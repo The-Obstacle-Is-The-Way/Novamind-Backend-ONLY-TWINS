@@ -1,311 +1,398 @@
 """
-API endpoints for the temporal neurotransmitter system.
+API routes for temporal neurotransmitter analysis.
 
-This module provides FastAPI routes for the temporal neurotransmitter system,
-enabling access to time-series neurotransmitter data, analysis, and visualization.
+This module defines FastAPI routes for the temporal neurotransmitter service
+using the clean SubjectIdentity architecture with no legacy dependencies.
 """
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Security, status, Path, Query
 
-from app.api.dependencies.auth import get_current_user_dict
-from app.api.dependencies.services import get_temporal_neurotransmitter_service
+from app.api.auth.jwt import get_current_user, verify_token
+from app.api.deps import (
+    get_subject_repository,
+    get_sequence_repository,
+    get_event_repository,
+    get_audit_service,
+    get_xgboost_service,
+)
+from app.api.schemas.temporal_schemas import (
+    GenerateTimeSeriesRequest,
+    TimeSeriesResponse,
+    NeurotransmitterAnalysisRequest,
+    NeurotransmitterEffectResponse,
+    TreatmentSimulationRequest,
+    SimulationResultResponse,
+    CascadeVisualizationRequest,
+    VisualizationDataResponse,
+    APIResponse,
+)
 from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
+from app.domain.entities.identity.subject_identity import SubjectIdentityRepository
+from app.domain.repositories.temporal_repository import TemporalSequenceRepository, EventRepository
+from app.domain.services.visualization_preprocessor import NeurotransmitterVisualizationPreprocessor
+from app.core.audit.audit_service import AuditService
+from app.core.exceptions import ResourceNotFoundError, ValidationError, AuthorizationError
 
 
-# Create the router
 router = APIRouter(
-    prefix="/api/v1/temporal-neurotransmitter",
-    tags=["temporal-neurotransmitter"],
+    prefix="/api/v1/neurotransmitters",
+    tags=["Neurotransmitter Analysis"],
+    dependencies=[Security(verify_token, scopes=["digital_twin:read", "digital_twin:write"])],
 )
 
 
-# Request/response models
-class TimeSeriesGenerateRequest(BaseModel):
-    """Request model for generating time series data."""
-    patient_id: UUID
-    brain_region: BrainRegion
-    neurotransmitter: Neurotransmitter
-    time_range_days: int = 14
-    time_step_hours: int = 6
+async def get_service(
+    subject_repository: SubjectIdentityRepository = Depends(get_subject_repository),
+    sequence_repository: TemporalSequenceRepository = Depends(get_sequence_repository),
+    event_repository: EventRepository = Depends(get_event_repository),
+    audit_service: AuditService = Depends(get_audit_service),
+    xgboost_service: Any = Depends(get_xgboost_service),
+) -> TemporalNeurotransmitterService:
+    """
+    Get the temporal neurotransmitter service with all dependencies properly injected.
+    
+    Args:
+        subject_repository: Repository for subject identities
+        sequence_repository: Repository for temporal sequences
+        event_repository: Repository for event tracking
+        audit_service: Service for audit logging
+        xgboost_service: Service for ML predictions
+        
+    Returns:
+        Configured TemporalNeurotransmitterService
+    """
+    visualizer = NeurotransmitterVisualizationPreprocessor()
+    
+    return TemporalNeurotransmitterService(
+        sequence_repository=sequence_repository,
+        subject_repository=subject_repository,
+        event_repository=event_repository,
+        visualization_preprocessor=visualizer,
+        xgboost_service=xgboost_service,
+        audit_service=audit_service,
+    )
 
 
-class TimeSeriesResponse(BaseModel):
-    """Response model for time series generation."""
-    sequence_id: UUID
-    patient_id: UUID
-    brain_region: str
-    neurotransmitter: str
-    time_range_days: int
-    time_step_hours: int
-
-
-class AnalyzeNeurotransmitterRequest(BaseModel):
-    """Request model for analyzing neurotransmitter levels."""
-    patient_id: UUID
-    brain_region: BrainRegion
-    neurotransmitter: Neurotransmitter
-
-
-class NeurotransmitterEffectResponse(BaseModel):
-    """Response model for neurotransmitter effect analysis."""
-    neurotransmitter: str
-    brain_region: str
-    effect_size: float
-    confidence_interval: Optional[tuple[float, float]] = None
-    p_value: Optional[float] = None
-    is_statistically_significant: bool
-    clinical_significance: Optional[str] = None
-    time_series_data: List[List[Union[str, float]]]
-    comparison_periods: Dict[str, List[str]]
-
-
-class TreatmentSimulationRequest(BaseModel):
-    """Request model for treatment simulation."""
-    patient_id: UUID
-    brain_region: BrainRegion
-    target_neurotransmitter: Neurotransmitter
-    treatment_effect: float
-    simulation_days: int = 14
-
-
-class TreatmentSimulationResponse(BaseModel):
-    """Response model for treatment simulation."""
-    sequence_ids: Dict[str, UUID]
-    patient_id: UUID
-    brain_region: str
-    target_neurotransmitter: str
-    treatment_effect: float
-    simulation_days: int
-
-
-class VisualizationDataRequest(BaseModel):
-    """Request model for visualization data."""
-    sequence_id: UUID
-    focus_features: Optional[List[str]] = None
-
-
-class VisualizationDataResponse(BaseModel):
-    """Response model for visualization data."""
-    time_points: List[str]
-    features: List[str]
-    values: List[List[float]]
-    metadata: Optional[Dict] = None
-
-
-class CascadeVisualizationRequest(BaseModel):
-    """Request model for cascade visualization."""
-    patient_id: UUID
-    starting_region: BrainRegion
-    neurotransmitter: Neurotransmitter
-    time_steps: int = 3
-
-
-class CascadeVisualizationResponse(BaseModel):
-    """Response model for cascade visualization."""
-    nodes: List[Dict]
-    connections: List[Dict]
-    time_steps: List[Dict]
-    metadata: Optional[Dict] = None
-
-
-@router.post(
-    "/time-series",
-    response_model=TimeSeriesResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Generate neurotransmitter time series",
-    description="Generate time series data for a specific neurotransmitter in a brain region.",
-)
+@router.post("/time-series", response_model=APIResponse)
 async def generate_time_series(
-    request: TimeSeriesGenerateRequest,
-    current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
+    request: GenerateTimeSeriesRequest,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    service: TemporalNeurotransmitterService = Depends(get_service),
+) -> APIResponse:
     """
-    Generate neurotransmitter time series data.
+    Generate a temporal sequence for a neurotransmitter in a specific brain region.
     
-    This endpoint generates time series data for a specific neurotransmitter
-    in a specific brain region for a given patient.
+    Args:
+        request: Request parameters for time series generation
+        current_user: Current authenticated user
+        service: Temporal neurotransmitter service
+        
+    Returns:
+        API response with sequence ID
+        
+    Raises:
+        HTTPException: If request processing fails
     """
-    sequence_id = await service.generate_neurotransmitter_time_series(
-        patient_id=request.patient_id,
-        brain_region=request.brain_region,
-        neurotransmitter=request.neurotransmitter,
-        time_range_days=request.time_range_days,
-        time_step_hours=request.time_step_hours
-    )
-    
-    return {
-        "sequence_id": sequence_id,
-        "patient_id": request.patient_id,
-        "brain_region": request.brain_region.value,
-        "neurotransmitter": request.neurotransmitter.value,
-        "time_range_days": request.time_range_days,
-        "time_step_hours": request.time_step_hours
-    }
-
-
-@router.post(
-    "/analyze",
-    response_model=NeurotransmitterEffectResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Analyze neurotransmitter levels",
-    description="Analyze neurotransmitter levels for a specific patient, brain region, and neurotransmitter.",
-)
-async def analyze_neurotransmitter(
-    request: AnalyzeNeurotransmitterRequest,
-    current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
-    """
-    Analyze neurotransmitter levels.
-    
-    This endpoint analyzes the neurotransmitter levels for a specific
-    brain region and neurotransmitter for a given patient.
-    """
-    effect = await service.analyze_patient_neurotransmitter_levels(
-        patient_id=request.patient_id,
-        brain_region=request.brain_region,
-        neurotransmitter=request.neurotransmitter
-    )
-    
-    if not effect:
+    try:
+        # Generate time series
+        sequence_id = await service.generate_neurotransmitter_time_series(
+            subject_id=request.subject_id,
+            brain_region=request.brain_region,
+            neurotransmitter=request.neurotransmitter,
+            time_range_days=request.time_range_days,
+            time_step_hours=request.time_step_hours,
+        )
+        
+        # Return response
+        return APIResponse(
+            success=True,
+            message="Neurotransmitter time series generated successfully",
+            data=TimeSeriesResponse(
+                sequence_id=sequence_id,
+                subject_id=request.subject_id,
+                brain_region=request.brain_region,
+                neurotransmitter=request.neurotransmitter,
+            ),
+        )
+        
+    except ResourceNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No data found for patient {request.patient_id} with {request.neurotransmitter.value} in {request.brain_region.value}"
+            detail=str(e),
         )
-    
-    # Format time series data for JSON response
-    time_series_data = [
-        [ts.strftime("%Y-%m-%dT%H:%M:%S"), value]
-        for ts, value in effect.time_series_data
-    ]
-    
-    # Format comparison periods
-    comparison_periods = {}
-    if effect.baseline_period:
-        comparison_periods["baseline"] = [
-            effect.baseline_period[0].strftime("%Y-%m-%dT%H:%M:%S"),
-            effect.baseline_period[1].strftime("%Y-%m-%dT%H:%M:%S")
-        ]
-    if effect.comparison_period:
-        comparison_periods["comparison"] = [
-            effect.comparison_period[0].strftime("%Y-%m-%dT%H:%M:%S"),
-            effect.comparison_period[1].strftime("%Y-%m-%dT%H:%M:%S")
-        ]
-    
-    return {
-        "neurotransmitter": effect.neurotransmitter.value,
-        "brain_region": effect.brain_region.value,
-        "effect_size": effect.effect_size,
-        "confidence_interval": effect.confidence_interval,
-        "p_value": effect.p_value,
-        "is_statistically_significant": effect.p_value is not None and effect.p_value < 0.05,
-        "clinical_significance": effect.clinical_significance.value if effect.clinical_significance else None,
-        "time_series_data": time_series_data,
-        "comparison_periods": comparison_periods
-    }
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except AuthorizationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating time series: {str(e)}",
+        )
 
 
-@router.post(
-    "/simulate-treatment",
-    response_model=TreatmentSimulationResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Simulate treatment response",
-    description="Simulate treatment response for a specific patient, brain region, and neurotransmitter.",
-)
+@router.post("/analysis", response_model=APIResponse)
+async def analyze_neurotransmitter(
+    request: NeurotransmitterAnalysisRequest,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    service: TemporalNeurotransmitterService = Depends(get_service),
+) -> APIResponse:
+    """
+    Analyze neurotransmitter levels for a subject in a specific brain region.
+    
+    Args:
+        request: Request parameters for neurotransmitter analysis
+        current_user: Current authenticated user
+        service: Temporal neurotransmitter service
+        
+    Returns:
+        API response with analysis results
+        
+    Raises:
+        HTTPException: If request processing fails
+    """
+    try:
+        # Perform analysis
+        effect = await service.analyze_neurotransmitter_levels(
+            subject_id=request.subject_id,
+            brain_region=request.brain_region,
+            neurotransmitter=request.neurotransmitter,
+        )
+        
+        if not effect:
+            return APIResponse(
+                success=True,
+                message="No data available for analysis",
+                data=None,
+            )
+        
+        # Return response
+        return APIResponse(
+            success=True,
+            message="Neurotransmitter analysis completed successfully",
+            data=NeurotransmitterEffectResponse(
+                subject_id=request.subject_id,
+                brain_region=request.brain_region,
+                neurotransmitter=request.neurotransmitter,
+                effect_size=effect.effect_size,
+                p_value=effect.p_value,
+                confidence_interval=effect.confidence_interval,
+                is_statistically_significant=effect.is_statistically_significant,
+                clinical_significance=effect.clinical_significance,
+                time_series_data=effect.time_series_data,
+            ),
+        )
+        
+    except ResourceNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except AuthorizationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error performing neurotransmitter analysis: {str(e)}",
+        )
+
+
+@router.post("/treatment-simulation", response_model=APIResponse)
 async def simulate_treatment(
     request: TreatmentSimulationRequest,
-    current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    service: TemporalNeurotransmitterService = Depends(get_service),
+) -> APIResponse:
     """
-    Simulate treatment response.
+    Simulate treatment response for a specific neurotransmitter and brain region.
     
-    This endpoint simulates the response to a treatment that targets
-    a specific neurotransmitter in a specific brain region for a given patient.
+    Args:
+        request: Request parameters for treatment simulation
+        current_user: Current authenticated user
+        service: Temporal neurotransmitter service
+        
+    Returns:
+        API response with simulation results
+        
+    Raises:
+        HTTPException: If request processing fails
     """
-    sequence_ids = await service.simulate_treatment_response(
-        patient_id=request.patient_id,
-        brain_region=request.brain_region,
-        target_neurotransmitter=request.target_neurotransmitter,
-        treatment_effect=request.treatment_effect,
-        simulation_days=request.simulation_days
-    )
-    
-    return {
-        "sequence_ids": {key.value: sequence_id for key, sequence_id in sequence_ids.items()},
-        "patient_id": request.patient_id,
-        "brain_region": request.brain_region.value,
-        "target_neurotransmitter": request.target_neurotransmitter.value,
-        "treatment_effect": request.treatment_effect,
-        "simulation_days": request.simulation_days
-    }
-
-
-@router.post(
-    "/visualization-data",
-    response_model=VisualizationDataResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Get visualization data",
-    description="Get visualization data for a specific sequence.",
-)
-async def get_visualization_data(
-    request: VisualizationDataRequest,
-    current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
-    """
-    Get visualization data.
-    
-    This endpoint gets visualization data for a specific sequence.
-    """
-    data = await service.get_visualization_data(
-        sequence_id=request.sequence_id,
-        focus_features=request.focus_features
-    )
-    
-    if not data:
+    try:
+        # Perform simulation
+        sequence_ids = await service.simulate_treatment_response(
+            subject_id=request.subject_id,
+            brain_region=request.brain_region,
+            target_neurotransmitter=request.target_neurotransmitter,
+            treatment_effect=request.treatment_effect,
+            simulation_days=request.simulation_days,
+        )
+        
+        # Return response
+        return APIResponse(
+            success=True,
+            message="Treatment simulation completed successfully",
+            data=SimulationResultResponse(
+                subject_id=request.subject_id,
+                brain_region=request.brain_region,
+                target_neurotransmitter=request.target_neurotransmitter,
+                treatment_effect=request.treatment_effect,
+                sequence_ids={nt.value: str(seq_id) for nt, seq_id in sequence_ids.items()},
+            ),
+        )
+        
+    except ResourceNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No data found for sequence {request.sequence_id}"
+            detail=str(e),
         )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except AuthorizationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error simulating treatment response: {str(e)}",
+        )
+
+
+@router.get("/sequences/{sequence_id}/visualization", response_model=APIResponse)
+async def get_sequence_visualization(
+    sequence_id: UUID = Path(..., description="UUID of the sequence"),
+    focus_features: Optional[List[str]] = Query(None, description="Features to focus on"),
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    service: TemporalNeurotransmitterService = Depends(get_service),
+) -> APIResponse:
+    """
+    Get visualization data for a temporal sequence.
     
-    return data
+    Args:
+        sequence_id: UUID of the sequence
+        focus_features: Optional list of features to focus on
+        current_user: Current authenticated user
+        service: Temporal neurotransmitter service
+        
+    Returns:
+        API response with visualization data
+        
+    Raises:
+        HTTPException: If request processing fails
+    """
+    try:
+        # Get visualization data
+        viz_data = await service.get_visualization_data(
+            sequence_id=sequence_id,
+            focus_features=focus_features,
+        )
+        
+        # Return response
+        return APIResponse(
+            success=True,
+            message="Visualization data retrieved successfully",
+            data=viz_data,
+        )
+        
+    except ResourceNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except AuthorizationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving visualization data: {str(e)}",
+        )
 
 
-@router.post(
-    "/cascade-visualization",
-    response_model=CascadeVisualizationResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Get cascade visualization",
-    description="Get cascade visualization for a specific patient, starting region, and neurotransmitter.",
-)
+@router.post("/cascade-visualization", response_model=APIResponse)
 async def get_cascade_visualization(
     request: CascadeVisualizationRequest,
-    current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    service: TemporalNeurotransmitterService = Depends(get_service),
+) -> APIResponse:
     """
-    Get cascade visualization.
+    Get visualization data for a neurotransmitter cascade.
     
-    This endpoint gets cascade visualization data showing how effects
-    propagate through connected brain regions over time.
+    Args:
+        request: Request parameters for cascade visualization
+        current_user: Current authenticated user
+        service: Temporal neurotransmitter service
+        
+    Returns:
+        API response with cascade visualization data
+        
+    Raises:
+        HTTPException: If request processing fails
     """
-    data = await service.get_cascade_visualization(
-        patient_id=request.patient_id,
-        starting_region=request.starting_region,
-        neurotransmitter=request.neurotransmitter,
-        time_steps=request.time_steps
-    )
-    
-    if not data:
+    try:
+        # Get cascade visualization
+        viz_data = await service.get_cascade_visualization(
+            subject_id=request.subject_id,
+            starting_region=request.starting_region,
+            neurotransmitter=request.neurotransmitter,
+            time_steps=request.time_steps,
+        )
+        
+        # Return response
+        return APIResponse(
+            success=True,
+            message="Cascade visualization data retrieved successfully",
+            data=VisualizationDataResponse(
+                subject_id=request.subject_id,
+                visualization_data=viz_data,
+            ),
+        )
+        
+    except ResourceNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No cascade data found for patient {request.patient_id} with {request.neurotransmitter.value} in {request.starting_region.value}"
+            detail=str(e),
         )
-    
-    return data
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except AuthorizationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving cascade visualization: {str(e)}",
+        )

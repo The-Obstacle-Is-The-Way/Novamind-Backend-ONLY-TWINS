@@ -1,5 +1,8 @@
 """
 Application service for temporal neurotransmitter analysis.
+
+This service handles neurotransmitter dynamics analysis, visualization, and simulation
+using the clean SubjectIdentity architecture with no legacy dependencies.
 """
 from datetime import datetime, timedelta, UTC
 from typing import Dict, List, Optional, Tuple, Any
@@ -12,36 +15,44 @@ from app.domain.entities.temporal_neurotransmitter_mapping import extend_neurotr
 from app.domain.entities.neurotransmitter_mapping import NeurotransmitterMapping, create_default_neurotransmitter_mapping
 from app.domain.repositories.temporal_repository import TemporalSequenceRepository, EventRepository
 from app.domain.services.visualization_preprocessor import NeurotransmitterVisualizationPreprocessor
+from app.domain.entities.identity.subject_identity import SubjectIdentity, SubjectIdentityRepository
+from app.core.audit.audit_service import AuditService, AuditEvent, AuditEventType
+from app.core.exceptions import ResourceNotFoundError, ValidationError
 
 
 class TemporalNeurotransmitterService:
     """
-    Application service for temporal neurotransmitter analysis and visualization.
+    Pure application service for temporal neurotransmitter analysis and visualization.
     
-    This service coordinates the interactions between domain entities and repositories,
-    providing a unified API for analyzing neurotransmitter dynamics over time.
+    This service uses SubjectIdentity abstractions throughout with no legacy dependencies.
     """
     
     def __init__(
         self,
         sequence_repository: TemporalSequenceRepository,
+        subject_repository: SubjectIdentityRepository,
         event_repository: Optional[EventRepository] = None,
         nt_mapping: Optional[NeurotransmitterMapping] = None,
         visualization_preprocessor: Optional[NeurotransmitterVisualizationPreprocessor] = None,
-        xgboost_service = None  # Intentionally untyped to avoid cyclic imports
+        xgboost_service = None,  # Intentionally untyped to avoid cyclic imports
+        audit_service: Optional[AuditService] = None
     ):
         """
         Initialize the service with required dependencies.
         
         Args:
             sequence_repository: Repository for temporal sequences
+            subject_repository: Repository for subject identities
             event_repository: Optional repository for event tracking
             nt_mapping: Optional custom neurotransmitter mapping
             visualization_preprocessor: Optional visualization preprocessor
             xgboost_service: Optional XGBoost machine learning service
+            audit_service: Optional audit service for secure logging
         """
         self.sequence_repository = sequence_repository
+        self.subject_repository = subject_repository
         self.event_repository = event_repository
+        self.audit_service = audit_service
         
         # Create neurotransmitter mapping with temporal extensions
         base_mapping = nt_mapping or create_default_neurotransmitter_mapping()
@@ -61,7 +72,7 @@ class TemporalNeurotransmitterService:
     
     async def generate_neurotransmitter_time_series(
         self,
-        patient_id: UUID,
+        subject_id: UUID,
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter,
         time_range_days: int = 30,
@@ -71,7 +82,7 @@ class TemporalNeurotransmitterService:
         Generate a temporal sequence for a neurotransmitter in a specific brain region.
         
         Args:
-            patient_id: UUID of the patient
+            subject_id: UUID of the subject identity
             brain_region: Target brain region
             neurotransmitter: Target neurotransmitter
             time_range_days: Number of days to simulate
@@ -79,7 +90,15 @@ class TemporalNeurotransmitterService:
             
         Returns:
             UUID of the created temporal sequence
+            
+        Raises:
+            ResourceNotFoundError: If subject doesn't exist
         """
+        # Verify subject exists
+        subject = await self.subject_repository.get_by_id(subject_id)
+        if not subject:
+            raise ResourceNotFoundError(f"Subject with ID {subject_id} not found")
+        
         # Generate timestamps
         end_time = datetime.now(UTC)
         start_time = end_time - timedelta(days=time_range_days)
@@ -94,8 +113,15 @@ class TemporalNeurotransmitterService:
             brain_region=brain_region,
             neurotransmitter=neurotransmitter,
             timestamps=timestamps,
-            patient_id=patient_id
+            subject_id=subject_id  # Pass subject_id instead of patient_id
         )
+        
+        # Add subject data to metadata
+        sequence.metadata.update({
+            "subject_id": str(subject_id),
+            "identity_type": subject.identity_type,
+            "subject_attributes": {k: v for k, v in subject.attributes.items() if k in ["age", "sex", "clinical_factors"]}
+        })
         
         # Persist sequence
         sequence_id = await self.sequence_repository.save(sequence)
@@ -103,35 +129,59 @@ class TemporalNeurotransmitterService:
         # Track event for audit and tracking purposes
         if self.event_repository:
             event = await self._create_sequence_generation_event(
-                patient_id=patient_id,
+                subject_id=subject_id,
                 brain_region=brain_region,
                 neurotransmitter=neurotransmitter,
                 sequence_id=sequence_id
             )
             await self.event_repository.save(event)
+        
+        # Record audit event if audit service is available
+        if self.audit_service:
+            await self.audit_service.log_event(
+                AuditEvent(
+                    event_type=AuditEventType.DATA_GENERATION,
+                    resource_id=str(sequence_id),
+                    resource_type="TemporalSequence",
+                    subject_id=str(subject_id),
+                    details={
+                        "brain_region": brain_region.value,
+                        "neurotransmitter": neurotransmitter.value,
+                        "time_range_days": time_range_days
+                    }
+                )
+            )
             
         return sequence_id
     
-    async def analyze_patient_neurotransmitter_levels(
+    async def analyze_neurotransmitter_levels(
         self,
-        patient_id: UUID,
+        subject_id: UUID,
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter
     ) -> Optional[NeurotransmitterEffect]:
         """
-        Analyze neurotransmitter levels for a patient in a specific brain region.
+        Analyze neurotransmitter levels for a subject in a specific brain region.
         
         Args:
-            patient_id: UUID of the patient
+            subject_id: UUID of the subject identity
             brain_region: Target brain region
             neurotransmitter: Target neurotransmitter
             
         Returns:
             Statistical analysis of neurotransmitter effect
+            
+        Raises:
+            ResourceNotFoundError: If subject doesn't exist
         """
+        # Verify subject exists
+        subject = await self.subject_repository.get_by_id(subject_id)
+        if not subject:
+            raise ResourceNotFoundError(f"Subject with ID {subject_id} not found")
+        
         # Get latest sequence containing this neurotransmitter
         sequence = await self.sequence_repository.get_latest_by_feature(
-            patient_id=patient_id,
+            subject_id=subject_id,  # Use subject_id instead of patient_id
             feature_name=neurotransmitter.value
         )
         
@@ -154,7 +204,7 @@ class TemporalNeurotransmitterService:
         split_idx = len(sequence.timestamps) // 3
         baseline_period = (sequence.timestamps[0], sequence.timestamps[split_idx])
         
-        # Use the correct method name: analyze_temporal_pattern instead of analyze_temporal_response
+        # Use the correct method name
         pattern_analysis = self.nt_mapping.analyze_temporal_pattern(
             brain_region=brain_region,
             neurotransmitter=neurotransmitter
@@ -179,18 +229,35 @@ class TemporalNeurotransmitterService:
         # Track analysis event if repository available
         if self.event_repository:
             event = await self._create_analysis_event(
-                patient_id=patient_id,
+                subject_id=subject_id,
                 brain_region=brain_region,
                 neurotransmitter=neurotransmitter,
                 effect=effect
             )
             await self.event_repository.save(event)
         
+        # Record audit event if audit service is available
+        if self.audit_service:
+            await self.audit_service.log_event(
+                AuditEvent(
+                    event_type=AuditEventType.DATA_ANALYSIS,
+                    resource_id=str(sequence.id),
+                    resource_type="TemporalSequence",
+                    subject_id=str(subject_id),
+                    details={
+                        "brain_region": brain_region.value,
+                        "neurotransmitter": neurotransmitter.value,
+                        "effect_size": effect.effect_size,
+                        "is_significant": effect.is_statistically_significant,
+                    }
+                )
+            )
+        
         return effect
     
     async def simulate_treatment_response(
         self,
-        patient_id: UUID,
+        subject_id: UUID,
         brain_region: BrainRegion,
         target_neurotransmitter: Neurotransmitter,
         treatment_effect: float,
@@ -200,7 +267,7 @@ class TemporalNeurotransmitterService:
         Simulate treatment response and save resulting temporal sequences.
         
         Args:
-            patient_id: UUID of the patient
+            subject_id: UUID of the subject identity
             brain_region: Target brain region
             target_neurotransmitter: Primary neurotransmitter affected by treatment
             treatment_effect: Magnitude and direction of effect (-1.0 to 1.0)
@@ -208,15 +275,28 @@ class TemporalNeurotransmitterService:
             
         Returns:
             Dictionary mapping neurotransmitters to their sequence UUIDs
+            
+        Raises:
+            ResourceNotFoundError: If subject doesn't exist
+            ValidationError: If treatment effect is invalid
         """
+        # Verify subject exists
+        subject = await self.subject_repository.get_by_id(subject_id)
+        if not subject:
+            raise ResourceNotFoundError(f"Subject with ID {subject_id} not found")
+        
+        # Validate treatment effect
+        if not -1.0 <= treatment_effect <= 1.0:
+            raise ValidationError("Treatment effect must be between -1.0 and 1.0")
+        
         # Adjust treatment effect using XGBoost predictions if available
         adjusted_effect = treatment_effect
         xgboost_prediction = None
         
         if self._xgboost_service:
-            # Try to get patient baseline data for more accurate prediction
+            # Try to get subject baseline data for more accurate prediction
             baseline_sequence = await self.sequence_repository.get_latest_by_feature(
-                patient_id=patient_id,
+                subject_id=subject_id,
                 feature_name=target_neurotransmitter.value
             )
             
@@ -227,9 +307,14 @@ class TemporalNeurotransmitterService:
                 baseline_value = baseline_sequence.values[0][feature_idx]
                 baseline_data[f"baseline_{target_neurotransmitter.value}"] = baseline_value
             
+            # Add subject attributes as features for prediction
+            for key, value in subject.attributes.items():
+                if isinstance(value, (int, float, bool)) or (isinstance(value, str) and value.isdigit()):
+                    baseline_data[f"subject_{key}"] = float(value)
+            
             # Get prediction from XGBoost service
             xgboost_prediction = self._xgboost_service.predict_treatment_response(
-                patient_id=patient_id,
+                subject_id=subject_id,
                 brain_region=brain_region,
                 neurotransmitter=target_neurotransmitter,
                 treatment_effect=treatment_effect,
@@ -262,7 +347,7 @@ class TemporalNeurotransmitterService:
             target_neurotransmitter=target_neurotransmitter,
             treatment_effect=adjusted_effect,
             timestamps=timestamps,
-            patient_id=patient_id
+            subject_id=subject_id  # Use subject_id instead of patient_id
         )
         
         # Save sequences and track events
@@ -275,7 +360,9 @@ class TemporalNeurotransmitterService:
                 "treatment_effect_magnitude": treatment_effect,
                 "adjusted_effect_magnitude": adjusted_effect,
                 "brain_region": brain_region.value,
-                "xgboost_prediction": xgboost_prediction if xgboost_prediction else None
+                "xgboost_prediction": xgboost_prediction if xgboost_prediction else None,
+                "subject_id": str(subject_id),
+                "identity_type": subject.identity_type
             })
             
             # Save sequence
@@ -285,7 +372,7 @@ class TemporalNeurotransmitterService:
             # Track simulation event
             if self.event_repository:
                 event = await self._create_simulation_event(
-                    patient_id=patient_id,
+                    subject_id=subject_id,
                     brain_region=brain_region,
                     target_neurotransmitter=target_neurotransmitter,
                     affected_neurotransmitter=nt,
@@ -294,6 +381,24 @@ class TemporalNeurotransmitterService:
                     adjusted_effect=adjusted_effect
                 )
                 await self.event_repository.save(event)
+            
+            # Record audit event if audit service is available
+            if self.audit_service:
+                await self.audit_service.log_event(
+                    AuditEvent(
+                        event_type=AuditEventType.SIMULATION,
+                        resource_id=str(sequence_id),
+                        resource_type="TemporalSequence",
+                        subject_id=str(subject_id),
+                        details={
+                            "brain_region": brain_region.value,
+                            "target_neurotransmitter": target_neurotransmitter.value,
+                            "affected_neurotransmitter": nt.value,
+                            "treatment_effect": treatment_effect,
+                            "adjusted_effect": adjusted_effect
+                        }
+                    )
+                )
         
         return sequence_ids
     
@@ -311,11 +416,14 @@ class TemporalNeurotransmitterService:
             
         Returns:
             Visualization-ready data structure
+            
+        Raises:
+            ResourceNotFoundError: If sequence doesn't exist
         """
         # Get sequence
         sequence = await self.sequence_repository.get_by_id(sequence_id)
         if not sequence:
-            raise ValueError(f"Sequence with ID {sequence_id} not found")
+            raise ResourceNotFoundError(f"Sequence with ID {sequence_id} not found")
         
         # Preprocess for visualization
         viz_data = self.visualization_preprocessor.precompute_temporal_sequence_visualization(
@@ -348,11 +456,23 @@ class TemporalNeurotransmitterService:
             "metadata": sequence.metadata
         })
         
+        # Record audit event if audit service is available
+        if self.audit_service and "subject_id" in sequence.metadata:
+            await self.audit_service.log_event(
+                AuditEvent(
+                    event_type=AuditEventType.DATA_ACCESS,
+                    resource_id=str(sequence_id),
+                    resource_type="TemporalSequence",
+                    subject_id=sequence.metadata["subject_id"],
+                    details={"action": "visualization", "focus_features": focus_features}
+                )
+            )
+        
         return viz_data
     
     async def get_cascade_visualization(
         self,
-        patient_id: UUID,
+        subject_id: UUID,
         starting_region: BrainRegion,
         neurotransmitter: Neurotransmitter,
         time_steps: int = 10
@@ -361,21 +481,29 @@ class TemporalNeurotransmitterService:
         Get visualization data for a neurotransmitter cascade.
         
         Args:
-            patient_id: UUID of the patient
+            subject_id: UUID of the subject identity
             starting_region: Brain region where cascade starts
             neurotransmitter: Neurotransmitter to trigger cascade
             time_steps: Number of time steps to simulate
             
         Returns:
             Visualization-ready data structure for the cascade
+            
+        Raises:
+            ResourceNotFoundError: If subject doesn't exist
         """
+        # Verify subject exists
+        subject = await self.subject_repository.get_by_id(subject_id)
+        if not subject:
+            raise ResourceNotFoundError(f"Subject with ID {subject_id} not found")
+        
         # Predict cascade
         cascade_results = self.nt_mapping.predict_cascade_effect(
             starting_region=starting_region,
             neurotransmitter=neurotransmitter,
             initial_level=0.8,  # Strong initial activation
             time_steps=time_steps,
-            patient_id=patient_id
+            subject_id=subject_id  # Use subject_id instead of patient_id
         )
         
         # Preprocess for visualization
@@ -464,13 +592,31 @@ class TemporalNeurotransmitterService:
         
         # Add enhanced visualization data
         viz_data.update({
-            "patient_id": str(patient_id),
+            "subject_id": str(subject_id),
+            "identity_type": subject.identity_type,
             "starting_region": starting_region.value,
             "neurotransmitter": neurotransmitter.value,
             "time_steps": time_steps_data,
             "nodes": nodes,
             "connections": connections
         })
+        
+        # Record audit event if audit service is available
+        if self.audit_service:
+            await self.audit_service.log_event(
+                AuditEvent(
+                    event_type=AuditEventType.DATA_ACCESS,
+                    resource_id=f"cascade_{starting_region.value}_{neurotransmitter.value}",
+                    resource_type="NeurotransmitterCascade",
+                    subject_id=str(subject_id),
+                    details={
+                        "action": "cascade_visualization", 
+                        "starting_region": starting_region.value,
+                        "neurotransmitter": neurotransmitter.value,
+                        "time_steps": time_steps
+                    }
+                )
+            )
         
         return viz_data
     
@@ -499,95 +645,109 @@ class TemporalNeurotransmitterService:
         # Return the closest region if distance is small enough
         if distances:
             closest_region = min(distances.items(), key=lambda x: x[1])
-            if closest_region[1] < 0.3:  # Threshold for match
+            if closest_region[1] < 5.0:  # Threshold for matching
                 return closest_region[0]
         
         return None
     
     async def _create_sequence_generation_event(
         self,
-        patient_id: UUID,
+        subject_id: UUID,
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter,
         sequence_id: UUID
-    ):
-        """Create an event for sequence generation."""
-        from app.domain.entities.temporal_events import CorrelatedEvent
+    ) -> Any:  # Type will depend on event system
+        """
+        Create an event for sequence generation.
         
-        if not self.event_repository:
-            return None
-        
-        event = CorrelatedEvent(
-            event_type="neurotransmitter_sequence_generated",
-            metadata={
-                "patient_id": str(patient_id),
-                "brain_region": brain_region.value,
-                "neurotransmitter": neurotransmitter.value,
-                "sequence_id": str(sequence_id),
-                "timestamp": datetime.now(UTC).isoformat()
-            }
-        )
-        
-        return event
+        Args:
+            subject_id: UUID of the subject identity
+            brain_region: Target brain region
+            neurotransmitter: Target neurotransmitter
+            sequence_id: UUID of the generated sequence
+            
+        Returns:
+            Event object
+        """
+        # Implementation depends on the event system
+        # This is just a placeholder
+        return {
+            "event_type": "sequence_generation",
+            "subject_id": str(subject_id),
+            "brain_region": brain_region.value,
+            "neurotransmitter": neurotransmitter.value,
+            "sequence_id": str(sequence_id),
+            "timestamp": datetime.now(UTC).isoformat()
+        }
     
     async def _create_analysis_event(
         self,
-        patient_id: UUID,
+        subject_id: UUID,
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter,
         effect: NeurotransmitterEffect
-    ):
-        """Create an event for neurotransmitter analysis."""
-        from app.domain.entities.temporal_events import CorrelatedEvent
+    ) -> Any:  # Type will depend on event system
+        """
+        Create an event for neurotransmitter analysis.
         
-        if not self.event_repository:
-            return None
-        
-        event = CorrelatedEvent(
-            event_type="neurotransmitter_analyzed",
-            metadata={
-                "patient_id": str(patient_id),
-                "brain_region": brain_region.value,
-                "neurotransmitter": neurotransmitter.value,
-                "effect_size": effect.effect_size,
-                "p_value": effect.p_value,
-                "is_significant": effect.is_statistically_significant,
-                "clinical_significance": effect.clinical_significance.value if effect.clinical_significance else "unknown",
-                "timestamp": datetime.now(UTC).isoformat()
-            }
-        )
-        
-        return event
+        Args:
+            subject_id: UUID of the subject identity
+            brain_region: Target brain region
+            neurotransmitter: Target neurotransmitter
+            effect: Analysis result
+            
+        Returns:
+            Event object
+        """
+        # Implementation depends on the event system
+        # This is just a placeholder
+        return {
+            "event_type": "neurotransmitter_analysis",
+            "subject_id": str(subject_id),
+            "brain_region": brain_region.value,
+            "neurotransmitter": neurotransmitter.value,
+            "effect_size": effect.effect_size,
+            "p_value": effect.p_value,
+            "is_significant": effect.is_statistically_significant,
+            "clinical_significance": effect.clinical_significance.value,
+            "timestamp": datetime.now(UTC).isoformat()
+        }
     
     async def _create_simulation_event(
         self,
-        patient_id: UUID,
+        subject_id: UUID,
         brain_region: BrainRegion,
         target_neurotransmitter: Neurotransmitter,
         affected_neurotransmitter: Neurotransmitter,
         sequence_id: UUID,
         treatment_effect: float,
         adjusted_effect: float
-    ):
-        """Create an event for treatment simulation."""
-        from app.domain.entities.temporal_events import CorrelatedEvent
+    ) -> Any:  # Type will depend on event system
+        """
+        Create an event for treatment simulation.
         
-        if not self.event_repository:
-            return None
-        
-        event = CorrelatedEvent(
-            event_type="treatment_simulation",
-            metadata={
-                "patient_id": str(patient_id),
-                "brain_region": brain_region.value,
-                "target_neurotransmitter": target_neurotransmitter.value,
-                "affected_neurotransmitter": affected_neurotransmitter.value,
-                "sequence_id": str(sequence_id),
-                "treatment_effect": treatment_effect,
-                "adjusted_effect": adjusted_effect,
-                "adjustment_delta": adjusted_effect - treatment_effect,
-                "timestamp": datetime.now(UTC).isoformat()
-            }
-        )
-        
-        return event
+        Args:
+            subject_id: UUID of the subject identity
+            brain_region: Target brain region
+            target_neurotransmitter: Primary target of treatment
+            affected_neurotransmitter: Neurotransmitter affected by treatment
+            sequence_id: UUID of the simulation sequence
+            treatment_effect: Original treatment effect magnitude
+            adjusted_effect: Adjusted effect after predictions
+            
+        Returns:
+            Event object
+        """
+        # Implementation depends on the event system
+        # This is just a placeholder
+        return {
+            "event_type": "treatment_simulation",
+            "subject_id": str(subject_id),
+            "brain_region": brain_region.value,
+            "target_neurotransmitter": target_neurotransmitter.value,
+            "affected_neurotransmitter": affected_neurotransmitter.value,
+            "sequence_id": str(sequence_id),
+            "treatment_effect": treatment_effect,
+            "adjusted_effect": adjusted_effect,
+            "timestamp": datetime.now(UTC).isoformat()
+        }

@@ -1,6 +1,7 @@
 # Novamind Digital Twin: Psychiatric Platform Architecture - Backend Only
 
 ## Clean Architecture
+- **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **Domain**: Pure business logic with no external dependencies
 - **Application**: Use cases, services, state management
@@ -9,6 +10,7 @@
 - **Core**: Cross-cutting concerns, shared utilities
 
 ## Backend Design Principles
+- **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **Single Responsibility**: Each module handles one specific concern
 - **Dependency Inversion**: High-level modules don't depend on low-level modules
@@ -18,6 +20,7 @@
 - **Type Hints**: All Python code uses type annotations
 
 ## HIPAA Compliance
+- **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **No PHI in URLs**: POST only for sensitive data
 - **Secure Storage**: Encrypted data at rest
@@ -28,6 +31,7 @@
 - **Authorization**: Role-based access control for all resources
 
 ## Data Security
+- **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **Input Validation**: Validate all user inputs
 - **Parameter Validation**: Use Pydantic models for request validation
@@ -36,6 +40,7 @@
 - **Encryption**: TLS for data in transit, encryption for data at rest
 
 ## API Design
+- **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **RESTful**: Follow REST principles for API design
 - **Versioning**: Versioned API endpoints
@@ -44,6 +49,7 @@
 - **Response Formats**: Consistent JSON structure
 
 ## Testing
+- **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **Unit Tests**: For business logic and services
 - **Integration Tests**: For API endpoints and repositories
@@ -52,7 +58,5 @@
 - **Test Coverage**: Maintain high test coverage
 
 ## Reference Documentation
-
-- **Backend Documentation**: Refer to `/backend/docs/` for detailed implementation guides
-- **Security Compliance**: See `/backend/docs/HIPAA_COMPLIANCE.md` for security requirements
-- **API Guidelines**: See `/backend/docs/API_GUIDELINES.md` for API design standards
+- **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
+- Read all /docs/
