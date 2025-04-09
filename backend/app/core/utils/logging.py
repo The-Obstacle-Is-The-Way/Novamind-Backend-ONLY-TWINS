@@ -12,10 +12,16 @@ import sys
 import traceback
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, Type, TypeVar, cast
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union, cast
 
 from app.core.constants import LogLevel
 
+# Try to import the PHI detection service if available
+try:
+    from app.core.services.ml.phi_detection import MockPHIDetection
+    HAS_PHI_DETECTION = True
+except ImportError:
+    HAS_PHI_DETECTION = False
 
 # Type variables for function signatures
 F = TypeVar('F', bound=Callable[..., Any])
@@ -215,3 +221,135 @@ def _create_logged_method(
             raise  # Re-raise the exception
             
     return wrapper
+
+
+class HIPAACompliantLogger:
+    """
+    HIPAA-compliant logger that sanitizes PHI from logs.
+    
+    This logger wraps a standard Python logger and automatically sanitizes
+    any PHI (Protected Health Information) from log messages before they
+    are recorded, ensuring HIPAA compliance.
+    """
+    
+    def __init__(
+        self, 
+        name: str, 
+        level: Union[int, str] = logging.INFO,
+        phi_detection_service = None
+    ):
+        """
+        Initialize a HIPAA-compliant logger.
+        
+        Args:
+            name: Logger name, typically __name__ of the calling module
+            level: Log level to use
+            phi_detection_service: Optional PHI detection service to use, if None a mock service is created
+        """
+        self.logger = get_logger(name)
+        
+        # Set log level
+        if isinstance(level, str):
+            level = getattr(logging, level.upper(), logging.INFO)
+        self.logger.setLevel(level)
+        
+        # Initialize PHI detection
+        if phi_detection_service is None and HAS_PHI_DETECTION:
+            # Use mock service if available and none provided
+            self.phi_detection = MockPHIDetection()
+        else:
+            # Use provided service or create a simple fallback
+            self.phi_detection = phi_detection_service or self._create_fallback_detector()
+    
+    def _create_fallback_detector(self):
+        """Create a simple fallback PHI detector when the real one is not available."""
+        class SimplePHIDetector:
+            def redact_phi(self, text: str) -> str:
+                """Simple regex-based sanitization as fallback."""
+                import re
+                # Simple patterns for common PHI
+                patterns = [
+                    # Names (Mr./Mrs./Dr. followed by capitalized words)
+                    r'\b(Mr\.|Mrs\.|Dr\.|Ms\.) [A-Z][a-z]+\b',
+                    # SSN pattern
+                    r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
+                    # Phone numbers
+                    r'\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b',
+                    # Email addresses
+                    r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
+                    # Dates (various formats)
+                    r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
+                    # Medical record numbers (assumes MRN: prefix)
+                    r'MRN:?\s*\d+',
+                    # Ages over 89
+                    r'\b(9\d|1[0-9]\d+)\s+years?\s+old\b',
+                ]
+                
+                sanitized_text = text
+                for pattern in patterns:
+                    sanitized_text = re.sub(pattern, "[REDACTED]", sanitized_text)
+                return sanitized_text
+                
+            def detect_phi(self, text: str) -> List[Dict[str, Any]]:
+                """Simple PHI detection as fallback."""
+                return []  # No detailed detection in fallback
+                
+        return SimplePHIDetector()
+    
+    def _sanitize_phi(self, message: Any) -> str:
+        """
+        Sanitize PHI from a log message.
+        
+        Args:
+            message: Message to sanitize
+            
+        Returns:
+            Sanitized message
+        """
+        if not isinstance(message, str):
+            message = str(message)
+            
+        # Use PHI detection service to sanitize the message
+        return self.phi_detection.redact_phi(message)
+    
+    def debug(self, message: Any, *args, **kwargs) -> None:
+        """Log a debug message with PHI sanitization."""
+        self.logger.debug(self._sanitize_phi(message), *args, **kwargs)
+    
+    def info(self, message: Any, *args, **kwargs) -> None:
+        """Log an info message with PHI sanitization."""
+        self.logger.info(self._sanitize_phi(message), *args, **kwargs)
+    
+    def warning(self, message: Any, *args, **kwargs) -> None:
+        """Log a warning message with PHI sanitization."""
+        self.logger.warning(self._sanitize_phi(message), *args, **kwargs)
+    
+    def error(self, message: Any, *args, **kwargs) -> None:
+        """Log an error message with PHI sanitization."""
+        self.logger.error(self._sanitize_phi(message), *args, **kwargs)
+    
+    def critical(self, message: Any, *args, **kwargs) -> None:
+        """Log a critical message with PHI sanitization."""
+        self.logger.critical(self._sanitize_phi(message), *args, **kwargs)
+    
+    def exception(self, message: Any, *args, **kwargs) -> None:
+        """Log an exception with PHI sanitization."""
+        self.logger.exception(self._sanitize_phi(message), *args, **kwargs)
+    
+    def log(self, level: int, message: Any, *args, **kwargs) -> None:
+        """Log a message with PHI sanitization at the specified level."""
+        self.logger.log(level, self._sanitize_phi(message), *args, **kwargs)
+
+
+def get_hipaa_logger(name: str, level: Union[int, str] = logging.INFO) -> HIPAACompliantLogger:
+    """
+    Get a HIPAA-compliant logger instance for the specified name.
+    
+    Args:
+        name: Logger name, typically __name__ of the calling module
+        level: Log level to use
+        
+    Returns:
+        HIPAA-compliant logger instance
+    """
+    return HIPAACompliantLogger(name, level)

@@ -87,3 +87,65 @@ class ModelInferenceError(DomainException):
     
     def __init__(self, message: str = "Error during model inference"):
         super().__init__(message)
+
+
+class EntityNotFoundError(DomainException):
+    """
+    Raised when an entity cannot be found by its identifier.
+    
+    This exception is used when attempting to retrieve an entity by ID
+    from a repository or data source and the entity does not exist.
+    """
+    
+    def __init__(self, message: str = "Entity not found", entity_type: str = None, entity_id: str = None):
+        if entity_type and entity_id:
+            message = f"{entity_type} with ID {entity_id} not found"
+        super().__init__(message)
+
+
+class UnauthorizedAccessError(DomainException):
+    """
+    Raised when a user attempts to access a resource they're not authorized for.
+    
+    This exception is used for authorization failures, such as attempting
+    to access a patient record without the proper role or permissions.
+    """
+    
+    def __init__(self, message: str = "Unauthorized access to resource"):
+        super().__init__(message)
+
+
+class AuthorizationError(DomainException):
+    """
+    Raised when there's an error with the authorization process.
+    
+    This exception is used for errors in the authorization workflow,
+    such as invalid role assignments or permission structures.
+    """
+    
+    def __init__(self, message: str = "Authorization error occurred"):
+        super().__init__(message)
+
+
+class MentalLLaMAInferenceError(ModelInferenceError):
+    """
+    Raised when there's an error during MentalLLaMA model inference.
+    
+    This is a specific subclass of ModelInferenceError used for errors
+    related to the MentalLLaMA natural language processing model.
+    """
+    
+    def __init__(self, message: str = "Error during MentalLLaMA inference"):
+        super().__init__(message)
+
+
+class AuthenticationException(AuthenticationError):
+    """
+    Alternative name for AuthenticationError for backward compatibility.
+    
+    This exception serves the same purpose as AuthenticationError and is provided
+    to maintain compatibility with existing code.
+    """
+    
+    def __init__(self, message: str = "Invalid authentication credentials"):
+        super().__init__(message)

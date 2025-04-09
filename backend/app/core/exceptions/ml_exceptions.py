@@ -98,6 +98,85 @@ class ModelNotFoundError(MLServiceError):
         super().__init__(message, *args, **kwargs)
 
 
+class MentalLLaMAInferenceError(MentaLLaMAServiceError):
+    """Exception raised for errors during MentalLLaMA inference."""
+    
+    def __init__(self, message: str = "Error during MentalLLaMA inference", *args, **kwargs):
+        """
+        Initialize MentalLLaMA inference error.
+        
+        Args:
+            message: Error message
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
+        super().__init__(message, *args, **kwargs)
+
+
+class DigitalTwinError(MLServiceError):
+    """Exception raised for errors in Digital Twin service."""
+    
+    def __init__(self, message: str = "Error in Digital Twin service", *args, **kwargs):
+        """
+        Initialize Digital Twin service error.
+        
+        Args:
+            message: Error message
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
+        super().__init__(message, *args, **kwargs)
+
+
+class DigitalTwinInferenceError(DigitalTwinError):
+    """Exception raised for errors during Digital Twin inference."""
+    
+    def __init__(self, message: str = "Error during Digital Twin inference", *args, **kwargs):
+        """
+        Initialize Digital Twin inference error.
+        
+        Args:
+            message: Error message
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
+        super().__init__(message, *args, **kwargs)
+
+
+class DigitalTwinSessionError(DigitalTwinError):
+    """Exception raised for errors with Digital Twin sessions."""
+    
+    def __init__(self, message: str = "Error with Digital Twin session", session_id: str = None, *args, **kwargs):
+        """
+        Initialize Digital Twin session error.
+        
+        Args:
+            message: Error message
+            session_id: ID of the session with the error
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
+        if session_id:
+            message = f"{message} (Session ID: {session_id})"
+        self.session_id = session_id
+        super().__init__(message, *args, **kwargs)
+
+
+class DigitalTwinConfigError(DigitalTwinError):
+    """Exception raised for configuration errors in Digital Twin service."""
+    
+    def __init__(self, message: str = "Digital Twin configuration error", *args, **kwargs):
+        """
+        Initialize Digital Twin configuration error.
+        
+        Args:
+            message: Error message
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
+        super().__init__(message, *args, **kwargs)
+
+
 class ServiceUnavailableError(MLServiceError):
     """Exception raised when an ML service is unavailable or uninitialized."""
     
