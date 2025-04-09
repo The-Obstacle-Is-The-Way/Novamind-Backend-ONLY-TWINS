@@ -1,21 +1,38 @@
-# -*- coding: utf-8 -*-
 """
-Patient Assessment Tool (PAT) Package.
+Patient Activity Tracking (PAT) service module.
 
-This package provides a service for patient assessments and clinical evaluations.
+This package provides components for tracking, analyzing, and interpreting
+patient activity data from wearable devices to generate clinical insights.
 """
 
-from app.core.services.ml.pat.pat_interface import PATInterface
-from app.core.services.ml.pat.pat_service import PATService
-from app.core.services.ml.pat.mock import MockPATService
+from app.core.services.ml.pat.base import PATBase
+from app.core.services.ml.pat.exceptions import (
+    AnalysisError,
+    AuthorizationError,
+    ConfigurationError,
+    EmbeddingError,
+    InitializationError,
+    IntegrationError,
+    PATError,
+    ResourceNotFoundError,
+    StorageError,
+    ValidationError,
+)
+from app.core.services.ml.pat.factory import PATFactory
+from app.core.services.ml.pat.mock import MockPAT
 
 __all__ = [
-    # Interfaces
-    "PATInterface",
-    
-    # Implementations
-    "PATService",
-    
-    # Mock implementations for testing
-    "MockPATService",
+    "PATBase",
+    "PATFactory",
+    "MockPAT",
+    "PATError",
+    "InitializationError",
+    "ValidationError",
+    "AnalysisError",
+    "EmbeddingError",
+    "ResourceNotFoundError",
+    "AuthorizationError",
+    "IntegrationError",
+    "ConfigurationError",
+    "StorageError",
 ]

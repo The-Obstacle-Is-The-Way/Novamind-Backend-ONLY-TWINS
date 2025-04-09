@@ -1,625 +1,412 @@
-# -*- coding: utf-8 -*-
 """
-Mock PAT (Patient Assessment Tool) Service Implementation.
+Mock implementation of the PAT service.
 
-This module implements a mock version of the PAT interface for testing.
+This module provides a mock implementation of the Patient Activity Tracking (PAT)
+service for development, testing, and demonstration purposes.
 """
 
-import datetime
-import logging
+import json
+import random
 import uuid
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Union
 
-from app.core.services.ml.pat.pat_interface import PATInterface
+from app.core.services.ml.pat.base import PATBase
+from app.core.services.ml.pat.exceptions import (
+    AnalysisError,
+    AuthorizationError,
+    EmbeddingError,
+    InitializationError,
+    ResourceNotFoundError,
+    ValidationError,
+)
 
-logger = logging.getLogger(__name__)
 
+class MockPAT(PATBase):
+    """Mock implementation of the PAT service for testing and development."""
 
-class MockPATService(PATInterface):
-    """
-    Mock implementation of the Patient Assessment Tool service for testing.
-    
-    This implementation stores data in memory and provides simplified
-    functionality to facilitate testing.
-    """
-    
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize the mock PAT service."""
+    def __init__(self) -> None:
+        """Initialize the MockPAT service."""
         self._initialized = False
-        self._config = config or {}
-        self._assessments = {}
-        self._form_templates = {}
+        self._configured = False
+        self._model_id = "mock-model-v1"
+        self._s3_bucket = "mock-s3-bucket"
+        self._dynamodb_table = "mock-dynamodb-table"
+        self._delay_ms = 0
         
-        # Setup default templates for testing
-        self._setup_mock_templates()
-    
+    @property
+    def configured(self) -> bool:
+        """Get whether the service is configured."""
+        return self._configured
+        
+    @property
+    def delay_ms(self) -> int:
+        """Get the configured delay in milliseconds."""
+        return self._delay_ms
+        self._data_store = {
+            "analyses": {},
+            "embeddings": {},
+            "integrations": {},
+            "patient_analyses": {},
+        }
+
     def initialize(self, config: Dict[str, Any]) -> None:
-        """Initialize the service with configuration."""
-        self._config.update(config)
-        self._initialized = True
-        logger.info("Mock PAT service initialized")
-    
-    def is_healthy(self) -> bool:
-        """Check if the service is healthy."""
-        return self._initialized
-    
-    def shutdown(self) -> None:
-        """Shutdown the service and release resources."""
-        self._initialized = False
-        self._assessments.clear()
-        self._form_templates.clear()
-        logger.info("Mock PAT service shutdown")
-    
-    def create_assessment(
-        self,
-        patient_id: str,
-        assessment_type: str,
-        clinician_id: Optional[str] = None,
-        initial_data: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Create a new patient assessment."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
+        """Initialize the service with configuration parameters.
         
-        if not patient_id or not assessment_type:
-            raise ValueError("Patient ID and assessment type are required")
-        
-        assessment_id = str(uuid.uuid4())
-        template_id = None
-        
-        # Find template for the assessment type
-        for tid, template in self._form_templates.items():
-            if template["form_type"] == assessment_type:
-                template_id = tid
-                break
-        
-        if not template_id:
-            template_id = self._create_mock_template(assessment_type)
-        
-        # Create assessment record
-        assessment = {
-            "id": assessment_id,
-            "patient_id": patient_id,
-            "clinician_id": clinician_id,
-            "assessment_type": assessment_type,
-            "template_id": template_id,
-            "status": "created",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "completed_at": None,
-            "data": initial_data or {},
-            "scores": {},
-            "flags": []
-        }
-        
-        self._assessments[assessment_id] = assessment
-        
-        return {
-            "assessment_id": assessment_id,
-            "patient_id": patient_id,
-            "status": "created",
-            "template_id": template_id
-        }
-    
-    def get_assessment(self, assessment_id: str) -> Dict[str, Any]:
-        """Get information about an assessment."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not assessment_id:
-            raise ValueError("Assessment ID is required")
-        
-        assessment = self._assessments.get(assessment_id)
-        if not assessment:
-            raise KeyError(f"Assessment not found: {assessment_id}")
-        
-        return {
-            "assessment_id": assessment["id"],
-            "patient_id": assessment["patient_id"],
-            "clinician_id": assessment["clinician_id"],
-            "assessment_type": assessment["assessment_type"],
-            "status": assessment["status"],
-            "created_at": assessment["created_at"],
-            "updated_at": assessment["updated_at"],
-            "completed_at": assessment["completed_at"],
-            "data": assessment["data"],
-            "scores": assessment["scores"],
-            "flags": assessment["flags"]
-        }
-    
-    def update_assessment(
-        self,
-        assessment_id: str,
-        data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Update an assessment with new data."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not assessment_id:
-            raise ValueError("Assessment ID is required")
-        
-        assessment = self._assessments.get(assessment_id)
-        if not assessment:
-            raise KeyError(f"Assessment not found: {assessment_id}")
-        
-        if assessment["status"] == "completed":
-            raise ValueError("Cannot update completed assessment")
-        
-        # Update data
-        assessment["data"].update(data)
-        assessment["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
-        
-        # Check for simple completion
-        if len(assessment["data"]) >= 3 and assessment["status"] == "created":
-            assessment["status"] = "in_progress"
-        
-        return {
-            "assessment_id": assessment["id"],
-            "patient_id": assessment["patient_id"],
-            "status": assessment["status"],
-            "updated_at": assessment["updated_at"]
-        }
-    
-    def complete_assessment(
-        self,
-        assessment_id: str,
-        completion_data: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Complete an assessment."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not assessment_id:
-            raise ValueError("Assessment ID is required")
-        
-        assessment = self._assessments.get(assessment_id)
-        if not assessment:
-            raise KeyError(f"Assessment not found: {assessment_id}")
-        
-        if assessment["status"] == "completed":
-            raise ValueError("Assessment already completed")
-        
-        # Update with completion data
-        if completion_data:
-            assessment["data"].update(completion_data)
-        
-        # Mark as completed
-        assessment["status"] = "completed"
-        assessment["completed_at"] = datetime.datetime.now(datetime.UTC).isoformat()
-        assessment["updated_at"] = assessment["completed_at"]
-        
-        # Generate mock scores
-        assessment["scores"] = self._generate_mock_scores(assessment)
-        
-        return {
-            "assessment_id": assessment["id"],
-            "patient_id": assessment["patient_id"],
-            "status": "completed",
-            "completed_at": assessment["completed_at"],
-            "scores": assessment["scores"]
-        }
-    
-    def analyze_assessment(
-        self,
-        assessment_id: str,
-        analysis_type: Optional[str] = None,
-        options: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Analyze an assessment."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not assessment_id:
-            raise ValueError("Assessment ID is required")
-        
-        assessment = self._assessments.get(assessment_id)
-        if not assessment:
-            raise KeyError(f"Assessment not found: {assessment_id}")
-        
-        analysis_type = analysis_type or "general"
-        
-        # Generate mock analysis result
-        result = {
-            "analysis_type": analysis_type,
-            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
-            "summary": f"Mock analysis of {analysis_type} type for assessment {assessment_id}",
-            "details": {},
-            "recommendations": []
-        }
-        
-        if analysis_type == "clinical":
-            result["details"]["clinical_significance"] = "moderate"
-            result["recommendations"].append("Consider follow-up assessment")
-        
-        if assessment["assessment_type"] == "depression":
-            result["details"]["depression_indicators"] = ["mood", "sleep", "appetite"]
-            if "phq9_9" in assessment["data"] and assessment["data"]["phq9_9"] > 1:
-                result["details"]["risk_level"] = "moderate"
-                result["recommendations"].append("Evaluate suicide risk")
-        
-        return {
-            "assessment_id": assessment["id"],
-            "patient_id": assessment["patient_id"],
-            "result": result
-        }
-    
-    def get_assessment_history(
-        self,
-        patient_id: str,
-        assessment_type: Optional[str] = None,
-        limit: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Get assessment history for a patient."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not patient_id:
-            raise ValueError("Patient ID is required")
-        
-        # Filter by patient ID and assessment type
-        history = []
-        for assessment in self._assessments.values():
-            if assessment["patient_id"] == patient_id:
-                if assessment_type and assessment["assessment_type"] != assessment_type:
-                    continue
+        Args:
+            config: Configuration parameters
+                - pat_s3_bucket: S3 bucket name for storage
+                - pat_dynamodb_table: DynamoDB table name for metadata
+                - pat_bedrock_model_id: Bedrock model ID
                 
-                history.append({
-                    "assessment_id": assessment["id"],
-                    "assessment_type": assessment["assessment_type"],
-                    "status": assessment["status"],
-                    "created_at": assessment["created_at"],
-                    "completed_at": assessment["completed_at"]
-                })
+        Raises:
+            InitializationError: If required configuration is missing
+        """
+        # In mock implementation, these configs are optional with defaults
+        self._s3_bucket = config.get("pat_s3_bucket", "mock-s3-bucket")
+        self._dynamodb_table = config.get("pat_dynamodb_table", "mock-dynamodb-table")
+        self._model_id = config.get("pat_bedrock_model_id", "mock-model-v1")
+        
+        # Optional delay for simulating latency
+        self._delay_ms = config.get("delay_ms", 0)
+        
+        # Add simulated delay for testing
+        if self._delay_ms > 0:
+            import time
+            time.sleep(self._delay_ms / 1000.0)
+            
+        # Mark as initialized
+        self._initialized = True
+        self._configured = True
+
+    def _validate_initialized(self) -> None:
+        """Validate that the service is initialized.
+        
+        Raises:
+            InitializationError: If the service is not initialized
+        """
+        if not self._initialized:
+            raise InitializationError("Service is not initialized")
+
+    def analyze_actigraphy(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        start_time: str,
+        end_time: str,
+        sampling_rate_hz: float,
+        device_info: Dict[str, Any],
+        analysis_types: List[str],
+    ) -> Dict[str, Any]:
+        """Analyze actigraphy data to extract insights.
+        
+        Args:
+            patient_id: Unique patient identifier
+            readings: List of actigraphy readings, each with timestamp and x,y,z values
+            start_time: ISO-8601 timestamp for start of data collection
+            end_time: ISO-8601 timestamp for end of data collection
+            sampling_rate_hz: Data sampling rate in Hz
+            device_info: Information about the recording device
+            analysis_types: List of analysis types to perform
+            
+        Returns:
+            A dictionary containing analysis results
+            
+        Raises:
+            ValidationError: If input validation fails
+            AnalysisError: If analysis fails for any reason
+        """
+        self._validate_initialized()
+        
+        # Validate inputs
+        if not patient_id:
+            raise ValidationError("patient_id is required")
+            
+        if len(readings) < 10:
+            raise ValidationError("At least 10 readings are required")
+            
+        if not analysis_types:
+            raise ValidationError("At least one analysis_type is required")
+            
+        invalid_types = [t for t in analysis_types if t not in ["sleep", "activity", "stress", "movement"]]
+        if invalid_types:
+            raise ValidationError(f"Invalid analysis types: {', '.join(invalid_types)}")
+        
+        # Create analysis ID
+        analysis_id = f"analysis_{uuid.uuid4()}"
+        created_at = datetime.now(timezone.utc).isoformat()
+        
+        # Generate mock results
+        results = {}
+        
+        if "sleep" in analysis_types:
+            results["sleep"] = {
+                "efficiency": random.uniform(70, 95),
+                "duration_hours": random.uniform(5, 9),
+                "deep_sleep_percentage": random.uniform(10, 30),
+                "rem_sleep_percentage": random.uniform(20, 30),
+                "light_sleep_percentage": random.uniform(40, 60),
+                "awake_minutes": random.uniform(10, 60),
+                "sleep_score": random.uniform(50, 100),
+                "sleep_onset_minutes": random.uniform(5, 30),
+            }
+            
+        if "activity" in analysis_types:
+            results["activity"] = {
+                "active_minutes": random.uniform(30, 300),
+                "sedentary_minutes": random.uniform(300, 900),
+                "steps": random.randint(2000, 15000),
+                "distance_km": random.uniform(1, 12),
+                "calories_burned": random.uniform(1000, 3000),
+                "activity_score": random.uniform(50, 100),
+            }
+            
+        if "stress" in analysis_types:
+            results["stress"] = {
+                "average_stress_level": random.uniform(1, 5),
+                "peak_stress_level": random.uniform(3, 5),
+                "stress_duration_minutes": random.uniform(10, 300),
+                "recovery_periods": random.randint(1, 10),
+                "stress_score": random.uniform(50, 100),
+            }
+            
+        if "movement" in analysis_types:
+            results["movement"] = {
+                "movement_intensity": [random.uniform(0, 5) for _ in range(24)],
+                "movement_consistency": random.uniform(0, 1),
+                "restlessness_index": random.uniform(0, 100),
+                "movement_score": random.uniform(50, 100),
+            }
+        
+        # Create analysis record
+        analysis = {
+            "analysis_id": analysis_id,
+            "patient_id": patient_id,
+            "created_at": created_at,
+            "start_time": start_time,
+            "end_time": end_time,
+            "sampling_rate_hz": sampling_rate_hz,
+            "device_info": device_info,
+            "analysis_types": analysis_types,
+            "results": results,
+            "model_version": "mock-model-1.0.0",
+        }
+        
+        # Store analysis
+        self._data_store["analyses"][analysis_id] = analysis
+        
+        # Store patient analysis index
+        if patient_id not in self._data_store["patient_analyses"]:
+            self._data_store["patient_analyses"][patient_id] = []
+        self._data_store["patient_analyses"][patient_id].append({
+            "analysis_id": analysis_id,
+            "created_at": created_at,
+            "analysis_types": analysis_types
+        })
+        
+        return analysis
+
+    def get_actigraphy_embeddings(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        start_time: str,
+        end_time: str,
+        sampling_rate_hz: float,
+    ) -> Dict[str, Any]:
+        """Generate embeddings from actigraphy data for similarity comparison.
+        
+        Args:
+            patient_id: Unique patient identifier
+            readings: List of actigraphy readings, each with timestamp and x,y,z values
+            start_time: ISO-8601 timestamp for start of data collection
+            end_time: ISO-8601 timestamp for end of data collection
+            sampling_rate_hz: Data sampling rate in Hz
+            
+        Returns:
+            A dictionary containing embedding vector and metadata
+            
+        Raises:
+            ValidationError: If input validation fails
+            EmbeddingError: If embedding generation fails
+        """
+        self._validate_initialized()
+        
+        # Validate inputs
+        if not patient_id:
+            raise ValidationError("patient_id is required")
+            
+        if len(readings) < 10:
+            raise ValidationError("At least 10 readings are required")
+        
+        # Create embedding ID
+        embedding_id = f"embedding_{uuid.uuid4()}"
+        created_at = datetime.now(timezone.utc).isoformat()
+        
+        # Generate mock embedding vector
+        dimensions = 64
+        embedding = [random.uniform(-1, 1) for _ in range(dimensions)]
+        
+        # Create embedding record
+        embedding_record = {
+            "embedding_id": embedding_id,
+            "patient_id": patient_id,
+            "created_at": created_at,
+            "start_time": start_time,
+            "end_time": end_time,
+            "sampling_rate_hz": sampling_rate_hz,
+            "embedding": embedding,
+            "dimensions": dimensions,
+            "model_version": "test-model-1.0.0",
+        }
+        
+        # Store embedding
+        self._data_store["embeddings"][embedding_id] = embedding_record
+        
+        return embedding_record
+
+    def get_analysis_by_id(self, analysis_id: str) -> Dict[str, Any]:
+        """Retrieve an analysis by its ID.
+        
+        Args:
+            analysis_id: The ID of the analysis to retrieve
+            
+        Returns:
+            The analysis record
+            
+        Raises:
+            ResourceNotFoundError: If the analysis is not found
+        """
+        self._validate_initialized()
+        
+        if analysis_id not in self._data_store["analyses"]:
+            raise ResourceNotFoundError(f"Analysis with ID {analysis_id} not found")
+            
+        return self._data_store["analyses"][analysis_id]
+
+    def get_patient_analyses(
+        self, patient_id: str, limit: int = 10, offset: int = 0
+    ) -> Dict[str, Any]:
+        """Retrieve analyses for a patient.
+        
+        Args:
+            patient_id: The patient's ID
+            limit: Maximum number of analyses to return
+            offset: Starting index for pagination
+            
+        Returns:
+            Dictionary with analyses and pagination metadata
+        """
+        self._validate_initialized()
+        
+        if patient_id not in self._data_store["patient_analyses"]:
+            return {
+                "items": [],
+                "total": 0,
+                "limit": limit,
+                "offset": offset,
+                "has_more": False
+            }
+            
+        analyses = self._data_store["patient_analyses"][patient_id]
+        total = len(analyses)
         
         # Sort by created_at in descending order
-        history.sort(key=lambda a: a["created_at"], reverse=True)
+        sorted_analyses = sorted(
+            analyses, 
+            key=lambda x: x["created_at"], 
+            reverse=True
+        )
         
-        # Apply limit
-        if limit and limit > 0:
-            history = history[:limit]
-        
-        return {
-            "patient_id": patient_id,
-            "assessment_type": assessment_type,
-            "count": len(history),
-            "history": history
-        }
-    
-    def create_form_template(
-        self,
-        name: str,
-        form_type: str,
-        fields: List[Dict[str, Any]],
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Create a new assessment form template."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not name or not form_type or not fields:
-            raise ValueError("Name, form type, and fields are required")
-        
-        template_id = str(uuid.uuid4())
-        
-        template = {
-            "id": template_id,
-            "name": name,
-            "form_type": form_type,
-            "fields": fields,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "metadata": metadata or {}
-        }
-        
-        self._form_templates[template_id] = template
+        # Apply pagination
+        paginated = sorted_analyses[offset:offset + limit]
         
         return {
-            "template_id": template_id,
-            "name": name,
-            "form_type": form_type,
-            "field_count": len(fields)
+            "items": paginated,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "has_more": (offset + limit) < total
         }
-    
-    def get_form_template(
-        self,
-        template_id: str
-    ) -> Dict[str, Any]:
-        """Get a form template."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not template_id:
-            raise ValueError("Template ID is required")
+
+    def get_model_info(self) -> Dict[str, Any]:
+        """Get information about the underlying model.
         
-        template = self._form_templates.get(template_id)
-        if not template:
-            raise KeyError(f"Template not found: {template_id}")
-        
-        return template
-    
-    def list_form_templates(
-        self,
-        form_type: Optional[str] = None,
-        limit: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """List available form templates."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-        
-        # Filter by form type
-        templates = []
-        for template in self._form_templates.values():
-            if form_type and template["form_type"] != form_type:
-                continue
-            
-            templates.append({
-                "id": template["id"],
-                "name": template["name"],
-                "form_type": template["form_type"],
-                "field_count": len(template["fields"])
-            })
-        
-        # Sort by name
-        templates.sort(key=lambda t: t["name"])
-        
-        # Apply limit
-        if limit and limit > 0:
-            templates = templates[:limit]
+        Returns:
+            Dictionary with model information
+        """
+        self._validate_initialized()
         
         return {
-            "count": len(templates),
-            "templates": templates
-        }
-    
-    def calculate_score(
-        self,
-        assessment_id: str,
-        scoring_method: Optional[str] = None,
-        options: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Calculate score for an assessment."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not assessment_id:
-            raise ValueError("Assessment ID is required")
-        
-        assessment = self._assessments.get(assessment_id)
-        if not assessment:
-            raise KeyError(f"Assessment not found: {assessment_id}")
-        
-        scoring_method = scoring_method or "standard"
-        
-        # Generate mock scores
-        scores = self._generate_mock_scores(assessment)
-        
-        # Update assessment scores
-        assessment["scores"] = scores
-        
-        return {
-            "assessment_id": assessment["id"],
-            "patient_id": assessment["patient_id"],
-            "scoring_method": scoring_method,
-            "scores": scores
-        }
-    
-    def generate_report(
-        self,
-        assessment_id: str,
-        report_type: Optional[str] = None,
-        options: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Generate a report for an assessment."""
-        if not self._initialized:
-            raise Exception("Service not initialized")
-            
-        if not assessment_id:
-            raise ValueError("Assessment ID is required")
-        
-        assessment = self._assessments.get(assessment_id)
-        if not assessment:
-            raise KeyError(f"Assessment not found: {assessment_id}")
-        
-        report_type = report_type or "summary"
-        
-        # Check if assessment is completed for certain report types
-        if report_type in ["detailed", "clinical"] and assessment["status"] != "completed":
-            raise ValueError(f"Assessment not completed for report type: {report_type}")
-        
-        # Generate mock report
-        report = {
-            "title": f"{report_type.capitalize()} Report",
-            "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "assessment_id": assessment["id"],
-            "patient_id": assessment["patient_id"],
-            "assessment_type": assessment["assessment_type"],
-            "status": assessment["status"],
-            "content": f"Mock {report_type} report content for assessment {assessment_id}"
-        }
-        
-        if assessment["scores"]:
-            report["scores"] = assessment["scores"]
-        
-        return {
-            "assessment_id": assessment["id"],
-            "report_type": report_type,
-            "report": report
-        }
-    
-    def _setup_mock_templates(self) -> None:
-        """Setup mock templates for testing."""
-        # PHQ-9 template
-        phq9_fields = [
-            {
-                "id": "phq9_1",
-                "type": "choice",
-                "question": "Little interest or pleasure in doing things",
-                "choices": [
-                    {"value": 0, "label": "Not at all"},
-                    {"value": 1, "label": "Several days"},
-                    {"value": 2, "label": "More than half the days"},
-                    {"value": 3, "label": "Nearly every day"}
-                ],
-                "required": True
-            },
-            {
-                "id": "phq9_9",
-                "type": "choice",
-                "question": "Thoughts that you would be better off dead, or of hurting yourself",
-                "choices": [
-                    {"value": 0, "label": "Not at all"},
-                    {"value": 1, "label": "Several days"},
-                    {"value": 2, "label": "More than half the days"},
-                    {"value": 3, "label": "Nearly every day"}
-                ],
-                "required": True,
-                "flag": True
-            }
-        ]
-        
-        phq9_template = {
-            "id": str(uuid.uuid4()),
-            "name": "PHQ-9 Depression Scale",
-            "form_type": "depression",
-            "fields": phq9_fields,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "metadata": {
-                "description": "Patient Health Questionnaire-9 for depression screening"
-            }
-        }
-        
-        # GAD-7 template
-        gad7_fields = [
-            {
-                "id": "gad7_1",
-                "type": "choice",
-                "question": "Feeling nervous, anxious, or on edge",
-                "choices": [
-                    {"value": 0, "label": "Not at all"},
-                    {"value": 1, "label": "Several days"},
-                    {"value": 2, "label": "More than half the days"},
-                    {"value": 3, "label": "Nearly every day"}
-                ],
-                "required": True
-            }
-        ]
-        
-        gad7_template = {
-            "id": str(uuid.uuid4()),
-            "name": "GAD-7 Anxiety Scale",
-            "form_type": "anxiety",
-            "fields": gad7_fields,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "metadata": {
-                "description": "Generalized Anxiety Disorder 7-item scale"
-            }
-        }
-        
-        # Store templates
-        self._form_templates[phq9_template["id"]] = phq9_template
-        self._form_templates[gad7_template["id"]] = gad7_template
-    
-    def _create_mock_template(self, form_type: str) -> str:
-        """Create a mock template for a form type."""
-        template_id = str(uuid.uuid4())
-        
-        template = {
-            "id": template_id,
-            "name": f"{form_type.capitalize()} Assessment",
-            "form_type": form_type,
-            "fields": [
-                {
-                    "id": f"{form_type}_1",
-                    "type": "text",
-                    "question": "Mock question 1",
-                    "required": True
-                },
-                {
-                    "id": f"{form_type}_2",
-                    "type": "choice",
-                    "question": "Mock question 2",
-                    "choices": [
-                        {"value": 0, "label": "None"},
-                        {"value": 1, "label": "Mild"},
-                        {"value": 2, "label": "Moderate"},
-                        {"value": 3, "label": "Severe"}
-                    ],
-                    "required": True
-                }
+            "name": "MockPAT",
+            "model_id": self._model_id,
+            "s3_bucket": self._s3_bucket,
+            "dynamodb_table": self._dynamodb_table,
+            "capabilities": [
+                "Sleep analysis",
+                "Activity analysis",
+                "Stress analysis",
+                "Movement analysis",
+                "Digital twin integration"
             ],
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "metadata": {
-                "description": f"Mock template for {form_type} assessment"
+            "input_format": {
+                "readings": "List of x,y,z accelerometer readings with timestamps",
+                "sampling_rate": "Frequency in Hz",
+                "analysis_types": ["sleep", "activity", "stress", "movement"]
+            }
+        }
+
+    def integrate_with_digital_twin(
+        self, patient_id: str, profile_id: str, analysis_id: str
+    ) -> Dict[str, Any]:
+        """Integrate actigraphy analysis with a digital twin profile.
+        
+        Args:
+            patient_id: Patient ID
+            profile_id: Digital twin profile ID
+            analysis_id: Analysis ID to integrate
+            
+        Returns:
+            Dictionary with integration results
+            
+        Raises:
+            ResourceNotFoundError: If the analysis is not found
+            AuthorizationError: If the analysis doesn't belong to the patient
+        """
+        self._validate_initialized()
+        
+        # Validate analysis exists
+        try:
+            analysis = self.get_analysis_by_id(analysis_id)
+        except ResourceNotFoundError:
+            raise ResourceNotFoundError(f"Analysis with ID {analysis_id} not found")
+            
+        # Validate patient ownership
+        if analysis["patient_id"] != patient_id:
+            raise AuthorizationError("Analysis does not belong to the patient")
+            
+        # Create integration ID
+        integration_id = f"integration_{uuid.uuid4()}"
+        created_at = datetime.now(timezone.utc).isoformat()
+        
+        # Generate mock integration results
+        integration = {
+            "integration_id": integration_id,
+            "patient_id": patient_id,
+            "profile_id": profile_id,
+            "analysis_id": analysis_id,
+            "created_at": created_at,
+            "status": "completed",
+            "insights_added": random.randint(3, 8),
+            "profile_update_summary": {
+                "sleep_pattern_updated": True,
+                "activity_level_updated": True,
+                "stress_indicators_updated": "stress" in analysis["analysis_types"],
+                "movement_patterns_updated": "movement" in analysis["analysis_types"],
             }
         }
         
-        self._form_templates[template_id] = template
+        # Store integration
+        self._data_store["integrations"][integration_id] = integration
         
-        return template_id
-    
-    def _generate_mock_scores(self, assessment: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate mock scores for an assessment."""
-        scores = {}
-        
-        if assessment["assessment_type"] == "depression":
-            # Generate PHQ-9 scores
-            phq9_total = 0
-            for i in range(1, 10):
-                field_id = f"phq9_{i}"
-                if field_id in assessment["data"]:
-                    value = assessment["data"][field_id]
-                    if isinstance(value, (int, float)):
-                        phq9_total += value
-            
-            # If no data, generate random score
-            if phq9_total == 0:
-                phq9_total = int(uuid.uuid4().int % 27)  # Random score between 0-27
-            
-            scores["phq9_total"] = phq9_total
-            
-            # Determine severity
-            if phq9_total >= 20:
-                scores["phq9_severity"] = "severe"
-            elif phq9_total >= 15:
-                scores["phq9_severity"] = "moderately_severe"
-            elif phq9_total >= 10:
-                scores["phq9_severity"] = "moderate"
-            elif phq9_total >= 5:
-                scores["phq9_severity"] = "mild"
-            else:
-                scores["phq9_severity"] = "minimal"
-        
-        elif assessment["assessment_type"] == "anxiety":
-            # Generate GAD-7 scores
-            gad7_total = 0
-            for i in range(1, 8):
-                field_id = f"gad7_{i}"
-                if field_id in assessment["data"]:
-                    value = assessment["data"][field_id]
-                    if isinstance(value, (int, float)):
-                        gad7_total += value
-            
-            # If no data, generate random score
-            if gad7_total == 0:
-                gad7_total = int(uuid.uuid4().int % 21)  # Random score between 0-21
-            
-            scores["gad7_total"] = gad7_total
-            
-            # Determine severity
-            if gad7_total >= 15:
-                scores["gad7_severity"] = "severe"
-            elif gad7_total >= 10:
-                scores["gad7_severity"] = "moderate"
-            elif gad7_total >= 5:
-                scores["gad7_severity"] = "mild"
-            else:
-                scores["gad7_severity"] = "minimal"
-        
-        else:
-            # Generate generic score
-            total = int(uuid.uuid4().int % 100)  # Random score between 0-99
-            scores[f"{assessment['assessment_type']}_score"] = total
-        
-        return scores
+        return integration

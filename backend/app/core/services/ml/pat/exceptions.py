@@ -117,3 +117,15 @@ class ConfigurationError(PATError):
             message: Error message
         """
         super().__init__(message, 500)
+
+
+class StorageError(PATError):
+    """Exception raised when storage operations (S3, DynamoDB) fail."""
+    
+    def __init__(self, message: str) -> None:
+        """Initialize the exception.
+        
+        Args:
+            message: Error message
+        """
+        super().__init__(message, 500)
