@@ -1,7 +1,7 @@
 # Novamind Digital Twin: Psychiatric Platform Architecture - Backend Only
 
 ## Clean Architecture
-
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **Domain**: Pure business logic with no external dependencies
 - **Application**: Use cases, services, state management
 - **Infrastructure**: External services, API clients, databases
@@ -9,7 +9,7 @@
 - **Core**: Cross-cutting concerns, shared utilities
 
 ## Backend Design Principles
-
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **Single Responsibility**: Each module handles one specific concern
 - **Dependency Inversion**: High-level modules don't depend on low-level modules
 - **Explicit Dependencies**: Dependencies are injected, not imported directly
@@ -18,7 +18,7 @@
 - **Type Hints**: All Python code uses type annotations
 
 ## HIPAA Compliance
-
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **No PHI in URLs**: POST only for sensitive data
 - **Secure Storage**: Encrypted data at rest
 - **Auto-Logout**: Implement timeouts for inactive sessions
@@ -28,7 +28,7 @@
 - **Authorization**: Role-based access control for all resources
 
 ## Data Security
-
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **Input Validation**: Validate all user inputs
 - **Parameter Validation**: Use Pydantic models for request validation
 - **Output Sanitization**: Ensure no sensitive data in responses
@@ -36,7 +36,7 @@
 - **Encryption**: TLS for data in transit, encryption for data at rest
 
 ## API Design
-
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **RESTful**: Follow REST principles for API design
 - **Versioning**: Versioned API endpoints
 - **Documentation**: OpenAPI/Swagger documentation
@@ -44,7 +44,7 @@
 - **Response Formats**: Consistent JSON structure
 
 ## Testing
-
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
 - **Unit Tests**: For business logic and services
 - **Integration Tests**: For API endpoints and repositories
 - **Security Tests**: For authentication and authorization
