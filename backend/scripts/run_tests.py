@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Comprehensive Test Runner
+Comprehensive Test Runner for Novamind Digital Twin Platform
 
 A unified test runner script that handles all test suites, coverage reporting,
-and provides detailed feedback on test results.
+and provides detailed feedback on test results. This script is designed to work
+with the new unified test architecture under /backend/app/tests/.
 
 Usage:
     python -m backend.scripts.run_tests [options]
@@ -35,7 +36,7 @@ from typing import Dict, List, Any, Optional, Tuple, Set
 
 
 class TestRunner:
-    """Test runner for all test suites."""
+    """Test runner for all test suites following clean architecture."""
     
     def __init__(self, base_dir: Path) -> None:
         """Initialize the test runner.
@@ -47,24 +48,8 @@ class TestRunner:
         self.app_dir = base_dir / "app"
         self.test_dir = self.app_dir / "tests"
         self.report_dir = base_dir / "reports"
-        self.test_structure = self._detect_test_structure()
         self.results: Dict[str, Any] = {}
         
-    def _detect_test_structure(self) -> str:
-        """Detect the test structure.
-        
-        Returns:
-            A string indicating the test structure: 'app_tests' or 'standalone_tests'
-        """
-        if (self.app_dir / "tests").exists():
-            return "app_tests"
-        elif (self.base_dir / "tests").exists():
-            self.test_dir = self.base_dir / "tests"
-            return "standalone_tests"
-        else:
-            print("WARNING: No test directory found.")
-            return "app_tests"  # Default to app_tests
-    
     def _run_command(self, cmd: List[str], timeout: int = 300) -> subprocess.CompletedProcess:
         """Run a command and return the result.
         
@@ -231,17 +216,8 @@ class TestRunner:
         print("Running Unit Tests")
         print("="*80 + "\n")
         
-        # Different paths based on test structure
-        if self.test_structure == "app_tests":
-            test_paths = [str(self.test_dir / "unit")]
-            if not Path(test_paths[0]).exists():
-                # Fall back to domain & core tests
-                test_paths = [
-                    str(self.test_dir / "domain"),
-                    str(self.test_dir / "core"),
-                ]
-        else:
-            test_paths = [str(self.test_dir / "unit")]
+        # Use the unified test structure under app/tests/unit
+        test_paths = [str(self.test_dir / "unit")]
             
         success, results = self._run_pytest(
             test_paths=test_paths,
@@ -251,7 +227,6 @@ class TestRunner:
             html=html,
             xml=xml,
             json=json,
-            markers="not integration and not security",
         )
         
         self.results["unit"] = results
@@ -277,11 +252,8 @@ class TestRunner:
         print("Running Integration Tests")
         print("="*80 + "\n")
         
-        # Different paths based on test structure
-        if self.test_structure == "app_tests":
-            test_paths = [str(self.test_dir / "integration")]
-        else:
-            test_paths = [str(self.test_dir / "integration")]
+        # Use the unified test structure under app/tests/integration
+        test_paths = [str(self.test_dir / "integration")]
             
         success, results = self._run_pytest(
             test_paths=test_paths,
@@ -291,21 +263,20 @@ class TestRunner:
             html=html,
             xml=xml,
             json=json,
-            markers="integration",
         )
         
         self.results["integration"] = results
         return success
     
     def run_security_tests(self, coverage: bool = False, verbose: bool = False,
-                          fail_under: int = 80, html: bool = False,
+                          fail_under: int = 95, html: bool = False,
                           xml: bool = False, json: bool = False) -> bool:
         """Run security tests.
         
         Args:
             coverage: Whether to run with coverage (default: False)
             verbose: Whether to run with verbose output (default: False)
-            fail_under: Fail if coverage is under this percentage (default: 80)
+            fail_under: Fail if coverage is under this percentage (default: 95)
             html: Whether to generate HTML coverage report (default: False)
             xml: Whether to generate XML coverage report (default: False)
             json: Whether to generate JSON coverage report (default: False)
@@ -317,11 +288,8 @@ class TestRunner:
         print("Running Security Tests")
         print("="*80 + "\n")
         
-        # Different paths based on test structure
-        if self.test_structure == "app_tests":
-            test_paths = [str(self.test_dir / "security")]
-        else:
-            test_paths = [str(self.test_dir / "security")]
+        # Use the unified test structure under app/tests/security
+        test_paths = [str(self.test_dir / "security")]
             
         success, results = self._run_pytest(
             test_paths=test_paths,
@@ -331,7 +299,6 @@ class TestRunner:
             html=html,
             xml=xml,
             json=json,
-            markers="security",
         )
         
         self.results["security"] = results
@@ -351,19 +318,8 @@ class TestRunner:
         print("Running ML Mock Tests")
         print("="*80 + "\n")
         
-        # Different paths based on test structure
-        if self.test_structure == "app_tests":
-            test_paths = [str(self.test_dir / "core/services/ml")]
-            # Make sure the path exists
-            if not Path(test_paths[0]).exists():
-                print(f"WARNING: ML mock test path {test_paths[0]} does not exist")
-                # Try alternative paths
-                alternative_path = str(self.app_dir / "tests/core/services/ml")
-                if Path(alternative_path).exists():
-                    test_paths = [alternative_path]
-                    print(f"Using alternative ML mock test path: {alternative_path}")
-        else:
-            test_paths = [str(self.test_dir / "core/services/ml")]
+        # Use the unified test structure - ML mock tests are under unit/core/services/ml
+        test_paths = [str(self.test_dir / "unit/core/services/ml")]
             
         success, results = self._run_pytest(
             test_paths=test_paths,
@@ -408,19 +364,17 @@ class TestRunner:
         print("Running Quick Tests")
         print("="*80 + "\n")
         
-        # Different paths based on test structure
-        if self.test_structure == "app_tests":
-            ml_path = str(self.test_dir / "core/services/ml")
-            domain_path = str(self.test_dir / "domain")
-        else:
-            ml_path = str(self.test_dir / "unit/core/services/ml")
-            domain_path = str(self.test_dir / "unit/domain")
+        # Use the most critical test paths for quick feedback
+        ml_path = str(self.test_dir / "unit/core/services/ml")
+        domain_path = str(self.test_dir / "unit/domain")
+        phi_path = str(self.test_dir / "security/phi")
             
         cmd = [
             sys.executable, "-m", "pytest",
             "-m", "not slow",
-            ml_path,  # ML service tests
+            ml_path,      # ML service tests
             domain_path,  # Core domain tests
+            phi_path,     # PHI protection tests
         ]
         
         if verbose:
@@ -507,52 +461,38 @@ class TestRunner:
         if not ml_mock_success:
             failed_suites.add("ML Mock Tests")
         
-        # Generate coverage report
+        # Generate combined coverage report if requested
         if coverage:
             print("\n" + "="*80)
-            print("Running Coverage Report")
+            print("Generating Combined Coverage Report")
             print("="*80 + "\n")
             
-            # Different paths based on test structure
-            if self.test_structure == "app_tests":
-                test_paths = [str(self.test_dir)]
-            else:
-                test_paths = [str(self.test_dir)]
-                
             cmd = [
                 sys.executable, "-m", "pytest",
                 "--cov=app",
-                "--cov-report=term-missing",
+                str(self.test_dir),
             ]
-            
-            if fail_under > 0:
-                cmd.append(f"--cov-fail-under={fail_under}")
             
             if html:
                 cmd.append("--cov-report=html")
-            
             if xml:
                 cmd.append("--cov-report=xml")
-            
             if json:
                 cmd.append("--cov-report=json")
+                
+            if fail_under > 0:
+                cmd.append(f"--cov-fail-under={fail_under}")
+                
+            # Always include terminal report
+            cmd.append("--cov-report=term-missing")
             
-            if verbose:
-                cmd.append("-v")
-            
-            # Add test paths
-            cmd.extend(test_paths)
-            
-            # Run pytest with combined coverage
-            result = self._run_command(cmd)
-            coverage_success = result.returncode == 0
-            
-            if not coverage_success:
+            combined_result = self._run_command(cmd)
+            if combined_result.returncode != 0 and fail_under > 0:
                 failed_suites.add("Coverage")
-            
-            # Extract coverage percentage from output
+                
+            # Extract overall coverage
             coverage_pct = 0
-            for line in result.stdout.split("\n"):
+            for line in combined_result.stdout.split("\n"):
                 if "TOTAL" in line and "%" in line:
                     parts = line.split()
                     for part in parts:
@@ -562,18 +502,15 @@ class TestRunner:
                             except:
                                 pass
             
-            print(f"\nCoverage: {coverage_pct:.2f}%")
-            
-            self.results["coverage"] = {
-                "success": coverage_success,
-                "return_code": result.returncode,
-                "output": result.stdout,
-                "error": result.stderr,
-                "coverage_pct": coverage_pct,
-            }
+            print(f"\nOverall Coverage: {coverage_pct:.2f}%")
+            if coverage_pct < fail_under:
+                print(f"❌ Coverage is below the required {fail_under}%")
+            else:
+                print(f"✅ Coverage meets or exceeds the required {fail_under}%")
         
-        # Return True if all tests passed and coverage meets threshold
-        return len(failed_suites) == 0
+        # Print overall summary
+        all_passed = len(failed_suites) == 0
+        return all_passed
     
     def print_summary(self) -> None:
         """Print a summary of test results."""
@@ -581,69 +518,54 @@ class TestRunner:
         print("Test Summary")
         print("="*80)
         
-        overall_status = "✅ PASSED" if all(r.get("success", False) for r in self.results.values()) else "❌ FAILED"
+        # Print individual test suite results
+        for suite, result in self.results.items():
+            suite_name = suite.replace("_", " ").title()
+            status = "✅ PASSED" if result.get("success", False) else "❌ FAILED"
+            print(f"{suite_name} Tests: {status}")
+            
+            # Print coverage if available
+            if "coverage_pct" in result:
+                print(f"  Coverage: {result['coverage_pct']:.2f}%")
         
-        for suite, results in self.results.items():
-            if suite == "unit":
-                print(f"Unit Tests: {'✅ PASSED' if results['success'] else '❌ FAILED'}")
-            elif suite == "integration":
-                print(f"Integration Tests: {'✅ PASSED' if results['success'] else '❌ FAILED'}")
-            elif suite == "security":
-                print(f"Security Tests: {'✅ PASSED' if results['success'] else '❌ FAILED'}")
-            elif suite == "ml_mock":
-                print(f"Ml_mock Tests: {'✅ PASSED' if results['success'] else '❌ FAILED'}")
-            elif suite == "coverage":
-                coverage_pct = results.get("coverage_pct", 0)
-                status = "✅ PASSED" if results["success"] else "❌ FAILED"
-                print(f"Coverage: {status} (coverage: {coverage_pct:.1f}%)")
-        
+        # Print overall status
+        all_passed = all(result.get("success", False) for result in self.results.values())
+        overall_status = "✅ PASSED" if all_passed else "❌ FAILED"
         print(f"\nOverall Status: {overall_status}")
-        print("="*80 + "\n")
+        print("="*80)
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse command line arguments.
-    
-    Returns:
-        Parsed arguments
-    """
-    parser = argparse.ArgumentParser(description="Run tests with various options.")
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description="Run tests for the project")
+    parser.add_argument("--all", action="store_true", help="Run all tests")
     parser.add_argument("--unit", action="store_true", help="Run unit tests")
     parser.add_argument("--integration", action="store_true", help="Run integration tests")
     parser.add_argument("--security", action="store_true", help="Run security tests")
     parser.add_argument("--ml-mock", action="store_true", help="Run ML mock tests")
-    parser.add_argument("--coverage", action="store_true", help="Run with coverage reporting")
-    parser.add_argument("--verbose", action="store_true", help="Run with verbose output")
-    parser.add_argument("--quick", action="store_true", help="Run a smaller subset of tests for quick feedback")
+    parser.add_argument("--quick", action="store_true", help="Run quick tests")
+    parser.add_argument("--coverage", action="store_true", help="Run with coverage")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Run with verbose output")
     parser.add_argument("--fail-under", type=int, default=80, help="Fail if coverage is under N percent")
-    parser.add_argument("--output", type=str, default="reports/", help="Path to write reports to")
     parser.add_argument("--html", action="store_true", help="Generate HTML coverage report")
     parser.add_argument("--xml", action="store_true", help="Generate XML coverage report")
     parser.add_argument("--json", action="store_true", help="Generate JSON coverage report")
-    
     return parser.parse_args()
 
 
 def main() -> int:
-    """Main entry point.
-    
-    Returns:
-        Exit code (0 on success, 1 on failure)
-    """
+    """Main entry point."""
     args = parse_args()
     
-    # Get the base directory (parent of the script directory)
-    base_dir = Path(__file__).resolve().parent.parent
+    # Get the project base directory
+    base_dir = Path(__file__).parent.parent
     
-    # Initialize the test runner
+    # Create the test runner
     test_runner = TestRunner(base_dir)
     
-    # If no test suites are specified, run all tests
-    run_all = not (args.unit or args.integration or args.security or args.ml_mock or args.quick)
-    
-    success = True
-    
-    if run_all:
+    # Determine which tests to run
+    if args.all or not any([args.unit, args.integration, args.security, args.ml_mock, args.quick]):
+        # Run all tests
         success = test_runner.run_all_tests(
             coverage=args.coverage,
             verbose=args.verbose,
@@ -652,52 +574,52 @@ def main() -> int:
             xml=args.xml,
             json=args.json,
         )
-    else:
-        # Run specified test suites
-        if args.unit:
-            success = test_runner.run_unit_tests(
-                coverage=args.coverage,
-                verbose=args.verbose,
-                fail_under=args.fail_under,
-                html=args.html,
-                xml=args.xml,
-                json=args.json,
-            ) and success
-        
-        if args.integration:
-            success = test_runner.run_integration_tests(
-                coverage=args.coverage,
-                verbose=args.verbose,
-                fail_under=args.fail_under,
-                html=args.html,
-                xml=args.xml,
-                json=args.json,
-            ) and success
-        
-        if args.security:
-            success = test_runner.run_security_tests(
-                coverage=args.coverage,
-                verbose=args.verbose,
-                fail_under=args.fail_under,
-                html=args.html,
-                xml=args.xml,
-                json=args.json,
-            ) and success
-        
-        if args.ml_mock:
-            success = test_runner.run_ml_mock_tests(
-                coverage=args.coverage,
-                verbose=args.verbose,
-            ) and success
-        
-        if args.quick:
-            success = test_runner.run_quick_tests(
-                verbose=args.verbose,
-            ) and success
+    elif args.unit:
+        # Run unit tests
+        success = test_runner.run_unit_tests(
+            coverage=args.coverage,
+            verbose=args.verbose,
+            fail_under=args.fail_under,
+            html=args.html,
+            xml=args.xml,
+            json=args.json,
+        )
+    elif args.integration:
+        # Run integration tests
+        success = test_runner.run_integration_tests(
+            coverage=args.coverage,
+            verbose=args.verbose,
+            fail_under=args.fail_under,
+            html=args.html,
+            xml=args.xml,
+            json=args.json,
+        )
+    elif args.security:
+        # Run security tests
+        success = test_runner.run_security_tests(
+            coverage=args.coverage,
+            verbose=args.verbose,
+            fail_under=args.fail_under,
+            html=args.html,
+            xml=args.xml,
+            json=args.json,
+        )
+    elif args.ml_mock:
+        # Run ML mock tests
+        success = test_runner.run_ml_mock_tests(
+            coverage=args.coverage,
+            verbose=args.verbose,
+        )
+    elif args.quick:
+        # Run quick tests
+        success = test_runner.run_quick_tests(
+            verbose=args.verbose,
+        )
     
     # Print summary
     test_runner.print_summary()
     
+    # Return exit code
     return 0 if success else 1
 
 

@@ -1,0 +1,53 @@
+[run]
+source = app
+omit = 
+    */tests/*
+    */migrations/*
+    */settings/local.py
+    */__init__.py
+    */conftest.py
+    */schemas.py
+    */types.py
+    */enums.py
+    */constants.py
+    */venv/*
+    */alembic/*
+
+[report]
+exclude_lines =
+    # Skip any pragma comments
+    pragma: no cover
+    
+    # Skip abstract methods
+    @abstractmethod
+    @abc.abstractmethod
+    
+    # Skip imports and module level constants
+    ^import 
+    ^from 
+    ^LOGGER
+    
+    # Don't complain about missing debug-only code
+    def __repr__
+    if self\.debug
+    
+    # Don't complain if tests don't hit defensive assertion code
+    raise NotImplementedError
+    pass
+    
+    # Don't complain about TYPE_CHECKING blocks
+    if TYPE_CHECKING:
+    
+    # Don't complain about Python 3.11+ exception groups
+    except\s+\(\s+
+
+[html]
+directory = coverage_html/html
+title = Novamind Digital Twin Test Coverage Report
+
+[xml]
+output = coverage.xml
+
+[json]
+output = coverage.json
+pretty_print = True

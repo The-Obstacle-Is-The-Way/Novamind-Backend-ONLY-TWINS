@@ -1,0 +1,309 @@
+{
+  "patient_id": "PT-12345678",
+  "demographic_data": {
+    "age": 45,
+    "gender": "female",
+    "ethnicity": "caucasian",
+    "marital_status": "married",
+    "education_level": "bachelor"
+  },
+  "clinical_data": {
+    "diagnoses": [
+      {
+        "code": "F33.2",
+        "name": "Major depressive disorder, recurrent, severe",
+        "diagnosed_date": "2023-05-15"
+      },
+      {
+        "code": "F41.1",
+        "name": "Generalized anxiety disorder",
+        "diagnosed_date": "2022-09-03"
+      }
+    ],
+    "medications": [
+      {
+        "name": "escitalopram",
+        "dosage": "20mg",
+        "frequency": "daily",
+        "start_date": "2023-06-01",
+        "end_date": null
+      },
+      {
+        "name": "lorazepam",
+        "dosage": "0.5mg",
+        "frequency": "as needed",
+        "start_date": "2023-07-15",
+        "end_date": null
+      }
+    ],
+    "treatment_history": [
+      {
+        "type": "CBT",
+        "provider_type": "psychiatrist",
+        "start_date": "2023-06-15",
+        "end_date": "2023-12-01",
+        "frequency": "weekly",
+        "sessions": 24,
+        "focus_areas": ["negative thinking", "behavior activation"],
+        "outcome": "moderate improvement"
+      },
+      {
+        "type": "group therapy",
+        "provider_type": "psychologist",
+        "start_date": "2024-01-10",
+        "end_date": null,
+        "frequency": "bi-weekly",
+        "sessions": 8,
+        "focus_areas": ["interpersonal skills", "emotional regulation"],
+        "outcome": "ongoing"
+      }
+    ],
+    "assessments": [
+      {
+        "type": "PHQ-9",
+        "date": "2023-05-01",
+        "score": 22,
+        "severity": "severe"
+      },
+      {
+        "type": "PHQ-9",
+        "date": "2023-08-15",
+        "score": 18,
+        "severity": "moderately severe"
+      },
+      {
+        "type": "PHQ-9",
+        "date": "2023-12-01",
+        "score": 14,
+        "severity": "moderate"
+      },
+      {
+        "type": "PHQ-9",
+        "date": "2024-03-10",
+        "score": 12,
+        "severity": "moderate"
+      },
+      {
+        "type": "GAD-7",
+        "date": "2023-05-01",
+        "score": 18,
+        "severity": "severe"
+      },
+      {
+        "type": "GAD-7",
+        "date": "2023-08-15",
+        "score": 15,
+        "severity": "severe"
+      },
+      {
+        "type": "GAD-7",
+        "date": "2023-12-01",
+        "score": 12,
+        "severity": "moderate"
+      },
+      {
+        "type": "GAD-7",
+        "date": "2024-03-10",
+        "score": 10,
+        "severity": "moderate"
+      }
+    ]
+  },
+  "biometric_data": {
+    "sleep": [
+      {
+        "date": "2024-03-01",
+        "duration_hours": 5.5,
+        "quality": "poor",
+        "disruptions": 3
+      },
+      {
+        "date": "2024-03-02",
+        "duration_hours": 6.2,
+        "quality": "fair",
+        "disruptions": 2
+      },
+      {
+        "date": "2024-03-03",
+        "duration_hours": 4.8,
+        "quality": "poor",
+        "disruptions": 4
+      },
+      {
+        "date": "2024-03-04",
+        "duration_hours": 7.0,
+        "quality": "good",
+        "disruptions": 1
+      },
+      {
+        "date": "2024-03-05",
+        "duration_hours": 6.5,
+        "quality": "fair",
+        "disruptions": 2
+      }
+    ],
+    "physical_activity": [
+      {
+        "date": "2024-03-01",
+        "steps": 3200,
+        "active_minutes": 15,
+        "exercise_type": "walking"
+      },
+      {
+        "date": "2024-03-02",
+        "steps": 4500,
+        "active_minutes": 25,
+        "exercise_type": "walking"
+      },
+      {
+        "date": "2024-03-03",
+        "steps": 2800,
+        "active_minutes": 10,
+        "exercise_type": "walking"
+      },
+      {
+        "date": "2024-03-04",
+        "steps": 5600,
+        "active_minutes": 35,
+        "exercise_type": "walking, light cardio"
+      },
+      {
+        "date": "2024-03-05",
+        "steps": 4200,
+        "active_minutes": 20,
+        "exercise_type": "walking"
+      }
+    ],
+    "heart_rate": [
+      {
+        "date": "2024-03-01",
+        "resting": 82,
+        "average": 88
+      },
+      {
+        "date": "2024-03-02",
+        "resting": 80,
+        "average": 86
+      },
+      {
+        "date": "2024-03-03",
+        "resting": 84,
+        "average": 90
+      },
+      {
+        "date": "2024-03-04",
+        "resting": 78,
+        "average": 85
+      },
+      {
+        "date": "2024-03-05",
+        "resting": 76,
+        "average": 84
+      }
+    ]
+  },
+  "digital_twin_data": {
+    "mood_entries": [
+      {
+        "date": "2024-03-01",
+        "mood": "depressed",
+        "severity": 4,
+        "triggers": ["work stress", "insomnia"],
+        "coping_strategies": ["deep breathing"]
+      },
+      {
+        "date": "2024-03-02",
+        "mood": "anxious",
+        "severity": 3,
+        "triggers": ["social interaction", "work deadlines"],
+        "coping_strategies": ["meditation", "progressive muscle relaxation"]
+      },
+      {
+        "date": "2024-03-03",
+        "mood": "depressed",
+        "severity": 4,
+        "triggers": ["family conflict", "fatigue"],
+        "coping_strategies": ["journaling"]
+      },
+      {
+        "date": "2024-03-04",
+        "mood": "neutral",
+        "severity": 2,
+        "triggers": [],
+        "coping_strategies": ["exercise", "socializing"]
+      },
+      {
+        "date": "2024-03-05",
+        "mood": "anxious",
+        "severity": 3,
+        "triggers": ["work presentation", "financial concerns"],
+        "coping_strategies": ["mindfulness", "talking with friend"]
+      }
+    ],
+    "medication_adherence": [
+      {
+        "date": "2024-03-01",
+        "took_morning_dose": true,
+        "took_evening_dose": false,
+        "reasons_for_nonadherence": ["forgot"]
+      },
+      {
+        "date": "2024-03-02",
+        "took_morning_dose": true,
+        "took_evening_dose": true,
+        "reasons_for_nonadherence": []
+      },
+      {
+        "date": "2024-03-03",
+        "took_morning_dose": true,
+        "took_evening_dose": true,
+        "reasons_for_nonadherence": []
+      },
+      {
+        "date": "2024-03-04",
+        "took_morning_dose": false,
+        "took_evening_dose": true,
+        "reasons_for_nonadherence": ["ran out of medication"]
+      },
+      {
+        "date": "2024-03-05",
+        "took_morning_dose": true,
+        "took_evening_dose": true,
+        "reasons_for_nonadherence": []
+      }
+    ],
+    "therapy_insights": [
+      {
+        "session_date": "2024-03-01",
+        "topics_discussed": ["work stress", "relationship difficulties"],
+        "homework_assigned": "Practice mindfulness for 10 minutes daily",
+        "homework_completed": true,
+        "perceived_benefit": 3
+      },
+      {
+        "session_date": "2024-03-08",
+        "topics_discussed": ["anxiety management", "sleep hygiene"],
+        "homework_assigned": "Establish consistent sleep schedule",
+        "homework_completed": false,
+        "perceived_benefit": 2
+      }
+    ],
+    "predicted_trends": {
+      "mood": {
+        "trend": "improving",
+        "confidence": 0.75,
+        "factors": ["medication adherence", "therapy engagement"]
+      },
+      "anxiety": {
+        "trend": "stable",
+        "confidence": 0.65,
+        "factors": ["ongoing work stress", "improved coping strategies"]
+      },
+      "sleep": {
+        "trend": "worsening",
+        "confidence": 0.80,
+        "factors": ["inconsistent sleep schedule", "evening anxiety"]
+      }
+    }
+  }
+}
