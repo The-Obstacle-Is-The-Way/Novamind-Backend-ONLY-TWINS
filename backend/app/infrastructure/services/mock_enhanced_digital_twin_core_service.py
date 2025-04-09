@@ -1198,23 +1198,25 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         brain_regions = {}
         for region in BrainRegion:
             activation_level = random.uniform(0.3, 0.7)
+            # Create BrainRegionState with POSITIONAL arguments to avoid Enum handling issues
             brain_regions[region] = BrainRegionState(
-                region=region,
-                activation_level=activation_level,
-                confidence=0.5,
-                related_symptoms=[],
-                clinical_significance=ClinicalSignificance.NONE
+                region,  # FIRST positional argument instead of named parameter
+                activation_level,
+                0.5,  # confidence
+                [],  # related_symptoms
+                ClinicalSignificance.NONE
             )
         
         # Initialize neurotransmitters with default values
         neurotransmitters = {}
         for nt in Neurotransmitter:
             level = random.uniform(0.3, 0.7)
+            # Use positional arguments instead of keyword args to avoid Enum issues
             neurotransmitters[nt] = NeurotransmitterState(
-                neurotransmitter=nt,
-                level=level,
-                confidence=0.5,
-                clinical_significance=ClinicalSignificance.NONE
+                nt,  # First positional arg instead of neurotransmitter=nt
+                level,
+                0.5,  # confidence
+                ClinicalSignificance.NONE
             )
         
         # Initialize some default neural connections
@@ -1222,7 +1224,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         connection_pairs = [
             (BrainRegion.PREFRONTAL_CORTEX, BrainRegion.ANTERIOR_CINGULATE),
             (BrainRegion.AMYGDALA, BrainRegion.HIPPOCAMPUS),
-            (BrainRegion.NUCLEUS_ACCUMBENS, BrainRegion.VENTRAL_TEGMENTAL_AREA)
+            (BrainRegion.NUCLEUS_ACCUMBENS, BrainRegion.INSULA)  # Changed to a valid brain region
         ]
         
         for source, target in connection_pairs:
@@ -1230,27 +1232,21 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
             neural_connections.append(NeuralConnection(
                 source_region=source,
                 target_region=target,
-                connection_type=ConnectionType.UNKNOWN,  # Required parameter
                 strength=strength,
                 confidence=0.5
             ))
         
         now = datetime.now()
         return DigitalTwinState(
-            id=uuid.uuid4(),
             patient_id=patient_id,
-            version=1,
-            created_at=now,
-            updated_at=now,
-            brain_regions=list(brain_regions.values()),
-            neurotransmitters={k: v.level for k, v in neurotransmitters.items()},
+            timestamp=now,
+            brain_regions=brain_regions,
+            neurotransmitters=neurotransmitters,
+            neural_connections=neural_connections,
             clinical_insights=[],
-            biomarkers={},
-            predicted_states={},
-            treatment_responses={},
-            confidence_scores={},
-            active_treatments=set(),
-            metadata={"update_source": "initialization"}
+            temporal_patterns=[],
+            update_source="initialization",
+            version=1
         )
     
     def _initialize_belief_network(self, patient_id: UUID, initial_data: Dict) -> BayesianBeliefNetwork:
