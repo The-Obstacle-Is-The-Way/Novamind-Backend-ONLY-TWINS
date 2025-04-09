@@ -2,7 +2,7 @@
 
 ## Clean Architecture
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
-- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
 - **Domain**: Pure business logic with no external dependencies
 - **Application**: Use cases, services, state management
 - **Infrastructure**: External services, API clients, databases
@@ -11,7 +11,7 @@
 
 ## Backend Design Principles
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
-- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
 - **Single Responsibility**: Each module handles one specific concern
 - **Dependency Inversion**: High-level modules don't depend on low-level modules
 - **Explicit Dependencies**: Dependencies are injected, not imported directly
@@ -21,7 +21,7 @@
 
 ## HIPAA Compliance
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
-- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
 - **No PHI in URLs**: POST only for sensitive data
 - **Secure Storage**: Encrypted data at rest
 - **Auto-Logout**: Implement timeouts for inactive sessions
@@ -32,7 +32,7 @@
 
 ## Data Security
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
-- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
 - **Input Validation**: Validate all user inputs
 - **Parameter Validation**: Use Pydantic models for request validation
 - **Output Sanitization**: Ensure no sensitive data in responses
@@ -41,7 +41,7 @@
 
 ## API Design
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
-- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
 - **RESTful**: Follow REST principles for API design
 - **Versioning**: Versioned API endpoints
 - **Documentation**: OpenAPI/Swagger documentation
@@ -50,7 +50,7 @@
 
 ## Testing
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
-- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE**
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
 - **Unit Tests**: For business logic and services
 - **Integration Tests**: For API endpoints and repositories
 - **Security Tests**: For authentication and authorization
@@ -59,4 +59,5 @@
 
 ## Reference Documentation
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
+- **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
 - Read all /docs/
