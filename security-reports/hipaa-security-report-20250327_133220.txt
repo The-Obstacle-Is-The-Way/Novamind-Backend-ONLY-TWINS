@@ -1,0 +1,10 @@
+================================================================================
+HIPAA Security Test Suite - FAIL
+================================================================================
+static_analysis: FAIL
+dependency_check: FAIL 
+phi_pattern_detection: FAIL
+phi_comprehensive_audit: FAIL
+================================================================================
+Reports saved to: /home/jj/dev/Novamind-Backend/security-reports
+================================================================================

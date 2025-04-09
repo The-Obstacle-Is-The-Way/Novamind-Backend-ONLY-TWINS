@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="9" failures="0" skipped="0" tests="9" time="4.176" timestamp="2025-03-27T14:41:05.912059-04:00" hostname="DESKTOP-L9V85UA"><testcase classname="" name="tests.security.test_api_security" time="0.000"><error message="collection failure">ImportError while importing test module '/home/jj/dev/Novamind-Backend/tests/security/test_api_security.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/security/test_api_security.py:18: in &lt;module&gt;
+    from app.main import app
+E   ModuleNotFoundError: No module named 'app.main'</error></testcase><testcase classname="" name="tests.security.test_auth_middleware" time="0.000"><error message="collection failure">ImportError while importing test module '/home/jj/dev/Novamind-Backend/tests/security/test_auth_middleware.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/security/test_auth_middleware.py:6: in &lt;module&gt;
+    from app.infrastructure.security.auth_middleware import (
+app/infrastructure/security/auth_middleware.py:23: in &lt;module&gt;
+    from app.infrastructure.logging.phi_logger import get_phi_logger
+app/infrastructure/logging/phi_logger.py:14: in &lt;module&gt;
+    from app.infrastructure.security.log_sanitizer import PHIFormatter, PHIRedactionHandler
+E   ImportError: cannot import name 'PHIFormatter' from 'app.infrastructure.security.log_sanitizer' (/home/jj/dev/Novamind-Backend/app/infrastructure/security/log_sanitizer.py)</error></testcase><testcase classname="" name="tests.security.test_log_sanitization" time="0.000"><error message="collection failure">ImportError while importing test module '/home/jj/dev/Novamind-Backend/tests/security/test_log_sanitization.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/security/test_log_sanitization.py:16: in &lt;module&gt;
+    from app.infrastructure.security.log_sanitizer import PHISanitizer
+E   ImportError: cannot import name 'PHISanitizer' from 'app.infrastructure.security.log_sanitizer' (/home/jj/dev/Novamind-Backend/app/infrastructure/security/log_sanitizer.py)</error></testcase><testcase classname="" name="tests.security.test_ml_encryption" time="0.000"><error message="collection failure">ImportError while importing test module '/home/jj/dev/Novamind-Backend/tests/security/test_ml_encryption.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/security/test_ml_encryption.py:7: in &lt;module&gt;
+    from app.infrastructure.security.encryption import EncryptionService, FieldEncryptor
+E   ImportError: cannot import name 'FieldEncryptor' from 'app.infrastructure.security.encryption' (/home/jj/dev/Novamind-Backend/app/infrastructure/security/encryption.py)</error></testcase><testcase classname="" name="tests.security.test_ml_phi_security" time="0.000"><error message="collection failure">ImportError while importing test module '/home/jj/dev/Novamind-Backend/tests/security/test_ml_phi_security.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/security/test_ml_phi_security.py:15: in &lt;module&gt;
+    from app.infrastructure.ml.data_processing import PHIProcessor
+E   ModuleNotFoundError: No module named 'app.infrastructure.ml.data_processing'</error></testcase><testcase classname="" name="tests.security.test_patient_phi_security" time="0.000"><error message="collection failure">ImportError while importing test module '/home/jj/dev/Novamind-Backend/tests/security/test_patient_phi_security.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/security/test_patient_phi_security.py:21: in &lt;module&gt;
+    from app.domain.value_objects.insurance import Insurance
+E   ModuleNotFoundError: No module named 'app.domain.value_objects.insurance'</error></testcase><testcase classname="" name="tests.security.test_phi_code_patterns" time="0.000"><error message="collection failure">venv/lib/python3.10/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+venv/lib/python3.10/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1006: in _find_and_load_unlocked
+    ???
+&lt;frozen importlib._bootstrap&gt;:688: in _load_unlocked
+    ???
+venv/lib/python3.10/site-packages/_pytest/assertion/rewrite.py:176: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+venv/lib/python3.10/site-packages/_pytest/assertion/rewrite.py:356: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+/usr/lib/python3.10/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/home/jj/dev/Novamind-Backend/tests/security/test_phi_code_patterns.py", line 252
+E       Process patient data and store in database.
+E   IndentationError: unexpected indent</error></testcase><testcase classname="" name="tests.security.test_phi_sanitizer" time="0.000"><error message="collection failure">ImportError while importing test module '/home/jj/dev/Novamind-Backend/tests/security/test_phi_sanitizer.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/security/test_phi_sanitizer.py:6: in &lt;module&gt;
+    from app.infrastructure.security.log_sanitizer import PHISanitizer
+E   ImportError: cannot import name 'PHISanitizer' from 'app.infrastructure.security.log_sanitizer' (/home/jj/dev/Novamind-Backend/app/infrastructure/security/log_sanitizer.py)</error></testcase><testcase classname="" name="tests.security.test_unit_of_work" time="0.000"><error message="collection failure">ImportError while importing test module '/home/jj/dev/Novamind-Backend/tests/security/test_unit_of_work.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/security/test_unit_of_work.py:6: in &lt;module&gt;
+    from app.domain.exceptions import TransactionError
+E   ImportError: cannot import name 'TransactionError' from 'app.domain.exceptions' (/home/jj/dev/Novamind-Backend/app/domain/exceptions/__init__.py)</error></testcase></testsuite></testsuites>

@@ -1,0 +1,27 @@
+================================================================================
+HIPAA Security Module Test Coverage Report (2025-03-27 18:42)
+================================================================================
+
+Average Coverage: 0.00% (Target: 80%)
+
+Module Coverage Details:
+--------------------------------------------------------------------------------
+❌ FAIL | ❌   0% | app/infrastructure/security/log_sanitizer.py
+❌ FAIL | ❌   0% | app/infrastructure/security/encryption.py
+❌ FAIL | ❌   0% | app/infrastructure/security/jwt_service.py
+❌ FAIL | ❌   0% | app/infrastructure/security/auth_middleware.py
+❌ FAIL | ❌   0% | app/infrastructure/security/phi_middleware.py
+❌ FAIL | ❌   0% | app/infrastructure/security/rbac/role_manager.py
+❌ FAIL | ❌   0% | app/infrastructure/security/password/password_handler.py
+❌ FAIL | ❌   0% | app/core/utils/phi_sanitizer.py
+
+Modules Needing Improvement:
+--------------------------------------------------------------------------------
+- app/infrastructure/security/log_sanitizer.py: 0% coverage (need +80%)
+- app/infrastructure/security/encryption.py: 0% coverage (need +80%)
+- app/infrastructure/security/jwt_service.py: 0% coverage (need +80%)
+- app/infrastructure/security/auth_middleware.py: 0% coverage (need +80%)
+- app/infrastructure/security/phi_middleware.py: 0% coverage (need +80%)
+- app/infrastructure/security/rbac/role_manager.py: 0% coverage (need +80%)
+- app/infrastructure/security/password/password_handler.py: 0% coverage (need +80%)
+- app/core/utils/phi_sanitizer.py: 0% coverage (need +80%)

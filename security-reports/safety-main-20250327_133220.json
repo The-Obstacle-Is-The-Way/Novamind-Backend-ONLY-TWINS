@@ -1,0 +1,1565 @@
+
+
++===========================================================================================================================================================================================+
+
+
+DEPRECATED: this command (`check`) has been DEPRECATED, and will be unsupported beyond 01 June 2024.
+
+
+We highly encourage switching to the new `scan` command which is easier to use, more powerful, and can be set up to mimic the deprecated command if required.
+
+
++===========================================================================================================================================================================================+
+
+
+{
+    "report_meta": {
+        "scan_target": "files",
+        "scanned": [
+            "requirements.txt"
+        ],
+        "scanned_full_path": [
+            "/home/jj/dev/Novamind-Backend/requirements.txt"
+        ],
+        "target_languages": [
+            "python"
+        ],
+        "policy_file": null,
+        "policy_file_source": "local",
+        "audit_and_monitor": false,
+        "api_key": false,
+        "account": "",
+        "local_database_path": null,
+        "safety_version": "3.3.1",
+        "timestamp": "2025-03-27 13:32:26",
+        "packages_found": 24,
+        "vulnerabilities_found": 0,
+        "vulnerabilities_ignored": 11,
+        "remediations_recommended": 0,
+        "telemetry": {
+            "safety_options": {
+                "files": {
+                    "-r": 1
+                },
+                "json": {
+                    "--json": 1
+                }
+            },
+            "safety_version": "3.3.1",
+            "safety_source": "cli",
+            "os_type": "Linux",
+            "os_release": "5.15.167.4-microsoft-standard-WSL2",
+            "os_description": "Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+            "python_version": "3.10.12",
+            "safety_command": "check"
+        },
+        "git": {
+            "branch": "main",
+            "tag": "",
+            "commit": "fcbb737dcc09188011183e1a432aaa3e645ac1e7",
+            "dirty": true,
+            "origin": "https://github.com/Crave-Trinity/Novamind-Backend.git"
+        },
+        "project": null,
+        "json_version": "1.1",
+        "remediations_attempted": 0,
+        "remediations_completed": 0,
+        "remediation_mode": "NON_INTERACTIVE"
+    },
+    "scanned_packages": {
+        "fastapi": {
+            "name": "fastapi",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "fastapi>=0.95.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "fastapi",
+                    "specifier": ">=0.95.1",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "uvicorn": {
+            "name": "uvicorn",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "uvicorn>=0.22.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "uvicorn",
+                    "specifier": ">=0.22.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "starlette": {
+            "name": "starlette",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "starlette>=0.27.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "starlette",
+                    "specifier": ">=0.27.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "sqlalchemy": {
+            "name": "sqlalchemy",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "sqlalchemy>=2.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "sqlalchemy",
+                    "specifier": ">=2.0.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "alembic": {
+            "name": "alembic",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "alembic>=1.10.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "alembic",
+                    "specifier": ">=1.10.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "asyncpg": {
+            "name": "asyncpg",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "asyncpg>=0.27.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "asyncpg",
+                    "specifier": ">=0.27.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "psycopg2-binary": {
+            "name": "psycopg2-binary",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "psycopg2-binary>=2.9.6",
+                    "extras": [],
+                    "marker": null,
+                    "name": "psycopg2-binary",
+                    "specifier": ">=2.9.6",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "python-jose": {
+            "name": "python-jose",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "python-jose>=3.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-jose",
+                    "specifier": ">=3.3.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "passlib": {
+            "name": "passlib",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "passlib>=1.7.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "passlib",
+                    "specifier": ">=1.7.4",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "python-multipart": {
+            "name": "python-multipart",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "python-multipart>=0.0.6",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-multipart",
+                    "specifier": ">=0.0.6",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "bcrypt": {
+            "name": "bcrypt",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "bcrypt>=4.0.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "bcrypt",
+                    "specifier": ">=4.0.1",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "pydantic": {
+            "name": "pydantic",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "pydantic>=2.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pydantic",
+                    "specifier": ">=2.0.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "email-validator": {
+            "name": "email-validator",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "email-validator>=2.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "email-validator",
+                    "specifier": ">=2.0.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "boto3": {
+            "name": "boto3",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "boto3>=1.26.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "boto3",
+                    "specifier": ">=1.26.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "botocore": {
+            "name": "botocore",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "botocore>=1.29.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "botocore",
+                    "specifier": ">=1.29.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "python-dotenv": {
+            "name": "python-dotenv",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "python-dotenv>=1.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-dotenv",
+                    "specifier": ">=1.0.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "structlog": {
+            "name": "structlog",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "structlog>=23.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "structlog",
+                    "specifier": ">=23.1.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "tenacity": {
+            "name": "tenacity",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "tenacity>=8.2.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "tenacity",
+                    "specifier": ">=8.2.2",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "pytz": {
+            "name": "pytz",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "pytz>=2023.3",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytz",
+                    "specifier": ">=2023.3",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "python-dateutil": {
+            "name": "python-dateutil",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "python-dateutil>=2.8.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-dateutil",
+                    "specifier": ">=2.8.2",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "pytest": {
+            "name": "pytest",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "pytest~=7.4.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytest",
+                    "specifier": "~=7.4.2",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "pytest-asyncio": {
+            "name": "pytest-asyncio",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "pytest-asyncio~=0.21.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytest-asyncio",
+                    "specifier": "~=0.21.1",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "httpx": {
+            "name": "httpx",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "httpx~=0.24.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "httpx",
+                    "specifier": "~=0.24.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        },
+        "cryptography": {
+            "name": "cryptography",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "cryptography>=44.0.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "cryptography",
+                    "specifier": ">=44.0.2",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ]
+        }
+    },
+    "affected_packages": {
+        "pydantic": {
+            "name": "pydantic",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "pydantic>=2.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pydantic",
+                    "specifier": ">=2.0.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ],
+            "found": null,
+            "insecure_versions": [
+                "0.0.1",
+                "0.0.2",
+                "0.0.3",
+                "0.0.4",
+                "0.0.5",
+                "0.0.6",
+                "0.0.7",
+                "0.0.8",
+                "0.1",
+                "0.10",
+                "0.11",
+                "0.11.1",
+                "0.11.2",
+                "0.12",
+                "0.12.1",
+                "0.13",
+                "0.13.1",
+                "0.14",
+                "0.15",
+                "0.16",
+                "0.16.1",
+                "0.17",
+                "0.18",
+                "0.18.1",
+                "0.18.2",
+                "0.19",
+                "0.2",
+                "0.20",
+                "0.20.1",
+                "0.20a1",
+                "0.21",
+                "0.2.1",
+                "0.22",
+                "0.23",
+                "0.24",
+                "0.25",
+                "0.26",
+                "0.27",
+                "0.27a1",
+                "0.28",
+                "0.29",
+                "0.3",
+                "0.30",
+                "0.30.1",
+                "0.31",
+                "0.31.1",
+                "0.32",
+                "0.32.1",
+                "0.32.2",
+                "0.4",
+                "0.5",
+                "0.6",
+                "0.6.1",
+                "0.6.2",
+                "0.6.3",
+                "0.6.4",
+                "0.7",
+                "0.7.1",
+                "0.8",
+                "0.9",
+                "0.9.1",
+                "1.0",
+                "1.0b1",
+                "1.0b2",
+                "1.1",
+                "1.10.0",
+                "1.10.0a1",
+                "1.10.0a2",
+                "1.10.0b1",
+                "1.10.1",
+                "1.10.10",
+                "1.10.11",
+                "1.10.12",
+                "1.10.2",
+                "1.10.3",
+                "1.10.4",
+                "1.10.5",
+                "1.10.6",
+                "1.10.7",
+                "1.10.8",
+                "1.10.9",
+                "1.1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "1.5",
+                "1.5.1",
+                "1.6",
+                "1.6.1",
+                "1.6.2",
+                "1.7",
+                "1.7.1",
+                "1.7.2",
+                "1.7.3",
+                "1.7.4",
+                "1.8",
+                "1.8.1",
+                "1.8.2",
+                "1.9.0",
+                "1.9.0a1",
+                "1.9.0a2",
+                "1.9.1",
+                "1.9.2",
+                "2.0",
+                "2.0.1",
+                "2.0.2",
+                "2.0.3",
+                "2.0a1",
+                "2.0a2",
+                "2.0a3",
+                "2.0a4",
+                "2.0b1",
+                "2.0b2",
+                "2.0b3",
+                "2.1.0",
+                "2.1.1",
+                "2.2.0",
+                "2.2.1",
+                "2.3.0"
+            ],
+            "secure_versions": [
+                "2.11.0b2",
+                "2.11.0b1",
+                "2.11.0a2",
+                "2.11.0a1",
+                "2.10.6",
+                "2.10.5",
+                "2.10.4",
+                "2.10.3",
+                "2.10.2",
+                "2.10.1",
+                "2.10.0",
+                "2.10.0b2",
+                "2.10.0b1",
+                "2.9.2",
+                "2.9.1",
+                "2.9.0",
+                "2.9.0b2",
+                "2.9.0b1",
+                "2.8.2",
+                "2.8.1",
+                "2.8.0",
+                "2.8.0b1",
+                "2.7.4",
+                "2.7.3",
+                "2.7.2",
+                "2.7.1",
+                "2.7.0",
+                "2.7.0b1",
+                "2.6.4",
+                "2.6.3",
+                "2.6.2",
+                "2.6.1",
+                "2.6.0",
+                "2.6.0b1",
+                "2.5.3",
+                "2.5.2",
+                "2.5.1",
+                "2.5.0",
+                "2.5.0b1",
+                "2.4.2",
+                "2.4.1",
+                "2.4.0",
+                "1.10.21",
+                "1.10.20",
+                "1.10.19",
+                "1.10.18",
+                "1.10.17",
+                "1.10.16",
+                "1.10.15",
+                "1.10.14",
+                "1.10.13"
+            ],
+            "latest_version_without_known_vulnerabilities": "2.11.0b2",
+            "latest_version": "2.10.6",
+            "more_info_url": "https://data.safetycli.com/p/pypi/pydantic/97c/"
+        },
+        "python-multipart": {
+            "name": "python-multipart",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "python-multipart>=0.0.6",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-multipart",
+                    "specifier": ">=0.0.6",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ],
+            "found": null,
+            "insecure_versions": [
+                "0.0.1",
+                "0.0.10",
+                "0.0.11",
+                "0.0.12",
+                "0.0.13",
+                "0.0.14",
+                "0.0.15",
+                "0.0.16",
+                "0.0.17",
+                "0.0.2",
+                "0.0.3",
+                "0.0.4",
+                "0.0.5",
+                "0.0.6",
+                "0.0.7",
+                "0.0.8",
+                "0.0.9"
+            ],
+            "secure_versions": [
+                "0.0.20",
+                "0.0.19",
+                "0.0.18"
+            ],
+            "latest_version_without_known_vulnerabilities": "0.0.20",
+            "latest_version": "0.0.20",
+            "more_info_url": "https://data.safetycli.com/p/pypi/python-multipart/97c/"
+        },
+        "python-jose": {
+            "name": "python-jose",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "python-jose>=3.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-jose",
+                    "specifier": ">=3.3.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ],
+            "found": null,
+            "insecure_versions": [
+                "0.1.0",
+                "0.1.1",
+                "0.1.2",
+                "0.1.3",
+                "0.1.4",
+                "0.1.5",
+                "0.1.6",
+                "0.1.7",
+                "0.1.8",
+                "0.2.0",
+                "0.3.0",
+                "0.4.0",
+                "0.5.0",
+                "0.5.1",
+                "0.5.2",
+                "0.5.3",
+                "0.5.4",
+                "0.5.5",
+                "0.5.6",
+                "0.6.1",
+                "0.6.2",
+                "0.7.0",
+                "1.0.0",
+                "1.1.0",
+                "1.2.0",
+                "1.3.0",
+                "1.3.1",
+                "1.3.2",
+                "1.4.0",
+                "2.0.0",
+                "2.0.1",
+                "2.0.2",
+                "3.0.0",
+                "3.0.1",
+                "3.1.0",
+                "3.2.0",
+                "3.3.0",
+                "3.4.0"
+            ],
+            "secure_versions": [],
+            "latest_version_without_known_vulnerabilities": "",
+            "latest_version": "3.4.0",
+            "more_info_url": "https://data.safetycli.com/p/pypi/python-jose/97c/"
+        },
+        "starlette": {
+            "name": "starlette",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "starlette>=0.27.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "starlette",
+                    "specifier": ">=0.27.0",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ],
+            "found": null,
+            "insecure_versions": [
+                "0.1.0",
+                "0.10.0",
+                "0.10.1",
+                "0.10.2",
+                "0.10.3",
+                "0.10.4",
+                "0.10.5",
+                "0.10.6",
+                "0.10.7",
+                "0.1.1",
+                "0.1.10",
+                "0.11.0",
+                "0.1.11",
+                "0.11.1",
+                "0.1.12",
+                "0.11.2",
+                "0.1.13",
+                "0.11.3",
+                "0.1.14",
+                "0.11.4",
+                "0.1.15",
+                "0.1.16",
+                "0.1.17",
+                "0.1.2",
+                "0.12.0",
+                "0.12.0b1",
+                "0.12.0b2",
+                "0.12.0b3",
+                "0.12.1",
+                "0.12.10",
+                "0.12.11",
+                "0.12.12",
+                "0.12.13",
+                "0.12.2",
+                "0.12.3",
+                "0.12.4",
+                "0.12.5",
+                "0.12.6",
+                "0.12.7",
+                "0.12.8",
+                "0.12.9",
+                "0.1.3",
+                "0.13.0",
+                "0.13.1",
+                "0.13.2",
+                "0.13.3",
+                "0.13.4",
+                "0.13.5",
+                "0.13.6",
+                "0.13.7",
+                "0.13.8",
+                "0.1.4",
+                "0.14.0",
+                "0.14.1",
+                "0.14.2",
+                "0.1.5",
+                "0.15.0",
+                "0.1.6",
+                "0.16.0",
+                "0.1.7",
+                "0.17.0",
+                "0.17.1",
+                "0.1.8",
+                "0.18.0",
+                "0.1.9",
+                "0.19.0",
+                "0.19.1",
+                "0.2.0",
+                "0.20.0",
+                "0.20.1",
+                "0.20.2",
+                "0.20.3",
+                "0.20.4",
+                "0.2.1",
+                "0.21.0",
+                "0.2.2",
+                "0.22.0",
+                "0.2.3",
+                "0.23.0",
+                "0.23.1",
+                "0.24.0",
+                "0.25.0",
+                "0.26.0",
+                "0.26.0.post1",
+                "0.26.1",
+                "0.27.0",
+                "0.28.0",
+                "0.29.0",
+                "0.3.0",
+                "0.30.0",
+                "0.3.1",
+                "0.31.0",
+                "0.31.1",
+                "0.3.2",
+                "0.32.0",
+                "0.32.0.post1",
+                "0.3.3",
+                "0.33.0",
+                "0.3.4",
+                "0.34.0",
+                "0.3.5",
+                "0.35.0",
+                "0.35.1",
+                "0.3.6",
+                "0.36.0",
+                "0.36.1",
+                "0.36.2",
+                "0.36.3",
+                "0.3.7",
+                "0.37.0",
+                "0.37.1",
+                "0.37.2",
+                "0.38.0",
+                "0.38.1",
+                "0.38.2",
+                "0.38.3",
+                "0.38.4",
+                "0.38.5",
+                "0.38.6",
+                "0.39.0",
+                "0.39.1",
+                "0.39.2",
+                "0.4.0",
+                "0.4.1",
+                "0.4.2",
+                "0.5.0",
+                "0.5.1",
+                "0.5.2",
+                "0.5.3",
+                "0.5.4",
+                "0.5.5",
+                "0.6.0",
+                "0.6.1",
+                "0.6.2",
+                "0.6.3",
+                "0.7.0",
+                "0.7.1",
+                "0.7.2",
+                "0.7.3",
+                "0.7.4",
+                "0.8.0",
+                "0.8.1",
+                "0.8.2",
+                "0.8.3",
+                "0.8.4",
+                "0.8.5",
+                "0.8.6",
+                "0.8.7",
+                "0.8.8",
+                "0.9.0",
+                "0.9.1",
+                "0.9.10",
+                "0.9.11",
+                "0.9.2",
+                "0.9.3",
+                "0.9.4",
+                "0.9.5",
+                "0.9.6",
+                "0.9.7",
+                "0.9.8",
+                "0.9.9"
+            ],
+            "secure_versions": [
+                "0.46.1",
+                "0.46.0",
+                "0.45.3",
+                "0.45.2",
+                "0.45.1",
+                "0.45.0",
+                "0.44.0",
+                "0.43.0",
+                "0.42.0",
+                "0.41.3",
+                "0.41.2",
+                "0.41.1",
+                "0.41.0",
+                "0.40.0"
+            ],
+            "latest_version_without_known_vulnerabilities": "0.46.1",
+            "latest_version": "0.46.1",
+            "more_info_url": "https://data.safetycli.com/p/pypi/starlette/97c/"
+        },
+        "fastapi": {
+            "name": "fastapi",
+            "version": null,
+            "requirements": [
+                {
+                    "raw": "fastapi>=0.95.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "fastapi",
+                    "specifier": ">=0.95.1",
+                    "url": null,
+                    "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+                }
+            ],
+            "found": null,
+            "insecure_versions": [
+                "0.1.0",
+                "0.10.0",
+                "0.100.0",
+                "0.100.0b1",
+                "0.100.0b2",
+                "0.100.0b3",
+                "0.100.1",
+                "0.10.1",
+                "0.101.0",
+                "0.101.1",
+                "0.10.2",
+                "0.102.0",
+                "0.103.0",
+                "0.103.1",
+                "0.103.2",
+                "0.104.0",
+                "0.104.1",
+                "0.105.0",
+                "0.106.0",
+                "0.107.0",
+                "0.108.0",
+                "0.109.0",
+                "0.1.10",
+                "0.11.0",
+                "0.1.11",
+                "0.1.12",
+                "0.1.13",
+                "0.1.14",
+                "0.1.15",
+                "0.1.16",
+                "0.1.17",
+                "0.1.18",
+                "0.1.19",
+                "0.1.2",
+                "0.12.0",
+                "0.12.1",
+                "0.1.3",
+                "0.13.0",
+                "0.1.4",
+                "0.14.0",
+                "0.1.5",
+                "0.15.0",
+                "0.1.6",
+                "0.16.0",
+                "0.1.7",
+                "0.17.0",
+                "0.1.8",
+                "0.18.0",
+                "0.1.9",
+                "0.19.0",
+                "0.2.0",
+                "0.20.0",
+                "0.20.1",
+                "0.2.1",
+                "0.21.0",
+                "0.22.0",
+                "0.23.0",
+                "0.24.0",
+                "0.25.0",
+                "0.26.0",
+                "0.27.0",
+                "0.27.1",
+                "0.27.2",
+                "0.28.0",
+                "0.29.0",
+                "0.29.1",
+                "0.3.0",
+                "0.30.0",
+                "0.30.1",
+                "0.31.0",
+                "0.32.0",
+                "0.33.0",
+                "0.34.0",
+                "0.35.0",
+                "0.36.0",
+                "0.37.0",
+                "0.38.0",
+                "0.38.1",
+                "0.39.0",
+                "0.4.0",
+                "0.40.0",
+                "0.41.0",
+                "0.42.0",
+                "0.43.0",
+                "0.44.0",
+                "0.44.1",
+                "0.45.0",
+                "0.46.0",
+                "0.47.0",
+                "0.47.1",
+                "0.48.0",
+                "0.49.0",
+                "0.49.1",
+                "0.49.2",
+                "0.5.0",
+                "0.50.0",
+                "0.5.1",
+                "0.51.0",
+                "0.52.0",
+                "0.53.0",
+                "0.53.1",
+                "0.53.2",
+                "0.54.0",
+                "0.54.1",
+                "0.54.2",
+                "0.55.0",
+                "0.55.1",
+                "0.56.0",
+                "0.56.1",
+                "0.57.0",
+                "0.58.0",
+                "0.58.1",
+                "0.59.0",
+                "0.6.0",
+                "0.60.0",
+                "0.60.1",
+                "0.60.2",
+                "0.6.1",
+                "0.61.0",
+                "0.61.1",
+                "0.61.2",
+                "0.6.2",
+                "0.62.0",
+                "0.6.3",
+                "0.63.0",
+                "0.6.4",
+                "0.64.0",
+                "0.65.0",
+                "0.65.1",
+                "0.65.2",
+                "0.65.3",
+                "0.66.0",
+                "0.66.1",
+                "0.67.0",
+                "0.68.0",
+                "0.68.1",
+                "0.68.2",
+                "0.69.0",
+                "0.7.0",
+                "0.70.0",
+                "0.70.1",
+                "0.7.1",
+                "0.71.0",
+                "0.72.0",
+                "0.73.0",
+                "0.74.0",
+                "0.74.1",
+                "0.75.0",
+                "0.75.1",
+                "0.75.2",
+                "0.76.0",
+                "0.77.0",
+                "0.77.1",
+                "0.78.0",
+                "0.79.0",
+                "0.79.1",
+                "0.8.0",
+                "0.80.0",
+                "0.81.0",
+                "0.82.0",
+                "0.83.0",
+                "0.84.0",
+                "0.85.0",
+                "0.85.1",
+                "0.85.2",
+                "0.86.0",
+                "0.87.0",
+                "0.88.0",
+                "0.89.0",
+                "0.89.1",
+                "0.9.0",
+                "0.90.0",
+                "0.90.1",
+                "0.9.1",
+                "0.91.0",
+                "0.92.0",
+                "0.93.0",
+                "0.94.0",
+                "0.94.1",
+                "0.95.0",
+                "0.95.1",
+                "0.95.2",
+                "0.96.0",
+                "0.96.1",
+                "0.97.0",
+                "0.98.0",
+                "0.99.0",
+                "0.99.1"
+            ],
+            "secure_versions": [
+                "0.115.12",
+                "0.115.11",
+                "0.115.10",
+                "0.115.9",
+                "0.115.8",
+                "0.115.7",
+                "0.115.6",
+                "0.115.5",
+                "0.115.4",
+                "0.115.3",
+                "0.115.2",
+                "0.115.1",
+                "0.115.0",
+                "0.114.2",
+                "0.114.1",
+                "0.114.0",
+                "0.113.0",
+                "0.112.4",
+                "0.112.3",
+                "0.112.2",
+                "0.112.1",
+                "0.112.0",
+                "0.111.1",
+                "0.111.0",
+                "0.111.0.dev1",
+                "0.110.3",
+                "0.110.3.dev2",
+                "0.110.3.dev1",
+                "0.110.2",
+                "0.110.1",
+                "0.110.0",
+                "0.109.2",
+                "0.109.1"
+            ],
+            "latest_version_without_known_vulnerabilities": "0.115.12",
+            "latest_version": "0.115.12",
+            "more_info_url": "https://data.safetycli.com/p/pypi/fastapi/97c/"
+        }
+    },
+    "announcements": [
+        {
+            "type": "warning",
+            "message": "Warning: fastapi, uvicorn, starlette, sqlalchemy, alembic, asyncpg, psycopg2-binary, python-jose, passlib, python-multipart, bcrypt, pydantic, email-validator, boto3, botocore, python-dotenv, structlog, tenacity, pytz, python-dateutil, pytest, pytest-asyncio, httpx and cryptography are unpinned. Safety by default does not report on potential vulnerabilities in unpinned packages. It is recommended to pin your dependencies unless this is a library meant for distribution. To learn more about reporting these, specifier range handling, and options for scanning unpinned packages visit https://docs.pyup.io/docs/safety-range-specs"
+        }
+    ],
+    "vulnerabilities": [],
+    "ignored_vulnerabilities": [
+        {
+            "vulnerability_id": "61416",
+            "package_name": "pydantic",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                ">=2.0a1,<2.4.0"
+            ],
+            "all_vulnerable_specs": [
+                "<1.10.13",
+                ">=2.0a1,<2.4.0"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "pydantic>=2.0.0",
+                "extras": [],
+                "marker": null,
+                "name": "pydantic",
+                "specifier": ">=2.0.0",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "Pydantic 1.10.13 and 2.4.0 include a fix for a regular expression denial of service vulnerability (REDoS).\r\nhttps://github.com/pydantic/pydantic/pull/7360\r\nhttps://github.com/pydantic/pydantic/pull/7673",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": null,
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/61416/97c"
+        },
+        {
+            "vulnerability_id": "71590",
+            "package_name": "pydantic",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                ">=2.0.0,<2.4.0"
+            ],
+            "all_vulnerable_specs": [
+                ">=2.0.0,<2.4.0",
+                "<1.10.13"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "pydantic>=2.0.0",
+                "extras": [],
+                "marker": null,
+                "name": "pydantic",
+                "specifier": ">=2.0.0",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "Regular expression denial of service in Pydanic affected versions allows remote attackers to cause denial of service via a crafted email string.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2024-3772",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/71590/97c"
+        },
+        {
+            "vulnerability_id": "74427",
+            "package_name": "python-multipart",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                "<0.0.18"
+            ],
+            "all_vulnerable_specs": [
+                "<0.0.18"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "python-multipart>=0.0.6",
+                "extras": [],
+                "marker": null,
+                "name": "python-multipart",
+                "specifier": ">=0.0.6",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "Affected versions of python-multipart are vulnerable to Allocation of Resources Without Limits or Throttling (CWE-770). An attacker can send specially crafted multipart/form-data requests containing excessive CR (\\r) or LF (\\n) characters before the first boundary or after the last boundary. This can lead to uncontrolled CPU usage and high memory consumption, causing the processing thread or event loop in ASGI applications to stall, resulting in a denial of service (DoS). The vulnerability exists in the MultipartParser's handling of line breaks around boundaries, where it processes each CRLF byte individually and logs warnings for each occurrence. To exploit this, an attacker simply needs to send large amounts of malformed multipart data with numerous CRLF characters. Upgrading to version 0.0.19 resolves this issue by preventing excessive resource allocation and logging when CRLF bytes are present.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2024-53981",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/74427/97c"
+        },
+        {
+            "vulnerability_id": "66706",
+            "package_name": "python-multipart",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                ">=0,<0.0.7"
+            ],
+            "all_vulnerable_specs": [
+                ">=0,<0.0.7"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "python-multipart>=0.0.6",
+                "extras": [],
+                "marker": null,
+                "name": "python-multipart",
+                "specifier": ">=0.0.6",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "A vulnerability in versions of python-multipart before 0.0.7 involves a Regular Expression Denial of Service (ReDoS) triggered by custom Content-Type headers. This issue allows an attacker to cause a significant consumption of system resources while processing such headers, effectively preventing the processing of other requests. This ReDoS vulnerability stems from the way regular expressions evaluate certain input patterns, which can lead to extensive backtracking, thereby causing the application to slow down significantly, consuming a disproportionate amount of CPU time and facilitating a denial of service condition.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": null,
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/66706/97c"
+        },
+        {
+            "vulnerability_id": "70716",
+            "package_name": "python-jose",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                ">=0"
+            ],
+            "all_vulnerable_specs": [
+                ">=0"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "python-jose>=3.3.0",
+                "extras": [],
+                "marker": null,
+                "name": "python-jose",
+                "specifier": ">=3.3.0",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "Affected versions of Python-jose allow attackers to cause a denial of service (resource consumption) during a decode via a crafted JSON Web Encryption (JWE) token with a high compression ratio, aka a \"JWT bomb.\" This is similar to CVE-2024-21319.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2024-33664",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/70716/97c"
+        },
+        {
+            "vulnerability_id": "70715",
+            "package_name": "python-jose",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                ">=0"
+            ],
+            "all_vulnerable_specs": [
+                ">=0"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "python-jose>=3.3.0",
+                "extras": [],
+                "marker": null,
+                "name": "python-jose",
+                "specifier": ">=3.3.0",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "Affected versions of Python-jose have a algorithm confusion vulnerability with OpenSSH ECDSA keys and other key formats. This is similar to CVE-2022-29217.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2024-33663",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/70715/97c"
+        },
+        {
+            "vulnerability_id": "73725",
+            "package_name": "starlette",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                "<0.40.0"
+            ],
+            "all_vulnerable_specs": [
+                "<0.40.0"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "starlette>=0.27.0",
+                "extras": [],
+                "marker": null,
+                "name": "starlette",
+                "specifier": ">=0.27.0",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "Affected versions of the Starlette framework are vulnerable to Denial of Service (DoS) attacks due to the lack of restrictions on multipart part sizes. The vulnerability resides in the MultiPartParser class, which previously did not enforce size limits on incoming data. This issue is mitigated by introducing a max_part_size constraint and raises exceptions when limits are exceeded.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2024-47874",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/73725/97c"
+        },
+        {
+            "vulnerability_id": "68094",
+            "package_name": "starlette",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                "<=0.36.1"
+            ],
+            "all_vulnerable_specs": [
+                "<=0.36.1"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "starlette>=0.27.0",
+                "extras": [],
+                "marker": null,
+                "name": "starlette",
+                "specifier": ">=0.27.0",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "When using form data, `python-multipart` employs a Regular Expression to parse the HTTP `Content-Type` header. This creates a vulnerability where an attacker can send a specially crafted `Content-Type` option, causing significant CPU resource consumption and indefinitely stalling the server by locking the main event loop, rendering the server unable to process further requests. This issue particularly affects FastAPI servers parsing form data, leading to a Denial of Service (DoS) condition when the number of malicious requests exceeds the number of available server workers. However, this vulnerability does not impact the processing of JSON data through the `/submit_json` endpoint. It is specific to a defined set of versions of FastAPI and `python-multipart` when handling form data.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": null,
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/68094/97c"
+        },
+        {
+            "vulnerability_id": "65293",
+            "package_name": "fastapi",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                "<=0.109.0"
+            ],
+            "all_vulnerable_specs": [
+                "<=0.109.0"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "fastapi>=0.95.1",
+                "extras": [],
+                "marker": null,
+                "name": "fastapi",
+                "specifier": ">=0.95.1",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "Fastapi 0.109.1 updates its minimum version of 'python-multipart' to >=0.0.7 to include a security fix.",
+            "is_transitive": true,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2024-24762",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/65293/97c"
+        },
+        {
+            "vulnerability_id": "64930",
+            "package_name": "fastapi",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                "<0.109.1"
+            ],
+            "all_vulnerable_specs": [
+                "<0.109.1"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "fastapi>=0.95.1",
+                "extras": [],
+                "marker": null,
+                "name": "fastapi",
+                "specifier": ">=0.95.1",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "FastAPI 0.109.1 addresses a critical security issue by upgrading its dependency python-multipart to version >=0.0.7. The upgrade mitigates a Regular Expression Denial of Service (ReDoS) vulnerability, which occurs when parsing form data. \r\nhttps://github.com/tiangolo/fastapi/security/advisories/GHSA-qf9m-vfgh-m389",
+            "is_transitive": true,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": null,
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/64930/97c"
+        },
+        {
+            "vulnerability_id": "58704",
+            "package_name": "fastapi",
+            "ignored": true,
+            "ignored_reason": "This vulnerability is being ignored due to the 'ignore-unpinned-requirements' flag (default True). To change this, set 'ignore-unpinned-requirements' to False under 'security' in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for more information.",
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                "<0.95.2"
+            ],
+            "all_vulnerable_specs": [
+                "<0.95.2"
+            ],
+            "analyzed_version": null,
+            "analyzed_requirement": {
+                "raw": "fastapi>=0.95.1",
+                "extras": [],
+                "marker": null,
+                "name": "fastapi",
+                "specifier": ">=0.95.1",
+                "url": null,
+                "found": "/home/jj/dev/Novamind-Backend/requirements.txt"
+            },
+            "advisory": "Fastapi 0.95.2 updates its dependency 'Starlette' to versions '>=0.27.0' to include a security fix.",
+            "is_transitive": true,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2023-29159",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/58704/97c"
+        }
+    ],
+    "remediations": {},
+    "remediations_results": {
+        "vulnerabilities_fixed": [],
+        "remediations_applied": {},
+        "remediations_skipped": {}
+    }
+}
+
+
++===========================================================================================================================================================================================+
+
+
+DEPRECATED: this command (`check`) has been DEPRECATED, and will be unsupported beyond 01 June 2024.
+
+
+We highly encourage switching to the new `scan` command which is easier to use, more powerful, and can be set up to mimic the deprecated command if required.
+
+
++===========================================================================================================================================================================================+
+
+

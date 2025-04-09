@@ -1,0 +1,162 @@
+
+
++===========================================================================================================================================================================================+
+
+
+DEPRECATED: this command (`check`) has been DEPRECATED, and will be unsupported beyond 01 June 2024.
+
+
+We highly encourage switching to the new `scan` command which is easier to use, more powerful, and can be set up to mimic the deprecated command if required.
+
+
++===========================================================================================================================================================================================+
+
+
++==============================================================================+
+
+                                   /$$$$$$            /$$
+                                  /$$__  $$          | $$
+               /$$$$$$$  /$$$$$$ | $$  \__//$$$$$$  /$$$$$$   /$$   /$$
+              /$$_____/ |____  $$| $$$$   /$$__  $$|_  $$_/  | $$  | $$
+             |  $$$$$$   /$$$$$$$| $$_/  | $$$$$$$$  | $$    | $$  | $$
+              \____  $$ /$$__  $$| $$    | $$_____/  | $$ /$$| $$  | $$
+              /$$$$$$$/|  $$$$$$$| $$    |  $$$$$$$  |  $$$$/|  $$$$$$$
+             |_______/  \_______/|__/     \_______/   \___/   \____  $$
+                                                              /$$  | $$
+                                                             |  $$$$$$/
+      by safetycli.com                                        \______/
+
++==============================================================================+
+
+ ANNOUNCEMENTS
+
+  * Warning: pytest, pytest-asyncio, fastapi, uvicorn, starlette, sqlalchemy, 
+    alembic, asyncpg, psycopg2-binary, python-jose, passlib, python-multipart, 
+    bcrypt, pydantic, email-validator, boto3, botocore, python-dotenv, 
+    structlog, tenacity, pytz, python-dateutil and httpx are unpinned. Safety 
+    by default does not report on potential vulnerabilities in unpinned 
+    packages. It is recommended to pin your dependencies unless this is a 
+    library meant for distribution. To learn more about reporting these, 
+    specifier range handling, and options for scanning unpinned packages visit 
+    https://docs.pyup.io/docs/safety-range-specs 
+
++==============================================================================+
+
+ REPORT 
+
+  Safety v3.3.1 is scanning for Vulnerabilities...
+  Scanning dependencies in your files:
+
+  -> requirements-dev.txt
+
+  Using open-source vulnerability database
+  Found and scanned 34 packages
+  Timestamp 2025-03-27 07:30:18
+  2 vulnerabilities reported
+  11 vulnerabilities ignored
+
++==============================================================================+
+ VULNERABILITIES FOUND
++==============================================================================+
+
+-> Warning: 2 known vulnerabilities match the pydantic versions that could be 
+   installed from your specifier: pydantic>=2.0.0 (unpinned). These 
+   vulnerabilities are not reported by default. To report these vulnerabilities 
+   set 'ignore-unpinned-requirements' to False under 'security' in your policy 
+   file. See https://docs.pyup.io/docs/safety-20-policy-file for more 
+   information. 
+   It is recommended to pin your dependencies unless this is a library meant 
+   for distribution. To learn more about reporting these, specifier range 
+   handling, and options for scanning unpinned packages visit 
+   https://docs.pyup.io/docs/safety-range-specs 
+-> Warning: 2 known vulnerabilities match the python-multipart versions that 
+   could be installed from your specifier: python-multipart>=0.0.6 (unpinned). 
+   These vulnerabilities are not reported by default. To report these 
+   vulnerabilities set 'ignore-unpinned-requirements' to False under 'security' 
+   in your policy file. See https://docs.pyup.io/docs/safety-20-policy-file for 
+   more information. 
+   It is recommended to pin your dependencies unless this is a library meant 
+   for distribution. To learn more about reporting these, specifier range 
+   handling, and options for scanning unpinned packages visit 
+   https://docs.pyup.io/docs/safety-range-specs 
+-> Warning: 2 known vulnerabilities match the python-jose versions that could 
+   be installed from your specifier: python-jose>=3.3.0 (unpinned). These 
+   vulnerabilities are not reported by default. To report these vulnerabilities 
+   set 'ignore-unpinned-requirements' to False under 'security' in your policy 
+   file. See https://docs.pyup.io/docs/safety-20-policy-file for more 
+   information. 
+   It is recommended to pin your dependencies unless this is a library meant 
+   for distribution. To learn more about reporting these, specifier range 
+   handling, and options for scanning unpinned packages visit 
+   https://docs.pyup.io/docs/safety-range-specs 
+-> Warning: 2 known vulnerabilities match the starlette versions that could be 
+   installed from your specifier: starlette>=0.27.0 (unpinned). These 
+   vulnerabilities are not reported by default. To report these vulnerabilities 
+   set 'ignore-unpinned-requirements' to False under 'security' in your policy 
+   file. See https://docs.pyup.io/docs/safety-20-policy-file for more 
+   information. 
+   It is recommended to pin your dependencies unless this is a library meant 
+   for distribution. To learn more about reporting these, specifier range 
+   handling, and options for scanning unpinned packages visit 
+   https://docs.pyup.io/docs/safety-range-specs 
+-> Warning: 3 known vulnerabilities match the fastapi versions that could be 
+   installed from your specifier: fastapi>=0.95.1 (unpinned). These 
+   vulnerabilities are not reported by default. To report these vulnerabilities 
+   set 'ignore-unpinned-requirements' to False under 'security' in your policy 
+   file. See https://docs.pyup.io/docs/safety-20-policy-file for more 
+   information. 
+   It is recommended to pin your dependencies unless this is a library meant 
+   for distribution. To learn more about reporting these, specifier range 
+   handling, and options for scanning unpinned packages visit 
+   https://docs.pyup.io/docs/safety-range-specs 
+
+-> Vulnerability found in bandit version 1.7.5
+   Vulnerability ID: 64484
+   Affected spec: <1.7.7
+   ADVISORY: Bandit 1.7.7 identifies the str.replace method as a
+   potential risk for SQL injection because it can be misused in...
+   PVE-2024-64484
+   For more information about this vulnerability, visit
+   https://data.safetycli.com/v/64484/97c
+   To ignore this vulnerability, use PyUp vulnerability id 64484 in safety’s
+   ignore command-line argument or add the ignore to your safety policy file.
+
+
+-> Vulnerability found in black version 23.9.1
+   Vulnerability ID: 66742
+   Affected spec: <24.3.0
+   ADVISORY: Affected versions of Black are vulnerable to Regular
+   Expression Denial of Service (ReDoS) via the...
+   CVE-2024-21503
+   For more information about this vulnerability, visit
+   https://data.safetycli.com/v/66742/97c
+   To ignore this vulnerability, use PyUp vulnerability id 66742 in safety’s
+   ignore command-line argument or add the ignore to your safety policy file.
+
+
++==============================================================================+
+   REMEDIATIONS
+
+  2 vulnerabilities were reported in 2 packages. For detailed remediation & 
+  fix recommendations, upgrade to a commercial license. 
+
++==============================================================================+
+
+ Scan was completed. 2 vulnerabilities were reported. 11 vulnerabilities from 5 
+ packages were ignored. 
+
++==============================================================================+
+
+
++===========================================================================================================================================================================================+
+
+
+DEPRECATED: this command (`check`) has been DEPRECATED, and will be unsupported beyond 01 June 2024.
+
+
+We highly encourage switching to the new `scan` command which is easier to use, more powerful, and can be set up to mimic the deprecated command if required.
+
+
++===========================================================================================================================================================================================+
+
+

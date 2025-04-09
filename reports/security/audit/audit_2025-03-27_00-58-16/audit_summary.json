@@ -1,0 +1,7 @@
+{
+  "audit_id": "HIPAA-AUDIT-2025-03-27_00-58-16",
+  "timestamp": "2025-03-27T00:58:31.034092",
+  "test_result": "FAIL",
+  "dependency_check_result": "FAIL",
+  "overall_result": "FAIL"
+}

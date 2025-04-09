@@ -1,0 +1,31 @@
+# HIPAA Security Testing Dependencies
+# Cross-platform security testing requirements for Novamind concierge psychiatry platform
+
+# Testing Framework
+pytest>=7.3.1
+pytest-html>=3.2.0
+pytest-asyncio>=0.21.0
+
+# Code Security Analysis
+bandit>=1.7.5
+
+# Dependency Vulnerability Scanning
+pip-audit>=2.6.1
+safety>=2.3.5  # Fallback for Linux/WSL environments
+
+# Security Libraries
+pyjwt>=2.7.0
+cryptography>=40.0.2
+python-jose>=3.3.0
+
+# HTTP Libraries for API Testing
+requests>=2.30.0
+httpx>=0.24.1
+
+# Output Formatting
+rich>=13.4.2
+colorama>=0.4.6  # Windows color support
+
+# Reporting
+pandas>=2.0.2  # For data processing in reports
+tabulate>=0.9.0  # For table formatting in terminal

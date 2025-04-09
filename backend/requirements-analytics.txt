@@ -1,0 +1,7 @@
+# Analytics and caching dependencies
+redis>=4.5.1,<5.0.0
+aioredis>=2.0.1
+# Rate limiting
+Starlette>=0.28.0
+# Improved JSON handling
+orjson>=3.9.10

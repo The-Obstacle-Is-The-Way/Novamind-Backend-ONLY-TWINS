@@ -1,0 +1,20 @@
+# Development Dependencies
+# Core requirements
+-r requirements.txt
+
+# Testing Tools
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+hypothesis==6.88.1
+
+# Development Tools
+black==23.9.1
+flake8==6.1.0
+mypy==1.6.1
+pre-commit==3.5.0
+bandit==1.7.5
+safety==3.3.1  # Updated to match requirements.txt
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==1.3.0

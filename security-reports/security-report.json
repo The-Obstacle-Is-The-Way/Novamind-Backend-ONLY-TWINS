@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-03-27T11:05:01-04:00",
+  "results": {
+    "static_analysis": {
+      "status": "fail",
+      "report": "static-analysis-20250327_110429.json"
+    },
+    "dependency_check": {
+      "status": "pass",
+      "report": "dependency-report-20250327_110429.json"
+    },
+    "phi_pattern_detection": {
+      "status": "pass",
+      "report": "hipaa_security_report_20250327_110429.json",
+      "total_patterns": 0
+    }
+  },
+  "overall_status": "fail"
+}

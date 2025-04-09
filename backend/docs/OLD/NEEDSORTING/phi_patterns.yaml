@@ -1,0 +1,201 @@
+# PHI Patterns Configuration for Novamind Log Sanitizer
+# This file contains patterns for detecting Protected Health Information (PHI)
+# in logs as required by HIPAA compliance standards.
+
+# Main patterns for PHI detection through regular expressions
+patterns:
+  - name: "Patient ID"
+    pattern: "\\bPT\\d{6,8}\\b"
+    type: "regex"
+    priority: 10
+    partial_redaction_length: 4
+    examples: ["PT12345678", "PT987654"]
+    
+  - name: "Social Security Number"
+    pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+    type: "regex" 
+    priority: 10
+    partial_redaction_length: 4
+    examples: ["123-45-6789"]
+    
+  - name: "Email Address"
+    pattern: "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\\b"
+    type: "regex"
+    priority: 8
+    partial_format: "xxxx@{domain}"
+    examples: ["patient@example.com", "doctor.name@hospital.org"]
+    
+  - name: "Phone Number"
+    pattern: "\\b\\(\\d{3}\\)\\s*\\d{3}-\\d{4}\\b|\\b\\d{3}-\\d{3}-\\d{4}\\b"
+    type: "regex"
+    priority: 7
+    partial_redaction_length: 4
+    examples: ["(555) 123-4567", "555-123-4567"]
+    
+  - name: "Credit Card Number"
+    pattern: "\\b(?:\\d{4}[- ]){3}\\d{4}\\b|\\b\\d{16}\\b"
+    type: "regex"
+    priority: 9
+    partial_redaction_length: 4
+    examples: ["4111-1111-1111-1111", "4111111111111111"]
+    
+  - name: "Date of Birth"
+    pattern: "\\b\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}\\b"
+    type: "regex"
+    priority: 8
+    partial_format: "xx/xx/{year}"
+    examples: ["01/15/1980", "1-15-1980", "01/15/80"]
+    
+  - name: "Medical Record Number"
+    pattern: "\\bMRN\\s*\\d{6,10}\\b|\\bMR#\\s*\\d{6,10}\\b"
+    type: "regex"
+    priority: 10
+    partial_redaction_length: 4
+    examples: ["MRN 1234567890", "MR#1234567"]
+    
+  - name: "Health Insurance ID"
+    pattern: "\\b[A-Z]{1,5}\\d{6,12}\\b"
+    type: "regex"
+    priority: 9
+    partial_redaction_length: 4
+    examples: ["BCBS123456789", "AETNA12345678"]
+    
+  - name: "Drug Prescription Number"
+    pattern: "\\bRX#\\s*\\d{6,10}\\b|\\bRX\\s*\\d{6,10}\\b"
+    type: "regex"
+    priority: 8
+    partial_redaction_length: 4
+    examples: ["RX#1234567890", "RX 1234567"]
+    
+  - name: "Driver's License"
+    pattern: "\\b[A-Z]\\d{7}\\b|\\b[A-Z]{1,2}\\d{6,7}\\b"
+    type: "regex"
+    priority: 8
+    partial_redaction_length: 4
+    examples: ["S1234567", "NY123456"]
+    
+  - name: "IPv4 Address"
+    pattern: "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b"
+    type: "regex"
+    priority: 6
+    examples: ["192.168.1.1", "10.0.0.1"]
+    
+  - name: "Full Name Pattern"
+    pattern: "\\b[A-Z][a-z]+\\s+[A-Z][a-z]+\\b"
+    type: "regex"
+    priority: 7
+    context_words: ["patient", "doctor", "physician", "client", "provider", "psychiatrist"]
+    examples: ["John Smith", "Jane Doe"]
+
+# Dictionary keys that signal PHI content
+sensitive_keys:
+  - name: "SSN"
+    keys: ["ssn", "social_security", "social_security_number"]
+    priority: 10
+    
+  - name: "DOB"
+    keys: ["dob", "date_of_birth", "birth_date"]
+    priority: 9
+    
+  - name: "Credit Card"
+    keys: ["credit_card", "cc_number", "card_number", "credit_card_number"]
+    priority: 10
+    
+  - name: "Patient ID"
+    keys: ["patient_id", "patientid", "patient_identifier", "patient_number"]
+    priority: 10
+    
+  - name: "Medical Record"
+    keys: ["medical_record", "medical_record_number", "mrn"]
+    priority: 10
+    
+  - name: "Address"
+    keys: ["address", "home_address", "street_address", "billing_address"]
+    priority: 8
+    
+  - name: "Phone"
+    keys: ["phone", "phone_number", "telephone", "cell", "mobile"]
+    priority: 8
+    
+  - name: "Email"
+    keys: ["email", "email_address", "e_mail"]
+    priority: 8
+    
+  - name: "Name Components"
+    keys: ["first_name", "last_name", "middle_name", "full_name"]
+    priority: 8
+    
+  - name: "Generic PHI"
+    keys: ["phi", "protected_health_information", "hipaa_data"]
+    priority: 10
+
+# Context words that suggest PHI when near other data
+context_words:
+  - "patient"
+  - "doctor"
+  - "physician"
+  - "psychiatrist"
+  - "therapist" 
+  - "medical"
+  - "health"
+  - "record"
+  - "prescription"
+  - "diagnosis"
+  - "treatment"
+  - "appointment"
+  - "visit"
+  - "admission"
+  - "discharge"
+  - "medication"
+  - "allergy"
+  - "insurance"
+  - "billing"
+  - "claim"
+  - "coverage"
+  - "subscriber"
+  - "policyholder"
+  - "beneficiary"
+  - "contact"
+  - "emergency"
+  - "next of kin"
+  - "guardian"
+  - "proxy"
+  - "authorization"
+  - "consent"
+
+# Whitelist for common terms that should not be redacted
+# even if they match PHI patterns
+whitelisted_terms:
+  - "admin"
+  - "localhost"
+  - "127.0.0.1"
+  - "example.com"
+  - "user123"
+  - "regular value"
+  - "regular_field"
+  - "some_data"
+  - "normal data"
+  - "User login: admin"
+
+# Configuration for the sanitizer behavior
+config:
+  # Default redaction mode (full, partial, hash)
+  default_redaction_mode: "full"
+  
+  # Number of characters to preserve in partial redaction
+  partial_redaction_length: 4
+  
+  # Marker text for redacted content
+  redaction_marker: "[REDACTED]"
+  
+  # Whether to preserve structure of dictionaries/objects
+  preserve_structure: true
+  
+  # Whether common/non-PHI terms should be preserved
+  preserve_non_phi: true
+  
+  # Enables heuristic detection mode for ambiguous cases
+  enable_heuristic_detection: true
+  
+  # Logging level for sanitizer operations
+  sanitizer_log_level: "warning"

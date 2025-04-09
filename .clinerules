@@ -1,0 +1,58 @@
+# Novamind Digital Twin: Psychiatric Platform Architecture - Backend Only
+
+## Clean Architecture
+
+- **Domain**: Pure business logic with no external dependencies
+- **Application**: Use cases, services, state management
+- **Infrastructure**: External services, API clients, databases
+- **API**: FastAPI routes and endpoints
+- **Core**: Cross-cutting concerns, shared utilities
+
+## Backend Design Principles
+
+- **Single Responsibility**: Each module handles one specific concern
+- **Dependency Inversion**: High-level modules don't depend on low-level modules
+- **Explicit Dependencies**: Dependencies are injected, not imported directly
+- **Repository Pattern**: Data access through abstract repository interfaces
+- **Service Layer**: Business logic encapsulated in service classes
+- **Type Hints**: All Python code uses type annotations
+
+## HIPAA Compliance
+
+- **No PHI in URLs**: POST only for sensitive data
+- **Secure Storage**: Encrypted data at rest
+- **Auto-Logout**: Implement timeouts for inactive sessions
+- **Audit Logging**: Track all data access in compliance with regulations
+- **Error Handling**: No PHI in logs/error messages
+- **Authentication**: Strong authentication mechanisms
+- **Authorization**: Role-based access control for all resources
+
+## Data Security
+
+- **Input Validation**: Validate all user inputs
+- **Parameter Validation**: Use Pydantic models for request validation
+- **Output Sanitization**: Ensure no sensitive data in responses
+- **Database Security**: Parameterized queries only (no string concatenation)
+- **Encryption**: TLS for data in transit, encryption for data at rest
+
+## API Design
+
+- **RESTful**: Follow REST principles for API design
+- **Versioning**: Versioned API endpoints
+- **Documentation**: OpenAPI/Swagger documentation
+- **Rate Limiting**: Protect APIs from abuse
+- **Response Formats**: Consistent JSON structure
+
+## Testing
+
+- **Unit Tests**: For business logic and services
+- **Integration Tests**: For API endpoints and repositories
+- **Security Tests**: For authentication and authorization
+- **Performance Tests**: For critical endpoints
+- **Test Coverage**: Maintain high test coverage
+
+## Reference Documentation
+
+- **Backend Documentation**: Refer to `/backend/docs/` for detailed implementation guides
+- **Security Compliance**: See `/backend/docs/HIPAA_COMPLIANCE.md` for security requirements
+- **API Guidelines**: See `/backend/docs/API_GUIDELINES.md` for API design standards

@@ -1,0 +1,45 @@
+# Core Application Requirements
+# This file contains main dependencies for the Novamind application
+
+# Web Framework
+fastapi>=0.95.1
+uvicorn>=0.22.0
+starlette>=0.27.0
+
+# Database
+sqlalchemy>=2.0.0
+alembic>=1.10.0
+asyncpg>=0.27.0
+psycopg2-binary>=2.9.6
+
+# Authentication & Authorization
+python-jose>=3.3.0
+passlib>=1.7.4
+python-multipart>=0.0.6
+bcrypt>=4.0.1
+
+# Validation & Serialization
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+email-validator>=2.0.0
+
+# AWS
+boto3>=1.26.0
+botocore>=1.29.0
+
+# Utilities
+python-dotenv>=1.0.0
+structlog>=23.1.0
+tenacity>=8.2.2
+
+# Date/Time
+pytz>=2023.3
+python-dateutil>=2.8.2
+
+# Testing
+pytest~=7.4.2
+pytest-asyncio~=0.21.1
+httpx~=0.24.0
+
+# Security
+cryptography>=44.0.2

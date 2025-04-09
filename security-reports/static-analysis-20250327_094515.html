@@ -1,0 +1,695 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+    Bandit Report
+</title>
+
+<style>
+
+html * {
+    font-family: "Arial", sans-serif;
+}
+
+pre {
+    font-family: "Monaco", monospace;
+}
+
+.bordered-box {
+    border: 1px solid black;
+    padding-top:.5em;
+    padding-bottom:.5em;
+    padding-left:1em;
+}
+
+.metrics-box {
+    font-size: 1.1em;
+    line-height: 130%;
+}
+
+.metrics-title {
+    font-size: 1.5em;
+    font-weight: 500;
+    margin-bottom: .25em;
+}
+
+.issue-description {
+    font-size: 1.3em;
+    font-weight: 500;
+}
+
+.candidate-issues {
+    margin-left: 2em;
+    border-left: solid 1px; LightGray;
+    padding-left: 5%;
+    margin-top: .2em;
+    margin-bottom: .2em;
+}
+
+.issue-block {
+    border: 1px solid LightGray;
+    padding-left: .5em;
+    padding-top: .5em;
+    padding-bottom: .5em;
+    margin-bottom: .5em;
+}
+
+.issue-sev-high {
+    background-color: Pink;
+}
+
+.issue-sev-medium {
+    background-color: NavajoWhite;
+}
+
+.issue-sev-low {
+    background-color: LightCyan;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="metrics">
+    <div class="metrics-box bordered-box">
+        <div class="metrics-title">
+            Metrics:<br>
+        </div>
+        Total lines of code: <span id="loc">18818</span><br>
+        Total lines skipped (#nosec): <span id="nosec">0</span>
+    </div>
+</div>
+
+
+
+
+<br>
+<div id="results">
+    
+<div id="issue-0">
+<div class="issue-block issue-sev-low">
+    <b>hardcoded_password_string: </b> Possible hardcoded password: 'Bearer'<br>
+    <b>Test ID:</b> B105<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>MEDIUM<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/259.html" target="_blank">CWE-259</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/core/constants.py" target="_blank">/home/jj/dev/Novamind-Backend/app/core/constants.py</a><br>
+    <b>Line number: </b>18<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/plugins/b105_hardcoded_password_string.html" target="_blank">https://bandit.readthedocs.io/en/1.8.3/plugins/b105_hardcoded_password_string.html</a><br>
+
+<div class="code">
+<pre>
+17	# Authentication constants
+18	TOKEN_TYPE = &quot;Bearer&quot;
+19	ACCESS_TOKEN_EXPIRE_DAYS = 7
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-1">
+<div class="issue-block issue-sev-low">
+    <b>hardcoded_password_string: </b> Possible hardcoded password: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'<br>
+    <b>Test ID:</b> B105<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>MEDIUM<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/259.html" target="_blank">CWE-259</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/core/utils/validation.py" target="_blank">/home/jj/dev/Novamind-Backend/app/core/utils/validation.py</a><br>
+    <b>Line number: </b>80<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/plugins/b105_hardcoded_password_string.html" target="_blank">https://bandit.readthedocs.io/en/1.8.3/plugins/b105_hardcoded_password_string.html</a><br>
+
+<div class="code">
+<pre>
+79	    # Security
+80	    PASSWORD = r&#x27;^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&amp;])[A-Za-z\d@$!%*?&amp;]{8,}$&#x27;
+81	
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-2">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>246<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+245	        if symptom == &quot;anxiety&quot;:
+246	            current_severity = round(random.uniform(5.0, 7.0), 1)
+247	        elif symptom == &quot;depression&quot;:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-3">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>248<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+247	        elif symptom == &quot;depression&quot;:
+248	            current_severity = round(random.uniform(4.0, 6.0), 1)
+249	        elif symptom == &quot;insomnia&quot;:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-4">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>250<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+249	        elif symptom == &quot;insomnia&quot;:
+250	            current_severity = round(random.uniform(3.0, 8.0), 1)
+251	        else:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-5">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>252<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+251	        else:
+252	            current_severity = round(random.uniform(2.0, 6.0), 1)
+253	        
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-6">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>255<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+254	        # Simple trajectory simulation
+255	        if random.random() &gt; 0.7:  # 30% chance of improving
+256	            trend = &quot;improving&quot;
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-7">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>258<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+257	            forecasted_severity = max(0, round(current_severity * 0.8, 1))
+258	        elif random.random() &gt; 0.5:  # 20% chance of worsening
+259	            trend = &quot;worsening&quot;
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-8">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>273<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+272	            else:
+273	                severity = round(current_severity + random.uniform(-0.2, 0.2), 1)
+274	            
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-9">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>284<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+283	            contributing_factors = [
+284	                {&quot;factor&quot;: &quot;sleep_quality&quot;, &quot;importance&quot;: round(random.uniform(0.6, 0.8), 2)},
+285	                {&quot;factor&quot;: &quot;work_stress&quot;, &quot;importance&quot;: round(random.uniform(0.7, 0.9), 2)},
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-10">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>285<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+284	                {&quot;factor&quot;: &quot;sleep_quality&quot;, &quot;importance&quot;: round(random.uniform(0.6, 0.8), 2)},
+285	                {&quot;factor&quot;: &quot;work_stress&quot;, &quot;importance&quot;: round(random.uniform(0.7, 0.9), 2)},
+286	                {&quot;factor&quot;: &quot;exercise&quot;, &quot;importance&quot;: round(random.uniform(0.4, 0.6), 2)}
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-11">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>286<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+285	                {&quot;factor&quot;: &quot;work_stress&quot;, &quot;importance&quot;: round(random.uniform(0.7, 0.9), 2)},
+286	                {&quot;factor&quot;: &quot;exercise&quot;, &quot;importance&quot;: round(random.uniform(0.4, 0.6), 2)}
+287	            ]
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-12">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>290<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+289	            contributing_factors = [
+290	                {&quot;factor&quot;: &quot;social_interaction&quot;, &quot;importance&quot;: round(random.uniform(0.6, 0.8), 2)},
+291	                {&quot;factor&quot;: &quot;sleep_quality&quot;, &quot;importance&quot;: round(random.uniform(0.7, 0.8), 2)},
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-13">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>291<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+290	                {&quot;factor&quot;: &quot;social_interaction&quot;, &quot;importance&quot;: round(random.uniform(0.6, 0.8), 2)},
+291	                {&quot;factor&quot;: &quot;sleep_quality&quot;, &quot;importance&quot;: round(random.uniform(0.7, 0.8), 2)},
+292	                {&quot;factor&quot;: &quot;physical_activity&quot;, &quot;importance&quot;: round(random.uniform(0.5, 0.7), 2)}
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-14">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>292<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+291	                {&quot;factor&quot;: &quot;sleep_quality&quot;, &quot;importance&quot;: round(random.uniform(0.7, 0.8), 2)},
+292	                {&quot;factor&quot;: &quot;physical_activity&quot;, &quot;importance&quot;: round(random.uniform(0.5, 0.7), 2)}
+293	            ]
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-15">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>296<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+295	            contributing_factors = [
+296	                {&quot;factor&quot;: &quot;medication_adherence&quot;, &quot;importance&quot;: round(random.uniform(0.7, 0.9), 2)},
+297	                {&quot;factor&quot;: &quot;therapy_attendance&quot;, &quot;importance&quot;: round(random.uniform(0.6, 0.8), 2)},
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-16">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>297<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+296	                {&quot;factor&quot;: &quot;medication_adherence&quot;, &quot;importance&quot;: round(random.uniform(0.7, 0.9), 2)},
+297	                {&quot;factor&quot;: &quot;therapy_attendance&quot;, &quot;importance&quot;: round(random.uniform(0.6, 0.8), 2)},
+298	                {&quot;factor&quot;: &quot;stress_level&quot;, &quot;importance&quot;: round(random.uniform(0.5, 0.7), 2)}
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-17">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>298<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+297	                {&quot;factor&quot;: &quot;therapy_attendance&quot;, &quot;importance&quot;: round(random.uniform(0.6, 0.8), 2)},
+298	                {&quot;factor&quot;: &quot;stress_level&quot;, &quot;importance&quot;: round(random.uniform(0.5, 0.7), 2)}
+299	            ]
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-18">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>305<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+304	            &quot;forecast_horizon_days&quot;: horizon_days,
+305	            &quot;confidence&quot;: round(random.uniform(0.7, 0.9), 2),
+306	            &quot;trend&quot;: trend,
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-19">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Standard pseudo-random generators are not suitable for security/cryptographic purposes.<br>
+    <b>Test ID:</b> B311<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/330.html" target="_blank">CWE-330</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/service.py</a><br>
+    <b>Line number: </b>362<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b311-random</a><br>
+
+<div class="code">
+<pre>
+361	            &quot;data_points&quot;: len(history),
+362	            &quot;confidence&quot;: round(random.uniform(0.7, 0.9), 2),
+363	            &quot;period_analyzed&quot;: {
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-20">
+<div class="issue-block issue-sev-medium">
+    <b>pytorch_load: </b> Use of unsafe PyTorch load<br>
+    <b>Test ID:</b> B614<br>
+    <b>Severity: </b>MEDIUM<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/502.html" target="_blank">CWE-502</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/transformer_model.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/symptom_forecasting/transformer_model.py</a><br>
+    <b>Line number: </b>482<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/plugins/b614_pytorch_load.html" target="_blank">https://bandit.readthedocs.io/en/1.8.3/plugins/b614_pytorch_load.html</a><br>
+
+<div class="code">
+<pre>
+481	        if model_path:
+482	            self.model.load_state_dict(torch.load(model_path, map_location=device))
+483	            
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-21">
+<div class="issue-block issue-sev-low">
+    <b>blacklist: </b> Consider possible security implications associated with pickle module.<br>
+    <b>Test ID:</b> B403<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/502.html" target="_blank">CWE-502</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/utils/serialization.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/utils/serialization.py</a><br>
+    <b>Line number: </b>11<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_imports.html#b403-import-pickle" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_imports.html#b403-import-pickle</a><br>
+
+<div class="code">
+<pre>
+10	import json
+11	import pickle
+12	import joblib
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-22">
+<div class="issue-block issue-sev-medium">
+    <b>pytorch_load: </b> Use of unsafe PyTorch load<br>
+    <b>Test ID:</b> B614<br>
+    <b>Severity: </b>MEDIUM<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/502.html" target="_blank">CWE-502</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/utils/serialization.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/utils/serialization.py</a><br>
+    <b>Line number: </b>148<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/plugins/b614_pytorch_load.html" target="_blank">https://bandit.readthedocs.io/en/1.8.3/plugins/b614_pytorch_load.html</a><br>
+
+<div class="code">
+<pre>
+147	                model = model_class()
+148	                model.load_state_dict(torch.load(model_path))
+149	                model.eval()  # Set to evaluation mode
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-23">
+<div class="issue-block issue-sev-medium">
+    <b>blacklist: </b> Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.<br>
+    <b>Test ID:</b> B301<br>
+    <b>Severity: </b>MEDIUM<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/502.html" target="_blank">CWE-502</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/ml/utils/serialization.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/ml/utils/serialization.py</a><br>
+    <b>Line number: </b>152<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b301-pickle" target="_blank">https://bandit.readthedocs.io/en/1.8.3/blacklists/blacklist_calls.html#b301-pickle</a><br>
+
+<div class="code">
+<pre>
+151	                with open(model_path, &#x27;rb&#x27;) as f:
+152	                    model = pickle.load(f)
+153	            else:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-24">
+<div class="issue-block issue-sev-low">
+    <b>hardcoded_password_string: </b> Possible hardcoded password: 'refresh'<br>
+    <b>Test ID:</b> B105<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>MEDIUM<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/259.html" target="_blank">CWE-259</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/security/jwt_service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/security/jwt_service.py</a><br>
+    <b>Line number: </b>178<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/plugins/b105_hardcoded_password_string.html" target="_blank">https://bandit.readthedocs.io/en/1.8.3/plugins/b105_hardcoded_password_string.html</a><br>
+
+<div class="code">
+<pre>
+177	        user_data_copy = user_data.copy()
+178	        user_data_copy[&quot;token_type&quot;] = &quot;refresh&quot;
+179	        
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-25">
+<div class="issue-block issue-sev-low">
+    <b>hardcoded_password_string: </b> Possible hardcoded password: 'refresh'<br>
+    <b>Test ID:</b> B105<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>MEDIUM<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/259.html" target="_blank">CWE-259</a><br>
+    <b>File: </b><a href="/home/jj/dev/Novamind-Backend/app/infrastructure/security/jwt_service.py" target="_blank">/home/jj/dev/Novamind-Backend/app/infrastructure/security/jwt_service.py</a><br>
+    <b>Line number: </b>221<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.3/plugins/b105_hardcoded_password_string.html" target="_blank">https://bandit.readthedocs.io/en/1.8.3/plugins/b105_hardcoded_password_string.html</a><br>
+
+<div class="code">
+<pre>
+220	        token_type = payload.get(&quot;token_type&quot;)
+221	        if token_type != &quot;refresh&quot;:
+222	            raise HTTPException(
+</pre>
+</div>
+
+
+</div>
+</div>
+
+</div>
+
+</body>
+</html>
