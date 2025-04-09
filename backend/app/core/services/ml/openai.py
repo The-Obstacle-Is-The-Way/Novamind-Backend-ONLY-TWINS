@@ -7,7 +7,7 @@ This module provides OpenAI-based implementation of MentaLLaMA services.
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from app.core.exceptions import (
@@ -335,7 +335,7 @@ Maintain a balanced, strengths-based approach while acknowledging challenges. Em
             # Add metadata
             result["model"] = model_name
             result["model_type"] = model_type
-            result["timestamp"] = datetime.utcnow().isoformat() + "Z"
+            result["timestamp"] = datetime.now(UTC).isoformat() + "Z"
             
             return result
             

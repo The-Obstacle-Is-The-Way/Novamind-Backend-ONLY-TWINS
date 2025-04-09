@@ -9,16 +9,17 @@ and provide realistic responses for testing without requiring actual ML models.
 
 import json
 import random
-from datetime import datetime, timedelta
+import uuid
+from datetime import datetime, UTC, timedelta
 from typing import Any, Dict, List, Optional, Union
-
 from app.core.exceptions import (
     InvalidConfigurationError,
     InvalidRequestError,
     ModelNotFoundError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.interface import MentaLLaMAInterface, PHIDetectionInterface
+from app.core.services.ml.interface import PHIDetectionInterface
+from app.core.services.ml.mentalllama import BaseMentaLLaMA
 from app.core.utils.logging import get_logger
 
 
@@ -26,7 +27,7 @@ from app.core.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-class MockMentaLLaMA(MentaLLaMAInterface):
+class MockMentaLLaMA(BaseMentaLLaMA):
     """
     Mock MentaLLaMA implementation.
     
@@ -37,10 +38,12 @@ class MockMentaLLaMA(MentaLLaMAInterface):
     
     def __init__(self) -> None:
         """Initialize MockMentaLLaMA instance."""
-        self._initialized = False
-        self._config = None
+        # Call parent class initializer
+        super().__init__()
+        
+        # Add additional mock-specific fields
         self._model_types = [
-            "general", "depression_detection", "risk_assessment", 
+            "general", "depression_detection", "risk_assessment",
             "sentiment_analysis", "wellness_dimensions", "digital_twin"
         ]
         self._mock_responses = {}
@@ -58,11 +61,20 @@ class MockMentaLLaMA(MentaLLaMAInterface):
             InvalidConfigurationError: If configuration is invalid
         """
         try:
-            self._config = config or {}
+            # Validate that config is a non-empty dictionary
+            if config is None:
+                raise InvalidConfigurationError("Configuration cannot be None")
+                
+            if not isinstance(config, dict):
+                raise InvalidConfigurationError("Configuration must be a dictionary")
+                
+            self._config = config
             
-            # Load mock responses
+            # Validate mock_responses if provided
             custom_responses = self._config.get("mock_responses")
-            if custom_responses and isinstance(custom_responses, dict):
+            if custom_responses is not None:
+                if not isinstance(custom_responses, dict):
+                    raise InvalidConfigurationError("mock_responses must be a dictionary")
                 self._mock_responses = custom_responses
             else:
                 self._load_default_mock_responses()
@@ -105,7 +117,7 @@ These patterns would warrant further professional assessment to determine clinic
 Remember that this is a preliminary analysis based solely on the language patterns in the text provided. A comprehensive evaluation would include a structured clinical interview, standardized assessments, and consideration of medical, developmental, and psychosocial history.""",
             "model": "mock-gpt-4",
             "model_type": "general",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_depression_detection_response(self) -> Dict[str, Any]:
@@ -144,7 +156,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "depression_detection",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_risk_assessment_response(self) -> Dict[str, Any]:
@@ -176,7 +188,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "risk_assessment",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_sentiment_analysis_response(self) -> Dict[str, Any]:
@@ -217,7 +229,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "sentiment_analysis",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_wellness_dimensions_response(self) -> Dict[str, Any]:
@@ -263,7 +275,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "wellness_dimensions",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_digital_twin_response(self) -> Dict[str, Any]:
@@ -272,7 +284,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             "digital_twin_model": {
                 "model_id": "dt-mock-123",
                 "model_type": "personalized-mental-health",
-                "created_at": datetime.utcnow().isoformat() + "Z",
+                "created_at": datetime.now(UTC).isoformat() + "Z",
                 "status": "active",
                 "metrics": {
                     "training_samples": 1250,
@@ -300,7 +312,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "digital_twin",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def is_healthy(self) -> bool:
@@ -310,12 +322,18 @@ Remember that this is a preliminary analysis based solely on the language patter
         Returns:
             True if healthy, False otherwise
         """
-        return self._initialized
+        # Use parent implementation
+        return super().is_healthy()
     
     def shutdown(self) -> None:
         """Shutdown the service and release resources."""
-        self._initialized = False
-        self._config = None
+        # Clear mock-specific resources
+        self._mock_responses.clear()
+        self._sessions.clear()
+        self._digital_twins.clear()
+        
+        # Call parent implementation
+        super().shutdown()
         logger.info("Mock MentaLLaMA service shut down")
     
     def process(
@@ -358,7 +376,7 @@ Remember that this is a preliminary analysis based solely on the language patter
         result = mock_response.copy()
         
         # Update timestamp
-        result["timestamp"] = datetime.utcnow().isoformat() + "Z"
+        result["timestamp"] = datetime.now(UTC).isoformat() + "Z"
         
         return result
     
@@ -373,9 +391,10 @@ Remember that this is a preliminary analysis based solely on the language patter
             ServiceUnavailableError: If service is not initialized
             InvalidRequestError: If text is empty or invalid
         """
-        if not self._initialized:
-            raise ServiceUnavailableError("Mock MentaLLaMA service is not initialized")
+        # Use parent's method to check initialization
+        self._ensure_initialized()
         
+        # Validate text input
         if not text or not isinstance(text, str):
             raise InvalidRequestError("Text must be a non-empty string")
     
@@ -492,7 +511,7 @@ Remember that this is a preliminary analysis based solely on the language patter
         # Get mock response
         response = self.process(text, "wellness_dimensions", options)
         
-        # Filter dimensions if requested
+        # Filter dimensions if provided
         if dimensions and isinstance(response, dict) and "wellness_dimensions" in response:
             filtered_dimensions = []
             for dim in response["wellness_dimensions"]:
@@ -505,174 +524,296 @@ Remember that this is a preliminary analysis based solely on the language patter
         
         return response
     
-    # Digital Twin methods
+    ##### Digital Twin Methods #####
     
     def generate_digital_twin(
         self,
-        patient_id: str,
-        patient_data: Optional[Dict[str, Any]] = None,
+        text_data: List[str],
+        demographic_data: Dict[str, Any],
+        medical_history: Dict[str, Any],
+        treatment_history: Dict[str, Any],
         options: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Generate or update a digital twin model for a patient.
+        Generate a digital twin model for a patient.
         
         Args:
-            patient_id: ID of the patient
-            patient_data: Additional patient data
+            text_data: List of text data (clinical notes, patient reports, etc.)
+            demographic_data: Patient demographic information
+            medical_history: Patient medical history
+            treatment_history: Patient treatment history
             options: Additional generation options
             
         Returns:
-            Digital twin model data and metrics
+            Digital twin model and analysis
             
         Raises:
             ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If patient ID is invalid
+            InvalidRequestError: If required data is missing or invalid
         """
-        if not self._initialized:
-            raise ServiceUnavailableError("Mock MentaLLaMA service is not initialized")
+        self._ensure_initialized()
         
-        if not patient_id or not isinstance(patient_id, str):
-            raise InvalidRequestError("Patient ID must be a non-empty string")
+        # Validate inputs
+        if not isinstance(text_data, list) or not all(isinstance(text, str) for text in text_data):
+            raise InvalidRequestError("Text data must be a list of strings")
+            
+        if not isinstance(demographic_data, dict):
+            raise InvalidRequestError("Demographic data must be a dictionary")
+            
+        if not isinstance(medical_history, dict):
+            raise InvalidRequestError("Medical history must be a dictionary")
+            
+        if not isinstance(treatment_history, dict):
+            raise InvalidRequestError("Treatment history must be a dictionary")
         
-        # Generate digital twin ID
-        digital_twin_id = f"dt-{patient_id}-{datetime.utcnow().strftime('%Y%m%d')}"
+        # Generate twin ID
+        digital_twin_id = f"dt-{uuid.uuid4().hex[:8]}"
         
-        # Create mock digital twin result
-        result = {
-            "patient_id": patient_id,
+        # Create a mock digital twin
+        digital_twin = {
             "digital_twin_id": digital_twin_id,
-            "creation_timestamp": datetime.utcnow().isoformat() + "Z",
-            "status": "active",
-            "model_type": "digital_twin",
-            "version": "1.0.0",
-            "metrics": {
+            "creation_timestamp": datetime.now(UTC).isoformat() + "Z",
+            "patient_info": {
+                # Store minimal, de-identified patient info
+                "age": demographic_data.get("age", 35),
+                "gender": demographic_data.get("gender", "undisclosed"),
+                "clinical_history_summary": "History of anxiety and depressive episodes"
+            },
+            "model_parameters": {
+                "version": "1.0",
                 "training_samples": 1250,
                 "accuracy": 0.92,
-                "f1_score": 0.89,
                 "confidence": 0.85
             },
-            "dimensions": [
-                {
-                    "name": "emotional_profile",
-                    "score": 0.72,
-                    "confidence": 0.85,
-                    "key_features": ["mild depression", "high anxiety", "emotional regulation challenges"]
-                },
-                {
-                    "name": "cognitive_patterns",
-                    "score": 0.68,
-                    "confidence": 0.78,
-                    "key_features": ["catastrophic thinking", "negative self-beliefs", "rumination"]
-                },
-                {
-                    "name": "behavioral_tendencies",
-                    "score": 0.85,
-                    "confidence": 0.92,
-                    "key_features": ["social withdrawal", "sleep disruption", "reduced activity"]
-                },
-                {
-                    "name": "treatment_responsiveness",
-                    "score": 0.79,
-                    "confidence": 0.81,
-                    "key_features": ["positive response to CBT", "moderate medication efficacy", "benefits from routine"]
+            "text_analysis": {
+                "analyzed_texts": len(text_data),
+                "key_themes": ["anxiety", "depression", "sleep disturbance"],
+                "sentiment": "predominantly negative",
+                "linguistic_markers": ["negative self-reference", "catastrophizing", "emotional reasoning"]
+            },
+            "clinical_profile": {
+                "primary_conditions": medical_history.get("conditions", ["Generalized anxiety disorder", "Major depressive disorder"]),
+                "symptom_patterns": ["Stress-induced anxiety", "Sleep disruption", "Negative rumination"],
+                "treatment_responses": [
+                    {
+                        "intervention": medication,
+                        "response_rate": 0.75,
+                        "durability": "medium"
+                    } for medication in treatment_history.get("medications", ["escitalopram"])
+                ],
+                "environmental_factors": [
+                    {
+                        "factor": "Work stress",
+                        "impact": "high",
+                        "temporal_pattern": "weekday peaks"
+                    },
+                    {
+                        "factor": "Sleep quality",
+                        "impact": "high",
+                        "temporal_pattern": "variable"
+                    }
+                ],
+                "risk_factors": {
+                    "suicidality": "low",
+                    "self_harm": "low",
+                    "substance_use": "low"
                 }
-            ],
-            "clinical_summary": "Digital twin model shows patterns consistent with moderate anxiety and mild depression. Model suggests positive responsiveness to cognitive behavioral interventions and benefit from structured routines. Sleep disruption appears to be a significant factor affecting overall wellbeing."
+            },
+            "prediction_models": {
+                "mood_trajectory": {
+                    "baseline": "moderate anxiety/depression",
+                    "trend": "gradual improvement",
+                    "variability": "moderate",
+                    "confidence": 0.80
+                },
+                "crisis_prediction": {
+                    "short_term_risk": "low",
+                    "triggers": ["work deadline", "interpersonal conflict"],
+                    "warning_signs": ["sleep disruption > 3 days", "withdrawal from social contact"],
+                    "confidence": 0.78
+                },
+                "intervention_response": {
+                    "optimal_modalities": ["Cognitive behavioral therapy", "Mindfulness practice"],
+                    "predicted_response_time": "2-4 weeks",
+                    "confidence": 0.75
+                }
+            },
+            "digital_phenotype": {
+                "linguistic_patterns": {
+                    "negative_self_reference": "moderate",
+                    "absolutist_thinking": "moderate",
+                    "future_orientation": "low"
+                },
+                "behavioral_patterns": {
+                    "sleep_cycle": "disrupted",
+                    "physical_activity": "below average",
+                    "social_engagement": "declining"
+                },
+                "cognitive_patterns": {
+                    "catastrophizing": "frequent",
+                    "rumination": "high",
+                    "problem_solving": "impaired under stress"
+                }
+            }
         }
         
-        # Store the digital twin
-        self._digital_twins[patient_id] = {
+        # Store in memory for retrieval
+        self._digital_twins[digital_twin_id] = digital_twin
+        
+        # Create result for API
+        result = {
             "digital_twin_id": digital_twin_id,
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "patient_data": patient_data or {},
-            "model_data": result
+            "creation_timestamp": digital_twin["creation_timestamp"],
+            "analyzed_text_count": len(text_data),
+            "summary": {
+                "key_characteristics": [
+                    "Moderate anxiety/depression with gradual improvement trend",
+                    "Strong response to CBT and mindfulness interventions",
+                    "Work stress as primary environmental trigger"
+                ],
+                "clinical_insights": [
+                    "Exhibits classic stress-anxiety-depression cycle",
+                    "Responds well to structured cognitive interventions",
+                    "Sleep quality is a key modifiable factor"
+                ],
+                "limitations": [
+                    "Digital twin is a simulation based on limited data",
+                    "Real-world behavior may differ from modeled predictions",
+                    "Regular recalibration recommended"
+                ]
+            },
+            "model": "mock-gpt-4",
+            "model_type": "digital_twin"
         }
         
         return result
     
     def create_digital_twin_session(
-        self,
-        therapist_id: str,
-        patient_id: Optional[str] = None,
-        session_type: Optional[str] = None,
-        session_params: Optional[Dict[str, Any]] = None
+        self, 
+        twin_id: Optional[str] = None,
+        session_type: str = "therapeutic",
+        initial_prompt: Optional[str] = None,
+        options: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Create a new Digital Twin session.
+        Create a new digital twin session.
         
         Args:
-            therapist_id: ID of the therapist
-            patient_id: ID of the patient (optional for anonymous sessions)
-            session_type: Type of session (therapy, assessment, coaching)
-            session_params: Additional session parameters
+            twin_id: ID of the digital twin to use (creates generic twin if None)
+            session_type: Type of session (therapeutic, assessment, etc.)
+            initial_prompt: Initial prompt for the session
+            options: Additional session options
             
         Returns:
-            Dict containing session information
+            Session details and information
             
         Raises:
             ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If request is invalid
+            InvalidRequestError: If required parameters are invalid
+            ModelNotFoundError: If the specified twin ID does not exist
         """
-        if not self._initialized:
-            raise ServiceUnavailableError("Mock MentaLLaMA service is not initialized")
+        self._ensure_initialized()
         
-        if not therapist_id or not isinstance(therapist_id, str):
-            raise InvalidRequestError("Therapist ID must be a non-empty string")
+        # Validate session type
+        valid_session_types = ["therapeutic", "therapy", "assessment", "crisis", "monitoring"]
         
-        # Generate session ID
-        session_id = f"session-{random.randint(10000, 99999)}-{datetime.utcnow().strftime('%Y%m%d')}"
+        # Map session types for backward compatibility
+        session_type_mapping = {
+            "therapy": "therapeutic"
+        }
         
-        # Set default session type
-        if not session_type:
-            session_type = "therapy"
+        # Use mapped session type if available
+        internal_session_type = session_type_mapping.get(session_type, session_type)
+        
+        if session_type not in valid_session_types:
+            raise InvalidRequestError(
+                f"Invalid session type: {session_type}. "
+                f"Must be one of {valid_session_types}"
+            )
+        
+        # Create session ID
+        session_id = f"sess-{uuid.uuid4().hex[:8]}"
+        
+        # Check if twin exists if ID is provided
+        digital_twin = None
+        if twin_id:
+            digital_twin = self._digital_twins.get(twin_id)
+            if not digital_twin:
+                raise ModelNotFoundError(f"Digital twin not found: {twin_id}")
+        
+        # Use a generic twin ID if none provided
+        if not twin_id:
+            twin_id = f"dt-generic-{uuid.uuid4().hex[:4]}"
         
         # Create session
         session = {
             "session_id": session_id,
-            "therapist_id": therapist_id,
-            "patient_id": patient_id,
-            "session_type": session_type,
+            "twin_id": twin_id,
+            "session_type": internal_session_type,
+            "created_at": datetime.now(UTC).isoformat() + "Z",
+            "updated_at": datetime.now(UTC).isoformat() + "Z",
             "status": "active",
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-            "messages": [],
-            "params": session_params or {}
+            "messages": []
         }
+        
+        # Add initial prompt if provided
+        if initial_prompt:
+            response = self._generate_dt_response(initial_prompt, session_type)
+            
+            # Add messages to session
+            message_id = f"msg-{random.randint(10000, 99999)}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
+            session["messages"].append({
+                "id": message_id,
+                "role": "user",
+                "content": initial_prompt,
+                "timestamp": datetime.now(UTC).isoformat() + "Z",
+            })
+            
+            dt_message_id = f"msg-{random.randint(10000, 99999)}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
+            session["messages"].append({
+                "id": dt_message_id,
+                "role": "assistant",
+                "content": response,
+                "timestamp": datetime.now(UTC).isoformat() + "Z",
+            })
+            
+            # Update session timestamp
+            session["updated_at"] = datetime.now(UTC).isoformat() + "Z"
         
         # Store session
         self._sessions[session_id] = session
         
-        # Return session info (excluding messages)
+        # Create API response
         result = {
             "session_id": session_id,
-            "therapist_id": therapist_id,
-            "patient_id": patient_id,
+            "twin_id": twin_id,
             "session_type": session_type,
-            "status": "active",
             "created_at": session["created_at"],
-            "params": session_params or {}
+            "status": "active",
+            "messages": session["messages"],
+            "message_count": len(session["messages"])
         }
         
         return result
     
     def get_digital_twin_session(self, session_id: str) -> Dict[str, Any]:
         """
-        Get information about a Digital Twin session.
+        Get details of a digital twin session.
         
         Args:
-            session_id: ID of the session
+            session_id: ID of the session to retrieve
             
         Returns:
-            Dict containing session information
+            Session details and information
             
         Raises:
             ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If session ID is invalid
-            ModelNotFoundError: If session not found
+            InvalidRequestError: If session ID is empty or invalid
+            ModelNotFoundError: If the specified session ID does not exist
         """
-        if not self._initialized:
-            raise ServiceUnavailableError("Mock MentaLLaMA service is not initialized")
+        self._ensure_initialized()
         
+        # Validate session ID
         if not session_id or not isinstance(session_id, str):
             raise InvalidRequestError("Session ID must be a non-empty string")
         
@@ -681,184 +822,168 @@ Remember that this is a preliminary analysis based solely on the language patter
         if not session:
             raise ModelNotFoundError(f"Session not found: {session_id}")
         
-        # Return session info (including messages)
-        result = {
-            "session_id": session["session_id"],
-            "therapist_id": session["therapist_id"],
-            "patient_id": session["patient_id"],
-            "session_type": session["session_type"],
-            "status": session["status"],
-            "created_at": session["created_at"],
-            "updated_at": session["updated_at"],
-            "message_count": len(session["messages"]),
-            "insights_count": len(session.get("insights", [])),
-            "messages": session["messages"],
-            "params": session["params"]
-        }
+        # Return a copy of the session
+        result = session.copy()
         
         return result
     
     def send_message_to_session(
-        self,
+        self, 
         session_id: str,
         message: str,
-        sender_type: Optional[str] = None,
-        sender_id: Optional[str] = None,
-        message_params: Optional[Dict[str, Any]] = None
+        options: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Send a message to a Digital Twin session.
+        Send a message to a digital twin session.
         
         Args:
-            session_id: ID of the session
+            session_id: ID of the session to send message to
             message: Message content
-            sender_type: Type of sender (user, therapist, system)
-            sender_id: ID of the sender
-            message_params: Additional message parameters
+            options: Additional message options
             
         Returns:
-            Dict containing message information and Digital Twin's response
+            Updated session details and response
             
         Raises:
             ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If request is invalid
-            ModelNotFoundError: If session not found
+            InvalidRequestError: If required parameters are invalid
+            ModelNotFoundError: If the specified session ID does not exist
         """
-        if not self._initialized:
-            raise ServiceUnavailableError("Mock MentaLLaMA service is not initialized")
+        self._ensure_initialized()
         
+        # Validate parameters
         if not session_id or not isinstance(session_id, str):
             raise InvalidRequestError("Session ID must be a non-empty string")
-        
+            
         if not message or not isinstance(message, str):
             raise InvalidRequestError("Message must be a non-empty string")
-        
-        # Set default sender type
-        if not sender_type:
-            sender_type = "user"
         
         # Get session
         session = self._sessions.get(session_id)
         if not session:
             raise ModelNotFoundError(f"Session not found: {session_id}")
-        
+            
         # Check if session is active
-        if session["status"] != "active":
+        if session.get("status") != "active":
             raise InvalidRequestError(f"Session is not active: {session_id}")
         
-        # Create message
-        message_id = f"msg-{random.randint(10000, 99999)}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-        message_obj = {
-            "message_id": message_id,
-            "session_id": session_id,
+        # Add user message to session
+        message_id = f"msg-{random.randint(10000, 99999)}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
+        session["messages"].append({
+            "id": message_id,
+            "role": "user",
             "content": message,
-            "sender_type": sender_type,
-            "sender_id": sender_id,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "params": message_params or {}
-        }
+            "timestamp": datetime.now(UTC).isoformat() + "Z",
+        })
         
-        # Add message to session
-        session["messages"].append(message_obj)
-        session["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        # Update session timestamp
+        session["updated_at"] = datetime.now(UTC).isoformat() + "Z"
         
-        # Generate Digital Twin response
-        dt_message_id = f"msg-{random.randint(10000, 99999)}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-        dt_response = self._generate_dt_response(message, session["session_type"])
-        dt_message = {
-            "message_id": dt_message_id,
-            "session_id": session_id,
-            "content": dt_response,
-            "sender_type": "digital_twin",
-            "sender_id": f"dt-{session.get('patient_id', 'anonymous')}",
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "params": {}
-        }
+        # Generate response
+        response = self._generate_dt_response(message, session.get("session_type", "therapeutic"))
         
-        # Add Digital Twin response to session
-        session["messages"].append(dt_message)
-        session["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        # Add digital twin response to session
+        dt_message_id = f"msg-{random.randint(10000, 99999)}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
+        session["messages"].append({
+            "id": dt_message_id,
+            "role": "assistant",
+            "content": response,
+            "timestamp": datetime.now(UTC).isoformat() + "Z",
+        })
         
-        # Return response
+        # Update session timestamp
+        session["updated_at"] = datetime.now(UTC).isoformat() + "Z"
+        # Create result
         result = {
-            "message": message_obj,
-            "response": dt_message,
-            "session_status": session["status"]
+            "session_id": session_id,
+            "message_id": dt_message_id,
+            "response": response,
+            "timestamp": datetime.now(UTC).isoformat() + "Z",
+            "session_status": session["status"],
+            "message_count": len(session["messages"]),
+            "messages": session["messages"]
         }
         
+        return result
         return result
     
     def _generate_dt_response(self, message: str, session_type: str) -> str:
         """
-        Generate a mock Digital Twin response based on message and session type.
+        Generate a response from the digital twin.
         
         Args:
-            message: The message to respond to
-            session_type: Type of session (therapy, assessment, coaching)
+            message: User message
+            session_type: Type of session
             
         Returns:
-            Generated response
+            Digital twin response
         """
-        # Simple responses based on session type
-        if session_type == "therapy":
-            responses = [
-                "I understand what you're saying. Can you tell me more about how that made you feel?",
-                "That sounds challenging. How have you been coping with these feelings?",
-                "I'm hearing that this has been difficult for you. What support do you feel would be most helpful right now?",
-                "It's common to feel that way in such situations. Have you noticed any patterns in when these feelings arise?",
-                "Thank you for sharing that with me. Let's explore some coping strategies that might help in these moments."
-            ]
+        if session_type == "therapeutic":
+            return """I appreciate you sharing that with me. It sounds like you've been experiencing a mix of anxiety and low mood, particularly related to work pressures. Many people find themselves struggling with similar feelings, especially when multiple stressors coincide.
+
+When you mention feeling "overwhelmed" and "stuck in a cycle," I'm noticing patterns consistent with anxiety and potential depression. These experiences can feel isolating, but they're actually quite common responses to persistent stress.
+
+Have you noticed any particular situations or times of day when these feelings are stronger? Understanding these patterns can help us identify practical coping strategies that might work for you.
+
+It might also be helpful to explore some brief relaxation techniques that can interrupt the stress cycle when it begins to escalate. Would you be interested in learning about a simple breathing exercise that many find helpful during moments of acute stress?"""
         elif session_type == "assessment":
-            responses = [
-                "I'd like to understand your experience better. On a scale of 1-10, how would you rate the intensity of what you're describing?",
-                "Could you share more about how frequently you've been experiencing this?",
-                "I'm gathering important information to help understand your situation. When did you first notice these symptoms?",
-                "How has this been affecting your daily functioning, such as work, relationships, or self-care?",
-                "Have you noticed any factors that seem to improve or worsen these experiences?"
-            ]
-        elif session_type == "coaching":
-            responses = [
-                "Let's focus on what specific goal you'd like to work toward based on what you've shared.",
-                "What one small step could you take this week to address this situation?",
-                "I hear your concern. Let's break this down into manageable actions you can take.",
-                "That's an important insight. How might you apply this awareness to your current challenges?",
-                "Let's identify what resources or support would help you move forward with this goal."
-            ]
-        else:  # Default responses
-            responses = [
-                "Thank you for sharing that with me. Could you tell me more?",
-                "I appreciate your openness. Let's explore this further.",
-                "That's helpful information. How does this affect your daily life?",
-                "I understand. What would be most helpful for us to focus on today?",
-                "I'm here to support you. What would you like to discuss next?"
-            ]
-        
-        # Return random response
-        return random.choice(responses)
+            return """Based on what you've shared, I'm noticing several patterns that would be important to explore further in a clinical assessment:
+
+1. Sleep difficulties (trouble falling asleep, early morning awakening)
+2. Persistent worry, especially about work performance
+3. Negative self-perception and self-criticism
+4. Reduced interest in previously enjoyed activities
+5. Physical symptoms including tension and fatigue
+
+These symptoms suggest elements of both anxiety and depression, which often co-occur. The duration and persistence of these experiences would be important to establish in a clinical context.
+
+On standardized measures, these descriptions might align with moderate anxiety and mild-to-moderate depressive symptoms, though formal assessment would be needed to confirm this.
+
+What other aspects of your daily functioning have you noticed being affected by these experiences?"""
+        elif session_type == "crisis":
+            return """I'm very concerned about what you're sharing, and I want to make sure you have immediate support. These feelings of hopelessness and thoughts about not wanting to continue are serious warning signs that require prompt professional attention.
+
+Your safety is the absolute priority right now. While I can provide information and support, you need to connect with a crisis professional who can help ensure your immediate safety.
+
+Please consider one of these immediate resources:
+- Call the National Suicide Prevention Lifeline: 988 or 1-800-273-8255
+- Text HOME to the Crisis Text Line: 741741
+- Go to your nearest emergency room
+- Call 911
+
+Would it be possible for you to reach out to one of these resources right now? Or is there someone nearby who could stay with you while you make this contact?"""
+        else:  # monitoring
+            return """Thank you for your check-in. I notice that your sleep has improved this week, which is a positive development. Your anxiety levels seem to fluctuate, with work meetings still triggering significant symptoms.
+
+Compared to your previous patterns, this represents moderate improvement in your sleep pattern, while anxiety symptoms remain fairly consistent with your baseline. The connection between work stressors and symptom increase remains a clear pattern.
+
+The mindfulness practice you've been implementing seems to be showing some initial positive effects, particularly for sleep onset. Continuing this practice, especially before challenging work situations, might help extend these benefits.
+
+Would you like to discuss some additional strategies specifically for managing anxiety during work meetings?"""
     
     def end_digital_twin_session(
-        self,
+        self, 
         session_id: str,
-        end_reason: Optional[str] = None
+        options: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        End a Digital Twin session.
+        End a digital twin session.
         
         Args:
-            session_id: ID of the session
-            end_reason: Reason for ending the session
+            session_id: ID of the session to end
+            options: Additional options
             
         Returns:
-            Dict containing session summary
+            Session summary and insights
             
         Raises:
             ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If session ID is invalid
-            ModelNotFoundError: If session not found
+            InvalidRequestError: If session ID is empty or invalid
+            ModelNotFoundError: If the specified session ID does not exist
         """
-        if not self._initialized:
-            raise ServiceUnavailableError("Mock MentaLLaMA service is not initialized")
+        self._ensure_initialized()
         
+        # Validate session ID
         if not session_id or not isinstance(session_id, str):
             raise InvalidRequestError("Session ID must be a non-empty string")
         
@@ -866,214 +991,258 @@ Remember that this is a preliminary analysis based solely on the language patter
         session = self._sessions.get(session_id)
         if not session:
             raise ModelNotFoundError(f"Session not found: {session_id}")
-        
+            
         # Check if session is already ended
-        if session["status"] != "active":
+        if session.get("status") != "active":
             raise InvalidRequestError(f"Session is already ended: {session_id}")
         
-        # Update session status
-        session["status"] = "ended"
-        session["updated_at"] = datetime.utcnow().isoformat() + "Z"
-        session["end_reason"] = end_reason or "completed"
-        session["ended_at"] = datetime.utcnow().isoformat() + "Z"
+        # End session
+        session["status"] = "completed"
+        session["updated_at"] = datetime.now(UTC).isoformat() + "Z"
+        session["ended_at"] = datetime.now(UTC).isoformat() + "Z"
         
         # Generate session summary
-        session_summary = self._generate_session_summary(session)
-        session["summary"] = session_summary
+        summary = self._generate_session_summary(session)
         
-        # Calculate session duration in minutes
-        start_time = datetime.fromisoformat(session["created_at"].replace("Z", "+00:00"))
-        end_time = datetime.fromisoformat(session["ended_at"].replace("Z", "+00:00"))
-        duration_minutes = int((end_time - start_time).total_seconds() / 60)
+        # Add summary to session
+        session["summary"] = summary
         
-        # Return response
+        # Create result
         result = {
             "session_id": session_id,
-            "status": "ended",
-            "end_reason": session["end_reason"],
+            "status": "completed",
             "ended_at": session["ended_at"],
+            "duration": self._calculate_session_duration(session),
             "message_count": len(session["messages"]),
-            "duration_minutes": duration_minutes,
-            "summary": session_summary
+            "summary": summary
         }
         
         return result
     
+    def _calculate_session_duration(self, session: Dict[str, Any]) -> str:
+        """
+        Calculate the duration of a session.
+        
+        Args:
+            session: Session data
+            
+        Returns:
+            Duration as a string (e.g., "45 minutes")
+        """
+        try:
+            created_at = datetime.fromisoformat(session["created_at"].rstrip("Z"))
+            ended_at = datetime.fromisoformat(session["ended_at"].rstrip("Z"))
+            duration = ended_at - created_at
+            minutes = duration.total_seconds() / 60
+            
+            if minutes < 1:
+                return "less than 1 minute"
+            elif minutes < 60:
+                return f"{int(minutes)} minutes"
+            else:
+                hours = int(minutes / 60)
+                remaining_minutes = int(minutes % 60)
+                if remaining_minutes == 0:
+                    return f"{hours} hours"
+                else:
+                    return f"{hours} hours {remaining_minutes} minutes"
+        except Exception:
+            return "unknown duration"
+    
     def _generate_session_summary(self, session: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Generate a mock session summary.
+        Generate a summary of a digital twin session.
         
         Args:
-            session: The session to generate a summary for
+            session: Session data
             
         Returns:
-            Generated session summary
+            Session summary
         """
-        # Extract basic session info
-        session_type = session.get("session_type", "therapy")
-        message_count = len(session.get("messages", []))
-        duration_seconds = 0
+        session_type = session.get("session_type", "therapeutic")
         
-        # Calculate session duration if timestamps are available
-        if "created_at" in session and "ended_at" in session:
-            try:
-                start_time = datetime.fromisoformat(session["created_at"].replace("Z", "+00:00"))
-                end_time = datetime.fromisoformat(session["ended_at"].replace("Z", "+00:00"))
-                duration_seconds = (end_time - start_time).total_seconds()
-            except (ValueError, TypeError):
-                duration_seconds = random.randint(900, 3600)  # Fallback: 15-60 minutes
-        else:
-            duration_seconds = random.randint(900, 3600)  # Fallback: 15-60 minutes
-        
-        # Generate appropriate summary based on session type
-        if session_type == "therapy":
-            themes = [
-                "anxiety about work performance",
-                "relationship difficulties",
-                "sleep disruption",
-                "feelings of inadequacy",
-                "social withdrawal"
-            ]
-            # Select 1-3 random themes
-            selected_themes = random.sample(themes, min(len(themes), random.randint(1, 3)))
-            
-            summary = {
-                "key_themes": selected_themes,
-                "emotional_patterns": {
-                    "primary_emotions": ["anxiety", "sadness"],
-                    "emotional_volatility": "moderate",
-                    "emotional_awareness": "good"
-                },
-                "therapeutic_insights": [
-                    "Client shows good engagement and self-reflection",
-                    "Cognitive restructuring techniques may be beneficial",
-                    "Sleep hygiene interventions recommended"
+        if session_type == "therapeutic":
+            return {
+                "key_themes": [
+                    "Work-related anxiety",
+                    "Sleep disruption",
+                    "Negative self-perception",
+                    "Social withdrawal"
                 ],
-                "progress_indicators": {
-                    "engagement": random.uniform(0.7, 0.9),
-                    "insight_development": random.uniform(0.5, 0.8),
-                    "coping_skills_application": random.uniform(0.4, 0.7)
+                "session_progression": {
+                    "engagement_level": "high",
+                    "emotional_trajectory": "initial distress with gradual stabilization",
+                    "insight_development": "moderate increase in self-awareness"
                 },
-                "suggested_focus_areas": [
-                    "Develop structured sleep routine",
-                    "Practice cognitive reframing techniques",
-                    "Gradual increase in social activities"
+                "therapeutic_elements": [
+                    {
+                        "element": "Validation",
+                        "response": "positive",
+                        "notes": "Client responded well to normalization of experience"
+                    },
+                    {
+                        "element": "Cognitive reframing",
+                        "response": "mixed",
+                        "notes": "Initial resistance followed by tentative consideration"
+                    },
+                    {
+                        "element": "Relaxation techniques",
+                        "response": "positive",
+                        "notes": "Expressed willingness to try breathing exercises"
+                    }
+                ],
+                "recommendations": [
+                    "Continue exploration of work-related anxiety triggers",
+                    "Develop personalized stress reduction routine",
+                    "Monitor sleep patterns and nighttime rumination",
+                    "Consider workload management strategies"
                 ]
             }
-            
         elif session_type == "assessment":
-            summary = {
-                "assessment_areas": [
-                    "emotional functioning",
-                    "cognitive patterns",
-                    "behavioral tendencies",
-                    "social support",
-                    "coping mechanisms"
+            return {
+                "clinical_impressions": {
+                    "primary_concerns": [
+                        "Generalized anxiety with prominent work-related worries",
+                        "Depressive symptoms including anhedonia and sleep disturbance",
+                        "Possible perfectionistic traits contributing to anxiety"
+                    ],
+                    "severity_estimate": "moderate",
+                    "functional_impact": "significant in occupational and social domains",
+                    "risk_assessment": "low acute risk; chronic moderate distress"
+                },
+                "symptom_pattern": {
+                    "onset": "gradual over approximately 6 months",
+                    "course": "persistent with recent intensification",
+                    "exacerbating_factors": ["work deadlines", "performance evaluations", "interpersonal conflicts"],
+                    "alleviating_factors": ["exercise", "time in nature", "structured activities"]
+                },
+                "diagnostic_considerations": [
+                    "Generalized Anxiety Disorder",
+                    "Persistent Depressive Disorder",
+                    "Adjustment Disorder with Mixed Anxiety and Depression"
                 ],
-                "provisional_impressions": {
-                    "possible_conditions": ["Moderate Anxiety", "Mild Depression"],
-                    "confidence": "moderate",
-                    "differential_considerations": ["Adjustment Disorder", "Sleep Disorder"]
-                },
-                "risk_factors": {
-                    "suicide_risk": "low",
-                    "self_harm_risk": "low",
-                    "harm_to_others_risk": "not detected"
-                },
                 "recommended_assessments": [
-                    "PHQ-9",
-                    "GAD-7",
-                    "Sleep Quality Assessment"
+                    "GAD-7 and PHQ-9 for symptom quantification",
+                    "Sleep diary to evaluate insomnia pattern",
+                    "Screening for comorbid conditions including substance use"
                 ],
                 "treatment_considerations": [
-                    "CBT might be beneficial for identified thought patterns",
-                    "Sleep hygiene protocol recommended",
-                    "Consider supportive therapy focused on building coping skills"
+                    "CBT with focus on cognitive restructuring",
+                    "Stress management and relaxation training",
+                    "Regular physical activity",
+                    "Evaluate need for psychiatric consultation"
                 ]
             }
-            
-        elif session_type == "coaching":
-            summary = {
-                "focus_areas": [
-                    "work-life balance",
-                    "stress management",
-                    "communication skills"
+        elif session_type == "crisis":
+            return {
+                "crisis_nature": {
+                    "type": "suicidal ideation with moderate risk",
+                    "precipitating_factors": ["job loss", "financial stress", "relationship conflict"],
+                    "protective_factors": ["awareness of distress", "help-seeking behavior", "social supports"],
+                    "immediate_concerns": "active thoughts of suicide without specific plan"
+                },
+                "interventions_provided": [
+                    "Risk assessment",
+                    "Safety planning",
+                    "Referral to crisis services",
+                    "Support and validation"
                 ],
-                "goals_identified": [
-                    "Establish consistent sleep schedule",
-                    "Develop assertive communication strategies",
-                    "Implement daily mindfulness practice"
-                ],
-                "strengths_leveraged": [
-                    "Self-awareness",
-                    "Commitment to personal growth",
-                    "Problem-solving abilities"
-                ],
-                "action_steps": [
-                    "Create evening wind-down routine",
-                    "Practice 'I' statements in challenging conversations",
-                    "Start with 5-minute daily meditation"
-                ],
-                "progress_metrics": {
-                    "goal_clarity": random.uniform(0.7, 0.9),
-                    "action_plan_development": random.uniform(0.6, 0.8),
-                    "commitment_level": random.uniform(0.7, 0.95)
-                }
-            }
-            
-        else:  # Default summary
-            summary = {
-                "key_points": [
-                    "Exploration of current challenges",
-                    "Discussion of coping strategies",
-                    "Identification of support resources"
-                ],
-                "engagement_level": "good",
-                "notable_patterns": [
-                    "Self-reflective communication style",
-                    "Focus on practical solutions",
-                    "Openness to feedback and suggestions"
-                ],
-                "follow_up_considerations": [
-                    "Continue exploring identified themes",
-                    "Develop more specific action plans",
-                    "Monitor progress on implemented strategies"
+                "client_response": {
+                    "engagement": "cooperative and forthcoming",
+                    "emotional_state": "fluctuating distress with periods of calm",
+                    "insight": "acknowledges need for immediate support",
+                    "safety_plan_adherence": "agreed to contact crisis line and inform family"
+                },
+                "risk_status": {
+                    "assessment": "moderate acute risk requiring prompt intervention",
+                    "recommendations": "immediate crisis services contact; consider emergency evaluation",
+                    "follow_up": "confirmed connection with crisis services and family support"
+                },
+                "continuity_of_care": [
+                    "Crisis services actively engaged",
+                    "Outpatient provider notified with client permission",
+                    "Family member informed and providing support",
+                    "Follow-up appointment scheduled within 24 hours"
                 ]
             }
-        
-        # Add general metrics
-        summary["session_metrics"] = {
-            "message_count": message_count,
-            "average_response_time_seconds": random.uniform(2.5, 5.0),
-            "engagement_score": random.uniform(0.7, 0.9),
-            "session_duration_minutes": int(duration_seconds / 60)
-        }
-        
-        return summary
+        else:  # monitoring
+            return {
+                "monitoring_period": {
+                    "duration": "2 weeks",
+                    "check_in_adherence": "85% compliance with scheduled check-ins",
+                    "data_quality": "consistent and detailed reporting"
+                },
+                "symptom_tracking": {
+                    "anxiety": {
+                        "trend": "gradually decreasing",
+                        "pattern": "highest mid-week, lowest weekends",
+                        "triggers": "consistently related to work meetings",
+                        "intervention_response": "moderate improvement with mindfulness practice"
+                    },
+                    "mood": {
+                        "trend": "stable with mild improvement",
+                        "pattern": "morning lows, evening improvement",
+                        "triggers": "social isolation associated with lower mood",
+                        "intervention_response": "positive response to scheduled activity"
+                    },
+                    "sleep": {
+                        "trend": "significant improvement",
+                        "pattern": "initial insomnia resolved, early waking persists",
+                        "triggers": "screen time before bed associated with poorer sleep",
+                        "intervention_response": "strong positive response to sleep hygiene protocol"
+                    }
+                },
+                "intervention_engagement": [
+                    {
+                        "intervention": "Daily mindfulness practice",
+                        "adherence": "70%",
+                        "reported_benefit": "moderate",
+                        "barriers": "time constraints, difficulty focusing"
+                    },
+                    {
+                        "intervention": "Sleep hygiene protocol",
+                        "adherence": "90%",
+                        "reported_benefit": "significant",
+                        "barriers": "occasional work requirements"
+                    },
+                    {
+                        "intervention": "Cognitive reframing exercises",
+                        "adherence": "60%",
+                        "reported_benefit": "mild to moderate",
+                        "barriers": "difficulty applying during high stress periods"
+                    }
+                ],
+                "recommendations": [
+                    "Continue sleep hygiene protocol with current parameters",
+                    "Adjust mindfulness practice to shorter, more frequent sessions",
+                    "Develop specific cognitive strategies for work meetings",
+                    "Increase scheduled positive social interactions"
+                ]
+            }
     
     def get_session_insights(
-        self,
+        self, 
         session_id: str,
-        insight_type: Optional[str] = None
+        options: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Get insights from a Digital Twin session.
+        Get clinical insights from a digital twin session.
         
         Args:
-            session_id: ID of the session
-            insight_type: Type of insights to retrieve
+            session_id: ID of the session to analyze
+            options: Additional options
             
         Returns:
-            Dict containing session insights
+            Clinical insights and analysis
             
         Raises:
             ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If session ID is invalid
-            ModelNotFoundError: If session not found
+            InvalidRequestError: If session ID is empty or invalid
+            ModelNotFoundError: If the specified session ID does not exist
         """
-        if not self._initialized:
-            raise ServiceUnavailableError("Mock MentaLLaMA service is not initialized")
+        self._ensure_initialized()
         
+        # Validate session ID
         if not session_id or not isinstance(session_id, str):
             raise InvalidRequestError("Session ID must be a non-empty string")
         
@@ -1082,136 +1251,70 @@ Remember that this is a preliminary analysis based solely on the language patter
         if not session:
             raise ModelNotFoundError(f"Session not found: {session_id}")
         
-        # Generate insights based on session and insight type
-        insights = {}
-        
-        # Basic insights (always included)
-        insights["session_id"] = session_id
-        insights["generated_at"] = datetime.utcnow().isoformat() + "Z"
-        insights["session_type"] = session.get("session_type", "therapy")
-        insights["message_count"] = len(session.get("messages", []))
-        insights["session_status"] = session.get("status", "unknown")
-        
-        # Add specific insights based on type
-        insights_list = []
-        
-        # Linguistic insights
-        if not insight_type or insight_type == "linguistic":
-            linguistic_insight = {
-                "type": "linguistic",
-                "data": {
-                    "emotional_tone": "primarily anxious with elements of sadness",
-                    "communication_style": "reflective and detail-oriented",
-                    "narrative_themes": [
-                        "work-related stress",
-                        "interpersonal difficulties",
-                        "sleep disturbances"
-                    ],
-                    "language_complexity": "moderate to high",
-                    "self_references": "frequent negative self-evaluation"
+        # Check if session has messages
+        if not session.get("messages"):
+            raise InvalidRequestError(f"Session has no messages: {session_id}")
+        # Create insights dictionary with the expected structure
+        insights = {
+            "session_id": session_id,
+            "twin_id": session.get("twin_id"),
+            "session_type": session.get("session_type"),
+            "message_count": len(session["messages"]),
+            "session_status": session.get("status"),
+            "insights": {
+                "themes": [
+                    "Work-related anxiety and stress",
+                    "Sleep disruption and fatigue",
+                    "Negative self-perception and rumination",
+                    "Social withdrawal and isolation"
+                ],
+                "patterns": {
+                    "emotional_tone": {
+                        "primary_valence": "negative",
+                        "intensity": "moderate to high",
+                        "stability": "fluctuating",
+                        "dominant_emotions": ["anxiety", "sadness", "frustration"]
+                    },
+                    "cognitive_patterns": {
+                        "all_or_nothing_thinking": "frequent",
+                        "catastrophizing": "moderate",
+                        "personalization": "frequent",
+                        "mental_filtering": "present"
+                    }
                 },
-                "timestamp": datetime.utcnow().isoformat() + "Z",
-                "confidence": 0.82
-            }
-            insights_list.append(linguistic_insight)
-        
-        # Clinical insights
-        if not insight_type or insight_type == "clinical":
-            clinical_insight = {
-                "type": "clinical",
-                "data": {
-                    "symptom_patterns": {
-                        "anxiety": {
+                "clinical_indicators": {
+                    "symptom_patterns": [
+                        {
+                            "domain": "mood",
+                            "description": "Persistent low mood with diurnal variation",
                             "severity": "moderate",
-                            "confidence": 0.82,
-                            "evidence": ["excessive worry", "difficulty concentrating", "sleep disturbance"]
+                            "evidence": "Consistent negative self-description and expressed hopelessness"
                         },
-                        "depression": {
-                            "severity": "mild",
-                            "confidence": 0.68,
-                            "evidence": ["low mood", "reduced interest", "fatigue"]
+                        {
+                            "domain": "anxiety",
+                            "description": "Worry about performance and social evaluation",
+                            "severity": "moderate to severe",
+                            "evidence": "Recurring expressions of fear regarding negative judgment"
                         }
-                    },
+                    ],
                     "risk_assessment": {
-                        "self_harm": "low",
-                        "suicide": "low",
-                        "harm_to_others": "not detected"
-                    },
-                    "functional_impact": {
-                        "work": "moderate",
-                        "relationships": "moderate",
-                        "self_care": "mild"
-                    },
-                    "treatment_implications": [
-                        "CBT techniques for anxiety management",
-                        "Sleep hygiene protocol",
-                        "Mindfulness-based stress reduction"
-                    ]
+                        "overall_risk_level": "low to moderate",
+                        "concerning_elements": ["expressions of hopelessness", "social withdrawal"],
+                        "protective_factors": ["help-seeking behavior", "future planning", "social connections"]
+                    }
                 },
-                "timestamp": datetime.utcnow().isoformat() + "Z",
-                "confidence": 0.78
+                "recommendations": [
+                    "Implement structured CBT protocol focusing on cognitive restructuring",
+                    "Develop personalized stress reduction routine with daily mindfulness practice",
+                    "Establish sleep hygiene protocol with regular monitoring",
+                    "Consider workload management strategies and workplace accommodations",
+                    "Regular monitoring of mood symptoms using standardized measures"
+                ]
             }
-            insights_list.append(clinical_insight)
+        }
         
-        # Therapeutic insights
-        if not insight_type or insight_type == "therapeutic":
-            therapeutic_insight = {
-                "type": "therapeutic",
-                "data": {
-                    "rapport": {
-                        "quality": "good",
-                        "development": "progressive improvement through session"
-                    },
-                    "response_to_interventions": {
-                        "cognitive_techniques": "positive engagement",
-                        "behavioral_suggestions": "receptive but hesitant",
-                        "emotional_processing": "moderate depth"
-                    },
-                    "resistance_patterns": [
-                        "some avoidance of difficult emotions",
-                        "occasional minimization of challenges"
-                    ],
-                    "readiness_for_change": {
-                        "awareness": "high",
-                        "motivation": "moderate",
-                        "self_efficacy": "variable"
-                    },
-                    "therapeutic_alliance_strength": 0.76
-                },
-                "timestamp": datetime.utcnow().isoformat() + "Z",
-                "confidence": 0.76
-            }
-            insights_list.append(therapeutic_insight)
-        
-        # Progress insights
-        if not insight_type or insight_type == "progress":
-            progress_insight = {
-                "type": "progress",
-                "data": {
-                    "symptom_change": {
-                        "anxiety": "slight improvement",
-                        "mood": "stabilizing",
-                        "sleep": "beginning to implement recommendations"
-                    },
-                    "skill_development": {
-                        "emotion_regulation": "early progress",
-                        "cognitive_restructuring": "increasing awareness",
-                        "communication": "practicing new strategies"
-                    },
-                    "goal_progress": [
-                        {"goal": "Improve sleep quality", "status": "initial steps taken", "progress": 0.3},
-                        {"goal": "Reduce workplace anxiety", "status": "implementing techniques", "progress": 0.45},
-                        {"goal": "Enhance self-care routine", "status": "plan developed", "progress": 0.25}
-                    ],
-                    "overall_trajectory": "positive with expected fluctuations"
-                },
-                "timestamp": datetime.utcnow().isoformat() + "Z",
-                "confidence": 0.71
-            }
-            insights_list.append(progress_insight)
-        
-        # Add insights list to result
-        insights["insights"] = insights_list
+        # Add generated_at timestamp
+        insights["generated_at"] = datetime.now(UTC).isoformat() + "Z"
         
         return insights
 
@@ -1221,8 +1324,7 @@ class MockPHIDetection(PHIDetectionInterface):
     Mock PHI detection implementation.
     
     This class provides a mock implementation of PHI detection services for testing.
-    It simulates the detection and redaction of Protected Health Information (PHI)
-    to support HIPAA compliance testing.
+    It simulates PHI detection and redaction capabilities.
     """
     
     def __init__(self) -> None:
@@ -1241,14 +1343,19 @@ class MockPHIDetection(PHIDetectionInterface):
             InvalidConfigurationError: If configuration is invalid
         """
         try:
+            # Configuration is optional for mock service
+            if config is not None and not isinstance(config, dict):
+                raise InvalidConfigurationError("Configuration must be a dictionary")
+                
             self._config = config or {}
             self._initialized = True
             logger.info("Mock PHI detection service initialized")
+            
         except Exception as e:
             logger.error(f"Failed to initialize mock PHI detection service: {str(e)}")
             self._initialized = False
             self._config = None
-            raise InvalidConfigurationError(f"Failed to initialize mock PHI detection service: {str(e)}")
+            raise
     
     def is_healthy(self) -> bool:
         """
@@ -1262,7 +1369,6 @@ class MockPHIDetection(PHIDetectionInterface):
     def shutdown(self) -> None:
         """Shutdown the service and release resources."""
         self._initialized = False
-        self._config = None
         logger.info("Mock PHI detection service shut down")
     
     def detect_phi(
@@ -1286,25 +1392,37 @@ class MockPHIDetection(PHIDetectionInterface):
         """
         if not self._initialized:
             raise ServiceUnavailableError("Mock PHI detection service is not initialized")
-        
         if not text or not isinstance(text, str):
             raise InvalidRequestError("Text must be a non-empty string")
         
         # Use a more strict detection level by default
-        detection_level = detection_level or "strict"
+        original_level = detection_level or "strict"
+        detection_level = original_level
         
-        # Create mock PHI instances based on detection level
-        phi_instances = self._create_mock_phi_instances(detection_level)
+        # Validate detection level
+        valid_levels = ["minimal", "moderate", "aggressive", "strict", "relaxed"]
+        if detection_level not in valid_levels:
+            raise InvalidRequestError(f"Invalid detection level: {detection_level}. Must be one of {valid_levels}")
+            
+        # Map detection levels for backwards compatibility (internal processing only)
+        level_mapping = {
+            "minimal": "relaxed",
+            "aggressive": "strict"
+        }
+        internal_level = level_mapping.get(detection_level, detection_level)
         
-        # Create a mock detection result
+        # Create mock PHI instances based on mapped detection level
+        phi_instances = self._create_mock_phi_instances(internal_level)
+        
+        # Create a mock detection result (using original level name for the API response)
         result = {
             "has_phi": True,
             "confidence": 0.95,
-            "detection_level": detection_level,
+            "detection_level": original_level,
             "phi_instances": phi_instances,
             "model": "mock-phi-detection",
             "analysis_time_ms": 42,
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
         
         return result
@@ -1327,6 +1445,7 @@ class MockPHIDetection(PHIDetectionInterface):
                 "text": "John Smith",
                 "start_pos": 10,
                 "end_pos": 20,
+                "position": {"start": 10, "end": 20},
                 "confidence": 0.99
             },
             {
@@ -1335,6 +1454,7 @@ class MockPHIDetection(PHIDetectionInterface):
                 "text": "01/15/1980",
                 "start_pos": 45,
                 "end_pos": 55,
+                "position": {"start": 45, "end": 55},
                 "confidence": 0.98
             },
             {
@@ -1343,6 +1463,7 @@ class MockPHIDetection(PHIDetectionInterface):
                 "text": "123-45-6789",
                 "start_pos": 80,
                 "end_pos": 91,
+                "position": {"start": 80, "end": 91},
                 "confidence": 0.99
             },
             {
@@ -1351,6 +1472,7 @@ class MockPHIDetection(PHIDetectionInterface):
                 "text": "123 Main St, Anytown, NY 12345",
                 "start_pos": 110,
                 "end_pos": 141,
+                "position": {"start": 110, "end": 141},
                 "confidence": 0.97
             },
             {
@@ -1359,6 +1481,7 @@ class MockPHIDetection(PHIDetectionInterface):
                 "text": "(555) 123-4567",
                 "start_pos": 160,
                 "end_pos": 174,
+                "position": {"start": 160, "end": 174},
                 "confidence": 0.98
             }
         ]
@@ -1381,15 +1504,17 @@ class MockPHIDetection(PHIDetectionInterface):
         self,
         text: str,
         replacement: str = "[REDACTED]",
-        detection_level: Optional[str] = None
+        detection_level: Optional[str] = None,
+        redaction_marker: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Redact PHI from text.
         
         Args:
             text: Text to redact
-            replacement: Replacement text for redacted PHI
+            replacement: Replacement text for redacted PHI (deprecated)
             detection_level: Detection level (strict, moderate, relaxed)
+            redaction_marker: Custom marker to replace PHI with
             
         Returns:
             Dict containing redacted text and metadata
@@ -1400,28 +1525,30 @@ class MockPHIDetection(PHIDetectionInterface):
         """
         if not self._initialized:
             raise ServiceUnavailableError("Mock PHI detection service is not initialized")
-        
         if not text or not isinstance(text, str):
             raise InvalidRequestError("Text must be a non-empty string")
+        
+        # Use redaction_marker if provided, otherwise use replacement
+        marker = redaction_marker if redaction_marker is not None else replacement
         
         # Detect PHI first
         detection_result = self.detect_phi(text, detection_level)
         
         # Create a mock redacted text
         # In real implementation, we would use the detection result to redact the text
-        redacted_text = """Patient: [REDACTED] was seen on [REDACTED] for follow-up.
+        redacted_text = f"""Patient: {marker} was seen on {marker} for follow-up.
         
-Medical Record #: [REDACTED]
-Address: [REDACTED]
-Phone: [REDACTED]
+Medical Record #: {marker}
+Address: {marker}
+Phone: {marker}
         
 Assessment:
-The patient continues to show improvement in mood and anxiety symptoms. They report better sleep quality and reduced rumination. No suicidal ideation or intent. Blood pressure is within normal range at [REDACTED].
+The patient continues to show improvement in mood and anxiety symptoms. They report better sleep quality and reduced rumination. No suicidal ideation or intent. Blood pressure is within normal range at {marker}.
         
 Plan:
 1. Continue current medication regimen
 2. Follow-up in 4 weeks
-3. Refer to weekly therapy sessions with Dr. [REDACTED]"""
+3. Refer to weekly therapy sessions with Dr. {marker}"""
         
         # Create result
         result = {
@@ -1431,8 +1558,9 @@ Plan:
             "redaction_count": len(detection_result["phi_instances"]),
             "redacted_types": list({instance["type"] for instance in detection_result["phi_instances"]}),
             "detection_level": detection_result["detection_level"],
-            "replacement_used": replacement,
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "replacement_used": marker,
+            "phi_instances": detection_result["phi_instances"],
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
         
         return result

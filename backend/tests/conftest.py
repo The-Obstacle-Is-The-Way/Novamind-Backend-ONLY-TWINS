@@ -19,8 +19,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 
-from app.core.config import AppSettings, get_app_settings
-from app.core.database_settings import DatabaseSettings
+from app.core.config.settings import Settings, get_settings
 from app.infrastructure.persistence.sqlalchemy.config.database import Base
 from app.infrastructure.security.encryption import EncryptionService
 from app.infrastructure.security.jwt_service import JWTService
@@ -37,51 +36,42 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     yield loop
     loop.close()
 
+# No longer need the mock_db_settings fixture
 @pytest.fixture(scope="session")
-def mock_db_settings():
-    """Create mock database settings for testing."""
-    db_settings = DatabaseSettings(
-        HOST="localhost",
-        PORT=5432,
-        USERNAME="test",
-        PASSWORD="test",
-        DATABASE="test",
-        POOL_SIZE=5,
-        POOL_MAX_OVERFLOW=10,
-        POOL_TIMEOUT=30,
-        POOL_RECYCLE=1800,
-        ECHO_SQL=False,
-        DISABLE_POOLING=True
-    )
-    
-    # Add a URL property for backward compatibility with tests
-    db_settings.URL = TEST_DATABASE_URL
-    
-    return db_settings
-
-@pytest.fixture(scope="session")
-def test_settings(mock_db_settings) -> AppSettings:
+def test_settings() -> Settings:
     """Create test settings."""
     # Use direct constructor to bypass env file loading
-    test_settings = AppSettings(
-        APP_NAME="Novamind Test",
+    test_settings = Settings(
+        PROJECT_NAME="Novamind Test",
         DEBUG=True,
         SECRET_KEY="test_secret_key",
-        JWT_ALGORITHM="HS256",
-        JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30,
+        ALGORITHM="HS256",
+        ACCESS_TOKEN_EXPIRE_MINUTES=30,
         CORS_ORIGINS=["*"],
-        CORS_METHODS=["*"],
-        CORS_HEADERS=["*"],
-        POSTGRES_SERVER="localhost",
-        POSTGRES_PORT=5432,
-        POSTGRES_USER="test",
-        POSTGRES_PASSWORD="test",
-        POSTGRES_DB="test",
-        ENV="testing"
+        ALLOWED_HOSTS=["*"],
+        DATABASE_URL=TEST_DATABASE_URL,
+        ENVIRONMENT="testing"
     )
     
-    # Add mock database settings as an object property
-    test_settings.database = mock_db_settings
+    return test_settings
+
+@pytest.fixture(scope="session")
+def test_settings() -> Settings:
+    """Create test settings."""
+    # Use direct constructor to bypass env file loading
+    test_settings = Settings(
+        PROJECT_NAME="Novamind Test",
+        DEBUG=True,
+        SECRET_KEY="test_secret_key",
+        ALGORITHM="HS256",
+        ACCESS_TOKEN_EXPIRE_MINUTES=30,
+        CORS_ORIGINS=["*"],
+        ALLOWED_HOSTS=["*"],
+        DATABASE_URL=TEST_DATABASE_URL,
+        ENVIRONMENT="testing"
+    )
+    
+    # No need to add mock database settings as they're now directly in the Settings class
     
     return test_settings
 
@@ -89,7 +79,7 @@ def test_settings(mock_db_settings) -> AppSettings:
 async def test_db_engine(test_settings):
     """Create a test database engine."""
     engine = create_async_engine(
-        test_settings.database.URL,  # Use the URL property we added for tests
+        test_settings.DATABASE_URL,  # Use the direct DATABASE_URL property from settings
         poolclass=NullPool,
         echo=False
     )

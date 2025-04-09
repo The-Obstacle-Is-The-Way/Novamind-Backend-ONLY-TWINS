@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient
 from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.ml import get_pat_service
 from app.api.routes.actigraphy import router as actigraphy_router
-from app.core.models.users import User
+from app.domain.entities.user import User
 from app.core.services.ml.pat.mock import MockPAT
 
 
@@ -106,9 +106,11 @@ def test_app(mock_pat: MockPAT) -> FastAPI:
             return User(
                 id=user_id,
                 email=f"{user_id}@example.com",
-                role=role,
+                first_name="Test",
+                last_name=role.capitalize(),
+                roles=[role],
                 is_active=True,
-                full_name=f"Test {role.capitalize()}"
+                hashed_password="test-hashed-password"
             )
         except jwt.PyJWTError:
             raise HTTPException(
@@ -178,31 +180,16 @@ def admin_token() -> str:
 
 
 @pytest.fixture
-def sample_readings() -> List[Dict[str, Any]]:
+def sample_readings() -> List[Dict[str, float]]:
     """Fixture that returns sample accelerometer readings.
     
     Returns:
-        List of sample accelerometer readings
+        Sample accelerometer readings
     """
     return [
-        {
-            "timestamp": "2025-01-01T00:00:00Z",
-            "x": 0.1,
-            "y": 0.2,
-            "z": 0.3
-        },
-        {
-            "timestamp": "2025-01-01T00:00:01Z",
-            "x": 0.2,
-            "y": 0.3,
-            "z": 0.4
-        },
-        {
-            "timestamp": "2025-01-01T00:00:02Z",
-            "x": 0.3,
-            "y": 0.4,
-            "z": 0.5
-        }
+        {"x": 0.1, "y": 0.2, "z": 0.9},
+        {"x": 0.2, "y": 0.3, "z": 0.8},
+        {"x": 0.3, "y": 0.4, "z": 0.7}
     ]
 
 
@@ -214,20 +201,20 @@ def sample_device_info() -> Dict[str, Any]:
         Sample device information
     """
     return {
-        "device_type": "smartwatch",
-        "model": "SampleWatch",
-        "manufacturer": "SampleTech",
-        "firmware_version": "1.0.0"
+        "device_id": "test-device-123",
+        "model": "Test Actigraph 1.0",
+        "firmware_version": "v1.0.0",
+        "battery_level": 85
     }
 
 
-def test_unauthorized_access(client: TestClient) -> None:
-    """Test that unauthorized requests are rejected.
+def test_unauthenticated_access(client: TestClient) -> None:
+    """Test that unauthenticated requests are rejected.
     
     Args:
         client: Test client
     """
-    # Try to access an endpoint without authentication
+    # Access an endpoint without authentication
     response = client.get("/api/v1/actigraphy/model-info")
     
     # Should return 401 Unauthorized

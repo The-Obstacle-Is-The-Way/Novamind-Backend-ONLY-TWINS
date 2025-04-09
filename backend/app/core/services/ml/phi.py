@@ -8,7 +8,7 @@ Protected Health Information (PHI) to ensure HIPAA compliance.
 
 import json
 import re
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Any, Dict, List, Optional, Pattern, Set, Tuple, Union
 
 from app.core.exceptions import (
@@ -259,7 +259,7 @@ class MockPHIDetection(PHIDetectionInterface):
             "detection_level": level,
             "phi_count": len(phi_detected),
             "has_phi": len(phi_detected) > 0,
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
         
         return response
@@ -316,7 +316,7 @@ class MockPHIDetection(PHIDetectionInterface):
             "detection_level": detection_result["detection_level"],
             "phi_count": detection_result["phi_count"],
             "has_phi": detection_result["has_phi"],
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
         
         return response
@@ -549,7 +549,7 @@ class OpenAIPHIDetection(PHIDetectionInterface):
                     "detection_level": level,
                     "phi_count": len(result.get("phi_detected", [])),
                     "has_phi": len(result.get("phi_detected", [])) > 0,
-                    "timestamp": datetime.utcnow().isoformat() + "Z"
+                    "timestamp": datetime.now(UTC).isoformat() + "Z"
                 }
                 
                 return response
@@ -667,7 +667,7 @@ Do not include any explanations or notes outside of the JSON structure."""
                 "detection_level": detection_result["detection_level"],
                 "phi_count": detection_result["phi_count"],
                 "has_phi": detection_result["has_phi"],
-                "timestamp": datetime.utcnow().isoformat() + "Z"
+                "timestamp": datetime.now(UTC).isoformat() + "Z"
             }
             
             return response

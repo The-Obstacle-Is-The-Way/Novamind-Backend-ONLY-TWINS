@@ -10,7 +10,7 @@ import json
 import random
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from app.core.exceptions import (
@@ -19,7 +19,7 @@ from app.core.exceptions import (
     ModelNotFoundError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.interface import DigitalTwinService
+from app.core.services.ml.interface import DigitalTwinInterface
 from app.core.utils.logging import get_logger
 
 
@@ -27,7 +27,7 @@ from app.core.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-class MockDigitalTwinService(DigitalTwinService):
+class MockDigitalTwinService(DigitalTwinInterface):
     """
     Mock implementation of Digital Twin service.
     
@@ -118,8 +118,8 @@ class MockDigitalTwinService(DigitalTwinService):
         session = {
             "session_id": session_id,
             "patient_id": patient_id,
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat() + "Z",
+            "created_at": datetime.now(UTC).isoformat() + "Z",
+            "expires_at": (datetime.now(UTC) + timedelta(hours=24)).isoformat() + "Z",
             "context": context or {},
             "history": [],
             "metadata": {
@@ -241,7 +241,7 @@ class MockDigitalTwinService(DigitalTwinService):
         response = self._get_response_for_message(message, session)
         
         # Add to history
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(UTC).isoformat() + "Z"
         session["history"].append({
             "role": "user",
             "content": message,
@@ -370,7 +370,7 @@ class MockDigitalTwinService(DigitalTwinService):
         result = {
             "session_id": session_id,
             "patient_id": session["patient_id"],
-            "ended_at": datetime.utcnow().isoformat() + "Z",
+            "ended_at": datetime.now(UTC).isoformat() + "Z",
             "metadata": {
                 "provider": "mock",
                 "status": "ended",
@@ -439,7 +439,7 @@ class MockDigitalTwinService(DigitalTwinService):
             "patient_id": patient_id,
             "insight_type": insight_type or "all",
             "time_period": time_period or "last_30_days",
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": datetime.now(UTC).isoformat() + "Z",
             "insights": insights,
             "processing_time": elapsed,
             "metadata": {
@@ -518,15 +518,32 @@ class MockDigitalTwinService(DigitalTwinService):
         prev_week_avg = sum(item["value"] for item in mood_data[-14:-7]) / 7
         change = round(current_week_avg - prev_week_avg, 2)
         
+        # Rename the entries for test compatibility
+        entries = []
+        for item in mood_data:
+            entries.append({
+                "date": item["date"],
+                "mood_value": item["value"],
+                "mood_label": item["label"],
+                "factors": ["sleep", "activity", "nutrition"][0:random.randint(1, 3)]
+            })
+        
         return {
             "type": "mood",
             "data": {
-                "daily_values": mood_data,
-                "average": round(sum(item["value"] for item in mood_data) / len(mood_data), 2),
-                "trend": {
+                "entries": entries,
+                "daily_values": mood_data,  # Keep this for backward compatibility
+                "average_mood": round(sum(item["value"] for item in mood_data) / len(mood_data), 2),
+                "average": round(sum(item["value"] for item in mood_data) / len(mood_data), 2),  # Keep for backward compatibility
+                "mood_trend": {
                     "direction": "up" if change > 0.05 else "down" if change < -0.05 else "stable",
                     "change_percentage": round(change * 100, 1)
                 },
+                "trend": {  # Keep for backward compatibility
+                    "direction": "up" if change > 0.05 else "down" if change < -0.05 else "stable",
+                    "change_percentage": round(change * 100, 1)
+                },
+                "mood_variability": round(random.uniform(0.05, 0.25), 2),
                 "observations": [
                     "Mood has been relatively stable over the period",
                     "Slight improvement noted in the past week",
@@ -546,15 +563,15 @@ class MockDigitalTwinService(DigitalTwinService):
             Mood label
         """
         if value < 0.2:
-            return "very low"
+            return "very negative"
         elif value < 0.4:
-            return "low"
+            return "negative"
         elif value < 0.6:
-            return "moderate"
+            return "neutral"
         elif value < 0.8:
-            return "good"
+            return "positive"
         else:
-            return "very good"
+            return "very positive"
     
     def _generate_activity_insights(self, patient_id: str, time_period: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -589,15 +606,46 @@ class MockDigitalTwinService(DigitalTwinService):
         prev_week_avg = sum(item["value"] for item in activity_data[-14:-7]) / 7
         change = round(current_week_avg - prev_week_avg, 2)
         
+        # Reformat for test compatibility
+        daily_activity = []
+        for item in activity_data:
+            # Convert activity minutes to steps (roughly 100 steps per minute)
+            steps = int(item["value"] * 100)
+            
+            # Determine activity level based on minutes
+            if item["value"] < 20:
+                activity_level = "low"
+            elif item["value"] < 45:
+                activity_level = "moderate"
+            else:
+                activity_level = "high"
+                
+            daily_activity.append({
+                "date": item["date"],
+                "steps": steps,
+                "active_minutes": item["value"],
+                "activity_level": activity_level
+            })
+        
         return {
             "type": "activity",
             "data": {
-                "daily_values": activity_data,
+                "daily_activity": daily_activity,
+                "daily_values": activity_data,  # Keep for backward compatibility
                 "average": round(sum(item["value"] for item in activity_data) / len(activity_data), 2),
-                "trend": {
+                "activity_trend": {
                     "direction": "up" if change > 5 else "down" if change < -5 else "stable",
                     "change_percentage": round((change / prev_week_avg) * 100 if prev_week_avg > 0 else 0, 1)
                 },
+                "trend": {  # Keep for backward compatibility
+                    "direction": "up" if change > 5 else "down" if change < -5 else "stable",
+                    "change_percentage": round((change / prev_week_avg) * 100 if prev_week_avg > 0 else 0, 1)
+                },
+                "activity_recommendations": [
+                    "Try to maintain at least 30 minutes of activity daily",
+                    "Consider adding strength training twice a week",
+                    "Increase activity gradually to avoid injury"
+                ],
                 "observations": [
                     "Activity levels have been consistent",
                     f"Average daily activity: {round(current_week_avg)} minutes",
@@ -646,16 +694,42 @@ class MockDigitalTwinService(DigitalTwinService):
         prev_week_avg = sum(item["hours"] for item in sleep_data[-14:-7]) / 7
         change = round(current_week_avg - prev_week_avg, 1)
         
+        # Reformat for test compatibility
+        sleep_records = []
+        for item in sleep_data:
+            # Generate random number of interruptions (0-5)
+            interruptions = random.randint(0, 5)
+            
+            sleep_records.append({
+                "date": item["date"],
+                "duration_hours": item["hours"],
+                "quality": item["quality"],
+                "interruptions": interruptions
+            })
+            
+        avg_duration = round(sum(item["hours"] for item in sleep_data) / len(sleep_data), 1)
+        
         return {
             "type": "sleep",
             "data": {
-                "daily_values": sleep_data,
-                "average_hours": round(sum(item["hours"] for item in sleep_data) / len(sleep_data), 1),
+                "sleep_records": sleep_records,
+                "daily_values": sleep_data,  # Keep for backward compatibility
+                "average_sleep_duration": avg_duration,
+                "average_hours": avg_duration,  # Keep for backward compatibility
                 "average_quality": round(sum(item["quality"] for item in sleep_data) / len(sleep_data), 2),
-                "trend": {
+                "sleep_quality_trend": {
                     "direction": "up" if change > 0.5 else "down" if change < -0.5 else "stable",
                     "change_hours": change
                 },
+                "trend": {  # Keep for backward compatibility
+                    "direction": "up" if change > 0.5 else "down" if change < -0.5 else "stable",
+                    "change_hours": change
+                },
+                "sleep_recommendations": [
+                    "Maintain consistent sleep schedule, even on weekends",
+                    "Avoid screen time at least 1 hour before bed",
+                    "Keep bedroom cool and dark for optimal sleep"
+                ],
                 "observations": [
                     f"Average sleep duration: {round(current_week_avg, 1)} hours per night",
                     "Sleep quality correlates with next-day mood",
@@ -708,20 +782,48 @@ class MockDigitalTwinService(DigitalTwinService):
         )
         adherence_rate = round((taken_doses / total_doses) * 100, 1)
         
+        # Create medication list with format expected by tests
+        medications_list = []
+        for med in medications:
+            # Calculate adherence rate for this specific medication
+            med_doses = days
+            med_taken = sum(1 for day in adherence_data if day["medications"][med]["taken"])
+            med_adherence = round((med_taken / med_doses) * 100, 1)
+            
+            medications_list.append({
+                "name": med,
+                "dosage": "10mg" if med == "Medication A" else "25mg",
+                "adherence": med_adherence,
+                "reported_effects": ["Mild drowsiness", "Dry mouth"] if med == "Medication A" else ["None reported"]
+            })
+            
         return {
             "type": "medication",
             "data": {
-                "daily_values": adherence_data,
+                "medications": medications_list,  # Add for test compatibility
+                "daily_values": adherence_data,   # Keep for backward compatibility
                 "adherence_rate": adherence_rate,
                 "adherence_label": "excellent" if adherence_rate >= 90 else "good" if adherence_rate >= 80 else "needs improvement",
-                "reported_side_effects": [
+                "side_effects": [                 # Add for test compatibility
                     {
                         "medication": "Medication A",
                         "effects": ["Mild drowsiness", "Dry mouth"],
                         "severity": "mild"
                     }
                 ],
-                "observations": [
+                "reported_side_effects": [        # Keep for backward compatibility
+                    {
+                        "medication": "Medication A",
+                        "effects": ["Mild drowsiness", "Dry mouth"],
+                        "severity": "mild"
+                    }
+                ],
+                "medication_recommendations": [   # Add for test compatibility
+                    "Continue current medication regimen",
+                    "Take Medication A with food to reduce drowsiness",
+                    "Stay hydrated to minimize dry mouth side effects"
+                ],
+                "observations": [                 # Keep for backward compatibility
                     f"Overall medication adherence rate: {adherence_rate}%",
                     "Morning dose more consistently taken than evening dose",
                     "Side effects appear to be mild and tolerable"
@@ -767,6 +869,23 @@ class MockDigitalTwinService(DigitalTwinService):
                         "attended": None
                     }
                 ],
+                "treatment_plan": {
+                    "therapies": [
+                        {"name": "Cognitive Behavioral Therapy", "frequency": "Weekly", "status": "Active"},
+                        {"name": "Medication Management", "frequency": "Monthly", "status": "Active"},
+                        {"name": "Group Support", "frequency": "Bi-weekly", "status": "Active"}
+                    ],
+                    "goals": [
+                        {"description": "Reduce anxiety symptoms", "timeline": "3 months", "progress": random.uniform(0.1, 1.0)},
+                        {"description": "Improve sleep quality", "timeline": "2 months", "progress": random.uniform(0.1, 1.0)},
+                        {"description": "Develop coping strategies", "timeline": "6 months", "progress": random.uniform(0.1, 1.0)}
+                    ]
+                },
+                "progress": "improving",
+                "engagement": {
+                    "score": round(engagement_score, 2),
+                    "level": "high" if engagement_score > 0.8 else "moderate"
+                },
                 "treatment_modules": [
                     {
                         "name": "CBT Module 1",
@@ -783,6 +902,11 @@ class MockDigitalTwinService(DigitalTwinService):
                         "completion": 50,
                         "feedback_score": 4.0
                     }
+                ],
+                "treatment_recommendations": [
+                    "Continue current treatment plan",
+                    "Increase mindfulness practice frequency",
+                    "Schedule follow-up appointment in 2 weeks"
                 ],
                 "observations": [
                     "Consistent engagement with treatment plan",

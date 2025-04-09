@@ -9,123 +9,55 @@ import pytest
 from fastapi import FastAPI, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.testclient import TestClient
+from uuid import UUID, uuid4
 
 from app.api.dependencies.auth import get_current_user
-from app.core.models.users import User
+from app.domain.entities.user import User
 
 
 @pytest.fixture
 def mock_current_user():
     """Fixture that provides a mock get_current_user function.
     
-    Returns:
-        Mock get_current_user function
+    Returns a test user with admin privileges for testing protected endpoints.
     """
-    async def mock_get_current_user(
-        credentials: HTTPAuthorizationCredentials = None,
-    ) -> User:
-        """Mock the get_current_user dependency.
-        
-        Args:
-            credentials: HTTP Authentication credentials
-            
-        Returns:
-            Mock user
-        """
-        if not credentials:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        
-        # For test purposes, use a simple token validation scheme
-        try:
-            # In a test environment, we're using simple tokens
-            payload = jwt.decode(
-                credentials.credentials,
-                "test-secret",
-                algorithms=["HS256"]
-            )
-            user_id = payload.get("sub")
-            role = payload.get("role", "patient")
-            
-            if not user_id:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid token",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-            
-            return User(
-                id=user_id,
-                email=f"{user_id}@example.com",
-                role=role,
-                is_active=True,
-                full_name=f"Test {role.capitalize()}"
-            )
-        except jwt.PyJWTError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+    test_user = User(
+        id=UUID("00000000-0000-0000-0000-000000000000"),
+        email="test@example.com",
+        first_name="Test",
+        last_name="User",
+        hashed_password="hashed_password",
+        is_active=True,
+        is_verified=True,
+        roles=["admin", "clinician"]
+    )
     
-    return mock_get_current_user
+    async def override_get_current_user(*args, **kwargs):
+        return test_user
+    
+    return override_get_current_user
 
 
 @pytest.fixture
-def override_auth_dependency(app: FastAPI, mock_current_user):
+def mock_auth_dependency(monkeypatch, mock_current_user):
     """Fixture that overrides the authentication dependency.
     
-    Args:
-        app: FastAPI application
-        mock_current_user: Mock get_current_user function
-        
-    Returns:
-        FastAPI application with overridden authentication dependency
+    This allows API tests to run without needing to authenticate.
     """
-    app.dependency_overrides[get_current_user] = mock_current_user
-    return app
+    monkeypatch.setattr(
+        "app.api.dependencies.auth.get_current_user", mock_current_user
+    )
+    yield
+    monkeypatch.undo()
 
 
 @pytest.fixture
-def patient_token() -> str:
-    """Fixture that returns a JWT token for a patient user.
+def test_client(mock_auth_dependency):
+    """Fixture that provides a FastAPI test client with mocked authentication.
     
-    Returns:
-        JWT token
+    Returns a configured test client for making requests to the API.
     """
-    payload = {
-        "sub": "test-patient-id",
-        "role": "patient"
-    }
-    return jwt.encode(payload, "test-secret", algorithm="HS256")
-
-
-@pytest.fixture
-def provider_token() -> str:
-    """Fixture that returns a JWT token for a provider user.
+    from app.main import app
     
-    Returns:
-        JWT token
-    """
-    payload = {
-        "sub": "test-provider-id",
-        "role": "provider"
-    }
-    return jwt.encode(payload, "test-secret", algorithm="HS256")
-
-
-@pytest.fixture
-def admin_token() -> str:
-    """Fixture that returns a JWT token for an admin user.
-    
-    Returns:
-        JWT token
-    """
-    payload = {
-        "sub": "test-admin-id",
-        "role": "admin"
-    }
-    return jwt.encode(payload, "test-secret", algorithm="HS256")
+    with TestClient(app) as client:
+        yield client

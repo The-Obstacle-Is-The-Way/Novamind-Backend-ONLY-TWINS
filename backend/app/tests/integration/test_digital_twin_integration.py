@@ -4,7 +4,7 @@ Demonstrates the interaction between all components.
 """
 import asyncio
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, timedelta
 
 import pytest
 

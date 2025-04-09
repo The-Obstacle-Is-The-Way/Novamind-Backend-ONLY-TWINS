@@ -1,89 +1,58 @@
-# Novamind Backend - Canonical Scripts
+# Novamind Backend Scripts
 
-This directory contains only the essential, canonical scripts for the Novamind Backend project. All redundant, platform-specific, and legacy scripts have been removed to maintain a clean, minimal codebase.
+This directory contains utility scripts for the Novamind Digital Twin backend project.
 
-## Core Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `unified_hipaa_security_suite.py` | Comprehensive security testing framework for static analysis, PHI detection, API security validation, configuration checking, and HIPAA compliance |
-| `unified_test_runner.py` | Cross-platform, layer-aware test runner with coverage reporting for all Clean Architecture layers |
-| `secure_logger.py` | HIPAA-compliant logging that automatically sanitizes PHI from log messages |
-| `novamind_cleanup.py` | Canonical codebase cleanup script that maintains this ultra-clean state |
-
-## Usage Guidelines
-
-### Unified HIPAA Security Suite
-
-```bash
-python scripts/unified_hipaa_security_suite.py
-```
-
-Comprehensive security testing in one command. Generates reports in `security-reports/`.
+## Testing
 
 ### Unified Test Runner
+The preferred way to run tests is through the unified test runner:
 
 ```bash
 # Run all tests
-python scripts/unified_test_runner.py
+python -m backend.scripts.run_tests
 
-# Run specific layer tests
-python scripts/unified_test_runner.py --layer domain
+# Run only unit tests
+python -m backend.scripts.run_tests --unit
 
-# Run specific module tests
-python scripts/unified_test_runner.py --module temporal_neurotransmitter
+# Run only ML mock tests (high coverage area)
+python -m backend.scripts.run_tests --ml-mock
 
 # Generate coverage report
-python scripts/unified_test_runner.py --coverage --html
+python -m backend.scripts.run_tests --coverage
+
+# Quick smoke test
+python -m backend.scripts.run_tests --quick
+
+# Verbose output
+python -m backend.scripts.run_tests --verbose
 ```
 
-### Secure Logger
+The test runner follows clean architecture principles and provides consistent reporting across all test types.
 
-```python
-from scripts.secure_logger import get_logger
+## Coverage Requirements
 
-logger = get_logger(__name__)
-logger.info("Processing patient data")  # PHI automatically sanitized
+- Target coverage: 80% across all code
+- ML Mock Services: Maintain >80% coverage for mock implementations
+- Domain layer: Maintain >85% coverage
+- Security components: Maintain >90% coverage
+
+## Other Utilities
+
+- `generate_compliance_summary.py`: Generates HIPAA compliance report
+- `run_hipaa_phi_audit.py`: Audits code for PHI protection 
+- `secure_logger.py`: Secure logging utility
+
+## Test Structure
+
+Tests are organized following clean architecture principles:
+
+```
+backend/
+├── tests/
+│   ├── unit/            # Unit tests for isolated components
+│   ├── integration/     # Integration tests for component interactions
+│   ├── security/        # Security and HIPAA compliance tests
+│   └── e2e/             # End-to-end tests
 ```
 
-### Codebase Cleanup
-
-```bash
-# See what would be deleted without making changes
-python scripts/novamind_cleanup.py --dry-run
-
-# Create backups before deletion
-python scripts/novamind_cleanup.py --backup
-
-# Perform cleanup
-python scripts/novamind_cleanup.py
-```
-
-## Development Principles
-
-1. **Canonical Minimalism**: Only essential scripts should exist
-2. **Zero Redundancy**: No duplicate functionality
-3. **Cross-Platform by Default**: No platform-specific implementations
-4. **Clean Architecture**: Scripts respect architectural boundaries
-5. **HIPAA Compliance**: Security and privacy by design
-
-## Canonical Tests
-
-Only these essential tests are maintained:
-
-1. **Domain Layer**:
-   - `app/tests/domain/entities/test_neurotransmitter_mapping.py`
-   - `app/tests/domain/entities/test_temporal_neurotransmitter.py`
-   - `app/tests/domain/services/test_enhanced_xgboost_service.py`
-
-2. **Application Layer**:
-   - `app/tests/application/services/test_temporal_neurotransmitter_service.py`
-
-3. **Infrastructure Layer**:
-   - `app/tests/infrastructure/repositories/test_temporal_event_repository.py`
-   - `app/tests/infrastructure/repositories/test_temporal_sequence_repository.py`
-   - `app/tests/infrastructure/services/test_mock_enhanced_digital_twin_neurotransmitter_service.py`
-
-4. **Integration**:
-   - `app/tests/integration/test_digital_twin_integration.py`
-   - `app/tests/integration/test_temporal_neurotransmitter_integration.py`
+All test file names should follow the pattern `test_*.py` to be automatically discovered.
