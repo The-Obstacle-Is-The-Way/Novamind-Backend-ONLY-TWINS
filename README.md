@@ -1,98 +1,36 @@
-# NOVAMIND Digital Twin: Concierge Psychiatry Platform - Backend Only
+# Novamind Digital Twin Backend
 
-A cutting-edge psychiatric platform with Digital Twin technology for personalized treatment planning and visualization. This repository contains only the backend components.
+## Overview
 
-## Project Structure
+Novamind Digital Twin is a next-generation psychiatric platform built on a revolutionary architecture that combines three powerful AI components (the "Trinity Stack"):
 
-This project follows a clean architecture with clear separation of concerns:
+1. **MentalLLaMA-33B**: Advanced language model for clinical text understanding and reasoning
+2. **XGBoost Prediction Engine**: Sophisticated prediction and optimization engine
+3. **PAT (Pretrained Actigraphy Transformer)**: Deep analysis of physiological and behavioral data
 
-```
-novamind-backend/
-├── backend/             # All backend code and configuration
-│   ├── app/             # FastAPI application
-│   │   ├── api/         # API endpoints
-│   │   ├── application/ # Application services and use cases
-│   │   ├── core/        # Core utilities and configuration
-│   │   ├── domain/      # Domain models and business logic
-│   │   └── infrastructure/ # External services integration
-│   ├── alembic/         # Database migration scripts
-│   ├── docs/            # Backend documentation
-│   ├── tests/           # Test suite
-│   ├── main.py          # FastAPI application entry point
-│   └── requirements.txt # Python dependencies
-│
-├── deployment/          # Deployment scripts and configurations
-├── reports/             # Generated reports
-├── security-reports/    # Security audit reports
-├── tools/               # Shared tools and utilities
-│
-└── README.md            # This file
-```
+This repository contains the backend code for the Novamind Digital Twin platform, with a focus on clean architecture, HIPAA compliance, and advanced clinical reasoning capabilities.
+
+## Architecture
+
+The system follows Clean Architecture principles with strict separation of concerns:
+- **Domain Layer**: Pure business logic (entities, repositories, service interfaces)
+- **Infrastructure Layer**: Implementation of services, data access, external integrations
+- **Application Layer**: Use cases orchestrating the services
+- **Presentation Layer**: API endpoints and UI components
+
+## Key Features
+
+- Temporal Knowledge Graph representation of clinical data
+- Bayesian Belief Network for probabilistic reasoning with uncertainty quantification
+- Multimodal data fusion from clinical notes, physiological measurements, and behavioral patterns
+- Treatment effect mapping and prediction
+- Digital phenotype detection
+- Counterfactual simulation of intervention scenarios
 
 ## Getting Started
 
-### Prerequisites
+See the [documentation](./backend/docs/README.md) for detailed instructions on setting up and running the system.
 
-- Python 3.10+
-- Docker and Docker Compose (for containerized deployment)
+## Security and Compliance
 
-### Backend Setup
-
-```bash
-# Navigate to backend directory
-cd backend
-
-# Create a virtual environment
-python -m venv venv
-
-# Activate the virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-pip install -r requirements-security.txt
-pip install -r requirements-analytics.txt
-
-# Run the FastAPI application
-uvicorn app.main:app --reload
-```
-
-The backend API will be available at http://localhost:8000.
-
-### Docker Deployment
-
-```bash
-# Build and start the containers
-docker-compose -f deployment/docker-compose.yml up -d
-
-# To stop the containers
-docker-compose -f deployment/docker-compose.yml down
-```
-
-## Development Guidelines
-
-### Backend
-
-- Follow clean architecture principles
-- Keep domain logic pure and framework-agnostic
-- Use type hints and docstrings
-- Write tests for all new features
-- Implement proper error handling
-
-## HIPAA Compliance
-
-This application handles sensitive patient data and must comply with HIPAA regulations:
-
-- No PHI in URLs (use POST only for sensitive data)
-- Implement proper authentication and authorization
-- Log all data access for audit trails
-- Encrypt all data in transit and at rest
-- Implement proper session timeouts and auto-logout
-- Regular security audits and vulnerability testing
-
-## License
-
-See the [LICENSE](LICENSE) file for details.
+This system is designed with HIPAA compliance as a core principle. See [security documentation](./backend/docs/HIPAA_COMPLIANCE.md) for details.
