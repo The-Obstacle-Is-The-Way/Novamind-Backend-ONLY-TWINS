@@ -395,3 +395,376 @@ class Patient:
             "insurance_provider": self.insurance_provider,
             "insurance_group": self.insurance_group,
             "insurance_status": self.insurance_status.value if self.insurance_status else None,
+            "emergency_contacts": [contact.to_dict() for contact in self.emergency_contacts],
+            "medical_history": self.medical_history,
+            "medications": self.medications,
+            "allergies": self.allergies,
+            "status": self.status.value if self.status else None,
+            "notes": self.notes,
+            "last_appointment": self.last_appointment,
+            "next_appointment": self.next_appointment,
+            "preferred_provider_id": self.preferred_provider_id
+        }
+        
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Patient':
+        """Create from dictionary."""
+        # Handle emergency contacts
+        emergency_contacts = []
+        for contact_data in data.get("emergency_contacts", []):
+            emergency_contacts.append(EmergencyContact.from_dict(contact_data))
+            
+        return cls(
+            id=data.get("id"),
+            first_name=data.get("first_name"),
+            last_name=data.get("last_name"),
+            date_of_birth=data.get("date_of_birth"),
+            gender=data.get("gender"),
+            email=data.get("email"),
+            phone=data.get("phone"),
+            address=data.get("address"),
+            insurance_id=data.get("insurance_id"),
+            insurance_provider=data.get("insurance_provider"),
+            insurance_group=data.get("insurance_group"),
+            insurance_status=data.get("insurance_status"),
+            emergency_contacts=emergency_contacts,
+            medical_history=data.get("medical_history", []),
+            medications=data.get("medications", []),
+            allergies=data.get("allergies", []),
+            status=data.get("status"),
+            notes=data.get("notes"),
+            last_appointment=data.get("last_appointment"),
+            next_appointment=data.get("next_appointment"),
+            preferred_provider_id=data.get("preferred_provider_id")
+        )
+        
+    def __eq__(self, other):
+        """Equality comparison."""
+        if not isinstance(other, Patient):
+            return False
+        return self.id == other.id
+        
+    def __ne__(self, other):
+        """Inequality comparison."""
+        return not self.__eq__(other)
+        
+    def __str__(self):
+        """String representation."""
+        return f"Patient({self.id}: {self.first_name} {self.last_name})"
+
+
+# ============= Patient Entity Tests =============
+
+@pytest.mark.standalone
+class TestPatient(unittest.TestCase):
+    """Tests for the Patient class."""
+    
+    def test_create_patient(self):
+        """Test creating a patient."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE,
+            email="john.doe@example.com",
+            phone="555-123-4567",
+            address="123 Main St, Anytown, USA"
+        )
+        
+        self.assertEqual(patient.first_name, "John")
+        self.assertEqual(patient.last_name, "Doe")
+        self.assertEqual(patient.date_of_birth, date(1980, 1, 15))
+        self.assertEqual(patient.gender, Gender.MALE)
+        self.assertEqual(patient.email, "john.doe@example.com")
+        self.assertEqual(patient.phone, "555-123-4567")
+        self.assertEqual(patient.address, "123 Main St, Anytown, USA")
+        self.assertEqual(patient.status, PatientStatus.ONBOARDING)
+        
+    def test_create_patient_with_string_enums(self):
+        """Test creating a patient with string enums."""
+        patient = Patient(
+            first_name="Jane",
+            last_name="Doe",
+            date_of_birth=date(1985, 5, 20),
+            gender="female",
+            status="active",
+            insurance_status="active"
+        )
+        
+        self.assertEqual(patient.gender, Gender.FEMALE)
+        self.assertEqual(patient.status, PatientStatus.ACTIVE)
+        self.assertEqual(patient.insurance_status, InsuranceStatus.ACTIVE)
+        
+    def test_create_patient_with_string_date(self):
+        """Test creating a patient with a string date."""
+        patient = Patient(
+            first_name="Alice",
+            last_name="Smith",
+            date_of_birth="1990-10-25",
+            gender=Gender.FEMALE
+        )
+        
+        self.assertEqual(patient.date_of_birth, date(1990, 10, 25))
+        
+    def test_create_patient_with_auto_id(self):
+        """Test creating a patient with auto-generated ID."""
+        patient = Patient(
+            first_name="Bob",
+            last_name="Johnson",
+            date_of_birth=date(1975, 3, 12),
+            gender=Gender.MALE
+        )
+        
+        self.assertIsNotNone(patient.id)
+        self.assertIsInstance(patient.id, str)
+        self.assertTrue(len(patient.id) > 0)
+        
+    def test_validate_required_fields(self):
+        """Test validation of required fields."""
+        # Missing first name
+        with self.assertRaises(ValueError):
+            Patient(
+                first_name="",
+                last_name="Doe",
+                date_of_birth=date(1980, 1, 15),
+                gender=Gender.MALE
+            )
+            
+        # Missing last name
+        with self.assertRaises(ValueError):
+            Patient(
+                first_name="John",
+                last_name="",
+                date_of_birth=date(1980, 1, 15),
+                gender=Gender.MALE
+            )
+            
+        # Missing date of birth
+        with self.assertRaises(ValueError):
+            Patient(
+                first_name="John",
+                last_name="Doe",
+                date_of_birth=None,
+                gender=Gender.MALE
+            )
+            
+        # Missing gender
+        with self.assertRaises(ValueError):
+            Patient(
+                first_name="John",
+                last_name="Doe",
+                date_of_birth=date(1980, 1, 15),
+                gender=None
+            )
+            
+    def test_validate_email_format(self):
+        """Test validation of email format."""
+        with self.assertRaises(ValueError):
+            Patient(
+                first_name="John",
+                last_name="Doe",
+                date_of_birth=date(1980, 1, 15),
+                gender=Gender.MALE,
+                email="invalid-email"
+            )
+            
+    def test_validate_phone_format(self):
+        """Test validation of phone format."""
+        with self.assertRaises(ValueError):
+            Patient(
+                first_name="John",
+                last_name="Doe",
+                date_of_birth=date(1980, 1, 15),
+                gender=Gender.MALE,
+                phone="invalid-phone-no-digits"
+            )
+            
+    def test_update_personal_info(self):
+        """Test updating personal information."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        patient.update_personal_info(
+            first_name="Johnny",
+            last_name="Smith",
+            date_of_birth=date(1981, 2, 16),
+            gender=Gender.OTHER,
+            email="johnny.smith@example.com",
+            phone="555-987-6543",
+            address="456 Oak St, Newtown, USA"
+        )
+        
+        self.assertEqual(patient.first_name, "Johnny")
+        self.assertEqual(patient.last_name, "Smith")
+        self.assertEqual(patient.date_of_birth, date(1981, 2, 16))
+        self.assertEqual(patient.gender, Gender.OTHER)
+        self.assertEqual(patient.email, "johnny.smith@example.com")
+        self.assertEqual(patient.phone, "555-987-6543")
+        self.assertEqual(patient.address, "456 Oak St, Newtown, USA")
+        
+    def test_update_personal_info_with_string_date(self):
+        """Test updating personal information with a string date."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        patient.update_personal_info(date_of_birth="1981-02-16")
+        
+        self.assertEqual(patient.date_of_birth, date(1981, 2, 16))
+        
+    def test_update_personal_info_with_string_gender(self):
+        """Test updating personal information with a string gender."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        patient.update_personal_info(gender="non_binary")
+        
+        self.assertEqual(patient.gender, Gender.NON_BINARY)
+        
+    def test_update_insurance_info(self):
+        """Test updating insurance information."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        patient.update_insurance_info(
+            insurance_id="INS123456",
+            insurance_provider="HealthCo",
+            insurance_group="GROUP789",
+            insurance_status=InsuranceStatus.ACTIVE
+        )
+        
+        self.assertEqual(patient.insurance_id, "INS123456")
+        self.assertEqual(patient.insurance_provider, "HealthCo")
+        self.assertEqual(patient.insurance_group, "GROUP789")
+        self.assertEqual(patient.insurance_status, InsuranceStatus.ACTIVE)
+        
+    def test_update_insurance_info_with_string_status(self):
+        """Test updating insurance information with a string status."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        patient.update_insurance_info(insurance_status="pending")
+        
+        self.assertEqual(patient.insurance_status, InsuranceStatus.PENDING)
+        
+    def test_add_emergency_contact(self):
+        """Test adding an emergency contact."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        contact = patient.add_emergency_contact(
+            name="Jane Doe",
+            relationship="Spouse",
+            phone="555-123-4567",
+            email="jane.doe@example.com"
+        )
+        
+        self.assertEqual(len(patient.emergency_contacts), 1)
+        self.assertEqual(patient.emergency_contacts[0], contact)
+        self.assertEqual(contact.name, "Jane Doe")
+        self.assertEqual(contact.relationship, "Spouse")
+        self.assertEqual(contact.phone, "555-123-4567")
+        self.assertEqual(contact.email, "jane.doe@example.com")
+        
+    def test_add_emergency_contact_validation(self):
+        """Test validation when adding an emergency contact."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        # Missing name
+        with self.assertRaises(ValueError):
+            patient.add_emergency_contact(
+                name="",
+                relationship="Spouse",
+                phone="555-123-4567"
+            )
+            
+        # Missing relationship
+        with self.assertRaises(ValueError):
+            patient.add_emergency_contact(
+                name="Jane Doe",
+                relationship="",
+                phone="555-123-4567"
+            )
+            
+        # Missing phone
+        with self.assertRaises(ValueError):
+            patient.add_emergency_contact(
+                name="Jane Doe",
+                relationship="Spouse",
+                phone=""
+            )
+            
+    def test_remove_emergency_contact(self):
+        """Test removing an emergency contact."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        contact1 = patient.add_emergency_contact(
+            name="Jane Doe",
+            relationship="Spouse",
+            phone="555-123-4567"
+        )
+        
+        contact2 = patient.add_emergency_contact(
+            name="Bob Doe",
+            relationship="Brother",
+            phone="555-987-6543"
+        )
+        
+        self.assertEqual(len(patient.emergency_contacts), 2)
+        
+        removed = patient.remove_emergency_contact(0)
+        
+        self.assertEqual(len(patient.emergency_contacts), 1)
+        self.assertEqual(removed, contact1)
+        self.assertEqual(patient.emergency_contacts[0], contact2)
+        
+    def test_remove_emergency_contact_invalid_index(self):
+        """Test removing an emergency contact with an invalid index."""
+        patient = Patient(
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+        )
+        
+        patient.add_emergency_contact(
+            name="Jane Doe",
+            relationship="Spouse",
+            phone="555-123-4567"
+        )
+        
+        with self.assertRaises(IndexError):
+            patient.remove_emergency_contact(1)

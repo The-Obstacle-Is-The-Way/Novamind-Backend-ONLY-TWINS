@@ -1,1 +1,160 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="25" time="0.052" timestamp="2025-04-10T07:15:23.536273" hostname="MacBookPro"><testcase classname="app.tests.standalone.test_base_security_test.TestBaseSecurityTest" name="test_default_attributes" time="0.020" /><testcase classname="app.tests.standalone.test_base_security_test.TestBaseSecurityTest" name="test_mock_auth_service" time="0.000" /><testcase classname="app.tests.standalone.test_base_security_test.AdminSecurityTest" name="test_admin_roles" time="0.000" /><testcase classname="app.tests.standalone.test_base_security_test.ClinicianSecurityTest" name="test_clinician_roles" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions.TestMentalLLaMAExceptions" name="test_base_exception" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions.TestMentalLLaMAExceptions" name="test_base_exception_without_details" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions.TestMentalLLaMAExceptions" name="test_connection_error" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions.TestMentalLLaMAExceptions" name="test_authentication_error" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions.TestMentalLLaMAExceptions" name="test_inference_error" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions.TestMentalLLaMAExceptions" name="test_validation_error" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions.TestMentalLLaMAExceptions" name="test_quota_exceeded_error" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions.TestMentalLLaMAExceptions" name="test_exception_inheritance" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions_self_contained.TestMLExceptions" name="test_base_error" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions_self_contained.TestMLExceptions" name="test_inference_error" time="0.000" /><testcase classname="app.tests.standalone.test_ml_exceptions_self_contained.TestMLExceptions" name="test_validation_error" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_address" time="0.001" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_complex_text" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_dict" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_dob" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_email" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_list" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_mrn" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_name" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_phone" time="0.000" /><testcase classname="app.tests.standalone.test_phi_sanitizer_self_contained.TestPHISanitizer" name="test_sanitize_ssn" time="0.000" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="7" failures="0" skipped="0" tests="7" time="6.991" timestamp="2025-04-10T13:48:03.193040+00:00" hostname="codespaces-703d42"><testcase classname="" name="app.tests.standalone.test_appointment" time="0.000"><error message="collection failure">ImportError while importing test module '/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/standalone/test_appointment.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1331: in _find_and_load_unlocked
+    ???
+&lt;frozen importlib._bootstrap&gt;:935: in _load_unlocked
+    ???
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+backend/app/tests/standalone/test_appointment.py:10: in &lt;module&gt;
+    from app.domain.entities.appointment import (
+backend/app/domain/entities/appointment.py:14: in &lt;module&gt;
+    from app.domain.exceptions import (
+E   ImportError: cannot import name 'AppointmentConflictError' from 'app.domain.exceptions' (/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/domain/exceptions/__init__.py)</error></testcase><testcase classname="" name="app.tests.standalone.test_biometric_event_processor" time="0.000"><error message="collection failure">ImportError while importing test module '/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/standalone/test_biometric_event_processor.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1331: in _find_and_load_unlocked
+    ???
+&lt;frozen importlib._bootstrap&gt;:935: in _load_unlocked
+    ???
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+backend/app/tests/standalone/test_biometric_event_processor.py:15: in &lt;module&gt;
+    from app.domain.entities.biometric_twin import BiometricDataPoint
+backend/app/domain/entities/biometric_twin.py:13: in &lt;module&gt;
+    from pydantic import BaseModel, Field, validator
+E   ModuleNotFoundError: No module named 'pydantic'</error></testcase><testcase classname="" name="app.tests.standalone.test_mfa_service" time="0.000"><error message="collection failure">ImportError while importing test module '/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/standalone/test_mfa_service.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1331: in _find_and_load_unlocked
+    ???
+&lt;frozen importlib._bootstrap&gt;:935: in _load_unlocked
+    ???
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+backend/app/tests/standalone/test_mfa_service.py:10: in &lt;module&gt;
+    from app.infrastructure.security.mfa_service import (
+backend/app/infrastructure/security/mfa_service.py:18: in &lt;module&gt;
+    import pyotp
+E   ModuleNotFoundError: No module named 'pyotp'</error></testcase><testcase classname="" name="app.tests.standalone.test_pat_mock" time="0.000"><error message="collection failure">ImportError while importing test module '/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/standalone/test_pat_mock.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1331: in _find_and_load_unlocked
+    ???
+&lt;frozen importlib._bootstrap&gt;:935: in _load_unlocked
+    ???
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+backend/app/tests/standalone/test_pat_mock.py:13: in &lt;module&gt;
+    from app.core.services.ml.pat.exceptions import (
+backend/app/core/services/ml/__init__.py:12: in &lt;module&gt;
+    from app.core.services.ml.factory import MLServiceFactory, MLServiceCache
+backend/app/core/services/ml/factory.py:14: in &lt;module&gt;
+    from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
+backend/app/core/services/ml/phi_detection.py:12: in &lt;module&gt;
+    import boto3
+E   ModuleNotFoundError: No module named 'boto3'</error></testcase><testcase classname="" name="app.tests.standalone.test_patient" time="0.000"><error message="collection failure">ImportError while importing test module '/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/standalone/test_patient.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1331: in _find_and_load_unlocked
+    ???
+&lt;frozen importlib._bootstrap&gt;:935: in _load_unlocked
+    ???
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+backend/app/tests/standalone/test_patient.py:10: in &lt;module&gt;
+    from app.domain.entities.patient import (
+E   ImportError: cannot import name 'InsuranceStatus' from 'app.domain.entities.patient' (/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/domain/entities/patient.py)</error></testcase><testcase classname="" name="app.tests.standalone.test_phi_sanitizer" time="0.000"><error message="collection failure">ImportError while importing test module '/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/standalone/test_phi_sanitizer.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1331: in _find_and_load_unlocked
+    ???
+&lt;frozen importlib._bootstrap&gt;:935: in _load_unlocked
+    ???
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+backend/app/tests/standalone/test_phi_sanitizer.py:7: in &lt;module&gt;
+    from app.infrastructure.security.log_sanitizer import PHISanitizer
+E   ImportError: cannot import name 'PHISanitizer' from 'app.infrastructure.security.log_sanitizer' (/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/infrastructure/security/log_sanitizer.py)</error></testcase><testcase classname="" name="app.tests.standalone.test_temporal" time="0.000"><error message="collection failure">ImportError while importing test module '/workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/standalone/test_temporal.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1331: in _find_and_load_unlocked
+    ???
+&lt;frozen importlib._bootstrap&gt;:935: in _load_unlocked
+    ???
+/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+backend/app/tests/standalone/test_temporal.py:14: in &lt;module&gt;
+    from app.domain.entities.digital_twin.temporal import (
+E   ModuleNotFoundError: No module named 'app.domain.entities.digital_twin.temporal'</error></testcase></testsuite></testsuites>
