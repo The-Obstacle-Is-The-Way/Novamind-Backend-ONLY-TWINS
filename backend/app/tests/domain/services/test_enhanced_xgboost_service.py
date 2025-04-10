@@ -5,7 +5,7 @@ Tests the treatment response prediction and interaction analysis capabilities
 of the XGBoost-based machine learning service.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 
 import pytest
 import numpy as np

@@ -1,100 +1,139 @@
-# -*- coding: utf-8 -*-
 """
-Role-Based Access Control (RBAC) Module
+Role-Based Access Control (RBAC) module for the Novamind Digital Twin Backend.
 
-This module implements RBAC functionality to manage permissions and roles
-for the Digital Twin system, ensuring proper authorization across the platform.
+This module provides utilities for authorizing users based on their roles
+and enforcing access control throughout the application.
 """
+from typing import List, Optional
+from fastapi import HTTPException, Request, status
 
-from typing import Dict, List, Optional, Set
+from app.domain.entities.user import User
+from app.domain.enums.role import Role
 
 
-class RoleBasedAccessControl:
+def check_permission(user: User, required_roles: List[Role]) -> bool:
     """
-    Role-Based Access Control implementation for the Digital Twin platform.
+    Check if a user has any of the required roles.
     
-    This class manages role-permission relationships and provides
-    methods for authorization checks throughout the application.
+    Args:
+        user: The user to check
+        required_roles: List of roles that grant permission
+        
+    Returns:
+        True if user has permission, raises HTTPException otherwise
+        
+    Raises:
+        HTTPException: If user doesn't have the required roles
+    """
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    # Check if user has any of the required roles
+    for role in required_roles:
+        if role in user.roles:
+            return True
+    
+    # If we get here, user doesn't have permission
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Not enough permissions",
+    )
+
+
+class RBACMiddleware:
+    """
+    Middleware for enforcing role-based access control in FastAPI.
+    
+    This middleware can be used both as a dependency and at the application level.
     """
     
     def __init__(self):
-        """Initialize the RBAC system with empty role-permission mappings."""
-        self._role_permissions: Dict[str, Set[str]] = {}
+        """Initialize the RBAC middleware."""
+        pass  # No initialization needed
     
-    def add_role(self, role: str) -> None:
+    async def __call__(self, request: Request) -> None:
         """
-        Add a new role to the RBAC system.
+        Process a request and check permissions.
         
         Args:
-            role: The name of the role to add
-        """
-        if role not in self._role_permissions:
-            self._role_permissions[role] = set()
-    
-    def add_role_permission(self, role: str, permission: str) -> None:
-        """
-        Assign a permission to a role.
-        
-        Args:
-            role: The role to which the permission is assigned
-            permission: The permission to assign
-        """
-        if role not in self._role_permissions:
-            self._role_permissions[role] = set()
-        
-        self._role_permissions[role].add(permission)
-    
-    def remove_role_permission(self, role: str, permission: str) -> None:
-        """
-        Remove a permission from a role.
-        
-        Args:
-            role: The role from which the permission is removed
-            permission: The permission to remove
-        """
-        if role in self._role_permissions and permission in self._role_permissions[role]:
-            self._role_permissions[role].remove(permission)
-    
-    def has_permission(self, roles: List[str], permission: str) -> bool:
-        """
-        Check if any of the provided roles have the specified permission.
-        
-        Args:
-            roles: List of roles to check
-            permission: The permission to verify
+            request: The FastAPI request object
             
         Returns:
-            bool: True if any role has the permission, False otherwise
+            None
+            
+        Raises:
+            HTTPException: If user doesn't have access
         """
-        for role in roles:
-            if role in self._role_permissions and permission in self._role_permissions[role]:
-                return True
+        # Get path and method for endpoint-specific rules
+        path = request.url.path
+        method = request.method
         
-        return False
+        # Apply endpoint-specific rules
+        # This would typically be configured from a database or config
+        if path.startswith("/api/v1/admin") and not self._has_admin_role(request):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Administrator access required",
+            )
+            
+        # PHI access audit for sensitive endpoints
+        if self._endpoint_contains_phi(path, method):
+            self._audit_phi_access(request)
     
-    def get_role_permissions(self, role: str) -> Set[str]:
+    def check_access(self, request: Request, required_roles: List[Role]) -> bool:
         """
-        Get all permissions assigned to a role.
+        Check if the user in the request has the required roles.
         
         Args:
-            role: The role to query
+            request: FastAPI request object
+            required_roles: List of roles that grant access
             
         Returns:
-            Set[str]: Set of permissions assigned to the role
+            True if user has access, raises HTTPException otherwise
+            
+        Raises:
+            HTTPException: If user doesn't have access
         """
-        return self._role_permissions.get(role, set()).copy()
+        user = getattr(request.state, "user", None)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+            
+        return check_permission(user, required_roles)
     
-    def get_roles_with_permission(self, permission: str) -> List[str]:
-        """
-        Get all roles that have a specific permission.
-        
-        Args:
-            permission: The permission to query
-            
-        Returns:
-            List[str]: List of roles that have the permission
-        """
-        return [
-            role for role, permissions in self._role_permissions.items() 
-            if permission in permissions
+    def _has_admin_role(self, request: Request) -> bool:
+        """Check if the user has the admin role."""
+        user = getattr(request.state, "user", None)
+        if user is None:
+            return False
+        return Role.ADMIN in user.roles
+    
+    def _endpoint_contains_phi(self, path: str, method: str) -> bool:
+        """Determine if an endpoint involves PHI access."""
+        # Define endpoints that contain PHI
+        phi_endpoints = [
+            "/api/v1/patients",
+            "/api/v1/clinical-notes",
+            "/api/v1/assessments",
+            "/api/v1/medical-records",
+            "/api/v1/diagnoses"
         ]
+        
+        return any(path.startswith(endpoint) for endpoint in phi_endpoints)
+    
+    def _audit_phi_access(self, request: Request) -> None:
+        """Record PHI access for auditing purposes."""
+        user = getattr(request.state, "user", None)
+        if user is None:
+            return
+        
+        # In a real implementation, this would log to a secure audit trail
+        # For testing, we'll just pass
+        pass

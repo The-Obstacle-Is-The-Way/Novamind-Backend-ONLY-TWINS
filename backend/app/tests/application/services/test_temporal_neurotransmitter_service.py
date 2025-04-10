@@ -5,7 +5,7 @@ These tests ensure the service correctly orchestrates interactions between
 domain entities, repositories, and external services.
 """
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, timedelta
 import uuid
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch

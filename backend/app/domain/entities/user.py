@@ -1,94 +1,66 @@
 """
-User entity for authentication and authorization.
+User entity for the Novamind Digital Twin Backend.
 
-This module defines the User domain entity which is used for authentication,
-authorization, and tracking user actions in the system.
+This module defines the User entity representing a user in the system
+with attributes and behaviors.
 """
-from datetime import datetime
-from typing import List, Optional
 from uuid import UUID
+from typing import List, Optional
+from pydantic import BaseModel, EmailStr, Field
+
+from app.domain.enums.role import Role
 
 
-class User:
+class User(BaseModel):
     """
-    User domain entity.
+    User entity representing a user in the Novamind system.
     
-    This class represents a user in the system, which could be a clinician,
-    administrator, or patient. It contains the essential user data required
-    for authentication and authorization.
+    This is a domain entity containing the core user attributes
+    and is independent of persistence concerns.
     """
+    id: UUID = Field(..., description="Unique identifier for the user")
+    username: str = Field(..., min_length=3, max_length=50, description="Username for login")
+    email: EmailStr = Field(..., description="Email address of the user")
+    roles: List[Role] = Field(default_factory=lambda: [Role.USER], description="User roles for authorization")
+    is_active: bool = Field(default=True, description="Whether the user account is active")
+    full_name: Optional[str] = Field(None, description="Full name of the user")
     
-    def __init__(
-        self,
-        id: UUID,
-        email: str,
-        first_name: str,
-        last_name: str,
-        hashed_password: str,
-        is_active: bool = True,
-        roles: List[str] = None,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None
-    ):
-        """
-        Initialize a User entity.
+    class Config:
+        """Pydantic model configuration."""
+        frozen = True  # Make instances immutable
         
-        Args:
-            id: Unique identifier for the user
-            email: User's email address
-            first_name: User's first name
-            last_name: User's last name
-            hashed_password: Securely hashed password
-            is_active: Whether the user account is active
-            roles: List of roles assigned to the user
-            created_at: When the user was created
-            updated_at: When the user was last updated
-        """
-        self.id = id
-        self.email = email
-        self.first_name = first_name
-        self.last_name = last_name
-        self.hashed_password = hashed_password
-        self.is_active = is_active
-        self.roles = roles or []
-        self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
-    
-    @property
-    def full_name(self) -> str:
-        """Get the user's full name."""
-        return f"{self.first_name} {self.last_name}"
-    
-    def has_role(self, role: str) -> bool:
+    def has_role(self, role: Role) -> bool:
         """
         Check if the user has a specific role.
         
         Args:
-            role: Role to check
+            role: The role to check for
             
         Returns:
-            True if the user has the specified role
+            True if the user has the role, False otherwise
         """
         return role in self.roles
     
-    def add_role(self, role: str) -> None:
+    def has_any_role(self, roles: List[Role]) -> bool:
         """
-        Add a role to the user.
+        Check if the user has any of the specified roles.
         
         Args:
-            role: Role to add
+            roles: List of roles to check for
+            
+        Returns:
+            True if the user has any of the roles, False otherwise
         """
-        if role not in self.roles:
-            self.roles.append(role)
-            self.updated_at = datetime.utcnow()
-    
-    def remove_role(self, role: str) -> None:
+        return any(role in self.roles for role in roles)
+
+    def has_all_roles(self, roles: List[Role]) -> bool:
         """
-        Remove a role from the user.
+        Check if the user has all of the specified roles.
         
         Args:
-            role: Role to remove
+            roles: List of roles to check for
+            
+        Returns:
+            True if the user has all of the roles, False otherwise
         """
-        if role in self.roles:
-            self.roles.remove(role)
-            self.updated_at = datetime.utcnow()
+        return all(role in self.roles for role in roles)

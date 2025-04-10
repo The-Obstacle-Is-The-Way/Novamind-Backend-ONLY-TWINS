@@ -17,8 +17,17 @@ Base = declarative_base()
 is_test = os.environ.get("TESTING", "0").lower() in ("1", "true", "yes")
 
 # Create the SQLAlchemy engine with appropriate driver based on environment
+database_url = settings.SQLALCHEMY_DATABASE_URI
+
+# Ensure async driver is used
+if database_url.startswith('postgresql://'):
+    database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
+elif database_url.startswith('sqlite://'):
+    database_url = database_url.replace('sqlite://', 'sqlite+aiosqlite://', 1)
+
+# Create the engine with proper async URL
 engine = create_async_engine(
-    settings.SQLALCHEMY_DATABASE_URI,
+    database_url,
     echo=False,
     future=True,
     pool_pre_ping=True
