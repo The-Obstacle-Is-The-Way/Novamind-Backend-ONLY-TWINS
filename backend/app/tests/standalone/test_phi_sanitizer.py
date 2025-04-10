@@ -1,290 +1,293 @@
-"""
-Self-contained test for PHI Sanitizer functionality.
-
-This test module includes both the necessary PHI sanitizer class and tests
-in a single file to validate that the sanitization logic is working correctly.
-"""
-import unittest
+# -*- coding: utf-8 -*-
+import pytest
 import re
-import logging
-from typing import Dict, Any, List, Union, Optional, Pattern, Set
-from datetime import datetime
+import json
+from unittest.mock import patch, MagicMock
+
+from app.infrastructure.security.log_sanitizer import PHISanitizer
+from app.core.utils.validation import PHIDetector
 
 
-class PHISanitizer:
-    """
-    Class for detecting and sanitizing Protected Health Information (PHI).
-    
-    This class provides methods to detect various types of PHI in text
-    and replace them with safe placeholders to ensure HIPAA compliance.
-    """
-    
-    def __init__(self):
-        """Initialize PHI detection patterns and sanitization rules."""
-        # Simple patterns to identify PHI contexts
-        self._phi_patterns: Dict[str, Pattern] = {
-            "names": re.compile(r'\b[A-Z][a-z]+ [A-Z][a-z]+\b'),  # Basic name pattern
-            "ssn": re.compile(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b'),  # SSN pattern
-            "dob": re.compile(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b'),  # Date pattern
-            "phone": re.compile(r'\b\(?\d{3}\)?[-\s]?\d{3}[-\s]?\d{4}\b'),  # Phone pattern
-            "email": re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'),  # Email pattern
-            "address": re.compile(r'\b\d+\s[A-Za-z0-9\s,]+(?:\s*(?:Apt|Unit|Suite)\s*[A-Za-z0-9]+)?\b'),  # Address pattern
-            "mrn": re.compile(r'\b(?:MR[-\s]?|#)?\d{5,10}\b'),  # Medical Record Number pattern
-        }
-        
-        # Context patterns for special handling
-        self._context_patterns: Dict[str, Dict[str, Pattern]] = {
-            "phone": {
-                "pattern": re.compile(r'Phone: .*|Call at .*'),
-                "replacement": "Phone: [REDACTED]"
-            },
-            "mrn": {
-                "pattern": re.compile(r'MRN: .*'),
-                "replacement": "MRN: [REDACTED]"
-            },
-            "medical_record": {
-                "pattern": re.compile(r'Medical Record: .*'),
-                "replacement": "Medical Record: [REDACTED]"
-            },
-            "address": {
-                "pattern": re.compile(r'Lives at .*'),
-                "replacement": "Lives at [REDACTED]"
-            }
-        }
-        
-        # Initialize a logger
-        self._logger = logging.getLogger(__name__)
-        
-    def sanitize(self, data: Union[str, Dict, List, Any]) -> Union[str, Dict, List, Any]:
-        """
-        Sanitize PHI from text or data structures.
-        
-        This method detects and replaces PHI in text. It can process strings,
-        dictionaries, lists, or other data structures recursively.
-        
-        Args:
-            data: Text or data structure to sanitize
-            
-        Returns:
-            Sanitized text or data structure
-        """
-        if isinstance(data, str):
-            return self._sanitize_string(data)
-        elif isinstance(data, dict):
-            return self._sanitize_dict(data)
-        elif isinstance(data, list):
-            return self._sanitize_list(data)
-        else:
-            # Return other data types unchanged
-            return data
-    
-    def _sanitize_string(self, text: str) -> str:
-        """
-        Sanitize PHI from a string.
-        
-        Args:
-            text: String to sanitize
-            
-        Returns:
-            Sanitized string
-        """
-        # Check if this is a multi-line text (like complex medical records)
-        if "\n" in text:
-            lines = text.split("\n")
-            sanitized_lines = [self._sanitize_string(line) for line in lines]
-            return "\n".join(sanitized_lines)
-            
-        # First, check if this string matches any context patterns
-        for context_name, context_data in self._context_patterns.items():
-            if context_data["pattern"].search(text):
-                return context_data["replacement"]
-        
-        # Otherwise, process with each PHI pattern
-        sanitized_text = text
-        for phi_type, pattern in self._phi_patterns.items():
-            # Replace each match with [REDACTED]
-            sanitized_text = pattern.sub("[REDACTED]", sanitized_text)
-        
-        return sanitized_text
-    
-    def _sanitize_dict(self, data: Dict) -> Dict:
-        """
-        Sanitize PHI from a dictionary recursively.
-        
-        Args:
-            data: Dictionary to sanitize
-            
-        Returns:
-            Sanitized dictionary
-        """
-        result = {}
-        for key, value in data.items():
-            result[key] = self.sanitize(value)
-        return result
-    
-    def _sanitize_list(self, data: List) -> List:
-        """
-        Sanitize PHI from a list recursively.
-        
-        Args:
-            data: List to sanitize
-            
-        Returns:
-            Sanitized list
-        """
-        return [self.sanitize(item) for item in data]
+class TestPHISanitizer:
+    """Test suite for the PHI Sanitizer component."""
 
+    @pytest.fixture
+    def sanitizer(self):
+        """Create a PHI sanitizer instance for testing."""
+        return PHISanitizer()
 
-class TestPHISanitizer(unittest.TestCase):
-    """Test the PHI sanitizer class."""
-    
-    def setUp(self):
-        """Set up a PHI sanitizer for each test."""
-        self.sanitizer = PHISanitizer()
-    
-    def test_sanitize_name(self):
-        """Test sanitizing personal names."""
-        # Test with a simple name
-        text = "Patient name is John Smith."
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Patient name is [REDACTED].")
-        
-        # Test with multiple names
-        text = "Dr. Jane Doe met with patient John Smith."
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Dr. [REDACTED] met with patient [REDACTED].")
-    
-    def test_sanitize_ssn(self):
-        """Test sanitizing Social Security Numbers."""
-        # Test with hyphenated SSN
-        text = "Patient SSN: 123-45-6789"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Patient SSN: [REDACTED]")
-        
-        # Test with non-hyphenated SSN
-        text = "SSN: 123456789"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "SSN: [REDACTED]")
-    
-    def test_sanitize_dob(self):
-        """Test sanitizing dates of birth."""
-        # Test with MM/DD/YYYY format
-        text = "DOB: 01/15/1985"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "DOB: [REDACTED]")
-        
-        # Test with DD-MM-YY format
-        text = "Date of Birth: 15-01-85"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Date of Birth: [REDACTED]")
-    
-    def test_sanitize_phone(self):
-        """Test sanitizing phone numbers."""
-        # Test with formatted phone number
-        text = "Phone: (555) 123-4567"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Phone: [REDACTED]")
-        
-        # Test with unformatted phone number
-        text = "Call at 5551234567"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Phone: [REDACTED]")
-    
-    def test_sanitize_email(self):
-        """Test sanitizing email addresses."""
-        text = "Email: patient@example.com"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Email: [REDACTED]")
-    
-    def test_sanitize_address(self):
-        """Test sanitizing physical addresses."""
-        text = "Lives at 123 Main Street, Apt 4B"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Lives at [REDACTED]")
-    
-    def test_sanitize_mrn(self):
-        """Test sanitizing medical record numbers."""
-        # Test with MR prefix
-        text = "MRN: MR12345678"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "MRN: [REDACTED]")
-        
-        # Test with # prefix
-        text = "Medical Record: #87654321"
-        sanitized = self.sanitizer.sanitize(text)
-        self.assertEqual(sanitized, "Medical Record: [REDACTED]")
-    
-    def test_sanitize_complex_text(self):
-        """Test sanitizing text with multiple PHI elements."""
-        text = """
-        Patient: John Smith
-        DOB: 01/15/1985
-        SSN: 123-45-6789
-        Phone: (555) 123-4567
-        Email: john.smith@example.com
-        Address: 123 Main Street, Apt 4B
-        MRN: MR12345678
-        
-        Dr. Jane Doe noted that the patient reported increased anxiety.
-        """
-        
-        sanitized = self.sanitizer.sanitize(text)
-        
-        # Check that all PHI is redacted
-        self.assertNotIn("John Smith", sanitized)
-        self.assertNotIn("01/15/1985", sanitized)
-        self.assertNotIn("123-45-6789", sanitized)
-        self.assertNotIn("(555) 123-4567", sanitized)
-        self.assertNotIn("john.smith@example.com", sanitized)
-        self.assertNotIn("123 Main Street", sanitized)
-        self.assertNotIn("MR12345678", sanitized)
-        self.assertNotIn("Jane Doe", sanitized)
-        
-        # Check that [REDACTED] appears the correct number of times
-        # Count will vary based on implementation, so just check there are several
-        self.assertGreaterEqual(sanitized.count("[REDACTED]"), 5)
-    
-    def test_sanitize_dict(self):
-        """Test sanitizing a dictionary."""
-        data = {
+    @pytest.fixture
+    def sample_phi_data(self):
+        """Sample PHI data for testing sanitization."""
+        return {
+            "ssn": "123-45-6789",
             "name": "John Smith",
-            "contact": {
-                "phone": "555-123-4567",
-                "email": "john.smith@example.com"
+            "dob": "01/15/1980",
+            "phone": "(555) 123-4567",
+            "email": "john.smith@example.com",
+            "address": "123 Main St, Anytown, CA 12345",
+            "mrn": "MRN12345678",
+            "insurance_id": "INS123456789",
+        }
+
+    def test_sanitize_string_with_ssn(self, sanitizer):
+        """Test sanitization of strings containing SSNs."""
+        input_text = "Patient SSN: 123-45-6789"
+        sanitized = sanitizer.sanitize_text(input_text)
+        
+        assert "123-45-6789" not in sanitized
+        assert "SSN" in sanitized
+        assert "[REDACTED:SSN]" in sanitized
+
+    def test_sanitize_string_with_multiple_phi(self, sanitizer):
+        """Test sanitization of strings containing multiple PHI elements."""
+        input_text = "Patient John Smith (DOB: 01/15/1980) with phone (555) 123-4567"
+        sanitized = sanitizer.sanitize_text(input_text)
+        
+        assert "John Smith" not in sanitized
+        assert "01/15/1980" not in sanitized
+        assert "(555) 123-4567" not in sanitized
+        assert "[REDACTED:NAME]" in sanitized
+        assert "[REDACTED:DOB]" in sanitized
+        assert "[REDACTED:PHONE]" in sanitized
+
+    def test_sanitize_json_with_phi(self, sanitizer, sample_phi_data):
+        """Test sanitization of JSON data containing PHI."""
+        input_json = json.dumps(sample_phi_data)
+        sanitized = sanitizer.sanitize_json(input_json)
+        sanitized_data = json.loads(sanitized)
+        
+        # Check that PHI is sanitized but structure is preserved
+        assert sanitized_data["ssn"] != "123-45-6789"
+        assert sanitized_data["name"] != "John Smith"
+        assert sanitized_data["phone"] != "(555) 123-4567"
+        assert sanitized_data["email"] != "john.smith@example.com"
+        
+        # Verify redaction markers
+        assert "[REDACTED:SSN]" in sanitized_data["ssn"]
+        assert "[REDACTED:NAME]" in sanitized_data["name"]
+        assert "[REDACTED:PHONE]" in sanitized_data["phone"]
+
+    def test_sanitize_dict_with_phi(self, sanitizer, sample_phi_data):
+        """Test sanitization of dictionary data containing PHI."""
+        sanitized_data = sanitizer.sanitize_dict(sample_phi_data)
+        
+        # Check that PHI is sanitized but structure is preserved
+        assert sanitized_data["ssn"] != "123-45-6789"
+        assert sanitized_data["name"] != "John Smith"
+        assert sanitized_data["phone"] != "(555) 123-4567"
+        assert sanitized_data["email"] != "john.smith@example.com"
+        
+        # Verify redaction markers
+        assert "[REDACTED:SSN]" in sanitized_data["ssn"]
+        assert "[REDACTED:NAME]" in sanitized_data["name"]
+        assert "[REDACTED:PHONE]" in sanitized_data["phone"]
+
+    def test_sanitize_nested_dict_with_phi(self, sanitizer):
+        """Test sanitization of nested dictionaries containing PHI."""
+        nested_data = {
+            "patient": {
+                "demographics": {
+                    "name": "Jane Doe",
+                    "ssn": "987-65-4321",
+                    "contact": {
+                        "phone": "(555) 987-6543",
+                        "email": "jane.doe@example.com"
+                    }
+                },
+                "insurance": {
+                    "provider": "Health Insurance Co",
+                    "id": "INS987654321"
+                }
             },
-            "medical_details": {
-                "diagnosis": "Anxiety disorder",
-                "ssn": "123-45-6789"
-            }
+            "non_phi_field": "This data should be untouched"
         }
         
-        sanitized = self.sanitizer.sanitize(data)
+        sanitized_data = sanitizer.sanitize_dict(nested_data)
         
-        # Check that all PHI is redacted
-        self.assertEqual(sanitized["name"], "[REDACTED]")
-        self.assertEqual(sanitized["contact"]["phone"], "[REDACTED]")
-        self.assertEqual(sanitized["contact"]["email"], "[REDACTED]")
-        # Non-PHI should be unchanged
-        self.assertEqual(sanitized["medical_details"]["diagnosis"], "Anxiety disorder")
-        # PHI should be redacted
-        self.assertEqual(sanitized["medical_details"]["ssn"], "[REDACTED]")
-    
-    def test_sanitize_list(self):
-        """Test sanitizing a list."""
-        data = [
-            "Patient: John Smith",
-            "Phone: 555-123-4567",
-            "Notes: Patient reports feeling better."
+        # Check nested PHI is sanitized
+        assert sanitized_data["patient"]["demographics"]["name"] != "Jane Doe"
+        assert sanitized_data["patient"]["demographics"]["ssn"] != "987-65-4321"
+        assert sanitized_data["patient"]["demographics"]["contact"]["phone"] != "(555) 987-6543"
+        assert sanitized_data["patient"]["demographics"]["contact"]["email"] != "jane.doe@example.com"
+        
+        # Non-PHI data should be untouched
+        assert sanitized_data["non_phi_field"] == "This data should be untouched"
+        assert sanitized_data["patient"]["insurance"]["provider"] == "Health Insurance Co"
+
+    def test_sanitize_list_with_phi(self, sanitizer):
+        """Test sanitization of lists containing PHI."""
+        list_data = [
+            "Patient John Doe",
+            "SSN: 123-45-6789",
+            "Phone: (555) 123-4567",
+            "Non-PHI data"
         ]
         
-        sanitized = self.sanitizer.sanitize(data)
+        sanitized_list = sanitizer.sanitize_list(list_data)
         
-        # Check that all PHI is redacted
-        self.assertEqual(sanitized[0], "Patient: [REDACTED]")
-        self.assertEqual(sanitized[1], "Phone: [REDACTED]")
-        # Non-PHI should be unchanged
-        self.assertEqual(sanitized[2], "Notes: Patient reports feeling better.")
+        # PHI should be sanitized
+        assert "John Doe" not in sanitized_list[0]
+        assert "123-45-6789" not in sanitized_list[1]
+        assert "(555) 123-4567" not in sanitized_list[2]
+        
+        # Non-PHI should be untouched
+        assert sanitized_list[3] == "Non-PHI data"
 
+    def test_sanitize_complex_structure(self, sanitizer):
+        """Test sanitization of complex nested structures with PHI."""
+        complex_data = {
+            "patients": [
+                {
+                    "name": "John Smith",
+                    "records": [
+                        {"date": "2025-01-15", "ssn": "123-45-6789"},
+                        {"date": "2025-02-20", "phone": "(555) 123-4567"}
+                    ]
+                },
+                {
+                    "name": "Jane Doe",
+                    "records": [
+                        {"date": "2025-03-10", "ssn": "987-65-4321"},
+                        {"date": "2025-04-05", "phone": "(555) 987-6543"}
+                    ]
+                }
+            ],
+            "metadata": {
+                "facility": "Medical Center",
+                "generated_at": "2025-03-27"
+            }
+        }
+        
+        sanitized_data = sanitizer.sanitize_dict(complex_data)
+        
+        # Check first patient's PHI is sanitized
+        assert sanitized_data["patients"][0]["name"] != "John Smith"
+        assert "123-45-6789" not in str(sanitized_data["patients"][0]["records"][0])
+        assert "(555) 123-4567" not in str(sanitized_data["patients"][0]["records"][1])
+        
+        # Check second patient's PHI is sanitized
+        assert sanitized_data["patients"][1]["name"] != "Jane Doe"
+        assert "987-65-4321" not in str(sanitized_data["patients"][1]["records"][0])
+        assert "(555) 987-6543" not in str(sanitized_data["patients"][1]["records"][1])
+        
+        # Non-PHI should be untouched
+        assert sanitized_data["metadata"]["facility"] == "Medical Center"
+        assert sanitized_data["metadata"]["generated_at"] == "2025-03-27"
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_sanitize_phi_in_logs(self, sanitizer):
+        """Test sanitization of PHI in log messages."""
+        log_message = "Error processing patient John Smith (SSN: 123-45-6789) due to system failure"
+        sanitized = sanitizer.sanitize_text(log_message)
+        
+        assert "John Smith" not in sanitized
+        assert "123-45-6789" not in sanitized
+        assert "Error processing patient" in sanitized
+        assert "due to system failure" in sanitized
+
+    def test_phi_detection_integration(self, sanitizer):
+        """Test integration with PHI detector component."""
+        with patch('app.infrastructure.security.log_sanitizer.PHIDetector') as mock_detector:
+            # Setup mock PHI detector
+            mock_detector_instance = MagicMock()
+            mock_detector.return_value = mock_detector_instance
+            
+            # Configure mock to detect PHI
+            mock_detector_instance.detect_phi.return_value = [
+                MagicMock(phi_type="SSN", value="123-45-6789", position=10)
+            ]
+            
+            # Create new sanitizer with mocked detector
+            test_sanitizer = PHISanitizer()
+            
+            # Test sanitization
+            result = test_sanitizer.sanitize_text("Patient SSN: 123-45-6789")
+            
+            # Verify PHI detector was called
+            mock_detector_instance.detect_phi.assert_called_once()
+            assert "123-45-6789" not in result
+
+    def test_phi_sanitizer_performance(self, sanitizer, sample_phi_data):
+        """Test sanitizer performance with large nested structures."""
+        # Create a large nested structure with PHI
+        large_data = {
+            "patients": [sample_phi_data.copy() for _ in range(100)],
+            "metadata": {"facility": "Medical Center"}
+        }
+        
+        # Measure sanitization time
+        import time
+        start = time.time()
+        sanitized_data = sanitizer.sanitize_dict(large_data)
+        end = time.time()
+        
+        # Sanitization should be reasonably fast (adjust threshold as needed)
+        assert end - start < 1.0, "Sanitization is too slow for large datasets"
+        
+        # Verify sanitization was effective
+        assert "123-45-6789" not in str(sanitized_data)
+        assert "John Smith" not in str(sanitized_data)
+
+    def test_preservation_of_non_phi(self, sanitizer):
+        """Test that non-PHI data is preserved during sanitization."""
+        mixed_data = {
+            "patient_id": "PT12345",  # Not PHI
+            "name": "John Smith",     # PHI
+            "ssn": "123-45-6789",     # PHI
+            "status": "Active",       # Not PHI
+            "priority": 1,            # Not PHI
+            "is_insured": True        # Not PHI
+        }
+        
+        sanitized = sanitizer.sanitize_dict(mixed_data)
+        
+        # PHI should be sanitized
+        assert sanitized["name"] != "John Smith"
+        assert sanitized["ssn"] != "123-45-6789"
+        
+        # Non-PHI should be preserved
+        assert sanitized["patient_id"] == "PT12345"
+        assert sanitized["status"] == "Active"
+        assert sanitized["priority"] == 1
+        assert sanitized["is_insured"] is True
+
+    def test_sanitizer_edge_cases(self, sanitizer):
+        """Test sanitizer with edge cases and unusual inputs."""
+        # Test with None
+        assert sanitizer.sanitize_text(None) is None
+        
+        # Test with empty string
+        assert sanitizer.sanitize_text("") == ""
+        
+        # Test with empty dict
+        assert sanitizer.sanitize_dict({}) == {}
+        
+        # Test with empty list
+        assert sanitizer.sanitize_list([]) == []
+        
+        # Test with mixed types in list
+        mixed_list = ["John Smith", 123, None, True, {"ssn": "123-45-6789"}]
+        sanitized_list = sanitizer.sanitize_list(mixed_list)
+        
+        assert "John Smith" not in str(sanitized_list[0])
+        assert sanitized_list[1] == 123
+        assert sanitized_list[2] is None
+        assert sanitized_list[3] is True
+        assert "123-45-6789" not in str(sanitized_list[4])
+
+    def test_redaction_format_consistency(self, sanitizer):
+        """Test that redaction format is consistent."""
+        phi_types = ["SSN", "NAME", "DOB", "PHONE", "EMAIL", "ADDRESS", "MRN"]
+        
+        for phi_type in phi_types:
+            test_text = f"This contains {phi_type} data"
+            sanitized = sanitizer.sanitize_text(test_text)
+            
+            # Check that redaction format is consistent
+            redaction_pattern = re.compile(r'\[REDACTED:([A-Z]+)\]')
+            matches = redaction_pattern.findall(sanitized)
+            
+            # We should have redactions and they should be in the expected format
+            if matches:
+                for match in matches:
+                    assert match in phi_types
