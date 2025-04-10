@@ -1,79 +1,67 @@
 """
-Temporal events module for the Temporal Neurotransmitter System.
+Temporal event entities for digital twin neural network modeling.
 
-This module defines the foundational data structure for representing
-time-based events with values and metadata.
+This module defines the core entities used to represent temporal events and their 
+correlations in the digital twin system, providing the foundation for neural network 
+modeling and temporal analysis.
 """
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Optional, Any, Generic, TypeVar, Set
-import uuid
-from uuid import UUID
-from enum import Enum, auto
 
-T = TypeVar('T', float, int, bool, str)
+from datetime import datetime, timedelta, UTC
+from enum import Enum, auto
+from typing import Any, Dict, Generic, List, Optional, Set, TypeVar, Union
+from uuid import UUID
+import uuid
+
+
+T = TypeVar('T')  # Type variable for event values
 
 
 class CorrelationType(Enum):
     """Types of correlations between events."""
-    CAUSATION = "causation"
-    ASSOCIATION = "association"
-    TEMPORAL = "temporal"
-    CAUSAL_CHAIN = "causal_chain"
-    BIDIRECTIONAL = "bidirectional"
+    CAUSAL = auto()           # Direct cause and effect
+    SEQUENTIAL = auto()       # Temporal sequence relationship
+    ASSOCIATIVE = auto()      # Statistical association
+    HIERARCHICAL = auto()     # Parent-child relationship
+    PARALLEL = auto()         # Concurrent events
+    COMPOUND = auto()         # Multiple correlation types
 
 
 class TemporalEvent(Generic[T]):
     """
-    An event that occurs at a specific point in time.
+    Base class for all temporal events in the digital twin system.
     
-    This class represents any data point with a timestamp, particularly
-    neurotransmitter levels measured at specific times. It includes
-    both the value and optional metadata for rich context.
+    A temporal event represents a state change, observation, or measurement
+    occurring at a specific point in time. It provides the foundation for
+    correlation analysis, pattern detection, and event stream processing.
     """
     
     def __init__(
         self,
-        timestamp: datetime,
-        value: T,
+        timestamp: datetime = None,
+        value: T = None,
         event_id: Optional[UUID] = None,
         patient_id: Optional[UUID] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
+        event_type: str = None
     ):
         """
         Initialize a new temporal event.
         
         Args:
             timestamp: When the event occurred
-            value: The value associated with this event
+            value: The event's value/payload
             event_id: Unique identifier for the event
-            patient_id: Identifier of the associated patient
-            metadata: Additional information about this event
+            patient_id: Associated patient identifier
+            metadata: Additional contextual information
+            event_type: Classification of the event
         """
-        self.timestamp = timestamp
+        self.timestamp = timestamp or datetime.now(UTC)
         self.value = value
         self.event_id = event_id or uuid.uuid4()
         self.patient_id = patient_id
         self.metadata = metadata or {}
-    
-    def add_metadata(self, key: str, value: Any) -> None:
-        """
-        Add a metadata key-value pair to the event.
+        self.event_type = event_type or self.__class__.__name__
         
-        Args:
-            key: Metadata key
-            value: Metadata value
-        """
-        self.metadata[key] = value
-    
-    def update_value(self, new_value: T) -> None:
-        """
-        Update the event's value.
-        
-        Args:
-            new_value: New value for the event
-        """
-        self.value = new_value
-    
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert event to dictionary for serialization.
@@ -81,26 +69,14 @@ class TemporalEvent(Generic[T]):
         Returns:
             Dictionary representation of the event
         """
-        result = {
-            "event_id": str(self.event_id),
+        return {
             "timestamp": self.timestamp.isoformat(),
             "value": self.value,
-            "metadata": self.metadata
+            "event_id": str(self.event_id),
+            "patient_id": str(self.patient_id) if self.patient_id else None,
+            "metadata": self.metadata,
+            "event_type": self.event_type
         }
-        
-        if self.patient_id:
-            result["patient_id"] = str(self.patient_id)
-        
-        return result
-    
-    def __str__(self) -> str:
-        """
-        Get string representation of the event.
-        
-        Returns:
-            String representation
-        """
-        return f"Event({self.timestamp.isoformat()}: {self.value})"
     
     def __eq__(self, other) -> bool:
         """
@@ -120,14 +96,24 @@ class TemporalEvent(Generic[T]):
             self.value == other.value and
             self.event_id == other.event_id
         )
+        
+    def __hash__(self) -> int:
+        """
+        Get hash of the event for use in sets and dictionaries.
+        
+        Returns:
+            Hash value based on event_id
+        """
+        return hash(self.event_id)
 
 
 class CorrelatedEvent(TemporalEvent[T]):
     """
-    An event that is correlated with other events.
+    An event that can be correlated with other events.
     
-    This class extends TemporalEvent with correlation capabilities,
-    tracking relationships between events for analysis.
+    Extends the base temporal event with correlation capabilities,
+    allowing it to participate in complex causal or associative
+    relationships with other events.
     """
     
     def __init__(
@@ -140,55 +126,48 @@ class CorrelatedEvent(TemporalEvent[T]):
         correlation_type: Optional[CorrelationType] = None,
         correlation_strength: float = 0.0,
         correlated_events: Optional[Set[UUID]] = None,
-        event_type: Optional[str] = None
+        event_type: str = None,
+        correlation_id: Optional[UUID] = None,
+        parent_event_id: Optional[UUID] = None
     ):
         """
         Initialize a new correlated event.
         
         Args:
             timestamp: When the event occurred
-            value: The value associated with this event
+            value: The event's value/payload
             event_id: Unique identifier for the event
-            patient_id: Identifier of the associated patient
-            metadata: Additional information about this event
-            correlation_type: Type of correlation with other events
-            correlation_strength: Strength of correlation (0.0-1.0)
-            correlated_events: Set of event IDs this event is correlated with
-            event_type: Type of the event (e.g., "neurotransmitter_sequence_generated")
+            patient_id: Associated patient identifier
+            metadata: Additional contextual information
+            correlation_type: Type of correlation
+            correlation_strength: Strength of correlation (0.0 to 1.0)
+            correlated_events: Set of correlated event IDs
+            event_type: Classification of the event
+            correlation_id: ID for grouping related events
+            parent_event_id: Optional ID of parent event
         """
-        # If timestamp is not provided (for metadata-only events),
-        # use current time
-        if timestamp is None:
-            timestamp = datetime.now()
-        
-        # For metadata-only events, use empty value
-        if value is None:
-            value = 0.0 if T == float else ""  # type: ignore
-        
-        # Update metadata with event_type if provided
-        local_metadata = metadata or {}
-        if event_type:
-            if local_metadata is None:
-                local_metadata = {}
-            local_metadata["event_type"] = event_type
-        
         super().__init__(
             timestamp=timestamp,
             value=value,
             event_id=event_id,
             patient_id=patient_id,
-            metadata=local_metadata
+            metadata=metadata,
+            event_type=event_type
         )
         
         self.correlation_type = correlation_type
         self.correlation_strength = max(0.0, min(1.0, correlation_strength))
         self.correlated_events = correlated_events or set()
+        self.correlation_id = correlation_id or self.event_id  # Use provided correlation_id or default to event_id
+        self.parent_event_id = parent_event_id  # Use the provided parent_event_id
+        # Add id property to match event_id for test compatibility
+        self.id = self.event_id
     
-    def add_correlation(
-        self,
+    def add_correlated_event(
+        self, 
         event_id: UUID,
-        correlation_type: CorrelationType,
-        strength: float = 0.5
+        correlation_type: CorrelationType = None,
+        correlation_strength: float = 0.5
     ) -> None:
         """
         Add a correlation to another event.
@@ -196,33 +175,73 @@ class CorrelatedEvent(TemporalEvent[T]):
         Args:
             event_id: ID of the event to correlate with
             correlation_type: Type of correlation
-            strength: Strength of correlation (0.0-1.0)
+            correlation_strength: Strength of correlation (0.0 to 1.0)
         """
+        if event_id == self.event_id:
+            return  # Don't correlate with self
+            
         self.correlated_events.add(event_id)
-        self.correlation_type = correlation_type
-        self.correlation_strength = max(0.0, min(1.0, strength))
+        
+        # Update correlation type if provided
+        if correlation_type is not None:
+            self.correlation_type = correlation_type
+            
+        # Update strength if higher than current
+        if correlation_strength > self.correlation_strength:
+            self.correlation_strength = min(1.0, correlation_strength)
     
     def to_dict(self) -> Dict[str, Any]:
         """
-        Convert event to dictionary for serialization.
+        Convert correlated event to dictionary for serialization.
         
         Returns:
-            Dictionary representation of the event
+            Dictionary representation of the correlated event
         """
-        result = super().to_dict()
-        
-        result.update({
+        base_dict = super().to_dict()
+        base_dict.update({
+            "correlation_type": self.correlation_type.name if self.correlation_type else None,
             "correlation_strength": self.correlation_strength,
-            "correlated_events": [str(event_id) for event_id in self.correlated_events]
+            "correlated_events": [str(e) for e in self.correlated_events],
+            "correlation_id": str(self.correlation_id),
+            "parent_event_id": str(self.parent_event_id) if self.parent_event_id else None
         })
+        return base_dict
+    
+    @classmethod
+    def create_child_event(
+        cls,
+        parent_event: 'CorrelatedEvent',
+        event_type: str,
+        **kwargs
+    ) -> 'CorrelatedEvent':
+        """
+        Create a child event from a parent event.
         
-        if self.correlation_type:
-            result["correlation_type"] = self.correlation_type.value
+        Args:
+            parent_event: The parent event
+            event_type: Type of the child event
+            **kwargs: Additional attributes for the child event
             
-        if "event_type" in self.metadata:
-            result["event_type"] = self.metadata["event_type"]
+        Returns:
+            A new child event with correlation to the parent
+        """
+        # Store all additional kwargs as metadata
+        metadata = kwargs.copy()
         
-        return result
+        # Create the child event
+        child_event = cls(
+            event_type=event_type,
+            metadata=metadata,
+            timestamp=datetime.now(UTC)
+        )
+        
+        # Set correlation ID to match parent
+        child_event.correlation_id = parent_event.correlation_id
+        
+        # Set parent event ID
+        child_event.parent_event_id = parent_event.event_id
+        
+        return child_event
 
 
 class EventChain:
@@ -235,10 +254,11 @@ class EventChain:
     
     def __init__(
         self,
-        name: str,
+        correlation_id: UUID,
+        name: Optional[str] = None,
         chain_id: Optional[UUID] = None,
         patient_id: Optional[UUID] = None,
-        events: Optional[List[UUID]] = None,
+        events: Optional[List[CorrelatedEvent]] = None,
         metadata: Optional[Dict[str, Any]] = None,
         created_at: Optional[datetime] = None
     ):
@@ -246,29 +266,117 @@ class EventChain:
         Initialize a new event chain.
         
         Args:
+            correlation_id: ID used to correlate events in this chain
             name: Name of the chain
             chain_id: Unique identifier for the chain
             patient_id: Identifier of the associated patient
-            events: Ordered list of event IDs in this chain
+            events: Ordered list of events in this chain
             metadata: Additional metadata for the chain
             created_at: Creation timestamp
         """
-        self.name = name
+        self.correlation_id = correlation_id
+        self.name = name or f"Chain-{str(correlation_id)[:8]}"
         self.chain_id = chain_id or uuid.uuid4()
         self.patient_id = patient_id
         self.events = events or []
         self.metadata = metadata or {}
-        self.created_at = created_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(UTC)
     
-    def add_event(self, event_id: UUID) -> None:
+    def add_event(self, event: CorrelatedEvent) -> None:
         """
         Add an event to the chain.
         
         Args:
-            event_id: The event ID to add
+            event: The event to add
+            
+        Raises:
+            ValueError: If the event doesn't match the chain's correlation ID
         """
-        self.events.append(event_id)
+        if event.correlation_id != self.correlation_id:
+            raise ValueError(
+                f"Event correlation ID {event.correlation_id} does not match "
+                f"chain correlation ID {self.correlation_id}"
+            )
+        self.events.append(event)
     
+    def get_root_event(self) -> Optional[CorrelatedEvent]:
+        """
+        Get the root event (event with no parent) in the chain.
+        
+        Returns:
+            The root event, or None if no events in chain
+        """
+        if not self.events:
+            return None
+            
+        for event in self.events:
+            if event.parent_event_id is None:
+                return event
+                
+        # If no root event found, return the first event
+        return self.events[0]
+        
+    def get_child_events(self, parent_id: UUID) -> List[CorrelatedEvent]:
+        """
+        Get all events that have the specified event as their parent.
+        
+        Args:
+            parent_id: ID of the parent event
+            
+        Returns:
+            List of child events
+        """
+        return [event for event in self.events if event.parent_event_id == parent_id]
+    
+    def get_event_by_id(self, event_id: UUID) -> Optional[CorrelatedEvent]:
+        """
+        Get an event by its ID.
+        
+        Args:
+            event_id: ID of the event to retrieve
+            
+        Returns:
+            The event with the specified ID, or None if not found
+        """
+        for event in self.events:
+            if event.event_id == event_id:
+                return event
+        
+        return None
+        
+    def get_events_by_type(self, event_type: str) -> List[CorrelatedEvent]:
+        """
+        Get all events of a specific type in the chain.
+        
+        Args:
+            event_type: The type of events to retrieve
+            
+        Returns:
+            List of events matching the specified type
+        """
+        return [event for event in self.events if event.event_type == event_type]
+        
+    def build_event_tree(self) -> Dict[UUID, List[UUID]]:
+        """
+        Build a mapping of event IDs to their child event IDs.
+        
+        Returns:
+            A dictionary where keys are event IDs and values are lists of child event IDs
+        """
+        # Initialize the tree
+        tree = {}
+        
+        # Process each event
+        for event in self.events:
+            # Find all children of this event
+            children = self.get_child_events(event.event_id)
+            
+            # If there are children, add to the tree
+            if children:
+                tree[event.event_id] = [child.event_id for child in children]
+                
+        return tree
+        
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert chain to dictionary for serialization.
@@ -278,21 +386,22 @@ class EventChain:
         """
         return {
             "name": self.name,
+            "correlation_id": str(self.correlation_id),
             "chain_id": str(self.chain_id),
             "created_at": self.created_at.isoformat(),
             "event_count": len(self.events),
             "metadata": self.metadata,
             "patient_id": str(self.patient_id) if self.patient_id else None,
-            "events": [str(event_id) for event_id in self.events]
+            "events": [event.to_dict() for event in self.events[:100]]  # Limit to first 100 for performance
         }
 
 
-class TemporalEventGroup:
+class EventGroup:
     """
-    A group of related temporal events.
+    A collection of related but not necessarily causally connected events.
     
-    This class represents a collection of events that form a logical group,
-    such as all neurotransmitter measurements from a specific therapeutic session.
+    This class provides a means to group related events for analysis without
+    requiring a strict causal relationship between them.
     """
     
     def __init__(
@@ -306,14 +415,14 @@ class TemporalEventGroup:
         created_at: Optional[datetime] = None
     ):
         """
-        Initialize a new temporal event group.
+        Initialize a new event group.
         
         Args:
             name: Name of the group
             description: Description of the group
             group_id: Unique identifier for the group
             patient_id: Identifier of the associated patient
-            events: List of temporal events in this group
+            events: List of events in this group
             metadata: Additional metadata for the group
             created_at: Creation timestamp
         """
@@ -323,7 +432,7 @@ class TemporalEventGroup:
         self.patient_id = patient_id
         self.events = events or []
         self.metadata = metadata or {}
-        self.created_at = created_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(UTC)
     
     def add_event(self, event: TemporalEvent) -> None:
         """

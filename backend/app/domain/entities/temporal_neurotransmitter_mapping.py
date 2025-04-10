@@ -801,6 +801,85 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         
         return result
     
+    def analyze_temporal_response(
+        self,
+        patient_id: UUID,
+        brain_region: BrainRegion,
+        neurotransmitter: Neurotransmitter,
+        time_series_data: List[Tuple[datetime, float]],
+        baseline_period: Tuple[datetime, datetime]
+    ) -> NeurotransmitterEffect:
+        """
+        Analyze a temporal response to detect effects on neurotransmitter levels.
+        
+        Args:
+            patient_id: The patient's unique identifier
+            brain_region: The brain region being analyzed
+            neurotransmitter: The neurotransmitter being analyzed
+            time_series_data: List of (timestamp, value) tuples representing measurements
+            baseline_period: (start, end) timestamps defining the baseline period
+            
+        Returns:
+            A NeurotransmitterEffect capturing the statistical properties of the effect
+        """
+        # Split data into baseline and intervention periods
+        baseline_data = []
+        intervention_data = []
+        
+        # Sort data by timestamp to ensure chronological order
+        sorted_data = sorted(time_series_data, key=lambda x: x[0])
+        
+        # Extract baseline period (timestamps within baseline_period)
+        for timestamp, value in sorted_data:
+            if baseline_period[0] <= timestamp <= baseline_period[1]:
+                baseline_data.append(value)
+            elif timestamp > baseline_period[1]:
+                intervention_data.append(value)
+        
+        # Ensure we have enough data for statistical analysis
+        if len(baseline_data) < 2 or len(intervention_data) < 2:
+            raise ValueError(
+                "Insufficient data for analysis. Need at least 2 points in baseline and intervention periods."
+            )
+            
+        # Estimate clinical significance based on effect magnitude
+        effect_magnitude = self._estimate_effect_magnitude(baseline_data, intervention_data)
+        
+        # Create NeurotransmitterEffect using factory method
+        effect = NeurotransmitterEffect.create(
+            neurotransmitter=neurotransmitter,
+            raw_data=intervention_data,
+            baseline_data=baseline_data,
+            clinical_significance=effect_magnitude
+        )
+        
+        return effect
+    
+    def _estimate_effect_magnitude(
+        self,
+        baseline_data: List[float],
+        intervention_data: List[float]
+    ) -> ClinicalSignificance:
+        """Estimate clinical significance based on data differences."""
+        baseline_mean = sum(baseline_data) / len(baseline_data)
+        intervention_mean = sum(intervention_data) / len(intervention_data)
+        
+        # Calculate percent change
+        if baseline_mean > 0:
+            percent_change = abs((intervention_mean - baseline_mean) / baseline_mean)
+        else:
+            percent_change = abs(intervention_mean - baseline_mean)
+            
+        # Assign clinical significance based on percent change
+        if percent_change > 0.5:
+            return ClinicalSignificance.SIGNIFICANT
+        elif percent_change > 0.3:
+            return ClinicalSignificance.MODERATE
+        elif percent_change > 0.1:
+            return ClinicalSignificance.MILD
+        else:
+            return ClinicalSignificance.MINIMAL
+            
     def _get_treatment_affected_neurotransmitters(
         self, primary_nt: Neurotransmitter, effect_strength: float
     ) -> Dict[Neurotransmitter, float]:
