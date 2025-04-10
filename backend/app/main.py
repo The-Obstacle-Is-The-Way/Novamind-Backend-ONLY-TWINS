@@ -14,7 +14,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.core.config import get_app_settings
+from app.core.config import settings
 from app.infrastructure.database.init_db import init_db
 from app.infrastructure.persistence.repository_factory import init_repositories
 from app.presentation.api.routes import api_router
@@ -69,7 +69,7 @@ def create_application() -> FastAPI:
     Returns:
         FastAPI: Configured FastAPI application
     """
-    settings = get_app_settings()
+    # settings object is imported directly
     
     app = FastAPI(
         title=settings.PROJECT_NAME,

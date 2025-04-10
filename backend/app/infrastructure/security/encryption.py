@@ -18,7 +18,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 
-from app.core.config import get_app_settings
+from app.core.config import settings
 
 
 def derive_key(password: bytes, salt: bytes, iterations: int = 100000) -> bytes:
@@ -153,7 +153,8 @@ class EncryptionService:
         Args:
             key: Encryption key. If None, uses the key from settings.
         """
-        app_settings = get_app_settings()
+        # Use the imported settings object directly
+        app_settings = settings
         security_settings = getattr(app_settings, 'security', {})
         self._key = key or getattr(security_settings, 'ENCRYPTION_KEY', 'novamind_default_key')
         self._salt = base64.b64decode(getattr(security_settings, 'KDF_SALT', b'novamind_hipaa_salt')) 

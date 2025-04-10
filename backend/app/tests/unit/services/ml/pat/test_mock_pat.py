@@ -93,7 +93,7 @@ class TestMockPAT:
         assert mock_pat._config == {"mock_delay_ms": 100}
         assert mock_pat._mock_delay_ms == 100
     
-    def test_initialization_error(self, mock_pat: MockPAT) -> None:
+    def test_initialization_error(self, mock_pat: MockPATService) -> None:
         """Test initialization with faulty config."""
         with pytest.raises(InitializationError):
             # Force an error by passing something that will cause initialize to fail

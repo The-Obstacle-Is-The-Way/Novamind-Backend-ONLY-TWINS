@@ -18,7 +18,7 @@ from botocore.exceptions import ClientError
 from app.core.services.ml.xgboost.aws import AWSXGBoostService # Removed AWSPhiDetector import
 from app.core.services.ml.xgboost.exceptions import (
     ValidationError, DataPrivacyError, ResourceNotFoundError,
-    ModelNotFoundError, PredictionError, ServiceUnavailableError,
+    ModelNotFoundError, PredictionError, ServiceConnectionError as ServiceUnavailableError, # Correct name, alias for compatibility
     ThrottlingError, ConfigurationError
 )
 

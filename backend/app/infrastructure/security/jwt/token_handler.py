@@ -14,11 +14,11 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from app.core.config import settings
-from app.core.utils.logging import HIPAACompliantLogger
+from app.core.utils.logging import get_logger
 from app.domain.exceptions import AuthenticationException
 
 # Initialize logger
-logger = HIPAACompliantLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TokenPayload(BaseModel):

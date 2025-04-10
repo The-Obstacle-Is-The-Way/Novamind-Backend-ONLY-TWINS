@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from app.core.config import get_app_settings
+from app.core.config import settings
 from app.infrastructure.security.jwt_service import JWTService
 from app.core.utils.logging import get_logger
 
@@ -64,7 +64,7 @@ async def get_current_user(
         
     try:
         # Initialize JWT service
-        jwt_service = JWTService(get_app_settings().JWT_SECRET_KEY)
+        jwt_service = JWTService(settings.JWT_SECRET_KEY)
         
         # Validate and decode token
         payload = await jwt_service.verify_token(token)
@@ -104,7 +104,7 @@ async def get_optional_user(
         
     try:
         # Initialize JWT service
-        jwt_service = JWTService(get_app_settings().JWT_SECRET_KEY)
+        jwt_service = JWTService(settings.JWT_SECRET_KEY)
         
         # Validate and decode token
         payload = await jwt_service.verify_token(token)

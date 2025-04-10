@@ -11,7 +11,7 @@ import logging
 import os
 from typing import Any, Dict, Optional, Union
 
-from app.core.config import get_app_settings
+from app.core.config import settings
 from app.infrastructure.security.log_sanitizer import PHIFormatter, PHIRedactionHandler
 
 
@@ -31,7 +31,7 @@ class PHILogger:
             name: Logger name
             log_path: Path to log file
         """
-        self.settings = get_app_settings()
+        self.settings = settings
         self.logger = logging.getLogger(name)
         
         # Use getattr to safely get the log level with a default if not present

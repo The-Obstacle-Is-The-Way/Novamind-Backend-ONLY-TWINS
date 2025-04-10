@@ -12,7 +12,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.persistence.sqlalchemy.config.database import create_async_session
-from app.core.config import get_app_settings
+from app.core.config import settings
 
 
 async def get_db_session() -> Generator[AsyncSession, None, None]:
@@ -25,7 +25,7 @@ async def get_db_session() -> Generator[AsyncSession, None, None]:
     Yields:
         AsyncSession: A database session with transaction handling
     """
-    session = create_async_session(get_app_settings())
+    session = create_async_session(settings)
     try:
         yield session
         await session.commit()

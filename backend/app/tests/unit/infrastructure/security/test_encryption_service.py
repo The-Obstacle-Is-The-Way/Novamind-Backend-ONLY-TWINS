@@ -13,7 +13,7 @@ from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.encryption_service import (
     EncryptionService,
-    EncryptionConfig,
+    # EncryptionConfig, # Class not found in module
     EncryptionAlgorithm,
     KeyManagementService,
     SymmetricEncryption,
@@ -26,25 +26,30 @@ from app.infrastructure.security.encryption_service import (
 )
 
 
-@pytest.fixture
-def encryption_config():
-    """Create an encryption service configuration for testing."""
-    return EncryptionConfig(
-        algorithm=EncryptionAlgorithm.AES_256_GCM,
-        key_source="local",
-        key_rotation_days=90,
-        enable_key_versioning=True,
-        key_identifier_prefix="novamind",
-        enable_at_rest_encryption=True,
-        enable_in_memory_protection=True,
-        hash_algorithm="argon2id",
-        hash_memory_cost=65536,
-        hash_time_cost=3,
-        hash_parallelism=4,
-        min_key_length=32,
-        aad_context="novamind-phi-context",
-        iv_length=12
-    )
+# @pytest.fixture # Commented out - Depends on EncryptionConfig which is not found
+# def encryption_config():
+#     """Create an encryption service configuration for testing."""
+#     # This fixture needs to be updated or removed as EncryptionConfig is not defined
+#     # in the service module. Configuration seems to be handled via __init__ args
+#     # or environment variables in the current EncryptionService implementation.
+#     # For now, returning None to allow collection, but tests using this will fail.
+#     return None
+    # return EncryptionConfig(
+    #     algorithm=EncryptionAlgorithm.AES_256_GCM,
+    #     key_source="local",
+    #     key_rotation_days=90,
+    #     enable_key_versioning=True,
+    #     key_identifier_prefix="novamind",
+    #     enable_at_rest_encryption=True,
+    #     enable_in_memory_protection=True,
+    #     hash_algorithm="argon2id",
+    #     hash_memory_cost=65536,
+    #     hash_time_cost=3,
+    #     hash_parallelism=4,
+    #     min_key_length=32,
+    #     aad_context="novamind-phi-context",
+    #     iv_length=12
+    # )
 
 
 @pytest.fixture
@@ -78,9 +83,11 @@ def mock_kms():
 
 
 @pytest.fixture
-def encryption_service(encryption_config, mock_kms):
+def encryption_service(mock_kms): # Removed encryption_config dependency
     """Create an encryption service for testing."""
-    service = EncryptionService(config=encryption_config)
+    # Service now takes key/salt directly or uses env vars
+    # Creating with default args for now, may need adjustment based on tests
+    service = EncryptionService()
     service.key_service = mock_kms
     return service
 

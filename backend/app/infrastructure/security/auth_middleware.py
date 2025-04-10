@@ -18,11 +18,11 @@ from fastapi.security import OAuth2PasswordBearer
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
-from app.core.config import get_settings
+from app.core.config import settings
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 from app.infrastructure.logging.audit_logger import get_audit_logger
 from app.infrastructure.logging.phi_logger import get_phi_logger
-from app.infrastructure.security.jwt_service import JWTService, get_jwt_service
+from app.infrastructure.security.jwt_service import JWTService
 
 # OAuth2 scheme for token extraction
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
@@ -160,10 +160,10 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
             jwt_service: Optional JWTService instance for dependency injection
         """
         super().__init__(app)
-        self.settings = get_settings()
+        self.settings = settings
         self.logger = logging.getLogger("app.infrastructure.security.auth_middleware")
         # Allow dependency injection of jwt_service for testing
-        self.jwt_service = jwt_service or get_jwt_service()
+        self.jwt_service = jwt_service or JWTService(self.settings.JWT_SECRET_KEY)
 
         # Routes that don't require authentication
         self.public_paths = [

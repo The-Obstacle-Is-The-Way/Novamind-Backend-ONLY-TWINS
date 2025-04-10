@@ -27,7 +27,7 @@ from jose import jwt
 
 # Import application code
 try:
-    from app.core.config import get_settings, get_jwt_secret_key
+    from app.core.config import settings
     from app.domain.exceptions import (
         AuthenticationError, 
         AuthorizationError,
@@ -63,13 +63,15 @@ except ImportError as e:
     # Mock the missing modules/functions
     from unittest.mock import MagicMock
     
-    get_settings = MagicMock(return_value=MagicMock(
+    # Mock the settings object directly if imports fail
+    settings = MagicMock(
         PHI_ENCRYPTION_KEY="test_key_for_phi_encryption_testing_only",
         JWT_SECRET_KEY="test_jwt_secret_key_for_testing_only",
         JWT_ALGORITHM="HS256",
-        JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
-    ))
-    get_jwt_secret_key = MagicMock(return_value="test_jwt_secret_key_for_testing_only")
+        JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30,
+        # Add other necessary attributes if needed by tests
+        USE_TLS=True # Assuming this is needed based on later test
+    )
     
     class AuthenticationError(Exception): pass
     class AuthorizationError(Exception): pass
@@ -133,7 +135,7 @@ def test_jwt_token(test_user):
         "permissions": test_user["permissions"],
         "exp": datetime.utcnow() + expires_delta
     }
-    return jwt.encode(data, get_jwt_secret_key(), algorithm="HS256")
+    return jwt.encode(data, settings.JWT_SECRET_KEY, algorithm="HS256")
 
 
 @pytest.fixture
@@ -225,7 +227,7 @@ class TestAuthentication:
             "exp": datetime.utcnow() - timedelta(minutes=30)
         }
         expired_token = jwt.encode(
-            expired_data, get_jwt_secret_key(), algorithm="HS256"
+            expired_data, settings.JWT_SECRET_KEY, algorithm="HS256"
         )
         
         # Verify the expired token is rejected
@@ -373,7 +375,8 @@ class TestHIPAACompliance:
     
     def test_secure_configuration(self):
         """Test that security configuration is properly set up."""
-        settings = get_settings()
+        # settings object is already imported or mocked
+        pass # No need to re-assign if using the imported/mocked settings directly
         
         # Verify essential security settings are configured
         assert hasattr(settings, "PHI_ENCRYPTION_KEY")

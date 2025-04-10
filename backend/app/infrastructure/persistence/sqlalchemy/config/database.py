@@ -127,16 +127,16 @@ def get_db_instance() -> Database:
     global _db_instance
     
     if _db_instance is None:
-        from app.core.config import get_app_settings
+        from app.core.config import settings
         
         # Load database settings from app settings
         db_settings = DatabaseSettings(
-            HOST=get_app_settings().POSTGRES_SERVER,
-            PORT=get_app_settings().POSTGRES_PORT,
-            USERNAME=get_app_settings().POSTGRES_USER,
-            PASSWORD=get_app_settings().POSTGRES_PASSWORD,
-            DATABASE=get_app_settings().POSTGRES_DB,
-            ECHO_SQL=get_app_settings().DEBUG,
+            HOST=settings.POSTGRES_SERVER,
+            PORT=settings.POSTGRES_PORT,
+            USERNAME=settings.POSTGRES_USER,
+            PASSWORD=settings.POSTGRES_PASSWORD,
+            DATABASE=settings.POSTGRES_DB,
+            ECHO_SQL=settings.DEBUG,
             # Additional settings can be loaded here
         )
         

@@ -15,7 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.core.config import get_settings
+from app.core.config import settings
 
 T = TypeVar("T")
 
@@ -37,7 +37,7 @@ class SQLAlchemyUnitOfWork:
         Args:
             session_factory: Factory function for creating SQLAlchemy sessions
         """
-        self.settings = get_settings()
+        self.settings = settings
         self.session_factory = session_factory or self._create_session_factory()
         self.session: Optional[Session] = None
         self.logger = logging.getLogger(__name__)

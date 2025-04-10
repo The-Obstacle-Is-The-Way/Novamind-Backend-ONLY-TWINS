@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.rbac.role_manager import (
-    RoleManager, 
+    RoleBasedAccessControl, # Corrected class name
     RoleDefinition,
     Role, 
     Permission
@@ -25,7 +25,7 @@ def role_manager():
     Returns:
         RoleManager instance with default roles
     """
-    return RoleManager()
+    return RoleBasedAccessControl()
 
 
 class TestRoleManager:

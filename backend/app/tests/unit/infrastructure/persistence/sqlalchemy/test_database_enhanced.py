@@ -18,7 +18,7 @@ from app.infrastructure.persistence.sqlalchemy.config.database import (
     Database,
     Base,
     get_db_dependency,
-    get_session,
+    # get_session, # Incorrect import, use get_db_session
     create_tables,
     get_engine,
     db
@@ -282,7 +282,7 @@ class TestDatabase:
             mock_db.session.return_value = mock_session_context()
             
             # Use get_session
-            session_gen = get_session()
+            session_gen = get_db_session()
             session = await session_gen.__anext__()
             
             # Check returned session

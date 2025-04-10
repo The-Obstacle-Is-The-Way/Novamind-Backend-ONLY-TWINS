@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status, Background
 from fastapi.responses import JSONResponse
 
 from app.domain.services.analytics_service import AnalyticsService
-from app.infrastructure.persistence.repositories.patient_repository import PatientRepository
+# from app.infrastructure.persistence.repositories.patient_repository import PatientRepository # Module not found
 from app.infrastructure.persistence.repositories.appointment_repository import AppointmentRepository
 from app.infrastructure.persistence.repositories.clinical_note_repository import ClinicalNoteRepository
 from app.infrastructure.persistence.repositories.medication_repository import MedicationRepository
@@ -41,7 +41,7 @@ CACHE_TTL = {
 
 
 def get_analytics_service(
-    patient_repository: PatientRepository = Depends(),
+    # patient_repository: PatientRepository = Depends(), # Commented out - Type not found
     appointment_repository: AppointmentRepository = Depends(),
     clinical_note_repository: ClinicalNoteRepository = Depends(),
     medication_repository: MedicationRepository = Depends(),
@@ -59,7 +59,7 @@ def get_analytics_service(
         AnalyticsService: Initialized analytics service
     """
     return AnalyticsService(
-        patient_repository=patient_repository,
+        # patient_repository=patient_repository, # Commented out - Dependency removed
         appointment_repository=appointment_repository,
         clinical_note_repository=clinical_note_repository,
         medication_repository=medication_repository,

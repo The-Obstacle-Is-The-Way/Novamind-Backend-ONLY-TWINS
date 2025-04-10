@@ -20,7 +20,7 @@ import logging
 import uuid
 from typing import Any, Dict, List, Optional, Union
 
-from app.core.config import get_settings
+from app.core.config import settings
 
 
 class AuditLogger:
@@ -40,7 +40,7 @@ class AuditLogger:
             logger_name: The name to use for the logger instance
         """
         self.logger = logging.getLogger(logger_name)
-        self.settings = get_settings()
+        self.settings = settings
 
         # Configure logging based on settings
         self._configure_logging()

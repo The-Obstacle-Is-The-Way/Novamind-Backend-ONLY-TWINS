@@ -15,7 +15,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from app.core.config import get_settings
+from app.core.config import settings
 
 
 class AuditLogger:
@@ -33,7 +33,7 @@ class AuditLogger:
         Args:
             log_path: Path to the audit log file. Defaults to setting from config.
         """
-        self.settings = get_settings()
+        self.settings = settings
         self.log_path = log_path or self.settings.AUDIT_LOG_PATH
 
         # Ensure log directory exists

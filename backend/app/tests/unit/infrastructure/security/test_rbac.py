@@ -9,7 +9,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.rbac.role_manager import (
-    RoleManager,
+    RoleBasedAccessControl, # Corrected class name
     RBACConfig,
     Permission,
     Role,
@@ -19,7 +19,7 @@ from app.infrastructure.security.rbac.role_manager import (
     AccessRequest,
     AccessContext,
     RBACDecision,
-    AccessDeniedError,
+    AccessDeniedError, # Keep original exceptions for now
     RoleNotFoundError,
     PermissionNotFoundError
 )

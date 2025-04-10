@@ -1,4 +1,4 @@
-N I# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Text preprocessing utilities for ML/AI services.
 
@@ -10,7 +10,7 @@ import re
 import json
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from app.core.logging.phi_logger import get_phi_safe_logger
+from app.infrastructure.logging.phi_logger import get_phi_safe_logger
 
 # Configure PHI-safe logger
 logger = get_phi_safe_logger(__name__)
