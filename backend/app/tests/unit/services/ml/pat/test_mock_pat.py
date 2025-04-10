@@ -74,7 +74,7 @@ def sample_device_info() -> Dict[str, Any]:
 class TestMockPAT:
     """Tests for the MockPAT class."""
     
-    def test_initialization(self, mock_pat: MockPAT) -> None:
+    def test_initialization(self, mock_pat: MockPATService) -> None:
         """Test successful initialization."""
         # Initialize with default config
         mock_pat.initialize({})
