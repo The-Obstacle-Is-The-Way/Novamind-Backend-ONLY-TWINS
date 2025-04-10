@@ -5,13 +5,13 @@ This module contains both the PHI sanitizer implementation and tests in a single
 making it completely independent of the rest of the application.
 """
 
-import unittest
-import pytest
-import re
 import json
 import logging
+import re
+import unittest
+from collections.abc import Callable
 from enum import Enum
-from typing import Dict, List, Set, Pattern, Any, Optional, Union, Callable
+from typing import Any
 
 # ============= PHI Sanitizer Implementation =============
 
@@ -29,9 +29,9 @@ class PHIPattern:
         self,
         name: str,
         regex: str = None,
-        exact_match: List[str] = None,
-        fuzzy_match: List[str] = None,
-        context_patterns: List[str] = None,
+        exact_match: list[str] = None,
+        fuzzy_match: list[str] = None,
+        context_patterns: list[str] = None,
         strategy: RedactionStrategy = RedactionStrategy.FULL
     ):
         self.name = name
@@ -71,7 +71,7 @@ class PatternRepository:
     
     def __init__(self):
         """Initialize with default patterns."""
-        self._patterns: Dict[str, PHIPattern] = {}
+        self._patterns: dict[str, PHIPattern] = {}
         self._add_default_patterns()
         
     def _add_default_patterns(self):
@@ -126,11 +126,11 @@ class PatternRepository:
         """Add a pattern to the repository."""
         self._patterns[pattern.name] = pattern
         
-    def get_pattern(self, name: str) -> Optional[PHIPattern]:
+    def get_pattern(self, name: str) -> PHIPattern | None:
         """Get a pattern by name."""
         return self._patterns.get(name)
         
-    def get_all_patterns(self) -> List[PHIPattern]:
+    def get_all_patterns(self) -> list[PHIPattern]:
         """Get all patterns."""
         return list(self._patterns.values())
 
@@ -185,8 +185,8 @@ class SanitizerConfig:
         self,
         enabled: bool = True,
         default_strategy: RedactionStrategy = RedactionStrategy.FULL,
-        sensitive_keys: Set[str] = None,
-        safe_system_messages: Set[str] = None,
+        sensitive_keys: set[str] = None,
+        safe_system_messages: set[str] = None,
         max_log_size: int = 10000
     ):
         self.enabled = enabled
@@ -217,7 +217,7 @@ class PHISanitizer:
         """Initialize the sanitizer with config and patterns."""
         self.config = config or SanitizerConfig()
         self.pattern_repo = pattern_repository or PatternRepository()
-        self.hooks: List[Callable[[str], str]] = []
+        self.hooks: list[Callable[[str], str]] = []
         
     def add_sanitization_hook(self, hook: Callable[[str], str]):
         """Add a custom sanitization hook."""
@@ -300,7 +300,7 @@ class PHISanitizer:
                     
         return sanitized_text
         
-    def _sanitize_dict(self, data: Dict) -> Dict:
+    def _sanitize_dict(self, data: dict) -> dict:
         """
         Sanitize PHI from a dictionary recursively.
         
@@ -319,7 +319,7 @@ class PHISanitizer:
                 result[key] = self.sanitize(value)
         return result
         
-    def _sanitize_list(self, data: List) -> List:
+    def _sanitize_list(self, data: list) -> list:
         """
         Sanitize PHI from a list recursively.
         
@@ -429,7 +429,6 @@ def sanitize_logs(sanitizer: PHISanitizer = None):
 
 # ============= PHI Sanitizer Tests =============
 
-@pytest.mark.standalone
 class TestPHISanitizer(unittest.TestCase):
     """Test the PHI sanitizer class."""
     

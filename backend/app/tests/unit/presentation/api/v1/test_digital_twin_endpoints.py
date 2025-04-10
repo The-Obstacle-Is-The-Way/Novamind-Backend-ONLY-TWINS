@@ -74,12 +74,10 @@ def mock_digital_twin_service():
         yield service_mock
 
 
-@pytest.mark.venv_only
 class TestMentalLLaMAEndpoints:
     """Tests for MentaLLaMA-specific API endpoints."""
 
-    @pytest.mark.venv_only
-def test_summarize_clinical_text_success(self, client, mock_jwt_auth, mock_digital_twin_service):
+    def test_summarize_clinical_text_success(self, client, mock_jwt_auth, mock_digital_twin_service):
         """Test successful clinical text summarization."""
         # Setup the mock response
         mock_digital_twin_service.mentallama_service.summarize_clinical_document.return_value = {
@@ -112,8 +110,7 @@ def test_summarize_clinical_text_success(self, client, mock_jwt_auth, mock_digit
             target_length=request_data["target_length"],
         )
 
-    @pytest.mark.venv_only
-def test_summarize_clinical_text_phi_detected(self, client, mock_jwt_auth, mock_digital_twin_service):
+    def test_summarize_clinical_text_phi_detected(self, client, mock_jwt_auth, mock_digital_twin_service):
         """Test clinical text summarization when PHI is detected."""
         # Setup the mock response
         mock_digital_twin_service.mentallama_service.summarize_clinical_document.return_value = {
@@ -139,8 +136,7 @@ def test_summarize_clinical_text_phi_detected(self, client, mock_jwt_auth, mock_
         assert "summary" in response.json()["result"]
         assert response.json()["phi_detected"] is True
 
-    @pytest.mark.venv_only
-def test_summarize_clinical_text_phi_error(self, client, mock_jwt_auth, mock_digital_twin_service):
+    def test_summarize_clinical_text_phi_error(self, client, mock_jwt_auth, mock_digital_twin_service):
         """Test clinical text summarization when PHI detection fails."""
         # Setup the mock to raise an error
         mock_digital_twin_service.mentallama_service.summarize_clinical_document.side_effect = PhiDetectionError(
@@ -161,8 +157,7 @@ def test_summarize_clinical_text_phi_error(self, client, mock_jwt_auth, mock_dig
         assert response.status_code == 400
         assert "PHI detection error" in response.json()["detail"]
 
-    @pytest.mark.venv_only
-def test_summarize_clinical_text_inference_error(self, client, mock_jwt_auth, mock_digital_twin_service):
+    def test_summarize_clinical_text_inference_error(self, client, mock_jwt_auth, mock_digital_twin_service):
         """Test clinical text summarization when model inference fails."""
         # Setup the mock to raise an error
         mock_digital_twin_service.mentallama_service.summarize_clinical_document.side_effect = MentalLLaMAInferenceError(
@@ -183,8 +178,7 @@ def test_summarize_clinical_text_inference_error(self, client, mock_jwt_auth, mo
         assert response.status_code == 400
         assert "Model inference failed" in response.json()["detail"]
 
-    @pytest.mark.venv_only
-def test_extract_clinical_entities_success(self, client, mock_jwt_auth, mock_digital_twin_service):
+    def test_extract_clinical_entities_success(self, client, mock_jwt_auth, mock_digital_twin_service):
         """Test successful clinical entity extraction."""
         # Setup the mock response
         mock_digital_twin_service.mentallama_service.extract_clinical_entities.return_value = {
@@ -219,8 +213,7 @@ def test_extract_clinical_entities_success(self, client, mock_jwt_auth, mock_dig
             entity_types=request_data["entity_types"],
         )
 
-    @pytest.mark.venv_only
-def test_extract_clinical_entities_phi_detected(self, client, mock_jwt_auth, mock_digital_twin_service):
+    def test_extract_clinical_entities_phi_detected(self, client, mock_jwt_auth, mock_digital_twin_service):
         """Test clinical entity extraction when PHI is detected."""
         # Setup the mock response
         mock_digital_twin_service.mentallama_service.extract_clinical_entities.return_value = {
@@ -248,8 +241,7 @@ def test_extract_clinical_entities_phi_detected(self, client, mock_jwt_auth, moc
         assert "entities" in response.json()["result"]
         assert response.json()["phi_detected"] is True
 
-    @pytest.mark.venv_only
-def test_extract_clinical_entities_error(self, client, mock_jwt_auth, mock_digital_twin_service):
+    def test_extract_clinical_entities_error(self, client, mock_jwt_auth, mock_digital_twin_service):
         """Test clinical entity extraction when it fails."""
         # Setup the mock to raise an error
         mock_digital_twin_service.mentallama_service.extract_clinical_entities.side_effect = MentalLLaMAInferenceError(

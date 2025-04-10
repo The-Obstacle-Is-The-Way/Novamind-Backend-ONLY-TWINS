@@ -5,10 +5,9 @@ This test module includes both the necessary security test infrastructure and te
 in a single file to validate that the test infrastructure is working correctly.
 """
 import unittest
-import pytest
-from typing import Dict, Any, List, Optional
+from enum import Enum
+from typing import Any
 from unittest.mock import MagicMock
-from enum import Enum, auto
 
 
 # Mock Role class that would normally be in app/core/security/roles.py
@@ -32,7 +31,7 @@ class BaseSecurityTest(unittest.TestCase):
     test_user_id: str = "test-user-id-12345"
     
     # Default test roles
-    test_roles: List[Role] = [Role.USER]
+    test_roles: list[Role] = [Role.USER]
     
     def setUp(self):
         """Set up test fixtures before each test."""
@@ -46,7 +45,7 @@ class BaseSecurityTest(unittest.TestCase):
         mock.get_user_by_id.return_value = self.create_test_user()
         return mock
     
-    def create_test_user(self) -> Dict[str, Any]:
+    def create_test_user(self) -> dict[str, Any]:
         """Create a test user with the configured ID and roles."""
         return {
             "id": self.test_user_id,
@@ -56,11 +55,9 @@ class BaseSecurityTest(unittest.TestCase):
         }
 
 
-@pytest.mark.standalone
 class TestBaseSecurityTest(BaseSecurityTest):
     """Test the BaseSecurityTest class itself."""
     
-    @pytest.mark.standalone
     def test_default_attributes(self):
         """Test that the default attributes are set correctly."""
         # Verify test_user_id attribute
@@ -73,7 +70,6 @@ class TestBaseSecurityTest(BaseSecurityTest):
         self.assertEqual(self.test_user["id"], self.test_user_id)
         self.assertEqual(self.test_user["roles"], self.test_roles)
     
-    @pytest.mark.standalone
     def test_mock_auth_service(self):
         """Test that the mock auth service is configured correctly."""
         # Verify authenticate method
@@ -84,28 +80,24 @@ class TestBaseSecurityTest(BaseSecurityTest):
         self.assertEqual(user, self.test_user)
 
 
-@pytest.mark.standalone
 class AdminSecurityTest(BaseSecurityTest):
     """Test subclassing with different roles."""
     
     # Override test_roles for admin testing
     test_roles = [Role.ADMIN, Role.USER]
     
-    @pytest.mark.standalone
     def test_admin_roles(self):
         """Test that the admin roles are set correctly."""
         self.assertEqual(self.test_roles, [Role.ADMIN, Role.USER])
         self.assertEqual(self.test_user["roles"], [Role.ADMIN, Role.USER])
 
 
-@pytest.mark.standalone
 class ClinicianSecurityTest(BaseSecurityTest):
     """Test subclassing with clinician roles."""
     
     # Override test_roles for clinician testing
     test_roles = [Role.CLINICIAN, Role.USER]
     
-    @pytest.mark.standalone
     def test_clinician_roles(self):
         """Test that the clinician roles are set correctly."""
         self.assertEqual(self.test_roles, [Role.CLINICIAN, Role.USER])

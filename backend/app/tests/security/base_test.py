@@ -6,10 +6,11 @@ focusing on HIPAA compliance, PHI protection, authentication, authorization,
 and other security concerns in the Novamind Digital Twin Platform.
 """
 import os
-import pytest
+from typing import Any
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
-from typing import List, Optional, Dict, Any
+
+import pytest
 
 from app.core.security.roles import Role
 
@@ -29,7 +30,7 @@ class BaseSecurityTest(TestCase):
     test_user_id: str = "test-user-id-12345"
     
     # Default roles for testing, to be overridden by subclasses as needed
-    test_roles: List[Role] = [Role.USER]
+    test_roles: list[Role] = [Role.USER]
     
     def setUp(self):
         """Set up security test fixtures.
@@ -72,7 +73,7 @@ class BaseSecurityTest(TestCase):
         os.environ.pop("TESTING", None)
         os.environ.pop("ENVIRONMENT", None)
             
-    def _create_test_user(self) -> Dict[str, Any]:
+    def _create_test_user(self) -> dict[str, Any]:
         """Create a test user with the configured roles.
         
         Returns:

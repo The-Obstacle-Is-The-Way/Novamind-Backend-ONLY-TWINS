@@ -32,12 +32,10 @@ def jwt_handler():
     )
 
 
-@pytest.mark.db_required
 class TestJWTHandler:
     """Test suite for JWT token handler."""
     
-    @pytest.mark.db_required
-def test_init_with_valid_settings(self):
+    def test_init_with_valid_settings(self):
         """Test initialization with valid settings."""
         handler = JWTHandler(
             secret_key="testkey12345678901234567890123456789",
@@ -49,14 +47,12 @@ def test_init_with_valid_settings(self):
         assert handler.algorithm == "HS256"
         assert handler.access_token_expire_minutes == 15
     
-    @pytest.mark.db_required
-def test_init_with_invalid_secret_key(self):
+    def test_init_with_invalid_secret_key(self):
         """Test initialization with invalid secret key."""
         with pytest.raises(ValueError, match="JWT secret key is missing or too short"):
             JWTHandler(secret_key="short", algorithm="HS256")
     
-    @pytest.mark.db_required
-def test_create_access_token(self, jwt_handler):
+    def test_create_access_token(self, jwt_handler):
         """Test creating an access token."""
         # Arrange
         user_id = "user123"
@@ -86,8 +82,7 @@ def test_create_access_token(self, jwt_handler):
         assert "exp" in decoded
         assert "iat" in decoded
     
-    @pytest.mark.db_required
-def test_create_access_token_with_custom_expiry(self, jwt_handler):
+    def test_create_access_token_with_custom_expiry(self, jwt_handler):
         """Test creating an access token with custom expiration."""
         # Arrange
         user_id = "user123"
@@ -117,8 +112,7 @@ def test_create_access_token_with_custom_expiry(self, jwt_handler):
         now = datetime.utcnow()
         assert abs((exp_time - now).total_seconds() - 3600) < 10  # Within 10 seconds of 1 hour
     
-    @pytest.mark.db_required
-def test_verify_token_valid(self, jwt_handler):
+    def test_verify_token_valid(self, jwt_handler):
         """Test verifying a valid token."""
         # Arrange
         user_id = "user123"
@@ -142,8 +136,7 @@ def test_verify_token_valid(self, jwt_handler):
         assert token_data.permissions == permissions
         assert token_data.session_id == session_id
     
-    @pytest.mark.db_required
-def test_verify_token_expired(self, jwt_handler):
+    def test_verify_token_expired(self, jwt_handler):
         """Test verifying an expired token."""
         # Arrange
         # Create token that is already expired
@@ -173,8 +166,7 @@ def test_verify_token_expired(self, jwt_handler):
         with pytest.raises(AuthenticationException, match="Token has expired"):
             jwt_handler.verify_token(token)
     
-    @pytest.mark.db_required
-def test_verify_token_invalid_signature(self, jwt_handler):
+    def test_verify_token_invalid_signature(self, jwt_handler):
         """Test verifying a token with invalid signature."""
         # Arrange
         user_id = "user123"
@@ -199,8 +191,7 @@ def test_verify_token_invalid_signature(self, jwt_handler):
         with pytest.raises(AuthenticationException, match="Invalid authentication token"):
             jwt_handler.verify_token(token)
     
-    @pytest.mark.db_required
-def test_verify_token_malformed(self, jwt_handler):
+    def test_verify_token_malformed(self, jwt_handler):
         """Test verifying a malformed token."""
         # Arrange
         token = "not.a.valid.token"
@@ -209,8 +200,7 @@ def test_verify_token_malformed(self, jwt_handler):
         with pytest.raises(AuthenticationException, match="Invalid authentication token"):
             jwt_handler.verify_token(token)
     
-    @pytest.mark.db_required
-def test_refresh_token(self, jwt_handler):
+    def test_refresh_token(self, jwt_handler):
         """Test refreshing a token."""
         # Arrange
         user_id = "user123"
@@ -256,8 +246,7 @@ def test_refresh_token(self, jwt_handler):
         # New token should have newer issued-at time
         assert new_payload["iat"] > original_payload["iat"]
     
-    @pytest.mark.db_required
-def test_refresh_token_expired(self, jwt_handler):
+    def test_refresh_token_expired(self, jwt_handler):
         """Test refreshing an expired token."""
         # Arrange
         # Create token that is already expired
@@ -287,8 +276,7 @@ def test_refresh_token_expired(self, jwt_handler):
         with pytest.raises(AuthenticationException, match="Token has expired"):
             jwt_handler.refresh_token(token)
     
-    @pytest.mark.db_required
-def test_get_user_id_from_token(self, jwt_handler):
+    def test_get_user_id_from_token(self, jwt_handler):
         """Test extracting user ID from token."""
         # Arrange
         user_id = "user123"
@@ -309,8 +297,7 @@ def test_get_user_id_from_token(self, jwt_handler):
         # Assert
         assert extracted_user_id == user_id
     
-    @pytest.mark.db_required
-def test_get_permissions_from_token(self, jwt_handler):
+    def test_get_permissions_from_token(self, jwt_handler):
         """Test extracting permissions from token."""
         # Arrange
         user_id = "user123"
@@ -331,8 +318,7 @@ def test_get_permissions_from_token(self, jwt_handler):
         # Assert
         assert extracted_permissions == permissions
     
-    @pytest.mark.db_required
-def test_get_role_from_token(self, jwt_handler):
+    def test_get_role_from_token(self, jwt_handler):
         """Test extracting role from token."""
         # Arrange
         user_id = "user123"
@@ -354,8 +340,7 @@ def test_get_role_from_token(self, jwt_handler):
         assert extracted_role == role
     
     @patch('app.infrastructure.security.jwt.token_handler.logger')
-    @pytest.mark.db_required
-def test_logging_behavior(self, mock_logger, jwt_handler):
+    def test_logging_behavior(self, mock_logger, jwt_handler):
         """Test that sensitive information is not logged."""
         # Arrange
         user_id = "user123"

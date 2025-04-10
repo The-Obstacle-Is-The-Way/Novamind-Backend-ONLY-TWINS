@@ -21,7 +21,6 @@ from app.core.services.ml.mock_dt import MockDigitalTwinService
 from app.tests.unit.base_test import BaseUnitTest
 
 
-@pytest.mark.db_required
 class TestMockDigitalTwinService(BaseUnitTest):
     """
     Test suite for MockDigitalTwinService class.
@@ -70,8 +69,7 @@ class TestMockDigitalTwinService(BaseUnitTest):
             self.service.shutdown()
         super().tearDown()
 
-    @pytest.mark.db_required
-def test_initialization(self) -> None:
+    def test_initialization(self) -> None:
         """Test service initialization with various configurations."""
         # Test default initialization
         service = MockDigitalTwinService()
@@ -96,8 +94,7 @@ def test_initialization(self) -> None:
         service.shutdown()
         self.assertFalse(service.is_healthy())
 
-    @pytest.mark.db_required
-def test_create_session(self) -> None:
+    def test_create_session(self) -> None:
         """Test creating a digital twin therapy session."""
         # Test with different session types
         for session_type in ["therapy", "assessment", "medication_review"]:
@@ -122,8 +119,7 @@ def test_create_session(self) -> None:
             start_time = datetime.fromisoformat(result["start_time"].rstrip("Z"))
             self.assertLess((datetime.now(UTC) - start_time).total_seconds(), 10)
 
-    @pytest.mark.db_required
-def test_get_session(self) -> None:
+    def test_get_session(self) -> None:
         """Test retrieving a digital twin therapy session."""
         # Create a session
         create_result = self.service.create_session(
@@ -146,8 +142,7 @@ def test_get_session(self) -> None:
         with self.assertRaises(ResourceNotFoundError):
             self.service.get_session("nonexistent-session-id")
 
-    @pytest.mark.db_required
-def test_send_message(self) -> None:
+    def test_send_message(self) -> None:
         """Test sending a message to a digital twin therapy session."""
         # Create a session
         create_result = self.service.create_session(
@@ -180,8 +175,7 @@ def test_send_message(self) -> None:
                 message=self.sample_message
             )
 
-    @pytest.mark.db_required
-def test_message_response_types(self) -> None:
+    def test_message_response_types(self) -> None:
         """Test different types of responses based on message content."""
         # Create a session
         create_result = self.service.create_session(
@@ -210,8 +204,7 @@ def test_message_response_types(self) -> None:
                 f"Response '{response}' not relevant to topic '{topic}'"
             )
 
-    @pytest.mark.db_required
-def test_end_session(self) -> None:
+    def test_end_session(self) -> None:
         """Test ending a digital twin therapy session."""
         # Create a session
         create_result = self.service.create_session(
@@ -248,8 +241,7 @@ def test_end_session(self) -> None:
         with self.assertRaises(InvalidRequestError):
             self.service.end_session(session_id)
 
-    @pytest.mark.db_required
-def test_get_insights(self) -> None:
+    def test_get_insights(self) -> None:
         """Test getting insights from a completed digital twin session."""
         # Create and complete a session with some messages
         session_result = self.service.create_session(
@@ -287,8 +279,7 @@ def test_get_insights(self) -> None:
         self.assertIsInstance(insights_result["insights"]["themes"], list)
         self.assertIsInstance(insights_result["insights"]["recommendations"], list)
 
-    @pytest.mark.db_required
-def test_mood_insights(self) -> None:
+    def test_mood_insights(self) -> None:
         """Test mood tracking insights from digital twin sessions."""
         # Create and complete multiple sessions to track mood
         mood_messages = {
@@ -328,8 +319,7 @@ def test_mood_insights(self) -> None:
         self.assertIsInstance(mood_insights["mood_data"], list)
         self.assertGreaterEqual(len(mood_insights["mood_data"]), 3)  # One per session
 
-    @pytest.mark.db_required
-def test_activity_insights(self) -> None:
+    def test_activity_insights(self) -> None:
         """Test activity tracking insights from digital twin."""
         # Generate activity insights
         activity_insights = self.service.get_activity_insights(self.twin_id)
@@ -341,8 +331,7 @@ def test_activity_insights(self) -> None:
         self.assertIn("trends", activity_insights)
         self.assertIn("recommendations", activity_insights)
 
-    @pytest.mark.db_required
-def test_sleep_insights(self) -> None:
+    def test_sleep_insights(self) -> None:
         """Test sleep tracking insights from digital twin."""
         # Generate sleep insights
         sleep_insights = self.service.get_sleep_insights(self.twin_id)
@@ -355,8 +344,7 @@ def test_sleep_insights(self) -> None:
         self.assertIn("patterns", sleep_insights)
         self.assertIn("recommendations", sleep_insights)
 
-    @pytest.mark.db_required
-def test_medication_insights(self) -> None:
+    def test_medication_insights(self) -> None:
         """Test medication insights from digital twin."""
         # Generate medication insights
         medication_insights = self.service.get_medication_insights(self.twin_id)
@@ -368,8 +356,7 @@ def test_medication_insights(self) -> None:
         self.assertIn("reported_effects", medication_insights)
         self.assertIn("recommendations", medication_insights)
 
-    @pytest.mark.db_required
-def test_treatment_insights(self) -> None:
+    def test_treatment_insights(self) -> None:
         """Test treatment response insights from digital twin."""
         # Generate treatment insights
         treatment_insights = self.service.get_treatment_insights(self.twin_id)

@@ -16,7 +16,6 @@ from app.core.services.ml.xgboost.exceptions import (
 )
 
 
-@pytest.mark.venv_only
 class TestMockXGBoostService:
     """Test case for the MockXGBoostService class."""
     
@@ -53,8 +52,7 @@ class TestMockXGBoostService:
         observer.notify_prediction = MagicMock()
         return observer
     
-    @pytest.mark.venv_only
-def test_initialization(self):
+    def test_initialization(self):
         """Test initialization of the service."""
         service = MockXGBoostService()
         config = {
@@ -68,8 +66,7 @@ def test_initialization(self):
         assert service.phi_detector is not None
         assert service.phi_detector.privacy_level == 3
     
-    @pytest.mark.venv_only
-def test_predict_risk_with_valid_data(self, service, sample_patient_id, sample_clinical_data):
+    def test_predict_risk_with_valid_data(self, service, sample_patient_id, sample_clinical_data):
         """Test risk prediction with valid data."""
         result = service.predict_risk(
             patient_id=sample_patient_id,
@@ -87,8 +84,7 @@ def test_predict_risk_with_valid_data(self, service, sample_patient_id, sample_c
         assert "meets_threshold" in result
         assert "factors" in result
     
-    @pytest.mark.venv_only
-def test_predict_risk_with_phi_detection(self, service, sample_patient_id):
+    def test_predict_risk_with_phi_detection(self, service, sample_patient_id):
         """Test risk prediction with PHI detection."""
         clinical_data = {
             "severity": "moderate",
@@ -105,8 +101,7 @@ def test_predict_risk_with_phi_detection(self, service, sample_patient_id):
                 clinical_data=clinical_data
             )
     
-    @pytest.mark.venv_only
-def test_predict_risk_with_invalid_data(self, service):
+    def test_predict_risk_with_invalid_data(self, service):
         """Test risk prediction with invalid data."""
         with pytest.raises(ValidationError):
             service.predict_risk(
@@ -129,8 +124,7 @@ def test_predict_risk_with_invalid_data(self, service):
                 clinical_data=None  # Missing clinical data
             )
     
-    @pytest.mark.venv_only
-def test_predict_treatment_response(self, service, sample_patient_id, sample_clinical_data):
+    def test_predict_treatment_response(self, service, sample_patient_id, sample_clinical_data):
         """Test treatment response prediction."""
         treatment_details = {
             "medication": "fluoxetine",
@@ -161,8 +155,7 @@ def test_predict_treatment_response(self, service, sample_patient_id, sample_cli
         assert "time_to_response" in result
         assert "alternative_treatments" in result
     
-    @pytest.mark.venv_only
-def test_predict_outcome(self, service, sample_patient_id, sample_clinical_data):
+    def test_predict_outcome(self, service, sample_patient_id, sample_clinical_data):
         """Test outcome prediction."""
         outcome_timeframe = {"weeks": 12}
         treatment_plan = {
@@ -188,8 +181,7 @@ def test_predict_outcome(self, service, sample_patient_id, sample_clinical_data)
         assert "predicted_outcomes" in result
         assert "key_factors" in result
     
-    @pytest.mark.venv_only
-def test_get_feature_importance(self, service, sample_patient_id):
+    def test_get_feature_importance(self, service, sample_patient_id):
         """Test feature importance retrieval."""
         # First make a prediction to get a prediction ID
         prediction = service.predict_risk(
@@ -214,8 +206,7 @@ def test_get_feature_importance(self, service, sample_patient_id):
         assert "global_importance" in result
         assert "local_importance" in result
     
-    @pytest.mark.venv_only
-def test_get_feature_importance_not_found(self, service, sample_patient_id):
+    def test_get_feature_importance_not_found(self, service, sample_patient_id):
         """Test feature importance with non-existent prediction ID."""
         with pytest.raises(ResourceNotFoundError):
             service.get_feature_importance(
@@ -224,8 +215,7 @@ def test_get_feature_importance_not_found(self, service, sample_patient_id):
                 prediction_id="non-existent-id"
             )
     
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin(self, service, sample_patient_id):
+    def test_integrate_with_digital_twin(self, service, sample_patient_id):
         """Test digital twin integration."""
         # First make a prediction to get a prediction ID
         prediction = service.predict_risk(
@@ -249,8 +239,7 @@ def test_integrate_with_digital_twin(self, service, sample_patient_id):
         assert result["prediction_id"] == prediction_id
         assert "digital_twin_updates" in result
     
-    @pytest.mark.venv_only
-def test_get_model_info(self, service):
+    def test_get_model_info(self, service):
         """Test model info retrieval."""
         result = service.get_model_info(model_type="risk_relapse")
         
@@ -261,14 +250,12 @@ def test_get_model_info(self, service):
         assert "features" in result
         assert "performance_metrics" in result
     
-    @pytest.mark.venv_only
-def test_get_model_info_not_found(self, service):
+    def test_get_model_info_not_found(self, service):
         """Test model info with non-existent model type."""
         with pytest.raises(ModelNotFoundError):
             service.get_model_info(model_type="non_existent_model")
     
-    @pytest.mark.venv_only
-def test_observer_pattern(self, service, sample_patient_id, observer):
+    def test_observer_pattern(self, service, sample_patient_id, observer):
         """Test observer registration and notification."""
         # Register observer
         observer_id = service.register_prediction_observer(observer)
@@ -292,15 +279,13 @@ def test_observer_pattern(self, service, sample_patient_id, observer):
         assert result is True
         assert observer_id not in service.observers
     
-    @pytest.mark.venv_only
-def test_unregister_nonexistent_observer(self, service):
+    def test_unregister_nonexistent_observer(self, service):
         """Test unregistering a non-existent observer."""
         result = service.unregister_prediction_observer("non-existent-id")
         
         assert result is False
     
-    @pytest.mark.venv_only
-def test_phi_detection(self, service):
+    def test_phi_detection(self, service):
         """Test the PHI detection functionality."""
         phi_detector = service.phi_detector
         
@@ -328,8 +313,7 @@ def test_phi_detection(self, service):
         assert result["has_phi"] is True
         assert len(result["matches"]) > 0
     
-    @pytest.mark.venv_only
-def test_prediction_sanitization(self, service):
+    def test_prediction_sanitization(self, service):
         """Test sanitization of predictions before notifying observers."""
         phi_detector = service.phi_detector
         

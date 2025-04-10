@@ -14,7 +14,6 @@ from app.domain.entities.neurotransmitter_mapping import (
 )
 
 
-@pytest.mark.venv_only
 def test_neurotransmitter_mapping_creation():
     """Test creating a new neurotransmitter mapping."""
     mapping = NeurotransmitterMapping()
@@ -25,7 +24,6 @@ def test_neurotransmitter_mapping_creation():
     assert len(mapping.production_map) == 0
 
 
-@pytest.mark.venv_only
 def test_add_receptor_profile():
     """Test adding receptor profiles to a mapping."""
     mapping = NeurotransmitterMapping()
@@ -65,7 +63,6 @@ def test_add_receptor_profile():
     assert len(mapping.receptor_profiles) == 2
 
 
-@pytest.mark.venv_only
 def test_get_receptor_profiles():
     """Test retrieving receptor profiles for specific region and neurotransmitter."""
     mapping = NeurotransmitterMapping()
@@ -133,7 +130,6 @@ def test_get_receptor_profiles():
     assert len(hippocampus_dopamine_profiles) == 0
 
 
-@pytest.mark.venv_only
 def test_add_production_site():
     """Test adding neurotransmitter production sites."""
     mapping = NeurotransmitterMapping()
@@ -154,7 +150,6 @@ def test_add_production_site():
     assert len(mapping.production_map[Neurotransmitter.SEROTONIN]) == 1
 
 
-@pytest.mark.venv_only
 def test_get_producing_regions():
     """Test retrieving regions that produce a specific neurotransmitter."""
     mapping = NeurotransmitterMapping()
@@ -180,7 +175,6 @@ def test_get_producing_regions():
     assert len(gaba_regions) == 0  # No GABA production sites defined
 
 
-@pytest.mark.venv_only
 def test_calculate_region_response():
     """Test calculating neurotransmitter effect on a brain region."""
     mapping = NeurotransmitterMapping()
@@ -243,7 +237,6 @@ def test_calculate_region_response():
     assert confidence_none == 0
 
 
-@pytest.mark.venv_only
 def test_default_mapping_creation():
     """Test creating a default scientific mapping."""
     mapping = create_default_neurotransmitter_mapping()
@@ -268,7 +261,6 @@ def test_default_mapping_creation():
     assert len(hippocampus_profiles) > 0
 
 
-@pytest.mark.venv_only
 def test_receptor_profile_creation():
     """Test creating and manipulating receptor profiles."""
     # Create a profile

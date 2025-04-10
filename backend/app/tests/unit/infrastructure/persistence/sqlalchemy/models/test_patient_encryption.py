@@ -17,7 +17,6 @@ from app.domain.value_objects.insurance import Insurance
 from app.infrastructure.security.encryption import EncryptionService
 
 
-@pytest.mark.db_required
 class TestPatientModelEncryption:
     """Test suite for PatientModel encryption/decryption functionality."""
     
@@ -64,8 +63,7 @@ class TestPatientModelEncryption:
             created_by=None
         )
     
-    @pytest.mark.db_required
-def test_encrypt_patient_data(self, sample_patient, mock_encryption_service):
+    def test_encrypt_patient_data(self, sample_patient, mock_encryption_service):
         """Test that patient PHI is encrypted when converted to a model."""
         # Import here to avoid circular imports
         with patch('app.infrastructure.persistence.sqlalchemy.models.patient.encryption_service', 
@@ -103,8 +101,7 @@ def test_encrypt_patient_data(self, sample_patient, mock_encryption_service):
             # Verify non-PHI fields are not encrypted
             assert patient_model.active == sample_patient.active
     
-    @pytest.mark.db_required
-def test_decrypt_patient_data(self, sample_patient, mock_encryption_service):
+    def test_decrypt_patient_data(self, sample_patient, mock_encryption_service):
         """Test that encrypted patient data is properly decrypted when retrieved."""
         # Import here to avoid circular imports
         with patch('app.infrastructure.persistence.sqlalchemy.models.patient.encryption_service', 
@@ -142,8 +139,7 @@ def test_decrypt_patient_data(self, sample_patient, mock_encryption_service):
             assert decrypted_patient.insurance.policy_number == sample_patient.insurance.policy_number
             assert decrypted_patient.insurance.group_number == sample_patient.insurance.group_number
     
-    @pytest.mark.db_required
-def test_null_values_handling(self, mock_encryption_service):
+    def test_null_values_handling(self, mock_encryption_service):
         """Test that null/empty values are handled correctly during encryption/decryption."""
         # Create patient with minimal data
         minimal_patient = Patient(

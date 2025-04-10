@@ -14,7 +14,6 @@ from app.infrastructure.repositories.patient_repository import PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
 
-@pytest.mark.db_required
 class TestPatientRepository:
     """Tests for the PatientRepository."""
     

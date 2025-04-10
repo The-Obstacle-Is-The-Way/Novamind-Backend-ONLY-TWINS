@@ -87,12 +87,10 @@ def aws_pat_service(mock_boto3, aws_config):
     return service
 
 
-@pytest.mark.db_required
 class TestAWSPATService:
     """Test the AWS PAT service implementation."""
     
-    @pytest.mark.db_required
-def test_initialization(self, mock_boto3, aws_config):
+    def test_initialization(self, mock_boto3, aws_config):
         """Test service initialization."""
         service = AWSPATService()
         service.initialize(aws_config)
@@ -104,8 +102,7 @@ def test_initialization(self, mock_boto3, aws_config):
         assert service._embeddings_table == aws_config["embeddings_table"]
         assert service._integrations_table == aws_config["integrations_table"]
     
-    @pytest.mark.db_required
-def test_initialization_failure(self, mock_boto3, aws_config):
+    def test_initialization_failure(self, mock_boto3, aws_config):
         """Test initialization failure."""
         # Set up boto3 client to raise an exception
         mock_boto3["sagemaker_runtime"].side_effect = ClientError(
@@ -117,8 +114,7 @@ def test_initialization_failure(self, mock_boto3, aws_config):
         with pytest.raises(InitializationError):
             service.initialize(aws_config)
     
-    @pytest.mark.db_required
-def test_sanitize_phi(self, aws_pat_service, mock_boto3):
+    def test_sanitize_phi(self, aws_pat_service, mock_boto3):
         """Test PHI sanitization."""
         # Configure mock to return PHI entities
         mock_boto3["comprehend_medical"].detect_phi.return_value = {
@@ -140,8 +136,7 @@ def test_sanitize_phi(self, aws_pat_service, mock_boto3):
         assert "[REDACTED-NAME]" in sanitized
         assert mock_boto3["comprehend_medical"].detect_phi.called
     
-    @pytest.mark.db_required
-def test_sanitize_phi_error(self, aws_pat_service, mock_boto3):
+    def test_sanitize_phi_error(self, aws_pat_service, mock_boto3):
         """Test PHI sanitization with error."""
         # Configure mock to raise an exception
         mock_boto3["comprehend_medical"].detect_phi.side_effect = ClientError(
@@ -155,8 +150,7 @@ def test_sanitize_phi_error(self, aws_pat_service, mock_boto3):
         # Verify that a placeholder is returned to avoid leaking PHI
         assert sanitized == "[PHI SANITIZATION ERROR]"
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy(self, aws_pat_service):
+    def test_analyze_actigraphy(self, aws_pat_service):
         """Test actigraphy analysis."""
         # Mock data
         patient_id = "patient123"
@@ -186,8 +180,7 @@ def test_analyze_actigraphy(self, aws_pat_service):
         assert result["patient_id"] == patient_id
         assert result["analysis_types"] == analysis_types
     
-    @pytest.mark.db_required
-def test_get_actigraphy_embeddings(self, aws_pat_service):
+    def test_get_actigraphy_embeddings(self, aws_pat_service):
         """Test actigraphy embeddings generation."""
         # Mock data
         patient_id = "patient123"
@@ -212,16 +205,14 @@ def test_get_actigraphy_embeddings(self, aws_pat_service):
         assert "embedding" in result
         assert result["patient_id"] == patient_id
     
-    @pytest.mark.db_required
-def test_get_analysis_by_id(self, aws_pat_service):
+    def test_get_analysis_by_id(self, aws_pat_service):
         """Test retrieving analysis by ID."""
         # This will raise ResourceNotFoundError as the stub implementation
         # doesn't actually store or retrieve real data
         with pytest.raises(ResourceNotFoundError):
             aws_pat_service.get_analysis_by_id("test-analysis-id")
     
-    @pytest.mark.db_required
-def test_get_model_info(self, aws_pat_service, aws_config):
+    def test_get_model_info(self, aws_pat_service, aws_config):
         """Test getting model information."""
         model_info = aws_pat_service.get_model_info()
         
@@ -231,8 +222,7 @@ def test_get_model_info(self, aws_pat_service, aws_config):
         assert aws_config["endpoint_name"] == model_info["endpoint_name"]
         assert model_info["active"] is True
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin(self, aws_pat_service):
+    def test_integrate_with_digital_twin(self, aws_pat_service):
         """Test integrating analysis with digital twin."""
         # Mock data
         patient_id = "patient123"

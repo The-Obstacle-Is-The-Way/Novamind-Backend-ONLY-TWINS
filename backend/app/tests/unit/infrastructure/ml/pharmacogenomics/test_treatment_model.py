@@ -16,7 +16,6 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.pharmacogenomics.treatment_model import TreatmentResponseModel
 
 
-@pytest.mark.db_required
 class TestTreatmentResponseModel:
     """Tests for the TreatmentResponseModel."""
 
@@ -95,8 +94,7 @@ class TestTreatmentResponseModel:
             }
         }
 
-    async @pytest.mark.db_required
-def test_initialize_loads_model_and_medication_data(self):
+    async def test_initialize_loads_model_and_medication_data(self):
         """Test that initialize loads the model and medication data correctly."""
         # Setup
         with patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True) as mock_joblib, \
@@ -135,8 +133,7 @@ def test_initialize_loads_model_and_medication_data(self):
             assert model._side_effect_model is not None
             assert model._medication_data is not None
 
-    async @pytest.mark.db_required
-def test_initialize_handles_missing_files(self):
+    async def test_initialize_handles_missing_files(self):
         """Test that initialize handles missing model and medication data files gracefully."""
         # Setup
         with patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True), \
@@ -161,8 +158,7 @@ def test_initialize_handles_missing_files(self):
             assert model._side_effect_model is not None
             assert model._medication_data is not None
 
-    async @pytest.mark.db_required
-def test_predict_treatment_response_success(self, model, sample_patient_data):
+    async def test_predict_treatment_response_success(self, model, sample_patient_data):
         """Test that predict_treatment_response correctly processes patient data and returns predictions."""
         # Setup
         medications = ["fluoxetine", "sertraline", "bupropion"]
@@ -202,8 +198,7 @@ def test_predict_treatment_response_success(self, model, sample_patient_data):
         assert "lowest_side_effects" in comparative
         assert "optimal_balance" in comparative
 
-    async @pytest.mark.db_required
-def test_predict_treatment_response_empty_medications(self, model, sample_patient_data):
+    async def test_predict_treatment_response_empty_medications(self, model, sample_patient_data):
         """Test that predict_treatment_response handles empty medications list gracefully."""
         # Setup
         empty_medications = []
@@ -214,8 +209,7 @@ def test_predict_treatment_response_empty_medications(self, model, sample_patien
         
         assert "No medications specified" in str(excinfo.value)
 
-    async @pytest.mark.db_required
-def test_extract_patient_features(self, model, sample_patient_data):
+    async def test_extract_patient_features(self, model, sample_patient_data):
         """Test that _extract_patient_features correctly transforms patient data into features."""
         # Setup
         with patch.object(model, '_extract_patient_features', wraps=model._extract_patient_features) as mock_extract:
@@ -245,8 +239,7 @@ def test_extract_patient_features(self, model, sample_patient_data):
             assert len(features["medication_history"]) == 1
             assert features["medication_history"][0]["name"] == "citalopram"
 
-    async @pytest.mark.db_required
-def test_predict_efficacy(self, model, sample_patient_data):
+    async def test_predict_efficacy(self, model, sample_patient_data):
         """Test that _predict_efficacy correctly predicts medication efficacy."""
         # Setup
         medications = ["fluoxetine", "sertraline", "bupropion"]
@@ -267,8 +260,7 @@ def test_predict_efficacy(self, model, sample_patient_data):
             assert 0 <= med_efficacy["confidence"] <= 1
             assert 0 <= med_efficacy["percentile"] <= 100
 
-    async @pytest.mark.db_required
-def test_predict_side_effects(self, model, sample_patient_data):
+    async def test_predict_side_effects(self, model, sample_patient_data):
         """Test that _predict_side_effects correctly predicts medication side effects."""
         # Setup
         medications = ["fluoxetine", "sertraline", "bupropion"]
@@ -293,8 +285,7 @@ def test_predict_side_effects(self, model, sample_patient_data):
                 assert "onset_days" in side_effect
                 assert 0 <= side_effect["risk"] <= 1
 
-    async @pytest.mark.db_required
-def test_generate_comparative_analysis(self, model):
+    async def test_generate_comparative_analysis(self, model):
         """Test that _generate_comparative_analysis correctly compares medication predictions."""
         # Setup
         medication_predictions = {

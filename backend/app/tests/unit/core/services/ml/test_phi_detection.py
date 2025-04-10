@@ -19,7 +19,6 @@ from app.core.exceptions import (
 from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
 
 
-@pytest.mark.venv_only
 class TestAWSComprehendMedicalPHIDetection:
     """Test suite for AWS Comprehend Medical PHI detection service."""
 
@@ -70,8 +69,7 @@ class TestAWSComprehendMedicalPHIDetection:
             })
         return service
 
-    @pytest.mark.venv_only
-def test_initialization(self):
+    def test_initialization(self):
         """Test service initialization with valid configuration."""
         service = AWSComprehendMedicalPHIDetection()
         
@@ -88,8 +86,7 @@ def test_initialization(self):
             assert service.is_healthy()
             mock_boto3.assert_called_once()
 
-    @pytest.mark.venv_only
-def test_initialization_boto_error(self):
+    def test_initialization_boto_error(self):
         """Test service initialization with Boto error."""
         service = AWSComprehendMedicalPHIDetection()
         
@@ -106,8 +103,7 @@ def test_initialization_boto_error(self):
                 
         assert not service.is_healthy()
 
-    @pytest.mark.venv_only
-def test_detect_phi_with_phi(self, phi_detection_service, mock_comprehend_response_with_phi):
+    def test_detect_phi_with_phi(self, phi_detection_service, mock_comprehend_response_with_phi):
         """Test PHI detection with text containing PHI."""
         with patch.object(
             phi_detection_service._comprehend_medical_client,
@@ -121,8 +117,7 @@ def test_detect_phi_with_phi(self, phi_detection_service, mock_comprehend_respon
             assert "NAME" in result["phi_types"]
             assert "PHONE_OR_FAX" in result["phi_types"]
 
-    @pytest.mark.venv_only
-def test_detect_phi_without_phi(self, phi_detection_service, mock_comprehend_response_without_phi):
+    def test_detect_phi_without_phi(self, phi_detection_service, mock_comprehend_response_without_phi):
         """Test PHI detection with text not containing PHI."""
         with patch.object(
             phi_detection_service._comprehend_medical_client,
@@ -135,22 +130,19 @@ def test_detect_phi_without_phi(self, phi_detection_service, mock_comprehend_res
             assert result["phi_count"] == 0
             assert len(result["phi_types"]) == 0
 
-    @pytest.mark.venv_only
-def test_detect_phi_empty_text(self, phi_detection_service):
+    def test_detect_phi_empty_text(self, phi_detection_service):
         """Test PHI detection with empty text."""
         with pytest.raises(InvalidRequestError):
             phi_detection_service.detect_phi("")
 
-    @pytest.mark.venv_only
-def test_detect_phi_service_not_initialized(self):
+    def test_detect_phi_service_not_initialized(self):
         """Test PHI detection with uninitialized service."""
         service = AWSComprehendMedicalPHIDetection()
         
         with pytest.raises(ServiceUnavailableError):
             service.detect_phi("Patient is John Doe")
 
-    @pytest.mark.venv_only
-def test_detect_phi_aws_error(self, phi_detection_service):
+    def test_detect_phi_aws_error(self, phi_detection_service):
         """Test PHI detection with AWS Comprehend Medical error."""
         with patch.object(
             phi_detection_service._comprehend_medical_client,
@@ -162,8 +154,7 @@ def test_detect_phi_aws_error(self, phi_detection_service):
         ), pytest.raises(ServiceUnavailableError):
             phi_detection_service.detect_phi("Patient is John Doe")
 
-    @pytest.mark.venv_only
-def test_redact_phi_with_phi(self, phi_detection_service, mock_comprehend_response_with_phi):
+    def test_redact_phi_with_phi(self, phi_detection_service, mock_comprehend_response_with_phi):
         """Test PHI redaction with text containing PHI."""
         with patch.object(
             phi_detection_service._comprehend_medical_client,
@@ -182,8 +173,7 @@ def test_redact_phi_with_phi(self, phi_detection_service, mock_comprehend_respon
             assert "NAME" in result["redaction_types"]
             assert "PHONE_OR_FAX" in result["redaction_types"]
 
-    @pytest.mark.venv_only
-def test_redact_phi_without_phi(self, phi_detection_service, mock_comprehend_response_without_phi):
+    def test_redact_phi_without_phi(self, phi_detection_service, mock_comprehend_response_without_phi):
         """Test PHI redaction with text not containing PHI."""
         with patch.object(
             phi_detection_service._comprehend_medical_client,
@@ -199,14 +189,12 @@ def test_redact_phi_without_phi(self, phi_detection_service, mock_comprehend_res
             assert result["original_text_length"] == len(test_text)
             assert result["redacted_text_length"] == len(test_text)
 
-    @pytest.mark.venv_only
-def test_redact_phi_empty_text(self, phi_detection_service):
+    def test_redact_phi_empty_text(self, phi_detection_service):
         """Test PHI redaction with empty text."""
         with pytest.raises(InvalidRequestError):
             phi_detection_service.redact_phi("")
 
-    @pytest.mark.venv_only
-def test_redact_phi_service_not_initialized(self):
+    def test_redact_phi_service_not_initialized(self):
         """Test PHI redaction with uninitialized service."""
         service = AWSComprehendMedicalPHIDetection()
         

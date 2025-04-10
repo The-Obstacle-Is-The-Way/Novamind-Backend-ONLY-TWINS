@@ -47,12 +47,10 @@ def sample_twin(sample_patient_id):
     )
 
 
-@pytest.mark.venv_only
 class TestBiometricDataPoint:
     """Tests for the BiometricDataPoint entity."""
     
-    @pytest.mark.venv_only
-def test_initialization(self, sample_patient_id):
+    def test_initialization(self, sample_patient_id):
         """Test that a BiometricDataPoint can be initialized with all required attributes."""
         data_id = uuid4()
         timestamp = datetime.utcnow()
@@ -75,8 +73,7 @@ def test_initialization(self, sample_patient_id):
         assert data_point.metadata == {}
         assert data_point.confidence == 1.0
     
-    @pytest.mark.venv_only
-def test_initialization_with_optional_attributes(self, sample_patient_id):
+    def test_initialization_with_optional_attributes(self, sample_patient_id):
         """Test that a BiometricDataPoint can be initialized with optional attributes."""
         data_id = uuid4()
         timestamp = datetime.utcnow()
@@ -96,8 +93,7 @@ def test_initialization_with_optional_attributes(self, sample_patient_id):
         assert data_point.metadata == metadata
         assert data_point.confidence == 0.85
     
-    @pytest.mark.venv_only
-def test_equality(self, sample_patient_id):
+    def test_equality(self, sample_patient_id):
         """Test that BiometricDataPoint equality works correctly."""
         data_id = uuid4()
         timestamp = datetime.utcnow()
@@ -133,8 +129,7 @@ def test_equality(self, sample_patient_id):
         assert data_point1 != data_point3
         assert data_point1 != "not a data point"
     
-    @pytest.mark.venv_only
-def test_representation(self, sample_data_point):
+    def test_representation(self, sample_data_point):
         """Test that the string representation of a BiometricDataPoint is correct."""
         repr_str = repr(sample_data_point)
         
@@ -145,12 +140,10 @@ def test_representation(self, sample_data_point):
         assert str(sample_data_point.value) in repr_str
 
 
-@pytest.mark.venv_only
 class TestBiometricTwin:
     """Tests for the BiometricTwin entity."""
     
-    @pytest.mark.venv_only
-def test_initialization(self, sample_patient_id):
+    def test_initialization(self, sample_patient_id):
         """Test that a BiometricTwin can be initialized with all required attributes."""
         twin_id = uuid4()
         now = datetime.utcnow()
@@ -172,8 +165,7 @@ def test_initialization(self, sample_patient_id):
         assert twin.models == {}
         assert twin.insights == {}
     
-    @pytest.mark.venv_only
-def test_add_data_point(self, sample_twin, sample_data_point):
+    def test_add_data_point(self, sample_twin, sample_data_point):
         """Test that a data point can be added to a twin."""
         # Add the data point
         sample_twin.add_data_point(sample_data_point)
@@ -186,8 +178,7 @@ def test_add_data_point(self, sample_twin, sample_data_point):
         # Check that updated_at was updated
         assert sample_twin.updated_at > sample_twin.created_at
     
-    @pytest.mark.venv_only
-def test_add_data_point_wrong_patient(self, sample_twin):
+    def test_add_data_point_wrong_patient(self, sample_twin):
         """Test that adding a data point with the wrong patient ID raises an error."""
         wrong_patient_data_point = BiometricDataPoint(
             data_id=uuid4(),
@@ -201,8 +192,7 @@ def test_add_data_point_wrong_patient(self, sample_twin):
         with pytest.raises(ValueError):
             sample_twin.add_data_point(wrong_patient_data_point)
     
-    @pytest.mark.venv_only
-def test_get_latest_data_point(self, sample_twin, sample_data_point):
+    def test_get_latest_data_point(self, sample_twin, sample_data_point):
         """Test that the latest data point can be retrieved."""
         # Add the data point
         sample_twin.add_data_point(sample_data_point)
@@ -224,13 +214,11 @@ def test_get_latest_data_point(self, sample_twin, sample_data_point):
         # Check that it's the later one
         assert latest == later_data_point
     
-    @pytest.mark.venv_only
-def test_get_latest_data_point_no_data(self, sample_twin):
+    def test_get_latest_data_point_no_data(self, sample_twin):
         """Test that get_latest_data_point returns None when no data points exist."""
         assert sample_twin.get_latest_data_point("heart_rate") is None
     
-    @pytest.mark.venv_only
-def test_get_data_points_in_range(self, sample_twin):
+    def test_get_data_points_in_range(self, sample_twin):
         """Test that data points within a time range can be retrieved."""
         # Create data points at different times
         now = datetime.utcnow()
@@ -263,8 +251,7 @@ def test_get_data_points_in_range(self, sample_twin):
             assert (now + timedelta(hours=i)) in range_points
             assert range_points[now + timedelta(hours=i)] == data_points[i]
     
-    @pytest.mark.venv_only
-def test_get_data_points_in_range_no_data(self, sample_twin):
+    def test_get_data_points_in_range_no_data(self, sample_twin):
         """Test that get_data_points_in_range returns an empty dict when no data points exist."""
         now = datetime.utcnow()
         range_points = sample_twin.get_data_points_in_range(
@@ -274,8 +261,7 @@ def test_get_data_points_in_range_no_data(self, sample_twin):
         )
         assert range_points == {}
     
-    @pytest.mark.venv_only
-def test_representation(self, sample_twin, sample_data_point):
+    def test_representation(self, sample_twin, sample_data_point):
         """Test that the string representation of a BiometricTwin is correct."""
         # Add a data point
         sample_twin.add_data_point(sample_data_point)

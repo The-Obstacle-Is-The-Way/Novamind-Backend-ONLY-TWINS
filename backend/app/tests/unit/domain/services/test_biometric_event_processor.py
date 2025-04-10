@@ -79,12 +79,10 @@ def mock_observer():
     return observer
 
 
-@pytest.mark.venv_only
 class TestBiometricEventProcessor:
     """Tests for the BiometricEventProcessor."""
     
-    @pytest.mark.venv_only
-def test_add_rule(self, sample_rule):
+    def test_add_rule(self, sample_rule):
         """Test that add_rule adds a rule to the processor."""
         processor = BiometricEventProcessor()
         processor.add_rule(sample_rule)
@@ -92,8 +90,7 @@ def test_add_rule(self, sample_rule):
         assert sample_rule.rule_id in processor.rules
         assert processor.rules[sample_rule.rule_id] == sample_rule
     
-    @pytest.mark.venv_only
-def test_remove_rule(self, sample_rule):
+    def test_remove_rule(self, sample_rule):
         """Test that remove_rule removes a rule from the processor."""
         processor = BiometricEventProcessor()
         processor.add_rule(sample_rule)
@@ -101,8 +98,7 @@ def test_remove_rule(self, sample_rule):
         
         assert sample_rule.rule_id not in processor.rules
     
-    @pytest.mark.venv_only
-def test_register_observer(self, mock_observer):
+    def test_register_observer(self, mock_observer):
         """Test that register_observer registers an observer for specific priorities."""
         processor = BiometricEventProcessor()
         processor.register_observer(mock_observer, [AlertPriority.WARNING])
@@ -111,8 +107,7 @@ def test_register_observer(self, mock_observer):
         assert mock_observer not in processor.observers[AlertPriority.URGENT]
         assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
     
-    @pytest.mark.venv_only
-def test_unregister_observer(self, mock_observer):
+    def test_unregister_observer(self, mock_observer):
         """Test that unregister_observer unregisters an observer from all priorities."""
         processor = BiometricEventProcessor()
         processor.register_observer(mock_observer, [AlertPriority.WARNING, AlertPriority.URGENT])
@@ -122,8 +117,7 @@ def test_unregister_observer(self, mock_observer):
         assert mock_observer not in processor.observers[AlertPriority.URGENT]
         assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
     
-    @pytest.mark.venv_only
-def test_process_data_point_no_patient_id(self):
+    def test_process_data_point_no_patient_id(self):
         """Test that process_data_point raises an error if the data point has no patient ID."""
         processor = BiometricEventProcessor()
         data_point = BiometricDataPoint(
@@ -140,8 +134,7 @@ def test_process_data_point_no_patient_id(self):
         with pytest.raises(ValidationError):
             processor.process_data_point(data_point)
     
-    @pytest.mark.venv_only
-def test_process_data_point_no_matching_rules(self, sample_data_point):
+    def test_process_data_point_no_matching_rules(self, sample_data_point):
         """Test that process_data_point returns no alerts if no rules match."""
         processor = BiometricEventProcessor()
         rule = AlertRule(
@@ -162,8 +155,7 @@ def test_process_data_point_no_matching_rules(self, sample_data_point):
         
         assert len(alerts) == 0
     
-    @pytest.mark.venv_only
-def test_process_data_point_matching_rule(self, sample_data_point, sample_rule, mock_observer):
+    def test_process_data_point_matching_rule(self, sample_data_point, sample_rule, mock_observer):
         """Test that process_data_point returns alerts for matching rules and notifies observers."""
         processor = BiometricEventProcessor()
         processor.add_rule(sample_rule)
@@ -180,8 +172,7 @@ def test_process_data_point_matching_rule(self, sample_data_point, sample_rule, 
         mock_observer.notify.assert_called_once()
         assert mock_observer.notify.call_args[0][0] == alerts[0]
     
-    @pytest.mark.venv_only
-def test_process_data_point_patient_specific_rule(self, sample_data_point, sample_rule, sample_clinician_id):
+    def test_process_data_point_patient_specific_rule(self, sample_data_point, sample_rule, sample_clinician_id):
         """Test that process_data_point only applies patient-specific rules to the right patient."""
         processor = BiometricEventProcessor()
         
@@ -212,8 +203,7 @@ def test_process_data_point_patient_specific_rule(self, sample_data_point, sampl
         assert len(alerts) == 1
         assert alerts[0].rule_id == sample_rule.rule_id
     
-    @pytest.mark.venv_only
-def test_process_data_point_inactive_rule(self, sample_data_point, sample_rule):
+    def test_process_data_point_inactive_rule(self, sample_data_point, sample_rule):
         """Test that process_data_point ignores inactive rules."""
         processor = BiometricEventProcessor()
         sample_rule.is_active = False
@@ -223,8 +213,7 @@ def test_process_data_point_inactive_rule(self, sample_data_point, sample_rule):
         
         assert len(alerts) == 0
     
-    @pytest.mark.venv_only
-def test_process_data_point_updates_context(self, sample_data_point):
+    def test_process_data_point_updates_context(self, sample_data_point):
         """Test that process_data_point updates the patient context."""
         processor = BiometricEventProcessor()
         
@@ -238,12 +227,10 @@ def test_process_data_point_updates_context(self, sample_data_point):
         assert processor.patient_context[sample_data_point.patient_id]["latest_values"][sample_data_point.data_type] == sample_data_point.value
 
 
-@pytest.mark.venv_only
 class TestAlertRule:
     """Tests for the AlertRule class."""
     
-    @pytest.mark.venv_only
-def test_evaluate_data_type_mismatch(self, sample_rule, sample_data_point):
+    def test_evaluate_data_type_mismatch(self, sample_rule, sample_data_point):
         """Test that evaluate returns False if the data type doesn't match."""
         # Change the rule's data type
         sample_rule.condition["data_type"] = "blood_pressure"
@@ -253,8 +240,7 @@ def test_evaluate_data_type_mismatch(self, sample_rule, sample_data_point):
         
         assert result is False
     
-    @pytest.mark.venv_only
-def test_evaluate_greater_than(self, sample_rule, sample_data_point):
+    def test_evaluate_greater_than(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the > operator."""
         # Set up the rule and data point
         sample_rule.condition["operator"] = ">"
@@ -272,8 +258,7 @@ def test_evaluate_greater_than(self, sample_rule, sample_data_point):
         
         assert result is False
     
-    @pytest.mark.venv_only
-def test_evaluate_greater_than_or_equal(self, sample_rule, sample_data_point):
+    def test_evaluate_greater_than_or_equal(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the >= operator."""
         # Set up the rule and data point
         sample_rule.condition["operator"] = ">="
@@ -294,8 +279,7 @@ def test_evaluate_greater_than_or_equal(self, sample_rule, sample_data_point):
         result = sample_rule.evaluate(sample_data_point, {})
         assert result is False
     
-    @pytest.mark.venv_only
-def test_evaluate_less_than(self, sample_rule, sample_data_point):
+    def test_evaluate_less_than(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the < operator."""
         # Set up the rule and data point
         sample_rule.condition["operator"] = "<"
@@ -311,8 +295,7 @@ def test_evaluate_less_than(self, sample_rule, sample_data_point):
         result = sample_rule.evaluate(sample_data_point, {})
         assert result is False
     
-    @pytest.mark.venv_only
-def test_evaluate_less_than_or_equal(self, sample_rule, sample_data_point):
+    def test_evaluate_less_than_or_equal(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the <= operator."""
         # Set up the rule and data point
         sample_rule.condition["operator"] = "<="
@@ -333,8 +316,7 @@ def test_evaluate_less_than_or_equal(self, sample_rule, sample_data_point):
         result = sample_rule.evaluate(sample_data_point, {})
         assert result is False
     
-    @pytest.mark.venv_only
-def test_evaluate_equal(self, sample_rule, sample_data_point):
+    def test_evaluate_equal(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the == operator."""
         # Set up the rule and data point
         sample_rule.condition["operator"] = "=="
@@ -350,8 +332,7 @@ def test_evaluate_equal(self, sample_rule, sample_data_point):
         result = sample_rule.evaluate(sample_data_point, {})
         assert result is False
     
-    @pytest.mark.venv_only
-def test_evaluate_not_equal(self, sample_rule, sample_data_point):
+    def test_evaluate_not_equal(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the != operator."""
         # Set up the rule and data point
         sample_rule.condition["operator"] = "!="
@@ -368,12 +349,10 @@ def test_evaluate_not_equal(self, sample_rule, sample_data_point):
         assert result is False
 
 
-@pytest.mark.venv_only
 class TestBiometricAlert:
     """Tests for the BiometricAlert class."""
     
-    @pytest.mark.venv_only
-def test_acknowledge(self, sample_data_point, sample_rule, sample_clinician_id):
+    def test_acknowledge(self, sample_data_point, sample_rule, sample_clinician_id):
         """Test that acknowledge correctly marks an alert as acknowledged."""
         # Create an alert
         alert = BiometricAlert(
@@ -401,12 +380,10 @@ def test_acknowledge(self, sample_data_point, sample_rule, sample_clinician_id):
         assert alert.acknowledged_by == sample_clinician_id
 
 
-@pytest.mark.venv_only
 class TestAlertObservers:
     """Tests for the AlertObserver classes."""
     
-    @pytest.mark.venv_only
-def test_email_alert_observer(self, sample_data_point, sample_rule):
+    def test_email_alert_observer(self, sample_data_point, sample_rule):
         """Test that EmailAlertObserver correctly notifies via email."""
         # Create a mock email service
         email_service = MagicMock()
@@ -434,8 +411,7 @@ def test_email_alert_observer(self, sample_data_point, sample_rule):
             # Check that the email service was not called (since it's commented out in the implementation)
             # email_service.send_email.assert_called_once()
     
-    @pytest.mark.venv_only
-def test_sms_alert_observer_urgent(self, sample_data_point, sample_rule):
+    def test_sms_alert_observer_urgent(self, sample_data_point, sample_rule):
         """Test that SMSAlertObserver correctly notifies via SMS for urgent alerts."""
         # Create a mock SMS service
         sms_service = MagicMock()
@@ -463,8 +439,7 @@ def test_sms_alert_observer_urgent(self, sample_data_point, sample_rule):
             # Check that the SMS service was not called (since it's commented out in the implementation)
             # sms_service.send_sms.assert_called_once()
     
-    @pytest.mark.venv_only
-def test_sms_alert_observer_non_urgent(self, sample_data_point, sample_rule):
+    def test_sms_alert_observer_non_urgent(self, sample_data_point, sample_rule):
         """Test that SMSAlertObserver doesn't notify for non-urgent alerts."""
         # Create a mock SMS service
         sms_service = MagicMock()
@@ -490,8 +465,7 @@ def test_sms_alert_observer_non_urgent(self, sample_data_point, sample_rule):
         # Check that the SMS service was not called
         # sms_service.send_sms.assert_not_called()
     
-    @pytest.mark.venv_only
-def test_in_app_alert_observer(self, sample_data_point, sample_rule):
+    def test_in_app_alert_observer(self, sample_data_point, sample_rule):
         """Test that InAppAlertObserver correctly notifies via in-app notifications."""
         # Create a mock notification service
         notification_service = MagicMock()
@@ -520,12 +494,10 @@ def test_in_app_alert_observer(self, sample_data_point, sample_rule):
             # notification_service.send_notification.assert_called()
 
 
-@pytest.mark.venv_only
 class TestClinicalRuleEngine:
     """Tests for the ClinicalRuleEngine class."""
     
-    @pytest.mark.venv_only
-def test_register_rule_template(self):
+    def test_register_rule_template(self):
         """Test that register_rule_template correctly registers a template."""
         engine = ClinicalRuleEngine()
         template = {
@@ -544,8 +516,7 @@ def test_register_rule_template(self):
         assert "high_heart_rate" in engine.rule_templates
         assert engine.rule_templates["high_heart_rate"] == template
     
-    @pytest.mark.venv_only
-def test_register_custom_condition(self):
+    def test_register_custom_condition(self):
         """Test that register_custom_condition correctly registers a condition function."""
         engine = ClinicalRuleEngine()
         
@@ -557,8 +528,7 @@ def test_register_custom_condition(self):
         assert "high_resting_heart_rate" in engine.custom_conditions
         assert engine.custom_conditions["high_resting_heart_rate"] == custom_condition
     
-    @pytest.mark.venv_only
-def test_create_rule_from_template(self, sample_clinician_id):
+    def test_create_rule_from_template(self, sample_clinician_id):
         """Test that create_rule_from_template correctly creates a rule from a template."""
         engine = ClinicalRuleEngine()
         template = {
@@ -592,8 +562,7 @@ def test_create_rule_from_template(self, sample_clinician_id):
         assert rule.condition["threshold"] == 100.0
         assert rule.created_by == sample_clinician_id
     
-    @pytest.mark.venv_only
-def test_create_rule_from_template_missing_parameter(self, sample_clinician_id):
+    def test_create_rule_from_template_missing_parameter(self, sample_clinician_id):
         """Test that create_rule_from_template raises an error if a required parameter is missing."""
         engine = ClinicalRuleEngine()
         template = {
@@ -619,8 +588,7 @@ def test_create_rule_from_template_missing_parameter(self, sample_clinician_id):
                 created_by=sample_clinician_id
             )
     
-    @pytest.mark.venv_only
-def test_create_rule_from_template_unknown_template(self, sample_clinician_id):
+    def test_create_rule_from_template_unknown_template(self, sample_clinician_id):
         """Test that create_rule_from_template raises an error if the template doesn't exist."""
         engine = ClinicalRuleEngine()
         

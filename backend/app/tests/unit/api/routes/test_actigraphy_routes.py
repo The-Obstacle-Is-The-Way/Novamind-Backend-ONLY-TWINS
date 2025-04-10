@@ -341,12 +341,10 @@ def mock_get_pat_service(mock_pat_service: MagicMock) -> None:
         yield
 
 
-@pytest.mark.venv_only
 class TestActigraphyRoutes:
     """Tests for the actigraphy API routes."""
     
-    @pytest.mark.venv_only
-def test_analyze_actigraphy_success(
+    def test_analyze_actigraphy_success(
         self,
         client: TestClient,
         mock_token: str,
@@ -369,8 +367,7 @@ def test_analyze_actigraphy_success(
         # Verify service call
         mock_pat_service.analyze_actigraphy.assert_called_once()
     
-    @pytest.mark.venv_only
-def test_analyze_actigraphy_unauthorized(
+    def test_analyze_actigraphy_unauthorized(
         self,
         client: TestClient,
         mock_token: str,
@@ -392,8 +389,7 @@ def test_analyze_actigraphy_unauthorized(
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_analyze_actigraphy_validation_error(
+    def test_analyze_actigraphy_validation_error(
         self,
         client: TestClient,
         mock_token: str,
@@ -415,8 +411,7 @@ def test_analyze_actigraphy_validation_error(
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid input" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_analyze_actigraphy_analysis_error(
+    def test_analyze_actigraphy_analysis_error(
         self,
         client: TestClient,
         mock_token: str,
@@ -438,8 +433,7 @@ def test_analyze_actigraphy_analysis_error(
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Analysis failed" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_get_actigraphy_embeddings_success(
+    def test_get_actigraphy_embeddings_success(
         self,
         client: TestClient,
         mock_token: str,
@@ -462,8 +456,7 @@ def test_get_actigraphy_embeddings_success(
         # Verify service call
         mock_pat_service.get_actigraphy_embeddings.assert_called_once()
     
-    @pytest.mark.venv_only
-def test_get_actigraphy_embeddings_unauthorized(
+    def test_get_actigraphy_embeddings_unauthorized(
         self,
         client: TestClient,
         mock_token: str,
@@ -485,8 +478,7 @@ def test_get_actigraphy_embeddings_unauthorized(
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_get_actigraphy_embeddings_validation_error(
+    def test_get_actigraphy_embeddings_validation_error(
         self,
         client: TestClient,
         mock_token: str,
@@ -508,8 +500,7 @@ def test_get_actigraphy_embeddings_validation_error(
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid input" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_get_actigraphy_embeddings_embedding_error(
+    def test_get_actigraphy_embeddings_embedding_error(
         self,
         client: TestClient,
         mock_token: str,
@@ -531,8 +522,7 @@ def test_get_actigraphy_embeddings_embedding_error(
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Embedding failed" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_get_analysis_by_id_success(
+    def test_get_analysis_by_id_success(
         self,
         client: TestClient,
         mock_token: str,
@@ -553,8 +543,7 @@ def test_get_analysis_by_id_success(
         # Verify service call
         mock_pat_service.get_analysis_by_id.assert_called_once_with(analysis_result["analysis_id"])
     
-    @pytest.mark.venv_only
-def test_get_analysis_by_id_not_found(
+    def test_get_analysis_by_id_not_found(
         self,
         client: TestClient,
         mock_token: str,
@@ -574,8 +563,7 @@ def test_get_analysis_by_id_not_found(
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "not found" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_get_analysis_by_id_unauthorized(
+    def test_get_analysis_by_id_unauthorized(
         self,
         client: TestClient,
         mock_token: str,
@@ -598,8 +586,7 @@ def test_get_analysis_by_id_unauthorized(
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_get_patient_analyses_success(
+    def test_get_patient_analyses_success(
         self,
         client: TestClient,
         mock_token: str,
@@ -625,8 +612,7 @@ def test_get_patient_analyses_success(
             offset=0
         )
     
-    @pytest.mark.venv_only
-def test_get_patient_analyses_unauthorized(
+    def test_get_patient_analyses_unauthorized(
         self,
         client: TestClient,
         mock_token: str
@@ -642,8 +628,7 @@ def test_get_patient_analyses_unauthorized(
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_get_model_info_success(
+    def test_get_model_info_success(
         self,
         client: TestClient,
         mock_token: str,
@@ -664,8 +649,7 @@ def test_get_model_info_success(
         # Verify service call
         mock_pat_service.get_model_info.assert_called_once()
     
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin_success(
+    def test_integrate_with_digital_twin_success(
         self,
         client: TestClient,
         mock_token: str,
@@ -688,8 +672,7 @@ def test_integrate_with_digital_twin_success(
         # Verify service call
         mock_pat_service.integrate_with_digital_twin.assert_called_once()
     
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin_unauthorized(
+    def test_integrate_with_digital_twin_unauthorized(
         self,
         client: TestClient,
         mock_token: str,
@@ -711,8 +694,7 @@ def test_integrate_with_digital_twin_unauthorized(
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin_not_found(
+    def test_integrate_with_digital_twin_not_found(
         self,
         client: TestClient,
         mock_token: str,
@@ -734,8 +716,7 @@ def test_integrate_with_digital_twin_not_found(
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "not found" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin_authorization_error(
+    def test_integrate_with_digital_twin_authorization_error(
         self,
         client: TestClient,
         mock_token: str,
@@ -757,8 +738,7 @@ def test_integrate_with_digital_twin_authorization_error(
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin_validation_error(
+    def test_integrate_with_digital_twin_validation_error(
         self,
         client: TestClient,
         mock_token: str,
@@ -780,8 +760,7 @@ def test_integrate_with_digital_twin_validation_error(
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid input" in response.json()["detail"]
     
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin_integration_error(
+    def test_integrate_with_digital_twin_integration_error(
         self,
         client: TestClient,
         mock_token: str,

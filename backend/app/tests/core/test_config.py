@@ -5,17 +5,13 @@ This module tests that application configuration loads correctly
 and handles environment variables properly.
 """
 import os
-import pytest
-from pathlib import Path
 
 from app.core.config import Settings
 
 
-@pytest.mark.db_required
 class TestSettings:
     """Test cases for the Settings class."""
     
-    @pytest.mark.db_required
 def test_default_settings(self):
         """Test that default settings are loaded correctly."""
         settings = Settings()
@@ -31,7 +27,6 @@ def test_default_settings(self):
         # HIPAA settings
         assert settings.ENABLE_PHI_AUDITING is True
     
-    @pytest.mark.db_required
 def test_environment_override(self, monkeypatch):
         """Test that environment variables can override settings."""
         # Setup environment variables
@@ -51,7 +46,6 @@ def test_environment_override(self, monkeypatch):
         assert settings.ACCESS_TOKEN_EXPIRE_MINUTES == 60
         assert settings.ENABLE_PHI_AUDITING is False
     
-    @pytest.mark.db_required
 def test_database_url_construction(self, monkeypatch):
         """Test that database URL is constructed correctly from components."""
         # Setup database environment variables
@@ -64,7 +58,6 @@ def test_database_url_construction(self, monkeypatch):
         # Check database URL
         assert str(settings.SQLALCHEMY_DATABASE_URI) == test_db_url
     
-    @pytest.mark.db_required
 def test_testing_environment(self, monkeypatch):
         """Test that testing environment settings are applied."""
         # Setup testing environment
@@ -78,7 +71,6 @@ def test_testing_environment(self, monkeypatch):
         assert settings.ENVIRONMENT == "testing"
         assert "DEBUG" in os.environ
     
-    @pytest.mark.db_required
 def test_cors_settings(self, monkeypatch):
         """Test CORS origins settings parsing."""
         # Test comma-separated string format

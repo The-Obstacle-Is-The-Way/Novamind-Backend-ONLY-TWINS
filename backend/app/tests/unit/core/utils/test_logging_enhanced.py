@@ -18,7 +18,6 @@ from unittest.mock import patch, MagicMock, mock_open, call
 from app.core.utils.logging import HIPAACompliantLogger, audit_log
 
 
-@pytest.mark.db_required
 class TestHIPAACompliantLogger:
     """Comprehensive tests for the HIPAACompliantLogger class."""
     
@@ -46,8 +45,7 @@ class TestHIPAACompliantLogger:
             if os.path.exists(path):
                 os.unlink(path)
     
-    @pytest.mark.db_required
-def test_logger_initialization(self, mock_settings):
+    def test_logger_initialization(self, mock_settings):
         """Test logger initialization with various configurations."""
         # Test with default settings
         logger = HIPAACompliantLogger("test_logger")
@@ -68,16 +66,14 @@ def test_logger_initialization(self, mock_settings):
         assert not any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler) 
                       for h in logger.logger.handlers)
     
-    @pytest.mark.db_required
-def test_get_formatter(self):
+    def test_get_formatter(self):
         """Test the formatter creation."""
         logger = HIPAACompliantLogger("test_logger")
         formatter = logger._get_formatter()
         assert isinstance(formatter, logging.Formatter)
         assert formatter._fmt == '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     
-    @pytest.mark.db_required
-def test_mask_phi(self):
+    def test_mask_phi(self):
         """Test PHI masking in log messages."""
         logger = HIPAACompliantLogger("test_logger")
         
@@ -96,8 +92,7 @@ def test_mask_phi(self):
         masked_phone = logger._mask_phi(phone_msg)
         assert "(555) 123-4567" not in masked_phone
     
-    @pytest.mark.db_required
-def test_logging_methods(self, mock_settings, temp_log_file):
+    def test_logging_methods(self, mock_settings, temp_log_file):
         """Test all logging level methods."""
         mock_settings.logging.LOG_FILE_PATH = temp_log_file
         
@@ -124,8 +119,7 @@ def test_logging_methods(self, mock_settings, temp_log_file):
             logger.critical("Critical message", {"key": "value"})
             mock_log.assert_called_with(logging.CRITICAL, "Critical message", {"key": "value"})
     
-    @pytest.mark.db_required
-def test_create_audit_log(self):
+    def test_create_audit_log(self):
         """Test audit log creation."""
         logger = HIPAACompliantLogger("test_logger")
         
@@ -152,8 +146,7 @@ def test_create_audit_log(self):
         assert "john@example.com" not in phi_audit_log["message"]
         assert "123-45-6789" not in phi_audit_log["extra"]["ssn"]
     
-    @pytest.mark.db_required
-def test_store_audit_log(self, mock_settings, temp_log_file):
+    def test_store_audit_log(self, mock_settings, temp_log_file):
         """Test audit log storage."""
         mock_settings.logging.ENABLE_AUDIT_LOGGING = True
         
@@ -172,8 +165,7 @@ def test_store_audit_log(self, mock_settings, temp_log_file):
             logger._store_audit_log(audit_data)
             mock_store.assert_called_once_with(audit_data)
     
-    @pytest.mark.db_required
-def test_log_method(self, mock_settings):
+    def test_log_method(self, mock_settings):
         """Test the base _log method."""
         with patch.object(HIPAACompliantLogger, '_create_audit_log') as mock_create_audit:
             with patch.object(HIPAACompliantLogger, '_store_audit_log') as mock_store_audit:
@@ -196,8 +188,7 @@ def test_log_method(self, mock_settings):
                 # Verify audit log was stored
                 mock_store_audit.assert_called_once()
     
-    @pytest.mark.db_required
-def test_integration_with_file(self, mock_settings, temp_log_file):
+    def test_integration_with_file(self, mock_settings, temp_log_file):
         """Test integration with file logging."""
         mock_settings.logging.LOG_FILE_PATH = temp_log_file
         mock_settings.logging.LOG_TO_FILE = True
@@ -215,7 +206,6 @@ def test_integration_with_file(self, mock_settings, temp_log_file):
             assert test_message in log_content
 
 
-@pytest.mark.db_required
 class TestAuditLogDecorator:
     """Tests for the audit_log decorator."""
     
@@ -226,13 +216,11 @@ class TestAuditLogDecorator:
         with patch('app.core.utils.logging.HIPAACompliantLogger', return_value=mock):
             yield mock
     
-    @pytest.mark.db_required
-def test_sync_function_success(self, mock_logger):
+    def test_sync_function_success(self, mock_logger):
         """Test the decorator on a synchronous function that succeeds."""
         # Define a sync function with the decorator
         @audit_log("test_event")
-        @pytest.mark.db_required
-def test_function(a, b):
+        def test_function(a, b):
             return a + b
         
         # Call the decorated function
@@ -245,8 +233,7 @@ def test_function(a, b):
         mock_logger.info.assert_called_once()
         assert "test_event completed successfully" in mock_logger.info.call_args[0][0]
     
-    @pytest.mark.db_required
-def test_sync_function_error(self, mock_logger):
+    def test_sync_function_error(self, mock_logger):
         """Test the decorator on a synchronous function that fails."""
         # Define a sync function that raises an exception
         @audit_log("test_event")
@@ -263,13 +250,11 @@ def test_sync_function_error(self, mock_logger):
         assert "Test error" in str(mock_logger.error.call_args[0][1])
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_async_function_success(self, mock_logger):
+    async def test_async_function_success(self, mock_logger):
         """Test the decorator on an asynchronous function that succeeds."""
         # Define an async function with the decorator
         @audit_log("test_async_event")
-        async @pytest.mark.db_required
-def test_async_function(a, b):
+        async def test_async_function(a, b):
             await asyncio.sleep(0.01)  # Simulate async work
             return a + b
         
@@ -284,8 +269,7 @@ def test_async_function(a, b):
         assert "test_async_event completed successfully" in mock_logger.info.call_args[0][0]
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_async_function_error(self, mock_logger):
+    async def test_async_function_error(self, mock_logger):
         """Test the decorator on an asynchronous function that fails."""
         # Define an async function that raises an exception
         @audit_log("test_async_event")

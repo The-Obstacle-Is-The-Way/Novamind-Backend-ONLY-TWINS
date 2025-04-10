@@ -65,12 +65,10 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
     )
 
 
-@pytest.mark.venv_only
 class TestBiometricAlert:
     """Tests for the BiometricAlert domain entity."""
     
-    @pytest.mark.venv_only
-def test_init_with_defaults(self, sample_patient_id, sample_rule_id, sample_data_points):
+    def test_init_with_defaults(self, sample_patient_id, sample_rule_id, sample_data_points):
         """Test initializing a BiometricAlert with default values."""
         # Arrange & Act
         alert = BiometricAlert(
@@ -99,8 +97,7 @@ def test_init_with_defaults(self, sample_patient_id, sample_rule_id, sample_data
         assert isinstance(alert.metadata, dict)
         assert len(alert.metadata) == 0
     
-    @pytest.mark.venv_only
-def test_init_with_custom_values(self, sample_patient_id, sample_rule_id, sample_data_points):
+    def test_init_with_custom_values(self, sample_patient_id, sample_rule_id, sample_data_points):
         """Test initializing a BiometricAlert with custom values."""
         # Arrange
         alert_id = uuid4()
@@ -130,8 +127,7 @@ def test_init_with_custom_values(self, sample_patient_id, sample_rule_id, sample
         assert alert.status == AlertStatus.ACKNOWLEDGED
         assert alert.metadata == metadata
     
-    @pytest.mark.venv_only
-def test_acknowledge(self, sample_alert, sample_provider_id):
+    def test_acknowledge(self, sample_alert, sample_provider_id):
         """Test acknowledging an alert."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
@@ -147,8 +143,7 @@ def test_acknowledge(self, sample_alert, sample_provider_id):
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
     
-    @pytest.mark.venv_only
-def test_acknowledge_already_acknowledged(self, sample_alert, sample_provider_id):
+    def test_acknowledge_already_acknowledged(self, sample_alert, sample_provider_id):
         """Test acknowledging an already acknowledged alert."""
         # Arrange
         original_provider_id = UUID("00000000-0000-0000-0000-000000000003")
@@ -163,8 +158,7 @@ def test_acknowledge_already_acknowledged(self, sample_alert, sample_provider_id
         assert sample_alert.acknowledged_by == original_provider_id
         assert sample_alert.acknowledged_at == original_acknowledged_at
     
-    @pytest.mark.venv_only
-def test_mark_in_progress(self, sample_alert, sample_provider_id):
+    def test_mark_in_progress(self, sample_alert, sample_provider_id):
         """Test marking an alert as in progress."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
@@ -178,8 +172,7 @@ def test_mark_in_progress(self, sample_alert, sample_provider_id):
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
     
-    @pytest.mark.venv_only
-def test_mark_in_progress_from_acknowledged(self, sample_alert, sample_provider_id):
+    def test_mark_in_progress_from_acknowledged(self, sample_alert, sample_provider_id):
         """Test marking an acknowledged alert as in progress."""
         # Arrange
         sample_alert.acknowledge(sample_provider_id)
@@ -194,8 +187,7 @@ def test_mark_in_progress_from_acknowledged(self, sample_alert, sample_provider_
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
     
-    @pytest.mark.venv_only
-def test_resolve(self, sample_alert, sample_provider_id):
+    def test_resolve(self, sample_alert, sample_provider_id):
         """Test resolving an alert."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
@@ -213,8 +205,7 @@ def test_resolve(self, sample_alert, sample_provider_id):
         assert sample_alert.resolution_notes == notes
         assert sample_alert.updated_at is not None
     
-    @pytest.mark.venv_only
-def test_resolve_from_in_progress(self, sample_alert, sample_provider_id):
+    def test_resolve_from_in_progress(self, sample_alert, sample_provider_id):
         """Test resolving an in-progress alert."""
         # Arrange
         sample_alert.mark_in_progress(sample_provider_id)
@@ -233,8 +224,7 @@ def test_resolve_from_in_progress(self, sample_alert, sample_provider_id):
         assert sample_alert.resolution_notes == notes
         assert sample_alert.updated_at is not None
     
-    @pytest.mark.venv_only
-def test_dismiss(self, sample_alert, sample_provider_id):
+    def test_dismiss(self, sample_alert, sample_provider_id):
         """Test dismissing an alert."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
@@ -252,8 +242,7 @@ def test_dismiss(self, sample_alert, sample_provider_id):
         assert sample_alert.resolution_notes == notes
         assert sample_alert.updated_at is not None
     
-    @pytest.mark.venv_only
-def test_dismiss_from_acknowledged(self, sample_alert, sample_provider_id):
+    def test_dismiss_from_acknowledged(self, sample_alert, sample_provider_id):
         """Test dismissing an acknowledged alert."""
         # Arrange
         sample_alert.acknowledge(sample_provider_id)
@@ -272,8 +261,7 @@ def test_dismiss_from_acknowledged(self, sample_alert, sample_provider_id):
         assert sample_alert.resolution_notes == notes
         assert sample_alert.updated_at is not None
     
-    @pytest.mark.venv_only
-def test_string_representation(self, sample_alert):
+    def test_string_representation(self, sample_alert):
         """Test the string representation of the alert."""
         # Act
         string_repr = str(sample_alert)

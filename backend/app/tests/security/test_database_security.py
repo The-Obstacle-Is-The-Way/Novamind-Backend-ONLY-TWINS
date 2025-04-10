@@ -22,7 +22,6 @@ from app.infrastructure.persistence.sqlalchemy.config.database import Database
 from app.infrastructure.security.encryption import EncryptionService
 
 
-@pytest.mark.db_required
 class TestDatabaseSecurity:
     """HIPAA-focused security tests for the database layer."""
     
@@ -47,8 +46,7 @@ class TestDatabaseSecurity:
         return EncryptionService()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_ssl_connection_required(self):
+    async def test_ssl_connection_required(self):
         """Test that SSL is required for database connections."""
         # Patch settings to check SSL enforcement
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.settings') as mock_settings:
@@ -67,8 +65,7 @@ def test_ssl_connection_required(self):
                 assert kwargs['connect_args']['sslmode'] == 'require'
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_database_credential_protection(self):
+    async def test_database_credential_protection(self):
         """Test that database credentials are never logged or exposed."""
         # Patch settings with test credentials
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.settings') as mock_settings:
@@ -92,8 +89,7 @@ def test_database_credential_protection(self):
                             assert "test_password" not in arg, "Password found in logs"
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_database_audit_logging(self, mock_session, mock_logger):
+    async def test_database_audit_logging(self, mock_session, mock_logger):
         """Test that database operations are properly audit logged."""
         # Test setup
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.async_sessionmaker') as mock_session_maker:
@@ -116,8 +112,7 @@ def test_database_audit_logging(self, mock_session, mock_logger):
                 assert any("session closed" in call.lower() for call in debug_calls)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_sql_injection_prevention(self, mock_session):
+    async def test_sql_injection_prevention(self, mock_session):
         """Test that SQL injection is prevented through parameterization."""
         # Setup a mock repository that uses the database
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.async_sessionmaker') as mock_session_maker:
@@ -145,8 +140,7 @@ def test_sql_injection_prevention(self, mock_session):
                 assert kwargs["parameters"]["id"] == malicious_input
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_encrypted_sensitive_data(self, encryption_service):
+    async def test_encrypted_sensitive_data(self, encryption_service):
         """Test that sensitive data is encrypted in the database."""
         # This is a schema validation test - we're testing that our
         # database models properly encrypt PHI before storage
@@ -189,8 +183,7 @@ def test_encrypted_sensitive_data(self, encryption_service):
                     assert len(field_value) > 20, "SSN does not appear to be properly secured"
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_database_connection_timeout(self):
+    async def test_database_connection_timeout(self):
         """Test that database connections have appropriate timeouts."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.settings') as mock_settings:
             # Set a reasonable connection timeout
@@ -210,8 +203,7 @@ def test_database_connection_timeout(self):
                 assert kwargs.get("pool_recycle") == 3600
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_session_isolation_level(self):
+    async def test_session_isolation_level(self):
         """Test that database sessions use appropriate isolation levels."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
             with patch('sqlalchemy.ext.asyncio.async_sessionmaker') as mock_session_maker:
@@ -226,8 +218,7 @@ def test_session_isolation_level(self):
                 assert "READ COMMITTED" in str(kwargs) or "SERIALIZABLE" in str(kwargs)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_error_response_sanitization(self, mock_session):
+    async def test_error_response_sanitization(self, mock_session):
         """Test that database errors don't expose sensitive information."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.async_sessionmaker') as mock_session_maker:
             # Configure session to raise an error with sensitive information

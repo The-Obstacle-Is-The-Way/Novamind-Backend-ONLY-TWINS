@@ -17,7 +17,6 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 
 
-@pytest.mark.db_required
 class TestDigitalTwinIntegrationService:
     """Tests for the DigitalTwinIntegrationService."""
 
@@ -200,8 +199,7 @@ class TestDigitalTwinIntegrationService:
         """Create a sample patient ID."""
         return str(uuid4())
 
-    async @pytest.mark.db_required
-def test_generate_comprehensive_insights_all_services(self, integration_service, sample_patient_id):
+    async def test_generate_comprehensive_insights_all_services(self, integration_service, sample_patient_id):
         """Test that generate_comprehensive_insights calls all services and combines results."""
         # Setup
         options = {
@@ -228,8 +226,7 @@ def test_generate_comprehensive_insights_all_services(self, integration_service,
         integration_service.biometric_correlation_service.analyze_correlations.assert_called_once()
         integration_service.medication_response_service.predict_medication_response.assert_called_once()
 
-    async @pytest.mark.db_required
-def test_generate_comprehensive_insights_partial_services(self, integration_service, sample_patient_id):
+    async def test_generate_comprehensive_insights_partial_services(self, integration_service, sample_patient_id):
         """Test that generate_comprehensive_insights only calls requested services."""
         # Setup
         options = {
@@ -256,8 +253,7 @@ def test_generate_comprehensive_insights_partial_services(self, integration_serv
         integration_service.medication_response_service.predict_medication_response.assert_called_once()
         integration_service.biometric_correlation_service.analyze_correlations.assert_not_called()
 
-    async @pytest.mark.db_required
-def test_generate_comprehensive_insights_handles_service_errors(self, integration_service, sample_patient_id):
+    async def test_generate_comprehensive_insights_handles_service_errors(self, integration_service, sample_patient_id):
         """Test that generate_comprehensive_insights handles service errors gracefully."""
         # Setup
         integration_service.symptom_forecasting_service.generate_forecast.side_effect = Exception("Service error")
@@ -281,8 +277,7 @@ def test_generate_comprehensive_insights_handles_service_errors(self, integratio
         assert "errors" in result
         assert "symptom_forecast" in result["errors"]
 
-    async @pytest.mark.db_required
-def test_generate_integrated_recommendations(self, integration_service, sample_patient_id):
+    async def test_generate_integrated_recommendations(self, integration_service, sample_patient_id):
         """Test that _generate_integrated_recommendations creates meaningful recommendations."""
         # Setup
         insights = {
@@ -357,8 +352,7 @@ def test_generate_integrated_recommendations(self, integration_service, sample_p
         assert "medication" in rec_types
         assert "biometric_monitoring" in rec_types or "behavioral" in rec_types
 
-    async @pytest.mark.db_required
-def test_get_patient_data(self, integration_service, sample_patient_id, mock_patient_repository):
+    async def test_get_patient_data(self, integration_service, sample_patient_id, mock_patient_repository):
         """Test that _get_patient_data retrieves patient data correctly."""
         # Execute
         patient_data = await integration_service._get_patient_data(sample_patient_id)
@@ -367,8 +361,7 @@ def test_get_patient_data(self, integration_service, sample_patient_id, mock_pat
         assert patient_data is not None
         mock_patient_repository.get_by_id.assert_called_once_with(sample_patient_id)
 
-    async @pytest.mark.db_required
-def test_get_patient_data_handles_missing_patient(self, integration_service, sample_patient_id, mock_patient_repository):
+    async def test_get_patient_data_handles_missing_patient(self, integration_service, sample_patient_id, mock_patient_repository):
         """Test that _get_patient_data handles missing patient data gracefully."""
         # Setup
         mock_patient_repository.get_by_id.return_value = None

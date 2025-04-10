@@ -7,8 +7,10 @@ They sit between standalone tests (no dependencies) and integration tests (exter
 
 import os
 import sys
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
+
 
 def pytest_configure(config):
     """Configure pytest environment for venv_only tests."""

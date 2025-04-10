@@ -7,7 +7,6 @@ from typing import Dict, List, Any, Union
 from app.core.security.phi_sanitizer import PHISanitizer
 
 
-@pytest.mark.venv_only
 class TestPHISanitizer:
     """Test cases for the PHI sanitization utilities."""
     
@@ -65,7 +64,6 @@ class TestPHISanitizer:
             f"ID: {self.patient_mrn}"
         ]
     
-    @pytest.mark.venv_only
 def test_sanitize_string(self):
         """Test that strings containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.text_with_phi)
@@ -82,7 +80,6 @@ def test_sanitize_string(self):
         # Verify redaction markers are present
         assert "[REDACTED]" in sanitized
     
-    @pytest.mark.venv_only
 def test_sanitize_dict(self):
         """Test that dictionaries containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.dict_with_phi)
@@ -100,9 +97,9 @@ def test_sanitize_dict(self):
         assert sanitized["non_phi_data"]["appointment_type"] == "Follow-up"
         assert sanitized["non_phi_data"]["duration_minutes"] == 30
         assert sanitized["medical_info"]["diagnosis"] == "Depression"
-        assert sanitized["medical_info"]["severity"] == "Moderate"
+        assert sanitized["medical_info"]["severity"@pytest.mark.standalone
+] == "Moderate"
     
-    @pytest.mark.venv_only
 def test_sanitize_list(self):
         """Test that lists containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.list_with_phi)
@@ -115,9 +112,9 @@ def test_sanitize_list(self):
             assert self.patient_mrn not in item
         
         # Non-PHI entries should be preserved
-        assert "Notes: Patient reports improved mood" in sanitized
+        assert "Notes: Pati@pytest.mark.standalone
+ent reports improved mood" in sanitized
     
-    @pytest.mark.venv_only
 def test_sanitize_complex_nested_structure(self):
         """Test sanitization of complex nested data structures with PHI."""
         complex_structure = {
@@ -157,9 +154,9 @@ def test_sanitize_complex_nested_structure(self):
         
         # Non-PHI should remain intact
         assert sanitized["metadata"]["generated_by"] == "Test System"
-        assert sanitized["metadata"]["timestamp"] == "2025-04-10T00:00:00Z"
+        asse@pytest.mark.standalone
+rt sanitized["metadata"]["timestamp"] == "2025-04-10T00:00:00Z"
     
-    @pytest.mark.venv_only
 def test_sanitize_with_custom_patterns(self):
         """Test sanitization with custom PHI patterns."""
         # Create sanitizer with custom patterns
@@ -176,10 +173,10 @@ def test_sanitize_with_custom_patterns(self):
         assert sanitized["name"] != self.patient_name
         
         # Custom patterns should also be sanitized
-        assert sanitized["medical_info"]["diagnosis"] != "Depression"
+        assert sanitized["medical_info"]["diagnos@pytest.mark.standalone
+is"] != "Depression"
         assert sanitized["medical_info"]["severity"] != "Moderate"
     
-    @pytest.mark.venv_only
 def test_sanitization_preserves_structure(self):
         """Test that sanitization preserves the structure of the input data."""
         # Test with dictionary

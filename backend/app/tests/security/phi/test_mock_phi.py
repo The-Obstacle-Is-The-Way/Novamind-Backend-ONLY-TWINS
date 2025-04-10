@@ -17,7 +17,6 @@ from app.core.exceptions import (
 from app.core.services.ml.mock import MockPHIDetection
 from app.tests.security.base_security_test import BaseSecurityTest
 
-@pytest.mark.venv_only
 class TestMockPHIDetection(BaseSecurityTest):
     """
     Test suite for MockPHIDetection class.
@@ -48,15 +47,13 @@ class TestMockPHIDetection(BaseSecurityTest):
             "Regular exercise and medication adherence are recommended."
         )
     
-    @pytest.mark.venv_only
-def test_initialization(self) -> None:
+    def test_initialization(self) -> None:
         """Test initialization of the PHI detection service."""
         self.assertIsNotNone(self.service)
         # _initialized is a private attribute, use is_healthy() instead
         self.assertTrue(self.service.is_healthy())
     
-    @pytest.mark.venv_only
-def test_detect_phi_basic(self) -> None:
+    def test_detect_phi_basic(self) -> None:
         """Test basic PHI detection in text."""
         result = self.service.detect_phi(self.sample_phi_text)
         # The result is a dictionary with 'phi_instances' key that contains detected PHI
@@ -70,8 +67,7 @@ def test_detect_phi_basic(self) -> None:
         self.assertIn("NAME", detected_types)
         # Other types may vary based on the implementation
     
-    @pytest.mark.venv_only
-def test_detect_phi_with_levels(self) -> None:
+    def test_detect_phi_with_levels(self) -> None:
         """Test PHI detection with confidence levels."""
         # MockPHIDetection doesn't support min_confidence, use detection_level instead
         result = self.service.detect_phi(self.sample_phi_text, detection_level="strict")
@@ -83,8 +79,7 @@ def test_detect_phi_with_levels(self) -> None:
         for entity in result['phi_instances']:
             self.assertIn('confidence', entity)
     
-    @pytest.mark.venv_only
-def test_detect_phi_with_specific_types(self) -> None:
+    def test_detect_phi_with_specific_types(self) -> None:
         """Test PHI detection with specific entity types."""
         # MockPHIDetection doesn't support phi_types directly
         # Just verify that it detects different types of PHI
@@ -99,8 +94,7 @@ def test_detect_phi_with_specific_types(self) -> None:
         # Verify at least one type of PHI is detected
         self.assertGreater(len(set(detected_types)), 0)
     
-    @pytest.mark.venv_only
-def test_detect_phi_no_phi(self) -> None:
+    def test_detect_phi_no_phi(self) -> None:
         """Test PHI detection with text that doesn't contain PHI."""
         # The mock implementation may detect some PHI in no_phi_text
         # This test just verifies it doesn't crash
@@ -109,8 +103,7 @@ def test_detect_phi_no_phi(self) -> None:
         self.assertIn('phi_instances', result)
         # We can't assert exactly what it returns as the mock may have various behaviors
     
-    @pytest.mark.venv_only
-def test_detect_phi_edge_cases(self) -> None:
+    def test_detect_phi_edge_cases(self) -> None:
         """Test PHI detection with edge cases."""
         # Empty text should raise InvalidRequestError
         with self.assertRaises(InvalidRequestError):
@@ -120,8 +113,7 @@ def test_detect_phi_edge_cases(self) -> None:
         with self.assertRaises(InvalidRequestError):
             self.service.detect_phi(None)
     
-    @pytest.mark.venv_only
-def test_redact_phi_basic(self) -> None:
+    def test_redact_phi_basic(self) -> None:
         """Test basic PHI redaction in text."""
         redacted = self.service.redact_phi(self.sample_phi_text)
         
@@ -133,8 +125,7 @@ def test_redact_phi_basic(self) -> None:
         # The actual redaction format depends on the implementation
         self.assertNotEqual(redacted_text, self.sample_phi_text)
     
-    @pytest.mark.venv_only
-def test_redact_phi_custom_replacement(self) -> None:
+    def test_redact_phi_custom_replacement(self) -> None:
         """Test PHI redaction with custom replacement text."""
         replacement = "[PHI]"
         redacted = self.service.redact_phi(self.sample_phi_text, replacement=replacement)
@@ -149,8 +140,7 @@ def test_redact_phi_custom_replacement(self) -> None:
         # Verify the replacement was used (based on replacement_used in result)
         self.assertEqual(redacted['replacement_used'], replacement)
     
-    @pytest.mark.venv_only
-def test_redact_phi_levels(self) -> None:
+    def test_redact_phi_levels(self) -> None:
         """Test PHI redaction with confidence levels."""
         # Use detection_level parameter instead of min_confidence
         redacted_high = self.service.redact_phi(
@@ -167,8 +157,7 @@ def test_redact_phi_levels(self) -> None:
         self.assertIn('redacted_text', redacted_high)
         self.assertIn('redacted_text', redacted_low)
     
-    @pytest.mark.venv_only
-def test_redact_phi_edge_cases(self) -> None:
+    def test_redact_phi_edge_cases(self) -> None:
         """Test PHI redaction with edge cases."""
         # Empty text should raise InvalidRequestError
         with self.assertRaises(InvalidRequestError):
@@ -178,8 +167,7 @@ def test_redact_phi_edge_cases(self) -> None:
         with self.assertRaises(InvalidRequestError):
             self.service.redact_phi(None)
     
-    @pytest.mark.venv_only
-def test_pattern_selection(self) -> None:
+    def test_pattern_selection(self) -> None:
         """Test selection of detection patterns based on configuration."""
         # Initialize with specific configuration
         pattern_service = MockPHIDetection()

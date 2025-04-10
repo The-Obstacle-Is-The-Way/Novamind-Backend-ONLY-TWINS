@@ -127,13 +127,11 @@ def unauthenticated_request():
     return mock_request
 
 
-@pytest.mark.db_required
 class TestAuthMiddleware:
     """Test suite for the authentication middleware."""
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_valid_authentication(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_valid_authentication(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test successful authentication with a valid token."""
         # Setup the next middleware in the chain
         async def mock_call_next(request):
@@ -159,8 +157,7 @@ def test_valid_authentication(self, auth_middleware, authenticated_request, mock
         auth_middleware.audit_logger.log_authentication.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_missing_token(self, auth_middleware, unauthenticated_request):
+    async def test_missing_token(self, auth_middleware, unauthenticated_request):
         """Test handling of a request without an authentication token."""
         # Setup the next middleware in the chain
         async def mock_call_next(request):
@@ -176,8 +173,7 @@ def test_missing_token(self, auth_middleware, unauthenticated_request):
         auth_middleware.audit_logger.log_authentication_failure.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_invalid_token(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_invalid_token(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test handling of a request with an invalid token."""
         # Configure JWT service to report token as invalid
         mock_jwt_service.validate_token.return_value = MagicMock(
@@ -202,8 +198,7 @@ def test_invalid_token(self, auth_middleware, authenticated_request, mock_jwt_se
         auth_middleware.audit_logger.log_authentication_failure.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_expired_token(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_expired_token(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test handling of a request with an expired token."""
         # Configure JWT service to report token as expired
         mock_jwt_service.validate_token.return_value = MagicMock(
@@ -228,8 +223,7 @@ def test_expired_token(self, auth_middleware, authenticated_request, mock_jwt_se
         auth_middleware.audit_logger.log_authentication_failure.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_exempt_path(self, auth_middleware, authenticated_request):
+    async def test_exempt_path(self, auth_middleware, authenticated_request):
         """Test that exempt paths bypass authentication."""
         # Modify the request to use an exempt path
         authenticated_request.url.path = "/health"
@@ -250,8 +244,7 @@ def test_exempt_path(self, auth_middleware, authenticated_request):
         assert json.loads(response.body) == {"status": "healthy"}
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_disabled_middleware(self, auth_config, app, authenticated_request):
+    async def test_disabled_middleware(self, auth_config, app, authenticated_request):
         """Test behavior when middleware is disabled."""
         # Create disabled middleware
         disabled_config = auth_config
@@ -279,8 +272,7 @@ def test_disabled_middleware(self, auth_config, app, authenticated_request):
         assert json.loads(response.body) == {"status": "success"}
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_scope_validation(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_scope_validation(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test validation of token scopes against required scopes for routes."""
         # Configure JWT service to return specific scopes
         mock_jwt_service.validate_token.return_value = MagicMock(
@@ -314,8 +306,7 @@ def test_scope_validation(self, auth_middleware, authenticated_request, mock_jwt
             await auth_middleware.dispatch(authenticated_request, mock_call_next)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_role_based_access(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_role_based_access(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test role-based access control."""
         # Configure JWT service to return specific roles
         mock_jwt_service.validate_token.return_value = MagicMock(
@@ -349,8 +340,7 @@ def test_role_based_access(self, auth_middleware, authenticated_request, mock_jw
             await auth_middleware.dispatch(authenticated_request, mock_call_next)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_admin_access_override(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_admin_access_override(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test that admin role overrides specific permission requirements."""
         # Configure JWT service to return admin role
         mock_jwt_service.validate_token.return_value = MagicMock(
@@ -379,8 +369,7 @@ def test_admin_access_override(self, auth_middleware, authenticated_request, moc
                 assert response.status_code == 200, f"Admin should have access to {method} {endpoint}"
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_patient_self_access(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_patient_self_access(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test that patients can only access their own records."""
         # Configure JWT service to return patient role
         mock_jwt_service.validate_token.return_value = MagicMock(
@@ -414,8 +403,7 @@ def test_patient_self_access(self, auth_middleware, authenticated_request, mock_
             await auth_middleware.dispatch(authenticated_request, mock_call_next)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_audit_logging(self, auth_middleware, authenticated_request):
+    async def test_audit_logging(self, auth_middleware, authenticated_request):
         """Test that authentication attempts are properly logged."""
         # Setup the next middleware in the chain
         async def mock_call_next(request):
@@ -453,8 +441,7 @@ def test_audit_logging(self, auth_middleware, authenticated_request):
         assert "reason" in log_call
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_custom_auth_header(self, auth_config, app, mock_jwt_service):
+    async def test_custom_auth_header(self, auth_config, app, mock_jwt_service):
         """Test using a custom authentication header."""
         # Create middleware with custom auth header
         custom_header_config = auth_config
@@ -489,8 +476,7 @@ def test_custom_auth_header(self, auth_config, app, mock_jwt_service):
         mock_jwt_service.validate_token.assert_called_once_with("valid.jwt.token")
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_method_based_permission(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_method_based_permission(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test that HTTP methods map correctly to permissions."""
         # Configure JWT service to return specific permissions
         mock_jwt_service.validate_token.return_value = MagicMock(
@@ -533,8 +519,7 @@ def test_method_based_permission(self, auth_middleware, authenticated_request, m
             await auth_middleware.dispatch(authenticated_request, mock_call_next)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_cognito_auth_backend(self, auth_config, app):
+    async def test_cognito_auth_backend(self, auth_config, app):
         """Test the AWS Cognito authentication backend."""
         # Create middleware with Cognito backend
         cognito_config = auth_config
@@ -579,8 +564,7 @@ def test_cognito_auth_backend(self, auth_config, app):
         mock_cognito.verify_token.assert_called_once_with("cognito.jwt.token")
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_response_headers(self, auth_middleware, authenticated_request):
+    async def test_response_headers(self, auth_middleware, authenticated_request):
         """Test that security headers are added to responses."""
         # Setup the next middleware in the chain
         async def mock_call_next(request):
@@ -596,8 +580,7 @@ def test_response_headers(self, auth_middleware, authenticated_request):
         assert "Content-Security-Policy" in response.headers
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_refresh_token_handling(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_refresh_token_handling(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test handling of token refresh when token is near expiration."""
         # Configure JWT service to indicate token needs refresh
         mock_jwt_service.should_refresh_token.return_value = True
@@ -615,8 +598,7 @@ def test_refresh_token_handling(self, auth_middleware, authenticated_request, mo
         assert response.headers["X-New-Access-Token"] == "new.access.token"
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_protected_route_handler(self, auth_middleware):
+    async def test_protected_route_handler(self, auth_middleware):
         """Test the protected route handler decorator."""
         # Create a protected route handler
         protected_handler = ProtectedRouteHandler(
@@ -628,8 +610,7 @@ def test_protected_route_handler(self, auth_middleware):
         endpoint_executed = False
         
         @protected_handler
-        async @pytest.mark.db_required
-def test_endpoint(request):
+        async def test_endpoint(request):
             nonlocal endpoint_executed
             endpoint_executed = True
             return JSONResponse(content={"status": "success"})
@@ -664,8 +645,7 @@ def test_endpoint(request):
         assert endpoint_executed is False
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_error_responses(self, auth_middleware, authenticated_request, mock_jwt_service):
+    async def test_error_responses(self, auth_middleware, authenticated_request, mock_jwt_service):
         """Test that authentication errors return appropriate HTTP responses."""
         # Configure JWT service to return various errors
         error_cases = [

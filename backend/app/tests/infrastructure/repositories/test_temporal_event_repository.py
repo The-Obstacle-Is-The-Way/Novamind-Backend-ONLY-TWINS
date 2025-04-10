@@ -32,7 +32,6 @@ def mock_session():
 
 
 @pytest.fixture
-@pytest.mark.db_required
 def test_event():
     """Create a test correlated event for tests."""
     now = datetime.now()
@@ -47,14 +46,13 @@ def test_event():
         patient_id=patient_id,
         event_type="neurotransmitter_change",
         timestamp=now,
-        metadata={"region": "prefrontal_cortex", "neurotransmitter": "serotonin", "value_change": 0.2}
+        event_metadata={"region": "prefrontal_cortex", "neurotransmitter": "serotonin", "value_change": 0.2} # Renamed
     )
     
     return event
 
 
 @pytest.fixture
-@pytest.mark.db_required
 def test_child_event(test_event):
     """Create a test child event."""
     child_id = uuid4()
@@ -66,7 +64,7 @@ def test_child_event(test_event):
         patient_id=test_event.patient_id,
         event_type="brain_region_activation",
         timestamp=test_event.timestamp + timedelta(seconds=30),
-        metadata={"region": "amygdala", "activation_level": 0.3}
+        event_metadata={"region": "amygdala", "activation_level": 0.3} # Renamed
     )
     
     return child_event
@@ -86,7 +84,7 @@ def mock_event_model():
     model.patient_id = uuid4()
     model.event_type = "neurotransmitter_change"
     model.timestamp = now
-    model.metadata = {"region": "prefrontal_cortex", "neurotransmitter": "serotonin", "value_change": 0.2}
+    model.event_metadata = {"region": "prefrontal_cortex", "neurotransmitter": "serotonin", "value_change": 0.2} # Renamed
     
     return model
 
@@ -103,24 +101,21 @@ def mock_child_event_model(mock_event_model):
     model.patient_id = mock_event_model.patient_id
     model.event_type = "brain_region_activation"
     model.timestamp = mock_event_model.timestamp + timedelta(seconds=30)
-    model.metadata = {"region": "amygdala", "activation_level": 0.3}
+    model.event_metadata = {"region": "amygdala", "activation_level": 0.3} # Renamed
     
     return model
 
 
-@pytest.mark.db_required
 class TestSqlAlchemyEventRepository:
     """Tests for SqlAlchemyEventRepository."""
     
-    @pytest.mark.db_required
-def test_init(self, mock_session):
+    def test_init(self, mock_session):
         """Test repository initialization."""
         repo = SqlAlchemyEventRepository(session=mock_session)
         assert repo.session == mock_session
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_save_event(self, mock_session, test_event):
+    async def test_save_event(self, mock_session, test_event):
         """Test saving a correlated event."""
         # Setup
         repo = SqlAlchemyEventRepository(session=mock_session)
@@ -142,11 +137,10 @@ def test_save_event(self, mock_session, test_event):
         assert added_model.patient_id == test_event.patient_id
         assert added_model.event_type == test_event.event_type
         assert added_model.timestamp == test_event.timestamp
-        assert added_model.metadata == test_event.metadata
+        assert added_model.event_metadata == test_event.event_metadata # Renamed
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_event_by_id_found(self, mock_session, mock_event_model):
+    async def test_get_event_by_id_found(self, mock_session, mock_event_model):
         """Test getting an event by ID when found."""
         # Setup
         repo = SqlAlchemyEventRepository(session=mock_session)
@@ -169,13 +163,12 @@ def test_get_event_by_id_found(self, mock_session, mock_event_model):
         assert result.patient_id == mock_event_model.patient_id
         assert result.event_type == mock_event_model.event_type
         assert result.timestamp == mock_event_model.timestamp
-        assert result.metadata == mock_event_model.metadata
+        assert result.event_metadata == mock_event_model.event_metadata # Renamed
         
         mock_session.execute.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_event_by_id_not_found(self, mock_session):
+    async def test_get_event_by_id_not_found(self, mock_session):
         """Test getting an event by ID when not found."""
         # Setup
         repo = SqlAlchemyEventRepository(session=mock_session)
@@ -195,8 +188,7 @@ def test_get_event_by_id_not_found(self, mock_session):
         mock_session.execute.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_events_by_correlation_id(self, mock_session, mock_event_model, mock_child_event_model):
+    async def test_get_events_by_correlation_id(self, mock_session, mock_event_model, mock_child_event_model):
         """Test getting events by correlation ID."""
         # Setup
         repo = SqlAlchemyEventRepository(session=mock_session)
@@ -219,8 +211,7 @@ def test_get_events_by_correlation_id(self, mock_session, mock_event_model, mock
         mock_session.execute.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_event_chain(self, mock_session, mock_event_model, mock_child_event_model):
+    async def test_get_event_chain(self, mock_session, mock_event_model, mock_child_event_model):
         """Test getting an event chain by correlation ID."""
         # Setup
         repo = SqlAlchemyEventRepository(session=mock_session)
@@ -250,8 +241,7 @@ def test_get_event_chain(self, mock_session, mock_event_model, mock_child_event_
             mock_get_events.assert_called_once_with(mock_event_model.correlation_id)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_patient_events(self, mock_session, mock_event_model, mock_child_event_model):
+    async def test_get_patient_events(self, mock_session, mock_event_model, mock_child_event_model):
         """Test getting events associated with a patient."""
         # Setup
         repo = SqlAlchemyEventRepository(session=mock_session)
@@ -298,5 +288,5 @@ def test_get_patient_events(self, mock_session, mock_event_model, mock_child_eve
             patient_id=model.patient_id,
             event_type=model.event_type,
             timestamp=model.timestamp,
-            metadata=model.metadata
+            event_metadata=model.event_metadata # Renamed
         )

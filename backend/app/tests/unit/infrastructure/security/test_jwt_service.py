@@ -85,12 +85,10 @@ def token_pair(jwt_service, user_claims):
     return jwt_service.create_token_pair(user_claims)
 
 
-@pytest.mark.db_required
 class TestJWTService:
     """Test suite for the JWT service."""
     
-    @pytest.mark.db_required
-def test_create_access_token(self, jwt_service, user_claims):
+    def test_create_access_token(self, jwt_service, user_claims):
         """Test creating an access token with user claims."""
         # Create an access token
         access_token = jwt_service.create_access_token(user_claims)
@@ -119,8 +117,7 @@ def test_create_access_token(self, jwt_service, user_claims):
         # Verify expiration claim
         assert "exp" in decoded
     
-    @pytest.mark.db_required
-def test_create_refresh_token(self, jwt_service, user_claims):
+    def test_create_refresh_token(self, jwt_service, user_claims):
         """Test creating a refresh token with user claims."""
         # Create a refresh token
         refresh_token = jwt_service.create_refresh_token(user_claims)
@@ -150,8 +147,7 @@ def test_create_refresh_token(self, jwt_service, user_claims):
         # Verify refresh token has a jti (JWT ID) claim
         assert "jti" in decoded
     
-    @pytest.mark.db_required
-def test_create_token_pair(self, jwt_service, user_claims):
+    def test_create_token_pair(self, jwt_service, user_claims):
         """Test creating a pair of access and refresh tokens."""
         # Create a token pair
         token_pair = jwt_service.create_token_pair(user_claims)
@@ -184,8 +180,7 @@ def test_create_token_pair(self, jwt_service, user_claims):
         # Verify refresh token was stored
         jwt_service.token_store.add_refresh_token.assert_called_once()
     
-    @pytest.mark.db_required
-def test_validate_token_valid(self, jwt_service, token_pair):
+    def test_validate_token_valid(self, jwt_service, token_pair):
         """Test validation of a valid token."""
         # Validate the access token
         validation_result = jwt_service.validate_token(token_pair.access_token)
@@ -197,8 +192,7 @@ def test_validate_token_valid(self, jwt_service, token_pair):
         assert validation_result.claims["sub"] == "user123"
         assert validation_result.token_type == TokenType.ACCESS
     
-    @pytest.mark.db_required
-def test_validate_token_invalid_signature(self, jwt_service, token_pair):
+    def test_validate_token_invalid_signature(self, jwt_service, token_pair):
         """Test validation of a token with invalid signature."""
         # Tamper with the token by changing a character
         tampered_token = token_pair.access_token[:-5] + "XXXXX"
@@ -212,8 +206,7 @@ def test_validate_token_invalid_signature(self, jwt_service, token_pair):
         assert isinstance(validation_result.error, InvalidSignatureError)
     
     @freeze_time("2025-03-27 12:00:00")
-    @pytest.mark.db_required
-def test_validate_token_expired(self, jwt_service, user_claims):
+    def test_validate_token_expired(self, jwt_service, user_claims):
         """Test validation of an expired token."""
         # Create a token that will expire immediately
         with patch.object(jwt_service.config, 'access_token_expire_minutes', 0):
@@ -229,8 +222,7 @@ def test_validate_token_expired(self, jwt_service, user_claims):
             assert validation_result.status == TokenStatus.EXPIRED
             assert isinstance(validation_result.error, ExpiredTokenError)
     
-    @pytest.mark.db_required
-def test_validate_token_revoked(self, jwt_service, token_pair, mock_token_store):
+    def test_validate_token_revoked(self, jwt_service, token_pair, mock_token_store):
         """Test validation of a revoked token."""
         # Configure the mock token store to report token as revoked
         mock_token_store.is_token_revoked.return_value = True
@@ -243,8 +235,7 @@ def test_validate_token_revoked(self, jwt_service, token_pair, mock_token_store)
         assert validation_result.status == TokenStatus.REVOKED
         assert isinstance(validation_result.error, RevokedTokenError)
     
-    @pytest.mark.db_required
-def test_validate_token_missing_claim(self, jwt_service, user_claims):
+    def test_validate_token_missing_claim(self, jwt_service, user_claims):
         """Test validation of a token with missing required claim."""
         # Create token with missing required claim
         user_claims_missing_sub = {k: v for k, v in user_claims.items() if k != "sub"}
@@ -267,15 +258,13 @@ def test_validate_token_missing_claim(self, jwt_service, user_claims):
         assert validation_result.status == TokenStatus.INVALID
         assert isinstance(validation_result.error, MissingClaimError)
     
-    @pytest.mark.db_required
-def test_token_required_decorator(self, jwt_service, token_pair):
+    def test_token_required_decorator(self, jwt_service, token_pair):
         """Test the token_required decorator."""
         # Define a test function to decorate
         test_executed = False
         
         @jwt_service.token_required
-        @pytest.mark.db_required
-def test_function(claims):
+        def test_function(claims):
             nonlocal test_executed
             test_executed = True
             return claims["sub"]
@@ -300,8 +289,7 @@ def test_function(claims):
         # Verify function was not executed
         assert test_executed is False
     
-    @pytest.mark.db_required
-def test_refresh_tokens(self, jwt_service, token_pair, mock_token_store):
+    def test_refresh_tokens(self, jwt_service, token_pair, mock_token_store):
         """Test refreshing tokens using a valid refresh token."""
         # Setup mock token store
         mock_token_store.is_token_revoked.return_value = False
@@ -320,8 +308,7 @@ def test_refresh_tokens(self, jwt_service, token_pair, mock_token_store):
         # Verify new refresh token was stored
         assert mock_token_store.add_refresh_token.call_count == 2  # Once for init, once for refresh
     
-    @pytest.mark.db_required
-def test_refresh_tokens_without_rotation(self, jwt_config, user_claims):
+    def test_refresh_tokens_without_rotation(self, jwt_config, user_claims):
         """Test refreshing tokens without token rotation enabled."""
         # Create config without refresh token rotation
         no_rotation_config = jwt_config
@@ -349,8 +336,7 @@ def test_refresh_tokens_without_rotation(self, jwt_config, user_claims):
         # Verify old refresh token was not revoked
         mock_store.add_token_to_revocation_list.assert_not_called()
     
-    @pytest.mark.db_required
-def test_revoke_token(self, jwt_service, token_pair, mock_token_store):
+    def test_revoke_token(self, jwt_service, token_pair, mock_token_store):
         """Test revoking a token."""
         # Revoke the access token
         jwt_service.revoke_token(token_pair.access_token)
@@ -358,8 +344,7 @@ def test_revoke_token(self, jwt_service, token_pair, mock_token_store):
         # Verify token was added to revocation list
         mock_token_store.add_token_to_revocation_list.assert_called_once()
     
-    @pytest.mark.db_required
-def test_revoke_all_refresh_tokens(self, jwt_service, user_claims, mock_token_store):
+    def test_revoke_all_refresh_tokens(self, jwt_service, user_claims, mock_token_store):
         """Test revoking all refresh tokens for a user."""
         # Setup mock refresh token family
         mock_token_store.get_refresh_token_family.return_value = ["token1", "token2", "token3"]
@@ -371,8 +356,7 @@ def test_revoke_all_refresh_tokens(self, jwt_service, user_claims, mock_token_st
         mock_token_store.get_refresh_token_family.assert_called_once_with(user_claims["sub"])
         assert mock_token_store.add_token_to_revocation_list.call_count == 3
     
-    @pytest.mark.db_required
-def test_extract_claims(self, jwt_service, token_pair):
+    def test_extract_claims(self, jwt_service, token_pair):
         """Test extracting claims from a token."""
         # Extract claims
         claims = jwt_service.extract_claims(token_pair.access_token)
@@ -383,15 +367,13 @@ def test_extract_claims(self, jwt_service, token_pair):
         assert claims["roles"] == ["psychiatrist"]
         assert claims["token_type"] == "access"
     
-    @pytest.mark.db_required
-def test_extract_claims_invalid_token(self, jwt_service):
+    def test_extract_claims_invalid_token(self, jwt_service):
         """Test extracting claims from an invalid token."""
         # Attempt to extract claims from an invalid token
         with pytest.raises(InvalidTokenError):
             jwt_service.extract_claims("invalid.token.string")
     
-    @pytest.mark.db_required
-def test_validate_token_type(self, jwt_service, token_pair):
+    def test_validate_token_type(self, jwt_service, token_pair):
         """Test validating token type."""
         # Validate correct token type
         result = jwt_service.validate_token(token_pair.access_token, expected_type=TokenType.ACCESS)
@@ -404,8 +386,7 @@ def test_validate_token_type(self, jwt_service, token_pair):
         assert "Expected token type" in str(result.error)
     
     @freeze_time("2025-03-27 12:00:00")
-    @pytest.mark.db_required
-def test_token_expiry_time(self, jwt_service, user_claims):
+    def test_token_expiry_time(self, jwt_service, user_claims):
         """Test token expiration times."""
         # Create tokens
         access_token = jwt_service.create_access_token(user_claims)
@@ -436,8 +417,7 @@ def test_token_expiry_time(self, jwt_service, user_claims):
         assert abs(access_decoded["exp"] - expected_access_exp) < 5  # Allow 5 seconds tolerance
         assert abs(refresh_decoded["exp"] - expected_refresh_exp) < 5  # Allow 5 seconds tolerance
     
-    @pytest.mark.db_required
-def test_should_refresh_token(self, jwt_service, user_claims):
+    def test_should_refresh_token(self, jwt_service, user_claims):
         """Test token refresh threshold detection."""
         # Create a token that will expire soon
         with patch.object(jwt_service.config, 'access_token_expire_minutes', 10):
@@ -457,8 +437,7 @@ def test_should_refresh_token(self, jwt_service, user_claims):
             should_refresh = jwt_service.should_refresh_token(token)
             assert should_refresh is True
     
-    @pytest.mark.db_required
-def test_validate_claims(self, jwt_service, user_claims):
+    def test_validate_claims(self, jwt_service, user_claims):
         """Test validation of JWT claims."""
         # Valid claims should pass validation
         jwt_service._validate_claims(user_claims)
@@ -468,8 +447,7 @@ def test_validate_claims(self, jwt_service, user_claims):
         with pytest.raises(MissingClaimError):
             jwt_service._validate_claims(invalid_claims)
     
-    @pytest.mark.db_required
-def test_verify_token_not_before(self, jwt_service, user_claims):
+    def test_verify_token_not_before(self, jwt_service, user_claims):
         """Test token validation with 'not before' (nbf) claim."""
         # Create claims with nbf in the future
         future_time = int(time.time()) + 3600  # 1 hour in the future
@@ -488,8 +466,7 @@ def test_verify_token_not_before(self, jwt_service, user_claims):
         assert validation_result.status == TokenStatus.INVALID
         assert "The token is not yet valid" in str(validation_result.error)
     
-    @pytest.mark.db_required
-def test_additional_audience_validation(self, jwt_config, user_claims):
+    def test_additional_audience_validation(self, jwt_config, user_claims):
         """Test token validation with multiple audiences."""
         # Create config with multiple audiences
         multi_audience_config = jwt_config
@@ -508,8 +485,7 @@ def test_additional_audience_validation(self, jwt_config, user_claims):
         assert service.validate_token(token_app).is_valid is True
         assert service.validate_token(token_invalid).is_valid is False
     
-    @pytest.mark.db_required
-def test_custom_claims(self, jwt_service, user_claims):
+    def test_custom_claims(self, jwt_service, user_claims):
         """Test adding custom claims with proper namespacing."""
         # Add custom claims
         custom_claims = {
@@ -531,8 +507,7 @@ def test_custom_claims(self, jwt_service, user_claims):
         assert extracted_claims[f"{jwt_service.config.claim_namespace}specialization"] == "depression"
         assert extracted_claims[f"{jwt_service.config.claim_namespace}is_premium"] is True
     
-    @pytest.mark.db_required
-def test_token_id_uniqueness(self, jwt_service, user_claims):
+    def test_token_id_uniqueness(self, jwt_service, user_claims):
         """Test that each token has a unique ID (jti claim)."""
         # Create multiple tokens
         token1 = jwt_service.create_refresh_token(user_claims)
@@ -560,8 +535,7 @@ def test_token_id_uniqueness(self, jwt_service, user_claims):
         assert "jti" in decoded2
         assert decoded1["jti"] != decoded2["jti"]
     
-    @pytest.mark.db_required
-def test_refresh_chain_security(self, jwt_service, token_pair, mock_token_store):
+    def test_refresh_chain_security(self, jwt_service, token_pair, mock_token_store):
         """Test refresh token rotation security (preventing refresh token reuse)."""
         # Configure token store to track refresh token families
         token_family = [token_pair.refresh_token]
@@ -581,8 +555,7 @@ def test_refresh_chain_security(self, jwt_service, token_pair, mock_token_store)
         # Verify token was checked against revocation list
         assert mock_token_store.is_token_revoked.call_count >= 2
     
-    @pytest.mark.db_required
-def test_token_store_integration(self, jwt_service, token_pair, mock_token_store):
+    def test_token_store_integration(self, jwt_service, token_pair, mock_token_store):
         """Test integration with the token store."""
         # Verify token store methods were called during token pair creation
         mock_token_store.add_refresh_token.assert_called_once()
@@ -591,8 +564,7 @@ def test_token_store_integration(self, jwt_service, token_pair, mock_token_store
         jwt_service.validate_token(token_pair.access_token)
         mock_token_store.is_token_revoked.assert_called()
     
-    @pytest.mark.db_required
-def test_error_handling(self, jwt_service):
+    def test_error_handling(self, jwt_service):
         """Test handling of various error conditions."""
         # Test with non-JWT string
         result = jwt_service.validate_token("not-a-jwt-token")
@@ -604,8 +576,7 @@ def test_error_handling(self, jwt_service):
         assert result.is_valid is False
         assert result.status == TokenStatus.INVALID
     
-    @pytest.mark.db_required
-def test_encode_decode_asymmetric_keys(self):
+    def test_encode_decode_asymmetric_keys(self):
         """Test token encoding/decoding with asymmetric keys (RS256)."""
         # Create a JWT config with RSA algorithm
         rsa_config = JWTConfig(

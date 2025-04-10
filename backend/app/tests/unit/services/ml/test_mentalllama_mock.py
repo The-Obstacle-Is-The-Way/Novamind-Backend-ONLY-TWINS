@@ -21,7 +21,6 @@ def mock_service():
     return service
 
 
-@pytest.mark.venv_only
 def test_initialization_success():
     """Test successful initialization of mock service."""
     # Arrange
@@ -36,7 +35,6 @@ def test_initialization_success():
     assert len(service._available_models) > 0
 
 
-@pytest.mark.venv_only
 def test_initialization_missing_provider():
     """Test initialization with missing provider."""
     # Arrange
@@ -47,7 +45,6 @@ def test_initialization_missing_provider():
         service.initialize({})
 
 
-@pytest.mark.venv_only
 def test_process(mock_service):
     """Test general processing functionality."""
     # Arrange
@@ -71,7 +68,6 @@ def test_process(mock_service):
     assert result["provider"] == "mock"
 
 
-@pytest.mark.venv_only
 def test_depression_detection_positive(mock_service):
     """Test depression detection with positive indicators."""
     # Arrange
@@ -91,7 +87,6 @@ def test_depression_detection_positive(mock_service):
     assert "rationale" in result
 
 
-@pytest.mark.venv_only
 def test_depression_detection_negative(mock_service):
     """Test depression detection with negative indicators."""
     # Arrange
@@ -108,7 +103,6 @@ def test_depression_detection_negative(mock_service):
     assert "key_indicators" in result
 
 
-@pytest.mark.venv_only
 def test_risk_assessment_high(mock_service):
     """Test risk assessment with high risk indicators."""
     # Arrange
@@ -129,7 +123,6 @@ def test_risk_assessment_high(mock_service):
     assert "rationale" in result
 
 
-@pytest.mark.venv_only
 def test_risk_assessment_low(mock_service):
     """Test risk assessment with low risk indicators."""
     # Arrange
@@ -148,7 +141,6 @@ def test_risk_assessment_low(mock_service):
     assert "rationale" in result
 
 
-@pytest.mark.venv_only
 def test_sentiment_analysis_positive(mock_service):
     """Test sentiment analysis with positive sentiment."""
     # Arrange
@@ -170,7 +162,6 @@ def test_sentiment_analysis_positive(mock_service):
     assert isinstance(result["emotion_distribution"], dict)
 
 
-@pytest.mark.venv_only
 def test_sentiment_analysis_negative(mock_service):
     """Test sentiment analysis with negative sentiment."""
     # Arrange
@@ -190,7 +181,6 @@ def test_sentiment_analysis_negative(mock_service):
     assert "emotion_distribution" in result
 
 
-@pytest.mark.venv_only
 def test_wellness_dimensions(mock_service):
     """Test wellness dimensions analysis."""
     # Arrange
@@ -212,7 +202,6 @@ def test_wellness_dimensions(mock_service):
     assert isinstance(result["recommendations"], list)
 
 
-@pytest.mark.venv_only
 def test_service_shutdown(mock_service):
     """Test service shutdown functionality."""
     # Act
@@ -224,7 +213,6 @@ def test_service_shutdown(mock_service):
     assert mock_service._available_models == {}
 
 
-@pytest.mark.venv_only
 def test_mock_response_parsing():
     """Test parsing of mock service responses."""
     # Arrange
@@ -254,7 +242,6 @@ def test_mock_response_parsing():
     assert parsed["confidence"] == 0.85
 
 
-@pytest.mark.venv_only
 def test_generate_with_invalid_input(mock_service):
     """Test generation with invalid inputs."""
     # Act

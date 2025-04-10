@@ -41,31 +41,26 @@ def app(mock_jwt_service):
     
     # Test endpoints
     @app.get("/test/user-id")
-    async @pytest.mark.db_required
-def test_get_current_user_id(user_id: UUID = Depends(get_current_user_id)):
+    async def test_get_current_user_id(user_id: UUID = Depends(get_current_user_id)):
         return {"user_id": str(user_id)}
     
     @app.get("/test/patient/{patient_id}")
-    async @pytest.mark.db_required
-def test_get_patient_id(patient_id: UUID = Depends(get_patient_id)):
+    async def test_get_patient_id(patient_id: UUID = Depends(get_patient_id)):
         return {"patient_id": str(patient_id)}
     
     @app.get("/test/user-role")
-    async @pytest.mark.db_required
-def test_get_current_user_role(role: str = Depends(get_current_user_role)):
+    async def test_get_current_user_role(role: str = Depends(get_current_user_role)):
         return {"role": role}
     
     @app.get("/test/clinician-only")
-    async @pytest.mark.db_required
-def test_require_clinician_role(
+    async def test_require_clinician_role(
         _: None = Depends(require_clinician_role),
         user_id: UUID = Depends(get_current_user_id)
     ):
         return {"user_id": str(user_id)}
     
     @app.get("/test/admin-only")
-    async @pytest.mark.db_required
-def test_require_admin_role(
+    async def test_require_admin_role(
         _: None = Depends(require_admin_role),
         user_id: UUID = Depends(get_current_user_id)
     ):
@@ -80,12 +75,10 @@ def client(app):
     return TestClient(app)
 
 
-@pytest.mark.db_required
 class TestBiometricEndpointsDependencies:
     """Tests for the biometric endpoints dependencies."""
     
-    @pytest.mark.db_required
-def test_get_current_user_id_success(self, client, mock_jwt_service):
+    def test_get_current_user_id_success(self, client, mock_jwt_service):
         """Test that get_current_user_id returns the user ID from the token."""
         # Setup
         user_id = "00000000-0000-0000-0000-000000000001"
@@ -102,8 +95,7 @@ def test_get_current_user_id_success(self, client, mock_jwt_service):
         assert response.json() == {"user_id": user_id}
         mock_jwt_service.decode_token.assert_called_once_with("test_token")
     
-    @pytest.mark.db_required
-def test_get_current_user_id_missing_sub(self, client, mock_jwt_service):
+    def test_get_current_user_id_missing_sub(self, client, mock_jwt_service):
         """Test that get_current_user_id raises an error if sub is missing."""
         # Setup
         mock_jwt_service.decode_token.return_value = {}
@@ -118,8 +110,7 @@ def test_get_current_user_id_missing_sub(self, client, mock_jwt_service):
         assert response.status_code == 401
         assert "Invalid authentication credentials" in response.json()["detail"]
     
-    @pytest.mark.db_required
-def test_get_current_user_id_authentication_exception(self, client, mock_jwt_service):
+    def test_get_current_user_id_authentication_exception(self, client, mock_jwt_service):
         """Test that get_current_user_id handles AuthenticationException."""
         # Setup
         mock_jwt_service.decode_token.side_effect = AuthenticationException("Invalid token")
@@ -134,8 +125,7 @@ def test_get_current_user_id_authentication_exception(self, client, mock_jwt_ser
         assert response.status_code == 401
         assert "Invalid token" in response.json()["detail"]
     
-    @pytest.mark.db_required
-def test_get_current_user_id_generic_exception(self, client, mock_jwt_service):
+    def test_get_current_user_id_generic_exception(self, client, mock_jwt_service):
         """Test that get_current_user_id handles generic exceptions."""
         # Setup
         mock_jwt_service.decode_token.side_effect = Exception("Unexpected error")
@@ -150,8 +140,7 @@ def test_get_current_user_id_generic_exception(self, client, mock_jwt_service):
         assert response.status_code == 401
         assert "Authentication error" in response.json()["detail"]
     
-    @pytest.mark.db_required
-def test_get_patient_id(self, client, mock_jwt_service):
+    def test_get_patient_id(self, client, mock_jwt_service):
         """Test that get_patient_id returns the patient ID from the path."""
         # Setup
         user_id = "00000000-0000-0000-0000-000000000001"
@@ -168,8 +157,7 @@ def test_get_patient_id(self, client, mock_jwt_service):
         assert response.status_code == 200
         assert response.json() == {"patient_id": patient_id}
     
-    @pytest.mark.db_required
-def test_get_current_user_role_success(self, client, mock_jwt_service):
+    def test_get_current_user_role_success(self, client, mock_jwt_service):
         """Test that get_current_user_role returns the role from the token."""
         # Setup
         mock_jwt_service.decode_token.return_value = {"role": "clinician"}
@@ -184,8 +172,7 @@ def test_get_current_user_role_success(self, client, mock_jwt_service):
         assert response.status_code == 200
         assert response.json() == {"role": "clinician"}
     
-    @pytest.mark.db_required
-def test_get_current_user_role_missing_role(self, client, mock_jwt_service):
+    def test_get_current_user_role_missing_role(self, client, mock_jwt_service):
         """Test that get_current_user_role raises an error if role is missing."""
         # Setup
         mock_jwt_service.decode_token.return_value = {}
@@ -200,8 +187,7 @@ def test_get_current_user_role_missing_role(self, client, mock_jwt_service):
         assert response.status_code == 401
         assert "Invalid authentication credentials" in response.json()["detail"]
     
-    @pytest.mark.db_required
-def test_require_clinician_role_success(self, client, mock_jwt_service):
+    def test_require_clinician_role_success(self, client, mock_jwt_service):
         """Test that require_clinician_role allows clinicians."""
         # Setup
         user_id = "00000000-0000-0000-0000-000000000001"
@@ -217,8 +203,7 @@ def test_require_clinician_role_success(self, client, mock_jwt_service):
         assert response.status_code == 200
         assert response.json() == {"user_id": user_id}
     
-    @pytest.mark.db_required
-def test_require_clinician_role_admin(self, client, mock_jwt_service):
+    def test_require_clinician_role_admin(self, client, mock_jwt_service):
         """Test that require_clinician_role allows admins."""
         # Setup
         user_id = "00000000-0000-0000-0000-000000000001"
@@ -234,8 +219,7 @@ def test_require_clinician_role_admin(self, client, mock_jwt_service):
         assert response.status_code == 200
         assert response.json() == {"user_id": user_id}
     
-    @pytest.mark.db_required
-def test_require_clinician_role_patient(self, client, mock_jwt_service):
+    def test_require_clinician_role_patient(self, client, mock_jwt_service):
         """Test that require_clinician_role rejects patients."""
         # Setup
         user_id = "00000000-0000-0000-0000-000000000001"
@@ -251,8 +235,7 @@ def test_require_clinician_role_patient(self, client, mock_jwt_service):
         assert response.status_code == 403
         assert "requires clinician privileges" in response.json()["detail"]
     
-    @pytest.mark.db_required
-def test_require_admin_role_success(self, client, mock_jwt_service):
+    def test_require_admin_role_success(self, client, mock_jwt_service):
         """Test that require_admin_role allows admins."""
         # Setup
         user_id = "00000000-0000-0000-0000-000000000001"
@@ -268,8 +251,7 @@ def test_require_admin_role_success(self, client, mock_jwt_service):
         assert response.status_code == 200
         assert response.json() == {"user_id": user_id}
     
-    @pytest.mark.db_required
-def test_require_admin_role_clinician(self, client, mock_jwt_service):
+    def test_require_admin_role_clinician(self, client, mock_jwt_service):
         """Test that require_admin_role rejects clinicians."""
         # Setup
         user_id = "00000000-0000-0000-0000-000000000001"

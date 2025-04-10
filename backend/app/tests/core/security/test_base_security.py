@@ -39,11 +39,9 @@ class BaseSecurityTest:
         )
 
 
-@pytest.mark.venv_only
 class TestBaseSecurityTest:
     """Tests for the BaseSecurityTest class itself."""
     
-    @pytest.mark.venv_only
 def test_init(self):
         """Test that BaseSecurityTest can be initialized."""
         security_test = BaseSecurityTest()
@@ -51,9 +49,9 @@ def test_init(self):
         
         assert security_test.user is not None
         assert security_test.user.id == security_test.test_user_id
-        assert security_test.user.roles == security_test.test_roles
+        assert security_test.user.roles == security_@pytest.mark.standalone
+test.test_roles
     
-    @pytest.mark.venv_only
 def test_create_custom_user(self):
         """Test that a custom user can be created."""
         security_test = BaseSecurityTest()
@@ -70,16 +68,15 @@ def test_create_custom_user(self):
         assert custom_user.roles == custom_roles
 
 
-@pytest.mark.venv_only
 class TestAuthenticationSystem(BaseSecurityTest):
     """Tests for the authentication system."""
     
     def setup_method(self):
         """Set up with admin role for testing."""
-        self.test_roles = [Role.ADMIN]
+        self.test_roles = [Rol@pytest.mark.standalone
+e.ADMIN]
         super().setup_method()
     
-    @pytest.mark.venv_only
 def test_user_authentication(self, monkeypatch):
         """Test that user authentication works."""
         # Mock the authentication process
@@ -92,10 +89,10 @@ def test_user_authentication(self, monkeypatch):
         authenticated_user = authenticate_user(username="test_user", password="password")
         
         assert authenticated_user is not None
-        assert authenticated_user.id == self.test_user_id
+        assert authenticated_user.id == self.tes@pytest.mark.standalone
+t_user_id
         assert Role.ADMIN in authenticated_user.roles
     
-    @pytest.mark.venv_only
 def test_get_current_user(self, monkeypatch):
         """Test that the current user can be retrieved."""
         # Mock the token validation
@@ -117,32 +114,31 @@ def test_get_current_user(self, monkeypatch):
         assert Role.ADMIN in current_user.roles
 
 
-@pytest.mark.venv_only
 class TestRBACSystem(BaseSecurityTest):
     """Tests for the RBAC system."""
     
     def setup_method(self):
-        """Set up with clinician role for testing."""
+        """Set up with clinician role fo@pytest.mark.standalone
+r testing."""
         self.test_roles = [Role.CLINICIAN]
         super().setup_method()
     
-    @pytest.mark.venv_only
 def test_permission_check_success(self):
         """Test that permission check succeeds for authorized roles."""
         # Should succeed because CLINICIAN has this permission
-        check_permission(self.user, required_roles=[Role.CLINICIAN, Role.ADMIN])
+        check_@pytest.mark.standalone
+permission(self.user, required_roles=[Role.CLINICIAN, Role.ADMIN])
         # No exception means the test passed
     
-    @pytest.mark.venv_only
 def test_permission_check_failure(self):
         """Test that permission check fails for unauthorized roles."""
         # Should fail because user is not ADMIN
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(HTTPException) as e@pytest.mark.standalone
+xc_info:
             check_permission(self.user, required_roles=[Role.ADMIN])
         
         assert exc_info.value.status_code == 403
     
-    @pytest.mark.venv_only
 def test_rbac_middleware(self):
         """Test the RBAC middleware."""
         middleware = RBACMiddleware()

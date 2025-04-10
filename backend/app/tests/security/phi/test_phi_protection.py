@@ -13,7 +13,6 @@ from app.core.utils.logging import PHIRedactor
 from app.tests.security.base_security_test import BaseSecurityTest
 
 
-@pytest.mark.venv_only
 class TestPHIProtection(BaseSecurityTest):
     """Tests for PHI protection mechanisms."""
 
@@ -39,8 +38,7 @@ class TestPHIProtection(BaseSecurityTest):
             "mixed": "John Smith (SSN: 123-45-6789, Phone: (555) 123-4567) was seen on 03/15/2024."
         }
 
-    @pytest.mark.venv_only
-def test_phi_detection_basic(self) -> None:
+    def test_phi_detection_basic(self) -> None:
         """Test basic PHI detection functionality."""
         # Test with mixed PHI sample
         results = self.redactor.detect(self.sample_phi_data["mixed"])
@@ -55,8 +53,7 @@ def test_phi_detection_basic(self) -> None:
         self.assertIn("DATE", detected_types)
         self.assertIn("PHONE", detected_types)
 
-    @pytest.mark.venv_only
-def test_phi_detection_with_specific_types(self) -> None:
+    def test_phi_detection_with_specific_types(self) -> None:
         """Test PHI detection with specific entity types."""
         # Test for specific PHI types
         for phi_type, sample in [
@@ -72,8 +69,7 @@ def test_phi_detection_with_specific_types(self) -> None:
             # Each sample should contain its specific PHI type
             self.assertIn(phi_type, detected_types)
 
-    @pytest.mark.venv_only
-def test_phi_detection_confidence_levels(self) -> None:
+    def test_phi_detection_confidence_levels(self) -> None:
         """Test PHI detection with confidence thresholds."""
         # The underlying mock implementation should assign varying confidence levels
         results = self.redactor.detect(self.sample_phi_data["mixed"])
@@ -85,8 +81,7 @@ def test_phi_detection_confidence_levels(self) -> None:
             self.assertGreaterEqual(result["confidence"], 0.0)
             self.assertLessEqual(result["confidence"], 1.0)
 
-    @pytest.mark.venv_only
-def test_phi_detection_with_confidence_threshold(self) -> None:
+    def test_phi_detection_with_confidence_threshold(self) -> None:
         """Test PHI detection with different confidence thresholds."""
         # This test relies on the mock implementation applying confidence thresholds
         mixed_text = self.sample_phi_data["mixed"]
@@ -98,8 +93,7 @@ def test_phi_detection_with_confidence_threshold(self) -> None:
         for result in high_conf_results:
             self.assertGreaterEqual(result["confidence"], 0.5)
 
-    @pytest.mark.venv_only
-def test_phi_redaction(self) -> None:
+    def test_phi_redaction(self) -> None:
         """Test basic PHI redaction functionality."""
         # Modified test to use explicit PHI text that must contain PHI as identified by the test
         # This allows the internal algorithm to change while the test remains valid
@@ -113,8 +107,7 @@ def test_phi_redaction(self) -> None:
         self.assertNotIn("John Smith", redacted)
         self.assertNotIn("123-45-6789", redacted)
 
-    @pytest.mark.venv_only
-def test_phi_redaction_with_specific_types(self) -> None:
+    def test_phi_redaction_with_specific_types(self) -> None:
         """Test PHI redaction with specific entity types."""
         # Create a mixed sample with multiple PHI types
         mixed_sample = "John Smith (SSN: 123-45-6789) can be reached at john.smith@example.com"
@@ -130,8 +123,7 @@ def test_phi_redaction_with_specific_types(self) -> None:
         # we just verify basic redaction occurs.
         self.assertNotEqual(mixed_sample, name_only_redaction)
 
-    @pytest.mark.venv_only
-def test_custom_redaction_format(self) -> None:
+    def test_custom_redaction_format(self) -> None:
         """Test custom redaction format."""
         sample = self.sample_phi_data["mixed"]
         
@@ -142,8 +134,7 @@ def test_custom_redaction_format(self) -> None:
         self.assertIn("[PHI REMOVED]", custom_redacted)
         self.assertNotIn("[REDACTED]", custom_redacted)
 
-    @pytest.mark.venv_only
-def test_non_phi_text_unchanged(self) -> None:
+    def test_non_phi_text_unchanged(self) -> None:
         """Test that non-PHI text remains unchanged."""
         non_phi_text = "The patient reported feeling better. Symptoms have decreased."
         
@@ -156,8 +147,7 @@ def test_non_phi_text_unchanged(self) -> None:
         # this text contains only medical terminology and no actual PHI
         self.assertEqual(non_phi_text, non_phi_text)
 
-    @pytest.mark.venv_only
-def test_batch_processing(self) -> None:
+    def test_batch_processing(self) -> None:
         """Test processing multiple PHI items."""
         # Create a list of text snippets
         batch = list(self.sample_phi_data.values())
@@ -175,8 +165,7 @@ def test_batch_processing(self) -> None:
             if "123-45-6789" in original:
                 self.assertNotIn("123-45-6789", redacted)
 
-    @pytest.mark.venv_only
-def test_invalid_input_handling(self) -> None:
+    def test_invalid_input_handling(self) -> None:
         """Test handling of invalid inputs."""
         # Empty string should return empty string
         self.assertEqual("", self.redactor.redact(""))
@@ -185,8 +174,7 @@ def test_invalid_input_handling(self) -> None:
         with self.assertRaises(Exception):
             self.redactor.redact(None)
 
-    @pytest.mark.venv_only
-def test_all_supported_phi_types(self) -> None:
+    def test_all_supported_phi_types(self) -> None:
         """Test redaction of all supported PHI types."""
         # This comprehensive test text includes various PHI types
         complex_phi = """

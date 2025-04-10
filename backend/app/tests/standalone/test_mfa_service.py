@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Tests for the MFA service.
 """
@@ -42,11 +41,9 @@ def mfa_service():
         return service
 
 
-@pytest.mark.standalone
 class TestMFAService:
     """Tests for the MFAService class."""
     
-    @pytest.mark.standalone
 def test_generate_secret_key(self, mfa_service):
         """Test generating a secret key."""
         secret_key = mfa_service.generate_secret_key()
@@ -59,7 +56,6 @@ def test_generate_secret_key(self, mfa_service):
     
     @patch('pyotp.TOTP')
     @patch('qrcode.QRCode')
-    @pytest.mark.standalone
 def test_setup_totp(self, mock_qrcode, mock_totp, mfa_service):
         """Test setting up TOTP."""
         # Mock the TOTP object
@@ -82,7 +78,6 @@ def test_setup_totp(self, mock_qrcode, mock_totp, mfa_service):
             assert result["mfa_type"] == MFAType.TOTP.value
     
     @patch('pyotp.TOTP')
-    @pytest.mark.standalone
 def test_verify_totp_valid(self, mock_totp, mfa_service):
         """Test verifying a valid TOTP code."""
         # Mock the TOTP object
@@ -97,7 +92,6 @@ def test_verify_totp_valid(self, mock_totp, mfa_service):
         mock_totp_instance.verify.assert_called_once_with("123456")
     
     @patch('pyotp.TOTP')
-    @pytest.mark.standalone
 def test_verify_totp_invalid(self, mock_totp, mfa_service):
         """Test verifying an invalid TOTP code."""
         # Mock the TOTP object
@@ -112,7 +106,6 @@ def test_verify_totp_invalid(self, mock_totp, mfa_service):
         mock_totp_instance.verify.assert_called_once_with("123456")
     
     @patch('random.choice')
-    @pytest.mark.standalone
 def test_generate_verification_code(self, mock_choice, mfa_service):
         """Test generating a verification code."""
         # Mock the random choice
@@ -126,7 +119,6 @@ def test_generate_verification_code(self, mock_choice, mfa_service):
         assert code == "000000"  # All zeros due to our mock
     
     @patch('time.time')
-    @pytest.mark.standalone
 def test_setup_sms_mfa(self, mock_time, mfa_service):
         """Test setting up SMS MFA."""
         # Mock the time
@@ -144,7 +136,6 @@ def test_setup_sms_mfa(self, mock_time, mfa_service):
             assert result["mfa_type"] == MFAType.SMS.value
     
     @patch('time.time')
-    @pytest.mark.standalone
 def test_setup_email_mfa(self, mock_time, mfa_service):
         """Test setting up email MFA."""
         # Mock the time
@@ -162,7 +153,6 @@ def test_setup_email_mfa(self, mock_time, mfa_service):
             assert result["mfa_type"] == MFAType.EMAIL.value
     
     @patch('time.time')
-    @pytest.mark.standalone
 def test_verify_code_valid(self, mock_time, mfa_service):
         """Test verifying a valid code."""
         # Mock the time
@@ -175,7 +165,6 @@ def test_verify_code_valid(self, mock_time, mfa_service):
         assert result is True
     
     @patch('time.time')
-    @pytest.mark.standalone
 def test_verify_code_expired(self, mock_time, mfa_service):
         """Test verifying an expired code."""
         # Mock the time
@@ -188,7 +177,6 @@ def test_verify_code_expired(self, mock_time, mfa_service):
         assert result is False
     
     @patch('time.time')
-    @pytest.mark.standalone
 def test_verify_code_invalid(self, mock_time, mfa_service):
         """Test verifying an invalid code."""
         # Mock the time
@@ -201,7 +189,6 @@ def test_verify_code_invalid(self, mock_time, mfa_service):
         assert result is False
     
     @patch('uuid.uuid4')
-    @pytest.mark.standalone
 def test_get_backup_codes(self, mock_uuid, mfa_service):
         """Test generating backup codes."""
         # Mock the UUID
@@ -215,7 +202,6 @@ def test_get_backup_codes(self, mock_uuid, mfa_service):
         assert all(len(code) == 10 for code in codes)
         assert all(code == "ABCDEF1234" for code in codes)  # All the same due to our mock
     
-    @pytest.mark.standalone
 def test_hash_backup_code(self, mfa_service):
         """Test hashing a backup code."""
         # Hash a code
@@ -225,7 +211,6 @@ def test_hash_backup_code(self, mfa_service):
         assert isinstance(hashed_code, str)
         assert len(hashed_code) > 0
     
-    @pytest.mark.standalone
 def test_verify_backup_code_valid(self, mfa_service):
         """Test verifying a valid backup code."""
         # Hash a code
@@ -237,7 +222,6 @@ def test_verify_backup_code_valid(self, mfa_service):
         # Check the result
         assert result is True
     
-    @pytest.mark.standalone
 def test_verify_backup_code_invalid(self, mfa_service):
         """Test verifying an invalid backup code."""
         # Hash a code
@@ -250,40 +234,33 @@ def test_verify_backup_code_invalid(self, mfa_service):
         assert result is False
 
 
-@pytest.mark.standalone
 class TestMFAStrategyFactory:
     """Tests for the MFAStrategyFactory class."""
     
-    @pytest.mark.standalone
 def test_create_totp_strategy(self, mfa_service):
         """Test creating a TOTP strategy."""
         strategy = MFAStrategyFactory.create_strategy(MFAType.TOTP, mfa_service)
         assert isinstance(strategy, TOTPStrategy)
     
-    @pytest.mark.standalone
 def test_create_sms_strategy(self, mfa_service):
         """Test creating an SMS strategy."""
         strategy = MFAStrategyFactory.create_strategy(MFAType.SMS, mfa_service)
         assert isinstance(strategy, SMSStrategy)
     
-    @pytest.mark.standalone
 def test_create_email_strategy(self, mfa_service):
         """Test creating an email strategy."""
         strategy = MFAStrategyFactory.create_strategy(MFAType.EMAIL, mfa_service)
         assert isinstance(strategy, EmailStrategy)
     
-    @pytest.mark.standalone
 def test_create_invalid_strategy(self, mfa_service):
         """Test creating an invalid strategy."""
         with pytest.raises(ValueError):
             MFAStrategyFactory.create_strategy("invalid", mfa_service)
 
 
-@pytest.mark.standalone
 class TestTOTPStrategy:
     """Tests for the TOTPStrategy class."""
     
-    @pytest.mark.standalone
 def test_setup(self, mfa_service):
         """Test setting up TOTP."""
         # Create the strategy
@@ -298,7 +275,6 @@ def test_setup(self, mfa_service):
             assert result == {"result": "success"}
             mfa_service.setup_totp.assert_called_once_with("user123", "test@example.com")
     
-    @pytest.mark.standalone
 def test_setup_missing_email(self, mfa_service):
         """Test setting up TOTP without an email."""
         # Create the strategy
@@ -308,7 +284,6 @@ def test_setup_missing_email(self, mfa_service):
         with pytest.raises(MFASetupException):
             strategy.setup("user123")
     
-    @pytest.mark.standalone
 def test_verify(self, mfa_service):
         """Test verifying TOTP."""
         # Create the strategy
@@ -323,7 +298,6 @@ def test_verify(self, mfa_service):
             assert result is True
             mfa_service.verify_totp.assert_called_once_with("ABCDEFGH", "123456")
     
-    @pytest.mark.standalone
 def test_verify_missing_parameters(self, mfa_service):
         """Test verifying TOTP without required parameters."""
         # Create the strategy
@@ -334,11 +308,9 @@ def test_verify_missing_parameters(self, mfa_service):
             strategy.verify()
 
 
-@pytest.mark.standalone
 class TestSMSStrategy:
     """Tests for the SMSStrategy class."""
     
-    @pytest.mark.standalone
 def test_setup(self, mfa_service):
         """Test setting up SMS MFA."""
         # Create the strategy
@@ -353,7 +325,6 @@ def test_setup(self, mfa_service):
             assert result == {"result": "success"}
             mfa_service.setup_sms_mfa.assert_called_once_with("user123", "+1234567890")
     
-    @pytest.mark.standalone
 def test_setup_missing_phone_number(self, mfa_service):
         """Test setting up SMS MFA without a phone number."""
         # Create the strategy
@@ -363,7 +334,6 @@ def test_setup_missing_phone_number(self, mfa_service):
         with pytest.raises(MFASetupException):
             strategy.setup("user123")
     
-    @pytest.mark.standalone
 def test_verify(self, mfa_service):
         """Test verifying SMS code."""
         # Create the strategy
@@ -382,7 +352,6 @@ def test_verify(self, mfa_service):
             assert result is True
             mfa_service.verify_code.assert_called_once_with("123456", "123456", 1300)
     
-    @pytest.mark.standalone
 def test_verify_missing_parameters(self, mfa_service):
         """Test verifying SMS code without required parameters."""
         # Create the strategy
@@ -393,11 +362,9 @@ def test_verify_missing_parameters(self, mfa_service):
             strategy.verify()
 
 
-@pytest.mark.standalone
 class TestEmailStrategy:
     """Tests for the EmailStrategy class."""
     
-    @pytest.mark.standalone
 def test_setup(self, mfa_service):
         """Test setting up email MFA."""
         # Create the strategy
@@ -412,7 +379,6 @@ def test_setup(self, mfa_service):
             assert result == {"result": "success"}
             mfa_service.setup_email_mfa.assert_called_once_with("user123", "test@example.com")
     
-    @pytest.mark.standalone
 def test_setup_missing_email(self, mfa_service):
         """Test setting up email MFA without an email."""
         # Create the strategy
@@ -422,7 +388,6 @@ def test_setup_missing_email(self, mfa_service):
         with pytest.raises(MFASetupException):
             strategy.setup("user123")
     
-    @pytest.mark.standalone
 def test_verify(self, mfa_service):
         """Test verifying email code."""
         # Create the strategy
@@ -441,7 +406,6 @@ def test_verify(self, mfa_service):
             assert result is True
             mfa_service.verify_code.assert_called_once_with("12345678", "12345678", 1300)
     
-    @pytest.mark.standalone
 def test_verify_missing_parameters(self, mfa_service):
         """Test verifying email code without required parameters."""
         # Create the strategy

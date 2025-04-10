@@ -27,12 +27,10 @@ from app.infrastructure.security.encryption import (
 from app.core.config import Settings
 
 
-@pytest.mark.venv_only
 class TestEncryptionUtils:
     """Tests for the encryption utility functions."""
     
-    @pytest.mark.venv_only
-def test_derive_key(self):
+    def test_derive_key(self):
         """Test key derivation from password and salt."""
         # Test with known inputs
         password = b"test_password"
@@ -56,8 +54,7 @@ def test_derive_key(self):
         key4 = derive_key(password, b"different_salt")
         assert key != key4
     
-    @pytest.mark.venv_only
-def test_encrypt_decrypt_data(self):
+    def test_encrypt_decrypt_data(self):
         """Test encryption and decryption of data."""
         # Test data and key
         data = "Sensitive patient information"
@@ -76,8 +73,7 @@ def test_encrypt_decrypt_data(self):
         # Verify decryption recovers the original data
         assert decrypted == data
     
-    @pytest.mark.venv_only
-def test_encrypt_decrypt_with_wrong_key(self):
+    def test_encrypt_decrypt_with_wrong_key(self):
         """Test decryption with wrong key fails."""
         # Test data and keys
         data = "Sensitive patient information"
@@ -91,8 +87,7 @@ def test_encrypt_decrypt_with_wrong_key(self):
         with pytest.raises(Exception):
             decrypt_data(encrypted, key2)
     
-    @pytest.mark.venv_only
-def test_hash_data(self):
+    def test_hash_data(self):
         """Test hashing of data."""
         # Test with known input
         data = "Sensitive patient information"
@@ -112,8 +107,7 @@ def test_hash_data(self):
         assert secure_compare(data, hashed)
         assert not secure_compare("wrong data", hashed)
     
-    @pytest.mark.venv_only
-def test_secure_compare(self):
+    def test_secure_compare(self):
         """Test secure comparison of plain text against hash."""
         # Test data
         data = "Sensitive patient information"
@@ -138,7 +132,6 @@ def test_secure_compare(self):
             secure_compare(data, unsupported_hash)
 
 
-@pytest.mark.venv_only
 class TestEncryptionService:
     """Tests for the EncryptionService class."""
     
@@ -157,8 +150,7 @@ class TestEncryptionService:
         """Create an EncryptionService instance with mocked settings."""
         return EncryptionService()
     
-    @pytest.mark.venv_only
-def test_initialization(self, encryption_service, mock_settings):
+    def test_initialization(self, encryption_service, mock_settings):
         """Test encryption service initialization with settings."""
         # Verify key is initialized correctly
         assert encryption_service.key is not None
@@ -172,8 +164,7 @@ def test_initialization(self, encryption_service, mock_settings):
         assert encryption_service.pepper is not None
         assert encryption_service.pepper == mock_settings.security.HASH_PEPPER
     
-    @pytest.mark.venv_only
-def test_encrypt_decrypt(self, encryption_service):
+    def test_encrypt_decrypt(self, encryption_service):
         """Test encryption and decryption with the service."""
         # Test data
         data = "Sensitive patient information"
@@ -191,8 +182,7 @@ def test_encrypt_decrypt(self, encryption_service):
         # Verify decryption recovers the original data
         assert decrypted == data
     
-    @pytest.mark.venv_only
-def test_encrypt_decrypt_with_metadata(self, encryption_service):
+    def test_encrypt_decrypt_with_metadata(self, encryption_service):
         """Test encryption and decryption with metadata."""
         # Test data with metadata
         data = "Sensitive patient information"
@@ -212,8 +202,7 @@ def test_encrypt_decrypt_with_metadata(self, encryption_service):
         assert retrieved_metadata["patient_id"] == "123"
         assert retrieved_metadata["record_type"] == "medical"
     
-    @pytest.mark.venv_only
-def test_hash_password(self, encryption_service):
+    def test_hash_password(self, encryption_service):
         """Test password hashing."""
         # Test password
         password = "SecurePassword123!"
@@ -233,8 +222,7 @@ def test_hash_password(self, encryption_service):
         assert encryption_service.verify_password(password, hashed)
         assert not encryption_service.verify_password("WrongPassword", hashed)
     
-    @pytest.mark.venv_only
-def test_pepper_text(self, encryption_service):
+    def test_pepper_text(self, encryption_service):
         """Test text peppering."""
         # Test text
         text = "Text to be peppered"
@@ -252,8 +240,7 @@ def test_pepper_text(self, encryption_service):
         # Verify different text yields different peppered result
         assert encryption_service._pepper_text("Different text") != peppered
     
-    @pytest.mark.venv_only
-def test_encrypt_decrypt_phi(self, encryption_service):
+    def test_encrypt_decrypt_phi(self, encryption_service):
         """Test PHI-specific encryption and decryption."""
         # Test PHI data
         phi_data = {
@@ -274,8 +261,7 @@ def test_encrypt_decrypt_phi(self, encryption_service):
         # Verify decryption recovers original PHI
         assert decrypted_phi == phi_data
     
-    @pytest.mark.venv_only
-def test_encrypt_file_decrypt_file(self, encryption_service, tmp_path):
+    def test_encrypt_file_decrypt_file(self, encryption_service, tmp_path):
         """Test file encryption and decryption."""
         # Create a test file
         test_file = tmp_path / "test.txt"
@@ -304,8 +290,7 @@ def test_encrypt_file_decrypt_file(self, encryption_service, tmp_path):
             with open(str(decrypted_file), 'r') as f:
                 assert f.read() == test_content
     
-    @pytest.mark.venv_only
-def test_encrypt_file_nonexistent(self, encryption_service, tmp_path):
+    def test_encrypt_file_nonexistent(self, encryption_service, tmp_path):
         """Test encryption of nonexistent file."""
         # Nonexistent input file
         nonexistent_file = tmp_path / "nonexistent.txt"
@@ -316,8 +301,7 @@ def test_encrypt_file_nonexistent(self, encryption_service, tmp_path):
             with pytest.raises(FileNotFoundError):
                 encryption_service.encrypt_file(str(nonexistent_file), str(output_file))
     
-    @pytest.mark.venv_only
-def test_decrypt_file_nonexistent(self, encryption_service, tmp_path):
+    def test_decrypt_file_nonexistent(self, encryption_service, tmp_path):
         """Test decryption of nonexistent file."""
         # Nonexistent input file
         nonexistent_file = tmp_path / "nonexistent.bin"

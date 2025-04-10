@@ -35,12 +35,10 @@ from app.domain.services.visualization_preprocessor import (
 )
 
 
-@pytest.mark.db_required
 class TestTemporalEvents:
     """Test suite for temporal event correlation tracking."""
     
-    @pytest.mark.db_required
-def test_correlated_event_creation(self):
+    def test_correlated_event_creation(self):
         """Test creation of correlated events."""
         # Create a root event
         root_event = CorrelatedEvent(
@@ -69,8 +67,7 @@ def test_correlated_event_creation(self):
         assert child_event.correlation_id == root_event.correlation_id
         assert child_event.id != root_event.id
     
-    @pytest.mark.db_required
-def test_event_chain(self):
+    def test_event_chain(self):
         """Test event chain functionality."""
         # Create a chain and some events
         correlation_id = uuid.uuid4()
@@ -129,12 +126,10 @@ def test_event_chain(self):
             chain.add_event(wrong_event)
 
 
-@pytest.mark.db_required
 class TestTemporalSequence:
     """Test suite for temporal sequences."""
     
-    @pytest.mark.db_required
-def test_temporal_sequence_creation(self):
+    def test_temporal_sequence_creation(self):
         """Test creation of temporal sequences."""
         # Create test data
         now = datetime.datetime.now()
@@ -196,8 +191,7 @@ def test_temporal_sequence_creation(self):
                 patient_id=patient_id
             )
     
-    @pytest.mark.db_required
-def test_temporal_sequence_operations(self):
+    def test_temporal_sequence_operations(self):
         """Test operations on temporal sequences."""
         # Create test data
         now = datetime.datetime.now()
@@ -253,12 +247,10 @@ def test_temporal_sequence_operations(self):
         assert len(seq_dict["values"]) == 10
 
 
-@pytest.mark.db_required
 class TestNeurotransmitterEffect:
     """Test suite for neurotransmitter effect metrics."""
     
-    @pytest.mark.db_required
-def test_neurotransmitter_effect_creation(self):
+    def test_neurotransmitter_effect_creation(self):
         """Test creation of neurotransmitter effects."""
         # Create a basic effect
         effect = NeurotransmitterEffect(
@@ -301,8 +293,7 @@ def test_neurotransmitter_effect_creation(self):
                 clinical_significance=ClinicalSignificance.MODERATE
             )
     
-    @pytest.mark.db_required
-def test_neurotransmitter_effect_factory(self):
+    def test_neurotransmitter_effect_factory(self):
         """Test factory method for neurotransmitter effects."""
         # Create test data (higher values in intervention vs baseline)
         baseline_data = [0.5, 0.4, 0.6, 0.5, 0.4]
@@ -332,7 +323,6 @@ def test_neurotransmitter_effect_factory(self):
         assert viz_data["clinical_significance"] == "moderate"
 
 
-@pytest.mark.db_required
 class TestTemporalNeurotransmitterMapping:
     """Test suite for temporal neurotransmitter mapping extensions."""
     
@@ -352,8 +342,7 @@ class TestTemporalNeurotransmitterMapping:
         
         return extended
     
-    @pytest.mark.db_required
-def test_generate_temporal_sequence(self, extended_mapping):
+    def test_generate_temporal_sequence(self, extended_mapping):
         """Test generation of temporal sequences from neurotransmitter mapping."""
         # Create test data
         now = datetime.datetime.now()
@@ -372,8 +361,7 @@ def test_generate_temporal_sequence(self, extended_mapping):
         assert sequence.metadata["brain_region"] == BrainRegion.PREFRONTAL_CORTEX.value
         assert sequence.metadata["primary_neurotransmitter"] == Neurotransmitter.SEROTONIN.value
     
-    @pytest.mark.db_required
-def test_predict_cascade_effect(self, extended_mapping):
+    def test_predict_cascade_effect(self, extended_mapping):
         """Test prediction of cascade effects across brain regions."""
         # Simulate cascade from amygdala
         cascade_results = extended_mapping.predict_cascade_effect(
@@ -396,8 +384,7 @@ def test_predict_cascade_effect(self, extended_mapping):
         
         assert propagated, "Cascade effect did not propagate to any other regions"
     
-    @pytest.mark.db_required
-def test_analyze_temporal_response(self, extended_mapping):
+    def test_analyze_temporal_response(self, extended_mapping):
         """Test analysis of temporal response to neurotransmitter changes."""
         # Create test data with increasing serotonin levels
         now = datetime.datetime.now()
@@ -425,8 +412,7 @@ def test_analyze_temporal_response(self, extended_mapping):
         assert effect.effect_magnitude in ["large", "medium"]  # Should be substantial
         assert effect.direction == "increase"
     
-    @pytest.mark.db_required
-def test_simulate_treatment_response(self, extended_mapping):
+    def test_simulate_treatment_response(self, extended_mapping):
         """Test simulation of treatment response."""
         # Create test data
         now = datetime.datetime.now()
@@ -466,12 +452,10 @@ def test_simulate_treatment_response(self, extended_mapping):
         assert indirect_effects, "No indirect effects on other neurotransmitters"
 
 
-@pytest.mark.db_required
 class TestVisualizationPreprocessor:
     """Test suite for visualization preprocessors."""
     
-    @pytest.mark.db_required
-def test_precompute_cascade_geometry(self):
+    def test_precompute_cascade_geometry(self):
         """Test precomputation of geometry for cascade visualization."""
         # Create test data
         preprocessor = NeurotransmitterVisualizationPreprocessor()
@@ -501,8 +485,7 @@ def test_precompute_cascade_geometry(self):
         active_t4 = len(geometry["vertices_by_time"][4]) // 3
         assert active_t4 == 3  # All 3 regions
     
-    @pytest.mark.db_required
-def test_neurotransmitter_effect_visualizer(self):
+    def test_neurotransmitter_effect_visualizer(self):
         """Test visualization of neurotransmitter effects."""
         # Create test data
         visualizer = NeurotransmitterEffectVisualizer()

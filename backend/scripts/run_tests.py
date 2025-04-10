@@ -3,26 +3,34 @@
 """
 Comprehensive Test Runner for Novamind Digital Twin Platform
 
-A unified test runner script that handles all test suites, coverage reporting,
-and provides detailed feedback on test results. This script is designed to work
-with the new unified test architecture under /backend/app/tests/.
+A unified test runner script that handles test suites, coverage reporting,
+and provides detailed feedback. Supports running tests by suite or dependency level.
 
 Usage:
     python -m backend.scripts.run_tests [options]
 
 Options:
-    --unit              Run only unit tests
-    --integration       Run only integration tests
-    --security          Run only security tests
-    --ml-mock           Run only ML mock tests
+  Test Selection:
+    --all               Run all tests (default: runs in dependency order: standalone -> venv -> db)
+    --standalone        Run only standalone tests (marker: 'standalone')
+    --venv              Run only venv-dependent tests (marker: 'venv_only')
+    --db                Run only DB-dependent tests (marker: 'db_required')
+    --unit              Run only tests under app/tests/unit/ (legacy)
+    --integration       Run only tests under app/tests/integration/ (legacy)
+    --security          Run only tests under app/tests/security/ (legacy)
+    --ml-mock           Run only ML mock tests (under unit/core/services/ml) (legacy)
+    --quick             Run a smaller subset of critical tests for quick feedback
+
+  Reporting & Coverage:
     --coverage          Run with coverage reporting (default: False)
-    --verbose           Run with verbose output (default: False)
-    --quick             Run a smaller subset of tests for quick feedback
     --fail-under=N      Fail if coverage is under N percent (default: 80)
-    --output=PATH       Path to write reports to (default: reports/)
     --html              Generate HTML coverage report (default: False)
     --xml               Generate XML coverage report (default: False)
     --json              Generate JSON coverage report (default: False)
+    --output=PATH       Path to write reports to (default: reports/) [Currently not used by coverage]
+
+  Other:
+    --verbose           Run with verbose output (default: False)
 """
 
 import argparse
@@ -350,6 +358,72 @@ class TestRunner:
         
         self.results["ml_mock"] = results
         return success
+
+    def run_standalone_tests(self, coverage: bool = False, verbose: bool = False,
+                             fail_under: int = 0, html: bool = False,
+                             xml: bool = False, json: bool = False) -> bool:
+        """Run standalone tests (marker: 'standalone')."""
+        print("\n" + "="*80)
+        print("Running Standalone Tests")
+        print("="*80 + "\n")
+
+        success, results = self._run_pytest(
+            test_paths=[str(self.test_dir)],  # Run against all tests
+            markers="standalone",
+            coverage=coverage,
+            verbose=verbose,
+            fail_under=fail_under, # Typically don't fail coverage on subsets
+            html=html,
+            xml=xml,
+            json=json,
+        )
+
+        self.results["standalone"] = results
+        return success
+
+    def run_venv_tests(self, coverage: bool = False, verbose: bool = False,
+                       fail_under: int = 0, html: bool = False,
+                       xml: bool = False, json: bool = False) -> bool:
+        """Run venv-dependent tests (marker: 'venv_only')."""
+        print("\n" + "="*80)
+        print("Running VENV-Dependent Tests")
+        print("="*80 + "\n")
+
+        success, results = self._run_pytest(
+            test_paths=[str(self.test_dir)], # Run against all tests
+            markers="venv_only",
+            coverage=coverage,
+            verbose=verbose,
+            fail_under=fail_under, # Typically don't fail coverage on subsets
+            html=html,
+            xml=xml,
+            json=json,
+        )
+
+        self.results["venv"] = results
+        return success
+
+    def run_db_tests(self, coverage: bool = False, verbose: bool = False,
+                     fail_under: int = 0, html: bool = False,
+                     xml: bool = False, json: bool = False) -> bool:
+        """Run DB-dependent tests (marker: 'db_required')."""
+        print("\n" + "="*80)
+        print("Running DB-Dependent Tests")
+        print("="*80 + "\n")
+
+        success, results = self._run_pytest(
+            test_paths=[str(self.test_dir)], # Run against all tests
+            markers="db_required",
+            coverage=coverage,
+            verbose=verbose,
+            fail_under=fail_under, # Typically don't fail coverage on subsets
+            html=html,
+            xml=xml,
+            json=json,
+        )
+
+        self.results["db"] = results
+        return success
     
     def run_quick_tests(self, verbose: bool = False) -> bool:
         """Run a subset of tests for quick feedback.
@@ -537,19 +611,30 @@ class TestRunner:
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Run tests for the project")
-    parser.add_argument("--all", action="store_true", help="Run all tests")
-    parser.add_argument("--unit", action="store_true", help="Run unit tests")
-    parser.add_argument("--integration", action="store_true", help="Run integration tests")
-    parser.add_argument("--security", action="store_true", help="Run security tests")
-    parser.add_argument("--ml-mock", action="store_true", help="Run ML mock tests")
-    parser.add_argument("--quick", action="store_true", help="Run quick tests")
-    parser.add_argument("--coverage", action="store_true", help="Run with coverage")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Run with verbose output")
-    parser.add_argument("--fail-under", type=int, default=80, help="Fail if coverage is under N percent")
-    parser.add_argument("--html", action="store_true", help="Generate HTML coverage report")
-    parser.add_argument("--xml", action="store_true", help="Generate XML coverage report")
-    parser.add_argument("--json", action="store_true", help="Generate JSON coverage report")
+    parser = argparse.ArgumentParser(description="Run tests for the Novamind Backend", formatter_class=argparse.RawTextHelpFormatter)
+    
+    test_group = parser.add_argument_group('Test Selection')
+    test_group.add_argument("--all", action="store_true", help="Run all tests (default: runs in dependency order)")
+    test_group.add_argument("--standalone", action="store_true", help="Run only standalone tests (marker: 'standalone')")
+    test_group.add_argument("--venv", action="store_true", help="Run only venv-dependent tests (marker: 'venv_only')")
+    test_group.add_argument("--db", action="store_true", help="Run only DB-dependent tests (marker: 'db_required')")
+    test_group.add_argument("--unit", action="store_true", help="Run only tests under app/tests/unit/ (legacy)")
+    test_group.add_argument("--integration", action="store_true", help="Run only tests under app/tests/integration/ (legacy)")
+    test_group.add_argument("--security", action="store_true", help="Run only tests under app/tests/security/ (legacy)")
+    test_group.add_argument("--ml-mock", action="store_true", help="Run only ML mock tests (under unit/core/services/ml) (legacy)")
+    test_group.add_argument("--quick", action="store_true", help="Run a smaller subset of critical tests")
+
+    report_group = parser.add_argument_group('Reporting & Coverage')
+    report_group.add_argument("--coverage", action="store_true", help="Run with coverage reporting")
+    report_group.add_argument("--fail-under", type=int, default=80, help="Fail if coverage is under N percent (default: 80)")
+    report_group.add_argument("--html", action="store_true", help="Generate HTML coverage report")
+    report_group.add_argument("--xml", action="store_true", help="Generate XML coverage report")
+    report_group.add_argument("--json", action="store_true", help="Generate JSON coverage report")
+    report_group.add_argument("--output", type=str, default="reports", help="Path to write reports to (default: reports/) [Currently not used by coverage]")
+
+    other_group = parser.add_argument_group('Other')
+    other_group.add_argument("--verbose", "-v", action="store_true", help="Run with verbose output")
+
     return parser.parse_args()
 
 
@@ -564,61 +649,107 @@ def main() -> int:
     test_runner = TestRunner(base_dir)
     
     # Determine which tests to run
-    if args.all or not any([args.unit, args.integration, args.security, args.ml_mock, args.quick]):
-        # Run all tests
-        success = test_runner.run_all_tests(
-            coverage=args.coverage,
-            verbose=args.verbose,
-            fail_under=args.fail_under,
-            html=args.html,
-            xml=args.xml,
-            json=args.json,
+    # Default to running all in dependency order if no specific type is selected
+    run_all_ordered = args.all or not any([
+        args.standalone, args.venv, args.db,
+        args.unit, args.integration, args.security, args.ml_mock, args.quick
+    ])
+
+    overall_success = True
+
+    if run_all_ordered:
+        # Run all tests in dependency order
+        print("\nRunning all tests in dependency order: standalone -> venv -> db")
+        
+        # Run Standalone
+        standalone_success = test_runner.run_standalone_tests(
+            coverage=args.coverage, verbose=args.verbose, fail_under=0, # Don't fail coverage on subsets
+            html=args.html, xml=args.xml, json=args.json
         )
+        if not standalone_success: overall_success = False
+
+        # Run VENV (if standalone passed or we continue on failure)
+        if overall_success: # Optional: Add a flag to continue on failure
+            venv_success = test_runner.run_venv_tests(
+                coverage=args.coverage, verbose=args.verbose, fail_under=0,
+                html=args.html, xml=args.xml, json=args.json
+            )
+            if not venv_success: overall_success = False
+
+        # Run DB (if previous passed or we continue on failure)
+        if overall_success: # Optional: Add a flag to continue on failure
+            db_success = test_runner.run_db_tests(
+                coverage=args.coverage, verbose=args.verbose, fail_under=0,
+                html=args.html, xml=args.xml, json=args.json
+            )
+            if not db_success: overall_success = False
+            
+        # Final combined coverage check if requested
+        if args.coverage and overall_success:
+             print("\n" + "="*80)
+             print("Generating Combined Coverage Report")
+             print("="*80 + "\n")
+             # This re-runs pytest just for coverage reporting, which is inefficient.
+             # A better approach would be to combine coverage data files.
+             # For now, we'll just run it again on all tests.
+             _, coverage_results = test_runner._run_pytest(
+                 test_paths=[str(test_runner.test_dir)],
+                 coverage=True, verbose=False, fail_under=args.fail_under,
+                 html=args.html, xml=args.xml, json=args.json
+             )
+             if not coverage_results.get("success", False) and args.fail_under > 0:
+                 print(f"❌ Coverage below threshold ({args.fail_under}%)")
+                 overall_success = False
+             else:
+                 print(f"✅ Coverage meets threshold ({args.fail_under}%)")
+                 
+        success = overall_success # Final success status for --all ordered run
+
+    elif args.standalone:
+        success = test_runner.run_standalone_tests(
+            coverage=args.coverage, verbose=args.verbose, fail_under=args.fail_under,
+            html=args.html, xml=args.xml, json=args.json
+        )
+    elif args.venv:
+        success = test_runner.run_venv_tests(
+            coverage=args.coverage, verbose=args.verbose, fail_under=args.fail_under,
+            html=args.html, xml=args.xml, json=args.json
+        )
+    elif args.db:
+        success = test_runner.run_db_tests(
+            coverage=args.coverage, verbose=args.verbose, fail_under=args.fail_under,
+            html=args.html, xml=args.xml, json=args.json
+        )
+    # --- Legacy Test Suite Execution ---
     elif args.unit:
-        # Run unit tests
         success = test_runner.run_unit_tests(
-            coverage=args.coverage,
-            verbose=args.verbose,
-            fail_under=args.fail_under,
-            html=args.html,
-            xml=args.xml,
-            json=args.json,
+            coverage=args.coverage, verbose=args.verbose, fail_under=args.fail_under,
+            html=args.html, xml=args.xml, json=args.json
         )
     elif args.integration:
-        # Run integration tests
         success = test_runner.run_integration_tests(
-            coverage=args.coverage,
-            verbose=args.verbose,
-            fail_under=args.fail_under,
-            html=args.html,
-            xml=args.xml,
-            json=args.json,
+            coverage=args.coverage, verbose=args.verbose, fail_under=args.fail_under,
+            html=args.html, xml=args.xml, json=args.json
         )
     elif args.security:
-        # Run security tests
         success = test_runner.run_security_tests(
-            coverage=args.coverage,
-            verbose=args.verbose,
-            fail_under=args.fail_under,
-            html=args.html,
-            xml=args.xml,
-            json=args.json,
+            coverage=args.coverage, verbose=args.verbose, fail_under=args.fail_under,
+            html=args.html, xml=args.xml, json=args.json
         )
     elif args.ml_mock:
-        # Run ML mock tests
         success = test_runner.run_ml_mock_tests(
-            coverage=args.coverage,
-            verbose=args.verbose,
+            coverage=args.coverage, verbose=args.verbose
         )
     elif args.quick:
-        # Run quick tests
-        success = test_runner.run_quick_tests(
-            verbose=args.verbose,
-        )
-    
+        success = test_runner.run_quick_tests(verbose=args.verbose)
+    else:
+        # Should not happen due to default logic, but handle defensively
+        print("No specific test suite or dependency level selected.")
+        success = True # Or False, depending on desired behavior
+
     # Print summary
     test_runner.print_summary()
-    
+
     # Return exit code
     return 0 if success else 1
 

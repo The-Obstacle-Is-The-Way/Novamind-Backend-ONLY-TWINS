@@ -23,7 +23,6 @@ from app.core.services.ml.pat.mock import MockPAT
 
 
 @pytest.fixture
-@pytest.mark.venv_only
 def test_app() -> FastAPI:
     """Fixture that returns a test FastAPI application.
     
@@ -127,7 +126,6 @@ def mock_pat(pat_storage: str) -> MockPAT:
     return pat
 
 
-@pytest.mark.venv_only
 def test_factory_create_mock_pat(pat_storage: str) -> None:
     """Test that the factory creates a MockPAT instance.
     
@@ -145,7 +143,6 @@ def test_factory_create_mock_pat(pat_storage: str) -> None:
     assert pat.storage_path == pat_storage
 
 
-@pytest.mark.venv_only
 def test_analyze_actigraphy_api(
     client: TestClient,
     sample_readings: List[Dict[str, Any]],
@@ -194,7 +191,6 @@ def test_analyze_actigraphy_api(
     assert "activity_levels" in data
 
 
-@pytest.mark.venv_only
 def test_get_embeddings_api(
     client: TestClient,
     sample_readings: List[Dict[str, Any]]
@@ -236,7 +232,6 @@ def test_get_embeddings_api(
     assert data["sampling_info"]["sample_count"] == 3
 
 
-@pytest.mark.venv_only
 def test_get_analysis_by_id_api(
     client: TestClient,
     sample_readings: List[Dict[str, Any]],
@@ -281,7 +276,6 @@ def test_get_analysis_by_id_api(
     assert data["device_info"] == sample_device_info
 
 
-@pytest.mark.venv_only
 def test_get_patient_analyses_api(
     client: TestClient,
     sample_readings: List[Dict[str, Any]],
@@ -346,7 +340,6 @@ def test_get_patient_analyses_api(
     assert data["offset"] == 0
 
 
-@pytest.mark.venv_only
 def test_get_model_info_api(client: TestClient) -> None:
     """Test the get model info API endpoint.
     
@@ -367,7 +360,6 @@ def test_get_model_info_api(client: TestClient) -> None:
     assert "provider" in data
 
 
-@pytest.mark.venv_only
 def test_integrate_with_digital_twin_api(
     client: TestClient,
     sample_readings: List[Dict[str, Any]],

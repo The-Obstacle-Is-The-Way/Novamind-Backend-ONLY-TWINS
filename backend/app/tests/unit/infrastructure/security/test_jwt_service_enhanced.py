@@ -15,13 +15,11 @@ from app.infrastructure.security.jwt_service import JWTService
 from app.core.config import Settings
 
 
-@pytest.mark.venv_only
 class TestJWTService:
     """Comprehensive tests for the JWTService class."""
     
     @pytest.fixture
-    @pytest.mark.venv_only
-def test_settings(self):
+    def test_settings(self):
         """Create test settings with JWT configuration."""
         settings = MagicMock()
         # Create nested security attribute
@@ -39,8 +37,7 @@ def test_settings(self):
         """Create a JWTService instance with test settings."""
         return JWTService(settings_instance=test_settings)
     
-    @pytest.mark.venv_only
-def test_initialization(self, jwt_service, test_settings):
+    def test_initialization(self, jwt_service, test_settings):
         """Test JWT service initialization with settings."""
         assert jwt_service.secret_key == test_settings.security.JWT_SECRET_KEY
         assert jwt_service.algorithm == test_settings.security.JWT_ALGORITHM
@@ -49,8 +46,7 @@ def test_initialization(self, jwt_service, test_settings):
         assert jwt_service.audience == test_settings.security.JWT_AUDIENCE
         assert jwt_service.issuer == test_settings.security.JWT_ISSUER
     
-    @pytest.mark.venv_only
-def test_create_access_token(self, jwt_service):
+    def test_create_access_token(self, jwt_service):
         """Test creation of access tokens."""
         # Create a basic access token
         data = {"sub": "user123", "role": "patient"}
@@ -83,8 +79,7 @@ def test_create_access_token(self, jwt_service):
         # Token should expire in ~30 minutes (between 29-31 minutes from now)
         assert 29*60 <= time_diff <= 31*60
     
-    @pytest.mark.venv_only
-def test_create_refresh_token(self, jwt_service):
+    def test_create_refresh_token(self, jwt_service):
         """Test creation of refresh tokens."""
         # Create a refresh token
         data = {"sub": "user123", "role": "patient", "refresh": True}
@@ -118,8 +113,7 @@ def test_create_refresh_token(self, jwt_service):
         max_seconds = (expected_days * 24 * 3600) + (1 * 3600)  # 7 days + 1 hour
         assert min_seconds <= time_diff <= max_seconds
     
-    @pytest.mark.venv_only
-def test_verify_token_valid(self, jwt_service):
+    def test_verify_token_valid(self, jwt_service):
         """Test verification of valid tokens."""
         # Create a valid token
         data = {"sub": "user123", "role": "patient"}
@@ -132,8 +126,7 @@ def test_verify_token_valid(self, jwt_service):
         assert payload["sub"] == "user123"
         assert payload["role"] == "patient"
     
-    @pytest.mark.venv_only
-def test_verify_token_expired(self, jwt_service):
+    def test_verify_token_expired(self, jwt_service):
         """Test verification of expired tokens."""
         # Create an expired token by patching datetime.utcnow
         with patch('app.infrastructure.security.jwt_service.datetime') as mock_datetime:
@@ -149,8 +142,7 @@ def test_verify_token_expired(self, jwt_service):
         with pytest.raises(jwt.ExpiredSignatureError):
             jwt_service.verify_token(token)
     
-    @pytest.mark.venv_only
-def test_verify_token_invalid_signature(self, jwt_service):
+    def test_verify_token_invalid_signature(self, jwt_service):
         """Test verification of tokens with invalid signatures."""
         # Create a valid token
         data = {"sub": "user123", "role": "patient"}
@@ -167,8 +159,7 @@ def test_verify_token_invalid_signature(self, jwt_service):
             with pytest.raises(jwt.InvalidSignatureError):
                 jwt_service.verify_token(tampered_token)
     
-    @pytest.mark.venv_only
-def test_verify_token_invalid_audience(self, jwt_service, test_settings):
+    def test_verify_token_invalid_audience(self, jwt_service, test_settings):
         """Test verification of tokens with invalid audience."""
         # Create token with custom audience
         with patch.object(jwt_service, 'audience', 'different:audience'):
@@ -179,8 +170,7 @@ def test_verify_token_invalid_audience(self, jwt_service, test_settings):
         with pytest.raises(jwt.InvalidAudienceError):
             jwt_service.verify_token(token)
     
-    @pytest.mark.venv_only
-def test_verify_token_invalid_issuer(self, jwt_service):
+    def test_verify_token_invalid_issuer(self, jwt_service):
         """Test verification of tokens with invalid issuer."""
         # Create token with custom issuer
         with patch.object(jwt_service, 'issuer', 'different.issuer'):
@@ -191,8 +181,7 @@ def test_verify_token_invalid_issuer(self, jwt_service):
         with pytest.raises(jwt.InvalidIssuerError):
             jwt_service.verify_token(token)
     
-    @pytest.mark.venv_only
-def test_verify_token_malformed(self, jwt_service):
+    def test_verify_token_malformed(self, jwt_service):
         """Test verification of malformed tokens."""
         # Create a malformed token
         malformed_token = "not.a.valid.token"
@@ -201,8 +190,7 @@ def test_verify_token_malformed(self, jwt_service):
         with pytest.raises(jwt.DecodeError):
             jwt_service.verify_token(malformed_token)
     
-    @pytest.mark.venv_only
-def test_refresh_access_token(self, jwt_service):
+    def test_refresh_access_token(self, jwt_service):
         """Test refreshing access tokens with valid refresh tokens."""
         # Create a refresh token
         user_data = {"sub": "user123", "role": "patient", "refresh": True}
@@ -220,8 +208,7 @@ def test_refresh_access_token(self, jwt_service):
         assert payload["role"] == "patient"
         assert "refresh" not in payload  # refresh flag shouldn't be in access tokens
     
-    @pytest.mark.venv_only
-def test_refresh_access_token_with_non_refresh_token(self, jwt_service):
+    def test_refresh_access_token_with_non_refresh_token(self, jwt_service):
         """Test refresh fails with non-refresh tokens."""
         # Create a regular access token
         user_data = {"sub": "user123", "role": "patient"}
@@ -231,8 +218,7 @@ def test_refresh_access_token_with_non_refresh_token(self, jwt_service):
         with pytest.raises(ValueError, match="Not a refresh token"):
             jwt_service.refresh_access_token(access_token)
     
-    @pytest.mark.venv_only
-def test_get_token_identity(self, jwt_service):
+    def test_get_token_identity(self, jwt_service):
         """Test extracting user identity from token."""
         # Create a token with user identity
         user_id = "user123"
@@ -245,8 +231,7 @@ def test_get_token_identity(self, jwt_service):
         # Verify identity
         assert identity == user_id
     
-    @pytest.mark.venv_only
-def test_get_token_identity_missing_sub(self, jwt_service):
+    def test_get_token_identity_missing_sub(self, jwt_service):
         """Test extracting identity from token without sub claim."""
         # Create a special token without sub claim using direct JWT encoding
         payload = {

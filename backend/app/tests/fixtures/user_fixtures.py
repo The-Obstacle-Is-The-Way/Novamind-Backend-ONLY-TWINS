@@ -4,10 +4,8 @@ User fixtures for testing authentication and authorization.
 This module provides common user test fixtures used across test cases.
 """
 from uuid import UUID
-from typing import List
 
 from app.domain.enums.role import Role
-
 
 # Test user ID (constant for predictable tests)
 test_user_id = UUID("12345678-1234-5678-1234-567812345678")

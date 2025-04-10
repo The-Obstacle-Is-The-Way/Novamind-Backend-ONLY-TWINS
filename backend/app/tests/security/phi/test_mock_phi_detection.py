@@ -17,7 +17,6 @@ from app.core.exceptions import (
 from app.core.services.ml.mock import MockPHIDetection
 from app.tests.security.base_security_test import BaseSecurityTest
 
-@pytest.mark.venv_only
 class TestMockPHIDetection(BaseSecurityTest):
     """
     Test suite for MockPHIDetection class.
@@ -49,8 +48,7 @@ class TestMockPHIDetection(BaseSecurityTest):
         self.audit_events.clear()
         super().tearDown()
     
-    @pytest.mark.venv_only
-def test_initialization(self) -> None:
+    def test_initialization(self) -> None:
         """Test initialization with valid and invalid configurations."""
         # Test default initialization
         service = MockPHIDetection()
@@ -78,8 +76,7 @@ def test_initialization(self) -> None:
             # Original expected behavior, still valid
             pass
 
-    @pytest.mark.venv_only
-def test_detect_phi_basic(self) -> None:
+    def test_detect_phi_basic(self) -> None:
         """Test basic PHI detection functionality."""
         result = self.service.detect_phi(self.sample_phi_text)
         
@@ -95,8 +92,7 @@ def test_detect_phi_basic(self) -> None:
             self.assertIn("position", instance)
             self.assertIn("confidence", instance)
 
-    @pytest.mark.venv_only
-def test_detect_phi_with_levels(self) -> None:
+    def test_detect_phi_with_levels(self) -> None:
         """Test PHI detection with different sensitivity levels."""
         # Test with each detection level
         level_counts = {}
@@ -111,8 +107,7 @@ def test_detect_phi_with_levels(self) -> None:
         # Aggressive should find more PHI than minimal
         self.assertLessEqual(level_counts["minimal"], level_counts["aggressive"])
 
-    @pytest.mark.venv_only
-def test_detect_phi_with_specific_types(self) -> None:
+    def test_detect_phi_with_specific_types(self) -> None:
         """Test PHI detection with specific PHI types."""
         # Note: Current implementation doesn't support phi_types filtering
         # So we're just testing general detection capabilities
@@ -127,8 +122,7 @@ def test_detect_phi_with_specific_types(self) -> None:
         self.assertTrue(any(t in detected_types for t in ["ssn", "email", "address", "name"]),
                        f"No expected PHI types found in {detected_types}")
 
-    @pytest.mark.venv_only
-def test_detect_phi_no_phi(self) -> None:
+    def test_detect_phi_no_phi(self) -> None:
         """Test PHI detection with text that contains no PHI."""
         no_phi_text = "This text contains no protected health information."
         result = self.service.detect_phi(no_phi_text)
@@ -137,8 +131,7 @@ def test_detect_phi_no_phi(self) -> None:
         # So we just test that a result is returned, not necessarily zero PHI
         self.assertIn("phi_instances", result)
 
-    @pytest.mark.venv_only
-def test_detect_phi_edge_cases(self) -> None:
+    def test_detect_phi_edge_cases(self) -> None:
         """Test PHI detection with edge cases and boundary conditions."""
         # Test with minimal text
         minimal_text = "Jane"
@@ -150,8 +143,7 @@ def test_detect_phi_edge_cases(self) -> None:
         result = self.service.detect_phi(long_text)
         self.assertIsInstance(result["phi_instances"], list)
 
-    @pytest.mark.venv_only
-def test_redact_phi_basic(self) -> None:
+    def test_redact_phi_basic(self) -> None:
         """Test basic PHI redaction functionality."""
         result = self.service.redact_phi(self.sample_phi_text)
         
@@ -168,8 +160,7 @@ def test_redact_phi_basic(self) -> None:
         # Verify default redaction marker is present
         self.assertIn("[REDACTED]", redacted_text)
 
-    @pytest.mark.venv_only
-def test_redact_phi_custom_replacement(self) -> None:
+    def test_redact_phi_custom_replacement(self) -> None:
         """Test PHI redaction with custom replacement marker."""
         marker = "[PHI]"
         result = self.service.redact_phi(
@@ -183,8 +174,7 @@ def test_redact_phi_custom_replacement(self) -> None:
         # Verify original PHI is gone
         self.assertNotIn("123-45-6789", result["redacted_text"])
 
-    @pytest.mark.venv_only
-def test_redact_phi_levels(self) -> None:
+    def test_redact_phi_levels(self) -> None:
         """Test PHI redaction with different sensitivity levels."""
         # First with minimal level
         minimal_result = self.service.redact_phi(
@@ -205,8 +195,7 @@ def test_redact_phi_levels(self) -> None:
         # Aggressive should redact more
         self.assertLessEqual(minimal_redactions, aggressive_redactions)
 
-    @pytest.mark.venv_only
-def test_redact_phi_edge_cases(self) -> None:
+    def test_redact_phi_edge_cases(self) -> None:
         """Test PHI redaction with edge cases."""
         # Test already redacted text
         redacted_text = "Patient [REDACTED] with ID [REDACTED]"
@@ -216,8 +205,7 @@ def test_redact_phi_edge_cases(self) -> None:
         double_redacted = "[REDACTED][REDACTED]"
         self.assertNotIn(double_redacted, result["redacted_text"])
 
-    @pytest.mark.venv_only
-def test_pattern_selection(self) -> None:
+    def test_pattern_selection(self) -> None:
         """Test that PHI detection patterns properly match different PHI types."""
         # Test patterns individually
         test_cases = {

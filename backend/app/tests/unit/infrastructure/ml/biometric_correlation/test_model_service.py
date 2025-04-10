@@ -17,7 +17,6 @@ from app.infrastructure.ml.biometric_correlation.model_service import BiometricC
 from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricLSTMModel
 
 
-@pytest.mark.db_required
 class TestBiometricCorrelationService:
     """Tests for the BiometricCorrelationService."""
 
@@ -112,8 +111,7 @@ class TestBiometricCorrelationService:
         """Create a sample patient ID."""
         return str(uuid4())
 
-    async @pytest.mark.db_required
-def test_analyze_correlations_success(self, service, mock_lstm_model, sample_biometric_data, sample_patient_id):
+    async def test_analyze_correlations_success(self, service, mock_lstm_model, sample_biometric_data, sample_patient_id):
         """Test that analyze_correlations correctly processes biometric data and returns correlations."""
         # Setup
         lookback_days = 30
@@ -154,8 +152,7 @@ def test_analyze_correlations_success(self, service, mock_lstm_model, sample_bio
             assert "message" in insight
             assert "action" in insight
 
-    async @pytest.mark.db_required
-def test_analyze_correlations_empty_data(self, service, sample_patient_id):
+    async def test_analyze_correlations_empty_data(self, service, sample_patient_id):
         """Test that analyze_correlations handles empty biometric data gracefully."""
         # Setup
         empty_data = {}
@@ -170,8 +167,7 @@ def test_analyze_correlations_empty_data(self, service, sample_patient_id):
         
         assert "Empty biometric data" in str(excinfo.value)
 
-    async @pytest.mark.db_required
-def test_analyze_correlations_insufficient_data(self, service, sample_patient_id):
+    async def test_analyze_correlations_insufficient_data(self, service, sample_patient_id):
         """Test that analyze_correlations handles insufficient biometric data gracefully."""
         # Setup
         insufficient_data = {
@@ -202,8 +198,7 @@ def test_analyze_correlations_insufficient_data(self, service, sample_patient_id
         assert "warning" in result
         assert "insufficient_data" in result["warning"]
 
-    async @pytest.mark.db_required
-def test_analyze_correlations_model_error(self, service, mock_lstm_model, sample_biometric_data, sample_patient_id):
+    async def test_analyze_correlations_model_error(self, service, mock_lstm_model, sample_biometric_data, sample_patient_id):
         """Test that analyze_correlations handles model errors gracefully."""
         # Setup
         mock_lstm_model.analyze_correlations.side_effect = Exception("Model error")
@@ -225,8 +220,7 @@ def test_analyze_correlations_model_error(self, service, mock_lstm_model, sample
         assert "insights" in result
         assert len(result["insights"]) == 0
 
-    async @pytest.mark.db_required
-def test_preprocess_biometric_data(self, service, sample_biometric_data):
+    async def test_preprocess_biometric_data(self, service, sample_biometric_data):
         """Test that _preprocess_biometric_data correctly transforms the input data."""
         # Setup
         with patch.object(service, '_preprocess_biometric_data', wraps=service._preprocess_biometric_data) as mock_preprocess:
@@ -257,8 +251,7 @@ def test_preprocess_biometric_data(self, service, sample_biometric_data):
                 assert "value" in data.columns
                 assert len(data) > 0
 
-    async @pytest.mark.db_required
-def test_generate_insights(self, service):
+    async def test_generate_insights(self, service):
         """Test that _generate_insights creates meaningful insights from correlations."""
         # Setup
         correlations = [
@@ -302,8 +295,7 @@ def test_generate_insights(self, service):
         assert sleep_insight is not None
         assert "mood" in sleep_insight["message"]
 
-    async @pytest.mark.db_required
-def test_calculate_biometric_coverage(self, service, sample_biometric_data):
+    async def test_calculate_biometric_coverage(self, service, sample_biometric_data):
         """Test that _calculate_biometric_coverage correctly calculates data coverage."""
         # Setup
         lookback_days = 30

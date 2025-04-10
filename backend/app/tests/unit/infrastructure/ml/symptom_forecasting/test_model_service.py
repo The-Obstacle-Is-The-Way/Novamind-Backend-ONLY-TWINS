@@ -18,7 +18,6 @@ from app.infrastructure.ml.symptom_forecasting.transformer_model import Transfor
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostTimeSeriesModel
 
 
-@pytest.mark.db_required
 class TestSymptomForecastingService:
     """Tests for the SymptomForecastingService."""
 
@@ -121,8 +120,7 @@ class TestSymptomForecastingService:
             ]
         }
 
-    async @pytest.mark.db_required
-def test_preprocess_patient_data_success(self, service, sample_patient_data):
+    async def test_preprocess_patient_data_success(self, service, sample_patient_data):
         """Test that preprocess_patient_data correctly processes valid patient data."""
         # Execute
         df, metadata = await service.preprocess_patient_data(sample_patient_data)
@@ -139,8 +137,7 @@ def test_preprocess_patient_data_success(self, service, sample_patient_data):
         assert metadata["patient_id"] == sample_patient_data["patient_id"]
         assert "anxiety" in metadata["symptom_types"]
 
-    async @pytest.mark.db_required
-def test_preprocess_patient_data_empty_history(self, service):
+    async def test_preprocess_patient_data_empty_history(self, service):
         """Test that preprocess_patient_data handles empty symptom history."""
         # Setup
         patient_data = {
@@ -156,8 +153,7 @@ def test_preprocess_patient_data_empty_history(self, service):
         assert "error" in metadata
         assert metadata["error"] == "insufficient_data"
 
-    async @pytest.mark.db_required
-def test_preprocess_patient_data_missing_columns(self, service):
+    async def test_preprocess_patient_data_missing_columns(self, service):
         """Test that preprocess_patient_data handles missing required columns."""
         # Setup
         patient_data = {
@@ -179,8 +175,7 @@ def test_preprocess_patient_data_missing_columns(self, service):
         assert "error" in metadata
         assert metadata["error"] == "missing_columns"
 
-    async @pytest.mark.db_required
-def test_generate_forecast_success(self, service, sample_patient_data, mock_transformer_model, mock_xgboost_model):
+    async def test_generate_forecast_success(self, service, sample_patient_data, mock_transformer_model, mock_xgboost_model):
         """Test that generate_forecast correctly generates a forecast for valid patient data."""
         # Execute
         forecast = await service.generate_forecast(sample_patient_data)
@@ -205,8 +200,7 @@ def test_generate_forecast_success(self, service, sample_patient_data, mock_tran
         mock_transformer_model.predict.assert_called_once()
         mock_xgboost_model.predict.assert_called_once()
 
-    async @pytest.mark.db_required
-def test_generate_forecast_insufficient_data(self, service, mock_transformer_model, mock_xgboost_model):
+    async def test_generate_forecast_insufficient_data(self, service, mock_transformer_model, mock_xgboost_model):
         """Test that generate_forecast handles insufficient data."""
         # Setup
         patient_data = {
@@ -228,8 +222,7 @@ def test_generate_forecast_insufficient_data(self, service, mock_transformer_mod
         mock_transformer_model.predict.assert_not_called()
         mock_xgboost_model.predict.assert_not_called()
 
-    async @pytest.mark.db_required
-def test_generate_forecast_model_error(self, service, sample_patient_data, mock_transformer_model):
+    async def test_generate_forecast_model_error(self, service, sample_patient_data, mock_transformer_model):
         """Test that generate_forecast handles model errors gracefully."""
         # Setup
         mock_transformer_model.predict.side_effect = Exception("Model error")
@@ -244,8 +237,7 @@ def test_generate_forecast_model_error(self, service, sample_patient_data, mock_
         assert forecast["confidence_intervals"] is None
         assert forecast["reliability"] == "none"
 
-    async @pytest.mark.db_required
-def test_model_initialization(self):
+    async def test_model_initialization(self):
         """Test that models are initialized if not already initialized."""
         # Setup
         mock_transformer = AsyncMock(spec=TransformerTimeSeriesModel)

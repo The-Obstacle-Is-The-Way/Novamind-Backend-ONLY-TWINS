@@ -5,7 +5,6 @@ This class provides common functionality and setup/teardown methods
 for unit tests across all layers of the architecture.
 """
 from unittest import TestCase
-import pytest
 
 
 class BaseUnitTest(TestCase):

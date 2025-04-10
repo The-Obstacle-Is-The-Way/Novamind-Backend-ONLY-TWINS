@@ -24,7 +24,6 @@ from app.domain.entities.digital_twin.temporal import (
 from app.domain.entities.digital_twin.state import DigitalTwinState
 
 
-@pytest.mark.venv_only
 class TestTemporalDynamics(unittest.TestCase):
     """Tests for the TemporalDynamics entity."""
     
@@ -76,8 +75,7 @@ class TestTemporalDynamics(unittest.TestCase):
             # Add to test states
             self.test_states.append(state)
     
-    @pytest.mark.venv_only
-def test_init_default_values(self):
+    def test_init_default_values(self):
         """Test that default values are correctly initialized."""
         dynamics = TemporalDynamics()
         
@@ -88,8 +86,7 @@ def test_init_default_values(self):
         assert dynamics.forecasting_models == {}
         assert dynamics.validation_metrics == {}
     
-    @pytest.mark.venv_only
-def test_init_custom_values(self):
+    def test_init_custom_values(self):
         """Test initialization with custom values."""
         custom_detectors = {
             "seasonal": SeasonalPatternDetector(
@@ -114,8 +111,7 @@ def test_init_custom_values(self):
         assert dynamics.min_data_points == 15
         assert dynamics.max_forecast_days == 90
     
-    @pytest.mark.venv_only
-def test_record_state_point(self):
+    def test_record_state_point(self):
         """Test recording state points in history."""
         # Initial state is empty
         assert len(self.temporal_dynamics.state_history) == 0
@@ -148,8 +144,7 @@ def test_record_state_point(self):
             assert self.temporal_dynamics.state_history[i].timestamp > \
                    self.temporal_dynamics.state_history[i-1].timestamp
     
-    @pytest.mark.venv_only
-def test_detect_patterns(self):
+    def test_detect_patterns(self):
         """Test detection of temporal patterns."""
         # Add all test states to history
         for state in self.test_states:
@@ -174,8 +169,7 @@ def test_detect_patterns(self):
         assert patterns["episodic"].confidence >= 0
         assert patterns["episodic"].episode_count is not None
     
-    @pytest.mark.venv_only
-def test_forecast_trajectory(self):
+    def test_forecast_trajectory(self):
         """Test forecasting of state trajectory."""
         # Add all test states to history
         for state in self.test_states:
@@ -202,8 +196,7 @@ def test_forecast_trajectory(self):
         assert "anxiety" in forecast.confidence_intervals
         assert len(forecast.confidence_intervals["mood"]) == len(forecast.time_points)
     
-    @pytest.mark.venv_only
-def test_predict_response(self):
+    def test_predict_response(self):
         """Test prediction of treatment response."""
         # Add all test states to history
         for state in self.test_states:
@@ -239,8 +232,7 @@ def test_predict_response(self):
         assert trajectory.mood_values[-1] > trajectory.mood_values[0]
         assert trajectory.anxiety_values[-1] < trajectory.anxiety_values[0]
     
-    @pytest.mark.venv_only
-def test_detect_seasonality(self):
+    def test_detect_seasonality(self):
         """Test detection of seasonal patterns."""
         # Create a seasonal pattern
         base_date = datetime.utcnow() - timedelta(days=365)
@@ -293,8 +285,7 @@ def test_detect_seasonality(self):
         assert patterns["seasonal"].confidence > 0.5
         assert 350 <= patterns["seasonal"].cycle_length <= 380  # Should be close to 365 days
     
-    @pytest.mark.venv_only
-def test_detect_episodes(self):
+    def test_detect_episodes(self):
         """Test detection of episodic patterns."""
         # Create an episodic pattern
         base_date = datetime.utcnow() - timedelta(days=365)
@@ -363,8 +354,7 @@ def test_detect_episodes(self):
         assert patterns["episodic"].episode_count == 3
         assert 15 <= patterns["episodic"].avg_duration <= 25  # Should be close to 20 days
     
-    @pytest.mark.venv_only
-def test_forecast_accuracy(self):
+    def test_forecast_accuracy(self):
         """Test accuracy of forecasting model."""
         # Add first 7 test states to history
         for i in range(7):
@@ -415,8 +405,7 @@ def test_forecast_accuracy(self):
         assert "mae" in metrics["mood_valence"]
         assert metrics["mood_valence"]["rmse"] < 0.3
     
-    @pytest.mark.venv_only
-def test_sliding_window(self):
+    def test_sliding_window(self):
         """Test sliding window functionality for state history."""
         # Create a long history
         long_dynamics = TemporalDynamics(history_window_days=30)
@@ -437,8 +426,7 @@ def test_sliding_window(self):
         date_diff = (newest_date - oldest_date).days
         assert date_diff <= 30
     
-    @pytest.mark.venv_only
-def test_treatment_effect_integration(self):
+    def test_treatment_effect_integration(self):
         """Test integration of treatment effects into forecasting."""
         # Add all test states to history
         for state in self.test_states:
@@ -470,8 +458,7 @@ def test_treatment_effect_integration(self):
         assert treatment_forecast.mood_values[-1] > baseline_forecast.mood_values[-1]
         assert treatment_forecast.anxiety_values[-1] < baseline_forecast.anxiety_values[-1]
     
-    @pytest.mark.venv_only
-def test_response_prediction_metrics(self):
+    def test_response_prediction_metrics(self):
         """Test metrics provided in treatment response prediction."""
         # Add all test states to history
         for state in self.test_states:
@@ -514,12 +501,10 @@ def test_response_prediction_metrics(self):
         assert 0.0 <= response["confidence"] <= 1.0
 
 
-@pytest.mark.venv_only
 class TestPatternDetectors(unittest.TestCase):
     """Tests for pattern detection algorithms."""
     
-    @pytest.mark.venv_only
-def test_seasonal_detector(self):
+    def test_seasonal_detector(self):
         """Test seasonal pattern detector."""
         # Create detector
         detector = SeasonalPatternDetector(
@@ -553,8 +538,7 @@ def test_seasonal_detector(self):
         assert result.confidence > 0.5
         assert 350 <= result.cycle_length <= 380  # Should be close to 365
     
-    @pytest.mark.venv_only
-def test_episodic_detector(self):
+    def test_episodic_detector(self):
         """Test episodic pattern detector."""
         # Create detector
         detector = EpisodicPatternDetector(
@@ -595,8 +579,7 @@ def test_episodic_detector(self):
         assert result.episode_count == 3
         assert 15 <= result.avg_duration <= 25  # Should be close to 20
     
-    @pytest.mark.venv_only
-def test_custom_pattern_detector(self):
+    def test_custom_pattern_detector(self):
         """Test creation of custom pattern detector."""
         # Create a custom detector
         class CustomDetector(PatternDetector):
@@ -636,12 +619,10 @@ def test_custom_pattern_detector(self):
         assert 0.4 <= result.metadata["mean"] <= 0.6
 
 
-@pytest.mark.venv_only
 class TestTrajectoryPrediction(unittest.TestCase):
     """Tests for the TrajectoryPrediction entity."""
     
-    @pytest.mark.venv_only
-def test_init(self):
+    def test_init(self):
         """Test initialization of trajectory prediction."""
         time_points = [0, 7, 14, 21, 28]
         mood_values = [-0.5, -0.4, -0.3, -0.2, -0.1]
@@ -658,8 +639,7 @@ def test_init(self):
         assert trajectory.anxiety_values == anxiety_values
         assert trajectory.confidence_intervals == {}
     
-    @pytest.mark.venv_only
-def test_with_confidence_intervals(self):
+    def test_with_confidence_intervals(self):
         """Test trajectory with confidence intervals."""
         time_points = [0, 7, 14, 21, 28]
         mood_values = [-0.5, -0.4, -0.3, -0.2, -0.1]
@@ -687,8 +667,7 @@ def test_with_confidence_intervals(self):
         assert len(trajectory.confidence_intervals["mood"]) == len(time_points)
         assert len(trajectory.confidence_intervals["anxiety"]) == len(time_points)
     
-    @pytest.mark.venv_only
-def test_calculate_slope(self):
+    def test_calculate_slope(self):
         """Test calculation of trajectory slope."""
         time_points = [0, 7, 14, 21, 28]
         mood_values = [-0.5, -0.4, -0.3, -0.2, -0.1]
@@ -708,8 +687,7 @@ def test_calculate_slope(self):
         assert mood_slope > 0  # Improving mood
         assert anxiety_slope < 0  # Decreasing anxiety
     
-    @pytest.mark.venv_only
-def test_time_to_threshold(self):
+    def test_time_to_threshold(self):
         """Test calculation of time to reach threshold."""
         time_points = [0, 7, 14, 21, 28, 35, 42, 49, 56]
         mood_values = [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3]
@@ -729,8 +707,7 @@ def test_time_to_threshold(self):
         assert mood_threshold_time == 35  # Day 35
         assert anxiety_threshold_time == 35  # Day 35
     
-    @pytest.mark.venv_only
-def test_interpolate(self):
+    def test_interpolate(self):
         """Test interpolation of trajectory values."""
         time_points = [0, 14, 28, 42, 56]
         mood_values = [-0.5, -0.3, -0.1, 0.1, 0.3]
@@ -759,8 +736,7 @@ def test_interpolate(self):
         assert -0.5 < weekly_trajectory.mood_values[1] < -0.3
         assert -0.3 < weekly_trajectory.mood_values[3] < -0.1
     
-    @pytest.mark.venv_only
-def test_calculate_response_metrics(self):
+    def test_calculate_response_metrics(self):
         """Test calculation of response metrics."""
         time_points = [0, 7, 14, 21, 28, 35, 42, 49, 56]
         mood_values = [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3]
@@ -790,7 +766,6 @@ def test_calculate_response_metrics(self):
         assert 0.0 <= response_metrics["probability_of_remission"] <= 1.0
 
 
-@pytest.mark.venv_only
 class TestTimeSeriesForecaster(unittest.TestCase):
     """Tests for the TimeSeriesForecaster component."""
     
@@ -807,8 +782,7 @@ class TestTimeSeriesForecaster(unittest.TestCase):
         # Linear trend with noise
         self.values = np.linspace(-0.5, 0.5, 50) + np.random.normal(0, 0.05, 50)
     
-    @pytest.mark.venv_only
-def test_train_model(self):
+    def test_train_model(self):
         """Test training of forecasting model."""
         # Train model
         self.forecaster.train(self.timestamps, self.values)
@@ -817,8 +791,7 @@ def test_train_model(self):
         assert self.forecaster.is_trained
         assert self.forecaster.train_end_time == self.timestamps[-1]
     
-    @pytest.mark.venv_only
-def test_forecast(self):
+    def test_forecast(self):
         """Test forecasting."""
         # Train model
         self.forecaster.train(self.timestamps, self.values)
@@ -838,8 +811,7 @@ def test_forecast(self):
         # Last forecast value should follow trend (positive in this case)
         assert forecast["values"][-1] > self.values[-1]
     
-    @pytest.mark.venv_only
-def test_forecast_with_intervention(self):
+    def test_forecast_with_intervention(self):
         """Test forecasting with intervention effects."""
         # Train model
         self.forecaster.train(self.timestamps, self.values)
@@ -864,8 +836,7 @@ def test_forecast_with_intervention(self):
             diff = forecast_with_intervention["values"][i] - forecast_base["values"][i]
             assert intervention_effect * 0.5 <= diff <= intervention_effect * 1.5
     
-    @pytest.mark.venv_only
-def test_validation(self):
+    def test_validation(self):
         """Test validation of forecast accuracy."""
         # Use first 40 points for training
         train_timestamps = self.timestamps[:40]
@@ -889,8 +860,7 @@ def test_validation(self):
         assert 0.0 <= metrics["mae"]
         assert metrics["r_squared"] <= 1.0
     
-    @pytest.mark.venv_only
-def test_multiple_forecasters(self):
+    def test_multiple_forecasters(self):
         """Test using multiple forecasters for different variables."""
         # Create forecasters for different variables
         mood_forecaster = TimeSeriesForecaster()

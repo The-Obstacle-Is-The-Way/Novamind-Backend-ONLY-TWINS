@@ -57,12 +57,10 @@ def sample_patient_data():
     }
 
 
-@pytest.mark.db_required
 class TestPHIHandling:
     """Test proper handling of PHI in ML components."""
 
-    @pytest.mark.db_required
-def test_phi_data_is_never_logged(self, sample_patient_data, caplog):
+    def test_phi_data_is_never_logged(self, sample_patient_data, caplog):
         """Test that PHI is never logged during ML processing."""
         with patch('app.infrastructure.ml.data_processing.PHIProcessor.process') as mock_process:
             mock_process.return_value = {"features": [0.1, 0.2, 0.3]}
@@ -78,8 +76,7 @@ def test_phi_data_is_never_logged(self, sample_patient_data, caplog):
                 assert "555-123-4567" not in log_message
                 assert "john.doe@example.com" not in log_message
 
-    @pytest.mark.db_required
-def test_phi_is_never_stored_in_plain_text(self, sample_patient_data, mock_encryption_service):
+    def test_phi_is_never_stored_in_plain_text(self, sample_patient_data, mock_encryption_service):
         """Test that PHI is never stored in plain text."""
         with patch('app.infrastructure.ml.data_processing.get_encryption_service', 
                   return_value=mock_encryption_service):
@@ -98,8 +95,7 @@ def test_phi_is_never_stored_in_plain_text(self, sample_patient_data, mock_encry
             assert not isinstance(encrypted_data, dict)
             assert not isinstance(encrypted_data, str)
 
-    @pytest.mark.db_required
-def test_phi_is_properly_deidentified(self, sample_patient_data, mock_phi_redaction_service):
+    def test_phi_is_properly_deidentified(self, sample_patient_data, mock_phi_redaction_service):
         """Test that PHI is properly de-identified for ML training."""
         with patch('app.infrastructure.ml.data_processing.get_redaction_service',
                   return_value=mock_phi_redaction_service):
@@ -113,8 +109,7 @@ def test_phi_is_properly_deidentified(self, sample_patient_data, mock_phi_redact
             # Ensure result is the redacted data
             assert deidentified_data == {"data": "redacted_data"}
 
-    @pytest.mark.db_required
-def test_patient_data_isolation(self, sample_patient_data):
+    def test_patient_data_isolation(self, sample_patient_data):
         """Test that patient data is isolated and not mixed with other patients."""
         patient_id_1 = sample_patient_data["patient_id"]
         sample_patient_data_2 = sample_patient_data.copy()
@@ -137,12 +132,10 @@ def test_patient_data_isolation(self, sample_patient_data):
             assert data1["data"] != data2["data"]
 
 
-@pytest.mark.db_required
 class TestMLDataProcessing:
     """Test ML data processing with PHI."""
 
-    @pytest.mark.db_required
-def test_feature_extraction_anonymizes_phi(self, sample_patient_data):
+    def test_feature_extraction_anonymizes_phi(self, sample_patient_data):
         """Test that feature extraction properly anonymizes PHI."""
         with patch('app.infrastructure.ml.data_processing.PHIProcessor.extract_features') as mock_extract:
             mock_extract.return_value = {"features": [0.1, 0.2, 0.3], "metadata": {"status": "complete"}}
@@ -166,8 +159,7 @@ def test_feature_extraction_anonymizes_phi(self, sample_patient_data):
             assert isinstance(features["features"], list)
             assert all(isinstance(x, float) for x in features["features"])
 
-    @pytest.mark.db_required
-def test_model_output_has_no_phi(self, sample_patient_data):
+    def test_model_output_has_no_phi(self, sample_patient_data):
         """Test that model output has no PHI."""
         with patch('app.infrastructure.ml.data_processing.PHIProcessor.run_model') as mock_run:
             mock_run.return_value = {
@@ -191,8 +183,7 @@ def test_model_output_has_no_phi(self, sample_patient_data):
             assert "555-123-4567" not in result_str
             assert "john.doe@example.com" not in result_str
 
-    @pytest.mark.db_required
-def test_batch_processing_isolates_patient_data(self):
+    def test_batch_processing_isolates_patient_data(self):
         """Test that batch processing properly isolates patient data."""
         batch_data = [
             {"patient_id": str(uuid.uuid4()), "data": "data1"},
@@ -216,12 +207,10 @@ def test_batch_processing_isolates_patient_data(self):
                 assert "result" in result
 
 
-@pytest.mark.db_required
 class TestMLSecureStorage:
     """Test secure storage of ML data."""
 
-    @pytest.mark.db_required
-def test_ml_model_storage_encryption(self, mock_encryption_service):
+    def test_ml_model_storage_encryption(self, mock_encryption_service):
         """Test that ML models are stored encrypted."""
         with patch('app.infrastructure.ml.data_processing.get_encryption_service',
                   return_value=mock_encryption_service):
@@ -234,8 +223,7 @@ def test_ml_model_storage_encryption(self, mock_encryption_service):
             # Verify encryption was called
             mock_encryption_service.encrypt.assert_called_once()
 
-    @pytest.mark.db_required
-def test_ml_model_loading_decryption(self, mock_encryption_service):
+    def test_ml_model_loading_decryption(self, mock_encryption_service):
         """Test that ML models are decrypted when loaded."""
         with patch('app.infrastructure.ml.data_processing.get_encryption_service',
                   return_value=mock_encryption_service):
@@ -249,8 +237,7 @@ def test_ml_model_loading_decryption(self, mock_encryption_service):
             # Model should be properly decoded from JSON
             assert isinstance(model, dict)
 
-    @pytest.mark.db_required
-def test_secure_temporary_files(self, sample_patient_data):
+    def test_secure_temporary_files(self, sample_patient_data):
         """Test that temporary files used in ML processing are secure."""
         with patch('app.infrastructure.ml.data_processing.PHIProcessor._secure_temp_file') as mock_temp:
             temp_path = "/tmp/secure_temp_123"

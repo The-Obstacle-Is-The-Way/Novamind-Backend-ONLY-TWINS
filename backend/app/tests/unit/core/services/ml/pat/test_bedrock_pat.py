@@ -137,12 +137,10 @@ def mock_bedrock_response():
     return mock_response
 
 
-@pytest.mark.db_required
 class TestBedrockPAT:
     """Test suite for the BedrockPAT service."""
     
-    @pytest.mark.db_required
-def test_initialization(self, mock_aws_session):
+    def test_initialization(self, mock_aws_session):
         """Test that the service initializes correctly."""
         # Arrange
         service = BedrockPAT()
@@ -167,8 +165,7 @@ def test_initialization(self, mock_aws_session):
         assert service._model_id == 'test-model-id'
         assert service._kms_key_id == 'test-kms-key-id'
     
-    @pytest.mark.db_required
-def test_initialization_missing_bucket(self, mock_aws_session):
+    def test_initialization_missing_bucket(self, mock_aws_session):
         """Test initialization fails when S3 bucket is missing."""
         # Arrange
         service = BedrockPAT()
@@ -182,8 +179,7 @@ def test_initialization_missing_bucket(self, mock_aws_session):
         
         assert "S3 bucket name is required" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_initialization_missing_table(self, mock_aws_session):
+    def test_initialization_missing_table(self, mock_aws_session):
         """Test initialization fails when DynamoDB table is missing."""
         # Arrange
         service = BedrockPAT()
@@ -197,8 +193,7 @@ def test_initialization_missing_table(self, mock_aws_session):
         
         assert "DynamoDB table name is required" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_initialization_missing_model_id(self, mock_aws_session):
+    def test_initialization_missing_model_id(self, mock_aws_session):
         """Test initialization fails when Bedrock model ID is missing."""
         # Arrange
         service = BedrockPAT()
@@ -212,8 +207,7 @@ def test_initialization_missing_model_id(self, mock_aws_session):
         
         assert "Bedrock model ID is required" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_initialization_s3_bucket_not_found(self, mock_aws_session):
+    def test_initialization_s3_bucket_not_found(self, mock_aws_session):
         """Test initialization fails when S3 bucket does not exist."""
         # Arrange
         service = BedrockPAT()
@@ -232,8 +226,7 @@ def test_initialization_s3_bucket_not_found(self, mock_aws_session):
         
         assert "S3 bucket test-bucket not found" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_initialization_dynamodb_table_not_found(self, mock_aws_session):
+    def test_initialization_dynamodb_table_not_found(self, mock_aws_session):
         """Test initialization fails when DynamoDB table does not exist."""
         # Arrange
         service = BedrockPAT()
@@ -255,8 +248,7 @@ def test_initialization_dynamodb_table_not_found(self, mock_aws_session):
         
         assert "DynamoDB table test-table not found" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_success(self, bedrock_pat_service, mock_aws_session, mock_bedrock_response):
+    def test_analyze_actigraphy_success(self, bedrock_pat_service, mock_aws_session, mock_bedrock_response):
         """Test successful actigraphy analysis."""
         # Arrange
         mock_aws_session['bedrock'].invoke_model.return_value = mock_bedrock_response
@@ -319,8 +311,7 @@ def test_analyze_actigraphy_success(self, bedrock_pat_service, mock_aws_session,
         assert input_data["patient_id"] == patient_id
         assert input_data["analysis_types"] == analysis_types
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_invalid_input(self, bedrock_pat_service):
+    def test_analyze_actigraphy_invalid_input(self, bedrock_pat_service):
         """Test actigraphy analysis with invalid input."""
         # Act & Assert - Missing patient_id
         with pytest.raises(ValidationError) as excinfo:
@@ -361,8 +352,7 @@ def test_analyze_actigraphy_invalid_input(self, bedrock_pat_service):
             )
         assert "At least one analysis_type is required" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_bedrock_error(self, bedrock_pat_service, mock_aws_session):
+    def test_analyze_actigraphy_bedrock_error(self, bedrock_pat_service, mock_aws_session):
         """Test actigraphy analysis when Bedrock returns an error."""
         # Arrange
         mock_aws_session['s3'].put_object.return_value = {}
@@ -392,8 +382,7 @@ def test_analyze_actigraphy_bedrock_error(self, bedrock_pat_service, mock_aws_se
         
         assert "Model inference error" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_get_actigraphy_embeddings_success(self, bedrock_pat_service, mock_aws_session, mock_bedrock_response):
+    def test_get_actigraphy_embeddings_success(self, bedrock_pat_service, mock_aws_session, mock_bedrock_response):
         """Test successful actigraphy embeddings generation."""
         # Arrange
         mock_aws_session['bedrock'].invoke_model.return_value = mock_bedrock_response
@@ -445,8 +434,7 @@ def test_get_actigraphy_embeddings_success(self, bedrock_pat_service, mock_aws_s
         body = json.loads(invoke_model_call["body"])
         assert body["task"] == "Generate vector embeddings from the actigraphy data for similarity comparison and pattern recognition."
     
-    @pytest.mark.db_required
-def test_get_analysis_by_id_success(self, bedrock_pat_service, mock_aws_session):
+    def test_get_analysis_by_id_success(self, bedrock_pat_service, mock_aws_session):
         """Test successful retrieval of analysis by ID."""
         # Arrange
         analysis_id = "test-analysis-id"
@@ -469,8 +457,7 @@ def test_get_analysis_by_id_success(self, bedrock_pat_service, mock_aws_session)
         assert result == mock_analysis
         table_mock.get_item.assert_called_once_with(Key={"analysis_id": analysis_id})
     
-    @pytest.mark.db_required
-def test_get_analysis_by_id_not_found(self, bedrock_pat_service, mock_aws_session):
+    def test_get_analysis_by_id_not_found(self, bedrock_pat_service, mock_aws_session):
         """Test retrieval of non-existent analysis."""
         # Arrange
         analysis_id = "non-existent-id"
@@ -487,8 +474,7 @@ def test_get_analysis_by_id_not_found(self, bedrock_pat_service, mock_aws_sessio
         
         assert f"Analysis with ID {analysis_id} not found" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_get_patient_analyses_success(self, bedrock_pat_service, mock_aws_session):
+    def test_get_patient_analyses_success(self, bedrock_pat_service, mock_aws_session):
         """Test successful retrieval of patient analyses."""
         # Arrange
         patient_id = "test-patient"
@@ -521,8 +507,7 @@ def test_get_patient_analyses_success(self, bedrock_pat_service, mock_aws_sessio
         assert "PK = :pk" in query_call["KeyConditionExpression"]
         assert query_call["ExpressionAttributeValues"][":pk"] == f"PATIENT#{patient_id}"
     
-    @pytest.mark.db_required
-def test_get_model_info(self, bedrock_pat_service):
+    def test_get_model_info(self, bedrock_pat_service):
         """Test retrieval of model information."""
         # Act
         result = bedrock_pat_service.get_model_info()
@@ -535,8 +520,7 @@ def test_get_model_info(self, bedrock_pat_service):
         assert "capabilities" in result
         assert "input_format" in result
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin_success(self, bedrock_pat_service, mock_aws_session, mock_bedrock_response):
+    def test_integrate_with_digital_twin_success(self, bedrock_pat_service, mock_aws_session, mock_bedrock_response):
         """Test successful integration with digital twin."""
         # Arrange
         patient_id = "test-patient"
@@ -582,8 +566,7 @@ def test_integrate_with_digital_twin_success(self, bedrock_pat_service, mock_aws
             body = json.loads(invoke_model_call["body"])
             assert body["task"] == "Integrate actigraphy analysis with a digital twin profile to enhance understanding of the patient's physical activity patterns."
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin_authorization_error(self, bedrock_pat_service):
+    def test_integrate_with_digital_twin_authorization_error(self, bedrock_pat_service):
         """Test integration with digital twin when analysis doesn't belong to patient."""
         # Arrange
         patient_id = "test-patient"

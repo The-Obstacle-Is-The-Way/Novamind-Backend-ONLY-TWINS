@@ -36,8 +36,7 @@ def redis_cache(mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_nonexistent_key(redis_cache, mock_redis_client):
+async def test_get_nonexistent_key(redis_cache, mock_redis_client):
     """Test getting a nonexistent key returns None."""
     mock_redis_client.get.return_value = None
     result = await redis_cache.get("nonexistent-key")
@@ -46,8 +45,7 @@ def test_get_nonexistent_key(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_existing_key(redis_cache, mock_redis_client):
+async def test_get_existing_key(redis_cache, mock_redis_client):
     """Test getting an existing key returns deserialized data."""
     mock_data = {"test": "value", "nested": {"data": 123}}
     mock_redis_client.get.return_value = json.dumps(mock_data)
@@ -59,8 +57,7 @@ def test_get_existing_key(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_invalid_json(redis_cache, mock_redis_client):
+async def test_get_invalid_json(redis_cache, mock_redis_client):
     """Test getting a key with invalid JSON returns None."""
     mock_redis_client.get.return_value = "invalid-json{"
     
@@ -71,8 +68,7 @@ def test_get_invalid_json(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_set_simple_value(redis_cache, mock_redis_client):
+async def test_set_simple_value(redis_cache, mock_redis_client):
     """Test setting a simple string value."""
     value = "simple-string-value"
     ttl = 60
@@ -90,8 +86,7 @@ def test_set_simple_value(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_set_complex_value(redis_cache, mock_redis_client):
+async def test_set_complex_value(redis_cache, mock_redis_client):
     """Test setting a complex dictionary value."""
     value = {"name": "test", "data": [1, 2, 3], "nested": {"x": "y"}}
     ttl = 300
@@ -108,8 +103,7 @@ def test_set_complex_value(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_set_json_error(redis_cache, mock_redis_client):
+async def test_set_json_error(redis_cache, mock_redis_client):
     """Test setting a non-serializable value."""
     # Create a circular reference that can't be JSON serialized
     circular_ref = {"self_ref": None}
@@ -123,8 +117,7 @@ def test_set_json_error(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_set_redis_error(redis_cache, mock_redis_client):
+async def test_set_redis_error(redis_cache, mock_redis_client):
     """Test setting a value when Redis raises an exception."""
     mock_redis_client.setex.side_effect = Exception("Redis connection error")
     
@@ -135,8 +128,7 @@ def test_set_redis_error(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_delete_existing_key(redis_cache, mock_redis_client):
+async def test_delete_existing_key(redis_cache, mock_redis_client):
     """Test deleting an existing key."""
     mock_redis_client.delete.return_value = 1
     
@@ -147,8 +139,7 @@ def test_delete_existing_key(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_delete_nonexistent_key(redis_cache, mock_redis_client):
+async def test_delete_nonexistent_key(redis_cache, mock_redis_client):
     """Test deleting a nonexistent key still returns success."""
     mock_redis_client.delete.return_value = 0
     
@@ -159,8 +150,7 @@ def test_delete_nonexistent_key(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_delete_redis_error(redis_cache, mock_redis_client):
+async def test_delete_redis_error(redis_cache, mock_redis_client):
     """Test deleting a key when Redis raises an exception."""
     mock_redis_client.delete.side_effect = Exception("Redis connection error")
     
@@ -171,8 +161,7 @@ def test_delete_redis_error(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_exists_true(redis_cache, mock_redis_client):
+async def test_exists_true(redis_cache, mock_redis_client):
     """Test checking if a key exists when it does."""
     mock_redis_client.exists.return_value = 1
     
@@ -183,8 +172,7 @@ def test_exists_true(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_exists_false(redis_cache, mock_redis_client):
+async def test_exists_false(redis_cache, mock_redis_client):
     """Test checking if a key exists when it doesn't."""
     mock_redis_client.exists.return_value = 0
     
@@ -195,8 +183,7 @@ def test_exists_false(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_exists_redis_error(redis_cache, mock_redis_client):
+async def test_exists_redis_error(redis_cache, mock_redis_client):
     """Test checking if a key exists when Redis raises an exception."""
     mock_redis_client.exists.side_effect = Exception("Redis connection error")
     
@@ -207,8 +194,7 @@ def test_exists_redis_error(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_increment_success(redis_cache, mock_redis_client):
+async def test_increment_success(redis_cache, mock_redis_client):
     """Test incrementing a counter."""
     mock_redis_client.incrby.return_value = 6
     
@@ -219,8 +205,7 @@ def test_increment_success(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_increment_redis_error(redis_cache, mock_redis_client):
+async def test_increment_redis_error(redis_cache, mock_redis_client):
     """Test incrementing a counter when Redis raises an exception."""
     mock_redis_client.incrby.side_effect = Exception("Redis connection error")
     
@@ -231,8 +216,7 @@ def test_increment_redis_error(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_ttl_success(redis_cache, mock_redis_client):
+async def test_get_ttl_success(redis_cache, mock_redis_client):
     """Test getting the TTL of a key."""
     mock_redis_client.ttl.return_value = 42
     
@@ -243,8 +227,7 @@ def test_get_ttl_success(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_ttl_nonexistent_key(redis_cache, mock_redis_client):
+async def test_get_ttl_nonexistent_key(redis_cache, mock_redis_client):
     """Test getting the TTL of a nonexistent key."""
     mock_redis_client.ttl.return_value = -2  # Redis returns -2 for nonexistent keys
     
@@ -255,8 +238,7 @@ def test_get_ttl_nonexistent_key(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_ttl_persistent_key(redis_cache, mock_redis_client):
+async def test_get_ttl_persistent_key(redis_cache, mock_redis_client):
     """Test getting the TTL of a persistent key (no expiry)."""
     mock_redis_client.ttl.return_value = -1  # Redis returns -1 for persistent keys
     
@@ -267,8 +249,7 @@ def test_get_ttl_persistent_key(redis_cache, mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_ttl_redis_error(redis_cache, mock_redis_client):
+async def test_get_ttl_redis_error(redis_cache, mock_redis_client):
     """Test getting the TTL when Redis raises an exception."""
     mock_redis_client.ttl.side_effect = Exception("Redis connection error")
     
@@ -278,7 +259,6 @@ def test_get_ttl_redis_error(redis_cache, mock_redis_client):
     mock_redis_client.ttl.assert_called_once_with("error-key")
 
 
-@pytest.mark.db_required
 def test_no_redis_available():
     """Test graceful degradation when Redis is not available."""
     with patch('redis.asyncio.from_url', side_effect=Exception("Connection error")):
@@ -287,8 +267,7 @@ def test_no_redis_available():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_methods_with_no_redis_client():
+async def test_methods_with_no_redis_client():
     """Test all methods gracefully handle when Redis client is not available."""
     cache = RedisCache()
     cache.redis_client = None

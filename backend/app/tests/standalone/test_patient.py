@@ -1,18 +1,13 @@
-# -*- coding: utf-8 -*-
 """
 Tests for the Patient entity.
 """
 
-from datetime import datetime, date
 import uuid
+from datetime import date, datetime
+
 import pytest
 
-from app.domain.entities.patient import (
-    Patient,
-    Gender,
-    InsuranceStatus,
-    PatientStatus
-)
+from app.domain.entities.patient import Gender, InsuranceStatus, Patient, PatientStatus
 from app.domain.exceptions import ValidationException
 
 
@@ -75,11 +70,9 @@ def valid_patient(valid_patient_data):
     return Patient(**valid_patient_data)
 
 
-@pytest.mark.standalone
 class TestPatient:
     """Tests for the Patient class."""
     
-    @pytest.mark.standalone
 def test_create_patient(self, valid_patient_data):
         """Test creating a patient."""
         patient = Patient(**valid_patient_data)
@@ -101,7 +94,6 @@ def test_create_patient(self, valid_patient_data):
         assert patient.notes == valid_patient_data["notes"]
         assert patient.status == valid_patient_data["status"]
     
-    @pytest.mark.standalone
 def test_create_patient_with_string_enums(self, valid_patient_data):
         """Test creating a patient with string enums."""
         # Convert enums to strings
@@ -116,7 +108,6 @@ def test_create_patient_with_string_enums(self, valid_patient_data):
         assert patient.insurance_status == InsuranceStatus.VERIFIED
         assert patient.status == PatientStatus.ACTIVE
     
-    @pytest.mark.standalone
 def test_create_patient_with_string_date(self, valid_patient_data):
         """Test creating a patient with string date."""
         # Convert date to string
@@ -127,7 +118,6 @@ def test_create_patient_with_string_date(self, valid_patient_data):
         
         assert patient.date_of_birth == date(1980, 1, 1)
     
-    @pytest.mark.standalone
 def test_create_patient_with_auto_id(self, valid_patient_data):
         """Test creating a patient with auto-generated ID."""
         data = valid_patient_data.copy()
@@ -138,7 +128,6 @@ def test_create_patient_with_auto_id(self, valid_patient_data):
         assert patient.id is not None
         assert isinstance(patient.id, uuid.UUID)
     
-    @pytest.mark.standalone
 def test_validate_required_fields(self):
         """Test validation of required fields."""
         # Missing first_name
@@ -186,7 +175,6 @@ def test_validate_required_fields(self):
                 gender=Gender.MALE
             )
     
-    @pytest.mark.standalone
 def test_validate_email_format(self, valid_patient_data):
         """Test validation of email format."""
         data = valid_patient_data.copy()
@@ -195,7 +183,6 @@ def test_validate_email_format(self, valid_patient_data):
         with pytest.raises(ValidationException):
             Patient(**data)
     
-    @pytest.mark.standalone
 def test_validate_phone_format(self, valid_patient_data):
         """Test validation of phone format."""
         data = valid_patient_data.copy()
@@ -205,7 +192,6 @@ def test_validate_phone_format(self, valid_patient_data):
         with pytest.raises(ValidationException):
             Patient(**data)
     
-    @pytest.mark.standalone
 def test_update_personal_info(self, valid_patient):
         """Test updating personal information."""
         valid_patient.update_personal_info(
@@ -237,7 +223,6 @@ def test_update_personal_info(self, valid_patient):
         }
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_update_personal_info_with_string_date(self, valid_patient):
         """Test updating personal information with string date."""
         valid_patient.update_personal_info(
@@ -246,7 +231,6 @@ def test_update_personal_info_with_string_date(self, valid_patient):
         
         assert valid_patient.date_of_birth == date(1981, 2, 2)
     
-    @pytest.mark.standalone
 def test_update_personal_info_with_string_gender(self, valid_patient):
         """Test updating personal information with string gender."""
         valid_patient.update_personal_info(
@@ -255,7 +239,6 @@ def test_update_personal_info_with_string_gender(self, valid_patient):
         
         assert valid_patient.gender == Gender.FEMALE
     
-    @pytest.mark.standalone
 def test_update_insurance_info(self, valid_patient):
         """Test updating insurance information."""
         new_insurance_info = {
@@ -273,7 +256,6 @@ def test_update_insurance_info(self, valid_patient):
         assert valid_patient.insurance_status == InsuranceStatus.PENDING
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_update_insurance_info_with_string_status(self, valid_patient):
         """Test updating insurance information with string status."""
         valid_patient.update_insurance_info(
@@ -283,7 +265,6 @@ def test_update_insurance_info_with_string_status(self, valid_patient):
         
         assert valid_patient.insurance_status == InsuranceStatus.PENDING
     
-    @pytest.mark.standalone
 def test_add_emergency_contact(self, valid_patient):
         """Test adding an emergency contact."""
         new_contact = {
@@ -298,7 +279,6 @@ def test_add_emergency_contact(self, valid_patient):
         assert valid_patient.emergency_contacts[1] == new_contact
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_add_emergency_contact_validation(self, valid_patient):
         """Test validation when adding an emergency contact."""
         # Missing name
@@ -315,7 +295,6 @@ def test_add_emergency_contact_validation(self, valid_patient):
                 "relationship": "Father"
             })
     
-    @pytest.mark.standalone
 def test_remove_emergency_contact(self, valid_patient):
         """Test removing an emergency contact."""
         valid_patient.remove_emergency_contact(0)
@@ -323,13 +302,11 @@ def test_remove_emergency_contact(self, valid_patient):
         assert len(valid_patient.emergency_contacts) == 0
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_remove_emergency_contact_invalid_index(self, valid_patient):
         """Test removing an emergency contact with invalid index."""
         with pytest.raises(IndexError):
             valid_patient.remove_emergency_contact(1)
     
-    @pytest.mark.standalone
 def test_add_medical_history_item(self, valid_patient):
         """Test adding a medical history item."""
         new_item = {
@@ -344,7 +321,6 @@ def test_add_medical_history_item(self, valid_patient):
         assert valid_patient.medical_history[1] == new_item
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_add_medical_history_item_validation(self, valid_patient):
         """Test validation when adding a medical history item."""
         # Missing condition
@@ -354,7 +330,6 @@ def test_add_medical_history_item_validation(self, valid_patient):
                 "notes": "Moderate"
             })
     
-    @pytest.mark.standalone
 def test_add_medication(self, valid_patient):
         """Test adding a medication."""
         new_medication = {
@@ -370,7 +345,6 @@ def test_add_medication(self, valid_patient):
         assert valid_patient.medications[1] == new_medication
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_add_medication_validation(self, valid_patient):
         """Test validation when adding a medication."""
         # Missing name
@@ -389,7 +363,6 @@ def test_add_medication_validation(self, valid_patient):
                 "start_date": "2021-03-15"
             })
     
-    @pytest.mark.standalone
 def test_remove_medication(self, valid_patient):
         """Test removing a medication."""
         valid_patient.remove_medication(0)
@@ -397,13 +370,11 @@ def test_remove_medication(self, valid_patient):
         assert len(valid_patient.medications) == 0
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_remove_medication_invalid_index(self, valid_patient):
         """Test removing a medication with invalid index."""
         with pytest.raises(IndexError):
             valid_patient.remove_medication(1)
     
-    @pytest.mark.standalone
 def test_add_allergy(self, valid_patient):
         """Test adding an allergy."""
         valid_patient.add_allergy("Sulfa")
@@ -412,7 +383,6 @@ def test_add_allergy(self, valid_patient):
         assert "Sulfa" in valid_patient.allergies
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_add_existing_allergy(self, valid_patient):
         """Test adding an existing allergy."""
         original_updated_at = valid_patient.updated_at
@@ -426,7 +396,6 @@ def test_add_existing_allergy(self, valid_patient):
         assert len(valid_patient.allergies) == 1
         assert valid_patient.updated_at == original_updated_at
     
-    @pytest.mark.standalone
 def test_remove_allergy(self, valid_patient):
         """Test removing an allergy."""
         valid_patient.remove_allergy("Penicillin")
@@ -434,7 +403,6 @@ def test_remove_allergy(self, valid_patient):
         assert len(valid_patient.allergies) == 0
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_remove_nonexistent_allergy(self, valid_patient):
         """Test removing a nonexistent allergy."""
         original_updated_at = valid_patient.updated_at
@@ -448,7 +416,6 @@ def test_remove_nonexistent_allergy(self, valid_patient):
         assert len(valid_patient.allergies) == 1
         assert valid_patient.updated_at == original_updated_at
     
-    @pytest.mark.standalone
 def test_update_status(self, valid_patient):
         """Test updating the patient's status."""
         valid_patient.update_status(PatientStatus.INACTIVE)
@@ -456,14 +423,12 @@ def test_update_status(self, valid_patient):
         assert valid_patient.status == PatientStatus.INACTIVE
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_update_status_with_string(self, valid_patient):
         """Test updating the patient's status with a string."""
         valid_patient.update_status("inactive")
         
         assert valid_patient.status == PatientStatus.INACTIVE
     
-    @pytest.mark.standalone
 def test_update_notes(self, valid_patient):
         """Test updating the patient's notes."""
         new_notes = "Updated patient notes"
@@ -473,7 +438,6 @@ def test_update_notes(self, valid_patient):
         assert valid_patient.notes == new_notes
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_update_appointment_times(self, valid_patient):
         """Test updating appointment times."""
         last_appointment = datetime.now() - timedelta(days=7)
@@ -488,7 +452,6 @@ def test_update_appointment_times(self, valid_patient):
         assert valid_patient.next_appointment == next_appointment
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_set_preferred_provider(self, valid_patient):
         """Test setting the preferred provider."""
         provider_id = str(uuid.uuid4())
@@ -498,7 +461,6 @@ def test_set_preferred_provider(self, valid_patient):
         assert valid_patient.preferred_provider_id == provider_id
         assert valid_patient.updated_at > valid_patient.created_at
     
-    @pytest.mark.standalone
 def test_to_dict(self, valid_patient):
         """Test converting a patient to a dictionary."""
         patient_dict = valid_patient.to_dict()
@@ -520,7 +482,6 @@ def test_to_dict(self, valid_patient):
         assert patient_dict["notes"] == valid_patient.notes
         assert patient_dict["status"] == valid_patient.status.value
     
-    @pytest.mark.standalone
 def test_from_dict(self, valid_patient):
         """Test creating a patient from a dictionary."""
         patient_dict = valid_patient.to_dict()
@@ -543,7 +504,6 @@ def test_from_dict(self, valid_patient):
         assert new_patient.notes == valid_patient.notes
         assert new_patient.status == valid_patient.status
     
-    @pytest.mark.standalone
 def test_equality(self, valid_patient_data):
         """Test patient equality."""
         patient1 = Patient(**valid_patient_data)
@@ -552,7 +512,6 @@ def test_equality(self, valid_patient_data):
         assert patient1 == patient2
         assert hash(patient1) == hash(patient2)
     
-    @pytest.mark.standalone
 def test_inequality(self, valid_patient_data):
         """Test patient inequality."""
         patient1 = Patient(**valid_patient_data)
@@ -565,7 +524,6 @@ def test_inequality(self, valid_patient_data):
         assert hash(patient1) != hash(patient2)
         assert patient1 != "not a patient"
     
-    @pytest.mark.standalone
 def test_string_representation(self, valid_patient):
         """Test string representation of a patient."""
         string_repr = str(valid_patient)

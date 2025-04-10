@@ -77,12 +77,10 @@ def valid_provider(valid_provider_data):
     return Provider(**valid_provider_data)
 
 
-@pytest.mark.venv_only
 class TestProvider:
     """Tests for the Provider class."""
     
-    @pytest.mark.venv_only
-def test_create_provider(self, valid_provider_data):
+    def test_create_provider(self, valid_provider_data):
         """Test creating a provider."""
         provider = Provider(**valid_provider_data)
         
@@ -105,8 +103,7 @@ def test_create_provider(self, valid_provider_data):
         assert provider.max_patients == valid_provider_data["max_patients"]
         assert provider.current_patient_count == valid_provider_data["current_patient_count"]
     
-    @pytest.mark.venv_only
-def test_create_provider_with_string_enums(self, valid_provider_data):
+    def test_create_provider_with_string_enums(self, valid_provider_data):
         """Test creating a provider with string enums."""
         # Convert enums to strings
         data = valid_provider_data.copy()
@@ -118,8 +115,7 @@ def test_create_provider_with_string_enums(self, valid_provider_data):
         assert provider.provider_type == ProviderType.PSYCHIATRIST
         assert provider.status == ProviderStatus.ACTIVE
     
-    @pytest.mark.venv_only
-def test_create_provider_with_auto_id(self, valid_provider_data):
+    def test_create_provider_with_auto_id(self, valid_provider_data):
         """Test creating a provider with auto-generated ID."""
         data = valid_provider_data.copy()
         data.pop("id")
@@ -129,8 +125,7 @@ def test_create_provider_with_auto_id(self, valid_provider_data):
         assert provider.id is not None
         assert isinstance(provider.id, uuid.UUID)
     
-    @pytest.mark.venv_only
-def test_validate_required_fields(self):
+    def test_validate_required_fields(self):
         """Test validation of required fields."""
         # Missing first_name
         with pytest.raises(ValidationException):
@@ -168,8 +163,7 @@ def test_validate_required_fields(self):
                 license_number="MD12345"
             )
     
-    @pytest.mark.venv_only
-def test_validate_psychiatrist_license(self):
+    def test_validate_psychiatrist_license(self):
         """Test validation of psychiatrist license."""
         # Missing license for psychiatrist
         with pytest.raises(ValidationException):
@@ -180,8 +174,7 @@ def test_validate_psychiatrist_license(self):
                 email="dr.smith@example.com"
             )
     
-    @pytest.mark.venv_only
-def test_validate_email_format(self, valid_provider_data):
+    def test_validate_email_format(self, valid_provider_data):
         """Test validation of email format."""
         data = valid_provider_data.copy()
         data["email"] = "invalid-email"
@@ -189,8 +182,7 @@ def test_validate_email_format(self, valid_provider_data):
         with pytest.raises(ValidationException):
             Provider(**data)
     
-    @pytest.mark.venv_only
-def test_validate_phone_format(self, valid_provider_data):
+    def test_validate_phone_format(self, valid_provider_data):
         """Test validation of phone format."""
         data = valid_provider_data.copy()
         data["email"] = None  # Remove email to force phone validation
@@ -199,8 +191,7 @@ def test_validate_phone_format(self, valid_provider_data):
         with pytest.raises(ValidationException):
             Provider(**data)
     
-    @pytest.mark.venv_only
-def test_update_personal_info(self, valid_provider):
+    def test_update_personal_info(self, valid_provider):
         """Test updating personal information."""
         valid_provider.update_personal_info(
             first_name="Dr. John",
@@ -229,8 +220,7 @@ def test_update_personal_info(self, valid_provider):
         assert valid_provider.bio == "Updated bio information"
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_update_professional_info(self, valid_provider):
+    def test_update_professional_info(self, valid_provider):
         """Test updating professional information."""
         valid_provider.update_professional_info(
             provider_type=ProviderType.PSYCHOLOGIST,
@@ -275,8 +265,7 @@ def test_update_professional_info(self, valid_provider):
         assert valid_provider.languages == ["English", "French"]
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_update_professional_info_with_string_provider_type(self, valid_provider):
+    def test_update_professional_info_with_string_provider_type(self, valid_provider):
         """Test updating professional information with string provider type."""
         valid_provider.update_professional_info(
             provider_type="psychologist"
@@ -284,31 +273,27 @@ def test_update_professional_info_with_string_provider_type(self, valid_provider
         
         assert valid_provider.provider_type == ProviderType.PSYCHOLOGIST
     
-    @pytest.mark.venv_only
-def test_update_status(self, valid_provider):
+    def test_update_status(self, valid_provider):
         """Test updating the provider's status."""
         valid_provider.update_status(ProviderStatus.ON_LEAVE)
         
         assert valid_provider.status == ProviderStatus.ON_LEAVE
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_update_status_with_string(self, valid_provider):
+    def test_update_status_with_string(self, valid_provider):
         """Test updating the provider's status with a string."""
         valid_provider.update_status("on_leave")
         
         assert valid_provider.status == ProviderStatus.ON_LEAVE
     
-    @pytest.mark.venv_only
-def test_add_specialty(self, valid_provider):
+    def test_add_specialty(self, valid_provider):
         """Test adding a specialty."""
         valid_provider.add_specialty("Depression")
         
         assert "Depression" in valid_provider.specialties
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_add_existing_specialty(self, valid_provider):
+    def test_add_existing_specialty(self, valid_provider):
         """Test adding an existing specialty."""
         original_updated_at = valid_provider.updated_at
         
@@ -322,16 +307,14 @@ def test_add_existing_specialty(self, valid_provider):
         assert len(valid_provider.specialties) == 2  # No duplicates
         assert valid_provider.updated_at == original_updated_at
     
-    @pytest.mark.venv_only
-def test_remove_specialty(self, valid_provider):
+    def test_remove_specialty(self, valid_provider):
         """Test removing a specialty."""
         valid_provider.remove_specialty("Adult Psychiatry")
         
         assert "Adult Psychiatry" not in valid_provider.specialties
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_remove_nonexistent_specialty(self, valid_provider):
+    def test_remove_nonexistent_specialty(self, valid_provider):
         """Test removing a nonexistent specialty."""
         original_updated_at = valid_provider.updated_at
         
@@ -344,16 +327,14 @@ def test_remove_nonexistent_specialty(self, valid_provider):
         assert len(valid_provider.specialties) == 2
         assert valid_provider.updated_at == original_updated_at
     
-    @pytest.mark.venv_only
-def test_add_language(self, valid_provider):
+    def test_add_language(self, valid_provider):
         """Test adding a language."""
         valid_provider.add_language("French")
         
         assert "French" in valid_provider.languages
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_add_existing_language(self, valid_provider):
+    def test_add_existing_language(self, valid_provider):
         """Test adding an existing language."""
         original_updated_at = valid_provider.updated_at
         
@@ -367,16 +348,14 @@ def test_add_existing_language(self, valid_provider):
         assert len(valid_provider.languages) == 2  # No duplicates
         assert valid_provider.updated_at == original_updated_at
     
-    @pytest.mark.venv_only
-def test_remove_language(self, valid_provider):
+    def test_remove_language(self, valid_provider):
         """Test removing a language."""
         valid_provider.remove_language("Spanish")
         
         assert "Spanish" not in valid_provider.languages
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_remove_nonexistent_language(self, valid_provider):
+    def test_remove_nonexistent_language(self, valid_provider):
         """Test removing a nonexistent language."""
         original_updated_at = valid_provider.updated_at
         
@@ -389,8 +368,7 @@ def test_remove_nonexistent_language(self, valid_provider):
         assert len(valid_provider.languages) == 2
         assert valid_provider.updated_at == original_updated_at
     
-    @pytest.mark.venv_only
-def test_add_education(self, valid_provider):
+    def test_add_education(self, valid_provider):
         """Test adding an education entry."""
         new_education = {
             "institution": "Another University",
@@ -404,8 +382,7 @@ def test_add_education(self, valid_provider):
         assert new_education in valid_provider.education
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_add_education_validation(self, valid_provider):
+    def test_add_education_validation(self, valid_provider):
         """Test validation when adding an education entry."""
         # Missing institution
         with pytest.raises(ValidationException):
@@ -421,8 +398,7 @@ def test_add_education_validation(self, valid_provider):
                 "year": 2015
             })
     
-    @pytest.mark.venv_only
-def test_add_certification(self, valid_provider):
+    def test_add_certification(self, valid_provider):
         """Test adding a certification."""
         new_certification = {
             "name": "New Certification",
@@ -436,8 +412,7 @@ def test_add_certification(self, valid_provider):
         assert new_certification in valid_provider.certifications
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_add_certification_validation(self, valid_provider):
+    def test_add_certification_validation(self, valid_provider):
         """Test validation when adding a certification."""
         # Missing name
         with pytest.raises(ValidationException):
@@ -446,8 +421,7 @@ def test_add_certification_validation(self, valid_provider):
                 "year": 2018
             })
     
-    @pytest.mark.venv_only
-def test_set_availability(self, valid_provider):
+    def test_set_availability(self, valid_provider):
         """Test setting availability."""
         new_availability = {
             "tuesday": [
@@ -463,8 +437,7 @@ def test_set_availability(self, valid_provider):
         assert valid_provider.availability == new_availability
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_set_availability_validation(self, valid_provider):
+    def test_set_availability_validation(self, valid_provider):
         """Test validation when setting availability."""
         # Missing start time
         with pytest.raises(ValidationException):
@@ -482,8 +455,7 @@ def test_set_availability_validation(self, valid_provider):
                 ]
             })
     
-    @pytest.mark.venv_only
-def test_add_availability_slot(self, valid_provider):
+    def test_add_availability_slot(self, valid_provider):
         """Test adding an availability slot."""
         valid_provider.add_availability_slot(
             day="tuesday",
@@ -497,8 +469,7 @@ def test_add_availability_slot(self, valid_provider):
         assert valid_provider.availability["tuesday"][0]["end"] == "17:00"
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_add_availability_slot_with_time_objects(self, valid_provider):
+    def test_add_availability_slot_with_time_objects(self, valid_provider):
         """Test adding an availability slot with time objects."""
         valid_provider.add_availability_slot(
             day="tuesday",
@@ -511,8 +482,7 @@ def test_add_availability_slot_with_time_objects(self, valid_provider):
         assert valid_provider.availability["tuesday"][0]["start"] == "09:00"
         assert valid_provider.availability["tuesday"][0]["end"] == "17:00"
     
-    @pytest.mark.venv_only
-def test_add_availability_slot_validation(self, valid_provider):
+    def test_add_availability_slot_validation(self, valid_provider):
         """Test validation when adding an availability slot."""
         # End time before start time
         with pytest.raises(ValidationException):
@@ -522,28 +492,24 @@ def test_add_availability_slot_validation(self, valid_provider):
                 end="09:00"
             )
     
-    @pytest.mark.venv_only
-def test_remove_availability_slot(self, valid_provider):
+    def test_remove_availability_slot(self, valid_provider):
         """Test removing an availability slot."""
         valid_provider.remove_availability_slot("monday", 0)
         
         assert len(valid_provider.availability["monday"]) == 1
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_remove_availability_slot_invalid_day(self, valid_provider):
+    def test_remove_availability_slot_invalid_day(self, valid_provider):
         """Test removing an availability slot with invalid day."""
         with pytest.raises(KeyError):
             valid_provider.remove_availability_slot("nonexistent_day", 0)
     
-    @pytest.mark.venv_only
-def test_remove_availability_slot_invalid_index(self, valid_provider):
+    def test_remove_availability_slot_invalid_index(self, valid_provider):
         """Test removing an availability slot with invalid index."""
         with pytest.raises(IndexError):
             valid_provider.remove_availability_slot("monday", 2)
     
-    @pytest.mark.venv_only
-def test_is_available(self, valid_provider):
+    def test_is_available(self, valid_provider):
         """Test checking if a provider is available."""
         # Available time
         assert valid_provider.is_available(
@@ -566,8 +532,7 @@ def test_is_available(self, valid_provider):
             end=time(11, 0)
         )
     
-    @pytest.mark.venv_only
-def test_is_available_inactive_provider(self, valid_provider):
+    def test_is_available_inactive_provider(self, valid_provider):
         """Test checking if an inactive provider is available."""
         valid_provider.status = ProviderStatus.INACTIVE
         
@@ -577,22 +542,19 @@ def test_is_available_inactive_provider(self, valid_provider):
             end=time(11, 0)
         )
     
-    @pytest.mark.venv_only
-def test_update_patient_count(self, valid_provider):
+    def test_update_patient_count(self, valid_provider):
         """Test updating the patient count."""
         valid_provider.update_patient_count(40)
         
         assert valid_provider.current_patient_count == 40
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_update_patient_count_validation(self, valid_provider):
+    def test_update_patient_count_validation(self, valid_provider):
         """Test validation when updating the patient count."""
         with pytest.raises(ValidationException):
             valid_provider.update_patient_count(-1)
     
-    @pytest.mark.venv_only
-def test_increment_patient_count(self, valid_provider):
+    def test_increment_patient_count(self, valid_provider):
         """Test incrementing the patient count."""
         original_count = valid_provider.current_patient_count
         
@@ -601,16 +563,14 @@ def test_increment_patient_count(self, valid_provider):
         assert valid_provider.current_patient_count == original_count + 1
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_increment_patient_count_at_max(self, valid_provider):
+    def test_increment_patient_count_at_max(self, valid_provider):
         """Test incrementing the patient count when at maximum."""
         valid_provider.current_patient_count = valid_provider.max_patients
         
         with pytest.raises(ValidationException):
             valid_provider.increment_patient_count()
     
-    @pytest.mark.venv_only
-def test_decrement_patient_count(self, valid_provider):
+    def test_decrement_patient_count(self, valid_provider):
         """Test decrementing the patient count."""
         original_count = valid_provider.current_patient_count
         
@@ -619,16 +579,14 @@ def test_decrement_patient_count(self, valid_provider):
         assert valid_provider.current_patient_count == original_count - 1
         assert valid_provider.updated_at > valid_provider.created_at
     
-    @pytest.mark.venv_only
-def test_decrement_patient_count_at_zero(self, valid_provider):
+    def test_decrement_patient_count_at_zero(self, valid_provider):
         """Test decrementing the patient count when at zero."""
         valid_provider.current_patient_count = 0
         
         with pytest.raises(ValidationException):
             valid_provider.decrement_patient_count()
     
-    @pytest.mark.venv_only
-def test_to_dict(self, valid_provider):
+    def test_to_dict(self, valid_provider):
         """Test converting a provider to a dictionary."""
         provider_dict = valid_provider.to_dict()
         
@@ -651,8 +609,7 @@ def test_to_dict(self, valid_provider):
         assert provider_dict["max_patients"] == valid_provider.max_patients
         assert provider_dict["current_patient_count"] == valid_provider.current_patient_count
     
-    @pytest.mark.venv_only
-def test_from_dict(self, valid_provider):
+    def test_from_dict(self, valid_provider):
         """Test creating a provider from a dictionary."""
         provider_dict = valid_provider.to_dict()
         new_provider = Provider.from_dict(provider_dict)
@@ -676,8 +633,7 @@ def test_from_dict(self, valid_provider):
         assert new_provider.max_patients == valid_provider.max_patients
         assert new_provider.current_patient_count == valid_provider.current_patient_count
     
-    @pytest.mark.venv_only
-def test_equality(self, valid_provider_data):
+    def test_equality(self, valid_provider_data):
         """Test provider equality."""
         provider1 = Provider(**valid_provider_data)
         provider2 = Provider(**valid_provider_data)
@@ -685,8 +641,7 @@ def test_equality(self, valid_provider_data):
         assert provider1 == provider2
         assert hash(provider1) == hash(provider2)
     
-    @pytest.mark.venv_only
-def test_inequality(self, valid_provider_data):
+    def test_inequality(self, valid_provider_data):
         """Test provider inequality."""
         provider1 = Provider(**valid_provider_data)
         
@@ -698,8 +653,7 @@ def test_inequality(self, valid_provider_data):
         assert hash(provider1) != hash(provider2)
         assert provider1 != "not a provider"
     
-    @pytest.mark.venv_only
-def test_string_representation(self, valid_provider):
+    def test_string_representation(self, valid_provider):
         """Test string representation of a provider."""
         string_repr = str(valid_provider)
         

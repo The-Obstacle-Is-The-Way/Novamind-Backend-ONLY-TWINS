@@ -35,18 +35,15 @@ name:
             return service
 
 
-@pytest.mark.venv_only
 class TestPHIDetectionService:
     """Test suite for PHI detection service."""
     
-    @pytest.mark.venv_only
-def test_initialization(self, phi_detection_service):
+    def test_initialization(self, phi_detection_service):
         """Test that the service initializes correctly."""
         assert phi_detection_service._initialized is True
         assert len(phi_detection_service.patterns) == 2
         
-    @pytest.mark.venv_only
-def test_pattern_loading_error(self):
+    def test_pattern_loading_error(self):
         """Test that service falls back to default patterns when loading fails."""
         default_patterns = [
             MagicMock(category="test", name="test_pattern")
@@ -58,14 +55,12 @@ def test_pattern_loading_error(self):
                 service.ensure_initialized()
                 assert len(service.patterns) == 1
                 
-    @pytest.mark.venv_only
-def test_contains_phi_positive(self, phi_detection_service):
+    def test_contains_phi_positive(self, phi_detection_service):
         """Test that PHI detection correctly identifies PHI."""
         text_with_phi = "Please contact John Smith at (555) 123-4567."
         assert phi_detection_service.contains_phi(text_with_phi) is True
             
-    @pytest.mark.venv_only
-def test_contains_phi_negative(self, phi_detection_service):
+    def test_contains_phi_negative(self, phi_detection_service):
         """Test that PHI detection correctly identifies non-PHI text."""
         text_without_phi = "This is a general message with no personal data."
         
@@ -73,8 +68,7 @@ def test_contains_phi_negative(self, phi_detection_service):
         with patch.object(phi_detection_service, "contains_phi", return_value=False):
             assert phi_detection_service.contains_phi(text_without_phi) is False
         
-    @pytest.mark.venv_only
-def test_detect_phi(self, phi_detection_service):
+    def test_detect_phi(self, phi_detection_service):
         """Test that PHI detection finds all PHI instances."""
         text = "Patient John Doe called from (555) 123-4567 about his appointment."
         
@@ -91,8 +85,7 @@ def test_detect_phi(self, phi_detection_service):
             assert any(category == "name" for category, _, _, _ in results)
             assert any(category == "contact" for category, _, _, _ in results)
         
-    @pytest.mark.venv_only
-def test_redact_phi(self, phi_detection_service):
+    def test_redact_phi(self, phi_detection_service):
         """Test that PHI redaction replaces PHI with redacted markers."""
         text = "Patient John Doe called from (555) 123-4567."
         
@@ -109,8 +102,7 @@ def test_redact_phi(self, phi_detection_service):
             assert "(555) 123-4567" not in redacted
             assert "[REDACTED:" in redacted
         
-    @pytest.mark.venv_only
-def test_anonymize_phi(self, phi_detection_service):
+    def test_anonymize_phi(self, phi_detection_service):
         """Test that PHI anonymization replaces PHI with synthetic data."""
         text = "Patient John Doe called from (555) 123-4567."
         
@@ -128,8 +120,7 @@ def test_anonymize_phi(self, phi_detection_service):
             assert "JOHN DOE" in anonymized or "NAME" in anonymized
             assert "CONTACT-INFO" in anonymized
         
-    @pytest.mark.venv_only
-def test_error_handling(self, phi_detection_service):
+    def test_error_handling(self, phi_detection_service):
         """Test that the service handles errors gracefully."""
         with patch.object(phi_detection_service, "ensure_initialized", side_effect=Exception("Test error")):
             with pytest.raises(PHIDetectionError):

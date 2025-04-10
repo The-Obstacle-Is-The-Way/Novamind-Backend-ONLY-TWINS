@@ -26,7 +26,7 @@ class NeurotransmitterType(str, Enum):
     NOREPINEPHRINE = "norepinephrine"
     ACETYLCHOLINE = "acetylcholine"
     ENDORPHIN = "endorphin"
-    OXYTOCIN = "oxytocin"
+OXYTOCIN = "oxytocin"
 
 
 class TemporalPatternType(str, Enum):
@@ -38,7 +38,7 @@ class TemporalPatternType(str, Enum):
     SUDDEN_SPIKE = "sudden_spike"
     SUDDEN_DROP = "sudden_drop"
     STABLE = "stable"
-    IRREGULAR = "irregular"
+IRREGULAR = "irregular"
     CUSTOM = "custom"
 
 
@@ -79,7 +79,8 @@ class NeurotransmitterReading:
             "level": self.level,
             "timestamp": self.timestamp.isoformat(),
             "patient_id": self.patient_id,
-            "source": self.source,
+            "@pytest.mark.standalone
+source": self.source,
             "metadata": self.metadata
         }
 
@@ -539,13 +540,12 @@ class TemporalNeurotransmitterAnalyzer:
             "timeframe_days": timeframe_days,
             "data_points": len(df_merged)
         }
-        
+   
         return result
 
 
 # ================= Tests =================
 
-@pytest.mark.venv_only
 def test_neurotransmitter_analyzer_pattern_detection():
     """Test that the analyzer can detect different temporal patterns."""
     # Set up analyzer
@@ -581,11 +581,10 @@ def test_neurotransmitter_analyzer_pattern_detection():
         assert result["pattern_type"] == pattern.value, \
             f"Expected {pattern.value}, got {result['pattern_type']}"
         assert result["confidence"] > 0.5, \
-            f"Confidence too low: {result['confidence']}"
+f"Confidence too low: {result['confidence']}"
         assert result["data_points"] > 0
         
 
-@pytest.mark.venv_only
 def test_neurotransmitter_analyzer_with_pandas():
     """Test that the analyzer correctly uses pandas for data analysis."""
     # Set up analyzer
@@ -630,13 +629,13 @@ def test_neurotransmitter_analyzer_with_pandas():
     result = analyzer.analyze_pattern(NeurotransmitterType.SEROTONIN)
     
     # The sine wave should be detected as a daily cycle
-    assert result["pattern_type"] == TemporalPatternType.DAILY_CYCLE.value
+    assert result["pattern_type"] == TemporalPatternType.DAI@pytest.mark.standalone
+LY_CYCLE.value
     assert result["has_daily_cycle"] == True
     assert "mean" in result
     assert "std" in result
     
 
-@pytest.mark.venv_only
 def test_neurotransmitter_correlation_analysis():
     """Test that correlations between neurotransmitters can be analyzed."""
     # Set up analyzer
@@ -693,12 +692,12 @@ def test_neurotransmitter_correlation_analysis():
     
     # Check results
     assert "correlation" in result
-    assert abs(result["correlation"]) > 0.5, "Expected strong correlation"
+    assert abs(result["correlation"]) >@pytest.mark.standalone
+ 0.5, "Expected strong correlation"
     assert result["relationship"] == "positively_correlated"
     assert result["synchronized"] == True
     
 
-@pytest.mark.venv_only
 def test_synthetic_data_generation():
     """Test that synthetic data generation creates the expected patterns."""
     # Set up analyzer
@@ -722,12 +721,12 @@ def test_synthetic_data_generation():
     analyzer.add_readings(readings)
     result = analyzer.analyze_pattern(NeurotransmitterType.SEROTONIN)
     
-    # Since we generated a daily cycle, it should be detected
+    # Since we gene@pytest.mark.standalone
+rated a daily cycle, it should be detected
     assert result["has_daily_cycle"] == True
     assert result["pattern_type"] == TemporalPatternType.DAILY_CYCLE.value
     
 
-@pytest.mark.venv_only
 def test_analyze_all_neurotransmitters():
     """Test analyzing all neurotransmitters at once."""
     # Set up analyzer

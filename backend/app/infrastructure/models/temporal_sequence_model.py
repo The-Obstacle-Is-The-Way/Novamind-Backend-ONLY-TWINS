@@ -92,7 +92,7 @@ class EventModel(Base):
     # Event data
     event_type = sa.Column(sa.String, nullable=False, index=True)
     timestamp = sa.Column(sa.DateTime, nullable=False, index=True)
-    metadata = sa.Column(JSONB, nullable=False, default={})
+    event_metadata = sa.Column(JSONB, nullable=False, default={}) # Renamed from metadata
     
     # Audit fields
     created_at = sa.Column(sa.DateTime, default=datetime.utcnow, nullable=False)

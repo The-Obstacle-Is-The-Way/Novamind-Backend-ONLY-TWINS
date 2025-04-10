@@ -134,7 +134,6 @@ def patient_repository(mock_session, mock_audit_logger):
 
 
 @pytest.fixture
-@pytest.mark.db_required
 def test_app(jwt_settings, encryption_settings, patient_repository):
     """Create a test FastAPI app with all security middleware and endpoints."""
     app = FastAPI()
@@ -203,7 +202,6 @@ def client(test_app):
     return TestClient(test_app)
 
 
-@pytest.mark.db_required
 def test_full_hipaa_flow_patient_viewing_own_data(
     client, patient_token, sample_patient_data, patient_repository, mock_session
 ):
@@ -254,7 +252,6 @@ def test_full_hipaa_flow_patient_viewing_own_data(
         patient_repository.audit_logger.log_access.assert_called()
 
 
-@pytest.mark.db_required
 def test_full_hipaa_flow_doctor_creating_patient(
     client, doctor_token, sample_patient_data, patient_repository
 ):
@@ -295,7 +292,6 @@ def test_full_hipaa_flow_doctor_creating_patient(
         assert "123-45-6789" not in str(audit_call), "SSN found in audit log"
 
 
-@pytest.mark.db_required
 def test_full_hipaa_flow_patient_unauthorized_for_other_patient(
     client, patient_token, sample_patient_data, patient_repository
 ):
@@ -327,7 +323,6 @@ def test_full_hipaa_flow_patient_unauthorized_for_other_patient(
         assert "123-45-6789" not in response.text, "SSN leaked in error response"
 
 
-@pytest.mark.db_required
 def test_full_hipaa_flow_error_handling_and_logging(
     client, doctor_token, sample_patient_data, patient_repository, mock_session, mock_audit_logger
 ):

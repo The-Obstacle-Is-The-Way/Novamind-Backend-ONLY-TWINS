@@ -213,12 +213,10 @@ def sample_alert(sample_rule, sample_data_point):
     )
 
 
-@pytest.mark.db_required
 class TestBiometricAlertsEndpoints:
     """Tests for the Biometric Alerts API endpoints."""
     
-    @pytest.mark.db_required
-def test_get_alert_rules(self, client, mock_rule_repository, sample_rule):
+    def test_get_alert_rules(self, client, mock_rule_repository, sample_rule):
         """Test that get_alert_rules returns the correct response."""
         # Setup
         mock_rule_repository.get_rules.return_value = [sample_rule]
@@ -236,8 +234,7 @@ def test_get_alert_rules(self, client, mock_rule_repository, sample_rule):
         assert data["rules"][0]["priority"] == sample_rule.priority.value
         mock_rule_repository.get_rules.assert_called_once()
     
-    @pytest.mark.db_required
-def test_create_alert_rule_from_template(
+    def test_create_alert_rule_from_template(
         self,
         client,
         mock_rule_repository,
@@ -272,8 +269,7 @@ def test_create_alert_rule_from_template(
         mock_rule_repository.create_rule.assert_called_once()
         mock_biometric_event_processor.add_rule.assert_called_once()
     
-    @pytest.mark.db_required
-def test_create_alert_rule_from_condition(
+    def test_create_alert_rule_from_condition(
         self,
         client,
         mock_rule_repository,
@@ -309,8 +305,7 @@ def test_create_alert_rule_from_condition(
         mock_rule_repository.create_rule.assert_called_once()
         mock_biometric_event_processor.add_rule.assert_called_once()
     
-    @pytest.mark.db_required
-def test_create_alert_rule_validation_error(
+    def test_create_alert_rule_validation_error(
         self,
         client,
         mock_clinical_rule_engine
@@ -337,8 +332,7 @@ def test_create_alert_rule_validation_error(
         assert "Missing required parameter" in response.json()["detail"]
         mock_clinical_rule_engine.create_rule_from_template.assert_called_once()
     
-    @pytest.mark.db_required
-def test_get_alert_rule(self, client, mock_rule_repository, sample_rule):
+    def test_get_alert_rule(self, client, mock_rule_repository, sample_rule):
         """Test that get_alert_rule returns the correct response."""
         # Setup
         mock_rule_repository.get_rule_by_id.return_value = sample_rule
@@ -354,8 +348,7 @@ def test_get_alert_rule(self, client, mock_rule_repository, sample_rule):
         assert data["priority"] == sample_rule.priority.value
         mock_rule_repository.get_rule_by_id.assert_called_once_with(sample_rule.rule_id)
     
-    @pytest.mark.db_required
-def test_get_alert_rule_not_found(self, client, mock_rule_repository):
+    def test_get_alert_rule_not_found(self, client, mock_rule_repository):
         """Test that get_alert_rule handles not found errors."""
         # Setup
         mock_rule_repository.get_rule_by_id.return_value = None
@@ -368,8 +361,7 @@ def test_get_alert_rule_not_found(self, client, mock_rule_repository):
         assert "not found" in response.json()["detail"]
         mock_rule_repository.get_rule_by_id.assert_called_once_with("nonexistent-rule")
     
-    @pytest.mark.db_required
-def test_update_alert_rule(
+    def test_update_alert_rule(
         self,
         client,
         mock_rule_repository,
@@ -403,8 +395,7 @@ def test_update_alert_rule(
         mock_rule_repository.update_rule.assert_called_once()
         mock_biometric_event_processor.add_rule.assert_called_once()
     
-    @pytest.mark.db_required
-def test_delete_alert_rule(
+    def test_delete_alert_rule(
         self,
         client,
         mock_rule_repository,
@@ -425,8 +416,7 @@ def test_delete_alert_rule(
         mock_rule_repository.delete_rule.assert_called_once_with(sample_rule.rule_id)
         mock_biometric_event_processor.remove_rule.assert_called_once_with(sample_rule.rule_id)
     
-    @pytest.mark.db_required
-def test_get_rule_templates(self, client, mock_clinical_rule_engine):
+    def test_get_rule_templates(self, client, mock_clinical_rule_engine):
         """Test that get_rule_templates returns the correct response."""
         # Setup
         # The mock_clinical_rule_engine fixture already has rule templates
@@ -442,8 +432,7 @@ def test_get_rule_templates(self, client, mock_clinical_rule_engine):
         assert data["templates"][0]["template_id"] in ["high_heart_rate", "low_heart_rate"]
         assert data["templates"][1]["template_id"] in ["high_heart_rate", "low_heart_rate"]
     
-    @pytest.mark.db_required
-def test_get_alerts(self, client, mock_alert_repository, sample_alert):
+    def test_get_alerts(self, client, mock_alert_repository, sample_alert):
         """Test that get_alerts returns the correct response."""
         # Setup
         mock_alert_repository.get_alerts.return_value = [sample_alert]
@@ -462,8 +451,7 @@ def test_get_alerts(self, client, mock_alert_repository, sample_alert):
         assert data["alerts"][0]["priority"] == sample_alert.priority.value
         mock_alert_repository.get_alerts.assert_called_once()
     
-    @pytest.mark.db_required
-def test_get_alerts_with_filters(self, client, mock_alert_repository, sample_alert, sample_patient_id):
+    def test_get_alerts_with_filters(self, client, mock_alert_repository, sample_alert, sample_patient_id):
         """Test that get_alerts handles filters correctly."""
         # Setup
         mock_alert_repository.get_alerts.return_value = [sample_alert]
@@ -492,8 +480,7 @@ def test_get_alerts_with_filters(self, client, mock_alert_repository, sample_ale
         assert isinstance(call_kwargs["start_time"], datetime)
         assert isinstance(call_kwargs["end_time"], datetime)
     
-    @pytest.mark.db_required
-def test_acknowledge_alert(self, client, mock_alert_repository, sample_alert):
+    def test_acknowledge_alert(self, client, mock_alert_repository, sample_alert):
         """Test that acknowledge_alert acknowledges an alert."""
         # Setup
         mock_alert_repository.get_alert_by_id.return_value = sample_alert
@@ -514,8 +501,7 @@ def test_acknowledge_alert(self, client, mock_alert_repository, sample_alert):
         mock_alert_repository.get_alert_by_id.assert_called_once_with(sample_alert.alert_id)
         mock_alert_repository.update_alert.assert_called_once()
     
-    @pytest.mark.db_required
-def test_get_patient_alerts(self, client, mock_alert_repository, sample_alert, sample_patient_id):
+    def test_get_patient_alerts(self, client, mock_alert_repository, sample_alert, sample_patient_id):
         """Test that get_patient_alerts returns the correct response."""
         # Setup
         mock_alert_repository.get_alerts.return_value = [sample_alert]
@@ -534,8 +520,7 @@ def test_get_patient_alerts(self, client, mock_alert_repository, sample_alert, s
         call_kwargs = mock_alert_repository.get_alerts.call_args[1]
         assert call_kwargs["patient_id"] == sample_patient_id
     
-    @pytest.mark.db_required
-def test_hipaa_compliance_in_responses(self, client, mock_alert_repository, sample_alert):
+    def test_hipaa_compliance_in_responses(self, client, mock_alert_repository, sample_alert):
         """Test that responses maintain HIPAA compliance by not including unnecessary PHI."""
         # Setup
         mock_alert_repository.get_alerts.return_value = [sample_alert]

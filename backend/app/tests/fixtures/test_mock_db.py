@@ -9,7 +9,6 @@ from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 from app.domain.entities.base import BaseEntity
 
 
-@pytest.mark.db_required
 class TestMockAsyncSession:
     """Test cases for the MockAsyncSession class."""
     

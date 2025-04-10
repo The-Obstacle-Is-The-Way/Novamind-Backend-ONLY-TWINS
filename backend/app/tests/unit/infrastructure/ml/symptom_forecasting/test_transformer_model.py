@@ -16,7 +16,6 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.transformer_model import TransformerTimeSeriesModel
 
 
-@pytest.mark.db_required
 class TestTransformerTimeSeriesModel:
     """Tests for the TransformerTimeSeriesModel."""
 
@@ -54,8 +53,7 @@ class TestTransformerTimeSeriesModel:
         }
         return pd.DataFrame(data)
 
-    async @pytest.mark.db_required
-def test_initialize_loads_model(self):
+    async def test_initialize_loads_model(self):
         """Test that initialize loads the model correctly."""
         # Setup
         with patch('app.infrastructure.ml.symptom_forecasting.transformer_model.torch', autospec=True) as mock_torch, \
@@ -77,8 +75,7 @@ def test_initialize_loads_model(self):
             assert model.is_initialized
             assert model._model is not None
 
-    async @pytest.mark.db_required
-def test_initialize_handles_missing_model(self):
+    async def test_initialize_handles_missing_model(self):
         """Test that initialize handles missing model files gracefully."""
         # Setup
         with patch('app.infrastructure.ml.symptom_forecasting.transformer_model.torch', autospec=True), \
@@ -96,8 +93,7 @@ def test_initialize_handles_missing_model(self):
             assert model.is_initialized
             assert model._model is not None
 
-    async @pytest.mark.db_required
-def test_predict_returns_forecast(self, model, sample_input_data):
+    async def test_predict_returns_forecast(self, model, sample_input_data):
         """Test that predict returns a forecast with the expected structure."""
         # Execute
         result = await model.predict(sample_input_data, horizon=4)
@@ -115,8 +111,7 @@ def test_predict_returns_forecast(self, model, sample_input_data):
         assert "mae" in result["model_metrics"]
         assert "rmse" in result["model_metrics"]
 
-    async @pytest.mark.db_required
-def test_predict_with_quantiles(self, model, sample_input_data):
+    async def test_predict_with_quantiles(self, model, sample_input_data):
         """Test that predict handles quantile predictions correctly."""
         # Setup
         quantiles = [0.1, 0.5, 0.9]
@@ -136,8 +131,7 @@ def test_predict_with_quantiles(self, model, sample_input_data):
             q_str = str(q)
             assert len(result["quantile_predictions"][q_str]) == 4
 
-    async @pytest.mark.db_required
-def test_predict_handles_empty_data(self, model):
+    async def test_predict_handles_empty_data(self, model):
         """Test that predict handles empty input data gracefully."""
         # Setup
         empty_df = pd.DataFrame()
@@ -148,8 +142,7 @@ def test_predict_handles_empty_data(self, model):
         
         assert "Empty input data" in str(excinfo.value)
 
-    async @pytest.mark.db_required
-def test_predict_handles_missing_columns(self, model):
+    async def test_predict_handles_missing_columns(self, model):
         """Test that predict handles input data with missing required columns."""
         # Setup
         incomplete_df = pd.DataFrame({
@@ -164,8 +157,7 @@ def test_predict_handles_missing_columns(self, model):
         
         assert "Missing required column" in str(excinfo.value)
 
-    async @pytest.mark.db_required
-def test_preprocess_input_data(self, model, sample_input_data):
+    async def test_preprocess_input_data(self, model, sample_input_data):
         """Test that _preprocess_input_data correctly transforms the input data."""
         # Setup
         with patch.object(model, '_preprocess_input_data', wraps=model._preprocess_input_data) as mock_preprocess:
@@ -184,8 +176,7 @@ def test_preprocess_input_data(self, model, sample_input_data):
             assert processed_data.ndim == 2  # 2D array: [time_steps, features]
             assert processed_data.shape[0] == len(sample_input_data)  # Same number of time steps
 
-    async @pytest.mark.db_required
-def test_postprocess_predictions(self, model, sample_input_data):
+    async def test_postprocess_predictions(self, model, sample_input_data):
         """Test that _postprocess_predictions correctly transforms the model output."""
         # Setup
         raw_predictions = np.array([4.2, 4.0, 3.8, 3.5])

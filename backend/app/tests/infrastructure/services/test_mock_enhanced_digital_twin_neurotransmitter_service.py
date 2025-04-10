@@ -32,8 +32,7 @@ def mock_service():
 
 
 @pytest.fixture
-async @pytest.mark.db_required
-def test_patient_id(mock_service) -> UUID:
+async def test_patient_id(mock_service) -> UUID:
     """Create a test patient with an initialized digital twin."""
     patient_id = uuid.uuid4()
     
@@ -53,8 +52,7 @@ def test_patient_id(mock_service) -> UUID:
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_initialize_neurotransmitter_mapping_patient_not_found(mock_service):
+async def test_initialize_neurotransmitter_mapping_patient_not_found(mock_service):
     """Test that initialize_neurotransmitter_mapping raises an error for nonexistent patients."""
     non_existent_id = uuid.uuid4()
     
@@ -67,8 +65,7 @@ def test_initialize_neurotransmitter_mapping_patient_not_found(mock_service):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_initialize_neurotransmitter_mapping_with_default(mock_service, test_patient_id):
+async def test_initialize_neurotransmitter_mapping_with_default(mock_service, test_patient_id):
     """Test initializing a neurotransmitter mapping with default values."""
     # Initialize with default mapping
     mapping = await mock_service.initialize_neurotransmitter_mapping(
@@ -87,8 +84,7 @@ def test_initialize_neurotransmitter_mapping_with_default(mock_service, test_pat
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_initialize_neurotransmitter_mapping_with_custom(mock_service, test_patient_id):
+async def test_initialize_neurotransmitter_mapping_with_custom(mock_service, test_patient_id):
     """Test initializing a neurotransmitter mapping with a custom mapping."""
     # Create a custom mapping
     custom_mapping = NeurotransmitterMapping()
@@ -120,8 +116,7 @@ def test_initialize_neurotransmitter_mapping_with_custom(mock_service, test_pati
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_initialize_neurotransmitter_mapping_without_default_or_custom(mock_service, test_patient_id):
+async def test_initialize_neurotransmitter_mapping_without_default_or_custom(mock_service, test_patient_id):
     """Test initializing an empty neurotransmitter mapping."""
     # Initialize with neither default nor custom (should create an empty mapping)
     mapping = await mock_service.initialize_neurotransmitter_mapping(
@@ -138,8 +133,7 @@ def test_initialize_neurotransmitter_mapping_without_default_or_custom(mock_serv
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_update_receptor_profiles_creates_mapping_if_needed(mock_service, test_patient_id):
+async def test_update_receptor_profiles_creates_mapping_if_needed(mock_service, test_patient_id):
     """Test that update_receptor_profiles creates a mapping if one doesn't exist."""
     # Define a profile
     profile = ReceptorProfile(
@@ -166,8 +160,7 @@ def test_update_receptor_profiles_creates_mapping_if_needed(mock_service, test_p
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_update_receptor_profiles_updates_existing_mapping(mock_service, test_patient_id):
+async def test_update_receptor_profiles_updates_existing_mapping(mock_service, test_patient_id):
     """Test that update_receptor_profiles updates an existing mapping."""
     # Initialize a mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -223,8 +216,7 @@ def test_update_receptor_profiles_updates_existing_mapping(mock_service, test_pa
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_neurotransmitter_effects_creates_mapping_if_needed(mock_service, test_patient_id):
+async def test_get_neurotransmitter_effects_creates_mapping_if_needed(mock_service, test_patient_id):
     """Test that get_neurotransmitter_effects creates a mapping if one doesn't exist."""
     # Call the method without initializing a mapping first
     effects = await mock_service.get_neurotransmitter_effects(
@@ -240,8 +232,7 @@ def test_get_neurotransmitter_effects_creates_mapping_if_needed(mock_service, te
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_neurotransmitter_effects_with_regions(mock_service, test_patient_id):
+async def test_get_neurotransmitter_effects_with_regions(mock_service, test_patient_id):
     """Test getting neurotransmitter effects with specific brain regions."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -276,8 +267,7 @@ def test_get_neurotransmitter_effects_with_regions(mock_service, test_patient_id
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_neurotransmitter_effects_without_regions(mock_service, test_patient_id):
+async def test_get_neurotransmitter_effects_without_regions(mock_service, test_patient_id):
     """Test getting neurotransmitter effects for all brain regions."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -298,8 +288,7 @@ def test_get_neurotransmitter_effects_without_regions(mock_service, test_patient
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_brain_region_neurotransmitter_sensitivity_creates_mapping_if_needed(mock_service, test_patient_id):
+async def test_get_brain_region_neurotransmitter_sensitivity_creates_mapping_if_needed(mock_service, test_patient_id):
     """Test that get_brain_region_neurotransmitter_sensitivity creates a mapping if needed."""
     # Call the method without initializing a mapping first
     sensitivities = await mock_service.get_brain_region_neurotransmitter_sensitivity(
@@ -314,8 +303,7 @@ def test_get_brain_region_neurotransmitter_sensitivity_creates_mapping_if_needed
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_brain_region_neurotransmitter_sensitivity_with_neurotransmitters(mock_service, test_patient_id):
+async def test_get_brain_region_neurotransmitter_sensitivity_with_neurotransmitters(mock_service, test_patient_id):
     """Test getting brain region sensitivity with specific neurotransmitters."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -352,8 +340,7 @@ def test_get_brain_region_neurotransmitter_sensitivity_with_neurotransmitters(mo
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_brain_region_neurotransmitter_sensitivity_without_neurotransmitters(mock_service, test_patient_id):
+async def test_get_brain_region_neurotransmitter_sensitivity_without_neurotransmitters(mock_service, test_patient_id):
     """Test getting brain region sensitivity for all neurotransmitters."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -373,8 +360,7 @@ def test_get_brain_region_neurotransmitter_sensitivity_without_neurotransmitters
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_simulate_neurotransmitter_cascade_creates_mapping_if_needed(mock_service, test_patient_id):
+async def test_simulate_neurotransmitter_cascade_creates_mapping_if_needed(mock_service, test_patient_id):
     """Test that simulate_neurotransmitter_cascade creates a mapping if needed."""
     # Define initial changes
     initial_changes = {
@@ -397,8 +383,7 @@ def test_simulate_neurotransmitter_cascade_creates_mapping_if_needed(mock_servic
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_simulate_neurotransmitter_cascade_with_parameters(mock_service, test_patient_id):
+async def test_simulate_neurotransmitter_cascade_with_parameters(mock_service, test_patient_id):
     """Test simulating neurotransmitter cascade with various parameters."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -444,8 +429,7 @@ def test_simulate_neurotransmitter_cascade_with_parameters(mock_service, test_pa
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_analyze_treatment_neurotransmitter_effects_creates_mapping_if_needed(mock_service, test_patient_id):
+async def test_analyze_treatment_neurotransmitter_effects_creates_mapping_if_needed(mock_service, test_patient_id):
     """Test that analyze_treatment_neurotransmitter_effects creates a mapping if needed."""
     # Define test parameters
     treatment_id = uuid.uuid4()
@@ -471,8 +455,7 @@ def test_analyze_treatment_neurotransmitter_effects_creates_mapping_if_needed(mo
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_analyze_treatment_neurotransmitter_effects_with_parameters(mock_service, test_patient_id):
+async def test_analyze_treatment_neurotransmitter_effects_with_parameters(mock_service, test_patient_id):
     """Test analyzing treatment effects with various parameters."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -516,8 +499,7 @@ def test_analyze_treatment_neurotransmitter_effects_with_parameters(mock_service
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_events_are_published(mock_service, test_patient_id):
+async def test_events_are_published(mock_service, test_patient_id):
     """Test that events are published when neurotransmitter mapping operations are performed."""
     # Subscribe to events
     events_received = []

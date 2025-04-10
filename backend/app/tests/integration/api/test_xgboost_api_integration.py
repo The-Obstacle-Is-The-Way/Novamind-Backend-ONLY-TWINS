@@ -303,12 +303,10 @@ def valid_outcome_prediction_data() -> Dict[str, Any]:
     }
 
 
-@pytest.mark.db_required
 class TestXGBoostAPIIntegration:
     """Integration tests for XGBoost API endpoints."""
 
-    @pytest.mark.db_required
-def test_predict_risk_success(
+    def test_predict_risk_success(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -360,8 +358,7 @@ def test_predict_risk_success(
             confidence_threshold=0.7
         )
 
-    @pytest.mark.db_required
-def test_predict_risk_validation_error(
+    def test_predict_risk_validation_error(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -390,8 +387,7 @@ def test_predict_risk_validation_error(
         assert "detail" in result
         assert "Invalid risk type" in result["detail"]
 
-    @pytest.mark.db_required
-def test_predict_risk_phi_detection(
+    def test_predict_risk_phi_detection(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -425,8 +421,7 @@ def test_predict_risk_phi_detection(
         assert "detail" in result
         assert "sensitive information" in result["detail"]
 
-    @pytest.mark.db_required
-def test_predict_risk_unauthorized(
+    def test_predict_risk_unauthorized(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -448,8 +443,7 @@ def test_predict_risk_unauthorized(
             # Verify response
             assert response.status_code in [401, 403]
 
-    @pytest.mark.db_required
-def test_predict_treatment_response_success(
+    def test_predict_treatment_response_success(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -515,8 +509,7 @@ def test_predict_treatment_response_success(
             treatment_history=valid_treatment_response_data["treatment_history"]
         )
 
-    @pytest.mark.db_required
-def test_predict_outcome_success(
+    def test_predict_outcome_success(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -592,8 +585,7 @@ def test_predict_outcome_success(
             comorbidities=valid_outcome_prediction_data["comorbidities"]
         )
 
-    @pytest.mark.db_required
-def test_get_feature_importance_success(
+    def test_get_feature_importance_success(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -650,8 +642,7 @@ def test_get_feature_importance_success(
             prediction_id="risk-123"
         )
 
-    @pytest.mark.db_required
-def test_get_feature_importance_not_found(
+    def test_get_feature_importance_not_found(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -680,8 +671,7 @@ def test_get_feature_importance_not_found(
         assert "detail" in result
         assert "not found" in result["detail"]
 
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin_success(
+    def test_integrate_with_digital_twin_success(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -732,8 +722,7 @@ def test_integrate_with_digital_twin_success(
             prediction_id="risk-123"
         )
 
-    @pytest.mark.db_required
-def test_get_model_info_success(
+    def test_get_model_info_success(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -781,8 +770,7 @@ def test_get_model_info_success(
             model_type="relapse_risk"
         )
 
-    @pytest.mark.db_required
-def test_get_model_info_not_found(
+    def test_get_model_info_not_found(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -807,8 +795,7 @@ def test_get_model_info_not_found(
         assert "detail" in result
         assert "not found" in result["detail"]
 
-    @pytest.mark.db_required
-def test_service_unavailable(
+    def test_service_unavailable(
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,

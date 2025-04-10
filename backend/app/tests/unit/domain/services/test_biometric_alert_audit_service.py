@@ -15,7 +15,6 @@ from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, Ale
 from app.domain.services.biometric_alert_audit_service import BiometricAlertAuditService
 
 
-@pytest.mark.db_required
 class TestBiometricAlertAuditService:
     """Tests for the BiometricAlertAuditService."""
     
@@ -83,8 +82,7 @@ class TestBiometricAlertAuditService:
             rule_id=sample_rule_id
         )
     
-    async @pytest.mark.db_required
-def test_notify_alert_creates_audit_record(
+    async def test_notify_alert_creates_audit_record(
         self, audit_service, mock_audit_logger, sample_alert
     ):
         """Test that notify_alert creates an audit record for a new alert."""
@@ -112,8 +110,7 @@ def test_notify_alert_creates_audit_record(
         # Ensure no PHI is included
         assert "data_points" not in alert_data
     
-    async @pytest.mark.db_required
-def test_record_alert_acknowledgment(
+    async def test_record_alert_acknowledgment(
         self, audit_service, mock_alert_repository, mock_audit_logger,
         sample_alert, sample_alert_id, sample_provider_id
     ):
@@ -148,8 +145,7 @@ def test_record_alert_acknowledgment(
         assert log_args["patient_id"] == str(sample_alert.patient_id)
         assert log_args["notes"] == "Acknowledged by Dr. Smith"
     
-    async @pytest.mark.db_required
-def test_record_alert_resolution(
+    async def test_record_alert_resolution(
         self, audit_service, mock_alert_repository, mock_audit_logger,
         sample_alert, sample_alert_id, sample_provider_id
     ):
@@ -186,8 +182,7 @@ def test_record_alert_resolution(
         assert log_args["notes"] == "Patient contacted and advised to rest"
         assert log_args["data"]["resolution_action"] == "patient_contacted"
     
-    async @pytest.mark.db_required
-def test_record_alert_dismissal(
+    async def test_record_alert_dismissal(
         self, audit_service, mock_alert_repository, mock_audit_logger,
         sample_alert, sample_alert_id, sample_provider_id
     ):
@@ -223,8 +218,7 @@ def test_record_alert_dismissal(
         assert log_args["notes"] == "False positive due to device error"
         assert log_args["data"]["dismissal_reason"] == "False positive due to device error"
     
-    async @pytest.mark.db_required
-def test_create_alert_audit_record_sanitizes_phi(
+    async def test_create_alert_audit_record_sanitizes_phi(
         self, audit_service, mock_audit_logger, sample_alert, sample_provider_id
     ):
         """Test that _create_alert_audit_record properly sanitizes PHI."""
@@ -263,8 +257,7 @@ def test_create_alert_audit_record_sanitizes_phi(
         # Verify additional data is included
         assert log_args["data"]["additional"] == "data"
     
-    async @pytest.mark.db_required
-def test_search_audit_trail(
+    async def test_search_audit_trail(
         self, audit_service, mock_audit_logger, sample_patient_id, 
         sample_alert_id, sample_provider_id
     ):
@@ -302,8 +295,7 @@ def test_search_audit_trail(
         assert search_args["limit"] == 50
         assert search_args["offset"] == 10
     
-    async @pytest.mark.db_required
-def test_no_audit_record_for_nonexistent_alert(
+    async def test_no_audit_record_for_nonexistent_alert(
         self, audit_service, mock_alert_repository, mock_audit_logger,
         sample_alert_id, sample_provider_id
     ):

@@ -82,7 +82,6 @@ class MockResponse:
         return self.body
 
 
-@pytest.mark.db_required
 class TestJWTAuthentication:
     """Test the JWT authentication system for HIPAA compliance"""
     
@@ -122,8 +121,7 @@ class TestJWTAuthentication:
         
         return _create_token
     
-    @pytest.mark.db_required
-def test_token_creation(self, auth_service):
+    def test_token_creation(self, auth_service):
         """Test that tokens are created with correct claims"""
         user = TEST_USERS["doctor"]
         
@@ -143,8 +141,7 @@ def test_token_creation(self, auth_service):
         assert decoded["role"] == user["role"], "Role claim is incorrect"
         assert decoded["permissions"] == user["permissions"], "Permissions claim is incorrect"
     
-    @pytest.mark.db_required
-def test_token_validation(self, auth_service, token_factory):
+    def test_token_validation(self, auth_service, token_factory):
         """Test that tokens are properly validated"""
         # Valid token
         valid_token = token_factory(user_type="admin", expired=False)
@@ -167,8 +164,7 @@ def test_token_validation(self, auth_service, token_factory):
         assert not validation_result["is_valid"], "Invalid token was accepted"
         assert "invalid" in validation_result["error"].lower(), "Error does not indicate token invalidity"
     
-    @pytest.mark.db_required
-def test_role_based_access(self, auth_service, token_factory):
+    def test_role_based_access(self, auth_service, token_factory):
         """Test that role-based access control works correctly"""
         # Test each role's access to different resources
         for role, resources in RESOURCE_ACCESS.items():
@@ -197,8 +193,7 @@ def test_role_based_access(self, auth_service, token_factory):
                 elif access_level == "deny":
                     assert not is_authorized, f"Role {role} was allowed access to {resource} despite deny rule"
     
-    @pytest.mark.db_required
-def test_token_from_request(self, auth_service, token_factory):
+    def test_token_from_request(self, auth_service, token_factory):
         """Test that tokens are correctly extracted from requests"""
         # Generate test token
         token = token_factory(user_type="doctor")
@@ -225,8 +220,7 @@ def test_token_from_request(self, auth_service, token_factory):
         extracted_token = auth_service.extract_token_from_request(request_without_token)
         assert extracted_token is None, "Should return None for request without token"
     
-    @pytest.mark.db_required
-def test_unauthorized_response(self, auth_service):
+    def test_unauthorized_response(self, auth_service):
         """Test that unauthorized requests get proper responses"""
         # Test expired token response
         expired_response = auth_service.create_unauthorized_response(
@@ -255,8 +249,7 @@ def test_unauthorized_response(self, auth_service):
         assert forbidden_response.status_code == 403, "Insufficient permissions should return 403 Forbidden"
         assert "permission" in forbidden_response.json()["error"].lower(), "Error message should mention permissions"
     
-    @pytest.mark.db_required
-def test_refresh_token(self, auth_service, token_factory):
+    def test_refresh_token(self, auth_service, token_factory):
         """Test token refresh functionality"""
         # Create refresh token
         user = TEST_USERS["patient"]
@@ -277,8 +270,7 @@ def test_refresh_token(self, auth_service, token_factory):
         invalid_refresh_result = auth_service.refresh_access_token("invalid.refresh.token")
         assert not invalid_refresh_result["success"], "Invalid refresh token was accepted"
     
-    @pytest.mark.db_required
-def test_hipaa_compliance_in_errors(self, auth_service, token_factory):
+    def test_hipaa_compliance_in_errors(self, auth_service, token_factory):
         """Test that authentication errors don't leak sensitive information"""
         # Create a context with invalid authentication
         invalid_token = token_factory(invalid=True)
@@ -298,8 +290,7 @@ def test_hipaa_compliance_in_errors(self, auth_service, token_factory):
         # Error should be generic enough not to leak information
         assert len(response_json["error"]) < 100, "Error message too detailed, may leak information"
     
-    @pytest.mark.db_required
-def test_token_security_properties(self, auth_service):
+    def test_token_security_properties(self, auth_service):
         """Test security properties of generated tokens"""
         user = TEST_USERS["admin"]
         

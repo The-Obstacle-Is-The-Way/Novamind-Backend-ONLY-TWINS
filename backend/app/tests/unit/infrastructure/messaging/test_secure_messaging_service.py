@@ -85,12 +85,10 @@ def secure_messaging_service(encryption_service):
     )
 
 
-@pytest.mark.db_required
 class TestSecureMessagingService:
     """Tests for the SecureMessagingService class."""
     
-    @pytest.mark.db_required
-def test_generate_key_pair(self, secure_messaging_service):
+    def test_generate_key_pair(self, secure_messaging_service):
         """Test generating a key pair."""
         private_key, public_key = secure_messaging_service.generate_key_pair()
         
@@ -104,8 +102,7 @@ def test_generate_key_pair(self, secure_messaging_service):
         assert public_key.startswith(b"-----BEGIN PUBLIC KEY-----")
         assert public_key.endswith(b"-----END PUBLIC KEY-----\n")
     
-    @pytest.mark.db_required
-def test_encrypt_decrypt_symmetric_key(self, secure_messaging_service, key_pair):
+    def test_encrypt_decrypt_symmetric_key(self, secure_messaging_service, key_pair):
         """Test encrypting and decrypting a symmetric key."""
         private_key, public_key = key_pair
         
@@ -127,8 +124,7 @@ def test_encrypt_decrypt_symmetric_key(self, secure_messaging_service, key_pair)
         # Check that the decrypted key matches the original
         assert decrypted_key == symmetric_key
     
-    @pytest.mark.db_required
-def test_encrypt_decrypt_message(self, secure_messaging_service):
+    def test_encrypt_decrypt_message(self, secure_messaging_service):
         """Test encrypting and decrypting a message."""
         # Generate a symmetric key
         symmetric_key = Fernet.generate_key()
@@ -151,8 +147,7 @@ def test_encrypt_decrypt_message(self, secure_messaging_service):
         # Check that the decrypted message matches the original
         assert decrypted_message == original_message
     
-    @pytest.mark.db_required
-def test_encrypt_message_for_recipient(self, secure_messaging_service, key_pair):
+    def test_encrypt_message_for_recipient(self, secure_messaging_service, key_pair):
         """Test encrypting a message for a recipient."""
         private_key, public_key = key_pair
         
@@ -177,8 +172,7 @@ def test_encrypt_message_for_recipient(self, secure_messaging_service, key_pair)
         assert message_package["expires_at"] > current_time
         assert message_package["expires_at"] == message_package["timestamp"] + 86400
     
-    @pytest.mark.db_required
-def test_decrypt_message(self, secure_messaging_service, key_pair):
+    def test_decrypt_message(self, secure_messaging_service, key_pair):
         """Test decrypting a message."""
         private_key, public_key = key_pair
         
@@ -200,8 +194,7 @@ def test_decrypt_message(self, secure_messaging_service, key_pair):
         # Check that the decrypted message matches the original
         assert decrypted_message == original_message
     
-    @pytest.mark.db_required
-def test_decrypt_expired_message(self, secure_messaging_service, key_pair):
+    def test_decrypt_expired_message(self, secure_messaging_service, key_pair):
         """Test decrypting an expired message."""
         private_key, public_key = key_pair
         
@@ -224,8 +217,7 @@ def test_decrypt_expired_message(self, secure_messaging_service, key_pair):
                 private_key=private_key
             )
     
-    @pytest.mark.db_required
-def test_create_message(self, secure_messaging_service, key_pair, encryption_service):
+    def test_create_message(self, secure_messaging_service, key_pair, encryption_service):
         """Test creating a message."""
         private_key, public_key = key_pair
         
@@ -266,8 +258,7 @@ def test_create_message(self, secure_messaging_service, key_pair, encryption_ser
         # Check that the encryption service was called
         encryption_service.encrypt_field.assert_called_once_with("Test Subject")
     
-    @pytest.mark.db_required
-def test_create_message_with_attachments(self, secure_messaging_service, key_pair):
+    def test_create_message_with_attachments(self, secure_messaging_service, key_pair):
         """Test creating a message with attachments."""
         private_key, public_key = key_pair
         
@@ -301,8 +292,7 @@ def test_create_message_with_attachments(self, secure_messaging_service, key_pai
         assert message["message_type"] == MessageType.DOCUMENT.value
         assert message["priority"] == MessagePriority.HIGH.value
     
-    @pytest.mark.db_required
-def test_send_message(self, secure_messaging_service, key_pair, message_repository):
+    def test_send_message(self, secure_messaging_service, key_pair, message_repository):
         """Test sending a message."""
         private_key, public_key = key_pair
         
@@ -329,8 +319,7 @@ def test_send_message(self, secure_messaging_service, key_pair, message_reposito
         # Check that the repository was called
         message_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_mark_as_delivered(self, secure_messaging_service, message_repository):
+    def test_mark_as_delivered(self, secure_messaging_service, message_repository):
         """Test marking a message as delivered."""
         # Create a mock message
         message = {
@@ -357,8 +346,7 @@ def test_mark_as_delivered(self, secure_messaging_service, message_repository):
         message_repository.get_by_id.assert_called_once_with(message["id"])
         message_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_mark_as_delivered_not_found(self, secure_messaging_service, message_repository):
+    def test_mark_as_delivered_not_found(self, secure_messaging_service, message_repository):
         """Test marking a non-existent message as delivered."""
         # Set up the repository to return None
         message_repository.get_by_id.return_value = None
@@ -370,8 +358,7 @@ def test_mark_as_delivered_not_found(self, secure_messaging_service, message_rep
                 message_repository=message_repository
             )
     
-    @pytest.mark.db_required
-def test_mark_as_read(self, secure_messaging_service, message_repository):
+    def test_mark_as_read(self, secure_messaging_service, message_repository):
         """Test marking a message as read."""
         # Create a mock message
         message = {
@@ -398,8 +385,7 @@ def test_mark_as_read(self, secure_messaging_service, message_repository):
         message_repository.get_by_id.assert_called_once_with(message["id"])
         message_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_mark_as_read_not_found(self, secure_messaging_service, message_repository):
+    def test_mark_as_read_not_found(self, secure_messaging_service, message_repository):
         """Test marking a non-existent message as read."""
         # Set up the repository to return None
         message_repository.get_by_id.return_value = None
@@ -411,8 +397,7 @@ def test_mark_as_read_not_found(self, secure_messaging_service, message_reposito
                 message_repository=message_repository
             )
     
-    @pytest.mark.db_required
-def test_delete_message(self, secure_messaging_service, message_repository):
+    def test_delete_message(self, secure_messaging_service, message_repository):
         """Test deleting a message."""
         # Create a mock message
         sender_id = "sender123"
@@ -445,8 +430,7 @@ def test_delete_message(self, secure_messaging_service, message_repository):
         message_repository.get_by_id.assert_called_once_with(message["id"])
         message_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_delete_message_not_found(self, secure_messaging_service, message_repository):
+    def test_delete_message_not_found(self, secure_messaging_service, message_repository):
         """Test deleting a non-existent message."""
         # Set up the repository to return None
         message_repository.get_by_id.return_value = None
@@ -459,8 +443,7 @@ def test_delete_message_not_found(self, secure_messaging_service, message_reposi
                 message_repository=message_repository
             )
     
-    @pytest.mark.db_required
-def test_delete_message_unauthorized(self, secure_messaging_service, message_repository):
+    def test_delete_message_unauthorized(self, secure_messaging_service, message_repository):
         """Test deleting a message by an unauthorized user."""
         # Create a mock message
         message = {

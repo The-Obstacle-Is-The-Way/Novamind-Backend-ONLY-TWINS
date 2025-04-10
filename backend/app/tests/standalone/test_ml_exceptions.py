@@ -5,15 +5,14 @@ This test module includes both the necessary exception classes and tests in a si
 to validate that the test infrastructure is working correctly.
 """
 import unittest
-from typing import Dict, Any, Optional
-from dataclasses import dataclass, field
+from typing import Any
 
 
 # Exception classes that would normally be in app/core/ml/exceptions.py
 class MentalLLaMABaseError(Exception):
     """Base exception for all MentalLLaMA errors."""
     
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         self.message = message
         self.details = details or {}
         super().__init__(message)
@@ -25,10 +24,10 @@ class MentalLLaMAInferenceError(MentalLLaMABaseError):
     def __init__(
         self, 
         message: str, 
-        model_id: Optional[str] = None,
-        input_text: Optional[str] = None,
-        error_type: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None
+        model_id: str | None = None,
+        input_text: str | None = None,
+        error_type: str | None = None,
+        details: dict[str, Any] | None = None
     ):
         self.model_id = model_id
         self.input_text = input_text
@@ -53,8 +52,8 @@ class MentalLLaMAValidationError(MentalLLaMABaseError):
     def __init__(
         self, 
         message: str, 
-        validation_errors: Optional[Dict[str, Any]] = None,
-        details: Optional[Dict[str, Any]] = None
+        validation_errors: dict[str, Any] | None = None,
+        details: dict[str, Any] | None = None
     ):
         self.validation_errors = validation_errors or {}
         
@@ -70,11 +69,9 @@ class MentalLLaMAValidationError(MentalLLaMABaseError):
 
 
 # Test class for the exceptions
-@pytest.mark.standalone
 class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     
-    @pytest.mark.standalone
 def test_base_error(self):
         """Test the base error class."""
         # Arrange
@@ -89,7 +86,6 @@ def test_base_error(self):
         self.assertEqual(error.details, details)
         self.assertEqual(str(error), message)
     
-    @pytest.mark.standalone
 def test_inference_error(self):
         """Test the inference error class."""
         # Arrange
@@ -120,7 +116,6 @@ def test_inference_error(self):
         # Ensure input_text is NOT included in details to prevent PHI leakage
         self.assertNotIn("input_text", error.details)
         
-    @pytest.mark.standalone
 def test_validation_error(self):
         """Test the validation error class."""
         # Arrange

@@ -20,7 +20,6 @@ from app.infrastructure.persistence.sqlalchemy.models.patient import PatientMode
 from app.infrastructure.security.encryption import EncryptionService
 
 
-@pytest.mark.db_required
 class TestPatientEncryptionIntegration:
     """Integration test suite for Patient model encryption with database."""
     
@@ -57,8 +56,7 @@ class TestPatientEncryptionIntegration:
         )
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_phi_encrypted_in_database(self, db_session: AsyncSession, sample_patient):
+    async def test_phi_encrypted_in_database(self, db_session: AsyncSession, sample_patient):
         """Test that PHI is stored encrypted in the database."""
         # Create a real encryption service
         encryption_service = EncryptionService()
@@ -95,8 +93,7 @@ def test_phi_encrypted_in_database(self, db_session: AsyncSession, sample_patien
         assert decrypted_email == sample_patient.email
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_phi_decrypted_in_repository(self, db_session: AsyncSession, sample_patient):
+    async def test_phi_decrypted_in_repository(self, db_session: AsyncSession, sample_patient):
         """Test that PHI is automatically decrypted when retrieved through repository."""
         # Save encrypted patient to database
         patient_model = PatientModel.from_domain(sample_patient)
@@ -129,8 +126,7 @@ def test_phi_decrypted_in_repository(self, db_session: AsyncSession, sample_pati
         assert retrieved_patient.insurance.policy_number == sample_patient.insurance.policy_number
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_encryption_error_handling(self, db_session: AsyncSession):
+    async def test_encryption_error_handling(self, db_session: AsyncSession):
         """Test that encryption/decryption errors are handled gracefully."""
         # Create patient with an ID that can be referenced in logs without exposing PHI
         patient_id = uuid.uuid4()

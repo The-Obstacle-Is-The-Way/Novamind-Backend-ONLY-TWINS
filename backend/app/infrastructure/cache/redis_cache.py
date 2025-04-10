@@ -9,7 +9,7 @@ interface for efficient caching in a distributed environment.
 import json
 from typing import Any, Dict, Optional
 
-import aioredis
+import redis.asyncio as aioredis # Use redis.asyncio instead of aioredis
 
 from app.application.interfaces.services.cache_service import CacheService
 from app.core.utils.logging import get_logger

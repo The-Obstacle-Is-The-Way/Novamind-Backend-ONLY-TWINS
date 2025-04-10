@@ -99,12 +99,10 @@ def user_context():
     )
 
 
-@pytest.mark.db_required
 class TestAuditLogger:
     """Test suite for the audit logger."""
     
-    @pytest.mark.db_required
-def test_log_authentication(self, audit_logger, user_context):
+    def test_log_authentication(self, audit_logger, user_context):
         """Test logging of authentication events."""
         # Log a successful authentication
         audit_logger.log_authentication(
@@ -134,8 +132,7 @@ def test_log_authentication(self, audit_logger, user_context):
         assert log_data["device_info"] == user_context.device_info
         assert "timestamp" in log_data
     
-    @pytest.mark.db_required
-def test_log_authentication_failure(self, audit_logger):
+    def test_log_authentication_failure(self, audit_logger):
         """Test logging of failed authentication attempts."""
         # Log a failed authentication
         audit_logger.log_authentication_failure(
@@ -163,8 +160,7 @@ def test_log_authentication_failure(self, audit_logger):
         assert log_data["ip_address"] == "192.168.1.100"
         assert "timestamp" in log_data
     
-    @pytest.mark.db_required
-def test_log_phi_access(self, audit_logger, user_context):
+    def test_log_phi_access(self, audit_logger, user_context):
         """Test logging of PHI access events."""
         # Create PHI access information
         phi_access = PHIAccessInfo(
@@ -204,8 +200,7 @@ def test_log_phi_access(self, audit_logger, user_context):
         assert log_data["ip_address"] == user_context.ip_address
         assert log_data["session_id"] == user_context.session_id
     
-    @pytest.mark.db_required
-def test_log_data_modification(self, audit_logger, user_context):
+    def test_log_data_modification(self, audit_logger, user_context):
         """Test logging of data modification events."""
         # Log a data modification event
         audit_logger.log_data_modification(
@@ -241,8 +236,7 @@ def test_log_data_modification(self, audit_logger, user_context):
         assert log_data["changes"]["frequency"]["new"] == "twice daily"
         assert "timestamp" in log_data
     
-    @pytest.mark.db_required
-def test_log_phi_violation(self, audit_logger, user_context):
+    def test_log_phi_violation(self, audit_logger, user_context):
         """Test logging of PHI policy violations."""
         # Log a PHI violation event
         audit_logger.log_phi_violation(
@@ -281,8 +275,7 @@ def test_log_phi_violation(self, audit_logger, user_context):
         assert log_data["remediation_action"] == "access_denied"
         assert "timestamp" in log_data
     
-    @pytest.mark.db_required
-def test_log_system_event(self, audit_logger):
+    def test_log_system_event(self, audit_logger):
         """Test logging of general system events."""
         # Log a system event
         audit_logger.log_system_event(
@@ -314,8 +307,7 @@ def test_log_system_event(self, audit_logger):
         assert log_data["details"]["node_id"] == "node-east-001"
         assert "timestamp" in log_data
     
-    @pytest.mark.db_required
-def test_phi_redaction(self, audit_logger, user_context):
+    def test_phi_redaction(self, audit_logger, user_context):
         """Test proper redaction of PHI in audit logs."""
         # Setup a log event with PHI
         phi_data = {
@@ -368,8 +360,7 @@ def test_phi_redaction(self, audit_logger, user_context):
         # But non-PHI medical info should remain
         assert log_data["patient"]["medical_record"]["diagnosis"] == "F41.1"
     
-    @pytest.mark.db_required
-def test_log_to_multiple_destinations(self, audit_logger, user_context):
+    def test_log_to_multiple_destinations(self, audit_logger, user_context):
         """Test logging to multiple destinations."""
         # Add a mock CloudWatch handler
         cloud_handler = MagicMock(spec=CloudWatchHandler)
@@ -397,8 +388,7 @@ def test_log_to_multiple_destinations(self, audit_logger, user_context):
         assert file_record.getMessage() == console_record.getMessage()
         assert file_record.getMessage() == cloud_record.getMessage()
     
-    @pytest.mark.db_required
-def test_log_level_filtering(self, audit_logger):
+    def test_log_level_filtering(self, audit_logger):
         """Test that logs are filtered based on configured log level."""
         # Set log level to WARNING
         audit_logger.config.log_level = AuditLevel.WARNING
@@ -425,8 +415,7 @@ def test_log_level_filtering(self, audit_logger):
         # Verify the warning log was emitted
         audit_logger.file_handler.emit.assert_called_once()
     
-    @pytest.mark.db_required
-def test_include_stack_trace(self, audit_logger):
+    def test_include_stack_trace(self, audit_logger):
         """Test inclusion of stack trace in error logs."""
         # Configure to include stack trace
         audit_logger.config.include_stack_trace = True
@@ -456,8 +445,7 @@ def test_include_stack_trace(self, audit_logger):
         assert "Traceback" in log_data["stack_trace"]
         assert "ValueError: Test exception" in log_data["stack_trace"]
     
-    @pytest.mark.db_required
-def test_structured_logging_format(self, audit_logger, user_context):
+    def test_structured_logging_format(self, audit_logger, user_context):
         """Test that logs are properly structured in JSON format."""
         # Log an event that produces structured output
         audit_logger.log_authentication(
@@ -490,8 +478,7 @@ def test_structured_logging_format(self, audit_logger, user_context):
         assert timestamp.endswith("Z")
         datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
     
-    @pytest.mark.db_required
-def test_request_response_logging(self, audit_logger, user_context):
+    def test_request_response_logging(self, audit_logger, user_context):
         """Test configurable inclusion of request/response bodies."""
         # Set up request and response data
         request_data = {
@@ -554,8 +541,7 @@ def test_request_response_logging(self, audit_logger, user_context):
         assert log_data["request"]["body"] == request_data["body"]
         assert log_data["response"]["body"] == response_data["body"]
     
-    @pytest.mark.db_required
-def test_log_search_export(self, audit_logger):
+    def test_log_search_export(self, audit_logger):
         """Test exporting and searching audit logs."""
         # Mock log entries in the internal store
         mock_entries = [
@@ -603,8 +589,7 @@ def test_log_search_export(self, audit_logger):
                 )
                 assert exported_file == "exported_logs.json"
     
-    @pytest.mark.db_required
-def test_phi_access_reason_required(self, audit_logger, user_context):
+    def test_phi_access_reason_required(self, audit_logger, user_context):
         """Test enforcement of PHI access reason when configured."""
         # Configure to require PHI access reason
         audit_logger.config.include_phi_access_reason = True
@@ -641,8 +626,7 @@ def test_phi_access_reason_required(self, audit_logger, user_context):
         # Verify the log was emitted
         audit_logger.file_handler.emit.assert_called_once()
     
-    @pytest.mark.db_required
-def test_custom_audit_event(self, audit_logger):
+    def test_custom_audit_event(self, audit_logger):
         """Test creating and logging custom audit events."""
         # Create a custom event
         custom_event = AuditEvent(
@@ -675,8 +659,7 @@ def test_custom_audit_event(self, audit_logger):
         assert log_data["details"]["custom_field_2"] == 42
         assert log_data["details"]["custom_field_3"]["nested"] == "data"
     
-    @pytest.mark.db_required
-def test_log_anonymization(self, audit_logger, user_context):
+    def test_log_anonymization(self, audit_logger, user_context):
         """Test anonymization of identifying information in logs when needed."""
         # Configure a mock anonymization function
         def mock_anonymize(field, value):
@@ -716,8 +699,7 @@ def test_log_anonymization(self, audit_logger, user_context):
         assert log_data["patient_id"] == "ANON_345"  # Anonymized patient ID
         assert log_data["user_id"] == "ANON_USER_23"  # Anonymized user ID
     
-    @pytest.mark.db_required
-def test_log_rotation(self, audit_logger, temp_log_file):
+    def test_log_rotation(self, audit_logger, temp_log_file):
         """Test log rotation functionality."""
         # Configure a real file handler for this test
         real_file_handler = SecureFileHandler(
@@ -747,8 +729,7 @@ def test_log_rotation(self, audit_logger, temp_log_file):
         # Verify rotation was called
         real_file_handler.doRollover.assert_called()
     
-    @pytest.mark.db_required
-def test_batch_logging(self, audit_logger):
+    def test_batch_logging(self, audit_logger):
         """Test efficient batch logging of multiple events."""
         # Create multiple events
         events = [
@@ -776,8 +757,7 @@ def test_batch_logging(self, audit_logger):
         # Verify each event was logged
         assert audit_logger.file_handler.emit.call_count == len(events)
     
-    @pytest.mark.db_required
-def test_request_id_correlation(self, audit_logger, user_context):
+    def test_request_id_correlation(self, audit_logger, user_context):
         """Test correlation of logs across a single request with request ID."""
         # Set a request ID for correlation
         request_id = "req-abc-123-xyz-789"
@@ -817,8 +797,7 @@ def test_request_id_correlation(self, audit_logger, user_context):
         assert log_data2["request_id"] == request_id
         assert log_data1["request_id"] == log_data2["request_id"]
     
-    @pytest.mark.db_required
-def test_performance_logging(self, audit_logger):
+    def test_performance_logging(self, audit_logger):
         """Test performance metrics in logs."""
         # Log a performance event
         audit_logger.log_performance(

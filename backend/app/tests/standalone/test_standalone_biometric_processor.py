@@ -6,12 +6,11 @@ in a single file, making it completely independent of the rest of the applicatio
 """
 
 import unittest
-import pytest
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Any, Union, Set, Callable
+from typing import Any
 from uuid import uuid4
-
 
 # ============= Biometric Event Processor Implementation =============
 
@@ -55,11 +54,11 @@ class BiometricDataPoint:
     def __init__(
         self,
         patient_id: str,
-        data_type: Union[BiometricType, str],
-        value: Union[float, int, dict, str],
-        timestamp: Optional[datetime] = None,
-        device_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        data_type: BiometricType | str,
+        value: float | int | dict | str,
+        timestamp: datetime | None = None,
+        device_id: str | None = None,
+        metadata: dict[str, Any] | None = None
     ):
         """
         Initialize a biometric data point.
@@ -89,7 +88,7 @@ class BiometricDataPoint:
         self.device_id = device_id
         self.metadata = metadata or {}
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -102,7 +101,7 @@ class BiometricDataPoint:
         }
         
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BiometricDataPoint':
+    def from_dict(cls, data: dict[str, Any]) -> 'BiometricDataPoint':
         """Create from dictionary."""
         # Parse timestamp if present
         timestamp = None
@@ -130,10 +129,10 @@ class AlertRule:
         name: str,
         data_type: BiometricType,
         operator: ComparisonOperator,
-        threshold: Union[float, int],
-        patient_id: Optional[str] = None,
+        threshold: float | int,
+        patient_id: str | None = None,
         severity: AlertSeverity = AlertSeverity.MEDIUM,
-        description: Optional[str] = None,
+        description: str | None = None,
         active: bool = True,
         cooldown_minutes: int = 60
     ):
@@ -161,7 +160,7 @@ class AlertRule:
         self.description = description or f"{data_type.value} {operator.value} {threshold}"
         self.active = active
         self.cooldown_minutes = cooldown_minutes
-        self.last_triggered: Dict[str, datetime] = {}  # patient_id -> last trigger time
+        self.last_triggered: dict[str, datetime] = {}  # patient_id -> last trigger time
         
     def evaluate(self, data_point: BiometricDataPoint) -> bool:
         """
@@ -224,7 +223,7 @@ class AlertRule:
             
         return result
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -251,7 +250,7 @@ class BiometricAlert:
         data_point: BiometricDataPoint,
         severity: AlertSeverity,
         message: str,
-        timestamp: Optional[datetime] = None
+        timestamp: datetime | None = None
     ):
         """
         Initialize a biometric alert.
@@ -274,8 +273,8 @@ class BiometricAlert:
         self.message = message
         self.timestamp = timestamp or datetime.now()
         self.acknowledged = False
-        self.acknowledged_at: Optional[datetime] = None
-        self.acknowledged_by: Optional[str] = None
+        self.acknowledged_at: datetime | None = None
+        self.acknowledged_by: str | None = None
         
     def acknowledge(self, user_id: str):
         """
@@ -288,7 +287,7 @@ class BiometricAlert:
         self.acknowledged_at = datetime.now()
         self.acknowledged_by = user_id
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -321,7 +320,7 @@ class AlertObserver:
 class EmailAlertObserver(AlertObserver):
     """Observer that sends email notifications for alerts."""
     
-    def __init__(self, recipients: List[str]):
+    def __init__(self, recipients: list[str]):
         """
         Initialize an email alert observer.
         
@@ -329,7 +328,7 @@ class EmailAlertObserver(AlertObserver):
             recipients: List of email recipients
         """
         self.recipients = recipients
-        self.sent_alerts: List[BiometricAlert] = []
+        self.sent_alerts: list[BiometricAlert] = []
         
     def notify(self, alert: BiometricAlert):
         """
@@ -358,7 +357,7 @@ class EmailAlertObserver(AlertObserver):
 class SMSAlertObserver(AlertObserver):
     """Observer that sends SMS notifications for alerts."""
     
-    def __init__(self, phone_numbers: List[str], urgent_only: bool = False):
+    def __init__(self, phone_numbers: list[str], urgent_only: bool = False):
         """
         Initialize an SMS alert observer.
         
@@ -368,7 +367,7 @@ class SMSAlertObserver(AlertObserver):
         """
         self.phone_numbers = phone_numbers
         self.urgent_only = urgent_only
-        self.sent_alerts: List[BiometricAlert] = []
+        self.sent_alerts: list[BiometricAlert] = []
         
     def notify(self, alert: BiometricAlert):
         """
@@ -399,7 +398,7 @@ class InAppAlertObserver(AlertObserver):
     
     def __init__(self):
         """Initialize an in-app alert observer."""
-        self.notifications: Dict[str, List[BiometricAlert]] = {}  # user_id -> alerts
+        self.notifications: dict[str, list[BiometricAlert]] = {}  # user_id -> alerts
         
     def notify(self, alert: BiometricAlert):
         """
@@ -428,8 +427,8 @@ class ClinicalRuleEngine:
     
     def __init__(self):
         """Initialize the clinical rule engine."""
-        self.rule_templates: Dict[str, Dict[str, Any]] = {}
-        self.custom_conditions: Dict[str, Callable[[BiometricDataPoint], bool]] = {}
+        self.rule_templates: dict[str, dict[str, Any]] = {}
+        self.custom_conditions: dict[str, Callable[[BiometricDataPoint], bool]] = {}
         
     def register_rule_template(
         self,
@@ -437,10 +436,10 @@ class ClinicalRuleEngine:
         name: str,
         data_type: BiometricType,
         operator: ComparisonOperator,
-        threshold: Union[float, int],
+        threshold: float | int,
         severity: AlertSeverity = AlertSeverity.MEDIUM,
-        description: Optional[str] = None,
-        parameters: Optional[List[str]] = None
+        description: str | None = None,
+        parameters: list[str] | None = None
     ):
         """
         Register a rule template.
@@ -482,8 +481,8 @@ class ClinicalRuleEngine:
     def create_rule_from_template(
         self,
         template_id: str,
-        parameters: Optional[Dict[str, Any]] = None,
-        patient_id: Optional[str] = None
+        parameters: dict[str, Any] | None = None,
+        patient_id: str | None = None
     ) -> AlertRule:
         """
         Create a rule from a template.
@@ -537,9 +536,9 @@ class ProcessorContext:
             patient_id: ID of the patient
         """
         self.patient_id = patient_id
-        self.last_values: Dict[BiometricType, Any] = {}
-        self.trends: Dict[BiometricType, List[Any]] = {}
-        self.alert_counts: Dict[str, int] = {}  # rule_id -> count
+        self.last_values: dict[BiometricType, Any] = {}
+        self.trends: dict[BiometricType, list[Any]] = {}
+        self.alert_counts: dict[str, int] = {}  # rule_id -> count
         
     def update(self, data_point: BiometricDataPoint):
         """
@@ -580,9 +579,9 @@ class BiometricEventProcessor:
     
     def __init__(self):
         """Initialize the biometric event processor."""
-        self.rules: Dict[str, AlertRule] = {}
-        self.observers: List[AlertObserver] = []
-        self.contexts: Dict[str, ProcessorContext] = {}  # patient_id -> context
+        self.rules: dict[str, AlertRule] = {}
+        self.observers: list[AlertObserver] = []
+        self.contexts: dict[str, ProcessorContext] = {}  # patient_id -> context
         
     def add_rule(self, rule: AlertRule):
         """
@@ -641,7 +640,7 @@ class BiometricEventProcessor:
             self.contexts[patient_id] = ProcessorContext(patient_id)
         return self.contexts[patient_id]
         
-    def process_data_point(self, data_point: BiometricDataPoint) -> List[BiometricAlert]:
+    def process_data_point(self, data_point: BiometricDataPoint) -> list[BiometricAlert]:
         """
         Process a biometric data point.
         
@@ -687,7 +686,6 @@ class BiometricEventProcessor:
 
 # ============= Biometric Event Processor Tests =============
 
-@pytest.mark.standalone
 class TestBiometricEventProcessor(unittest.TestCase):
     """Test the biometric event processor."""
     
@@ -922,7 +920,6 @@ class TestBiometricEventProcessor(unittest.TestCase):
         self.assertEqual(context.trends[BiometricType.HEART_RATE], [80, 90])
 
 
-@pytest.mark.standalone
 class TestAlertRule(unittest.TestCase):
     """Test the alert rule class."""
     
@@ -1212,7 +1209,6 @@ class TestAlertRule(unittest.TestCase):
         self.assertTrue(result3)
 
 
-@pytest.mark.standalone
 class TestBiometricAlert(unittest.TestCase):
     """Test the biometric alert class."""
     
@@ -1249,7 +1245,6 @@ class TestBiometricAlert(unittest.TestCase):
         self.assertEqual(alert.acknowledged_by, "user1")
 
 
-@pytest.mark.standalone
 class TestAlertObservers(unittest.TestCase):
     """Test the alert observer classes."""
     
@@ -1375,7 +1370,6 @@ class TestAlertObservers(unittest.TestCase):
         self.assertEqual(observer.notifications[provider_id][0], self.alert)
 
 
-@pytest.mark.standalone
 class TestClinicalRuleEngine(unittest.TestCase):
     """Test the clinical rule engine."""
     

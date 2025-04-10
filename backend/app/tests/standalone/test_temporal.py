@@ -5,26 +5,23 @@ This module contains tests for temporal pattern detection, trajectory prediction
 and longitudinal modeling capabilities of the Digital Twin system.
 """
 import unittest
-import pytest
 from datetime import datetime, timedelta
+from uuid import uuid4
+
 import numpy as np
-from typing import Dict, List, Any, Optional
-from uuid import UUID, uuid4
 
-from app.domain.entities.digital_twin.temporal import (
-    TemporalDynamics,
-    PatternDetector,
-    SeasonalPatternDetector,
-    EpisodicPatternDetector,
-    TrajectoryPrediction,
-    PatternStrength,
-    TimeSeriesForecaster,
-    StateHistoryPoint
-)
 from app.domain.entities.digital_twin.state import DigitalTwinState
+from app.domain.entities.digital_twin.temporal import (
+    EpisodicPatternDetector,
+    PatternDetector,
+    PatternStrength,
+    SeasonalPatternDetector,
+    TemporalDynamics,
+    TimeSeriesForecaster,
+    TrajectoryPrediction,
+)
 
 
-@pytest.mark.standalone
 class TestTemporalDynamics(unittest.TestCase):
     """Tests for the TemporalDynamics entity."""
     
@@ -502,7 +499,6 @@ class TestTemporalDynamics(unittest.TestCase):
         assert 0.0 <= response["confidence"] <= 1.0
 
 
-@pytest.mark.standalone
 class TestPatternDetectors(unittest.TestCase):
     """Tests for pattern detection algorithms."""
     
@@ -621,7 +617,6 @@ class TestPatternDetectors(unittest.TestCase):
         assert 0.4 <= result.metadata["mean"] <= 0.6
 
 
-@pytest.mark.standalone
 class TestTrajectoryPrediction(unittest.TestCase):
     """Tests for the TrajectoryPrediction entity."""
     
@@ -769,7 +764,6 @@ class TestTrajectoryPrediction(unittest.TestCase):
         assert 0.0 <= response_metrics["probability_of_remission"] <= 1.0
 
 
-@pytest.mark.standalone
 class TestTimeSeriesForecaster(unittest.TestCase):
     """Tests for the TimeSeriesForecaster component."""
     

@@ -15,8 +15,7 @@ from app.domain.entities.digital_twin.digital_twin_state import DigitalTwinState
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_digital_twin_temporal_analysis():
+async def test_digital_twin_temporal_analysis():
     """
     Test the temporal analysis functionality of digital twin.
     
@@ -77,8 +76,7 @@ def test_digital_twin_temporal_analysis():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_digital_twin_state_transition():
+async def test_digital_twin_state_transition():
     """
     Test the state transition functionality of the digital twin.
     

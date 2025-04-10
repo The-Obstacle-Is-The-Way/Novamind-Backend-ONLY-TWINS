@@ -88,12 +88,10 @@ def valid_appointment(future_datetime):
     )
 
 
-@pytest.mark.db_required
 class TestAppointmentService:
     """Tests for the AppointmentService class."""
     
-    @pytest.mark.db_required
-def test_get_appointment(self, appointment_service, appointment_repository, valid_appointment):
+    def test_get_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test getting an appointment."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -107,14 +105,12 @@ def test_get_appointment(self, appointment_service, appointment_repository, vali
         # Check that the repository was called
         appointment_repository.get_by_id.assert_called_once_with(valid_appointment.id)
     
-    @pytest.mark.db_required
-def test_get_appointment_not_found(self, appointment_service):
+    def test_get_appointment_not_found(self, appointment_service):
         """Test getting a non-existent appointment."""
         with pytest.raises(AppointmentNotFoundException):
             appointment_service.get_appointment("nonexistent_id")
     
-    @pytest.mark.db_required
-def test_get_appointments_for_patient(self, appointment_service, appointment_repository, valid_appointment):
+    def test_get_appointments_for_patient(self, appointment_service, appointment_repository, valid_appointment):
         """Test getting appointments for a patient."""
         # Set up the repository to return a list of appointments
         appointment_repository.get_by_patient_id.return_value = [valid_appointment]
@@ -131,8 +127,7 @@ def test_get_appointments_for_patient(self, appointment_service, appointment_rep
             "patient123", None, None, None
         )
     
-    @pytest.mark.db_required
-def test_get_appointments_for_patient_not_found(self, appointment_service, patient_repository):
+    def test_get_appointments_for_patient_not_found(self, appointment_service, patient_repository):
         """Test getting appointments for a non-existent patient."""
         # Set up the repository to return None
         patient_repository.get_by_id.return_value = None
@@ -140,8 +135,7 @@ def test_get_appointments_for_patient_not_found(self, appointment_service, patie
         with pytest.raises(PatientNotFoundException):
             appointment_service.get_appointments_for_patient("nonexistent_id")
     
-    @pytest.mark.db_required
-def test_get_appointments_for_provider(self, appointment_service, appointment_repository, valid_appointment):
+    def test_get_appointments_for_provider(self, appointment_service, appointment_repository, valid_appointment):
         """Test getting appointments for a provider."""
         # Set up the repository to return a list of appointments
         appointment_repository.get_by_provider_id.return_value = [valid_appointment]
@@ -158,8 +152,7 @@ def test_get_appointments_for_provider(self, appointment_service, appointment_re
             "provider456", None, None, None
         )
     
-    @pytest.mark.db_required
-def test_get_appointments_for_provider_not_found(self, appointment_service, provider_repository):
+    def test_get_appointments_for_provider_not_found(self, appointment_service, provider_repository):
         """Test getting appointments for a non-existent provider."""
         # Set up the repository to return None
         provider_repository.get_by_id.return_value = None
@@ -167,8 +160,7 @@ def test_get_appointments_for_provider_not_found(self, appointment_service, prov
         with pytest.raises(ProviderNotFoundException):
             appointment_service.get_appointments_for_provider("nonexistent_id")
     
-    @pytest.mark.db_required
-def test_create_appointment(self, appointment_service, appointment_repository, future_datetime):
+    def test_create_appointment(self, appointment_service, appointment_repository, future_datetime):
         """Test creating an appointment."""
         # Create the appointment
         appointment = appointment_service.create_appointment(
@@ -198,8 +190,7 @@ def test_create_appointment(self, appointment_service, appointment_repository, f
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_create_appointment_with_default_end_time(self, appointment_service, future_datetime):
+    def test_create_appointment_with_default_end_time(self, appointment_service, future_datetime):
         """Test creating an appointment with default end time."""
         # Create the appointment
         appointment = appointment_service.create_appointment(
@@ -213,8 +204,7 @@ def test_create_appointment_with_default_end_time(self, appointment_service, fut
         assert appointment.start_time == future_datetime
         assert appointment.end_time == future_datetime + timedelta(minutes=60)
     
-    @pytest.mark.db_required
-def test_create_appointment_patient_not_found(self, appointment_service, patient_repository, future_datetime):
+    def test_create_appointment_patient_not_found(self, appointment_service, patient_repository, future_datetime):
         """Test creating an appointment with a non-existent patient."""
         # Set up the repository to return None
         patient_repository.get_by_id.return_value = None
@@ -226,8 +216,7 @@ def test_create_appointment_patient_not_found(self, appointment_service, patient
                 start_time=future_datetime
             )
     
-    @pytest.mark.db_required
-def test_create_appointment_provider_not_found(self, appointment_service, provider_repository, future_datetime):
+    def test_create_appointment_provider_not_found(self, appointment_service, provider_repository, future_datetime):
         """Test creating an appointment with a non-existent provider."""
         # Set up the repository to return None
         provider_repository.get_by_id.return_value = None
@@ -239,8 +228,7 @@ def test_create_appointment_provider_not_found(self, appointment_service, provid
                 start_time=future_datetime
             )
     
-    @pytest.mark.db_required
-def test_create_appointment_conflict(self, appointment_service, appointment_repository, future_datetime):
+    def test_create_appointment_conflict(self, appointment_service, appointment_repository, future_datetime):
         """Test creating an appointment with a conflict."""
         # Set up the repository to return a list of appointments
         appointment_repository.get_by_provider_id.return_value = [
@@ -263,8 +251,7 @@ def test_create_appointment_conflict(self, appointment_service, appointment_repo
                 end_time=future_datetime + timedelta(hours=1)
             )
     
-    @pytest.mark.db_required
-def test_create_appointment_daily_limit(self, appointment_service, appointment_repository, future_datetime):
+    def test_create_appointment_daily_limit(self, appointment_service, appointment_repository, future_datetime):
         """Test creating an appointment when the daily limit is reached."""
         # Set up the repository to return a list of appointments
         appointment_repository.get_by_provider_id.return_value = [
@@ -288,8 +275,7 @@ def test_create_appointment_daily_limit(self, appointment_service, appointment_r
                 end_time=future_datetime + timedelta(hours=10)
             )
     
-    @pytest.mark.db_required
-def test_reschedule_appointment(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
+    def test_reschedule_appointment(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
         """Test rescheduling an appointment."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -315,8 +301,7 @@ def test_reschedule_appointment(self, appointment_service, appointment_repositor
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_reschedule_appointment_with_default_end_time(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
+    def test_reschedule_appointment_with_default_end_time(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
         """Test rescheduling an appointment with default end time."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -334,8 +319,7 @@ def test_reschedule_appointment_with_default_end_time(self, appointment_service,
         assert updated_appointment.start_time == new_start_time
         assert updated_appointment.end_time == new_start_time + timedelta(hours=1)
     
-    @pytest.mark.db_required
-def test_reschedule_appointment_not_found(self, appointment_service):
+    def test_reschedule_appointment_not_found(self, appointment_service):
         """Test rescheduling a non-existent appointment."""
         with pytest.raises(AppointmentNotFoundException):
             appointment_service.reschedule_appointment(
@@ -343,8 +327,7 @@ def test_reschedule_appointment_not_found(self, appointment_service):
                 new_start_time=datetime.now() + timedelta(days=1)
             )
     
-    @pytest.mark.db_required
-def test_reschedule_appointment_conflict(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
+    def test_reschedule_appointment_conflict(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
         """Test rescheduling an appointment with a conflict."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -369,8 +352,7 @@ def test_reschedule_appointment_conflict(self, appointment_service, appointment_
                 new_end_time=future_datetime + timedelta(days=1, hours=1)
             )
     
-    @pytest.mark.db_required
-def test_cancel_appointment(self, appointment_service, appointment_repository, valid_appointment):
+    def test_cancel_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test cancelling an appointment."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -391,8 +373,7 @@ def test_cancel_appointment(self, appointment_service, appointment_repository, v
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_cancel_appointment_not_found(self, appointment_service):
+    def test_cancel_appointment_not_found(self, appointment_service):
         """Test cancelling a non-existent appointment."""
         with pytest.raises(AppointmentNotFoundException):
             appointment_service.cancel_appointment(
@@ -400,8 +381,7 @@ def test_cancel_appointment_not_found(self, appointment_service):
                 cancelled_by="user123"
             )
     
-    @pytest.mark.db_required
-def test_confirm_appointment(self, appointment_service, appointment_repository, valid_appointment):
+    def test_confirm_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test confirming an appointment."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -417,8 +397,7 @@ def test_confirm_appointment(self, appointment_service, appointment_repository, 
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_check_in_appointment(self, appointment_service, appointment_repository, valid_appointment):
+    def test_check_in_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test checking in an appointment."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -434,8 +413,7 @@ def test_check_in_appointment(self, appointment_service, appointment_repository,
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_start_appointment(self, appointment_service, appointment_repository, valid_appointment):
+    def test_start_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test starting an appointment."""
         # Set up the repository to return the appointment
         valid_appointment.status = AppointmentStatus.CHECKED_IN
@@ -452,8 +430,7 @@ def test_start_appointment(self, appointment_service, appointment_repository, va
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_complete_appointment(self, appointment_service, appointment_repository, valid_appointment):
+    def test_complete_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test completing an appointment."""
         # Set up the repository to return the appointment
         valid_appointment.status = AppointmentStatus.IN_PROGRESS
@@ -470,8 +447,7 @@ def test_complete_appointment(self, appointment_service, appointment_repository,
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_mark_no_show(self, appointment_service, appointment_repository, valid_appointment):
+    def test_mark_no_show(self, appointment_service, appointment_repository, valid_appointment):
         """Test marking an appointment as no-show."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -487,8 +463,7 @@ def test_mark_no_show(self, appointment_service, appointment_repository, valid_a
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_schedule_follow_up(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
+    def test_schedule_follow_up(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
         """Test scheduling a follow-up appointment."""
         # Set up the repository to return the appointment
         valid_appointment.status = AppointmentStatus.COMPLETED
@@ -519,8 +494,7 @@ def test_schedule_follow_up(self, appointment_service, appointment_repository, v
         # Check that the repository was called twice (once for the follow-up, once for the original)
         assert appointment_repository.save.call_count == 2
     
-    @pytest.mark.db_required
-def test_send_reminder(self, appointment_service, appointment_repository, valid_appointment):
+    def test_send_reminder(self, appointment_service, appointment_repository, valid_appointment):
         """Test sending a reminder for an appointment."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment
@@ -537,8 +511,7 @@ def test_send_reminder(self, appointment_service, appointment_repository, valid_
         # Check that the repository was called
         appointment_repository.save.assert_called_once()
     
-    @pytest.mark.db_required
-def test_update_notes(self, appointment_service, appointment_repository, valid_appointment):
+    def test_update_notes(self, appointment_service, appointment_repository, valid_appointment):
         """Test updating appointment notes."""
         # Set up the repository to return the appointment
         appointment_repository.get_by_id.return_value = valid_appointment

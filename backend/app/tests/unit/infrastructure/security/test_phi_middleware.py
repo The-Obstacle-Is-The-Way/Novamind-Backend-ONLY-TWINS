@@ -174,13 +174,11 @@ def authenticated_request():
     return mock_request
 
 
-@pytest.mark.db_required
 class TestPHIMiddleware:
     """Test suite for the PHI middleware."""
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_phi_detection_in_request(self, phi_middleware, authenticated_request, mock_audit_logger):
+    async def test_phi_detection_in_request(self, phi_middleware, authenticated_request, mock_audit_logger):
         """Test detection of PHI in request body."""
         # Setup the next middleware in the chain
         async def mock_call_next(request):
@@ -202,8 +200,7 @@ def test_phi_detection_in_request(self, phi_middleware, authenticated_request, m
         mock_audit_logger.log_phi_access.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_phi_masking_in_response(self, phi_middleware, authenticated_request, mock_masking_service):
+    async def test_phi_masking_in_response(self, phi_middleware, authenticated_request, mock_masking_service):
         """Test masking of PHI in response body."""
         # Configure middleware to mask sensitive data
         phi_middleware.config.mask_sensitive_data_in_responses = True
@@ -245,8 +242,7 @@ def test_phi_masking_in_response(self, phi_middleware, authenticated_request, mo
         mock_masking_service.mask_phi.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_missing_phi_access_reason(self, phi_middleware, authenticated_request):
+    async def test_missing_phi_access_reason(self, phi_middleware, authenticated_request):
         """Test handling of request without PHI access reason."""
         # Remove the PHI access reason header
         authenticated_request.headers = Headers({
@@ -266,8 +262,7 @@ def test_missing_phi_access_reason(self, phi_middleware, authenticated_request):
         phi_middleware.audit_logger.log_phi_violation.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_invalid_phi_access_reason(self, phi_middleware, authenticated_request):
+    async def test_invalid_phi_access_reason(self, phi_middleware, authenticated_request):
         """Test handling of request with invalid PHI access reason."""
         # Set an invalid PHI access reason
         authenticated_request.headers = Headers({
@@ -288,8 +283,7 @@ def test_invalid_phi_access_reason(self, phi_middleware, authenticated_request):
         phi_middleware.audit_logger.log_phi_violation.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_exempt_path(self, phi_middleware, authenticated_request):
+    async def test_exempt_path(self, phi_middleware, authenticated_request):
         """Test that exempt paths bypass PHI processing."""
         # Modify the request to use an exempt path
         authenticated_request.url.path = "/health"
@@ -313,8 +307,7 @@ def test_exempt_path(self, phi_middleware, authenticated_request):
         phi_middleware.audit_logger.log_phi_access.assert_not_called()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_disabled_middleware(self, phi_config, app, authenticated_request):
+    async def test_disabled_middleware(self, phi_config, app, authenticated_request):
         """Test behavior when middleware is disabled."""
         # Create disabled middleware
         disabled_config = phi_config
@@ -342,8 +335,7 @@ def test_disabled_middleware(self, phi_config, app, authenticated_request):
         disabled_middleware.audit_logger.log_phi_access.assert_not_called()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_patient_relationship_validation(self, phi_middleware, authenticated_request):
+    async def test_patient_relationship_validation(self, phi_middleware, authenticated_request):
         """Test validation of provider-patient relationship."""
         # Configure middleware to require patient relationship
         phi_middleware.config.require_patient_relationship = True
@@ -370,8 +362,7 @@ def test_patient_relationship_validation(self, phi_middleware, authenticated_req
             await phi_middleware.dispatch(authenticated_request, mock_call_next)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_phi_detection_in_url(self, phi_middleware, authenticated_request):
+    async def test_phi_detection_in_url(self, phi_middleware, authenticated_request):
         """Test detection of PHI in URL path/query."""
         # Modify the request to include PHI in URL
         authenticated_request.url.path = "/api/patients/123-45-6789"  # SSN in URL
@@ -390,8 +381,7 @@ def test_phi_detection_in_url(self, phi_middleware, authenticated_request):
         phi_middleware.audit_logger.log_phi_violation.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_minimum_necessary_principle(self, phi_middleware, authenticated_request):
+    async def test_minimum_necessary_principle(self, phi_middleware, authenticated_request):
         """Test enforcement of minimum necessary principle."""
         # Configure middleware to enforce minimum necessary
         phi_middleware.config.enforce_minimum_necessary = True
@@ -418,8 +408,7 @@ def test_minimum_necessary_principle(self, phi_middleware, authenticated_request
         phi_middleware.audit_logger.log_phi_violation.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_sensitive_query_parameters(self, phi_middleware, authenticated_request):
+    async def test_sensitive_query_parameters(self, phi_middleware, authenticated_request):
         """Test detection of PHI in query parameters."""
         # Modify the request to include PHI in query params
         authenticated_request.url.path = "/api/patients"
@@ -439,8 +428,7 @@ def test_sensitive_query_parameters(self, phi_middleware, authenticated_request)
         phi_middleware.audit_logger.log_phi_violation.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_phi_response_handling(self, phi_middleware, authenticated_request):
+    async def test_phi_response_handling(self, phi_middleware, authenticated_request):
         """Test proper handling of PHI in responses."""
         # Configure middleware
         phi_middleware.config.mask_sensitive_data_in_responses = True
@@ -488,8 +476,7 @@ def test_phi_response_handling(self, phi_middleware, authenticated_request):
         assert response_data["medical_records"][0]["diagnosis"] == "F41.1"
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_access_record_creation(self, phi_middleware, authenticated_request):
+    async def test_access_record_creation(self, phi_middleware, authenticated_request):
         """Test creation of proper PHI access records."""
         # Setup the next middleware in the chain
         async def mock_call_next(request):
@@ -512,8 +499,7 @@ def test_access_record_creation(self, phi_middleware, authenticated_request):
         assert access_record.action is not None
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_large_request_handling(self, phi_middleware, authenticated_request):
+    async def test_large_request_handling(self, phi_middleware, authenticated_request):
         """Test handling of large requests with PHI."""
         # Configure size limit
         phi_middleware.config.request_body_size_limit_kb = 1  # 1KB limit
@@ -540,8 +526,7 @@ def test_large_request_handling(self, phi_middleware, authenticated_request):
         assert exc_info.value.status_code == 413  # Request Entity Too Large
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_role_based_access_control(self, phi_middleware, authenticated_request):
+    async def test_role_based_access_control(self, phi_middleware, authenticated_request):
         """Test role-based PHI access control."""
         # Set up different roles with varying PHI access permissions
         phi_middleware.config.role_phi_access = {
@@ -583,8 +568,7 @@ def test_role_based_access_control(self, phi_middleware, authenticated_request):
             await phi_middleware.dispatch(authenticated_request, mock_call_next)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_purpose_specific_access(self, phi_middleware, authenticated_request):
+    async def test_purpose_specific_access(self, phi_middleware, authenticated_request):
         """Test purpose-specific PHI access controls."""
         # Configure purpose-specific access rules
         phi_middleware.config.purpose_based_access = {

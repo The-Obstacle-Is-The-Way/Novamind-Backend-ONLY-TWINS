@@ -51,7 +51,6 @@ def patient_repository(db_session, encryption_service):
     return PatientRepository(db_session, encryption_service)
 
 
-@pytest.mark.db_required
 def test_patient_creation_encrypts_phi(patient_repository, encryption_service):
     """Test that patient creation encrypts PHI fields."""
     # Spy on the encryption service
@@ -86,7 +85,6 @@ def test_patient_creation_encrypts_phi(patient_repository, encryption_service):
         assert "INS-67890" in encrypted_fields, "Insurance ID should be encrypted"
 
 
-@pytest.mark.db_required
 def test_patient_retrieval_decrypts_phi(patient_repository, encryption_service, db_session):
     """Test that patient retrieval decrypts PHI fields."""
     # Create an "encrypted" patient record in the mock DB
@@ -119,7 +117,6 @@ def test_patient_retrieval_decrypts_phi(patient_repository, encryption_service, 
         assert patient.email == "john.doe@example.com"
 
 
-@pytest.mark.db_required
 def test_repository_filters_inactive_records(patient_repository, db_session):
     """Test that repository filters out inactive/deleted records by default."""
     # Setup mock to verify filtering
@@ -135,7 +132,6 @@ def test_repository_filters_inactive_records(patient_repository, db_session):
     assert "is_active" in str(filter_args), "Should filter by is_active"
 
 
-@pytest.mark.db_required
 def test_audit_logging_on_patient_changes(patient_repository, encryption_service):
     """Test that all patient changes are audit logged."""
     patient_id = str(uuid.uuid4())
@@ -167,7 +163,6 @@ def test_audit_logging_on_patient_changes(patient_repository, encryption_service
             assert "john.doe@example.com" not in json.dumps(log_payload), "Email should not be in audit log"
 
 
-@pytest.mark.db_required
 def test_authorization_check_before_operations(patient_repository):
     """Test that authorization is checked before sensitive operations."""
     patient_id = str(uuid.uuid4())
@@ -204,7 +199,6 @@ def test_authorization_check_before_operations(patient_repository):
             patient_repository.delete(patient_id)
 
 
-@pytest.mark.db_required
 def test_phi_never_appears_in_exceptions(patient_repository, db_session):
     """Test that PHI never appears in exception messages."""
     # Make DB session fail with an exception containing PHI
@@ -231,7 +225,6 @@ def test_phi_never_appears_in_exceptions(patient_repository, db_session):
     assert "[REDACTED]" in exception_str or "PHI redacted" in exception_str, "Exception should indicate PHI redaction"
 
 
-@pytest.mark.db_required
 def test_bulk_operations_maintain_encryption(patient_repository, encryption_service):
     """Test that bulk operations maintain encryption for all records."""
     # Create multiple patients
@@ -254,7 +247,6 @@ def test_bulk_operations_maintain_encryption(patient_repository, encryption_serv
                 f"SSN {patient.ssn} should be encrypted"
 
 
-@pytest.mark.db_required
 def test_search_filters_without_exposing_phi(patient_repository, db_session):
     """Test that search operations filter records without exposing PHI."""
     # Mock query builder
@@ -286,7 +278,6 @@ def test_search_filters_without_exposing_phi(patient_repository, db_session):
             assert "123-45-6789" not in log_message, "SSN should not appear in logs"
 
 
-@pytest.mark.db_required
 def test_encryption_key_rotation(encryption_service):
     """Test that encryption key rotation works correctly."""
     # Encrypt data with the current key
@@ -320,7 +311,6 @@ def test_encryption_key_rotation(encryption_service):
     assert decrypted == original_text
 
 
-@pytest.mark.db_required
 def test_field_level_encryption(encryption_service):
     """Test that encryption operates at the field level not record level."""
     # Encrypt multiple fields

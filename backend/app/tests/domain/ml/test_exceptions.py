@@ -4,24 +4,20 @@ Tests for the ML exceptions module.
 This module tests the custom exception classes for machine learning operations,
 particularly the MentalLLaMA inference system exceptions.
 """
-import pytest
-from typing import Dict, Any
 
 from app.domain.ml.exceptions import (
+    MentalLLaMAAuthenticationError,
     MentalLLaMABaseException,
     MentalLLaMAConnectionError,
-    MentalLLaMAAuthenticationError,
     MentalLLaMAInferenceError,
-    MentalLLaMAValidationError,
     MentalLLaMAQuotaExceededError,
+    MentalLLaMAValidationError,
 )
 
 
-@pytest.mark.db_required
 class TestMentalLLaMAExceptions:
     """Tests for the MentalLLaMA exception classes."""
     
-    @pytest.mark.db_required
 def test_base_exception(self):
         """Test MentalLLaMABaseException creation and properties."""
         # Create a basic exception
@@ -35,7 +31,6 @@ def test_base_exception(self):
         assert exception.details == details
         assert str(exception) == message
     
-    @pytest.mark.db_required
 def test_base_exception_without_details(self):
         """Test MentalLLaMABaseException creation without details."""
         message = "Test base exception without details"
@@ -47,7 +42,6 @@ def test_base_exception_without_details(self):
         assert exception.details == {}
         assert str(exception) == message
     
-    @pytest.mark.db_required
 def test_connection_error(self):
         """Test MentalLLaMAConnectionError creation and properties."""
         message = "Failed to connect to MentalLLaMA API"
@@ -65,7 +59,6 @@ def test_connection_error(self):
         assert exception.details == details
         assert str(exception) == message
     
-    @pytest.mark.db_required
 def test_authentication_error(self):
         """Test MentalLLaMAAuthenticationError creation and properties."""
         message = "API key invalid or expired"
@@ -81,7 +74,6 @@ def test_authentication_error(self):
         assert exception.details == details
         assert str(exception) == message
     
-    @pytest.mark.db_required
 def test_inference_error(self):
         """Test MentalLLaMAInferenceError creation and properties."""
         message = "Inference failed due to invalid input format"
@@ -116,7 +108,6 @@ def test_inference_error(self):
         assert "status_code" in exception.details
         assert exception.details["status_code"] == 400
     
-    @pytest.mark.db_required
 def test_validation_error(self):
         """Test MentalLLaMAValidationError creation and properties."""
         message = "Input validation failed"
@@ -140,7 +131,6 @@ def test_validation_error(self):
         assert "request_id" in exception.details
         assert exception.details["request_id"] == "req-123456"
     
-    @pytest.mark.db_required
 def test_quota_exceeded_error(self):
         """Test MentalLLaMAQuotaExceededError creation and properties."""
         message = "API call quota exceeded"
@@ -167,7 +157,6 @@ def test_quota_exceeded_error(self):
         assert "reset_time" in exception.details
         assert exception.details["reset_time"] == "2025-04-11T00:00:00Z"
     
-    @pytest.mark.db_required
 def test_exception_inheritance(self):
         """Test that all exceptions inherit from MentalLLaMABaseException."""
         # Create instances of all exception types

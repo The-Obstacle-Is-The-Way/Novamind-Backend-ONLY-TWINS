@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Base Security Test Case
 
@@ -8,9 +7,9 @@ proper authentication setup and user role management.
 
 import uuid
 from unittest import TestCase
-from typing import Dict, List, Optional, Set, Union
 
 import pytest
+
 from app.core.security import RoleBasedAccessControl
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
@@ -76,7 +75,7 @@ class BaseSecurityTest(TestCase):
         self.rbac.add_role_permission('admin', 'update:all_data')
         self.rbac.add_role_permission('admin', 'delete:all_data')
     
-    def has_permission(self, permission: str, roles: Optional[List[str]] = None) -> bool:
+    def has_permission(self, permission: str, roles: list[str] | None = None) -> bool:
         """
         Check if the specified roles have the given permission.
         
@@ -91,9 +90,9 @@ class BaseSecurityTest(TestCase):
         return self.rbac.has_permission(check_roles, permission)
     
     def get_auth_token(self, 
-                       user_id: Optional[str] = None, 
-                       roles: Optional[List[str]] = None,
-                       custom_claims: Optional[Dict[str, any]] = None) -> str:
+                       user_id: str | None = None, 
+                       roles: list[str] | None = None,
+                       custom_claims: dict[str, any] | None = None) -> str:
         """
         Generate a mock authentication token for testing.
         
@@ -111,9 +110,9 @@ class BaseSecurityTest(TestCase):
             **(custom_claims or {})
         }
         # Mock token is just the string representation of the claims for testing
-        return f"mock_token.{str(claims)}"
+        return f"mock_token.{claims!s}"
     
-    def get_auth_headers(self, token: Optional[str] = None) -> Dict[str, str]:
+    def get_auth_headers(self, token: str | None = None) -> dict[str, str]:
         """
         Generate mock authentication headers for testing.
         

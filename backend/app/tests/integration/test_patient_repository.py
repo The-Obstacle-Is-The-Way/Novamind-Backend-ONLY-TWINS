@@ -4,16 +4,16 @@ Database-dependent tests for the Patient Repository.
 These tests require an actual database connection.
 They test the repository layer's interaction with the database.
 """
-import pytest
 import uuid
 from datetime import datetime, timedelta
 
-from app.domain.entities.patient import Patient
-from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
-from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
+import pytest
+
+from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import (
+    PatientRepository,
+)
 
 
-@pytest.mark.db_required
 class TestPatientRepository:
     """
     Integration tests for the PatientRepository.
@@ -43,7 +43,6 @@ class TestPatientRepository:
             "updated_at": datetime.now()
         }
     
-    @pytest.mark.db_required
     async def test_create_patient(self, repository, sample_patient_data):
         """Test creating a patient in the database."""
         # Create a patient
@@ -58,7 +57,6 @@ class TestPatientRepository:
         # Clean up - delete the patient
         await repository.delete(patient.id)
     
-    @pytest.mark.db_required
     async def test_get_patient_by_id(self, repository, sample_patient_data):
         """Test retrieving a patient by ID from the database."""
         # Create a patient first
@@ -76,7 +74,6 @@ class TestPatientRepository:
         # Clean up
         await repository.delete(created_patient.id)
     
-    @pytest.mark.db_required
     async def test_update_patient(self, repository, sample_patient_data):
         """Test updating a patient in the database."""
         # Create a patient first
@@ -104,7 +101,6 @@ class TestPatientRepository:
         # Clean up
         await repository.delete(created_patient.id)
     
-    @pytest.mark.db_required
     async def test_delete_patient(self, repository, sample_patient_data):
         """Test deleting a patient from the database."""
         # Create a patient first
@@ -120,7 +116,6 @@ class TestPatientRepository:
         retrieved_patient = await repository.get_by_id(created_patient.id)
         assert retrieved_patient is None
     
-    @pytest.mark.db_required
     async def test_get_all_patients(self, repository, sample_patient_data):
         """Test retrieving all patients from the database."""
         # Create multiple patients

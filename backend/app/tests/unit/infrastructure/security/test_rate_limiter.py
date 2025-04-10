@@ -61,12 +61,10 @@ def mock_response():
     return mock
 
 
-@pytest.mark.db_required
 class TestRateLimitConfig:
     """Tests for RateLimitConfig class."""
 
-    @pytest.mark.db_required
-def test_init(self):
+    def test_init(self):
         """Test initialization of RateLimitConfig."""
         config = RateLimitConfig(
             requests_per_period=100,
@@ -77,8 +75,7 @@ def test_init(self):
         assert config.period_seconds == 60
         assert config.burst_capacity == 10
 
-    @pytest.mark.db_required
-def test_init_default_burst_capacity(self):
+    def test_init_default_burst_capacity(self):
         """Test initialization of RateLimitConfig with default burst capacity."""
         config = RateLimitConfig(
             requests_per_period=100,
@@ -89,12 +86,10 @@ def test_init_default_burst_capacity(self):
         assert config.burst_capacity == 0
 
 
-@pytest.mark.db_required
 class TestDistributedRateLimiter:
     """Tests for DistributedRateLimiter class."""
 
-    @pytest.mark.db_required
-def test_init(self, mock_cache_service):
+    def test_init(self, mock_cache_service):
         """Test initialization of DistributedRateLimiter."""
         limiter = DistributedRateLimiter(cache_service=mock_cache_service)
         assert limiter.cache == mock_cache_service
@@ -102,8 +97,7 @@ def test_init(self, mock_cache_service):
         assert limiter.configs[RateLimitType.DEFAULT].requests_per_period == 100
         assert limiter.configs[RateLimitType.LOGIN].requests_per_period == 5
 
-    @pytest.mark.db_required
-def test_configure(self, rate_limiter):
+    def test_configure(self, rate_limiter):
         """Test configuring rate limits."""
         custom_config = RateLimitConfig(
             requests_per_period=200,
@@ -116,8 +110,7 @@ def test_configure(self, rate_limiter):
         assert rate_limiter.configs[RateLimitType.DEFAULT].burst_capacity == 20
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_is_rate_limited_redis_unavailable(self, rate_limiter):
+    async def test_is_rate_limited_redis_unavailable(self, rate_limiter):
         """Test behavior when Redis is unavailable."""
         rate_limiter.cache.redis_client = None
         is_limited, info = await rate_limiter.is_rate_limited("test-ip")
@@ -126,8 +119,7 @@ def test_is_rate_limited_redis_unavailable(self, rate_limiter):
         assert "Redis unavailable" in info["reason"]
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_is_rate_limited_new_bucket(self, rate_limiter, mock_cache_service):
+    async def test_is_rate_limited_new_bucket(self, rate_limiter, mock_cache_service):
         """Test first request creates a new bucket."""
         mock_cache_service.exists.return_value = False
         
@@ -149,8 +141,7 @@ def test_is_rate_limited_new_bucket(self, rate_limiter, mock_cache_service):
         assert call_args["value"]["remaining"] == 109
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_is_rate_limited_existing_bucket(self, rate_limiter, mock_cache_service):
+    async def test_is_rate_limited_existing_bucket(self, rate_limiter, mock_cache_service):
         """Test request with existing bucket."""
         mock_cache_service.exists.return_value = True
         current_time = time.time()
@@ -178,8 +169,7 @@ def test_is_rate_limited_existing_bucket(self, rate_limiter, mock_cache_service)
         assert call_args["value"]["remaining"] == 49
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_is_rate_limited_bucket_expired(self, rate_limiter, mock_cache_service):
+    async def test_is_rate_limited_bucket_expired(self, rate_limiter, mock_cache_service):
         """Test request when bucket has expired."""
         mock_cache_service.exists.return_value = True
         current_time = time.time()
@@ -202,8 +192,7 @@ def test_is_rate_limited_bucket_expired(self, rate_limiter, mock_cache_service):
         mock_cache_service.set.assert_called_once()
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_is_rate_limited_no_tokens_left(self, rate_limiter, mock_cache_service):
+    async def test_is_rate_limited_no_tokens_left(self, rate_limiter, mock_cache_service):
         """Test request when no tokens are left."""
         mock_cache_service.exists.return_value = True
         current_time = time.time()
@@ -227,8 +216,7 @@ def test_is_rate_limited_no_tokens_left(self, rate_limiter, mock_cache_service):
         # No set called since the bucket wasn't modified
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_is_rate_limited_with_user_id(self, rate_limiter, mock_cache_service):
+    async def test_is_rate_limited_with_user_id(self, rate_limiter, mock_cache_service):
         """Test rate limiting with a user ID."""
         mock_cache_service.exists.return_value = False
         
@@ -246,8 +234,7 @@ def test_is_rate_limited_with_user_id(self, rate_limiter, mock_cache_service):
         assert "user123" in call_args
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_is_rate_limited_redis_error(self, rate_limiter, mock_cache_service):
+    async def test_is_rate_limited_redis_error(self, rate_limiter, mock_cache_service):
         """Test behavior when Redis raises an error."""
         mock_cache_service.exists.side_effect = Exception("Redis error")
         
@@ -257,8 +244,7 @@ def test_is_rate_limited_redis_error(self, rate_limiter, mock_cache_service):
         assert "Error" in info["reason"]
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_apply_rate_limit_headers(self, rate_limiter, mock_response):
+    async def test_apply_rate_limit_headers(self, rate_limiter, mock_response):
         """Test applying rate limit headers to response."""
         rate_limit_info = {
             "limit": 100,
@@ -273,8 +259,7 @@ def test_apply_rate_limit_headers(self, rate_limiter, mock_response):
         assert "X-RateLimit-Reset" in mock_response.headers
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_apply_rate_limit_headers_with_retry(self, rate_limiter, mock_response):
+    async def test_apply_rate_limit_headers_with_retry(self, rate_limiter, mock_response):
         """Test applying rate limit headers with retry-after."""
         rate_limit_info = {
             "limit": 100,
@@ -290,8 +275,7 @@ def test_apply_rate_limit_headers_with_retry(self, rate_limiter, mock_response):
         assert mock_response.headers["Retry-After"] == "60"
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_process_request_default(self, rate_limiter, mock_request):
+    async def test_process_request_default(self, rate_limiter, mock_request):
         """Test processing a basic request."""
         with patch.object(
             rate_limiter, "is_rate_limited", AsyncMock(return_value=(False, {"remaining": 99}))
@@ -308,8 +292,7 @@ def test_process_request_default(self, rate_limiter, mock_request):
             assert call_args[1]["limit_type"] == RateLimitType.DEFAULT
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_process_request_with_api_key(self, rate_limiter, mock_request):
+    async def test_process_request_with_api_key(self, rate_limiter, mock_request):
         """Test processing a request with an API key."""
         mock_request.headers = Headers({"X-API-Key": "test-api-key"})
         
@@ -328,8 +311,7 @@ def test_process_request_with_api_key(self, rate_limiter, mock_request):
             assert call_args[1]["limit_type"] == RateLimitType.API_KEY
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_process_request_with_user(self, rate_limiter, mock_request):
+    async def test_process_request_with_user(self, rate_limiter, mock_request):
         """Test processing a request with a user."""
         mock_request.state.user = {"sub": "user123"}
         
@@ -347,8 +329,7 @@ def test_process_request_with_user(self, rate_limiter, mock_request):
             assert call_args[1]["user_id"] == "user123"
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_process_request_custom_limit_type(self, rate_limiter, mock_request):
+    async def test_process_request_custom_limit_type(self, rate_limiter, mock_request):
         """Test processing a request with a custom limit type."""
         with patch.object(
             rate_limiter, "is_rate_limited", AsyncMock(return_value=(False, {"remaining": 99}))

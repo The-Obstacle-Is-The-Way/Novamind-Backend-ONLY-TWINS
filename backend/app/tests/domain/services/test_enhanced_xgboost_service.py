@@ -14,7 +14,6 @@ from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 
 
-@pytest.mark.venv_only
 class TestEnhancedXGBoostService:
     """Test suite for the EnhancedXGBoostService."""
     
@@ -24,14 +23,12 @@ class TestEnhancedXGBoostService:
         return EnhancedXGBoostService()
     
     @pytest.fixture
-    @pytest.mark.venv_only
-def test_patient_id(self):
+    def test_patient_id(self):
         """Generate a test patient ID."""
         return uuid.uuid4()
     
     @pytest.fixture
-    @pytest.mark.venv_only
-def test_baseline_data(self):
+    def test_baseline_data(self):
         """Create test baseline data."""
         return {
             "baseline_serotonin": 0.4,
@@ -42,8 +39,7 @@ def test_baseline_data(self):
             "stress_level": 0.6
         }
     
-    @pytest.mark.venv_only
-def test_predict_treatment_response_basic(self, xgboost_service, test_patient_id):
+    def test_predict_treatment_response_basic(self, xgboost_service, test_patient_id):
         """Test basic treatment response prediction."""
         # Test prediction for increasing serotonin
         prediction = xgboost_service.predict_treatment_response(
@@ -65,8 +61,7 @@ def test_predict_treatment_response_basic(self, xgboost_service, test_patient_id
         assert prediction["timeframe_days"] > 0
         assert len(prediction["feature_importance"]) > 0
     
-    @pytest.mark.venv_only
-def test_predict_treatment_response_with_baseline(self, xgboost_service, test_patient_id, test_baseline_data):
+    def test_predict_treatment_response_with_baseline(self, xgboost_service, test_patient_id, test_baseline_data):
         """Test treatment response prediction with baseline data."""
         # Predict with baseline data
         prediction = xgboost_service.predict_treatment_response(
@@ -86,8 +81,7 @@ def test_predict_treatment_response_with_baseline(self, xgboost_service, test_pa
         assert "baseline_dopamine" in importance
         assert "baseline_serotonin" in importance
     
-    @pytest.mark.venv_only
-def test_prediction_different_brain_regions(self, xgboost_service, test_patient_id):
+    def test_prediction_different_brain_regions(self, xgboost_service, test_patient_id):
         """Test predictions for different brain regions."""
         # Test prediction for different brain regions
         regions = [
@@ -112,8 +106,7 @@ def test_prediction_different_brain_regions(self, xgboost_service, test_patient_
         # Not all predictions should be identical (extremely unlikely with our algorithm)
         assert len(set(predictions)) > 1, "Predictions should differ by brain region"
     
-    @pytest.mark.venv_only
-def test_prediction_different_neurotransmitters(self, xgboost_service, test_patient_id):
+    def test_prediction_different_neurotransmitters(self, xgboost_service, test_patient_id):
         """Test predictions for different neurotransmitters."""
         # Test prediction for different neurotransmitters
         neurotransmitters = [
@@ -137,8 +130,7 @@ def test_prediction_different_neurotransmitters(self, xgboost_service, test_pati
         # Verify that predictions differ by neurotransmitter
         assert len(set(predictions)) > 1, "Predictions should differ by neurotransmitter"
     
-    @pytest.mark.venv_only
-def test_positive_vs_negative_treatment_effects(self, xgboost_service, test_patient_id, test_baseline_data):
+    def test_positive_vs_negative_treatment_effects(self, xgboost_service, test_patient_id, test_baseline_data):
         """Test that positive and negative treatment effects yield different predictions."""
         # Predict with positive effect
         positive_prediction = xgboost_service.predict_treatment_response(
@@ -162,8 +154,7 @@ def test_positive_vs_negative_treatment_effects(self, xgboost_service, test_pati
         assert positive_prediction["predicted_response"] != negative_prediction["predicted_response"], \
             "Positive and negative treatment effects should yield different predictions"
     
-    @pytest.mark.venv_only
-def test_analyze_treatment_interactions(self, xgboost_service):
+    def test_analyze_treatment_interactions(self, xgboost_service):
         """Test analysis of interactions between neurotransmitter treatments."""
         # Test interaction analysis
         interactions = xgboost_service.analyze_treatment_interactions(
@@ -191,8 +182,7 @@ def test_analyze_treatment_interactions(self, xgboost_service):
         assert "net_interaction" in dopamine_interaction
         assert "is_synergistic" in dopamine_interaction
     
-    @pytest.mark.venv_only
-def test_feature_encoding(self, xgboost_service):
+    def test_feature_encoding(self, xgboost_service):
         """Test that features are correctly encoded."""
         # Test encoding brain region
         region_encoding1 = xgboost_service._encode_brain_region(BrainRegion.PREFRONTAL_CORTEX)
@@ -212,8 +202,7 @@ def test_feature_encoding(self, xgboost_service):
         assert region_encoding1 != region_encoding2
         assert nt_encoding1 != nt_encoding2
     
-    @pytest.mark.venv_only
-def test_consistency_of_predictions(self, xgboost_service, test_patient_id):
+    def test_consistency_of_predictions(self, xgboost_service, test_patient_id):
         """Test that predictions are consistent for the same inputs."""
         # Make prediction twice with same inputs
         prediction1 = xgboost_service.predict_treatment_response(

@@ -6,10 +6,9 @@ making it completely independent of the rest of the application.
 """
 
 import unittest
-import pytest
 from datetime import date
 from enum import Enum
-from typing import Dict, List, Optional, Any, Union
+from typing import Any
 from uuid import uuid4
 
 # ============= Patient Entity Implementation =============
@@ -49,7 +48,7 @@ class EmergencyContact:
         name: str,
         relationship: str,
         phone: str,
-        email: Optional[str] = None
+        email: str | None = None
     ):
         self.name = name
         self.relationship = relationship
@@ -64,7 +63,7 @@ class EmergencyContact:
         if not phone or not phone.strip():
             raise ValueError("Emergency contact phone cannot be empty")
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "name": self.name,
@@ -74,7 +73,7 @@ class EmergencyContact:
         }
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'EmergencyContact':
+    def from_dict(cls, data: dict[str, Any]) -> 'EmergencyContact':
         """Create from dictionary."""
         return cls(
             name=data.get("name", ""),
@@ -92,24 +91,24 @@ class Patient:
         id: str = None,
         first_name: str = None,
         last_name: str = None,
-        date_of_birth: Union[str, date] = None,
-        gender: Union[str, Gender] = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        address: Optional[str] = None,
-        insurance_id: Optional[str] = None,
-        insurance_provider: Optional[str] = None,
-        insurance_group: Optional[str] = None,
-        insurance_status: Union[str, InsuranceStatus] = InsuranceStatus.UNKNOWN,
-        emergency_contacts: Optional[List[EmergencyContact]] = None,
-        medical_history: Optional[List[str]] = None,
-        medications: Optional[List[Dict[str, Any]]] = None,
-        allergies: Optional[List[str]] = None,
-        status: Union[str, PatientStatus] = PatientStatus.ONBOARDING,
-        notes: Optional[str] = None,
-        last_appointment: Optional[str] = None,
-        next_appointment: Optional[str] = None,
-        preferred_provider_id: Optional[str] = None
+        date_of_birth: str | date = None,
+        gender: str | Gender = None,
+        email: str | None = None,
+        phone: str | None = None,
+        address: str | None = None,
+        insurance_id: str | None = None,
+        insurance_provider: str | None = None,
+        insurance_group: str | None = None,
+        insurance_status: str | InsuranceStatus = InsuranceStatus.UNKNOWN,
+        emergency_contacts: list[EmergencyContact] | None = None,
+        medical_history: list[str] | None = None,
+        medications: list[dict[str, Any]] | None = None,
+        allergies: list[str] | None = None,
+        status: str | PatientStatus = PatientStatus.ONBOARDING,
+        notes: str | None = None,
+        last_appointment: str | None = None,
+        next_appointment: str | None = None,
+        preferred_provider_id: str | None = None
     ):
         # Generate ID if not provided
         self.id = id if id else str(uuid4())
@@ -204,13 +203,13 @@ class Patient:
             
     def update_personal_info(
         self,
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-        date_of_birth: Optional[Union[str, date]] = None,
-        gender: Optional[Union[str, Gender]] = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        address: Optional[str] = None
+        first_name: str | None = None,
+        last_name: str | None = None,
+        date_of_birth: str | date | None = None,
+        gender: str | Gender | None = None,
+        email: str | None = None,
+        phone: str | None = None,
+        address: str | None = None
     ):
         """Update patient's personal information."""
         if first_name is not None:
@@ -252,10 +251,10 @@ class Patient:
         
     def update_insurance_info(
         self,
-        insurance_id: Optional[str] = None,
-        insurance_provider: Optional[str] = None,
-        insurance_group: Optional[str] = None,
-        insurance_status: Optional[Union[str, InsuranceStatus]] = None
+        insurance_id: str | None = None,
+        insurance_provider: str | None = None,
+        insurance_group: str | None = None,
+        insurance_status: str | InsuranceStatus | None = None
     ):
         """Update patient's insurance information."""
         if insurance_id is not None:
@@ -279,7 +278,7 @@ class Patient:
         name: str,
         relationship: str,
         phone: str,
-        email: Optional[str] = None
+        email: str | None = None
     ):
         """Add an emergency contact."""
         contact = EmergencyContact(
@@ -308,9 +307,9 @@ class Patient:
         name: str,
         dosage: str,
         frequency: str,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        prescribed_by: Optional[str] = None
+        start_date: str | None = None,
+        end_date: str | None = None,
+        prescribed_by: str | None = None
     ):
         """Add a medication."""
         if not name or not name.strip():
@@ -351,7 +350,7 @@ class Patient:
             return True
         return False
         
-    def update_status(self, status: Union[str, PatientStatus]):
+    def update_status(self, status: str | PatientStatus):
         """Update patient status."""
         if isinstance(status, str):
             try:
@@ -367,8 +366,8 @@ class Patient:
         
     def update_appointment_times(
         self,
-        last_appointment: Optional[str] = None,
-        next_appointment: Optional[str] = None
+        last_appointment: str | None = None,
+        next_appointment: str | None = None
     ):
         """Update appointment times."""
         if last_appointment is not None:
@@ -380,7 +379,7 @@ class Patient:
         """Set preferred provider."""
         self.preferred_provider_id = provider_id
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -407,7 +406,7 @@ class Patient:
         }
         
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Patient':
+    def from_dict(cls, data: dict[str, Any]) -> 'Patient':
         """Create from dictionary."""
         # Handle emergency contacts
         emergency_contacts = []
@@ -455,7 +454,6 @@ class Patient:
 
 # ============= Patient Entity Tests =============
 
-@pytest.mark.standalone
 class TestPatient(unittest.TestCase):
     """Tests for the Patient class."""
     

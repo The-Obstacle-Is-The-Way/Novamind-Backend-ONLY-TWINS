@@ -6,12 +6,10 @@ in a single file, making it completely independent of the rest of the applicatio
 """
 
 import unittest
-import pytest
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Any, Union, Set
+from typing import Any
 from uuid import uuid4
-
 
 # ================= Digital Twin Enums =================
 
@@ -60,8 +58,8 @@ class TwinModel:
         name: str,
         model_type: TwinModelType,
         patient_id: str,
-        description: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        description: str | None = None,
+        metadata: dict[str, Any] | None = None
     ):
         """
         Initialize a twin model.
@@ -94,7 +92,7 @@ class TwinModel:
         self.metadata[key] = value
         self.updated_at = datetime.now()
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -116,12 +114,12 @@ class TimeSeriesModel(TwinModel):
         self,
         name: str,
         patient_id: str,
-        data_type: Union[BiometricDataType, str],
+        data_type: BiometricDataType | str,
         prediction_interval: PredictionInterval = PredictionInterval.DAILY,
         lookback_window: int = 7,
         forecast_horizon: int = 7,
-        description: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        description: str | None = None,
+        metadata: dict[str, Any] | None = None
     ):
         """
         Initialize a time series model.
@@ -159,7 +157,7 @@ class TimeSeriesModel(TwinModel):
         self.last_trained = None
         self.performance_metrics = {}
         
-    def train(self, data: List[Dict[str, Any]]) -> Dict[str, float]:
+    def train(self, data: list[dict[str, Any]]) -> dict[str, float]:
         """
         Train the model on historical data.
         
@@ -185,7 +183,7 @@ class TimeSeriesModel(TwinModel):
         
         return metrics
         
-    def predict(self, current_data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
+    def predict(self, current_data: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
         """
         Generate predictions for the forecast horizon.
         
@@ -229,7 +227,7 @@ class TimeSeriesModel(TwinModel):
             
         return predictions
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base_dict = super().to_dict()
         time_series_dict = {
@@ -250,9 +248,9 @@ class BiometricTwinModel(TwinModel):
         self,
         name: str,
         patient_id: str,
-        biometric_types: List[BiometricDataType],
-        description: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        biometric_types: list[BiometricDataType],
+        description: str | None = None,
+        metadata: dict[str, Any] | None = None
     ):
         """
         Initialize a biometric twin model.
@@ -276,7 +274,7 @@ class BiometricTwinModel(TwinModel):
         self.alert_rules = []
         self.baseline_values = {}
         
-    def add_alert_rule(self, rule: Dict[str, Any]) -> str:
+    def add_alert_rule(self, rule: dict[str, Any]) -> str:
         """
         Add an alert rule for a biometric type.
         
@@ -309,7 +307,7 @@ class BiometricTwinModel(TwinModel):
                 return True
         return False
         
-    def set_baseline(self, biometric_type: BiometricDataType, value: Union[float, Dict[str, float]]) -> None:
+    def set_baseline(self, biometric_type: BiometricDataType, value: float | dict[str, float]) -> None:
         """
         Set a baseline value for a biometric type.
         
@@ -320,7 +318,7 @@ class BiometricTwinModel(TwinModel):
         self.baseline_values[biometric_type.value] = value
         self.updated_at = datetime.now()
         
-    def process_biometric_data(self, data_point: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def process_biometric_data(self, data_point: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Process a biometric data point and generate alerts if needed.
         
@@ -382,7 +380,7 @@ class BiometricTwinModel(TwinModel):
                 
         return alerts
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base_dict = super().to_dict()
         biometric_dict = {
@@ -399,9 +397,9 @@ class DigitalTwin:
     def __init__(
         self,
         patient_id: str,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        name: str | None = None,
+        description: str | None = None,
+        metadata: dict[str, Any] | None = None
     ):
         """
         Initialize a digital twin.
@@ -420,7 +418,7 @@ class DigitalTwin:
         self.created_at = datetime.now()
         self.updated_at = self.created_at
         self.version = "1.0.0"
-        self.models: Dict[str, TwinModel] = {}
+        self.models: dict[str, TwinModel] = {}
         
     def add_model(self, model: TwinModel) -> None:
         """
@@ -451,7 +449,7 @@ class DigitalTwin:
             return True
         return False
         
-    def get_models_by_type(self, model_type: TwinModelType) -> List[TwinModel]:
+    def get_models_by_type(self, model_type: TwinModelType) -> list[TwinModel]:
         """
         Get all models of a specific type.
         
@@ -463,7 +461,7 @@ class DigitalTwin:
         """
         return [model for model in self.models.values() if model.model_type == model_type]
         
-    def generate_biometric_alert_rules(self) -> Dict[str, Any]:
+    def generate_biometric_alert_rules(self) -> dict[str, Any]:
         """
         Generate alert rules for all biometric models.
         
@@ -535,7 +533,7 @@ class DigitalTwin:
             
         return rules_info
         
-    def predict_symptoms(self, horizon_days: int = 7) -> Dict[str, Any]:
+    def predict_symptoms(self, horizon_days: int = 7) -> dict[str, Any]:
         """
         Generate symptom predictions for all time series models.
         
@@ -572,7 +570,7 @@ class DigitalTwin:
             
         return predictions
         
-    def process_biometric_data(self, data_points: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def process_biometric_data(self, data_points: list[dict[str, Any]]) -> dict[str, Any]:
         """
         Process multiple biometric data points.
         
@@ -604,7 +602,7 @@ class DigitalTwin:
                 
         return results
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -621,7 +619,6 @@ class DigitalTwin:
 
 # ================= Tests =================
 
-@pytest.mark.standalone
 class TestDigitalTwin(unittest.TestCase):
     """Test the DigitalTwin class."""
     
@@ -856,7 +853,6 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(twin_dict["models"][model.id]["name"], model.name)
 
 
-@pytest.mark.standalone
 class TestTimeSeriesModel(unittest.TestCase):
     """Test the TimeSeriesModel class."""
     
@@ -969,7 +965,6 @@ class TestTimeSeriesModel(unittest.TestCase):
         self.assertIn("performance_metrics", model_dict)
 
 
-@pytest.mark.standalone
 class TestBiometricTwinModel(unittest.TestCase):
     """Test the BiometricTwinModel class."""
     

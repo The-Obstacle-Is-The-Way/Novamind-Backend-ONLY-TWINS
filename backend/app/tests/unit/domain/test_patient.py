@@ -43,7 +43,6 @@ def valid_patient_data(mock_encryption_service):
     }
 
 
-@pytest.mark.venv_only
 def test_create_patient(valid_patient_data, mock_encryption_service):
     """Test patient creation with valid data."""
     # Create patient
@@ -74,7 +73,6 @@ def test_create_patient(valid_patient_data, mock_encryption_service):
     assert patient._contact_info.phone.startswith("encrypted_")
 
 
-@pytest.mark.venv_only
 def test_update_patient(valid_patient_data, mock_encryption_service):
     """Test patient update."""
     # Create initial patient
@@ -105,7 +103,6 @@ def test_update_patient(valid_patient_data, mock_encryption_service):
     assert patient._contact_info.phone.startswith("encrypted_")
 
 
-@pytest.mark.venv_only
 def test_patient_phi_masking(valid_patient_data):
     """Test PHI masking in patient data."""
     patient = Patient(**valid_patient_data)

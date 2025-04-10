@@ -51,12 +51,10 @@ def valid_appointment(valid_appointment_data):
     return Appointment(**valid_appointment_data)
 
 
-@pytest.mark.venv_only
 class TestAppointment:
     """Tests for the Appointment class."""
     
-    @pytest.mark.venv_only
-def test_create_appointment(self, valid_appointment_data):
+    def test_create_appointment(self, valid_appointment_data):
         """Test creating an appointment."""
         appointment = Appointment(**valid_appointment_data)
         
@@ -72,8 +70,7 @@ def test_create_appointment(self, valid_appointment_data):
         assert appointment.notes == valid_appointment_data["notes"]
         assert appointment.reason == valid_appointment_data["reason"]
     
-    @pytest.mark.venv_only
-def test_create_appointment_with_string_enums(self, valid_appointment_data):
+    def test_create_appointment_with_string_enums(self, valid_appointment_data):
         """Test creating an appointment with string enums."""
         # Convert enums to strings
         data = valid_appointment_data.copy()
@@ -87,8 +84,7 @@ def test_create_appointment_with_string_enums(self, valid_appointment_data):
         assert appointment.status == AppointmentStatus.SCHEDULED
         assert appointment.priority == AppointmentPriority.NORMAL
     
-    @pytest.mark.venv_only
-def test_create_appointment_with_auto_id(self, valid_appointment_data):
+    def test_create_appointment_with_auto_id(self, valid_appointment_data):
         """Test creating an appointment with auto-generated ID."""
         data = valid_appointment_data.copy()
         data.pop("id")
@@ -98,8 +94,7 @@ def test_create_appointment_with_auto_id(self, valid_appointment_data):
         assert appointment.id is not None
         assert isinstance(appointment.id, uuid.UUID)
     
-    @pytest.mark.venv_only
-def test_validate_required_fields(self):
+    def test_validate_required_fields(self):
         """Test validation of required fields."""
         # Missing patient_id
         with pytest.raises(InvalidAppointmentStateError):
@@ -146,8 +141,7 @@ def test_validate_required_fields(self):
                 end_time=datetime.now() + timedelta(days=1, hours=1)
             )
     
-    @pytest.mark.venv_only
-def test_validate_appointment_times(self, future_datetime):
+    def test_validate_appointment_times(self, future_datetime):
         """Test validation of appointment times."""
         # End time before start time
         with pytest.raises(InvalidAppointmentTimeError):
@@ -169,48 +163,42 @@ def test_validate_appointment_times(self, future_datetime):
                 appointment_type=AppointmentType.INITIAL_CONSULTATION
             )
     
-    @pytest.mark.venv_only
-def test_confirm_appointment(self, valid_appointment):
+    def test_confirm_appointment(self, valid_appointment):
         """Test confirming an appointment."""
         valid_appointment.confirm()
         
         assert valid_appointment.status == AppointmentStatus.CONFIRMED
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_confirm_non_scheduled_appointment(self, valid_appointment):
+    def test_confirm_non_scheduled_appointment(self, valid_appointment):
         """Test confirming a non-scheduled appointment."""
         valid_appointment.status = AppointmentStatus.CANCELLED
         
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.confirm()
     
-    @pytest.mark.venv_only
-def test_check_in_appointment(self, valid_appointment):
+    def test_check_in_appointment(self, valid_appointment):
         """Test checking in an appointment."""
         valid_appointment.check_in()
         
         assert valid_appointment.status == AppointmentStatus.CHECKED_IN
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_check_in_confirmed_appointment(self, valid_appointment):
+    def test_check_in_confirmed_appointment(self, valid_appointment):
         """Test checking in a confirmed appointment."""
         valid_appointment.status = AppointmentStatus.CONFIRMED
         valid_appointment.check_in()
         
         assert valid_appointment.status == AppointmentStatus.CHECKED_IN
     
-    @pytest.mark.venv_only
-def test_check_in_invalid_appointment(self, valid_appointment):
+    def test_check_in_invalid_appointment(self, valid_appointment):
         """Test checking in an invalid appointment."""
         valid_appointment.status = AppointmentStatus.CANCELLED
         
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.check_in()
     
-    @pytest.mark.venv_only
-def test_start_appointment(self, valid_appointment):
+    def test_start_appointment(self, valid_appointment):
         """Test starting an appointment."""
         valid_appointment.status = AppointmentStatus.CHECKED_IN
         valid_appointment.start()
@@ -218,14 +206,12 @@ def test_start_appointment(self, valid_appointment):
         assert valid_appointment.status == AppointmentStatus.IN_PROGRESS
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_start_invalid_appointment(self, valid_appointment):
+    def test_start_invalid_appointment(self, valid_appointment):
         """Test starting an invalid appointment."""
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.start()
     
-    @pytest.mark.venv_only
-def test_complete_appointment(self, valid_appointment):
+    def test_complete_appointment(self, valid_appointment):
         """Test completing an appointment."""
         valid_appointment.status = AppointmentStatus.IN_PROGRESS
         valid_appointment.complete()
@@ -233,14 +219,12 @@ def test_complete_appointment(self, valid_appointment):
         assert valid_appointment.status == AppointmentStatus.COMPLETED
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_complete_invalid_appointment(self, valid_appointment):
+    def test_complete_invalid_appointment(self, valid_appointment):
         """Test completing an invalid appointment."""
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.complete()
     
-    @pytest.mark.venv_only
-def test_cancel_appointment(self, valid_appointment):
+    def test_cancel_appointment(self, valid_appointment):
         """Test cancelling an appointment."""
         cancelled_by = str(uuid.uuid4())
         reason = "Patient requested cancellation"
@@ -253,40 +237,35 @@ def test_cancel_appointment(self, valid_appointment):
         assert valid_appointment.cancellation_reason == reason
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_cancel_invalid_appointment(self, valid_appointment):
+    def test_cancel_invalid_appointment(self, valid_appointment):
         """Test cancelling an invalid appointment."""
         valid_appointment.status = AppointmentStatus.COMPLETED
         
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.cancel(str(uuid.uuid4()))
     
-    @pytest.mark.venv_only
-def test_mark_no_show(self, valid_appointment):
+    def test_mark_no_show(self, valid_appointment):
         """Test marking an appointment as no-show."""
         valid_appointment.mark_no_show()
         
         assert valid_appointment.status == AppointmentStatus.NO_SHOW
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_mark_no_show_confirmed_appointment(self, valid_appointment):
+    def test_mark_no_show_confirmed_appointment(self, valid_appointment):
         """Test marking a confirmed appointment as no-show."""
         valid_appointment.status = AppointmentStatus.CONFIRMED
         valid_appointment.mark_no_show()
         
         assert valid_appointment.status == AppointmentStatus.NO_SHOW
     
-    @pytest.mark.venv_only
-def test_mark_no_show_invalid_appointment(self, valid_appointment):
+    def test_mark_no_show_invalid_appointment(self, valid_appointment):
         """Test marking an invalid appointment as no-show."""
         valid_appointment.status = AppointmentStatus.COMPLETED
         
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.mark_no_show()
     
-    @pytest.mark.venv_only
-def test_reschedule_appointment(self, valid_appointment, future_datetime):
+    def test_reschedule_appointment(self, valid_appointment, future_datetime):
         """Test rescheduling an appointment."""
         new_start_time = future_datetime + timedelta(days=1)
         new_end_time = new_start_time + timedelta(hours=1)
@@ -300,8 +279,7 @@ def test_reschedule_appointment(self, valid_appointment, future_datetime):
         assert reason in valid_appointment.notes
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_reschedule_invalid_appointment(self, valid_appointment, future_datetime):
+    def test_reschedule_invalid_appointment(self, valid_appointment, future_datetime):
         """Test rescheduling an invalid appointment."""
         valid_appointment.status = AppointmentStatus.COMPLETED
         
@@ -311,8 +289,7 @@ def test_reschedule_invalid_appointment(self, valid_appointment, future_datetime
                 future_datetime + timedelta(days=1, hours=1)
             )
     
-    @pytest.mark.venv_only
-def test_reschedule_invalid_times(self, valid_appointment, future_datetime):
+    def test_reschedule_invalid_times(self, valid_appointment, future_datetime):
         """Test rescheduling with invalid times."""
         # End time before start time
         with pytest.raises(InvalidAppointmentTimeError):
@@ -328,8 +305,7 @@ def test_reschedule_invalid_times(self, valid_appointment, future_datetime):
                 datetime.now() + timedelta(hours=1)
             )
     
-    @pytest.mark.venv_only
-def test_schedule_follow_up(self, valid_appointment):
+    def test_schedule_follow_up(self, valid_appointment):
         """Test scheduling a follow-up appointment."""
         valid_appointment.status = AppointmentStatus.COMPLETED
         follow_up_id = str(uuid.uuid4())
@@ -340,16 +316,14 @@ def test_schedule_follow_up(self, valid_appointment):
         assert valid_appointment.follow_up_appointment_id == follow_up_id
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_schedule_follow_up_invalid_appointment(self, valid_appointment):
+    def test_schedule_follow_up_invalid_appointment(self, valid_appointment):
         """Test scheduling a follow-up for an invalid appointment."""
         follow_up_id = str(uuid.uuid4())
         
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.schedule_follow_up(follow_up_id)
     
-    @pytest.mark.venv_only
-def test_send_reminder(self, valid_appointment):
+    def test_send_reminder(self, valid_appointment):
         """Test sending a reminder for an appointment."""
         valid_appointment.send_reminder()
         
@@ -357,8 +331,7 @@ def test_send_reminder(self, valid_appointment):
         assert valid_appointment.reminder_sent_at is not None
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_update_notes(self, valid_appointment):
+    def test_update_notes(self, valid_appointment):
         """Test updating appointment notes."""
         new_notes = "Patient reported improvement in symptoms"
         
@@ -367,8 +340,7 @@ def test_update_notes(self, valid_appointment):
         assert valid_appointment.notes == new_notes
         assert valid_appointment.updated_at > valid_appointment.created_at
     
-    @pytest.mark.venv_only
-def test_to_dict(self, valid_appointment):
+    def test_to_dict(self, valid_appointment):
         """Test converting an appointment to a dictionary."""
         appointment_dict = valid_appointment.to_dict()
         
@@ -381,8 +353,7 @@ def test_to_dict(self, valid_appointment):
         assert appointment_dict["status"] == valid_appointment.status.value
         assert appointment_dict["priority"] == valid_appointment.priority.value
     
-    @pytest.mark.venv_only
-def test_from_dict(self, valid_appointment):
+    def test_from_dict(self, valid_appointment):
         """Test creating an appointment from a dictionary."""
         appointment_dict = valid_appointment.to_dict()
         new_appointment = Appointment.from_dict(appointment_dict)
@@ -396,8 +367,7 @@ def test_from_dict(self, valid_appointment):
         assert new_appointment.status == valid_appointment.status
         assert new_appointment.priority == valid_appointment.priority
     
-    @pytest.mark.venv_only
-def test_equality(self, valid_appointment_data):
+    def test_equality(self, valid_appointment_data):
         """Test appointment equality."""
         appointment1 = Appointment(**valid_appointment_data)
         appointment2 = Appointment(**valid_appointment_data)
@@ -405,8 +375,7 @@ def test_equality(self, valid_appointment_data):
         assert appointment1 == appointment2
         assert hash(appointment1) == hash(appointment2)
     
-    @pytest.mark.venv_only
-def test_inequality(self, valid_appointment_data):
+    def test_inequality(self, valid_appointment_data):
         """Test appointment inequality."""
         appointment1 = Appointment(**valid_appointment_data)
         
@@ -418,8 +387,7 @@ def test_inequality(self, valid_appointment_data):
         assert hash(appointment1) != hash(appointment2)
         assert appointment1 != "not an appointment"
     
-    @pytest.mark.venv_only
-def test_string_representation(self, valid_appointment):
+    def test_string_representation(self, valid_appointment):
         """Test string representation of an appointment."""
         string_repr = str(valid_appointment)
         

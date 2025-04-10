@@ -5,14 +5,11 @@ This module tests the PHI (Protected Health Information) detection
 and sanitization capabilities of the Novamind Digital Twin Platform,
 ensuring HIPAA compliance for all data handling processes.
 """
-import pytest
-from unittest.mock import MagicMock
 
-from app.tests.security.base_test import BaseSecurityTest
 from app.core.security.phi_sanitizer import PHISanitizer
+from app.tests.security.base_test import BaseSecurityTest
 
 
-@pytest.mark.db_required
 class TestPHISanitization(BaseSecurityTest):
     """Tests for PHI detection and sanitization functionality."""
     
@@ -21,7 +18,6 @@ class TestPHISanitization(BaseSecurityTest):
         super().setUp()
         self.sanitizer = PHISanitizer()
         
-    @pytest.mark.db_required
 def test_sanitize_text_with_names(self):
         """Test that patient names are properly sanitized."""
         # Test text with common name patterns
@@ -34,7 +30,6 @@ def test_sanitize_text_with_names(self):
         self.assertIn("Patient", sanitized)
         self.assertIn("reported symptoms", sanitized)
         
-    @pytest.mark.db_required
 def test_sanitize_text_with_phone_numbers(self):
         """Test that phone numbers are properly sanitized."""
         # Test various phone number formats
@@ -51,7 +46,6 @@ def test_sanitize_text_with_phone_numbers(self):
             self.assertNotIn("4567", sanitized)
             self.assertIn("[REDACTED]", sanitized)
             
-    @pytest.mark.db_required
 def test_sanitize_text_with_dates(self):
         """Test that dates are properly sanitized."""
         # Test various date formats
@@ -69,7 +63,6 @@ def test_sanitize_text_with_dates(self):
             self.assertNotIn("1980-01-15", sanitized)
             self.assertIn("[REDACTED]", sanitized)
             
-    @pytest.mark.db_required
 def test_sanitize_text_with_ssn(self):
         """Test that Social Security Numbers are properly sanitized."""
         # Test various SSN formats
@@ -85,7 +78,6 @@ def test_sanitize_text_with_ssn(self):
             self.assertNotIn("123456789", sanitized)
             self.assertIn("[REDACTED]", sanitized)
             
-    @pytest.mark.db_required
 def test_sanitize_text_with_addresses(self):
         """Test that addresses are properly sanitized."""
         # Test address formats
@@ -97,7 +89,6 @@ def test_sanitize_text_with_addresses(self):
         self.assertNotIn("10001", sanitized)
         self.assertIn("[REDACTED]", sanitized)
         
-    @pytest.mark.db_required
 def test_sanitize_medical_record_numbers(self):
         """Test that medical record numbers are properly sanitized."""
         # Test MRN formats
@@ -114,7 +105,6 @@ def test_sanitize_medical_record_numbers(self):
             self.assertNotIn("MR-12345-B", sanitized)
             self.assertIn("[REDACTED]", sanitized)
             
-    @pytest.mark.db_required
 def test_sanitize_nested_dictionary(self):
         """Test that PHI in nested dictionary structures is properly sanitized."""
         # Test dictionary with nested PHI
@@ -145,7 +135,6 @@ def test_sanitize_nested_dictionary(self):
         self.assertIn("Patient reports symptoms", str(sanitized))
         self.assertIn("Main Clinic", str(sanitized))
         
-    @pytest.mark.db_required
 def test_sanitize_list_data(self):
         """Test that PHI in list structures is properly sanitized."""
         # Test list with PHI
@@ -165,7 +154,6 @@ def test_sanitize_list_data(self):
         self.assertIn("[REDACTED]", str(sanitized))
         self.assertIn("Patient reports symptoms", str(sanitized))
         
-    @pytest.mark.db_required
 def test_audit_logging_on_phi_detection(self):
         """Test that PHI detection is properly audit logged."""
         # Replace the sanitizer's logger with our mock
@@ -190,7 +178,6 @@ def test_audit_logging_on_phi_detection(self):
             # Restore the original logger
             self.sanitizer._logger = original_logger
             
-    @pytest.mark.db_required
 def test_no_false_positives(self):
         """Test that non-PHI text is not incorrectly sanitized."""
         # Test text without PHI

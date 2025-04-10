@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Mock Database Fixtures for Testing
 
@@ -7,12 +6,11 @@ requiring an actual PostgreSQL database connection, while still providing
 all necessary functionality for test cases.
 """
 
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 import pytest_asyncio
-from typing import Any, AsyncGenerator, Callable, Dict, List, Optional, Type, Union
-from unittest.mock import AsyncMock, MagicMock, patch
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class MockAsyncSession(MagicMock):

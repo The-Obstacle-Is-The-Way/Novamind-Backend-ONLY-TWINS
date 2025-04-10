@@ -6,16 +6,14 @@ making it completely independent of the rest of the application.
 """
 
 import unittest
-import pytest
-from typing import Dict, Any, Optional, List
-
+from typing import Any
 
 # ============= ML Exception Classes =============
 
 class MLBaseError(Exception):
     """Base class for all ML-related exceptions."""
     
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         """
         Initialize the exception.
         
@@ -54,7 +52,7 @@ class MLBaseError(Exception):
         """
         return self.details.get(key, default)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the exception to a dictionary.
         
@@ -75,8 +73,8 @@ class MLInferenceError(MLBaseError):
         self,
         message: str,
         model_name: str,
-        input_data: Optional[Any] = None,
-        details: Optional[Dict[str, Any]] = None
+        input_data: Any | None = None,
+        details: dict[str, Any] | None = None
     ):
         """
         Initialize the exception.
@@ -113,8 +111,8 @@ class MLValidationError(MLBaseError):
     def __init__(
         self,
         message: str,
-        validation_errors: Optional[List[Dict[str, Any]]] = None,
-        details: Optional[Dict[str, Any]] = None
+        validation_errors: list[dict[str, Any]] | None = None,
+        details: dict[str, Any] | None = None
     ):
         """
         Initialize the exception.
@@ -134,8 +132,8 @@ class MLValidationError(MLBaseError):
         self,
         field: str,
         error: str,
-        expected: Optional[Any] = None,
-        actual: Optional[Any] = None
+        expected: Any | None = None,
+        actual: Any | None = None
     ) -> 'MLValidationError':
         """
         Add a validation error.
@@ -170,8 +168,8 @@ class MLModelNotFoundError(MLBaseError):
     def __init__(
         self,
         model_name: str,
-        available_models: Optional[List[str]] = None,
-        details: Optional[Dict[str, Any]] = None
+        available_models: list[str] | None = None,
+        details: dict[str, Any] | None = None
     ):
         """
         Initialize the exception.
@@ -198,9 +196,9 @@ class MLServiceUnavailableError(MLBaseError):
     def __init__(
         self,
         service_name: str,
-        reason: Optional[str] = None,
-        retry_after: Optional[int] = None,
-        details: Optional[Dict[str, Any]] = None
+        reason: str | None = None,
+        retry_after: int | None = None,
+        details: dict[str, Any] | None = None
     ):
         """
         Initialize the exception.
@@ -235,8 +233,8 @@ class MLServiceRateLimitError(MLServiceUnavailableError):
         self,
         service_name: str,
         limit: int,
-        retry_after: Optional[int] = None,
-        details: Optional[Dict[str, Any]] = None
+        retry_after: int | None = None,
+        details: dict[str, Any] | None = None
     ):
         """
         Initialize the exception.
@@ -257,7 +255,6 @@ class MLServiceRateLimitError(MLServiceUnavailableError):
 
 # ============= ML Exception Tests =============
 
-@pytest.mark.standalone
 class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     

@@ -1,6 +1,6 @@
 # Analytics and caching dependencies
 redis>=4.5.1,<5.0.0
-aioredis>=2.0.1
+# aioredis>=2.0.1  # Removed, functionality merged into redis>=4.2
 # Rate limiting
 Starlette>=0.28.0
 # Improved JSON handling

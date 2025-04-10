@@ -4,7 +4,6 @@ Debugging test to check enum behavior issues.
 
 import sys
 from enum import Enum
-from typing import Any
 
 
 class ComparisonOperator(str, Enum):
@@ -17,7 +16,6 @@ class ComparisonOperator(str, Enum):
     NOT_EQUAL = "not_equal"
 
 
-@pytest.mark.standalone
 def test_enum_behavior():
     """Test the behavior of Enum classes."""
     print("\nDEBUG: Testing enum behavior")

@@ -25,7 +25,6 @@ from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, Ale
 from app.domain.entities.digital_twin.biometric_rule import BiometricRule, RuleCondition, RuleOperator
 
 
-@pytest.mark.db_required
 class TestBiometricDataAdapter:
     """Tests for the BiometricDataAdapter."""
 
@@ -64,8 +63,7 @@ class TestBiometricDataAdapter:
             
         return twin
 
-    @pytest.mark.db_required
-def test_to_ml_format_success(self, adapter, sample_biometric_twin):
+    def test_to_ml_format_success(self, adapter, sample_biometric_twin):
         """Test that to_ml_format correctly converts a BiometricTwin to ML format."""
         # Execute
         ml_data = adapter.to_ml_format(sample_biometric_twin)
@@ -93,8 +91,7 @@ def test_to_ml_format_success(self, adapter, sample_biometric_twin):
             assert "value" in data_point
             assert isinstance(data_point["value"], (int, float))
 
-    @pytest.mark.db_required
-def test_to_ml_format_empty_twin(self, adapter):
+    def test_to_ml_format_empty_twin(self, adapter):
         """Test that to_ml_format handles an empty BiometricTwin gracefully."""
         # Setup
         empty_twin = BiometricTwin(patient_id=uuid4())
@@ -106,8 +103,7 @@ def test_to_ml_format_empty_twin(self, adapter):
         assert isinstance(ml_data, dict)
         assert len(ml_data) == 0
 
-    @pytest.mark.db_required
-def test_from_ml_format_success(self, adapter):
+    def test_from_ml_format_success(self, adapter):
         """Test that from_ml_format correctly converts ML format to domain entities."""
         # Setup
         patient_id = uuid4()
@@ -156,7 +152,6 @@ def test_from_ml_format_success(self, adapter):
         assert any(dp.value == 7.5 for dp in sleep_points)
 
 
-@pytest.mark.db_required
 class TestSymptomDataAdapter:
     """Tests for the SymptomDataAdapter."""
 
@@ -191,8 +186,7 @@ class TestSymptomDataAdapter:
             ]
         }
 
-    @pytest.mark.db_required
-def test_to_ml_format_success(self, adapter, sample_symptom_data):
+    def test_to_ml_format_success(self, adapter, sample_symptom_data):
         """Test that to_ml_format correctly converts symptom data to ML format."""
         # Setup
         domain_data = {
@@ -234,8 +228,7 @@ def test_to_ml_format_success(self, adapter, sample_symptom_data):
             assert isinstance(data_point["date"], str)
             assert isinstance(data_point["severity"], int)
 
-    @pytest.mark.db_required
-def test_from_ml_format_success(self, adapter, sample_symptom_data):
+    def test_from_ml_format_success(self, adapter, sample_symptom_data):
         """Test that from_ml_format correctly converts ML format to domain entities."""
         # Execute
         domain_data = adapter.from_ml_format(sample_symptom_data)
@@ -266,7 +259,6 @@ def test_from_ml_format_success(self, adapter, sample_symptom_data):
             assert isinstance(data_point["severity"], int)
 
 
-@pytest.mark.db_required
 class TestGeneticDataAdapter:
     """Tests for the GeneticDataAdapter."""
 
@@ -293,8 +285,7 @@ class TestGeneticDataAdapter:
             ]
         }
 
-    @pytest.mark.db_required
-def test_to_ml_format_success(self, adapter, sample_genetic_data):
+    def test_to_ml_format_success(self, adapter, sample_genetic_data):
         """Test that to_ml_format correctly converts genetic data to ML format."""
         # Setup
         domain_data = {
@@ -318,8 +309,7 @@ def test_to_ml_format_success(self, adapter, sample_genetic_data):
         # Verify
         assert ml_data == domain_data  # Should be the same format
 
-    @pytest.mark.db_required
-def test_from_ml_format_success(self, adapter, sample_genetic_data):
+    def test_from_ml_format_success(self, adapter, sample_genetic_data):
         """Test that from_ml_format correctly converts ML format to domain entities."""
         # Execute
         domain_data = adapter.from_ml_format(sample_genetic_data)
@@ -328,7 +318,6 @@ def test_from_ml_format_success(self, adapter, sample_genetic_data):
         assert domain_data == sample_genetic_data  # Should be the same format
 
 
-@pytest.mark.db_required
 class TestPatientDataAdapter:
     """Tests for the PatientDataAdapter."""
 
@@ -361,8 +350,7 @@ class TestPatientDataAdapter:
             ]
         }
 
-    @pytest.mark.db_required
-def test_to_ml_format_success(self, adapter, sample_patient_data):
+    def test_to_ml_format_success(self, adapter, sample_patient_data):
         """Test that to_ml_format correctly converts patient data to ML format."""
         # Setup
         domain_data = {
@@ -391,8 +379,7 @@ def test_to_ml_format_success(self, adapter, sample_patient_data):
         assert ml_data["conditions"] == sample_patient_data["conditions"]
         assert ml_data["medication_history"] == sample_patient_data["medication_history"]
 
-    @pytest.mark.db_required
-def test_from_ml_format_success(self, adapter, sample_patient_data):
+    def test_from_ml_format_success(self, adapter, sample_patient_data):
         """Test that from_ml_format correctly converts ML format to domain entities."""
         # Execute
         domain_data = adapter.from_ml_format(sample_patient_data)
@@ -414,7 +401,6 @@ def test_from_ml_format_success(self, adapter, sample_patient_data):
         assert domain_data["medication_history"] == sample_patient_data["medication_history"]
 
 
-@pytest.mark.db_required
 class TestAlertAdapter:
     """Tests for the AlertAdapter."""
 
@@ -444,8 +430,7 @@ class TestAlertAdapter:
             acknowledged=False
         )
 
-    @pytest.mark.db_required
-def test_to_ml_format_success(self, adapter, sample_biometric_alert):
+    def test_to_ml_format_success(self, adapter, sample_biometric_alert):
         """Test that to_ml_format correctly converts a BiometricAlert to ML format."""
         # Execute
         ml_data = adapter.to_ml_format(sample_biometric_alert)
@@ -485,8 +470,7 @@ def test_to_ml_format_success(self, adapter, sample_biometric_alert):
         assert ml_data["priority"] == "WARNING"
         assert ml_data["acknowledged"] is False
 
-    @pytest.mark.db_required
-def test_from_ml_format_success(self, adapter, sample_biometric_alert):
+    def test_from_ml_format_success(self, adapter, sample_biometric_alert):
         """Test that from_ml_format correctly converts ML format to a BiometricAlert."""
         # Setup
         ml_data = {

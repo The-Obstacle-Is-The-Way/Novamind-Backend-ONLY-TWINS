@@ -4,16 +4,16 @@ VENV-dependent tests for the Patient Service.
 These tests require Python packages but mock database access.
 They test service layer functionality in isolation from actual database.
 """
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock
 
-from app.domain.entities.patient import Patient
+import pytest
+
 from app.application.services.patient_service import PatientService
+from app.domain.entities.patient import Patient
 from app.domain.exceptions.patient_exceptions import PatientNotFoundError
 
 
-@pytest.mark.venv_only
 class TestPatientService:
     """Test suite for PatientService."""
     
@@ -47,7 +47,6 @@ class TestPatientService:
         # Create a patient entity
         self.patient = Patient(**self.patient_data)
     
-    @pytest.mark.venv_only
     async def test_get_patient_by_id_success(self):
         """Test successfully retrieving a patient by ID."""
         # Setup mock return value
@@ -60,7 +59,6 @@ class TestPatientService:
         assert result == self.patient
         self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
     
-    @pytest.mark.venv_only
     async def test_get_patient_by_id_not_found(self):
         """Test retrieving a non-existent patient by ID."""
         # Setup mock to return None
@@ -73,7 +71,6 @@ class TestPatientService:
         # Verify mock was called
         self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
     
-    @pytest.mark.venv_only
     async def test_create_patient_success(self):
         """Test successfully creating a patient."""
         # Setup mock to return the new patient
@@ -89,7 +86,6 @@ class TestPatientService:
         # Verify logger was called
         self.mock_logger.info.assert_called_once()
     
-    @pytest.mark.venv_only
     async def test_update_patient_success(self):
         """Test successfully updating a patient."""
         # Setup mocks
@@ -107,7 +103,6 @@ class TestPatientService:
         self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
         self.mock_repository.update.assert_called_once()
     
-    @pytest.mark.venv_only
     async def test_delete_patient_success(self):
         """Test successfully deleting a patient."""
         # Setup mocks

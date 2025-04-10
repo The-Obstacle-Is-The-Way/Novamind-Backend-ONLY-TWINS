@@ -57,19 +57,16 @@ def mock_boto3_client():
         }
 
 
-@pytest.mark.venv_only
 class TestAWSPhiDetector:
     """Tests for the AWSPhiDetector class."""
     
-    @pytest.mark.venv_only
-def test_initialize(self, mock_boto3_client):
+    def test_initialize(self, mock_boto3_client):
         """Test initializing the PHI detector."""
         detector = AWSPhiDetector(privacy_level=2, region="us-east-1")
         assert detector.privacy_level == 2
         assert detector.region == "us-east-1"
         
-    @pytest.mark.venv_only
-def test_scan_for_phi_with_phi(self, mock_boto3_client):
+    def test_scan_for_phi_with_phi(self, mock_boto3_client):
         """Test scanning text with PHI."""
         # Configure mock response from Comprehend Medical
         mock_boto3_client['comprehend_medical'].detect_phi.return_value = {
@@ -98,8 +95,7 @@ def test_scan_for_phi_with_phi(self, mock_boto3_client):
             Text=text
         )
         
-    @pytest.mark.venv_only
-def test_scan_for_phi_without_phi(self, mock_boto3_client):
+    def test_scan_for_phi_without_phi(self, mock_boto3_client):
         """Test scanning text without PHI."""
         # Configure mock response from Comprehend Medical
         mock_boto3_client['comprehend_medical'].detect_phi.return_value = {
@@ -114,8 +110,7 @@ def test_scan_for_phi_without_phi(self, mock_boto3_client):
         assert result["has_phi"] is False
         assert len(result["matches"]) == 0
         
-    @pytest.mark.venv_only
-def test_scan_for_phi_aws_error(self, mock_boto3_client):
+    def test_scan_for_phi_aws_error(self, mock_boto3_client):
         """Test handling AWS errors during PHI scanning."""
         # Configure mock to raise a ClientError
         mock_boto3_client['comprehend_medical'].detect_phi.side_effect = ClientError(
@@ -128,8 +123,7 @@ def test_scan_for_phi_aws_error(self, mock_boto3_client):
         with pytest.raises(ServiceUnavailableError):
             detector.scan_for_phi("Test text")
             
-    @pytest.mark.venv_only
-def test_sanitize_prediction(self, mock_boto3_client):
+    def test_sanitize_prediction(self, mock_boto3_client):
         """Test sanitizing a prediction with PHI."""
         # Configure mock for PHI detection
         def mock_detect_phi(Text):
@@ -169,7 +163,6 @@ def test_sanitize_prediction(self, mock_boto3_client):
         assert sanitized["factors"] == ["medication_adherence", "sleep_quality"]
 
 
-@pytest.mark.venv_only
 class TestAWSXGBoostService:
     """Tests for the AWSXGBoostService class."""
     
@@ -221,11 +214,9 @@ class TestAWSXGBoostService:
         return service
     
     @pytest.fixture
-    @pytest.mark.venv_only
-def test_observer(self):
+    def test_observer(self):
         """Create a test observer for prediction notifications."""
-        @pytest.mark.venv_only
-class TestObserver:
+        class TestObserver:
             def __init__(self):
                 self.last_notification = None
                 
@@ -234,31 +225,27 @@ class TestObserver:
         
         return TestObserver()
     
-    @pytest.mark.venv_only
-def test_initialize(self, xgboost_service, aws_config):
+    def test_initialize(self, xgboost_service, aws_config):
         """Test initializing the service with configuration."""
         assert xgboost_service.config["aws_region"] == aws_config["aws_region"]
         assert xgboost_service.config["endpoint_prefix"] == aws_config["endpoint_prefix"]
         assert "risk_relapse" in xgboost_service.endpoints
         
-    @pytest.mark.venv_only
-def test_initialize_missing_region(self, mock_boto3_client):
+    def test_initialize_missing_region(self, mock_boto3_client):
         """Test initializing without AWS region."""
         service = AWSXGBoostService()
         
         with pytest.raises(ConfigurationError):
             service.initialize({})
             
-    @pytest.mark.venv_only
-def test_initialize_missing_endpoint_prefix(self, mock_boto3_client):
+    def test_initialize_missing_endpoint_prefix(self, mock_boto3_client):
         """Test initializing without endpoint prefix."""
         service = AWSXGBoostService()
         
         with pytest.raises(ConfigurationError):
             service.initialize({"aws_region": "us-east-1"})
     
-    @pytest.mark.venv_only
-def test_predict_risk_missing_patient_id(self, xgboost_service):
+    def test_predict_risk_missing_patient_id(self, xgboost_service):
         """Test predict_risk with missing patient ID."""
         with pytest.raises(ValidationError):
             xgboost_service.predict_risk(
@@ -267,8 +254,7 @@ def test_predict_risk_missing_patient_id(self, xgboost_service):
                 clinical_data={"severity": "moderate"}
             )
             
-    @pytest.mark.venv_only
-def test_predict_risk_unsupported_risk_type(self, xgboost_service):
+    def test_predict_risk_unsupported_risk_type(self, xgboost_service):
         """Test predict_risk with unsupported risk type."""
         xgboost_service.endpoints = {}  # Clear endpoints
         
@@ -279,8 +265,7 @@ def test_predict_risk_unsupported_risk_type(self, xgboost_service):
                 clinical_data={"severity": "moderate"}
             )
     
-    @pytest.mark.venv_only
-def test_predict_risk_phi_detection(self, xgboost_service):
+    def test_predict_risk_phi_detection(self, xgboost_service):
         """Test PHI detection during risk prediction."""
         # Configure PHI detector to detect PHI
         xgboost_service.phi_detector.scan_for_phi.return_value = {
@@ -295,8 +280,7 @@ def test_predict_risk_phi_detection(self, xgboost_service):
                 clinical_data={"notes": "Contains PHI"}
             )
             
-    @pytest.mark.venv_only
-def test_predict_risk_successful(self, xgboost_service, mock_boto3_client):
+    def test_predict_risk_successful(self, xgboost_service, mock_boto3_client):
         """Test successful risk prediction."""
         # Configure SageMaker mock response
         sagemaker_response = {
@@ -338,8 +322,7 @@ def test_predict_risk_successful(self, xgboost_service, mock_boto3_client):
         # Verify SageMaker was called
         mock_boto3_client['sagemaker'].invoke_endpoint.assert_called_once()
         
-    @pytest.mark.venv_only
-def test_predict_risk_sagemaker_error(self, xgboost_service, mock_boto3_client):
+    def test_predict_risk_sagemaker_error(self, xgboost_service, mock_boto3_client):
         """Test handling SageMaker errors during prediction."""
         # Configure SageMaker to raise an error
         mock_boto3_client['sagemaker'].invoke_endpoint.side_effect = ClientError(
@@ -354,8 +337,7 @@ def test_predict_risk_sagemaker_error(self, xgboost_service, mock_boto3_client):
                 clinical_data={"severity": "moderate"}
             )
             
-    @pytest.mark.venv_only
-def test_predict_risk_service_unavailable(self, xgboost_service, mock_boto3_client):
+    def test_predict_risk_service_unavailable(self, xgboost_service, mock_boto3_client):
         """Test handling service unavailable errors."""
         # Configure SageMaker to raise a service unavailable error
         mock_boto3_client['sagemaker'].invoke_endpoint.side_effect = ClientError(
@@ -370,8 +352,7 @@ def test_predict_risk_service_unavailable(self, xgboost_service, mock_boto3_clie
                 clinical_data={"severity": "moderate"}
             )
             
-    @pytest.mark.venv_only
-def test_predict_risk_throttling(self, xgboost_service, mock_boto3_client):
+    def test_predict_risk_throttling(self, xgboost_service, mock_boto3_client):
         """Test handling throttling errors."""
         # Configure SageMaker to raise a throttling error
         mock_boto3_client['sagemaker'].invoke_endpoint.side_effect = ClientError(
@@ -386,8 +367,7 @@ def test_predict_risk_throttling(self, xgboost_service, mock_boto3_client):
                 clinical_data={"severity": "moderate"}
             )
     
-    @pytest.mark.venv_only
-def test_predict_treatment_response_successful(self, xgboost_service, mock_boto3_client):
+    def test_predict_treatment_response_successful(self, xgboost_service, mock_boto3_client):
         """Test successful treatment response prediction."""
         # Configure SageMaker mock response
         sagemaker_response = {
@@ -427,8 +407,7 @@ def test_predict_treatment_response_successful(self, xgboost_service, mock_boto3
         # Verify SageMaker was called
         mock_boto3_client['sagemaker'].invoke_endpoint.assert_called_once()
         
-    @pytest.mark.venv_only
-def test_get_model_info(self, xgboost_service):
+    def test_get_model_info(self, xgboost_service):
         """Test getting model information."""
         # Add a model to model_info
         xgboost_service.model_info["test_model"] = {
@@ -441,14 +420,12 @@ def test_get_model_info(self, xgboost_service):
         assert result["version"] == "1.0.0"
         assert result["description"] == "Test model"
         
-    @pytest.mark.venv_only
-def test_get_model_info_not_found(self, xgboost_service):
+    def test_get_model_info_not_found(self, xgboost_service):
         """Test getting info for a non-existent model."""
         with pytest.raises(ModelNotFoundError):
             xgboost_service.get_model_info("non_existent_model")
             
-    @pytest.mark.venv_only
-def test_get_feature_importance(self, xgboost_service, mock_boto3_client):
+    def test_get_feature_importance(self, xgboost_service, mock_boto3_client):
         """Test getting feature importance."""
         # Add a prediction
         prediction_id = "pred-12345678"
@@ -494,8 +471,7 @@ def test_get_feature_importance(self, xgboost_service, mock_boto3_client):
         # Verify SageMaker was called
         mock_boto3_client['sagemaker'].invoke_endpoint.assert_called_once()
         
-    @pytest.mark.venv_only
-def test_get_feature_importance_prediction_not_found(self, xgboost_service):
+    def test_get_feature_importance_prediction_not_found(self, xgboost_service):
         """Test getting feature importance for non-existent prediction."""
         with pytest.raises(ResourceNotFoundError):
             xgboost_service.get_feature_importance(
@@ -504,8 +480,7 @@ def test_get_feature_importance_prediction_not_found(self, xgboost_service):
                 prediction_id="non_existent"
             )
             
-    @pytest.mark.venv_only
-def test_get_feature_importance_no_endpoint(self, xgboost_service):
+    def test_get_feature_importance_no_endpoint(self, xgboost_service):
         """Test getting feature importance with no explanation endpoint."""
         # Add a prediction
         prediction_id = "pred-12345678"
@@ -525,8 +500,7 @@ def test_get_feature_importance_no_endpoint(self, xgboost_service):
                 prediction_id=prediction_id
             )
             
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin(self, xgboost_service, mock_boto3_client):
+    def test_integrate_with_digital_twin(self, xgboost_service, mock_boto3_client):
         """Test integrating prediction with digital twin."""
         # Add a prediction
         prediction_id = "pred-12345678"
@@ -569,8 +543,7 @@ def test_integrate_with_digital_twin(self, xgboost_service, mock_boto3_client):
         # Verify SageMaker was called
         mock_boto3_client['sagemaker'].invoke_endpoint.assert_called_once()
         
-    @pytest.mark.venv_only
-def test_integrate_with_digital_twin_no_endpoint(self, xgboost_service):
+    def test_integrate_with_digital_twin_no_endpoint(self, xgboost_service):
         """Test digital twin integration with no endpoint."""
         # Add a prediction
         prediction_id = "pred-12345678"
@@ -590,8 +563,7 @@ def test_integrate_with_digital_twin_no_endpoint(self, xgboost_service):
                 prediction_id=prediction_id
             )
             
-    @pytest.mark.venv_only
-def test_observer_notification(self, xgboost_service, mock_boto3_client, test_observer):
+    def test_observer_notification(self, xgboost_service, mock_boto3_client, test_observer):
         """Test observer notification on prediction."""
         # Register observer
         observer_id = xgboost_service.register_prediction_observer(test_observer)

@@ -98,12 +98,10 @@ def client(app):
     return TestClient(app)
 
 
-@pytest.mark.db_required
 class TestAnalyticsEndpoints:
     """Tests for analytics endpoints."""
 
-    @pytest.mark.db_required
-def test_get_patient_treatment_outcomes_async(
+    def test_get_patient_treatment_outcomes_async(
         self, client, mock_analytics_service, mock_cache_service
     ):
         """Test patient treatment outcomes endpoint with cache miss."""
@@ -129,8 +127,7 @@ def test_get_patient_treatment_outcomes_async(
         mock_cache_service.get.assert_called_once()
         # BackgroundTasks would be called, but we can't easily verify that in the test
 
-    @pytest.mark.db_required
-def test_get_patient_treatment_outcomes_cached(
+    def test_get_patient_treatment_outcomes_cached(
         self, client, mock_analytics_service, mock_cache_service
     ):
         """Test patient treatment outcomes endpoint with cache hit."""
@@ -160,8 +157,7 @@ def test_get_patient_treatment_outcomes_cached(
         mock_cache_service.get.assert_called_once()
         mock_analytics_service.get_patient_treatment_outcomes.assert_not_called()
 
-    @pytest.mark.db_required
-def test_get_analytics_job_status_completed(
+    def test_get_analytics_job_status_completed(
         self, client, mock_cache_service
     ):
         """Test checking status of a completed analytics job."""
@@ -185,8 +181,7 @@ def test_get_analytics_job_status_completed(
         # Verify cache was checked for status
         mock_cache_service.get.assert_called_once_with(f"status:{job_id}")
 
-    @pytest.mark.db_required
-def test_get_analytics_job_status_not_found(
+    def test_get_analytics_job_status_not_found(
         self, client, mock_cache_service
     ):
         """Test checking status of a non-existent analytics job."""
@@ -206,8 +201,7 @@ def test_get_analytics_job_status_not_found(
         # Verify cache was checked for status
         mock_cache_service.get.assert_called_once_with(f"status:{job_id}")
 
-    @pytest.mark.db_required
-def test_get_practice_metrics(
+    def test_get_practice_metrics(
         self, client, mock_analytics_service, mock_cache_service
     ):
         """Test practice metrics endpoint."""
@@ -226,8 +220,7 @@ def test_get_practice_metrics(
         # Verify cache was checked
         mock_cache_service.get.assert_called_once()
 
-    @pytest.mark.db_required
-def test_get_diagnosis_distribution(
+    def test_get_diagnosis_distribution(
         self, client, mock_analytics_service, mock_cache_service
     ):
         """Test diagnosis distribution endpoint."""
@@ -250,8 +243,7 @@ def test_get_diagnosis_distribution(
         mock_cache_service.get.assert_called_once()
         mock_analytics_service.get_diagnosis_distribution.assert_called_once()
 
-    @pytest.mark.db_required
-def test_get_medication_effectiveness(
+    def test_get_medication_effectiveness(
         self, client, mock_analytics_service, mock_cache_service
     ):
         """Test medication effectiveness endpoint."""
@@ -273,8 +265,7 @@ def test_get_medication_effectiveness(
         # Verify cache was checked
         mock_cache_service.get.assert_called_once()
 
-    @pytest.mark.db_required
-def test_get_treatment_comparison(
+    def test_get_treatment_comparison(
         self, client, mock_analytics_service, mock_cache_service
     ):
         """Test treatment comparison endpoint."""
@@ -300,8 +291,7 @@ def test_get_treatment_comparison(
         # Verify cache was checked
         mock_cache_service.get.assert_called_once()
 
-    @pytest.mark.db_required
-def test_get_patient_risk_stratification(
+    def test_get_patient_risk_stratification(
         self, client, mock_analytics_service, mock_cache_service
     ):
         """Test patient risk stratification endpoint."""
@@ -326,13 +316,11 @@ def test_get_patient_risk_stratification(
         mock_analytics_service.get_patient_risk_stratification.assert_called_once()
 
 
-@pytest.mark.db_required
 class TestBackgroundProcessingFunctions:
     """Tests for background processing functions."""
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_process_treatment_outcomes_success(
+    async def test_process_treatment_outcomes_success(
         self, mock_analytics_service, mock_cache_service
     ):
         """Test background processing of treatment outcomes."""
@@ -381,8 +369,7 @@ def test_process_treatment_outcomes_success(
         assert status_cache_call[1]["value"]["data"] == expected_result
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_process_treatment_outcomes_error(
+    async def test_process_treatment_outcomes_error(
         self, mock_analytics_service, mock_cache_service
     ):
         """Test error handling in treatment outcomes processing."""
@@ -415,8 +402,7 @@ def test_process_treatment_outcomes_error(
         assert "Test error" in cache_call[1]["value"]["message"]
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_process_practice_metrics(
+    async def test_process_practice_metrics(
         self, mock_analytics_service, mock_cache_service
     ):
         """Test background processing of practice metrics."""

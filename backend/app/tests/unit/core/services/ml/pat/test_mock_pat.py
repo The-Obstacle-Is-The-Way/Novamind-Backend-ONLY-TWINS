@@ -65,12 +65,10 @@ def sample_device_info():
     }
 
 
-@pytest.mark.db_required
 class TestMockPAT:
     """Tests for the MockPAT implementation."""
     
-    @pytest.mark.db_required
-def test_initialization_success(self):
+    def test_initialization_success(self):
         """Test successful initialization of MockPAT."""
         pat = MockPAT()
         pat.initialize({})
@@ -78,8 +76,7 @@ def test_initialization_success(self):
         assert pat.configured is True
         assert pat.delay_ms == 0
     
-    @pytest.mark.db_required
-def test_initialization_with_delay(self):
+    def test_initialization_with_delay(self):
         """Test initialization with delay parameter."""
         pat = MockPAT()
         pat.initialize({"delay_ms": 100})
@@ -87,8 +84,7 @@ def test_initialization_with_delay(self):
         assert pat.configured is True
         assert pat.delay_ms == 100
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_success(self, mock_pat, sample_readings, sample_device_info):
+    def test_analyze_actigraphy_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful actigraphy analysis."""
         result = mock_pat.analyze_actigraphy(
             patient_id="test-patient",
@@ -128,8 +124,7 @@ def test_analyze_actigraphy_success(self, mock_pat, sample_readings, sample_devi
         assert "vigorous_activity_minutes" in activity_levels
         assert "sedentary_minutes" in activity_levels
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_with_all_types(self, mock_pat, sample_readings, sample_device_info):
+    def test_analyze_actigraphy_with_all_types(self, mock_pat, sample_readings, sample_device_info):
         """Test actigraphy analysis with all analysis types."""
         result = mock_pat.analyze_actigraphy(
             patient_id="test-patient",
@@ -151,8 +146,7 @@ def test_analyze_actigraphy_with_all_types(self, mock_pat, sample_readings, samp
         assert "behavioral_patterns" in result
         assert "mood_indicators" in result
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_missing_patient_id(self, mock_pat, sample_readings, sample_device_info):
+    def test_analyze_actigraphy_missing_patient_id(self, mock_pat, sample_readings, sample_device_info):
         """Test actigraphy analysis with missing patient ID."""
         with pytest.raises(ValidationError) as excinfo:
             mock_pat.analyze_actigraphy(
@@ -167,8 +161,7 @@ def test_analyze_actigraphy_missing_patient_id(self, mock_pat, sample_readings, 
         
         assert "Patient ID is required" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_invalid_sampling_rate(self, mock_pat, sample_readings, sample_device_info):
+    def test_analyze_actigraphy_invalid_sampling_rate(self, mock_pat, sample_readings, sample_device_info):
         """Test actigraphy analysis with invalid sampling rate."""
         with pytest.raises(ValidationError) as excinfo:
             mock_pat.analyze_actigraphy(
@@ -183,8 +176,7 @@ def test_analyze_actigraphy_invalid_sampling_rate(self, mock_pat, sample_reading
         
         assert "Sampling rate must be positive" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_insufficient_readings(self, mock_pat, sample_device_info):
+    def test_analyze_actigraphy_insufficient_readings(self, mock_pat, sample_device_info):
         """Test actigraphy analysis with insufficient readings."""
         # Create a list with only 5 readings
         readings = []
@@ -211,8 +203,7 @@ def test_analyze_actigraphy_insufficient_readings(self, mock_pat, sample_device_
         
         assert "At least 10 readings are required" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_invalid_reading_format(self, mock_pat, sample_device_info):
+    def test_analyze_actigraphy_invalid_reading_format(self, mock_pat, sample_device_info):
         """Test actigraphy analysis with invalid reading format."""
         # Create readings with missing fields
         readings = []
@@ -239,8 +230,7 @@ def test_analyze_actigraphy_invalid_reading_format(self, mock_pat, sample_device
         
         assert "missing required fields" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_unsupported_analysis_type(self, mock_pat, sample_readings, sample_device_info):
+    def test_analyze_actigraphy_unsupported_analysis_type(self, mock_pat, sample_readings, sample_device_info):
         """Test actigraphy analysis with unsupported analysis type."""
         with pytest.raises(ValidationError) as excinfo:
             mock_pat.analyze_actigraphy(
@@ -255,8 +245,7 @@ def test_analyze_actigraphy_unsupported_analysis_type(self, mock_pat, sample_rea
         
         assert "Unsupported analysis type" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_get_actigraphy_embeddings_success(self, mock_pat, sample_readings):
+    def test_get_actigraphy_embeddings_success(self, mock_pat, sample_readings):
         """Test successful embeddings generation."""
         result = mock_pat.get_actigraphy_embeddings(
             patient_id="test-patient",
@@ -283,8 +272,7 @@ def test_get_actigraphy_embeddings_success(self, mock_pat, sample_readings):
         magnitude = sum(x ** 2 for x in vector) ** 0.5
         assert abs(magnitude - 1.0) < 1e-6  # Should be very close to 1.0
     
-    @pytest.mark.db_required
-def test_get_analysis_by_id_success(self, mock_pat, sample_readings, sample_device_info):
+    def test_get_analysis_by_id_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful retrieval of analysis by ID."""
         # First, create an analysis
         result = mock_pat.analyze_actigraphy(
@@ -308,16 +296,14 @@ def test_get_analysis_by_id_success(self, mock_pat, sample_readings, sample_devi
         assert retrieved["device_info"] == sample_device_info
         assert "sleep_quality" in retrieved
     
-    @pytest.mark.db_required
-def test_get_analysis_by_id_not_found(self, mock_pat):
+    def test_get_analysis_by_id_not_found(self, mock_pat):
         """Test retrieval of analysis by ID when not found."""
         with pytest.raises(ResourceNotFoundError) as excinfo:
             mock_pat.get_analysis_by_id("non-existent-id")
         
         assert "not found" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_get_patient_analyses_success(self, mock_pat, sample_readings, sample_device_info):
+    def test_get_patient_analyses_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful retrieval of patient analyses."""
         # Create multiple analyses for the same patient
         for i in range(3):
@@ -348,8 +334,7 @@ def test_get_patient_analyses_success(self, mock_pat, sample_readings, sample_de
         timestamps = [analysis["timestamp"] for analysis in result["analyses"]]
         assert timestamps == sorted(timestamps, reverse=True)
     
-    @pytest.mark.db_required
-def test_get_patient_analyses_with_pagination(self, mock_pat, sample_readings, sample_device_info):
+    def test_get_patient_analyses_with_pagination(self, mock_pat, sample_readings, sample_device_info):
         """Test retrieval of patient analyses with pagination."""
         # Create multiple analyses for the same patient
         for i in range(5):
@@ -372,16 +357,14 @@ def test_get_patient_analyses_with_pagination(self, mock_pat, sample_readings, s
         assert result["limit"] == 2
         assert result["offset"] == 1
     
-    @pytest.mark.db_required
-def test_get_patient_analyses_empty(self, mock_pat):
+    def test_get_patient_analyses_empty(self, mock_pat):
         """Test retrieval of patient analyses when none exist."""
         result = mock_pat.get_patient_analyses("non-existent-patient")
         
         assert len(result["analyses"]) == 0
         assert result["total"] == 0
     
-    @pytest.mark.db_required
-def test_get_model_info(self, mock_pat):
+    def test_get_model_info(self, mock_pat):
         """Test getting model information."""
         info = mock_pat.get_model_info()
         
@@ -392,8 +375,7 @@ def test_get_model_info(self, mock_pat):
         assert info["provider"] == "mock"
         assert len(info["capabilities"]) > 0
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin_success(self, mock_pat, sample_readings, sample_device_info):
+    def test_integrate_with_digital_twin_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful integration with digital twin."""
         # First, create an analysis
         result = mock_pat.analyze_actigraphy(
@@ -442,8 +424,7 @@ def test_integrate_with_digital_twin_success(self, mock_pat, sample_readings, sa
         assert "behavioral_insights" in profile
         assert "mood_assessment" in profile
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin_analysis_not_found(self, mock_pat):
+    def test_integrate_with_digital_twin_analysis_not_found(self, mock_pat):
         """Test integration with digital twin when analysis is not found."""
         with pytest.raises(ResourceNotFoundError) as excinfo:
             mock_pat.integrate_with_digital_twin(
@@ -454,8 +435,7 @@ def test_integrate_with_digital_twin_analysis_not_found(self, mock_pat):
         
         assert "not found" in str(excinfo.value)
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin_wrong_patient(self, mock_pat, sample_readings, sample_device_info):
+    def test_integrate_with_digital_twin_wrong_patient(self, mock_pat, sample_readings, sample_device_info):
         """Test integration with digital twin when analysis belongs to different patient."""
         # First, create an analysis for patient1
         result = mock_pat.analyze_actigraphy(

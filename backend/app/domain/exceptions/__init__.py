@@ -126,3 +126,23 @@ class InvalidAppointmentTimeError(DomainException):
     
     def __init__(self, message: str = "Invalid appointment time"):
         super().__init__(message)
+
+
+# --- Added Missing Exceptions ---
+
+class AuthorizationError(DomainException):
+    """Raised when an action is not authorized for the user."""
+    def __init__(self, message: str = "Action not authorized"):
+        super().__init__(message)
+
+
+class EntityNotFoundError(DomainException):
+    """Raised when a requested domain entity cannot be found."""
+    def __init__(self, entity_type: str, entity_id: str):
+        message = f"{entity_type} with ID '{entity_id}' not found."
+        super().__init__(message)
+
+class RepositoryError(DomainException):
+    """Raised for general repository or database interaction errors."""
+    def __init__(self, message: str = "Repository error occurred"):
+        super().__init__(message)

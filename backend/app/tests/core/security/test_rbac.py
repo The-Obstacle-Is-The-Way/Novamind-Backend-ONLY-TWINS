@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Role-Based Access Control Tests
 
@@ -10,7 +9,6 @@ import unittest
 from app.core.security.rbac import RoleBasedAccessControl
 
 
-@pytest.mark.venv_only
 class TestRoleBasedAccessControl(unittest.TestCase):
     """Test suite for Role-Based Access Control functionality."""
     
@@ -37,7 +35,6 @@ class TestRoleBasedAccessControl(unittest.TestCase):
         self.rbac.add_role_permission('admin', 'update:all_data')
         self.rbac.add_role_permission('admin', 'delete:all_data')
     
-    @pytest.mark.venv_only
 def test_add_role(self):
         """Test adding a new role."""
         # Add new role
@@ -46,7 +43,6 @@ def test_add_role(self):
         # Verify it exists with empty permissions
         self.assertEqual(self.rbac.get_role_permissions('researcher'), set())
     
-    @pytest.mark.venv_only
 def test_add_role_permission(self):
         """Test adding a permission to a role."""
         # Add new permission to existing role
@@ -58,9 +54,9 @@ def test_add_role_permission(self):
         
         # Verify other permissions still exist
         self.assertIn('read:own_data', user_permissions)
-        self.assertIn('update:own_data', user_permissions)
+        self.assertIn('update:own_data', us@pytest.mark.standalone
+er_permissions)
     
-    @pytest.mark.venv_only
 def test_remove_role_permission(self):
         """Test removing a permission from a role."""
         # Remove existing permission
@@ -72,9 +68,9 @@ def test_remove_role_permission(self):
         
         # Verify other permissions still exist
         self.assertIn('read:patient_data', clinician_permissions)
-        self.assertIn('read:clinical_notes', clinician_permissions)
+        self.assertIn('read:@pytest.mark.standalone
+clinical_notes', clinician_permissions)
     
-    @pytest.mark.venv_only
 def test_has_permission_single_role(self):
         """Test permission check with a single role."""
         # User role permissions
@@ -88,9 +84,9 @@ def test_has_permission_single_role(self):
         
         # Admin role permissions
         self.assertTrue(self.rbac.has_permission(['admin'], 'delete:all_data'))
-        self.assertFalse(self.rbac.has_permission(['admin'], 'read:clinical_notes'))
+        self.assertFa@pytest.mark.standalone
+lse(self.rbac.has_permission(['admin'], 'read:clinical_notes'))
     
-    @pytest.mark.venv_only
 def test_has_permission_multiple_roles(self):
         """Test permission check with multiple roles."""
         # User + Clinician roles
@@ -103,30 +99,30 @@ def test_has_permission_multiple_roles(self):
         roles = ['user', 'admin']
         self.assertTrue(self.rbac.has_permission(roles, 'read:own_data'))       # from user
         self.assertTrue(self.rbac.has_permission(roles, 'delete:all_data'))     # from admin
-        self.assertFalse(self.rbac.has_permission(roles, 'read:clinical_notes')) # not in either
+        s@pytest.mark.standalone
+elf.assertFalse(self.rbac.has_permission(roles, 'read:clinical_notes')) # not in either
     
-    @pytest.mark.venv_only
 def test_has_permission_nonexistent_role(self):
-        """Test permission check with non-existent role."""
+        """Test permission check @pytest.mark.standalone
+with non-existent role."""
         self.assertFalse(self.rbac.has_permission(['nonexistent'], 'read:own_data'))
     
-    @pytest.mark.venv_only
 def test_has_permission_nonexistent_permission(self):
-        """Test checking for a non-existent permission."""
+        ""@pytest.mark.standalone
+"Test checking for a non-existent permission."""
         self.assertFalse(self.rbac.has_permission(['user'], 'nonexistent:permission'))
     
-    @pytest.mark.venv_only
 def test_get_role_permissions(self):
         """Test getting all permissions for a role."""
         # Check admin permissions
         admin_permissions = self.rbac.get_role_permissions('admin')
         expected = {'read:all_data', 'update:all_data', 'delete:all_data'}
-        self.assertEqual(admin_permissions, expected)
+        self.as@pytest.mark.standalone
+sertEqual(admin_permissions, expected)
         
         # Check nonexistent role
         self.assertEqual(self.rbac.get_role_permissions('nonexistent'), set())
     
-    @pytest.mark.venv_only
 def test_get_roles_with_permission(self):
         """Test getting all roles with a specific permission."""
         # Multiple roles with read permissions

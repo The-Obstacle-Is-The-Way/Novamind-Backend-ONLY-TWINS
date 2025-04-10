@@ -106,13 +106,11 @@ def use_case(mock_analytics_repository, mock_cache_service):
         return use_case
 
 
-@pytest.mark.db_required
 class TestRetrieveAggregatedAnalyticsUseCase:
     """Test suite for the RetrieveAggregatedAnalyticsUseCase."""
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_execute_with_basic_parameters(self, use_case, mock_analytics_repository):
+    async def test_execute_with_basic_parameters(self, use_case, mock_analytics_repository):
         """
         Test retrieving aggregated data with basic parameters.
         """
@@ -148,8 +146,7 @@ def test_execute_with_basic_parameters(self, use_case, mock_analytics_repository
         )
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_execute_with_filters_and_time_range(self, use_case, mock_analytics_repository):
+    async def test_execute_with_filters_and_time_range(self, use_case, mock_analytics_repository):
         """
         Test retrieving data with filters and custom time range.
         """
@@ -183,8 +180,7 @@ def test_execute_with_filters_and_time_range(self, use_case, mock_analytics_repo
         assert call_args["end_time"] == now
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_time_range_string_handling(self, use_case, mock_analytics_repository):
+    async def test_time_range_string_handling(self, use_case, mock_analytics_repository):
         """
         Test handling of string format time ranges.
         """
@@ -211,8 +207,7 @@ def test_time_range_string_handling(self, use_case, mock_analytics_repository):
         assert call_args["end_time"].day == 30
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_invalid_time_range_handling(self, use_case, mock_analytics_repository):
+    async def test_invalid_time_range_handling(self, use_case, mock_analytics_repository):
         """
         Test handling of invalid time ranges.
         """
@@ -238,8 +233,7 @@ def test_invalid_time_range_handling(self, use_case, mock_analytics_repository):
         assert isinstance(call_args["end_time"], datetime)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_dimension_sanitization(self, use_case, mock_analytics_repository):
+    async def test_dimension_sanitization(self, use_case, mock_analytics_repository):
         """
         Test sanitization of dimension parameters.
         """
@@ -259,8 +253,7 @@ def test_dimension_sanitization(self, use_case, mock_analytics_repository):
         assert "invalid_dimension" not in call_args["dimensions"]
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_filter_sanitization(self, use_case, mock_analytics_repository):
+    async def test_filter_sanitization(self, use_case, mock_analytics_repository):
         """
         Test sanitization of filter parameters.
         """
@@ -288,8 +281,7 @@ def test_filter_sanitization(self, use_case, mock_analytics_repository):
         assert isinstance(call_args["filters"]["platform"], str)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_caching_behavior(self, use_case, mock_analytics_repository, mock_cache_service):
+    async def test_caching_behavior(self, use_case, mock_analytics_repository, mock_cache_service):
         """
         Test caching of aggregation results.
         """
@@ -329,8 +321,7 @@ def test_caching_behavior(self, use_case, mock_analytics_repository, mock_cache_
         )
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_cache_ttl_determination(self, use_case):
+    async def test_cache_ttl_determination(self, use_case):
         """
         Test different TTL values based on query parameters.
         """
@@ -371,8 +362,7 @@ def test_cache_ttl_determination(self, use_case):
         assert regular_ttl == 3600  # 1 hour for regular data
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_cache_key_generation(self, use_case):
+    async def test_cache_key_generation(self, use_case):
         """
         Test generation of cache keys from parameters.
         """
@@ -412,8 +402,7 @@ def test_cache_key_generation(self, use_case):
         assert key != key2
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_empty_dimensions_default(self, use_case, mock_analytics_repository):
+    async def test_empty_dimensions_default(self, use_case, mock_analytics_repository):
         """
         Test default dimension when empty list provided.
         """
@@ -431,8 +420,7 @@ def test_empty_dimensions_default(self, use_case, mock_analytics_repository):
         assert call_args["dimensions"] == ["event_type"]
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_very_large_time_range_limit(self, use_case, mock_analytics_repository):
+    async def test_very_large_time_range_limit(self, use_case, mock_analytics_repository):
         """
         Test limiting of very large time ranges.
         """

@@ -19,7 +19,6 @@ from app.presentation.api.endpoints.analytics_endpoints import router, Analytics
 
 
 @pytest.fixture
-@pytest.mark.db_required
 def test_client():
     """Create a test client for the analytics endpoints."""
     from fastapi import FastAPI
@@ -54,8 +53,7 @@ def mock_user():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_record_analytics_event(test_client, mock_cache, mock_background_tasks, mock_user):
+async def test_record_analytics_event(test_client, mock_cache, mock_background_tasks, mock_user):
     """Test the record_analytics_event endpoint."""
     # Arrange
     event_data = {
@@ -104,8 +102,7 @@ def test_record_analytics_event(test_client, mock_cache, mock_background_tasks, 
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_record_analytics_batch(test_client, mock_cache, mock_background_tasks, mock_user):
+async def test_record_analytics_batch(test_client, mock_cache, mock_background_tasks, mock_user):
     """Test the record_analytics_batch endpoint."""
     # Arrange
     batch_data = {
@@ -169,8 +166,7 @@ def test_record_analytics_batch(test_client, mock_cache, mock_background_tasks, 
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_phi_detection_in_analytics_event(test_client, mock_cache, mock_background_tasks, mock_user):
+async def test_phi_detection_in_analytics_event(test_client, mock_cache, mock_background_tasks, mock_user):
     """Test PHI detection in analytics events."""
     # Arrange
     event_data = {
@@ -221,8 +217,7 @@ def test_phi_detection_in_analytics_event(test_client, mock_cache, mock_backgrou
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_analytics_dashboard(test_client, mock_cache, mock_user):
+async def test_get_analytics_dashboard(test_client, mock_cache, mock_user):
     """Test the get_analytics_dashboard endpoint."""
     # Arrange
     # Mock dashboard data that would be cached

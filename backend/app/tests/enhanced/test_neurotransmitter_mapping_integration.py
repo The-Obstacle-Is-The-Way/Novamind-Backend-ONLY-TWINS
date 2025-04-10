@@ -69,8 +69,7 @@ async def initialized_patient(enhanced_services, patient_id, initial_data) -> Di
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_initialize_neurotransmitter_mapping(enhanced_services, patient_id, initialized_patient):
+async def test_initialize_neurotransmitter_mapping(enhanced_services, patient_id, initialized_patient):
     """Test initializing a neurotransmitter mapping for a patient."""
     digital_twin_service, = enhanced_services
     
@@ -94,8 +93,7 @@ def test_initialize_neurotransmitter_mapping(enhanced_services, patient_id, init
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_custom_neurotransmitter_mapping(enhanced_services, patient_id, initialized_patient):
+async def test_custom_neurotransmitter_mapping(enhanced_services, patient_id, initialized_patient):
     """Test creating a custom neurotransmitter mapping for a patient."""
     digital_twin_service, = enhanced_services
     
@@ -163,8 +161,7 @@ def test_custom_neurotransmitter_mapping(enhanced_services, patient_id, initiali
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_update_receptor_profiles(enhanced_services, patient_id, initialized_patient):
+async def test_update_receptor_profiles(enhanced_services, patient_id, initialized_patient):
     """Test updating receptor profiles in the neurotransmitter mapping."""
     digital_twin_service, = enhanced_services
     
@@ -221,8 +218,7 @@ def test_update_receptor_profiles(enhanced_services, patient_id, initialized_pat
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_get_neurotransmitter_effects(enhanced_services, patient_id, initialized_patient):
+async def test_get_neurotransmitter_effects(enhanced_services, patient_id, initialized_patient):
     """Test getting neurotransmitter effects on brain regions."""
     digital_twin_service, = enhanced_services
     
@@ -258,8 +254,7 @@ def test_get_neurotransmitter_effects(enhanced_services, patient_id, initialized
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_get_brain_region_neurotransmitter_sensitivity(enhanced_services, patient_id, initialized_patient):
+async def test_get_brain_region_neurotransmitter_sensitivity(enhanced_services, patient_id, initialized_patient):
     """Test getting brain region sensitivity to neurotransmitters."""
     digital_twin_service, = enhanced_services
     
@@ -298,8 +293,7 @@ def test_get_brain_region_neurotransmitter_sensitivity(enhanced_services, patien
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_simulate_neurotransmitter_cascade(enhanced_services, patient_id, initialized_patient):
+async def test_simulate_neurotransmitter_cascade(enhanced_services, patient_id, initialized_patient):
     """Test simulating neurotransmitter cascade effects."""
     digital_twin_service, = enhanced_services
     
@@ -351,8 +345,7 @@ def test_simulate_neurotransmitter_cascade(enhanced_services, patient_id, initia
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_analyze_treatment_neurotransmitter_effects(enhanced_services, patient_id, initialized_patient):
+async def test_analyze_treatment_neurotransmitter_effects(enhanced_services, patient_id, initialized_patient):
     """Test analyzing treatment effects on neurotransmitters over time."""
     digital_twin_service, = enhanced_services
     
@@ -418,8 +411,7 @@ def test_analyze_treatment_neurotransmitter_effects(enhanced_services, patient_i
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_integrated_neurotransmitter_mapping_with_visualization(enhanced_services, patient_id, initialized_patient):
+async def test_integrated_neurotransmitter_mapping_with_visualization(enhanced_services, patient_id, initialized_patient):
     """Test integration of neurotransmitter mapping with visualization data generation."""
     digital_twin_service, = enhanced_services
     

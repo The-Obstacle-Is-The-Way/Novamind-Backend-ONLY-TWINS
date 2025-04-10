@@ -16,7 +16,6 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
 
 
-@pytest.mark.db_required
 class TestGeneMedicationModel:
     """Tests for the GeneMedicationModel."""
 
@@ -118,8 +117,7 @@ class TestGeneMedicationModel:
             ]
         }
 
-    async @pytest.mark.db_required
-def test_initialize_loads_model_and_knowledge_base(self):
+    async def test_initialize_loads_model_and_knowledge_base(self):
         """Test that initialize loads the model and knowledge base correctly."""
         # Setup
         with patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.joblib', autospec=True) as mock_joblib, \
@@ -155,8 +153,7 @@ def test_initialize_loads_model_and_knowledge_base(self):
             assert model._model is not None
             assert model._knowledge_base is not None
 
-    async @pytest.mark.db_required
-def test_initialize_handles_missing_files(self):
+    async def test_initialize_handles_missing_files(self):
         """Test that initialize handles missing model and knowledge base files gracefully."""
         # Setup
         with patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.joblib', autospec=True), \
@@ -180,8 +177,7 @@ def test_initialize_handles_missing_files(self):
             assert model._model is not None
             assert model._knowledge_base is not None
 
-    async @pytest.mark.db_required
-def test_predict_medication_interactions_success(self, model, sample_genetic_data):
+    async def test_predict_medication_interactions_success(self, model, sample_genetic_data):
         """Test that predict_medication_interactions correctly processes genetic data and returns interactions."""
         # Setup
         medications = ["fluoxetine", "sertraline", "bupropion"]
@@ -211,8 +207,7 @@ def test_predict_medication_interactions_success(self, model, sample_genetic_dat
         assert metabolizer_status["CYP2D6"] == "normal"
         assert metabolizer_status["CYP2C19"] == "intermediate"
 
-    async @pytest.mark.db_required
-def test_predict_medication_interactions_empty_genetic_data(self, model):
+    async def test_predict_medication_interactions_empty_genetic_data(self, model):
         """Test that predict_medication_interactions handles empty genetic data gracefully."""
         # Setup
         empty_genetic_data = {"genes": []}
@@ -224,8 +219,7 @@ def test_predict_medication_interactions_empty_genetic_data(self, model):
         
         assert "Empty genetic data" in str(excinfo.value)
 
-    async @pytest.mark.db_required
-def test_predict_medication_interactions_empty_medications(self, model, sample_genetic_data):
+    async def test_predict_medication_interactions_empty_medications(self, model, sample_genetic_data):
         """Test that predict_medication_interactions handles empty medications list gracefully."""
         # Setup
         empty_medications = []
@@ -236,8 +230,7 @@ def test_predict_medication_interactions_empty_medications(self, model, sample_g
         
         assert "No medications specified" in str(excinfo.value)
 
-    async @pytest.mark.db_required
-def test_extract_gene_features(self, model, sample_genetic_data):
+    async def test_extract_gene_features(self, model, sample_genetic_data):
         """Test that _extract_gene_features correctly transforms genetic data into features."""
         # Setup
         with patch.object(model, '_extract_gene_features', wraps=model._extract_gene_features) as mock_extract:
@@ -260,8 +253,7 @@ def test_extract_gene_features(self, model, sample_genetic_data):
             assert features["CYP2C19"] == "*1/*2"
             assert features["CYP1A2"] == "*1F/*1F"
 
-    async @pytest.mark.db_required
-def test_determine_metabolizer_status(self, model):
+    async def test_determine_metabolizer_status(self, model):
         """Test that _determine_metabolizer_status correctly determines metabolizer status."""
         # Setup
         gene_variants = {
@@ -282,8 +274,7 @@ def test_determine_metabolizer_status(self, model):
         assert status["CYP2C19"] == "intermediate"
         assert status["CYP1A2"] == "rapid"
 
-    async @pytest.mark.db_required
-def test_lookup_known_interactions(self, model):
+    async def test_lookup_known_interactions(self, model):
         """Test that _lookup_known_interactions correctly looks up known interactions."""
         # Setup
         metabolizer_status = {
@@ -306,8 +297,7 @@ def test_lookup_known_interactions(self, model):
         assert fluoxetine_interaction["effect"] == "increased_levels"
         assert fluoxetine_interaction["recommendation"] == "dose_reduction"
 
-    async @pytest.mark.db_required
-def test_predict_novel_interactions(self, model):
+    async def test_predict_novel_interactions(self, model):
         """Test that _predict_novel_interactions correctly predicts novel interactions."""
         # Setup
         gene_features = {

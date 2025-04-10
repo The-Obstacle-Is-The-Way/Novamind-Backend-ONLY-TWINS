@@ -18,12 +18,10 @@ from app.domain.entities.digital_twin.state import (
 )
 
 
-@pytest.mark.venv_only
 class TestNeurotransmitterState(unittest.TestCase):
     """Tests for the NeurotransmitterState entity."""
     
-    @pytest.mark.venv_only
-def test_init_default_values(self):
+    def test_init_default_values(self):
         """Test that default values are correctly initialized."""
         state = NeurotransmitterState()
         
@@ -36,8 +34,7 @@ def test_init_default_values(self):
         assert isinstance(state.inflammation_markers, dict)
         assert isinstance(state.circuit_connectivity, dict)
     
-    @pytest.mark.venv_only
-def test_init_custom_values(self):
+    def test_init_custom_values(self):
         """Test initialization with custom values."""
         state = NeurotransmitterState(
             serotonin_level=0.5,
@@ -53,8 +50,7 @@ def test_init_custom_values(self):
         assert state.gaba_level == -0.1
         assert state.glutamate_level == 0.4
     
-    @pytest.mark.venv_only
-def test_validation_range(self):
+    def test_validation_range(self):
         """Test validation of neurotransmitter level ranges."""
         # Values should be between -1.0 and 1.0
         with pytest.raises(ValidationError):
@@ -72,8 +68,7 @@ def test_validation_range(self):
         with pytest.raises(ValidationError):
             NeurotransmitterState(glutamate_level=1.1)
     
-    @pytest.mark.venv_only
-def test_calculate_balance_index(self):
+    def test_calculate_balance_index(self):
         """Test calculation of neurotransmitter balance index."""
         # Test optimal balance
         optimal_state = NeurotransmitterState(
@@ -108,12 +103,10 @@ def test_calculate_balance_index(self):
         assert balance_index < 0.3
 
 
-@pytest.mark.venv_only
 class TestPsychologicalState(unittest.TestCase):
     """Tests for the PsychologicalState entity."""
     
-    @pytest.mark.venv_only
-def test_init_default_values(self):
+    def test_init_default_values(self):
         """Test that default values are correctly initialized."""
         state = PsychologicalState()
         
@@ -125,8 +118,7 @@ def test_init_default_values(self):
         assert state.rumination == 0.0
         assert isinstance(state.cognitive_distortions, dict)
     
-    @pytest.mark.venv_only
-def test_init_custom_values(self):
+    def test_init_custom_values(self):
         """Test initialization with custom values."""
         state = PsychologicalState(
             mood_valence=-0.5,
@@ -146,8 +138,7 @@ def test_init_custom_values(self):
         assert state.rumination == 0.3
         assert state.anhedonia == 0.5
     
-    @pytest.mark.venv_only
-def test_validation_range(self):
+    def test_validation_range(self):
         """Test validation of psychological state ranges."""
         # Mood values should be between -1.0 and 1.0
         with pytest.raises(ValidationError):
@@ -169,8 +160,7 @@ def test_validation_range(self):
         with pytest.raises(ValidationError):
             PsychologicalState(rumination=-0.1)
     
-    @pytest.mark.venv_only
-def test_calculate_depression_severity(self):
+    def test_calculate_depression_severity(self):
         """Test calculation of depression severity."""
         # Test no depression
         no_depression = PsychologicalState(
@@ -197,8 +187,7 @@ def test_calculate_depression_severity(self):
         )
         assert severe_depression.calculate_depression_severity() > 0.8
     
-    @pytest.mark.venv_only
-def test_calculate_anxiety_severity(self):
+    def test_calculate_anxiety_severity(self):
         """Test calculation of anxiety severity."""
         # Test no anxiety
         no_anxiety = PsychologicalState(
@@ -226,12 +215,10 @@ def test_calculate_anxiety_severity(self):
         assert severe_anxiety.calculate_anxiety_severity() > 0.7
 
 
-@pytest.mark.venv_only
 class TestBehavioralState(unittest.TestCase):
     """Tests for the BehavioralState entity."""
     
-    @pytest.mark.venv_only
-def test_init_default_values(self):
+    def test_init_default_values(self):
         """Test that default values are correctly initialized."""
         state = BehavioralState()
         
@@ -246,8 +233,7 @@ def test_init_default_values(self):
         assert state.self_care == 0.0
         assert isinstance(state.avoidance_behaviors, dict)
     
-    @pytest.mark.venv_only
-def test_init_custom_values(self):
+    def test_init_custom_values(self):
         """Test initialization with custom values."""
         state = BehavioralState(
             activity_level=-0.3,
@@ -271,8 +257,7 @@ def test_init_custom_values(self):
         assert state.social_engagement == 0.4
         assert state.self_care == 0.5
     
-    @pytest.mark.venv_only
-def test_validation_range(self):
+    def test_validation_range(self):
         """Test validation of behavioral state ranges."""
         # Bidirectional values should be between -1.0 and 1.0
         with pytest.raises(ValidationError):
@@ -301,8 +286,7 @@ def test_validation_range(self):
         with pytest.raises(ValidationError):
             BehavioralState(sleep_duration=25.0)
     
-    @pytest.mark.venv_only
-def test_calculate_functional_impairment(self):
+    def test_calculate_functional_impairment(self):
         """Test calculation of functional impairment."""
         # Test no impairment
         no_impairment = BehavioralState(
@@ -333,12 +317,10 @@ def test_calculate_functional_impairment(self):
         assert severe_impairment.calculate_functional_impairment() > 0.7
 
 
-@pytest.mark.venv_only
 class TestCognitiveState(unittest.TestCase):
     """Tests for the CognitiveState entity."""
     
-    @pytest.mark.venv_only
-def test_init_default_values(self):
+    def test_init_default_values(self):
         """Test that default values are correctly initialized."""
         state = CognitiveState()
         
@@ -352,8 +334,7 @@ def test_init_default_values(self):
         assert state.cognitive_flexibility == 0.0
         assert state.insight == 0.0
     
-    @pytest.mark.venv_only
-def test_init_custom_values(self):
+    def test_init_custom_values(self):
         """Test initialization with custom values."""
         state = CognitiveState(
             attention_level=0.6,
@@ -377,8 +358,7 @@ def test_init_custom_values(self):
         assert state.cognitive_flexibility == 0.4
         assert state.insight == 0.6
     
-    @pytest.mark.venv_only
-def test_validation_range(self):
+    def test_validation_range(self):
         """Test validation of cognitive state ranges."""
         # All cognitive values should be between 0.0 and 1.0
         with pytest.raises(ValidationError):
@@ -396,8 +376,7 @@ def test_validation_range(self):
         with pytest.raises(ValidationError):
             CognitiveState(executive_function=2.0)
     
-    @pytest.mark.venv_only
-def test_calculate_cognitive_impairment(self):
+    def test_calculate_cognitive_impairment(self):
         """Test calculation of cognitive impairment."""
         # Test no impairment
         no_impairment = CognitiveState(
@@ -437,12 +416,10 @@ def test_calculate_cognitive_impairment(self):
         assert severe_impairment.calculate_cognitive_impairment() > 0.8
 
 
-@pytest.mark.venv_only
 class TestDigitalTwinState(unittest.TestCase):
     """Tests for the DigitalTwinState entity."""
     
-    @pytest.mark.venv_only
-def test_init_default_values(self):
+    def test_init_default_values(self):
         """Test that default values are correctly initialized."""
         state = DigitalTwinState()
         
@@ -455,8 +432,7 @@ def test_init_default_values(self):
         assert isinstance(state.condition_severities, dict)
         assert isinstance(state.symptom_clusters, dict)
     
-    @pytest.mark.venv_only
-def test_init_custom_values(self):
+    def test_init_custom_values(self):
         """Test initialization with custom components."""
         neurotransmitter = NeurotransmitterState(
             serotonin_level=0.5,
@@ -489,8 +465,7 @@ def test_init_custom_values(self):
         assert state.cognitive == cognitive
         assert state.version == "1.1.0"
     
-    @pytest.mark.venv_only
-def test_update_derived_values(self):
+    def test_update_derived_values(self):
         """Test calculation of derived values."""
         # Create a state with specific values
         state = DigitalTwinState(
@@ -545,8 +520,7 @@ def test_update_derived_values(self):
         # Cognitive impairment should be moderate
         assert 0.3 < state.condition_severities["cognitive_impairment"] < 0.8
     
-    @pytest.mark.venv_only
-def test_calculation_methods(self):
+    def test_calculation_methods(self):
         """Test individual calculation methods."""
         state = DigitalTwinState(
             neurotransmitter=NeurotransmitterState(

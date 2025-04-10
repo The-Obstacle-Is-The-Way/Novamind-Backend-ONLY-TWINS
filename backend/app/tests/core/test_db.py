@@ -79,7 +79,6 @@ def test_get_session():
             pass
 
 
-@pytest.mark.db_required
 class TestDatabaseBase:
     """Test base class for database-related tests."""
     
@@ -88,7 +87,6 @@ class TestDatabaseBase:
 def test_base_class_table_creation(self):
         """Test that Base can create tables."""
         # Create a simple model class
-        @pytest.mark.db_required
 class TestModel(Base):
             __tablename__ = "test_models_temp"
             

@@ -21,7 +21,6 @@ from app.core.services.ml.mock import MockMentaLLaMA
 from app.tests.unit.base_test import BaseUnitTest
 
 
-@pytest.mark.db_required
 class TestMockMentaLLaMA(BaseUnitTest):
     """Test suite for MockMentaLLaMA class that provides psychiatric analysis."""
 
@@ -43,8 +42,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
             self.service.shutdown()
         super().tearDown()
 
-    @pytest.mark.db_required
-def test_initialization(self) -> None:
+    def test_initialization(self) -> None:
         """Test initialization with valid and invalid configurations."""
         # Test default initialization
         service = MockMentaLLaMA()
@@ -69,8 +67,7 @@ def test_initialization(self) -> None:
             # Pass invalid config that would cause error during processing
             service.initialize({"mock_responses": "not-a-dict"})
 
-    @pytest.mark.db_required
-def test_process_with_invalid_inputs(self) -> None:
+    def test_process_with_invalid_inputs(self) -> None:
         """Test process method with invalid inputs ensuring proper error handling."""
         # Test empty text
         with self.assertRaises(InvalidRequestError):
@@ -89,8 +86,7 @@ def test_process_with_invalid_inputs(self) -> None:
         with self.assertRaises(ServiceUnavailableError):
             uninitialized_service.process("Some text")
 
-    @pytest.mark.db_required
-def test_process_returns_expected_structure(self) -> None:
+    def test_process_returns_expected_structure(self) -> None:
         """Test that process returns the expected response structure with all required fields."""
         # Test general model (default)
         result = self.service.process(self.sample_text)
@@ -110,8 +106,7 @@ def test_process_returns_expected_structure(self) -> None:
             result = self.service.process(self.sample_text, model_type)
             self.assertEqual(result["model_type"], model_type)
 
-    @pytest.mark.db_required
-def test_detect_depression(self) -> None:
+    def test_detect_depression(self) -> None:
         """Test depression detection functionality ensuring clinical metrics are present."""
         result = self.service.detect_depression(self.sample_text)
         self.assertIn("depression_signals", result)
@@ -124,8 +119,7 @@ def test_detect_depression(self) -> None:
         self.assertIn("recommendations", result)
         self.assertIn("suggested_assessments", result["recommendations"])
 
-    @pytest.mark.db_required
-def test_assess_risk(self) -> None:
+    def test_assess_risk(self) -> None:
         """Test risk assessment functionality for self-harm detection."""
         # Test without specific risk type
         result = self.service.assess_risk(self.sample_text)
@@ -143,8 +137,7 @@ def test_assess_risk(self) -> None:
         # Verify clinical recommendations exist
         self.assertIn("recommendations", result)
 
-    @pytest.mark.db_required
-def test_analyze_sentiment(self) -> None:
+    def test_analyze_sentiment(self) -> None:
         """Test sentiment analysis functionality for emotional valence detection."""
         result = self.service.analyze_sentiment(self.sample_text)
         self.assertIn("sentiment", result)
@@ -157,8 +150,7 @@ def test_analyze_sentiment(self) -> None:
         self.assertIn("analysis", result)
         self.assertIn("emotional_themes", result["analysis"])
 
-    @pytest.mark.db_required
-def test_analyze_wellness_dimensions(self) -> None:
+    def test_analyze_wellness_dimensions(self) -> None:
         """Test wellness dimensions analysis functionality with comprehensive measures."""
         # Test without specific dimensions
         result = self.service.analyze_wellness_dimensions(self.sample_text)
@@ -177,8 +169,7 @@ def test_analyze_wellness_dimensions(self) -> None:
         self.assertIn("analysis", result)
         self.assertIn("recommendations", result)
 
-    @pytest.mark.db_required
-def test_digital_twin_session_workflow(self) -> None:
+    def test_digital_twin_session_workflow(self) -> None:
         """Test the complete digital twin session workflow from creation to insights."""
         # Create a digital twin
         twin_result = self.service.generate_digital_twin(

@@ -16,7 +16,7 @@ from app.core.services.ml.interface import (
     BaseMLInterface as MLService,
     PHIDetectionInterface as PHIDetectionService,
 )
-from app.core.services.ml.mentalllama import BaseMentaLLaMA
+from app.core.services.ml.mentalllama import MentaLLaMA # Corrected class name
 from app.core.services.ml.mock import MockMentaLLaMA
 from app.core.services.ml.pat import PATInterface, PATService, MockPATService
 
@@ -30,7 +30,7 @@ __all__ = [
     "PATInterface",
     
     # Base implementations
-    "BaseMentaLLaMA",
+    "MentaLLaMA", # Corrected class name in export list
     "PATService",
     
     # Mock implementations

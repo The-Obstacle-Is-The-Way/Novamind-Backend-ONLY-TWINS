@@ -20,7 +20,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from app.core.services.ml.pat.pat_service import PATService
 
 
-@pytest.mark.venv_only
 class TestPATService:
     """Tests for the PAT service."""
 
@@ -46,8 +45,7 @@ class TestPATService:
             "phq9_9": 0
         }
 
-    @pytest.mark.venv_only
-def test_initialization(self) -> None:
+    def test_initialization(self) -> None:
         """Test service initialization."""
         service = PATService()
         assert not service.is_healthy()
@@ -60,8 +58,7 @@ def test_initialization(self) -> None:
         service.shutdown()
         assert not service.is_healthy()
 
-    @pytest.mark.venv_only
-def test_create_assessment(self, pat_service: PATService) -> None:
+    def test_create_assessment(self, pat_service: PATService) -> None:
         """Test creating a new assessment."""
         # Create assessment with minimal data
         result = pat_service.create_assessment(
@@ -105,8 +102,7 @@ def test_create_assessment(self, pat_service: PATService) -> None:
                 assessment_type="invalid-type"  # Invalid: unsupported assessment type
             )
 
-    @pytest.mark.venv_only
-def test_get_assessment(self, pat_service: PATService) -> None:
+    def test_get_assessment(self, pat_service: PATService) -> None:
         """Test retrieving an assessment."""
         # Create an assessment to retrieve
         create_result = pat_service.create_assessment(
@@ -134,8 +130,7 @@ def test_get_assessment(self, pat_service: PATService) -> None:
         with pytest.raises(ModelNotFoundError):
             pat_service.get_assessment("non-existent-id")  # Invalid: assessment not found
 
-    @pytest.mark.venv_only
-def test_update_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+    def test_update_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test updating an assessment."""
         # Create an assessment to update
         create_result = pat_service.create_assessment(
@@ -181,8 +176,7 @@ def test_update_assessment(self, pat_service: PATService, mock_assessment_data: 
         with pytest.raises(InvalidRequestError):
             pat_service.update_assessment(assessment_id, {})  # Invalid: empty data
 
-    @pytest.mark.venv_only
-def test_complete_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+    def test_complete_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test completing an assessment."""
         # Create an assessment to complete
         create_result = pat_service.create_assessment(
@@ -217,8 +211,7 @@ def test_complete_assessment(self, pat_service: PATService, mock_assessment_data
         with pytest.raises(ModelNotFoundError):
             pat_service.complete_assessment("non-existent-id")  # Invalid: assessment not found
 
-    @pytest.mark.venv_only
-def test_analyze_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+    def test_analyze_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test analyzing an assessment."""
         # Create an assessment to analyze
         create_result = pat_service.create_assessment(
@@ -253,8 +246,7 @@ def test_analyze_assessment(self, pat_service: PATService, mock_assessment_data:
         with pytest.raises(InvalidRequestError):
             pat_service.analyze_assessment(assessment_id, "invalid-type")  # Invalid: unsupported analysis type
 
-    @pytest.mark.venv_only
-def test_calculate_scores(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+    def test_calculate_scores(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test score calculation functionality."""
         # Create assessment
         create_result = pat_service.create_assessment(
@@ -292,8 +284,7 @@ def test_calculate_scores(self, pat_service: PATService, mock_assessment_data: D
         with pytest.raises(InvalidRequestError):
             pat_service.calculate_score(assessment_id, "invalid-method")  # Invalid: unsupported scoring method
 
-    @pytest.mark.venv_only
-def test_get_assessment_history(self, pat_service: PATService) -> None:
+    def test_get_assessment_history(self, pat_service: PATService) -> None:
         """Test retrieving assessment history for a patient."""
         patient_id = "test-patient-9"
         
@@ -333,8 +324,7 @@ def test_get_assessment_history(self, pat_service: PATService) -> None:
         with pytest.raises(InvalidRequestError):
             pat_service.get_assessment_history("")  # Invalid: empty patient_id
 
-    @pytest.mark.venv_only
-def test_form_template_operations(self, pat_service: PATService) -> None:
+    def test_form_template_operations(self, pat_service: PATService) -> None:
         """Test form template creation and retrieval."""
         # Create a custom template
         form_fields = [
@@ -402,8 +392,7 @@ def test_form_template_operations(self, pat_service: PATService) -> None:
         with pytest.raises(ModelNotFoundError):
             pat_service.get_form_template("non-existent-id")  # Invalid: template not found
 
-    @pytest.mark.venv_only
-def test_generate_report(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+    def test_generate_report(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test report generation functionality."""
         # Create assessment
         create_result = pat_service.create_assessment(
@@ -460,8 +449,7 @@ def test_generate_report(self, pat_service: PATService, mock_assessment_data: Di
         with pytest.raises(InvalidRequestError):
             pat_service.generate_report(assessment_id, "invalid-type")  # Invalid: unsupported report type
 
-    @pytest.mark.venv_only
-def test_service_unavailable_errors(self) -> None:
+    def test_service_unavailable_errors(self) -> None:
         """Test service unavailable errors when not initialized."""
         service = PATService()  # Uninitialized service
         
@@ -498,8 +486,7 @@ def test_service_unavailable_errors(self) -> None:
         with pytest.raises(ServiceUnavailableError):
             service.generate_report("assessment-id")
 
-    @pytest.mark.venv_only
-def test_high_risk_flagging(self, pat_service: PATService) -> None:
+    def test_high_risk_flagging(self, pat_service: PATService) -> None:
         """Test that high-risk responses are properly flagged."""
         # Create an assessment
         create_result = pat_service.create_assessment(
@@ -518,8 +505,7 @@ def test_high_risk_flagging(self, pat_service: PATService) -> None:
         assert any(flag["type"] == "suicide_risk" for flag in assessment["flags"])
         assert any(flag["severity"] == "high" for flag in assessment["flags"])
 
-    @pytest.mark.venv_only
-def test_completion_percentage(self, pat_service: PATService) -> None:
+    def test_completion_percentage(self, pat_service: PATService) -> None:
         """Test completion percentage calculation."""
         # Create assessment
         create_result = pat_service.create_assessment(

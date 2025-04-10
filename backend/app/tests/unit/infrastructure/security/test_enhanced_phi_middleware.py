@@ -26,24 +26,20 @@ def mock_audit_logger():
 
 
 @pytest.fixture
-@pytest.mark.db_required
 def test_app(mock_audit_logger):
     """Fixture for a test FastAPI application with PHI middleware."""
     app = FastAPI()
     
     @app.get("/test")
-    async @pytest.mark.db_required
-def test_endpoint():
+    async def test_endpoint():
         return {"message": "Test endpoint"}
     
     @app.get("/test-with-phi")
-    async @pytest.mark.db_required
-def test_with_phi():
+    async def test_with_phi():
         return {"patient": "John Doe", "ssn": "123-45-6789"}
     
     @app.post("/test-post")
-    async @pytest.mark.db_required
-def test_post(data: dict):
+    async def test_post(data: dict):
         return data
     
     setup_enhanced_phi_middleware(
@@ -57,25 +53,21 @@ def test_post(data: dict):
 
 
 @pytest.fixture
-@pytest.mark.db_required
 def test_client(test_app):
     """Fixture for a test client."""
     return TestClient(test_app)
 
 
-@pytest.mark.db_required
 class TestEnhancedPHIMiddleware:
     """Tests for the EnhancedPHIMiddleware class."""
     
-    @pytest.mark.db_required
-def test_excluded_paths_are_skipped(self, test_client):
+    def test_excluded_paths_are_skipped(self, test_client):
         """Test that excluded paths are skipped."""
         # The /docs path should be excluded by default
         response = test_client.get("/docs")
         assert response.status_code == 404  # 404 because the path doesn't exist, but middleware didn't block it
     
-    @pytest.mark.db_required
-def test_sanitize_response_with_phi(self, test_client):
+    def test_sanitize_response_with_phi(self, test_client):
         """Test that responses with PHI are sanitized."""
         response = test_client.get("/test-with-phi")
         assert response.status_code == 200
@@ -87,15 +79,13 @@ def test_sanitize_response_with_phi(self, test_client):
         assert data["ssn"] != "123-45-6789"
         assert data["ssn"] == "000-00-0000"
     
-    @pytest.mark.db_required
-def test_block_request_with_phi_in_query(self, test_client):
+    def test_block_request_with_phi_in_query(self, test_client):
         """Test that requests with PHI in query parameters are blocked."""
         response = test_client.get("/test?patient=John%20Doe")
         assert response.status_code == 400
         assert "PHI detected in request" in response.json()["error"]
     
-    @pytest.mark.db_required
-def test_block_request_with_phi_in_body(self, test_client):
+    def test_block_request_with_phi_in_body(self, test_client):
         """Test that requests with PHI in body are blocked."""
         response = test_client.post(
             "/test-post",
@@ -104,15 +94,13 @@ def test_block_request_with_phi_in_body(self, test_client):
         assert response.status_code == 400
         assert "PHI detected in request" in response.json()["error"]
     
-    @pytest.mark.db_required
-def test_allow_request_without_phi(self, test_client):
+    def test_allow_request_without_phi(self, test_client):
         """Test that requests without PHI are allowed."""
         response = test_client.get("/test")
         assert response.status_code == 200
         assert response.json() == {"message": "Test endpoint"}
     
-    @pytest.mark.db_required
-def test_allow_post_without_phi(self, test_client):
+    def test_allow_post_without_phi(self, test_client):
         """Test that POST requests without PHI are allowed."""
         response = test_client.post(
             "/test-post",
@@ -122,8 +110,7 @@ def test_allow_post_without_phi(self, test_client):
         assert response.json() == {"data": "test data", "value": 123}
     
     @patch("app.infrastructure.security.enhanced_phi_middleware.EnhancedPHIDetector")
-    @pytest.mark.db_required
-def test_phi_detection_in_request(self, mock_detector, test_client, mock_audit_logger):
+    def test_phi_detection_in_request(self, mock_detector, test_client, mock_audit_logger):
         """Test PHI detection in requests."""
         # Mock the PHI detector to always detect PHI
         mock_detector.contains_phi.return_value = True
@@ -136,8 +123,7 @@ def test_phi_detection_in_request(self, mock_detector, test_client, mock_audit_l
         mock_audit_logger.log_security_event.assert_called_once()
     
     @patch("app.infrastructure.security.enhanced_phi_middleware.EnhancedPHISanitizer")
-    @pytest.mark.db_required
-def test_phi_sanitization_in_response(self, mock_sanitizer, test_client):
+    def test_phi_sanitization_in_response(self, mock_sanitizer, test_client):
         """Test PHI sanitization in responses."""
         # Mock the sanitizer to return a specific sanitized value
         mock_sanitizer.sanitize_structured_data.return_value = {"sanitized": True}
@@ -146,12 +132,10 @@ def test_phi_sanitization_in_response(self, mock_sanitizer, test_client):
         assert response.status_code == 200
         assert response.json() == {"sanitized": True}
     
-    @pytest.mark.db_required
-def test_non_json_response_not_sanitized(self, test_app, test_client):
+    def test_non_json_response_not_sanitized(self, test_app, test_client):
         """Test that non-JSON responses are not sanitized."""
         @test_app.get("/test-text")
-        async @pytest.mark.db_required
-def test_text():
+        async def test_text():
             return "This is a text response with John Doe's information"
         
         response = test_client.get("/test-text")
@@ -159,13 +143,11 @@ def test_text():
         assert "John Doe" in response.text
     
     @patch("app.infrastructure.security.enhanced_phi_middleware.logger")
-    @pytest.mark.db_required
-def test_error_handling_in_response_processing(self, mock_logger, test_app, test_client):
+    def test_error_handling_in_response_processing(self, mock_logger, test_app, test_client):
         """Test error handling in response processing."""
         # Create a response that will cause an error during processing
         @test_app.get("/test-error")
-        async @pytest.mark.db_required
-def test_error():
+        async def test_error():
             # Return a response that will cause a JSON decode error
             return JSONResponse(content=b"invalid json")
         
@@ -177,7 +159,6 @@ def test_error():
         assert "Error sanitizing response" in mock_logger.warning.call_args[0][0]
 
 
-@pytest.mark.db_required
 def test_setup_enhanced_phi_middleware():
     """Test the setup function for the middleware."""
     app = FastAPI()

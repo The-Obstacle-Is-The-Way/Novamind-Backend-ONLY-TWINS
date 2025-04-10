@@ -19,7 +19,6 @@ def default_ml_settings():
     return MLSettings()
 
 
-@pytest.mark.venv_only
 def test_default_values(default_ml_settings):
     """Test that default values are set correctly."""
     # Check default directories
@@ -47,7 +46,6 @@ def test_default_values(default_ml_settings):
     "BATCH_SIZE": "128",
     "MAX_TEXT_LENGTH": "8192"
 })
-@pytest.mark.venv_only
 def test_environment_variable_override():
     """Test that environment variables override default values."""
     settings = MLSettings()
@@ -67,7 +65,6 @@ def test_environment_variable_override():
     assert settings.MAX_TEXT_LENGTH == 8192
 
 
-@pytest.mark.venv_only
 def test_directory_creation(tmp_path):
     """Test that model directories are created if they don't exist."""
     # Create temporary directories for testing
@@ -93,7 +90,6 @@ def test_directory_creation(tmp_path):
         assert mentallama_dir.exists()
 
 
-@pytest.mark.venv_only
 def test_model_path_creation():
     """Test creating model paths with version and variant."""
     settings = MLSettings()
@@ -111,7 +107,6 @@ def test_model_path_creation():
         assert path == expected
 
 
-@pytest.mark.venv_only
 def test_digital_twin_settings(default_ml_settings):
     """Test Digital Twin specific settings."""
     # Check default Digital Twin settings
@@ -128,7 +123,6 @@ def test_digital_twin_settings(default_ml_settings):
         assert settings.DIGITAL_TWIN_REGIONS == 42
 
 
-@pytest.mark.venv_only
 def test_xgboost_settings(default_ml_settings):
     """Test XGBoost specific settings."""
     # Check default XGBoost settings
@@ -145,7 +139,6 @@ def test_xgboost_settings(default_ml_settings):
         assert settings.XGBOOST_GPU_ENABLED is True
 
 
-@pytest.mark.venv_only
 def test_phi_detection_settings(default_ml_settings):
     """Test PHI detection specific settings."""
     # Check default PHI detection settings
@@ -162,7 +155,6 @@ def test_phi_detection_settings(default_ml_settings):
         assert settings.PHI_REDACTION_ENABLED is False
 
 
-@pytest.mark.venv_only
 def test_validation():
     """Test validation of settings."""
     # Test with invalid value for batch size

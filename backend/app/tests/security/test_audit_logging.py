@@ -25,7 +25,6 @@ TEST_PATIENT = {
 }
 
 
-@pytest.mark.venv_only
 class TestAuditLogging:
     """Test the audit logging system for HIPAA compliance"""
     
@@ -38,8 +37,7 @@ class TestAuditLogging:
         except ImportError:
             pytest.skip("Audit logger not implemented yet")
     
-    @pytest.mark.venv_only
-def test_log_phi_access(self, audit_logger):
+    def test_log_phi_access(self, audit_logger):
         """Test logging of PHI access events"""
         # Log PHI access
         log_id = audit_logger.log_phi_access(
@@ -65,8 +63,7 @@ def test_log_phi_access(self, audit_logger):
         assert "timestamp" in log_entry, "Missing timestamp in audit log"
         assert "ip_address" in log_entry, "Missing IP address in audit log"
     
-    @pytest.mark.venv_only
-def test_search_audit_logs(self, audit_logger):
+    def test_search_audit_logs(self, audit_logger):
         """Test searching audit logs"""
         # Create multiple log entries
         for action in ["view", "update", "print"]:
@@ -98,8 +95,7 @@ def test_search_audit_logs(self, audit_logger):
         )
         assert len(recent_logs) >= 3, "Failed to retrieve logs by date range"
     
-    @pytest.mark.venv_only
-def test_tamper_resistance(self, audit_logger):
+    def test_tamper_resistance(self, audit_logger):
         """Test audit log tamper resistance"""
         # Create log entry
         log_id = audit_logger.log_phi_access(
@@ -128,8 +124,7 @@ def test_tamper_resistance(self, audit_logger):
             assert "permission" in str(e).lower() or "tamper" in str(e).lower() or "read" in str(e).lower(), \
                 "Expected permission or tampering error"
     
-    @pytest.mark.venv_only
-def test_log_security(self, audit_logger):
+    def test_log_security(self, audit_logger):
         """Test audit log security controls"""
         # Verify admin can access logs
         admin_access = audit_logger.check_log_access(
@@ -153,8 +148,7 @@ def test_log_security(self, audit_logger):
         )
         assert not patient_access, "Patients should not have access to audit logs"
     
-    @pytest.mark.venv_only
-def test_log_export(self, audit_logger):
+    def test_log_export(self, audit_logger):
         """Test audit log export for compliance reporting"""
         # Create test logs
         for i in range(5):

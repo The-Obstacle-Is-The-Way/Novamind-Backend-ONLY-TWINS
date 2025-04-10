@@ -148,8 +148,7 @@ def patient_data():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_generate_comprehensive_patient_insights(integration_service, patient_data):
+async def test_generate_comprehensive_patient_insights(integration_service, patient_data):
     """Test generating comprehensive patient insights."""
     patient_id = uuid4()
     
@@ -186,8 +185,7 @@ def test_generate_comprehensive_patient_insights(integration_service, patient_da
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_generate_insights_with_missing_data(integration_service):
+async def test_generate_insights_with_missing_data(integration_service):
     """Test generating insights with missing data."""
     patient_id = uuid4()
     
@@ -216,8 +214,7 @@ def test_generate_insights_with_missing_data(integration_service):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_generate_insights_with_invalid_data(integration_service):
+async def test_generate_insights_with_invalid_data(integration_service):
     """Test generating insights with invalid data."""
     patient_id = uuid4()
     
@@ -233,8 +230,7 @@ def test_generate_insights_with_invalid_data(integration_service):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_run_symptom_forecasting(integration_service, patient_data):
+async def test_run_symptom_forecasting(integration_service, patient_data):
     """Test running symptom forecasting independently."""
     patient_id = uuid4()
     
@@ -251,8 +247,7 @@ def test_run_symptom_forecasting(integration_service, patient_data):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_run_biometric_correlation(integration_service, patient_data):
+async def test_run_biometric_correlation(integration_service, patient_data):
     """Test running biometric correlation independently."""
     patient_id = uuid4()
     
@@ -269,8 +264,7 @@ def test_run_biometric_correlation(integration_service, patient_data):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_run_pharmacogenomics(integration_service, patient_data):
+async def test_run_pharmacogenomics(integration_service, patient_data):
     """Test running pharmacogenomics independently."""
     patient_id = uuid4()
     
@@ -287,8 +281,7 @@ def test_run_pharmacogenomics(integration_service, patient_data):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_generate_integrated_recommendations(integration_service):
+async def test_generate_integrated_recommendations(integration_service):
     """Test generating integrated recommendations."""
     # Create mock results from individual microservices
     results = [
@@ -335,8 +328,7 @@ def test_generate_integrated_recommendations(integration_service):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_handle_microservice_failure(integration_service, patient_data):
+async def test_handle_microservice_failure(integration_service, patient_data):
     """Test handling of microservice failures."""
     patient_id = uuid4()
     
@@ -357,8 +349,7 @@ def test_handle_microservice_failure(integration_service, patient_data):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
-def test_sanitize_patient_data(integration_service, patient_data):
+async def test_sanitize_patient_data(integration_service, patient_data):
     """Test sanitization of patient data for HIPAA compliance."""
     # Add PHI to patient data
     patient_data_with_phi = patient_data.copy()

@@ -4,12 +4,12 @@ Sample venv_only test that demonstrates using third-party packages without exter
 This test uses pandas for data processing but doesn't connect to any external services.
 """
 
-import pytest
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
 
-@pytest.mark.venv_only
+import numpy as np
+import pandas as pd
+
+
 def test_pandas_processing():
     """Test that pandas can be used for data processing in venv_only tests."""
     # Create a sample DataFrame

@@ -85,7 +85,6 @@ except ImportError:
             return token_payload['role']
 
 
-@pytest.mark.venv_only
 class TestHIPAAAuthCompliance:
     """Test authentication and authorization for HIPAA compliance."""
     
@@ -134,8 +133,7 @@ class TestHIPAAAuthCompliance:
             "permissions": ["read:patient", "write:patient", "read:phi", "write:phi"]
         }, expires_delta=-1)  # Token expired 1 minute ago
     
-    @pytest.mark.venv_only
-def test_valid_token_authentication(self, auth_middleware, doctor_token):
+    def test_valid_token_authentication(self, auth_middleware, doctor_token):
         """Test that valid tokens authenticate successfully."""
         payload = auth_middleware.authenticate(doctor_token)
         assert payload is not None
@@ -143,21 +141,18 @@ def test_valid_token_authentication(self, auth_middleware, doctor_token):
         assert "sub" in payload
         assert "exp" in payload
     
-    @pytest.mark.venv_only
-def test_expired_token_authentication(self, auth_middleware, expired_token):
+    def test_expired_token_authentication(self, auth_middleware, expired_token):
         """Test that expired tokens fail authentication."""
         payload = auth_middleware.authenticate(expired_token)
         assert payload is None
     
-    @pytest.mark.venv_only
-def test_tampered_token_authentication(self, auth_middleware, doctor_token):
+    def test_tampered_token_authentication(self, auth_middleware, doctor_token):
         """Test that tampered tokens fail authentication."""
         tampered_token = doctor_token[:-5] + "tampr"  # Tamper with signature
         payload = auth_middleware.authenticate(tampered_token)
         assert payload is None
     
-    @pytest.mark.venv_only
-def test_role_based_access_control(self, role_manager, doctor_token, patient_token, jwt_service):
+    def test_role_based_access_control(self, role_manager, doctor_token, patient_token, jwt_service):
         """Test that role-based access control properly enforces permissions."""
         doctor_payload = jwt_service.decode_token(doctor_token)
         patient_payload = jwt_service.decode_token(patient_token)
@@ -174,14 +169,12 @@ def test_role_based_access_control(self, role_manager, doctor_token, patient_tok
         assert role_manager.has_permission(patient_role, "read:phi") is False
         assert role_manager.has_permission(patient_role, "read:own_data") is True
     
-    @pytest.mark.venv_only
-def test_missing_token(self, auth_middleware):
+    def test_missing_token(self, auth_middleware):
         """Test that missing token fails authentication."""
         payload = auth_middleware.authenticate(None)
         assert payload is None
     
-    @pytest.mark.venv_only
-def test_patient_data_isolation(self, jwt_service, role_manager):
+    def test_patient_data_isolation(self, jwt_service, role_manager):
         """Test that patients can only access their own data."""
         # Create two different patient tokens
         patient1_token = jwt_service.create_access_token({
@@ -218,8 +211,7 @@ def test_patient_data_isolation(self, jwt_service, role_manager):
         assert role_manager.has_permission(role1, "read:patient") is False
         assert role_manager.has_permission(role2, "read:patient") is False
     
-    @pytest.mark.venv_only
-def test_token_without_role(self, jwt_service, role_manager):
+    def test_token_without_role(self, jwt_service, role_manager):
         """Test that tokens without role get default guest permissions."""
         # Create token without role
         no_role_token = jwt_service.create_access_token({
@@ -241,8 +233,7 @@ def test_token_without_role(self, jwt_service, role_manager):
     
     @patch('jwt.encode', side_effect=jwt.encode)
     @patch('jwt.decode', side_effect=jwt.decode)
-    @pytest.mark.venv_only
-def test_token_operations_audit_trail(self, mock_decode, mock_encode, jwt_service):
+    def test_token_operations_audit_trail(self, mock_decode, mock_encode, jwt_service):
         """Test that token operations can be properly audited."""
         # Create and verify a token, monitoring encode/decode calls
         test_data = {"sub": "audit_test", "role": "admin"}
@@ -262,8 +253,7 @@ def test_token_operations_audit_trail(self, mock_decode, mock_encode, jwt_servic
         mock_decode.assert_called()
         assert mock_decode.call_args[0][0] == token
     
-    @pytest.mark.venv_only
-def test_multi_factor_auth_support(self, jwt_service):
+    def test_multi_factor_auth_support(self, jwt_service):
         """Test support for multi-factor authentication in tokens."""
         # Create a token with MFA flag
         mfa_token = jwt_service.create_access_token({
@@ -278,8 +268,7 @@ def test_multi_factor_auth_support(self, jwt_service):
         assert payload["mfa_complete"] is True
         assert payload["auth_level"] == "2"
     
-    @pytest.mark.venv_only
-def test_minimal_phi_in_token(self, jwt_service):
+    def test_minimal_phi_in_token(self, jwt_service):
         """Test that tokens contain minimal PHI, even for authorized users."""
         # Create an admin token
         admin_token = jwt_service.create_access_token({

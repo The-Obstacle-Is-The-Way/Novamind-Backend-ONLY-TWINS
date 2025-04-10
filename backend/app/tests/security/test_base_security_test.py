@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Base Security Test Class Tests
 
@@ -13,11 +12,9 @@ from unittest.mock import patch
 from app.tests.security.base_security_test import BaseSecurityTest
 
 
-@pytest.mark.db_required
 class TestBaseSecurityTest(unittest.TestCase):
     """Test suite for BaseSecurityTest functionality."""
     
-    @pytest.mark.db_required
 def test_initialization(self):
         """Test that BaseSecurityTest initializes with correct attributes."""
         security_test = BaseSecurityTest()
@@ -34,7 +31,6 @@ def test_initialization(self):
         # Clean up
         security_test.tearDown()
     
-    @pytest.mark.db_required
 def test_has_permission(self):
         """Test permission checking functionality."""
         security_test = BaseSecurityTest()
@@ -52,7 +48,6 @@ def test_has_permission(self):
         # Clean up
         security_test.tearDown()
     
-    @pytest.mark.db_required
 def test_get_auth_token(self):
         """Test generation of authentication tokens."""
         security_test = BaseSecurityTest()
@@ -90,7 +85,6 @@ def test_get_auth_token(self):
         # Clean up
         security_test.tearDown()
     
-    @pytest.mark.db_required
 def test_get_auth_headers(self):
         """Test generation of authentication headers."""
         security_test = BaseSecurityTest()
@@ -119,7 +113,6 @@ def test_get_auth_headers(self):
         security_test.tearDown()
     
     @patch('app.tests.security.base_security_test.MockAsyncSession')
-    @pytest.mark.db_required
 def test_db_session_setup(self, mock_session_class):
         """Test database session is properly set up."""
         security_test = BaseSecurityTest()
@@ -131,7 +124,6 @@ def test_db_session_setup(self, mock_session_class):
         # Clean up
         security_test.tearDown()
     
-    @pytest.mark.db_required
 def test_entity_factory_setup(self):
         """Test entity factory is properly set up."""
         security_test = BaseSecurityTest()

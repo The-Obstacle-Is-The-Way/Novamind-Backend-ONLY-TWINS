@@ -18,7 +18,6 @@ from app.core.services.ml.mentalllama import MentaLLaMAService
 from app.core.exceptions import ServiceUnavailableError, ModelNotFoundError, InvalidRequestError
 
 
-@pytest.mark.db_required
 class TestMentaLLaMAService:
     """Test suite for MentaLLaMA service."""
 
@@ -44,8 +43,7 @@ class TestMentaLLaMAService:
             }
         }
 
-    @pytest.mark.db_required
-def test_initialization(self, service, mock_config):
+    def test_initialization(self, service, mock_config):
         """Test service initialization."""
         # Patch the setup client methods to avoid actual client creation
         with patch.object(service, '_setup_client'), \
@@ -59,8 +57,7 @@ def test_initialization(self, service, mock_config):
             assert service._config == mock_config
             assert service._provider == "internal"
 
-    @pytest.mark.db_required
-def test_initialization_failure(self, service, mock_config):
+    def test_initialization_failure(self, service, mock_config):
         """Test service initialization failure."""
         # Mock _setup_client to raise an exception
         with patch.object(service, '_setup_client', side_effect=Exception("Setup failed")), \
@@ -74,8 +71,7 @@ def test_initialization_failure(self, service, mock_config):
             assert "initialization failed" in str(exc_info.value)
             assert service._initialized is False
 
-    @pytest.mark.db_required
-def test_is_healthy(self, service):
+    def test_is_healthy(self, service):
         """Test health check method."""
         # Not initialized
         assert service.is_healthy() is False
@@ -89,8 +85,7 @@ def test_is_healthy(self, service):
         service._client = {"type": "internal"}
         assert service.is_healthy() is True
 
-    @pytest.mark.db_required
-def test_shutdown(self, service):
+    def test_shutdown(self, service):
         """Test shutdown method."""
         # Set up service for shutdown
         service._initialized = True
@@ -107,8 +102,7 @@ def test_shutdown(self, service):
     @patch('app.core.services.ml.mentalllama.sanitize_text')
     @patch('app.core.services.ml.mentalllama.uuid.uuid4')
     @patch('app.core.services.ml.mentalllama.datetime')
-    @pytest.mark.db_required
-def test_process_method(self, mock_datetime, mock_uuid, mock_sanitize, mock_json, service, mock_config):
+    def test_process_method(self, mock_datetime, mock_uuid, mock_sanitize, mock_json, service, mock_config):
         """Test process method for task execution."""
         # Set up mocks
         mock_uuid.return_value = uuid.UUID('12345678-1234-5678-1234-567812345678')
@@ -181,8 +175,7 @@ def test_process_method(self, mock_datetime, mock_uuid, mock_sanitize, mock_json
                 0.7
             )
 
-    @pytest.mark.db_required
-def test_process_service_not_initialized(self, service):
+    def test_process_service_not_initialized(self, service):
         """Test process method when service is not initialized."""
         with pytest.raises(ServiceUnavailableError) as exc_info:
             service.process(
@@ -193,8 +186,7 @@ def test_process_service_not_initialized(self, service):
         
         assert "not initialized" in str(exc_info.value)
 
-    @pytest.mark.db_required
-def test_process_model_not_found(self, service):
+    def test_process_model_not_found(self, service):
         """Test process method with non-existent model."""
         # Initialize service
         service._initialized = True
@@ -214,8 +206,7 @@ def test_process_model_not_found(self, service):
         
         assert "not found" in str(exc_info.value)
 
-    @pytest.mark.db_required
-def test_process_unsupported_task(self, service):
+    def test_process_unsupported_task(self, service):
         """Test process method with unsupported task."""
         # Initialize service
         service._initialized = True
@@ -236,8 +227,7 @@ def test_process_unsupported_task(self, service):
         assert "not support task" in str(exc_info.value)
 
     @patch('app.core.services.ml.mentalllama.sanitize_text')
-    @pytest.mark.db_required
-def test_sanitize_input(self, mock_sanitize, service):
+    def test_sanitize_input(self, mock_sanitize, service):
         """Test PHI sanitization function."""
         mock_sanitize.return_value = "Sanitized text without PHI"
         
@@ -246,8 +236,7 @@ def test_sanitize_input(self, mock_sanitize, service):
         assert result == "Sanitized text without PHI"
         mock_sanitize.assert_called_once_with("Original text with PHI")
 
-    @pytest.mark.db_required
-def test_post_process_response_depression_detection(self, service):
+    def test_post_process_response_depression_detection(self, service):
         """Test post-processing for depression detection task."""
         # Mock extraction methods
         with patch.object(service, '_extract_severity', return_value="moderate"), \
@@ -269,8 +258,7 @@ def test_post_process_response_depression_detection(self, service):
             assert result["structured_data"]["severity"] == "moderate"
             assert len(result["structured_data"]["key_indicators"]) == 2
 
-    @pytest.mark.db_required
-def test_post_process_response_risk_assessment(self, service):
+    def test_post_process_response_risk_assessment(self, service):
         """Test post-processing for risk assessment task."""
         # Mock extraction methods
         with patch.object(service, '_extract_risk_level', return_value="low"), \
@@ -294,8 +282,7 @@ def test_post_process_response_risk_assessment(self, service):
             assert len(result["structured_data"]["key_indicators"]) == 1
             assert len(result["structured_data"]["suggested_actions"]) == 1
 
-    @pytest.mark.db_required
-def test_create_task_prompt(self, service):
+    def test_create_task_prompt(self, service):
         """Test task prompt creation."""
         user_prompt = "User provided text for analysis"
         context = {"patient_history": "Patient history text"}
@@ -325,8 +312,7 @@ def test_create_task_prompt(self, service):
         assert user_prompt in no_context_prompt
 
     @patch('app.core.services.ml.mentalllama.sanitize_text')
-    @pytest.mark.db_required
-def test_task_specific_methods(self, mock_sanitize, service):
+    def test_task_specific_methods(self, mock_sanitize, service):
         """Test the specialized task-specific methods."""
         # Set up mocks
         mock_sanitize.return_value = "Sanitized text"
@@ -400,8 +386,7 @@ def test_task_specific_methods(self, mock_sanitize, service):
             assert result == {"result": "success"}
 
     @patch('app.core.services.ml.mentalllama.boto3')
-    @pytest.mark.db_required
-def test_setup_aws_client(self, mock_boto3, service):
+    def test_setup_aws_client(self, mock_boto3, service):
         """Test AWS Bedrock client setup."""
         # Set up mock session and client
         mock_session = MagicMock()
@@ -436,8 +421,7 @@ def test_setup_aws_client(self, mock_boto3, service):
         mock_boto3.client.assert_called_once()
 
     @patch('app.core.services.ml.mentalllama.boto3')
-    @pytest.mark.db_required
-def test_setup_aws_client_error(self, mock_boto3, service):
+    def test_setup_aws_client_error(self, mock_boto3, service):
         """Test AWS Bedrock client setup with errors."""
         # Test ImportError
         mock_boto3.side_effect = ImportError("boto3 not installed")
@@ -461,8 +445,7 @@ def test_setup_aws_client_error(self, mock_boto3, service):
         assert "AWS client initialization failed" in str(exc_info.value)
 
     @patch('app.core.services.ml.mentalllama.OpenAI')
-    @pytest.mark.db_required
-def test_setup_openai_client(self, mock_openai, service):
+    def test_setup_openai_client(self, mock_openai, service):
         """Test OpenAI client setup."""
         # Set up mock OpenAI client
         mock_openai_client = MagicMock()
@@ -488,8 +471,7 @@ def test_setup_openai_client(self, mock_openai, service):
         assert service._client["client"] == mock_openai_client
 
     @patch('app.core.services.ml.mentalllama.OpenAI')
-    @pytest.mark.db_required
-def test_setup_openai_client_error(self, mock_openai, service):
+    def test_setup_openai_client_error(self, mock_openai, service):
         """Test OpenAI client setup with errors."""
         # Test ImportError
         mock_openai.side_effect = ImportError("openai not installed")
@@ -512,8 +494,7 @@ def test_setup_openai_client_error(self, mock_openai, service):
         
         assert "OpenAI client initialization failed" in str(exc_info.value)
 
-    @pytest.mark.db_required
-def test_process_with_provider(self, service):
+    def test_process_with_provider(self, service):
         """Test provider selection in process method."""
         service._provider = "internal"
         
@@ -584,8 +565,7 @@ def test_process_with_provider(self, service):
             
             assert "Unsupported provider" in str(exc_info.value)
 
-    @pytest.mark.db_required
-def test_estimate_tokens_used(self, service):
+    def test_estimate_tokens_used(self, service):
         """Test token estimation function."""
         prompt = "This is a test prompt"
         response = "This is a model response"

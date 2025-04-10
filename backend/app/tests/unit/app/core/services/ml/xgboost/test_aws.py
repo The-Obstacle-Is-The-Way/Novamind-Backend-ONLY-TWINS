@@ -21,7 +21,6 @@ from app.core.services.ml.xgboost.exceptions import (
 )
 
 
-@pytest.mark.db_required
 class TestObserver(Observer):
     """Test implementation of the Observer interface."""
     
@@ -54,7 +53,6 @@ def aws_config():
 
 
 @pytest.fixture
-@pytest.mark.db_required
 def test_observer():
     """Fixture for test observer."""
     return TestObserver()
@@ -145,12 +143,10 @@ def treatment_plan():
     }
 
 
-@pytest.mark.db_required
 class TestAWSXGBoostService:
     """Test suite for the AWS XGBoost service implementation."""
     
-    @pytest.mark.db_required
-def test_initialization(self, aws_config, boto_clients):
+    def test_initialization(self, aws_config, boto_clients):
         """Test initialization with configuration."""
         service = AWSXGBoostService()
         service.initialize(aws_config)
@@ -170,8 +166,7 @@ def test_initialization(self, aws_config, boto_clients):
         ]
         boto_clients["mock_boto3_client"].assert_has_calls(calls, any_order=True)
     
-    @pytest.mark.db_required
-def test_initialization_missing_parameters(self):
+    def test_initialization_missing_parameters(self):
         """Test initialization with missing parameters."""
         service = AWSXGBoostService()
         
@@ -180,8 +175,7 @@ def test_initialization_missing_parameters(self):
         
         assert "Missing required AWS parameter" in str(exc_info.value)
     
-    @pytest.mark.db_required
-def test_initialization_client_error(self, boto_clients):
+    def test_initialization_client_error(self, boto_clients):
         """Test initialization with AWS client error."""
         # Make boto3.client raise ClientError
         error_response = {"Error": {"Code": "AuthFailure", "Message": "Auth failure"}}
@@ -203,8 +197,7 @@ def test_initialization_client_error(self, boto_clients):
         assert exc_info.value.service == "AWS"
         assert exc_info.value.error_type == "AuthFailure"
     
-    @pytest.mark.db_required
-def test_observer_registration(self, aws_service, test_observer):
+    def test_observer_registration(self, aws_service, test_observer):
         """Test observer registration and notification."""
         # Register observer
         aws_service.register_observer(EventType.PREDICTION, test_observer)
@@ -232,8 +225,7 @@ def test_observer_registration(self, aws_service, test_observer):
         assert data["patient_id"] == "P12345"
         assert "timestamp" in data
     
-    @pytest.mark.db_required
-def test_observer_unregistration(self, aws_service, test_observer):
+    def test_observer_unregistration(self, aws_service, test_observer):
         """Test observer unregistration."""
         # Register then unregister observer
         aws_service.register_observer(EventType.PREDICTION, test_observer)
@@ -256,8 +248,7 @@ def test_observer_unregistration(self, aws_service, test_observer):
         # Verify observer was not notified
         assert len(test_observer.events) == 0
     
-    @pytest.mark.db_required
-def test_predict_risk(self, aws_service, boto_clients, clinical_data):
+    def test_predict_risk(self, aws_service, boto_clients, clinical_data):
         """Test risk prediction."""
         # Mock SageMaker endpoint response
         response_body = {
@@ -300,8 +291,7 @@ def test_predict_risk(self, aws_service, boto_clients, clinical_data):
         assert request_body["clinical_data"] == clinical_data
         assert request_body["time_frame_days"] == 60
     
-    @pytest.mark.db_required
-def test_predict_risk_validation_error(self, aws_service):
+    def test_predict_risk_validation_error(self, aws_service):
         """Test risk prediction with validation error."""
         with pytest.raises(ValidationError):
             aws_service.predict_risk(
@@ -324,8 +314,7 @@ def test_predict_risk_validation_error(self, aws_service):
                 clinical_data={}  # Empty clinical data
             )
     
-    @pytest.mark.db_required
-def test_predict_risk_phi_detection(self, aws_service):
+    def test_predict_risk_phi_detection(self, aws_service):
         """Test risk prediction with PHI detection."""
         with pytest.raises(DataPrivacyError):
             aws_service.predict_risk(
@@ -337,8 +326,7 @@ def test_predict_risk_phi_detection(self, aws_service):
                 }
             )
     
-    @pytest.mark.db_required
-def test_predict_risk_model_not_found(self, aws_service):
+    def test_predict_risk_model_not_found(self, aws_service):
         """Test risk prediction with model not found."""
         with pytest.raises(ModelNotFoundError):
             aws_service.predict_risk(
@@ -347,8 +335,7 @@ def test_predict_risk_model_not_found(self, aws_service):
                 clinical_data={"symptom_severity": 7}
             )
     
-    @pytest.mark.db_required
-def test_predict_risk_aws_error(self, aws_service, boto_clients):
+    def test_predict_risk_aws_error(self, aws_service, boto_clients):
         """Test risk prediction with AWS error."""
         # Make SageMaker endpoint raise ClientError
         error_response = {"Error": {"Code": "ModelError", "Message": "Model error"}}
@@ -367,8 +354,7 @@ def test_predict_risk_aws_error(self, aws_service, boto_clients):
         assert "Model prediction failed" in str(exc_info.value)
         assert exc_info.value.model_type == "risk-relapse"
     
-    @pytest.mark.db_required
-def test_predict_treatment_response(self, aws_service, boto_clients, clinical_data, treatment_details):
+    def test_predict_treatment_response(self, aws_service, boto_clients, clinical_data, treatment_details):
         """Test treatment response prediction."""
         # Mock SageMaker endpoint response
         response_body = {
@@ -413,8 +399,7 @@ def test_predict_treatment_response(self, aws_service, boto_clients, clinical_da
         assert request_body["treatment_details"] == treatment_details
         assert request_body["prediction_horizon"] == "12_weeks"
     
-    @pytest.mark.db_required
-def test_predict_outcome(self, aws_service, boto_clients, clinical_data, treatment_plan):
+    def test_predict_outcome(self, aws_service, boto_clients, clinical_data, treatment_plan):
         """Test outcome prediction."""
         # Mock SageMaker endpoint response
         response_body = {
@@ -463,8 +448,7 @@ def test_predict_outcome(self, aws_service, boto_clients, clinical_data, treatme
         assert request_body["time_frame_days"] == 8 * 7 + 3
         assert request_body["outcome_type"] == "symptom"
     
-    @pytest.mark.db_required
-def test_get_feature_importance(self, aws_service, boto_clients):
+    def test_get_feature_importance(self, aws_service, boto_clients):
         """Test feature importance retrieval."""
         # Mock SageMaker endpoint response
         response_body = {
@@ -511,8 +495,7 @@ def test_get_feature_importance(self, aws_service, boto_clients):
         assert request_body["model_type"] == "relapse-risk"
         assert request_body["prediction_id"] == "risk-123456-P12345"
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin(self, aws_service, boto_clients):
+    def test_integrate_with_digital_twin(self, aws_service, boto_clients):
         """Test digital twin integration."""
         # Mock SageMaker endpoint response
         response_body = {
@@ -559,8 +542,7 @@ def test_integrate_with_digital_twin(self, aws_service, boto_clients):
         assert request_body["profile_id"] == "DP67890"
         assert request_body["prediction_id"] == "risk-123456-P12345"
     
-    @pytest.mark.db_required
-def test_get_model_info(self, aws_service, boto_clients):
+    def test_get_model_info(self, aws_service, boto_clients):
         """Test model info retrieval."""
         # Mock SageMaker response
         model_response = {
@@ -591,14 +573,12 @@ def test_get_model_info(self, aws_service, boto_clients):
             ModelName="relapse-risk-model"
         )
     
-    @pytest.mark.db_required
-def test_get_model_info_not_found(self, aws_service):
+    def test_get_model_info_not_found(self, aws_service):
         """Test model info retrieval for non-existent model."""
         with pytest.raises(ModelNotFoundError):
             aws_service.get_model_info("non-existent-model")
     
-    @pytest.mark.db_required
-def test_calculate_timeframe_days(self, aws_service):
+    def test_calculate_timeframe_days(self, aws_service):
         """Test calculation of timeframe days."""
         # Test with all units
         timeframe = {"days": 5, "weeks": 2, "months": 1}
@@ -620,8 +600,7 @@ def test_calculate_timeframe_days(self, aws_service):
         result = aws_service._calculate_timeframe_days(timeframe)
         assert result == 2 * 30
     
-    @pytest.mark.db_required
-def test_validate_outcome_params(self, aws_service, clinical_data, treatment_plan):
+    def test_validate_outcome_params(self, aws_service, clinical_data, treatment_plan):
         """Test validation of outcome parameters."""
         # Valid parameters
         aws_service._validate_outcome_params(

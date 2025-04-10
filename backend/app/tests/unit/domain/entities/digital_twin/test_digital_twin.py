@@ -36,7 +36,6 @@ from app.domain.entities.digital_twin.temporal import (
 )
 
 
-@pytest.mark.db_required
 class TestDigitalTwin(unittest.TestCase):
     """Tests for the DigitalTwin entity."""
     
@@ -139,8 +138,7 @@ class TestDigitalTwin(unittest.TestCase):
             confidence_level=ModelConfidence.MODERATE
         )
     
-    @pytest.mark.db_required
-def test_init_default_values(self):
+    def test_init_default_values(self):
         """Test that default values are correctly initialized."""
         twin = DigitalTwin(
             patient_id=self.patient_id,
@@ -162,8 +160,7 @@ def test_init_default_values(self):
         assert isinstance(twin.validation_metrics, dict)
         assert twin.temporal_dynamics is None
     
-    @pytest.mark.db_required
-def test_init_custom_values(self):
+    def test_init_custom_values(self):
         """Test initialization with custom values."""
         created_at = datetime.utcnow() - timedelta(days=10)
         last_calibration = datetime.utcnow() - timedelta(days=5)
@@ -191,8 +188,7 @@ def test_init_custom_values(self):
         assert twin.confidence_level == ModelConfidence.HIGH
         assert twin.calibration_score == 0.85
     
-    @pytest.mark.db_required
-def test_update_state(self):
+    def test_update_state(self):
         """Test updating the digital twin state."""
         # Create initial state snapshot
         initial_state_copy = self.digital_twin.current_state.copy(deep=True)
@@ -237,8 +233,7 @@ def test_update_state(self):
         # Verify update timestamp
         assert self.digital_twin.updated_at > self.digital_twin.created_at
     
-    @pytest.mark.db_required
-def test_predict_treatment_response(self):
+    def test_predict_treatment_response(self):
         """Test prediction of treatment response."""
         # Add temporal dynamics for prediction
         from app.domain.entities.digital_twin.temporal import TemporalDynamics
@@ -262,8 +257,7 @@ def test_predict_treatment_response(self):
         assert isinstance(treatment_response.trajectory, TrajectoryPrediction)
         assert treatment_response.confidence_level == self.digital_twin.confidence_level
     
-    @pytest.mark.db_required
-def test_compare_treatments(self):
+    def test_compare_treatments(self):
         """Test comparison of multiple treatments."""
         # Add temporal dynamics for prediction
         from app.domain.entities.digital_twin.temporal import TemporalDynamics
@@ -284,8 +278,7 @@ def test_compare_treatments(self):
         assert "recommended_treatment_id" in treatment_analysis.recommendations
         assert treatment_analysis.confidence_level == self.digital_twin.confidence_level
     
-    @pytest.mark.db_required
-def test_detect_patterns(self):
+    def test_detect_patterns(self):
         """Test detection of temporal patterns."""
         # Create temporal dynamics with pattern detectors
         from app.domain.entities.digital_twin.temporal import (
@@ -316,8 +309,7 @@ def test_detect_patterns(self):
         assert isinstance(patterns["seasonal"], PatternStrength)
         assert isinstance(patterns["episodic"], PatternStrength)
     
-    @pytest.mark.db_required
-def test_calibrate(self):
+    def test_calibrate(self):
         """Test calibration of the model."""
         # Create observed data
         observed_data = {
@@ -340,8 +332,7 @@ def test_calibrate(self):
         assert self.digital_twin.calibration_score == calibration_score
         assert self.digital_twin.last_calibration is not None
     
-    @pytest.mark.db_required
-def test_evaluate_accuracy(self):
+    def test_evaluate_accuracy(self):
         """Test evaluation of model accuracy."""
         # Create validation data
         validation_data = {
@@ -372,8 +363,7 @@ def test_evaluate_accuracy(self):
         assert all(0.0 <= value <= 1.0 for value in metrics.values())
         assert self.digital_twin.validation_metrics == metrics
     
-    @pytest.mark.db_required
-def test_neurotransmitter_update(self):
+    def test_neurotransmitter_update(self):
         """Test updating neurotransmitter state."""
         # Create neurotransmitter data
         neurotransmitter_data = {
@@ -407,8 +397,7 @@ def test_neurotransmitter_update(self):
         assert self.digital_twin.current_state.neurotransmitter.dopamine_receptor_sensitivity == self.initial_state.neurotransmitter.dopamine_receptor_sensitivity
         assert self.digital_twin.current_state.neurotransmitter.norepinephrine_level == self.initial_state.neurotransmitter.norepinephrine_level
     
-    @pytest.mark.db_required
-def test_psychological_update(self):
+    def test_psychological_update(self):
         """Test updating psychological state."""
         # Create psychological data
         psychological_data = {
@@ -439,8 +428,7 @@ def test_psychological_update(self):
         assert self.digital_twin.current_state.psychological.stress_reactivity == self.initial_state.psychological.stress_reactivity
         assert self.digital_twin.current_state.psychological.anhedonia == self.initial_state.psychological.anhedonia
     
-    @pytest.mark.db_required
-def test_behavioral_update(self):
+    def test_behavioral_update(self):
         """Test updating behavioral state."""
         # Create behavioral data
         behavioral_data = {
@@ -472,8 +460,7 @@ def test_behavioral_update(self):
         assert self.digital_twin.current_state.behavioral.weight_changes == self.initial_state.behavioral.weight_changes
         assert self.digital_twin.current_state.behavioral.social_engagement == self.initial_state.behavioral.social_engagement
     
-    @pytest.mark.db_required
-def test_cognitive_update(self):
+    def test_cognitive_update(self):
         """Test updating cognitive state."""
         # Create cognitive data
         cognitive_data = {

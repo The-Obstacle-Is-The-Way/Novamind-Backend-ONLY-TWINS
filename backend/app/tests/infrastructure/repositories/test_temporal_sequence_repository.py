@@ -38,7 +38,6 @@ def mock_session():
 
 
 @pytest.fixture
-@pytest.mark.db_required
 def test_sequence():
     """Create a test temporal sequence for tests."""
     now = datetime.now()
@@ -60,7 +59,7 @@ def test_sequence():
             [0.6, 0.4, 0.6],
             [0.7, 0.5, 0.5]
         ],
-        metadata={"source": "test", "type": "neurotransmitter_levels"}
+        sequence_metadata={"source": "test", "type": "neurotransmitter_levels"} # Renamed
     )
     
     return sequence
@@ -76,7 +75,7 @@ def mock_sequence_model():
     model.sequence_id = sequence_id
     model.patient_id = uuid4()
     model.feature_names = ["dopamine", "serotonin", "gaba"]
-    model.metadata = {"source": "test", "type": "neurotransmitter_levels"}
+    model.sequence_metadata = {"source": "test", "type": "neurotransmitter_levels"} # Renamed
     model.created_at = now
     
     return model
@@ -99,19 +98,16 @@ def mock_data_points(mock_sequence_model):
     return data_points
 
 
-@pytest.mark.db_required
 class TestSqlAlchemyTemporalSequenceRepository:
     """Tests for SqlAlchemyTemporalSequenceRepository."""
     
-    @pytest.mark.db_required
-def test_init(self, mock_session):
+    def test_init(self, mock_session):
         """Test repository initialization."""
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
         assert repo.session == mock_session
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_save(self, mock_session, test_sequence):
+    async def test_save(self, mock_session, test_sequence):
         """Test saving a temporal sequence."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
@@ -131,7 +127,7 @@ def test_save(self, mock_session, test_sequence):
         assert added_model.sequence_id == test_sequence.sequence_id
         assert added_model.patient_id == test_sequence.patient_id
         assert added_model.feature_names == test_sequence.feature_names
-        assert added_model.metadata == test_sequence.metadata
+        assert added_model.sequence_metadata == test_sequence.sequence_metadata # Renamed
         
         # Verify data points creation
         data_points = mock_session.add_all.call_args[0][0]
@@ -144,8 +140,7 @@ def test_save(self, mock_session, test_sequence):
             assert point.values == test_sequence.values[i]
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_by_id_found(self, mock_session, mock_sequence_model, mock_data_points):
+    async def test_get_by_id_found(self, mock_session, mock_sequence_model, mock_data_points):
         """Test getting a sequence by ID when found."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
@@ -172,7 +167,7 @@ def test_get_by_id_found(self, mock_session, mock_sequence_model, mock_data_poin
         assert result.sequence_id == mock_sequence_model.sequence_id
         assert result.patient_id == mock_sequence_model.patient_id
         assert result.feature_names == mock_sequence_model.feature_names
-        assert result.metadata == mock_sequence_model.metadata
+        assert result.sequence_metadata == mock_sequence_model.sequence_metadata # Renamed
         assert len(result.timestamps) == len(mock_data_points)
         assert len(result.values) == len(mock_data_points)
         
@@ -180,8 +175,7 @@ def test_get_by_id_found(self, mock_session, mock_sequence_model, mock_data_poin
         assert mock_session.execute.call_count == 2
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_by_id_not_found(self, mock_session):
+    async def test_get_by_id_not_found(self, mock_session):
         """Test getting a sequence by ID when not found."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
@@ -201,8 +195,7 @@ def test_get_by_id_not_found(self, mock_session):
         mock_session.execute.assert_called_once()
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_by_patient_id(self, mock_session, mock_sequence_model, mock_data_points):
+    async def test_get_by_patient_id(self, mock_session, mock_sequence_model, mock_data_points):
         """Test getting sequences by patient ID."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
@@ -234,8 +227,7 @@ def test_get_by_patient_id(self, mock_session, mock_sequence_model, mock_data_po
         assert mock_session.execute.call_count == 2
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_delete_success(self, mock_session):
+    async def test_delete_success(self, mock_session):
         """Test deleting a sequence successfully."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
@@ -257,8 +249,7 @@ def test_delete_success(self, mock_session):
         assert mock_session.execute.call_count == 2
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_delete_not_found(self, mock_session):
+    async def test_delete_not_found(self, mock_session):
         """Test deleting a sequence that doesn't exist."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
@@ -280,8 +271,7 @@ def test_delete_not_found(self, mock_session):
         assert mock_session.execute.call_count == 2
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_latest_by_feature(self, mock_session, mock_sequence_model, mock_data_points):
+    async def test_get_latest_by_feature(self, mock_session, mock_sequence_model, mock_data_points):
         """Test getting the latest sequence containing a specific feature."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
@@ -320,8 +310,7 @@ def test_get_latest_by_feature(self, mock_session, mock_sequence_model, mock_dat
         assert "limit(5)" in str(mock_session.execute.call_args_list[0])
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_latest_by_feature_not_found(self, mock_session):
+    async def test_get_latest_by_feature_not_found(self, mock_session):
         """Test getting the latest sequence by feature when not found."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)

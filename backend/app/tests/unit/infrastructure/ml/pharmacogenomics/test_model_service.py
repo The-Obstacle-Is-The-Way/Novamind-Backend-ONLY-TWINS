@@ -18,7 +18,6 @@ from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMed
 from app.infrastructure.ml.pharmacogenomics.treatment_model import TreatmentResponseModel
 
 
-@pytest.mark.db_required
 class TestPharmacogenomicsService:
     """Tests for the PharmacogenomicsService."""
 
@@ -173,8 +172,7 @@ class TestPharmacogenomicsService:
         """Create a sample patient ID."""
         return str(uuid4())
 
-    async @pytest.mark.db_required
-def test_predict_medication_response_success(self, service, mock_gene_medication_model, 
+    async def test_predict_medication_response_success(self, service, mock_gene_medication_model, 
                                                      mock_treatment_model, sample_genetic_data, 
                                                      sample_patient_data, sample_patient_id):
         """Test that predict_medication_response correctly processes data and returns predictions."""
@@ -217,8 +215,7 @@ def test_predict_medication_response_success(self, service, mock_gene_medication
             assert "effect" in interaction
             assert "recommendation" in interaction
 
-    async @pytest.mark.db_required
-def test_predict_medication_response_empty_genetic_data(self, service, sample_patient_data, sample_patient_id):
+    async def test_predict_medication_response_empty_genetic_data(self, service, sample_patient_data, sample_patient_id):
         """Test that predict_medication_response handles empty genetic data gracefully."""
         # Setup
         empty_genetic_data = {"genes": []}
@@ -235,8 +232,7 @@ def test_predict_medication_response_empty_genetic_data(self, service, sample_pa
         
         assert "Empty genetic data" in str(excinfo.value)
 
-    async @pytest.mark.db_required
-def test_predict_medication_response_empty_medications(self, service, sample_genetic_data, 
+    async def test_predict_medication_response_empty_medications(self, service, sample_genetic_data, 
                                                                sample_patient_data, sample_patient_id):
         """Test that predict_medication_response handles empty medications list gracefully."""
         # Setup
@@ -253,8 +249,7 @@ def test_predict_medication_response_empty_medications(self, service, sample_gen
         
         assert "No medications specified" in str(excinfo.value)
 
-    async @pytest.mark.db_required
-def test_predict_medication_response_model_error(self, service, mock_gene_medication_model,
+    async def test_predict_medication_response_model_error(self, service, mock_gene_medication_model,
                                                          sample_genetic_data, sample_patient_data, 
                                                          sample_patient_id):
         """Test that predict_medication_response handles model errors gracefully."""
@@ -278,8 +273,7 @@ def test_predict_medication_response_model_error(self, service, mock_gene_medica
         assert "medication_predictions" not in result
         assert "gene_medication_interactions" not in result
 
-    async @pytest.mark.db_required
-def test_generate_medication_recommendations(self, service, sample_genetic_data, sample_patient_data):
+    async def test_generate_medication_recommendations(self, service, sample_genetic_data, sample_patient_data):
         """Test that _generate_medication_recommendations creates meaningful recommendations."""
         # Setup
         gene_interactions = [
@@ -356,8 +350,7 @@ def test_generate_medication_recommendations(self, service, sample_genetic_data,
         assert recommendations["escitalopram"]["action"] == "dose_reduction"
         assert "reduced metabolism" in recommendations["escitalopram"]["rationale"].lower()
 
-    async @pytest.mark.db_required
-def test_combine_predictions(self, service):
+    async def test_combine_predictions(self, service):
         """Test that _combine_predictions correctly combines predictions from different models."""
         # Setup
         gene_predictions = {

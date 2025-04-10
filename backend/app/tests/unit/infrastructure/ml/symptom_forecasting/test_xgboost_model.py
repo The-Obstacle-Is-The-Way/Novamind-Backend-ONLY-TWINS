@@ -16,7 +16,6 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel
 
 
-@pytest.mark.db_required
 class TestXGBoostSymptomModel:
     """Tests for the XGBoostSymptomModel."""
 
@@ -33,8 +32,7 @@ class TestXGBoostSymptomModel:
             model.models = {"depression_score": MagicMock()}
             return model
 
-    @pytest.mark.db_required
-def test_load_model(self, tmp_path):
+    def test_load_model(self, tmp_path):
         """Test that the model loads correctly from a file."""
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.joblib', autospec=True) as mock_joblib, \
              patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.os.path.exists', return_value=True):
@@ -56,8 +54,7 @@ def test_load_model(self, tmp_path):
             assert model.target_names == ["t1"]
             assert model.params["n_estimators"] == 100
 
-    @pytest.mark.db_required
-def test_save_model(self, model, tmp_path):
+    def test_save_model(self, model, tmp_path):
         """Test that the model is saved correctly."""
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.joblib', autospec=True) as mock_joblib:
             # Execute
@@ -74,8 +71,7 @@ def test_save_model(self, model, tmp_path):
             assert "timestamp" in args[0]
 
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_predict(self, model):
+    async def test_predict(self, model):
         """Test that the model predicts correctly."""
         # Setup
         X = np.array([
@@ -101,8 +97,7 @@ def test_predict(self, model):
             # The result shape should be (n_samples, horizon, n_targets)
             assert result["values"].shape == (3, 3, 1)
 
-    @pytest.mark.db_required
-def test_get_feature_importance(self, model):
+    def test_get_feature_importance(self, model):
         """Test that feature importance is correctly calculated."""
         # Setup
         mock_model = model.models["depression_score"]
@@ -121,8 +116,7 @@ def test_get_feature_importance(self, model):
         assert result["depression_score"]["medication_adherence"] == 25.7
         mock_model.get_score.assert_called_once_with(importance_type="gain")
 
-    @pytest.mark.db_required
-def test_get_model_info(self, model):
+    def test_get_model_info(self, model):
         """Test that model info is correctly reported."""
         # Execute
         info = model.get_model_info()
@@ -137,8 +131,7 @@ def test_get_model_info(self, model):
         assert info["feature_names"] == ["symptom_history_1", "symptom_history_2", "medication_adherence", "sleep_quality"]
         assert info["target_names"] == ["depression_score"]
 
-    @pytest.mark.db_required
-def test_train(self, model):
+    def test_train(self, model):
         """Test that the model trains correctly."""
         # Setup
         X_train = np.array([

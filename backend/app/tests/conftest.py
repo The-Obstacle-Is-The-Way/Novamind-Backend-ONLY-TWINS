@@ -4,20 +4,20 @@ Pytest fixtures for the Novamind Digital Twin Backend.
 This module provides fixtures that can be used across all test modules,
 organized by dependency level.
 """
-import os
 import asyncio
-import pytest
-from typing import AsyncGenerator, Dict, Any, Optional
-import logging
-from pathlib import Path
+import os
+from collections.abc import AsyncGenerator
 from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import pytest
 
 # SQLAlchemy imports for DB fixtures
 try:
-    from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-    from sqlalchemy.orm import sessionmaker
-    from sqlalchemy.ext.asyncio import AsyncEngine
     from sqlalchemy import event, text
+    from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+    from sqlalchemy.orm import sessionmaker
 except ImportError:
     # These imports might fail in standalone test environment
     pass
@@ -33,7 +33,7 @@ TEST_DIR = BACKEND_DIR / "app" / "tests"
 # ===============================================================
 
 @pytest.fixture
-def sample_data() -> Dict[str, Any]:
+def sample_data() -> dict[str, Any]:
     """
     Provide sample test data that doesn't require any external dependencies.
     
@@ -117,7 +117,7 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-async def db_engine() -> Optional[AsyncEngine]:
+async def db_engine() -> AsyncEngine | None:
     """
     Create a database engine for testing.
     
@@ -147,7 +147,7 @@ async def db_engine() -> Optional[AsyncEngine]:
 
 
 @pytest.fixture
-async def db_session(db_engine) -> AsyncGenerator[Optional[AsyncSession], None]:
+async def db_session(db_engine) -> AsyncGenerator[AsyncSession | None, None]:
     """
     Create a database session for testing.
     

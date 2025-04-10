@@ -71,12 +71,10 @@ def sample_device_info() -> Dict[str, Any]:
     }
 
 
-@pytest.mark.db_required
 class TestMockPAT:
     """Tests for the MockPAT class."""
     
-    @pytest.mark.db_required
-def test_initialization(self, mock_pat: MockPAT) -> None:
+    def test_initialization(self, mock_pat: MockPAT) -> None:
         """Test successful initialization."""
         # Initialize with default config
         mock_pat.initialize({})
@@ -95,22 +93,19 @@ def test_initialization(self, mock_pat: MockPAT) -> None:
         assert mock_pat._config == {"mock_delay_ms": 100}
         assert mock_pat._mock_delay_ms == 100
     
-    @pytest.mark.db_required
-def test_initialization_error(self, mock_pat: MockPAT) -> None:
+    def test_initialization_error(self, mock_pat: MockPAT) -> None:
         """Test initialization with faulty config."""
         with pytest.raises(InitializationError):
             # Force an error by passing something that will cause initialize to fail
             mock_pat._simulate_delay = None  # type: ignore
             mock_pat.initialize({})
     
-    @pytest.mark.db_required
-def test_uninitialized_error(self, mock_pat: MockPAT) -> None:
+    def test_uninitialized_error(self, mock_pat: MockPAT) -> None:
         """Test calling methods before initialization."""
         with pytest.raises(InitializationError):
             mock_pat.get_model_info()
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy(
+    def test_analyze_actigraphy(
         self,
         initialized_mock_pat: MockPAT,
         sample_readings: List[Dict[str, Any]],
@@ -155,8 +150,7 @@ def test_analyze_actigraphy(
         analysis_id = result["analysis_id"]
         assert analysis_id in initialized_mock_pat._analyses
     
-    @pytest.mark.db_required
-def test_analyze_actigraphy_validation_error(
+    def test_analyze_actigraphy_validation_error(
         self,
         initialized_mock_pat: MockPAT,
         sample_readings: List[Dict[str, Any]],
@@ -211,8 +205,7 @@ def test_analyze_actigraphy_validation_error(
                 analysis_types=["invalid_analysis_type"]
             )
     
-    @pytest.mark.db_required
-def test_get_actigraphy_embeddings(
+    def test_get_actigraphy_embeddings(
         self,
         initialized_mock_pat: MockPAT,
         sample_readings: List[Dict[str, Any]]
@@ -255,8 +248,7 @@ def test_get_actigraphy_embeddings(
         embedding_id = result["embedding_id"]
         assert embedding_id in initialized_mock_pat._embeddings
     
-    @pytest.mark.db_required
-def test_get_actigraphy_embeddings_validation_error(
+    def test_get_actigraphy_embeddings_validation_error(
         self,
         initialized_mock_pat: MockPAT,
         sample_readings: List[Dict[str, Any]]
@@ -292,8 +284,7 @@ def test_get_actigraphy_embeddings_validation_error(
                 sampling_rate_hz=0.0
             )
     
-    @pytest.mark.db_required
-def test_get_analysis_by_id(
+    def test_get_analysis_by_id(
         self,
         initialized_mock_pat: MockPAT,
         sample_readings: List[Dict[str, Any]],
@@ -320,14 +311,12 @@ def test_get_analysis_by_id(
         assert result["patient_id"] == "patient123"
         assert result["analysis_types"] == ["activity_level_analysis"]
     
-    @pytest.mark.db_required
-def test_get_analysis_by_id_not_found(self, initialized_mock_pat: MockPAT) -> None:
+    def test_get_analysis_by_id_not_found(self, initialized_mock_pat: MockPAT) -> None:
         """Test retrieving a non-existent analysis."""
         with pytest.raises(ResourceNotFoundError):
             initialized_mock_pat.get_analysis_by_id("nonexistent_id")
     
-    @pytest.mark.db_required
-def test_get_patient_analyses(
+    def test_get_patient_analyses(
         self,
         initialized_mock_pat: MockPAT,
         sample_readings: List[Dict[str, Any]],
@@ -394,8 +383,7 @@ def test_get_patient_analyses(
         assert result["pagination"]["total"] == 3
         assert result["pagination"]["has_more"] is False
     
-    @pytest.mark.db_required
-def test_get_model_info(self, initialized_mock_pat: MockPAT) -> None:
+    def test_get_model_info(self, initialized_mock_pat: MockPAT) -> None:
         """Test retrieving model information."""
         # Get model info
         result = initialized_mock_pat.get_model_info()
@@ -411,8 +399,7 @@ def test_get_model_info(self, initialized_mock_pat: MockPAT) -> None:
         assert isinstance(result["capabilities"], list)
         assert "activity_level_analysis" in result["capabilities"]
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin(
+    def test_integrate_with_digital_twin(
         self,
         initialized_mock_pat: MockPAT,
         sample_readings: List[Dict[str, Any]],
@@ -455,8 +442,7 @@ def test_integrate_with_digital_twin(
             for key in ["updated_aspects", "confidence_score", "updated_at"]
         )
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin_resource_not_found(
+    def test_integrate_with_digital_twin_resource_not_found(
         self,
         initialized_mock_pat: MockPAT
     ) -> None:
@@ -468,8 +454,7 @@ def test_integrate_with_digital_twin_resource_not_found(
                 analysis_id="nonexistent_id"
             )
     
-    @pytest.mark.db_required
-def test_integrate_with_digital_twin_authorization_error(
+    def test_integrate_with_digital_twin_authorization_error(
         self,
         initialized_mock_pat: MockPAT,
         sample_readings: List[Dict[str, Any]],
@@ -496,8 +481,7 @@ def test_integrate_with_digital_twin_authorization_error(
                 analysis_id=analysis_id
             )
     
-    @pytest.mark.db_required
-def test_integration_validation_error(self, initialized_mock_pat: MockPAT) -> None:
+    def test_integration_validation_error(self, initialized_mock_pat: MockPAT) -> None:
         """Test integration with invalid parameters."""
         # Test empty patient_id
         with pytest.raises(ValidationError):

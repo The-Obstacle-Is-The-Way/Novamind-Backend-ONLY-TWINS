@@ -267,7 +267,6 @@ except ImportError:
             self.audit_log.append(log_entry)
 
 
-@pytest.mark.db_required
 class TestDBPHIProtection:
     """Test database PHI protection mechanisms for HIPAA compliance."""
     
@@ -306,8 +305,7 @@ class TestDBPHIProtection:
         """Create guest user context."""
         return {"role": "guest", "user_id": None}
         
-    @pytest.mark.db_required
-def test_data_encryption_at_rest(self, db, admin_context):
+    def test_data_encryption_at_rest(self, db, admin_context):
         """Test that PHI is encrypted when stored in the database."""
         repo = PatientRepository(db.get_session(), user_context=admin_context)
         
@@ -341,8 +339,7 @@ def test_data_encryption_at_rest(self, db, admin_context):
         assert created_patient.date_of_birth == "1980-01-01"
         assert created_patient.medical_record_number == "MRN12345"
     
-    @pytest.mark.db_required
-def test_role_based_access_control(self, db):
+    def test_role_based_access_control(self, db):
         """Test that access to PHI is properly controlled by role."""
         # Setup repositories with different user contexts
         admin_repo = PatientRepository(db.get_session(), user_context={"role": "admin", "user_id": "A12345"})
@@ -384,8 +381,7 @@ def test_role_based_access_control(self, db):
         with pytest.raises(PermissionError):
             doctor_repo.delete("P12345")
     
-    @pytest.mark.db_required
-def test_patient_data_isolation(self, db):
+    def test_patient_data_isolation(self, db):
         """Test that patients can only access their own data."""
         # Setup patient repositories with different patient IDs
         patient1_repo = PatientRepository(db.get_session(), 
@@ -404,8 +400,7 @@ def test_patient_data_isolation(self, db):
         assert len(patient1_repo.get_all()) == 0
         assert len(patient2_repo.get_all()) == 0
     
-    @pytest.mark.db_required
-def test_audit_logging(self, db, admin_context):
+    def test_audit_logging(self, db, admin_context):
         """Test that all PHI access is properly logged for auditing."""
         repo = PatientRepository(db.get_session(), user_context=admin_context)
         
@@ -432,8 +427,7 @@ def test_audit_logging(self, db, admin_context):
             assert "role" in entry
             assert "success" in entry
     
-    @pytest.mark.db_required
-def test_phi_filtering_by_role(self, db):
+    def test_phi_filtering_by_role(self, db):
         """Test that PHI is filtered based on user role."""
         # Setup repositories with different user contexts
         admin_repo = PatientRepository(db.get_session(), user_context={"role": "admin", "user_id": "A12345"})
@@ -464,8 +458,7 @@ def test_phi_filtering_by_role(self, db):
         # Guest should see no PHI
         assert guest_patient is None
     
-    @pytest.mark.db_required
-def test_transaction_rollback_on_error(self, db, admin_context):
+    def test_transaction_rollback_on_error(self, db, admin_context):
         """Test that transactions are rolled back when errors occur."""
         with patch('tests.security.test_db_phi_protection.PatientRepository.create') as mock_create:
             mock_create.side_effect = Exception("Database error")
@@ -485,8 +478,7 @@ def test_transaction_rollback_on_error(self, db, admin_context):
             assert uow.rolled_back is True
             assert uow.committed is False
     
-    @pytest.mark.db_required
-def test_phi_in_query_parameters(self, db, admin_context):
+    def test_phi_in_query_parameters(self, db, admin_context):
         """Test proper handling of PHI in query parameters."""
         repo = PatientRepository(db.get_session(), user_context=admin_context)
         

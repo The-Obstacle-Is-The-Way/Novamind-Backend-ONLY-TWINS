@@ -61,12 +61,10 @@ def mock_xgboost_service():
         yield service
 
 
-@pytest.mark.db_required
 class TestHealthcheck:
     """Tests for the healthcheck endpoint."""
 
-    @pytest.mark.db_required
-def test_healthcheck_success(self, mock_xgboost_service):
+    def test_healthcheck_success(self, mock_xgboost_service):
         """Test successful healthcheck."""
         mock_xgboost_service.healthcheck.return_value = {
             "status": "healthy",
@@ -83,8 +81,7 @@ def test_healthcheck_success(self, mock_xgboost_service):
         assert "models" in response.json()
         assert mock_xgboost_service.healthcheck.called
 
-    @pytest.mark.db_required
-def test_healthcheck_failure(self, mock_xgboost_service):
+    def test_healthcheck_failure(self, mock_xgboost_service):
         """Test healthcheck with service error."""
         mock_xgboost_service.healthcheck.side_effect = Exception("Service unavailable")
         
@@ -94,12 +91,10 @@ def test_healthcheck_failure(self, mock_xgboost_service):
         assert "Service health check failed" in response.json()["detail"]
 
 
-@pytest.mark.db_required
 class TestRiskPrediction:
     """Tests for the risk prediction endpoint."""
 
-    @pytest.mark.db_required
-def test_predict_risk_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_predict_risk_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successful risk prediction generation."""
         # Setup mock return value
         mock_xgboost_service.predict_risk.return_value.to_dict.return_value = {
@@ -146,8 +141,7 @@ def test_predict_risk_success(self, mock_auth, mock_patient_access, mock_xgboost
         assert kwargs["risk_type"].value == "risk_relapse"
         assert "phq9_score" in kwargs["features"]
 
-    @pytest.mark.db_required
-def test_predict_risk_invalid_features(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_predict_risk_invalid_features(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test risk prediction with invalid features."""
         mock_xgboost_service.predict_risk.side_effect = InvalidFeatureError("Missing required feature: phq9_score")
         
@@ -168,8 +162,7 @@ def test_predict_risk_invalid_features(self, mock_auth, mock_patient_access, moc
         assert response.status_code == 400
         assert "Invalid features" in response.json()["detail"]
 
-    @pytest.mark.db_required
-def test_predict_risk_model_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_predict_risk_model_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test risk prediction with non-existent model."""
         mock_xgboost_service.predict_risk.side_effect = ModelNotFoundError("No model available for risk_relapse")
         
@@ -190,8 +183,7 @@ def test_predict_risk_model_not_found(self, mock_auth, mock_patient_access, mock
         assert response.status_code == 404
         assert "Model not found" in response.json()["detail"]
 
-    @pytest.mark.db_required
-def test_predict_risk_prediction_error(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_predict_risk_prediction_error(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test risk prediction with service error."""
         mock_xgboost_service.predict_risk.side_effect = PredictionError("Failed to generate prediction")
         
@@ -212,8 +204,7 @@ def test_predict_risk_prediction_error(self, mock_auth, mock_patient_access, moc
         assert response.status_code == 500
         assert "Prediction failed" in response.json()["detail"]
 
-    @pytest.mark.db_required
-def test_predict_risk_validation_error(self, mock_auth, mock_patient_access):
+    def test_predict_risk_validation_error(self, mock_auth, mock_patient_access):
         """Test risk prediction with invalid input data."""
         test_data = {
             "patient_id": "patient-456",
@@ -233,12 +224,10 @@ def test_predict_risk_validation_error(self, mock_auth, mock_patient_access):
         assert "value is not a valid enumeration member" in response.json()["detail"][0]["msg"]
 
 
-@pytest.mark.db_required
 class TestTreatmentPrediction:
     """Tests for the treatment prediction endpoint."""
 
-    @pytest.mark.db_required
-def test_predict_treatment_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_predict_treatment_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successful treatment prediction generation."""
         # Setup mock return value
         mock_xgboost_service.predict_treatment_response.return_value.to_dict.return_value = {
@@ -291,12 +280,10 @@ def test_predict_treatment_success(self, mock_auth, mock_patient_access, mock_xg
         assert kwargs["treatment_details"]["medication"] == "escitalopram"
 
 
-@pytest.mark.db_required
 class TestGetPrediction:
     """Tests for the get prediction endpoint."""
 
-    @pytest.mark.db_required
-def test_get_prediction_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_get_prediction_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successfully retrieving a prediction."""
         # Setup mock return value
         mock_prediction = MagicMock()
@@ -327,8 +314,7 @@ def test_get_prediction_success(self, mock_auth, mock_patient_access, mock_xgboo
         # Verify the service was called with correct parameters
         mock_xgboost_service.get_prediction.assert_called_once_with("pred-123")
 
-    @pytest.mark.db_required
-def test_get_prediction_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_get_prediction_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test retrieving a non-existent prediction."""
         mock_xgboost_service.get_prediction.side_effect = PredictionNotFoundError("Prediction pred-123 not found")
         
@@ -338,12 +324,10 @@ def test_get_prediction_not_found(self, mock_auth, mock_patient_access, mock_xgb
         assert "Prediction not found" in response.json()["detail"]
 
 
-@pytest.mark.db_required
 class TestValidatePrediction:
     """Tests for the prediction validation endpoint."""
 
-    @pytest.mark.db_required
-def test_validate_prediction_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_validate_prediction_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successfully validating a prediction."""
         # Setup mocks
         mock_prediction = MagicMock()
@@ -373,8 +357,7 @@ def test_validate_prediction_success(self, mock_auth, mock_patient_access, mock_
         assert kwargs["status"].value == "validated"
         assert kwargs["validator_notes"] == "Clinically confirmed"
 
-    @pytest.mark.db_required
-def test_validate_prediction_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_validate_prediction_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test validating a non-existent prediction."""
         mock_xgboost_service.get_prediction.side_effect = PredictionNotFoundError("Prediction pred-123 not found")
         
@@ -392,12 +375,10 @@ def test_validate_prediction_not_found(self, mock_auth, mock_patient_access, moc
         assert "Prediction not found" in response.json()["detail"]
 
 
-@pytest.mark.db_required
 class TestCompareTreatments:
     """Tests for the treatment comparison endpoint."""
 
-    @pytest.mark.db_required
-def test_compare_treatments_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    def test_compare_treatments_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successfully comparing treatments."""
         # Setup mock return value
         mock_xgboost_service.compare_treatments.return_value = {
@@ -472,8 +453,7 @@ def test_compare_treatments_success(self, mock_auth, mock_patient_access, mock_x
         assert len(kwargs["treatment_options"]) == 2
         assert kwargs["treatment_options"][0]["category"] == "medication_ssri"
 
-    @pytest.mark.db_required
-def test_compare_treatments_insufficient_options(self, mock_auth, mock_patient_access):
+    def test_compare_treatments_insufficient_options(self, mock_auth, mock_patient_access):
         """Test comparing treatments with less than 2 options."""
         # Test data with only one treatment option
         test_data = {
