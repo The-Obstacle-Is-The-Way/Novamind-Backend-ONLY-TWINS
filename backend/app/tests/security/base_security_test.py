@@ -10,7 +10,7 @@ from unittest import TestCase
 
 import pytest
 
-from app.core.security import RoleBasedAccessControl
+from app.infrastructure.security.rbac.role_manager import RoleBasedAccessControl # Corrected import path
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
 

@@ -7,7 +7,7 @@ from datetime import date, datetime
 
 import pytest
 
-from app.domain.entities.patient import Gender, InsuranceStatus, Patient, PatientStatus
+from app.domain.entities.patient import Patient # Removed Gender, InsuranceStatus, PatientStatus
 from app.domain.exceptions import ValidationException
 
 

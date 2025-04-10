@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch, call
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.infrastructure.persistence.sqlalchemy.unit_of_work import SQLAlchemyUnitOfWork
-from app.domain.exceptions import TransactionError
+from app.domain.exceptions import RepositoryError # Changed from TransactionError
 
 
 class TestSQLAlchemyUnitOfWork:
@@ -274,7 +274,7 @@ class TestSQLAlchemyUnitOfWork:
         _, mock_session = mock_session_factory
         
         # Act
-        with pytest.raises(TransactionError):
+        with pytest.raises(RepositoryError): # Changed exception type
             with unit_of_work.read_only():
                 unit_of_work.commit()
         

@@ -249,8 +249,7 @@ class TestPHIInCodePatterns:
         """Test detection of PHI in more complex, realistic code samples."""
         complex_code = """
         def process_patient_data(patient_data):
-            """
-            Process patient data and store in database.
+            """Process patient data and store in database.
             
             Example:
                 process_patient_data({

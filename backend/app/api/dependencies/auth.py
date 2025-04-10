@@ -8,12 +8,13 @@ from datetime import datetime
 from typing import Dict, Optional, Any
 
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer # Import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.db import get_session
+# Remove incorrect import of oauth2_scheme
 from app.core.auth import (
-    oauth2_scheme,
     validate_jwt,
     get_current_user_id,
     get_has_patient_access,
@@ -23,6 +24,8 @@ from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.repositories.user_repository import get_user_repository
 
+# Instantiate oauth2_scheme here
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # Assuming tokenUrl is correct
 
 async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> Dict[str, Any]:
     """

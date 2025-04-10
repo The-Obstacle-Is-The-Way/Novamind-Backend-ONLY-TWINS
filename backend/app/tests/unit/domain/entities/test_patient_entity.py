@@ -7,12 +7,7 @@ from datetime import datetime, date
 import uuid
 import pytest
 
-from app.domain.entities.patient import (
-    Patient,
-    Gender,
-    InsuranceStatus,
-    PatientStatus
-)
+from app.domain.entities.patient import Patient # Corrected import
 from app.domain.exceptions import ValidationException
 
 

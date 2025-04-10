@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.infrastructure.security.log_sanitizer import PHISanitizer
+from app.infrastructure.security.log_sanitizer import LogSanitizer # Corrected class name
 
 
 class TestPHISanitizer:
