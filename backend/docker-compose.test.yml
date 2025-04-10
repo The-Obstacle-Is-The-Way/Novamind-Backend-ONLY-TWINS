@@ -1,57 +1,88 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  db-test:
-    image: postgres:15-alpine
+  # Database for testing
+  novamind-db-test:
     container_name: novamind-db-test
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=novamind_test
+    image: postgres:15-alpine
     ports:
       - "15432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: novamind_test
     volumes:
-      - postgres_test_data:/var/lib/postgresql/data
+      - pg_data_test:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
-    networks:
-      - novamind-test-network
+      start_period: 5s
 
-  pgadmin-test:
-    image: dpage/pgadmin4:latest
-    container_name: novamind-pgadmin-test
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@novamind.test
-      - PGADMIN_DEFAULT_PASSWORD=admin
-      - PGADMIN_LISTEN_PORT=5050
-    ports:
-      - "15050:5050"
-    depends_on:
-      - db-test
-    volumes:
-      - pgadmin_test_data:/var/lib/pgadmin
-    networks:
-      - novamind-test-network
-
-  redis-test:
-    image: redis:alpine
+  # Redis for caching and session management
+  novamind-redis-test:
     container_name: novamind-redis-test
+    image: redis:alpine
     ports:
       - "16379:6379"
     volumes:
-      - redis_test_data:/data
-    networks:
-      - novamind-test-network
+      - redis_data_test:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # PgAdmin for database management (optional, for developer convenience)
+  novamind-pgadmin-test:
+    container_name: novamind-pgadmin-test
+    image: dpage/pgadmin4
+    depends_on:
+      - novamind-db-test
+    ports:
+      - "15050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@novamind.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data_test:/var/lib/pgadmin
+    restart: unless-stopped
+
+  # Test runner container
+  novamind-test-runner:
+    container_name: novamind-test-runner
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      novamind-db-test:
+        condition: service_healthy
+      novamind-redis-test:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - test_results:/app/test-results
+    environment:
+      # Database configuration
+      TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@novamind-db-test:5432/novamind_test
+      TEST_REDIS_URL: redis://novamind-redis-test:6379/0
+
+      # Test configuration
+      TESTING: "1"
+      TEST_MODE: "1"
+      PYTEST_ADDOPTS: "--color=yes --cov=app --cov-report=term-missing:skip-covered --cov-report=xml:/app/test-results/coverage.xml"
+
+      # Debugging and performance settings
+      LOG_LEVEL: DEBUG
+
+    # Command can be overridden when running docker-compose
+    # Default runs all tests in stages, but CI can specify specific test types
+    command: python -m scripts.run_tests_by_dependency --all --xml --cleanup
 
 volumes:
-  postgres_test_data:
-  pgadmin_test_data:
-  redis_test_data:
-
-networks:
-  novamind-test-network:
-    driver: bridge
+  pg_data_test:
+  redis_data_test:
+  pgadmin_data_test:
+  test_results:

@@ -1,6 +1,6 @@
 #!/bin/bash
-
-# Script to set up and run the Novamind test environment
+# Novamind Test Environment Management Script
+# This script handles setting up and tearing down the test environment
 
 set -e
 
@@ -8,12 +8,18 @@ set -e
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
 
+# Determine the script directory and backend directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKEND_DIR="$(dirname "$SCRIPT_DIR")"
+
 # Print a header
-echo -e "${GREEN}=====================================================================${NC}"
-echo -e "${GREEN}               Novamind Test Environment Setup${NC}"
-echo -e "${GREEN}=====================================================================${NC}"
+echo -e "${BLUE}${BOLD}=====================================================================${NC}"
+echo -e "${BLUE}${BOLD}               Novamind Test Environment Management                  ${NC}"
+echo -e "${BLUE}${BOLD}=====================================================================${NC}"
 
 # Function to check if Docker is running
 check_docker() {
@@ -28,7 +34,7 @@ check_docker() {
 # Function to start the test environment
 start_test_environment() {
   echo -e "${YELLOW}Starting test environment...${NC}"
-  cd "$(dirname "$0")/.." || exit
+  cd "$BACKEND_DIR" || exit 1
   
   # Check if containers are already running
   if docker ps --format '{{.Names}}' | grep -q "novamind-db-test"; then
@@ -37,7 +43,7 @@ start_test_environment() {
   fi
   
   # Start containers in detached mode
-  docker-compose -f docker-compose.test.yml up -d
+  docker-compose -f docker-compose.test.yml up -d novamind-db-test novamind-redis-test novamind-pgadmin-test
   
   # Wait for database to be ready
   echo -e "${YELLOW}Waiting for database to be ready...${NC}"
@@ -54,71 +60,109 @@ start_test_environment() {
     fi
   done
   
+  # Run database migrations if needed
+  if [ "$1" = "--with-migrations" ]; then
+    echo -e "${YELLOW}Running database migrations...${NC}"
+    cd "$BACKEND_DIR" || exit 1
+    
+    # Set environment variables for alembic
+    export DB_USER=postgres
+    export DB_PASSWORD=postgres
+    export DB_HOST=localhost
+    export DB_PORT=15432
+    export DB_NAME=novamind_test
+    
+    # Run migrations
+    alembic upgrade head
+    
+    echo -e "${GREEN}Database migrations completed.${NC}"
+  fi
+  
   echo -e "${GREEN}Test environment is up and running.${NC}"
   echo -e "${YELLOW}PostgreSQL is available at localhost:15432${NC}"
   echo -e "${YELLOW}PgAdmin is available at http://localhost:15050${NC}"
   echo -e "${YELLOW}Redis is available at localhost:16379${NC}"
 }
 
-# Function to run the tests
-run_tests() {
-  echo -e "${YELLOW}Setting up environment variables for tests...${NC}"
-  export TEST_DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:15432/novamind_test"
-  export TEST_REDIS_URL="redis://localhost:16379/0"
-  export ENVIRONMENT="test"
-  
-  # Ensure we're in the backend directory
-  cd "$(dirname "$0")/.." || exit
-  
-  # Run the tests
-  echo -e "${YELLOW}Running tests...${NC}"
-  echo -e "${GREEN}=====================================================================${NC}"
-  
-  # You can modify the test command based on your needs
-  python -m pytest "$@"
-  
-  EXIT_CODE=$?
-  
-  echo -e "${GREEN}=====================================================================${NC}"
-  
-  # Check the exit code
-  if [ $EXIT_CODE -eq 0 ]; then
-    echo -e "${GREEN}All tests passed!${NC}"
-  else
-    echo -e "${RED}Tests failed with exit code $EXIT_CODE${NC}"
-  fi
-  
-  return $EXIT_CODE
-}
-
 # Function to clean up the test environment
 cleanup() {
   echo -e "${YELLOW}Cleaning up test environment...${NC}"
-  cd "$(dirname "$0")/.." || exit
+  cd "$BACKEND_DIR" || exit 1
   docker-compose -f docker-compose.test.yml down
   echo -e "${GREEN}Test environment has been stopped and removed.${NC}"
+}
+
+# Function to show test environment status
+status() {
+  echo -e "${YELLOW}Test environment status:${NC}"
+  
+  # Check if containers are running
+  if docker ps --format '{{.Names}}' | grep -q "novamind-db-test"; then
+    echo -e "${GREEN}Database container is running.${NC}"
+    
+    # Check database connectivity
+    if docker exec novamind-db-test pg_isready -U postgres > /dev/null 2>&1; then
+      echo -e "${GREEN}Database is accepting connections.${NC}"
+    else
+      echo -e "${RED}Database is not accepting connections.${NC}"
+    fi
+  else
+    echo -e "${RED}Database container is not running.${NC}"
+  fi
+  
+  # Check Redis
+  if docker ps --format '{{.Names}}' | grep -q "novamind-redis-test"; then
+    echo -e "${GREEN}Redis container is running.${NC}"
+    
+    # Check Redis connectivity
+    if docker exec novamind-redis-test redis-cli ping > /dev/null 2>&1; then
+      echo -e "${GREEN}Redis is accepting connections.${NC}"
+    else
+      echo -e "${RED}Redis is not accepting connections.${NC}"
+    fi
+  else
+    echo -e "${RED}Redis container is not running.${NC}"
+  fi
+  
+  # Check PgAdmin
+  if docker ps --format '{{.Names}}' | grep -q "novamind-pgadmin-test"; then
+    echo -e "${GREEN}PgAdmin container is running.${NC}"
+  else
+    echo -e "${RED}PgAdmin container is not running.${NC}"
+  fi
 }
 
 # Main execution
 case "$1" in
   start)
     check_docker
-    start_test_environment
-    ;;
-  run)
-    shift
-    run_tests "$@"
+    start_test_environment "$2"
     ;;
   stop|clean)
     cleanup
     ;;
-  *)
-    # Default: start environment and run tests
+  status)
+    status
+    ;;
+  restart)
+    cleanup
     check_docker
-    start_test_environment
-    run_tests
-    # Uncomment the following line to automatically clean up after tests
-    # cleanup
+    start_test_environment "$2"
+    ;;
+  *)
+    echo -e "Usage: $0 {start|stop|status|restart} [--with-migrations]"
+    echo -e ""
+    echo -e "Commands:"
+    echo -e "  start             Start the test environment"
+    echo -e "  stop, clean       Stop and remove the test environment"
+    echo -e "  status            Check the status of the test environment"
+    echo -e "  restart           Restart the test environment"
+    echo -e ""
+    echo -e "Options:"
+    echo -e "  --with-migrations Run database migrations after startup"
+    echo -e ""
+    echo -e "Example:"
+    echo -e "  $0 start --with-migrations"
     ;;
 esac
 
