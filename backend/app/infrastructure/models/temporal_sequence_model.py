@@ -25,7 +25,7 @@ class TemporalSequenceModel(Base):
     
     # Sequence metadata
     feature_names = sa.Column(ARRAY(sa.String), nullable=False)
-    metadata = sa.Column(JSONB, nullable=False, default={})
+    sequence_metadata = sa.Column(JSONB, nullable=False, default={})
     
     # Audit fields
     created_at = sa.Column(sa.DateTime, default=datetime.utcnow, nullable=False)

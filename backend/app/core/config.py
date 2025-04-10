@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Novamind Digital Twin"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "CHANGE_THIS_TO_A_PROPER_SECRET_IN_PRODUCTION")
@@ -62,6 +63,7 @@ class Settings(BaseSettings):
         if all([server, user, password, db]):
             # PostgreSQL connection string
             return f"postgresql+asyncpg://{user}:{password}@{server}/{db}"
+            # For tests (defaults to using async drivers)
         
         # Default to SQLite for development
         base_dir = Path(__file__).resolve().parent.parent.parent

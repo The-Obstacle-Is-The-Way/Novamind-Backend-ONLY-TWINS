@@ -1,129 +1,100 @@
 #!/bin/bash
-# Test runner script for Novamind Digital Twin Backend
-# This script sets up the environment and runs the tests
+# Enhanced test runner for Novamind Digital Twin Backend
+# This script runs various test suites with appropriate settings
 
 set -e
 
-# Display a header
-echo "==============================================="
-echo "  Novamind Digital Twin Backend Test Runner   "
-echo "==============================================="
+# Colors for terminal output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Set environment variables for testing if .env.test doesn't exist
-if [ ! -f ".env.test" ]; then
-    echo "Creating default .env.test file..."
-    cat > .env.test << EOF
-# Environment configuration for testing
-ENVIRONMENT=test
-TESTING=true
-LOG_LEVEL=DEBUG
+# Print header
+echo -e "${BLUE}=========================================${NC}"
+echo -e "${BLUE}  Novamind Digital Twin Test Suite      ${NC}"
+echo -e "${BLUE}=========================================${NC}"
 
-# Database configuration
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:15432/novamind_test
-TEST_DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:15432/novamind_test
-SQLALCHEMY_DATABASE_URI=postgresql+asyncpg://postgres:postgres@localhost:15432/novamind_test
-
-# Security settings
-SECRET_KEY=test-key-long-enough-for-testing-purposes-only
-ENCRYPTION_KEY=test-encryption-key-32-bytes-long!!
-JWT_SECRET_KEY=test-jwt-secret-key-for-testing-only
-
-# Audit logging
-AUDIT_LOG_LEVEL=20
-AUDIT_LOG_TO_FILE=False
-EXTERNAL_AUDIT_ENABLED=False
-
-# Authentication
-AUTH_DISABLED=false
-TEST_USER_ID=test-user-123
-TEST_USER_ROLES=clinician,researcher
-
-# PHI Settings
-PHI_DETECTION_ENABLED=true
-PHI_REDACTION_ENABLED=true
-PHI_AUDIT_ENABLED=true
-
-# Performance
-ASYNC_TASKS_ENABLED=false
-EOF
-fi
-
-# Check if Docker is running
-echo "Checking Docker status..."
-if ! docker info > /dev/null 2>&1; then
-    echo "Error: Docker is not running or not accessible."
-    echo "Please start Docker and try again."
-    exit 1
-fi
-
-# Check if the test database container is running, if not start it
-echo "Checking test database..."
-if ! docker-compose -f docker-compose.test.yml ps | grep -q "postgres"; then
-    echo "Starting test database..."
-    docker-compose -f docker-compose.test.yml up -d postgres
+# Function for running tests
+run_test() {
+    local name=$1
+    local command=$2
     
-    # Wait for the database to be ready
-    echo "Waiting for database to be ready..."
-    for i in {1..30}; do
-        if docker-compose -f docker-compose.test.yml exec postgres pg_isready -U postgres > /dev/null 2>&1; then
-            echo "Database is ready!"
-            break
-        fi
-        echo -n "."
-        sleep 1
-    done
-    echo ""
-else
-    echo "Test database is already running."
-fi
+    echo -e "\n${YELLOW}Running $name tests...${NC}"
+    if eval $command; then
+        echo -e "${GREEN}✓ $name tests passed!${NC}"
+        return 0
+    else
+        echo -e "${RED}✗ $name tests failed!${NC}"
+        return 1
+    fi
+}
 
 # Install test dependencies if needed
-if [ "$1" == "--install" ] || [ "$1" == "-i" ]; then
-    echo "Installing test dependencies..."
-    pip install -r requirements-dev.txt
-    shift  # Remove the first argument
+if [[ $1 == "--install" ]]; then
+    echo -e "${YELLOW}Installing test dependencies...${NC}"
+    pip install -e ".[test,dev]"
+    shift
 fi
 
-# Prepare coverage paths
-COVERAGE_DIR="coverage_html"
-mkdir -p "$COVERAGE_DIR"
+# Set PYTHONPATH to include project root
+export PYTHONPATH=$PYTHONPATH:$(pwd)
 
-# Run the tests
-echo "Running tests..."
-if [ $# -eq 0 ]; then
-    # No arguments, run all tests with coverage
-    python -m pytest app/tests/ -v --cov=app --cov-report=term --cov-report=html:$COVERAGE_DIR
+# Default to running all tests if no arguments given
+if [[ $# -eq 0 ]]; then
+    set -- "all"
+fi
+
+# Process arguments
+EXIT_CODE=0
+
+for arg in "$@"; do
+    case $arg in
+        "core")
+            run_test "Core" "python -m pytest app/tests/core -v" || EXIT_CODE=1
+            ;;
+        "domain")
+            run_test "Domain" "python -m pytest app/tests/domain -v" || EXIT_CODE=1
+            ;;
+        "api")
+            run_test "API" "python -m pytest app/tests/api -v" || EXIT_CODE=1
+            ;;
+        "security")
+            run_test "Security" "python -m pytest app/tests/security -v" || EXIT_CODE=1
+            ;;
+        "fixtures")
+            run_test "Fixtures" "python -m pytest app/tests/fixtures -v" || EXIT_CODE=1
+            ;;
+        "infrastructure")
+            run_test "Infrastructure" "python -m pytest app/tests/infrastructure -v" || EXIT_CODE=1
+            ;;
+        "integration")
+            run_test "Integration" "python -m pytest app/tests/integration -v" || EXIT_CODE=1
+            ;;
+        "coverage")
+            echo -e "\n${YELLOW}Running full test suite with coverage...${NC}"
+            python -m pytest --cov=app --cov-report=term --cov-report=html:coverage_html app/tests/ -v
+            echo -e "${GREEN}Coverage report generated in ./coverage_html/${NC}"
+            ;;
+        "all")
+            echo -e "\n${YELLOW}Running all tests...${NC}"
+            python -m pytest app/tests/ -v || EXIT_CODE=1
+            ;;
+        *)
+            echo -e "${RED}Unknown test suite: $arg${NC}"
+            echo -e "Available options: core, domain, api, security, fixtures, infrastructure, integration, coverage, all"
+            EXIT_CODE=1
+            ;;
+    esac
+done
+
+echo -e "\n${BLUE}=========================================${NC}"
+if [[ $EXIT_CODE -eq 0 ]]; then
+    echo -e "${GREEN}All test suites completed successfully!${NC}"
 else
-    # Run with provided arguments
-    python -m pytest "$@"
+    echo -e "${RED}Some tests failed. Please check the output above.${NC}"
 fi
+echo -e "${BLUE}=========================================${NC}"
 
-TEST_EXIT_CODE=$?
-
-# Generate coverage report
-if [ $TEST_EXIT_CODE -eq 0 ]; then
-    echo "Tests passed successfully!"
-    echo "Generating coverage report..."
-    coverage report -m
-    coverage xml -o coverage.xml
-    coverage json -o coverage.json
-    
-    echo "Coverage report generated at:"
-    echo "  HTML: $COVERAGE_DIR/index.html"
-    echo "  XML: coverage.xml"
-    echo "  JSON: coverage.json"
-else
-    echo "Tests failed with exit code $TEST_EXIT_CODE"
-fi
-
-# Ask if user wants to shut down the test database
-if [ "$TEST_EXIT_CODE" -eq 0 ]; then
-    read -p "Do you want to shut down the test database container? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "Shutting down test database..."
-        docker-compose -f docker-compose.test.yml down
-    fi
-fi
-
-exit $TEST_EXIT_CODE
+exit $EXIT_CODE

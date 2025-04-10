@@ -5,12 +5,18 @@ This module provides the database engine, session management,
 and connection utilities for the application.
 """
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 from app.core.config import settings
+import os
 
+# Create the declarative base model
+Base = declarative_base()
 
-# Create the SQLAlchemy engine
+# Determine if we're in test mode
+is_test = os.environ.get("TESTING", "0").lower() in ("1", "true", "yes")
+
+# Create the SQLAlchemy engine with appropriate driver based on environment
 engine = create_async_engine(
     settings.SQLALCHEMY_DATABASE_URI,
     echo=False,
@@ -18,30 +24,38 @@ engine = create_async_engine(
     pool_pre_ping=True
 )
 
-# Create a session factory
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-    class_=AsyncSession
+# Create async session factory
+AsyncSessionLocal = sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False
 )
-
-# Base class for SQLAlchemy models
-Base = declarative_base()
 
 
 async def get_session() -> AsyncSession:
     """
-    Get an asynchronous database session.
+    Get a database session for use in a FastAPI dependency.
     
-    This dependency will be used in FastAPI to provide database sessions
-    to API endpoints. It ensures proper session cleanup after use.
+    This creates a new session for each request and closes it when the request is complete.
     
     Returns:
-        SQLAlchemy AsyncSession 
+        AsyncSession: An asynchronous SQLAlchemy session
     """
-    async with SessionLocal() as session:
+    async with AsyncSessionLocal() as session:
         try:
             yield session
         finally:
             await session.close()
+
+
+async def init_db() -> None:
+    """
+    Initialize the database with all defined models.
+    
+    This is called at application startup to create any missing tables.
+    """
+    async with engine.begin() as conn:
+        # Only create tables in development mode, not in production
+        if settings.ENVIRONMENT == "development" or is_test:
+            await conn.run_sync(Base.metadata.create_all)

@@ -109,7 +109,6 @@ class EnhancedXGBoostService:
             nt: i / (len(neurotransmitters) - 1) if len(neurotransmitters) > 1 else 0.5
             for i, nt in enumerate(sorted(neurotransmitters, key=lambda n: n.value))
         }
-        }
     def predict_treatment_response(
         self,
         patient_id: UUID,
