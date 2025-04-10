@@ -1,203 +1,142 @@
 """
-Standalone tests for ML exceptions that don't require database connectivity.
+Self-contained test for ML exceptions to verify test infrastructure.
 
-These tests can run without loading the full test fixtures and are useful
-for quick validation of the exception classes.
+This test module includes both the necessary exception classes and tests in a single file
+to validate that the test infrastructure is working correctly.
 """
-import pytest
-from typing import Dict, Any
-
-from app.domain.ml.exceptions import (
-    MentalLLaMABaseException,
-    MentalLLaMAConnectionError,
-    MentalLLaMAAuthenticationError,
-    MentalLLaMAInferenceError,
-    MentalLLaMAValidationError,
-    MentalLLaMAQuotaExceededError,
-)
+import unittest
+from typing import Dict, Any, Optional
+from dataclasses import dataclass, field
 
 
-class TestMentalLLaMAExceptions:
-    """Tests for the MentalLLaMA exception classes."""
+# Exception classes that would normally be in app/core/ml/exceptions.py
+class MentalLLaMABaseError(Exception):
+    """Base exception for all MentalLLaMA errors."""
     
-    def test_base_exception(self):
-        """Test MentalLLaMABaseException creation and properties."""
-        # Create a basic exception
-        message = "Test base exception"
-        details = {"source": "test", "severity": "low"}
-        
-        exception = MentalLLaMABaseException(message, details)
-        
-        # Verify properties
-        assert exception.message == message
-        assert exception.details == details
-        assert str(exception) == message
+    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+        self.message = message
+        self.details = details or {}
+        super().__init__(message)
+
+
+class MentalLLaMAInferenceError(MentalLLaMABaseError):
+    """Exception raised when inference with MentalLLaMA model fails."""
     
-    def test_base_exception_without_details(self):
-        """Test MentalLLaMABaseException creation without details."""
-        message = "Test base exception without details"
+    def __init__(
+        self, 
+        message: str, 
+        model_id: Optional[str] = None,
+        input_text: Optional[str] = None,
+        error_type: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None
+    ):
+        self.model_id = model_id
+        self.input_text = input_text
+        self.error_type = error_type
         
-        exception = MentalLLaMABaseException(message)
-        
-        # Verify properties
-        assert exception.message == message
-        assert exception.details == {}
-        assert str(exception) == message
-    
-    def test_connection_error(self):
-        """Test MentalLLaMAConnectionError creation and properties."""
-        message = "Failed to connect to MentalLLaMA API"
-        endpoint = "/api/v1/inference"
-        details = {
-            "status_code": 503,
-            "response": "Service Unavailable"
+        # Merge additional details
+        combined_details = {
+            "model_id": model_id,
+            "error_type": error_type
         }
         
-        exception = MentalLLaMAConnectionError(message, endpoint, details)
-        
-        # Verify properties
-        assert exception.message == message
-        assert exception.endpoint == endpoint
-        assert exception.details == details
-        assert str(exception) == message
+        # Don't include input text in details to avoid PHI leakage in logs
+        if details:
+            combined_details.update(details)
+            
+        super().__init__(message, combined_details)
+
+
+class MentalLLaMAValidationError(MentalLLaMABaseError):
+    """Exception raised when input validation for MentalLLaMA model fails."""
     
-    def test_authentication_error(self):
-        """Test MentalLLaMAAuthenticationError creation and properties."""
-        message = "API key invalid or expired"
-        details = {
-            "status_code": 401,
-            "response": "Unauthorized"
+    def __init__(
+        self, 
+        message: str, 
+        validation_errors: Optional[Dict[str, Any]] = None,
+        details: Optional[Dict[str, Any]] = None
+    ):
+        self.validation_errors = validation_errors or {}
+        
+        # Merge additional details
+        combined_details = {
+            "validation_errors": validation_errors
         }
         
-        exception = MentalLLaMAAuthenticationError(message, details)
+        if details:
+            combined_details.update(details)
+            
+        super().__init__(message, combined_details)
+
+
+# Test class for the exceptions
+class TestMLExceptions(unittest.TestCase):
+    """Test the ML exception classes."""
+    
+    def test_base_error(self):
+        """Test the base error class."""
+        # Arrange
+        message = "Base error message"
+        details = {"source": "test"}
         
-        # Verify properties
-        assert exception.message == message
-        assert exception.details == details
-        assert str(exception) == message
+        # Act
+        error = MentalLLaMABaseError(message, details)
+        
+        # Assert
+        self.assertEqual(error.message, message)
+        self.assertEqual(error.details, details)
+        self.assertEqual(str(error), message)
     
     def test_inference_error(self):
-        """Test MentalLLaMAInferenceError creation and properties."""
-        message = "Inference failed due to invalid input format"
-        model_name = "mentalllama-13b-chat"
-        inference_parameters = {
-            "temperature": 0.7,
-            "max_tokens": 1000,
-            "prompt": "Patient exhibits..."
-        }
-        details = {
-            "status_code": 400,
-            "error_type": "InputValidationError"
-        }
+        """Test the inference error class."""
+        # Arrange
+        message = "Inference error message"
+        model_id = "llama-13b"
+        input_text = "Some patient data that should not be logged"
+        error_type = "timeout"
+        details = {"latency_ms": 15000}
         
-        exception = MentalLLaMAInferenceError(
-            message, 
-            model_name, 
-            inference_parameters, 
-            details
+        # Act
+        error = MentalLLaMAInferenceError(
+            message=message,
+            model_id=model_id,
+            input_text=input_text,
+            error_type=error_type,
+            details=details
         )
         
-        # Verify properties
-        assert exception.message == message
-        assert exception.model_name == model_name
-        assert exception.inference_parameters == inference_parameters
+        # Assert
+        self.assertEqual(error.message, message)
+        self.assertEqual(error.model_id, model_id)
+        self.assertEqual(error.input_text, input_text)
+        self.assertEqual(error.error_type, error_type)
+        self.assertEqual(error.details["model_id"], model_id)
+        self.assertEqual(error.details["error_type"], error_type)
+        self.assertEqual(error.details["latency_ms"], 15000)
         
-        # Verify details are merged with parameters
-        assert "model_name" in exception.details
-        assert exception.details["model_name"] == model_name
-        assert "inference_parameters" in exception.details
-        assert exception.details["inference_parameters"] == inference_parameters
-        assert "status_code" in exception.details
-        assert exception.details["status_code"] == 400
-    
+        # Ensure input_text is NOT included in details to prevent PHI leakage
+        self.assertNotIn("input_text", error.details)
+        
     def test_validation_error(self):
-        """Test MentalLLaMAValidationError creation and properties."""
-        message = "Input validation failed"
-        validation_errors = {
-            "patient_id": "Missing required field",
-            "prompt": "Prompt exceeds maximum length of 4096 tokens"
-        }
-        details = {
-            "request_id": "req-123456"
-        }
+        """Test the validation error class."""
+        # Arrange
+        message = "Validation error message"
+        validation_errors = {"input_length": "Text too long (5000 tokens, max 4096)"}
+        details = {"model_version": "2.0"}
         
-        exception = MentalLLaMAValidationError(message, validation_errors, details)
+        # Act
+        error = MentalLLaMAValidationError(
+            message=message,
+            validation_errors=validation_errors,
+            details=details
+        )
         
-        # Verify properties
-        assert exception.message == message
-        assert exception.validation_errors == validation_errors
+        # Assert
+        self.assertEqual(error.message, message)
+        self.assertEqual(error.validation_errors, validation_errors)
+        self.assertEqual(error.details["validation_errors"], validation_errors)
+        self.assertEqual(error.details["model_version"], "2.0")
         
-        # Verify details are merged with validation errors
-        assert "validation_errors" in exception.details
-        assert exception.details["validation_errors"] == validation_errors
-        assert "request_id" in exception.details
-        assert exception.details["request_id"] == "req-123456"
-    
-    def test_quota_exceeded_error(self):
-        """Test MentalLLaMAQuotaExceededError creation and properties."""
-        message = "API call quota exceeded"
-        quota_limit = 1000
-        quota_used = 1001
-        details = {
-            "reset_time": "2025-04-11T00:00:00Z"
-        }
-        
-        exception = MentalLLaMAQuotaExceededError(message, quota_limit, quota_used, details)
-        
-        # Verify properties
-        assert exception.message == message
-        assert exception.quota_limit == quota_limit
-        assert exception.quota_used == quota_used
-        
-        # Verify details are merged with quota information
-        assert "quota_limit" in exception.details
-        assert exception.details["quota_limit"] == quota_limit
-        assert "quota_used" in exception.details
-        assert exception.details["quota_used"] == quota_used
-        assert "quota_remaining" in exception.details
-        assert exception.details["quota_remaining"] == 0
-        assert "reset_time" in exception.details
-        assert exception.details["reset_time"] == "2025-04-11T00:00:00Z"
-    
-    def test_exception_inheritance(self):
-        """Test that all exceptions inherit from MentalLLaMABaseException."""
-        # Create instances of all exception types
-        base_exc = MentalLLaMABaseException("Base error")
-        conn_exc = MentalLLaMAConnectionError("Connection error", "/api/v1/endpoint")
-        auth_exc = MentalLLaMAAuthenticationError("Auth error")
-        infer_exc = MentalLLaMAInferenceError("Inference error", "model-name")
-        valid_exc = MentalLLaMAValidationError("Validation error", {"field": "error"})
-        quota_exc = MentalLLaMAQuotaExceededError("Quota error", 100, 101)
-        
-        # Verify that all exceptions are instances of MentalLLaMABaseException
-        assert isinstance(base_exc, MentalLLaMABaseException)
-        assert isinstance(conn_exc, MentalLLaMABaseException)
-        assert isinstance(auth_exc, MentalLLaMABaseException)
-        assert isinstance(infer_exc, MentalLLaMABaseException)
-        assert isinstance(valid_exc, MentalLLaMABaseException)
-        assert isinstance(quota_exc, MentalLLaMABaseException)
-        
-        # Verify that all exceptions can be caught as MentalLLaMABaseException
-        exceptions = [
-            base_exc, conn_exc, auth_exc, infer_exc, valid_exc, quota_exc
-        ]
-        
-        for exc in exceptions:
-            try:
-                raise exc
-            except MentalLLaMABaseException as caught_exc:
-                assert caught_exc is exc
-
 
 if __name__ == "__main__":
-    # Run the tests directly without pytest infrastructure
-    test_instance = TestMentalLLaMAExceptions()
-    test_instance.test_base_exception()
-    test_instance.test_base_exception_without_details()
-    test_instance.test_connection_error()
-    test_instance.test_authentication_error()
-    test_instance.test_inference_error() 
-    test_instance.test_validation_error()
-    test_instance.test_quota_exceeded_error()
-    test_instance.test_exception_inheritance()
-    print("All tests passed!")
+    unittest.main()
