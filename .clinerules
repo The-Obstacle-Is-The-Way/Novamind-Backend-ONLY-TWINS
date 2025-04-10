@@ -1,7 +1,7 @@
 # Novamind Digital Twin: Psychiatric Platform Architecture - Backend Only
 
 ## Clean Architecture
-- **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
+- **No aliases, patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
 - **Domain**: Pure business logic with no external dependencies
 - **Application**: Use cases, services, state management

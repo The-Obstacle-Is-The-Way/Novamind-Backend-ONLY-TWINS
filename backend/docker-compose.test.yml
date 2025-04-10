@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: novamind_test
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:

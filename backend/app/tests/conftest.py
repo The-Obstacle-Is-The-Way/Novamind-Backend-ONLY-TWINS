@@ -2,70 +2,59 @@
 PyTest configuration for Novamind Digital Twin Platform tests.
 
 This module provides pytest fixtures and configuration for all tests,
-including environment variable setup, database mocking, and other
-test requirements.
+including environment variable setup, database fixtures, and authentication
+support for test integration.
 """
 
 import os
 import sys
 import pytest
+import pytest_asyncio
 import logging
-from typing import Dict, Any, Generator
+from typing import Dict, Any, Generator, Optional
 from unittest import mock
 from datetime import datetime, timedelta, UTC
+from pathlib import Path
+from dotenv import load_dotenv
 
-# Directly set test environment variables
-os.environ["TESTING"] = "true"
-os.environ["ENVIRONMENT"] = "test"
-os.environ["LOG_LEVEL"] = "DEBUG"
-os.environ["SECRET_KEY"] = "test-key-long-enough-for-testing-purposes-only"
-os.environ["DATABASE_URL"] = "postgresql://postgres:postgres@localhost:5432/novamind_test"
-os.environ["JWT_SECRET_KEY"] = "test-jwt-key-for-testing-only"
+# Load test environment variables from .env.test file
+env_path = Path(__file__).parent.parent.parent / '.env.test'
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    # Fallback to direct environment variables if file doesn't exist
+    os.environ["TESTING"] = "true"
+    os.environ["ENVIRONMENT"] = "test"
+    os.environ["LOG_LEVEL"] = "DEBUG"
+    os.environ["SECRET_KEY"] = "test-key-long-enough-for-testing-purposes-only"
+    os.environ["DATABASE_URL"] = "postgresql://postgres:postgres@localhost:15432/novamind_test"
+    os.environ["JWT_SECRET_KEY"] = "test-jwt-key-for-testing-only"
 
-# First patch settings to avoid database connections
-settings_patch = mock.patch("app.core.config.settings")
-mock_settings = settings_patch.start()
-mock_settings.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/novamind_test"
-mock_settings.ENVIRONMENT = "test"
-mock_settings.SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@localhost:5432/novamind_test"
-mock_settings.DEBUG = True
+# Import fixtures
+pytest_plugins = [
+    "app.tests.fixtures.auth_fixtures",
+    "app.tests.fixtures.db_fixtures",
+]
 
-# Import modules after patching
+# Import modules after environment setup
 from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
 from app.core.services.ml.mock_dt import MockDigitalTwinService
+from app.core.utils.phi_sanitizer import PHISanitizer
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment() -> None:
     """Set up test environment variables and configuration."""
     # This fixture runs automatically at the beginning of the test session
-    # Environment variables were already set above
+    # Environment variables were already loaded above
     pass
-
-
-# Mock the database components
-db_session_mock = mock.MagicMock()
-get_db_mock = mock.MagicMock(return_value=db_session_mock)
-
-# Create a mock Database class instance
-mock_db_instance = mock.MagicMock()
-mock_db_instance.session.return_value.__enter__.return_value = db_session_mock
-
-# Patch database-related components
-db_patcher = mock.patch("app.infrastructure.persistence.sqlalchemy.config.database.get_db_instance", 
-                        return_value=mock_db_instance)
-db_patcher.start()
-
-# Patch the get_db_session function
-session_patcher = mock.patch("app.infrastructure.persistence.sqlalchemy.config.database.get_db_session")
-mock_session = session_patcher.start()
-mock_session.return_value.__enter__.return_value = db_session_mock
 
 
 @pytest.fixture(scope="function")
 def test_settings():
     """Fixture to provide test settings."""
-    return mock_settings
+    from app.core.config import get_test_settings
+    return get_test_settings()
 
 
 @pytest.fixture(scope="function")
@@ -194,40 +183,28 @@ def sample_forecast_response() -> Dict[str, Any]:
     }
 
 
-# Authentication test fixtures
 @pytest.fixture(scope="function")
-def test_user_id():
-    """Test user ID for authentication fixtures."""
-    return "test-user-123"
-
-
-@pytest.fixture(scope="function")
-def test_roles():
-    """Test roles for authentication fixtures."""
-    return ["clinician", "researcher"]
+def phi_sanitizer():
+    """Fixture to provide PHI sanitizer."""
+    return PHISanitizer()
 
 
 @pytest.fixture(scope="function")
-def db():
+def mock_async_db():
     """
-    Fixture to provide a mocked database session.
+    Fixture to provide a mocked async database session.
     
-    Instead of connecting to a real database, we use a mock that can be
-    configured as needed for individual tests.
+    This is for tests that need to mock the database but don't use 
+    the real database fixtures.
     """
-    # Return the pre-configured mock session
-    return db_session_mock
-
-
-# Mock database session for tests that need it but don't use the db fixture
-@pytest.fixture(autouse=True)
-def mock_db_session():
-    """
-    Fixture to mock database session for all tests.
+    # Create an async mock session
+    mock_session = mock.AsyncMock()
     
-    This helps tests that reference the database but don't explicitly use the db fixture.
-    """
-    with mock.patch("app.infrastructure.persistence.sqlalchemy.config.database.get_db_session") as mock_session:
-        # Configure the mock to return itself when entering a context
-        mock_session.return_value.__enter__.return_value = mock_session.return_value
-        yield mock_session.return_value
+    # Mock common SQLAlchemy methods
+    mock_session.execute.return_value.scalars.return_value.first.return_value = None
+    mock_session.execute.return_value.scalars.return_value.all.return_value = []
+    mock_session.commit.return_value = None
+    mock_session.rollback.return_value = None
+    
+    # Return the mock session
+    yield mock_session

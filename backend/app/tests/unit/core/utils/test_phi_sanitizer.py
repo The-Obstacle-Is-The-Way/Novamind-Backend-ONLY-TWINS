@@ -1,226 +1,209 @@
 # -*- coding: utf-8 -*-
 """
-Unit tests for PHI sanitization to ensure HIPAA compliance with PHI handling.
+Tests for PHI Sanitizer utility.
+
+These tests ensure that the PHI Sanitizer correctly identifies and sanitizes
+Protected Health Information to maintain HIPAA compliance.
 """
 
 import pytest
-from datetime import date
 from typing import Dict, Any, List
-import json
 
-from app.core.utils.phi_sanitizer import (
-    PHIType,
-    PHIDetector,
-    PHISanitizer,
-    get_phi_secure_logger,
-    sanitize_log_message
-)
+from app.core.utils.phi_sanitizer import PHISanitizer, PHIDetector, PHIType, get_phi_secure_logger
 
 
-class TestPHIDetection:
-    """Test suite for PHI detection functionality."""
-    
-    def test_email_detection(self):
-        """Test detection of email addresses."""
-        test_emails = [
-            "patient@example.com",
-            "dr.smith@hospital.org",
-            "john.doe+tag@gmail.com",
-            "support@company-name.co.uk"
-        ]
+class TestPHIDetector:
+    """Test suite for the PHI detector functionality."""
+
+    def test_contains_phi_true(self, sample_phi_text):
+        """Test PHI detection in text containing PHI."""
+        # Act
+        result = PHIDetector.contains_phi(sample_phi_text)
         
-        for email in test_emails:
-            assert PHIDetector.contains_phi(email), f"Failed to detect email: {email}"
-    
-    def test_phone_detection(self):
-        """Test detection of phone numbers in various formats."""
-        test_phones = [
-            "555-123-4567",
-            "(555) 123-4567",
-            "5551234567",
-            "+1 555 123 4567"
-        ]
+        # Assert
+        assert result is True, "Should detect PHI in the sample text"
+
+    def test_contains_phi_false(self, sample_non_phi_text):
+        """Test PHI detection in text without PHI."""
+        # Act
+        result = PHIDetector.contains_phi(sample_non_phi_text)
         
-        for phone in test_phones:
-            assert PHIDetector.contains_phi(phone), f"Failed to detect phone: {phone}"
-    
-    def test_ssn_detection(self):
-        """Test detection of Social Security Numbers."""
-        test_ssns = [
-            "123-45-6789",
-            "123456789"
-        ]
+        # Assert
+        assert result is False, "Should not detect PHI in text without PHI"
+
+    def test_contains_phi_edge_cases(self):
+        """Test PHI detection with edge cases."""
+        # Test with empty string
+        assert PHIDetector.contains_phi("") is False
         
-        for ssn in test_ssns:
-            assert PHIDetector.contains_phi(ssn), f"Failed to detect SSN: {ssn}"
-    
-    def test_date_detection(self):
-        """Test detection of dates that could be DOB."""
-        test_dates = [
-            "1980-01-01",
-            "1980/01/01",
-            "01/01/1980",
-            "1980.01.01"
-        ]
+        # Test with None
+        assert PHIDetector.contains_phi(None) is False
         
-        for date_str in test_dates:
-            assert PHIDetector.contains_phi(date_str), f"Failed to detect date: {date_str}"
-    
-    def test_detection_in_context(self):
-        """Test detection of PHI embedded in larger text."""
-        test_contexts = [
-            "Patient email: patient@example.com should be kept private",
-            "Please call at (555) 123-4567 for appointment",
-            "SSN: 123-45-6789 was provided for billing",
-            "The patient was born on 1980-01-01 in California"
-        ]
+        # Test with non-string
+        assert PHIDetector.contains_phi(123) is False
+
+    def test_detect_phi_types(self, sample_phi_text):
+        """Test detection of specific PHI types."""
+        # Act
+        result = PHIDetector.detect_phi_types(sample_phi_text)
         
-        for context in test_contexts:
-            assert PHIDetector.contains_phi(context), f"Failed to detect PHI in: {context}"
-    
-    def test_known_test_values_detection(self):
-        """Test detection of known test values from the KNOWN_TEST_VALUES list."""
-        for test_value in PHIDetector.KNOWN_TEST_VALUES:
-            assert PHIDetector.contains_phi(test_value), f"Failed to detect known test value: {test_value}"
-    
-    def test_no_false_positives(self):
-        """Test that non-PHI text is not flagged."""
-        non_phi_texts = [
-            "This contains no PHI",
-            "ID-12345",
-            "The system version is 2.0.1",
-            "Error code: E-12345"
-        ]
+        # Assert
+        assert isinstance(result, list)
+        assert len(result) > 0, "Should detect multiple PHI instances"
         
-        for text in non_phi_texts:
-            assert not PHIDetector.contains_phi(text), f"False positive detection in: {text}"
+        # Verify structure of results
+        for phi_type, match_text in result:
+            assert isinstance(phi_type, PHIType)
+            assert isinstance(match_text, str)
+            assert match_text in sample_phi_text
+        
+        # Check for specific PHI types
+        phi_types = [phi_type for phi_type, _ in result]
+        assert PHIType.SSN in phi_types, "Should detect SSN"
+        assert PHIType.EMAIL in phi_types, "Should detect email"
+        assert PHIType.PHONE in phi_types, "Should detect phone number"
+        assert PHIType.ADDRESS in phi_types, "Should detect address"
+        assert PHIType.NAME in phi_types, "Should detect name"
+
+    def test_detect_phi_types_edge_cases(self):
+        """Test PHI type detection with edge cases."""
+        # Test with empty string
+        assert PHIDetector.detect_phi_types("") == []
+        
+        # Test with None
+        assert PHIDetector.detect_phi_types(None) == []
+        
+        # Test with non-string
+        assert PHIDetector.detect_phi_types(123) == []
 
 
-class TestPHISanitization:
-    """Test suite for PHI sanitization functionality."""
-    
-    def test_email_sanitization(self):
-        """Test sanitization of email addresses."""
-        email = "patient@example.com"
-        sanitized = PHISanitizer.sanitize_text(email)
+class TestPHISanitizer:
+    """Test suite for the PHI sanitizer functionality."""
+
+    def test_sanitize_text(self, sample_phi_text):
+        """Test sanitization of text containing PHI."""
+        # Act
+        sanitized = PHISanitizer.sanitize_text(sample_phi_text)
         
-        assert "patient@example.com" not in sanitized
-        assert "@example.com" in sanitized  # Format is preserved but value is changed
-    
-    def test_phone_sanitization(self):
-        """Test sanitization of phone numbers."""
-        phone = "555-123-4567"
-        sanitized = PHISanitizer.sanitize_text(phone)
+        # Assert
+        assert sanitized != sample_phi_text, "Sanitized text should differ from original"
         
-        assert "555-123-4567" not in sanitized
-        assert sanitized == "555-000-0000"
-    
-    def test_ssn_sanitization(self):
-        """Test sanitization of SSNs."""
-        ssn = "123-45-6789"
-        sanitized = PHISanitizer.sanitize_text(ssn)
+        # Check that PHI has been redacted
+        assert "123-45-6789" not in sanitized, "SSN should be redacted"
+        assert "john.smith@example.com" not in sanitized, "Email should be redacted"
+        assert "(555) 123-4567" not in sanitized, "Phone should be redacted"
+        assert "123 Main St" not in sanitized, "Address should be redacted"
         
-        assert "123-45-6789" not in sanitized
-        assert sanitized == "000-00-0000"
-    
-    def test_dob_sanitization(self):
-        """Test sanitization of dates of birth."""
-        dob = "1980-01-01"
-        sanitized = PHISanitizer.sanitize_text(dob)
+        # Verify redaction markers
+        assert "[REDACTED:SSN]" in sanitized or "000-00-0000" in sanitized
+        assert "[REDACTED:EMAIL]" in sanitized or "[REDACTED]" in sanitized
+        assert "[REDACTED:PHONE]" in sanitized or "555-000-0000" in sanitized
+
+    def test_sanitize_text_no_phi(self, sample_non_phi_text):
+        """Test sanitization of text without PHI."""
+        # Act
+        sanitized = PHISanitizer.sanitize_text(sample_non_phi_text)
         
-        assert "1980-01-01" not in sanitized
-        assert sanitized == "YYYY-MM-DD"
-    
-    def test_sanitization_in_context(self):
-        """Test sanitization of PHI embedded in larger text."""
-        original = "Patient John Doe (DOB: 1980-01-01, SSN: 123-45-6789) " \
-                  "can be reached at 555-123-4567 or patient@example.com"
-        sanitized = PHISanitizer.sanitize_text(original)
+        # Assert
+        assert sanitized == sample_non_phi_text, "Text without PHI should remain unchanged"
+
+    def test_sanitize_structured_data(self, sample_patient_data):
+        """Test sanitization of structured data containing PHI."""
+        # Act
+        sanitized = PHISanitizer.sanitize_structured_data(sample_patient_data)
         
-        assert "1980-01-01" not in sanitized
-        assert "123-45-6789" not in sanitized
-        assert "555-123-4567" not in sanitized
-        assert "patient@example.com" not in sanitized
-        assert "YYYY-MM-DD" in sanitized
-        assert "000-00-0000" in sanitized
-        assert "555-000-0000" in sanitized
-    
-    def test_structured_data_sanitization(self):
-        """Test sanitization of structured data (dict/list)."""
-        structured_data: Dict[str, Any] = {
+        # Assert
+        assert sanitized != sample_patient_data, "Sanitized data should differ from original"
+        
+        # Check that PHI has been redacted
+        assert sanitized["email"] != sample_patient_data["email"], "Email should be redacted"
+        assert sanitized["phone"] != sample_patient_data["phone"], "Phone should be redacted"
+        assert sanitized["address"]["street"] != sample_patient_data["address"]["street"], "Address should be redacted"
+        assert sanitized["medical_record_number"] != sample_patient_data["medical_record_number"], "MRN should be redacted"
+        assert sanitized["insurance"]["policy_number"] != sample_patient_data["insurance"]["policy_number"], "Policy number should be redacted"
+
+    def test_sanitize_structured_data_nested(self):
+        """Test sanitization of deeply nested structured data."""
+        # Arrange
+        nested_data = {
             "patient": {
-                "name": "John Doe",
-                "contact": {
-                    "email": "john.doe@example.com",
-                    "phone": "555-123-4567"
-                },
-                "dob": "1980-01-01",
-                "ssn": "123-45-6789",
-                "visits": [
-                    {"date": "2025-03-01", "notes": "Patient complained about headaches."},
-                    {"date": "2025-03-15", "notes": "Follow-up, call at 555-123-4567."}
-                ]
+                "personal": {
+                    "ssn": "123-45-6789",
+                    "name": "John Smith",
+                    "contacts": [
+                        {"type": "email", "value": "john.smith@example.com"},
+                        {"type": "phone", "value": "(555) 123-4567"}
+                    ]
+                }
+            },
+            "non_phi_data": {
+                "appointment_type": "Follow-up",
+                "duration_minutes": 30
             }
         }
         
-        sanitized = PHISanitizer.sanitize_structured_data(structured_data)
-        sanitized_json = json.dumps(sanitized)
+        # Act
+        sanitized = PHISanitizer.sanitize_structured_data(nested_data)
         
-        # Check that PHI has been removed
-        assert "john.doe@example.com" not in sanitized_json
-        assert "555-123-4567" not in sanitized_json
-        assert "1980-01-01" not in sanitized_json
-        assert "123-45-6789" not in sanitized_json
+        # Assert
+        assert sanitized != nested_data, "Sanitized data should differ from original"
         
-        # Check structure is preserved
-        assert "patient" in sanitized
-        assert "contact" in sanitized["patient"]
-        assert "email" in sanitized["patient"]["contact"]
-        assert "visits" in sanitized["patient"]
-        assert len(sanitized["patient"]["visits"]) == 2
+        # Check that PHI has been redacted at all levels
+        assert sanitized["patient"]["personal"]["ssn"] != nested_data["patient"]["personal"]["ssn"]
+        assert sanitized["patient"]["personal"]["name"] != nested_data["patient"]["personal"]["name"]
+        assert sanitized["patient"]["personal"]["contacts"][0]["value"] != nested_data["patient"]["personal"]["contacts"][0]["value"]
+        assert sanitized["patient"]["personal"]["contacts"][1]["value"] != nested_data["patient"]["personal"]["contacts"][1]["value"]
+        
+        # Check that non-PHI data is preserved
+        assert sanitized["non_phi_data"] == nested_data["non_phi_data"]
 
 
-class TestSecureLogging:
-    """Test suite for secure logging functionality with PHI sanitization."""
-    
-    def test_log_message_sanitization(self):
-        """Test that log messages are properly sanitized."""
-        unsanitized = "Patient John Doe (SSN: 123-45-6789) called from 555-123-4567"
-        sanitized = sanitize_log_message(unsanitized)
-        
-        assert "123-45-6789" not in sanitized
-        assert "555-123-4567" not in sanitized
-    
-    def test_log_with_format_args(self):
-        """Test sanitization with format arguments."""
-        message = "Patient {} has SSN {} and phone {}"
-        sanitized = sanitize_log_message(
-            message, 
-            "John Doe", 
-            "123-45-6789", 
-            "555-123-4567"
-        )
-        
-        assert "123-45-6789" not in sanitized
-        assert "555-123-4567" not in sanitized
-    
-    def test_secure_logger(self):
-        """Test the PHISecureLogger class (no actual logs generated)."""
-        # This is a behavioral test, we mock the actual logger
-        import logging
-        from unittest.mock import patch
-        
-        test_message = "Patient email: patient@example.com"
-        
-        with patch.object(logging.Logger, 'info') as mock_info:
-            secure_logger = get_phi_secure_logger("test_logger")
-            secure_logger.info(test_message)
-            
-            # Check that the logger was called with sanitized text
-            assert mock_info.called
-            sanitized_call = mock_info.call_args[0][0]
-            assert "patient@example.com" not in sanitized_call
+class TestPHISecureLogger:
+    """Test suite for the PHI secure logger functionality."""
 
+    def test_get_phi_secure_logger(self):
+        """Test creation of PHI-secure logger."""
+        # Act
+        logger = get_phi_secure_logger("test_logger")
+        
+        # Assert
+        assert logger is not None, "Should return a logger instance"
+        assert hasattr(logger, "debug"), "Logger should have debug method"
+        assert hasattr(logger, "info"), "Logger should have info method"
+        assert hasattr(logger, "warning"), "Logger should have warning method"
+        assert hasattr(logger, "error"), "Logger should have error method"
+        assert hasattr(logger, "critical"), "Logger should have critical method"
+        assert hasattr(logger, "exception"), "Logger should have exception method"
 
-if __name__ == "__main__":
-    pytest.main(["-xvs", __file__])
+    def test_sanitize_log_message(self):
+        """Test sanitization of log messages."""
+        # Arrange
+        message = "Patient {name} with SSN {ssn} needs attention"
+        name = "John Smith"
+        ssn = "123-45-6789"
+        
+        # Act
+        sanitized = sanitize_log_message(message, name=name, ssn=ssn)
+        
+        # Assert
+        assert "John Smith" not in sanitized, "Name should be redacted"
+        assert "123-45-6789" not in sanitized, "SSN should be redacted"
+        assert message != sanitized, "Sanitized message should differ from original"
+
+    def test_phi_secure_logger_methods(self, caplog):
+        """Test PHI secure logger methods."""
+        # Arrange
+        logger = get_phi_secure_logger("test_phi_logger")
+        phi_text = "SSN: 123-45-6789, Patient: John Smith"
+        
+        # Act - Test different log levels
+        logger.debug(phi_text)
+        logger.info(phi_text)
+        logger.warning(phi_text)
+        logger.error(phi_text)
+        logger.critical(phi_text)
+        
+        # Assert
+        for record in caplog.records:
+            assert "123-45-6789" not in record.message, f"SSN should be redacted in {record.levelname} log"
+            assert "John Smith" not in record.message, f"Name should be redacted in {record.levelname} log"

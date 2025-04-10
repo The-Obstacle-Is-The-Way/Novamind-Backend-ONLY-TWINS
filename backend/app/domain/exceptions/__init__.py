@@ -119,6 +119,35 @@ class AppointmentConflictError(DomainError):
         super().__init__(message)
 
 
-# Import specific domain model exceptions
-# (These imports are at the bottom to avoid circular imports)
-from app.domain.exceptions.model_exceptions import ModelError, MentalLLaMAInferenceError
+# Import and re-export model exceptions
+from app.domain.exceptions.model_exceptions import (
+    ModelError,
+    ModelInferenceError,
+    MentalLLaMAInferenceError,
+    ModelNotFoundError,
+    DigitalTwinModelError,
+    SimulationError,
+    ModelTrainingError,
+    ModelValidationError
+)
+
+# Export all exceptions
+__all__ = [
+    'DomainError',
+    'EntityNotFoundError',
+    'ValidationError',
+    'BusinessRuleViolationError',
+    'InvalidStateError',
+    'ConcurrencyError',
+    'AuthorizationException',
+    'RepositoryError',
+    'AppointmentConflictError',
+    'ModelError',
+    'ModelInferenceError',
+    'MentalLLaMAInferenceError',
+    'ModelNotFoundError',
+    'DigitalTwinModelError',
+    'SimulationError',
+    'ModelTrainingError',
+    'ModelValidationError'
+]

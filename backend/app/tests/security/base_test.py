@@ -1,53 +1,41 @@
 """
-Base test class for security tests in Novamind Digital Twin Platform.
+Base test class for security-related tests in Novamind Digital Twin Platform.
 
-This class provides enhanced security test fixtures and utilities
-specific to security testing concerns.
+This module provides base test functionality for all security-related tests,
+including authentication, authorization, and data protection.
 """
 
-import os
-from typing import Dict, Any, List, Optional
-import logging
+import unittest
+import uuid
 from unittest import mock
-
-# Mock the get_settings function before importing audit
-# This ensures the audit module can initialize properly during import
-settings_patch = mock.patch('app.core.config.get_settings')
-mock_settings = settings_patch.start()
-mock_settings.return_value = mock.MagicMock(
-    AUDIT_LOG_LEVEL=logging.INFO,
-    AUDIT_LOG_TO_FILE=False,
-    ENVIRONMENT="test",
-    EXTERNAL_AUDIT_ENABLED=False,
-    AUDIT_LOG_FILE="test_audit.log"
-)
-
-# Also patch the AuditLogger class before importing it
-audit_logger_patch = mock.patch('app.infrastructure.security.audit.AuditLogger')
-mock_audit_logger_class = audit_logger_patch.start()
-mock_audit_instance = mock.MagicMock()
-mock_audit_logger_class.return_value = mock_audit_instance
-
-# Now it's safe to import
-from app.tests.base_test import BaseTest
+from typing import Dict, List, Any, Optional
 
 
-class BaseSecurityTest(BaseTest):
-    """Base class for all security tests in the system."""
+class BaseSecurityTest(unittest.TestCase):
+    """Base class for all security-related tests."""
     
     def setUp(self) -> None:
-        """Set up security test fixtures."""
-        super().setUp()
+        """Set up test fixtures for security tests."""
+        # Set up test user with synthetic test data
+        self.test_user_id = str(uuid.uuid4())
+        self.test_roles = ["clinician", "researcher"]
+        self.test_permissions = ["read:patient", "write:notes", "read:analytics"]
         
-        # Mock security services and components
+        # Setup auth mocks
         self.setup_auth_mocks()
-        self.setup_encryption_mocks()
-        self.setup_audit_mocks()
         
-        # Initialize standard security test data
-        self.test_user_id = "test-security-user"
-        self.test_roles = ["user", "clinician"]
-        
+        # Set up audit logging mock
+        self.audit_logger_patcher = mock.patch(
+            "app.core.utils.logging.AuditLogger"
+        )
+        self.mock_audit_logger = self.audit_logger_patcher.start()
+    
+    def tearDown(self) -> None:
+        """Tear down test fixtures for security tests."""
+        # Stop patchers
+        self.auth_patcher.stop()
+        self.audit_logger_patcher.stop()
+    
     def setup_auth_mocks(self) -> None:
         """Set up authentication and authorization mocks."""
         # Mock auth service
@@ -55,62 +43,72 @@ class BaseSecurityTest(BaseTest):
             "app.infrastructure.security.jwt_service.JWTService"
         )
         self.mock_auth_service = self.auth_patcher.start()
-        
+    
         # Setup auth service behavior
         self.mock_auth_service.return_value.verify_token.return_value = {
             "user_id": self.test_user_id,
             "roles": self.test_roles
         }
         
-    def setup_encryption_mocks(self) -> None:
-        """Set up encryption mocks."""
-        # Mock encryption service
-        self.encryption_patcher = mock.patch(
-            "app.infrastructure.security.encryption_service.EncryptionService"
-        )
-        self.mock_encryption_service = self.encryption_patcher.start()
-        
-        # Setup encryption service behavior
-        self.mock_encryption_service.return_value.encrypt.side_effect = \
-            lambda text: f"ENCRYPTED({text})"
-        self.mock_encryption_service.return_value.decrypt.side_effect = \
-            lambda text: text.replace("ENCRYPTED(", "").replace(")", "")
-            
-    def setup_audit_mocks(self) -> None:
-        """Set up audit logging mocks."""
-        # Use the global mock instance that was created before imports
-        self.mock_audit_service = mock_audit_instance
-        
-        # Configure the audit service behavior
-        self.mock_audit_service.log_phi_access.side_effect = self.mock_audit_log
-        
-        # We don't need to start/stop any patchers since they're now global
+        self.mock_auth_service.return_value.create_token.return_value = "mock.jwt.token"
+        self.mock_auth_service.return_value.has_permission.return_value = True
     
-    def tearDown(self) -> None:
-        """Tear down security test fixtures."""
-        # Stop only the authentication and encryption patchers
-        # The audit patchers are global and should not be stopped per test
-        self.auth_patcher.stop()
-        self.encryption_patcher.stop()
-        
-        super().tearDown()
-    
-    def assert_phi_access_logged(self, resource_type: str, 
-                                resource_id: str) -> None:
-        """Assert that PHI access was properly logged.
+    def set_user_roles(self, roles: List[str]) -> None:
+        """
+        Update the test user roles.
         
         Args:
-            resource_type: Type of resource accessed
-            resource_id: ID of resource accessed
+            roles: New roles for the test user
         """
-        matching_events = [
-            event for event in self.audit_events
-            if (event["action"] == "access" and
-                event["resource_type"] == resource_type and
-                event["resource_id"] == resource_id)
-        ]
+        self.test_roles = roles
+        self.mock_auth_service.return_value.verify_token.return_value = {
+            "user_id": self.test_user_id,
+            "roles": self.test_roles
+        }
+    
+    def set_user_permissions(self, permissions: List[str]) -> None:
+        """
+        Update the test user permissions.
         
-        self.assertTrue(
-            len(matching_events) > 0,
-            f"No audit log for PHI access to {resource_type}:{resource_id}"
-        )
+        Args:
+            permissions: New permissions for the test user
+        """
+        self.test_permissions = permissions
+        
+        # Update the has_permission mock to check against the new permissions list
+        def has_permission_side_effect(permission: str, *args, **kwargs) -> bool:
+            return permission in self.test_permissions
+            
+        self.mock_auth_service.return_value.has_permission.side_effect = has_permission_side_effect
+    
+    def assert_audit_logged(self, action: str, resource_type: str, user_id: Optional[str] = None) -> None:
+        """
+        Assert that an audit log was created.
+        
+        Args:
+            action: Expected audit log action
+            resource_type: Expected audit log resource type
+            user_id: Expected user ID (defaults to test_user_id)
+        """
+        if not user_id:
+            user_id = self.test_user_id
+            
+        # Check if the appropriate audit log method was called
+        if action == "access":
+            self.mock_audit_logger.return_value.log_access.assert_called_with(
+                user_id=user_id, 
+                resource_type=resource_type,
+                mock.ANY
+            )
+        elif action == "modify":
+            self.mock_audit_logger.return_value.log_modification.assert_called_with(
+                user_id=user_id, 
+                resource_type=resource_type,
+                mock.ANY
+            )
+        elif action == "delete":
+            self.mock_audit_logger.return_value.log_deletion.assert_called_with(
+                user_id=user_id, 
+                resource_type=resource_type,
+                mock.ANY
+            )
