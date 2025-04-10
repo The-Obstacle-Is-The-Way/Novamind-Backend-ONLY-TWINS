@@ -322,3 +322,38 @@ class InvalidConfigurationError(ConfigurationException):
             config_key=config_key, 
             **kwargs
         )
+
+
+class MentalLLaMAInferenceError(ExternalServiceException):
+    """Exception raised when an inference error occurs with MentalLLaMA models."""
+    
+    def __init__(
+        self,
+        message: str,
+        model_name: Optional[str] = None,
+        input_data: Optional[Any] = None,
+        error_details: Optional[Dict[str, Any]] = None,
+        is_transient: bool = False,
+        **kwargs
+    ):
+        """
+        Initialize MentalLLaMA inference error.
+        
+        Args:
+            message: Error message
+            model_name: Name of the MentalLLaMA model that failed
+            input_data: Input data that caused the error (sanitized of PHI)
+            error_details: Detailed error information from the inference engine
+            is_transient: Whether the error is transient and can be retried
+            **kwargs: Additional context
+        """
+        super().__init__(
+            message,
+            service_name="MentalLLaMA",
+            error_code=error_details.get("code") if error_details else None,
+            is_transient=is_transient,
+            model_name=model_name,
+            input_shape=str(type(input_data)) if input_data is not None else None,
+            error_details=error_details,
+            **kwargs
+        )

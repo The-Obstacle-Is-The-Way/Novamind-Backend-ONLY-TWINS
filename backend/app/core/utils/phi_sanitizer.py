@@ -20,14 +20,26 @@ class PHISanitizer:
     
     # PHI patterns to detect and sanitize
     PHI_PATTERNS = {
-        'mrn': re.compile(r'\b\d{5,10}\b'),  # Medical Record Numbers
+        # Define patterns with careful attention to specificity
         'ssn': re.compile(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b'),  # Social Security Numbers
-        'name': re.compile(r'\b(?:[A-Z][a-z]+ ){1,2}[A-Z][a-z]+\b'),  # Full names
-        'dob': re.compile(r'\b(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}[-/]\d{1,2}[-/]\d{1,2})\b'),  # Dates of birth
         'address': re.compile(r'\b\d+\s+[A-Za-z\s]+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St)\.?\b', re.IGNORECASE),  # Addresses
-        'phone': re.compile(r'\b(?:\+\d{1,2}\s)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b'),  # Phone numbers
         'email': re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'),  # Email addresses
+        'phone': re.compile(r'(?:\+\d{1,2}\s)?(?:\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})'),  # Phone numbers with international format support
+        'dob': re.compile(r'\b(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}[-/]\d{1,2}[-/]\d{1,2})\b'),  # Dates of birth
+        'name': re.compile(r'\b(?:[A-Z][a-z]+ ){1,2}[A-Z][a-z]+\b'),  # Full names
+        'mrn': re.compile(r'\b(?<!\-)\d{5,10}\b(?!\-)'),  # Medical Record Numbers with negative lookahead/lookbehind
     }
+    
+    # Define the order in which patterns should be applied
+    PATTERN_ORDER = [
+        'ssn',      # Check for SSNs first
+        'address',  # Check addresses before names (to avoid partial matches)
+        'email',
+        'phone',
+        'dob',
+        'name',
+        'mrn',      # Check MRNs last (as they're less specific)
+    ]
     
     @classmethod
     def sanitize_string(cls, text: str) -> str:
@@ -44,8 +56,12 @@ class PHISanitizer:
             return text
             
         sanitized = text
-        for phi_type, pattern in cls.PHI_PATTERNS.items():
-            sanitized = pattern.sub(f"[{phi_type.upper()} REDACTED]", sanitized)
+        
+        # Apply patterns in the specified order for consistent results
+        for phi_type in cls.PATTERN_ORDER:
+            pattern = cls.PHI_PATTERNS.get(phi_type)
+            if pattern:
+                sanitized = pattern.sub(f"[{phi_type.upper()} REDACTED]", sanitized)
             
         return sanitized
     
@@ -148,3 +164,8 @@ class PHISanitizer:
             new_patterns: Dictionary of new pattern names and compiled regex patterns
         """
         cls.PHI_PATTERNS.update(new_patterns)
+        
+        # Update pattern order list if new types are added
+        for pattern_type in new_patterns.keys():
+            if pattern_type not in cls.PATTERN_ORDER:
+                cls.PATTERN_ORDER.append(pattern_type)

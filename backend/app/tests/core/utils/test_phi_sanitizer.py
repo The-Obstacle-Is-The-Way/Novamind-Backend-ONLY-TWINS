@@ -1,4 +1,4 @@
-TEST# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 PHI Sanitizer Tests
 
