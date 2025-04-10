@@ -7,7 +7,6 @@ to be injected into FastAPI endpoints.
 """
 
 from typing import Generator, AsyncGenerator # Ensure AsyncGenerator is imported
-from pydantic import BaseModel # Import BaseModel
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,27 +16,20 @@ from app.infrastructure.persistence.sqlalchemy.config.database import get_db_ses
 from app.core.config import settings
 
 
-# Define a simple wrapper for the session
-class DBSessionWrapper(BaseModel):
-    session: AsyncSession
-
-    class Config:
-        arbitrary_types_allowed = True # Allow non-Pydantic types like AsyncSession
-
 # Renamed function to avoid conflict with imported name
 from typing import Optional # Ensure Optional is imported
 
-async def get_db() -> AsyncGenerator[DBSessionWrapper, None]: # Yield the wrapper
+async def get_db() -> AsyncGenerator[AsyncSession, None]: # Yield AsyncSession directly
     """
-    Provide an async database session wrapped in a Pydantic model.
+    Provide an async database session for endpoints.
 
-    This dependency yields a wrapper containing the SQLAlchemy async session
-    obtained from the infrastructure layer's session factory.
+    This dependency yields a SQLAlchemy async session obtained from the
+    infrastructure layer's session factory and ensures proper handling.
 
     Yields:
-        DBSessionWrapper: A wrapper containing the database session.
+        AsyncSession: A database session.
     """
     async for session in get_session_from_config():
-        yield DBSessionWrapper(session=session) # Yield wrapper instance
+        yield session
         # The context manager from get_session_from_config handles closing.
         break # Ensure we only yield once per request cycle

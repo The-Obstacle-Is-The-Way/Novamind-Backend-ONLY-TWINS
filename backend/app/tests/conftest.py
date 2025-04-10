@@ -218,3 +218,78 @@ async def redis_client():
     except ImportError:
         # Skip in standalone environment
         yield None
+
+# ===============================================================
+# API / APP FIXTURES (require FastAPI app instance)
+# ===============================================================
+
+# Keep necessary imports here
+try:
+    from fastapi import FastAPI, Depends
+    from fastapi.testclient import TestClient
+    # sqlalchemy.ext.asyncio.AsyncSession is needed for override_get_db type hint
+    from sqlalchemy.ext.asyncio import AsyncSession
+except ImportError:
+    FastAPI = None
+    TestClient = None
+    AsyncSession = None
+    Depends = None # Add placeholder for Depends if FastAPI fails
+
+# Define placeholders for potentially missing imports (used in override_get_db and app fixture)
+# These will be populated *inside* the app fixture if imports succeed there
+_main_app_module = None
+_get_db_module = None
+# Removed duplicate/incorrectly indented placeholders
+
+# Define the override function for the database dependency
+# Ensure db_session fixture is defined before this
+async def override_get_db(session: AsyncSession = Depends(db_session)) -> AsyncGenerator[AsyncSession, None]:
+    """Override for get_db that uses the test session fixture."""
+    if session is None:
+        pytest.skip("Database session not available for this test environment.")
+    yield session
+
+
+
+@pytest.fixture(scope="session")
+def app(event_loop) -> FastAPI | None:
+    """
+    Create a FastAPI app instance for the test session with dependency overrides.
+    Import the app and apply overrides *inside* the fixture.
+    """
+    # --- Move imports inside the fixture ---
+    global _main_app_module, _get_db_module # Use internal placeholders
+    try:
+        # Import the main app instance HERE
+        from app.main import app as _main_app_module
+        # Import the production get_db dependency HERE
+        from app.presentation.api.dependencies.database import get_db as _get_db_module
+    except ImportError:
+        pytest.skip("FastAPI or DB dependencies not available for app fixture.")
+        return None
+    # --- End moved imports ---
+
+    if _main_app_module is None or _get_db_module is None or override_get_db is None:
+         pytest.skip("FastAPI or DB dependencies not available for app fixture.")
+         return None
+
+    # Apply the dependency override BEFORE the app is yielded
+    _main_app_module.dependency_overrides[_get_db_module] = override_get_db
+    yield _main_app_module # Yield the app instance
+
+    # Clear overrides after the test session finishes with the app
+    _main_app_module.dependency_overrides.clear()
+
+
+# Correct indentation for client fixture
+@pytest.fixture()
+def client(app: FastAPI) -> TestClient | None:
+    """
+    Get a TestClient instance for the app.
+    """
+    if app is None:
+        pytest.skip("FastAPI app fixture not available for client fixture.")
+        return None # Should not be reached if skipped
+
+    with TestClient(app) as test_client:
+        yield test_client

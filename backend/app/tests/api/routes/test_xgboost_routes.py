@@ -8,10 +8,14 @@ All tests use the MockXGBoostService to avoid external dependencies.
 
 import json
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
+# Remove direct FastAPI/TestClient imports if no longer needed at module level
+# from fastapi import FastAPI
+# from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
+# Import TestClient for type hinting the fixture
+from fastapi.testclient import TestClient
 
+# Router import remains the same
 from app.api.routes.xgboost import router
 from app.core.services.ml.xgboost import (
     MockXGBoostService,
@@ -27,11 +31,10 @@ from app.core.services.ml.xgboost import (
     PredictionError
 )
 
-
-# Create a FastAPI test app with the XGBoost router
-app = FastAPI()
-app.include_router(router)
-client = TestClient(app)
+# Remove module-level app/client creation
+# app = FastAPI()
+# app.include_router(router)
+# client = TestClient(app)
 
 
 # Mock authentication
@@ -64,7 +67,8 @@ def mock_xgboost_service():
 class TestHealthcheck:
     """Tests for the healthcheck endpoint."""
 
-    def test_healthcheck_success(self, mock_xgboost_service):
+    # Inject the client fixture
+    def test_healthcheck_success(self, client: TestClient, mock_xgboost_service):
         """Test successful healthcheck."""
         mock_xgboost_service.healthcheck.return_value = {
             "status": "healthy",
@@ -81,7 +85,8 @@ class TestHealthcheck:
         assert "models" in response.json()
         assert mock_xgboost_service.healthcheck.called
 
-    def test_healthcheck_failure(self, mock_xgboost_service):
+    # Inject the client fixture
+    def test_healthcheck_failure(self, client: TestClient, mock_xgboost_service):
         """Test healthcheck with service error."""
         mock_xgboost_service.healthcheck.side_effect = Exception("Service unavailable")
         
@@ -94,7 +99,8 @@ class TestHealthcheck:
 class TestRiskPrediction:
     """Tests for the risk prediction endpoint."""
 
-    def test_predict_risk_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_predict_risk_success(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successful risk prediction generation."""
         # Setup mock return value
         mock_xgboost_service.predict_risk.return_value.to_dict.return_value = {
@@ -141,7 +147,8 @@ class TestRiskPrediction:
         assert kwargs["risk_type"].value == "risk_relapse"
         assert "phq9_score" in kwargs["features"]
 
-    def test_predict_risk_invalid_features(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_predict_risk_invalid_features(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test risk prediction with invalid features."""
         mock_xgboost_service.predict_risk.side_effect = InvalidFeatureError("Missing required feature: phq9_score")
         
@@ -162,7 +169,8 @@ class TestRiskPrediction:
         assert response.status_code == 400
         assert "Invalid features" in response.json()["detail"]
 
-    def test_predict_risk_model_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_predict_risk_model_not_found(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test risk prediction with non-existent model."""
         mock_xgboost_service.predict_risk.side_effect = ModelNotFoundError("No model available for risk_relapse")
         
@@ -183,7 +191,8 @@ class TestRiskPrediction:
         assert response.status_code == 404
         assert "Model not found" in response.json()["detail"]
 
-    def test_predict_risk_prediction_error(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_predict_risk_prediction_error(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test risk prediction with service error."""
         mock_xgboost_service.predict_risk.side_effect = PredictionError("Failed to generate prediction")
         
@@ -204,7 +213,8 @@ class TestRiskPrediction:
         assert response.status_code == 500
         assert "Prediction failed" in response.json()["detail"]
 
-    def test_predict_risk_validation_error(self, mock_auth, mock_patient_access):
+    # Inject the client fixture
+    def test_predict_risk_validation_error(self, client: TestClient, mock_auth, mock_patient_access):
         """Test risk prediction with invalid input data."""
         test_data = {
             "patient_id": "patient-456",
@@ -227,7 +237,8 @@ class TestRiskPrediction:
 class TestTreatmentPrediction:
     """Tests for the treatment prediction endpoint."""
 
-    def test_predict_treatment_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_predict_treatment_success(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successful treatment prediction generation."""
         # Setup mock return value
         mock_xgboost_service.predict_treatment_response.return_value.to_dict.return_value = {
@@ -283,7 +294,8 @@ class TestTreatmentPrediction:
 class TestGetPrediction:
     """Tests for the get prediction endpoint."""
 
-    def test_get_prediction_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_get_prediction_success(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successfully retrieving a prediction."""
         # Setup mock return value
         mock_prediction = MagicMock()
@@ -314,7 +326,8 @@ class TestGetPrediction:
         # Verify the service was called with correct parameters
         mock_xgboost_service.get_prediction.assert_called_once_with("pred-123")
 
-    def test_get_prediction_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_get_prediction_not_found(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test retrieving a non-existent prediction."""
         mock_xgboost_service.get_prediction.side_effect = PredictionNotFoundError("Prediction pred-123 not found")
         
@@ -327,7 +340,8 @@ class TestGetPrediction:
 class TestValidatePrediction:
     """Tests for the prediction validation endpoint."""
 
-    def test_validate_prediction_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_validate_prediction_success(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successfully validating a prediction."""
         # Setup mocks
         mock_prediction = MagicMock()
@@ -357,7 +371,8 @@ class TestValidatePrediction:
         assert kwargs["status"].value == "validated"
         assert kwargs["validator_notes"] == "Clinically confirmed"
 
-    def test_validate_prediction_not_found(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_validate_prediction_not_found(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test validating a non-existent prediction."""
         mock_xgboost_service.get_prediction.side_effect = PredictionNotFoundError("Prediction pred-123 not found")
         
@@ -378,7 +393,8 @@ class TestValidatePrediction:
 class TestCompareTreatments:
     """Tests for the treatment comparison endpoint."""
 
-    def test_compare_treatments_success(self, mock_auth, mock_patient_access, mock_xgboost_service):
+    # Inject the client fixture
+    def test_compare_treatments_success(self, client: TestClient, mock_auth, mock_patient_access, mock_xgboost_service):
         """Test successfully comparing treatments."""
         # Setup mock return value
         mock_xgboost_service.compare_treatments.return_value = {
@@ -453,7 +469,8 @@ class TestCompareTreatments:
         assert len(kwargs["treatment_options"]) == 2
         assert kwargs["treatment_options"][0]["category"] == "medication_ssri"
 
-    def test_compare_treatments_insufficient_options(self, mock_auth, mock_patient_access):
+    # Inject the client fixture
+    def test_compare_treatments_insufficient_options(self, client: TestClient, mock_auth, mock_patient_access):
         """Test comparing treatments with less than 2 options."""
         # Test data with only one treatment option
         test_data = {

@@ -8,10 +8,14 @@ the entire API flow functions as expected.
 
 import json
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
+# Remove direct FastAPI/TestClient imports if no longer needed at module level
+# from fastapi import FastAPI
+# from fastapi.testclient import TestClient
 from unittest.mock import patch
+# Import TestClient for type hinting the fixture
+from fastapi.testclient import TestClient
 
+# Router import remains the same
 from app.api.routes.xgboost import router
 from app.core.services.ml.xgboost import (
     get_xgboost_service,
@@ -21,11 +25,10 @@ from app.core.services.ml.xgboost import (
     RiskLevel
 )
 
-
-# Create test app with dependency overrides for integration testing
-app = FastAPI()
-app.include_router(router)
-client = TestClient(app)
+# Remove module-level app/client creation
+# app = FastAPI()
+# app.include_router(router)
+# client = TestClient(app)
 
 
 # Override dependencies for testing
@@ -60,8 +63,9 @@ def mock_service():
 
 class TestXGBoostIntegration:
     """Integration tests for the XGBoost API."""
-    
-    def test_risk_prediction_flow(self, mock_service):
+
+    # Inject the client fixture
+    def test_risk_prediction_flow(self, client: TestClient, mock_service):
         """Test the complete risk prediction workflow."""
         # Step 1: Generate a risk prediction
         risk_request = {
@@ -121,8 +125,9 @@ class TestXGBoostIntegration:
         assert response.status_code == 200
         assert response.json()["digital_twin_updated"] is True
         assert response.json()["prediction_count"] == 1
-    
-    def test_treatment_comparison_flow(self, mock_service):
+
+    # Inject the client fixture
+    def test_treatment_comparison_flow(self, client: TestClient, mock_service):
         """Test the treatment comparison workflow."""
         # Step 1: Compare multiple treatment options
         comparison_request = {
@@ -155,8 +160,9 @@ class TestXGBoostIntegration:
         assert response.json()["treatments_compared"] == 3
         assert len(response.json()["results"]) == 3
         assert "recommendation" in response.json()
-    
-    def test_model_info_flow(self, mock_service):
+
+    # Inject the client fixture
+    def test_model_info_flow(self, client: TestClient, mock_service):
         """Test the model information workflow."""
         # Step 1: Get available models
         response = client.get("/api/v1/xgboost/models")
@@ -180,8 +186,9 @@ class TestXGBoostIntegration:
         assert response.status_code == 200
         assert response.json()["model_id"] == model_id
         assert "features" in response.json()
-    
-    def test_healthcheck(self, mock_service):
+
+    # Inject the client fixture
+    def test_healthcheck(self, client: TestClient, mock_service):
         """Test the healthcheck endpoint."""
         response = client.get("/api/v1/xgboost/healthcheck")
         
