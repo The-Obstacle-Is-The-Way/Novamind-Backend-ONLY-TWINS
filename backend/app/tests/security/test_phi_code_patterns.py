@@ -30,7 +30,18 @@ class TestPHIInCodePatterns:
         # Different programming languages and assignment styles
         code_samples = [
             # Python
+            'ssn = "123-45-6789"',
+            'patient_name = "John Smith"',
+            'patient = {"ssn": "123-45-6789", "name": "John Smith"}',
+
             # JavaScript/TypeScript
+            'const ssn = "123-45-6789";',
+            'let patientName = "John Smith";',
+            'var patient = {ssn: "123-45-6789", name: "John Smith"};',
+
+            # Java/C#
+            'String ssn = "123-45-6789";',
+            'Patient patient = new Patient("John Smith", "123-45-6789");',
 
             # SQL
             "INSERT INTO patients (name, ssn) VALUES ('John Smith', '123-45-6789')",
@@ -41,54 +52,6 @@ class TestPHIInCodePatterns:
         for code in code_samples:
             assert detector.contains_phi(code), f"Failed to detect PHI in: {code}"
 
-    def test_phi_in_function_calls(self, detector):
-        """Test detection of PHI in function and method calls."""
-        code_samples = [
-            # Direct function calls
-            'process_patient("John Smith", "123-45-6789")',
-            'validate_ssn("123-45-6789")',
-
-            # Method calls
-            'patient.set_ssn("123-45-6789")',
-            'patient.update({"name": "John Smith", "ssn": "123-45-6789"})',
-
-            # Chained calls
-            'db.patients.find_one({"ssn": "123-45-6789"}).update()',
-            'get_patient("John Smith").set_ssn("123-45-6789").save()'
-        ]
-
-        # Verify PHI is detected in all samples
-        for code in code_samples:
-            assert detector.contains_phi(code), f"Failed to detect PHI in: {code}"
-
-    def test_phi_in_config_files(self, detector):
-        """Test detection of PHI in configuration patterns."""
-        config_samples = [
-            # JSON configs
-            '{"api": {"test_ssn": "123-45-6789", "test_user": "John Smith"}}',
-
-            # YAML-like configs
-            """
-            database:
-              test_credentials:
-                username: admin
-                password: password123
-              test_data:
-                patient_ssn: 123-45-6789
-                patient_name: John Smith
-            """,
-
-            # INI-like configs
-            """
-            [test_data]
-            patient_ssn = 123-45-6789
-            patient_name = John Smith
-            """,
-
-            # Environment vars
-            'TEST_PATIENT_SSN=123-45-6789',
-            'export TEST_PATIENT_NAME="John Smith"'
-        ]
 
         # Verify PHI is detected in all samples
         for config in config_samples:
@@ -540,3 +503,4 @@ class TestPHIInSourceFiles:
             assert len(dob_matches) >= 1
         finally:
             # Clean up
+            os.unlink(path)

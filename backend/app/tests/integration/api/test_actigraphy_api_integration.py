@@ -11,13 +11,13 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
+# Removed FastAPI import
+from fastapi.testclient import TestClient # Keep for type hinting
 from unittest.mock import patch
 
 from app.core.services.ml.pat.mock import MockPATService
 from app.presentation.api.dependencies import get_pat_service # Corrected import path
-from app.main import app
+# Removed direct app import
 
 
 @pytest.fixture
@@ -28,17 +28,9 @@ def mock_pat_service():
     return service
 
 
-@pytest.fixture
-def client(mock_pat_service):
-    """Test client with mocked PAT service."""
-    # Override the dependency to use our mock service
-    app.dependency_overrides[get_pat_service] = lambda: mock_pat_service
-    
-    with TestClient(app) as test_client:
-        yield test_client
-    
-    # Clear dependency overrides after test
-    app.dependency_overrides.clear()
+# Removed local client fixture; tests will use client from conftest.py
+# Dependency override logic needs to be handled globally in conftest.py if required for all tests,
+# or via specific test setup if only needed here.
 
 
 @pytest.fixture
@@ -87,7 +79,7 @@ def actigraphy_data():
 class TestActigraphyAPI:
     """Integration tests for the Actigraphy API."""
     
-    def test_analyze_actigraphy(self, client, auth_headers, actigraphy_data):
+    def test_analyze_actigraphy(self, client: TestClient, auth_headers, actigraphy_data): # Use client fixture
         """Test analyzing actigraphy data."""
         response = client.post(
             "/api/v1/actigraphy/analyze",
@@ -105,7 +97,7 @@ class TestActigraphyAPI:
         assert "data_summary" in data
         assert data["data_summary"]["readings_count"] == len(actigraphy_data["readings"])
     
-    def test_get_actigraphy_embeddings(self, client, auth_headers, actigraphy_data):
+    def test_get_actigraphy_embeddings(self, client: TestClient, auth_headers, actigraphy_data): # Use client fixture
         """Test generating embeddings from actigraphy data."""
         # Remove unnecessary fields for embedding generation
         embedding_data = {
@@ -132,7 +124,7 @@ class TestActigraphyAPI:
         assert "vector" in data["embedding"]
         assert "dimension" in data["embedding"]
     
-    def test_get_analysis_by_id(self, client, auth_headers, mock_pat_service):
+    def test_get_analysis_by_id(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test retrieving an analysis by ID."""
         # First create an analysis
         analysis_data = mock_pat_service.analyze_actigraphy(
@@ -159,7 +151,7 @@ class TestActigraphyAPI:
         assert "patient_id" in data
         assert "timestamp" in data
     
-    def test_get_patient_analyses(self, client, auth_headers, mock_pat_service):
+    def test_get_patient_analyses(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test retrieving analyses for a patient."""
         patient_id = "test-patient-123"
         
@@ -187,7 +179,7 @@ class TestActigraphyAPI:
         assert len(data["analyses"]) > 0
         assert "pagination" in data
     
-    def test_get_model_info(self, client, auth_headers):
+    def test_get_model_info(self, client: TestClient, auth_headers): # Use client fixture
         """Test getting model information."""
         response = client.get(
             "/api/v1/actigraphy/model-info",
@@ -201,7 +193,7 @@ class TestActigraphyAPI:
         assert "capabilities" in data
         assert "description" in data
     
-    def test_integrate_with_digital_twin(self, client, auth_headers, mock_pat_service):
+    def test_integrate_with_digital_twin(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test integrating analysis with digital twin."""
         # Create an analysis
         analysis_data = mock_pat_service.analyze_actigraphy(
@@ -238,7 +230,7 @@ class TestActigraphyAPI:
         assert "status" in data
         assert data["status"] == "success"
     
-    def test_unauthorized_access(self, client, actigraphy_data):
+    def test_unauthorized_access(self, client: TestClient, actigraphy_data): # Use client fixture
         """Test unauthorized access to API."""
         response = client.post(
             "/api/v1/actigraphy/analyze",

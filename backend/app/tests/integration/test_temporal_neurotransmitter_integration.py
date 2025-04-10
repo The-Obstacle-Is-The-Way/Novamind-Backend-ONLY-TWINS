@@ -93,18 +93,7 @@ async def temporal_service(sequence_repository, event_repository, xgboost_servic
     )
 
 
-@pytest.fixture
-def test_app():
-    """Create a FastAPI app with temporal routes."""
-    app = FastAPI()
-    app.include_router(temporal_router)
-    return app
-
-
-@pytest.fixture
-def test_client(test_app):
-    """Create a test client with the test app."""
-    return TestClient(test_app)
+# Local test_app and test_client fixtures removed; tests will use the client fixture from conftest.py
 
 
 @pytest.fixture
@@ -313,9 +302,9 @@ async def test_full_neurotransmitter_coverage_with_treatment(
 
 @pytest.mark.asyncio
 async def test_api_integration_with_service(
-    test_client,
+    client: TestClient, # Use client fixture from conftest.py
     mock_current_user,
-    test_app,
+    # test_app fixture removed
     temporal_service,
     patient_id
 ):
@@ -330,7 +319,7 @@ async def test_api_integration_with_service(
         return_value=AsyncMock(return_value=temporal_service)
     ):
         # Test 1: Generate time series
-        time_series_response = test_client.post(
+        time_series_response = client.post( # Use client fixture
             "/api/v1/temporal-neurotransmitter/time-series",
             json={
                 "patient_id": str(patient_id),
@@ -346,7 +335,7 @@ async def test_api_integration_with_service(
         assert "sequence_id" in time_series_response.json()
         
         # Test 2: Simulate treatment
-        treatment_response = test_client.post(
+        treatment_response = client.post( # Use client fixture
             "/api/v1/temporal-neurotransmitter/simulate-treatment",
             json={
                 "patient_id": str(patient_id),
@@ -365,7 +354,7 @@ async def test_api_integration_with_service(
         first_sequence_id = list(treatment_response.json()["sequence_ids"].values())[0]
         
         # Test 3: Get visualization data
-        viz_response = test_client.post(
+        viz_response = client.post( # Use client fixture
             "/api/v1/temporal-neurotransmitter/visualization-data",
             json={
                 "sequence_id": first_sequence_id

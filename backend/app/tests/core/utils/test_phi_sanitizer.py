@@ -57,8 +57,7 @@ def test_sanitize_string_without_phi(self):
         
         for text in non_phi_strings:
             sanitized = PHISanitizer.sanitize_string(text)
-            self.assertEqual(s@pytest.mark.standalone
-anitized, text)
+            self.assertEqual(sanitized, text)
     
 def test_sanitize_empty_and_none_inputs(self):
         """Test sanitization with empty or None inputs."""
@@ -67,8 +66,7 @@ def test_sanitize_empty_and_none_inputs(self):
         self.assertEqual(PHISanitizer.sanitize_dict({}), {})
         self.assertEqual(PHISanitizer.sanitize_dict(None), None)
         self.assertEqual(PHISanitizer.sanitize_list([]), [])
-        self.assertEqual(@pytest.mark.standalone
-PHISanitizer.sanitize_list(None), None)
+        self.assertEqual(PHISanitizer.sanitize_list(None), None)
     
 def test_sanitize_dict(self):
         """Test sanitization of dictionaries with PHI."""
@@ -109,8 +107,7 @@ def test_sanitize_dict(self):
             }
         }
         
-        sanitized = PHISanitizer.sanitize_dict(@pytest.mark.standalone
-test_dict)
+        sanitized = PHISanitizer.sanitize_dict(test_dict)
         self.assertEqual(sanitized, expected_output)
     
 def test_sanitize_dict_with_excluded_keys(self):
@@ -130,8 +127,7 @@ def test_sanitize_dict_with_excluded_keys(self):
             "patient_id": "A12345",
             "name": "John Smith",  # Not sanitized
             "contact": {
-                "email": "[EMAIL RE@pytest.mark.standalone
-DACTED]"
+                "email": "[EMAIL REDACTED]"
             }
         }
         
@@ -159,8 +155,7 @@ def test_sanitize_list(self):
 def test_sanitize_error_message(self):
         """Test sanitization of error messages containing PHI."""
         error_message = "Error processing data for John Smith (SSN: 123-45-6789)"
-        expected = "Error processing data for [NAME REDACTED] (SSN: [SSN RE@pytest.mark.standalone
-DACTED])"
+        expected = "Error processing data for [NAME REDACTED] (SSN: [SSN REDACTED])"
         
         sanitized = PHISanitizer.sanitize_error_message(error_message)
         self.assertEqual(sanitized, expected)
@@ -168,8 +163,7 @@ DACTED])"
 def test_sanitize_log_entry(self):
         """Test sanitization of log entries containing PHI."""
         log_entry = "User accessed record for patient John Smith (DOB: 01/01/1980)"
-        expected = "User accessed record for patie@pytest.mark.standalone
-nt [NAME REDACTED] (DOB: [DOB REDACTED])"
+        expected = "User accessed record for patient [NAME REDACTED] (DOB: [DOB REDACTED])"
         
         sanitized = PHISanitizer.sanitize_log_entry(log_entry)
         self.assertEqual(sanitized, expected)

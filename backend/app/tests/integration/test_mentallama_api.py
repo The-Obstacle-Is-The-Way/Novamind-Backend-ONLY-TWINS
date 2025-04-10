@@ -25,19 +25,7 @@ from app.core.exceptions import (
 from app.core.services.ml.interface import MentaLLaMAInterface, MLService
 
 
-# Test client setup
-@pytest.fixture
-def app() -> FastAPI:
-    """Create FastAPI app for testing."""
-    app = FastAPI()
-    app.include_router(ml_router)
-    return app
-
-
-@pytest.fixture
-def client(app: FastAPI) -> TestClient:
-    """Create test client."""
-    return TestClient(app)
+# Local app/client fixtures removed; tests will use the client fixture from conftest.py
 
 
 # Mock services
@@ -264,7 +252,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 # Mock authentication
 @pytest.fixture
-def mock_auth():
+def mock_auth(client: TestClient): # Add client fixture dependency if needed by patch target
     """Mock authentication."""
     with patch("app.api.auth.dependencies.get_current_user") as mock:
         mock.return_value = {
@@ -276,7 +264,7 @@ def mock_auth():
 
 
 @pytest.fixture
-def mock_services():
+def mock_services(client: TestClient): # Add client fixture dependency if needed by patch target
     """Mock ML services."""
     # Enable services in settings
     ml_settings.enable_mentallama = True

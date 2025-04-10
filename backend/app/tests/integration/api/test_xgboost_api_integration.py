@@ -21,18 +21,7 @@ from app.core.services.ml.xgboost.exceptions import (
 )
 
 
-@pytest.fixture
-def app() -> FastAPI:
-    """Create FastAPI app with the XGBoost router."""
-    app = FastAPI()
-    app.include_router(xgboost_router)
-    return app
-
-
-@pytest.fixture
-def client(app: FastAPI) -> TestClient:
-    """Create test client for FastAPI app."""
-    return TestClient(app)
+# Local app and client fixtures removed; tests will use client from conftest.py
 
 
 @pytest.fixture

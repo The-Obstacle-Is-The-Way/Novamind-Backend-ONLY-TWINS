@@ -296,10 +296,7 @@ def analyses_list(patient_id: str) -> Dict[str, Any]:
 
 
 # Test client
-@pytest.fixture
-def client() -> TestClient:
-    """Create a test client for the actigraphy routes."""
-    return TestClient(router)
+# Removed local client fixture; tests will use client from conftest.py
 
 
 # Mock authentication
@@ -346,7 +343,7 @@ class TestActigraphyRoutes:
     
     def test_analyze_actigraphy_success(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         analysis_request: Dict[str, Any],
         analysis_result: Dict[str, Any],
@@ -369,7 +366,7 @@ class TestActigraphyRoutes:
     
     def test_analyze_actigraphy_unauthorized(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         analysis_request: Dict[str, Any]
     ) -> None:
@@ -391,7 +388,7 @@ class TestActigraphyRoutes:
     
     def test_analyze_actigraphy_validation_error(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         analysis_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -413,7 +410,7 @@ class TestActigraphyRoutes:
     
     def test_analyze_actigraphy_analysis_error(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         analysis_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -435,7 +432,7 @@ class TestActigraphyRoutes:
     
     def test_get_actigraphy_embeddings_success(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         embedding_request: Dict[str, Any],
         embedding_result: Dict[str, Any],
@@ -458,7 +455,7 @@ class TestActigraphyRoutes:
     
     def test_get_actigraphy_embeddings_unauthorized(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         embedding_request: Dict[str, Any]
     ) -> None:
@@ -480,7 +477,7 @@ class TestActigraphyRoutes:
     
     def test_get_actigraphy_embeddings_validation_error(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         embedding_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -502,7 +499,7 @@ class TestActigraphyRoutes:
     
     def test_get_actigraphy_embeddings_embedding_error(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         embedding_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -524,7 +521,7 @@ class TestActigraphyRoutes:
     
     def test_get_analysis_by_id_success(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         analysis_result: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -545,7 +542,7 @@ class TestActigraphyRoutes:
     
     def test_get_analysis_by_id_not_found(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         mock_pat_service: MagicMock
     ) -> None:
@@ -565,7 +562,7 @@ class TestActigraphyRoutes:
     
     def test_get_analysis_by_id_unauthorized(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         analysis_result: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -588,7 +585,7 @@ class TestActigraphyRoutes:
     
     def test_get_patient_analyses_success(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         patient_id: str,
         analyses_list: Dict[str, Any],
@@ -614,7 +611,7 @@ class TestActigraphyRoutes:
     
     def test_get_patient_analyses_unauthorized(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str
     ) -> None:
         """Test unauthorized patient analyses retrieval."""
@@ -630,7 +627,7 @@ class TestActigraphyRoutes:
     
     def test_get_model_info_success(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         model_info: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -651,7 +648,7 @@ class TestActigraphyRoutes:
     
     def test_integrate_with_digital_twin_success(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         integration_request: Dict[str, Any],
         integration_result: Dict[str, Any],
@@ -674,7 +671,7 @@ class TestActigraphyRoutes:
     
     def test_integrate_with_digital_twin_unauthorized(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         integration_request: Dict[str, Any]
     ) -> None:
@@ -696,7 +693,7 @@ class TestActigraphyRoutes:
     
     def test_integrate_with_digital_twin_not_found(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         integration_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -718,7 +715,7 @@ class TestActigraphyRoutes:
     
     def test_integrate_with_digital_twin_authorization_error(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         integration_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -740,7 +737,7 @@ class TestActigraphyRoutes:
     
     def test_integrate_with_digital_twin_validation_error(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         integration_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -762,7 +759,7 @@ class TestActigraphyRoutes:
     
     def test_integrate_with_digital_twin_integration_error(
         self,
-        client: TestClient,
+        client: TestClient, # Use client fixture from conftest.py
         mock_token: str,
         integration_request: Dict[str, Any],
         mock_pat_service: MagicMock
