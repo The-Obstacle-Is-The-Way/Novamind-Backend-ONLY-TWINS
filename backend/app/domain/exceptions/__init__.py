@@ -149,3 +149,39 @@ class AuthenticationException(AuthenticationError):
     
     def __init__(self, message: str = "Invalid authentication credentials"):
         super().__init__(message)
+
+
+class AuthorizationException(AuthorizationError):
+    """
+    Alternative name for AuthorizationError for backward compatibility.
+    
+    This exception serves the same purpose as AuthorizationError and is provided
+    to maintain compatibility with existing code.
+    """
+    
+    def __init__(self, message: str = "Authorization error occurred"):
+        super().__init__(message)
+
+
+class RepositoryError(DomainException):
+    """
+    Raised when there's an error when interacting with a repository.
+    
+    This exception is used for generic repository-related errors, such as
+    connection failures or data consistency issues.
+    """
+    
+    def __init__(self, message: str = "Error accessing repository"):
+        super().__init__(message)
+
+
+class AppointmentConflictError(DomainException):
+    """
+    Raised when there's a scheduling conflict with an appointment.
+    
+    This exception is used when attempting to schedule an appointment
+    that overlaps with an existing appointment.
+    """
+    
+    def __init__(self, message: str = "Appointment scheduling conflict"):
+        super().__init__(message)

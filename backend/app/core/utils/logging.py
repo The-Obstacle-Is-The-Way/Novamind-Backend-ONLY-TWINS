@@ -353,3 +353,184 @@ def get_hipaa_logger(name: str, level: Union[int, str] = logging.INFO) -> HIPAAC
         HIPAA-compliant logger instance
     """
     return HIPAACompliantLogger(name, level)
+
+
+class PHIRedactor:
+    """
+    Class for redacting PHI from text.
+    
+    This class provides methods to detect and redact PHI (Protected Health
+    Information) from text to ensure HIPAA compliance.
+    """
+    
+    def __init__(self, phi_detection_service=None):
+        """
+        Initialize PHI redactor.
+        
+        Args:
+            phi_detection_service: Optional PHI detection service to use
+        """
+        # Use provided service or try to create a mock service
+        self.phi_detection = phi_detection_service or self._create_fallback_detector()
+    
+    def _create_fallback_detector(self):
+        """Create a simple fallback PHI detector."""
+        class SimplePHIDetector:
+            def redact_phi(self, text: str, replacement: str = "[REDACTED]") -> str:
+                """Simple regex-based sanitization as fallback."""
+                import re
+                # Simple patterns for common PHI
+                patterns = [
+                    # Names (Mr./Mrs./Dr. followed by capitalized words)
+                    r'\b(Mr\.|Mrs\.|Dr\.|Ms\.) [A-Z][a-z]+\b',
+                    # SSN pattern
+                    r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
+                    # Phone numbers
+                    r'\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b',
+                    # Email addresses
+                    r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
+                    # Dates (various formats)
+                    r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
+                    # Medical record numbers (assumes MRN: prefix)
+                    r'MRN:?\s*\d+',
+                    # Ages over 89
+                    r'\b(9\d|1[0-9]\d+)\s+years?\s+old\b',
+                ]
+                
+                sanitized_text = text
+                for pattern in patterns:
+                    sanitized_text = re.sub(pattern, replacement, sanitized_text)
+                return sanitized_text
+                
+            def detect_phi(self, text: str) -> List[Dict[str, Any]]:
+                """Simple PHI detection as fallback."""
+                return []  # No detailed detection in fallback
+                
+        return SimplePHIDetector()
+    
+    def redact(self, text: str, replacement: str = "[REDACTED]") -> str:
+        """
+        Redact PHI from text.
+        
+        Args:
+            text: Text to redact
+            replacement: String to replace PHI with
+            
+        Returns:
+            Redacted text
+        """
+        if not text:
+            return ""
+            
+        try:
+            return self.phi_detection.redact_phi(text, replacement)
+        except Exception:
+            # Fallback to simple redaction on error
+            return self._create_fallback_detector().redact_phi(text, replacement)
+    
+    def detect(self, text: str) -> List[Dict[str, Any]]:
+        """
+        Detect PHI in text.
+        
+        Args:
+            text: Text to analyze
+            
+        Returns:
+            List of detected PHI entities with metadata
+        """
+        if not text:
+            return []
+        
+        try:
+            return self.phi_detection.detect_phi(text)
+        except Exception:
+            return []
+
+
+def audit_log(
+    event_type: str,
+    user_id: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    resource_id: Optional[str] = None,
+    details: Optional[Dict[str, Any]] = None,
+    success: bool = True
+) -> None:
+    """
+    Log an audit event for compliance purposes.
+    
+    This function logs security and access events in a HIPAA-compliant format
+    suitable for audit trails and compliance reporting.
+    
+    Args:
+        event_type: Type of event (e.g., "access", "modify", "delete")
+        user_id: ID of the user performing the action
+        resource_type: Type of resource being accessed (e.g., "patient", "record")
+        resource_id: ID of the resource being accessed
+        details: Additional details about the event (sanitized automatically)
+        success: Whether the action was successful
+    """
+    # Get logger for audit events
+    logger = get_hipaa_logger("audit")
+    
+    # Create audit message
+    message = f"AUDIT: {event_type}"
+    if user_id:
+        message += f" | User: {user_id}"
+    if resource_type:
+        message += f" | Resource: {resource_type}"
+    if resource_id:
+        message += f" | ID: {resource_id}"
+    if success:
+        message += " | Status: SUCCESS"
+    else:
+        message += " | Status: FAILURE"
+        
+    # Log the audit event (PHI sanitization handled by the HIPAA logger)
+    if details:
+        # Convert details to string for logging, sanitizing sensitive fields
+        sanitized_details = _sanitize_details(details)
+        message += f" | Details: {sanitized_details}"
+        
+    logger.info(message)
+
+
+def _sanitize_details(details: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Sanitize sensitive details before logging.
+    
+    Args:
+        details: Dictionary of details to sanitize
+        
+    Returns:
+        Sanitized details dictionary
+    """
+    # Create a copy of the details to avoid modifying the original
+    sanitized = {}
+    
+    # Fields that should be completely redacted
+    sensitive_fields = {
+        "password", "secret", "token", "key", "ssn", "social_security",
+        "credit_card", "card_number", "cvv", "pin"
+    }
+    
+    # Fields that should be partially redacted
+    partial_fields = {
+        "name", "email", "address", "phone", "dob", "birth", "age"
+    }
+    
+    redactor = PHIRedactor()
+    
+    for key, value in details.items():
+        key_lower = key.lower()
+        
+        # Completely redact sensitive fields
+        if any(sensitive in key_lower for sensitive in sensitive_fields):
+            sanitized[key] = "[REDACTED]"
+        # Partially redact fields that might contain PHI
+        elif any(partial in key_lower for partial in partial_fields) and isinstance(value, str):
+            sanitized[key] = redactor.redact(value)
+        # Keep non-sensitive values
+        else:
+            sanitized[key] = value
+            
+    return sanitized

@@ -162,6 +162,21 @@ class DigitalTwinSessionError(DigitalTwinError):
         super().__init__(message, *args, **kwargs)
 
 
+class SimulationError(DigitalTwinError):
+    """Exception raised for errors during digital twin simulation."""
+    
+    def __init__(self, message: str = "Error in digital twin simulation", *args, **kwargs):
+        """
+        Initialize simulation error.
+        
+        Args:
+            message: Error message
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
+        super().__init__(message, *args, **kwargs)
+
+
 class DigitalTwinConfigError(DigitalTwinError):
     """Exception raised for configuration errors in Digital Twin service."""
     
