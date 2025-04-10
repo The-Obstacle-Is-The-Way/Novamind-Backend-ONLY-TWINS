@@ -8,13 +8,15 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements.txt requirements-test.txt requirements-dev.txt ./
+COPY requirements.txt requirements-test.txt requirements-dev.txt requirements-standalone.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -r requirements-test.txt
 RUN pip install --no-cache-dir -r requirements-dev.txt
+RUN pip install --no-cache-dir -r requirements-standalone.txt
 
 # Copy application code
 COPY . .
@@ -25,13 +27,13 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV TEST_MODE=1
 
-# Set up memory directory 
-RUN mkdir -p /app/memory/entities /app/memory/relations /app/memory/observations
-RUN chmod -R 777 /app/memory
-
 # Create directory for test results
 RUN mkdir -p /app/test-results
 RUN chmod -R 777 /app/test-results
+
+# Prepare directories for mounted volumes
+RUN mkdir -p /app/memory
+RUN chmod -R 777 /app/memory
 
 # Add a healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \

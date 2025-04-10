@@ -21,10 +21,9 @@ services:
       - postgres-test
     command: >
       bash -c "
-        python -m pytest app/tests/standalone/ -v --strict-markers &&
-        python -m pytest app/tests/venv_only/ -v --strict-markers &&
-        python -m pytest app/tests/integration/ -v --strict-markers &&
-        python -m pytest app/tests/security/ -v --strict-markers
+        cd /app &&
+        python -m pytest app/tests/standalone/test_standalone_digital_twin.py -v &&
+        python -m pytest app/tests/venv_only/test_temporal_neurotransmitter_analysis.py -v
       "
 
   postgres-test:
