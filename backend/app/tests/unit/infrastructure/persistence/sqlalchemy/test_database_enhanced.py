@@ -14,14 +14,13 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 from sqlalchemy.exc import SQLAlchemyError
 
+# Corrected imports
 from app.infrastructure.persistence.sqlalchemy.config.database import (
     Database,
     Base,
     get_db_dependency,
-    # get_session, # Incorrect import, use get_db_session
-    # create_tables, # Removed incorrect import
-    # get_engine, # Removed incorrect import
-    db
+    get_db_instance,
+    get_db_session
 )
 
 
@@ -280,7 +279,10 @@ class TestDatabase:
     @pytest.mark.asyncio
     async def test_get_session_generator(self, mock_engine, mock_session_maker):
         """Test the get_session generator function."""
-        with patch('app.infrastructure.persistence.sqlalchemy.config.database.db') as mock_db:
+        # Patch get_db_instance instead of the non-existent db
+        with patch('app.infrastructure.persistence.sqlalchemy.config.database.get_db_instance') as mock_get_db_instance:
+            mock_db = MagicMock() # Create a mock Database instance
+            mock_get_db_instance.return_value = mock_db
             mock_session = MagicMock()
             
             # Setup the context manager behavior for session

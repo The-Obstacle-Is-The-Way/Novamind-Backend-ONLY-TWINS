@@ -22,7 +22,9 @@ from app.domain.value_objects.emergency_contact import EmergencyContact
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
 from app.core.utils.phi_sanitizer import PHIDetector, PHISanitizer
-from app.core.utils.logging import HIPAACompliantLogger
+# Removed incorrect import
+# Import the correct function for getting a sanitized logger
+from app.infrastructure.security.log_sanitizer import get_sanitized_logger
 
 
 @pytest.fixture
@@ -136,7 +138,7 @@ class TestPHISanitizationIntegration:
     async def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
         """Test that PHI is properly sanitized in logs."""
         # Set up logger
-        logger = HIPAACompliantLogger("test.phi.integration")
+        logger = get_sanitized_logger("test.phi.integration") # Use correct function
         
         # Log some PHI
         logger.info(
@@ -164,7 +166,7 @@ class TestPHISanitizationIntegration:
     async def test_phi_sanitization_during_errors(self, test_patient: Patient, log_capture: StringIO):
         """Test that PHI is sanitized even during error handling."""
         # Set up logger
-        logger = HIPAACompliantLogger("test.phi.error")
+        logger = get_sanitized_logger("test.phi.error") # Use correct function
         
         try:
             # Simulate an error with PHI in the message
@@ -206,7 +208,7 @@ class TestPHISanitizationIntegration:
         # Simulate processing in service layer
         def process_patient_data(model: PatientModel) -> Dict[str, Any]:
             """Simulate processing in another module."""
-            logger = HIPAACompliantLogger("service.patient")
+            logger = get_sanitized_logger("service.patient") # Use correct function
             
             # Log the processing (with PHI that should be sanitized)
             logger.info(

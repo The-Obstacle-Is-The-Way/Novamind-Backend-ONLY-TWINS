@@ -15,12 +15,11 @@ from app.domain.entities.appointment import (
     AppointmentPriority
 )
 from app.domain.exceptions import (
-    EntityNotFoundError, # Changed from AppointmentNotFoundException
+    EntityNotFoundError,
     AppointmentConflictError,
     InvalidAppointmentStateError,
     InvalidAppointmentTimeError,
-    # PatientNotFoundException, # Removed - Use EntityNotFoundError
-    # ProviderNotFoundException # Removed - Use EntityNotFoundError
+    # Removed AppointmentNotFoundException, PatientNotFoundException, ProviderNotFoundException
 )
 from app.domain.services.appointment_service import AppointmentService
 

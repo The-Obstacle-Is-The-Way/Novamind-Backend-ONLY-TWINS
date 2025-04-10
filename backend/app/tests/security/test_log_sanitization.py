@@ -14,7 +14,7 @@ import tempfile
 from unittest.mock import patch, MagicMock
 
 # Path to the log sanitizer module
-from app.infrastructure.security.log_sanitizer import PHISanitizer
+from app.infrastructure.security.log_sanitizer import LogSanitizer # Corrected class name
 
 
 class TestLogSanitization:

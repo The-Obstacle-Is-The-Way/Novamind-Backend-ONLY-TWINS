@@ -10,7 +10,7 @@ from uuid import uuid4
 
 import numpy as np
 
-from app.domain.entities.digital_twin.state import DigitalTwinState
+# Removed import of non-existent DigitalTwinState
 from app.domain.entities.digital_twin.temporal import (
     EpisodicPatternDetector,
     PatternDetector,

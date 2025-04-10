@@ -14,7 +14,7 @@ from app.domain.entities.digital_twin.digital_twin import (
     DigitalTwin,
     # ModelConfidence # Removed non-existent import
 )
-from app.domain.entities.digital_twin.state import DigitalTwinState
+# Removed import of non-existent DigitalTwinState
 from app.domain.entities.digital_twin.treatment import (
     Treatment,
     TreatmentCategory,

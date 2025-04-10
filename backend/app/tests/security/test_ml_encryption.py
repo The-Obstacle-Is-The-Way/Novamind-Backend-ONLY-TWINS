@@ -5,7 +5,7 @@ import json
 from typing import Dict, Any
 from unittest.mock import patch, MagicMock
 
-from app.infrastructure.security.encryption import EncryptionService, FieldEncryptor
+from app.infrastructure.security.encryption import EncryptionService # Removed FieldEncryptor
 from app.domain.exceptions import EncryptionError, DecryptionError
 
 

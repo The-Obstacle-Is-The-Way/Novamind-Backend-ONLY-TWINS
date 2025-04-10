@@ -9,7 +9,9 @@ Protected Health Information to maintain HIPAA compliance.
 import pytest
 from typing import Dict, Any, List
 
-from app.core.utils.phi_sanitizer import PHISanitizer, PHIDetector, PHIType, get_phi_secure_logger
+from app.core.utils.phi_sanitizer import PHISanitizer, PHIDetector, PHIType # Removed get_phi_secure_logger
+# Import the correct function for getting a sanitized logger
+from app.infrastructure.security.log_sanitizer import get_sanitized_logger
 
 
 class TestPHIDetector:
@@ -161,10 +163,10 @@ class TestPHISanitizer:
 class TestPHISecureLogger:
     """Test suite for the PHI secure logger functionality."""
 
-    def test_get_phi_secure_logger(self):
+    def test_get_sanitized_logger(self): # Renamed test
         """Test creation of PHI-secure logger."""
         # Act
-        logger = get_phi_secure_logger("test_logger")
+        logger = get_sanitized_logger("test_logger") # Use get_sanitized_logger
         
         # Assert
         assert logger is not None, "Should return a logger instance"
@@ -175,25 +177,12 @@ class TestPHISecureLogger:
         assert hasattr(logger, "critical"), "Logger should have critical method"
         assert hasattr(logger, "exception"), "Logger should have exception method"
 
-    def test_sanitize_log_message(self):
-        """Test sanitization of log messages."""
-        # Arrange
-        message = "Patient {name} with SSN {ssn} needs attention"
-        name = "John Smith"
-        ssn = "123-45-6789"
-        
-        # Act
-        sanitized = sanitize_log_message(message, name=name, ssn=ssn)
-        
-        # Assert
-        assert "John Smith" not in sanitized, "Name should be redacted"
-        assert "123-45-6789" not in sanitized, "SSN should be redacted"
-        assert message != sanitized, "Sanitized message should differ from original"
-
+    # Removed test_sanitize_log_message as the function doesn't exist
+    # and the functionality is tested via logger methods below.
     def test_phi_secure_logger_methods(self, caplog):
         """Test PHI secure logger methods."""
         # Arrange
-        logger = get_phi_secure_logger("test_phi_logger")
+        logger = get_sanitized_logger("test_phi_logger") # Use get_sanitized_logger
         phi_text = "SSN: 123-45-6789, Patient: John Smith"
         
         # Act - Test different log levels

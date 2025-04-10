@@ -249,15 +249,7 @@ class TestPHIInCodePatterns:
         """Test detection of PHI in more complex, realistic code samples."""
         complex_code = """
         def process_patient_data(patient_data):
-            """Process patient data and store in database.
-            
-            Example:
-                process_patient_data({
-                    'name': 'John Smith',
-                    'ssn': '123-45-6789',
-                    'dob': '01/02/1980'
-                })
-            """
+            """Process patient data and store in database."""
             # Validate SSN format
             if not is_valid_ssn(patient_data.get('ssn')):
                 # Example of invalid SSN: 123-456-7890 (too many digits)

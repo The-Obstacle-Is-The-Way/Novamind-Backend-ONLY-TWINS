@@ -15,7 +15,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.infrastructure.database.init_db import init_db
+# Removed incorrect import
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance # Import correct function
 from app.infrastructure.persistence.repository_factory import init_repositories
 from app.presentation.api.routes import api_router
 from app.presentation.api.routes.analytics_endpoints import router as analytics_router
@@ -45,7 +46,9 @@ async def lifespan(app: FastAPI):
     logger.info("Starting NOVAMIND application")
     
     # Initialize database
-    await init_db()
+    # Call create_all on the database instance
+    db_instance = get_db_instance()
+    await db_instance.create_all()
     
     # Initialize repositories
     init_repositories()

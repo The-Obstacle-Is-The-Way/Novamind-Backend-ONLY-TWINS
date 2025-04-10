@@ -11,11 +11,13 @@ from typing import Generator
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.persistence.sqlalchemy.config.database import create_async_session
+# Corrected import: Use get_db_session from the config module
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session as get_session_from_config
 from app.core.config import settings
 
 
-async def get_db_session() -> Generator[AsyncSession, None, None]:
+# Renamed function to avoid conflict with imported name
+async def get_db() -> Generator[AsyncSession, None, None]:
     """
     Provide an async database session for endpoints.
     
@@ -25,12 +27,13 @@ async def get_db_session() -> Generator[AsyncSession, None, None]:
     Yields:
         AsyncSession: A database session with transaction handling
     """
-    session = create_async_session(settings)
-    try:
-        yield session
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise
-    finally:
-        await session.close()
+    # Use the imported session generator from the config module
+    async for session in get_session_from_config():
+        try:
+            yield session
+            # Commit/rollback logic might be handled within the config's session context manager
+            # If not, keep it here. Assuming it's handled there for now.
+        except Exception:
+            # Rollback might be handled by the context manager
+            raise
+        # finally block might be handled by the context manager

@@ -16,8 +16,8 @@ from fastapi.responses import JSONResponse
 from app.domain.services.analytics_service import AnalyticsService
 # from app.infrastructure.persistence.repositories.patient_repository import PatientRepository # Module not found
 from app.domain.repositories.appointment_repository import AppointmentRepository # Corrected import path
-from app.infrastructure.persistence.repositories.clinical_note_repository import ClinicalNoteRepository
-from app.infrastructure.persistence.repositories.medication_repository import MedicationRepository
+from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository # Corrected import path
+from app.domain.repositories.medication_repository import MedicationRepository # Corrected import path
 from app.infrastructure.security.jwt_service import get_jwt_service
 from app.infrastructure.security.auth_middleware import verify_provider_access, verify_admin_access
 from app.infrastructure.cache.redis_cache import RedisCache, get_cache_service

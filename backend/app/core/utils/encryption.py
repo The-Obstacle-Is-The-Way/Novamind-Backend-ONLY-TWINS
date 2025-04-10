@@ -275,5 +275,17 @@ class EncryptionService:
         return hmac.compare_digest(calculated_hmac, hmac_value)
 
 
-# Create a default encryption service
-default_encryption_service = EncryptionService()
+# Default instance (lazy initialization)
+_default_encryption_service = None
+
+def get_default_encryption_service() -> EncryptionService:
+    """Get the default encryption service instance, initializing if needed."""
+    global _default_encryption_service
+    if _default_encryption_service is None:
+        _default_encryption_service = EncryptionService() # Instantiates here, requires key
+    return _default_encryption_service
+
+# For potential backward compatibility if anything directly imported default_encryption_service
+# Note: This will still raise ValueError if key is not set when first called.
+# Consider removing this if direct import is confirmed not used.
+# default_encryption_service = get_default_encryption_service()

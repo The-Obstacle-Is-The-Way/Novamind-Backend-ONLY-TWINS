@@ -24,7 +24,7 @@ from app.core.exceptions import (
 from app.core.services.ml.pat.bedrock import BedrockPAT
 from app.core.services.ml.pat.factory import PATServiceFactory # Corrected class name
 from app.core.services.ml.pat.interface import PATInterface
-from app.core.services.ml.pat.mock import MockPAT
+from app.core.services.ml.pat.mock import MockPATService # Corrected class name
 
 
 # Helper function to create sample readings
@@ -48,7 +48,7 @@ def create_sample_readings(num_readings: int = 10) -> List[Dict[str, Any]]:
 
 # Test fixture for a configured MockPAT instance
 @pytest.fixture
-def mock_pat_service() -> MockPAT:
+def mock_pat_service() -> MockPATService: # Corrected type hint
     """Fixture providing a configured MockPAT instance."""
     service = MockPAT()
     service.initialize({})
@@ -91,7 +91,7 @@ class TestMockPAT:
         service.initialize({})
         assert service.initialized
     
-    def test_analyze_actigraphy(self, mock_pat_service: MockPAT) -> None:
+    def test_analyze_actigraphy(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
         """Test analyzing actigraphy data with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -130,7 +130,7 @@ class TestMockPAT:
         assert "moderate" in activity_levels
         assert "vigorous" in activity_levels
     
-    def test_get_embeddings(self, mock_pat_service: MockPAT) -> None:
+    def test_get_embeddings(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
         """Test generating embeddings with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"
