@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, validator
 from app.core.utils.logging import get_logger
 from app.core.constants import CacheNamespace, EventType
 from app.application.interfaces.services.cache_service import CacheService
-from app.presentation.api.dependencies.services import get_cache_service
+from app.presentation.api.dependencies.services import get_cache_service # Corrected import path
 from app.presentation.api.dependencies.auth import get_current_user
 from app.presentation.api.dependencies.rate_limiter import RateLimitDependency
 from app.infrastructure.ml.phi_detection import PHIDetectionService

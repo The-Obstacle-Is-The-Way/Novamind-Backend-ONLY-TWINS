@@ -9,7 +9,7 @@ and trigger clinical interventions when concerning patterns emerge.
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Any, Optional, Set, Callable
-from uuid import UUIDEASE 
+from uuid import UUID # Corrected import
 
 from app.domain.entities.biometric_twin import BiometricDataPoint
 from app.domain.exceptions import ValidationError

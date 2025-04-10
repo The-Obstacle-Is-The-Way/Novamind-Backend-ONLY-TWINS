@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertStatus, AlertPriority
 from app.domain.exceptions import EntityNotFoundError, RepositoryError
 from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
-from app.infrastructure.persistence.sqlalchemy.config.database import get_db
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session # Corrected import
 from app.infrastructure.persistence.sqlalchemy.repositories.biometric_alert_repository import SQLAlchemyBiometricAlertRepository
 from app.presentation.api.dependencies.auth import get_current_user, get_current_provider
 from app.presentation.api.schemas.biometric_alert import (

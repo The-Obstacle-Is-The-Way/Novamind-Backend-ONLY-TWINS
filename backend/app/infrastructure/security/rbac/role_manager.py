@@ -27,8 +27,8 @@ Usage:
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Set, Union
 
-from app.core.config import get_settings
-from app.domain.exceptions import UnauthorizedAccessError
+from app.core.config import settings # Corrected import
+from app.domain.exceptions import AuthorizationError # Corrected exception name
 
 
 class RoleBasedAccessControl:
@@ -280,4 +280,4 @@ def verify_permission_or_raise(
     """
     if not verify_permission(user, required_permission):
         msg = error_message or f"User lacks required permission: {required_permission}"
-        raise UnauthorizedAccessError(msg)
+        raise AuthorizationError(msg) # Use the correct exception class

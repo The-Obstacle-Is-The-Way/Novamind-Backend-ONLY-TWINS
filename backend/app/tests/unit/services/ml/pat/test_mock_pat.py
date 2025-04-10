@@ -20,7 +20,7 @@ from app.core.services.ml.pat.exceptions import (
     ValidationError,
 )
 from app.core.services.ml.pat.interface import PATInterface
-from app.core.services.ml.pat.mock import MockPAT
+from app.core.services.ml.pat.mock import MockPATService # Corrected import
 
 
 @pytest.fixture

@@ -13,7 +13,7 @@ import redis.asyncio as aioredis # Use redis.asyncio instead of aioredis
 
 from app.application.interfaces.services.cache_service import CacheService
 from app.core.utils.logging import get_logger
-from app.core.config import get_app_settings
+from app.core.config import settings # Corrected import
 
 
 logger = get_logger(__name__)
@@ -30,7 +30,7 @@ class RedisCache(CacheService):
     def __init__(self):
         """Initialize the Redis cache service."""
         self._client = None
-        self._settings = get_app_settings()
+        self._settings = settings # Use the imported settings object
         
     async def initialize(self) -> None:
         """

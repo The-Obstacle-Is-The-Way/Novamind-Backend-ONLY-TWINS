@@ -8,6 +8,7 @@ to ensure HIPAA compliance in logs, error messages, and other outputs.
 
 import re
 from typing import Any, Dict, List, Optional, Pattern, Set, Union
+from enum import Enum, auto
 
 
 class PHISanitizer:
@@ -169,3 +170,28 @@ class PHISanitizer:
         for pattern_type in new_patterns.keys():
             if pattern_type not in cls.PATTERN_ORDER:
                 cls.PATTERN_ORDER.append(pattern_type)
+
+
+# --- Added Missing Definitions ---
+
+class PHIType(Enum):
+    """Enumeration of PHI types for classification."""
+    SSN = auto()
+    ADDRESS = auto()
+    EMAIL = auto()
+    PHONE = auto()
+    DOB = auto()
+    NAME = auto()
+    MRN = auto()
+    CREDIT_CARD = auto() # Example, add others as needed
+    OTHER = auto()
+
+
+class PHIDetector:
+    """Base class or interface placeholder for PHI detection logic."""
+    # In a real implementation, this might define abstract methods
+    # for detecting PHI based on patterns or models.
+    def detect(self, text: str) -> List[Dict[str, Any]]:
+        """Detect PHI instances in text."""
+        # Placeholder implementation
+        return []

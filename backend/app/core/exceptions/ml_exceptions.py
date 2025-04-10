@@ -181,3 +181,16 @@ class ServiceUnavailableError(MLServiceError):
         self.service_name = service_name
         self.reason = reason
         super().__init__(message, *args, **kwargs)
+
+
+class DigitalTwinError(MLServiceError):
+    """Exception raised for errors specific to Digital Twin operations."""
+    
+    def __init__(self, message: str = "Error in Digital Twin operation", *args, **kwargs):
+        """
+        Initialize Digital Twin error.
+        
+        Args:
+            message: Error message
+        """
+        super().__init__(message, *args, **kwargs)

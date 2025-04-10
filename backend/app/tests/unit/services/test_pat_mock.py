@@ -19,7 +19,7 @@ from app.core.services.ml.pat.exceptions import (
     ResourceNotFoundError,
     ValidationError,
 )
-from app.core.services.ml.pat.mock import MockPAT
+from app.core.services.ml.pat.mock import MockPATService # Corrected import
 
 
 @pytest.fixture

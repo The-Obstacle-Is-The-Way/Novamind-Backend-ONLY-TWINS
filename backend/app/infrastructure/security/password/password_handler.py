@@ -13,10 +13,10 @@ from typing import Optional, Tuple
 from passlib.context import CryptContext
 
 from app.core.config import settings
-from app.core.utils.logging import HIPAACompliantLogger
+from app.core.utils.logging import get_logger # Use the standard logger function
 
 # Initialize logger
-logger = HIPAACompliantLogger(__name__)
+logger = get_logger(__name__) # Use the standard logger function
 
 
 class PasswordHandler:
