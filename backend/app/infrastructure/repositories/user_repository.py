@@ -10,7 +10,8 @@ from uuid import UUID
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import get_password_hash
+# Corrected import for password hashing function
+from app.infrastructure.security.encryption import hash_data as get_password_hash
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.models.user_model import UserModel

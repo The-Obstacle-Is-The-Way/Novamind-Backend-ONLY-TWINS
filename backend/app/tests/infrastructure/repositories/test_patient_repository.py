@@ -70,8 +70,8 @@ class TestPatientRepository:
         )
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_create_patient(self):
+    @pytest.mark.db_required
+    async def test_create_patient(self): # Correct decorator and async def order
         """Test creating a new patient."""
         # Configure mock to track the add operation
         self.mock_db._committed_objects = []
@@ -84,8 +84,8 @@ def test_create_patient(self):
         assert result == self.patient_1
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_patient_by_id(self):
+    @pytest.mark.db_required
+    async def test_get_patient_by_id(self): # Correct decorator and async def order
         """Test retrieving a patient by ID."""
         # Configure mock to return our test patient
         self.mock_db._query_results = [self.patient_1]
@@ -98,8 +98,8 @@ def test_get_patient_by_id(self):
         assert result == self.patient_1
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_patient_by_id_not_found(self):
+    @pytest.mark.db_required
+    async def test_get_patient_by_id_not_found(self): # Correct decorator and async def order
         """Test retrieving a non-existent patient."""
         # Configure mock to return no results
         self.mock_db._query_results = []
@@ -113,8 +113,8 @@ def test_get_patient_by_id_not_found(self):
         assert result is None
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_update_patient(self):
+    @pytest.mark.db_required
+    async def test_update_patient(self): # Correct decorator and async def order
         """Test updating an existing patient."""
         # Configure mock to track update operation
         self.mock_db._committed_objects = []
@@ -134,8 +134,8 @@ def test_update_patient(self):
         assert result.email == "jonathan.doe@example.com"
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_delete_patient(self):
+    @pytest.mark.db_required
+    async def test_delete_patient(self): # Correct decorator and async def order
         """Test deleting a patient."""
         # Configure mock to track delete operation
         self.mock_db._deleted_objects = []
@@ -147,8 +147,8 @@ def test_delete_patient(self):
         assert self.patient_1 in self.mock_db._deleted_objects
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_all_patients(self):
+    @pytest.mark.db_required
+    async def test_get_all_patients(self): # Correct decorator and async def order
         """Test retrieving all patients."""
         # Configure mock to return our test patients
         patients = [self.patient_1, self.patient_2, self.patient_3]
@@ -163,8 +163,8 @@ def test_get_all_patients(self):
         assert set(result) == set(patients)
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_patients_by_last_name(self):
+    @pytest.mark.db_required
+    async def test_get_patients_by_last_name(self): # Correct decorator and async def order
         """Test retrieving patients by last name."""
         # Configure mock to return filtered results
         self.mock_db._query_results = [self.patient_1]
@@ -178,8 +178,8 @@ def test_get_patients_by_last_name(self):
         assert result[0] == self.patient_1
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_get_active_patients(self):
+    @pytest.mark.db_required
+    async def test_get_active_patients(self): # Correct decorator and async def order
         """Test retrieving only active patients."""
         # Configure mock to return active patients
         active_patients = [self.patient_1, self.patient_2]

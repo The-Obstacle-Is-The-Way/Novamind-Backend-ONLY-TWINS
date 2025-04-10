@@ -23,10 +23,10 @@ from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIn
 from app.presentation.api.v1.endpoints.digital_twins import (
     router,
     get_digital_twin_service,
-    get_current_user_id
+    # Removed get_current_user_id - belongs in auth dependencies
 )
 from app.presentation.api.v1.schemas.digital_twin_schemas import (
-    DigitalTwinStatusResponse,
+    # DigitalTwinStatusResponse, # Removed non-existent schema
     PatientInsightsResponse,
     SymptomForecastResponse,
     BiometricCorrelationResponse,

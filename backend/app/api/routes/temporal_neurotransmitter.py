@@ -123,7 +123,7 @@ async def generate_time_series(
     request: TimeSeriesGenerateRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
+) -> TimeSeriesResponse: # Add explicit return type annotation
     """
     Generate neurotransmitter time series data.
     
@@ -159,7 +159,7 @@ async def analyze_neurotransmitter(
     request: AnalyzeNeurotransmitterRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
+) -> NeurotransmitterEffectResponse: # Corrected explicit return type annotation
     """
     Analyze neurotransmitter levels.
     
@@ -221,7 +221,7 @@ async def simulate_treatment(
     request: TreatmentSimulationRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
+) -> TreatmentSimulationResponse: # Corrected explicit return type annotation
     """
     Simulate treatment response.
     
@@ -257,7 +257,7 @@ async def get_visualization_data(
     request: VisualizationDataRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
+) -> VisualizationDataResponse: # Add explicit return type annotation
     """
     Get visualization data.
     
@@ -288,7 +288,7 @@ async def get_cascade_visualization(
     request: CascadeVisualizationRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-):
+) -> CascadeVisualizationResponse: # Add explicit return type annotation
     """
     Get cascade visualization.
     

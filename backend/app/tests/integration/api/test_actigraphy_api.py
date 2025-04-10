@@ -16,7 +16,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from app.api.dependencies import get_pat_service
+from app.presentation.api.dependencies import get_pat_service # Corrected import path
 from app.api.schemas.actigraphy import (
     AnalysisType,
     DeviceInfo,

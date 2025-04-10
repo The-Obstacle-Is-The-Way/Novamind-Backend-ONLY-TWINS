@@ -27,9 +27,10 @@ from app.presentation.api.v1.endpoints.digital_twins import (
     router as digital_twins_router,
 )
 from app.presentation.api.v1.schemas.digital_twin_schemas import (
-    ClinicalEntityExtractionRequest,
-    ClinicalTextSummaryRequest,
+    # ClinicalEntityExtractionRequest, # Removed non-existent schema
+    # ClinicalTextSummaryRequest, # Removed non-existent schema
     MentalLLaMAResponse,
+    ClinicalTextAnalysisRequest
 )
 
 

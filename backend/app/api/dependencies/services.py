@@ -8,40 +8,49 @@ from typing import AsyncGenerator
 
 from fastapi import Depends
 
-from app.api.dependencies.database import get_db
-from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
-from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
+# Import AsyncSession for type hinting
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.presentation.api.dependencies.database import get_db # Corrected import path
+# Re-import necessary infrastructure and domain types
 from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
 from app.infrastructure.repositories.temporal_sequence_repository import SqlAlchemyTemporalSequenceRepository
+from app.domain.repositories.temporal_repository import TemporalSequenceRepository, EventRepository
+from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
+from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 
 
-async def get_sequence_repository(db=Depends(get_db)) -> AsyncGenerator:
+# Re-introduce repository provider functions
+async def get_sequence_repository(db: AsyncSession = Depends(get_db)) -> TemporalSequenceRepository:
     """Get a sequence repository instance."""
     repository = SqlAlchemyTemporalSequenceRepository(session=db)
-    yield repository
+    return repository
 
 
-async def get_event_repository(db=Depends(get_db)) -> AsyncGenerator:
+async def get_event_repository(db: AsyncSession = Depends(get_db)) -> EventRepository:
     """Get an event repository instance."""
     repository = SqlAlchemyEventRepository(session=db)
-    yield repository
+    return repository
 
 
-async def get_xgboost_service() -> AsyncGenerator:
+# Assuming EnhancedXGBoostService is the concrete type, keep it for now
+# If there's an interface like XGBoostService, prefer that.
+async def get_xgboost_service() -> EnhancedXGBoostService:
     """Get an XGBoost service instance."""
     # In production, model_path would be loaded from configuration
     service = EnhancedXGBoostService()
-    yield service
+    # No yield needed if the dependency scope is handled by FastAPI/Depends
+    return service
 
 
 async def get_temporal_neurotransmitter_service(
-    sequence_repository=Depends(get_sequence_repository),
-    event_repository=Depends(get_event_repository),
-    xgboost_service=Depends(get_xgboost_service)
-) -> AsyncGenerator:
+    # Depend on the repository providers again
+    sequence_repository: TemporalSequenceRepository = Depends(get_sequence_repository),
+    event_repository: EventRepository = Depends(get_event_repository),
+    xgboost_service: EnhancedXGBoostService = Depends(get_xgboost_service)
+) -> TemporalNeurotransmitterService:
     """
     Get a temporal neurotransmitter service instance with all dependencies.
-    
+
     This dependency automatically injects repositories and the XGBoost service.
     """
     service = TemporalNeurotransmitterService(
@@ -49,4 +58,4 @@ async def get_temporal_neurotransmitter_service(
         event_repository=event_repository,
         xgboost_service=xgboost_service
     )
-    yield service
+    return service

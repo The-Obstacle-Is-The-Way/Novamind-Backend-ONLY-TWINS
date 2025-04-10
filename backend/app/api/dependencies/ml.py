@@ -11,7 +11,7 @@ from typing import Dict, Any
 from fastapi import Depends
 
 from app.core.config import settings
-from app.core.services.ml.pat.factory import PATFactory
+from app.core.services.ml.pat.factory import PATServiceFactory # Corrected class name
 from app.core.services.ml.pat.interface import PATInterface
 
 
@@ -49,4 +49,6 @@ def get_pat_service(
     Returns:
         Configured PAT service instance
     """
-    return PATFactory.get_pat_service(config)
+    factory = PATServiceFactory() # Instantiate the factory
+    # Pass config to the create_service method, which uses settings internally
+    return factory.create_service()

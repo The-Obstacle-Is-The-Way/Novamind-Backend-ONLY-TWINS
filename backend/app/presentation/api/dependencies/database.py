@@ -6,7 +6,8 @@ This module provides dependency functions for database sessions
 to be injected into FastAPI endpoints.
 """
 
-from typing import Generator
+from typing import Generator, AsyncGenerator # Ensure AsyncGenerator is imported
+from pydantic import BaseModel # Import BaseModel
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,24 +17,27 @@ from app.infrastructure.persistence.sqlalchemy.config.database import get_db_ses
 from app.core.config import settings
 
 
+# Define a simple wrapper for the session
+class DBSessionWrapper(BaseModel):
+    session: AsyncSession
+
+    class Config:
+        arbitrary_types_allowed = True # Allow non-Pydantic types like AsyncSession
+
 # Renamed function to avoid conflict with imported name
-async def get_db() -> Generator[AsyncSession, None, None]:
+from typing import Optional # Ensure Optional is imported
+
+async def get_db() -> AsyncGenerator[DBSessionWrapper, None]: # Yield the wrapper
     """
-    Provide an async database session for endpoints.
-    
-    This dependency yields a SQLAlchemy async session that automatically
-    handles commit/rollback and session closing based on the request lifecycle.
-    
+    Provide an async database session wrapped in a Pydantic model.
+
+    This dependency yields a wrapper containing the SQLAlchemy async session
+    obtained from the infrastructure layer's session factory.
+
     Yields:
-        AsyncSession: A database session with transaction handling
+        DBSessionWrapper: A wrapper containing the database session.
     """
-    # Use the imported session generator from the config module
     async for session in get_session_from_config():
-        try:
-            yield session
-            # Commit/rollback logic might be handled within the config's session context manager
-            # If not, keep it here. Assuming it's handled there for now.
-        except Exception:
-            # Rollback might be handled by the context manager
-            raise
-        # finally block might be handled by the context manager
+        yield DBSessionWrapper(session=session) # Yield wrapper instance
+        # The context manager from get_session_from_config handles closing.
+        break # Ensure we only yield once per request cycle

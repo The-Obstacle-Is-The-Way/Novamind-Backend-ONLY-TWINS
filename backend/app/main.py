@@ -18,7 +18,7 @@ from app.core.config import settings
 # Removed incorrect import
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance # Import correct function
 # Removed import of non-existent repository_factory
-from app.presentation.api.routes import api_router
+from app.api.routes import api_router # Corrected import path
 from app.presentation.api.routes.analytics_endpoints import router as analytics_router
 from app.presentation.middleware.rate_limiting_middleware import setup_rate_limiting
 

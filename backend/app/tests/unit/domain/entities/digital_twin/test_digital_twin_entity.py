@@ -86,19 +86,12 @@ class TestDigitalTwin(unittest.TestCase):
             category=TreatmentCategory.THERAPY,
             frequency=TreatmentFrequency.WEEKLY,
             start_date=datetime.utcnow(),
-            therapy_details=TherapyDetails(
-                type=TherapyType.CBT,
-                session_duration_minutes=50,
-                frequency=TreatmentFrequency.WEEKLY,
-                approach="Cognitive restructuring",
-                target_symptoms=["depression", "anxiety"],
-                expected_duration_weeks=16
-            ),
+            # Removed therapy_details due to missing TherapyDetails/TherapyType
             predicted_effects={
                 "serotonin": 0.2,
                 "rumination": -0.3,
                 "cognitive_distortions": -0.4
-            }
+            } # Keep predicted_effects if needed
         )
         
         # Create treatment plan
@@ -479,7 +472,7 @@ class TestDigitalTwin(unittest.TestCase):
 
 
 # Missing imports
-from app.domain.entities.digital_twin.treatment import TherapyType, TherapyDetails
+# Removed import of non-existent TherapyType, TherapyDetails
 
 
 if __name__ == '__main__':

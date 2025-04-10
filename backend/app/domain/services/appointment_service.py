@@ -17,12 +17,11 @@ from app.domain.entities.appointment import (
     AppointmentPriority
 )
 from app.domain.exceptions import (
-    AppointmentNotFoundException,
+    EntityNotFoundError, # Use generic not found error
     AppointmentConflictError,
     InvalidAppointmentStateError,
     InvalidAppointmentTimeError,
-    PatientNotFoundException,
-    ProviderNotFoundException
+    # Removed specific not found exceptions
 )
 from app.domain.repositories.appointment_repository import AppointmentRepository
 from app.domain.repositories.patient_repository import PatientRepository
@@ -79,12 +78,12 @@ class AppointmentService:
             Appointment entity
             
         Raises:
-            AppointmentNotFoundException: If the appointment is not found
+            EntityNotFoundError: If the appointment is not found
         """
         appointment = self.appointment_repository.get_by_id(appointment_id)
         
         if not appointment:
-            raise AppointmentNotFoundException(f"Appointment with ID {appointment_id} not found")
+            raise EntityNotFoundError(f"Appointment with ID {appointment_id} not found")
         
         return appointment
     
@@ -108,13 +107,13 @@ class AppointmentService:
             List of appointments
             
         Raises:
-            PatientNotFoundException: If the patient is not found
+            EntityNotFoundError: If the patient is not found
         """
         # Check if patient exists
         patient = self.patient_repository.get_by_id(patient_id)
         
         if not patient:
-            raise PatientNotFoundException(f"Patient with ID {patient_id} not found")
+            raise EntityNotFoundError(f"Patient with ID {patient_id} not found")
         
         # Convert string status to enum if necessary
         if isinstance(status, str):
@@ -148,13 +147,13 @@ class AppointmentService:
             List of appointments
             
         Raises:
-            ProviderNotFoundException: If the provider is not found
+            EntityNotFoundError: If the provider is not found
         """
         # Check if provider exists
         provider = self.provider_repository.get_by_id(provider_id)
         
         if not provider:
-            raise ProviderNotFoundException(f"Provider with ID {provider_id} not found")
+            raise EntityNotFoundError(f"Provider with ID {provider_id} not found")
         
         # Convert string status to enum if necessary
         if isinstance(status, str):
@@ -198,8 +197,7 @@ class AppointmentService:
             Created appointment
             
         Raises:
-            PatientNotFoundException: If the patient is not found
-            ProviderNotFoundException: If the provider is not found
+            EntityNotFoundError: If the patient or provider is not found
             AppointmentConflictError: If there is a conflict with another appointment
             InvalidAppointmentTimeError: If the appointment time is invalid
         """
@@ -207,13 +205,13 @@ class AppointmentService:
         patient = self.patient_repository.get_by_id(patient_id)
         
         if not patient:
-            raise PatientNotFoundException(f"Patient with ID {patient_id} not found")
+            raise EntityNotFoundError(f"Patient with ID {patient_id} not found")
         
         # Check if provider exists
         provider = self.provider_repository.get_by_id(provider_id)
         
         if not provider:
-            raise ProviderNotFoundException(f"Provider with ID {provider_id} not found")
+            raise EntityNotFoundError(f"Provider with ID {provider_id} not found")
         
         # Set end time if not provided
         if not end_time:
@@ -264,7 +262,7 @@ class AppointmentService:
             Updated appointment
             
         Raises:
-            AppointmentNotFoundException: If the appointment is not found
+            EntityNotFoundError: If the appointment is not found
             InvalidAppointmentStateError: If the appointment cannot be rescheduled
             InvalidAppointmentTimeError: If the new time is invalid
             AppointmentConflictError: If there is a conflict with another appointment
@@ -307,7 +305,7 @@ class AppointmentService:
             Updated appointment
             
         Raises:
-            AppointmentNotFoundException: If the appointment is not found
+            EntityNotFoundError: If the appointment is not found
             InvalidAppointmentStateError: If the appointment cannot be cancelled
         """
         # Get the appointment
@@ -333,7 +331,7 @@ class AppointmentService:
             Updated appointment
             
         Raises:
-            AppointmentNotFoundException: If the appointment is not found
+            EntityNotFoundError: If the appointment is not found
             InvalidAppointmentStateError: If the appointment cannot be confirmed
         """
         # Get the appointment
@@ -359,7 +357,7 @@ class AppointmentService:
             Updated appointment
             
         Raises:
-            AppointmentNotFoundException: If the appointment is not found
+            EntityNotFoundError: If the appointment is not found
             InvalidAppointmentStateError: If the appointment cannot be checked in
         """
         # Get the appointment
@@ -385,7 +383,7 @@ class AppointmentService:
             Updated appointment
             
         Raises:
-            AppointmentNotFoundException: If the appointment is not found
+            EntityNotFoundError: If the appointment is not found
             InvalidAppointmentStateError: If the appointment cannot be started
         """
         # Get the appointment
@@ -411,7 +409,7 @@ class AppointmentService:
             Updated appointment
             
         Raises:
-            AppointmentNotFoundException: If the appointment is not found
+            EntityNotFoundError: If the appointment is not found
             InvalidAppointmentStateError: If the appointment cannot be completed
         """
         # Get the appointment
@@ -437,7 +435,7 @@ class AppointmentService:
             Updated appointment
             
         Raises:
-            AppointmentNotFoundException: If the appointment is not found
+            EntityNotFoundError: If the appointment is not found
             InvalidAppointmentStateError: If the appointment cannot be marked as no-show
         """
         # Get the appointment
@@ -477,7 +475,7 @@ class AppointmentService:
             Created follow-up appointment
             
         Raises:
-            AppointmentNotFoundException: If the original appointment is not found
+            EntityNotFoundError: If the original appointment is not found
             InvalidAppointmentStateError: If a follow-up cannot be scheduled
             AppointmentConflictError: If there is a conflict with another appointment
         """

@@ -13,8 +13,13 @@ class TestMockAsyncSession:
     """Test cases for the MockAsyncSession class."""
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_mock_session_basic_operations(self, mock_db):
+    @pytest.mark.db_required # Keep custom marker if needed
+    def mock_db(): # Fixture itself is not async
+        """Provides a mock async database session."""
+        return MockAsyncSession() # Assuming MockAsyncSession is the intended mock object
+
+    @pytest.mark.asyncio # Mark test as async
+    async def test_mock_session_basic_operations(self, mock_db): # Add async
         """Test that basic CRUD operations work with MockAsyncSession."""
         # Setup test entity
         test_entity = BaseEntity()
@@ -47,8 +52,8 @@ def test_mock_session_basic_operations(self, mock_db):
         assert not mock_db._pending_objects
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_mock_session_refresh(self, mock_db):
+    @pytest.mark.db_required
+    async def test_mock_session_refresh(self, mock_db): # Correct decorator and async def order
         """Test the refresh operation."""
         test_entity = BaseEntity()
         test_entity.id = uuid4()
@@ -64,8 +69,8 @@ def test_mock_session_refresh(self, mock_db):
         assert test_entity in mock_db._committed_objects
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_mock_session_delete(self, mock_db):
+    @pytest.mark.db_required
+    async def test_mock_session_delete(self, mock_db): # Correct decorator and async def order
         """Test the delete operation."""
         test_entity = BaseEntity()
         test_entity.id = uuid4()
@@ -84,8 +89,8 @@ def test_mock_session_delete(self, mock_db):
         assert not mock_db._deleted_objects
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_mock_session_close(self, mock_db):
+    @pytest.mark.db_required
+    async def test_mock_session_close(self, mock_db): # Correct decorator and async def order
         """Test the close operation."""
         test_entity = BaseEntity()
         mock_db.add(test_entity)

@@ -20,7 +20,8 @@ from app.domain.repositories.clinical_note_repository import ClinicalNoteReposit
 from app.domain.repositories.medication_repository import MedicationRepository # Corrected import path
 # Removed import of non-existent get_jwt_service
 from app.infrastructure.security.auth_middleware import verify_provider_access, verify_admin_access
-from app.infrastructure.cache.redis_cache import RedisCache, get_cache_service
+from app.infrastructure.cache.redis_cache import RedisCache # Removed get_cache_service
+from app.presentation.api.dependencies import get_cache_service # Corrected import path
 
 # Create router
 router = APIRouter(
