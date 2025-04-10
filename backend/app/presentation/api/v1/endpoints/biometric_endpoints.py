@@ -12,7 +12,7 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, Path, status
 from fastapi.security import OAuth2PasswordBearer
 
-from app.domain.exceptions import AuthenticationException, AuthorizationException
+from app.domain.exceptions import AuthenticationError, AuthorizationError # Corrected names
 from app.infrastructure.security.jwt_service import JWTService
 
 

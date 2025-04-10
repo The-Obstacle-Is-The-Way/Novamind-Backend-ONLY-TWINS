@@ -14,7 +14,7 @@ from unittest.mock import patch, MagicMock
 from jose import jwt, JWTError
 
 from app.infrastructure.security.jwt.token_handler import JWTHandler, TokenPayload
-from app.domain.exceptions import AuthenticationException
+from app.domain.exceptions import AuthenticationError # Corrected exception name
 
 
 @pytest.fixture

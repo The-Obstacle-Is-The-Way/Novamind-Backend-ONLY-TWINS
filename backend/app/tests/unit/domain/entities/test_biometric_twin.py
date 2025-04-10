@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 import pytest
 
-from app.domain.entities.biometric_twin import BiometricDataPoint, BiometricTwin
+from app.domain.entities.biometric_twin import BiometricDataPoint, BiometricTwinState # Corrected class name
 
 
 @pytest.fixture

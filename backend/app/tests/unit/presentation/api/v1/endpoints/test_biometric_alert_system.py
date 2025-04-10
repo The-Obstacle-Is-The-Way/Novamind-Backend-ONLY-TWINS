@@ -95,14 +95,15 @@ def mock_current_user():
     return user
 
 
+# Renamed fixture to mock_current_user
 @pytest.fixture
-def mock_current_provider():
-    """Create a mock current provider."""
-    provider = MagicMock()
-    provider.id = UUID("00000000-0000-0000-0000-000000000001")
-    provider.username = "test_provider"
-    provider.roles = ["provider"]
-    return provider
+def mock_current_user():
+    """Create a mock current user (previously provider)."""
+    user = MagicMock()
+    user.id = UUID("00000000-0000-0000-0000-000000000001")
+    user.username = "test_provider"
+    user.roles = ["provider"] # Assuming provider role is still relevant for tests
+    return user
 
 
 @pytest.fixture
@@ -118,15 +119,15 @@ class TestBiometricAlertSystemEndpoints:
     """Tests for the biometric alert system API endpoints."""
     
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_create_alert(self, mock_get_current_provider, mock_get_alert_repository, 
-                               mock_repository, mock_current_provider, sample_alert):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_create_alert(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                               mock_repository, mock_current_user, sample_alert): # Renamed fixture usage
         """Test creating a new biometric alert."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import create_alert
         from app.presentation.api.schemas.biometric_alert import BiometricAlertCreateSchema
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         mock_repository.save.return_value = sample_alert
         
@@ -143,7 +144,7 @@ class TestBiometricAlertSystemEndpoints:
         response = await create_alert(
             alert_data=alert_data,
             repository=mock_repository,
-            current_user=mock_current_provider
+            current_user=mock_current_user # Renamed fixture usage
         )
         
         # Assert
@@ -151,15 +152,15 @@ class TestBiometricAlertSystemEndpoints:
         mock_repository.save.assert_called_once()
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_create_alert_repository_error(self, mock_get_current_provider, mock_get_alert_repository, 
-                                               mock_repository, mock_current_provider, sample_alert):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_create_alert_repository_error(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                                               mock_repository, mock_current_user, sample_alert): # Renamed fixture usage
         """Test handling repository error when creating an alert."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import create_alert
         from app.presentation.api.schemas.biometric_alert import BiometricAlertCreateSchema
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         mock_repository.save.side_effect = RepositoryError("Database error")
         
@@ -177,7 +178,7 @@ class TestBiometricAlertSystemEndpoints:
             await create_alert(
                 alert_data=alert_data,
                 repository=mock_repository,
-                current_user=mock_current_provider
+                current_user=mock_current_user # Renamed fixture usage
             )
         
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -287,21 +288,21 @@ class TestBiometricAlertSystemEndpoints:
         assert "Error retrieving biometric alerts" in exc_info.value.detail
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_get_active_alerts(self, mock_get_current_provider, mock_get_alert_repository, 
-                                    mock_repository, mock_current_provider, sample_alert):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_get_active_alerts(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                                    mock_repository, mock_current_user, sample_alert): # Renamed fixture usage
         """Test getting active alerts."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import get_active_alerts
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         mock_repository.get_active_alerts.return_value = [sample_alert]
         
         # Act
         response = await get_active_alerts(
             repository=mock_repository,
-            current_user=mock_current_provider
+            current_user=mock_current_user # Renamed fixture usage
         )
         
         # Assert
@@ -316,15 +317,15 @@ class TestBiometricAlertSystemEndpoints:
         )
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_get_active_alerts_with_priority(self, mock_get_current_provider, mock_get_alert_repository, 
-                                                 mock_repository, mock_current_provider, sample_alert):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_get_active_alerts_with_priority(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                                                 mock_repository, mock_current_user, sample_alert): # Renamed fixture usage
         """Test getting active alerts with priority filter."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import get_active_alerts
         from app.presentation.api.schemas.biometric_alert import AlertPriorityEnum
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         mock_repository.get_active_alerts.return_value = [sample_alert]
         
@@ -334,7 +335,7 @@ class TestBiometricAlertSystemEndpoints:
         response = await get_active_alerts(
             priority=priority,
             repository=mock_repository,
-            current_user=mock_current_provider
+            current_user=mock_current_user # Renamed fixture usage
         )
         
         # Assert
@@ -392,21 +393,21 @@ class TestBiometricAlertSystemEndpoints:
         assert f"Biometric alert with ID {sample_alert_id} not found" in exc_info.value.detail
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_update_alert_status(self, mock_get_current_provider, mock_get_alert_repository, 
-                                      mock_repository, mock_current_provider, sample_alert_id, sample_alert):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_update_alert_status(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                                      mock_repository, mock_current_user, sample_alert_id, sample_alert): # Renamed fixture usage
         """Test updating the status of an alert."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import update_alert_status
         from app.presentation.api.schemas.biometric_alert import AlertStatusUpdateSchema, AlertStatusEnum
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         
         # Create a resolved alert
         resolved_alert = sample_alert
         resolved_alert.status = AlertStatus.RESOLVED
-        resolved_alert.resolved_by = mock_current_provider.id
+        resolved_alert.resolved_by = mock_current_user.id # Renamed fixture usage
         resolved_alert.resolved_at = datetime.utcnow()
         resolved_alert.resolution_notes = "Issue resolved"
         
@@ -422,7 +423,7 @@ class TestBiometricAlertSystemEndpoints:
             alert_id=sample_alert_id,
             status_update=status_update,
             repository=mock_repository,
-            current_user=mock_current_provider
+            current_user=mock_current_user # Renamed fixture usage
         )
         
         # Assert
@@ -430,20 +431,20 @@ class TestBiometricAlertSystemEndpoints:
         mock_repository.update_status.assert_called_once_with(
             alert_id=sample_alert_id,
             status=AlertStatus.RESOLVED,
-            provider_id=mock_current_provider.id,
+            provider_id=mock_current_user.id, # Renamed fixture usage
             notes="Issue resolved"
         )
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_update_alert_status_not_found(self, mock_get_current_provider, mock_get_alert_repository, 
-                                               mock_repository, mock_current_provider, sample_alert_id):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_update_alert_status_not_found(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                                               mock_repository, mock_current_user, sample_alert_id): # Renamed fixture usage
         """Test updating the status of a non-existent alert."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import update_alert_status
         from app.presentation.api.schemas.biometric_alert import AlertStatusUpdateSchema, AlertStatusEnum
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         mock_repository.update_status.side_effect = EntityNotFoundError(f"Biometric alert with ID {sample_alert_id} not found")
         
@@ -458,21 +459,21 @@ class TestBiometricAlertSystemEndpoints:
                 alert_id=sample_alert_id,
                 status_update=status_update,
                 repository=mock_repository,
-                current_user=mock_current_provider
+                current_user=mock_current_user # Renamed fixture usage
             )
         
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
         assert f"Biometric alert with ID {sample_alert_id} not found" in exc_info.value.detail
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_delete_alert(self, mock_get_current_provider, mock_get_alert_repository, 
-                               mock_repository, mock_current_provider, sample_alert_id, sample_alert):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_delete_alert(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                               mock_repository, mock_current_user, sample_alert_id, sample_alert): # Renamed fixture usage
         """Test deleting an alert."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import delete_alert
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         mock_repository.get_by_id.return_value = sample_alert
         mock_repository.delete.return_value = True
@@ -481,7 +482,7 @@ class TestBiometricAlertSystemEndpoints:
         await delete_alert(
             alert_id=sample_alert_id,
             repository=mock_repository,
-            current_user=mock_current_provider
+            current_user=mock_current_user # Renamed fixture usage
         )
         
         # Assert
@@ -489,14 +490,14 @@ class TestBiometricAlertSystemEndpoints:
         mock_repository.delete.assert_called_once_with(sample_alert_id)
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_delete_alert_not_found(self, mock_get_current_provider, mock_get_alert_repository, 
-                                         mock_repository, mock_current_provider, sample_alert_id):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_delete_alert_not_found(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                                         mock_repository, mock_current_user, sample_alert_id): # Renamed fixture usage
         """Test deleting a non-existent alert."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import delete_alert
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         mock_repository.get_by_id.return_value = None
         
@@ -505,21 +506,21 @@ class TestBiometricAlertSystemEndpoints:
             await delete_alert(
                 alert_id=sample_alert_id,
                 repository=mock_repository,
-                current_user=mock_current_provider
+                current_user=mock_current_user # Renamed fixture usage
             )
         
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
         assert f"Biometric alert with ID {sample_alert_id} not found" in exc_info.value.detail
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
-    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_delete_alert_failure(self, mock_get_current_provider, mock_get_alert_repository, 
-                                       mock_repository, mock_current_provider, sample_alert_id, sample_alert):
+    @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user") # Changed patch target
+    async def test_delete_alert_failure(self, mock_get_current_user, mock_get_alert_repository, # Renamed mock arg
+                                      mock_repository, mock_current_user, sample_alert_id, sample_alert): # Renamed fixture usage
         """Test handling a failure when deleting an alert."""
         # Arrange
         from app.presentation.api.v1.endpoints.biometric_alert_system import delete_alert
         
-        mock_get_current_provider.return_value = mock_current_provider
+        mock_get_current_user.return_value = mock_current_user # Renamed mock and fixture usage
         mock_get_alert_repository.return_value = mock_repository
         mock_repository.get_by_id.return_value = sample_alert
         mock_repository.delete.return_value = False
@@ -529,7 +530,7 @@ class TestBiometricAlertSystemEndpoints:
             await delete_alert(
                 alert_id=sample_alert_id,
                 repository=mock_repository,
-                current_user=mock_current_provider
+                current_user=mock_current_user # Renamed fixture usage
             )
         
         assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR

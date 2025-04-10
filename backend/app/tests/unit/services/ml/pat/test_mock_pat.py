@@ -32,7 +32,7 @@ def mock_pat() -> MockPATService:
 @pytest.fixture
 def initialized_mock_pat() -> MockPATService:
     """Create and initialize a MockPAT instance."""
-    pat = MockPAT()
+    pat = MockPATService()
     pat.initialize({"mock_delay_ms": 0})
     return pat
 
@@ -85,7 +85,7 @@ class TestMockPAT:
         assert mock_pat._mock_delay_ms == 0
         
         # Initialize with mock delay
-        mock_pat = MockPAT()
+        mock_pat = MockPATService()
         mock_pat.initialize({"mock_delay_ms": 100})
         
         # Verify config is stored
@@ -100,14 +100,14 @@ class TestMockPAT:
             mock_pat._simulate_delay = None  # type: ignore
             mock_pat.initialize({})
     
-    def test_uninitialized_error(self, mock_pat: MockPAT) -> None:
+    def test_uninitialized_error(self, mock_pat: MockPATService) -> None:
         """Test calling methods before initialization."""
         with pytest.raises(InitializationError):
             mock_pat.get_model_info()
     
     def test_analyze_actigraphy(
         self,
-        initialized_mock_pat: MockPAT,
+        initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
         sample_device_info: Dict[str, Any]
     ) -> None:
@@ -152,7 +152,7 @@ class TestMockPAT:
     
     def test_analyze_actigraphy_validation_error(
         self,
-        initialized_mock_pat: MockPAT,
+        initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
         sample_device_info: Dict[str, Any]
     ) -> None:
@@ -207,7 +207,7 @@ class TestMockPAT:
     
     def test_get_actigraphy_embeddings(
         self,
-        initialized_mock_pat: MockPAT,
+        initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]]
     ) -> None:
         """Test successful embedding generation."""
@@ -250,7 +250,7 @@ class TestMockPAT:
     
     def test_get_actigraphy_embeddings_validation_error(
         self,
-        initialized_mock_pat: MockPAT,
+        initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]]
     ) -> None:
         """Test embedding generation with invalid parameters."""
@@ -286,7 +286,7 @@ class TestMockPAT:
     
     def test_get_analysis_by_id(
         self,
-        initialized_mock_pat: MockPAT,
+        initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
         sample_device_info: Dict[str, Any]
     ) -> None:
@@ -311,14 +311,14 @@ class TestMockPAT:
         assert result["patient_id"] == "patient123"
         assert result["analysis_types"] == ["activity_level_analysis"]
     
-    def test_get_analysis_by_id_not_found(self, initialized_mock_pat: MockPAT) -> None:
+    def test_get_analysis_by_id_not_found(self, initialized_mock_pat: MockPATService) -> None:
         """Test retrieving a non-existent analysis."""
         with pytest.raises(ResourceNotFoundError):
             initialized_mock_pat.get_analysis_by_id("nonexistent_id")
     
     def test_get_patient_analyses(
         self,
-        initialized_mock_pat: MockPAT,
+        initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
         sample_device_info: Dict[str, Any]
     ) -> None:
@@ -383,7 +383,7 @@ class TestMockPAT:
         assert result["pagination"]["total"] == 3
         assert result["pagination"]["has_more"] is False
     
-    def test_get_model_info(self, initialized_mock_pat: MockPAT) -> None:
+    def test_get_model_info(self, initialized_mock_pat: MockPATService) -> None:
         """Test retrieving model information."""
         # Get model info
         result = initialized_mock_pat.get_model_info()
@@ -401,7 +401,7 @@ class TestMockPAT:
     
     def test_integrate_with_digital_twin(
         self,
-        initialized_mock_pat: MockPAT,
+        initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
         sample_device_info: Dict[str, Any]
     ) -> None:
@@ -444,7 +444,7 @@ class TestMockPAT:
     
     def test_integrate_with_digital_twin_resource_not_found(
         self,
-        initialized_mock_pat: MockPAT
+        initialized_mock_pat: MockPATService
     ) -> None:
         """Test integration with a non-existent analysis."""
         with pytest.raises(ResourceNotFoundError):
@@ -456,7 +456,7 @@ class TestMockPAT:
     
     def test_integrate_with_digital_twin_authorization_error(
         self,
-        initialized_mock_pat: MockPAT,
+        initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
         sample_device_info: Dict[str, Any]
     ) -> None:
@@ -481,7 +481,7 @@ class TestMockPAT:
                 analysis_id=analysis_id
             )
     
-    def test_integration_validation_error(self, initialized_mock_pat: MockPAT) -> None:
+    def test_integration_validation_error(self, initialized_mock_pat: MockPATService) -> None:
         """Test integration with invalid parameters."""
         # Test empty patient_id
         with pytest.raises(ValidationError):

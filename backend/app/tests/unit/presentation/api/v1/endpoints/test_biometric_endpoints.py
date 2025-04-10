@@ -13,7 +13,7 @@ import pytest
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.testclient import TestClient
 
-from app.domain.exceptions import AuthenticationException, AuthorizationException
+from app.domain.exceptions import AuthenticationError, AuthorizationError # Corrected exception names
 from app.presentation.api.v1.endpoints.biometric_endpoints import (
     get_current_user_id,
     get_patient_id,

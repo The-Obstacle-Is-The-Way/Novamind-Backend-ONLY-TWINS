@@ -10,7 +10,8 @@ import pytest
 from typing import List, Dict, Any
 from unittest.mock import patch, mock_open
 
-from app.infrastructure.ml.phi_detection import PHIDetectionService, PHIPattern
+from app.infrastructure.ml.phi_detection import PHIDetectionService
+from app.infrastructure.security.log_sanitizer import PHIPattern # Corrected import path
 
 
 @pytest.fixture

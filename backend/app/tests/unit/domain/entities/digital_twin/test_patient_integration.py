@@ -12,7 +12,7 @@ from typing import Dict, List, Any, Optional
 
 from app.domain.entities.digital_twin.digital_twin import (
     DigitalTwin,
-    ModelConfidence
+    # ModelConfidence # Removed non-existent import
 )
 from app.domain.entities.digital_twin.state import DigitalTwinState
 from app.domain.entities.digital_twin.treatment import (
@@ -101,7 +101,7 @@ class TestPatientDigitalTwinIntegration(unittest.TestCase):
                 "social_support": "moderate",
                 "stress_level": "moderate"
             },
-            confidence_level=ModelConfidence.MODERATE
+            confidence_level=0.7 # Replaced with float value
         )
         
         # Create assessments
@@ -244,7 +244,7 @@ class TestPatientDigitalTwinIntegration(unittest.TestCase):
                 demographic_factors=demographic_factors,
                 genetic_factors=patient.genetic_data,
                 medical_history=medical_history,
-                confidence_level=ModelConfidence.MODERATE
+                confidence_level=0.7 # Replaced with float value
             )
         
         # Create a digital twin from the patient

@@ -211,3 +211,36 @@ class ConfigurationError(XGBoostServiceError):
             details=details,
             **kwargs
         )
+
+
+class ThrottlingError(ServiceConnectionError):
+    """
+    Raised when a service request is throttled.
+    
+    This exception indicates that the service limit has been exceeded
+    and the request should be retried later.
+    """
+    
+    def __init__(
+        self,
+        message: str = "Request throttled by service",
+        service: Optional[str] = None,
+        retry_after: Optional[int] = None,
+        **kwargs
+    ):
+        """
+        Initialize a new throttling error.
+        
+        Args:
+            message: Error message
+            service: Name of the service that throttled the request
+            retry_after: Suggested delay in seconds before retrying
+            **kwargs: Additional error context
+        """
+        super().__init__(
+            message,
+            service=service,
+            error_type="Throttling",
+            retry_after=retry_after,
+            **kwargs
+        )

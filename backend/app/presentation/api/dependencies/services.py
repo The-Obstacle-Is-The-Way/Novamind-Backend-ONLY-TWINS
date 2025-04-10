@@ -41,3 +41,27 @@ async def get_cache_service() -> AsyncGenerator[CacheService, None]:
     finally:
         # No cleanup needed since we're keeping the instance alive
         pass
+
+# Singleton digital twin service instance
+_digital_twin_service = None
+
+async def get_digital_twin_service() -> AsyncGenerator['DigitalTwinIntegrationService', None]:
+    """
+    Provide a Digital Twin Integration service instance.
+    
+    Yields:
+        DigitalTwinIntegrationService instance
+    """
+    global _digital_twin_service
+    from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService # Local import
+    
+    if _digital_twin_service is None:
+        # In a real app, config would come from settings
+        _digital_twin_service = DigitalTwinIntegrationService(config={})
+        await _digital_twin_service.initialize() # Assuming an async init method
+        
+    try:
+        yield _digital_twin_service
+    finally:
+        # No cleanup needed for singleton
+        pass

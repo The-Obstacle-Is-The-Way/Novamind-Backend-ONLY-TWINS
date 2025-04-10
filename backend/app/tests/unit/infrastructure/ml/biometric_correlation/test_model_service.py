@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.biometric_correlation.model_service import BiometricCorrelationService
-from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricLSTMModel
+from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel # Corrected class name
 
 
 class TestBiometricCorrelationService:

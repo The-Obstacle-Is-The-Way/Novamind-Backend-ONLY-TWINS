@@ -18,7 +18,7 @@ from app.domain.exceptions import EntityNotFoundError, RepositoryError
 from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session # Corrected import
 from app.infrastructure.persistence.sqlalchemy.repositories.biometric_alert_repository import SQLAlchemyBiometricAlertRepository
-from app.presentation.api.dependencies.auth import get_current_user, get_current_provider
+from app.presentation.api.dependencies.auth import get_current_user # Removed get_current_provider
 from app.presentation.api.schemas.biometric_alert import (
     AlertListResponseSchema,
     AlertStatusUpdateSchema,
@@ -41,7 +41,7 @@ router = APIRouter(
 )
 
 
-def get_alert_repository(db: Session = Depends(get_db)) -> BiometricAlertRepository:
+def get_alert_repository(db: Session = Depends(get_db_session)) -> BiometricAlertRepository: # Corrected dependency function name
     """
     Dependency for getting the biometric alert repository.
     
@@ -64,7 +64,7 @@ def get_alert_repository(db: Session = Depends(get_db)) -> BiometricAlertReposit
 async def create_alert(
     alert_data: BiometricAlertCreateSchema,
     repository: BiometricAlertRepository = Depends(get_alert_repository),
-    current_user: UserResponseSchema = Depends(get_current_provider)
+    current_user: UserResponseSchema = Depends(get_current_user) # Changed to get_current_user
 ) -> BiometricAlertResponseSchema:
     """
     Create a new biometric alert.
@@ -187,7 +187,7 @@ async def get_active_alerts(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Number of items per page"),
     repository: BiometricAlertRepository = Depends(get_alert_repository),
-    current_user: UserResponseSchema = Depends(get_current_provider)
+    current_user: UserResponseSchema = Depends(get_current_user) # Changed to get_current_user
 ) -> AlertListResponseSchema:
     """
     Get active (non-resolved) biometric alerts.
@@ -288,7 +288,7 @@ async def update_alert_status(
     alert_id: UUID = Path(..., description="ID of the alert"),
     status_update: AlertStatusUpdateSchema = None,
     repository: BiometricAlertRepository = Depends(get_alert_repository),
-    current_user: UserResponseSchema = Depends(get_current_provider)
+    current_user: UserResponseSchema = Depends(get_current_user) # Changed to get_current_user
 ) -> BiometricAlertResponseSchema:
     """
     Update the status of a biometric alert.
@@ -339,7 +339,7 @@ async def update_alert_status(
 async def delete_alert(
     alert_id: UUID = Path(..., description="ID of the alert"),
     repository: BiometricAlertRepository = Depends(get_alert_repository),
-    current_user: UserResponseSchema = Depends(get_current_provider)
+    current_user: UserResponseSchema = Depends(get_current_user) # Changed to get_current_user
 ) -> None:
     """
     Delete a biometric alert.

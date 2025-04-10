@@ -12,7 +12,7 @@ import os
 from typing import Any, Dict, Optional, Union
 
 from app.core.config import settings
-from app.infrastructure.security.log_sanitizer import PHIFormatter, PHIRedactionHandler
+from app.infrastructure.security.log_sanitizer import PHIFormatter, LogSanitizer # Import LogSanitizer
 
 
 class PHILogger:
@@ -53,10 +53,11 @@ class PHILogger:
             self.logger.handlers.clear()
 
         # Create redaction handler and formatter
-        redactor = PHIRedactionHandler()
+        # Instantiate LogSanitizer directly
+        sanitizer = LogSanitizer()
         formatter = PHIFormatter(
             fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            redactor=redactor,
+            sanitizer=sanitizer, # Pass sanitizer instance correctly
         )
 
         # Add console handler with redaction

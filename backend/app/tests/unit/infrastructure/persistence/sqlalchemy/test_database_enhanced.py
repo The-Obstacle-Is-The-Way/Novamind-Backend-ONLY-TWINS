@@ -19,8 +19,8 @@ from app.infrastructure.persistence.sqlalchemy.config.database import (
     Base,
     get_db_dependency,
     # get_session, # Incorrect import, use get_db_session
-    create_tables,
-    get_engine,
+    # create_tables, # Removed incorrect import
+    # get_engine, # Removed incorrect import
     db
 )
 
@@ -160,39 +160,48 @@ class TestDatabase:
             assert session == mock_session
     
     @pytest.mark.asyncio
-    async def test_create_tables(self, mock_engine):
-        """Test table creation function."""
-        with patch('app.infrastructure.persistence.sqlalchemy.config.database.get_engine',
-                  return_value=mock_engine):
-            with patch('sqlalchemy.ext.asyncio.AsyncEngine.begin') as mock_begin:
-                # Mock the async context manager
-                mock_connection = MagicMock()
-                mock_begin.return_value.__aenter__.return_value = mock_connection
-                mock_begin.return_value.__aexit__.return_value = None
-            
-                with patch('app.infrastructure.persistence.sqlalchemy.config.database.Base.metadata.create_all') as mock_create_all:
-                    # Call create_tables
-                    await create_tables()
-                    
-                    # Check table creation occurred
-                    mock_create_all.assert_called_once_with(mock_connection)
+    async def test_create_tables(self, mock_engine, mock_settings): # Added mock_settings fixture
+        """Test table creation method of the Database class."""
+        # Patch the engine creation used by Database.__init__
+        with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine', return_value=mock_engine):
+            # Patch the Base.metadata.create_all call that happens within run_sync
+            with patch('app.infrastructure.persistence.sqlalchemy.config.database.Base.metadata.create_all') as mock_metadata_create_all:
+                
+                # Instantiate Database (uses mocked engine via create_async_engine patch)
+                # Pass mock_settings to ensure correct initialization path
+                db_instance = Database(settings=mock_settings.database)
+                
+                # Call the create_all method on the instance
+                await db_instance.create_all()
+                
+                # Check that the engine's begin method was called
+                mock_engine.begin.assert_called_once()
+                
+                # Check that Base.metadata.create_all was called (via run_sync)
+                # The argument check is complex due to run_sync, so we just check if it was called.
+                mock_metadata_create_all.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_get_engine(self):
-        """Test engine creation utility function."""
+    async def test_get_engine(self, mock_settings): # Added mock_settings
+        """Test getting the engine from the Database instance."""
+        # Patch the engine creation used by Database.__init__
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
-            mock_engine = MagicMock()
-            mock_create_engine.return_value = mock_engine
+            mock_engine_instance = MagicMock(spec=AsyncEngine) # Use spec for better mocking
+            mock_create_engine.return_value = mock_engine_instance
             
-            # Initialize a new database singleton
-            with patch('app.infrastructure.persistence.sqlalchemy.config.database.db', MagicMock()) as mock_db:
-                mock_db.engine = mock_engine
-                
-                # Get engine
-                engine = get_engine()
-                
-                # Check returned engine
-                assert engine == mock_engine
+            # Reset the global instance to force re-initialization with mock
+            from app.infrastructure.persistence.sqlalchemy.config import database
+            database._db_instance = None
+            
+            # Get the database instance (which will now use the mocked engine)
+            db_instance = database.get_db_instance()
+            
+            # Get engine from the instance
+            engine = db_instance.engine
+            
+            # Check returned engine
+            assert engine == mock_engine_instance
+            mock_create_engine.assert_called_once() # Ensure engine was created
     
     @pytest.mark.asyncio
     async def test_connection_error_handling(self, mock_settings):

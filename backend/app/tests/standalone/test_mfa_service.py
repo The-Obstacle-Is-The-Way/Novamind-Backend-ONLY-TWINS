@@ -54,6 +54,7 @@ def test_generate_secret_key(self, mfa_service):
         # Secret key should be non-empty
         assert len(secret_key) > 0
     
+    # Corrected indentation for the decorator and method definition
     @patch('pyotp.TOTP')
     @patch('qrcode.QRCode')
 def test_setup_totp(self, mock_qrcode, mock_totp, mfa_service):

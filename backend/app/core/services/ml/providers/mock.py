@@ -16,14 +16,14 @@ from app.core.exceptions import (
     ModelNotFoundError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.mentalllama import BaseMentaLLaMA
+from app.core.services.ml.mentalllama import MentaLLaMA # Corrected class name
 from app.core.utils.logging import get_logger
 
 # Create logger (no PHI logging)
 logger = get_logger(__name__)
 
 
-class MockMentaLLaMA(BaseMentaLLaMA):
+class MockMentaLLaMA(MentaLLaMA): # Corrected base class
     """
     Mock implementation for MentaLLaMA service.
     

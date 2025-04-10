@@ -34,7 +34,7 @@ class AuditLogger:
             log_path: Path to the audit log file. Defaults to setting from config.
         """
         self.settings = settings
-        self.log_path = log_path or self.settings.AUDIT_LOG_PATH
+        self.log_path = log_path or self.settings.PHI_AUDIT_LOG_PATH # Corrected attribute name
 
         # Ensure log directory exists
         log_dir = os.path.dirname(self.log_path)

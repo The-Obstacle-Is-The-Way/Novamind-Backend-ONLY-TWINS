@@ -15,12 +15,12 @@ from app.domain.entities.appointment import (
     AppointmentPriority
 )
 from app.domain.exceptions import (
-    AppointmentNotFoundException,
+    EntityNotFoundError, # Changed from AppointmentNotFoundException
     AppointmentConflictError,
     InvalidAppointmentStateError,
     InvalidAppointmentTimeError,
-    PatientNotFoundException,
-    ProviderNotFoundException
+    # PatientNotFoundException, # Removed - Use EntityNotFoundError
+    # ProviderNotFoundException # Removed - Use EntityNotFoundError
 )
 from app.domain.services.appointment_service import AppointmentService
 
@@ -107,7 +107,7 @@ class TestAppointmentService:
     
     def test_get_appointment_not_found(self, appointment_service):
         """Test getting a non-existent appointment."""
-        with pytest.raises(AppointmentNotFoundException):
+        with pytest.raises(EntityNotFoundError): # Changed exception type
             appointment_service.get_appointment("nonexistent_id")
     
     def test_get_appointments_for_patient(self, appointment_service, appointment_repository, valid_appointment):
@@ -132,7 +132,7 @@ class TestAppointmentService:
         # Set up the repository to return None
         patient_repository.get_by_id.return_value = None
         
-        with pytest.raises(PatientNotFoundException):
+        with pytest.raises(EntityNotFoundError): # Changed exception type
             appointment_service.get_appointments_for_patient("nonexistent_id")
     
     def test_get_appointments_for_provider(self, appointment_service, appointment_repository, valid_appointment):
@@ -157,7 +157,7 @@ class TestAppointmentService:
         # Set up the repository to return None
         provider_repository.get_by_id.return_value = None
         
-        with pytest.raises(ProviderNotFoundException):
+        with pytest.raises(EntityNotFoundError): # Changed exception type
             appointment_service.get_appointments_for_provider("nonexistent_id")
     
     def test_create_appointment(self, appointment_service, appointment_repository, future_datetime):
@@ -209,7 +209,7 @@ class TestAppointmentService:
         # Set up the repository to return None
         patient_repository.get_by_id.return_value = None
         
-        with pytest.raises(PatientNotFoundException):
+        with pytest.raises(EntityNotFoundError): # Changed exception type
             appointment_service.create_appointment(
                 patient_id="nonexistent_id",
                 provider_id="provider456",
@@ -221,7 +221,7 @@ class TestAppointmentService:
         # Set up the repository to return None
         provider_repository.get_by_id.return_value = None
         
-        with pytest.raises(ProviderNotFoundException):
+        with pytest.raises(EntityNotFoundError): # Changed exception type
             appointment_service.create_appointment(
                 patient_id="patient123",
                 provider_id="nonexistent_id",
@@ -321,7 +321,7 @@ class TestAppointmentService:
     
     def test_reschedule_appointment_not_found(self, appointment_service):
         """Test rescheduling a non-existent appointment."""
-        with pytest.raises(AppointmentNotFoundException):
+        with pytest.raises(EntityNotFoundError): # Changed exception type
             appointment_service.reschedule_appointment(
                 appointment_id="nonexistent_id",
                 new_start_time=datetime.now() + timedelta(days=1)
@@ -375,7 +375,7 @@ class TestAppointmentService:
     
     def test_cancel_appointment_not_found(self, appointment_service):
         """Test cancelling a non-existent appointment."""
-        with pytest.raises(AppointmentNotFoundException):
+        with pytest.raises(EntityNotFoundError): # Changed exception type
             appointment_service.cancel_appointment(
                 appointment_id="nonexistent_id",
                 cancelled_by="user123"

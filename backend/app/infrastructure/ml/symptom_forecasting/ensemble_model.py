@@ -27,8 +27,8 @@ from app.infrastructure.ml.base.model_metrics import ModelMetrics
 from app.infrastructure.ml.symptom_forecasting.transformer_model import (
     SymptomTransformerModel,
 )
-from app.infrastructure.ml.symptom_forecasting.xgboost_model import SymptomXGBoostModel
-from app.infrastructure.ml.utils.preprocessing import DataPreprocessor
+from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel # Corrected class name
+# from app.infrastructure.ml.utils.preprocessing import DataPreprocessor # Removed unused import
 from app.infrastructure.ml.utils.serialization import ModelSerializer
 
 

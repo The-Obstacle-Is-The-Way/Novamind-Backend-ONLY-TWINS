@@ -15,8 +15,8 @@ from fastapi.responses import Response
 
 from app.core.constants import CacheNamespace
 from app.presentation.api.dependencies.rate_limiter import (
-    RateLimiter, 
-    get_client_id, 
+    # RateLimiter, # Removed incorrect import
+    # get_client_id, # Removed non-existent import
     RateLimitDependency
 )
 

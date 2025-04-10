@@ -19,7 +19,7 @@ from app.core.exceptions import (
     ModelNotFoundError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.interface import DigitalTwinService
+from app.core.services.ml.interface import DigitalTwinInterface # Corrected interface name
 from app.core.utils.logging import get_logger
 
 
@@ -27,7 +27,7 @@ from app.core.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-class MockDigitalTwinService(DigitalTwinService):
+class MockDigitalTwinService(DigitalTwinInterface): # Corrected base class
     """
     Mock implementation of Digital Twin service.
     

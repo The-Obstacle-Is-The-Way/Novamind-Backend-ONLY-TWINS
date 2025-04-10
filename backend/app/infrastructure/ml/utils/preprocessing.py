@@ -10,10 +10,10 @@ import re
 import json
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from app.infrastructure.logging.phi_logger import get_phi_safe_logger
+from app.infrastructure.logging.phi_logger import get_phi_logger
 
 # Configure PHI-safe logger
-logger = get_phi_safe_logger(__name__)
+logger = get_phi_logger(__name__)
 
 
 async def sanitize_text(

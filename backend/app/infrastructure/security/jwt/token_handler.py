@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from app.core.config import settings
 from app.core.utils.logging import get_logger
-from app.domain.exceptions import AuthenticationException
+from app.domain.exceptions import AuthenticationError # Corrected exception name
 
 # Initialize logger
 logger = get_logger(__name__)

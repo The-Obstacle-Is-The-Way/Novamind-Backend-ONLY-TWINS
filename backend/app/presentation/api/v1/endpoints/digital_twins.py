@@ -14,11 +14,13 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
+# Import EntityNotFoundError from domain exceptions
+from app.domain.exceptions import EntityNotFoundError
 from app.core.exceptions.ml_exceptions import (
     DigitalTwinError,
-    SimulationError,
-    TwinNotFoundError,
-    TwinStorageError
+    # SimulationError, # Not defined in ml_exceptions.py
+    # TwinNotFoundError, # Removed - Does not exist
+    # TwinStorageError # Removed - Does not exist
 )
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 from app.presentation.api.dependencies import get_digital_twin_service
@@ -94,7 +96,7 @@ async def create_digital_twin(
         
         return result
         
-    except TwinStorageError as e:
+    except DigitalTwinError as e: # Changed exception type
         logger.error(f"Twin storage error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -157,7 +159,7 @@ async def get_digital_twin(
         
         return result
         
-    except TwinNotFoundError:
+    except EntityNotFoundError: # Changed exception type
         logger.warning(f"Digital twin not found, ID: {twin_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -220,7 +222,7 @@ async def update_digital_twin(
         
         return result
         
-    except TwinNotFoundError:
+    except EntityNotFoundError: # Changed exception type
         logger.warning(f"Digital twin not found for update, ID: {twin_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -297,7 +299,7 @@ async def run_simulation(
         
         return result
         
-    except TwinNotFoundError:
+    except EntityNotFoundError: # Changed exception type
         logger.warning(f"Digital twin not found for simulation, ID: {twin_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -356,7 +358,7 @@ async def delete_digital_twin(
         
         return None
         
-    except TwinNotFoundError:
+    except EntityNotFoundError: # Changed exception type
         logger.warning(f"Digital twin not found for deletion, ID: {twin_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

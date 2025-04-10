@@ -9,7 +9,7 @@ import json
 import pytest
 from unittest.mock import patch, MagicMock
 
-from app.core.utils.logging import HIPAACompliantLogger, PHIRedactor, log_function_call
+from app.core.utils.logging import get_logger, log_execution_time, log_method_calls # Corrected imports, removed HIPAACompliantLogger, PHIRedactor, log_function_call
 
 
 class TestPHIRedactor:

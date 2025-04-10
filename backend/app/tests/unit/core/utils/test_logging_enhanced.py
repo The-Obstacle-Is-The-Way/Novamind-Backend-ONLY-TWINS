@@ -15,7 +15,7 @@ import asyncio
 import pytest
 from unittest.mock import patch, MagicMock, mock_open, call
 
-from app.core.utils.logging import HIPAACompliantLogger, audit_log
+from app.core.utils.logging import get_logger # Corrected import, removed HIPAACompliantLogger, audit_log
 
 
 class TestHIPAACompliantLogger:
