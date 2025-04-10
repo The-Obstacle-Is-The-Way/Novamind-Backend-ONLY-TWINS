@@ -8,6 +8,7 @@ from app.infrastructure.security.log_sanitizer import PHISanitizer
 from app.core.utils.validation import PHIDetector
 
 
+@pytest.mark.venv_only
 class TestPHISanitizer:
     """Test suite for the PHI Sanitizer component."""
 
@@ -30,7 +31,8 @@ class TestPHISanitizer:
             "insurance_id": "INS123456789",
         }
 
-    def test_sanitize_string_with_ssn(self, sanitizer):
+    @pytest.mark.venv_only
+def test_sanitize_string_with_ssn(self, sanitizer):
         """Test sanitization of strings containing SSNs."""
         input_text = "Patient SSN: 123-45-6789"
         sanitized = sanitizer.sanitize_text(input_text)
@@ -39,7 +41,8 @@ class TestPHISanitizer:
         assert "SSN" in sanitized
         assert "[REDACTED:SSN]" in sanitized
 
-    def test_sanitize_string_with_multiple_phi(self, sanitizer):
+    @pytest.mark.venv_only
+def test_sanitize_string_with_multiple_phi(self, sanitizer):
         """Test sanitization of strings containing multiple PHI elements."""
         input_text = "Patient John Smith (DOB: 01/15/1980) with phone (555) 123-4567"
         sanitized = sanitizer.sanitize_text(input_text)
@@ -51,7 +54,8 @@ class TestPHISanitizer:
         assert "[REDACTED:DOB]" in sanitized
         assert "[REDACTED:PHONE]" in sanitized
 
-    def test_sanitize_json_with_phi(self, sanitizer, sample_phi_data):
+    @pytest.mark.venv_only
+def test_sanitize_json_with_phi(self, sanitizer, sample_phi_data):
         """Test sanitization of JSON data containing PHI."""
         input_json = json.dumps(sample_phi_data)
         sanitized = sanitizer.sanitize_json(input_json)
@@ -68,7 +72,8 @@ class TestPHISanitizer:
         assert "[REDACTED:NAME]" in sanitized_data["name"]
         assert "[REDACTED:PHONE]" in sanitized_data["phone"]
 
-    def test_sanitize_dict_with_phi(self, sanitizer, sample_phi_data):
+    @pytest.mark.venv_only
+def test_sanitize_dict_with_phi(self, sanitizer, sample_phi_data):
         """Test sanitization of dictionary data containing PHI."""
         sanitized_data = sanitizer.sanitize_dict(sample_phi_data)
         
@@ -83,7 +88,8 @@ class TestPHISanitizer:
         assert "[REDACTED:NAME]" in sanitized_data["name"]
         assert "[REDACTED:PHONE]" in sanitized_data["phone"]
 
-    def test_sanitize_nested_dict_with_phi(self, sanitizer):
+    @pytest.mark.venv_only
+def test_sanitize_nested_dict_with_phi(self, sanitizer):
         """Test sanitization of nested dictionaries containing PHI."""
         nested_data = {
             "patient": {
@@ -115,7 +121,8 @@ class TestPHISanitizer:
         assert sanitized_data["non_phi_field"] == "This data should be untouched"
         assert sanitized_data["patient"]["insurance"]["provider"] == "Health Insurance Co"
 
-    def test_sanitize_list_with_phi(self, sanitizer):
+    @pytest.mark.venv_only
+def test_sanitize_list_with_phi(self, sanitizer):
         """Test sanitization of lists containing PHI."""
         list_data = [
             "Patient John Doe",
@@ -134,7 +141,8 @@ class TestPHISanitizer:
         # Non-PHI should be untouched
         assert sanitized_list[3] == "Non-PHI data"
 
-    def test_sanitize_complex_structure(self, sanitizer):
+    @pytest.mark.venv_only
+def test_sanitize_complex_structure(self, sanitizer):
         """Test sanitization of complex nested structures with PHI."""
         complex_data = {
             "patients": [
@@ -175,7 +183,8 @@ class TestPHISanitizer:
         assert sanitized_data["metadata"]["facility"] == "Medical Center"
         assert sanitized_data["metadata"]["generated_at"] == "2025-03-27"
 
-    def test_sanitize_phi_in_logs(self, sanitizer):
+    @pytest.mark.venv_only
+def test_sanitize_phi_in_logs(self, sanitizer):
         """Test sanitization of PHI in log messages."""
         log_message = "Error processing patient John Smith (SSN: 123-45-6789) due to system failure"
         sanitized = sanitizer.sanitize_text(log_message)
@@ -185,7 +194,8 @@ class TestPHISanitizer:
         assert "Error processing patient" in sanitized
         assert "due to system failure" in sanitized
 
-    def test_phi_detection_integration(self, sanitizer):
+    @pytest.mark.venv_only
+def test_phi_detection_integration(self, sanitizer):
         """Test integration with PHI detector component."""
         with patch('app.infrastructure.security.log_sanitizer.PHIDetector') as mock_detector:
             # Setup mock PHI detector
@@ -207,7 +217,8 @@ class TestPHISanitizer:
             mock_detector_instance.detect_phi.assert_called_once()
             assert "123-45-6789" not in result
 
-    def test_phi_sanitizer_performance(self, sanitizer, sample_phi_data):
+    @pytest.mark.venv_only
+def test_phi_sanitizer_performance(self, sanitizer, sample_phi_data):
         """Test sanitizer performance with large nested structures."""
         # Create a large nested structure with PHI
         large_data = {
@@ -228,7 +239,8 @@ class TestPHISanitizer:
         assert "123-45-6789" not in str(sanitized_data)
         assert "John Smith" not in str(sanitized_data)
 
-    def test_preservation_of_non_phi(self, sanitizer):
+    @pytest.mark.venv_only
+def test_preservation_of_non_phi(self, sanitizer):
         """Test that non-PHI data is preserved during sanitization."""
         mixed_data = {
             "patient_id": "PT12345",  # Not PHI
@@ -251,7 +263,8 @@ class TestPHISanitizer:
         assert sanitized["priority"] == 1
         assert sanitized["is_insured"] is True
 
-    def test_sanitizer_edge_cases(self, sanitizer):
+    @pytest.mark.venv_only
+def test_sanitizer_edge_cases(self, sanitizer):
         """Test sanitizer with edge cases and unusual inputs."""
         # Test with None
         assert sanitizer.sanitize_text(None) is None
@@ -275,7 +288,8 @@ class TestPHISanitizer:
         assert sanitized_list[3] is True
         assert "123-45-6789" not in str(sanitized_list[4])
 
-    def test_redaction_format_consistency(self, sanitizer):
+    @pytest.mark.venv_only
+def test_redaction_format_consistency(self, sanitizer):
         """Test that redaction format is consistent."""
         phi_types = ["SSN", "NAME", "DOB", "PHONE", "EMAIL", "ADDRESS", "MRN"]
         

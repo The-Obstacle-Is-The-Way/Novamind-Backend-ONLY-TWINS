@@ -96,6 +96,7 @@ except ImportError as e:
 
 # Test fixtures
 @pytest.fixture
+@pytest.mark.venv_only
 def test_user():
     """Create a test user for authentication tests."""
     return {
@@ -108,6 +109,7 @@ def test_user():
 
 
 @pytest.fixture
+@pytest.mark.venv_only
 def test_phi_data():
     """Create test PHI data for encryption tests."""
     return {
@@ -123,6 +125,7 @@ def test_phi_data():
 
 
 @pytest.fixture
+@pytest.mark.venv_only
 def test_jwt_token(test_user):
     """Create a valid JWT token for testing."""
     expires_delta = timedelta(minutes=30)
@@ -152,10 +155,12 @@ def mock_rbac():
 
 
 # PHI Encryption Tests
+@pytest.mark.venv_only
 class TestPHIEncryption:
     """Test PHI encryption and decryption functionality."""
     
-    def test_encrypt_decrypt_phi(self, test_phi_data):
+    @pytest.mark.venv_only
+def test_encrypt_decrypt_phi(self, test_phi_data):
         """Test that PHI can be encrypted and decrypted correctly."""
         # Encrypt the data
         encrypted_data = encrypt_phi(test_phi_data)
@@ -170,7 +175,8 @@ class TestPHIEncryption:
         # Verify the decrypted data matches the original
         assert decrypted_data == test_phi_data
     
-    def test_encrypt_field_sensitive_data(self):
+    @pytest.mark.venv_only
+def test_encrypt_field_sensitive_data(self):
         """Test that specific fields can be encrypted individually."""
         ssn = "123-45-6789"
         encrypted_ssn = encrypt_field(ssn)
@@ -185,7 +191,8 @@ class TestPHIEncryption:
         # Verify the decrypted field matches the original
         assert decrypted_ssn == ssn
     
-    def test_encryption_key_requirements(self):
+    @pytest.mark.venv_only
+def test_encryption_key_requirements(self):
         """Test that encryption key meets strength requirements."""
         # Generate a new key
         key = generate_phi_key()
@@ -196,10 +203,12 @@ class TestPHIEncryption:
 
 
 # Authentication Tests
+@pytest.mark.venv_only
 class TestAuthentication:
     """Test authentication mechanisms for HIPAA compliance."""
     
-    def test_create_access_token(self, test_user):
+    @pytest.mark.venv_only
+def test_create_access_token(self, test_user):
         """Test that access tokens can be created correctly."""
         token = create_access_token(
             data={"sub": test_user["username"], "id": test_user["id"]}
@@ -209,7 +218,8 @@ class TestAuthentication:
         assert isinstance(token, str)
         assert len(token) > 0
     
-    def test_decode_access_token(self, test_jwt_token, test_user):
+    @pytest.mark.venv_only
+def test_decode_access_token(self, test_jwt_token, test_user):
         """Test that access tokens can be decoded correctly."""
         decoded = decode_token(test_jwt_token)
         
@@ -217,7 +227,8 @@ class TestAuthentication:
         assert decoded["sub"] == test_user["username"]
         assert "exp" in decoded
     
-    def test_expired_token_rejection(self):
+    @pytest.mark.venv_only
+def test_expired_token_rejection(self):
         """Test that expired tokens are rejected."""
         # Create an expired token
         expired_data = {
@@ -232,7 +243,8 @@ class TestAuthentication:
         with pytest.raises((jwt.JWTError, AuthenticationError)):
             decode_token(expired_token)
     
-    def test_invalid_token_rejection(self):
+    @pytest.mark.venv_only
+def test_invalid_token_rejection(self):
         """Test that invalid tokens are rejected."""
         # Create an invalid token
         invalid_token = "invalid.token.format"
@@ -243,10 +255,12 @@ class TestAuthentication:
 
 
 # Authorization Tests
+@pytest.mark.venv_only
 class TestAuthorization:
     """Test authorization mechanisms for HIPAA compliance."""
     
-    def test_rbac_permission_check(self, test_user, mock_rbac):
+    @pytest.mark.venv_only
+def test_rbac_permission_check(self, test_user, mock_rbac):
         """Test that RBAC permission checks work correctly."""
         # Check permission
         result = check_permission(
@@ -259,7 +273,8 @@ class TestAuthorization:
         assert result is True
         mock_rbac.assert_called_once()
     
-    def test_rbac_permission_denied(self, test_user, mock_rbac):
+    @pytest.mark.venv_only
+def test_rbac_permission_denied(self, test_user, mock_rbac):
         """Test that RBAC denies unauthorized access."""
         # Set up the mock to deny permission
         mock_rbac.return_value = False
@@ -274,7 +289,8 @@ class TestAuthorization:
         # Verify permission check fails
         assert result is False
     
-    def test_cross_patient_data_access_prevented(self, test_user):
+    @pytest.mark.venv_only
+def test_cross_patient_data_access_prevented(self, test_user):
         """Test that patients cannot access other patients' data."""
         # Mock a situation where a patient tries to access another patient's data
         with pytest.raises((AuthorizationError, HTTPException)):
@@ -288,10 +304,12 @@ class TestAuthorization:
 
 
 # Audit Logging Tests
+@pytest.mark.venv_only
 class TestAuditLogging:
     """Test audit logging for HIPAA compliance."""
     
-    def test_phi_access_logging(self, test_user, test_phi_data, mock_audit_logger):
+    @pytest.mark.venv_only
+def test_phi_access_logging(self, test_user, test_phi_data, mock_audit_logger):
         """Test that PHI access is properly logged."""
         # Simulate PHI access
         log_phi_access(
@@ -307,7 +325,8 @@ class TestAuditLogging:
         assert kwargs["user_id"] == test_user["id"]
         assert kwargs["action"] == "view"
     
-    def test_phi_sanitization(self, test_phi_data):
+    @pytest.mark.venv_only
+def test_phi_sanitization(self, test_phi_data):
         """Test that PHI is properly sanitized in logs."""
         # Sanitize PHI data
         sanitized = sanitize_phi(json.dumps(test_phi_data))
@@ -318,10 +337,12 @@ class TestAuditLogging:
 
 
 # Security Boundaries Tests
+@pytest.mark.venv_only
 class TestSecurityBoundaries:
     """Test security boundaries for HIPAA compliance."""
     
-    def test_unauthorized_request_rejection(self):
+    @pytest.mark.venv_only
+def test_unauthorized_request_rejection(self):
         """Test that unauthorized requests are rejected."""
         # Simulate an unauthorized request
         with pytest.raises((AuthenticationError, HTTPException)):
@@ -329,7 +350,8 @@ class TestSecurityBoundaries:
             get_current_user(None)
             raise AuthenticationError("No authentication token provided")
     
-    def test_phi_access_error_handling(self, test_phi_data):
+    @pytest.mark.venv_only
+def test_phi_access_error_handling(self, test_phi_data):
         """Test that PHI access errors are properly handled."""
         # Simulate a PHI access error
         try:
@@ -345,10 +367,12 @@ class TestSecurityBoundaries:
 
 
 # HIPAA Compliance Requirements Tests
+@pytest.mark.venv_only
 class TestHIPAACompliance:
     """Test overall HIPAA compliance requirements."""
     
-    def test_field_level_encryption(self, test_phi_data):
+    @pytest.mark.venv_only
+def test_field_level_encryption(self, test_phi_data):
         """Test that field-level encryption is available for PHI."""
         for field in ["ssn", "diagnosis", "medication"]:
             if field in test_phi_data:
@@ -360,7 +384,8 @@ class TestHIPAACompliance:
                 assert encrypted != value
                 assert decrypted == value
     
-    def test_minimum_necessary_principle(self, test_phi_data):
+    @pytest.mark.venv_only
+def test_minimum_necessary_principle(self, test_phi_data):
         """Test that only necessary PHI fields are included in responses."""
         # Create a response with only necessary fields
         necessary_fields = ["patient_id", "first_name", "last_name"]
@@ -371,7 +396,8 @@ class TestHIPAACompliance:
         assert "diagnosis" not in response_data
         assert "medication" not in response_data
     
-    def test_secure_configuration(self):
+    @pytest.mark.venv_only
+def test_secure_configuration(self):
         """Test that security configuration is properly set up."""
         settings = get_settings()
         
@@ -385,7 +411,8 @@ class TestHIPAACompliance:
         assert hasattr(settings, "USE_TLS")
         assert settings.USE_TLS is True
     
-    def test_password_policy(self):
+    @pytest.mark.venv_only
+def test_password_policy(self):
         """Test that password policy meets HIPAA requirements."""
         # This is a placeholder for a real password policy test
         # A real test would check minimum length, complexity, etc.

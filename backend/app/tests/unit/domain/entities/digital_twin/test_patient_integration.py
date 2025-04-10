@@ -34,6 +34,7 @@ from app.domain.entities.patient.assessment import (
 )
 
 
+@pytest.mark.db_required
 class TestPatientDigitalTwinIntegration(unittest.TestCase):
     """Tests for the integration between Patient and DigitalTwin entities."""
     
@@ -217,7 +218,8 @@ class TestPatientDigitalTwinIntegration(unittest.TestCase):
         # Add treatment plan to patient
         self.patient.treatment_plans = [self.treatment_plan]
     
-    def test_create_digital_twin_from_patient(self):
+    @pytest.mark.db_required
+def test_create_digital_twin_from_patient(self):
         """Test creating a digital twin from patient data."""
         # Create a factory function to generate a digital twin from patient data
         def create_digital_twin_from_patient(patient: Patient) -> DigitalTwin:
@@ -258,7 +260,8 @@ class TestPatientDigitalTwinIntegration(unittest.TestCase):
         assert "diagnoses" in twin.medical_history
         assert "major depressive disorder" in twin.medical_history["diagnoses"]
     
-    def test_update_digital_twin_from_assessment(self):
+    @pytest.mark.db_required
+def test_update_digital_twin_from_assessment(self):
         """Test updating a digital twin based on assessment data."""
         # Define a function to update the digital twin from assessment
         def update_digital_twin_from_assessment(
@@ -443,7 +446,8 @@ class TestPatientDigitalTwinIntegration(unittest.TestCase):
         # Verify anxiety state was updated
         assert self.digital_twin.current_state.psychological.anxiety_level > 0.5
     
-    def test_predict_treatment_response_from_patient_data(self):
+    @pytest.mark.db_required
+def test_predict_treatment_response_from_patient_data(self):
         """Test predicting treatment response using patient data."""
         # Define a function to enhance twin prediction with patient data
         def predict_with_patient_context(
@@ -557,7 +561,8 @@ class TestPatientDigitalTwinIntegration(unittest.TestCase):
         assert isinstance(prediction["efficacy"], float)
         assert isinstance(prediction["time_to_response"], int)
     
-    def test_integrate_assessment_history_with_digital_twin(self):
+    @pytest.mark.db_required
+def test_integrate_assessment_history_with_digital_twin(self):
         """Test integrating assessment history with digital twin trajectory."""
         # Define a function to map assessment history to trajectory points
         def map_assessments_to_trajectory(
@@ -667,6 +672,7 @@ class TestPatientDigitalTwinIntegration(unittest.TestCase):
             assert len(forecast.mood_values) > 0
 
 
+@pytest.mark.db_required
 class TestDigitalTwinTreatmentPlanIntegration(unittest.TestCase):
     """Tests for the integration between DigitalTwin and TreatmentPlan entities."""
     
@@ -729,7 +735,8 @@ class TestDigitalTwinTreatmentPlanIntegration(unittest.TestCase):
             status="active"
         )
     
-    def test_evaluate_treatment_plan_with_digital_twin(self):
+    @pytest.mark.db_required
+def test_evaluate_treatment_plan_with_digital_twin(self):
         """Test evaluating a treatment plan using digital twin predictions."""
         # Define a function to evaluate a treatment plan
         def evaluate_treatment_plan(
@@ -1044,7 +1051,8 @@ class TestDigitalTwinTreatmentPlanIntegration(unittest.TestCase):
         assert "optimizations" in evaluation["recommendations"]
         assert "overall_recommendation" in evaluation["recommendations"]
     
-    def test_simulate_treatment_plan_effects(self):
+    @pytest.mark.db_required
+def test_simulate_treatment_plan_effects(self):
         """Test simulating the effects of a treatment plan over time."""
         # Define a function to simulate the progression of state over time
         def simulate_treatment_effects(

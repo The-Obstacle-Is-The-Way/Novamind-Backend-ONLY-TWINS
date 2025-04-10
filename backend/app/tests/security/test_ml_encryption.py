@@ -9,6 +9,7 @@ from app.infrastructure.security.encryption import EncryptionService, FieldEncry
 from app.domain.exceptions import EncryptionError, DecryptionError
 
 
+@pytest.mark.db_required
 class TestEncryptionService:
     """
     Tests for the EncryptionService to ensure HIPAA-compliant data protection.
@@ -41,7 +42,8 @@ class TestEncryptionService:
             "notes": "Patient reports improved mood following therapy sessions."
         }
     
-    def test_encrypt_decrypt_data(self, encryption_service, sensitive_data):
+    @pytest.mark.db_required
+def test_encrypt_decrypt_data(self, encryption_service, sensitive_data):
         """Test basic encryption and decryption functionality."""
         # Arrange - We have sensitive data to encrypt
         
@@ -58,7 +60,8 @@ class TestEncryptionService:
         # Encrypted data should contain the version header
         assert encrypted.startswith("v1:")
     
-    def test_encryption_is_deterministic(self, encryption_service, sensitive_data):
+    @pytest.mark.db_required
+def test_encryption_is_deterministic(self, encryption_service, sensitive_data):
         """Test that encryption is deterministic with same key."""
         # This is important for database lookups on encrypted fields
         
@@ -69,7 +72,8 @@ class TestEncryptionService:
         # Assert - Encryption should be deterministic with same key
         assert encrypted1 == encrypted2
     
-    def test_encryption_with_different_keys(self, sensitive_data):
+    @pytest.mark.db_required
+def test_encryption_with_different_keys(self, sensitive_data):
         """Test that encryption with different keys produces different results."""
         # Arrange - Create two encryption services with different keys
         with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_key_for_unit_tests_only_12345678"}):
@@ -93,7 +97,8 @@ class TestEncryptionService:
         with pytest.raises(DecryptionError):
             service2.decrypt(encrypted1)
     
-    def test_detect_tampering(self, encryption_service, sensitive_data):
+    @pytest.mark.db_required
+def test_detect_tampering(self, encryption_service, sensitive_data):
         """Test that tampering with encrypted data is detected."""
         # Arrange
         encrypted = encryption_service.encrypt(json.dumps(sensitive_data))
@@ -105,7 +110,8 @@ class TestEncryptionService:
         with pytest.raises(DecryptionError):
             encryption_service.decrypt(tampered)
     
-    def test_handle_invalid_input(self, encryption_service):
+    @pytest.mark.db_required
+def test_handle_invalid_input(self, encryption_service):
         """Test handling of invalid input for encryption/decryption."""
         # Test with None
         with pytest.raises(EncryptionError):
@@ -129,7 +135,8 @@ class TestEncryptionService:
         with pytest.raises(DecryptionError):
             encryption_service.decrypt("not_encrypted_data")
     
-    def test_key_rotation(self, encryption_service, sensitive_data):
+    @pytest.mark.db_required
+def test_key_rotation(self, encryption_service, sensitive_data):
         """Test encryption key rotation capabilities."""
         # Arrange
         # 1. Encrypt data with old key
@@ -160,7 +167,8 @@ class TestEncryptionService:
         # Verify old and new encrypted formats are different
         assert old_encrypted != new_encrypted
     
-    def test_encryption_performance(self, encryption_service, sensitive_data):
+    @pytest.mark.db_required
+def test_encryption_performance(self, encryption_service, sensitive_data):
         """Test encryption/decryption performance for large data sets."""
         # Arrange - Create a large dataset
         large_data = sensitive_data.copy()
@@ -190,6 +198,7 @@ class TestEncryptionService:
         assert decryption_time < 0.05, f"Decryption too slow: {decryption_time} seconds"
 
 
+@pytest.mark.db_required
 class TestFieldEncryptor:
     """
     Tests for the FieldEncryptor to ensure HIPAA-compliant field-level encryption.
@@ -228,7 +237,8 @@ class TestFieldEncryptor:
             }
         }
     
-    def test_encrypt_selected_fields(self, field_encryptor, mixed_data):
+    @pytest.mark.db_required
+def test_encrypt_selected_fields(self, field_encryptor, mixed_data):
         """Test encrypting only selected fields in a document."""
         # Arrange
         fields_to_encrypt = ["patient", "notes", "vitals.allergies"]
@@ -258,7 +268,8 @@ class TestFieldEncryptor:
         assert isinstance(encrypted_data["vitals"]["allergies"], str)
         assert encrypted_data["vitals"]["allergies"].startswith("v1:")
     
-    def test_decrypt_selected_fields(self, field_encryptor, mixed_data):
+    @pytest.mark.db_required
+def test_decrypt_selected_fields(self, field_encryptor, mixed_data):
         """Test decrypting selected fields in a document."""
         # Arrange
         fields_to_encrypt = ["patient", "notes", "vitals.allergies"]
@@ -277,7 +288,8 @@ class TestFieldEncryptor:
         assert decrypted_data["record_id"] == mixed_data["record_id"]
         assert decrypted_data["vitals"]["height"] == mixed_data["vitals"]["height"]
     
-    def test_nested_field_handling(self, field_encryptor):
+    @pytest.mark.db_required
+def test_nested_field_handling(self, field_encryptor):
         """Test handling of deeply nested fields."""
         # Arrange
         nested_data = {
@@ -322,7 +334,8 @@ class TestFieldEncryptor:
         assert decrypted_data["metadata"]["user"]["profile"]["name"] == nested_data["metadata"]["user"]["profile"]["name"]
         assert decrypted_data["metadata"]["user"]["profile"]["email"] == nested_data["metadata"]["user"]["profile"]["email"]
     
-    def test_array_field_handling(self, field_encryptor):
+    @pytest.mark.db_required
+def test_array_field_handling(self, field_encryptor):
         """Test handling of fields in arrays."""
         # Arrange
         array_data = {
@@ -368,7 +381,8 @@ class TestFieldEncryptor:
             assert decrypted_data["records"][i]["name"] == array_data["records"][i]["name"]
             assert decrypted_data["records"][i]["diagnosis"] == array_data["records"][i]["diagnosis"]
     
-    def test_handles_missing_fields(self, field_encryptor, mixed_data):
+    @pytest.mark.db_required
+def test_handles_missing_fields(self, field_encryptor, mixed_data):
         """Test handling of missing fields during encryption/decryption."""
         # Arrange
         fields_to_encrypt = ["patient", "notes", "non_existent_field"]
@@ -382,7 +396,8 @@ class TestFieldEncryptor:
         assert "non_existent_field" not in decrypted_data
         assert decrypted_data["patient"] == mixed_data["patient"]
     
-    def test_phi_data_schema_compliance(self, field_encryptor):
+    @pytest.mark.db_required
+def test_phi_data_schema_compliance(self, field_encryptor):
         """Test encryption of standard PHI fields in a medical schema."""
         # Arrange - Create a standard patient schema with PHI
         patient_record = {

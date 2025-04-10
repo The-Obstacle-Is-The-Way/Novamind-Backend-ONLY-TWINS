@@ -70,10 +70,12 @@ class MentalLLaMAValidationError(MentalLLaMABaseError):
 
 
 # Test class for the exceptions
+@pytest.mark.standalone
 class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     
-    def test_base_error(self):
+    @pytest.mark.standalone
+def test_base_error(self):
         """Test the base error class."""
         # Arrange
         message = "Base error message"
@@ -87,7 +89,8 @@ class TestMLExceptions(unittest.TestCase):
         self.assertEqual(error.details, details)
         self.assertEqual(str(error), message)
     
-    def test_inference_error(self):
+    @pytest.mark.standalone
+def test_inference_error(self):
         """Test the inference error class."""
         # Arrange
         message = "Inference error message"
@@ -117,7 +120,8 @@ class TestMLExceptions(unittest.TestCase):
         # Ensure input_text is NOT included in details to prevent PHI leakage
         self.assertNotIn("input_text", error.details)
         
-    def test_validation_error(self):
+    @pytest.mark.standalone
+def test_validation_error(self):
         """Test the validation error class."""
         # Arrange
         message = "Validation error message"

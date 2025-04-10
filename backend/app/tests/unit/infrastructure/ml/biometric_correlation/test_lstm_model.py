@@ -16,6 +16,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricLSTMModel
 
 
+@pytest.mark.db_required
 class TestBiometricLSTMModel:
     """Tests for the BiometricLSTMModel."""
 
@@ -107,7 +108,8 @@ class TestBiometricLSTMModel:
             "mood": mood_data
         }
 
-    async def test_initialize_loads_model(self):
+    async @pytest.mark.db_required
+def test_initialize_loads_model(self):
         """Test that initialize loads the model correctly."""
         # Setup
         with patch('app.infrastructure.ml.biometric_correlation.lstm_model.torch', autospec=True) as mock_torch, \
@@ -134,7 +136,8 @@ class TestBiometricLSTMModel:
             assert model._model is not None
             assert model._metadata == {'version': '1.0'}
 
-    async def test_initialize_handles_missing_model(self):
+    async @pytest.mark.db_required
+def test_initialize_handles_missing_model(self):
         """Test that initialize handles missing model files gracefully."""
         # Setup
         with patch('app.infrastructure.ml.biometric_correlation.lstm_model.torch', autospec=True), \
@@ -152,7 +155,8 @@ class TestBiometricLSTMModel:
             assert model.is_initialized
             assert model._model is not None
 
-    async def test_analyze_correlations_returns_correlations(self, model, sample_biometric_data, sample_symptom_data):
+    async @pytest.mark.db_required
+def test_analyze_correlations_returns_correlations(self, model, sample_biometric_data, sample_symptom_data):
         """Test that analyze_correlations returns correlations with the expected structure."""
         # Execute
         result = await model.analyze_correlations(sample_biometric_data, sample_symptom_data)
@@ -176,7 +180,8 @@ class TestBiometricLSTMModel:
         assert "false_positive_rate" in result["model_metrics"]
         assert "lag_prediction_mae" in result["model_metrics"]
 
-    async def test_analyze_correlations_handles_empty_data(self, model):
+    async @pytest.mark.db_required
+def test_analyze_correlations_handles_empty_data(self, model):
         """Test that analyze_correlations handles empty input data gracefully."""
         # Setup
         empty_biometric_data = {}
@@ -188,7 +193,8 @@ class TestBiometricLSTMModel:
         
         assert "Empty input data" in str(excinfo.value)
 
-    async def test_analyze_correlations_handles_missing_columns(self, model, sample_biometric_data):
+    async @pytest.mark.db_required
+def test_analyze_correlations_handles_missing_columns(self, model, sample_biometric_data):
         """Test that analyze_correlations handles input data with missing required columns."""
         # Setup
         incomplete_symptom_data = {
@@ -204,7 +210,8 @@ class TestBiometricLSTMModel:
         
         assert "Missing required column" in str(excinfo.value)
 
-    async def test_preprocess_data(self, model, sample_biometric_data, sample_symptom_data):
+    async @pytest.mark.db_required
+def test_preprocess_data(self, model, sample_biometric_data, sample_symptom_data):
         """Test that _preprocess_data correctly transforms the input data."""
         # Setup
         with patch.object(model, '_preprocess_data', wraps=model._preprocess_data) as mock_preprocess:
@@ -232,7 +239,8 @@ class TestBiometricLSTMModel:
                 assert isinstance(data, np.ndarray)
                 assert data.ndim == 1  # 1D array: [time_steps]
 
-    async def test_align_time_series(self, model):
+    async @pytest.mark.db_required
+def test_align_time_series(self, model):
         """Test that _align_time_series correctly aligns time series data."""
         # Setup
         biometric_df = pd.DataFrame({
@@ -256,7 +264,8 @@ class TestBiometricLSTMModel:
         np.testing.assert_array_equal(aligned_biometric, [3, 4, 5, 6, 7, 8, 9, 10])
         np.testing.assert_array_equal(aligned_symptom, [5, 6, 7, 8, 9, 10, 11, 12])
 
-    async def test_calculate_lag_correlations(self, model):
+    async @pytest.mark.db_required
+def test_calculate_lag_correlations(self, model):
         """Test that _calculate_lag_correlations correctly calculates lagged correlations."""
         # Setup
         biometric_data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])

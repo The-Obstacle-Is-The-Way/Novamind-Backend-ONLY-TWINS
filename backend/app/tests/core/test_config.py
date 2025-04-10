@@ -11,10 +11,12 @@ from pathlib import Path
 from app.core.config import Settings
 
 
+@pytest.mark.db_required
 class TestSettings:
     """Test cases for the Settings class."""
     
-    def test_default_settings(self):
+    @pytest.mark.db_required
+def test_default_settings(self):
         """Test that default settings are loaded correctly."""
         settings = Settings()
         
@@ -29,7 +31,8 @@ class TestSettings:
         # HIPAA settings
         assert settings.ENABLE_PHI_AUDITING is True
     
-    def test_environment_override(self, monkeypatch):
+    @pytest.mark.db_required
+def test_environment_override(self, monkeypatch):
         """Test that environment variables can override settings."""
         # Setup environment variables
         monkeypatch.setenv("PROJECT_NAME", "Custom Project Name")
@@ -48,7 +51,8 @@ class TestSettings:
         assert settings.ACCESS_TOKEN_EXPIRE_MINUTES == 60
         assert settings.ENABLE_PHI_AUDITING is False
     
-    def test_database_url_construction(self, monkeypatch):
+    @pytest.mark.db_required
+def test_database_url_construction(self, monkeypatch):
         """Test that database URL is constructed correctly from components."""
         # Setup database environment variables
         test_db_url = "postgresql://test-user:test-password@test-db-server:5432/test-db"
@@ -60,7 +64,8 @@ class TestSettings:
         # Check database URL
         assert str(settings.SQLALCHEMY_DATABASE_URI) == test_db_url
     
-    def test_testing_environment(self, monkeypatch):
+    @pytest.mark.db_required
+def test_testing_environment(self, monkeypatch):
         """Test that testing environment settings are applied."""
         # Setup testing environment
         monkeypatch.setenv("TESTING", "1")
@@ -73,7 +78,8 @@ class TestSettings:
         assert settings.ENVIRONMENT == "testing"
         assert "DEBUG" in os.environ
     
-    def test_cors_settings(self, monkeypatch):
+    @pytest.mark.db_required
+def test_cors_settings(self, monkeypatch):
         """Test CORS origins settings parsing."""
         # Test comma-separated string format
         monkeypatch.setenv("CORS_ORIGINS", "http://localhost,https://example.com")

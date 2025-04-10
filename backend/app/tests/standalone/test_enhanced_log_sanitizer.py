@@ -14,10 +14,12 @@ from app.infrastructure.security.log_sanitizer import (
 )
 
 
+@pytest.mark.db_required
 class TestPHIPattern:
     """Test suite for PHIPattern class."""
     
-    def test_phi_pattern_matches_regex(self):
+    @pytest.mark.db_required
+def test_phi_pattern_matches_regex(self):
         """Test regex pattern matching."""
         pattern = PHIPattern(
             name="SSN", 
@@ -37,7 +39,8 @@ class TestPHIPattern:
         assert not pattern.matches("")
         assert not pattern.matches(None)
 
-    def test_phi_pattern_matches_exact(self):
+    @pytest.mark.db_required
+def test_phi_pattern_matches_exact(self):
         """Test exact pattern matching."""
         pattern = PHIPattern(
             name="Sensitive Key", 
@@ -56,7 +59,8 @@ class TestPHIPattern:
         assert not pattern.matches("")
         assert not pattern.matches(None)
 
-    def test_phi_pattern_matches_fuzzy(self):
+    @pytest.mark.db_required
+def test_phi_pattern_matches_fuzzy(self):
         """Test fuzzy pattern matching."""
         pattern = PHIPattern(
             name="Medical Term", 
@@ -75,7 +79,8 @@ class TestPHIPattern:
         assert not pattern.matches("")
         assert not pattern.matches(None)
 
-    def test_phi_pattern_matches_context(self):
+    @pytest.mark.db_required
+def test_phi_pattern_matches_context(self):
         """Test context-based pattern matching."""
         pattern = PHIPattern(
             name="SSN Context", 
@@ -97,10 +102,12 @@ class TestPHIPattern:
         assert not pattern.matches("", None)
 
 
+@pytest.mark.db_required
 class TestPatternRepository:
     """Test suite for PatternRepository class."""
     
-    def test_default_patterns(self):
+    @pytest.mark.db_required
+def test_default_patterns(self):
         """Test that default patterns are loaded."""
         repo = PatternRepository()
         patterns = repo.get_patterns()
@@ -114,7 +121,8 @@ class TestPatternRepository:
         assert "PatientID" in pattern_names
 
     @patch('app.infrastructure.security.log_sanitizer.yaml.safe_load')
-    def test_load_patterns_from_file(self, mock_yaml_load, tmp_path):
+    @pytest.mark.db_required
+def test_load_patterns_from_file(self, mock_yaml_load, tmp_path):
         """Test loading patterns from a YAML file."""
         # Mock the yaml.safe_load to return our test data
         mock_yaml_load.return_value = {
@@ -165,7 +173,8 @@ class TestPatternRepository:
         assert "test" in test_pattern.context_words
         assert "test123" in test_pattern.examples
 
-    def test_add_pattern(self):
+    @pytest.mark.db_required
+def test_add_pattern(self):
         """Test adding a new pattern."""
         repo = PatternRepository()
         initial_count = len(repo.get_patterns())
@@ -185,10 +194,12 @@ class TestPatternRepository:
         assert any(p.name == "Custom Pattern" for p in patterns)
 
 
+@pytest.mark.db_required
 class TestRedactionStrategies:
     """Test suite for redaction strategies."""
     
-    def test_full_redaction_strategy(self):
+    @pytest.mark.db_required
+def test_full_redaction_strategy(self):
         """Test FullRedactionStrategy."""
         strategy = FullRedactionStrategy(marker="[PHI REDACTED]")
         
@@ -199,7 +210,8 @@ class TestRedactionStrategies:
         assert strategy.redact("") == "[PHI REDACTED]"
         assert strategy.redact(None) == "[PHI REDACTED]"
 
-    def test_partial_redaction_strategy_ssn(self):
+    @pytest.mark.db_required
+def test_partial_redaction_strategy_ssn(self):
         """Test PartialRedactionStrategy with SSN."""
         strategy = PartialRedactionStrategy(visible_length=4, marker="[REDACTED]")
         
@@ -212,7 +224,8 @@ class TestRedactionStrategies:
         result = strategy.redact("123456789", ssn_pattern)
         assert result == "xxx-xx-6789" or result == "xxxxx6789"
 
-    def test_partial_redaction_strategy_email(self):
+    @pytest.mark.db_required
+def test_partial_redaction_strategy_email(self):
         """Test PartialRedactionStrategy with email."""
         strategy = PartialRedactionStrategy(visible_length=4, marker="[REDACTED]")
         
@@ -221,7 +234,8 @@ class TestRedactionStrategies:
         assert strategy.redact("john.doe@example.com", email_pattern) == "xxxx@example.com"
         assert strategy.redact("short@test.org", email_pattern) == "xxxx@test.org"
 
-    def test_partial_redaction_strategy_phone(self):
+    @pytest.mark.db_required
+def test_partial_redaction_strategy_phone(self):
         """Test PartialRedactionStrategy with phone number."""
         strategy = PartialRedactionStrategy(visible_length=4, marker="[REDACTED]")
         
@@ -230,7 +244,8 @@ class TestRedactionStrategies:
         assert strategy.redact("555-123-4567", phone_pattern) == "xxx-xxx-4567"
         assert strategy.redact("(555) 123-4567", phone_pattern) == "xxx-xxx-4567"
 
-    def test_partial_redaction_strategy_patient_id(self):
+    @pytest.mark.db_required
+def test_partial_redaction_strategy_patient_id(self):
         """Test PartialRedactionStrategy with patient ID."""
         strategy = PartialRedactionStrategy(visible_length=4, marker="[REDACTED]")
         
@@ -239,7 +254,8 @@ class TestRedactionStrategies:
         assert strategy.redact("PT123456", id_pattern) == "[ID ending in 3456]"
         assert strategy.redact("PT12", id_pattern) == "[REDACTED]"  # Too short
 
-    def test_partial_redaction_strategy_default(self):
+    @pytest.mark.db_required
+def test_partial_redaction_strategy_default(self):
         """Test PartialRedactionStrategy default behavior."""
         strategy = PartialRedactionStrategy(visible_length=4, marker="[REDACTED]")
         
@@ -251,7 +267,8 @@ class TestRedactionStrategies:
         result = strategy.redact("short")
         assert result == "[REDACTED]" or result == "xhort"
 
-    def test_hash_redaction_strategy(self):
+    @pytest.mark.db_required
+def test_hash_redaction_strategy(self):
         """Test HashRedactionStrategy."""
         strategy = HashRedactionStrategy(salt="test-salt", hash_length=10)
         
@@ -269,7 +286,8 @@ class TestRedactionStrategies:
         assert len(hash1) == 10
         assert len(hash2) == 10
 
-    def test_redaction_strategy_factory(self):
+    @pytest.mark.db_required
+def test_redaction_strategy_factory(self):
         """Test RedactionStrategyFactory."""
         config = SanitizerConfig(
             redaction_marker="[CUSTOM REDACTED]",
@@ -293,10 +311,12 @@ class TestRedactionStrategies:
         assert hash_strategy.salt == "custom-salt"
 
 
+@pytest.mark.db_required
 class TestSanitizerConfig:
     """Test suite for SanitizerConfig class."""
     
-    def test_default_config(self):
+    @pytest.mark.db_required
+def test_default_config(self):
         """Test default configuration values."""
         config = SanitizerConfig()
         
@@ -309,7 +329,8 @@ class TestSanitizerConfig:
         assert "patient_id" in config.sensitive_field_names
         assert config.scan_nested_objects is True
 
-    def test_custom_config(self):
+    @pytest.mark.db_required
+def test_custom_config(self):
         """Test custom configuration values."""
         config = SanitizerConfig(
             enabled=False,
@@ -333,11 +354,13 @@ class TestSanitizerConfig:
         assert config.hash_identifiers is True
 
 
+@pytest.mark.db_required
 class TestLogSanitizer:
     """Test suite for LogSanitizer class."""
     
     @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-    def test_sanitize_simple_string(self, mock_sanitize_string):
+    @pytest.mark.db_required
+def test_sanitize_simple_string(self, mock_sanitize_string):
         """Test sanitizing a simple string."""
         # Setup the mock to return the input unchanged for "No PHI here"
         mock_sanitize_string.side_effect = lambda x: x if x == "No PHI here" else "[REDACTED]"
@@ -360,7 +383,8 @@ class TestLogSanitizer:
         assert "[REDACTED]" in sanitizer.sanitize("Patient ID: PT123456")
 
     @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-    def test_sanitize_with_partial_redaction(self, mock_sanitize_string):
+    @pytest.mark.db_required
+def test_sanitize_with_partial_redaction(self, mock_sanitize_string):
         """Test sanitizing with partial redaction mode."""
         # Setup the mock to return partially redacted SSN
         mock_sanitize_string.return_value = "SSN: xxx-xx-6789"
@@ -373,7 +397,8 @@ class TestLogSanitizer:
         assert "xxx-xx-6789" in result
 
     @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-    def test_sanitize_complex_string(self, mock_sanitize_string):
+    @pytest.mark.db_required
+def test_sanitize_complex_string(self, mock_sanitize_string):
         """Test sanitizing a complex string with multiple PHI types."""
         # Setup the mock to return a sanitized string that preserves "Patient record"
         mock_sanitize_string.return_value = "Patient record - [REDACTED], [REDACTED], [REDACTED], Email: [REDACTED], [REDACTED], ID: [REDACTED]"
@@ -399,7 +424,8 @@ class TestLogSanitizer:
         # Non-PHI should remain
         assert "Patient record" in result
 
-    def test_sanitize_dict(self):
+    @pytest.mark.db_required
+def test_sanitize_dict(self):
         """Test sanitizing a dictionary."""
         sanitizer = LogSanitizer()
         
@@ -433,7 +459,8 @@ class TestLogSanitizer:
         # Non-PHI should remain
         assert result["insurance"]["provider"] == "HealthCare Inc"
 
-    def test_sanitize_list(self):
+    @pytest.mark.db_required
+def test_sanitize_list(self):
         """Test sanitizing a list."""
         sanitizer = LogSanitizer()
         
@@ -450,7 +477,8 @@ class TestLogSanitizer:
             assert item["name"] == "[REDACTED]"
             assert item["email"] == "[REDACTED]"
 
-    def test_sanitize_structured_log(self):
+    @pytest.mark.db_required
+def test_sanitize_structured_log(self):
         """Test sanitizing a structured log."""
         sanitizer = LogSanitizer()
         
@@ -483,7 +511,8 @@ class TestLogSanitizer:
         # Non-PHI context should remain
         assert result["context"]["user"] == "admin"
 
-    def test_is_sensitive_key(self):
+    @pytest.mark.db_required
+def test_is_sensitive_key(self):
         """Test sensitive key detection."""
         sanitizer = LogSanitizer()
         
@@ -500,7 +529,8 @@ class TestLogSanitizer:
         assert sanitizer._is_sensitive_key("status") is False
         assert sanitizer._is_sensitive_key("count") is False
 
-    def test_safe_system_message(self):
+    @pytest.mark.db_required
+def test_safe_system_message(self):
         """Test safe system message detection."""
         sanitizer = LogSanitizer()
         
@@ -513,7 +543,8 @@ class TestLogSanitizer:
         assert sanitizer._is_safe_system_message("User data: John Doe") is False
         assert sanitizer._is_safe_system_message("Patient SSN: 123-45-6789") is False
 
-    def test_sanitization_hooks(self):
+    @pytest.mark.db_required
+def test_sanitization_hooks(self):
         """Test custom sanitization hooks."""
         sanitizer = LogSanitizer()
         
@@ -531,7 +562,8 @@ class TestLogSanitizer:
         # Regular PHI should still be redacted
         assert "[REDACTED]" in sanitizer.sanitize("SSN: 123-45-6789")
 
-    def test_disabled_sanitizer(self):
+    @pytest.mark.db_required
+def test_disabled_sanitizer(self):
         """Test sanitizer when disabled."""
         config = SanitizerConfig(enabled=False)
         sanitizer = LogSanitizer(config=config)
@@ -540,7 +572,8 @@ class TestLogSanitizer:
         text_with_phi = "SSN: 123-45-6789"
         assert sanitizer.sanitize(text_with_phi) == text_with_phi
 
-    def test_max_log_size(self):
+    @pytest.mark.db_required
+def test_max_log_size(self):
         """Test log size limiting."""
         config = SanitizerConfig(max_log_size_kb=1)  # 1KB limit
         sanitizer = LogSanitizer(config=config)
@@ -553,10 +586,12 @@ class TestLogSanitizer:
         assert "... [Truncated]" in result
 
 
+@pytest.mark.db_required
 class TestLoggingIntegration:
     """Test suite for logging integration."""
     
-    def test_phi_formatter(self):
+    @pytest.mark.db_required
+def test_phi_formatter(self):
         """Test PHIFormatter."""
         sanitizer = LogSanitizer()
         formatter = PHIFormatter(fmt="%(levelname)s: %(message)s", sanitizer=sanitizer)
@@ -578,7 +613,8 @@ class TestLoggingIntegration:
         assert "[REDACTED]" in formatted
 
     @patch('app.infrastructure.security.log_sanitizer.PHIRedactionHandler.emit')
-    def test_phi_redaction_handler(self, mock_emit, caplog):
+    @pytest.mark.db_required
+def test_phi_redaction_handler(self, mock_emit, caplog):
         """Test PHIRedactionHandler."""
         caplog.set_level(logging.INFO)
         
@@ -607,7 +643,8 @@ class TestLoggingIntegration:
         assert isinstance(record, logging.LogRecord)
         assert "Patient SSN: 123-45-6789" in record.getMessage()
 
-    def test_sanitized_logger(self, caplog):
+    @pytest.mark.db_required
+def test_sanitized_logger(self, caplog):
         """Test SanitizedLogger."""
         caplog.set_level(logging.INFO)
         
@@ -623,13 +660,15 @@ class TestLoggingIntegration:
         # Check sanitizer was called
         mock_sanitizer.sanitize.assert_called()
 
-    def test_get_sanitized_logger(self):
+    @pytest.mark.db_required
+def test_get_sanitized_logger(self):
         """Test get_sanitized_logger function."""
         logger = get_sanitized_logger("test_getter")
         assert isinstance(logger, SanitizedLogger)
         assert logger.logger.name == "test_getter"
 
-    def test_sanitize_logs_decorator(self):
+    @pytest.mark.db_required
+def test_sanitize_logs_decorator(self):
         """Test sanitize_logs decorator."""
         # Create a mock sanitizer
         mock_sanitizer = MagicMock()

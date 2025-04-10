@@ -22,6 +22,7 @@ from app.core.exceptions import (
 from app.core.services.ml.mentalllama import MentaLLaMA
 
 
+@pytest.mark.venv_only
 class TestMentaLLaMA:
     """Test suite for MentaLLaMA service."""
 
@@ -79,7 +80,8 @@ class TestMentaLLaMA:
             })
         return service
 
-    def test_initialization(self, mock_phi_detection):
+    @pytest.mark.venv_only
+def test_initialization(self, mock_phi_detection):
         """Test service initialization with valid configuration."""
         service = MentaLLaMA(phi_detection_service=mock_phi_detection)
         
@@ -99,7 +101,8 @@ class TestMentaLLaMA:
             assert service.is_healthy()
             mock_boto3.assert_called_once()
 
-    def test_initialization_missing_model_ids(self, mock_phi_detection):
+    @pytest.mark.venv_only
+def test_initialization_missing_model_ids(self, mock_phi_detection):
         """Test service initialization with missing model IDs."""
         service = MentaLLaMA(phi_detection_service=mock_phi_detection)
         
@@ -108,7 +111,8 @@ class TestMentaLLaMA:
             
         assert not service.is_healthy()
 
-    def test_initialization_boto_error(self, mock_phi_detection):
+    @pytest.mark.venv_only
+def test_initialization_boto_error(self, mock_phi_detection):
         """Test service initialization with Boto error."""
         service = MentaLLaMA(phi_detection_service=mock_phi_detection)
         
@@ -127,7 +131,8 @@ class TestMentaLLaMA:
                 
         assert not service.is_healthy()
 
-    def test_detect_depression(self, mentalllama_service, mock_bedrock_response):
+    @pytest.mark.venv_only
+def test_detect_depression(self, mentalllama_service, mock_bedrock_response):
         """Test depression detection with valid input."""
         with patch.object(
             mentalllama_service._bedrock_client,
@@ -144,19 +149,22 @@ class TestMentaLLaMA:
             assert "analysis" in result
             assert "recommendations" in result
 
-    def test_detect_depression_empty_text(self, mentalllama_service):
+    @pytest.mark.venv_only
+def test_detect_depression_empty_text(self, mentalllama_service):
         """Test depression detection with empty text."""
         with pytest.raises(InvalidRequestError):
             mentalllama_service.detect_depression("")
 
-    def test_detect_depression_service_not_initialized(self):
+    @pytest.mark.venv_only
+def test_detect_depression_service_not_initialized(self):
         """Test depression detection with uninitialized service."""
         service = MentaLLaMA()
         
         with pytest.raises(ServiceUnavailableError):
             service.detect_depression("I'm feeling sad today")
 
-    def test_detect_depression_with_phi(self, mentalllama_service, mock_bedrock_response):
+    @pytest.mark.venv_only
+def test_detect_depression_with_phi(self, mentalllama_service, mock_bedrock_response):
         """Test depression detection with PHI in text."""
         # Configure PHI detection mock to detect PHI
         mentalllama_service._phi_detection_service.detect_phi.return_value = {"has_phi": True}
@@ -176,7 +184,8 @@ class TestMentaLLaMA:
             assert "depression_signals" in result
             assert result["depression_signals"]["severity"] == "mild"
 
-    def test_detect_depression_bedrock_error(self, mentalllama_service):
+    @pytest.mark.venv_only
+def test_detect_depression_bedrock_error(self, mentalllama_service):
         """Test depression detection with Bedrock error."""
         with patch.object(
             mentalllama_service._bedrock_client,
@@ -188,7 +197,8 @@ class TestMentaLLaMA:
         ), pytest.raises(ServiceUnavailableError):
             mentalllama_service.detect_depression("I'm feeling sad today")
 
-    def test_detect_depression_invalid_json_response(self, mentalllama_service):
+    @pytest.mark.venv_only
+def test_detect_depression_invalid_json_response(self, mentalllama_service):
         """Test depression detection with invalid JSON response."""
         mock_response = {
             "body": MagicMock()

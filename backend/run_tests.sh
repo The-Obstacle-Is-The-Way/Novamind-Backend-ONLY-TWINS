@@ -1,8 +1,8 @@
 #!/bin/bash
-# Novamind Digital Twin Test Runner
-# This script provides a simple command-line interface for running tests
-# organized by dependency level.
+# Main test runner script for the Novamind Digital Twin Backend
+# This script provides a simple interface to the test infrastructure
 
+# Set strict error handling
 set -e
 
 # Define colors for output
@@ -13,211 +13,198 @@ BLUE='\033[0;34m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
-# Determine the script directory and backend directory
+# Determine the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKEND_DIR="${SCRIPT_DIR}"
 
-# Print header
+# Default values
+RUN_STANDALONE=false
+RUN_VENV=false
+RUN_DB=false
+RUN_ALL=false
+XML_OUTPUT=false
+HTML_OUTPUT=false
+VERBOSE=false
+CI_MODE=false
+CLEANUP=false
+SETUP_ENV=false
+CLEANUP_ENV=false
+CLASSIFY=false
+CLASSIFY_UPDATE=false
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --standalone)
+      RUN_STANDALONE=true
+      shift
+      ;;
+    --venv)
+      RUN_VENV=true
+      shift
+      ;;
+    --db)
+      RUN_DB=true
+      shift
+      ;;
+    --all)
+      RUN_ALL=true
+      shift
+      ;;
+    --xml)
+      XML_OUTPUT=true
+      shift
+      ;;
+    --html)
+      HTML_OUTPUT=true
+      shift
+      ;;
+    --verbose|-v)
+      VERBOSE=true
+      shift
+      ;;
+    --ci)
+      CI_MODE=true
+      shift
+      ;;
+    --cleanup)
+      CLEANUP=true
+      shift
+      ;;
+    --setup-env)
+      SETUP_ENV=true
+      shift
+      ;;
+    --cleanup-env)
+      CLEANUP_ENV=true
+      shift
+      ;;
+    --classify)
+      CLASSIFY=true
+      shift
+      ;;
+    --classify-update)
+      CLASSIFY=true
+      CLASSIFY_UPDATE=true
+      shift
+      ;;
+    --help|-h)
+      echo "Usage: $0 [options]"
+      echo "Test runner for Novamind Digital Twin Backend"
+      echo ""
+      echo "Options:"
+      echo "  --standalone          Run standalone tests only"
+      echo "  --venv                Run venv-dependent tests only"
+      echo "  --db                  Run database-dependent tests only"
+      echo "  --all                 Run all tests (default if no test type specified)"
+      echo "  --xml                 Generate XML test report"
+      echo "  --html                Generate HTML coverage report"
+      echo "  --verbose, -v         Verbose output"
+      echo "  --ci                  Run in CI mode (changes output paths)"
+      echo "  --cleanup             Clean up test environment after tests"
+      echo "  --setup-env           Set up test environment without running tests"
+      echo "  --cleanup-env         Clean up test environment without running tests"
+      echo "  --classify            Analyze and classify test files by dependency"
+      echo "  --classify-update     Analyze test files and update with appropriate markers"
+      echo "  --help, -h            Show this help message"
+      echo ""
+      echo "Examples:"
+      echo "  $0 --standalone       # Run standalone tests only"
+      echo "  $0 --all --xml        # Run all tests with XML report"
+      echo "  $0 --classify-update  # Update test files with dependency markers"
+      exit 0
+      ;;
+    *)
+      echo -e "${RED}Unknown option: $1${NC}"
+      echo "Use --help for usage information"
+      exit 1
+      ;;
+  esac
+done
+
+# Print Novamind banner
 echo -e "${BLUE}${BOLD}=====================================================================${NC}"
 echo -e "${BLUE}${BOLD}                Novamind Digital Twin Test Runner                    ${NC}"
 echo -e "${BLUE}${BOLD}=====================================================================${NC}"
 
-# Function to display help
-show_help() {
-    echo -e "Usage: $0 [options]"
-    echo -e ""
-    echo -e "Options:"
-    echo -e "  ${BOLD}Test Selection${NC}"
-    echo -e "  --all              Run all tests (default)"
-    echo -e "  --standalone       Run only standalone tests"
-    echo -e "  --venv             Run only VENV-dependent tests"
-    echo -e "  --db               Run only DB-dependent tests"
-    echo -e ""
-    echo -e "  ${BOLD}Test Environment${NC}"
-    echo -e "  --setup-env        Set up test environment without running tests"
-    echo -e "  --cleanup-env      Clean up test environment without running tests"
-    echo -e "  --cleanup          Clean up test environment after running tests"
-    echo -e ""
-    echo -e "  ${BOLD}Output Options${NC}"
-    echo -e "  -v, --verbose      Enable verbose output"
-    echo -e "  --xml              Generate XML test reports"
-    echo -e "  --html             Generate HTML coverage reports"
-    echo -e "  --ci               Run in CI mode (fail fast)"
-    echo -e ""
-    echo -e "  ${BOLD}Utility Options${NC}"
-    echo -e "  --classify         Classify tests by dependency level"
-    echo -e "  --classify-update  Classify tests and update markers"
-    echo -e "  --help             Display this help message"
-    echo -e ""
-    echo -e "  ${BOLD}Example Usage${NC}"
-    echo -e "  $0 --standalone --verbose"
-    echo -e "  $0 --classify-update"
-    echo -e "  $0 --db --xml --html --cleanup"
-}
-
-# Check for no arguments
-if [ $# -eq 0 ]; then
-    echo -e "${YELLOW}No arguments provided, running all tests with default options.${NC}"
-    echo -e "${YELLOW}Use --help to see available options.${NC}"
-    echo -e ""
+# If no test type specified, run all
+if [[ "$RUN_STANDALONE" == "false" && "$RUN_VENV" == "false" && "$RUN_DB" == "false" && "$RUN_ALL" == "false" && "$CLASSIFY" == "false" && "$SETUP_ENV" == "false" && "$CLEANUP_ENV" == "false" ]]; then
+  RUN_ALL=true
 fi
 
-# Parse arguments
-RUN_ALL=0
-RUN_STANDALONE=0
-RUN_VENV=0
-RUN_DB=0
-SETUP_ENV=0
-CLEANUP_ENV=0
-CLEANUP=0
-VERBOSE=0
-XML=0
-HTML=0
-CI=0
-CLASSIFY=0
-CLASSIFY_UPDATE=0
-
-for arg in "$@"; do
-    case $arg in
-        --help)
-            show_help
-            exit 0
-            ;;
-        --all)
-            RUN_ALL=1
-            ;;
-        --standalone)
-            RUN_STANDALONE=1
-            ;;
-        --venv)
-            RUN_VENV=1
-            ;;
-        --db)
-            RUN_DB=1
-            ;;
-        --setup-env)
-            SETUP_ENV=1
-            ;;
-        --cleanup-env)
-            CLEANUP_ENV=1
-            ;;
-        --cleanup)
-            CLEANUP=1
-            ;;
-        -v|--verbose)
-            VERBOSE=1
-            ;;
-        --xml)
-            XML=1
-            ;;
-        --html)
-            HTML=1
-            ;;
-        --ci)
-            CI=1
-            ;;
-        --classify)
-            CLASSIFY=1
-            ;;
-        --classify-update)
-            CLASSIFY_UPDATE=1
-            ;;
-        *)
-            # Unknown option
-            echo -e "${RED}Unknown option: $arg${NC}"
-            show_help
-            exit 1
-            ;;
-    esac
-done
-
-# Set default to run all tests if no specific test type selected
-if [ $RUN_STANDALONE -eq 0 ] && [ $RUN_VENV -eq 0 ] && [ $RUN_DB -eq 0 ] && [ $SETUP_ENV -eq 0 ] && [ $CLEANUP_ENV -eq 0 ] && [ $CLASSIFY -eq 0 ] && [ $CLASSIFY_UPDATE -eq 0 ]; then
-    RUN_ALL=1
+# Handle test classification
+if [[ "$CLASSIFY" == "true" ]]; then
+  echo -e "${YELLOW}Analyzing test files to determine dependency levels...${NC}"
+  
+  CLASSIFY_ARGS=""
+  if [[ "$CLASSIFY_UPDATE" == "true" ]]; then
+    CLASSIFY_ARGS="--update"
+    echo -e "${YELLOW}Will update test files with appropriate markers${NC}"
+  fi
+  
+  if [[ "$VERBOSE" == "true" ]]; then
+    CLASSIFY_ARGS="$CLASSIFY_ARGS --verbose"
+  fi
+  
+  python "${SCRIPT_DIR}/scripts/classify_tests.py" $CLASSIFY_ARGS
+  
+  echo -e "${GREEN}Test classification complete${NC}"
+  
+  # Exit if we were only classifying
+  if [[ "$RUN_ALL" == "false" && "$RUN_STANDALONE" == "false" && "$RUN_VENV" == "false" && "$RUN_DB" == "false" ]]; then
+    exit 0
+  fi
 fi
 
-# Ensure permissions
-chmod +x "${BACKEND_DIR}/scripts/run_tests_by_dependency.py"
-chmod +x "${BACKEND_DIR}/scripts/classify_tests.py"
-
-# Handle special commands
-if [ $SETUP_ENV -eq 1 ]; then
-    echo -e "${BLUE}Setting up test environment...${NC}"
-    "${BACKEND_DIR}/scripts/run_test_environment.sh" start
-    exit $?
+# Handle environment setup/cleanup only
+if [[ "$SETUP_ENV" == "true" ]]; then
+  echo -e "${YELLOW}Setting up test environment...${NC}"
+  python "${SCRIPT_DIR}/scripts/run_tests_by_dependency.py" --setup-env
+  echo -e "${GREEN}Test environment setup complete${NC}"
+  exit 0
 fi
 
-if [ $CLEANUP_ENV -eq 1 ]; then
-    echo -e "${BLUE}Cleaning up test environment...${NC}"
-    "${BACKEND_DIR}/scripts/run_test_environment.sh" stop
-    exit $?
+if [[ "$CLEANUP_ENV" == "true" ]]; then
+  echo -e "${YELLOW}Cleaning up test environment...${NC}"
+  python "${SCRIPT_DIR}/scripts/run_tests_by_dependency.py" --cleanup-env
+  echo -e "${GREEN}Test environment cleanup complete${NC}"
+  exit 0
 fi
 
-# Run test classification if requested
-if [ $CLASSIFY -eq 1 ] || [ $CLASSIFY_UPDATE -eq 1 ]; then
-    echo -e "${BLUE}Classifying tests by dependency level...${NC}"
-    
-    CLASSIFY_ARGS="--path ${BACKEND_DIR}/app/tests"
-    
-    if [ $CLASSIFY_UPDATE -eq 1 ]; then
-        CLASSIFY_ARGS="${CLASSIFY_ARGS} --update"
-    fi
-    
-    if [ $VERBOSE -eq 1 ]; then
-        CLASSIFY_ARGS="${CLASSIFY_ARGS} --log-level DEBUG"
-    fi
-    
-    python "${BACKEND_DIR}/scripts/classify_tests.py" ${CLASSIFY_ARGS}
-    exit $?
-fi
-
-# Build args for test runner
+# Build arguments for the test runner
 RUNNER_ARGS=""
 
-# Test selection
-if [ $RUN_ALL -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --all"
-elif [ $RUN_STANDALONE -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --standalone-only"
-elif [ $RUN_VENV -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --venv-only"
-elif [ $RUN_DB -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --db-only"
+if [[ "$RUN_ALL" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --all"
+elif [[ "$RUN_STANDALONE" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --standalone"
+elif [[ "$RUN_VENV" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --venv"
+elif [[ "$RUN_DB" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --db"
 fi
 
-# Output options
-if [ $VERBOSE -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --verbose"
+if [[ "$XML_OUTPUT" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --xml"
 fi
 
-if [ $XML -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --xml"
+if [[ "$HTML_OUTPUT" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --html"
 fi
 
-if [ $HTML -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --html"
+if [[ "$VERBOSE" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --verbose"
 fi
 
-# Behavior options
-if [ $CI -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --ci"
+if [[ "$CI_MODE" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --ci"
 fi
 
-if [ $CLEANUP -eq 1 ]; then
-    RUNNER_ARGS="${RUNNER_ARGS} --cleanup"
+if [[ "$CLEANUP" == "true" ]]; then
+  RUNNER_ARGS="$RUNNER_ARGS --cleanup"
 fi
 
-# Run the tests
-echo -e "${BLUE}Running tests with arguments: ${RUNNER_ARGS}${NC}"
-echo -e ""
-python "${BACKEND_DIR}/scripts/run_tests_by_dependency.py" ${RUNNER_ARGS}
-EXIT_CODE=$?
+echo -e "${YELLOW}Starting test run with args: $RUNNER_ARGS${NC}"
+python "${SCRIPT_DIR}/scripts/run_tests_by_dependency.py" $RUNNER_ARGS
 
-# Show final message
-if [ $EXIT_CODE -eq 0 ]; then
-    echo -e "${GREEN}${BOLD}All tests passed!${NC}"
-else
-    echo -e "${RED}${BOLD}Some tests failed with exit code ${EXIT_CODE}${NC}"
-fi
-
-exit $EXIT_CODE
+echo -e "${GREEN}Test run complete${NC}"
+exit 0

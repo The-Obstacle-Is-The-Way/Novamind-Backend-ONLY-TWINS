@@ -85,10 +85,12 @@ def encryption_service(encryption_config, mock_kms):
     return service
 
 
+@pytest.mark.db_required
 class TestEncryptionService:
     """Test suite for the encryption service."""
     
-    def test_encrypt_decrypt_text(self, encryption_service):
+    @pytest.mark.db_required
+def test_encrypt_decrypt_text(self, encryption_service):
         """Test encryption and decryption of text data."""
         # Sample PHI
         sensitive_data = "Patient John Smith (SSN: 123-45-6789) diagnosed with F41.1"
@@ -112,7 +114,8 @@ class TestEncryptionService:
         # Verify decryption restores the original plaintext
         assert decrypted_data == sensitive_data
     
-    def test_encrypt_decrypt_dict(self, encryption_service):
+    @pytest.mark.db_required
+def test_encrypt_decrypt_dict(self, encryption_service):
         """Test encryption and decryption of dictionary data."""
         # Sample PHI in dictionary format
         sensitive_dict = {
@@ -143,7 +146,8 @@ class TestEncryptionService:
         # Verify decryption restores the original dict
         assert decrypted_dict == sensitive_dict
     
-    def test_tamper_detection(self, encryption_service):
+    @pytest.mark.db_required
+def test_tamper_detection(self, encryption_service):
         """Test detection of tampered ciphertext."""
         # Sample data
         original_data = "Confidential patient data"
@@ -164,7 +168,8 @@ class TestEncryptionService:
         with pytest.raises(TamperingDetectedError):
             encryption_service.decrypt(encrypted_result)
     
-    def test_tamper_detection_with_tag(self, encryption_service):
+    @pytest.mark.db_required
+def test_tamper_detection_with_tag(self, encryption_service):
         """Test detection of tampered authentication tag."""
         # Sample data
         original_data = "Confidential patient data"
@@ -185,7 +190,8 @@ class TestEncryptionService:
         with pytest.raises(TamperingDetectedError):
             encryption_service.decrypt(encrypted_result)
     
-    def test_key_rotation(self, encryption_service, mock_kms):
+    @pytest.mark.db_required
+def test_key_rotation(self, encryption_service, mock_kms):
         """Test key rotation functionality."""
         # Sample data
         original_data = "Patient information"
@@ -216,7 +222,8 @@ class TestEncryptionService:
         assert encryption_service.decrypt(encrypted_result) == original_data
         assert encryption_service.decrypt(new_encrypted_result) == original_data
     
-    def test_password_hashing(self, encryption_service):
+    @pytest.mark.db_required
+def test_password_hashing(self, encryption_service):
         """Test secure password hashing."""
         # Sample password
         password = "StrongP@ssw0rd123!"
@@ -233,7 +240,8 @@ class TestEncryptionService:
         # Verify wrong password fails
         assert encryption_service.verify_password("WrongPassword", password_hash) is False
     
-    def test_secure_random_generation(self, encryption_service):
+    @pytest.mark.db_required
+def test_secure_random_generation(self, encryption_service):
         """Test secure random number generation."""
         # Generate secure random bytes
         random_bytes_16 = encryption_service.generate_secure_random(16)
@@ -250,7 +258,8 @@ class TestEncryptionService:
         another_random_16 = encryption_service.generate_secure_random(16)
         assert random_bytes_16 != another_random_16
     
-    def test_key_derivation(self, encryption_service):
+    @pytest.mark.db_required
+def test_key_derivation(self, encryption_service):
         """Test key derivation from passphrases."""
         # Sample passphrase
         passphrase = "This is a secure passphrase for key derivation"
@@ -271,7 +280,8 @@ class TestEncryptionService:
         new_salt = encryption_service.generate_secure_random(16)
         assert derived_key_32 != encryption_service.derive_key(passphrase, new_salt, key_length=32)
     
-    def test_asymmetric_encryption(self, encryption_service):
+    @pytest.mark.db_required
+def test_asymmetric_encryption(self, encryption_service):
         """Test asymmetric encryption for secure key exchange."""
         # Generate a key pair for the recipient
         key_pair = encryption_service.generate_asymmetric_key_pair()
@@ -293,7 +303,8 @@ class TestEncryptionService:
         # Verify successful decryption
         assert decrypted_data == sensitive_data
     
-    def test_digital_signature(self, encryption_service):
+    @pytest.mark.db_required
+def test_digital_signature(self, encryption_service):
         """Test digital signature functionality for data integrity and authenticity."""
         # Generate a key pair for signing
         key_pair = encryption_service.generate_signing_key_pair()
@@ -315,7 +326,8 @@ class TestEncryptionService:
         is_valid = encryption_service.verify_signature(tampered_message, signature, verify_key)
         assert is_valid is False
     
-    def test_file_encryption(self, encryption_service):
+    @pytest.mark.db_required
+def test_file_encryption(self, encryption_service):
         """Test encryption and decryption of file data."""
         # Sample file content
         file_data = b"This is a confidential patient file containing PHI.\n" * 1000  # ~50KB
@@ -339,7 +351,8 @@ class TestEncryptionService:
         # Verify successful decryption
         assert decrypted_file == file_data
     
-    def test_authenticated_encryption(self, encryption_service):
+    @pytest.mark.db_required
+def test_authenticated_encryption(self, encryption_service):
         """Test authenticated encryption with additional authenticated data (AAD)."""
         # Sample data and context information
         sensitive_data = "Patient lab results: HDL 65mg/dL, LDL 120mg/dL"
@@ -359,7 +372,8 @@ class TestEncryptionService:
         with pytest.raises(TamperingDetectedError):
             encryption_service.decrypt_with_aad(encrypted_result, wrong_context)
     
-    def test_bulk_encryption(self, encryption_service):
+    @pytest.mark.db_required
+def test_bulk_encryption(self, encryption_service):
         """Test encryption and decryption of multiple items in bulk."""
         # Multiple items to encrypt
         sensitive_items = [
@@ -380,7 +394,8 @@ class TestEncryptionService:
         # Verify all items were correctly decrypted
         assert decrypted_items == sensitive_items
     
-    def test_hash_data_for_storage(self, encryption_service):
+    @pytest.mark.db_required
+def test_hash_data_for_storage(self, encryption_service):
         """Test secure hashing of data for storage or comparison."""
         # Data to hash
         data_to_hash = "A unique identifier that should be securely stored"
@@ -398,7 +413,8 @@ class TestEncryptionService:
         different_data = "A slightly different identifier"
         assert encryption_service.hash_data(different_data) != hashed_data
     
-    def test_key_wrapping(self, encryption_service):
+    @pytest.mark.db_required
+def test_key_wrapping(self, encryption_service):
         """Test key wrapping for secure key storage."""
         # Create a data key to be wrapped
         data_key = encryption_service.generate_secure_random(32)
@@ -415,7 +431,8 @@ class TestEncryptionService:
         # Verify unwrapped key matches the original
         assert unwrapped_key == data_key
     
-    def test_aws_kms_integration(self, encryption_service):
+    @pytest.mark.db_required
+def test_aws_kms_integration(self, encryption_service):
         """Test integration with AWS KMS for key management."""
         # Mock AWS KMS client
         mock_aws_kms = MagicMock()
@@ -452,7 +469,8 @@ class TestEncryptionService:
             # Verify successful decryption
             assert decrypted_data == sample_data
     
-    def test_error_handling(self, encryption_service):
+    @pytest.mark.db_required
+def test_error_handling(self, encryption_service):
         """Test handling of various error conditions."""
         # Test with invalid key
         with pytest.raises(InvalidKeyError):
@@ -466,7 +484,8 @@ class TestEncryptionService:
         with pytest.raises(DecryptionError):
             encryption_service.decrypt(incomplete_result)
     
-    def test_encryption_performance(self, encryption_service):
+    @pytest.mark.db_required
+def test_encryption_performance(self, encryption_service):
         """Test encryption performance with larger data sets."""
         # Generate a larger data set (~1MB)
         large_data = "A" * (1024 * 1024)  # 1MB of 'A' characters

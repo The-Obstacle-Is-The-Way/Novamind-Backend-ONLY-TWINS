@@ -17,6 +17,7 @@ from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomFore
 from app.infrastructure.ml.base.base_model import BaseMLModel
 
 
+@pytest.mark.db_required
 class TestSymptomForecastEnsembleModel:
     """Tests for the SymptomForecastEnsembleModel."""
 
@@ -70,7 +71,8 @@ class TestSymptomForecastEnsembleModel:
         }
         return pd.DataFrame(data)
 
-    async def test_predict_combines_model_predictions(self, ensemble_model, sample_input_data, mock_model_1, mock_model_2):
+    async @pytest.mark.db_required
+def test_predict_combines_model_predictions(self, ensemble_model, sample_input_data, mock_model_1, mock_model_2):
         """Test that predict correctly combines predictions from component models."""
         # Execute
         result = await ensemble_model.predict(sample_input_data, horizon=4)
@@ -98,7 +100,8 @@ class TestSymptomForecastEnsembleModel:
         assert result["contributing_models"]["Model1"]["weight"] == 0.7
         assert result["contributing_models"]["Model2"]["weight"] == 0.3
 
-    async def test_predict_with_custom_weights(self, mock_model_1, mock_model_2, sample_input_data):
+    async @pytest.mark.db_required
+def test_predict_with_custom_weights(self, mock_model_1, mock_model_2, sample_input_data):
         """Test that predict respects custom weights provided at prediction time."""
         # Setup
         ensemble = SymptomForecastEnsembleModel(
@@ -121,7 +124,8 @@ class TestSymptomForecastEnsembleModel:
         assert result["contributing_models"]["Model1"]["weight"] == 0.4
         assert result["contributing_models"]["Model2"]["weight"] == 0.6
 
-    async def test_predict_handles_model_error(self, mock_model_1, mock_model_2, sample_input_data):
+    async @pytest.mark.db_required
+def test_predict_handles_model_error(self, mock_model_1, mock_model_2, sample_input_data):
         """Test that predict handles errors in component models gracefully."""
         # Setup
         mock_model_1.predict.side_effect = Exception("Model error")
@@ -144,7 +148,8 @@ class TestSymptomForecastEnsembleModel:
             mock_model_2.predict.return_value["predictions"]
         )
 
-    async def test_predict_with_all_models_failing(self, mock_model_1, mock_model_2, sample_input_data):
+    async @pytest.mark.db_required
+def test_predict_with_all_models_failing(self, mock_model_1, mock_model_2, sample_input_data):
         """Test that predict handles the case where all component models fail."""
         # Setup
         mock_model_1.predict.side_effect = Exception("Model 1 error")
@@ -160,7 +165,8 @@ class TestSymptomForecastEnsembleModel:
         
         assert "All models failed" in str(excinfo.value)
 
-    async def test_calculate_confidence_intervals(self, ensemble_model, sample_input_data):
+    async @pytest.mark.db_required
+def test_calculate_confidence_intervals(self, ensemble_model, sample_input_data):
         """Test that confidence intervals are correctly calculated."""
         # Execute
         result = await ensemble_model.predict(sample_input_data, horizon=4)

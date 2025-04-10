@@ -28,10 +28,12 @@ def role_manager():
     return RoleManager()
 
 
+@pytest.mark.venv_only
 class TestRoleManager:
     """Test suite for role-based access control manager."""
     
-    def test_init_default_roles(self, role_manager):
+    @pytest.mark.venv_only
+def test_init_default_roles(self, role_manager):
         """Test that default roles are created during initialization."""
         # Assert
         roles = role_manager.get_all_roles()
@@ -50,7 +52,8 @@ class TestRoleManager:
         assert len(roles[Role.PROVIDER].permissions) > 0
         assert len(roles[Role.ADMIN].permissions) > 0
     
-    def test_patient_role_permissions(self, role_manager):
+    @pytest.mark.venv_only
+def test_patient_role_permissions(self, role_manager):
         """Test that patient role has appropriate permissions."""
         # Get patient permissions
         patient_perms = role_manager.get_role_permissions(Role.PATIENT)
@@ -67,7 +70,8 @@ class TestRoleManager:
         assert Permission.VIEW_PATIENT_MEDICAL_RECORDS not in patient_perms
         assert Permission.VIEW_ALL_APPOINTMENTS not in patient_perms
     
-    def test_provider_role_permissions(self, role_manager):
+    @pytest.mark.venv_only
+def test_provider_role_permissions(self, role_manager):
         """Test that provider role has appropriate permissions."""
         # Get provider permissions
         provider_perms = role_manager.get_role_permissions(Role.PROVIDER)
@@ -84,7 +88,8 @@ class TestRoleManager:
         assert Permission.MANAGE_USERS not in provider_perms
         assert Permission.ADMIN_ALL not in provider_perms
     
-    def test_admin_role_permissions(self, role_manager):
+    @pytest.mark.venv_only
+def test_admin_role_permissions(self, role_manager):
         """Test that admin role has appropriate permissions."""
         # Get admin permissions
         admin_perms = role_manager.get_role_permissions(Role.ADMIN)
@@ -95,26 +100,30 @@ class TestRoleManager:
         assert Permission.MANAGE_ROLES in admin_perms
         assert Permission.VIEW_AUDIT_LOGS in admin_perms
     
-    def test_has_permission_valid(self, role_manager):
+    @pytest.mark.venv_only
+def test_has_permission_valid(self, role_manager):
         """Test permission check for valid permissions."""
         # Assert
         assert role_manager.has_permission(Role.PATIENT, Permission.VIEW_OWN_PROFILE) is True
         assert role_manager.has_permission(Role.PROVIDER, Permission.EDIT_PATIENT_MEDICAL_RECORDS) is True
         assert role_manager.has_permission(Role.ADMIN, Permission.MANAGE_USERS) is True
     
-    def test_has_permission_invalid(self, role_manager):
+    @pytest.mark.venv_only
+def test_has_permission_invalid(self, role_manager):
         """Test permission check for invalid permissions."""
         # Assert
         assert role_manager.has_permission(Role.PATIENT, Permission.EDIT_PATIENT_MEDICAL_RECORDS) is False
         assert role_manager.has_permission(Role.NURSE, Permission.CREATE_PRESCRIPTION) is False
         assert role_manager.has_permission(Role.RECEPTIONIST, Permission.MANAGE_USERS) is False
     
-    def test_has_permission_nonexistent_role(self, role_manager):
+    @pytest.mark.venv_only
+def test_has_permission_nonexistent_role(self, role_manager):
         """Test permission check for nonexistent role."""
         # Assert
         assert role_manager.has_permission("nonexistent_role", Permission.VIEW_OWN_PROFILE) is False
     
-    def test_has_permission_admin_all(self, role_manager):
+    @pytest.mark.venv_only
+def test_has_permission_admin_all(self, role_manager):
         """Test that ADMIN_ALL permission grants all other permissions."""
         # Admin role has ADMIN_ALL permission
         
@@ -125,7 +134,8 @@ class TestRoleManager:
         assert role_manager.has_permission(Role.ADMIN, Permission.CREATE_PRESCRIPTION) is True
         assert role_manager.has_permission(Role.ADMIN, Permission.VIEW_PATIENT_MEDICAL_RECORDS) is True
     
-    def test_add_role(self, role_manager):
+    @pytest.mark.venv_only
+def test_add_role(self, role_manager):
         """Test adding a new role."""
         # Arrange
         new_role = RoleDefinition(
@@ -148,7 +158,8 @@ class TestRoleManager:
         assert Permission.VIEW_PATIENT_MEDICAL_RECORDS in roles["researcher"].permissions
         assert Permission.VIEW_AUDIT_LOGS in roles["researcher"].permissions
     
-    def test_add_existing_role(self, role_manager):
+    @pytest.mark.venv_only
+def test_add_existing_role(self, role_manager):
         """Test adding a role with an existing name raises error."""
         # Arrange
         duplicate_role = RoleDefinition(
@@ -161,7 +172,8 @@ class TestRoleManager:
         with pytest.raises(ValueError, match=f"Role {Role.PATIENT} already exists"):
             role_manager.add_role(duplicate_role)
     
-    def test_update_role_permissions(self, role_manager):
+    @pytest.mark.venv_only
+def test_update_role_permissions(self, role_manager):
         """Test updating permissions for a role."""
         # Arrange
         new_permissions = {
@@ -178,7 +190,8 @@ class TestRoleManager:
         assert updated_perms == new_permissions
         assert Permission.SCHEDULE_ANY_APPOINTMENT not in updated_perms
     
-    def test_update_nonexistent_role(self, role_manager):
+    @pytest.mark.venv_only
+def test_update_nonexistent_role(self, role_manager):
         """Test updating permissions for a nonexistent role raises error."""
         # Arrange
         new_permissions = {Permission.VIEW_OWN_PROFILE}
@@ -187,7 +200,8 @@ class TestRoleManager:
         with pytest.raises(ValueError, match="Role nonexistent_role does not exist"):
             role_manager.update_role_permissions("nonexistent_role", new_permissions)
     
-    def test_add_permission_to_role(self, role_manager):
+    @pytest.mark.venv_only
+def test_add_permission_to_role(self, role_manager):
         """Test adding a single permission to a role."""
         # Arrange
         # Ensure permission is not already in the role
@@ -201,7 +215,8 @@ class TestRoleManager:
         updated_perms = role_manager.get_role_permissions(Role.NURSE)
         assert Permission.CREATE_PRESCRIPTION in updated_perms
     
-    def test_remove_permission_from_role(self, role_manager):
+    @pytest.mark.venv_only
+def test_remove_permission_from_role(self, role_manager):
         """Test removing a permission from a role."""
         # Arrange
         # Ensure permission is in the role
@@ -215,13 +230,15 @@ class TestRoleManager:
         updated_perms = role_manager.get_role_permissions(Role.PATIENT)
         assert Permission.VIEW_OWN_PROFILE not in updated_perms
     
-    def test_get_role_permissions_nonexistent(self, role_manager):
+    @pytest.mark.venv_only
+def test_get_role_permissions_nonexistent(self, role_manager):
         """Test getting permissions for a nonexistent role raises error."""
         # Act & Assert
         with pytest.raises(ValueError, match="Role nonexistent_role does not exist"):
             role_manager.get_role_permissions("nonexistent_role")
     
-    def test_check_user_permission_basic(self, role_manager):
+    @pytest.mark.venv_only
+def test_check_user_permission_basic(self, role_manager):
         """Test basic user permission check."""
         # Act & Assert
         assert role_manager.check_user_permission(
@@ -236,7 +253,8 @@ class TestRoleManager:
             None
         ) is False
     
-    def test_check_user_permission_with_resource(self, role_manager):
+    @pytest.mark.venv_only
+def test_check_user_permission_with_resource(self, role_manager):
         """Test user permission check with resource ID."""
         # Act & Assert
         # Provider should have access to patient records
@@ -254,7 +272,8 @@ class TestRoleManager:
         ) is False
     
     @patch('app.infrastructure.security.rbac.role_manager.logger')
-    def test_logging_behavior(self, mock_logger, role_manager):
+    @pytest.mark.venv_only
+def test_logging_behavior(self, mock_logger, role_manager):
         """Test that appropriate logging occurs for security events."""
         # Act
         role_manager.has_permission(Role.PROVIDER, Permission.EDIT_PATIENT_MEDICAL_RECORDS)

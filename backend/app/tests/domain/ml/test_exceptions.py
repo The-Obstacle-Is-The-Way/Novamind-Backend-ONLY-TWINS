@@ -17,10 +17,12 @@ from app.domain.ml.exceptions import (
 )
 
 
+@pytest.mark.db_required
 class TestMentalLLaMAExceptions:
     """Tests for the MentalLLaMA exception classes."""
     
-    def test_base_exception(self):
+    @pytest.mark.db_required
+def test_base_exception(self):
         """Test MentalLLaMABaseException creation and properties."""
         # Create a basic exception
         message = "Test base exception"
@@ -33,7 +35,8 @@ class TestMentalLLaMAExceptions:
         assert exception.details == details
         assert str(exception) == message
     
-    def test_base_exception_without_details(self):
+    @pytest.mark.db_required
+def test_base_exception_without_details(self):
         """Test MentalLLaMABaseException creation without details."""
         message = "Test base exception without details"
         
@@ -44,7 +47,8 @@ class TestMentalLLaMAExceptions:
         assert exception.details == {}
         assert str(exception) == message
     
-    def test_connection_error(self):
+    @pytest.mark.db_required
+def test_connection_error(self):
         """Test MentalLLaMAConnectionError creation and properties."""
         message = "Failed to connect to MentalLLaMA API"
         endpoint = "/api/v1/inference"
@@ -61,7 +65,8 @@ class TestMentalLLaMAExceptions:
         assert exception.details == details
         assert str(exception) == message
     
-    def test_authentication_error(self):
+    @pytest.mark.db_required
+def test_authentication_error(self):
         """Test MentalLLaMAAuthenticationError creation and properties."""
         message = "API key invalid or expired"
         details = {
@@ -76,7 +81,8 @@ class TestMentalLLaMAExceptions:
         assert exception.details == details
         assert str(exception) == message
     
-    def test_inference_error(self):
+    @pytest.mark.db_required
+def test_inference_error(self):
         """Test MentalLLaMAInferenceError creation and properties."""
         message = "Inference failed due to invalid input format"
         model_name = "mentalllama-13b-chat"
@@ -110,7 +116,8 @@ class TestMentalLLaMAExceptions:
         assert "status_code" in exception.details
         assert exception.details["status_code"] == 400
     
-    def test_validation_error(self):
+    @pytest.mark.db_required
+def test_validation_error(self):
         """Test MentalLLaMAValidationError creation and properties."""
         message = "Input validation failed"
         validation_errors = {
@@ -133,7 +140,8 @@ class TestMentalLLaMAExceptions:
         assert "request_id" in exception.details
         assert exception.details["request_id"] == "req-123456"
     
-    def test_quota_exceeded_error(self):
+    @pytest.mark.db_required
+def test_quota_exceeded_error(self):
         """Test MentalLLaMAQuotaExceededError creation and properties."""
         message = "API call quota exceeded"
         quota_limit = 1000
@@ -159,7 +167,8 @@ class TestMentalLLaMAExceptions:
         assert "reset_time" in exception.details
         assert exception.details["reset_time"] == "2025-04-11T00:00:00Z"
     
-    def test_exception_inheritance(self):
+    @pytest.mark.db_required
+def test_exception_inheritance(self):
         """Test that all exceptions inherit from MentalLLaMABaseException."""
         # Create instances of all exception types
         base_exc = MentalLLaMABaseException("Base error")

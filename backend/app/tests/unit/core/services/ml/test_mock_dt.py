@@ -25,6 +25,7 @@ from app.core.services.ml.mock_dt import MockDigitalTwinService
 from app.core.services.ml.interface import DigitalTwinInterface
 
 
+@pytest.mark.db_required
 class TestMockDigitalTwinService:
     """Test suite for MockDigitalTwinService class."""
 
@@ -40,7 +41,8 @@ class TestMockDigitalTwinService:
         """Create a sample patient ID for testing."""
         return f"test-patient-{uuid.uuid4()}"
 
-    def test_initialization(self):
+    @pytest.mark.db_required
+def test_initialization(self):
         """Test initialization with valid and invalid configurations."""
         # Test default initialization
         service = MockDigitalTwinService()
@@ -63,7 +65,8 @@ class TestMockDigitalTwinService:
             service.initialize("not-a-dict")
         assert not service.is_healthy()
 
-    def test_create_session(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_create_session(self, mock_service, sample_patient_id):
         """Test creating a new Digital Twin session."""
         # Test with minimal parameters
         result = mock_service.create_session(sample_patient_id)
@@ -85,7 +88,8 @@ class TestMockDigitalTwinService:
         with pytest.raises(ServiceUnavailableError):
             uninitialized_service.create_session(sample_patient_id)
 
-    def test_get_session(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_get_session(self, mock_service, sample_patient_id):
         """Test retrieving a Digital Twin session."""
         # Create a session first
         create_result = mock_service.create_session(sample_patient_id)
@@ -111,7 +115,8 @@ class TestMockDigitalTwinService:
         with pytest.raises(ServiceUnavailableError):
             uninitialized_service.get_session(session_id)
 
-    def test_send_message(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_send_message(self, mock_service, sample_patient_id):
         """Test sending messages to a Digital Twin session."""
         # Create a session first
         create_result = mock_service.create_session(sample_patient_id)
@@ -153,7 +158,8 @@ class TestMockDigitalTwinService:
         with pytest.raises(ServiceUnavailableError):
             uninitialized_service.send_message(session_id, "Test message")
 
-    def test_message_response_types(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_message_response_types(self, mock_service, sample_patient_id):
         """Test different types of message responses."""
         # Create a session
         create_result = mock_service.create_session(sample_patient_id)
@@ -194,7 +200,8 @@ class TestMockDigitalTwinService:
             result = mock_service.send_message(session_id, f"My {therapy_term}")
             assert "therapy" in result["response"].lower()
 
-    def test_end_session(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_end_session(self, mock_service, sample_patient_id):
         """Test ending a Digital Twin session."""
         # Create a session first
         create_result = mock_service.create_session(sample_patient_id)
@@ -221,7 +228,8 @@ class TestMockDigitalTwinService:
         with pytest.raises(ServiceUnavailableError):
             uninitialized_service.end_session(session_id)
 
-    def test_get_insights(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_get_insights(self, mock_service, sample_patient_id):
         """Test getting Digital Twin insights."""
         # Test with default parameters
         result = mock_service.get_insights(sample_patient_id)
@@ -260,7 +268,8 @@ class TestMockDigitalTwinService:
         with pytest.raises(ServiceUnavailableError):
             uninitialized_service.get_insights(sample_patient_id)
 
-    def test_mood_insights(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_mood_insights(self, mock_service, sample_patient_id):
         """Test mood insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="mood")
         mood_data = result["insights"]["data"]
@@ -284,7 +293,8 @@ class TestMockDigitalTwinService:
         for label in mood_labels:
             assert label in ["very negative", "negative", "neutral", "positive", "very positive"]
 
-    def test_activity_insights(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_activity_insights(self, mock_service, sample_patient_id):
         """Test activity insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="activity")
         activity_data = result["insights"]["data"]
@@ -302,7 +312,8 @@ class TestMockDigitalTwinService:
         assert "active_minutes" in first_entry
         assert "activity_level" in first_entry
 
-    def test_sleep_insights(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_sleep_insights(self, mock_service, sample_patient_id):
         """Test sleep insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="sleep")
         sleep_data = result["insights"]["data"]
@@ -321,7 +332,8 @@ class TestMockDigitalTwinService:
         assert "quality" in first_entry
         assert "interruptions" in first_entry
 
-    def test_medication_insights(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_medication_insights(self, mock_service, sample_patient_id):
         """Test medication insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="medication")
         med_data = result["insights"]["data"]
@@ -340,7 +352,8 @@ class TestMockDigitalTwinService:
         assert "adherence" in first_med
         assert "reported_effects" in first_med
 
-    def test_treatment_insights(self, mock_service, sample_patient_id):
+    @pytest.mark.db_required
+def test_treatment_insights(self, mock_service, sample_patient_id):
         """Test treatment insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="treatment")
         treatment_data = result["insights"]["data"]

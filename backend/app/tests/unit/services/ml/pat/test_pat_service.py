@@ -80,10 +80,12 @@ def bedrock_pat_service() -> BedrockPAT:
     return service
 
 
+@pytest.mark.db_required
 class TestMockPAT:
     """Test suite for the MockPAT implementation."""
     
-    def test_initialization(self) -> None:
+    @pytest.mark.db_required
+def test_initialization(self) -> None:
         """Test that the MockPAT service initializes correctly."""
         service = MockPAT()
         assert not service.initialized
@@ -91,7 +93,8 @@ class TestMockPAT:
         service.initialize({})
         assert service.initialized
     
-    def test_analyze_actigraphy(self, mock_pat_service: MockPAT) -> None:
+    @pytest.mark.db_required
+def test_analyze_actigraphy(self, mock_pat_service: MockPAT) -> None:
         """Test analyzing actigraphy data with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -130,7 +133,8 @@ class TestMockPAT:
         assert "moderate" in activity_levels
         assert "vigorous" in activity_levels
     
-    def test_get_embeddings(self, mock_pat_service: MockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_embeddings(self, mock_pat_service: MockPAT) -> None:
         """Test generating embeddings with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -157,7 +161,8 @@ class TestMockPAT:
         assert isinstance(result["embeddings"], list)
         assert len(result["embeddings"]) == result["embedding_size"]
     
-    def test_get_analysis_by_id(self, mock_pat_service: MockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_analysis_by_id(self, mock_pat_service: MockPAT) -> None:
         """Test retrieving an analysis by ID with the mock service."""
         # First create an analysis
         patient_id = "test-patient-1"
@@ -186,7 +191,8 @@ class TestMockPAT:
         assert result["patient_id"] == patient_id
         assert "sleep_metrics" in result
     
-    def test_get_patient_analyses(self, mock_pat_service: MockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_patient_analyses(self, mock_pat_service: MockPAT) -> None:
         """Test retrieving analyses for a patient with the mock service."""
         # First create multiple analyses for the same patient
         patient_id = "test-patient-2"
@@ -236,7 +242,8 @@ class TestMockPAT:
         )
         assert len(offset_result["analyses"]) == 2
     
-    def test_get_model_info(self, mock_pat_service: MockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_model_info(self, mock_pat_service: MockPAT) -> None:
         """Test retrieving model information with the mock service."""
         result = mock_pat_service.get_model_info()
         
@@ -248,7 +255,8 @@ class TestMockPAT:
         assert "supported_analysis_types" in result
         assert isinstance(result["supported_analysis_types"], list)
     
-    def test_integrate_with_digital_twin(self, mock_pat_service: MockPAT) -> None:
+    @pytest.mark.db_required
+def test_integrate_with_digital_twin(self, mock_pat_service: MockPAT) -> None:
         """Test integrating actigraphy analysis with a digital twin with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -286,10 +294,12 @@ class TestMockPAT:
         assert "integrated_profile" in result
 
 
+@pytest.mark.db_required
 class TestBedrockPAT:
     """Test suite for the BedrockPAT implementation."""
     
-    def test_initialization(self) -> None:
+    @pytest.mark.db_required
+def test_initialization(self) -> None:
         """Test initialization with invalid configuration."""
         service = BedrockPAT()
         
@@ -320,7 +330,8 @@ class TestBedrockPAT:
             assert service.table_name == "test-table"
             assert service.kms_key_id == "test-key-id"
     
-    def test_analyze_actigraphy(self, bedrock_pat_service: BedrockPAT) -> None:
+    @pytest.mark.db_required
+def test_analyze_actigraphy(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test analyzing actigraphy data with the Bedrock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -378,7 +389,8 @@ class TestBedrockPAT:
         args, kwargs = bedrock_pat_service.dynamodb_client.put_item.call_args
         assert kwargs["TableName"] == "test-table"
     
-    def test_get_embeddings(self, bedrock_pat_service: BedrockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_embeddings(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test generating embeddings with the Bedrock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -422,7 +434,8 @@ class TestBedrockPAT:
         # Verify Bedrock was called correctly
         bedrock_pat_service.bedrock_runtime.invoke_model.assert_called_once()
     
-    def test_get_analysis_by_id(self, bedrock_pat_service: BedrockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_analysis_by_id(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test retrieving an analysis by ID with the Bedrock service."""
         analysis_id = str(uuid.uuid4())
         
@@ -460,7 +473,8 @@ class TestBedrockPAT:
         assert kwargs["TableName"] == "test-table"
         assert kwargs["Key"]["AnalysisId"]["S"] == analysis_id
     
-    def test_get_analysis_by_id_not_found(self, bedrock_pat_service: BedrockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_analysis_by_id_not_found(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test retrieving a non-existent analysis by ID."""
         analysis_id = str(uuid.uuid4())
         
@@ -473,7 +487,8 @@ class TestBedrockPAT:
         with pytest.raises(ResourceNotFoundError):
             bedrock_pat_service.get_analysis_by_id(analysis_id)
     
-    def test_get_patient_analyses(self, bedrock_pat_service: BedrockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_patient_analyses(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test retrieving analyses for a patient with the Bedrock service."""
         patient_id = "test-patient-1"
         
@@ -540,7 +555,8 @@ class TestBedrockPAT:
         assert kwargs["TableName"] == "test-table"
         assert kwargs["IndexName"] == "PatientIdIndex"
     
-    def test_get_patient_analyses_not_found(self, bedrock_pat_service: BedrockPAT) -> None:
+    @pytest.mark.db_required
+def test_get_patient_analyses_not_found(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test retrieving analyses for a patient with no results."""
         patient_id = "test-patient-not-found"
         
@@ -559,7 +575,8 @@ class TestBedrockPAT:
                 offset=0
             )
     
-    def test_integrate_with_digital_twin(self, bedrock_pat_service: BedrockPAT) -> None:
+    @pytest.mark.db_required
+def test_integrate_with_digital_twin(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test integrating actigraphy analysis with a digital twin with the Bedrock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -619,10 +636,12 @@ class TestBedrockPAT:
         bedrock_pat_service.bedrock_runtime.invoke_model.assert_called_once()
 
 
+@pytest.mark.db_required
 class TestPATFactory:
     """Test suite for the PAT factory."""
     
-    def test_create_pat_service_mock(self) -> None:
+    @pytest.mark.db_required
+def test_create_pat_service_mock(self) -> None:
         """Test creating a mock PAT service."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
             # Set up mock settings
@@ -639,7 +658,8 @@ class TestPATFactory:
             assert isinstance(service, MockPAT)
             assert service.initialized
     
-    def test_create_pat_service_bedrock(self) -> None:
+    @pytest.mark.db_required
+def test_create_pat_service_bedrock(self) -> None:
         """Test creating a Bedrock PAT service."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings, \
              patch("boto3.client") as mock_boto:
@@ -660,7 +680,8 @@ class TestPATFactory:
             assert isinstance(service, BedrockPAT)
             assert service.initialized
     
-    def test_create_pat_service_invalid_provider(self) -> None:
+    @pytest.mark.db_required
+def test_create_pat_service_invalid_provider(self) -> None:
         """Test creating a PAT service with an invalid provider."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
             # Set up mock settings
@@ -674,7 +695,8 @@ class TestPATFactory:
             with pytest.raises(InvalidConfigurationError):
                 PATFactory.create_pat_service()
     
-    def test_create_pat_service_missing_provider(self) -> None:
+    @pytest.mark.db_required
+def test_create_pat_service_missing_provider(self) -> None:
         """Test creating a PAT service with a missing provider."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
             # Set up mock settings
@@ -686,7 +708,8 @@ class TestPATFactory:
             with pytest.raises(InvalidConfigurationError):
                 PATFactory.create_pat_service()
     
-    def test_create_pat_service_with_config(self) -> None:
+    @pytest.mark.db_required
+def test_create_pat_service_with_config(self) -> None:
         """Test creating a PAT service with explicit config."""
         # Create config
         config = {

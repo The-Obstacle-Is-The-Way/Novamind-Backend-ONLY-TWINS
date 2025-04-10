@@ -113,10 +113,12 @@ def mock_session():
     return session
 
 
+@pytest.mark.db_required
 class TestSQLAlchemyBiometricAlertRepository:
     """Tests for the SQLAlchemy implementation of the BiometricAlertRepository."""
     
-    def test_init(self, mock_session):
+    @pytest.mark.db_required
+def test_init(self, mock_session):
         """Test initializing the repository."""
         # Act
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -124,7 +126,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         # Assert
         assert repository.session == mock_session
     
-    async def test_save_new_alert(self, mock_session, sample_alert, sample_alert_model):
+    async @pytest.mark.db_required
+def test_save_new_alert(self, mock_session, sample_alert, sample_alert_model):
         """Test saving a new biometric alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -145,7 +148,8 @@ class TestSQLAlchemyBiometricAlertRepository:
                 mock_map_to_entity.assert_called_once_with(sample_alert_model)
                 assert result == sample_alert
     
-    async def test_save_existing_alert(self, mock_session, sample_alert, sample_alert_model):
+    async @pytest.mark.db_required
+def test_save_existing_alert(self, mock_session, sample_alert, sample_alert_model):
         """Test updating an existing biometric alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -165,7 +169,8 @@ class TestSQLAlchemyBiometricAlertRepository:
                 mock_map_to_entity.assert_called_once_with(sample_alert_model)
                 assert result == sample_alert
     
-    async def test_save_error(self, mock_session, sample_alert):
+    async @pytest.mark.db_required
+def test_save_error(self, mock_session, sample_alert):
         """Test handling an error when saving an alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -178,7 +183,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         assert "Error saving biometric alert" in str(exc_info.value)
         mock_session.rollback.assert_called_once()
     
-    async def test_get_by_id(self, mock_session, sample_alert_id, sample_alert, sample_alert_model):
+    async @pytest.mark.db_required
+def test_get_by_id(self, mock_session, sample_alert_id, sample_alert, sample_alert_model):
         """Test retrieving an alert by ID."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -194,7 +200,8 @@ class TestSQLAlchemyBiometricAlertRepository:
             mock_map_to_entity.assert_called_once_with(sample_alert_model)
             assert result == sample_alert
     
-    async def test_get_by_id_not_found(self, mock_session, sample_alert_id):
+    async @pytest.mark.db_required
+def test_get_by_id_not_found(self, mock_session, sample_alert_id):
         """Test retrieving a non-existent alert by ID."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -206,7 +213,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         # Assert
         assert result is None
     
-    async def test_get_by_id_error(self, mock_session, sample_alert_id):
+    async @pytest.mark.db_required
+def test_get_by_id_error(self, mock_session, sample_alert_id):
         """Test handling an error when retrieving an alert by ID."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -218,7 +226,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         
         assert "Error retrieving biometric alert" in str(exc_info.value)
     
-    async def test_get_by_patient_id(self, mock_session, sample_patient_id, sample_alert, sample_alert_model):
+    async @pytest.mark.db_required
+def test_get_by_patient_id(self, mock_session, sample_patient_id, sample_alert, sample_alert_model):
         """Test retrieving alerts for a patient."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -234,7 +243,8 @@ class TestSQLAlchemyBiometricAlertRepository:
             mock_map_to_entity.assert_called_once_with(sample_alert_model)
             assert result == [sample_alert]
     
-    async def test_get_by_patient_id_with_filters(self, mock_session, sample_patient_id, sample_alert, sample_alert_model):
+    async @pytest.mark.db_required
+def test_get_by_patient_id_with_filters(self, mock_session, sample_patient_id, sample_alert, sample_alert_model):
         """Test retrieving alerts for a patient with filters."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -266,7 +276,8 @@ class TestSQLAlchemyBiometricAlertRepository:
                 mock_map_to_entity.assert_called_once_with(sample_alert_model)
                 assert result == [sample_alert]
     
-    async def test_get_by_patient_id_error(self, mock_session, sample_patient_id):
+    async @pytest.mark.db_required
+def test_get_by_patient_id_error(self, mock_session, sample_patient_id):
         """Test handling an error when retrieving alerts for a patient."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -278,7 +289,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         
         assert "Error retrieving biometric alerts" in str(exc_info.value)
     
-    async def test_get_active_alerts(self, mock_session, sample_alert, sample_alert_model):
+    async @pytest.mark.db_required
+def test_get_active_alerts(self, mock_session, sample_alert, sample_alert_model):
         """Test retrieving active alerts."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -294,7 +306,8 @@ class TestSQLAlchemyBiometricAlertRepository:
             mock_map_to_entity.assert_called_once_with(sample_alert_model)
             assert result == [sample_alert]
     
-    async def test_get_active_alerts_with_priority(self, mock_session, sample_alert, sample_alert_model):
+    async @pytest.mark.db_required
+def test_get_active_alerts_with_priority(self, mock_session, sample_alert, sample_alert_model):
         """Test retrieving active alerts with priority filter."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -312,7 +325,8 @@ class TestSQLAlchemyBiometricAlertRepository:
             mock_map_to_entity.assert_called_once_with(sample_alert_model)
             assert result == [sample_alert]
     
-    async def test_get_active_alerts_error(self, mock_session):
+    async @pytest.mark.db_required
+def test_get_active_alerts_error(self, mock_session):
         """Test handling an error when retrieving active alerts."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -324,7 +338,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         
         assert "Error retrieving active alerts" in str(exc_info.value)
     
-    async def test_update_status(self, mock_session, sample_alert_id, sample_provider_id, sample_alert, sample_alert_model):
+    async @pytest.mark.db_required
+def test_update_status(self, mock_session, sample_alert_id, sample_provider_id, sample_alert, sample_alert_model):
         """Test updating the status of an alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -347,7 +362,8 @@ class TestSQLAlchemyBiometricAlertRepository:
                 mock_save.assert_called_once()
                 assert result == sample_alert
     
-    async def test_update_status_not_found(self, mock_session, sample_alert_id, sample_provider_id):
+    async @pytest.mark.db_required
+def test_update_status_not_found(self, mock_session, sample_alert_id, sample_provider_id):
         """Test updating the status of a non-existent alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -363,7 +379,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         
         assert f"Biometric alert with ID {sample_alert_id} not found" in str(exc_info.value)
     
-    async def test_update_status_error(self, mock_session, sample_alert_id, sample_provider_id):
+    async @pytest.mark.db_required
+def test_update_status_error(self, mock_session, sample_alert_id, sample_provider_id):
         """Test handling an error when updating the status of an alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -379,7 +396,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         
         assert "Error updating alert status" in str(exc_info.value)
     
-    async def test_delete(self, mock_session, sample_alert_id):
+    async @pytest.mark.db_required
+def test_delete(self, mock_session, sample_alert_id):
         """Test deleting an alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -393,7 +411,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         mock_session.commit.assert_called_once()
         assert result is True
     
-    async def test_delete_not_found(self, mock_session, sample_alert_id):
+    async @pytest.mark.db_required
+def test_delete_not_found(self, mock_session, sample_alert_id):
         """Test deleting a non-existent alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -407,7 +426,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         mock_session.commit.assert_called_once()
         assert result is False
     
-    async def test_delete_error(self, mock_session, sample_alert_id):
+    async @pytest.mark.db_required
+def test_delete_error(self, mock_session, sample_alert_id):
         """Test handling an error when deleting an alert."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -420,7 +440,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         assert "Error deleting biometric alert" in str(exc_info.value)
         mock_session.rollback.assert_called_once()
     
-    async def test_count_by_patient(self, mock_session, sample_patient_id):
+    async @pytest.mark.db_required
+def test_count_by_patient(self, mock_session, sample_patient_id):
         """Test counting alerts for a patient."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -432,7 +453,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         # Assert
         assert result == 5
     
-    async def test_count_by_patient_with_filters(self, mock_session, sample_patient_id):
+    async @pytest.mark.db_required
+def test_count_by_patient_with_filters(self, mock_session, sample_patient_id):
         """Test counting alerts for a patient with filters."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -456,7 +478,8 @@ class TestSQLAlchemyBiometricAlertRepository:
             mock_apply_filters.assert_called_once_with(mock_session, status, start_date, end_date)
             assert result == 3
     
-    async def test_count_by_patient_error(self, mock_session, sample_patient_id):
+    async @pytest.mark.db_required
+def test_count_by_patient_error(self, mock_session, sample_patient_id):
         """Test handling an error when counting alerts for a patient."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -468,7 +491,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         
         assert "Error counting biometric alerts" in str(exc_info.value)
     
-    def test_apply_filters(self, mock_session):
+    @pytest.mark.db_required
+def test_apply_filters(self, mock_session):
         """Test applying filters to a query."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(mock_session)
@@ -483,7 +507,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         assert result == mock_session
         mock_session.filter.assert_called()
     
-    def test_map_to_entity(self, sample_alert_model, sample_alert):
+    @pytest.mark.db_required
+def test_map_to_entity(self, sample_alert_model, sample_alert):
         """Test mapping a model to an entity."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(MagicMock())
@@ -504,7 +529,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         assert result.updated_at == sample_alert_model.updated_at
         assert result.status == sample_alert_model.status
     
-    def test_map_to_model(self, sample_alert):
+    @pytest.mark.db_required
+def test_map_to_model(self, sample_alert):
         """Test mapping an entity to a model."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(MagicMock())
@@ -525,7 +551,8 @@ class TestSQLAlchemyBiometricAlertRepository:
         assert result.updated_at == sample_alert.updated_at
         assert result.status == sample_alert.status
     
-    def test_update_model(self, sample_alert_model, sample_alert):
+    @pytest.mark.db_required
+def test_update_model(self, sample_alert_model, sample_alert):
         """Test updating a model with entity values."""
         # Arrange
         repository = SQLAlchemyBiometricAlertRepository(MagicMock())

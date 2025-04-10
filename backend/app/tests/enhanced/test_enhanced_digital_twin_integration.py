@@ -52,7 +52,8 @@ def initial_data() -> Dict:
 
 
 @pytest.mark.asyncio
-async def test_factory_creates_services(enhanced_services):
+async @pytest.mark.db_required
+def test_factory_creates_services(enhanced_services):
     """Test that the factory correctly creates all enhanced services."""
     digital_twin_service, mental_llama_service, xgboost_service, pat_service = enhanced_services
     
@@ -64,7 +65,8 @@ async def test_factory_creates_services(enhanced_services):
 
 
 @pytest.mark.asyncio
-async def test_initialize_digital_twin(enhanced_services, patient_id, initial_data):
+async @pytest.mark.db_required
+def test_initialize_digital_twin(enhanced_services, patient_id, initial_data):
     """Test initializing a Digital Twin with knowledge graph and belief network."""
     digital_twin_service, _, _, _ = enhanced_services
     
@@ -96,7 +98,8 @@ async def test_initialize_digital_twin(enhanced_services, patient_id, initial_da
 
 
 @pytest.mark.asyncio
-async def test_process_multimodal_data(enhanced_services, patient_id, initial_data):
+async @pytest.mark.db_required
+def test_process_multimodal_data(enhanced_services, patient_id, initial_data):
     """Test processing multimodal data through the Digital Twin."""
     digital_twin_service, _, _, _ = enhanced_services
     
@@ -143,7 +146,8 @@ async def test_process_multimodal_data(enhanced_services, patient_id, initial_da
 
 
 @pytest.mark.asyncio
-async def test_knowledge_graph_operations(enhanced_services, patient_id, initial_data):
+async @pytest.mark.db_required
+def test_knowledge_graph_operations(enhanced_services, patient_id, initial_data):
     """Test operations on the knowledge graph."""
     digital_twin_service, _, _, _ = enhanced_services
     
@@ -203,7 +207,8 @@ async def test_knowledge_graph_operations(enhanced_services, patient_id, initial
 
 
 @pytest.mark.asyncio
-async def test_belief_network_operations(enhanced_services, patient_id, initial_data):
+async @pytest.mark.db_required
+def test_belief_network_operations(enhanced_services, patient_id, initial_data):
     """Test operations on the belief network."""
     digital_twin_service, _, _, _ = enhanced_services
     
@@ -235,7 +240,8 @@ async def test_belief_network_operations(enhanced_services, patient_id, initial_
 
 
 @pytest.mark.asyncio
-async def test_event_system(enhanced_services, patient_id):
+async @pytest.mark.db_required
+def test_event_system(enhanced_services, patient_id):
     """Test the event subscription and publication system."""
     digital_twin_service, _, _, _ = enhanced_services
     
@@ -270,7 +276,8 @@ async def test_event_system(enhanced_services, patient_id):
 
 
 @pytest.mark.asyncio
-async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
+async @pytest.mark.db_required
+def test_advanced_analyses(enhanced_services, patient_id, initial_data):
     """Test advanced analyses provided by the Enhanced Digital Twin."""
     digital_twin_service, _, _, _ = enhanced_services
     
@@ -324,7 +331,8 @@ async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
 
 
 @pytest.mark.asyncio
-async def test_counterfactual_simulation(enhanced_services, patient_id, initial_data):
+async @pytest.mark.db_required
+def test_counterfactual_simulation(enhanced_services, patient_id, initial_data):
     """Test counterfactual simulation of intervention scenarios."""
     digital_twin_service, _, _, _ = enhanced_services
     
@@ -393,7 +401,8 @@ async def test_counterfactual_simulation(enhanced_services, patient_id, initial_
 
 
 @pytest.mark.asyncio
-async def test_clinical_summary_generation(enhanced_services, patient_id, initial_data):
+async @pytest.mark.db_required
+def test_clinical_summary_generation(enhanced_services, patient_id, initial_data):
     """Test generation of a comprehensive clinical summary."""
     digital_twin_service, _, _, _ = enhanced_services
     
@@ -423,7 +432,8 @@ async def test_clinical_summary_generation(enhanced_services, patient_id, initia
 
 
 @pytest.mark.asyncio
-async def test_visualization_data_generation(enhanced_services, patient_id, initial_data):
+async @pytest.mark.db_required
+def test_visualization_data_generation(enhanced_services, patient_id, initial_data):
     """Test generation of visualization data."""
     digital_twin_service, _, _, _ = enhanced_services
     

@@ -25,6 +25,7 @@ from app.infrastructure.persistence.sqlalchemy.config.database import (
 )
 
 
+@pytest.mark.db_required
 class TestDatabase:
     """Comprehensive tests for the Database class and database utilities."""
     
@@ -85,7 +86,8 @@ class TestDatabase:
         return mock_maker
     
     @pytest.mark.asyncio
-    async def test_database_initialization(self, mock_settings):
+    async @pytest.mark.db_required
+def test_database_initialization(self, mock_settings):
         """Test database class initialization."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
             mock_engine = MagicMock()
@@ -106,7 +108,8 @@ class TestDatabase:
             assert kwargs["pool_pre_ping"] is True
     
     @pytest.mark.asyncio
-    async def test_database_session_context_manager(self, mock_engine, mock_session_maker):
+    async @pytest.mark.db_required
+def test_database_session_context_manager(self, mock_engine, mock_session_maker):
         """Test the database session context manager."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',
                   return_value=mock_engine):
@@ -121,7 +124,8 @@ class TestDatabase:
                 mock_session_maker.return_value.close.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_database_dispose(self, mock_engine):
+    async @pytest.mark.db_required
+def test_database_dispose(self, mock_engine):
         """Test the database engine disposal."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',
                   return_value=mock_engine):
@@ -134,7 +138,8 @@ class TestDatabase:
             mock_engine.dispose.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_get_db_dependency(self, mock_engine, mock_session_maker):
+    async @pytest.mark.db_required
+def test_get_db_dependency(self, mock_engine, mock_session_maker):
         """Test the get_db dependency injection function."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.Database') as MockDatabase:
             mock_db = MagicMock()
@@ -160,7 +165,8 @@ class TestDatabase:
             assert session == mock_session
     
     @pytest.mark.asyncio
-    async def test_create_tables(self, mock_engine):
+    async @pytest.mark.db_required
+def test_create_tables(self, mock_engine):
         """Test table creation function."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.get_engine',
                   return_value=mock_engine):
@@ -178,7 +184,8 @@ class TestDatabase:
                     mock_create_all.assert_called_once_with(mock_connection)
     
     @pytest.mark.asyncio
-    async def test_get_engine(self):
+    async @pytest.mark.db_required
+def test_get_engine(self):
         """Test engine creation utility function."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
             mock_engine = MagicMock()
@@ -195,7 +202,8 @@ class TestDatabase:
                 assert engine == mock_engine
     
     @pytest.mark.asyncio
-    async def test_connection_error_handling(self, mock_settings):
+    async @pytest.mark.db_required
+def test_connection_error_handling(self, mock_settings):
         """Test error handling for database connection failures."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
             # Simulate connection error
@@ -211,7 +219,8 @@ class TestDatabase:
                 assert "Failed to initialize database engine" in mock_logger.error.call_args[0][0]
     
     @pytest.mark.asyncio
-    async def test_session_exception_handling(self, mock_engine, mock_session_maker):
+    async @pytest.mark.db_required
+def test_session_exception_handling(self, mock_engine, mock_session_maker):
         """Test session exception handling in the context manager."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',
                   return_value=mock_engine):
@@ -235,7 +244,8 @@ class TestDatabase:
                 mock_session.close.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_pool_configuration(self, mock_settings):
+    async @pytest.mark.db_required
+def test_pool_configuration(self, mock_settings):
         """Test database pool configuration."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
             # Initialize database
@@ -250,7 +260,8 @@ class TestDatabase:
             assert kwargs["echo"] == mock_settings.database.ECHO
     
     @pytest.mark.asyncio
-    async def test_test_mode_configuration(self, mock_settings):
+    async @pytest.mark.db_required
+def test_test_mode_configuration(self, mock_settings):
         """Test database configuration in test mode."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
             # Set test mode
@@ -269,7 +280,8 @@ class TestDatabase:
             assert "pool_recycle" not in kwargs
     
     @pytest.mark.asyncio
-    async def test_get_session_generator(self, mock_engine, mock_session_maker):
+    async @pytest.mark.db_required
+def test_get_session_generator(self, mock_engine, mock_session_maker):
         """Test the get_session generator function."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.db') as mock_db:
             mock_session = MagicMock()

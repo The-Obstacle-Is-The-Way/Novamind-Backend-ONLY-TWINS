@@ -16,6 +16,7 @@ from app.domain.exceptions import BiometricIntegrationError
 from app.domain.services.biometric_integration_service import BiometricIntegrationService
 
 
+@pytest.mark.db_required
 class TestBiometricIntegrationService:
     """Tests for the BiometricIntegrationService class."""
     
@@ -29,7 +30,8 @@ class TestBiometricIntegrationService:
         """Create a BiometricIntegrationService instance for testing."""
         return BiometricIntegrationService(biometric_twin_repository=mock_repository)
     
-    def test_get_or_create_biometric_twin_existing(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_get_or_create_biometric_twin_existing(self, service, mock_repository):
         """Test retrieving an existing biometric twin."""
         # Arrange
         patient_id = uuid4()
@@ -44,7 +46,8 @@ class TestBiometricIntegrationService:
         mock_repository.get_by_patient_id.assert_called_once_with(patient_id)
         mock_repository.save.assert_not_called()
     
-    def test_get_or_create_biometric_twin_new(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_get_or_create_biometric_twin_new(self, service, mock_repository):
         """Test creating a new biometric twin when one doesn't exist."""
         # Arrange
         patient_id = uuid4()
@@ -60,7 +63,8 @@ class TestBiometricIntegrationService:
         mock_repository.get_by_patient_id.assert_called_once_with(patient_id)
         mock_repository.save.assert_called_once()
     
-    def test_get_or_create_biometric_twin_error(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_get_or_create_biometric_twin_error(self, service, mock_repository):
         """Test error handling when repository operations fail."""
         # Arrange
         patient_id = uuid4()
@@ -72,7 +76,8 @@ class TestBiometricIntegrationService:
         
         assert "Failed to get or create biometric twin" in str(exc_info.value)
     
-    def test_add_biometric_data(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_add_biometric_data(self, service, mock_repository):
         """Test adding a biometric data point."""
         # Arrange
         patient_id = uuid4()
@@ -102,7 +107,8 @@ class TestBiometricIntegrationService:
         mock_twin.add_data_point.assert_called_once()
         mock_repository.save.assert_called_once_with(mock_twin)
     
-    def test_add_biometric_data_with_error(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_add_biometric_data_with_error(self, service, mock_repository):
         """Test error handling when adding biometric data fails."""
         # Arrange
         patient_id = uuid4()
@@ -119,7 +125,8 @@ class TestBiometricIntegrationService:
         
         assert "Failed to add biometric data" in str(exc_info.value)
     
-    def test_batch_add_biometric_data(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_batch_add_biometric_data(self, service, mock_repository):
         """Test adding multiple biometric data points in a batch."""
         # Arrange
         patient_id = uuid4()
@@ -156,7 +163,8 @@ class TestBiometricIntegrationService:
         assert mock_twin.add_data_point.call_count == 2
         mock_repository.save.assert_called_once_with(mock_twin)
     
-    def test_get_biometric_data(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_get_biometric_data(self, service, mock_repository):
         """Test retrieving biometric data with filtering."""
         # Arrange
         patient_id = uuid4()
@@ -209,7 +217,8 @@ class TestBiometricIntegrationService:
         assert len(result) == 1
         assert result[0].data_type == "blood_pressure"
     
-    def test_get_biometric_data_no_twin(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_get_biometric_data_no_twin(self, service, mock_repository):
         """Test retrieving biometric data when no twin exists."""
         # Arrange
         patient_id = uuid4()
@@ -221,7 +230,8 @@ class TestBiometricIntegrationService:
         # Assert
         assert result == []
     
-    def test_analyze_trends(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_analyze_trends(self, service, mock_repository):
         """Test analyzing trends in biometric data."""
         # Arrange
         patient_id = uuid4()
@@ -273,7 +283,8 @@ class TestBiometricIntegrationService:
         assert result["minimum"] == 70
         assert result["maximum"] == 85
     
-    def test_analyze_trends_insufficient_data(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_analyze_trends_insufficient_data(self, service, mock_repository):
         """Test analyzing trends with insufficient data."""
         # Arrange
         patient_id = uuid4()
@@ -288,7 +299,8 @@ class TestBiometricIntegrationService:
         # Assert
         assert result["status"] == "insufficient_data"
     
-    def test_detect_correlations(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_detect_correlations(self, service, mock_repository):
         """Test detecting correlations between different biometric data types."""
         # Arrange
         patient_id = uuid4()
@@ -339,7 +351,8 @@ class TestBiometricIntegrationService:
         assert "activity_level" in result
         assert isinstance(result["activity_level"], float)
     
-    def test_connect_device(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_connect_device(self, service, mock_repository):
         """Test connecting a device to a biometric twin."""
         # Arrange
         patient_id = uuid4()
@@ -365,7 +378,8 @@ class TestBiometricIntegrationService:
         service.add_biometric_data.assert_called_once()
         mock_repository.save.assert_called_once_with(mock_twin)
     
-    def test_disconnect_device(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_disconnect_device(self, service, mock_repository):
         """Test disconnecting a device from a biometric twin."""
         # Arrange
         patient_id = uuid4()
@@ -388,7 +402,8 @@ class TestBiometricIntegrationService:
         service.add_biometric_data.assert_called_once()
         mock_repository.save.assert_called_once_with(mock_twin)
     
-    def test_disconnect_device_no_twin(self, service, mock_repository):
+    @pytest.mark.db_required
+def test_disconnect_device_no_twin(self, service, mock_repository):
         """Test disconnecting a device when no twin exists."""
         # Arrange
         patient_id = uuid4()

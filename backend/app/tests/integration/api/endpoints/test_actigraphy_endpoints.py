@@ -50,6 +50,7 @@ def mock_pat(pat_storage: str) -> MockPAT:
 
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_app(mock_pat: MockPAT) -> FastAPI:
     """Fixture that returns a test FastAPI application.
     
@@ -208,6 +209,7 @@ def sample_device_info() -> Dict[str, Any]:
     }
 
 
+@pytest.mark.db_required
 def test_unauthenticated_access(client: TestClient) -> None:
     """Test that unauthenticated requests are rejected.
     
@@ -222,6 +224,7 @@ def test_unauthenticated_access(client: TestClient) -> None:
     assert "Not authenticated" in response.text
 
 
+@pytest.mark.db_required
 def test_authorized_access(client: TestClient, patient_token: str) -> None:
     """Test that authorized requests are allowed.
     
@@ -239,6 +242,7 @@ def test_authorized_access(client: TestClient, patient_token: str) -> None:
     assert response.status_code == 200
 
 
+@pytest.mark.db_required
 def test_input_validation(client: TestClient, patient_token: str) -> None:
     """Test that input validation works correctly.
     
@@ -269,6 +273,7 @@ def test_input_validation(client: TestClient, patient_token: str) -> None:
     assert "value_error" in response.text
 
 
+@pytest.mark.db_required
 def test_phi_data_sanitization(
     client: TestClient, 
     provider_token: str,
@@ -325,6 +330,7 @@ def test_phi_data_sanitization(
     assert "555-123-4567" not in str(data)
 
 
+@pytest.mark.db_required
 def test_role_based_access_control(
     client: TestClient,
     patient_token: str,
@@ -389,6 +395,7 @@ def test_role_based_access_control(
     assert patient_admin_response.status_code in [403, 404]
 
 
+@pytest.mark.db_required
 def test_hipaa_audit_logging(
     client: TestClient,
     provider_token: str,
@@ -459,6 +466,7 @@ def test_hipaa_audit_logging(
             os.unlink(temp_log_path)
 
 
+@pytest.mark.db_required
 def test_secure_data_transmission(
     client: TestClient,
     provider_token: str,
@@ -554,6 +562,7 @@ def test_secure_data_transmission(
     assert not any("test-patient" in str(v) for v in query_params.values())
 
 
+@pytest.mark.db_required
 def test_api_response_structure(
     client: TestClient,
     provider_token: str,

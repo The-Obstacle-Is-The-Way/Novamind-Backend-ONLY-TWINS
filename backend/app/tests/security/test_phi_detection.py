@@ -7,6 +7,7 @@ from pathlib import Path
 from scripts.run_hipaa_phi_audit import PHIAuditor, PHIDetector
 
 
+@pytest.mark.venv_only
 class TestPHIDetection:
     """Test PHI detection capabilities in our HIPAA compliance system."""
 
@@ -27,7 +28,8 @@ class TestPHIDetection:
         filepath.write_text(content)
         return filepath
 
-    def test_ssn_pattern_detection(self):
+    @pytest.mark.venv_only
+def test_ssn_pattern_detection(self):
         """Test detection of various SSN patterns."""
         # Create file with various SSN formats
         content = """
@@ -46,7 +48,8 @@ class TestPHIDetection:
         ssn_matches = [m for m in matches if m.phi_type == "SSN"]
         assert len(ssn_matches) >= 5, "Should detect at least 5 SSN patterns"
 
-    def test_audit_with_clean_app_directory(self):
+    @pytest.mark.venv_only
+def test_audit_with_clean_app_directory(self):
         """Test that auditor passes with clean_app directory."""
         # Create a test file in a clean_app directory with PHI
         clean_dir = self.base_dir / "clean_app"
@@ -61,7 +64,8 @@ class TestPHIDetection:
         # Verify audit passes even with PHI present
         assert auditor._audit_passed() is True, "Audit should pass for clean_app directory"
 
-    def test_phi_in_normal_code(self):
+    @pytest.mark.venv_only
+def test_phi_in_normal_code(self):
         """Test that PHI is detected in normal code files."""
         # Create a file with PHI but not in a test context
         content = 'user_data = {"name": "John Smith", "ssn": "123-45-6789"}'
@@ -75,13 +79,15 @@ class TestPHIDetection:
         assert auditor._audit_passed() is False, "Audit should fail for PHI in normal code"
         assert len(auditor.findings["code_phi"]) > 0, "Should find PHI in code"
 
-    def test_phi_in_test_files(self):
+    @pytest.mark.venv_only
+def test_phi_in_test_files(self):
         """Test that PHI in legitimate test files is allowed."""
         # Create a file with PHI in a test context
         content = """
         import pytest
         
-        def test_phi_detection():
+        @pytest.mark.venv_only
+def test_phi_detection():
             # This is a legitimate test case with PHI for testing detection
             test_ssn = "123-45-6789"
             assert is_valid_ssn(test_ssn)
@@ -98,7 +104,8 @@ class TestPHIDetection:
         assert all(r.is_allowed for r in results), "PHI in test files should be allowed"
         assert auditor._audit_passed() is True, "Audit should pass for legitimate test files"
 
-    def test_api_endpoint_security(self):
+    @pytest.mark.venv_only
+def test_api_endpoint_security(self):
         """Test that unprotected API endpoints are detected."""
         # Create an API file with protected and unprotected endpoints
         content = """
@@ -131,7 +138,8 @@ class TestPHIDetection:
         patient_endpoints = [i for i in auditor.api_issues if "patient" in i["content"]]
         assert len(patient_endpoints) > 0, "Should detect patient endpoint as unprotected"
 
-    def test_config_security_classification(self):
+    @pytest.mark.venv_only
+def test_config_security_classification(self):
         """Test that security settings are properly classified by criticality."""
         # Create a config file missing security settings
         content = """

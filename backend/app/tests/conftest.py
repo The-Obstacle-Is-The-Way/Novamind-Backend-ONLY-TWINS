@@ -1,142 +1,220 @@
 """
-Test Configuration for Novamind Digital Twin Platform.
+Pytest fixtures for the Novamind Digital Twin Backend.
 
-This module provides pytest fixtures for testing both unit and integration tests.
-It includes configurations for both standalone testing and database-dependent testing.
+This module provides fixtures that can be used across all test modules,
+organized by dependency level.
 """
 import os
+import asyncio
 import pytest
-import pytest_asyncio
-from typing import AsyncGenerator, Dict, Any, List, Optional
-from unittest.mock import AsyncMock, MagicMock, patch
+from typing import AsyncGenerator, Dict, Any, Optional
+import logging
+from pathlib import Path
+from datetime import datetime
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+# SQLAlchemy imports for DB fixtures
+try:
+    from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.ext.asyncio import AsyncEngine
+    from sqlalchemy import event, text
+except ImportError:
+    # These imports might fail in standalone test environment
+    pass
 
-from app.tests.fixtures.mock_db_fixture import MockAsyncSession
+
+# Constants
+BACKEND_DIR = Path(__file__).parent.parent.parent
+TEST_DIR = BACKEND_DIR / "app" / "tests"
 
 
-# Determine if we're in test mode and what type of tests we're running
-is_test_mode = os.environ.get("TESTING") == "1"
-test_type = os.environ.get("TEST_TYPE", "unit")  # 'unit' or 'integration'
+# ===============================================================
+# STANDALONE FIXTURES (no external dependencies)
+# ===============================================================
 
-
-# Create different database configurations based on test type
-@pytest_asyncio.fixture
-async def db_session() -> AsyncGenerator[AsyncSession, None]:
+@pytest.fixture
+def sample_data() -> Dict[str, Any]:
     """
-    Fixture for database session in tests.
+    Provide sample test data that doesn't require any external dependencies.
     
-    This fixture provides different session implementations based on test type:
-    - For unit tests: Returns a MockAsyncSession
-    - For integration tests: Returns a real AsyncSession with in-memory SQLite
-    
-    Yields:
-        AsyncSession: Database session for testing
+    This fixture is usable by standalone tests.
     """
-    if test_type == "unit":
-        # For unit tests, use a mock session
-        mock_session = MockAsyncSession()
-        yield mock_session
-    else:
-        # For integration tests, use an actual in-memory database
+    return {
+        "id": "test-id-12345",
+        "name": "Test Name",
+        "value": 42,
+        "date": datetime.now().isoformat(),
+        "attributes": ["attr1", "attr2", "attr3"],
+        "metadata": {
+            "created_by": "test",
+            "version": "1.0.0"
+        }
+    }
+
+
+# ===============================================================
+# VENV-DEPENDENT FIXTURES (require Python packages but no external services)
+# ===============================================================
+
+@pytest.fixture
+def mock_logger():
+    """
+    Provide a mock logger for testing.
+    
+    This fixture is usable by venv-dependent tests.
+    """
+    class MockLogger:
+        def __init__(self):
+            self.logs = {
+                "debug": [],
+                "info": [],
+                "warning": [],
+                "error": [],
+                "critical": []
+            }
+            
+        def debug(self, msg, *args, **kwargs):
+            self.logs["debug"].append(msg)
+            
+        def info(self, msg, *args, **kwargs):
+            self.logs["info"].append(msg)
+            
+        def warning(self, msg, *args, **kwargs):
+            self.logs["warning"].append(msg)
+            
+        def error(self, msg, *args, **kwargs):
+            self.logs["error"].append(msg)
+            
+        def critical(self, msg, *args, **kwargs):
+            self.logs["critical"].append(msg)
+            
+        def reset(self):
+            for level in self.logs:
+                self.logs[level] = []
+    
+    return MockLogger()
+
+
+# ===============================================================
+# DB-DEPENDENT FIXTURES (require database connections)
+# ===============================================================
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """
+    Create an event loop for the test session.
+    
+    This is required for async tests using pytest-asyncio.
+    """
+    try:
+        loop = asyncio.get_event_loop_policy().new_event_loop()
+        asyncio.set_event_loop(loop)
+        yield loop
+        loop.close()
+    except ImportError:
+        # Skip in standalone environment
+        yield None
+
+
+@pytest.fixture(scope="session")
+async def db_engine() -> Optional[AsyncEngine]:
+    """
+    Create a database engine for testing.
+    
+    This fixture is only usable by db-dependent tests.
+    """
+    try:
+        # Get test database URL from environment or use default
+        db_url = os.environ.get(
+            "TEST_DATABASE_URL", 
+            "postgresql+asyncpg://postgres:postgres@localhost:15432/novamind_test"
+        )
+        
+        # Create engine
         engine = create_async_engine(
-            "sqlite+aiosqlite:///:memory:",
+            db_url,
             echo=False,
-            future=True,
+            future=True
         )
         
-        # Create tables if needed (would need to import metadata from models)
-        # async with engine.begin() as conn:
-        #     await conn.run_sync(Base.metadata.create_all)
+        yield engine
         
-        # Create session factory
+        # Close engine
+        await engine.dispose()
+    except (ImportError, NameError):
+        # Skip in standalone environment
+        yield None
+
+
+@pytest.fixture
+async def db_session(db_engine) -> AsyncGenerator[Optional[AsyncSession], None]:
+    """
+    Create a database session for testing.
+    
+    This fixture is only usable by db-dependent tests.
+    """
+    if db_engine is None:
+        # Skip in standalone environment
+        yield None
+        return
+        
+    try:
+        # Create session
         async_session = sessionmaker(
-            engine,
-            class_=AsyncSession,
-            expire_on_commit=False,
-            autocommit=False,
-            autoflush=False,
+            db_engine, 
+            expire_on_commit=False, 
+            class_=AsyncSession
         )
         
-        # Create and yield session
         async with async_session() as session:
-            try:
+            # Start transaction
+            async with session.begin():
+                # Create all tables - this assumes models are imported
+                # and metadata is available
+                from app.infrastructure.persistence.sqlalchemy.models.patient import metadata
+                async with db_engine.begin() as conn:
+                    await conn.run_sync(metadata.create_all)
+                
                 yield session
-                await session.commit()
-            except Exception:
+                
+                # Rollback transaction
                 await session.rollback()
-                raise
-            finally:
-                await session.close()
+                
+                # Clean up tables
+                async with db_engine.begin() as conn:
+                    await conn.run_sync(metadata.drop_all)
+    except (ImportError, NameError):
+        # Skip in standalone environment
+        yield None
+
+
+@pytest.fixture
+async def redis_client():
+    """
+    Create a Redis client for testing.
+    
+    This fixture is only usable by db-dependent tests.
+    """
+    try:
+        import redis.asyncio as redis
         
-        # Clean up (drop tables)
-        # async with engine.begin() as conn:
-        #     await conn.run_sync(Base.metadata.drop_all)
-
-
-@pytest.fixture
-def test_user() -> Dict[str, Any]:
-    """
-    Fixture that provides a test user for authentication testing.
-    
-    Returns:
-        Dict[str, Any]: A dictionary representing a test user
-    """
-    return {
-        "id": "test-user-id-12345",
-        "username": "test_user",
-        "email": "test_user@example.com",
-        "roles": ["user"]
-    }
-
-
-@pytest.fixture
-def admin_user() -> Dict[str, Any]:
-    """
-    Fixture that provides an admin user for authorization testing.
-    
-    Returns:
-        Dict[str, Any]: A dictionary representing an admin user
-    """
-    return {
-        "id": "admin-user-id-67890",
-        "username": "admin_user",
-        "email": "admin@example.com",
-        "roles": ["admin", "user"]
-    }
-
-
-@pytest.fixture
-def clinician_user() -> Dict[str, Any]:
-    """
-    Fixture that provides a clinician user for authorization testing.
-    
-    Returns:
-        Dict[str, Any]: A dictionary representing a clinician user
-    """
-    return {
-        "id": "clinician-user-id-54321",
-        "username": "clinician_user",
-        "email": "clinician@example.com",
-        "roles": ["clinician", "user"]
-    }
-
-
-@pytest.fixture
-def mock_auth_service() -> MagicMock:
-    """
-    Fixture that provides a mock authentication service.
-    
-    Returns:
-        MagicMock: A configured mock authentication service
-    """
-    mock = MagicMock()
-    mock.authenticate.return_value = True
-    mock.get_user_by_id.return_value = {
-        "id": "test-user-id-12345",
-        "username": "test_user",
-        "email": "test_user@example.com",
-        "roles": ["user"]
-    }
-    return mock
+        # Get test Redis URL from environment or use default
+        redis_url = os.environ.get(
+            "TEST_REDIS_URL", 
+            "redis://localhost:16379/0"
+        )
+        
+        # Create client
+        client = redis.from_url(redis_url)
+        
+        # Clear database
+        await client.flushdb()
+        
+        yield client
+        
+        # Clear database and close
+        await client.flushdb()
+        await client.close()
+    except ImportError:
+        # Skip in standalone environment
+        yield None

@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
 
+@pytest.mark.venv_only
 class TestJWTService:
     """
     Tests for the JWT Service implementation to ensure HIPAA compliance.
@@ -46,7 +47,8 @@ class TestJWTService:
             # No PHI included
         }
     
-    def test_create_access_token_no_phi(self, jwt_service, user_data):
+    @pytest.mark.venv_only
+def test_create_access_token_no_phi(self, jwt_service, user_data):
         """Test that created tokens contain no PHI."""
         # Act
         token = jwt_service.create_access_token(user_data)
@@ -67,7 +69,8 @@ class TestJWTService:
         for field in phi_fields:
             assert field not in decoded
     
-    def test_create_access_token_expiration(self, jwt_service, user_data):
+    @pytest.mark.venv_only
+def test_create_access_token_expiration(self, jwt_service, user_data):
         """Test that tokens have proper expiration times."""
         # Act
         token = jwt_service.create_access_token(user_data)
@@ -85,7 +88,8 @@ class TestJWTService:
         
         assert difference < 10, "Token expiration should be ~15 minutes"
     
-    def test_verify_token_valid(self, jwt_service, user_data):
+    @pytest.mark.venv_only
+def test_verify_token_valid(self, jwt_service, user_data):
         """Test that valid tokens are properly verified."""
         # Arrange
         token = jwt_service.create_access_token(user_data)
@@ -97,7 +101,8 @@ class TestJWTService:
         assert payload["sub"] == user_data["user_id"]
         assert payload["role"] == user_data["role"]
     
-    def test_verify_token_expired(self, jwt_service, user_data):
+    @pytest.mark.venv_only
+def test_verify_token_expired(self, jwt_service, user_data):
         """Test that expired tokens are rejected."""
         # Arrange
         # Create a token that's already expired by setting a custom exp
@@ -110,7 +115,8 @@ class TestJWTService:
         with pytest.raises(TokenExpiredError):
             jwt_service.verify_token(expired_token)
     
-    def test_verify_token_invalid_signature(self, jwt_service, user_data):
+    @pytest.mark.venv_only
+def test_verify_token_invalid_signature(self, jwt_service, user_data):
         """Test that tokens with invalid signatures are rejected."""
         # Arrange
         token = jwt_service.create_access_token(user_data)
@@ -122,7 +128,8 @@ class TestJWTService:
         with pytest.raises(AuthenticationError):
             jwt_service.verify_token(tampered_token)
     
-    def test_verify_token_invalid_format(self, jwt_service):
+    @pytest.mark.venv_only
+def test_verify_token_invalid_format(self, jwt_service):
         """Test that tokens with invalid format are rejected."""
         # Arrange
         invalid_token = "not.a.token"
@@ -131,7 +138,8 @@ class TestJWTService:
         with pytest.raises(AuthenticationError):
             jwt_service.verify_token(invalid_token)
     
-    def test_admin_role_permissions(self, jwt_service):
+    @pytest.mark.venv_only
+def test_admin_role_permissions(self, jwt_service):
         """Test that admin tokens contain appropriate permissions."""
         # Arrange
         admin_data = {
@@ -149,7 +157,8 @@ class TestJWTService:
         assert jwt_service.has_role(token, "provider")  # Admin inherits provider permissions
         assert jwt_service.has_role(token, "patient")   # Admin inherits patient permissions
     
-    def test_provider_role_permissions(self, jwt_service, provider_data):
+    @pytest.mark.venv_only
+def test_provider_role_permissions(self, jwt_service, provider_data):
         """Test that provider tokens have appropriate permissions."""
         # Act
         token = jwt_service.create_access_token(provider_data)
@@ -159,7 +168,8 @@ class TestJWTService:
         assert jwt_service.has_role(token, "patient")  # Providers can access patient resources
         assert not jwt_service.has_role(token, "admin")  # Providers can't access admin resources
     
-    def test_patient_role_permissions(self, jwt_service, user_data):
+    @pytest.mark.venv_only
+def test_patient_role_permissions(self, jwt_service, user_data):
         """Test that patient tokens have limited permissions."""
         # Act
         token = jwt_service.create_access_token(user_data)
@@ -169,7 +179,8 @@ class TestJWTService:
         assert not jwt_service.has_role(token, "provider")  # Patients can't access provider resources
         assert not jwt_service.has_role(token, "admin")     # Patients can't access admin resources
     
-    def test_refresh_token_rotation(self, jwt_service, user_data):
+    @pytest.mark.venv_only
+def test_refresh_token_rotation(self, jwt_service, user_data):
         """Test that refresh tokens are properly rotated for security."""
         # Arrange
         refresh_token = jwt_service.create_refresh_token(user_data)
@@ -186,7 +197,8 @@ class TestJWTService:
         with pytest.raises(AuthenticationError):
             jwt_service.refresh_tokens(refresh_token)
     
-    def test_refresh_token_family_tracking(self, jwt_service, user_data):
+    @pytest.mark.venv_only
+def test_refresh_token_family_tracking(self, jwt_service, user_data):
         """Test that refresh token families are tracked for breach detection."""
         # This test ensures we're following NIST recommendations for detecting
         # token theft by tracking token families

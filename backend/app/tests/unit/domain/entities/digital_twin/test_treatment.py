@@ -27,6 +27,7 @@ from app.domain.entities.digital_twin.treatment import (
 )
 
 
+@pytest.mark.db_required
 class TestMedicationTreatment(unittest.TestCase):
     """Tests for the Medication Treatment entity."""
     
@@ -58,7 +59,8 @@ class TestMedicationTreatment(unittest.TestCase):
             )
         )
     
-    def test_init_medication(self):
+    @pytest.mark.db_required
+def test_init_medication(self):
         """Test medication initialization."""
         assert self.medication.name == "Fluoxetine"
         assert self.medication.category == TreatmentCategory.MEDICATION
@@ -76,7 +78,8 @@ class TestMedicationTreatment(unittest.TestCase):
         assert self.medication.medication_details.half_life_hours == 48
         assert "serotonin transporters" in self.medication.medication_details.primary_targets
     
-    def test_calculate_effects(self):
+    @pytest.mark.db_required
+def test_calculate_effects(self):
         """Test calculation of medication effects."""
         # Calculate immediate effects
         immediate_effects = self.medication.calculate_immediate_effects()
@@ -98,7 +101,8 @@ class TestMedicationTreatment(unittest.TestCase):
         assert "anxiety_level" in long_term_effects
         assert "rumination" in long_term_effects
     
-    def test_medication_withdrawal(self):
+    @pytest.mark.db_required
+def test_medication_withdrawal(self):
         """Test effects of medication withdrawal."""
         # Set end date to simulate discontinuation
         self.medication.end_date = datetime.utcnow()
@@ -114,7 +118,8 @@ class TestMedicationTreatment(unittest.TestCase):
         assert "anxiety_level" in withdrawal_effects
         assert withdrawal_effects["anxiety_level"] > 0  # Should increase
     
-    def test_dose_response_curve(self):
+    @pytest.mark.db_required
+def test_dose_response_curve(self):
         """Test dose-response relationship."""
         # Test standard dose
         standard_effects = self.medication.calculate_immediate_effects()
@@ -169,7 +174,8 @@ class TestMedicationTreatment(unittest.TestCase):
         # Verify lower dose produces weaker effects
         assert low_dose_effects["serotonin_level"] < standard_effects["serotonin_level"]
     
-    def test_medication_duration(self):
+    @pytest.mark.db_required
+def test_medication_duration(self):
         """Test effect duration based on medication half-life."""
         # Create medications with different half-lives
         short_half_life = Treatment(
@@ -210,6 +216,7 @@ class TestMedicationTreatment(unittest.TestCase):
         assert short_effect_after_miss["serotonin_level"] < long_effect_after_miss["serotonin_level"]
 
 
+@pytest.mark.db_required
 class TestTherapyTreatment(unittest.TestCase):
     """Tests for the Therapy Treatment entity."""
     
@@ -245,7 +252,8 @@ class TestTherapyTreatment(unittest.TestCase):
             }
         )
     
-    def test_init_therapy(self):
+    @pytest.mark.db_required
+def test_init_therapy(self):
         """Test therapy initialization."""
         assert self.therapy.name == "Cognitive Behavioral Therapy"
         assert self.therapy.category == TreatmentCategory.THERAPY
@@ -261,7 +269,8 @@ class TestTherapyTreatment(unittest.TestCase):
         assert "depression" in self.therapy.therapy_details.target_symptoms
         assert "cognitive restructuring" in self.therapy.therapy_details.techniques
     
-    def test_calculate_effects(self):
+    @pytest.mark.db_required
+def test_calculate_effects(self):
         """Test calculation of therapy effects."""
         # Calculate session effects (immediate after a session)
         session_effects = self.therapy.calculate_session_effects()
@@ -283,7 +292,8 @@ class TestTherapyTreatment(unittest.TestCase):
         assert "social_engagement" in long_term_effects
         assert long_term_effects["social_engagement"] > 0
     
-    def test_different_therapy_types(self):
+    @pytest.mark.db_required
+def test_different_therapy_types(self):
         """Test different types of therapy."""
         # Create IPT therapy
         ipt_therapy = Treatment(
@@ -344,7 +354,8 @@ class TestTherapyTreatment(unittest.TestCase):
         assert dbt_effects["emotional_regulation"] > cbt_effects.get("emotional_regulation", 0)
         assert dbt_effects["emotional_regulation"] > ipt_effects.get("emotional_regulation", 0)
     
-    def test_therapy_adherence_effects(self):
+    @pytest.mark.db_required
+def test_therapy_adherence_effects(self):
         """Test how adherence affects therapy outcomes."""
         # Calculate standard effects (full adherence)
         full_adherence = self.therapy.calculate_long_term_effects(weeks=12)
@@ -367,6 +378,7 @@ class TestTherapyTreatment(unittest.TestCase):
         assert partial_adherence["rumination"] < poor_adherence["rumination"]
 
 
+@pytest.mark.db_required
 class TestLifestyleIntervention(unittest.TestCase):
     """Tests for the Lifestyle Intervention entity."""
     
@@ -431,7 +443,8 @@ class TestLifestyleIntervention(unittest.TestCase):
             }
         )
     
-    def test_init_lifestyle(self):
+    @pytest.mark.db_required
+def test_init_lifestyle(self):
         """Test lifestyle intervention initialization."""
         assert self.exercise.name == "Aerobic Exercise Program"
         assert self.exercise.category == TreatmentCategory.LIFESTYLE
@@ -446,7 +459,8 @@ class TestLifestyleIntervention(unittest.TestCase):
         assert self.exercise.lifestyle_details.duration_minutes == 30
         assert "cardiovascular" in self.exercise.lifestyle_details.target_systems
     
-    def test_calculate_effects(self):
+    @pytest.mark.db_required
+def test_calculate_effects(self):
         """Test calculation of lifestyle intervention effects."""
         # Calculate immediate effects of exercise
         immediate_effects = self.exercise.calculate_immediate_effects()
@@ -469,7 +483,8 @@ class TestLifestyleIntervention(unittest.TestCase):
         assert "neuroplasticity" in cumulative_effects
         assert cumulative_effects["neuroplasticity"] > 0
     
-    def test_sleep_intervention_effects(self):
+    @pytest.mark.db_required
+def test_sleep_intervention_effects(self):
         """Test effects of sleep hygiene intervention."""
         # Calculate immediate effects
         immediate_effects = self.sleep_hygiene.calculate_immediate_effects()
@@ -492,7 +507,8 @@ class TestLifestyleIntervention(unittest.TestCase):
         assert "mood_stability" in cumulative_effects
         assert cumulative_effects["mood_stability"] > 0
     
-    def test_intervention_combinations(self):
+    @pytest.mark.db_required
+def test_intervention_combinations(self):
         """Test combined effects of multiple lifestyle interventions."""
         # Calculate individual effects
         exercise_effects = self.exercise.calculate_long_term_effects(weeks=4)
@@ -557,6 +573,7 @@ class TestLifestyleIntervention(unittest.TestCase):
         assert combined_effects["bdnf_level"] > individual_bdnf_effects
 
 
+@pytest.mark.db_required
 class TestTreatmentPlan(unittest.TestCase):
     """Tests for the TreatmentPlan entity."""
     
@@ -625,7 +642,8 @@ class TestTreatmentPlan(unittest.TestCase):
             status="active"
         )
     
-    def test_init_treatment_plan(self):
+    @pytest.mark.db_required
+def test_init_treatment_plan(self):
         """Test treatment plan initialization."""
         assert self.treatment_plan.name == "Depression Treatment Plan"
         assert self.treatment_plan.patient_id == self.patient_id
@@ -637,7 +655,8 @@ class TestTreatmentPlan(unittest.TestCase):
         assert "sleep" in self.treatment_plan.target_symptoms
         assert self.treatment_plan.expected_duration_weeks == 12
     
-    def test_get_active_treatments(self):
+    @pytest.mark.db_required
+def test_get_active_treatments(self):
         """Test retrieving active treatments."""
         # All treatments should be active
         active_treatments = self.treatment_plan.get_active_treatments()
@@ -654,7 +673,8 @@ class TestTreatmentPlan(unittest.TestCase):
         assert self.therapy in active_treatments
         assert self.exercise in active_treatments
     
-    def test_calculate_combined_effects(self):
+    @pytest.mark.db_required
+def test_calculate_combined_effects(self):
         """Test calculation of combined treatment effects."""
         # Calculate combined effects after 4 weeks
         combined_effects = self.treatment_plan.calculate_combined_effects(weeks=4)
@@ -679,7 +699,8 @@ class TestTreatmentPlan(unittest.TestCase):
             exercise_effects.get("mood_valence", 0)
         )
     
-    def test_treatment_interactions(self):
+    @pytest.mark.db_required
+def test_treatment_interactions(self):
         """Test detection of treatment interactions."""
         # Add a treatment with potential interactions
         interacting_med = Treatment(
@@ -714,7 +735,8 @@ class TestTreatmentPlan(unittest.TestCase):
             for interaction in interactions
         )
     
-    def test_treatment_adjustment(self):
+    @pytest.mark.db_required
+def test_treatment_adjustment(self):
         """Test adjusting treatments within a plan."""
         # Initial dosage
         assert self.medication.medication_details.dosage == 10.0
@@ -767,7 +789,8 @@ class TestTreatmentPlan(unittest.TestCase):
         # Verify augmentation increased effects
         assert effects_after["mood_valence"] > mood_before
     
-    def test_treatment_plan_progress(self):
+    @pytest.mark.db_required
+def test_treatment_plan_progress(self):
         """Test monitoring treatment plan progress."""
         # Simulate starting the plan
         self.treatment_plan.status = "active"
@@ -790,6 +813,7 @@ class TestTreatmentPlan(unittest.TestCase):
         assert progress["remaining_weeks"] == 6
 
 
+@pytest.mark.db_required
 class TestTreatmentResponse(unittest.TestCase):
     """Tests for the TreatmentResponse entity."""
     
@@ -825,7 +849,8 @@ class TestTreatmentResponse(unittest.TestCase):
             }
         )
     
-    def test_init_treatment_response(self):
+    @pytest.mark.db_required
+def test_init_treatment_response(self):
         """Test treatment response initialization."""
         assert self.treatment_response.patient_id == self.patient_id
         assert self.treatment_response.digital_twin_id == self.digital_twin_id
@@ -840,7 +865,8 @@ class TestTreatmentResponse(unittest.TestCase):
         assert self.treatment_response.confidence_level == "MODERATE"
         assert self.treatment_response.symptom_changes["mood_valence"] == 0.4
     
-    def test_calculate_benefit_risk_ratio(self):
+    @pytest.mark.db_required
+def test_calculate_benefit_risk_ratio(self):
         """Test calculation of benefit-risk ratio."""
         ratio = self.treatment_response.calculate_benefit_risk_ratio()
         
@@ -868,7 +894,8 @@ class TestTreatmentResponse(unittest.TestCase):
         # Verify high-risk ratio is lower
         assert high_risk_ratio < ratio
     
-    def test_compare_to_population(self):
+    @pytest.mark.db_required
+def test_compare_to_population(self):
         """Test comparison to population norms."""
         population_norms = {
             "efficacy": {
@@ -901,7 +928,8 @@ class TestTreatmentResponse(unittest.TestCase):
         assert "time_to_response_percentile" in comparison
         assert comparison["time_to_response_percentile"] > 50  # Faster than average
     
-    def test_predict_adherence(self):
+    @pytest.mark.db_required
+def test_predict_adherence(self):
         """Test prediction of treatment adherence."""
         patient_factors = {
             "prior_adherence": 0.8,
@@ -919,7 +947,8 @@ class TestTreatmentResponse(unittest.TestCase):
         assert "key_factors" in adherence_prediction
         assert "recommendations" in adherence_prediction
     
-    def test_trajectory_prediction(self):
+    @pytest.mark.db_required
+def test_trajectory_prediction(self):
         """Test prediction of treatment trajectory."""
         from app.domain.entities.digital_twin.temporal import TrajectoryPrediction
         
@@ -956,7 +985,8 @@ class TestTreatmentResponse(unittest.TestCase):
         assert mood_slope > 0  # Mood improves (increases)
         assert anxiety_slope < 0  # Anxiety improves (decreases)
     
-    def test_treatment_analysis(self):
+    @pytest.mark.db_required
+def test_treatment_analysis(self):
         """Test treatment analysis entity."""
         # Create a second treatment response
         treatment_id_2 = uuid4()

@@ -114,12 +114,14 @@ def client():
     return TestClient(app)
 
 
+@pytest.mark.db_required
 class TestBiometricAlertSystemEndpoints:
     """Tests for the biometric alert system API endpoints."""
     
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_create_alert(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_create_alert(self, mock_get_current_provider, mock_get_alert_repository, 
                                mock_repository, mock_current_provider, sample_alert):
         """Test creating a new biometric alert."""
         # Arrange
@@ -152,7 +154,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_create_alert_repository_error(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_create_alert_repository_error(self, mock_get_current_provider, mock_get_alert_repository, 
                                                mock_repository, mock_current_provider, sample_alert):
         """Test handling repository error when creating an alert."""
         # Arrange
@@ -185,7 +188,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user")
-    async def test_get_patient_alerts(self, mock_get_current_user, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_get_patient_alerts(self, mock_get_current_user, mock_get_alert_repository, 
                                      mock_repository, mock_current_user, sample_patient_id, sample_alert):
         """Test getting alerts for a patient."""
         # Arrange
@@ -219,7 +223,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user")
-    async def test_get_patient_alerts_with_filters(self, mock_get_current_user, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_get_patient_alerts_with_filters(self, mock_get_current_user, mock_get_alert_repository, 
                                                  mock_repository, mock_current_user, sample_patient_id, sample_alert):
         """Test getting alerts for a patient with filters."""
         # Arrange
@@ -265,7 +270,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user")
-    async def test_get_patient_alerts_repository_error(self, mock_get_current_user, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_get_patient_alerts_repository_error(self, mock_get_current_user, mock_get_alert_repository, 
                                                      mock_repository, mock_current_user, sample_patient_id):
         """Test handling repository error when getting patient alerts."""
         # Arrange
@@ -288,7 +294,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_get_active_alerts(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_get_active_alerts(self, mock_get_current_provider, mock_get_alert_repository, 
                                     mock_repository, mock_current_provider, sample_alert):
         """Test getting active alerts."""
         # Arrange
@@ -317,7 +324,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_get_active_alerts_with_priority(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_get_active_alerts_with_priority(self, mock_get_current_provider, mock_get_alert_repository, 
                                                  mock_repository, mock_current_provider, sample_alert):
         """Test getting active alerts with priority filter."""
         # Arrange
@@ -347,7 +355,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user")
-    async def test_get_alert(self, mock_get_current_user, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_get_alert(self, mock_get_current_user, mock_get_alert_repository, 
                             mock_repository, mock_current_user, sample_alert_id, sample_alert):
         """Test getting a specific alert by ID."""
         # Arrange
@@ -370,7 +379,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_user")
-    async def test_get_alert_not_found(self, mock_get_current_user, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_get_alert_not_found(self, mock_get_current_user, mock_get_alert_repository, 
                                       mock_repository, mock_current_user, sample_alert_id):
         """Test getting a non-existent alert."""
         # Arrange
@@ -393,7 +403,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_update_alert_status(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_update_alert_status(self, mock_get_current_provider, mock_get_alert_repository, 
                                       mock_repository, mock_current_provider, sample_alert_id, sample_alert):
         """Test updating the status of an alert."""
         # Arrange
@@ -436,7 +447,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_update_alert_status_not_found(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_update_alert_status_not_found(self, mock_get_current_provider, mock_get_alert_repository, 
                                                mock_repository, mock_current_provider, sample_alert_id):
         """Test updating the status of a non-existent alert."""
         # Arrange
@@ -466,7 +478,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_delete_alert(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_delete_alert(self, mock_get_current_provider, mock_get_alert_repository, 
                                mock_repository, mock_current_provider, sample_alert_id, sample_alert):
         """Test deleting an alert."""
         # Arrange
@@ -490,7 +503,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_delete_alert_not_found(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_delete_alert_not_found(self, mock_get_current_provider, mock_get_alert_repository, 
                                          mock_repository, mock_current_provider, sample_alert_id):
         """Test deleting a non-existent alert."""
         # Arrange
@@ -513,7 +527,8 @@ class TestBiometricAlertSystemEndpoints:
         
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_alert_repository")
     @patch("app.presentation.api.v1.endpoints.biometric_alert_system.get_current_provider")
-    async def test_delete_alert_failure(self, mock_get_current_provider, mock_get_alert_repository, 
+    async @pytest.mark.db_required
+def test_delete_alert_failure(self, mock_get_current_provider, mock_get_alert_repository, 
                                        mock_repository, mock_current_provider, sample_alert_id, sample_alert):
         """Test handling a failure when deleting an alert."""
         # Arrange

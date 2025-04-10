@@ -9,7 +9,7 @@ hypothesis==6.88.1
 
 # Development Tools
 black==23.9.1
-flake8==6.1.0
+ruff==0.3.5  # Fast Python linter, replaces flake8
 mypy==1.6.1
 pre-commit==3.5.0
 bandit==1.7.5

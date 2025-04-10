@@ -7,6 +7,7 @@ from typing import Dict, List, Any, Union
 from app.core.security.phi_sanitizer import PHISanitizer
 
 
+@pytest.mark.venv_only
 class TestPHISanitizer:
     """Test cases for the PHI sanitization utilities."""
     
@@ -64,7 +65,8 @@ class TestPHISanitizer:
             f"ID: {self.patient_mrn}"
         ]
     
-    def test_sanitize_string(self):
+    @pytest.mark.venv_only
+def test_sanitize_string(self):
         """Test that strings containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.text_with_phi)
         
@@ -80,7 +82,8 @@ class TestPHISanitizer:
         # Verify redaction markers are present
         assert "[REDACTED]" in sanitized
     
-    def test_sanitize_dict(self):
+    @pytest.mark.venv_only
+def test_sanitize_dict(self):
         """Test that dictionaries containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.dict_with_phi)
         
@@ -99,7 +102,8 @@ class TestPHISanitizer:
         assert sanitized["medical_info"]["diagnosis"] == "Depression"
         assert sanitized["medical_info"]["severity"] == "Moderate"
     
-    def test_sanitize_list(self):
+    @pytest.mark.venv_only
+def test_sanitize_list(self):
         """Test that lists containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.list_with_phi)
         
@@ -113,7 +117,8 @@ class TestPHISanitizer:
         # Non-PHI entries should be preserved
         assert "Notes: Patient reports improved mood" in sanitized
     
-    def test_sanitize_complex_nested_structure(self):
+    @pytest.mark.venv_only
+def test_sanitize_complex_nested_structure(self):
         """Test sanitization of complex nested data structures with PHI."""
         complex_structure = {
             "patients": [
@@ -154,7 +159,8 @@ class TestPHISanitizer:
         assert sanitized["metadata"]["generated_by"] == "Test System"
         assert sanitized["metadata"]["timestamp"] == "2025-04-10T00:00:00Z"
     
-    def test_sanitize_with_custom_patterns(self):
+    @pytest.mark.venv_only
+def test_sanitize_with_custom_patterns(self):
         """Test sanitization with custom PHI patterns."""
         # Create sanitizer with custom patterns
         custom_sanitizer = PHISanitizer(
@@ -173,7 +179,8 @@ class TestPHISanitizer:
         assert sanitized["medical_info"]["diagnosis"] != "Depression"
         assert sanitized["medical_info"]["severity"] != "Moderate"
     
-    def test_sanitization_preserves_structure(self):
+    @pytest.mark.venv_only
+def test_sanitization_preserves_structure(self):
         """Test that sanitization preserves the structure of the input data."""
         # Test with dictionary
         dict_sanitized = self.sanitizer.sanitize(self.dict_with_phi)

@@ -17,6 +17,7 @@ from app.core.services.ml.pat.interface import PATInterface
 from app.core.services.ml.pat.mock import MockPAT
 
 
+@pytest.mark.venv_only
 class TestPATFactory(unittest.TestCase):
     """Test cases for PATFactory."""
     
@@ -55,7 +56,8 @@ class TestPATFactory(unittest.TestCase):
         # Clear the instance cache
         PATFactory._instance_cache = {}
 
-    def test_get_mock_pat(self) -> None:
+    @pytest.mark.venv_only
+def test_get_mock_pat(self) -> None:
         """Test getting a MockPAT instance."""
         # Arrange
         config = {
@@ -72,7 +74,8 @@ class TestPATFactory(unittest.TestCase):
         self.mock_mock_pat_instance.initialize.assert_called_once_with(config)
         self.mock_bedrock_pat.assert_not_called()
 
-    def test_get_bedrock_pat(self) -> None:
+    @pytest.mark.venv_only
+def test_get_bedrock_pat(self) -> None:
         """Test getting a BedrockPAT instance."""
         # Arrange
         config = {
@@ -91,7 +94,8 @@ class TestPATFactory(unittest.TestCase):
         self.mock_bedrock_pat_instance.initialize.assert_called_once_with(config)
         self.mock_mock_pat.assert_not_called()
 
-    def test_get_default_provider(self) -> None:
+    @pytest.mark.venv_only
+def test_get_default_provider(self) -> None:
         """Test getting a PAT instance with the default provider."""
         # Arrange
         config = {
@@ -107,7 +111,8 @@ class TestPATFactory(unittest.TestCase):
         self.mock_mock_pat_instance.initialize.assert_called_once_with(config)
         self.mock_bedrock_pat.assert_not_called()
 
-    def test_get_unknown_provider(self) -> None:
+    @pytest.mark.venv_only
+def test_get_unknown_provider(self) -> None:
         """Test getting a PAT instance with an unknown provider."""
         # Arrange
         config = {
@@ -122,7 +127,8 @@ class TestPATFactory(unittest.TestCase):
         self.mock_mock_pat.assert_not_called()
         self.mock_bedrock_pat.assert_not_called()
 
-    def test_instance_caching(self) -> None:
+    @pytest.mark.venv_only
+def test_instance_caching(self) -> None:
         """Test that instances are cached."""
         # Arrange
         config = {
@@ -139,7 +145,8 @@ class TestPATFactory(unittest.TestCase):
         self.mock_mock_pat.assert_called_once()
         self.mock_mock_pat_instance.initialize.assert_called_once_with(config)
 
-    def test_different_configs_create_different_instances(self) -> None:
+    @pytest.mark.venv_only
+def test_different_configs_create_different_instances(self) -> None:
         """Test that different configs create different instances."""
         # Arrange
         config1 = {
@@ -168,7 +175,8 @@ class TestPATFactory(unittest.TestCase):
         mock_instance2.initialize.assert_called_once_with(config2)
 
     @patch("app.core.services.ml.pat.factory.PATFactory._instance_cache")
-    def test_cache_key_generation(self, mock_cache) -> None:
+    @pytest.mark.venv_only
+def test_cache_key_generation(self, mock_cache) -> None:
         """Test that cache keys are generated correctly."""
         # Arrange
         mock_cache.__getitem__.side_effect = KeyError

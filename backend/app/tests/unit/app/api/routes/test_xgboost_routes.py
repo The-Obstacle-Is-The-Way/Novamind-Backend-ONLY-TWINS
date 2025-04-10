@@ -273,10 +273,12 @@ def model_info_response():
     }
 
 
+@pytest.mark.db_required
 class TestRiskPredictionEndpoint:
     """Test suite for the risk prediction endpoint."""
     
-    def test_predict_risk_success(
+    @pytest.mark.db_required
+def test_predict_risk_success(
         self,
         client,
         mock_xgboost_service,
@@ -308,7 +310,8 @@ class TestRiskPredictionEndpoint:
             time_frame_days=risk_prediction_request["time_frame_days"]
         )
     
-    def test_predict_risk_validation_error(
+    @pytest.mark.db_required
+def test_predict_risk_validation_error(
         self,
         client,
         mock_xgboost_service,
@@ -332,7 +335,8 @@ class TestRiskPredictionEndpoint:
         assert "error_type" in response.json()
         assert response.json()["error_type"] == "ValidationError"
     
-    def test_predict_risk_data_privacy_error(
+    @pytest.mark.db_required
+def test_predict_risk_data_privacy_error(
         self,
         client,
         mock_xgboost_service,
@@ -356,7 +360,8 @@ class TestRiskPredictionEndpoint:
         assert "error_type" in response.json()
         assert response.json()["error_type"] == "DataPrivacyError"
     
-    def test_predict_risk_model_not_found(
+    @pytest.mark.db_required
+def test_predict_risk_model_not_found(
         self,
         client,
         mock_xgboost_service,
@@ -381,10 +386,12 @@ class TestRiskPredictionEndpoint:
         assert response.json()["error_type"] == "ModelNotFoundError"
 
 
+@pytest.mark.db_required
 class TestTreatmentResponseEndpoint:
     """Test suite for the treatment response endpoint."""
     
-    def test_predict_treatment_response_success(
+    @pytest.mark.db_required
+def test_predict_treatment_response_success(
         self,
         client,
         mock_xgboost_service,
@@ -418,7 +425,8 @@ class TestTreatmentResponseEndpoint:
             prediction_horizon=treatment_response_request["prediction_horizon"]
         )
     
-    def test_predict_treatment_response_validation_error(
+    @pytest.mark.db_required
+def test_predict_treatment_response_validation_error(
         self,
         client,
         mock_xgboost_service,
@@ -443,10 +451,12 @@ class TestTreatmentResponseEndpoint:
         assert response.json()["error_type"] == "ValidationError"
 
 
+@pytest.mark.db_required
 class TestOutcomePredictionEndpoint:
     """Test suite for the outcome prediction endpoint."""
     
-    def test_predict_outcome_success(
+    @pytest.mark.db_required
+def test_predict_outcome_success(
         self,
         client,
         mock_xgboost_service,
@@ -480,7 +490,8 @@ class TestOutcomePredictionEndpoint:
             outcome_type="symptom"
         )
     
-    def test_predict_outcome_validation_error(
+    @pytest.mark.db_required
+def test_predict_outcome_validation_error(
         self,
         client,
         mock_xgboost_service,
@@ -505,10 +516,12 @@ class TestOutcomePredictionEndpoint:
         assert response.json()["error_type"] == "ValidationError"
 
 
+@pytest.mark.db_required
 class TestFeatureImportanceEndpoint:
     """Test suite for the feature importance endpoint."""
     
-    def test_get_feature_importance_success(
+    @pytest.mark.db_required
+def test_get_feature_importance_success(
         self,
         client,
         mock_xgboost_service,
@@ -537,7 +550,8 @@ class TestFeatureImportanceEndpoint:
             prediction_id=feature_importance_request["prediction_id"]
         )
     
-    def test_get_feature_importance_not_found(
+    @pytest.mark.db_required
+def test_get_feature_importance_not_found(
         self,
         client,
         mock_xgboost_service,
@@ -563,10 +577,12 @@ class TestFeatureImportanceEndpoint:
         assert response.json()["error_type"] == "ResourceNotFoundError"
 
 
+@pytest.mark.db_required
 class TestDigitalTwinIntegrationEndpoint:
     """Test suite for the digital twin integration endpoint."""
     
-    def test_integrate_with_digital_twin_success(
+    @pytest.mark.db_required
+def test_integrate_with_digital_twin_success(
         self,
         client,
         mock_xgboost_service,
@@ -596,7 +612,8 @@ class TestDigitalTwinIntegrationEndpoint:
             prediction_id=digital_twin_integration_request["prediction_id"]
         )
     
-    def test_integrate_with_digital_twin_not_found(
+    @pytest.mark.db_required
+def test_integrate_with_digital_twin_not_found(
         self,
         client,
         mock_xgboost_service,
@@ -622,10 +639,12 @@ class TestDigitalTwinIntegrationEndpoint:
         assert response.json()["error_type"] == "ResourceNotFoundError"
 
 
+@pytest.mark.db_required
 class TestModelInfoEndpoint:
     """Test suite for the model info endpoint."""
     
-    def test_get_model_info_success(
+    @pytest.mark.db_required
+def test_get_model_info_success(
         self,
         client,
         mock_xgboost_service,
@@ -650,7 +669,8 @@ class TestModelInfoEndpoint:
         # Check that the service was called correctly
         mock_xgboost_service.get_model_info.assert_called_once_with("relapse_risk")
     
-    def test_get_model_info_not_found(
+    @pytest.mark.db_required
+def test_get_model_info_not_found(
         self,
         client,
         mock_xgboost_service

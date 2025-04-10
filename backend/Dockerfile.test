@@ -1,43 +1,41 @@
+# Dockerfile for Novamind Digital Twin Backend Testing
 FROM python:3.10-slim
 
+# Set working directory
 WORKDIR /app
 
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    TESTING=1
+
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libpq-dev \
-    gcc \
     curl \
     git \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY requirements.txt requirements-test.txt requirements-dev.txt requirements-standalone.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir -r requirements-test.txt
-RUN pip install --no-cache-dir -r requirements-dev.txt
-RUN pip install --no-cache-dir -r requirements-standalone.txt
+# Copy only the requirements files first to leverage Docker cache
+COPY requirements*.txt ./
 
-# Copy application code
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir -r requirements-test.txt \
+    && pip install --no-cache-dir -r requirements-dev.txt
+
+# Copy the test script and make it executable
+COPY scripts/ ./scripts/
+RUN chmod +x ./scripts/run_tests_by_dependency.py \
+    && chmod +x ./scripts/classify_tests.py
+
+# Copy the rest of the application
 COPY . .
 
-# Set environment variables
-ENV PYTHONPATH=/app
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV TEST_MODE=1
-
-# Create directory for test results
+# Create test results directory
 RUN mkdir -p /app/test-results
-RUN chmod -R 777 /app/test-results
 
-# Prepare directories for mounted volumes
-RUN mkdir -p /app/memory
-RUN chmod -R 777 /app/memory
-
-# Add a healthcheck
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-
-# Default command runs tests in strict isolation
-CMD ["python", "-m", "pytest", "app/tests/standalone/", "-v", "--strict-markers"]
+# Default command
+CMD ["python", "-m", "scripts.run_tests_by_dependency", "--all", "--xml", "--html"]

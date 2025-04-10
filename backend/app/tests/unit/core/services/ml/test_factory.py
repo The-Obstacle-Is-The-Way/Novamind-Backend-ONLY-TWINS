@@ -17,6 +17,7 @@ from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
 from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
 
 
+@pytest.mark.venv_only
 class TestMLServiceFactory:
     """Test suite for ML Service Factory."""
     
@@ -37,7 +38,8 @@ class TestMLServiceFactory:
         })
         return factory
     
-    def test_initialization(self):
+    @pytest.mark.venv_only
+def test_initialization(self):
         """Test factory initialization with valid configuration."""
         factory = MLServiceFactory()
         factory.initialize({
@@ -51,7 +53,8 @@ class TestMLServiceFactory:
         assert factory._config is not None
         assert "mentalllama" in factory._config
     
-    def test_initialization_empty_config(self):
+    @pytest.mark.venv_only
+def test_initialization_empty_config(self):
         """Test factory initialization with empty configuration."""
         factory = MLServiceFactory()
         
@@ -61,7 +64,8 @@ class TestMLServiceFactory:
         with pytest.raises(InvalidConfigurationError):
             factory.initialize(None)
     
-    def test_create_phi_detection_service_aws(self, factory):
+    @pytest.mark.venv_only
+def test_create_phi_detection_service_aws(self, factory):
         """Test creating AWS PHI detection service."""
         with patch(
             "app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize"
@@ -71,7 +75,8 @@ class TestMLServiceFactory:
             assert isinstance(service, AWSComprehendMedicalPHIDetection)
             mock_initialize.assert_called_once()
     
-    def test_create_phi_detection_service_mock(self, factory):
+    @pytest.mark.venv_only
+def test_create_phi_detection_service_mock(self, factory):
         """Test creating mock PHI detection service."""
         with patch(
             "app.core.services.ml.mock.MockPHIDetection.initialize"
@@ -81,12 +86,14 @@ class TestMLServiceFactory:
             assert isinstance(service, MockPHIDetection)
             mock_initialize.assert_called_once()
     
-    def test_create_phi_detection_service_invalid(self, factory):
+    @pytest.mark.venv_only
+def test_create_phi_detection_service_invalid(self, factory):
         """Test creating PHI detection service with invalid type."""
         with pytest.raises(InvalidConfigurationError):
             factory.create_phi_detection_service("invalid")
     
-    def test_create_mentalllama_service_aws(self, factory):
+    @pytest.mark.venv_only
+def test_create_mentalllama_service_aws(self, factory):
         """Test creating AWS MentaLLaMA service."""
         with patch(
             "app.core.services.ml.mentalllama.MentaLLaMA.initialize"
@@ -100,7 +107,8 @@ class TestMLServiceFactory:
             mock_initialize.assert_called_once()
             mock_create_phi.assert_called_once_with("aws")
     
-    def test_create_mentalllama_service_mock(self, factory):
+    @pytest.mark.venv_only
+def test_create_mentalllama_service_mock(self, factory):
         """Test creating mock MentaLLaMA service."""
         with patch(
             "app.core.services.ml.mock.MockMentaLLaMA.initialize"
@@ -114,7 +122,8 @@ class TestMLServiceFactory:
             mock_initialize.assert_called_once()
             mock_create_phi.assert_called_once_with("mock")
     
-    def test_create_mentalllama_service_without_phi(self, factory):
+    @pytest.mark.venv_only
+def test_create_mentalllama_service_without_phi(self, factory):
         """Test creating MentaLLaMA service without PHI detection."""
         with patch(
             "app.core.services.ml.mentalllama.MentaLLaMA.initialize"
@@ -127,12 +136,14 @@ class TestMLServiceFactory:
             mock_initialize.assert_called_once()
             mock_create_phi.assert_not_called()
     
-    def test_create_mentalllama_service_invalid(self, factory):
+    @pytest.mark.venv_only
+def test_create_mentalllama_service_invalid(self, factory):
         """Test creating MentaLLaMA service with invalid type."""
         with pytest.raises(InvalidConfigurationError):
             factory.create_mentalllama_service("invalid")
     
-    def test_service_caching(self, factory):
+    @pytest.mark.venv_only
+def test_service_caching(self, factory):
         """Test that services are cached and reused."""
         with patch(
             "app.core.services.ml.mentalllama.MentaLLaMA.initialize"
@@ -148,7 +159,8 @@ class TestMLServiceFactory:
             # Initialize should only be called once
             mock_initialize.assert_called_once()
     
-    def test_shutdown(self, factory):
+    @pytest.mark.venv_only
+def test_shutdown(self, factory):
         """Test factory shutdown."""
         with patch(
             "app.core.services.ml.mentalllama.MentaLLaMA.initialize"

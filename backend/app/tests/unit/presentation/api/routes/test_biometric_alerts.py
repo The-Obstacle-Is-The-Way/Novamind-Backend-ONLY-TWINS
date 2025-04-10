@@ -128,10 +128,12 @@ def override_auth(app, mock_current_user, mock_current_provider):
     return mock_current_user, mock_current_provider
 
 
+@pytest.mark.db_required
 class TestCreateAlert:
     """Tests for the create_alert endpoint."""
     
-    async def test_create_alert_success(self, client, override_get_repository, override_auth, sample_alert_data, sample_alert):
+    async @pytest.mark.db_required
+def test_create_alert_success(self, client, override_get_repository, override_auth, sample_alert_data, sample_alert):
         """Test creating a biometric alert successfully."""
         # Setup
         mock_repository = override_get_repository
@@ -150,7 +152,8 @@ class TestCreateAlert:
         # Verify repository was called
         mock_repository.save.assert_called_once()
     
-    async def test_create_alert_validation_error(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_create_alert_validation_error(self, client, override_get_repository, override_auth):
         """Test validation error when creating a biometric alert with invalid data."""
         # Setup - missing required fields
         invalid_data = {
@@ -165,7 +168,8 @@ class TestCreateAlert:
         # Verify
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
-    async def test_create_alert_repository_error(self, client, override_get_repository, override_auth, sample_alert_data):
+    async @pytest.mark.db_required
+def test_create_alert_repository_error(self, client, override_get_repository, override_auth, sample_alert_data):
         """Test error handling when the repository raises an error."""
         # Setup
         mock_repository = override_get_repository
@@ -179,10 +183,12 @@ class TestCreateAlert:
         assert "Error creating biometric alert" in response.json()["detail"]
 
 
+@pytest.mark.db_required
 class TestGetPatientAlerts:
     """Tests for the get_patient_alerts endpoint."""
     
-    async def test_get_patient_alerts_success(self, client, override_get_repository, override_auth, sample_alert):
+    async @pytest.mark.db_required
+def test_get_patient_alerts_success(self, client, override_get_repository, override_auth, sample_alert):
         """Test retrieving biometric alerts for a patient successfully."""
         # Setup
         patient_id = uuid4()
@@ -207,7 +213,8 @@ class TestGetPatientAlerts:
         assert call_args["limit"] == 20  # Default page size
         assert call_args["offset"] == 0  # First page
     
-    async def test_get_patient_alerts_with_filters(self, client, override_get_repository, override_auth, sample_alert):
+    async @pytest.mark.db_required
+def test_get_patient_alerts_with_filters(self, client, override_get_repository, override_auth, sample_alert):
         """Test retrieving biometric alerts for a patient with filters."""
         # Setup
         patient_id = uuid4()
@@ -231,7 +238,8 @@ class TestGetPatientAlerts:
         assert call_args["limit"] == 10  # Custom page size
         assert call_args["offset"] == 10  # Second page with page_size=10
     
-    async def test_get_patient_alerts_repository_error(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_get_patient_alerts_repository_error(self, client, override_get_repository, override_auth):
         """Test error handling when the repository raises an error."""
         # Setup
         patient_id = uuid4()
@@ -246,10 +254,12 @@ class TestGetPatientAlerts:
         assert "Error retrieving biometric alerts" in response.json()["detail"]
 
 
+@pytest.mark.db_required
 class TestGetActiveAlerts:
     """Tests for the get_active_alerts endpoint."""
     
-    async def test_get_active_alerts_success(self, client, override_get_repository, override_auth, sample_alert):
+    async @pytest.mark.db_required
+def test_get_active_alerts_success(self, client, override_get_repository, override_auth, sample_alert):
         """Test retrieving active biometric alerts successfully."""
         # Setup
         mock_repository = override_get_repository
@@ -272,7 +282,8 @@ class TestGetActiveAlerts:
         assert call_args["limit"] == 20  # Default page size
         assert call_args["offset"] == 0  # First page
     
-    async def test_get_active_alerts_with_priority_filter(self, client, override_get_repository, override_auth, sample_alert):
+    async @pytest.mark.db_required
+def test_get_active_alerts_with_priority_filter(self, client, override_get_repository, override_auth, sample_alert):
         """Test retrieving active biometric alerts with priority filter."""
         # Setup
         mock_repository = override_get_repository
@@ -293,7 +304,8 @@ class TestGetActiveAlerts:
         assert call_args["limit"] == 10  # Custom page size
         assert call_args["offset"] == 10  # Second page with page_size=10
     
-    async def test_get_active_alerts_repository_error(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_get_active_alerts_repository_error(self, client, override_get_repository, override_auth):
         """Test error handling when the repository raises an error."""
         # Setup
         mock_repository = override_get_repository
@@ -307,10 +319,12 @@ class TestGetActiveAlerts:
         assert "Error retrieving active alerts" in response.json()["detail"]
 
 
+@pytest.mark.db_required
 class TestGetAlert:
     """Tests for the get_alert endpoint."""
     
-    async def test_get_alert_success(self, client, override_get_repository, override_auth, sample_alert):
+    async @pytest.mark.db_required
+def test_get_alert_success(self, client, override_get_repository, override_auth, sample_alert):
         """Test retrieving a specific biometric alert successfully."""
         # Setup
         alert_id = sample_alert.alert_id
@@ -329,7 +343,8 @@ class TestGetAlert:
         # Verify repository was called with correct parameters
         mock_repository.get_by_id.assert_called_once_with(alert_id)
     
-    async def test_get_alert_not_found(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_get_alert_not_found(self, client, override_get_repository, override_auth):
         """Test error handling when the alert doesn't exist."""
         # Setup
         alert_id = uuid4()
@@ -343,7 +358,8 @@ class TestGetAlert:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert f"Biometric alert with ID {alert_id} not found" in response.json()["detail"]
     
-    async def test_get_alert_repository_error(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_get_alert_repository_error(self, client, override_get_repository, override_auth):
         """Test error handling when the repository raises an error."""
         # Setup
         alert_id = uuid4()
@@ -358,10 +374,12 @@ class TestGetAlert:
         assert "Error retrieving biometric alert" in response.json()["detail"]
 
 
+@pytest.mark.db_required
 class TestUpdateAlertStatus:
     """Tests for the update_alert_status endpoint."""
     
-    async def test_update_alert_status_success(self, client, override_get_repository, override_auth, sample_alert):
+    async @pytest.mark.db_required
+def test_update_alert_status_success(self, client, override_get_repository, override_auth, sample_alert):
         """Test updating the status of a biometric alert successfully."""
         # Setup
         alert_id = sample_alert.alert_id
@@ -388,7 +406,8 @@ class TestUpdateAlertStatus:
         assert call_args["status"] == AlertStatus.ACKNOWLEDGED
         assert call_args["notes"] == "Reviewing this alert"
     
-    async def test_update_alert_status_not_found(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_update_alert_status_not_found(self, client, override_get_repository, override_auth):
         """Test error handling when the alert doesn't exist."""
         # Setup
         alert_id = uuid4()
@@ -407,7 +426,8 @@ class TestUpdateAlertStatus:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert f"Biometric alert with ID {alert_id} not found" in response.json()["detail"]
     
-    async def test_update_alert_status_repository_error(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_update_alert_status_repository_error(self, client, override_get_repository, override_auth):
         """Test error handling when the repository raises an error."""
         # Setup
         alert_id = uuid4()
@@ -427,10 +447,12 @@ class TestUpdateAlertStatus:
         assert "Error updating biometric alert status" in response.json()["detail"]
 
 
+@pytest.mark.db_required
 class TestDeleteAlert:
     """Tests for the delete_alert endpoint."""
     
-    async def test_delete_alert_success(self, client, override_get_repository, override_auth, sample_alert):
+    async @pytest.mark.db_required
+def test_delete_alert_success(self, client, override_get_repository, override_auth, sample_alert):
         """Test deleting a biometric alert successfully."""
         # Setup
         alert_id = sample_alert.alert_id
@@ -449,7 +471,8 @@ class TestDeleteAlert:
         mock_repository.get_by_id.assert_called_once_with(alert_id)
         mock_repository.delete.assert_called_once_with(alert_id)
     
-    async def test_delete_alert_not_found(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_delete_alert_not_found(self, client, override_get_repository, override_auth):
         """Test error handling when the alert doesn't exist."""
         # Setup
         alert_id = uuid4()
@@ -463,7 +486,8 @@ class TestDeleteAlert:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert f"Biometric alert with ID {alert_id} not found" in response.json()["detail"]
     
-    async def test_delete_alert_repository_error(self, client, override_get_repository, override_auth):
+    async @pytest.mark.db_required
+def test_delete_alert_repository_error(self, client, override_get_repository, override_auth):
         """Test error handling when the repository raises an error."""
         # Setup
         alert_id = uuid4()

@@ -120,7 +120,8 @@ def patient_data():
 
 
 @pytest.mark.asyncio
-async def test_preprocess_patient_data(forecasting_service, patient_data):
+async @pytest.mark.venv_only
+def test_preprocess_patient_data(forecasting_service, patient_data):
     """Test preprocessing of patient data."""
     patient_id = uuid4()
     
@@ -138,7 +139,8 @@ async def test_preprocess_patient_data(forecasting_service, patient_data):
 
 
 @pytest.mark.asyncio
-async def test_preprocess_patient_data_with_missing_data(forecasting_service):
+async @pytest.mark.venv_only
+def test_preprocess_patient_data_with_missing_data(forecasting_service):
     """Test preprocessing with missing data."""
     patient_id = uuid4()
     
@@ -151,7 +153,8 @@ async def test_preprocess_patient_data_with_missing_data(forecasting_service):
 
 
 @pytest.mark.asyncio
-async def test_forecast_symptoms_with_ensemble(forecasting_service, patient_data):
+async @pytest.mark.venv_only
+def test_forecast_symptoms_with_ensemble(forecasting_service, patient_data):
     """Test symptom forecasting with ensemble approach."""
     patient_id = uuid4()
     
@@ -184,7 +187,8 @@ async def test_forecast_symptoms_with_ensemble(forecasting_service, patient_data
 
 
 @pytest.mark.asyncio
-async def test_forecast_symptoms_without_ensemble(forecasting_service, patient_data):
+async @pytest.mark.venv_only
+def test_forecast_symptoms_without_ensemble(forecasting_service, patient_data):
     """Test symptom forecasting without ensemble approach."""
     patient_id = uuid4()
     
@@ -204,7 +208,8 @@ async def test_forecast_symptoms_without_ensemble(forecasting_service, patient_d
 
 
 @pytest.mark.asyncio
-async def test_forecast_symptoms_with_insufficient_data(forecasting_service):
+async @pytest.mark.venv_only
+def test_forecast_symptoms_with_insufficient_data(forecasting_service):
     """Test forecasting with insufficient data."""
     patient_id = uuid4()
     
@@ -234,7 +239,8 @@ async def test_forecast_symptoms_with_insufficient_data(forecasting_service):
 
 
 @pytest.mark.asyncio
-async def test_analyze_symptom_patterns(forecasting_service, patient_data):
+async @pytest.mark.venv_only
+def test_analyze_symptom_patterns(forecasting_service, patient_data):
     """Test analysis of symptom patterns."""
     patient_id = uuid4()
     
@@ -258,7 +264,8 @@ async def test_analyze_symptom_patterns(forecasting_service, patient_data):
 
 
 @pytest.mark.asyncio
-async def test_identify_risk_periods(forecasting_service, patient_data):
+async @pytest.mark.venv_only
+def test_identify_risk_periods(forecasting_service, patient_data):
     """Test identification of risk periods."""
     patient_id = uuid4()
     
@@ -291,7 +298,8 @@ async def test_identify_risk_periods(forecasting_service, patient_data):
 
 
 @pytest.mark.asyncio
-async def test_get_model_performance_metrics(forecasting_service):
+async @pytest.mark.venv_only
+def test_get_model_performance_metrics(forecasting_service):
     """Test retrieval of model performance metrics."""
     # Get performance metrics
     metrics = await forecasting_service.get_model_performance_metrics()
@@ -310,7 +318,8 @@ async def test_get_model_performance_metrics(forecasting_service):
 
 
 @pytest.mark.asyncio
-async def test_sanitize_patient_data(forecasting_service):
+async @pytest.mark.venv_only
+def test_sanitize_patient_data(forecasting_service):
     """Test sanitization of patient data for HIPAA compliance."""
     # Create patient data with PHI
     patient_data_with_phi = {
@@ -343,7 +352,8 @@ async def test_sanitize_patient_data(forecasting_service):
 
 
 @pytest.mark.asyncio
-async def test_model_failure_handling(forecasting_service, patient_data):
+async @pytest.mark.venv_only
+def test_model_failure_handling(forecasting_service, patient_data):
     """Test handling of model failures."""
     patient_id = uuid4()
     

@@ -1,132 +1,133 @@
 """
-Patient domain entities for the Novamind Digital Twin platform.
-Pure domain models with no external dependencies.
+Patient entity in the Novamind Digital Twin platform.
+
+Represents the core domain entity for a patient with all relevant attributes.
+This is a pure domain model with no external dependencies.
 """
+from datetime import datetime
+from typing import Optional, List, Dict, Any, Union
 from dataclasses import dataclass, field
-from datetime import date, datetime
-from enum import Enum
-from typing import Dict, List, Optional, Set
-from uuid import UUID
-
-
-class Gender(Enum):
-    """Patient gender for clinical relevance."""
-    MALE = "male"
-    FEMALE = "female"
-    NON_BINARY = "non_binary"
-    OTHER = "other"
-    PREFER_NOT_TO_SAY = "prefer_not_to_say"
-
-
-class DiagnosisStatus(Enum):
-    """Status of a clinical diagnosis."""
-    PROVISIONAL = "provisional"
-    CONFIRMED = "confirmed"
-    DIFFERENTIAL = "differential"
-    RULED_OUT = "ruled_out"
-    IN_REMISSION = "in_remission"
-
-
-class MedicationStatus(Enum):
-    """Status of a medication."""
-    ACTIVE = "active"
-    DISCONTINUED = "discontinued"
-    PLANNED = "planned"
-    ON_HOLD = "on_hold"
-
-
-@dataclass
-class Diagnosis:
-    """Clinical diagnosis for a patient."""
-    id: UUID
-    code: str  # ICD-10 or DSM-5 code
-    name: str
-    status: DiagnosisStatus
-    onset_date: Optional[date] = None
-    diagnosed_date: date = field(default_factory=date.today)
-    notes: Optional[str] = None
-    severity: Optional[float] = None  # 0.0 to 1.0 if applicable
-    diagnosed_by: Optional[UUID] = None  # Reference to clinician
-    
-    @property
-    def is_active(self) -> bool:
-        """Return True if diagnosis is currently active."""
-        return self.status in [DiagnosisStatus.CONFIRMED, DiagnosisStatus.PROVISIONAL]
-
-
-@dataclass
-class Medication:
-    """Medication prescribed to a patient."""
-    id: UUID
-    name: str
-    dosage: str
-    frequency: str
-    status: MedicationStatus
-    start_date: date
-    end_date: Optional[date] = None
-    prescriber_id: Optional[UUID] = None
-    reason: Optional[str] = None
-    notes: Optional[str] = None
-    
-    @property
-    def is_active(self) -> bool:
-        """Return True if medication is currently active."""
-        return (
-            self.status == MedicationStatus.ACTIVE and
-            (self.end_date is None or self.end_date >= date.today())
-        )
-
-
-@dataclass
-class PatientPreference:
-    """Patient preferences for care and communication."""
-    communication_method: str  # e.g., "email", "phone", "text"
-    appointment_reminder_time: int  # hours before appointment
-    data_sharing_approved: bool = False
-    research_participation: bool = False
-    theme_preference: str = "default"
-    visualization_detail_level: str = "standard"  # "minimal", "standard", "detailed"
 
 
 @dataclass
 class Patient:
     """
-    Patient entity representing an individual receiving care.
-    Core domain entity that contains PHI and must be handled with HIPAA compliance.
+    Patient entity representing a person receiving care.
+    
+    This class is a pure domain entity with no dependencies on external
+    systems or frameworks.
     """
-    id: UUID
-    first_name: str
-    last_name: str
-    date_of_birth: date
-    gender: Gender
+    id: str
+    name: str
+    date_of_birth: Union[datetime, str]
+    gender: str
     email: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
-    diagnoses: List[Diagnosis] = field(default_factory=list)
-    medications: List[Medication] = field(default_factory=list)
-    preferences: Optional[PatientPreference] = None
-    primary_provider_id: Optional[UUID] = None
-    created_at: datetime = field(default_factory=datetime.now)
-    updated_at: datetime = field(default_factory=datetime.now)
+    insurance_number: Optional[str] = None
+    medical_history: List[str] = field(default_factory=list)
+    medications: List[str] = field(default_factory=list)
+    allergies: List[str] = field(default_factory=list)
+    treatment_notes: List[Dict[str, Any]] = field(default_factory=list)
+    created_at: Optional[Union[datetime, str]] = None
+    updated_at: Optional[Union[datetime, str]] = None
     
-    @property
-    def full_name(self) -> str:
-        """Return patient's full name."""
-        return f"{self.first_name} {self.last_name}"
+    def __post_init__(self):
+        """
+        Perform post-initialization validation and normalization.
+        """
+        # Ensure created_at and updated_at are set
+        if self.created_at is None:
+            self.created_at = datetime.now()
+        if self.updated_at is None:
+            self.updated_at = datetime.now()
+            
+        # Convert string dates to datetime if needed
+        if isinstance(self.date_of_birth, str):
+            try:
+                self.date_of_birth = datetime.fromisoformat(self.date_of_birth.replace('Z', '+00:00'))
+            except ValueError:
+                # If it's not an ISO format, try common formats
+                try:
+                    self.date_of_birth = datetime.strptime(self.date_of_birth, "%Y-%m-%d")
+                except ValueError:
+                    pass  # Keep as string if we can't parse it
+                
+        if isinstance(self.created_at, str):
+            try:
+                self.created_at = datetime.fromisoformat(self.created_at.replace('Z', '+00:00'))
+            except ValueError:
+                pass
+                
+        if isinstance(self.updated_at, str):
+            try:
+                self.updated_at = datetime.fromisoformat(self.updated_at.replace('Z', '+00:00'))
+            except ValueError:
+                pass
     
-    @property
-    def age(self) -> int:
-        """Calculate patient's age from date of birth."""
-        today = date.today()
-        born = self.date_of_birth
-        return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+    def add_medical_history_item(self, condition: str) -> None:
+        """
+        Add a medical condition to the patient's history.
+        
+        Args:
+            condition: The medical condition to add
+        """
+        if condition and condition not in self.medical_history:
+            self.medical_history.append(condition)
+            self.updated_at = datetime.now()
     
-    @property
-    def active_diagnoses(self) -> List[Diagnosis]:
-        """Return list of active diagnoses."""
-        return [d for d in self.diagnoses if d.is_active]
+    def add_medication(self, medication: str) -> None:
+        """
+        Add a medication to the patient's current medications.
+        
+        Args:
+            medication: The medication to add
+        """
+        if medication and medication not in self.medications:
+            self.medications.append(medication)
+            self.updated_at = datetime.now()
     
-    @property
-    def active_medications(self) -> List[Medication]:
-        """Return list of active medications."""
-        return [m for m in self.medications if m.is_active]
+    def add_allergy(self, allergy: str) -> None:
+        """
+        Add an allergy to the patient's allergies list.
+        
+        Args:
+            allergy: The allergy to add
+        """
+        if allergy and allergy not in self.allergies:
+            self.allergies.append(allergy)
+            self.updated_at = datetime.now()
+    
+    def add_treatment_note(self, note: Dict[str, Any]) -> None:
+        """
+        Add a treatment note to the patient's record.
+        
+        Args:
+            note: The treatment note to add, must contain 'date' and 'content' keys
+        """
+        if note and isinstance(note, dict) and 'content' in note:
+            # Ensure note has a date
+            if 'date' not in note:
+                note['date'] = datetime.now()
+                
+            self.treatment_notes.append(note)
+            self.updated_at = datetime.now()
+    
+    def update_contact_info(self, email: Optional[str] = None, phone: Optional[str] = None, 
+                           address: Optional[str] = None) -> None:
+        """
+        Update the patient's contact information.
+        
+        Args:
+            email: New email address
+            phone: New phone number
+            address: New physical address
+        """
+        if email is not None:
+            self.email = email
+        if phone is not None:
+            self.phone = phone
+        if address is not None:
+            self.address = address
+            
+        self.updated_at = datetime.now()

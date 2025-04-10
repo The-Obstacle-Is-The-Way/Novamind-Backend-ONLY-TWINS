@@ -14,6 +14,7 @@ from app.infrastructure.repositories.patient_repository import PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
 
+@pytest.mark.db_required
 class TestPatientRepository:
     """Tests for the PatientRepository."""
     
@@ -70,7 +71,8 @@ class TestPatientRepository:
         )
     
     @pytest.mark.asyncio
-    async def test_create_patient(self):
+    async @pytest.mark.db_required
+def test_create_patient(self):
         """Test creating a new patient."""
         # Configure mock to track the add operation
         self.mock_db._committed_objects = []
@@ -83,7 +85,8 @@ class TestPatientRepository:
         assert result == self.patient_1
     
     @pytest.mark.asyncio
-    async def test_get_patient_by_id(self):
+    async @pytest.mark.db_required
+def test_get_patient_by_id(self):
         """Test retrieving a patient by ID."""
         # Configure mock to return our test patient
         self.mock_db._query_results = [self.patient_1]
@@ -96,7 +99,8 @@ class TestPatientRepository:
         assert result == self.patient_1
     
     @pytest.mark.asyncio
-    async def test_get_patient_by_id_not_found(self):
+    async @pytest.mark.db_required
+def test_get_patient_by_id_not_found(self):
         """Test retrieving a non-existent patient."""
         # Configure mock to return no results
         self.mock_db._query_results = []
@@ -110,7 +114,8 @@ class TestPatientRepository:
         assert result is None
     
     @pytest.mark.asyncio
-    async def test_update_patient(self):
+    async @pytest.mark.db_required
+def test_update_patient(self):
         """Test updating an existing patient."""
         # Configure mock to track update operation
         self.mock_db._committed_objects = []
@@ -130,7 +135,8 @@ class TestPatientRepository:
         assert result.email == "jonathan.doe@example.com"
     
     @pytest.mark.asyncio
-    async def test_delete_patient(self):
+    async @pytest.mark.db_required
+def test_delete_patient(self):
         """Test deleting a patient."""
         # Configure mock to track delete operation
         self.mock_db._deleted_objects = []
@@ -142,7 +148,8 @@ class TestPatientRepository:
         assert self.patient_1 in self.mock_db._deleted_objects
     
     @pytest.mark.asyncio
-    async def test_get_all_patients(self):
+    async @pytest.mark.db_required
+def test_get_all_patients(self):
         """Test retrieving all patients."""
         # Configure mock to return our test patients
         patients = [self.patient_1, self.patient_2, self.patient_3]
@@ -157,7 +164,8 @@ class TestPatientRepository:
         assert set(result) == set(patients)
     
     @pytest.mark.asyncio
-    async def test_get_patients_by_last_name(self):
+    async @pytest.mark.db_required
+def test_get_patients_by_last_name(self):
         """Test retrieving patients by last name."""
         # Configure mock to return filtered results
         self.mock_db._query_results = [self.patient_1]
@@ -171,7 +179,8 @@ class TestPatientRepository:
         assert result[0] == self.patient_1
     
     @pytest.mark.asyncio
-    async def test_get_active_patients(self):
+    async @pytest.mark.db_required
+def test_get_active_patients(self):
         """Test retrieving only active patients."""
         # Configure mock to return active patients
         active_patients = [self.patient_1, self.patient_2]

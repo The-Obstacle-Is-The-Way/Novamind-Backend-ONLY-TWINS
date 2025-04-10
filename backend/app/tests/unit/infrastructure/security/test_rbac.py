@@ -131,10 +131,12 @@ def role_manager(rbac_config, role_definitions, mock_audit_logger):
     return manager
 
 
+@pytest.mark.db_required
 class TestRoleManager:
     """Test suite for the role manager."""
     
-    def test_has_permission_admin(self, role_manager):
+    @pytest.mark.db_required
+def test_has_permission_admin(self, role_manager):
         """Test that admin role has access to all permissions."""
         # Check admin access to various resources
         permissions_to_check = [
@@ -151,7 +153,8 @@ class TestRoleManager:
             # Admin should have access to all permissions
             assert role_manager.has_permission("admin", perm) is True
     
-    def test_has_permission_psychiatrist(self, role_manager):
+    @pytest.mark.db_required
+def test_has_permission_psychiatrist(self, role_manager):
         """Test that psychiatrist role has appropriate permissions."""
         # Permissions psychiatrist should have
         permitted = [
@@ -177,7 +180,8 @@ class TestRoleManager:
         for perm in denied:
             assert role_manager.has_permission("psychiatrist", perm) is False
     
-    def test_has_permission_nurse(self, role_manager):
+    @pytest.mark.db_required
+def test_has_permission_nurse(self, role_manager):
         """Test that nurse role has appropriate permissions."""
         # Permissions nurse should have
         permitted = [
@@ -203,7 +207,8 @@ class TestRoleManager:
         for perm in denied:
             assert role_manager.has_permission("nurse", perm) is False
     
-    def test_has_permission_patient(self, role_manager):
+    @pytest.mark.db_required
+def test_has_permission_patient(self, role_manager):
         """Test that patient role has 'own' resource permissions only."""
         # Permissions patient should have (only on own resources)
         permitted = [
@@ -231,7 +236,8 @@ class TestRoleManager:
         for perm in denied:
             assert role_manager.has_permission("patient", perm) is False
     
-    def test_role_inheritance(self, role_manager):
+    @pytest.mark.db_required
+def test_role_inheritance(self, role_manager):
         """Test that role inheritance works correctly."""
         # Configure inheritance (admin inherits all)
         role_manager._role_hierarchy = {
@@ -273,7 +279,8 @@ class TestRoleManager:
         # Patient should not inherit anything
         assert "patient" not in role_manager._role_hierarchy
     
-    def test_wildcard_permissions(self, role_manager):
+    @pytest.mark.db_required
+def test_wildcard_permissions(self, role_manager):
         """Test that wildcard permissions work correctly."""
         # Test generic wildcards
         assert role_manager.has_permission("admin", "*") is True
@@ -285,7 +292,8 @@ class TestRoleManager:
         assert role_manager.has_permission("nurse", "read:patient:*") is True
         assert role_manager.has_permission("patient", "read:patient:*") is False  # Patient can only read own
     
-    def test_permission_parsing(self, role_manager):
+    @pytest.mark.db_required
+def test_permission_parsing(self, role_manager):
         """Test that permission strings are parsed correctly."""
         # Parse a permission string
         permission = role_manager.parse_permission("read:patient:own")
@@ -303,7 +311,8 @@ class TestRoleManager:
         assert wildcard.resource_type == "*"
         assert wildcard.resource_qualifier == "*"
     
-    def test_check_access_with_context(self, role_manager):
+    @pytest.mark.db_required
+def test_check_access_with_context(self, role_manager):
         """Test access checking with context information."""
         # Create an access request with context
         request = AccessRequest(
@@ -346,7 +355,8 @@ class TestRoleManager:
         assert decision.granted is False
         assert "not authorized to access" in decision.reason
     
-    def test_check_access_for_clinician(self, role_manager):
+    @pytest.mark.db_required
+def test_check_access_for_clinician(self, role_manager):
         """Test access checking for clinical staff roles."""
         # Create an access request for a psychiatrist
         request = AccessRequest(
@@ -400,7 +410,8 @@ class TestRoleManager:
         assert decision.granted is False
         assert "does not have permission" in decision.reason
     
-    def test_check_access_admin_override(self, role_manager):
+    @pytest.mark.db_required
+def test_check_access_admin_override(self, role_manager):
         """Test that admin role can override access restrictions."""
         # Create an access request for admin
         request = AccessRequest(
@@ -428,7 +439,8 @@ class TestRoleManager:
         assert decision.granted is True
         assert "Admin has permission" in decision.reason
     
-    def test_audit_logging(self, role_manager, mock_audit_logger):
+    @pytest.mark.db_required
+def test_audit_logging(self, role_manager, mock_audit_logger):
         """Test that access decisions are properly logged."""
         # Enable auditing
         role_manager.config.audit_access_decisions = True
@@ -488,7 +500,8 @@ class TestRoleManager:
         denied_log_call = mock_audit_logger.log_rbac_decision.call_args[1]
         assert denied_log_call["decision"].granted is False
     
-    def test_permission_caching(self, role_manager):
+    @pytest.mark.db_required
+def test_permission_caching(self, role_manager):
         """Test that permission decisions are properly cached."""
         # Enable caching
         role_manager.config.cache_decisions = True
@@ -517,7 +530,8 @@ class TestRoleManager:
         # Verify a new check was performed
         assert check_calls == 2
     
-    def test_enforce_strict_checking(self, role_manager):
+    @pytest.mark.db_required
+def test_enforce_strict_checking(self, role_manager):
         """Test strict permission checking."""
         # Enable strict checking
         role_manager.config.enforce_strict_checking = True
@@ -537,7 +551,8 @@ class TestRoleManager:
         assert role_manager.has_permission("non_existent_role", "read:patient:*") is False
         assert role_manager.has_permission("psychiatrist", "non_existent:permission") is False
     
-    def test_default_deny_policy(self, role_manager):
+    @pytest.mark.db_required
+def test_default_deny_policy(self, role_manager):
         """Test the default deny policy."""
         # Enable default deny
         role_manager.config.default_deny = True
@@ -562,7 +577,8 @@ class TestRoleManager:
         # Restore the original method
         role_manager._check_permission = original_check
     
-    def test_permission_composition(self, role_manager):
+    @pytest.mark.db_required
+def test_permission_composition(self, role_manager):
         """Test permission composition using multiple roles."""
         # Create an access request with multiple roles
         request = AccessRequest(
@@ -604,7 +620,8 @@ class TestRoleManager:
         assert decision.granted is True
         assert "Nurse has permission" in decision.reason
     
-    def test_contextual_permission_evaluation(self, role_manager):
+    @pytest.mark.db_required
+def test_contextual_permission_evaluation(self, role_manager):
         """Test evaluation of permissions that depend on request context."""
         # Configure a special rule for context-based evaluation
         def special_context_rule(request, context):
@@ -657,7 +674,8 @@ class TestRoleManager:
         assert decision.granted is False
         assert "does not have permission" in decision.reason
     
-    def test_ensure_loaded_roles(self, role_manager):
+    @pytest.mark.db_required
+def test_ensure_loaded_roles(self, role_manager):
         """Test that roles are properly loaded."""
         # Check that all expected roles are loaded
         expected_roles = ["admin", "psychiatrist", "nurse", "patient", "receptionist"]
@@ -667,7 +685,8 @@ class TestRoleManager:
             assert isinstance(role_manager._roles[role_name], RoleDefinition)
             assert role_manager._roles[role_name].name == role_name
     
-    def test_require_explicit_roles(self, role_manager):
+    @pytest.mark.db_required
+def test_require_explicit_roles(self, role_manager):
         """Test enforcement of explicit role requirement."""
         # Enable require explicit roles
         role_manager.config.require_explicit_roles = True
@@ -694,7 +713,8 @@ class TestRoleManager:
         assert decision.granted is False
         assert "No roles specified" in decision.reason
     
-    def test_check_access_with_no_matching_permission(self, role_manager):
+    @pytest.mark.db_required
+def test_check_access_with_no_matching_permission(self, role_manager):
         """Test access check when no matching permission exists."""
         # Create an access request for a resource type not defined in permissions
         request = AccessRequest(
@@ -718,7 +738,8 @@ class TestRoleManager:
         assert decision.granted is False
         assert "does not have permission" in decision.reason
     
-    def test_role_assignment_validation(self, role_manager):
+    @pytest.mark.db_required
+def test_role_assignment_validation(self, role_manager):
         """Test validation of role assignments."""
         # Test valid role assignment
         valid_roles = ["admin", "psychiatrist", "nurse"]
@@ -736,7 +757,8 @@ class TestRoleManager:
         role_manager.config.enforce_strict_checking = False
         assert role_manager.validate_roles(invalid_roles) is False
     
-    def test_dynamic_permission_evaluation(self, role_manager):
+    @pytest.mark.db_required
+def test_dynamic_permission_evaluation(self, role_manager):
         """Test dynamic evaluation of permissions based on context."""
         # Create a dynamic permission evaluator
         def evaluate_own_resource(request, context):

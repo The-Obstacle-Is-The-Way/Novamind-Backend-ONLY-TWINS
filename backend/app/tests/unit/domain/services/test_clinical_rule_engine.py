@@ -19,6 +19,7 @@ from app.domain.exceptions import ValidationError
 from app.domain.services.clinical_rule_engine import ClinicalRuleEngine
 
 
+@pytest.mark.db_required
 class TestClinicalRuleEngine:
     """Tests for the ClinicalRuleEngine service."""
     
@@ -85,7 +86,8 @@ class TestClinicalRuleEngine:
             is_active=True
         )
     
-    async def test_create_rule(self, rule_engine, mock_rule_repository, 
+    async @pytest.mark.db_required
+def test_create_rule(self, rule_engine, mock_rule_repository, 
                               sample_rule_data, sample_patient_id, sample_provider_id):
         """Test that create_rule correctly creates a rule from the provided data."""
         # Setup
@@ -118,7 +120,8 @@ class TestClinicalRuleEngine:
         assert saved_rule.provider_id == sample_provider_id
         assert saved_rule.is_active is True
     
-    async def test_create_rule_with_invalid_operator(self, rule_engine, sample_rule_data, 
+    async @pytest.mark.db_required
+def test_create_rule_with_invalid_operator(self, rule_engine, sample_rule_data, 
                                                    sample_patient_id, sample_provider_id):
         """Test that create_rule raises ValidationError for invalid operators."""
         # Modify the sample data to have an invalid operator
@@ -136,7 +139,8 @@ class TestClinicalRuleEngine:
                 provider_id=sample_provider_id
             )
     
-    async def test_create_rule_with_invalid_logical_operator(self, rule_engine, sample_rule_data, 
+    async @pytest.mark.db_required
+def test_create_rule_with_invalid_logical_operator(self, rule_engine, sample_rule_data, 
                                                           sample_patient_id, sample_provider_id):
         """Test that create_rule raises ValidationError for invalid logical operators."""
         # Execute and verify
@@ -151,7 +155,8 @@ class TestClinicalRuleEngine:
                 provider_id=sample_provider_id
             )
     
-    async def test_create_rule_with_invalid_priority(self, rule_engine, sample_rule_data, 
+    async @pytest.mark.db_required
+def test_create_rule_with_invalid_priority(self, rule_engine, sample_rule_data, 
                                                   sample_patient_id, sample_provider_id):
         """Test that create_rule raises ValidationError for invalid priorities."""
         # Execute and verify
@@ -166,7 +171,8 @@ class TestClinicalRuleEngine:
                 provider_id=sample_provider_id
             )
     
-    async def test_update_rule(self, rule_engine, mock_rule_repository, sample_rule):
+    async @pytest.mark.db_required
+def test_update_rule(self, rule_engine, mock_rule_repository, sample_rule):
         """Test that update_rule correctly updates an existing rule."""
         # Setup
         rule_id = sample_rule.rule_id
@@ -193,7 +199,8 @@ class TestClinicalRuleEngine:
         assert updated_rule.logical_operator == sample_rule.logical_operator
         assert updated_rule.alert_priority == sample_rule.alert_priority
     
-    async def test_update_rule_conditions(self, rule_engine, mock_rule_repository, sample_rule):
+    async @pytest.mark.db_required
+def test_update_rule_conditions(self, rule_engine, mock_rule_repository, sample_rule):
         """Test that update_rule correctly updates rule conditions."""
         # Setup
         rule_id = sample_rule.rule_id
@@ -231,7 +238,8 @@ class TestClinicalRuleEngine:
         assert updated_rule.conditions[1].data_type == "blood_pressure_systolic"
         assert updated_rule.logical_operator == LogicalOperator.OR
     
-    async def test_update_nonexistent_rule(self, rule_engine, mock_rule_repository):
+    async @pytest.mark.db_required
+def test_update_nonexistent_rule(self, rule_engine, mock_rule_repository):
         """Test that update_rule raises ValidationError for nonexistent rules."""
         # Setup
         rule_id = uuid4()
@@ -244,7 +252,8 @@ class TestClinicalRuleEngine:
                 name="Updated Rule Name"
             )
     
-    async def test_create_standard_rules(self, rule_engine, mock_rule_repository, 
+    async @pytest.mark.db_required
+def test_create_standard_rules(self, rule_engine, mock_rule_repository, 
                                        sample_provider_id, sample_patient_id):
         """Test that create_standard_rules creates a set of predefined rules."""
         # Setup
@@ -273,7 +282,8 @@ class TestClinicalRuleEngine:
             assert rule.provider_id == sample_provider_id
             assert rule.is_active is True
     
-    async def test_get_active_rules_for_patient(self, rule_engine, mock_rule_repository, 
+    async @pytest.mark.db_required
+def test_get_active_rules_for_patient(self, rule_engine, mock_rule_repository, 
                                              sample_patient_id, sample_rule):
         """Test that get_active_rules_for_patient returns all active rules for a patient."""
         # Setup

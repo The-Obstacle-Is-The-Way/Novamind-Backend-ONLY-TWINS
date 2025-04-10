@@ -17,6 +17,7 @@ from app.domain.value_objects.address import Address
 from app.domain.value_objects.contact_info import ContactInfo
 
 
+@pytest.mark.venv_only
 class TestEmergencyContact:
     """Comprehensive tests for the EmergencyContact value object."""
     
@@ -37,7 +38,8 @@ class TestEmergencyContact:
             }
         }
     
-    def test_emergency_contact_creation(self, valid_contact_data):
+    @pytest.mark.venv_only
+def test_emergency_contact_creation(self, valid_contact_data):
         """Test successful creation of emergency contact."""
         contact = EmergencyContact(**valid_contact_data)
         
@@ -50,7 +52,8 @@ class TestEmergencyContact:
         assert contact.address.street == valid_contact_data["address"]["street"]
         assert contact.address.city == valid_contact_data["address"]["city"]
     
-    def test_emergency_contact_validation(self):
+    @pytest.mark.venv_only
+def test_emergency_contact_validation(self):
         """Test validation of emergency contact data."""
         # Test with missing required fields
         with pytest.raises(ValueError):
@@ -87,7 +90,8 @@ class TestEmergencyContact:
                 email="invalid-email"  # Invalid email
             )
     
-    def test_emergency_contact_optional_fields(self, valid_contact_data):
+    @pytest.mark.venv_only
+def test_emergency_contact_optional_fields(self, valid_contact_data):
         """Test emergency contact with optional fields."""
         # Test with missing email
         data = valid_contact_data.copy()
@@ -101,7 +105,8 @@ class TestEmergencyContact:
         contact = EmergencyContact(**data)
         assert contact.address is None
     
-    def test_emergency_contact_equality(self, valid_contact_data):
+    @pytest.mark.venv_only
+def test_emergency_contact_equality(self, valid_contact_data):
         """Test equality comparison of emergency contacts."""
         contact1 = EmergencyContact(**valid_contact_data)
         contact2 = EmergencyContact(**valid_contact_data)
@@ -115,7 +120,8 @@ class TestEmergencyContact:
         contact3 = EmergencyContact(**different_data)
         assert contact1 != contact3
     
-    def test_emergency_contact_repr(self, valid_contact_data):
+    @pytest.mark.venv_only
+def test_emergency_contact_repr(self, valid_contact_data):
         """Test string representation of emergency contact."""
         contact = EmergencyContact(**valid_contact_data)
         repr_str = repr(contact)
@@ -125,7 +131,8 @@ class TestEmergencyContact:
         assert contact.relationship in repr_str
         assert contact.phone in repr_str
     
-    def test_emergency_contact_to_dict(self, valid_contact_data):
+    @pytest.mark.venv_only
+def test_emergency_contact_to_dict(self, valid_contact_data):
         """Test conversion of emergency contact to dictionary."""
         contact = EmergencyContact(**valid_contact_data)
         contact_dict = contact.to_dict()
@@ -139,6 +146,7 @@ class TestEmergencyContact:
         assert contact_dict["address"]["street"] == valid_contact_data["address"]["street"]
 
 
+@pytest.mark.venv_only
 class TestPsychiatricAssessment:
     """Comprehensive tests for the PsychiatricAssessment value object."""
     
@@ -153,7 +161,8 @@ class TestPsychiatricAssessment:
             "notes": "Patient shows improvement with current regimen"
         }
     
-    def test_psychiatric_assessment_creation(self, valid_assessment_data):
+    @pytest.mark.venv_only
+def test_psychiatric_assessment_creation(self, valid_assessment_data):
         """Test successful creation of psychiatric assessment."""
         assessment = PsychiatricAssessment(**valid_assessment_data)
         
@@ -164,7 +173,8 @@ class TestPsychiatricAssessment:
         assert assessment.treatment_plan == valid_assessment_data["treatment_plan"]
         assert assessment.notes == valid_assessment_data["notes"]
     
-    def test_psychiatric_assessment_validation(self):
+    @pytest.mark.venv_only
+def test_psychiatric_assessment_validation(self):
         """Test validation of psychiatric assessment data."""
         # Test with missing required fields
         with pytest.raises(ValueError):
@@ -191,7 +201,8 @@ class TestPsychiatricAssessment:
                 treatment_plan=""  # Empty treatment plan
             )
     
-    def test_psychiatric_assessment_optional_fields(self, valid_assessment_data):
+    @pytest.mark.venv_only
+def test_psychiatric_assessment_optional_fields(self, valid_assessment_data):
         """Test psychiatric assessment with optional fields."""
         # Test with missing notes
         data = valid_assessment_data.copy()
@@ -199,7 +210,8 @@ class TestPsychiatricAssessment:
         assessment = PsychiatricAssessment(**data)
         assert assessment.notes is None
     
-    def test_psychiatric_assessment_equality(self, valid_assessment_data):
+    @pytest.mark.venv_only
+def test_psychiatric_assessment_equality(self, valid_assessment_data):
         """Test equality comparison of psychiatric assessments."""
         assessment1 = PsychiatricAssessment(**valid_assessment_data)
         assessment2 = PsychiatricAssessment(**valid_assessment_data)
@@ -213,7 +225,8 @@ class TestPsychiatricAssessment:
         assessment3 = PsychiatricAssessment(**different_data)
         assert assessment1 != assessment3
     
-    def test_psychiatric_assessment_repr(self, valid_assessment_data):
+    @pytest.mark.venv_only
+def test_psychiatric_assessment_repr(self, valid_assessment_data):
         """Test string representation of psychiatric assessment."""
         assessment = PsychiatricAssessment(**valid_assessment_data)
         repr_str = repr(assessment)
@@ -223,7 +236,8 @@ class TestPsychiatricAssessment:
         assert assessment.diagnosis in repr_str
         assert assessment.severity in repr_str
     
-    def test_psychiatric_assessment_to_dict(self, valid_assessment_data):
+    @pytest.mark.venv_only
+def test_psychiatric_assessment_to_dict(self, valid_assessment_data):
         """Test conversion of psychiatric assessment to dictionary."""
         assessment = PsychiatricAssessment(**valid_assessment_data)
         assessment_dict = assessment.to_dict()
@@ -235,7 +249,8 @@ class TestPsychiatricAssessment:
         assert assessment_dict["treatment_plan"] == valid_assessment_data["treatment_plan"]
         assert assessment_dict["notes"] == valid_assessment_data["notes"]
     
-    def test_psychiatric_assessment_from_dict(self, valid_assessment_data):
+    @pytest.mark.venv_only
+def test_psychiatric_assessment_from_dict(self, valid_assessment_data):
         """Test creation of psychiatric assessment from dictionary."""
         # Convert date to string as it would come from JSON
         dict_data = valid_assessment_data.copy()
@@ -249,6 +264,7 @@ class TestPsychiatricAssessment:
         assert assessment.severity == valid_assessment_data["severity"]
 
 
+@pytest.mark.venv_only
 class TestAddressValueObject:
     """Tests for the Address value object."""
     
@@ -263,7 +279,8 @@ class TestAddressValueObject:
             "country": "USA"
         }
     
-    def test_address_creation(self, valid_address_data):
+    @pytest.mark.venv_only
+def test_address_creation(self, valid_address_data):
         """Test successful creation of address."""
         address = Address(**valid_address_data)
         
@@ -274,7 +291,8 @@ class TestAddressValueObject:
         assert address.zip_code == valid_address_data["zip_code"]
         assert address.country == valid_address_data["country"]
     
-    def test_address_validation(self):
+    @pytest.mark.venv_only
+def test_address_validation(self):
         """Test validation of address data."""
         # Test with missing required fields
         with pytest.raises(ValueError):
@@ -295,7 +313,8 @@ class TestAddressValueObject:
                 country="USA"
             )
     
-    def test_address_to_dict(self, valid_address_data):
+    @pytest.mark.venv_only
+def test_address_to_dict(self, valid_address_data):
         """Test conversion of address to dictionary."""
         address = Address(**valid_address_data)
         address_dict = address.to_dict()
@@ -304,6 +323,7 @@ class TestAddressValueObject:
         assert address_dict == valid_address_data
 
 
+@pytest.mark.venv_only
 class TestContactInfoValueObject:
     """Tests for the ContactInfo value object."""
     
@@ -316,7 +336,8 @@ class TestContactInfoValueObject:
             "preferred_contact_method": "email"
         }
     
-    def test_contact_info_creation(self, valid_contact_info_data):
+    @pytest.mark.venv_only
+def test_contact_info_creation(self, valid_contact_info_data):
         """Test successful creation of contact info."""
         contact_info = ContactInfo(**valid_contact_info_data)
         
@@ -325,7 +346,8 @@ class TestContactInfoValueObject:
         assert contact_info.phone == valid_contact_info_data["phone"]
         assert contact_info.preferred_contact_method == valid_contact_info_data["preferred_contact_method"]
     
-    def test_contact_info_validation(self):
+    @pytest.mark.venv_only
+def test_contact_info_validation(self):
         """Test validation of contact info data."""
         # Test with invalid email
         with pytest.raises(ValueError):
@@ -351,7 +373,8 @@ class TestContactInfoValueObject:
                 preferred_contact_method="invalid-method"  # Invalid method
             )
     
-    def test_contact_info_optional_fields(self, valid_contact_info_data):
+    @pytest.mark.venv_only
+def test_contact_info_optional_fields(self, valid_contact_info_data):
         """Test contact info with optional fields."""
         # Test with missing email
         data = valid_contact_info_data.copy()
@@ -365,7 +388,8 @@ class TestContactInfoValueObject:
         contact_info = ContactInfo(**data)
         assert contact_info.phone is None
     
-    def test_contact_info_to_dict(self, valid_contact_info_data):
+    @pytest.mark.venv_only
+def test_contact_info_to_dict(self, valid_contact_info_data):
         """Test conversion of contact info to dictionary."""
         contact_info = ContactInfo(**valid_contact_info_data)
         contact_info_dict = contact_info.to_dict()

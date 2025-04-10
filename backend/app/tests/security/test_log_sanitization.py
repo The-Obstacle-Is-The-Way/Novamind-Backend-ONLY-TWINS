@@ -17,6 +17,7 @@ from unittest.mock import patch, MagicMock
 from app.infrastructure.security.log_sanitizer import PHISanitizer
 
 
+@pytest.mark.db_required
 class TestLogSanitization:
     """Test PHI sanitization in logs to ensure HIPAA compliance."""
 
@@ -50,13 +51,15 @@ class TestLogSanitization:
         
         return test_logger, temp_log_file
 
-    def test_sanitizer_initialization(self):
+    @pytest.mark.db_required
+def test_sanitizer_initialization(self):
         """Test that the PHI sanitizer properly initializes patterns."""
         sanitizer = PHISanitizer()
         assert hasattr(sanitizer, 'patterns')
         assert len(sanitizer.patterns) > 0, "Sanitizer should have patterns defined"
 
-    def test_ssn_sanitization(self):
+    @pytest.mark.db_required
+def test_ssn_sanitization(self):
         """Test that SSNs are properly sanitized."""
         sanitizer = PHISanitizer()
         test_log = "Patient SSN is 123-45-6789"
@@ -64,7 +67,8 @@ class TestLogSanitization:
         assert "123-45-6789" not in sanitized
         assert "[REDACTED-SSN]" in sanitized
     
-    def test_email_sanitization(self):
+    @pytest.mark.db_required
+def test_email_sanitization(self):
         """Test that email addresses are properly sanitized."""
         sanitizer = PHISanitizer()
         test_log = "Patient email is patient@example.com"
@@ -72,7 +76,8 @@ class TestLogSanitization:
         assert "patient@example.com" not in sanitized
         assert "[REDACTED-EMAIL]" in sanitized
     
-    def test_phone_sanitization(self):
+    @pytest.mark.db_required
+def test_phone_sanitization(self):
         """Test that phone numbers are properly sanitized."""
         sanitizer = PHISanitizer()
         test_log = "Patient phone is (555) 123-4567"
@@ -80,7 +85,8 @@ class TestLogSanitization:
         assert "(555) 123-4567" not in sanitized
         assert "[REDACTED-PHONE]" in sanitized
     
-    def test_name_sanitization(self):
+    @pytest.mark.db_required
+def test_name_sanitization(self):
         """Test that names are properly sanitized."""
         sanitizer = PHISanitizer()
         test_log = "Patient name is John Smith"
@@ -88,7 +94,8 @@ class TestLogSanitization:
         assert "John Smith" not in sanitized
         assert "[REDACTED-NAME]" in sanitized
     
-    def test_multiple_phi_sanitization(self):
+    @pytest.mark.db_required
+def test_multiple_phi_sanitization(self):
         """Test that multiple PHI elements in the same log are all sanitized."""
         sanitizer = PHISanitizer()
         test_log = "Patient John Smith (SSN: 123-45-6789) can be reached at (555) 123-4567 or john.smith@example.com"
@@ -104,7 +111,8 @@ class TestLogSanitization:
         assert "[REDACTED-PHONE]" in sanitized
         assert "[REDACTED-EMAIL]" in sanitized
     
-    def test_sanitizer_integration_with_logger(self, logger_setup):
+    @pytest.mark.db_required
+def test_sanitizer_integration_with_logger(self, logger_setup):
         """Test the sanitizer's integration with the logging system."""
         logger, log_file = logger_setup
         
@@ -125,7 +133,8 @@ class TestLogSanitization:
                 log_content = f.read()
                 assert "SANITIZED LOG MESSAGE" in log_content
 
-    def test_phi_never_reaches_logs(self, logger_setup, monkeypatch):
+    @pytest.mark.db_required
+def test_phi_never_reaches_logs(self, logger_setup, monkeypatch):
         """End-to-end test ensuring PHI doesn't make it to logs."""
         # Set up a real sanitizer that will be used by the logging system
         real_sanitizer = PHISanitizer()
@@ -156,7 +165,8 @@ class TestLogSanitization:
             assert "[REDACTED-SSN]" in log_content
             assert "[REDACTED-PHONE]" in log_content
 
-    def test_sanitization_performance(self):
+    @pytest.mark.db_required
+def test_sanitization_performance(self):
         """Test the performance of log sanitization on large log entries."""
         sanitizer = PHISanitizer()
         

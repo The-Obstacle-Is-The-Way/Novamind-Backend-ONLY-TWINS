@@ -21,6 +21,7 @@ from app.core.utils.validation import PHIDetector
 from app.infrastructure.security.phi_middleware import PHIMiddleware, add_phi_middleware
 
 
+@pytest.mark.db_required
 class TestPHIMiddleware:
     """Test suite for PHI middleware functionality."""
 
@@ -37,7 +38,8 @@ class TestPHIMiddleware:
         )
 
     @pytest.mark.asyncio
-    async def test_exclude_path(self):
+    async @pytest.mark.db_required
+def test_exclude_path(self):
         """Test that excluded paths are not processed."""
         # Mock a request to an excluded path
         request = self._create_mock_request("/static/image.png")
@@ -52,7 +54,8 @@ class TestPHIMiddleware:
         # No sanitization should occur for excluded paths
 
     @pytest.mark.asyncio
-    async def test_sanitize_request_with_phi(self):
+    async @pytest.mark.db_required
+def test_sanitize_request_with_phi(self):
         """Test that requests with PHI are logged but not modified."""
         # Mock a request with PHI in body
         phi_body = json.dumps({"patient": "John Doe", "ssn": "123-45-6789"}).encode('utf-8')
@@ -77,7 +80,8 @@ class TestPHIMiddleware:
             call_next.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_sanitize_response_with_phi(self):
+    async @pytest.mark.db_required
+def test_sanitize_response_with_phi(self):
         """Test that responses with PHI are sanitized."""
         # Mock request
         request = self._create_mock_request("/api/patients")
@@ -113,7 +117,8 @@ class TestPHIMiddleware:
         assert sanitized_data["appointment"]["date"] == "2023-04-15"
 
     @pytest.mark.asyncio
-    async def test_whitelist_patterns(self):
+    async @pytest.mark.db_required
+def test_whitelist_patterns(self):
         """Test that whitelisted patterns are not sanitized."""
         # Create middleware with whitelist
         middleware = PHIMiddleware(
@@ -159,7 +164,8 @@ class TestPHIMiddleware:
         assert sanitized_data["address"] == "[REDACTED]"
 
     @pytest.mark.asyncio
-    async def test_audit_mode(self):
+    async @pytest.mark.db_required
+def test_audit_mode(self):
         """Test that audit mode logs but doesn't redact PHI."""
         # Create middleware in audit mode
         middleware = PHIMiddleware(
@@ -199,7 +205,8 @@ class TestPHIMiddleware:
             assert sanitized_data["patient"]["ssn"] == "123-45-6789"
 
     @pytest.mark.asyncio
-    async def test_sanitize_non_json_response(self):
+    async @pytest.mark.db_required
+def test_sanitize_non_json_response(self):
         """Test that non-JSON responses are not sanitized."""
         # Mock request
         request = self._create_mock_request("/api/patients")
@@ -223,7 +230,8 @@ class TestPHIMiddleware:
         assert result_response.body.decode('utf-8') == html_response
 
     @pytest.mark.asyncio
-    async def test_sanitize_nested_json(self):
+    async @pytest.mark.db_required
+def test_sanitize_nested_json(self):
         """Test that deeply nested JSON is properly sanitized."""
         # Mock request
         request = self._create_mock_request("/api/patients")
@@ -281,7 +289,8 @@ class TestPHIMiddleware:
         assert patient["medical"]["insurance"]["policy"] == "12345"
         assert patient["medical"]["insurance"]["provider"] == "Health Co"
 
-    def test_add_phi_middleware(self):
+    @pytest.mark.db_required
+def test_add_phi_middleware(self):
         """Test the helper function to add PHI middleware to FastAPI app."""
         # Create a FastAPI app
         app = FastAPI()

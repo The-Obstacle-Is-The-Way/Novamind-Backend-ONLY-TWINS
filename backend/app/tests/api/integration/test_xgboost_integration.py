@@ -58,10 +58,12 @@ def mock_service():
         yield mock_service
 
 
+@pytest.mark.venv_only
 class TestXGBoostIntegration:
     """Integration tests for the XGBoost API."""
     
-    def test_risk_prediction_flow(self, mock_service):
+    @pytest.mark.venv_only
+def test_risk_prediction_flow(self, mock_service):
         """Test the complete risk prediction workflow."""
         # Step 1: Generate a risk prediction
         risk_request = {
@@ -122,7 +124,8 @@ class TestXGBoostIntegration:
         assert response.json()["digital_twin_updated"] is True
         assert response.json()["prediction_count"] == 1
     
-    def test_treatment_comparison_flow(self, mock_service):
+    @pytest.mark.venv_only
+def test_treatment_comparison_flow(self, mock_service):
         """Test the treatment comparison workflow."""
         # Step 1: Compare multiple treatment options
         comparison_request = {
@@ -156,7 +159,8 @@ class TestXGBoostIntegration:
         assert len(response.json()["results"]) == 3
         assert "recommendation" in response.json()
     
-    def test_model_info_flow(self, mock_service):
+    @pytest.mark.venv_only
+def test_model_info_flow(self, mock_service):
         """Test the model information workflow."""
         # Step 1: Get available models
         response = client.get("/api/v1/xgboost/models")
@@ -181,7 +185,8 @@ class TestXGBoostIntegration:
         assert response.json()["model_id"] == model_id
         assert "features" in response.json()
     
-    def test_healthcheck(self, mock_service):
+    @pytest.mark.venv_only
+def test_healthcheck(self, mock_service):
         """Test the healthcheck endpoint."""
         response = client.get("/api/v1/xgboost/healthcheck")
         

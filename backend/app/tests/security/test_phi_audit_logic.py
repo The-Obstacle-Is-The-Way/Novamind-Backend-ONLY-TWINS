@@ -19,6 +19,7 @@ from pathlib import Path
 from scripts.run_hipaa_phi_audit import PHIAuditor, PHIAuditResult
 
 
+@pytest.mark.venv_only
 class TestPHIAuditLogic:
     """Test suite for PHI audit decision-making logic."""
 
@@ -30,7 +31,8 @@ class TestPHIAuditLogic:
         # Cleanup
         shutil.rmtree(temp_path)
 
-    def test_audit_passed_with_clean_directory(self):
+    @pytest.mark.venv_only
+def test_audit_passed_with_clean_directory(self):
         """Test that the _audit_passed method returns True for clean directories."""
         # Create an auditor with no issues
         auditor = PHIAuditor(base_dir=".")
@@ -39,7 +41,8 @@ class TestPHIAuditLogic:
         # Verify audit passes with no issues
         assert auditor._audit_passed() is True, "Audit should pass with no issues"
 
-    def test_audit_passed_with_clean_app_directory(self, temp_dir):
+    @pytest.mark.venv_only
+def test_audit_passed_with_clean_app_directory(self, temp_dir):
         """Test that the audit passes for clean_app directory even with issues."""
         # Create a clean_app directory
         clean_app_dir = os.path.join(temp_dir, "clean_app")
@@ -58,7 +61,8 @@ class TestPHIAuditLogic:
         # Verify audit passes despite having issues
         assert auditor._audit_passed() is True, "Audit should pass for clean_app directory regardless of issues"
 
-    def test_audit_passed_with_clean_app_in_path(self, temp_dir):
+    @pytest.mark.venv_only
+def test_audit_passed_with_clean_app_in_path(self, temp_dir):
         """Test that the audit passes when 'clean_app' is in the path but not the directory name."""
         # Create a directory with clean_app in the path
         nested_dir = os.path.join(temp_dir, "nested", "clean_app_tests", "fixtures")
@@ -77,7 +81,8 @@ class TestPHIAuditLogic:
         # Verify audit passes despite having issues
         assert auditor._audit_passed() is True, "Audit should pass with clean_app in path"
 
-    def test_audit_failed_with_issues(self):
+    @pytest.mark.venv_only
+def test_audit_failed_with_issues(self):
         """Test that the audit fails when issues are found and not in clean_app directory."""
         # Create an auditor with issues in a regular directory
         auditor = PHIAuditor(base_dir="/some/regular/path")
@@ -92,7 +97,8 @@ class TestPHIAuditLogic:
         # Verify audit fails with issues in a non-clean_app directory
         assert auditor._audit_passed() is False, "Audit should fail with issues in regular directory"
 
-    def test_audit_file_detection(self, temp_dir):
+    @pytest.mark.venv_only
+def test_audit_file_detection(self, temp_dir):
         """Test the is_phi_test_file detection logic."""
         # Create a PHIAuditor instance
         auditor = PHIAuditor(base_dir=temp_dir)
@@ -108,6 +114,7 @@ class TestPHIAuditLogic:
             f.write("""
 import pytest
 
+@pytest.mark.venv_only
 def test_something():
     assert 1 + 1 == 2
 """)
@@ -119,6 +126,7 @@ def test_something():
 import pytest
 from app.core.utils.validation import PHIDetector
 
+@pytest.mark.venv_only
 def test_phi_detection():
     detector = PHIDetector()
     assert detector.contains_phi("123-45-6789") is True
@@ -134,7 +142,8 @@ def test_phi_detection():
         assert auditor.is_phi_test_file(phi_test_file, open(phi_test_file, "r").read()) is True, \
             "PHI test file should be detected correctly"
 
-    def test_strict_mode_disables_special_handling(self, temp_dir):
+    @pytest.mark.venv_only
+def test_strict_mode_disables_special_handling(self, temp_dir):
         """Test that strict mode disables special handling for test files and clean_app directories."""
         # Create a clean_app directory
         clean_app_dir = os.path.join(temp_dir, "clean_app")
@@ -144,6 +153,7 @@ def test_phi_detection():
         test_file = os.path.join(clean_app_dir, "test_phi.py")
         with open(test_file, "w") as f:
             f.write("""
+@pytest.mark.venv_only
 def test_function():
     ssn = "123-45-6789"
     return ssn
@@ -167,7 +177,8 @@ def test_function():
         assert strict_auditor.is_phi_test_file(test_file, open(test_file, "r").read()) is False, \
             "PHI test file detection should be disabled in strict mode"
 
-    def test_audit_result_allowed_status(self):
+    @pytest.mark.venv_only
+def test_audit_result_allowed_status(self):
         """Test the allowed status of audit results for PHI test files."""
         # Create an audit result
         result = PHIAuditResult(file_path="test_phi.py")
@@ -189,7 +200,8 @@ def test_function():
         assert result.has_phi is True, "Result should have PHI"
         assert result.is_allowed is True, "PHI should be allowed in test file"
 
-    def test_report_counts_for_clean_app_files(self, temp_dir):
+    @pytest.mark.venv_only
+def test_report_counts_for_clean_app_files(self, temp_dir):
         """Test that report correctly counts allowed PHI in clean_app directories."""
         # Create clean_app directory with PHI
         clean_app_dir = os.path.join(temp_dir, "clean_app")
@@ -220,7 +232,8 @@ def get_test_data():
             "Report should indicate that audit passed"
 
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_run_audit_with_clean_app_directory(self, mock_logger, temp_dir):
+    @pytest.mark.venv_only
+def test_run_audit_with_clean_app_directory(self, mock_logger, temp_dir):
         """Test the full run_audit method with a clean_app directory."""
         # Create clean_app directory
         clean_app_dir = os.path.join(temp_dir, "clean_app_test")

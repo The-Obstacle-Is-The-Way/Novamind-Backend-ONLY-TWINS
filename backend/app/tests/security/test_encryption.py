@@ -94,6 +94,7 @@ except ImportError:
             return result
 
 
+@pytest.mark.db_required
 class TestEncryption(unittest.TestCase):
     """Test suite for PHI encryption functionality"""
     
@@ -123,7 +124,8 @@ class TestEncryption(unittest.TestCase):
             "phone", "email", "diagnosis", "notes"
         ]
 
-    def test_key_management(self):
+    @pytest.mark.db_required
+def test_key_management(self):
         """Test encryption key management"""
         # Get the encryption key
         key = self.key_manager.get_encryption_key()
@@ -140,7 +142,8 @@ class TestEncryption(unittest.TestCase):
         # Keys should be different after rotation
         self.assertNotEqual(key, new_key)
 
-    def test_field_encryption(self):
+    @pytest.mark.db_required
+def test_field_encryption(self):
         """Test field-level encryption and decryption"""
         # Test encryption of a single value
         ssn = self.patient_data["ssn"]
@@ -153,7 +156,8 @@ class TestEncryption(unittest.TestCase):
         decrypted_ssn = self.encryption.decrypt(encrypted_ssn)
         self.assertEqual(ssn, decrypted_ssn)
 
-    def test_dict_encryption(self):
+    @pytest.mark.db_required
+def test_dict_encryption(self):
         """Test encryption of multiple fields in a dictionary"""
         # Encrypt PHI fields in the patient data
         encrypted_data = self.encryption.encrypt_dict(
@@ -193,7 +197,8 @@ class TestEncryption(unittest.TestCase):
                     f"Field {field} was not correctly decrypted"
                 )
 
-    def test_empty_values(self):
+    @pytest.mark.db_required
+def test_empty_values(self):
         """Test handling of empty or null values"""
         # Test with empty string
         self.assertEqual("", self.encryption.encrypt(""))
@@ -203,7 +208,8 @@ class TestEncryption(unittest.TestCase):
         self.assertIsNone(self.encryption.encrypt(None))
         self.assertIsNone(self.encryption.decrypt(None))
 
-    def test_nested_data_handling(self):
+    @pytest.mark.db_required
+def test_nested_data_handling(self):
         """Test encryption with nested data structures"""
         # Create nested data structure
         nested_data = {
@@ -248,7 +254,8 @@ class TestEncryption(unittest.TestCase):
             # If nested encryption isn't implemented, skip this test
             self.skipTest("Nested field encryption not implemented in mock")
 
-    def test_data_integrity(self):
+    @pytest.mark.db_required
+def test_data_integrity(self):
         """Test data integrity during encryption/decryption cycles"""
         # Multiple encryption/decryption cycles should preserve data integrity
         original_data = self.patient_data.copy()
@@ -262,7 +269,8 @@ class TestEncryption(unittest.TestCase):
         # Data should remain unchanged
         self.assertEqual(original_data, data)
 
-    def test_error_handling(self):
+    @pytest.mark.db_required
+def test_error_handling(self):
         """Test error handling during encryption/decryption"""
         # Test handling of invalid encrypted data
         invalid_encrypted = "ENC_INVALID"  # Missing trailing _ENC
@@ -275,7 +283,8 @@ class TestEncryption(unittest.TestCase):
             # If an exception is raised, that's also acceptable
             pass
 
-    def test_hipaa_compliance(self):
+    @pytest.mark.db_required
+def test_hipaa_compliance(self):
         """Verify compliance with HIPAA requirements"""
         # Generate some test data
         test_data = {

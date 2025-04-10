@@ -94,6 +94,7 @@ async def temporal_service(sequence_repository, event_repository, xgboost_servic
 
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_app():
     """Create a FastAPI app with temporal routes."""
     app = FastAPI()
@@ -102,6 +103,7 @@ def test_app():
 
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_client(test_app):
     """Create a test client with the test app."""
     return TestClient(test_app)
@@ -123,7 +125,8 @@ def patient_id():
 
 
 @pytest.mark.asyncio
-async def test_temporal_service_with_xgboost_integration(
+async @pytest.mark.db_required
+def test_temporal_service_with_xgboost_integration(
     temporal_service: TemporalNeurotransmitterService,
     xgboost_service: EnhancedXGBoostService,
     patient_id: UUID
@@ -201,7 +204,8 @@ async def test_temporal_service_with_xgboost_integration(
 
 
 @pytest.mark.asyncio
-async def test_full_brain_region_coverage_with_visualization(
+async @pytest.mark.db_required
+def test_full_brain_region_coverage_with_visualization(
     temporal_service: TemporalNeurotransmitterService,
     patient_id: UUID
 ):
@@ -258,7 +262,8 @@ async def test_full_brain_region_coverage_with_visualization(
 
 
 @pytest.mark.asyncio
-async def test_full_neurotransmitter_coverage_with_treatment(
+async @pytest.mark.db_required
+def test_full_neurotransmitter_coverage_with_treatment(
     temporal_service: TemporalNeurotransmitterService,
     patient_id: UUID
 ):
@@ -312,7 +317,8 @@ async def test_full_neurotransmitter_coverage_with_treatment(
 
 
 @pytest.mark.asyncio
-async def test_api_integration_with_service(
+async @pytest.mark.db_required
+def test_api_integration_with_service(
     test_client,
     mock_current_user,
     test_app,

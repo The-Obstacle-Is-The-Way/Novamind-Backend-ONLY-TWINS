@@ -9,11 +9,13 @@ from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 from app.domain.entities.base import BaseEntity
 
 
+@pytest.mark.db_required
 class TestMockAsyncSession:
     """Test cases for the MockAsyncSession class."""
     
     @pytest.mark.asyncio
-    async def test_mock_session_basic_operations(self, mock_db):
+    async @pytest.mark.db_required
+def test_mock_session_basic_operations(self, mock_db):
         """Test that basic CRUD operations work with MockAsyncSession."""
         # Setup test entity
         test_entity = BaseEntity()
@@ -46,7 +48,8 @@ class TestMockAsyncSession:
         assert not mock_db._pending_objects
     
     @pytest.mark.asyncio
-    async def test_mock_session_refresh(self, mock_db):
+    async @pytest.mark.db_required
+def test_mock_session_refresh(self, mock_db):
         """Test the refresh operation."""
         test_entity = BaseEntity()
         test_entity.id = uuid4()
@@ -62,7 +65,8 @@ class TestMockAsyncSession:
         assert test_entity in mock_db._committed_objects
     
     @pytest.mark.asyncio
-    async def test_mock_session_delete(self, mock_db):
+    async @pytest.mark.db_required
+def test_mock_session_delete(self, mock_db):
         """Test the delete operation."""
         test_entity = BaseEntity()
         test_entity.id = uuid4()
@@ -81,7 +85,8 @@ class TestMockAsyncSession:
         assert not mock_db._deleted_objects
     
     @pytest.mark.asyncio
-    async def test_mock_session_close(self, mock_db):
+    async @pytest.mark.db_required
+def test_mock_session_close(self, mock_db):
         """Test the close operation."""
         test_entity = BaseEntity()
         mock_db.add(test_entity)

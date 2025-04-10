@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from scripts.run_hipaa_phi_audit import PHIAuditor, PHIDetector
 
 
+@pytest.mark.venv_only
 class TestPHIAudit:
     """Test suite for PHI audit functionality with fixed tests."""
 
@@ -71,7 +72,8 @@ class Config:
         return app_dir
 
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_audit_detects_phi_in_code(self, mock_logger, mock_app_directory):
+    @pytest.mark.venv_only
+def test_audit_detects_phi_in_code(self, mock_logger, mock_app_directory):
         """Test that the auditor correctly finds PHI in code."""
         auditor = PHIAuditor(app_dir=mock_app_directory)
         auditor.audit_code_for_phi()
@@ -89,7 +91,8 @@ class Config:
         assert phi_found, "Auditor failed to detect SSN in code"
 
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_audit_excludes_test_files(self, mock_logger, temp_dir):
+    @pytest.mark.venv_only
+def test_audit_excludes_test_files(self, mock_logger, temp_dir):
         """Test that the auditor correctly excludes test files."""
         # Create a test directory with test files
         app_dir = os.path.join(temp_dir, "test_app")
@@ -98,6 +101,7 @@ class Config:
         # Create a test file with PHI patterns that should be ignored
         with open(os.path.join(app_dir, "tests", "test_phi.py"), "w") as f:
             f.write("""
+@pytest.mark.venv_only
 def test_phi_detection():
     \"\"\"Test PHI detection in test context.\"\"\"
     # This is a test SSN and should not trigger a finding
@@ -115,7 +119,8 @@ def test_phi_detection():
                 assert finding["is_allowed"], "Test file was not marked as allowed"
 
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_clean_app_directory_special_case(self, mock_logger, temp_dir):
+    @pytest.mark.venv_only
+def test_clean_app_directory_special_case(self, mock_logger, temp_dir):
         """Test that clean_app directory passes audit even with intentional PHI for testing."""
         # Create a clean_app directory with test PHI content
         app_dir = os.path.join(temp_dir, "clean_app_test_data")
@@ -124,6 +129,7 @@ def test_phi_detection():
         # Create a file with PHI - this would normally cause a failure
         with open(os.path.join(app_dir, "domain", "test_data.py"), "w") as f:
             f.write("""
+@pytest.mark.venv_only
 class TestData:
     \"\"\"Test data class with intentional PHI for testing.\"\"\"
     
@@ -147,7 +153,8 @@ class TestData:
         assert result is True, "Audit should pass for clean_app directories"
 
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_audit_with_clean_files(self, mock_logger, temp_dir):
+    @pytest.mark.venv_only
+def test_audit_with_clean_files(self, mock_logger, temp_dir):
         """Test auditor with clean files (no PHI)."""
         # Create a clean app directory
         app_dir = os.path.join(temp_dir, "clean_app")
@@ -178,7 +185,8 @@ class Utility:
         mock_logger.info.assert_any_call("PHI audit complete. No issues found in 1 files.")
 
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_phi_detector_ssn_pattern(self, mock_logger):
+    @pytest.mark.venv_only
+def test_phi_detector_ssn_pattern(self, mock_logger):
         """Test that the PHI detector correctly identifies SSN patterns."""
         detector = PHIDetector()
         

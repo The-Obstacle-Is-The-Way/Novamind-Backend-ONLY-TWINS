@@ -25,6 +25,7 @@ from app.infrastructure.security.encryption import EncryptionService
 from app.core.utils.logging import get_logger
 
 
+@pytest.mark.venv_only
 class TestPatientPHISecurity:
     """Test suite for HIPAA security compliance of Patient PHI."""
     
@@ -60,7 +61,8 @@ class TestPatientPHISecurity:
             created_by=None
         )
     
-    def test_no_phi_in_string_representation(self, sample_patient_with_phi):
+    @pytest.mark.venv_only
+def test_no_phi_in_string_representation(self, sample_patient_with_phi):
         """Test that __repr__ and __str__ methods don't expose PHI."""
         # Convert to model
         patient_model = PatientModel.from_domain(sample_patient_with_phi)
@@ -83,7 +85,8 @@ class TestPatientPHISecurity:
             assert str(phi) not in repr_repr, f"PHI {phi} found in repr representation"
     
     @patch('app.core.utils.logging.get_logger')
-    def test_no_phi_in_logs(self, mock_get_logger, sample_patient_with_phi):
+    @pytest.mark.venv_only
+def test_no_phi_in_logs(self, mock_get_logger, sample_patient_with_phi):
         """Test that PHI is not included in log messages."""
         # Create a mock logger
         mock_logger = MagicMock()
@@ -122,7 +125,8 @@ class TestPatientPHISecurity:
                 assert str(phi) not in log_message, f"PHI '{phi}' found in log message: {log_message}"
     
     @patch('app.infrastructure.security.encryption.EncryptionService.encrypt')
-    def test_all_phi_fields_are_encrypted(self, mock_encrypt, sample_patient_with_phi):
+    @pytest.mark.venv_only
+def test_all_phi_fields_are_encrypted(self, mock_encrypt, sample_patient_with_phi):
         """Test that all PHI fields are passed to the encryption service."""
         # Configure mock to return the input
         mock_encrypt.side_effect = lambda x: f"ENCRYPTED:{x}" if x else None
@@ -162,7 +166,8 @@ class TestPatientPHISecurity:
             mock_encrypt.assert_any_call(field)
     
     @patch('app.infrastructure.security.audit.AuditLogger.log_data_access')
-    def test_phi_access_is_audited(self, mock_log_data_access, sample_patient_with_phi):
+    @pytest.mark.venv_only
+def test_phi_access_is_audited(self, mock_log_data_access, sample_patient_with_phi):
         """Test that PHI access generates appropriate audit logs."""
         from app.infrastructure.security.audit import AuditLogger
         
@@ -200,7 +205,8 @@ class TestPatientPHISecurity:
             for phi in phi_elements:
                 assert str(phi) not in str(details), f"PHI '{phi}' found in audit log details"
     
-    def test_error_handling_without_phi_exposure(self, sample_patient_with_phi):
+    @pytest.mark.venv_only
+def test_error_handling_without_phi_exposure(self, sample_patient_with_phi):
         """Test that errors are handled without exposing PHI."""
         # Create patient model with encrypted data
         patient_model = PatientModel.from_domain(sample_patient_with_phi)

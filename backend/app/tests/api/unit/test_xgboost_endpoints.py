@@ -202,6 +202,7 @@ def mock_error_dependencies():
 
 # === Test Cases ===
 
+@pytest.mark.db_required
 def test_predict_risk_endpoint(mock_dependencies):
     """Test the risk prediction endpoint with valid data."""
     # Prepare request data
@@ -244,6 +245,7 @@ def test_predict_risk_endpoint(mock_dependencies):
     assert "age" in call_args["features"]
 
 
+@pytest.mark.db_required
 def test_predict_treatment_response_endpoint(mock_dependencies):
     """Test the treatment response prediction endpoint with valid data."""
     # Prepare request data
@@ -287,6 +289,7 @@ def test_predict_treatment_response_endpoint(mock_dependencies):
     assert "genetic_markers" in call_args["patient_features"]
 
 
+@pytest.mark.db_required
 def test_predict_outcome_endpoint(mock_dependencies):
     """Test the outcome prediction endpoint with valid data."""
     # Prepare request data
@@ -333,6 +336,7 @@ def test_predict_outcome_endpoint(mock_dependencies):
     assert "support_network" in call_args["patient_features"]
 
 
+@pytest.mark.db_required
 def test_get_feature_importance_endpoint(mock_dependencies):
     """Test the feature importance endpoint."""
     # Prepare request data
@@ -359,6 +363,7 @@ def test_get_feature_importance_endpoint(mock_dependencies):
     assert call_args["model_type"] == ModelType.RISK_SUICIDE
 
 
+@pytest.mark.db_required
 def test_digital_twin_integration_endpoint(mock_dependencies):
     """Test the digital twin integration endpoint."""
     # Prepare request data
@@ -384,6 +389,7 @@ def test_digital_twin_integration_endpoint(mock_dependencies):
     mock_dependencies.simulate_digital_twin.assert_called_once()
 
 
+@pytest.mark.db_required
 def test_model_info_endpoint(mock_dependencies):
     """Test the model info endpoint."""
     # Prepare request data
@@ -410,6 +416,7 @@ def test_model_info_endpoint(mock_dependencies):
 
 # === Error Handling Tests ===
 
+@pytest.mark.db_required
 def test_model_not_found_error(mock_error_dependencies):
     """Test handling of ModelNotFoundError."""
     # Prepare request data
@@ -431,6 +438,7 @@ def test_model_not_found_error(mock_error_dependencies):
     assert data["detail"]["error_type"] == "not_found"
 
 
+@pytest.mark.db_required
 def test_prediction_error(mock_error_dependencies):
     """Test handling of PredictionError."""
     # Prepare request data
@@ -453,6 +461,7 @@ def test_prediction_error(mock_error_dependencies):
     assert data["detail"]["error_type"] == "prediction_error"
 
 
+@pytest.mark.db_required
 def test_service_connection_error(mock_error_dependencies):
     """Test handling of ServiceConnectionError."""
     # Prepare request data
@@ -477,6 +486,7 @@ def test_service_connection_error(mock_error_dependencies):
     assert data["detail"]["error_type"] == "service_unavailable"
 
 
+@pytest.mark.db_required
 def test_validation_error():
     """Test handling of validation errors with missing required fields."""
     # Prepare request data with missing required fields

@@ -11,7 +11,8 @@ from app.core.db import engine, init_db, get_session, Base
 
 
 @pytest.mark.asyncio
-async def test_engine_creation():
+async @pytest.mark.db_required
+def test_engine_creation():
     """Test that the database engine is created with correct settings."""
     # Verify the engine is correctly configured for testing
     assert engine is not None
@@ -28,7 +29,8 @@ async def test_engine_creation():
 
 
 @pytest.mark.asyncio
-async def test_init_db():
+async @pytest.mark.db_required
+def test_init_db():
     """Test database initialization."""
     # Clear any existing tables
     async with engine.begin() as conn:
@@ -46,7 +48,8 @@ async def test_init_db():
 
 
 @pytest.mark.asyncio
-async def test_get_session():
+async @pytest.mark.db_required
+def test_get_session():
     """Test that get_session returns valid sessions."""
     # Test that the session dependency yields an async session
     session_generator = get_session()
@@ -76,14 +79,17 @@ async def test_get_session():
             pass
 
 
+@pytest.mark.db_required
 class TestDatabaseBase:
     """Test base class for database-related tests."""
     
     @pytest.mark.asyncio
-    async def test_base_class_table_creation(self):
+    async @pytest.mark.db_required
+def test_base_class_table_creation(self):
         """Test that Base can create tables."""
         # Create a simple model class
-        class TestModel(Base):
+        @pytest.mark.db_required
+class TestModel(Base):
             __tablename__ = "test_models_temp"
             
             # Use Column import from the same source as Base

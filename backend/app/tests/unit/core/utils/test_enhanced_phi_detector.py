@@ -15,10 +15,12 @@ from app.core.utils.enhanced_phi_detector import (
 from app.core.utils.phi_sanitizer import PHIType
 
 
+@pytest.mark.venv_only
 class TestEnhancedPHIDetector:
     """Tests for the EnhancedPHIDetector class."""
 
-    def test_contains_phi_with_standard_patterns(self):
+    @pytest.mark.venv_only
+def test_contains_phi_with_standard_patterns(self):
         """Test detection of PHI using standard patterns."""
         # Test with email
         assert EnhancedPHIDetector.contains_phi("Contact me at john.doe@example.com")
@@ -35,7 +37,8 @@ class TestEnhancedPHIDetector:
         # Test with name
         assert EnhancedPHIDetector.contains_phi("Patient: John Doe")
 
-    def test_contains_phi_with_enhanced_patterns(self):
+    @pytest.mark.venv_only
+def test_contains_phi_with_enhanced_patterns(self):
         """Test detection of PHI using enhanced patterns."""
         # Test with more complex name format
         assert EnhancedPHIDetector.contains_phi("Dr. Smith will see you now")
@@ -52,7 +55,8 @@ class TestEnhancedPHIDetector:
         # Test with alternative date format
         assert EnhancedPHIDetector.contains_phi("Born on Jan 1, 1980")
 
-    def test_contains_phi_with_medical_context(self):
+    @pytest.mark.venv_only
+def test_contains_phi_with_medical_context(self):
         """Test detection of PHI in medical context."""
         # Test with medical context and potential identifiers
         assert EnhancedPHIDetector.contains_phi(
@@ -64,7 +68,8 @@ class TestEnhancedPHIDetector:
             "The diagnosis was anxiety and treatment includes medication."
         )
 
-    def test_detect_phi_types(self):
+    @pytest.mark.venv_only
+def test_detect_phi_types(self):
         """Test detection of specific PHI types."""
         # Test with multiple PHI types
         text = "Patient John Doe (DOB: 1980-01-01) with MRN: 12345678 lives at 123 Main St."
@@ -84,17 +89,20 @@ class TestEnhancedPHIDetector:
         assert any("MRN: 12345678" in match for match in detected_types.values())
         assert any("123 Main St" in match for match in detected_types.values())
 
-    def test_no_phi_in_regular_text(self):
+    @pytest.mark.venv_only
+def test_no_phi_in_regular_text(self):
         """Test that regular text without PHI is not flagged."""
         assert not EnhancedPHIDetector.contains_phi(
             "This is a regular message without any personal health information."
         )
 
 
+@pytest.mark.venv_only
 class TestEnhancedPHISanitizer:
     """Tests for the EnhancedPHISanitizer class."""
 
-    def test_sanitize_text(self):
+    @pytest.mark.venv_only
+def test_sanitize_text(self):
         """Test sanitization of text containing PHI."""
         # Test with multiple PHI types
         text = "Patient John Doe (DOB: 1980-01-01) with MRN: 12345678 lives at 123 Main St."
@@ -110,7 +118,8 @@ class TestEnhancedPHISanitizer:
         assert "123 Main St" not in sanitized
         assert "ANONYMIZED_ADDRESS" in sanitized
 
-    def test_create_safe_log_message(self):
+    @pytest.mark.venv_only
+def test_create_safe_log_message(self):
         """Test creation of safe log messages."""
         # Test with format string and arguments
         message = "Patient {name} (DOB: {dob}) has appointment on {date}"
@@ -126,7 +135,8 @@ class TestEnhancedPHISanitizer:
         # Non-PHI date should be preserved
         assert "2025-04-01" in safe_message
 
-    def test_sanitize_structured_data(self):
+    @pytest.mark.venv_only
+def test_sanitize_structured_data(self):
         """Test sanitization of structured data."""
         # Test with nested dictionary
         data = {
@@ -159,11 +169,13 @@ class TestEnhancedPHISanitizer:
         assert sanitized["appointment_date"] == "2025-04-01"
 
 
+@pytest.mark.venv_only
 class TestEnhancedPHISecureLogger:
     """Tests for the EnhancedPHISecureLogger class."""
 
     @patch('logging.Logger.debug')
-    def test_debug_log_sanitization(self, mock_debug):
+    @pytest.mark.venv_only
+def test_debug_log_sanitization(self, mock_debug):
         """Test that debug logs are sanitized."""
         logger = EnhancedPHISecureLogger("test_logger")
         logger.debug("Patient John Doe (SSN: 123-45-6789) has an appointment")
@@ -178,7 +190,8 @@ class TestEnhancedPHISecureLogger:
         assert "000-00-0000" in logged_message
 
     @patch('logging.Logger.info')
-    def test_info_log_sanitization(self, mock_info):
+    @pytest.mark.venv_only
+def test_info_log_sanitization(self, mock_info):
         """Test that info logs are sanitized."""
         logger = EnhancedPHISecureLogger("test_logger")
         logger.info("Email sent to {email}", email="patient@example.com")
@@ -191,7 +204,8 @@ class TestEnhancedPHISecureLogger:
         assert "anonymized.email" in logged_message
 
     @patch('logging.Logger.error')
-    def test_error_log_sanitization(self, mock_error):
+    @pytest.mark.venv_only
+def test_error_log_sanitization(self, mock_error):
         """Test that error logs are sanitized."""
         logger = EnhancedPHISecureLogger("test_logger")
         logger.error("Failed to process record for MRN: 12345678")
@@ -204,7 +218,8 @@ class TestEnhancedPHISecureLogger:
         assert "MRN-" in logged_message
 
     @patch('logging.Logger.exception')
-    def test_exception_log_sanitization(self, mock_exception):
+    @pytest.mark.venv_only
+def test_exception_log_sanitization(self, mock_exception):
         """Test that exception logs are sanitized."""
         logger = EnhancedPHISecureLogger("test_logger")
         try:
@@ -219,6 +234,7 @@ class TestEnhancedPHISecureLogger:
         assert "Exception occurred" in mock_exception.call_args[0][0]
 
 
+@pytest.mark.venv_only
 def test_get_enhanced_phi_secure_logger():
     """Test the factory function for getting a logger."""
     logger = get_enhanced_phi_secure_logger("test_module")

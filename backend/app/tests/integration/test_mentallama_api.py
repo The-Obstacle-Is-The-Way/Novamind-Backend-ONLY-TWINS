@@ -291,6 +291,7 @@ def mock_services():
 
 
 # Tests
+@pytest.mark.db_required
 def test_process_text(client: TestClient, mock_auth, mock_services):
     """Test process text endpoint."""
     request_data = {
@@ -316,6 +317,7 @@ def test_process_text(client: TestClient, mock_auth, mock_services):
     assert data["metadata"]["task"] == "general_analysis"
 
 
+@pytest.mark.db_required
 def test_process_text_with_missing_prompt(client: TestClient, mock_auth, mock_services):
     """Test process text endpoint with missing prompt."""
     request_data = {
@@ -332,6 +334,7 @@ def test_process_text_with_missing_prompt(client: TestClient, mock_auth, mock_se
     assert "detail" in response.json()
 
 
+@pytest.mark.db_required
 def test_process_text_with_nonexistent_model(client: TestClient, mock_auth, mock_services):
     """Test process text endpoint with nonexistent model."""
     request_data = {
@@ -350,6 +353,7 @@ def test_process_text_with_nonexistent_model(client: TestClient, mock_auth, mock
     assert "detail" in response.json()
 
 
+@pytest.mark.db_required
 def test_depression_detection(client: TestClient, mock_auth, mock_services):
     """Test depression detection endpoint."""
     request_data = {
@@ -379,6 +383,7 @@ def test_depression_detection(client: TestClient, mock_auth, mock_services):
     assert "created_at" in data
 
 
+@pytest.mark.db_required
 def test_risk_assessment(client: TestClient, mock_auth, mock_services):
     """Test risk assessment endpoint."""
     request_data = {
@@ -408,6 +413,7 @@ def test_risk_assessment(client: TestClient, mock_auth, mock_services):
     assert "created_at" in data
 
 
+@pytest.mark.db_required
 def test_sentiment_analysis(client: TestClient, mock_auth, mock_services):
     """Test sentiment analysis endpoint."""
     request_data = {
@@ -436,6 +442,7 @@ def test_sentiment_analysis(client: TestClient, mock_auth, mock_services):
     assert "created_at" in data
 
 
+@pytest.mark.db_required
 def test_wellness_dimensions(client: TestClient, mock_auth, mock_services):
     """Test wellness dimensions endpoint."""
     request_data = {
@@ -465,6 +472,7 @@ def test_wellness_dimensions(client: TestClient, mock_auth, mock_services):
     assert "created_at" in data
 
 
+@pytest.mark.db_required
 def test_health_check(client: TestClient, mock_services):
     """Test health check endpoint."""
     response = client.get("/api/v1/ml/health")
@@ -479,6 +487,7 @@ def test_health_check(client: TestClient, mock_services):
     assert data["services"]["mentalllama"]["healthy"] is True
 
 
+@pytest.mark.db_required
 def test_service_unavailable(client: TestClient, mock_auth):
     """Test service unavailable error."""
     # Disable MentaLLaMA service

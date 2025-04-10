@@ -10,6 +10,7 @@ from unittest.mock import patch, MagicMock
 from app.core.utils.encryption import EncryptionService
 
 
+@pytest.mark.venv_only
 class TestEncryptionService:
     """Tests for the HIPAA-compliant encryption service."""
     
@@ -19,7 +20,8 @@ class TestEncryptionService:
         with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_secret_key_for_encryption_service_tests"}):
             return EncryptionService()
     
-    def test_initialization(self):
+    @pytest.mark.venv_only
+def test_initialization(self):
         """Test encryption service initialization."""
         with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_key"}):
             service = EncryptionService()
@@ -28,14 +30,16 @@ class TestEncryptionService:
             assert service.key is not None
             assert service.cipher is not None
     
-    def test_initialization_with_missing_key(self):
+    @pytest.mark.venv_only
+def test_initialization_with_missing_key(self):
         """Test initialization with missing key raises error."""
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(ValueError) as excinfo:
                 EncryptionService()
             assert "Encryption key not provided" in str(excinfo.value)
     
-    def test_encrypt_decrypt_string(self, encryption_service):
+    @pytest.mark.venv_only
+def test_encrypt_decrypt_string(self, encryption_service):
         """Test encrypting and decrypting a string."""
         plaintext = "This is sensitive patient information"
         
@@ -51,7 +55,8 @@ class TestEncryptionService:
         # Verify the decrypted text matches the original
         assert decrypted == plaintext
     
-    def test_encrypt_decrypt_empty_string(self, encryption_service):
+    @pytest.mark.venv_only
+def test_encrypt_decrypt_empty_string(self, encryption_service):
         """Test encrypting and decrypting an empty string."""
         plaintext = ""
         
@@ -67,13 +72,15 @@ class TestEncryptionService:
         # Verify the decrypted text is empty
         assert decrypted == ""
     
-    def test_decrypt_invalid_string(self, encryption_service):
+    @pytest.mark.venv_only
+def test_decrypt_invalid_string(self, encryption_service):
         """Test decrypting an invalid string raises error."""
         with pytest.raises(ValueError) as excinfo:
             encryption_service.decrypt_string("invalid_encrypted_text")
         assert "Failed to decrypt string" in str(excinfo.value)
     
-    def test_encrypt_decrypt_dict(self, encryption_service):
+    @pytest.mark.venv_only
+def test_encrypt_decrypt_dict(self, encryption_service):
         """Test encrypting and decrypting a dictionary."""
         data = {
             "patient_id": "12345",
@@ -108,7 +115,8 @@ class TestEncryptionService:
         # Verify all fields match the original
         assert decrypted_data == data
     
-    def test_encrypt_decrypt_nested_dict(self, encryption_service):
+    @pytest.mark.venv_only
+def test_encrypt_decrypt_nested_dict(self, encryption_service):
         """Test encrypting and decrypting a nested dictionary."""
         data = {
             "patient": {
@@ -145,7 +153,8 @@ class TestEncryptionService:
         # Verify all fields match the original
         assert decrypted_data == data
     
-    def test_generate_verify_hash(self, encryption_service):
+    @pytest.mark.venv_only
+def test_generate_verify_hash(self, encryption_service):
         """Test generating and verifying a hash."""
         data = "sensitive_data"
         
@@ -164,7 +173,8 @@ class TestEncryptionService:
         is_valid = encryption_service.verify_hash("wrong_data", hash_value, salt)
         assert is_valid is False
     
-    def test_generate_verify_hmac(self, encryption_service):
+    @pytest.mark.venv_only
+def test_generate_verify_hmac(self, encryption_service):
         """Test generating and verifying an HMAC."""
         data = "data_to_verify_integrity"
         

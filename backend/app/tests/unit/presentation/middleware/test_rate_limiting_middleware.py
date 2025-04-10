@@ -91,7 +91,8 @@ def rate_limiter(mock_cache):
 
 
 @pytest.mark.asyncio
-async def test_rate_limiter_initial_request(rate_limiter):
+async @pytest.mark.db_required
+def test_rate_limiter_initial_request(rate_limiter):
     """Test that the first request within limits is allowed."""
     # Test initial request (should be allowed)
     allowed, count, reset = await rate_limiter.check_rate_limit(
@@ -106,7 +107,8 @@ async def test_rate_limiter_initial_request(rate_limiter):
 
 
 @pytest.mark.asyncio
-async def test_rate_limiter_multiple_requests(rate_limiter):
+async @pytest.mark.db_required
+def test_rate_limiter_multiple_requests(rate_limiter):
     """Test multiple requests within limits."""
     # Make multiple requests
     results = []
@@ -125,7 +127,8 @@ async def test_rate_limiter_multiple_requests(rate_limiter):
 
 
 @pytest.mark.asyncio
-async def test_rate_limiter_exceeding_limit(rate_limiter):
+async @pytest.mark.db_required
+def test_rate_limiter_exceeding_limit(rate_limiter):
     """Test that requests exceeding the limit are denied."""
     # Set up rate limit of 5 requests
     max_requests = 5
@@ -151,7 +154,8 @@ async def test_rate_limiter_exceeding_limit(rate_limiter):
 
 
 @pytest.mark.asyncio
-async def test_rate_limiter_different_keys(rate_limiter):
+async @pytest.mark.db_required
+def test_rate_limiter_different_keys(rate_limiter):
     """Test rate limiting for different clients."""
     # Make requests for different clients
     allowed1, count1, _ = await rate_limiter.check_rate_limit(
@@ -176,7 +180,8 @@ async def test_rate_limiter_different_keys(rate_limiter):
 
 
 @pytest.mark.asyncio
-async def test_get_client_id_with_authenticated_user():
+async @pytest.mark.db_required
+def test_get_client_id_with_authenticated_user():
     """Test getting client ID for authenticated user."""
     # Mock request and user
     request = MagicMock()
@@ -189,7 +194,8 @@ async def test_get_client_id_with_authenticated_user():
 
 
 @pytest.mark.asyncio
-async def test_get_client_id_with_ip():
+async @pytest.mark.db_required
+def test_get_client_id_with_ip():
     """Test getting client ID from IP address."""
     # Mock request with client IP
     request = MagicMock()
@@ -202,7 +208,8 @@ async def test_get_client_id_with_ip():
 
 
 @pytest.mark.asyncio
-async def test_get_client_id_with_forwarded_ip():
+async @pytest.mark.db_required
+def test_get_client_id_with_forwarded_ip():
     """Test getting client ID from X-Forwarded-For header."""
     # Mock request with X-Forwarded-For
     request = MagicMock()
@@ -216,7 +223,8 @@ async def test_get_client_id_with_forwarded_ip():
 
 
 @pytest.mark.asyncio
-async def test_rate_limit_dependency():
+async @pytest.mark.db_required
+def test_rate_limit_dependency():
     """Test the RateLimitDependency class."""
     # Create dependency
     dependency = RateLimitDependency(max_requests=5, window_seconds=60)
@@ -247,7 +255,8 @@ async def test_rate_limit_dependency():
 
 
 @pytest.mark.asyncio
-async def test_rate_limit_dependency_exceeded():
+async @pytest.mark.db_required
+def test_rate_limit_dependency_exceeded():
     """Test the RateLimitDependency when limit is exceeded."""
     # Create dependency
     dependency = RateLimitDependency(max_requests=5, window_seconds=60)

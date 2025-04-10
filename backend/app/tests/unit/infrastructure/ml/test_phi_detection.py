@@ -21,6 +21,7 @@ def phi_detection_service():
     return service
 
 
+@pytest.mark.venv_only
 def test_initialize_loads_default_patterns():
     """Test that initialize loads default patterns when file loading fails."""
     service = PHIDetectionService("nonexistent_file.yaml")
@@ -33,6 +34,7 @@ def test_initialize_loads_default_patterns():
     assert len(service.patterns) > 0
 
 
+@pytest.mark.venv_only
 def test_ensure_initialized_calls_initialize():
     """Test that ensure_initialized calls initialize if not initialized."""
     service = PHIDetectionService()
@@ -42,6 +44,7 @@ def test_ensure_initialized_calls_initialize():
     assert service.initialized
 
 
+@pytest.mark.venv_only
 def test_detect_phi_empty_text():
     """Test that detect_phi returns empty list for empty text."""
     service = PHIDetectionService()
@@ -52,6 +55,7 @@ def test_detect_phi_empty_text():
     assert len(results) == 0
 
 
+@pytest.mark.venv_only
 def test_contains_phi_empty_text():
     """Test that contains_phi returns False for empty text."""
     service = PHIDetectionService()
@@ -68,6 +72,7 @@ def test_contains_phi_empty_text():
     ("John Smith is 92 years old", True),
     ("The patient's MRN is MRN12345", True),
 ])
+@pytest.mark.venv_only
 def test_contains_phi(phi_detection_service, text, expected):
     """Test contains_phi with various texts containing/not containing PHI."""
     assert phi_detection_service.contains_phi(text) == expected
@@ -83,6 +88,7 @@ def test_contains_phi(phi_detection_service, text, expected):
     ("Credit card: 4111 1111 1111 1111", "Credit Card"),
     ("Patient is 95 years old", "Age over 90"),
 ])
+@pytest.mark.venv_only
 def test_detect_phi_finds_different_types(phi_detection_service, text, phi_type):
     """Test that detect_phi finds different types of PHI."""
     results = phi_detection_service.detect_phi(text)
@@ -91,6 +97,7 @@ def test_detect_phi_finds_different_types(phi_detection_service, text, phi_type)
     assert any(r["type"] == phi_type for r in results)
 
 
+@pytest.mark.venv_only
 def test_detect_phi_results_format():
     """Test that detect_phi returns correctly formatted results."""
     service = PHIDetectionService()
@@ -134,12 +141,14 @@ def test_detect_phi_results_format():
         "No PHI here"
     ),
 ])
+@pytest.mark.venv_only
 def test_redact_phi(phi_detection_service, text, replacement, expected):
     """Test redacting PHI with different replacement strings."""
     redacted = phi_detection_service.redact_phi(text, replacement)
     assert redacted == expected
 
 
+@pytest.mark.venv_only
 def test_redact_phi_empty_text():
     """Test that redact_phi handles empty text gracefully."""
     service = PHIDetectionService()
@@ -148,6 +157,7 @@ def test_redact_phi_empty_text():
     assert service.redact_phi("") == ""
 
 
+@pytest.mark.venv_only
 def test_redact_phi_overlapping_matches():
     """Test that redact_phi correctly handles overlapping PHI."""
     service = PHIDetectionService()
@@ -165,6 +175,7 @@ def test_redact_phi_overlapping_matches():
     assert "John Smith" not in redacted
 
 
+@pytest.mark.venv_only
 def test_get_phi_types():
     """Test getting the list of PHI types."""
     service = PHIDetectionService()
@@ -178,6 +189,7 @@ def test_get_phi_types():
     assert "Email Address" in phi_types
 
 
+@pytest.mark.venv_only
 def test_get_statistics():
     """Test getting statistics about PHI patterns."""
     service = PHIDetectionService()
@@ -195,6 +207,7 @@ def test_get_statistics():
 
 
 @patch("app.infrastructure.ml.phi_detection.re")
+@pytest.mark.venv_only
 def test_phi_pattern_creation(mock_re):
     """Test creating a PHIPattern instance."""
     # Mock re.compile for testing

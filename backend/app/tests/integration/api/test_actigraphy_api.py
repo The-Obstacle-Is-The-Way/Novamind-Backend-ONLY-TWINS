@@ -85,10 +85,12 @@ def override_dependencies(mock_pat_service):
     app.dependency_overrides = {}
 
 
+@pytest.mark.venv_only
 class TestActigraphyAPI:
     """Integration tests for the actigraphy API endpoints."""
     
-    def test_analyze_actigraphy(self):
+    @pytest.mark.venv_only
+def test_analyze_actigraphy(self):
         """Test the analyze actigraphy endpoint."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -148,7 +150,8 @@ class TestActigraphyAPI:
         assert "moderate" in activity_levels
         assert "vigorous" in activity_levels
     
-    def test_get_embeddings(self):
+    @pytest.mark.venv_only
+def test_get_embeddings(self):
         """Test the get embeddings endpoint."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -190,7 +193,8 @@ class TestActigraphyAPI:
         assert isinstance(data["embeddings"], list)
         assert len(data["embeddings"]) == data["embedding_size"]
     
-    def test_get_analysis_by_id(self, mock_pat_service):
+    @pytest.mark.venv_only
+def test_get_analysis_by_id(self, mock_pat_service):
         """Test retrieving an analysis by ID."""
         # First create an analysis
         patient_id = "test-patient-1"
@@ -223,7 +227,8 @@ class TestActigraphyAPI:
         assert data["patient_id"] == patient_id
         assert "sleep_metrics" in data
     
-    def test_get_patient_analyses(self, mock_pat_service):
+    @pytest.mark.venv_only
+def test_get_patient_analyses(self, mock_pat_service):
         """Test retrieving analyses for a patient."""
         # First create multiple analyses for the same patient
         patient_id = "test-patient-2"
@@ -259,7 +264,8 @@ class TestActigraphyAPI:
         assert len(data["analyses"]) == 3
         assert data["total"] == 3
     
-    def test_get_model_info(self):
+    @pytest.mark.venv_only
+def test_get_model_info(self):
         """Test retrieving model information."""
         # Make request
         response = client.get(
@@ -276,7 +282,8 @@ class TestActigraphyAPI:
         assert "supported_analysis_types" in data
         assert isinstance(data["supported_analysis_types"], list)
     
-    def test_integrate_with_digital_twin(self, mock_pat_service):
+    @pytest.mark.venv_only
+def test_integrate_with_digital_twin(self, mock_pat_service):
         """Test integrating actigraphy analysis with a digital twin."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -320,7 +327,8 @@ class TestActigraphyAPI:
         assert "timestamp" in data
         assert "integrated_profile" in data
     
-    def test_unauthorized_access(self):
+    @pytest.mark.venv_only
+def test_unauthorized_access(self):
         """Test unauthorized access to the API."""
         # Make request without token
         response = client.get(

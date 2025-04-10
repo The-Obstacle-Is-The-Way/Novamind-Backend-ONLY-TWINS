@@ -26,7 +26,8 @@ from app.core.utils.logging import HIPAACompliantLogger
 
 
 @pytest.fixture
-async def test_patient() -> Patient:
+async @pytest.mark.db_required
+def test_patient() -> Patient:
     """Create a test patient with PHI for testing."""
     patient_id = uuid.uuid4()
     return Patient(
@@ -80,6 +81,7 @@ def log_capture() -> StringIO:
     root_logger.setLevel(original_level)
 
 
+@pytest.mark.db_required
 class TestPHISanitizationIntegration:
     """
     Integration test suite for PHI sanitization across database and logs.
@@ -89,7 +91,8 @@ class TestPHISanitizationIntegration:
     """
     
     @pytest.mark.asyncio
-    async def test_patient_phi_database_encryption(self, test_patient: Patient):
+    async @pytest.mark.db_required
+def test_patient_phi_database_encryption(self, test_patient: Patient):
         """Test that PHI is encrypted in database and decrypted when retrieved."""
         # Convert to model (encrypts PHI)
         patient_model = PatientModel.from_domain(test_patient)
@@ -133,7 +136,8 @@ class TestPHISanitizationIntegration:
                 await new_session.commit()
     
     @pytest.mark.asyncio
-    async def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
+    async @pytest.mark.db_required
+def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
         """Test that PHI is properly sanitized in logs."""
         # Set up logger
         logger = HIPAACompliantLogger("test.phi.integration")
@@ -161,7 +165,8 @@ class TestPHISanitizationIntegration:
         assert str(test_patient.id) in log_content, "Patient ID should be in logs"
     
     @pytest.mark.asyncio
-    async def test_phi_sanitization_during_errors(self, test_patient: Patient, log_capture: StringIO):
+    async @pytest.mark.db_required
+def test_phi_sanitization_during_errors(self, test_patient: Patient, log_capture: StringIO):
         """Test that PHI is sanitized even during error handling."""
         # Set up logger
         logger = HIPAACompliantLogger("test.phi.error")
@@ -196,7 +201,8 @@ class TestPHISanitizationIntegration:
         assert "ANONYMIZED" in log_content or "REDACTED" in log_content, "No sanitization markers found"
     
     @pytest.mark.asyncio
-    async def test_cross_module_phi_protection(self, test_patient: Patient, log_capture: StringIO):
+    async @pytest.mark.db_required
+def test_cross_module_phi_protection(self, test_patient: Patient, log_capture: StringIO):
         """Test PHI protection across module boundaries."""
         # This test simulates a full pipeline that processes patient data
         

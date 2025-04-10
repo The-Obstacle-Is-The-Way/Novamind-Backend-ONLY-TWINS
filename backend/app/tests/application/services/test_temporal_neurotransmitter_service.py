@@ -20,6 +20,7 @@ from app.domain.services.visualization_preprocessor import NeurotransmitterVisua
 # Fixtures for testing
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_patient_id():
     """Generate a test patient ID."""
     return uuid.uuid4()
@@ -112,11 +113,13 @@ def temporal_service(mock_sequence_repository, mock_event_repository, mock_xgboo
     )
 
 
+@pytest.mark.db_required
 class TestTemporalNeurotransmitterService:
     """Test suite for the TemporalNeurotransmitterService."""
     
     @pytest.mark.asyncio
-    async def test_generate_neurotransmitter_time_series(self, temporal_service, test_patient_id):
+    async @pytest.mark.db_required
+def test_generate_neurotransmitter_time_series(self, temporal_service, test_patient_id):
         """Test generation of neurotransmitter time series."""
         # Execute
         sequence_id = await temporal_service.generate_neurotransmitter_time_series(
@@ -136,7 +139,8 @@ class TestTemporalNeurotransmitterService:
             assert temporal_service.event_repository.save.called
     
     @pytest.mark.asyncio
-    async def test_analyze_patient_neurotransmitter_levels(
+    async @pytest.mark.db_required
+def test_analyze_patient_neurotransmitter_levels(
         self, temporal_service, mock_sequence_repository, mock_sequence, test_patient_id
     ):
         """Test analysis of neurotransmitter levels."""
@@ -160,7 +164,8 @@ class TestTemporalNeurotransmitterService:
         assert effect.comparison_period is not None
     
     @pytest.mark.asyncio
-    async def test_analyze_patient_neurotransmitter_levels_no_data(
+    async @pytest.mark.db_required
+def test_analyze_patient_neurotransmitter_levels_no_data(
         self, temporal_service, mock_sequence_repository, test_patient_id
     ):
         """Test analysis when no data is available."""
@@ -178,7 +183,8 @@ class TestTemporalNeurotransmitterService:
         assert effect is None
     
     @pytest.mark.asyncio
-    async def test_simulate_treatment_response(
+    async @pytest.mark.db_required
+def test_simulate_treatment_response(
         self, temporal_service, mock_sequence_repository, test_patient_id
     ):
         """Test simulation of treatment response."""
@@ -203,7 +209,8 @@ class TestTemporalNeurotransmitterService:
         assert temporal_service._xgboost_service.predict_treatment_response.called
     
     @pytest.mark.asyncio
-    async def test_simulate_treatment_response_without_xgboost(
+    async @pytest.mark.db_required
+def test_simulate_treatment_response_without_xgboost(
         self, mock_sequence_repository, mock_event_repository
     ):
         """Test simulation of treatment response without XGBoost service."""
@@ -232,7 +239,8 @@ class TestTemporalNeurotransmitterService:
         assert mock_sequence_repository.save.called
     
     @pytest.mark.asyncio
-    async def test_get_visualization_data(
+    async @pytest.mark.db_required
+def test_get_visualization_data(
         self, temporal_service, mock_sequence_repository, mock_sequence
     ):
         """Test retrieval of visualization data."""
@@ -252,7 +260,8 @@ class TestTemporalNeurotransmitterService:
         assert mock_sequence_repository.get_by_id.called
     
     @pytest.mark.asyncio
-    async def test_get_visualization_data_invalid_id(
+    async @pytest.mark.db_required
+def test_get_visualization_data_invalid_id(
         self, temporal_service, mock_sequence_repository
     ):
         """Test visualization data retrieval with invalid ID."""
@@ -265,7 +274,8 @@ class TestTemporalNeurotransmitterService:
             await temporal_service.get_visualization_data(sequence_id)
     
     @pytest.mark.asyncio
-    async def test_get_cascade_visualization(
+    async @pytest.mark.db_required
+def test_get_cascade_visualization(
         self, temporal_service, test_patient_id
     ):
         """Test cascade visualization."""
@@ -288,7 +298,8 @@ class TestTemporalNeurotransmitterService:
         assert cascade_data["neurotransmitter"] == Neurotransmitter.SEROTONIN.value
     
     @pytest.mark.asyncio
-    async def test_xgboost_integration_treatment_adjustment(
+    async @pytest.mark.db_required
+def test_xgboost_integration_treatment_adjustment(
         self, temporal_service, mock_sequence_repository, mock_sequence, test_patient_id
     ):
         """Test XGBoost integration for treatment effect adjustment."""

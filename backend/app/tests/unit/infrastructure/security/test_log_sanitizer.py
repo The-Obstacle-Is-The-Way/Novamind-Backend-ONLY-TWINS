@@ -98,10 +98,12 @@ def log_sanitizer(sanitizer_config, pattern_repository):
     return sanitizer
 
 
+@pytest.mark.db_required
 class TestLogSanitizer:
     """Test suite for the log sanitizer."""
     
-    def test_sanitize_simple_string(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_simple_string(self, log_sanitizer):
         """Test sanitization of a simple string with PHI."""
         # String with SSN
         input_string = "Patient record with SSN: 123-45-6789"
@@ -113,7 +115,8 @@ class TestLogSanitizer:
         assert "123-45-6789" not in sanitized
         assert "[REDACTED]" in sanitized
     
-    def test_sanitize_json_string(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_json_string(self, log_sanitizer):
         """Test sanitization of a JSON string with PHI."""
         # JSON string with PHI
         json_string = json.dumps({
@@ -142,7 +145,8 @@ class TestLogSanitizer:
         assert "email" in sanitized_json["contact"]
         assert "phone" in sanitized_json["contact"]
     
-    def test_sanitize_dict(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_dict(self, log_sanitizer):
         """Test sanitization of a dictionary with PHI."""
         # Dictionary with PHI
         patient_dict = {
@@ -179,7 +183,8 @@ class TestLogSanitizer:
         # Verify non-sensitive fields were preserved
         assert sanitized["insurance"]["provider"] == "HealthCare Inc"
     
-    def test_sanitize_list(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_list(self, log_sanitizer):
         """Test sanitization of a list with PHI."""
         # List with PHI
         patient_list = [
@@ -204,7 +209,8 @@ class TestLogSanitizer:
             assert item["name"] != "John Smith" and item["name"] != "Jane Doe"
             assert "example.com" not in item["email"]
     
-    def test_sensitive_key_detection(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sensitive_key_detection(self, log_sanitizer):
         """Test detection and sanitization based on sensitive key names."""
         # Dictionary with sensitive keys
         data = {
@@ -232,7 +238,8 @@ class TestLogSanitizer:
         assert sanitized["some_data"] == "normal data"
         assert sanitized["nested"]["regular_field"] == "regular value"
     
-    def test_pattern_based_detection(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_pattern_based_detection(self, log_sanitizer):
         """Test detection and sanitization based on PHI patterns."""
         # String with various PHI patterns but no sensitive keys
         log_message = """
@@ -256,7 +263,8 @@ class TestLogSanitizer:
         assert "Action: Viewed patient with ID" in sanitized
         assert "Reference: Document #12345 mentions insurance policy" in sanitized
     
-    def test_contextual_detection(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_contextual_detection(self, log_sanitizer):
         """Test contextual detection of PHI."""
         # Enable contextual detection
         log_sanitizer.config.enable_contextual_detection = True
@@ -283,7 +291,8 @@ class TestLogSanitizer:
         assert "987-65-4321" not in sanitized_no_context
         assert "contact@example.org" not in sanitized_no_context  # Email is still detected by pattern
     
-    def test_partial_redaction(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_partial_redaction(self, log_sanitizer):
         """Test partial redaction of PHI."""
         # Configure partial redaction
         log_sanitizer.config.redaction_mode = RedactionMode.PARTIAL
@@ -304,7 +313,8 @@ class TestLogSanitizer:
             assert "-6789" in sanitized or "xxx-xx-6789" in sanitized
             assert "example.com" in sanitized or "xxxx.xxxx@example.com" in sanitized
     
-    def test_full_redaction(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_full_redaction(self, log_sanitizer):
         """Test full redaction of PHI."""
         # Configure full redaction
         log_sanitizer.config.redaction_mode = RedactionMode.FULL
@@ -323,7 +333,8 @@ class TestLogSanitizer:
         assert "-6789" not in sanitized  # Last 4 should not be visible
         assert "example.com" not in sanitized  # Domain should not be visible
     
-    def test_hash_redaction(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_hash_redaction(self, log_sanitizer):
         """Test hash-based redaction of PHI."""
         # Configure hash redaction
         log_sanitizer.config.redaction_mode = RedactionMode.HASH
@@ -342,7 +353,8 @@ class TestLogSanitizer:
         sanitized2 = log_sanitizer.sanitize(log_message)
         assert sanitized == sanitized2
     
-    def test_log_message_sanitization(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_log_message_sanitization(self, log_sanitizer):
         """Test sanitization of log messages."""
         # Create a log message with PHI
         log_record = logging.LogRecord(
@@ -362,7 +374,8 @@ class TestLogSanitizer:
         assert "John Smith" not in sanitized_record.getMessage()
         assert "123-45-6789" not in sanitized_record.getMessage()
     
-    def test_structured_log_sanitization(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_structured_log_sanitization(self, log_sanitizer):
         """Test sanitization of structured logs."""
         # Structured log entry
         structured_log = {
@@ -409,7 +422,8 @@ class TestLogSanitizer:
         assert sanitized["context"]["user"] == "doctor_smith"
         assert sanitized["context"]["action"] == "view"
     
-    def test_disabled_sanitizer(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_disabled_sanitizer(self, log_sanitizer):
         """Test behavior when sanitizer is disabled."""
         # Disable the sanitizer
         log_sanitizer.config.enabled = False
@@ -424,7 +438,8 @@ class TestLogSanitizer:
         assert sanitized == log_message
         assert "123-45-6789" in sanitized
     
-    def test_exception_handling(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_exception_handling(self, log_sanitizer):
         """Test sanitizer's exception handling."""
         # Configure to allow exceptions
         log_sanitizer.config.exceptions_allowed = True
@@ -443,7 +458,8 @@ class TestLogSanitizer:
             result = log_sanitizer.sanitize("Test message with PHI")
             assert result == "Test message with PHI"  # Original returned on error
     
-    def test_max_log_size(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_max_log_size(self, log_sanitizer):
         """Test handling of large log messages."""
         # Configure max log size
         log_sanitizer.config.max_log_size_kb = 1  # 1KB
@@ -458,7 +474,8 @@ class TestLogSanitizer:
         assert len(sanitized) < len(large_message)
         assert "[Truncated]" in sanitized
     
-    def test_sanitization_hook(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitization_hook(self, log_sanitizer):
         """Test custom sanitization hooks."""
         # Define a custom sanitization hook
         def custom_hook(value, context):
@@ -479,7 +496,8 @@ class TestLogSanitizer:
         assert "CUSTOM_PHI" not in sanitized
         assert "[CUSTOM_REDACTED]" in sanitized
     
-    def test_multiple_phi_instances(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_multiple_phi_instances(self, log_sanitizer):
         """Test sanitization of multiple PHI instances in the same message."""
         # Message with multiple PHI instances
         log_message = """
@@ -501,7 +519,8 @@ class TestLogSanitizer:
         assert "jane.smith@example.com" not in sanitized
         assert "987-65-4321" not in sanitized
     
-    def test_phi_at_boundaries(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_phi_at_boundaries(self, log_sanitizer):
         """Test sanitization of PHI at string boundaries."""
         # PHI at start, middle, and end of string
         log_message = "123-45-6789 is the SSN for patient and email is john@example.com"

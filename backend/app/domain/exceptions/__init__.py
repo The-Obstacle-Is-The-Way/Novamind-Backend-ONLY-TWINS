@@ -87,3 +87,42 @@ class ModelInferenceError(DomainException):
     
     def __init__(self, message: str = "Error during model inference"):
         super().__init__(message)
+
+
+# Appointment-related exceptions
+class AppointmentConflictError(DomainException):
+    """
+    Raised when there's a conflict with another appointment.
+    
+    This exception is used when trying to schedule an appointment that conflicts
+    with an existing appointment, either for the patient or the provider.
+    """
+    
+    def __init__(self, message: str = "Appointment conflicts with another appointment"):
+        super().__init__(message)
+
+
+class InvalidAppointmentStateError(DomainException):
+    """
+    Raised when an appointment is in an invalid state for the requested operation.
+    
+    This exception is used when trying to perform an operation on an appointment
+    that is not allowed given its current state (e.g., trying to complete an
+    appointment that is not in progress).
+    """
+    
+    def __init__(self, message: str = "Invalid appointment state for this operation"):
+        super().__init__(message)
+
+
+class InvalidAppointmentTimeError(DomainException):
+    """
+    Raised when appointment times are invalid.
+    
+    This exception is used when appointment times are invalid, such as when
+    the end time is before the start time, or when trying to schedule an
+    appointment in the past.
+    """
+    
+    def __init__(self, message: str = "Invalid appointment time"):
+        super().__init__(message)

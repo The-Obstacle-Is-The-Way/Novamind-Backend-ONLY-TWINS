@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock
 from app.infrastructure.security.log_sanitizer import LogSanitizer
 
 
+@pytest.mark.db_required
 class TestLogSanitizer:
     """
     Tests for the LogSanitizer to ensure PHI is properly redacted from logs.
@@ -20,7 +21,8 @@ class TestLogSanitizer:
         """Create a LogSanitizer instance for testing."""
         return LogSanitizer()
     
-    def test_sanitize_patient_names(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_patient_names(self, log_sanitizer):
         """Test that patient names are properly redacted."""
         # Arrange
         log_message = "Patient John Smith checked in at 4pm"
@@ -33,7 +35,8 @@ class TestLogSanitizer:
         assert "[REDACTED-NAME]" in sanitized
         assert "Patient [REDACTED-NAME] checked in at 4pm" == sanitized
     
-    def test_sanitize_email_addresses(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_email_addresses(self, log_sanitizer):
         """Test that email addresses are properly redacted."""
         # Arrange
         log_message = "Sent reminder to patient@example.com for their appointment"
@@ -46,7 +49,8 @@ class TestLogSanitizer:
         assert "[REDACTED-EMAIL]" in sanitized
         assert "Sent reminder to [REDACTED-EMAIL] for their appointment" == sanitized
     
-    def test_sanitize_phone_numbers(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_phone_numbers(self, log_sanitizer):
         """Test that phone numbers are properly redacted."""
         # Test various phone number formats
         phone_formats = [
@@ -64,7 +68,8 @@ class TestLogSanitizer:
             assert "555" not in sanitized
             assert "[REDACTED-PHONE]" in sanitized
     
-    def test_sanitize_addresses(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_addresses(self, log_sanitizer):
         """Test that addresses are properly redacted."""
         # Arrange
         log_message = "Sending mail to 123 Main St, Anytown CA 90210"
@@ -78,7 +83,8 @@ class TestLogSanitizer:
         assert "90210" not in sanitized
         assert "[REDACTED-ADDRESS]" in sanitized
     
-    def test_sanitize_dates_of_birth(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_dates_of_birth(self, log_sanitizer):
         """Test that dates of birth are properly redacted."""
         # Test various date formats
         date_formats = [
@@ -99,7 +105,8 @@ class TestLogSanitizer:
             assert "Jan" not in sanitized
             assert "[REDACTED-DOB]" in sanitized
     
-    def test_sanitize_medical_record_numbers(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_medical_record_numbers(self, log_sanitizer):
         """Test that medical record numbers are properly redacted."""
         # Arrange
         log_message = "Accessed MRN: 12345678 for appointment scheduling"
@@ -111,7 +118,8 @@ class TestLogSanitizer:
         assert "12345678" not in sanitized
         assert "[REDACTED-MRN]" in sanitized
     
-    def test_sanitize_ssn(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_ssn(self, log_sanitizer):
         """Test that social security numbers are properly redacted."""
         # Test various SSN formats
         ssn_formats = [
@@ -130,7 +138,8 @@ class TestLogSanitizer:
             assert "6789" not in sanitized
             assert "[REDACTED-SSN]" in sanitized
     
-    def test_sanitize_credit_card(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_credit_card(self, log_sanitizer):
         """Test that credit card numbers are properly redacted."""
         # Arrange
         log_message = "Payment processed with card 4111-1111-1111-1111"
@@ -143,7 +152,8 @@ class TestLogSanitizer:
         assert "1111-1111-1111" not in sanitized
         assert "[REDACTED-CC]" in sanitized
     
-    def test_sanitize_json_data(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_json_data(self, log_sanitizer):
         """Test that PHI in JSON is properly redacted."""
         # Arrange
         log_message = """Log: {"user": "patient1", "name": "John Smith", "email": "john@example.com"}"""
@@ -157,7 +167,8 @@ class TestLogSanitizer:
         assert "[REDACTED-NAME]" in sanitized
         assert "[REDACTED-EMAIL]" in sanitized
     
-    def test_sanitize_complex_mixed_content(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_complex_mixed_content(self, log_sanitizer):
         """Test that complex mixed content with multiple PHI types is properly sanitized."""
         # Arrange
         log_message = (
@@ -187,7 +198,8 @@ class TestLogSanitizer:
         assert "[REDACTED-PHONE]" in sanitized
         assert "[REDACTED-ADDRESS]" in sanitized
     
-    def test_no_false_positives(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_no_false_positives(self, log_sanitizer):
         """Test that non-PHI data is not incorrectly redacted."""
         # Arrange - These should NOT be redacted
         safe_messages = [
@@ -203,7 +215,8 @@ class TestLogSanitizer:
             sanitized = log_sanitizer.sanitize(message)
             assert sanitized == message, f"False positive: {message} was incorrectly sanitized"
     
-    def test_sanitize_preserves_log_structure(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_preserves_log_structure(self, log_sanitizer):
         """Test that sanitization preserves the overall log structure."""
         # Arrange
         log_message = "ERROR [2023-01-02T15:30:45] Patient John Smith (ID: 12345) - Failed to schedule appointment"
@@ -217,7 +230,8 @@ class TestLogSanitizer:
         assert "John Smith" not in sanitized
         assert "[REDACTED-NAME]" in sanitized
     
-    def test_sanitize_performance(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitize_performance(self, log_sanitizer):
         """Test that sanitization performs efficiently on large logs."""
         # Arrange
         # Create a large log message with repeated PHI patterns
@@ -238,7 +252,8 @@ class TestLogSanitizer:
         # This is a reasonable threshold for large log processing
         assert execution_time < 1.0, f"Sanitization took too long: {execution_time} seconds"
     
-    def test_sanitizer_with_custom_patterns(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_sanitizer_with_custom_patterns(self, log_sanitizer):
         """Test that custom PHI patterns can be added and detected."""
         # Arrange - Add a custom pattern for patient IDs
         with patch.object(log_sanitizer, 'add_custom_pattern') as mock_add:
@@ -258,7 +273,8 @@ class TestLogSanitizer:
         assert "P123456" not in sanitized
         assert "[REDACTED-PATIENT-ID]" in sanitized
     
-    def test_audit_trail_integration(self, log_sanitizer):
+    @pytest.mark.db_required
+def test_audit_trail_integration(self, log_sanitizer):
         """Test that sanitization is properly integrated with audit logging."""
         # Arrange
         from app.infrastructure.logging.audit_logger import AuditLogger

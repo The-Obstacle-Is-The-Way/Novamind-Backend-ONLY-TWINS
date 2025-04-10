@@ -84,10 +84,12 @@ def actigraphy_data():
     }
 
 
+@pytest.mark.venv_only
 class TestActigraphyAPI:
     """Integration tests for the Actigraphy API."""
     
-    def test_analyze_actigraphy(self, client, auth_headers, actigraphy_data):
+    @pytest.mark.venv_only
+def test_analyze_actigraphy(self, client, auth_headers, actigraphy_data):
         """Test analyzing actigraphy data."""
         response = client.post(
             "/api/v1/actigraphy/analyze",
@@ -105,7 +107,8 @@ class TestActigraphyAPI:
         assert "data_summary" in data
         assert data["data_summary"]["readings_count"] == len(actigraphy_data["readings"])
     
-    def test_get_actigraphy_embeddings(self, client, auth_headers, actigraphy_data):
+    @pytest.mark.venv_only
+def test_get_actigraphy_embeddings(self, client, auth_headers, actigraphy_data):
         """Test generating embeddings from actigraphy data."""
         # Remove unnecessary fields for embedding generation
         embedding_data = {
@@ -132,7 +135,8 @@ class TestActigraphyAPI:
         assert "vector" in data["embedding"]
         assert "dimension" in data["embedding"]
     
-    def test_get_analysis_by_id(self, client, auth_headers, mock_pat_service):
+    @pytest.mark.venv_only
+def test_get_analysis_by_id(self, client, auth_headers, mock_pat_service):
         """Test retrieving an analysis by ID."""
         # First create an analysis
         analysis_data = mock_pat_service.analyze_actigraphy(
@@ -159,7 +163,8 @@ class TestActigraphyAPI:
         assert "patient_id" in data
         assert "timestamp" in data
     
-    def test_get_patient_analyses(self, client, auth_headers, mock_pat_service):
+    @pytest.mark.venv_only
+def test_get_patient_analyses(self, client, auth_headers, mock_pat_service):
         """Test retrieving analyses for a patient."""
         patient_id = "test-patient-123"
         
@@ -187,7 +192,8 @@ class TestActigraphyAPI:
         assert len(data["analyses"]) > 0
         assert "pagination" in data
     
-    def test_get_model_info(self, client, auth_headers):
+    @pytest.mark.venv_only
+def test_get_model_info(self, client, auth_headers):
         """Test getting model information."""
         response = client.get(
             "/api/v1/actigraphy/model-info",
@@ -201,7 +207,8 @@ class TestActigraphyAPI:
         assert "capabilities" in data
         assert "description" in data
     
-    def test_integrate_with_digital_twin(self, client, auth_headers, mock_pat_service):
+    @pytest.mark.venv_only
+def test_integrate_with_digital_twin(self, client, auth_headers, mock_pat_service):
         """Test integrating analysis with digital twin."""
         # Create an analysis
         analysis_data = mock_pat_service.analyze_actigraphy(
@@ -238,7 +245,8 @@ class TestActigraphyAPI:
         assert "status" in data
         assert data["status"] == "success"
     
-    def test_unauthorized_access(self, client, actigraphy_data):
+    @pytest.mark.venv_only
+def test_unauthorized_access(self, client, actigraphy_data):
         """Test unauthorized access to API."""
         response = client.post(
             "/api/v1/actigraphy/analyze",

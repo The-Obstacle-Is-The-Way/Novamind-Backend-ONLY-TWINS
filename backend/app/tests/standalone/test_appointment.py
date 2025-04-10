@@ -51,9 +51,11 @@ def valid_appointment(valid_appointment_data):
     return Appointment(**valid_appointment_data)
 
 
+@pytest.mark.standalone
 class TestAppointment:
     """Tests for the Appointment class."""
     
+    @pytest.mark.standalone
     def test_create_appointment(self, valid_appointment_data):
         """Test creating an appointment."""
         appointment = Appointment(**valid_appointment_data)
@@ -70,6 +72,7 @@ class TestAppointment:
         assert appointment.notes == valid_appointment_data["notes"]
         assert appointment.reason == valid_appointment_data["reason"]
     
+    @pytest.mark.standalone
     def test_create_appointment_with_string_enums(self, valid_appointment_data):
         """Test creating an appointment with string enums."""
         # Convert enums to strings
@@ -84,6 +87,7 @@ class TestAppointment:
         assert appointment.status == AppointmentStatus.SCHEDULED
         assert appointment.priority == AppointmentPriority.NORMAL
     
+    @pytest.mark.standalone
     def test_create_appointment_with_auto_id(self, valid_appointment_data):
         """Test creating an appointment with auto-generated ID."""
         data = valid_appointment_data.copy()
@@ -94,6 +98,7 @@ class TestAppointment:
         assert appointment.id is not None
         assert isinstance(appointment.id, uuid.UUID)
     
+    @pytest.mark.standalone
     def test_validate_required_fields(self):
         """Test validation of required fields."""
         # Missing patient_id
@@ -141,6 +146,7 @@ class TestAppointment:
                 end_time=datetime.now() + timedelta(days=1, hours=1)
             )
     
+    @pytest.mark.standalone
     def test_validate_appointment_times(self, future_datetime):
         """Test validation of appointment times."""
         # End time before start time
@@ -163,6 +169,7 @@ class TestAppointment:
                 appointment_type=AppointmentType.INITIAL_CONSULTATION
             )
     
+    @pytest.mark.standalone
     def test_confirm_appointment(self, valid_appointment):
         """Test confirming an appointment."""
         valid_appointment.confirm()
@@ -170,6 +177,7 @@ class TestAppointment:
         assert valid_appointment.status == AppointmentStatus.CONFIRMED
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_confirm_non_scheduled_appointment(self, valid_appointment):
         """Test confirming a non-scheduled appointment."""
         valid_appointment.status = AppointmentStatus.CANCELLED
@@ -177,6 +185,7 @@ class TestAppointment:
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.confirm()
     
+    @pytest.mark.standalone
     def test_check_in_appointment(self, valid_appointment):
         """Test checking in an appointment."""
         valid_appointment.check_in()
@@ -184,6 +193,7 @@ class TestAppointment:
         assert valid_appointment.status == AppointmentStatus.CHECKED_IN
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_check_in_confirmed_appointment(self, valid_appointment):
         """Test checking in a confirmed appointment."""
         valid_appointment.status = AppointmentStatus.CONFIRMED
@@ -191,6 +201,7 @@ class TestAppointment:
         
         assert valid_appointment.status == AppointmentStatus.CHECKED_IN
     
+    @pytest.mark.standalone
     def test_check_in_invalid_appointment(self, valid_appointment):
         """Test checking in an invalid appointment."""
         valid_appointment.status = AppointmentStatus.CANCELLED
@@ -198,6 +209,7 @@ class TestAppointment:
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.check_in()
     
+    @pytest.mark.standalone
     def test_start_appointment(self, valid_appointment):
         """Test starting an appointment."""
         valid_appointment.status = AppointmentStatus.CHECKED_IN
@@ -206,11 +218,13 @@ class TestAppointment:
         assert valid_appointment.status == AppointmentStatus.IN_PROGRESS
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_start_invalid_appointment(self, valid_appointment):
         """Test starting an invalid appointment."""
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.start()
     
+    @pytest.mark.standalone
     def test_complete_appointment(self, valid_appointment):
         """Test completing an appointment."""
         valid_appointment.status = AppointmentStatus.IN_PROGRESS
@@ -219,11 +233,13 @@ class TestAppointment:
         assert valid_appointment.status == AppointmentStatus.COMPLETED
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_complete_invalid_appointment(self, valid_appointment):
         """Test completing an invalid appointment."""
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.complete()
     
+    @pytest.mark.standalone
     def test_cancel_appointment(self, valid_appointment):
         """Test cancelling an appointment."""
         cancelled_by = str(uuid.uuid4())
@@ -237,6 +253,7 @@ class TestAppointment:
         assert valid_appointment.cancellation_reason == reason
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_cancel_invalid_appointment(self, valid_appointment):
         """Test cancelling an invalid appointment."""
         valid_appointment.status = AppointmentStatus.COMPLETED
@@ -244,6 +261,7 @@ class TestAppointment:
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.cancel(str(uuid.uuid4()))
     
+    @pytest.mark.standalone
     def test_mark_no_show(self, valid_appointment):
         """Test marking an appointment as no-show."""
         valid_appointment.mark_no_show()
@@ -251,6 +269,7 @@ class TestAppointment:
         assert valid_appointment.status == AppointmentStatus.NO_SHOW
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_mark_no_show_confirmed_appointment(self, valid_appointment):
         """Test marking a confirmed appointment as no-show."""
         valid_appointment.status = AppointmentStatus.CONFIRMED
@@ -258,6 +277,7 @@ class TestAppointment:
         
         assert valid_appointment.status == AppointmentStatus.NO_SHOW
     
+    @pytest.mark.standalone
     def test_mark_no_show_invalid_appointment(self, valid_appointment):
         """Test marking an invalid appointment as no-show."""
         valid_appointment.status = AppointmentStatus.COMPLETED
@@ -265,6 +285,7 @@ class TestAppointment:
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.mark_no_show()
     
+    @pytest.mark.standalone
     def test_reschedule_appointment(self, valid_appointment, future_datetime):
         """Test rescheduling an appointment."""
         new_start_time = future_datetime + timedelta(days=1)
@@ -279,6 +300,7 @@ class TestAppointment:
         assert reason in valid_appointment.notes
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_reschedule_invalid_appointment(self, valid_appointment, future_datetime):
         """Test rescheduling an invalid appointment."""
         valid_appointment.status = AppointmentStatus.COMPLETED
@@ -289,6 +311,7 @@ class TestAppointment:
                 future_datetime + timedelta(days=1, hours=1)
             )
     
+    @pytest.mark.standalone
     def test_reschedule_invalid_times(self, valid_appointment, future_datetime):
         """Test rescheduling with invalid times."""
         # End time before start time
@@ -305,6 +328,7 @@ class TestAppointment:
                 datetime.now() + timedelta(hours=1)
             )
     
+    @pytest.mark.standalone
     def test_schedule_follow_up(self, valid_appointment):
         """Test scheduling a follow-up appointment."""
         valid_appointment.status = AppointmentStatus.COMPLETED
@@ -316,6 +340,7 @@ class TestAppointment:
         assert valid_appointment.follow_up_appointment_id == follow_up_id
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_schedule_follow_up_invalid_appointment(self, valid_appointment):
         """Test scheduling a follow-up for an invalid appointment."""
         follow_up_id = str(uuid.uuid4())
@@ -323,6 +348,7 @@ class TestAppointment:
         with pytest.raises(InvalidAppointmentStateError):
             valid_appointment.schedule_follow_up(follow_up_id)
     
+    @pytest.mark.standalone
     def test_send_reminder(self, valid_appointment):
         """Test sending a reminder for an appointment."""
         valid_appointment.send_reminder()
@@ -331,6 +357,7 @@ class TestAppointment:
         assert valid_appointment.reminder_sent_at is not None
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_update_notes(self, valid_appointment):
         """Test updating appointment notes."""
         new_notes = "Patient reported improvement in symptoms"
@@ -340,6 +367,7 @@ class TestAppointment:
         assert valid_appointment.notes == new_notes
         assert valid_appointment.updated_at > valid_appointment.created_at
     
+    @pytest.mark.standalone
     def test_to_dict(self, valid_appointment):
         """Test converting an appointment to a dictionary."""
         appointment_dict = valid_appointment.to_dict()
@@ -353,6 +381,7 @@ class TestAppointment:
         assert appointment_dict["status"] == valid_appointment.status.value
         assert appointment_dict["priority"] == valid_appointment.priority.value
     
+    @pytest.mark.standalone
     def test_from_dict(self, valid_appointment):
         """Test creating an appointment from a dictionary."""
         appointment_dict = valid_appointment.to_dict()
@@ -367,6 +396,7 @@ class TestAppointment:
         assert new_appointment.status == valid_appointment.status
         assert new_appointment.priority == valid_appointment.priority
     
+    @pytest.mark.standalone
     def test_equality(self, valid_appointment_data):
         """Test appointment equality."""
         appointment1 = Appointment(**valid_appointment_data)
@@ -375,6 +405,7 @@ class TestAppointment:
         assert appointment1 == appointment2
         assert hash(appointment1) == hash(appointment2)
     
+    @pytest.mark.standalone
     def test_inequality(self, valid_appointment_data):
         """Test appointment inequality."""
         appointment1 = Appointment(**valid_appointment_data)
@@ -387,6 +418,7 @@ class TestAppointment:
         assert hash(appointment1) != hash(appointment2)
         assert appointment1 != "not an appointment"
     
+    @pytest.mark.standalone
     def test_string_representation(self, valid_appointment):
         """Test string representation of an appointment."""
         string_repr = str(valid_appointment)

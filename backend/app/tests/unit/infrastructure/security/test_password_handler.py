@@ -24,10 +24,12 @@ def password_handler():
     return PasswordHandler()
 
 
+@pytest.mark.venv_only
 class TestPasswordHandler:
     """Test suite for password handler."""
     
-    def test_hash_password(self, password_handler):
+    @pytest.mark.venv_only
+def test_hash_password(self, password_handler):
         """Test that passwords are properly hashed."""
         # Arrange
         test_password = "Secure@Password123"
@@ -41,7 +43,8 @@ class TestPasswordHandler:
         assert len(hashed) > 20  # Bcrypt hashes are longer than this
         assert hashed.startswith("$2")  # Bcrypt hash signature
     
-    def test_verify_password_valid(self, password_handler):
+    @pytest.mark.venv_only
+def test_verify_password_valid(self, password_handler):
         """Test that valid password verification works."""
         # Arrange
         test_password = "Secure@Password123"
@@ -53,7 +56,8 @@ class TestPasswordHandler:
         # Assert
         assert result is True
     
-    def test_verify_password_invalid(self, password_handler):
+    @pytest.mark.venv_only
+def test_verify_password_invalid(self, password_handler):
         """Test that invalid password verification fails."""
         # Arrange
         test_password = "Secure@Password123"
@@ -66,7 +70,8 @@ class TestPasswordHandler:
         # Assert
         assert result is False
     
-    def test_password_needs_rehash(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_needs_rehash(self, password_handler):
         """Test detection of passwords that need rehashing."""
         # This is more challenging to test directly since we'd need outdated hashes
         # We'll mock the internal pwd_context.needs_update method
@@ -83,7 +88,8 @@ class TestPasswordHandler:
             assert result is True
             mock_needs_update.assert_called_once_with(test_hash)
     
-    def test_generate_secure_password(self, password_handler):
+    @pytest.mark.venv_only
+def test_generate_secure_password(self, password_handler):
         """Test secure password generation."""
         # Act
         password = password_handler.generate_secure_password()
@@ -97,7 +103,8 @@ class TestPasswordHandler:
         assert any(c.isdigit() for c in password)
         assert any(c in "!@#$%^&*()-_=+[]{}|;:,.<>?/" for c in password)
     
-    def test_generate_secure_password_custom_length(self, password_handler):
+    @pytest.mark.venv_only
+def test_generate_secure_password_custom_length(self, password_handler):
         """Test secure password generation with custom length."""
         # Act
         password = password_handler.generate_secure_password(length=24)
@@ -111,7 +118,8 @@ class TestPasswordHandler:
         assert any(c.isdigit() for c in password)
         assert any(c in "!@#$%^&*()-_=+[]{}|;:,.<>?/" for c in password)
     
-    def test_generate_secure_password_minimum_length(self, password_handler):
+    @pytest.mark.venv_only
+def test_generate_secure_password_minimum_length(self, password_handler):
         """Test secure password generation with length below minimum."""
         # Act - try to generate a short password (should enforce minimum)
         password = password_handler.generate_secure_password(length=8)
@@ -119,7 +127,8 @@ class TestPasswordHandler:
         # Assert
         assert len(password) == 12  # Should enforce minimum of 12
     
-    def test_password_strength_valid(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_strength_valid(self, password_handler):
         """Test password strength validation with valid password."""
         # Arrange
         strong_password = "Str0ng@P4ssw0rd!"
@@ -131,7 +140,8 @@ class TestPasswordHandler:
         assert is_valid is True
         assert error is None
     
-    def test_password_strength_too_short(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_strength_too_short(self, password_handler):
         """Test password strength validation with short password."""
         # Arrange
         short_password = "Short1!"
@@ -143,7 +153,8 @@ class TestPasswordHandler:
         assert is_valid is False
         assert "at least 12 characters" in error
     
-    def test_password_strength_missing_uppercase(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_strength_missing_uppercase(self, password_handler):
         """Test password strength validation with missing uppercase."""
         # Arrange
         password = "no_uppercase123!"
@@ -155,7 +166,8 @@ class TestPasswordHandler:
         assert is_valid is False
         assert "uppercase" in error
     
-    def test_password_strength_missing_lowercase(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_strength_missing_lowercase(self, password_handler):
         """Test password strength validation with missing lowercase."""
         # Arrange
         password = "NO_LOWERCASE123!"
@@ -167,7 +179,8 @@ class TestPasswordHandler:
         assert is_valid is False
         assert "lowercase" in error
     
-    def test_password_strength_missing_digit(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_strength_missing_digit(self, password_handler):
         """Test password strength validation with missing digit."""
         # Arrange
         password = "NoDigits@Here!"
@@ -179,7 +192,8 @@ class TestPasswordHandler:
         assert is_valid is False
         assert "digits" in error
     
-    def test_password_strength_missing_special(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_strength_missing_special(self, password_handler):
         """Test password strength validation with missing special characters."""
         # Arrange
         password = "NoSpecialChars123"
@@ -191,7 +205,8 @@ class TestPasswordHandler:
         assert is_valid is False
         assert "special characters" in error
     
-    def test_password_strength_common_patterns(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_strength_common_patterns(self, password_handler):
         """Test password strength validation rejecting common patterns."""
         # Arrange
         password = "Password12345!"
@@ -203,7 +218,8 @@ class TestPasswordHandler:
         assert is_valid is False
         assert "common patterns" in error
     
-    def test_password_strength_repeating_chars(self, password_handler):
+    @pytest.mark.venv_only
+def test_password_strength_repeating_chars(self, password_handler):
         """Test password strength validation rejecting repeating characters."""
         # Arrange
         password = "StrongPasswwwrd123!"
@@ -216,7 +232,8 @@ class TestPasswordHandler:
         assert "repeated characters" in error
     
     @patch('app.infrastructure.security.password.password_handler.logger')
-    def test_logging_behavior(self, mock_logger, password_handler):
+    @pytest.mark.venv_only
+def test_logging_behavior(self, mock_logger, password_handler):
         """Test that no sensitive information is logged."""
         # Arrange
         test_password = "SecretP@ssw0rd!"
@@ -232,7 +249,8 @@ class TestPasswordHandler:
             log_message = call[0][0]
             assert test_password not in log_message
     
-    def test_random_password_uniqueness(self, password_handler):
+    @pytest.mark.venv_only
+def test_random_password_uniqueness(self, password_handler):
         """Test that generated passwords are unique/random."""
         # Generate multiple passwords
         passwords = [

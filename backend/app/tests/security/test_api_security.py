@@ -22,6 +22,7 @@ from app.infrastructure.security.rate_limiting import RateLimiter
 
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_client():
     """Create a FastAPI test client for testing."""
     return TestClient(app)
@@ -55,15 +56,18 @@ def mock_admin_user():
     }
 
 
+@pytest.mark.db_required
 class TestAuthentication:
     """Test authentication mechanisms."""
 
-    def test_missing_token(self, test_client):
+    @pytest.mark.db_required
+def test_missing_token(self, test_client):
         """Test that requests without tokens are rejected."""
         response = test_client.get("/api/v1/patients/me")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_invalid_token(self, test_client):
+    @pytest.mark.db_required
+def test_invalid_token(self, test_client):
         """Test that invalid tokens are rejected."""
         response = test_client.get(
             "/api/v1/patients/me",
@@ -71,7 +75,8 @@ class TestAuthentication:
         )
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_expired_token(self, test_client):
+    @pytest.mark.db_required
+def test_expired_token(self, test_client):
         """Test that expired tokens are rejected."""
         # Create an expired token (exp in the past)
         expired_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJyb2xlIjoicGF0aWVudCIsImV4cCI6MTU4MzI2MTIzNH0.signature"
@@ -84,7 +89,8 @@ class TestAuthentication:
             )
             assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_tampered_token(self, test_client):
+    @pytest.mark.db_required
+def test_tampered_token(self, test_client):
         """Test that tampered tokens are rejected."""
         # Token with modified payload
         tampered_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJoYWNrZXIiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjk5OTk5OTk5OTl9.invalid_signature"
@@ -97,7 +103,8 @@ class TestAuthentication:
             )
             assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_valid_token(self, test_client, mock_token, mock_user):
+    @pytest.mark.db_required
+def test_valid_token(self, test_client, mock_token, mock_user):
         """Test that valid tokens are accepted."""
         with patch('app.presentation.api.auth.get_current_user', return_value=mock_user):
             response = test_client.get(
@@ -107,10 +114,12 @@ class TestAuthentication:
             assert response.status_code == status.HTTP_200_OK
 
 
+@pytest.mark.db_required
 class TestAuthorization:
     """Test authorization and access control."""
 
-    def test_patient_accessing_own_data(self, test_client, mock_token, mock_user):
+    @pytest.mark.db_required
+def test_patient_accessing_own_data(self, test_client, mock_token, mock_user):
         """Test that patients can access their own data."""
         user_id = mock_user["id"]
         
@@ -121,7 +130,8 @@ class TestAuthorization:
             )
             assert response.status_code == status.HTTP_200_OK
 
-    def test_patient_accessing_other_patient_data(self, test_client, mock_token, mock_user):
+    @pytest.mark.db_required
+def test_patient_accessing_other_patient_data(self, test_client, mock_token, mock_user):
         """Test that patients cannot access other patients' data."""
         other_user_id = str(uuid.uuid4())  # Different from mock_user["id"]
         
@@ -134,7 +144,8 @@ class TestAuthorization:
             )
             assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_admin_accessing_patient_data(self, test_client, mock_token, mock_admin_user):
+    @pytest.mark.db_required
+def test_admin_accessing_patient_data(self, test_client, mock_token, mock_admin_user):
         """Test that admins/psychiatrists can access patient data."""
         patient_id = str(uuid.uuid4())
         
@@ -145,7 +156,8 @@ class TestAuthorization:
             )
             assert response.status_code == status.HTTP_200_OK
 
-    def test_role_specific_endpoint(self, test_client, mock_token, mock_user, mock_admin_user):
+    @pytest.mark.db_required
+def test_role_specific_endpoint(self, test_client, mock_token, mock_user, mock_admin_user):
         """Test that role-specific endpoints enforce proper access control."""
         # Admin-only endpoint
         with patch('app.presentation.api.auth.get_current_user', return_value=mock_user), \
@@ -166,10 +178,12 @@ class TestAuthorization:
             assert response.status_code == status.HTTP_200_OK
 
 
+@pytest.mark.db_required
 class TestRateLimiting:
     """Test rate limiting for security."""
 
-    def test_rate_limiting(self, test_client):
+    @pytest.mark.db_required
+def test_rate_limiting(self, test_client):
         """Test that rate limiting is enforced on authentication endpoints."""
         limiter = RateLimiter()
         
@@ -186,7 +200,8 @@ class TestRateLimiting:
             
             assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
 
-    def test_ip_based_rate_limiting(self, test_client):
+    @pytest.mark.db_required
+def test_ip_based_rate_limiting(self, test_client):
         """Test that IP-based rate limiting works."""
         client_ip = "192.168.1.1"
         limiter = RateLimiter()
@@ -225,10 +240,12 @@ class TestRateLimiting:
             assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
 
 
+@pytest.mark.db_required
 class TestInputValidation:
     """Test input validation for security."""
 
-    def test_invalid_input_format(self, test_client, mock_token, mock_user):
+    @pytest.mark.db_required
+def test_invalid_input_format(self, test_client, mock_token, mock_user):
         """Test that invalid input format is rejected."""
         with patch('app.presentation.api.auth.get_current_user', return_value=mock_user):
             response = test_client.post(
@@ -238,7 +255,8 @@ class TestInputValidation:
             )
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    def test_input_sanitization(self, test_client, mock_token, mock_user):
+    @pytest.mark.db_required
+def test_input_sanitization(self, test_client, mock_token, mock_user):
         """Test that input is properly sanitized."""
         malicious_input = {
             "name": "Test Patient<script>alert('XSS')</script>",
@@ -264,7 +282,8 @@ class TestInputValidation:
             # Verify sanitize was called with the malicious input
             mock_sanitize.assert_called_once_with(malicious_input)
 
-    def test_input_length_limits(self, test_client, mock_token, mock_user):
+    @pytest.mark.db_required
+def test_input_length_limits(self, test_client, mock_token, mock_user):
         """Test that input length limits are enforced."""
         # Create overly long inputs
         overly_long_text = "x" * 10000  # 10,000 characters
@@ -286,10 +305,12 @@ class TestInputValidation:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
+@pytest.mark.db_required
 class TestSecureHeaders:
     """Test secure headers for HTTP responses."""
 
-    def test_security_headers(self, test_client):
+    @pytest.mark.db_required
+def test_security_headers(self, test_client):
         """Test that security headers are present in responses."""
         response = test_client.get("/api/v1/health")
         
@@ -305,7 +326,8 @@ class TestSecureHeaders:
         assert "Strict-Transport-Security" in response.headers
         assert "max-age=31536000" in response.headers["Strict-Transport-Security"]
 
-    def test_cors_configuration(self, test_client):
+    @pytest.mark.db_required
+def test_cors_configuration(self, test_client):
         """Test proper CORS configuration."""
         # Send an OPTIONS request (preflight)
         response = test_client.options(
@@ -323,10 +345,12 @@ class TestSecureHeaders:
         assert response.headers["Access-Control-Allow-Origin"] != "*"
 
 
+@pytest.mark.db_required
 class TestErrorHandling:
     """Test secure error handling."""
 
-    def test_error_messages_do_not_leak_info(self, test_client):
+    @pytest.mark.db_required
+def test_error_messages_do_not_leak_info(self, test_client):
         """Test that error messages don't leak sensitive information."""
         # Test with a non-existent endpoint
         response = test_client.get("/api/v1/nonexistent")
@@ -340,7 +364,8 @@ class TestErrorHandling:
         assert "line" not in error_data["detail"].lower()
         assert "file" not in error_data["detail"].lower()
 
-    def test_database_error_handling(self, test_client, mock_token, mock_user):
+    @pytest.mark.db_required
+def test_database_error_handling(self, test_client, mock_token, mock_user):
         """Test that database errors don't leak sensitive information."""
         with patch('app.presentation.api.auth.get_current_user', return_value=mock_user), \
              patch('app.presentation.api.endpoints.patients.PatientService.get_patient', 

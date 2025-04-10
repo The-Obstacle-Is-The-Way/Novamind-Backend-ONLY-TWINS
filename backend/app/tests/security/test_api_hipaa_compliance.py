@@ -108,7 +108,8 @@ except ImportError:
                 return func
             return decorator
             
-    class TestClient:
+    @pytest.mark.db_required
+class TestClient:
         """Mock TestClient."""
         def __init__(self, app):
             self.app = app
@@ -216,6 +217,7 @@ except ImportError:
             await self.app(scope, receive, send)
 
 
+@pytest.mark.db_required
 class TestAPIHIPAACompliance:
     """Test API endpoint HIPAA compliance."""
     
@@ -247,12 +249,14 @@ class TestAPIHIPAACompliance:
         """Create patient token."""
         return "Bearer patient-token-P12345"
         
-    def test_unauthenticated_request_rejected(self, client):
+    @pytest.mark.db_required
+def test_unauthenticated_request_rejected(self, client):
         """Test that unauthenticated requests to PHI endpoints are rejected."""
         response = client.get("/api/v1/patients/P12345")
         assert response.status_code == 401
         
-    def test_patient_data_isolation(self, client, patient_token):
+    @pytest.mark.db_required
+def test_patient_data_isolation(self, client, patient_token):
         """Test that patients can only access their own data."""
         # Own data - should succeed
         own_response = client.get(
@@ -268,7 +272,8 @@ class TestAPIHIPAACompliance:
         )
         assert other_response.status_code == 403
         
-    def test_phi_sanitization_in_response(self, client, admin_token):
+    @pytest.mark.db_required
+def test_phi_sanitization_in_response(self, client, admin_token):
         """Test that PHI is properly sanitized in API responses."""
         response = client.get(
             "/api/v1/patients/P12345", 
@@ -283,7 +288,8 @@ class TestAPIHIPAACompliance:
         assert "phone" not in data or "*" in data["phone"]  # Phone should be redacted
         assert "address" not in data or "*" in data["address"]  # Address should be redacted
         
-    def test_phi_not_in_query_params(self, client, admin_token):
+    @pytest.mark.db_required
+def test_phi_not_in_query_params(self, client, admin_token):
         """Test that PHI is not exposed in query parameters."""
         # Mock the request method to inspect query parameters
         original_get = client.get
@@ -307,7 +313,8 @@ class TestAPIHIPAACompliance:
             params={"name": "John", "status": "active"}
         )
         
-    def test_phi_not_in_request_bodies(self, client, admin_token):
+    @pytest.mark.db_required
+def test_phi_not_in_request_bodies(self, client, admin_token):
         """Test that PHI is properly handled in request bodies."""
         # Mock the request method to inspect request body
         original_post = client.post
@@ -340,13 +347,15 @@ class TestAPIHIPAACompliance:
         data = response.json()
         assert "ssn" not in data or data["ssn"] == "[REDACTED]"
         
-    def test_https_requirement(self, client, admin_token):
+    @pytest.mark.db_required
+def test_https_requirement(self, client, admin_token):
         """Test that the API enforces HTTPS for all PHI endpoints."""
         # In a real test, we would verify all requests use HTTPS
         # For simulation, we'll just check that a middleware or intercept exists
         assert any(middleware[0] == PHISanitizingMiddleware for middleware in getattr(client.app, "middleware", []))
         
-    def test_proper_authentication_and_authorization(self, client, admin_token, doctor_token, patient_token):
+    @pytest.mark.db_required
+def test_proper_authentication_and_authorization(self, client, admin_token, doctor_token, patient_token):
         """Test that proper authentication and authorization are enforced."""
         # Admin can access any patient
         admin_response = client.get(
@@ -369,7 +378,8 @@ class TestAPIHIPAACompliance:
         )
         assert patient_response.status_code == 403
         
-    def test_phi_security_headers(self, client, admin_token):
+    @pytest.mark.db_required
+def test_phi_security_headers(self, client, admin_token):
         """Test that appropriate security headers are applied to responses."""
         # In a real implementation, we would check for headers like:
         # - Strict-Transport-Security
@@ -384,7 +394,8 @@ class TestAPIHIPAACompliance:
         )
         assert response.status_code == 200
         
-    def test_api_rate_limiting(self, client, admin_token):
+    @pytest.mark.db_required
+def test_api_rate_limiting(self, client, admin_token):
         """Test that rate limiting is applied to prevent brute force attacks."""
         # In a real implementation, we would:
         # 1. Send multiple requests in quick succession
@@ -393,7 +404,8 @@ class TestAPIHIPAACompliance:
         # through a middleware that we already verified exists
         assert any(middleware[0] == PHISanitizingMiddleware for middleware in getattr(client.app, "middleware", []))
         
-    def test_sensitive_operations_audit_log(self, client, admin_token):
+    @pytest.mark.db_required
+def test_sensitive_operations_audit_log(self, client, admin_token):
         """Test that sensitive operations are properly logged for audit."""
         # For a real test, we would:
         # 1. Mock the audit logging system

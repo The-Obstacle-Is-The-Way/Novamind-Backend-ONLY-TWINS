@@ -16,6 +16,7 @@ from app.infrastructure.security.jwt_service import JWTService
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
 
+@pytest.mark.venv_only
 class TestAuthMiddleware:
     """
     Tests for the Authentication Middleware to ensure HIPAA-compliant access control.
@@ -128,11 +129,13 @@ class TestAuthMiddleware:
         return app
     
     @pytest.fixture
-    def test_client(self, app):
+    @pytest.mark.venv_only
+def test_client(self, app):
         """Create a test client for the FastAPI app."""
         return TestClient(app)
     
-    def test_public_route_access(self, test_client):
+    @pytest.mark.venv_only
+def test_public_route_access(self, test_client):
         """Test that public routes are accessible without authentication."""
         # Act
         response = test_client.get("/public")
@@ -141,7 +144,8 @@ class TestAuthMiddleware:
         assert response.status_code == 200
         assert response.json() == {"message": "public access"}
     
-    def test_patient_route_without_token(self, test_client):
+    @pytest.mark.venv_only
+def test_patient_route_without_token(self, test_client):
         """Test that patient routes require authentication."""
         # Act
         response = test_client.get("/patient-only")
@@ -149,7 +153,8 @@ class TestAuthMiddleware:
         # Assert
         assert response.status_code == 401
     
-    def test_patient_route_with_patient_token(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_patient_route_with_patient_token(self, test_client, mock_jwt_service):
         """Test that patient routes are accessible with patient token."""
         # Act
         response = test_client.get(
@@ -161,7 +166,8 @@ class TestAuthMiddleware:
         assert response.status_code == 200
         assert response.json()["message"] == "patient access"
     
-    def test_patient_route_with_provider_token(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_patient_route_with_provider_token(self, test_client, mock_jwt_service):
         """Test that patient routes are accessible with provider token."""
         # Act
         response = test_client.get(
@@ -173,7 +179,8 @@ class TestAuthMiddleware:
         assert response.status_code == 200
         assert response.json()["message"] == "patient access"
     
-    def test_provider_route_with_patient_token(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_provider_route_with_patient_token(self, test_client, mock_jwt_service):
         """Test that provider routes are not accessible with patient token."""
         # Act
         response = test_client.get(
@@ -184,7 +191,8 @@ class TestAuthMiddleware:
         # Assert
         assert response.status_code == 403  # Forbidden
     
-    def test_provider_route_with_provider_token(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_provider_route_with_provider_token(self, test_client, mock_jwt_service):
         """Test that provider routes are accessible with provider token."""
         # Act
         response = test_client.get(
@@ -196,7 +204,8 @@ class TestAuthMiddleware:
         assert response.status_code == 200
         assert response.json()["message"] == "provider access"
     
-    def test_admin_route_with_provider_token(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_admin_route_with_provider_token(self, test_client, mock_jwt_service):
         """Test that admin routes are not accessible with provider token."""
         # Act
         response = test_client.get(
@@ -207,7 +216,8 @@ class TestAuthMiddleware:
         # Assert
         assert response.status_code == 403  # Forbidden
     
-    def test_admin_route_with_admin_token(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_admin_route_with_admin_token(self, test_client, mock_jwt_service):
         """Test that admin routes are accessible with admin token."""
         # Act
         response = test_client.get(
@@ -219,7 +229,8 @@ class TestAuthMiddleware:
         assert response.status_code == 200
         assert response.json()["message"] == "admin access"
     
-    def test_expired_token(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_expired_token(self, test_client, mock_jwt_service):
         """Test that expired tokens are rejected."""
         # Act
         response = test_client.get(
@@ -231,7 +242,8 @@ class TestAuthMiddleware:
         assert response.status_code == 401
         assert "expired" in response.json()["detail"].lower()
     
-    def test_invalid_token(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_invalid_token(self, test_client, mock_jwt_service):
         """Test that invalid tokens are rejected."""
         # Act
         response = test_client.get(
@@ -243,7 +255,8 @@ class TestAuthMiddleware:
         assert response.status_code == 401
         assert "invalid" in response.json()["detail"].lower()
     
-    def test_patient_accessing_own_data(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_patient_accessing_own_data(self, test_client, mock_jwt_service):
         """Test that a patient can access their own data."""
         # Act
         response = test_client.get(
@@ -255,7 +268,8 @@ class TestAuthMiddleware:
         assert response.status_code == 200
         assert response.json()["patient_id"] == "patient123"
     
-    def test_patient_accessing_other_patient_data(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_patient_accessing_other_patient_data(self, test_client, mock_jwt_service):
         """Test that a patient cannot access another patient's data."""
         # Act
         response = test_client.get(
@@ -267,7 +281,8 @@ class TestAuthMiddleware:
         assert response.status_code == 403
         assert "access denied" in response.json()["detail"].lower()
     
-    def test_provider_accessing_patient_data(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_provider_accessing_patient_data(self, test_client, mock_jwt_service):
         """Test that a provider can access any patient's data."""
         # Act
         response = test_client.get(
@@ -279,7 +294,8 @@ class TestAuthMiddleware:
         assert response.status_code == 200
         assert response.json()["patient_id"] == "patient123"
     
-    def test_malformed_authorization_header(self, test_client):
+    @pytest.mark.venv_only
+def test_malformed_authorization_header(self, test_client):
         """Test that malformed authorization headers are rejected."""
         # Act - Missing "Bearer" prefix
         response = test_client.get(
@@ -299,7 +315,8 @@ class TestAuthMiddleware:
         # Assert
         assert response.status_code == 401
     
-    def test_rate_limiting(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_rate_limiting(self, test_client, mock_jwt_service):
         """Test that rate limiting is applied to prevent brute force attacks."""
         # Patching the middleware's rate limit values for testing
         with patch.object(JWTAuthMiddleware, '_RATE_LIMIT_MAX_REQUESTS', 5), \
@@ -316,7 +333,8 @@ class TestAuthMiddleware:
             # Assert - One of the later responses should be rate limited
             assert any(r.status_code == 429 for r in responses[-5:]), "Rate limiting not applied"
     
-    def test_csrf_protection(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_csrf_protection(self, test_client, mock_jwt_service):
         """Test CSRF protection mechanisms."""
         # Act - Simulate a request without proper CSRF token
         # This test is conceptual - actual implementation depends on your CSRF approach
@@ -333,7 +351,8 @@ class TestAuthMiddleware:
         # sufficient protection against CSRF
         assert response.status_code != 403, "CSRF protection should not block valid API requests"
     
-    def test_logging_of_access_attempts(self, test_client, mock_jwt_service):
+    @pytest.mark.venv_only
+def test_logging_of_access_attempts(self, test_client, mock_jwt_service):
         """Test that access attempts are properly logged."""
         # Arrange
         mock_logger = MagicMock()

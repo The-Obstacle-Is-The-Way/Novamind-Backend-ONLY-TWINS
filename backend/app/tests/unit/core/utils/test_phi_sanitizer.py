@@ -12,10 +12,12 @@ from typing import Dict, Any, List
 from app.core.utils.phi_sanitizer import PHISanitizer, PHIDetector, PHIType, get_phi_secure_logger
 
 
+@pytest.mark.venv_only
 class TestPHIDetector:
     """Test suite for the PHI detector functionality."""
 
-    def test_contains_phi_true(self, sample_phi_text):
+    @pytest.mark.venv_only
+def test_contains_phi_true(self, sample_phi_text):
         """Test PHI detection in text containing PHI."""
         # Act
         result = PHIDetector.contains_phi(sample_phi_text)
@@ -23,7 +25,8 @@ class TestPHIDetector:
         # Assert
         assert result is True, "Should detect PHI in the sample text"
 
-    def test_contains_phi_false(self, sample_non_phi_text):
+    @pytest.mark.venv_only
+def test_contains_phi_false(self, sample_non_phi_text):
         """Test PHI detection in text without PHI."""
         # Act
         result = PHIDetector.contains_phi(sample_non_phi_text)
@@ -31,7 +34,8 @@ class TestPHIDetector:
         # Assert
         assert result is False, "Should not detect PHI in text without PHI"
 
-    def test_contains_phi_edge_cases(self):
+    @pytest.mark.venv_only
+def test_contains_phi_edge_cases(self):
         """Test PHI detection with edge cases."""
         # Test with empty string
         assert PHIDetector.contains_phi("") is False
@@ -42,7 +46,8 @@ class TestPHIDetector:
         # Test with non-string
         assert PHIDetector.contains_phi(123) is False
 
-    def test_detect_phi_types(self, sample_phi_text):
+    @pytest.mark.venv_only
+def test_detect_phi_types(self, sample_phi_text):
         """Test detection of specific PHI types."""
         # Act
         result = PHIDetector.detect_phi_types(sample_phi_text)
@@ -65,7 +70,8 @@ class TestPHIDetector:
         assert PHIType.ADDRESS in phi_types, "Should detect address"
         assert PHIType.NAME in phi_types, "Should detect name"
 
-    def test_detect_phi_types_edge_cases(self):
+    @pytest.mark.venv_only
+def test_detect_phi_types_edge_cases(self):
         """Test PHI type detection with edge cases."""
         # Test with empty string
         assert PHIDetector.detect_phi_types("") == []
@@ -77,10 +83,12 @@ class TestPHIDetector:
         assert PHIDetector.detect_phi_types(123) == []
 
 
+@pytest.mark.venv_only
 class TestPHISanitizer:
     """Test suite for the PHI sanitizer functionality."""
 
-    def test_sanitize_text(self, sample_phi_text):
+    @pytest.mark.venv_only
+def test_sanitize_text(self, sample_phi_text):
         """Test sanitization of text containing PHI."""
         # Act
         sanitized = PHISanitizer.sanitize_text(sample_phi_text)
@@ -99,7 +107,8 @@ class TestPHISanitizer:
         assert "[REDACTED:EMAIL]" in sanitized or "[REDACTED]" in sanitized
         assert "[REDACTED:PHONE]" in sanitized or "555-000-0000" in sanitized
 
-    def test_sanitize_text_no_phi(self, sample_non_phi_text):
+    @pytest.mark.venv_only
+def test_sanitize_text_no_phi(self, sample_non_phi_text):
         """Test sanitization of text without PHI."""
         # Act
         sanitized = PHISanitizer.sanitize_text(sample_non_phi_text)
@@ -107,7 +116,8 @@ class TestPHISanitizer:
         # Assert
         assert sanitized == sample_non_phi_text, "Text without PHI should remain unchanged"
 
-    def test_sanitize_structured_data(self, sample_patient_data):
+    @pytest.mark.venv_only
+def test_sanitize_structured_data(self, sample_patient_data):
         """Test sanitization of structured data containing PHI."""
         # Act
         sanitized = PHISanitizer.sanitize_structured_data(sample_patient_data)
@@ -122,7 +132,8 @@ class TestPHISanitizer:
         assert sanitized["medical_record_number"] != sample_patient_data["medical_record_number"], "MRN should be redacted"
         assert sanitized["insurance"]["policy_number"] != sample_patient_data["insurance"]["policy_number"], "Policy number should be redacted"
 
-    def test_sanitize_structured_data_nested(self):
+    @pytest.mark.venv_only
+def test_sanitize_structured_data_nested(self):
         """Test sanitization of deeply nested structured data."""
         # Arrange
         nested_data = {
@@ -158,10 +169,12 @@ class TestPHISanitizer:
         assert sanitized["non_phi_data"] == nested_data["non_phi_data"]
 
 
+@pytest.mark.venv_only
 class TestPHISecureLogger:
     """Test suite for the PHI secure logger functionality."""
 
-    def test_get_phi_secure_logger(self):
+    @pytest.mark.venv_only
+def test_get_phi_secure_logger(self):
         """Test creation of PHI-secure logger."""
         # Act
         logger = get_phi_secure_logger("test_logger")
@@ -175,7 +188,8 @@ class TestPHISecureLogger:
         assert hasattr(logger, "critical"), "Logger should have critical method"
         assert hasattr(logger, "exception"), "Logger should have exception method"
 
-    def test_sanitize_log_message(self):
+    @pytest.mark.venv_only
+def test_sanitize_log_message(self):
         """Test sanitization of log messages."""
         # Arrange
         message = "Patient {name} with SSN {ssn} needs attention"
@@ -190,7 +204,8 @@ class TestPHISecureLogger:
         assert "123-45-6789" not in sanitized, "SSN should be redacted"
         assert message != sanitized, "Sanitized message should differ from original"
 
-    def test_phi_secure_logger_methods(self, caplog):
+    @pytest.mark.venv_only
+def test_phi_secure_logger_methods(self, caplog):
         """Test PHI secure logger methods."""
         # Arrange
         logger = get_phi_secure_logger("test_phi_logger")

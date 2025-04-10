@@ -17,6 +17,7 @@ from unittest.mock import patch, MagicMock
 from scripts.run_hipaa_phi_audit import PHIAuditor
 
 
+@pytest.mark.db_required
 class TestPHIAudit:
     """Test the PHI audit functionality to ensure it correctly identifies PHI violations."""
 
@@ -99,7 +100,8 @@ def process_user_data(data):
                 
         return app_dir
 
-    def test_audit_detects_phi_in_code(self, mock_app_directory):
+    @pytest.mark.db_required
+def test_audit_detects_phi_in_code(self, mock_app_directory):
         """Test that the auditor correctly finds PHI in code."""
         auditor = PHIAuditor(app_dir=mock_app_directory)
         auditor.audit_code_for_phi()
@@ -116,7 +118,8 @@ def process_user_data(data):
                 
         assert phi_found, "Auditor failed to detect SSN in code"
 
-    def test_audit_detects_unsanitized_logging(self, mock_app_directory):
+    @pytest.mark.db_required
+def test_audit_detects_unsanitized_logging(self, mock_app_directory):
         """Test that the auditor flags unsanitized logging."""
         auditor = PHIAuditor(app_dir=mock_app_directory)
         auditor.audit_logging_sanitization()
@@ -125,7 +128,8 @@ def process_user_data(data):
         # But the auditor should detect where PHI might be logged
         assert "logging_issues" in auditor.findings
 
-    def test_audit_detects_unprotected_api_endpoints(self, mock_app_directory):
+    @pytest.mark.db_required
+def test_audit_detects_unprotected_api_endpoints(self, mock_app_directory):
         """Test that the auditor flags API endpoints without authentication."""
         auditor = PHIAuditor(app_dir=mock_app_directory)
         auditor.audit_api_endpoints()
@@ -142,7 +146,8 @@ def process_user_data(data):
                 
         assert endpoint_found, "Auditor failed to detect unauthenticated API endpoint"
 
-    def test_audit_detects_missing_security_config(self, mock_app_directory):
+    @pytest.mark.db_required
+def test_audit_detects_missing_security_config(self, mock_app_directory):
         """Test that the auditor flags missing security settings in config."""
         # Create the config directory if it doesn't exist
         config_dir = os.path.join(mock_app_directory, "core")
@@ -163,7 +168,8 @@ def process_user_data(data):
                 
         assert config_found, "Auditor failed to detect missing security settings in config"
 
-    def test_audit_report_generation(self, mock_app_directory, temp_dir):
+    @pytest.mark.db_required
+def test_audit_report_generation(self, mock_app_directory, temp_dir):
         """Test that the auditor generates a proper report."""
         auditor = PHIAuditor(app_dir=mock_app_directory)
         auditor.run_audit()
@@ -187,7 +193,8 @@ def process_user_data(data):
         assert "files_examined" in report_data["summary"]
         assert report_data["summary"]["files_examined"] > 0
 
-    def test_full_audit_execution(self, mock_app_directory):
+    @pytest.mark.db_required
+def test_full_audit_execution(self, mock_app_directory):
         """Test the full audit execution process."""
         auditor = PHIAuditor(app_dir=mock_app_directory)
         result = auditor.run_audit()
@@ -200,7 +207,8 @@ def process_user_data(data):
         assert "api_security" in auditor.findings
         assert "configuration_issues" in auditor.findings
         
-    def test_save_to_json_method(self, mock_app_directory, temp_dir):
+    @pytest.mark.db_required
+def test_save_to_json_method(self, mock_app_directory, temp_dir):
         """Test that the save_to_json method properly generates a JSON file."""
         auditor = PHIAuditor(app_dir=mock_app_directory)
         auditor.run_audit()
@@ -228,7 +236,8 @@ def process_user_data(data):
         assert "files_examined" in report_data["summary"]
         assert report_data["summary"]["files_examined"] > 0
 
-    def test_clean_app_directory_special_case(self, temp_dir):
+    @pytest.mark.db_required
+def test_clean_app_directory_special_case(self, temp_dir):
         """Test that the auditor passes when given a clean_app directory with test PHI."""
         # Create a special clean_app directory structure with test files containing PHI
         clean_app_dir = os.path.join(temp_dir, "clean_app")
@@ -238,10 +247,12 @@ def process_user_data(data):
         test_file_path = os.path.join(clean_app_dir, "domain", "test_patient.py")
         with open(test_file_path, "w") as f:
             f.write("""
+@pytest.mark.db_required
 class TestPatient:
     \"\"\"Test patient with PHI.\"\"\"
     
-    def test_patient_creation(self):
+    @pytest.mark.db_required
+def test_patient_creation(self):
         # This is test PHI and should be ignored in clean_app directories
         patient = Patient(
             name="John Doe",
@@ -259,7 +270,8 @@ class TestPatient:
         # even though it contains PHI
         assert result is True, "Audit should pass for clean_app directories regardless of PHI content"
         
-    def test_audit_with_clean_files(self, temp_dir):
+    @pytest.mark.db_required
+def test_audit_with_clean_files(self, temp_dir):
         """Test that the audit passes when given clean files (no PHI)."""
         # Create a directory structure with clean files
         clean_dir = os.path.join(temp_dir, "clean_app_no_phi")
@@ -310,7 +322,8 @@ class Sanitizer:
         assert auditor._count_files_examined() > 0
 
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_audit_with_clean_files(self, mock_logger, temp_dir):
+    @pytest.mark.db_required
+def test_audit_with_clean_files(self, mock_logger, temp_dir):
         """Test auditor with clean files (no PHI)."""
         # Create a clean app directory
         app_dir = os.path.join(temp_dir, "clean_app")
@@ -343,7 +356,8 @@ class Utility:
         mock_logger.info.assert_any_call("PHI audit complete. No issues found in 1 files.")
         
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_clean_app_directory_special_case(self, mock_logger, temp_dir):
+    @pytest.mark.db_required
+def test_clean_app_directory_special_case(self, mock_logger, temp_dir):
         """Test that clean_app directory passes audit even with intentional PHI for testing."""
         # Create a clean_app directory with test PHI content
         app_dir = os.path.join(temp_dir, "clean_app_test_data")
@@ -352,6 +366,7 @@ class Utility:
         # Create a file with PHI - this would normally cause a failure
         with open(os.path.join(app_dir, "domain", "test_data.py"), "w") as f:
             f.write("""
+@pytest.mark.db_required
 class TestData:
     \"\"\"Test data class with intentional PHI for testing.\"\"\"
     
@@ -375,7 +390,8 @@ class TestData:
         assert result is True, "Audit should pass for clean_app directories"
         
     @patch('scripts.run_hipaa_phi_audit.logger')
-    def test_ssn_pattern_detection(self, mock_logger, temp_dir):
+    @pytest.mark.db_required
+def test_ssn_pattern_detection(self, mock_logger, temp_dir):
         """Test specific SSN pattern detection capability of the auditor."""
         # Create a directory with a file containing an SSN pattern
         test_dir = os.path.join(temp_dir, "ssn_test")
@@ -422,7 +438,8 @@ def process_patient_data():
         # Verify logger was called
         assert mock_logger.info.called or mock_logger.warning.called, "Neither logger.info nor logger.warning was called"
 
-    def test_performance_with_large_codebase(self, temp_dir):
+    @pytest.mark.db_required
+def test_performance_with_large_codebase(self, temp_dir):
         """Test the performance of the auditor with a large number of files."""
         # Create a large mock codebase
         app_dir = os.path.join(temp_dir, "large_app")

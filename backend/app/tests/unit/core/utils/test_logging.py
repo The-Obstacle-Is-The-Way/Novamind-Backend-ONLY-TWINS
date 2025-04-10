@@ -12,10 +12,12 @@ from unittest.mock import patch, MagicMock
 from app.core.utils.logging import HIPAACompliantLogger, PHIRedactor, log_function_call
 
 
+@pytest.mark.venv_only
 class TestPHIRedactor:
     """Tests for the PHI redaction functionality."""
     
-    def test_redact_email(self):
+    @pytest.mark.venv_only
+def test_redact_email(self):
         """Test redaction of email addresses."""
         redactor = PHIRedactor()
         text = "Please contact john.doe@example.com for more information."
@@ -23,7 +25,8 @@ class TestPHIRedactor:
         assert "john.doe@example.com" not in redacted
         assert "[REDACTED:email]" in redacted
     
-    def test_redact_ssn(self):
+    @pytest.mark.venv_only
+def test_redact_ssn(self):
         """Test redaction of Social Security Numbers."""
         redactor = PHIRedactor()
         text = "Patient SSN: 123-45-6789"
@@ -31,7 +34,8 @@ class TestPHIRedactor:
         assert "123-45-6789" not in redacted
         assert "[REDACTED:ssn]" in redacted
     
-    def test_redact_phone(self):
+    @pytest.mark.venv_only
+def test_redact_phone(self):
         """Test redaction of phone numbers."""
         redactor = PHIRedactor()
         text = "Call me at (555) 123-4567"
@@ -39,7 +43,8 @@ class TestPHIRedactor:
         assert "(555) 123-4567" not in redacted
         assert "[REDACTED:phone]" in redacted
     
-    def test_redact_multiple_phi(self):
+    @pytest.mark.venv_only
+def test_redact_multiple_phi(self):
         """Test redaction of multiple PHI elements in a single text."""
         redactor = PHIRedactor()
         text = "Patient John Doe (SSN: 123-45-6789) can be reached at john.doe@example.com or (555) 123-4567."
@@ -51,7 +56,8 @@ class TestPHIRedactor:
         assert "[REDACTED:email]" in redacted
         assert "[REDACTED:phone]" in redacted
     
-    def test_redact_with_custom_patterns(self):
+    @pytest.mark.venv_only
+def test_redact_with_custom_patterns(self):
         """Test redaction with custom patterns."""
         custom_patterns = {
             'patient_id': r'P\d{6}',
@@ -66,6 +72,7 @@ class TestPHIRedactor:
         assert "[REDACTED:custom_code]" in redacted
 
 
+@pytest.mark.venv_only
 class TestHIPAACompliantLogger:
     """Tests for the HIPAA-compliant logger."""
     
@@ -81,7 +88,8 @@ class TestHIPAACompliantLogger:
         audit_file = tmp_path / "audit.log"
         return str(audit_file)
     
-    def test_logger_initialization(self, temp_log_file):
+    @pytest.mark.venv_only
+def test_logger_initialization(self, temp_log_file):
         """Test logger initialization."""
         logger = HIPAACompliantLogger(
             name="test_logger",
@@ -99,7 +107,8 @@ class TestHIPAACompliantLogger:
         assert isinstance(logger.logger, logging.Logger)
         assert isinstance(logger.redactor, PHIRedactor)
     
-    def test_logging_with_phi_redaction(self, temp_log_file):
+    @pytest.mark.venv_only
+def test_logging_with_phi_redaction(self, temp_log_file):
         """Test logging with PHI redaction."""
         with patch('app.core.utils.logging.settings') as mock_settings:
             mock_settings.security.ENABLE_PHI_REDACTION = True
@@ -122,7 +131,8 @@ class TestHIPAACompliantLogger:
                 assert "john.doe@example.com" not in log_content
                 assert "[REDACTED:email]" in log_content
     
-    def test_audit_logging(self, temp_audit_file):
+    @pytest.mark.venv_only
+def test_audit_logging(self, temp_audit_file):
         """Test audit logging functionality."""
         with patch('app.core.utils.logging.settings') as mock_settings:
             mock_settings.security.ENABLE_PHI_REDACTION = True
@@ -156,12 +166,14 @@ class TestHIPAACompliantLogger:
                 assert audit_data["details"]["reason"] == "clinical review"
                 assert audit_data["status"] == "success"
     
-    def test_log_function_call_decorator(self):
+    @pytest.mark.venv_only
+def test_log_function_call_decorator(self):
         """Test the log_function_call decorator."""
         mock_logger = MagicMock(spec=HIPAACompliantLogger)
         
         @log_function_call(logger=mock_logger)
-        def test_function(a, b):
+        @pytest.mark.venv_only
+def test_function(a, b):
             return a + b
         
         result = test_function(1, 2)
@@ -172,7 +184,8 @@ class TestHIPAACompliantLogger:
         # Second call contains execution time which we can't predict exactly
         assert "test_function completed in" in mock_logger.debug.call_args_list[1][0][0]
     
-    def test_log_function_call_with_exception(self):
+    @pytest.mark.venv_only
+def test_log_function_call_with_exception(self):
         """Test the log_function_call decorator with exception."""
         mock_logger = MagicMock(spec=HIPAACompliantLogger)
         

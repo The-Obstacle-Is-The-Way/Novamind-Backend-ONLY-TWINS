@@ -64,11 +64,13 @@ def use_case(mock_analytics_repository, mock_cache_service):
         return use_case
 
 
+@pytest.mark.db_required
 class TestProcessAnalyticsEventUseCase:
     """Test suite for the ProcessAnalyticsEventUseCase."""
     
     @pytest.mark.asyncio
-    async def test_execute_with_all_parameters(self, use_case, mock_analytics_repository):
+    async @pytest.mark.db_required
+def test_execute_with_all_parameters(self, use_case, mock_analytics_repository):
         """
         Test processing an event with all parameters provided.
         """
@@ -106,7 +108,8 @@ class TestProcessAnalyticsEventUseCase:
         )
     
     @pytest.mark.asyncio
-    async def test_execute_with_minimal_parameters(self, use_case):
+    async @pytest.mark.db_required
+def test_execute_with_minimal_parameters(self, use_case):
         """
         Test processing an event with only required parameters.
         """
@@ -135,7 +138,8 @@ class TestProcessAnalyticsEventUseCase:
         )
     
     @pytest.mark.asyncio
-    async def test_real_time_counter_updates(self, use_case, mock_cache_service):
+    async @pytest.mark.db_required
+def test_real_time_counter_updates(self, use_case, mock_cache_service):
         """
         Test that real-time counters are updated in cache.
         """
@@ -156,7 +160,8 @@ class TestProcessAnalyticsEventUseCase:
         mock_cache_service.increment.assert_any_call(f"analytics:user:{user_id}:{event_type}")
     
     @pytest.mark.asyncio
-    async def test_phi_not_logged(self, use_case):
+    async @pytest.mark.db_required
+def test_phi_not_logged(self, use_case):
         """
         Test that PHI is not included in logs even if present in event data.
         """
@@ -190,7 +195,8 @@ class TestProcessAnalyticsEventUseCase:
             assert "12345678" not in str(args)
     
     @pytest.mark.asyncio
-    async def test_repository_error_handling(self, use_case, mock_analytics_repository):
+    async @pytest.mark.db_required
+def test_repository_error_handling(self, use_case, mock_analytics_repository):
         """
         Test proper error handling when repository operations fail.
         """

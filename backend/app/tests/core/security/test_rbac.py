@@ -10,6 +10,7 @@ import unittest
 from app.core.security.rbac import RoleBasedAccessControl
 
 
+@pytest.mark.venv_only
 class TestRoleBasedAccessControl(unittest.TestCase):
     """Test suite for Role-Based Access Control functionality."""
     
@@ -36,7 +37,8 @@ class TestRoleBasedAccessControl(unittest.TestCase):
         self.rbac.add_role_permission('admin', 'update:all_data')
         self.rbac.add_role_permission('admin', 'delete:all_data')
     
-    def test_add_role(self):
+    @pytest.mark.venv_only
+def test_add_role(self):
         """Test adding a new role."""
         # Add new role
         self.rbac.add_role('researcher')
@@ -44,7 +46,8 @@ class TestRoleBasedAccessControl(unittest.TestCase):
         # Verify it exists with empty permissions
         self.assertEqual(self.rbac.get_role_permissions('researcher'), set())
     
-    def test_add_role_permission(self):
+    @pytest.mark.venv_only
+def test_add_role_permission(self):
         """Test adding a permission to a role."""
         # Add new permission to existing role
         self.rbac.add_role_permission('user', 'delete:own_data')
@@ -57,7 +60,8 @@ class TestRoleBasedAccessControl(unittest.TestCase):
         self.assertIn('read:own_data', user_permissions)
         self.assertIn('update:own_data', user_permissions)
     
-    def test_remove_role_permission(self):
+    @pytest.mark.venv_only
+def test_remove_role_permission(self):
         """Test removing a permission from a role."""
         # Remove existing permission
         self.rbac.remove_role_permission('clinician', 'update:patient_data')
@@ -70,7 +74,8 @@ class TestRoleBasedAccessControl(unittest.TestCase):
         self.assertIn('read:patient_data', clinician_permissions)
         self.assertIn('read:clinical_notes', clinician_permissions)
     
-    def test_has_permission_single_role(self):
+    @pytest.mark.venv_only
+def test_has_permission_single_role(self):
         """Test permission check with a single role."""
         # User role permissions
         self.assertTrue(self.rbac.has_permission(['user'], 'read:own_data'))
@@ -85,7 +90,8 @@ class TestRoleBasedAccessControl(unittest.TestCase):
         self.assertTrue(self.rbac.has_permission(['admin'], 'delete:all_data'))
         self.assertFalse(self.rbac.has_permission(['admin'], 'read:clinical_notes'))
     
-    def test_has_permission_multiple_roles(self):
+    @pytest.mark.venv_only
+def test_has_permission_multiple_roles(self):
         """Test permission check with multiple roles."""
         # User + Clinician roles
         roles = ['user', 'clinician']
@@ -99,15 +105,18 @@ class TestRoleBasedAccessControl(unittest.TestCase):
         self.assertTrue(self.rbac.has_permission(roles, 'delete:all_data'))     # from admin
         self.assertFalse(self.rbac.has_permission(roles, 'read:clinical_notes')) # not in either
     
-    def test_has_permission_nonexistent_role(self):
+    @pytest.mark.venv_only
+def test_has_permission_nonexistent_role(self):
         """Test permission check with non-existent role."""
         self.assertFalse(self.rbac.has_permission(['nonexistent'], 'read:own_data'))
     
-    def test_has_permission_nonexistent_permission(self):
+    @pytest.mark.venv_only
+def test_has_permission_nonexistent_permission(self):
         """Test checking for a non-existent permission."""
         self.assertFalse(self.rbac.has_permission(['user'], 'nonexistent:permission'))
     
-    def test_get_role_permissions(self):
+    @pytest.mark.venv_only
+def test_get_role_permissions(self):
         """Test getting all permissions for a role."""
         # Check admin permissions
         admin_permissions = self.rbac.get_role_permissions('admin')
@@ -117,7 +126,8 @@ class TestRoleBasedAccessControl(unittest.TestCase):
         # Check nonexistent role
         self.assertEqual(self.rbac.get_role_permissions('nonexistent'), set())
     
-    def test_get_roles_with_permission(self):
+    @pytest.mark.venv_only
+def test_get_roles_with_permission(self):
         """Test getting all roles with a specific permission."""
         # Multiple roles with read permissions
         self.rbac.add_role_permission('researcher', 'read:patient_data')

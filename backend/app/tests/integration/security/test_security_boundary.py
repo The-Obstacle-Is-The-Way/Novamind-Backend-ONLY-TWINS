@@ -37,10 +37,12 @@ def security_components():
     return jwt_handler, password_handler, role_manager
 
 
+@pytest.mark.db_required
 class TestSecurityBoundary:
     """Test suite for integrated security boundaries."""
     
-    def test_complete_auth_flow(self, security_components):
+    @pytest.mark.db_required
+def test_complete_auth_flow(self, security_components):
         """Test a complete authentication flow with all security components."""
         # Unpack components
         jwt_handler, password_handler, role_manager = security_components
@@ -80,7 +82,8 @@ class TestSecurityBoundary:
         # Patient should not be able to view all patients
         assert not role_manager.has_permission(token_data.role, Permission.VIEW_ASSIGNED_PATIENTS)
     
-    def test_provider_access_scope(self, security_components):
+    @pytest.mark.db_required
+def test_provider_access_scope(self, security_components):
         """Test provider access scope with security components."""
         # Unpack components
         jwt_handler, password_handler, role_manager = security_components
@@ -127,7 +130,8 @@ class TestSecurityBoundary:
             patient_record_id
         )
     
-    def test_token_expiration_security(self, security_components):
+    @pytest.mark.db_required
+def test_token_expiration_security(self, security_components):
         """Test token expiration enforces security boundary."""
         # Unpack components
         jwt_handler, _, _ = security_components
@@ -152,7 +156,8 @@ class TestSecurityBoundary:
         with pytest.raises(Exception):
             jwt_handler.verify_token(token)
     
-    def test_password_strength_enforcement(self, security_components):
+    @pytest.mark.db_required
+def test_password_strength_enforcement(self, security_components):
         """Test password strength enforcement."""
         # Unpack components
         _, password_handler, _ = security_components
@@ -177,7 +182,8 @@ class TestSecurityBoundary:
             assert is_valid is False
             assert error is not None
     
-    def test_admin_special_privileges(self, security_components):
+    @pytest.mark.db_required
+def test_admin_special_privileges(self, security_components):
         """Test admin special privileges that override normal permissions."""
         # Unpack components
         jwt_handler, _, role_manager = security_components
