@@ -13,304 +13,517 @@ import traceback
 from datetime import datetime
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union, cast
+import re
+import uuid
+import json
 
 from app.core.constants import LogLevel
 
 # Try to import the PHI detection service if available
 try:
-    from app.core.services.ml.phi_detection import MockPHIDetection
-    HAS_PHI_DETECTION = True
+    from app.core.services.ml.mock import MockPHIDetection
+    PHI_DETECTION_AVAILABLE = True
 except ImportError:
-    HAS_PHI_DETECTION = False
-
-# Type variables for function signatures
-F = TypeVar('F', bound=Callable[..., Any])
+    PHI_DETECTION_AVAILABLE = False
 
 
-def get_logger(name: str) -> logging.Logger:
+# Configure the root logger
+def configure_logging(
+    level: Union[int, str] = logging.INFO,
+    log_format: Optional[str] = None,
+    log_file: Optional[str] = None,
+) -> None:
     """
-    Get a configured logger instance for the specified name.
-    
-    This function creates and returns a logger with the specified name,
-    configured according to the application's logging settings.
-    HIPAA-compliant sanitization is automatically applied.
+    Configure application logging.
     
     Args:
-        name: Logger name, typically __name__ of the calling module
-        
-    Returns:
-        Configured logger instance
+        level: Logging level
+        log_format: Logging format
+        log_file: Path to log file
     """
-    logger = logging.getLogger(name)
+    if isinstance(level, str):
+        level = getattr(logging, level.upper(), logging.INFO)
     
-    # Only configure if it hasn't been done yet
-    if not logger.handlers:
-        # Get log level from environment or default to INFO
-        log_level_str = os.getenv("LOG_LEVEL", "INFO").upper()
-        log_level = getattr(logging, log_level_str, logging.INFO)
-        
-        # Set level
-        logger.setLevel(log_level)
-        
-        # Create console handler
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(log_level)
-        
-        # Create formatter
-        formatter = logging.Formatter(
-            '[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        console_handler.setFormatter(formatter)
-        
-        # Add handler to logger
-        logger.addHandler(console_handler)
-        
-        # Don't propagate to root logger
-        logger.propagate = False
-        
-    return logger
+    if not log_format:
+        log_format = "[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s"
+    
+    handlers = [logging.StreamHandler(sys.stdout)]
+    if log_file:
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        handlers.append(logging.FileHandler(log_file))
+    
+    logging.basicConfig(
+        level=level,
+        format=log_format,
+        handlers=handlers,
+    )
 
 
-def log_execution_time(
-    logger: Optional[logging.Logger] = None, 
-    level: LogLevel = LogLevel.DEBUG
-) -> Callable[[F], F]:
+class PHIRedactor:
     """
-    Decorator to log the execution time of a function.
+    Class for redacting Protected Health Information (PHI) from text.
     
-    Args:
-        logger: Logger to use, if None a new logger is created using function's module name
-        level: Log level to use
-        
-    Returns:
-        Decorator function
+    This class uses pattern matching and/or ML-based PHI detection to find and
+    redact sensitive information in text to comply with HIPAA regulations.
     """
-    def decorator(func: F) -> F:
-        @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            # Get or create logger
-            nonlocal logger
-            if logger is None:
-                logger = get_logger(func.__module__)
-            
-            # Record start time
-            start_time = datetime.now()
-            
-            # Call the decorated function
+    
+    # Common PHI patterns
+    DEFAULT_PHI_PATTERNS = {
+        # Names (simplified pattern - actual implementation would be more robust)
+        "NAME": r"\b[A-Z][a-z]+ [A-Z][a-z]+\b",
+        
+        # Dates of birth or any dates (matches common date formats)
+        "DATE": r"\b\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b|\b\d{1,2}\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s\d{2,4}\b",
+        
+        # SSN (Social Security Number)
+        "SSN": r"\b\d{3}[-]\d{2}[-]\d{4}\b",
+        
+        # MRN (Medical Record Number) - various formats
+        "MRN": r"\b(?:MRN|Medical Record):?\s*[A-Za-z0-9-]+\b",
+        
+        # Phone numbers
+        "PHONE": r"\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b",
+        
+        # Email addresses
+        "EMAIL": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+        
+        # Addresses
+        "ADDRESS": r"\b\d+\s[A-Za-z0-9\s,]+\b(?:Road|Rd|Street|St|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Court|Ct|Plaza|Plz|Place|Pl)\b",
+        
+        # ZIP codes
+        "ZIP": r"\b\d{5}(?:-\d{4})?\b",
+    }
+    
+    def __init__(self, 
+                 phi_patterns: Optional[Dict[str, str]] = None, 
+                 use_ml_detection: bool = True,
+                 default_replacement: str = "[REDACTED]"):
+        """
+        Initialize PHI redactor.
+        
+        Args:
+            phi_patterns: Dictionary of PHI type patterns to use for regex-based redaction
+            use_ml_detection: Whether to use ML-based PHI detection if available
+            default_replacement: Default text to replace PHI with
+        """
+        self.patterns = phi_patterns or self.DEFAULT_PHI_PATTERNS
+        self.use_ml_detection = use_ml_detection and PHI_DETECTION_AVAILABLE
+        self.default_replacement = default_replacement
+        
+        # Compile patterns for efficiency
+        self.compiled_patterns = {
+            phi_type: re.compile(pattern) 
+            for phi_type, pattern in self.patterns.items()
+        }
+        
+        # Initialize ML detection service if available and requested
+        self.phi_detection_service = None
+        if self.use_ml_detection and PHI_DETECTION_AVAILABLE:
             try:
-                result = func(*args, **kwargs)
-                # Record end time and calculate duration
-                end_time = datetime.now()
-                duration_ms = (end_time - start_time).total_seconds() * 1000
-                
-                # Log execution time
-                logger.log(
-                    level.value,
-                    f"Function '{func.__name__}' executed in {duration_ms:.2f} ms"
+                self.phi_detection_service = MockPHIDetection()
+                self.phi_detection_service.initialize({})
+            except Exception:
+                self.use_ml_detection = False
+                logging.warning("Failed to initialize PHI detection service. Falling back to regex only.")
+        
+    def redact(self, 
+              text: str, 
+              replacement: Optional[str] = None,
+              phi_types: Optional[List[str]] = None) -> str:
+        """
+        Redact PHI from text.
+        
+        Args:
+            text: Text to redact
+            replacement: Text to replace PHI with (defaults to class default)
+            phi_types: Specific PHI types to redact (if None, redact all)
+            
+        Returns:
+            Redacted text
+        """
+        if not text:
+            return text
+            
+        replacement = replacement or self.default_replacement
+        
+        # Track the redactions we're going to make
+        redactions = []
+        
+        # First use ML-based detection if available and enabled
+        if self.use_ml_detection and self.phi_detection_service:
+            try:
+                result = self.phi_detection_service.redact_phi(
+                    text, 
+                    replacement=replacement
                 )
-                
-                return result
+                if result and "redacted_text" in result:
+                    return result["redacted_text"]
             except Exception as e:
-                # Log exception with sanitized PHI
-                end_time = datetime.now()
-                duration_ms = (end_time - start_time).total_seconds() * 1000
-                
-                logger.exception(
-                    f"Exception in '{func.__name__}' after {duration_ms:.2f} ms: {str(e)}"
-                )
-                raise  # Re-raise the exception
-                
-        return cast(F, wrapper)
-    
-    return decorator
-
-
-def log_method_calls(
-    logger: Optional[logging.Logger] = None,
-    level: LogLevel = LogLevel.DEBUG,
-    log_args: bool = True,
-    log_results: bool = True
-) -> Callable[[Type], Type]:
-    """
-    Class decorator to log method calls.
-    
-    Args:
-        logger: Logger to use, if None a logger is created for each method
-        level: Log level to use
-        log_args: Whether to log method arguments
-        log_results: Whether to log method return values
+                logging.warning(f"ML-based PHI redaction failed: {str(e)}. Falling back to regex.")
         
-    Returns:
-        Decorator function
-    """
-    def decorator(cls: Type) -> Type:
-        # Get class methods (excluding magic methods)
-        for name, method in cls.__dict__.items():
-            if callable(method) and not name.startswith('__'):
-                setattr(cls, name, _create_logged_method(
-                    method, logger, level, log_args, log_results
-                ))
-        return cls
-    
-    return decorator
-
-
-def _create_logged_method(
-    method: Callable,
-    logger: Optional[logging.Logger],
-    level: LogLevel,
-    log_args: bool,
-    log_results: bool
-) -> Callable:
-    """
-    Create a logged version of a method.
-    
-    Args:
-        method: Method to wrap with logging
-        logger: Logger to use
-        level: Log level to use
-        log_args: Whether to log method arguments
-        log_results: Whether to log method return values
+        # Otherwise fall back to regex-based redaction
+        redacted_text = text
         
-    Returns:
-        Wrapped method with logging
-    """
-    @wraps(method)
-    def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
-        # Get or create logger
-        method_logger = logger
-        if method_logger is None:
-            method_logger = get_logger(f"{self.__class__.__module__}.{self.__class__.__name__}")
-        
-        # Build method call representation
-        method_call = f"{self.__class__.__name__}.{method.__name__}"
-        if log_args and (args or kwargs):
-            args_str = ", ".join([str(arg) for arg in args])
-            kwargs_str = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
-            args_kwargs = [s for s in [args_str, kwargs_str] if s]
-            method_call += f"({', '.join(args_kwargs)})"
-        
-        # Log method entry
-        method_logger.log(level.value, f"Calling {method_call}")
-        
-        # Execute method
-        try:
-            result = method(self, *args, **kwargs)
+        # Filter patterns if specific types are requested
+        patterns_to_use = self.compiled_patterns
+        if phi_types:
+            patterns_to_use = {
+                phi_type: pattern 
+                for phi_type, pattern in self.compiled_patterns.items()
+                if phi_type in phi_types
+            }
             
-            # Log successful completion
-            if log_results:
-                method_logger.log(
-                    level.value,
-                    f"{method_call} returned: {str(result)}"
-                )
-            else:
-                method_logger.log(
-                    level.value,
-                    f"{method_call} completed successfully"
-                )
-                
-            return result
+        # Apply each pattern
+        for phi_type, pattern in patterns_to_use.items():
+            redacted_text = pattern.sub(replacement, redacted_text)
             
-        except Exception as e:
-            # Log exception
-            tb = traceback.format_exc()
-            method_logger.error(
-                f"Exception in {method_call}: {str(e)}\n{tb}"
+        return redacted_text
+        
+    def detect(self, 
+              text: str, 
+              phi_types: Optional[List[str]] = None,
+              min_confidence: float = 0.8) -> List[Dict[str, Any]]:
+        """
+        Detect PHI in text.
+        
+        Args:
+            text: Text to analyze
+            phi_types: Specific PHI types to detect (if None, detect all)
+            min_confidence: Minimum confidence level for ML-based detection
+            
+        Returns:
+            List of detected PHI instances
+        """
+        if not text:
+            return []
+            
+        # First use ML-based detection if available and enabled
+        if self.use_ml_detection and self.phi_detection_service:
+            try:
+                result = self.phi_detection_service.detect_phi(text)
+                if result and "phi_instances" in result:
+                    return [
+                        {
+                            "type": phi["type"],
+                            "text": phi["text"],
+                            "position": phi["position"],
+                            "confidence": phi.get("confidence", 1.0)
+                        }
+                        for phi in result["phi_instances"]
+                        if (not phi_types or phi["type"] in phi_types) and
+                           phi.get("confidence", 1.0) >= min_confidence
+                    ]
+            except Exception as e:
+                logging.warning(f"ML-based PHI detection failed: {str(e)}. Falling back to regex.")
+        
+        # Otherwise fall back to regex-based detection
+        detected_phi = []
+        
+        # Filter patterns if specific types are requested
+        patterns_to_use = self.patterns
+        if phi_types:
+            patterns_to_use = {
+                phi_type: pattern 
+                for phi_type, pattern in self.patterns.items()
+                if phi_type in phi_types
+            }
+            
+        # Apply each pattern
+        for phi_type, pattern in patterns_to_use.items():
+            for match in re.finditer(self.compiled_patterns[phi_type], text):
+                detected_phi.append({
+                    "type": phi_type,
+                    "text": match.group(0),
+                    "position": {
+                        "start": match.start(),
+                        "end": match.end()
+                    },
+                    "confidence": 1.0  # Regex always has 100% confidence
+                })
+            
+        return detected_phi
+
+
+class AuditLogger:
+    """
+    Audit logger for HIPAA-compliant audit trail.
+    
+    This class provides methods for logging audit events related to PHI access,
+    modifications, and other security-relevant actions.
+    """
+    
+    def __init__(self, logger_name: str = "audit", level: int = logging.INFO):
+        """
+        Initialize audit logger.
+        
+        Args:
+            logger_name: Name of the logger
+            level: Logging level
+        """
+        self.logger = logging.getLogger(logger_name)
+        self.logger.setLevel(level)
+        
+        # Add special handler for audit logs if not already present
+        if not any(isinstance(h, logging.FileHandler) for h in self.logger.handlers):
+            audit_file = os.environ.get("AUDIT_LOG_FILE", "audit.log")
+            
+            # Create directory if it doesn't exist
+            audit_dir = os.path.dirname(audit_file)
+            if audit_dir and not os.path.exists(audit_dir):
+                os.makedirs(audit_dir, exist_ok=True)
+                
+            handler = logging.FileHandler(audit_file)
+            formatter = logging.Formatter(
+                "[%(asctime)s] [%(levelname)s] [%(name)s] [%(trace_id)s] - %(message)s"
             )
-            raise  # Re-raise the exception
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+    
+    def _create_audit_record(self, 
+                           user_id: str, 
+                           action: str, 
+                           resource_type: str,
+                           resource_id: Optional[str] = None,
+                           details: Optional[Dict[str, Any]] = None,
+                           result: str = "success") -> Dict[str, Any]:
+        """
+        Create an audit record.
+        
+        Args:
+            user_id: ID of the user performing the action
+            action: Action being performed (e.g., "read", "write", "delete")
+            resource_type: Type of resource being accessed (e.g., "patient", "note")
+            resource_id: ID of the resource being accessed
+            details: Additional details about the action
+            result: Result of the action ("success" or "failure")
             
-    return wrapper
+        Returns:
+            Audit record as a dictionary
+        """
+        trace_id = str(uuid.uuid4())
+        
+        record = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "trace_id": trace_id,
+            "user_id": user_id,
+            "action": action,
+            "resource_type": resource_type,
+            "result": result
+        }
+        
+        if resource_id:
+            record["resource_id"] = resource_id
+            
+        if details:
+            # Make sure we don't log any PHI
+            phi_redactor = PHIRedactor()
+            safe_details = {}
+            for key, value in details.items():
+                if isinstance(value, str):
+                    safe_details[key] = phi_redactor.redact(value)
+                else:
+                    safe_details[key] = value
+            record["details"] = safe_details
+            
+        return record, trace_id
+    
+    def log_access(self, 
+                  user_id: str, 
+                  resource_type: str, 
+                  resource_id: Optional[str] = None,
+                  details: Optional[Dict[str, Any]] = None,
+                  result: str = "success") -> None:
+        """
+        Log access to PHI.
+        
+        Args:
+            user_id: ID of the user accessing the data
+            resource_type: Type of resource being accessed
+            resource_id: ID of the resource being accessed
+            details: Additional details about the access
+            result: Result of the access ("success" or "failure")
+        """
+        record, trace_id = self._create_audit_record(
+            user_id=user_id,
+            action="access",
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=details,
+            result=result
+        )
+        
+        self.logger.info(
+            f"User {user_id} accessed {resource_type} {resource_id or ''} - {result}",
+            extra={"trace_id": trace_id}
+        )
+        
+        # Also log the structured record
+        self.logger.debug(json.dumps(record), extra={"trace_id": trace_id})
+    
+    def log_modification(self, 
+                        user_id: str, 
+                        resource_type: str, 
+                        resource_id: Optional[str] = None,
+                        details: Optional[Dict[str, Any]] = None,
+                        result: str = "success") -> None:
+        """
+        Log modification of PHI.
+        
+        Args:
+            user_id: ID of the user modifying the data
+            resource_type: Type of resource being modified
+            resource_id: ID of the resource being modified
+            details: Additional details about the modification
+            result: Result of the modification ("success" or "failure")
+        """
+        record, trace_id = self._create_audit_record(
+            user_id=user_id,
+            action="modify",
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=details,
+            result=result
+        )
+        
+        self.logger.info(
+            f"User {user_id} modified {resource_type} {resource_id or ''} - {result}",
+            extra={"trace_id": trace_id}
+        )
+        
+        # Also log the structured record
+        self.logger.debug(json.dumps(record), extra={"trace_id": trace_id})
+    
+    def log_deletion(self, 
+                    user_id: str, 
+                    resource_type: str, 
+                    resource_id: Optional[str] = None,
+                    details: Optional[Dict[str, Any]] = None,
+                    result: str = "success") -> None:
+        """
+        Log deletion of PHI.
+        
+        Args:
+            user_id: ID of the user deleting the data
+            resource_type: Type of resource being deleted
+            resource_id: ID of the resource being deleted
+            details: Additional details about the deletion
+            result: Result of the deletion ("success" or "failure")
+        """
+        record, trace_id = self._create_audit_record(
+            user_id=user_id,
+            action="delete",
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=details,
+            result=result
+        )
+        
+        self.logger.info(
+            f"User {user_id} deleted {resource_type} {resource_id or ''} - {result}",
+            extra={"trace_id": trace_id}
+        )
+        
+        # Also log the structured record
+        self.logger.debug(json.dumps(record), extra={"trace_id": trace_id})
+    
+    def log_export(self, 
+                  user_id: str, 
+                  resource_type: str, 
+                  resource_id: Optional[str] = None,
+                  details: Optional[Dict[str, Any]] = None,
+                  result: str = "success") -> None:
+        """
+        Log export of PHI.
+        
+        Args:
+            user_id: ID of the user exporting the data
+            resource_type: Type of resource being exported
+            resource_id: ID of the resource being exported
+            details: Additional details about the export
+            result: Result of the export ("success" or "failure")
+        """
+        record, trace_id = self._create_audit_record(
+            user_id=user_id,
+            action="export",
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=details,
+            result=result
+        )
+        
+        self.logger.info(
+            f"User {user_id} exported {resource_type} {resource_id or ''} - {result}",
+            extra={"trace_id": trace_id}
+        )
+        
+        # Also log the structured record
+        self.logger.debug(json.dumps(record), extra={"trace_id": trace_id})
+    
+    def log_authentication(self, 
+                          user_id: str, 
+                          details: Optional[Dict[str, Any]] = None,
+                          result: str = "success") -> None:
+        """
+        Log authentication event.
+        
+        Args:
+            user_id: ID of the user attempting authentication
+            details: Additional details about the authentication
+            result: Result of the authentication ("success" or "failure")
+        """
+        record, trace_id = self._create_audit_record(
+            user_id=user_id,
+            action="authenticate",
+            resource_type="authentication",
+            details=details,
+            result=result
+        )
+        
+        self.logger.info(
+            f"User {user_id} authentication - {result}",
+            extra={"trace_id": trace_id}
+        )
+        
+        # Also log the structured record
+        self.logger.debug(json.dumps(record), extra={"trace_id": trace_id})
 
 
 class HIPAACompliantLogger:
     """
-    HIPAA-compliant logger that sanitizes PHI from logs.
+    Logger wrapper that ensures HIPAA compliance by redacting PHI.
     
-    This logger wraps a standard Python logger and automatically sanitizes
-    any PHI (Protected Health Information) from log messages before they
-    are recorded, ensuring HIPAA compliance.
+    This class wraps a standard Python logger and automatically redacts
+    any PHI in log messages to ensure HIPAA compliance.
     """
     
-    def __init__(
-        self, 
-        name: str, 
-        level: Union[int, str] = logging.INFO,
-        phi_detection_service = None
-    ):
+    def __init__(self, name: str, level: Union[int, str] = logging.INFO):
         """
-        Initialize a HIPAA-compliant logger.
+        Initialize HIPAA-compliant logger.
         
         Args:
-            name: Logger name, typically __name__ of the calling module
-            level: Log level to use
-            phi_detection_service: Optional PHI detection service to use, if None a mock service is created
+            name: Logger name
+            level: Logging level
         """
-        self.logger = get_logger(name)
-        
-        # Set log level
         if isinstance(level, str):
             level = getattr(logging, level.upper(), logging.INFO)
+            
+        self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
-        
-        # Initialize PHI detection
-        if phi_detection_service is None and HAS_PHI_DETECTION:
-            # Use mock service if available and none provided
-            self.phi_detection = MockPHIDetection()
-        else:
-            # Use provided service or create a simple fallback
-            self.phi_detection = phi_detection_service or self._create_fallback_detector()
+        self.phi_redactor = PHIRedactor()
     
-    def _create_fallback_detector(self):
-        """Create a simple fallback PHI detector when the real one is not available."""
-        class SimplePHIDetector:
-            def redact_phi(self, text: str) -> str:
-                """Simple regex-based sanitization as fallback."""
-                import re
-                # Simple patterns for common PHI
-                patterns = [
-                    # Names (Mr./Mrs./Dr. followed by capitalized words)
-                    r'\b(Mr\.|Mrs\.|Dr\.|Ms\.) [A-Z][a-z]+\b',
-                    # SSN pattern
-                    r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
-                    # Phone numbers
-                    r'\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b',
-                    # Email addresses
-                    r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
-                    # Dates (various formats)
-                    r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
-                    # Medical record numbers (assumes MRN: prefix)
-                    r'MRN:?\s*\d+',
-                    # Ages over 89
-                    r'\b(9\d|1[0-9]\d+)\s+years?\s+old\b',
-                ]
-                
-                sanitized_text = text
-                for pattern in patterns:
-                    sanitized_text = re.sub(pattern, "[REDACTED]", sanitized_text)
-                return sanitized_text
-                
-            def detect_phi(self, text: str) -> List[Dict[str, Any]]:
-                """Simple PHI detection as fallback."""
-                return []  # No detailed detection in fallback
-                
-        return SimplePHIDetector()
-    
-    def _sanitize_phi(self, message: Any) -> str:
+    def _sanitize_phi(self, message: Any) -> Any:
         """
-        Sanitize PHI from a log message.
+        Sanitize PHI from log message.
         
         Args:
-            message: Message to sanitize
+            message: Log message to sanitize
             
         Returns:
             Sanitized message
         """
-        if not isinstance(message, str):
-            message = str(message)
-            
-        # Use PHI detection service to sanitize the message
-        return self.phi_detection.redact_phi(message)
+        if isinstance(message, str):
+            return self.phi_redactor.redact(message)
+        return message
     
     def debug(self, message: Any, *args, **kwargs) -> None:
         """Log a debug message with PHI sanitization."""
@@ -355,182 +568,29 @@ def get_hipaa_logger(name: str, level: Union[int, str] = logging.INFO) -> HIPAAC
     return HIPAACompliantLogger(name, level)
 
 
-class PHIRedactor:
+def get_audit_logger(name: str = "audit", level: int = logging.INFO) -> AuditLogger:
     """
-    Class for redacting PHI from text.
-    
-    This class provides methods to detect and redact PHI (Protected Health
-    Information) from text to ensure HIPAA compliance.
-    """
-    
-    def __init__(self, phi_detection_service=None):
-        """
-        Initialize PHI redactor.
-        
-        Args:
-            phi_detection_service: Optional PHI detection service to use
-        """
-        # Use provided service or try to create a mock service
-        self.phi_detection = phi_detection_service or self._create_fallback_detector()
-    
-    def _create_fallback_detector(self):
-        """Create a simple fallback PHI detector."""
-        class SimplePHIDetector:
-            def redact_phi(self, text: str, replacement: str = "[REDACTED]") -> str:
-                """Simple regex-based sanitization as fallback."""
-                import re
-                # Simple patterns for common PHI
-                patterns = [
-                    # Names (Mr./Mrs./Dr. followed by capitalized words)
-                    r'\b(Mr\.|Mrs\.|Dr\.|Ms\.) [A-Z][a-z]+\b',
-                    # SSN pattern
-                    r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
-                    # Phone numbers
-                    r'\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b',
-                    # Email addresses
-                    r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
-                    # Dates (various formats)
-                    r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
-                    # Medical record numbers (assumes MRN: prefix)
-                    r'MRN:?\s*\d+',
-                    # Ages over 89
-                    r'\b(9\d|1[0-9]\d+)\s+years?\s+old\b',
-                ]
-                
-                sanitized_text = text
-                for pattern in patterns:
-                    sanitized_text = re.sub(pattern, replacement, sanitized_text)
-                return sanitized_text
-                
-            def detect_phi(self, text: str) -> List[Dict[str, Any]]:
-                """Simple PHI detection as fallback."""
-                return []  # No detailed detection in fallback
-                
-        return SimplePHIDetector()
-    
-    def redact(self, text: str, replacement: str = "[REDACTED]") -> str:
-        """
-        Redact PHI from text.
-        
-        Args:
-            text: Text to redact
-            replacement: String to replace PHI with
-            
-        Returns:
-            Redacted text
-        """
-        if not text:
-            return ""
-            
-        try:
-            return self.phi_detection.redact_phi(text, replacement)
-        except Exception:
-            # Fallback to simple redaction on error
-            return self._create_fallback_detector().redact_phi(text, replacement)
-    
-    def detect(self, text: str) -> List[Dict[str, Any]]:
-        """
-        Detect PHI in text.
-        
-        Args:
-            text: Text to analyze
-            
-        Returns:
-            List of detected PHI entities with metadata
-        """
-        if not text:
-            return []
-        
-        try:
-            return self.phi_detection.detect_phi(text)
-        except Exception:
-            return []
-
-
-def audit_log(
-    event_type: str,
-    user_id: Optional[str] = None,
-    resource_type: Optional[str] = None,
-    resource_id: Optional[str] = None,
-    details: Optional[Dict[str, Any]] = None,
-    success: bool = True
-) -> None:
-    """
-    Log an audit event for compliance purposes.
-    
-    This function logs security and access events in a HIPAA-compliant format
-    suitable for audit trails and compliance reporting.
+    Get an audit logger instance.
     
     Args:
-        event_type: Type of event (e.g., "access", "modify", "delete")
-        user_id: ID of the user performing the action
-        resource_type: Type of resource being accessed (e.g., "patient", "record")
-        resource_id: ID of the resource being accessed
-        details: Additional details about the event (sanitized automatically)
-        success: Whether the action was successful
-    """
-    # Get logger for audit events
-    logger = get_hipaa_logger("audit")
-    
-    # Create audit message
-    message = f"AUDIT: {event_type}"
-    if user_id:
-        message += f" | User: {user_id}"
-    if resource_type:
-        message += f" | Resource: {resource_type}"
-    if resource_id:
-        message += f" | ID: {resource_id}"
-    if success:
-        message += " | Status: SUCCESS"
-    else:
-        message += " | Status: FAILURE"
-        
-    # Log the audit event (PHI sanitization handled by the HIPAA logger)
-    if details:
-        # Convert details to string for logging, sanitizing sensitive fields
-        sanitized_details = _sanitize_details(details)
-        message += f" | Details: {sanitized_details}"
-        
-    logger.info(message)
-
-
-def _sanitize_details(details: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Sanitize sensitive details before logging.
-    
-    Args:
-        details: Dictionary of details to sanitize
+        name: Logger name
+        level: Logging level
         
     Returns:
-        Sanitized details dictionary
+        Audit logger instance
     """
-    # Create a copy of the details to avoid modifying the original
-    sanitized = {}
+    return AuditLogger(name, level)
+
+
+def get_logger(name: str, level: Union[int, str] = logging.INFO) -> HIPAACompliantLogger:
+    """
+    Get a logger instance for the specified name.
     
-    # Fields that should be completely redacted
-    sensitive_fields = {
-        "password", "secret", "token", "key", "ssn", "social_security",
-        "credit_card", "card_number", "cvv", "pin"
-    }
-    
-    # Fields that should be partially redacted
-    partial_fields = {
-        "name", "email", "address", "phone", "dob", "birth", "age"
-    }
-    
-    redactor = PHIRedactor()
-    
-    for key, value in details.items():
-        key_lower = key.lower()
+    Args:
+        name: Logger name, typically __name__ of the calling module
+        level: Log level to use
         
-        # Completely redact sensitive fields
-        if any(sensitive in key_lower for sensitive in sensitive_fields):
-            sanitized[key] = "[REDACTED]"
-        # Partially redact fields that might contain PHI
-        elif any(partial in key_lower for partial in partial_fields) and isinstance(value, str):
-            sanitized[key] = redactor.redact(value)
-        # Keep non-sensitive values
-        else:
-            sanitized[key] = value
-            
-    return sanitized
+    Returns:
+        HIPAA-compliant logger instance
+    """
+    return get_hipaa_logger(name, level)

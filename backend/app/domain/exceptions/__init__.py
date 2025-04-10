@@ -1,187 +1,124 @@
 """
-Domain-specific exceptions package for the Novamind concierge psychiatry platform.
+Domain Exceptions.
 
-This package provides direct access to the exception classes needed by other modules.
+This module defines domain-specific exceptions that represent business rule violations
+or domain errors. These exceptions should be used to communicate domain-specific errors
+to the application layer.
 """
 
+from typing import List, Optional
 
-# Define exception classes directly in the __init__.py file to avoid circular imports
-class DomainException(Exception):
-    """Base exception class for all domain-specific exceptions."""
+from app.core.exceptions.base_exceptions import (
+    ApplicationError, 
+    AuthenticationError, 
+    AuthorizationError
+)
 
+
+class DomainError(ApplicationError):
+    """Base class for all domain exceptions."""
+    
     def __init__(self, message: str = "Domain error occurred"):
-        self.message = message
-        super().__init__(self.message)
-
-
-class AuthenticationError(DomainException):
-    """
-    Raised when authentication fails due to invalid credentials or tokens.
-
-    This exception is typically thrown during JWT validation or login attempts
-    with incorrect credentials.
-    """
-
-    def __init__(self, message: str = "Invalid authentication credentials"):
         super().__init__(message)
 
 
-class TokenExpiredError(AuthenticationError):
-    """
-    Raised when an authentication token has expired.
-
-    This is a specific type of authentication error indicating that
-    the user needs to refresh their token or log in again.
-    """
-
-    def __init__(self, message: str = "Token has expired"):
+class EntityNotFoundError(DomainError):
+    """Exception raised when an entity cannot be found."""
+    
+    def __init__(self, entity_type: str, entity_id: Optional[str] = None):
+        message = f"{entity_type} not found"
+        if entity_id:
+            message = f"{message}: {entity_id}"
+        self.entity_type = entity_type
+        self.entity_id = entity_id
         super().__init__(message)
 
 
-class ValidationError(DomainException):
-    """
-    Raised when input data fails validation rules.
-
-    This exception is used for domain-level validation errors, such as
-    invalid biometric rule conditions, invalid parameter values, or
-    other constraint violations in the domain model.
-    """
-
-    def __init__(self, message: str = "Validation error occurred"):
+class ValidationError(DomainError):
+    """Exception raised when domain validation fails."""
+    
+    def __init__(self, message: str = "Validation error", errors: Optional[List[str]] = None):
+        self.errors = errors or []
+        if errors and len(errors) > 0:
+            message = f"{message}: {', '.join(errors)}"
         super().__init__(message)
 
 
-class ValidationException(ValidationError):
-    """
-    Alternative name for ValidationError that is used for backward compatibility.
+class BusinessRuleViolationError(DomainError):
+    """Exception raised when a business rule is violated."""
     
-    This exception serves the same purpose as ValidationError and is provided to
-    maintain compatibility with existing code that expects a ValidationException class.
-    """
+    def __init__(self, rule: str, message: str = "Business rule violation"):
+        self.rule = rule
+        full_message = f"{message}: {rule}"
+        super().__init__(full_message)
+
+
+class InvalidStateError(DomainError):
+    """Exception raised when an operation is performed on an entity in an invalid state."""
     
-    def __init__(self, message: str = "Validation error occurred"):
+    def __init__(self, entity_type: str, current_state: str, required_state: str):
+        self.entity_type = entity_type
+        self.current_state = current_state
+        self.required_state = required_state
+        message = f"{entity_type} is in {current_state} state, but {required_state} is required"
         super().__init__(message)
 
 
-class BiometricIntegrationError(DomainException):
-    """
-    Raised when there's an error processing biometric data.
-
-    This exception is used for errors related to biometric data processing,
-    such as invalid data formats, integration issues with biometric devices,
-    or errors in the biometric data pipeline.
-    """
-
-    def __init__(self, message: str = "Error processing biometric data"):
-        super().__init__(message)
-
-
-class ModelInferenceError(DomainException):
-    """
-    Raised when there's an error during model inference or prediction.
+class ConcurrencyError(DomainError):
+    """Exception raised when a concurrency conflict occurs."""
     
-    This exception is used for errors related to ML model inference,
-    such as incompatible input data, model loading failures, or
-    unexpected errors during prediction.
-    """
-    
-    def __init__(self, message: str = "Error during model inference"):
-        super().__init__(message)
-
-
-class EntityNotFoundError(DomainException):
-    """
-    Raised when an entity cannot be found by its identifier.
-    
-    This exception is used when attempting to retrieve an entity by ID
-    from a repository or data source and the entity does not exist.
-    """
-    
-    def __init__(self, message: str = "Entity not found", entity_type: str = None, entity_id: str = None):
-        if entity_type and entity_id:
-            message = f"{entity_type} with ID {entity_id} not found"
-        super().__init__(message)
-
-
-class UnauthorizedAccessError(DomainException):
-    """
-    Raised when a user attempts to access a resource they're not authorized for.
-    
-    This exception is used for authorization failures, such as attempting
-    to access a patient record without the proper role or permissions.
-    """
-    
-    def __init__(self, message: str = "Unauthorized access to resource"):
-        super().__init__(message)
-
-
-class AuthorizationError(DomainException):
-    """
-    Raised when there's an error with the authorization process.
-    
-    This exception is used for errors in the authorization workflow,
-    such as invalid role assignments or permission structures.
-    """
-    
-    def __init__(self, message: str = "Authorization error occurred"):
-        super().__init__(message)
-
-
-class MentalLLaMAInferenceError(ModelInferenceError):
-    """
-    Raised when there's an error during MentalLLaMA model inference.
-    
-    This is a specific subclass of ModelInferenceError used for errors
-    related to the MentalLLaMA natural language processing model.
-    """
-    
-    def __init__(self, message: str = "Error during MentalLLaMA inference"):
-        super().__init__(message)
-
-
-class AuthenticationException(AuthenticationError):
-    """
-    Alternative name for AuthenticationError for backward compatibility.
-    
-    This exception serves the same purpose as AuthenticationError and is provided
-    to maintain compatibility with existing code.
-    """
-    
-    def __init__(self, message: str = "Invalid authentication credentials"):
+    def __init__(self, entity_type: str, entity_id: Optional[str] = None):
+        self.entity_type = entity_type
+        self.entity_id = entity_id
+        message = f"Concurrency conflict for {entity_type}"
+        if entity_id:
+            message = f"{message}: {entity_id}"
         super().__init__(message)
 
 
 class AuthorizationException(AuthorizationError):
     """
-    Alternative name for AuthorizationError for backward compatibility.
+    Exception raised when a user is not authorized to perform an action.
     
-    This exception serves the same purpose as AuthorizationError and is provided
-    to maintain compatibility with existing code.
+    This exception is a synonym for AuthorizationError, provided for
+    backward compatibility.
     """
     
-    def __init__(self, message: str = "Authorization error occurred"):
+    def __init__(self, message: str = "Not authorized to perform this action"):
         super().__init__(message)
 
 
-class RepositoryError(DomainException):
+class RepositoryError(DomainError):
     """
-    Raised when there's an error when interacting with a repository.
+    Exception raised when an error occurs in a repository operation.
     
-    This exception is used for generic repository-related errors, such as
-    connection failures or data consistency issues.
+    This exception is used to wrap infrastructure errors into a domain-level
+    exception without exposing implementation details.
     """
     
-    def __init__(self, message: str = "Error accessing repository"):
+    def __init__(self, message: str = "Error accessing repository", original_exception: Optional[Exception] = None):
+        self.original_exception = original_exception
         super().__init__(message)
 
 
-class AppointmentConflictError(DomainException):
+class AppointmentConflictError(DomainError):
     """
-    Raised when there's a scheduling conflict with an appointment.
+    Exception raised when an appointment conflicts with an existing appointment.
     
-    This exception is used when attempting to schedule an appointment
-    that overlaps with an existing appointment.
+    This is a domain-specific exception for the scheduling bounded context.
     """
     
-    def __init__(self, message: str = "Appointment scheduling conflict"):
+    def __init__(self, appointment_id: Optional[str] = None, conflicting_id: Optional[str] = None):
+        self.appointment_id = appointment_id
+        self.conflicting_id = conflicting_id
+        message = "Appointment conflicts with existing appointment"
+        if appointment_id and conflicting_id:
+            message = f"{message}: {appointment_id} conflicts with {conflicting_id}"
+        elif appointment_id:
+            message = f"{message} for {appointment_id}"
         super().__init__(message)
+
+
+# Import specific domain model exceptions
+# (These imports are at the bottom to avoid circular imports)
+from app.domain.exceptions.model_exceptions import ModelError, MentalLLaMAInferenceError
