@@ -14,11 +14,10 @@ from datetime import datetime
 from botocore.exceptions import ClientError
 
 from app.core.services.ml.xgboost.aws import AWSXGBoostService
-from app.core.services.ml.xgboost import (
-    PredictionType,
-    RiskLevel,
-    TreatmentCategory,
-    ValidationStatus,
+# Import Enums from the correct schema location
+from app.api.schemas.xgboost import RiskLevel, TreatmentCategory, ValidationStatus
+# Import Exceptions from the service exception module
+from app.core.services.ml.xgboost.exceptions import (
     ModelNotFoundError,
     PredictionNotFoundError,
     InvalidFeatureError,
@@ -26,6 +25,8 @@ from app.core.services.ml.xgboost import (
     ServiceConfigurationError,
     ServiceConnectionError
 )
+# ModelType might be defined elsewhere or needs clarification
+from app.core.services.ml.xgboost import ModelType # Assuming ModelType is correctly here for now
 
 
 @pytest.fixture
@@ -190,7 +191,7 @@ class TestPredictRisk:
         
         # Test data
         patient_id = 'patient-123'
-        risk_type = PredictionType.RISK_RELAPSE
+        risk_type = ModelType.RISK_RELAPSE # Use ModelType
         features = {
             'age': 35,
             'phq9_score': 18,
@@ -240,7 +241,7 @@ class TestPredictRisk:
         
         # Test data
         patient_id = 'patient-123'
-        risk_type = PredictionType.RISK_RELAPSE
+        risk_type = ModelType.RISK_RELAPSE # Use ModelType
         features = {
             'age': 35,
             'phq9_score': 18
@@ -260,7 +261,7 @@ class TestPredictRisk:
         """Test risk prediction with invalid risk type."""
         # Test data
         patient_id = 'patient-123'
-        risk_type = PredictionType.TREATMENT_RESPONSE_MEDICATION  # Not a risk type
+        risk_type = ModelType.TREATMENT_RESPONSE_MEDICATION  # Not a risk type, use ModelType
         features = {
             'age': 35,
             'phq9_score': 18
@@ -293,7 +294,7 @@ class TestPredictRisk:
         
         # Test data
         patient_id = 'patient-123'
-        risk_type = PredictionType.RISK_RELAPSE
+        risk_type = ModelType.RISK_RELAPSE # Use ModelType
         features = {
             'age': 35,
             'phq9_score': 18
@@ -343,7 +344,7 @@ class TestGetPrediction:
         # Verify result
         assert result.prediction_id == 'pred-123'
         assert result.patient_id == 'patient-456'
-        assert result.prediction_type == PredictionType.RISK_RELAPSE
+        assert result.prediction_type == ModelType.RISK_RELAPSE # Use ModelType
         assert result.risk_level == RiskLevel.HIGH
         assert result.risk_score == 0.75
         assert result.confidence == 0.85

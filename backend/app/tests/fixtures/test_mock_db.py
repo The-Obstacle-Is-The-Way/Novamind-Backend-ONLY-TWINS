@@ -6,7 +6,7 @@ from sqlalchemy import select
 from uuid import uuid4
 
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
-from app.domain.entities.base import BaseEntity
+# from app.domain.entities.base import BaseEntity # BaseEntity does not exist
 
 
 class TestMockAsyncSession:
@@ -22,7 +22,7 @@ class TestMockAsyncSession:
     async def test_mock_session_basic_operations(self, mock_db): # Add async
         """Test that basic CRUD operations work with MockAsyncSession."""
         # Setup test entity
-        test_entity = BaseEntity()
+        test_entity = object() # Use standard object for mock testing
         test_entity.id = uuid4()
         
         # Test add
@@ -35,7 +35,9 @@ class TestMockAsyncSession:
         assert not mock_db._pending_objects
         
         # Test execution of a query
-        query = select(BaseEntity).where(BaseEntity.id == test_entity.id)
+        # query = select(BaseEntity).where(BaseEntity.id == test_entity.id) # Cannot query object directly
+        # For mock testing, we can simulate query execution without a real query object
+        query = "mock_query"
         mock_db._query_results = [test_entity]  # Set expected result
         
         result = await mock_db.execute(query)
@@ -45,7 +47,7 @@ class TestMockAsyncSession:
         assert mock_db._last_executed_query is not None
         
         # Test rollback
-        mock_db.add(BaseEntity())  # Add another entity
+        mock_db.add(object())  # Add another entity
         assert len(mock_db._pending_objects) == 1
         
         await mock_db.rollback()
@@ -55,7 +57,7 @@ class TestMockAsyncSession:
     @pytest.mark.db_required
     async def test_mock_session_refresh(self, mock_db): # Correct decorator and async def order
         """Test the refresh operation."""
-        test_entity = BaseEntity()
+        test_entity = object() # Use standard object
         test_entity.id = uuid4()
         
         # Add and commit entity
@@ -72,7 +74,7 @@ class TestMockAsyncSession:
     @pytest.mark.db_required
     async def test_mock_session_delete(self, mock_db): # Correct decorator and async def order
         """Test the delete operation."""
-        test_entity = BaseEntity()
+        test_entity = object() # Use standard object
         test_entity.id = uuid4()
         
         # Add and commit entity
@@ -92,7 +94,7 @@ class TestMockAsyncSession:
     @pytest.mark.db_required
     async def test_mock_session_close(self, mock_db): # Correct decorator and async def order
         """Test the close operation."""
-        test_entity = BaseEntity()
+        test_entity = object() # Use standard object
         mock_db.add(test_entity)
         
         # Close session
