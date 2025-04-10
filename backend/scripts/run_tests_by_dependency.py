@@ -1,250 +1,153 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-Test runner script for the Novamind Digital Twin Backend.
+Run tests by dependency level.
 
-This script runs tests based on their dependency level, allowing for more
-efficient testing by running independent tests first and dependent tests later.
+This script runs tests based on their dependency requirements:
+1. Standalone tests: No dependencies beyond Python itself
+2. VENV-dependent tests: Require Python packages but no external services
+3. DB-dependent tests: Require database connections or other external services
+
+Usage:
+    python -m scripts.run_tests_by_dependency --standalone  # Run standalone tests
+    python -m scripts.run_tests_by_dependency --venv        # Run venv-dependent tests
+    python -m scripts.run_tests_by_dependency --db          # Run DB-dependent tests
+    python -m scripts.run_tests_by_dependency --all         # Run all tests in order
 """
-import os
-import sys
+
 import argparse
-import asyncio
-import subprocess
-from typing import List, Optional, Dict, Any
 import logging
-import time
-import json
+import os
+import subprocess
+import sys
 from pathlib import Path
-from datetime import datetime
+
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)8s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
-logger = logging.getLogger("test_runner")
-
-# Constants
-BACKEND_DIR = Path(__file__).parent.parent
-TEST_DIR = BACKEND_DIR / "app" / "tests"
-STANDALONE_DIR = TEST_DIR / "standalone"
-TEST_RESULTS_DIR = BACKEND_DIR / "test-results"
-COVERAGE_DIR = BACKEND_DIR / "coverage_html"
+logger = logging.getLogger(__name__)
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse command-line arguments."""
+def parse_args():
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Run tests by dependency level")
-    
-    # Test selection options
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--all", action="store_true", help="Run all tests")
-    group.add_argument("--standalone", action="store_true", help="Run standalone tests only")
-    group.add_argument("--venv", action="store_true", help="Run venv-dependent tests only")
-    group.add_argument("--db", action="store_true", help="Run database-dependent tests only")
-    
-    # Output options
-    parser.add_argument("--xml", action="store_true", help="Generate XML test report")
-    parser.add_argument("--html", action="store_true", help="Generate HTML coverage report")
-    parser.add_argument("--ci", action="store_true", help="Run in CI mode (changes output paths)")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
-    
-    # Environment options
-    parser.add_argument("--cleanup", action="store_true", help="Clean up test environment after tests")
-    parser.add_argument("--setup-env", action="store_true", help="Set up test environment without running tests")
-    parser.add_argument("--cleanup-env", action="store_true", help="Clean up test environment without running tests")
-    
+    parser.add_argument(
+        "--standalone", action="store_true", help="Run standalone tests"
+    )
+    parser.add_argument(
+        "--venv", action="store_true", help="Run VENV-dependent tests"
+    )
+    parser.add_argument(
+        "--db", action="store_true", help="Run DB-dependent tests"
+    )
+    parser.add_argument(
+        "--all", action="store_true", help="Run all tests in order"
+    )
+    parser.add_argument(
+        "--xml", action="store_true", help="Generate XML reports"
+    )
+    parser.add_argument(
+        "--html", action="store_true", help="Generate HTML coverage reports"
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Enable verbose output"
+    )
+
     return parser.parse_args()
 
 
-def setup_environment() -> bool:
-    """Set up the test environment."""
-    logger.info("Setting up test environment...")
-    
-    # Create directories
-    os.makedirs(TEST_RESULTS_DIR, exist_ok=True)
-    os.makedirs(COVERAGE_DIR, exist_ok=True)
-    
-    # Start services if needed for DB tests
-    # This would typically start Docker containers with test databases
-    if os.path.exists(BACKEND_DIR / "scripts" / "run_test_environment.sh"):
-        try:
-            subprocess.run(
-                ["bash", BACKEND_DIR / "scripts" / "run_test_environment.sh", "start"],
-                check=True
-            )
-            logger.info("Test environment started successfully")
-        except subprocess.CalledProcessError:
-            logger.error("Failed to start test environment")
-            return False
-    
-    return True
+def get_project_root():
+    """Get the project root directory."""
+    script_dir = Path(__file__).resolve().parent
+    return script_dir.parent
 
 
-def cleanup_environment() -> bool:
-    """Clean up the test environment."""
-    logger.info("Cleaning up test environment...")
+def run_pytest(marker, xml_output=None, html=False, verbose=False):
+    """Run pytest with the specified marker."""
+    cmd = ["pytest"]
     
-    # Stop services if needed
-    if os.path.exists(BACKEND_DIR / "scripts" / "run_test_environment.sh"):
-        try:
-            subprocess.run(
-                ["bash", BACKEND_DIR / "scripts" / "run_test_environment.sh", "stop"],
-                check=True
-            )
-            logger.info("Test environment stopped successfully")
-        except subprocess.CalledProcessError:
-            logger.error("Failed to stop test environment")
-            return False
+    if marker:
+        cmd.extend(["-m", marker])
     
-    return True
-
-
-def run_tests(
-    test_type: str, 
-    xml_output: bool = False, 
-    html_output: bool = False, 
-    verbose: bool = False, 
-    ci_mode: bool = False
-) -> bool:
-    """
-    Run tests of a specific dependency level.
+    cmd.extend(["--cov=app"])
     
-    Args:
-        test_type: Type of tests to run ('standalone', 'venv', 'db')
-        xml_output: Whether to generate XML report
-        html_output: Whether to generate HTML coverage report
-        verbose: Whether to use verbose output
-        ci_mode: Whether running in CI environment
-        
-    Returns:
-        bool: True if tests passed, False otherwise
-    """
-    logger.info(f"Running {test_type} tests...")
-    
-    # Prepare pytest arguments
-    pytest_args = ["-xvs"] if verbose else ["-x"]
-    
-    if test_type == "standalone":
-        # Standalone tests are in a dedicated directory
-        pytest_args.extend([str(STANDALONE_DIR)])
-        marker = "standalone"
-    elif test_type == "venv":
-        # VENV-dependent tests are anywhere with the venv_only marker
-        pytest_args.extend(["-m", "venv_only", str(TEST_DIR)])
-        marker = "venv_only"
-    elif test_type == "db":
-        # DB-dependent tests are anywhere with the db_required marker
-        pytest_args.extend(["-m", "db_required", str(TEST_DIR)])
-        marker = "db_required"
-    else:
-        logger.error(f"Unknown test type: {test_type}")
-        return False
-    
-    # Add coverage options
-    pytest_args.extend(["--cov=app", "--cov-report=term"])
-    
-    # Add XML output if requested
     if xml_output:
-        xml_file = TEST_RESULTS_DIR / f"{test_type}-results.xml"
-        pytest_args.extend(["--junitxml", str(xml_file)])
+        cmd.extend(["--junitxml", xml_output])
     
-    # Add HTML output if requested
-    if html_output:
-        pytest_args.extend(["--cov-report", f"html:{COVERAGE_DIR}"])
+    if html:
+        cmd.extend(["--cov-report", "html:coverage_html"])
     
-    # Run pytest
-    logger.info(f"Running pytest with args: {' '.join(pytest_args)}")
-    result = subprocess.run(
-        [sys.executable, "-m", "pytest"] + pytest_args,
-        cwd=BACKEND_DIR
-    )
+    cmd.extend(["--cov-report", "term"])
     
-    return result.returncode == 0
+    if verbose:
+        cmd.append("-v")
+    
+    logger.info(f"Running: {' '.join(cmd)}")
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.stdout:
+            logger.info(result.stdout)
+        if result.stderr:
+            logger.error(result.stderr)
+        return result.returncode == 0
+    except Exception as e:
+        logger.error(f"Error running pytest: {e}")
+        return False
 
 
-def main() -> int:
+def main():
     """Main entry point."""
     args = parse_args()
-    start_time = time.time()
+    os.chdir(get_project_root())  # Change to project root
     
-    # Early returns for environment-only operations
-    if args.setup_env:
-        return 0 if setup_environment() else 1
+    if not any([args.standalone, args.venv, args.db, args.all]):
+        logger.info("No test type specified, defaulting to --all")
+        args.all = True
     
-    if args.cleanup_env:
-        return 0 if cleanup_environment() else 1
+    success = True
     
-    # Determine which tests to run
-    run_standalone = args.all or args.standalone
-    run_venv = args.all or args.venv
-    run_db = args.all or args.db
+    # Run standalone tests
+    if args.standalone or args.all:
+        logger.info("Running standalone tests...")
+        xml_output = "test-results/standalone-results.xml" if args.xml else None
+        standalone_success = run_pytest("standalone", xml_output, args.html, args.verbose)
+        if not standalone_success:
+            logger.error("Standalone tests failed")
+            success = False
+            if not args.all:
+                return 1
     
-    # If no test type specified, run all
-    if not (run_standalone or run_venv or run_db):
-        run_standalone = run_venv = run_db = True
+    # Run VENV-dependent tests
+    if args.venv or args.all:
+        logger.info("Running VENV-dependent tests...")
+        xml_output = "test-results/venv-results.xml" if args.xml else None
+        venv_success = run_pytest("venv_only", xml_output, args.html, args.verbose)
+        if not venv_success:
+            logger.error("VENV-dependent tests failed")
+            success = False
+            if not args.all:
+                return 1
     
-    # Set up environment if needed
-    if run_db and not setup_environment():
+    # Run DB-dependent tests
+    if args.db or args.all:
+        logger.info("Running DB-dependent tests...")
+        xml_output = "test-results/db-results.xml" if args.xml else None
+        db_success = run_pytest("db_required", xml_output, args.html, args.verbose)
+        if not db_success:
+            logger.error("DB-dependent tests failed")
+            success = False
+            if not args.all:
+                return 1
+    
+    if not success:
+        logger.error("One or more test types failed")
         return 1
     
-    # Track pass/fail status
-    tests_passed = True
-    
-    try:
-        # Run tests in dependency order
-        if run_standalone:
-            standalone_passed = run_tests(
-                "standalone", 
-                xml_output=args.xml, 
-                html_output=args.html, 
-                verbose=args.verbose,
-                ci_mode=args.ci
-            )
-            tests_passed = tests_passed and standalone_passed
-            
-            if not standalone_passed and not args.all:
-                logger.error("Standalone tests failed, stopping test run")
-                return 1
-        
-        if run_venv:
-            venv_passed = run_tests(
-                "venv", 
-                xml_output=args.xml, 
-                html_output=args.html, 
-                verbose=args.verbose,
-                ci_mode=args.ci
-            )
-            tests_passed = tests_passed and venv_passed
-            
-            if not venv_passed and not args.all:
-                logger.error("VENV-dependent tests failed, stopping test run")
-                return 1
-        
-        if run_db:
-            db_passed = run_tests(
-                "db", 
-                xml_output=args.xml, 
-                html_output=args.html, 
-                verbose=args.verbose,
-                ci_mode=args.ci
-            )
-            tests_passed = tests_passed and db_passed
-    
-    finally:
-        # Clean up if requested or if we're running DB tests
-        if (args.cleanup or run_db) and not args.setup_env:
-            cleanup_environment()
-    
-    # Report test results
-    elapsed_time = time.time() - start_time
-    if tests_passed:
-        logger.info(f"All tests passed in {elapsed_time:.2f} seconds")
-        return 0
-    else:
-        logger.error(f"Tests failed after {elapsed_time:.2f} seconds")
-        return 1
+    logger.info("All tests passed successfully")
+    return 0
 
 
 if __name__ == "__main__":
