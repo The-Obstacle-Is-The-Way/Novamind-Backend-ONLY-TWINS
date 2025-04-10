@@ -1,0 +1,79 @@
+name: Standalone Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  standalone-tests:
+    name: Run Standalone Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r backend/requirements-dev.txt
+      
+      - name: Verify standalone test directory exists
+        run: |
+          if [ ! -d "backend/app/tests/standalone" ]; then
+            echo "Error: Standalone test directory not found at backend/app/tests/standalone"
+            exit 1
+          fi
+      
+      - name: Run standalone tests
+        run: |
+          cd backend
+          PYTHONPATH=$PWD pytest app/tests/standalone/ --cov=app --cov-report=xml:coverage.xml --cov-report=term-missing -v --junitxml=test-results/standalone-results.xml
+        env:
+          TESTING: "1"
+          TEST_TYPE: "unit"
+      
+      - name: Create test results directory if it doesn't exist
+        run: mkdir -p backend/test-results
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: backend/coverage.xml
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: backend/test-results
+      
+      - name: Check Coverage (optional at this stage)
+        run: |
+          cd backend
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(float(root.attrib['line-rate']) * 100)")
+          echo "Current coverage: $COVERAGE%"
+          echo "Minimum required coverage will be enforced in future updates"
+          # We're not failing the build on coverage yet until we establish baseline
+          # MIN_COVERAGE=90
+          # if (( $(echo "$COVERAGE < $MIN_COVERAGE" | bc -l) )); then
+          #   echo "Coverage is below the required threshold of $MIN_COVERAGE%"
+          #   exit 1
+          # fi
