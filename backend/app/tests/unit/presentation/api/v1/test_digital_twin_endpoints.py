@@ -29,7 +29,7 @@ from app.presentation.api.v1.endpoints.digital_twins import (
 from app.presentation.api.v1.schemas.digital_twin_schemas import (
     # ClinicalEntityExtractionRequest, # Removed non-existent schema
     # ClinicalTextSummaryRequest, # Removed non-existent schema
-    MentalLLaMAResponse,
+    ClinicalTextAnalysisResponse, # Renamed from MentalLLaMAResponse
     ClinicalTextAnalysisRequest
 )
 

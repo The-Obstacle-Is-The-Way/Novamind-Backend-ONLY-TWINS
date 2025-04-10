@@ -209,6 +209,8 @@ class HistoricalAnalysisRequest(BaseModel):
 class ModelInfoResponse(BaseModel):
     """Response model for PAT model information."""
     
+    model_config = {"protected_namespaces": ()}
+    
     model_name: str = Field(..., description="Name of the PAT model")
     model_size: PATModelSizeEnum = Field(..., description="Size of the PAT model")
     model_path: str = Field(..., description="Path to the PAT model")

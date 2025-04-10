@@ -112,8 +112,7 @@ def test_sanitize_list(self):
             assert self.patient_mrn not in item
         
         # Non-PHI entries should be preserved
-        assert "Notes: Pati@pytest.mark.standalone
-ent reports improved mood" in sanitized
+        assert "Notes: Patient reports improved mood" in sanitized
     
 def test_sanitize_complex_nested_structure(self):
         """Test sanitization of complex nested data structures with PHI."""
@@ -154,8 +153,7 @@ def test_sanitize_complex_nested_structure(self):
         
         # Non-PHI should remain intact
         assert sanitized["metadata"]["generated_by"] == "Test System"
-        asse@pytest.mark.standalone
-rt sanitized["metadata"]["timestamp"] == "2025-04-10T00:00:00Z"
+        assert sanitized["metadata"]["timestamp"] == "2025-04-10T00:00:00Z"
     
 def test_sanitize_with_custom_patterns(self):
         """Test sanitization with custom PHI patterns."""
@@ -173,8 +171,7 @@ def test_sanitize_with_custom_patterns(self):
         assert sanitized["name"] != self.patient_name
         
         # Custom patterns should also be sanitized
-        assert sanitized["medical_info"]["diagnos@pytest.mark.standalone
-is"] != "Depression"
+        assert sanitized["medical_info"]["diagnosis"] != "Depression" # Corrected key and removed marker
         assert sanitized["medical_info"]["severity"] != "Moderate"
     
 def test_sanitization_preserves_structure(self):
@@ -191,4 +188,4 @@ def test_sanitization_preserves_structure(self):
         
         # Test with string
         string_sanitized = self.sanitizer.sanitize(self.text_with_phi)
-        assert isinstance(string_sanitized, str)
+        assert isinstance(string_sanitized, str) # Ensure no hidden characters

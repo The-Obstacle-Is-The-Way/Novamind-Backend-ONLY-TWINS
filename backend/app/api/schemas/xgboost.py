@@ -377,6 +377,8 @@ class PerformanceMetrics(BaseModel):
 class ModelInfoResponse(BaseResponse):
     """Schema for model information responses."""
     
+    model_config = {"protected_namespaces": ()}
+    
     model_type: str = Field(..., description="Type of model")
     version: str = Field(..., description="Model version")
     last_updated: datetime = Field(..., description="Last update timestamp")

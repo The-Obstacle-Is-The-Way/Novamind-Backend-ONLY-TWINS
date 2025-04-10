@@ -11,8 +11,8 @@ from app.core.db import engine, init_db, get_session, Base
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_engine_creation():
+@pytest.mark.db_required
+async def test_engine_creation():
     """Test that the database engine is created with correct settings."""
     # Verify the engine is correctly configured for testing
     assert engine is not None
@@ -29,8 +29,8 @@ def test_engine_creation():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_init_db():
+@pytest.mark.db_required
+async def test_init_db():
     """Test database initialization."""
     # Clear any existing tables
     async with engine.begin() as conn:
@@ -48,8 +48,8 @@ def test_init_db():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_session():
+@pytest.mark.db_required
+async def test_get_session():
     """Test that get_session returns valid sessions."""
     # Test that the session dependency yields an async session
     session_generator = get_session()
@@ -83,19 +83,10 @@ class TestDatabaseBase:
     """Test base class for database-related tests."""
     
     @pytest.mark.asyncio
-    async @pytest.mark.db_required
-def test_base_class_table_creation(self):
+    @pytest.mark.db_required
+    async def test_base_class_table_creation(self):
         """Test that Base can create tables."""
-        # Create a simple model class
-class TestModel(Base):
-            __tablename__ = "test_models_temp"
-            
-            # Use Column import from the same source as Base
-            from sqlalchemy import Column, String, Integer
-            
-            id = Column(Integer, primary_key=True)
-            name = Column(String, nullable=False)
-        
+        # Model definition moved outside the test method
         # Create just this table
         async with engine.begin() as conn:
             await conn.run_sync(lambda schema: TestModel.__table__.create(schema, checkfirst=True))
@@ -109,3 +100,10 @@ class TestModel(Base):
         # Clean up - drop the table
         async with engine.begin() as conn:
             await conn.run_sync(lambda schema: TestModel.__table__.drop(schema, checkfirst=True))
+
+# Define TestModel at module level
+from sqlalchemy import Column, String, Integer # Move import here too
+class TestModel(Base):
+    __tablename__ = "test_models_temp"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)

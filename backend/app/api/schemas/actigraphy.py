@@ -302,6 +302,8 @@ class AnalysesList(BaseModel):
 class EmbeddingData(BaseModel):
     """Embedding data."""
     
+    model_config = {"protected_namespaces": ()}
+    
     vector: List[float] = Field(
         ...,
         description="Embedding vector"

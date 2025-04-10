@@ -20,10 +20,10 @@ from app.presentation.api.dependencies import get_pat_service # Corrected import
 from app.api.schemas.actigraphy import (
     AnalysisType,
     DeviceInfo,
-    AnalyzeRequest,
+    AnalyzeActigraphyRequest, # Corrected schema name
     AccelerometerReading,
 )
-from app.core.services.ml.pat.mock import MockPAT
+from app.core.services.ml.pat.mock import MockPATService # Corrected class name
 from app.main import app
 
 

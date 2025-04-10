@@ -995,6 +995,8 @@ class DigitalTwinIntegrationResponse(BaseModel):
 class ModelInfoResponse(BaseModel):
     """Response model for model information."""
     
+    model_config = {"protected_namespaces": ()}
+    
     model_type: str = Field(
         ...,
         description="Type of model"

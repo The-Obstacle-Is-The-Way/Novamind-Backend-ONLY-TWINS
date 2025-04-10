@@ -16,6 +16,8 @@ from pydantic import BaseModel, Field, field_validator
 class XGBoostSettings(BaseModel):
     """XGBoost model configuration settings."""
     
+    model_config = {"protected_namespaces": ()}
+    
     model_path: str = Field(
         default="models/xgboost",
         description="Path to XGBoost model files"

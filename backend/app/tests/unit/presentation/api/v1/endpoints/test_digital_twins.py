@@ -27,8 +27,8 @@ from app.presentation.api.v1.endpoints.digital_twins import (
 )
 from app.presentation.api.v1.schemas.digital_twin_schemas import (
     # DigitalTwinStatusResponse, # Removed non-existent schema
-    PatientInsightsResponse,
-    SymptomForecastResponse,
+    PersonalizedInsightResponse, # Renamed from PatientInsightsResponse
+    # SymptomForecastResponse, # Schema does not exist
     BiometricCorrelationResponse,
     MedicationResponsePredictionResponse,
     TreatmentPlanResponse

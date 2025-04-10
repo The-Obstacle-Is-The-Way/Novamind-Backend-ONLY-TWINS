@@ -15,12 +15,12 @@ from botocore.exceptions import ClientError
 
 from app.core.services.ml.xgboost.aws import AWSXGBoostService
 # Import Enums from the correct schema location
-from app.api.schemas.xgboost import RiskLevel, TreatmentCategory, ValidationStatus
+from app.api.schemas.xgboost import RiskLevel, TreatmentType # Renamed TreatmentCategory to TreatmentType, removed ValidationStatus
 # Import Exceptions from the service exception module
 from app.core.services.ml.xgboost.exceptions import (
     ModelNotFoundError,
-    PredictionNotFoundError,
-    InvalidFeatureError,
+    # PredictionNotFoundError, # Does not exist in exceptions module
+    # InvalidFeatureError, # Does not exist in exceptions module
     PredictionError,
     ServiceConfigurationError,
     ServiceConnectionError
@@ -268,7 +268,7 @@ class TestPredictRisk:
         }
         
         # Call method and verify exception
-        with pytest.raises(InvalidFeatureError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info: # Use ValidationError
             aws_xgboost_service.predict_risk(
                 patient_id=patient_id,
                 risk_type=risk_type,
@@ -360,7 +360,7 @@ class TestGetPrediction:
         mock_aws_clients['predictions_table'].get_item.return_value = {}
         
         # Call method and verify exception
-        with pytest.raises(PredictionNotFoundError) as exc_info:
+        with pytest.raises(ResourceNotFoundError) as exc_info: # Use ResourceNotFoundError
             aws_xgboost_service.get_prediction('pred-123')
         
         assert "Prediction pred-123 not found" in str(exc_info.value)
@@ -374,7 +374,7 @@ class TestGetPrediction:
         )
         
         # Call method and verify exception
-        with pytest.raises(ServiceOperationError) as exc_info:
+        with pytest.raises(ServiceConnectionError) as exc_info: # Correct exception type
             aws_xgboost_service.get_prediction('pred-123')
         
         assert "Failed to retrieve prediction" in str(exc_info.value)
@@ -392,7 +392,8 @@ class TestValidatePrediction:
             # Call method
             result = aws_xgboost_service.validate_prediction(
                 prediction_id='pred-123',
-                status=ValidationStatus.VALIDATED,
+                # status=ValidationStatus.VALIDATED, # TODO: ValidationStatus enum removed/renamed, update test logic
+                status="validated", # Using string literal temporarily
                 validator_notes='Clinically confirmed'
             )
             
