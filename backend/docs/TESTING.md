@@ -292,3 +292,89 @@ If you encounter issues with the test suite:
 1. Check this documentation for solutions
 2. Examine the test logs for specific error messages
 3. Reach out to the development team if problems persist
+1. **Use real dependencies**: Test with actual database and services when possible
+2. **Focus on interactions**: Verify how components work together
+3. **Clean up after tests**: Ensure tests don't affect each other
+4. **Test failure modes**: Verify how the system handles failures
+5. **Use transactions**: Wrap tests in transactions for isolation
+
+Example:
+
+```python
+@pytest.mark.asyncio
+async def test_patient_repository_integration(db_session):
+    # Arrange
+    repository = PatientRepository()
+    patient = Patient(id="test-id", name="Test Patient")
+    
+    # Act
+    await repository.create(db_session, patient)
+    result = await repository.get_by_id(db_session, "test-id")
+    
+    # Assert
+    assert result is not None
+    assert result.id == "test-id"
+    assert result.name == "Test Patient"
+```
+
+## Testing for HIPAA Compliance
+
+HIPAA compliance tests focus on:
+
+1. **PHI Protection**: Verify PHI is properly identified and protected
+2. **Access Controls**: Test authentication and authorization
+3. **Audit Logging**: Verify access to PHI is properly logged
+4. **Data Encryption**: Test encryption of PHI at rest and in transit
+5. **Error Handling**: Ensure errors don't expose PHI
+
+Example:
+
+```python
+def test_phi_redaction():
+    # Arrange
+    redactor = PHIRedactor()
+    text = "Patient John Smith (SSN: 123-45-6789) reported symptoms."
+    
+    # Act
+    redacted = redactor.redact(text)
+    
+    # Assert
+    assert "John Smith" not in redacted
+    assert "123-45-6789" not in redacted
+    assert "[REDACTED]" in redacted
+```
+
+## Continuous Integration
+
+The test suite is designed to run in CI/CD pipelines:
+
+1. Tests run on every pull request
+2. Coverage reports are generated and stored
+3. Test failures block pull request merges
+4. Security tests are required to pass
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database connection errors**:
+   - Ensure PostgreSQL is running on port 15432
+   - Check the database name is `novamind_test`
+   - Verify credentials are correct
+
+2. **Missing dependencies**:
+   - Run `pip install -r requirements-dev.txt`
+   - Check for conflicting package versions
+
+3. **Inconsistent test results**:
+   - Ensure tests are properly isolated
+   - Check for shared state between tests
+   - Verify cleanup after tests
+
+### Getting Help
+
+If you encounter issues with the test suite:
+
+1. Check this documentation for solutions
+2. Examine the test logs for specific error messages
+3. Reach out to the development team if problems persist

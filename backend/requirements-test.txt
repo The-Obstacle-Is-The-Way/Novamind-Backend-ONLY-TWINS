@@ -1,0 +1,25 @@
+# Test dependencies for Novamind Digital Twin Backend
+# This file contains all dependencies required for testing the application
+
+# Base requirements
+-r requirements.txt
+
+# Testing frameworks
+pytest>=7.4.0
+pytest-asyncio>=0.21.1
+pytest-cov>=4.1.0
+pytest-timeout>=2.1.0
+pytest-mock>=3.10.0
+pytest-xdist>=3.3.1
+
+# Database drivers for testing
+asyncpg>=0.28.0  # Async PostgreSQL driver
+aiosqlite>=0.19.0  # Async SQLite driver for testing
+
+# Mocking and fixtures
+httpx>=0.24.1  # For testing HTTP clients
+faker>=18.10.1  # For generating test data
+
+# Security testing
+bandit>=1.7.5  # Security linting
+safety>=2.3.5  # Dependency vulnerability checking

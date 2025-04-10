@@ -1,107 +1,142 @@
 """
-Global test fixtures and configurations for pytest.
+Test Configuration for Novamind Digital Twin Platform.
 
-This module provides test fixtures that are available to all test modules.
+This module provides pytest fixtures for testing both unit and integration tests.
+It includes configurations for both standalone testing and database-dependent testing.
 """
 import os
 import pytest
-import asyncio
-from typing import AsyncGenerator, Generator
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+import pytest_asyncio
+from typing import AsyncGenerator, Dict, Any, List, Optional
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-# Set test environment variable
-os.environ["TESTING"] = "1"
-
-# Import DB dependencies after setting testing environment
-from app.core.db import Base, get_session
-from app.domain.entities.base import BaseEntity
-from app.infrastructure.repositories.base import BaseRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
 
-@pytest.fixture(scope="session")
-def event_loop() -> Generator:
-    """Create an instance of the default event loop for the test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+# Determine if we're in test mode and what type of tests we're running
+is_test_mode = os.environ.get("TESTING") == "1"
+test_type = os.environ.get("TEST_TYPE", "unit")  # 'unit' or 'integration'
 
 
-@pytest.fixture(scope="session")
-def sqlite_test_db_url() -> str:
-    """Get a SQLite database URL for testing."""
-    return "sqlite+aiosqlite:///:memory:"
-
-
-@pytest.fixture(scope="session")
-async def test_engine(sqlite_test_db_url):
-    """Create a test SQLAlchemy engine using SQLite."""
-    engine = create_async_engine(
-        sqlite_test_db_url,
-        echo=False,
-        future=True,
-    )
-    
-    # Create all tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
-    yield engine
-    
-    # Clean up
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-    
-    await engine.dispose()
-
-
-@pytest.fixture
-async def test_db(test_engine) -> AsyncGenerator[AsyncSession, None]:
+# Create different database configurations based on test type
+@pytest_asyncio.fixture
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """
-    Get a test database session.
+    Fixture for database session in tests.
     
-    This fixture provides an actual SQLite database session for integration tests
-    that need to test real database operations.
+    This fixture provides different session implementations based on test type:
+    - For unit tests: Returns a MockAsyncSession
+    - For integration tests: Returns a real AsyncSession with in-memory SQLite
+    
+    Yields:
+        AsyncSession: Database session for testing
     """
-    async_session = sessionmaker(
-        test_engine, class_=AsyncSession, expire_on_commit=False
-    )
-    
-    async with async_session() as session:
-        yield session
-        # Roll back all changes
-        await session.rollback()
+    if test_type == "unit":
+        # For unit tests, use a mock session
+        mock_session = MockAsyncSession()
+        yield mock_session
+    else:
+        # For integration tests, use an actual in-memory database
+        engine = create_async_engine(
+            "sqlite+aiosqlite:///:memory:",
+            echo=False,
+            future=True,
+        )
+        
+        # Create tables if needed (would need to import metadata from models)
+        # async with engine.begin() as conn:
+        #     await conn.run_sync(Base.metadata.create_all)
+        
+        # Create session factory
+        async_session = sessionmaker(
+            engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+        
+        # Create and yield session
+        async with async_session() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
+        
+        # Clean up (drop tables)
+        # async with engine.begin() as conn:
+        #     await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest.fixture
-def mock_db() -> MockAsyncSession:
+def test_user() -> Dict[str, Any]:
     """
-    Get a mock database session.
+    Fixture that provides a test user for authentication testing.
     
-    This fixture provides a mocked SQLAlchemy session for unit tests,
-    to avoid database connections and speed up testing.
+    Returns:
+        Dict[str, Any]: A dictionary representing a test user
     """
-    return MockAsyncSession()
+    return {
+        "id": "test-user-id-12345",
+        "username": "test_user",
+        "email": "test_user@example.com",
+        "roles": ["user"]
+    }
 
 
 @pytest.fixture
-def test_entity() -> BaseEntity:
-    """Provide a base test entity for testing."""
-    return BaseEntity()
-
-
-@pytest.fixture
-def test_repository(mock_db) -> BaseRepository:
-    """Provide a base repository with a mock session for testing."""
-    return BaseRepository(session=mock_db)
-
-
-# Override the real session dependency with test session
-@pytest.fixture
-def override_get_session(test_db):
-    """Override the get_session dependency for FastAPI testing."""
-    async def _get_session():
-        yield test_db
+def admin_user() -> Dict[str, Any]:
+    """
+    Fixture that provides an admin user for authorization testing.
     
-    return _get_session
+    Returns:
+        Dict[str, Any]: A dictionary representing an admin user
+    """
+    return {
+        "id": "admin-user-id-67890",
+        "username": "admin_user",
+        "email": "admin@example.com",
+        "roles": ["admin", "user"]
+    }
+
+
+@pytest.fixture
+def clinician_user() -> Dict[str, Any]:
+    """
+    Fixture that provides a clinician user for authorization testing.
+    
+    Returns:
+        Dict[str, Any]: A dictionary representing a clinician user
+    """
+    return {
+        "id": "clinician-user-id-54321",
+        "username": "clinician_user",
+        "email": "clinician@example.com",
+        "roles": ["clinician", "user"]
+    }
+
+
+@pytest.fixture
+def mock_auth_service() -> MagicMock:
+    """
+    Fixture that provides a mock authentication service.
+    
+    Returns:
+        MagicMock: A configured mock authentication service
+    """
+    mock = MagicMock()
+    mock.authenticate.return_value = True
+    mock.get_user_by_id.return_value = {
+        "id": "test-user-id-12345",
+        "username": "test_user",
+        "email": "test_user@example.com",
+        "roles": ["user"]
+    }
+    return mock

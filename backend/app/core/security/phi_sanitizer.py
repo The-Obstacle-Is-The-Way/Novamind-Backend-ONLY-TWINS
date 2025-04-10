@@ -1,149 +1,172 @@
 """
-PHI sanitization utilities for HIPAA compliance.
+PHI Sanitization module for the Novamind Digital Twin Platform.
 
-This module provides tools to detect and sanitize Protected Health Information (PHI)
-from various data structures before logging, error reporting, or external transmission.
+This module provides functionality for detecting and sanitizing Protected Health
+Information (PHI) from logs, error messages, and other text to ensure HIPAA compliance.
 """
-
 import re
-from typing import Dict, List, Any, Union, Pattern, Optional
+from typing import Dict, Any, List, Union, Optional, Pattern
+import logging
+from datetime import datetime
 
 
 class PHISanitizer:
     """
-    Class responsible for sanitizing Protected Health Information (PHI) from data.
+    Class for detecting and sanitizing Protected Health Information (PHI).
     
-    This sanitizer can detect and redact common PHI patterns in strings, or recursively
-    process complex data structures (dictionaries, lists) to sanitize PHI at all levels.
+    This class provides methods to detect various types of PHI in text
+    and replace them with safe placeholders to ensure HIPAA compliance.
     """
     
-    # Default PHI patterns to detect
-    DEFAULT_PHI_PATTERNS = [
-        # Names (first and last names adjacent to each other)
-        r'(?i)\b[A-Z][a-z]+ [A-Z][a-z]+\b',
+    def __init__(self):
+        """Initialize PHI detection patterns."""
+        # Define regex patterns for different PHI types
+        self._patterns: Dict[str, Pattern] = {
+            "names": re.compile(r'\b[A-Z][a-z]+ [A-Z][a-z]+\b'),  # Basic name pattern
+            "ssn": re.compile(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b'),  # SSN pattern
+            "dob": re.compile(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b'),  # Date pattern
+            "phone": re.compile(r'\b\(?[2-9]\d{2}\)?[-\s]?\d{3}[-\s]?\d{4}\b'),  # Phone pattern
+            "email": re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'),  # Email pattern
+            "address": re.compile(r'\b\d+\s[A-Za-z0-9\s,]+\b(?:\s*(?:Apt|Unit|Suite)\s*[A-Za-z0-9]+)?'),  # Address pattern
+            "mrn": re.compile(r'\b(?:MR[-\s]?|#)?\d{5,10}\b'),  # Medical Record Number pattern
+            "ip_address": re.compile(r'\b(?:\d{1,3}\.){3}\d{1,3}\b'),  # IP address pattern
+            "credit_card": re.compile(r'\b(?:\d{4}[-\s]?){3}\d{4}\b'),  # Credit card pattern
+            "zip_code": re.compile(r'\b\d{5}(?:[-\s]\d{4})?\b'),  # ZIP code pattern
+        }
         
-        # Email addresses
-        r'(?i)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
+        # Initialize a logger
+        self._logger = logging.getLogger(__name__)
         
-        # US Social Security Numbers
-        r'\b\d{3}-\d{2}-\d{4}\b',
-        
-        # US Phone numbers
-        r'(?:\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}',
-        
-        # Dates that could be birthdates
-        r'\b\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}\b',
-        
-        # Street addresses
-        r'\b\d+\s+[\w\s]+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Court|Ct|Lane|Ln|Way|Parkway|Pkwy|Place|Pl)\b',
-        
-        # ZIP codes
-        r'\b\d{5}(?:-\d{4})?\b',
-        
-        # Medical Record Numbers (common formats)
-        r'\b(?:MRN)?[A-Z0-9]{6,10}\b',
-        
-        # Health plan beneficiary numbers
-        r'\b[A-Z]{1,2}[0-9]{6,12}\b',
-        
-        # Account numbers
-        r'\bACC[0-9]{6,12}\b',
-        
-        # Certificate/license numbers
-        r'\b(?:LIC|CERT)[A-Z0-9]{6,12}\b',
-        
-        # Vehicle identifiers
-        r'\b[A-Z0-9]{1,3}[\s-]?[A-Z0-9]{3,7}\b',
-        
-        # Device identifiers and serial numbers
-        r'\b(?:DEV|SN)[A-Z0-9]{6,12}\b',
-        
-        # Biometric identifiers
-        r'\b(?:BIO|BIOID)[A-Z0-9]{6,12}\b',
-        
-        # URLs containing identifiable information
-        r'https?://[^\s/$.?#].[^\s]*(?:patient|profile|id)[=][^\s&]+',
-        
-        # IP addresses
-        r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
-    ]
-    
-    def __init__(self, additional_patterns: Optional[List[str]] = None):
+    def sanitize(self, text: Union[str, Dict, List, Any]) -> Union[str, Dict, List, Any]:
         """
-        Initialize the PHI sanitizer with default and custom patterns.
+        Sanitize PHI from text or data structures.
+        
+        This method detects and replaces PHI in text. It can process strings,
+        dictionaries, lists, or other data structures recursively.
         
         Args:
-            additional_patterns: Optional list of additional regex patterns to detect as PHI
-        """
-        patterns = self.DEFAULT_PHI_PATTERNS.copy()
-        
-        if additional_patterns:
-            patterns.extend(additional_patterns)
-        
-        # Compile patterns for better performance
-        self.patterns = [re.compile(pattern) for pattern in patterns]
-    
-    def sanitize(self, data: Any) -> Any:
-        """
-        Sanitize PHI from any data structure.
-        
-        This method can handle strings, dictionaries, lists, and nested combinations.
-        The original structure is preserved, but PHI content is replaced with [REDACTED].
-        
-        Args:
-            data: The data to sanitize, can be a string, dict, list, or nested structure
+            text: Text or data structure to sanitize
             
         Returns:
-            The sanitized data with the same structure as the input
+            Sanitized text or data structure
         """
-        if isinstance(data, str):
-            return self._sanitize_string(data)
-        elif isinstance(data, dict):
-            return self._sanitize_dict(data)
-        elif isinstance(data, list):
-            return self._sanitize_list(data)
+        if isinstance(text, str):
+            return self._sanitize_string(text)
+        elif isinstance(text, dict):
+            return self._sanitize_dict(text)
+        elif isinstance(text, list):
+            return self._sanitize_list(text)
         else:
-            # For other data types (int, float, bool, None), return as is
-            return data
+            # Return other data types unchanged
+            return text
     
     def _sanitize_string(self, text: str) -> str:
         """
-        Sanitize PHI from a string by replacing matches with [REDACTED].
+        Sanitize PHI from a string.
         
         Args:
-            text: The string to sanitize
+            text: String to sanitize
             
         Returns:
-            The sanitized string with PHI replaced by [REDACTED]
+            Sanitized string
         """
-        sanitized = text
-        for pattern in self.patterns:
-            sanitized = pattern.sub("[REDACTED]", sanitized)
-        return sanitized
+        # Track if PHI was detected
+        phi_detected = False
+        detected_types = []
+        
+        # Process with each pattern
+        for phi_type, pattern in self._patterns.items():
+            # Find all matches
+            matches = pattern.findall(text)
+            
+            # Replace each match with [REDACTED]
+            if matches:
+                phi_detected = True
+                detected_types.append(phi_type)
+                text = pattern.sub("[REDACTED]", text)
+        
+        # Log PHI detection if any was found (but don't log the actual PHI)
+        if phi_detected:
+            self._log_phi_detection(
+                text_length=len(text),
+                detected_types=detected_types
+            )
+        
+        return text
     
-    def _sanitize_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _sanitize_dict(self, data: Dict) -> Dict:
         """
-        Recursively sanitize PHI from a dictionary and its nested structures.
+        Sanitize PHI from a dictionary recursively.
         
         Args:
-            data: The dictionary to sanitize
+            data: Dictionary to sanitize
             
         Returns:
-            A new dictionary with the same structure but sanitized values
+            Sanitized dictionary
         """
         result = {}
         for key, value in data.items():
             result[key] = self.sanitize(value)
         return result
     
-    def _sanitize_list(self, data: List[Any]) -> List[Any]:
+    def _sanitize_list(self, data: List) -> List:
         """
-        Recursively sanitize PHI from a list and its items.
+        Sanitize PHI from a list recursively.
         
         Args:
-            data: The list to sanitize
+            data: List to sanitize
             
         Returns:
-            A new list with the same structure but sanitized items
+            Sanitized list
         """
         return [self.sanitize(item) for item in data]
+    
+    def _log_phi_detection(self, text_length: int, detected_types: List[str]) -> None:
+        """
+        Log detection of PHI (without including the actual PHI).
+        
+        Args:
+            text_length: Length of the text where PHI was detected
+            detected_types: Types of PHI detected
+        """
+        # Get the current user ID from the security context if available
+        user_id = self._get_current_user_id()
+        
+        # Log the detection event
+        self.log_phi_detection(
+            user_id=user_id,
+            details={
+                "text_length": text_length,
+                "detected_types": detected_types,
+                "timestamp": datetime.now().isoformat()
+            }
+        )
+    
+    def _get_current_user_id(self) -> str:
+        """
+        Get the current user ID from the security context.
+        
+        Returns:
+            User ID if available, otherwise "system"
+        """
+        try:
+            # In a real implementation, this would get the current user ID
+            # from the security context, but for testing we'll use a placeholder
+            return "system"
+        except Exception:
+            return "system"
+    
+    def log_phi_detection(self, user_id: str, details: Dict[str, Any]) -> None:
+        """
+        Log PHI detection event.
+        
+        This method would typically send the event to an audit logging system.
+        
+        Args:
+            user_id: ID of the user who triggered the event
+            details: Additional details about the event
+        """
+        # In a real implementation, this would log to a secure audit log
+        self._logger.warning(
+            f"PHI detection event by user {user_id}: {len(details.get('detected_types', []))} type(s) detected"
+        )

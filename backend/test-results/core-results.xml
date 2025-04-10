@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="3" failures="0" skipped="0" tests="3" time="0.372" timestamp="2025-04-10T07:15:24.312812" hostname="MacBookPro"><testcase classname="" name="app.tests.core.test_config" time="0.000"><error message="collection failure">ImportError while importing test module '/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/core/test_config.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+app/tests/core/test_config.py:11: in &lt;module&gt;
+    from app.core.config import Settings
+E   ImportError: cannot import name 'Settings' from 'app.core.config' (/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/core/config/__init__.py)</error></testcase><testcase classname="" name="app.tests.core.test_db" time="0.000"><error message="collection failure">app/tests/core/test_db.py:10: in &lt;module&gt;
+    from app.core.db import engine, init_db, get_session, Base
+app/core/db.py:20: in &lt;module&gt;
+    engine = create_async_engine(
+novamind_venv/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/engine.py:121: in create_async_engine
+    return AsyncEngine(sync_engine)
+novamind_venv/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/engine.py:1033: in __init__
+    raise exc.InvalidRequestError(
+E   sqlalchemy.exc.InvalidRequestError: The asyncio extension requires an async driver to be used. The loaded 'psycopg2' is not async.</error></testcase><testcase classname="" name="app.tests.core.security.test_base_security" time="0.000"><error message="collection failure">ImportError while importing test module '/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/core/security/test_base_security.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+app/tests/core/security/test_base_security.py:9: in &lt;module&gt;
+    from app.core.security.authentication import authenticate_user, get_current_user
+E   ModuleNotFoundError: No module named 'app.core.security.authentication'</error></testcase></testsuite></testsuites>
