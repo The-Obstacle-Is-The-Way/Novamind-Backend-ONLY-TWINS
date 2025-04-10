@@ -1,37 +1,60 @@
 # -*- coding: utf-8 -*-
 """
-Digital Twins API Endpoints.
+Digital Twin API endpoints.
 
-This module provides FastAPI routes for managing patient digital twins
-using the MentaLLaMA framework with HIPAA compliance.
+This module provides FastAPI endpoints for interacting with Digital Twin services.
+These endpoints allow clinicians and systems to query patient digital twin models,
+get insights, and simulate treatment outcomes.
 """
 
 import logging
-import uuid
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
-
+from uuid import UUID
 from app.core.exceptions.ml_exceptions import (
+    ModelInferenceError as CoreModelInferenceError,
+    ModelNotFoundError,
+    ServiceUnavailableError,
     DigitalTwinError,
-    SimulationError,
-    TwinNotFoundError,
-    TwinStorageError
+    DigitalTwinInferenceError,
+    DigitalTwinSessionError,
+    SimulationError
 )
-from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
+from app.domain.exceptions import ValidationError, ModelInferenceError as DomainModelInferenceError
+from app.domain.exceptions import ValidationError
 from app.presentation.api.dependencies import get_digital_twin_service
-from app.presentation.api.schemas.ml_schemas import (
-    DigitalTwinCreateRequest,
-    DigitalTwinResponse,
-    DigitalTwinUpdateRequest,
-    SimulationRequest,
-    SimulationResponse
+from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
+from app.presentation.api.v1.schemas.digital_twin_schemas import (
+    DigitalTwinStatusResponse,
+    PatientInsightsResponse,
+    SymptomForecastResponse,
+    BiometricCorrelationResponse,
+    MedicationResponsePredictionResponse,
+    TreatmentPlanResponse
 )
 
 
-logger = logging.getLogger(__name__)
+async def get_current_user_id(request: Request) -> UUID:
+    """
+    Get the ID of the currently authenticated user.
+    
+    In a real implementation, this would extract the user ID from
+    the authentication token or session. For this mock implementation,
+    we return a fixed UUID.
+    
+    Args:
+        request: The FastAPI request object
+        
+    Returns:
+        User UUID
+    """
+    # In a real implementation, this would come from the auth token
+    # For now, we'll return a fixed ID for testing
+    return UUID("00000000-0000-0000-0000-000000000001")
+
 
 router = APIRouter(
     prefix="/digital-twins",
@@ -45,376 +68,411 @@ router = APIRouter(
 )
 
 
-@router.post(
-    "/",
-    response_model=DigitalTwinResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Create a new digital twin",
-    description="""
-    Create a new digital twin for a patient.
-    
-    This endpoint creates a new digital twin model for a patient based on
-    their clinical data. The twin can be used for treatment simulation,
-    outcome prediction, and personalized care planning.
-    """,
+@router.get(
+    "/patients/{patient_id}/status",
+    response_model=DigitalTwinStatusResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get Digital Twin status for a patient",
+    description="Retrieves the current status and completeness of a patient's Digital Twin model."
 )
-async def create_digital_twin(
-    request: DigitalTwinCreateRequest,
+async def get_digital_twin_status(
+    patient_id: UUID4 = Path(..., description="Patient ID"),
     digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
-) -> DigitalTwinResponse:
+    current_user_id: UUID = Depends(get_current_user_id)
+):
     """
-    Create a new digital twin for a patient.
+    Get the current status of a patient's Digital Twin.
     
     Args:
-        request: Creation request with patient data
-        digital_twin_service: Digital twin service instance
-        
+        patient_id: Unique identifier for the patient
+        digital_twin_service: Digital Twin integration service
+        current_user_id: ID of the authenticated user
+    
     Returns:
-        Created digital twin information
-        
+        Digital Twin status response
+    
     Raises:
-        HTTPException: If twin creation fails
+        HTTPException: If an error occurs during processing
     """
     try:
-        # Log operation (no PHI)
-        twin_id = str(uuid.uuid4())
-        logger.info(f"Digital twin creation requested, ID: {twin_id}")
-        
-        # Create digital twin
-        result = await digital_twin_service.create_twin(
-            twin_id=twin_id,
-            patient_id=request.patient_id,
-            clinical_data=request.clinical_data,
-            demographic_data=request.demographic_data,
-            parameters=request.parameters
-        )
-        
-        # Log completion (no PHI)
-        logger.info(f"Digital twin created successfully, ID: {twin_id}")
-        
-        return result
-        
-    except TwinStorageError as e:
-        logger.error(f"Twin storage error: {str(e)}")
+        status_response = await digital_twin_service.get_digital_twin_status(patient_id)
+        return status_response
+    except (ModelNotFoundError, ServiceUnavailableError, ValidationError) as e:
+        # Handle errors without leaking PHI
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to store digital twin. Please try again.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
-        
-    except DigitalTwinError as e:
-        logger.error(f"Digital twin creation error: {str(e)}")
+    except (CoreModelInferenceError, DomainModelInferenceError) as e:
+        # Explicitly handle ModelInferenceError to ensure it returns a 400
+        logging.error(f"Error in get_digital_twin_status: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create digital twin. Please try again.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
-        
     except Exception as e:
-        logger.error(f"Unexpected error in digital twin creation: {str(e)}")
+        # Log the full error but return a generic message to avoid leaking PHI
+        logging.error(f"Error in get_digital_twin_status: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred. Please try again later.",
+            detail="An unexpected error occurred processing the digital twin status"
         )
 
 
 @router.get(
-    "/{twin_id}",
-    response_model=DigitalTwinResponse,
+    "/patients/{patient_id}/insights",
+    response_model=PatientInsightsResponse,
     status_code=status.HTTP_200_OK,
-    summary="Get digital twin",
-    description="""
-    Retrieve a digital twin by ID.
-    
-    This endpoint retrieves information about an existing digital twin,
-    including its current state, parameters, and metadata.
-    """,
+    summary="Get comprehensive patient insights",
+    description="Retrieves comprehensive insights about a patient from their Digital Twin model."
 )
-async def get_digital_twin(
-    twin_id: UUID4 = Path(..., description="ID of the digital twin to retrieve"),
+async def get_patient_insights(
+    patient_id: UUID4 = Path(..., description="Patient ID"),
+    include_symptom_forecast: bool = Query(True, description="Include symptom forecasting insights"),
+    include_biometric_correlations: bool = Query(True, description="Include biometric correlations"),
+    include_medication_predictions: bool = Query(True, description="Include medication response predictions"),
     digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
-) -> DigitalTwinResponse:
+    current_user_id: UUID = Depends(get_current_user_id)
+):
     """
-    Retrieve a digital twin by ID.
+    Get comprehensive insights for a patient from their Digital Twin model.
     
     Args:
-        twin_id: Digital twin ID
-        digital_twin_service: Digital twin service instance
-        
+        patient_id: Unique identifier for the patient
+        include_symptom_forecast: Whether to include symptom forecasting insights
+        include_biometric_correlations: Whether to include biometric correlations
+        include_medication_predictions: Whether to include medication response predictions
+        digital_twin_service: Digital Twin integration service
+        current_user_id: ID of the authenticated user
+    
     Returns:
-        Digital twin information
-        
+        Comprehensive patient insights
+    
     Raises:
-        HTTPException: If twin is not found or retrieval fails
+        HTTPException: If an error occurs during processing
     """
     try:
-        # Log operation (no PHI)
-        logger.info(f"Digital twin retrieval requested, ID: {twin_id}")
+        options = {
+            "include_symptom_forecast": include_symptom_forecast,
+            "include_biometric_correlations": include_biometric_correlations,
+            "include_medication_predictions": include_medication_predictions
+        }
         
-        # Get digital twin
-        result = await digital_twin_service.get_twin(twin_id=str(twin_id))
-        
-        # Log completion (no PHI)
-        logger.info(f"Digital twin retrieved successfully, ID: {twin_id}")
-        
-        return result
-        
-    except TwinNotFoundError:
-        logger.warning(f"Digital twin not found, ID: {twin_id}")
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Digital twin with ID {twin_id} not found",
+        insights = await digital_twin_service.generate_comprehensive_patient_insights(
+            patient_id=patient_id,
+            options=options
         )
         
+        return insights
+    except (ModelNotFoundError, ServiceUnavailableError, ValidationError) as e:
+        # Handle errors without leaking PHI
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except (CoreModelInferenceError, DomainModelInferenceError) as e:
+        # Explicitly handle ModelInferenceError to ensure it returns a 400
+        logging.error(f"Error in get_patient_insights: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except Exception as e:
-        logger.error(f"Unexpected error in digital twin retrieval: {str(e)}")
+        # Log the full error but return a generic message to avoid leaking PHI
+        logging.error(f"Error in get_patient_insights: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve digital twin. Please try again.",
+            detail="An unexpected error occurred processing patient insights"
         )
 
 
-@router.put(
-    "/{twin_id}",
-    response_model=DigitalTwinResponse,
+@router.post(
+    "/patients/{patient_id}/update",
+    response_model=DigitalTwinStatusResponse,
     status_code=status.HTTP_200_OK,
-    summary="Update digital twin",
-    description="""
-    Update an existing digital twin.
-    
-    This endpoint updates an existing digital twin with new clinical data,
-    parameters, or other information. It can be used to keep the twin
-    synchronized with real patient data.
-    """,
+    summary="Update patient Digital Twin",
+    description="Updates a patient's Digital Twin model with new data."
 )
 async def update_digital_twin(
-    request: DigitalTwinUpdateRequest,
-    twin_id: UUID4 = Path(..., description="ID of the digital twin to update"),
+    update_data: Dict,
+    patient_id: UUID4 = Path(..., description="Patient ID"),
     digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
-) -> DigitalTwinResponse:
+    current_user_id: UUID = Depends(get_current_user_id)
+):
     """
-    Update an existing digital twin.
+    Update a patient's Digital Twin model with new data.
     
     Args:
-        request: Update request with new data
-        twin_id: Digital twin ID
-        digital_twin_service: Digital twin service instance
-        
+        update_data: Data to update the Digital Twin with
+        patient_id: Unique identifier for the patient
+        digital_twin_service: Digital Twin integration service
+        current_user_id: ID of the authenticated user
+    
     Returns:
-        Updated digital twin information
-        
+        Updated Digital Twin status
+    
     Raises:
-        HTTPException: If twin is not found or update fails
+        HTTPException: If an error occurs during processing
     """
     try:
-        # Log operation (no PHI)
-        logger.info(f"Digital twin update requested, ID: {twin_id}")
-        
-        # Update digital twin
-        result = await digital_twin_service.update_twin(
-            twin_id=str(twin_id),
-            clinical_data=request.clinical_data,
-            parameters=request.parameters
+        # Update the digital twin
+        await digital_twin_service.update_digital_twin(
+            patient_id=patient_id,
+            update_data=update_data
         )
         
-        # Log completion (no PHI)
-        logger.info(f"Digital twin updated successfully, ID: {twin_id}")
-        
-        return result
-        
-    except TwinNotFoundError:
-        logger.warning(f"Digital twin not found for update, ID: {twin_id}")
+        # Get the updated status
+        status_response = await digital_twin_service.get_digital_twin_status(patient_id)
+        return status_response
+    except (ModelNotFoundError, ServiceUnavailableError, ValidationError) as e:
+        # Handle errors without leaking PHI
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Digital twin with ID {twin_id} not found",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
-        
-    except TwinStorageError as e:
-        logger.error(f"Twin storage error during update: {str(e)}")
+    except (CoreModelInferenceError, DomainModelInferenceError) as e:
+        # Explicitly handle ModelInferenceError to ensure it returns a 400
+        logging.error(f"Error in update_digital_twin: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update digital twin. Please try again.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
-        
     except Exception as e:
-        logger.error(f"Unexpected error in digital twin update: {str(e)}")
+        # Log the full error but return a generic message to avoid leaking PHI
+        logging.error(f"Error in update_digital_twin: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred. Please try again later.",
-        )
-
-
-@router.post(
-    "/{twin_id}/simulate",
-    response_model=SimulationResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Run simulation on digital twin",
-    description="""
-    Run a simulation on a digital twin.
-    
-    This endpoint runs a simulation on an existing digital twin to predict
-    treatment outcomes, responses, or other clinical scenarios. It can be
-    used for personalized treatment planning.
-    """,
-)
-async def run_simulation(
-    request: SimulationRequest,
-    twin_id: UUID4 = Path(..., description="ID of the digital twin to simulate"),
-    digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
-) -> SimulationResponse:
-    """
-    Run a simulation on a digital twin.
-    
-    Args:
-        request: Simulation parameters
-        twin_id: Digital twin ID
-        digital_twin_service: Digital twin service instance
-        
-    Returns:
-        Simulation results
-        
-    Raises:
-        HTTPException: If twin is not found or simulation fails
-    """
-    try:
-        # Log operation (no PHI)
-        logger.info(
-            f"Digital twin simulation requested, ID: {twin_id}, "
-            f"scenario: {request.scenario}"
-        )
-        
-        # Run simulation
-        result = await digital_twin_service.run_simulation(
-            twin_id=str(twin_id),
-            scenario=request.scenario,
-            parameters=request.parameters,
-            duration=request.duration
-        )
-        
-        # Log completion (no PHI)
-        logger.info(
-            f"Digital twin simulation completed, ID: {twin_id}, "
-            f"scenario: {request.scenario}"
-        )
-        
-        return result
-        
-    except TwinNotFoundError:
-        logger.warning(f"Digital twin not found for simulation, ID: {twin_id}")
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Digital twin with ID {twin_id} not found",
-        )
-        
-    except SimulationError as e:
-        logger.error(f"Simulation error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Simulation failed: {str(e)}",
-        )
-        
-    except Exception as e:
-        logger.error(f"Unexpected error in digital twin simulation: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred. Please try again later.",
-        )
-
-
-@router.delete(
-    "/{twin_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete digital twin",
-    description="""
-    Delete a digital twin.
-    
-    This endpoint deletes an existing digital twin. This operation cannot
-    be undone, but an audit trail of the deletion is maintained.
-    """,
-)
-async def delete_digital_twin(
-    twin_id: UUID4 = Path(..., description="ID of the digital twin to delete"),
-    digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
-) -> None:
-    """
-    Delete a digital twin.
-    
-    Args:
-        twin_id: Digital twin ID
-        digital_twin_service: Digital twin service instance
-        
-    Raises:
-        HTTPException: If twin is not found or deletion fails
-    """
-    try:
-        # Log operation (no PHI)
-        logger.info(f"Digital twin deletion requested, ID: {twin_id}")
-        
-        # Delete digital twin
-        await digital_twin_service.delete_twin(twin_id=str(twin_id))
-        
-        # Log completion (no PHI)
-        logger.info(f"Digital twin deleted successfully, ID: {twin_id}")
-        
-        return None
-        
-    except TwinNotFoundError:
-        logger.warning(f"Digital twin not found for deletion, ID: {twin_id}")
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Digital twin with ID {twin_id} not found",
-        )
-        
-    except Exception as e:
-        logger.error(f"Unexpected error in digital twin deletion: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete digital twin. Please try again.",
+            detail="An unexpected error occurred updating the digital twin"
         )
 
 
 @router.get(
-    "/",
-    response_model=List[DigitalTwinResponse],
+    "/patients/{patient_id}/symptom-forecast",
+    response_model=SymptomForecastResponse,
     status_code=status.HTTP_200_OK,
-    summary="List digital twins",
-    description="""
-    List digital twins for a patient.
-    
-    This endpoint retrieves a list of all digital twins for a specific patient,
-    optionally filtered by parameters.
-    """,
+    summary="Get symptom forecast for patient",
+    description="Retrieves a forecast of symptom progression for a patient."
 )
-async def list_patient_twins(
-    patient_id: str = Query(..., description="Patient ID to list twins for"),
+async def get_symptom_forecast(
+    patient_id: UUID4 = Path(..., description="Patient ID"),
+    days: int = Query(30, description="Number of days to forecast"),
     digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
-) -> List[DigitalTwinResponse]:
+    current_user_id: UUID = Depends(get_current_user_id)
+):
     """
-    List digital twins for a patient.
+    Get a forecast of symptom progression for a patient.
     
     Args:
-        patient_id: Patient ID to list twins for
-        digital_twin_service: Digital twin service instance
-        
+        patient_id: Unique identifier for the patient
+        days: Number of days to forecast
+        digital_twin_service: Digital Twin integration service
+        current_user_id: ID of the authenticated user
+    
     Returns:
-        List of digital twins for the patient
-        
+        Symptom forecast
+    
     Raises:
-        HTTPException: If listing fails
+        HTTPException: If an error occurs during processing
     """
     try:
-        # Log operation (no PHI)
-        logger.info(f"Digital twin listing requested for patient")
+        forecast = await digital_twin_service.symptom_forecasting_service.forecast_symptoms(
+            patient_id=patient_id,
+            days=days
+        )
         
-        # List digital twins
-        results = await digital_twin_service.list_twins(patient_id=patient_id)
-        
-        # Log completion (no PHI)
-        logger.info(f"Retrieved {len(results)} digital twins")
-        
-        return results
-        
+        return forecast
+    except (ModelNotFoundError, ServiceUnavailableError, ValidationError) as e:
+        # Handle errors without leaking PHI
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except (CoreModelInferenceError, DomainModelInferenceError) as e:
+        # Explicitly handle ModelInferenceError to ensure it returns a 400
+        logging.error(f"Error in get_symptom_forecast: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except Exception as e:
-        logger.error(f"Unexpected error in digital twin listing: {str(e)}")
+        # Log the full error but return a generic message to avoid leaking PHI
+        logging.error(f"Error in get_symptom_forecast: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to list digital twins. Please try again.",
+            detail="An unexpected error occurred generating symptom forecast"
+        )
+
+
+@router.get(
+    "/patients/{patient_id}/biometric-correlations",
+    response_model=BiometricCorrelationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get biometric correlations for patient",
+    description="Retrieves correlations between biometric data and mental health indicators."
+)
+async def get_biometric_correlations(
+    patient_id: UUID4 = Path(..., description="Patient ID"),
+    days: int = Query(30, description="Number of days of data to analyze"),
+    digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
+    current_user_id: UUID = Depends(get_current_user_id)
+):
+    """
+    Get correlations between biometric data and mental health indicators.
+    
+    Args:
+        patient_id: Unique identifier for the patient
+        days: Number of days of data to analyze
+        digital_twin_service: Digital Twin integration service
+        current_user_id: ID of the authenticated user
+    
+    Returns:
+        Biometric correlations
+    
+    Raises:
+        HTTPException: If an error occurs during processing
+    """
+    try:
+        correlations = await digital_twin_service.biometric_correlation_service.analyze_correlations(
+            patient_id=patient_id,
+            window_days=days
+        )
+        
+        return correlations
+    except (ModelNotFoundError, ServiceUnavailableError, ValidationError) as e:
+        # Handle errors without leaking PHI
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except (CoreModelInferenceError, DomainModelInferenceError) as e:
+        # Explicitly handle ModelInferenceError to ensure it returns a 400
+        logging.error(f"Error in get_biometric_correlations: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        # Log the full error but return a generic message to avoid leaking PHI
+        logging.error(f"Error in get_biometric_correlations: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred analyzing biometric correlations"
+        )
+
+
+@router.post(
+    "/patients/{patient_id}/medication-response",
+    response_model=MedicationResponsePredictionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Predict medication response",
+    description="Predicts a patient's response to specified medications."
+)
+async def predict_medication_response(
+    request_data: Dict,
+    patient_id: UUID4 = Path(..., description="Patient ID"),
+    digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
+    current_user_id: UUID = Depends(get_current_user_id)
+):
+    """
+    Predict a patient's response to specified medications.
+    
+    Args:
+        request_data: Request data containing medications to predict response for
+        patient_id: Unique identifier for the patient
+        digital_twin_service: Digital Twin integration service
+        current_user_id: ID of the authenticated user
+    
+    Returns:
+        Medication response predictions
+    
+    Raises:
+        HTTPException: If an error occurs during processing
+    """
+    try:
+        medications = request_data.get("medications", [])
+        
+        predictions = await digital_twin_service.pharmacogenomics_service.predict_medication_responses(
+            patient_id=patient_id,
+            medications=medications
+        )
+        
+        return predictions
+    except (ModelNotFoundError, ServiceUnavailableError, ValidationError) as e:
+        # Handle errors without leaking PHI
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except (CoreModelInferenceError, DomainModelInferenceError) as e:
+        # Explicitly handle ModelInferenceError to ensure it returns a 400
+        logging.error(f"Error in predict_medication_response: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        # Log the full error but return a generic message to avoid leaking PHI
+        logging.error(f"Error in predict_medication_response: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred predicting medication response"
+        )
+
+
+@router.post(
+    "/patients/{patient_id}/treatment-plan",
+    response_model=TreatmentPlanResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Generate treatment plan",
+    description="Generates a personalized treatment plan for a patient."
+)
+async def generate_treatment_plan(
+    request_data: Dict,
+    patient_id: UUID4 = Path(..., description="Patient ID"),
+    digital_twin_service: DigitalTwinIntegrationService = Depends(get_digital_twin_service),
+    current_user_id: UUID = Depends(get_current_user_id)
+):
+    """
+    Generate a personalized treatment plan for a patient.
+    
+    Args:
+        request_data: Request data containing treatment plan parameters
+        patient_id: Unique identifier for the patient
+        digital_twin_service: Digital Twin integration service
+        current_user_id: ID of the authenticated user
+    
+    Returns:
+        Personalized treatment plan
+    
+    Raises:
+        HTTPException: If an error occurs during processing
+    """
+    try:
+        treatment_plan = await digital_twin_service.pharmacogenomics_service.recommend_treatment_plan(
+            patient_id=patient_id,
+            diagnosis=request_data.get("diagnosis"),
+            treatment_goals=request_data.get("treatment_goals", []),
+            treatment_constraints=request_data.get("treatment_constraints", [])
+        )
+        
+        return treatment_plan
+    except (ModelNotFoundError, ServiceUnavailableError, ValidationError) as e:
+        # Handle errors without leaking PHI
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except (CoreModelInferenceError, DomainModelInferenceError) as e:
+        # Explicitly handle ModelInferenceError to ensure it returns a 400
+        logging.error(f"Error in generate_treatment_plan: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        # Log the full error but return a generic message to avoid leaking PHI
+        logging.error(f"Error in generate_treatment_plan: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred generating treatment plan"
         )

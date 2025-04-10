@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: novamind_test
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ENVIRONMENT=test
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/novamind_test
+      - TEST_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/novamind_test
+      - LOG_LEVEL=DEBUG
+      - ENCRYPTION_KEY=test-encryption-key-32-bytes-long!!
+      - JWT_SECRET_KEY=test-jwt-secret-key-for-testing-only
+      - AUDIT_LOG_LEVEL=20
+      - AUDIT_LOG_TO_FILE=False
+      - EXTERNAL_AUDIT_ENABLED=False
+      - PYTHONPATH=/app
+    command: sh -c "pytest -vv -s"
+
+volumes:
+  postgres_test_data:

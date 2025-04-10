@@ -10,7 +10,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, UUID4, Field, validator
+from pydantic import BaseModel, UUID4, Field, field_validator
 
 
 class AnalysisType(str, Enum):
@@ -43,12 +43,13 @@ class ClinicalAnalysisRequest(BaseModel):
         None,
         description="Optional context about the patient (e.g., age, gender, history)"
     )
-    
-    @validator("text")
+    @field_validator("text", mode="before")
+    @classmethod
     def text_not_empty(cls, v: str) -> str:
         """Validate text is not empty or just whitespace."""
-        if v.strip() == "":
+        if v is None or v.strip() == "":
             raise ValueError("Text cannot be empty or just whitespace")
+        return v
         return v
 
 
@@ -180,10 +181,12 @@ class DigitalTwinUpdateRequest(BaseModel):
         description="Updated parameters"
     )
     
-    @validator("clinical_data", "parameters")
-    def at_least_one_field(cls, v: Optional[Dict[str, Any]], values: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    @field_validator("clinical_data", "parameters", mode="after")
+    @classmethod
+    def at_least_one_field(cls, v: Optional[Dict[str, Any]], info) -> Optional[Dict[str, Any]]:
         """Validate at least one field is provided."""
-        if not v and not any(values.values()):
+        model_data = info.data
+        if not v and not any(value for key, value in model_data.items() if key != info.field_name):
             raise ValueError("At least one of clinical_data or parameters must be provided")
         return v
 

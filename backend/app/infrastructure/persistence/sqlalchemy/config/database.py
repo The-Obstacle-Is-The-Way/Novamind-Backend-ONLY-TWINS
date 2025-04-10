@@ -145,7 +145,6 @@ def get_db_instance() -> Database:
         
     return _db_instance
 
-
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
     Get a database session from the session factory.
@@ -158,6 +157,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
     db = get_db_instance()
     async with db.session() as session:
+        yield session
         yield session
 
 

@@ -15,16 +15,19 @@ from app.core.exceptions import (
     ServiceUnavailableError,
 )
 from app.core.services.ml.mock import MockPHIDetection
-from app.tests.security.base_test import BaseSecurityTest
-
+from app.tests.security.base_security_test import BaseSecurityTest
 
 class TestMockPHIDetection(BaseSecurityTest):
     """
     Test suite for MockPHIDetection class.
     
-    These tests verify that the PHI detection service correctly 
+    These tests verify that the PHI detection service correctly
     identifies and redacts protected health information in text.
     """
+    # Add required auth attributes that BaseSecurityTest expects
+    test_user_id = "test-security-user-123"
+    test_roles = ["user", "clinician", "researcher"]
+    
     
     def setUp(self) -> None:
         """Set up test fixtures and service instance."""

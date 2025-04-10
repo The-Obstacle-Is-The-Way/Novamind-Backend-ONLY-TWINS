@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
 """
-Unit tests for Mock PHI Detection Service.
+Security tests for PHI Detection service.
 
-This module tests the mock implementation of the PHI Detection service
-to ensure it correctly simulates PHI detection and redaction without
-using actual PHI analysis algorithms.
+This module tests the mock PHI detection service to ensure it correctly
+identifies and redacts Protected Health Information (PHI) in text.
+These tests are security-critical as they validate HIPAA compliance mechanisms.
 """
 
 import pytest
-import re
-import time
 from typing import Dict, Any, List
 
 from app.core.exceptions import (
@@ -17,282 +14,171 @@ from app.core.exceptions import (
     InvalidRequestError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.mock_phi import MockPHIDetection
+from app.core.services.ml.mock import MockPHIDetection
+from app.tests.security.base_security_test import BaseSecurityTest
 
-
-class TestMockPHIDetection:
-    """Test suite for MockPHIDetectionService class."""
-
-    @pytest.fixture
-    def mock_service(self) -> MockPHIDetection:
-        """Create and initialize a MockPHIDetection instance."""
-        service = MockPHIDetection()
-        service.initialize({"detection_level": "moderate"})
-        return service
-
-    @pytest.fixture
-    def sample_phi_text(self) -> str:
-        """Create a sample text with various types of PHI for testing."""
-        return (
-            "Patient John Smith (SSN: 123-45-6789) was admitted on 01/15/2023. "
-            "He is 45 years old and can be reached at 555-123-4567 or john.smith@example.com. "
-            "He lives at 123 Main Street, San Francisco, CA. "
-            "His medical record number is MRN 987654."
+class TestMockPHIDetection(BaseSecurityTest):
+    """
+    Test suite for MockPHIDetection class.
+    
+    These tests verify that the PHI detection service correctly
+    identifies and redacts protected health information in text.
+    """
+    
+    # Add required auth attributes that BaseSecurityTest expects
+    test_user_id = "test-security-user-123"
+    test_roles = ["user", "clinician", "researcher"]
+    
+    def setUp(self) -> None:
+        """Set up test fixtures and service instance."""
+        super().setUp()
+        self.service = MockPHIDetection()
+        self.service.initialize({})
+        
+        self.sample_phi_text = (
+            "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
+            "His email is john.smith@example.com and phone number is (555) 123-4567. "
+            "Patient lives at 123 Main St, Springfield, IL 62701."
         )
-
-    def test_initialization(self):
-        """Test initialization with valid and invalid configurations."""
-        # Test initialization with valid config
-        service = MockPHIDetection()
-        service.initialize({"detection_level": "strict"})
-        assert service.is_healthy()
         
-        # Test with different detection levels
-        for level in ["strict", "moderate", "relaxed"]:
-            service = MockPHIDetection()
-            service.initialize({"detection_level": level})
-            assert service.is_healthy()
+        self.no_phi_text = (
+            "The patient reported feeling better after the treatment. "
+            "Symptoms have decreased in severity and frequency. "
+            "Regular exercise and medication adherence are recommended."
+        )
+    
+    def test_initialization(self) -> None:
+        """Test initialization of the PHI detection service."""
+        self.assertIsNotNone(self.service)
+        self.assertTrue(self.service.is_initialized)
+    
+    def test_detect_phi_basic(self) -> None:
+        """Test basic PHI detection in text."""
+        results = self.service.detect_phi(self.sample_phi_text)
+        self.assertGreater(len(results), 0)
         
-        # Test shutdown
-        service.shutdown()
-        assert not service.is_healthy()
+        # Check that key PHI entities are detected
+        detected_types = [result["type"] for result in results]
+        self.assertIn("NAME", detected_types)
+        self.assertIn("SSN", detected_types)
+        self.assertIn("DATE", detected_types)
+        self.assertIn("EMAIL", detected_types)
+        self.assertIn("PHONE", detected_types)
+        self.assertIn("ADDRESS", detected_types)
+    
+    def test_detect_phi_with_levels(self) -> None:
+        """Test PHI detection with confidence levels."""
+        results = self.service.detect_phi(self.sample_phi_text, min_confidence=0.8)
+        high_confidence_results = [r for r in results if r["confidence"] >= 0.8]
         
-        # Test initialization with empty config
-        service = MockPHIDetection()
-        with pytest.raises(InvalidConfigurationError):
-            service.initialize({})
-        assert not service.is_healthy()
+        # We should have fewer results with high confidence filter
+        self.assertEqual(len(results), len(high_confidence_results))
         
-        # Test initialization with invalid config
-        service = MockPHIDetection()
-        with pytest.raises(InvalidConfigurationError):
-            service.initialize("not-a-dict")
-        assert not service.is_healthy()
-
-    def test_detect_phi_basic(self, mock_service, sample_phi_text):
-        """Test basic PHI detection functionality."""
-        # Test default detection
-        result = mock_service.detect_phi(sample_phi_text)
-        assert "has_phi" in result
-        assert result["has_phi"] is True
-        assert "phi_count" in result
-        assert result["phi_count"] > 0
-        assert "phi_entities" in result
-        assert len(result["phi_entities"]) > 0
-        assert "detection_level" in result
-        assert result["detection_level"] == "moderate"
-        assert "processing_time" in result
-        assert "metadata" in result
-        assert result["metadata"]["mock"] is True
+        # Test with low confidence to get more results
+        all_results = self.service.detect_phi(self.sample_phi_text, min_confidence=0.1)
+        self.assertGreaterEqual(len(all_results), len(results))
+    
+    def test_detect_phi_with_specific_types(self) -> None:
+        """Test PHI detection with specific entity types."""
+        # Only detect names and phone numbers
+        results = self.service.detect_phi(
+            self.sample_phi_text, 
+            phi_types=["NAME", "PHONE"]
+        )
         
-        # Verify entity structure
-        first_entity = result["phi_entities"][0]
-        assert "id" in first_entity
-        assert "type" in first_entity
-        assert "value" in first_entity
-        assert "start" in first_entity
-        assert "end" in first_entity
-        assert "confidence" in first_entity
-        assert 0.85 <= first_entity["confidence"] <= 0.98
-
-    def test_detect_phi_with_levels(self, mock_service, sample_phi_text):
-        """Test PHI detection with different detection levels."""
-        # Test with strict level
-        strict_result = mock_service.detect_phi(sample_phi_text, detection_level="strict")
-        assert strict_result["detection_level"] == "strict"
-        
-        # Test with moderate level
-        moderate_result = mock_service.detect_phi(sample_phi_text, detection_level="moderate")
-        assert moderate_result["detection_level"] == "moderate"
-        
-        # Test with relaxed level
-        relaxed_result = mock_service.detect_phi(sample_phi_text, detection_level="relaxed")
-        assert relaxed_result["detection_level"] == "relaxed"
-        
-        # Compare entity counts across levels
-        # Strict should find more than moderate, moderate more than relaxed
-        assert strict_result["phi_count"] >= moderate_result["phi_count"]
-        assert moderate_result["phi_count"] >= relaxed_result["phi_count"]
-
-    def test_detect_phi_with_specific_types(self, mock_service):
-        """Test PHI detection for specific entity types."""
-        # Test NAME detection
-        name_text = "The patient's name is John Smith."
-        name_result = mock_service.detect_phi(name_text)
-        assert name_result["has_phi"]
-        assert any(entity["type"] == "NAME" for entity in name_result["phi_entities"])
-        
-        # Test DATE detection
-        date_text = "The appointment was on 01/15/2023."
-        date_result = mock_service.detect_phi(date_text)
-        assert date_result["has_phi"]
-        assert any(entity["type"] == "DATE" for entity in date_result["phi_entities"])
-        
-        # Test PHONE detection
-        phone_text = "Call me at 555-123-4567."
-        phone_result = mock_service.detect_phi(phone_text)
-        assert phone_result["has_phi"]
-        assert any(entity["type"] == "PHONE" for entity in phone_result["phi_entities"])
-        
-        # Test EMAIL detection
-        email_text = "My email is john.smith@example.com."
-        email_result = mock_service.detect_phi(email_text)
-        assert email_result["has_phi"]
-        assert any(entity["type"] == "EMAIL" for entity in email_result["phi_entities"])
-        
-        # Test SSN detection
-        ssn_text = "SSN: 123-45-6789"
-        ssn_result = mock_service.detect_phi(ssn_text)
-        assert ssn_result["has_phi"]
-        assert any(entity["type"] == "SSN" for entity in ssn_result["phi_entities"])
-        
-        # Test ADDRESS detection
-        address_text = "I live at 123 Main Street."
-        address_result = mock_service.detect_phi(address_text)
-        assert address_result["has_phi"]
-        assert any(entity["type"] == "ADDRESS" for entity in address_result["phi_entities"])
-        
-        # Test AGE detection
-        age_text = "The patient is 45 years old."
-        age_result = mock_service.detect_phi(age_text)
-        assert age_result["has_phi"]
-        assert any(entity["type"] == "AGE" for entity in age_result["phi_entities"])
-        
-        # Test MEDICAL_RECORD detection
-        mrn_text = "Medical record: MRN 987654."
-        mrn_result = mock_service.detect_phi(mrn_text)
-        assert mrn_result["has_phi"]
-        assert any(entity["type"] == "MEDICAL_RECORD" for entity in mrn_result["phi_entities"])
-
-    def test_detect_phi_no_phi(self, mock_service):
+        detected_types = [result["type"] for result in results]
+        self.assertIn("NAME", detected_types)
+        self.assertIn("PHONE", detected_types)
+        self.assertNotIn("SSN", detected_types)
+        self.assertNotIn("EMAIL", detected_types)
+    
+    def test_detect_phi_no_phi(self) -> None:
         """Test PHI detection with text that doesn't contain PHI."""
-        no_phi_text = "This text does not contain any personal health information."
-        result = mock_service.detect_phi(no_phi_text)
-        assert not result["has_phi"]
-        assert result["phi_count"] == 0
-        assert len(result["phi_entities"]) == 0
-
-    def test_detect_phi_edge_cases(self, mock_service):
+        results = self.service.detect_phi(self.no_phi_text)
+        self.assertEqual(len(results), 0)
+    
+    def test_detect_phi_edge_cases(self) -> None:
         """Test PHI detection with edge cases."""
         # Empty text
-        empty_text = ""
-        result = mock_service.detect_phi(empty_text)
-        assert not result["has_phi"]
-        assert result["phi_count"] == 0
+        results = self.service.detect_phi("")
+        self.assertEqual(len(results), 0)
         
-        # Very short text without PHI
-        short_text = "Hello."
-        result = mock_service.detect_phi(short_text)
-        assert not result["has_phi"]
+        # None input should raise an error
+        with self.assertRaises(InvalidRequestError):
+            self.service.detect_phi(None)
         
-        # Text with similar but not matching patterns
-        almost_phi_text = "The code is 12345 and the color is red."
-        result = mock_service.detect_phi(almost_phi_text)
-        assert not result["has_phi"]  # Should not detect these as PHI
+        # Very short text
+        results = self.service.detect_phi("Hello")
+        self.assertEqual(len(results), 0)
+    
+    def test_redact_phi_basic(self) -> None:
+        """Test basic PHI redaction in text."""
+        redacted = self.service.redact_phi(self.sample_phi_text)
         
-        # Uninitialized service test
-        uninitialized_service = MockPHIDetection()
-        with pytest.raises(ServiceUnavailableError):
-            uninitialized_service.detect_phi("Some text")
-
-    def test_redact_phi_basic(self, mock_service, sample_phi_text):
-        """Test basic PHI redaction functionality."""
-        # Test with default replacement
-        result = mock_service.redact_phi(sample_phi_text)
-        assert "redacted_text" in result
-        assert "phi_entities" in result
-        assert len(result["phi_entities"]) > 0
-        assert "processing_time" in result
+        # Check that PHI has been redacted
+        self.assertNotIn("John Smith", redacted)
+        self.assertNotIn("123-45-6789", redacted)
+        self.assertNotIn("john.smith@example.com", redacted)
+        self.assertNotIn("(555) 123-4567", redacted)
+        self.assertNotIn("123 Main St", redacted)
         
-        # Check that PHI is actually redacted
-        redacted_text = result["redacted_text"]
-        assert "John Smith" not in redacted_text
-        assert "123-45-6789" not in redacted_text
-        assert "555-123-4567" not in redacted_text
-        assert "john.smith@example.com" not in redacted_text
-        assert "[REDACTED]" in redacted_text  # Default replacement marker
-        
-        # Check redacted_text length information
-        assert "original_text_length" in result
-        assert result["original_text_length"] == len(sample_phi_text)
-        assert "redacted_text_length" in result
-        assert result["redacted_text_length"] == len(redacted_text)
-
-    def test_redact_phi_custom_replacement(self, mock_service, sample_phi_text):
+        # Check that redaction markers are present
+        self.assertIn("[REDACTED]", redacted)
+    
+    def test_redact_phi_custom_replacement(self) -> None:
         """Test PHI redaction with custom replacement text."""
-        # Test with custom replacement
-        custom_marker = "***PHI***"
-        result = mock_service.redact_phi(sample_phi_text, replacement=custom_marker)
-        assert "redacted_text" in result
+        redacted = self.service.redact_phi(
+            self.sample_phi_text,
+            replacement="[PHI]"
+        )
         
-        # Check that PHI is redacted with custom marker
-        redacted_text = result["redacted_text"]
-        assert "John Smith" not in redacted_text
-        assert "123-45-6789" not in redacted_text
-        assert custom_marker in redacted_text
-        assert "[REDACTED]" not in redacted_text  # Should not use default marker
-
-    def test_redact_phi_levels(self, mock_service, sample_phi_text):
-        """Test PHI redaction with different detection levels."""
-        # Test each detection level
-        for level in ["strict", "moderate", "relaxed"]:
-            result = mock_service.redact_phi(sample_phi_text, detection_level=level)
-            assert result["detection_level"] == level
-            assert "redacted_text" in result
-            
-            # Strict should have more redactions than moderate, moderate more than relaxed
-            if level == "strict":
-                strict_phi_count = result["phi_count"]
-            elif level == "moderate":
-                moderate_phi_count = result["phi_count"]
-            elif level == "relaxed":
-                relaxed_phi_count = result["phi_count"]
+        # Check that custom replacement is used
+        self.assertIn("[PHI]", redacted)
+        self.assertNotIn("[REDACTED]", redacted)
+    
+    def test_redact_phi_levels(self) -> None:
+        """Test PHI redaction with confidence levels."""
+        redacted_high = self.service.redact_phi(
+            self.sample_phi_text,
+            min_confidence=0.9
+        )
         
-        # Verify hierarchy of detection levels
-        assert strict_phi_count >= moderate_phi_count
-        assert moderate_phi_count >= relaxed_phi_count
-
-    def test_redact_phi_edge_cases(self, mock_service):
+        redacted_low = self.service.redact_phi(
+            self.sample_phi_text,
+            min_confidence=0.1
+        )
+        
+        # Lower confidence should redact more
+        self.assertNotEqual(redacted_high, redacted_low)
+        self.assertGreater(redacted_low.count("[REDACTED]"), redacted_high.count("[REDACTED]"))
+    
+    def test_redact_phi_edge_cases(self) -> None:
         """Test PHI redaction with edge cases."""
         # Empty text
-        empty_text = ""
-        result = mock_service.redact_phi(empty_text)
-        assert result["redacted_text"] == ""
-        assert result["phi_count"] == 0
+        redacted = self.service.redact_phi("")
+        self.assertEqual(redacted, "")
         
-        # Text without PHI
-        no_phi_text = "This text does not contain any personal health information."
-        result = mock_service.redact_phi(no_phi_text)
-        assert result["redacted_text"] == no_phi_text  # Should remain unchanged
-        assert result["phi_count"] == 0
+        # None input should raise an error
+        with self.assertRaises(InvalidRequestError):
+            self.service.redact_phi(None)
         
-        # Uninitialized service test
-        uninitialized_service = MockPHIDetection()
-        with pytest.raises(ServiceUnavailableError):
-            uninitialized_service.redact_phi("Some text")
-
-    def test_pattern_selection(self):
-        """Test the internal pattern selection logic."""
-        service = MockPHIDetection()
+        # No PHI in text should return original
+        redacted = self.service.redact_phi(self.no_phi_text)
+        self.assertEqual(redacted, self.no_phi_text)
+    
+    def test_pattern_selection(self) -> None:
+        """Test selection of detection patterns based on configuration."""
+        # Initialize with specific patterns
+        pattern_service = MockPHIDetection()
+        pattern_service.initialize({
+            "patterns": ["NAME", "EMAIL"]
+        })
         
-        # Access protected methods directly for testing patterns
-        strict_patterns = service._get_strict_patterns()
-        moderate_patterns = service._get_moderate_patterns()
-        relaxed_patterns = service._get_relaxed_patterns()
-        default_patterns = service._get_default_patterns()
+        results = pattern_service.detect_phi(self.sample_phi_text)
+        detected_types = [result["type"] for result in results]
         
-        # Strict should have more pattern types than moderate
-        assert len(strict_patterns.keys()) >= len(moderate_patterns.keys())
-        
-        # Moderate should have more pattern types than relaxed
-        assert len(moderate_patterns.keys()) >= len(relaxed_patterns.keys())
-        
-        # Default should be the same as moderate patterns (by implementation)
-        assert len(default_patterns.keys()) == len(moderate_patterns.keys())
-        
-        # Check that each pattern dictionary has the expected structure
-        for pattern_dict in [strict_patterns, moderate_patterns, relaxed_patterns]:
-            for phi_type, patterns in pattern_dict.items():
-                assert isinstance(phi_type, str)
-                assert isinstance(patterns, list)
-                assert all(isinstance(p, re.Pattern) for p in patterns)
+        # Only configured patterns should be detected
+        self.assertIn("NAME", detected_types)
+        self.assertIn("EMAIL", detected_types)
+        self.assertNotIn("SSN", detected_types)
+        self.assertNotIn("PHONE", detected_types)

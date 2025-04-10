@@ -1,8 +1,8 @@
 """
-Base test class for security tests in Novamind Digital Twin Platform.
+Base security test class for all security tests in Novamind Digital Twin Platform.
 
-This class provides enhanced security test fixtures and utilities
-specific to security testing concerns.
+This class provides improved handling of security-related test attributes and fixtures
+to ensure proper initialization of test data.
 """
 
 import os
@@ -35,19 +35,23 @@ from app.tests.base_test import BaseTest
 class BaseSecurityTest(BaseTest):
     """Base class for all security tests in the system."""
     
+    # Default values for security testing
+    default_test_user_id = "test-security-user-default"
+    default_test_roles = ["user", "clinician"]
+    
     def setUp(self) -> None:
         """Set up security test fixtures."""
+        # Ensure we have proper test data from child classes
+        self.test_user_id = getattr(self, 'test_user_id', self.default_test_user_id)
+        self.test_roles = getattr(self, 'test_roles', self.default_test_roles)
+        
         super().setUp()
         
         # Mock security services and components
         self.setup_auth_mocks()
         self.setup_encryption_mocks()
         self.setup_audit_mocks()
-        
-        # Initialize standard security test data
-        self.test_user_id = "test-security-user"
-        self.test_roles = ["user", "clinician"]
-        
+    
     def setup_auth_mocks(self) -> None:
         """Set up authentication and authorization mocks."""
         # Mock auth service

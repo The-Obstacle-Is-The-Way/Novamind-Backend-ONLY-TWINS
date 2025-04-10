@@ -8,7 +8,7 @@ with the ML services.
 """
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Dict, List, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
@@ -96,11 +96,11 @@ def sample_status_response(sample_patient_id):
         "components": {
             "symptom_forecasting": {
                 "has_model": True,
-                "last_updated": datetime.utcnow().isoformat()
+                "last_updated": datetime.now(UTC).isoformat()
             },
             "biometric_correlation": {
                 "has_model": True,
-                "last_updated": datetime.utcnow().isoformat()
+                "last_updated": datetime.now(UTC).isoformat()
             },
             "pharmacogenomics": {
                 "service_available": True,
@@ -109,7 +109,7 @@ def sample_status_response(sample_patient_id):
                 }
             }
         },
-        "last_checked": datetime.utcnow().isoformat()
+        "last_checked": datetime.now(UTC).isoformat()
     }
 
 
@@ -118,7 +118,7 @@ def sample_insights_response(sample_patient_id):
     """Create a sample patient insights response."""
     return {
         "patient_id": str(sample_patient_id),
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "symptom_forecasting": {
             "trending_symptoms": [
                 {
@@ -177,10 +177,10 @@ def sample_forecast_response(sample_patient_id):
     return {
         "patient_id": str(sample_patient_id),
         "forecast_days": 30,
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "forecast_points": [
             {
-                "date": (datetime.utcnow() + timedelta(days=1)).strftime("%Y-%m-%d"),
+                "date": (datetime.now(UTC) + timedelta(days=1)).strftime("%Y-%m-%d"),
                 "symptom": "anxiety",
                 "severity": 6.2,
                 "confidence_low": 5.5,
@@ -246,7 +246,7 @@ class TestDigitalTwinEndpoints:
                 {
                     "symptom": "anxiety",
                     "severity": 7,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.now(UTC).isoformat()
                 }
             ]
         }
@@ -282,7 +282,7 @@ class TestDigitalTwinEndpoints:
         correlations_response = {
             "patient_id": str(sample_patient_id),
             "window_days": 30,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "strong_correlations": [
                 {
                     "biometric_type": "heart_rate",
@@ -298,7 +298,7 @@ class TestDigitalTwinEndpoints:
                     "data_type": "sleep_quality",
                     "description": "Unusual sleep pattern detected",
                     "severity": 0.65,
-                    "detected_at": datetime.utcnow().isoformat()
+                    "detected_at": datetime.now(UTC).isoformat()
                 }
             ],
             "data_quality": {
@@ -322,7 +322,7 @@ class TestDigitalTwinEndpoints:
         # Setup
         medication_response = {
             "patient_id": str(sample_patient_id),
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "predictions": [
                 {
                     "medication": "sertraline",
@@ -369,7 +369,7 @@ class TestDigitalTwinEndpoints:
         treatment_plan = {
             "patient_id": str(sample_patient_id),
             "diagnosis": "Major Depressive Disorder",
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "recommendations": {
                 "medications": [
                     {
@@ -391,7 +391,8 @@ class TestDigitalTwinEndpoints:
                         "type": "therapy",
                         "recommendation_text": "Cognitive Behavioral Therapy, 1 session per week",
                         "importance": 0.85,
-                        "evidence_level": "A"
+                        "evidence_level": "A",
+                        "genetic_basis": None
                     }
                 ],
                 "lifestyle": [
@@ -399,7 +400,8 @@ class TestDigitalTwinEndpoints:
                         "type": "lifestyle",
                         "recommendation_text": "Daily 30-minute moderate exercise",
                         "importance": 0.7,
-                        "evidence_level": "B"
+                        "evidence_level": "B",
+                        "genetic_basis": None
                     }
                 ],
                 "summary": [
@@ -407,7 +409,8 @@ class TestDigitalTwinEndpoints:
                         "type": "summary",
                         "recommendation_text": "Combined medication and therapy approach recommended",
                         "importance": 0.95,
-                        "evidence_level": "A"
+                        "evidence_level": "A",
+                        "genetic_basis": None
                     }
                 ]
             },

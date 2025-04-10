@@ -1,313 +1,246 @@
 # -*- coding: utf-8 -*-
 """
-Digital Twin API schemas.
+Digital Twin API schemas for the v1 API.
 
-This module provides Pydantic schemas for the Digital Twin API endpoints,
-handling input validation and response serialization.
+This module provides Pydantic schemas for digital twin endpoints, focusing on 
+status responses, insights, forecasting, and treatment recommendations.
 """
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
+from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field
 
 
-class DigitalTwinFeatureSchema(BaseModel):
-    """Schema for Digital Twin Feature."""
+class ComponentStatus(BaseModel):
+    """Status of a digital twin component."""
     
-    name: str = Field(..., description="Feature name")
-    value: Any = Field(..., description="Feature value (any serializable data)")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Timestamp when feature was recorded")
+    has_model: bool = Field(..., description="Whether a model exists for this component")
+    last_updated: str = Field(..., description="ISO timestamp of last update")
     
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "name": "heart_rate",
-                "value": 72,
-                "timestamp": "2025-03-28T04:00:00"
-            }
-        }
+    
+class ServiceInfo(BaseModel):
+    """Information about a service."""
+    
+    version: str = Field(..., description="Service version")
+
+
+class ComponentServiceStatus(BaseModel):
+    """Status of a service component."""
+    
+    service_available: bool = Field(..., description="Whether the service is available")
+    service_info: ServiceInfo = Field(..., description="Service information")
+
+
+class DigitalTwinStatusResponse(BaseModel):
+    """Response schema for digital twin status."""
+    
+    patient_id: str = Field(..., description="Patient ID")
+    status: str = Field(..., description="Overall status of the digital twin")
+    completeness: int = Field(..., description="Percentage of completeness")
+    components: Dict[str, Union[ComponentStatus, ComponentServiceStatus]] = Field(
+        ..., description="Status of individual components"
     )
+    last_checked: str = Field(..., description="ISO timestamp of last check")
 
 
-class TreatmentOutcomeSchema(BaseModel):
-    """Schema for Treatment Outcome."""
+class TrendingSymptom(BaseModel):
+    """Information about a trending symptom."""
     
-    id: Optional[str] = Field(None, description="Unique ID for outcome record")
-    digital_twin_id: Optional[str] = Field(None, description="ID of associated digital twin")
-    treatment: str = Field(..., description="Treatment administered")
-    outcome: str = Field(..., description="Observed outcome")
-    effectiveness: str = Field(..., description="Treatment effectiveness")
-    notes: Optional[str] = Field(None, description="Additional notes")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Timestamp when outcome was recorded")
+    symptom: str = Field(..., description="Name of the symptom")
+    trend: str = Field(..., description="Trend direction (increasing, decreasing, stable)")
+    confidence: float = Field(..., description="Confidence in the trend")
+    insight_text: str = Field(..., description="Text insight about the trend")
+
+
+class RiskAlert(BaseModel):
+    """Information about a risk alert."""
     
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "id": "12345678-1234-5678-1234-567812345678",
-                "digital_twin_id": "98765432-9876-5432-9876-987654321098",
-                "treatment": "Cognitive Behavioral Therapy",
-                "outcome": "Reduced anxiety symptoms",
-                "effectiveness": "Moderate improvement",
-                "notes": "Patient reported feeling less anxious in social situations",
-                "timestamp": "2025-03-28T04:00:00"
-            }
-        }
-    )
+    symptom: str = Field(..., description="Name of the symptom")
+    risk_level: str = Field(..., description="Level of risk (low, moderate, high)")
+    alert_text: str = Field(..., description="Text alert about the risk")
+    importance: float = Field(..., description="Importance of the alert")
 
 
-class TreatmentPredictionSchema(BaseModel):
-    """Schema for Treatment Prediction."""
+class SymptomForecastingInsights(BaseModel):
+    """Symptom forecasting insights."""
     
-    id: Optional[str] = Field(None, description="Unique ID for prediction")
-    digital_twin_id: Optional[str] = Field(None, description="ID of associated digital twin")
-    treatment: str = Field(..., description="Treatment being predicted")
-    condition: Optional[str] = Field(None, description="Condition being treated")
-    likelihood: str = Field(..., description="Likelihood of positive response")
-    timeline: str = Field(..., description="Expected timeline for response")
-    obstacles: List[str] = Field(default_factory=list, description="Potential obstacles to treatment")
-    influencing_factors: List[str] = Field(default_factory=list, description="Factors influencing treatment response")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score for prediction")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Timestamp when prediction was made")
+    trending_symptoms: List[TrendingSymptom] = Field(..., description="Trending symptoms")
+    risk_alerts: List[RiskAlert] = Field(..., description="Risk alerts")
+
+
+class BiometricCorrelation(BaseModel):
+    """Information about a biometric correlation."""
     
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "id": "12345678-1234-5678-1234-567812345678",
-                "digital_twin_id": "98765432-9876-5432-9876-987654321098",
-                "treatment": "Selective Serotonin Reuptake Inhibitor",
-                "condition": "Major Depressive Disorder",
-                "likelihood": "High",
-                "timeline": "4-6 weeks",
-                "obstacles": ["Medication adherence", "Side effects"],
-                "influencing_factors": ["Age", "Symptom severity", "Co-occurring conditions"],
-                "confidence": 0.85,
-                "timestamp": "2025-03-28T04:00:00"
-            }
-        }
-    )
+    biometric_type: str = Field(..., description="Type of biometric data")
+    mental_health_indicator: str = Field(..., description="Mental health indicator correlated with")
+    correlation_strength: float = Field(..., description="Strength of correlation")
+    direction: str = Field(..., description="Direction of correlation (positive, negative)")
+    insight_text: str = Field(..., description="Text insight about the correlation")
+    p_value: float = Field(..., description="P-value of the correlation")
 
 
-class DigitalTwinSchema(BaseModel):
-    """Schema for Digital Twin."""
+class BiometricCorrelationInsights(BaseModel):
+    """Biometric correlation insights."""
     
-    id: Optional[str] = Field(None, description="Unique ID for digital twin")
-    patient_id: Optional[str] = Field(None, description="ID of associated patient")
-    name: Optional[str] = Field(None, description="Name of digital twin")
-    description: Optional[str] = Field(None, description="Description of digital twin")
-    features: List[DigitalTwinFeatureSchema] = Field(default_factory=list, description="Features of digital twin")
-    created_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp when digital twin was created")
-    updated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp when digital twin was last updated")
+    strong_correlations: List[BiometricCorrelation] = Field(..., description="Strong correlations")
+
+
+class MedicationResponsePrediction(BaseModel):
+    """Information about a medication response prediction."""
     
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "id": "98765432-9876-5432-9876-987654321098",
-                "patient_id": "ab123456-ab12-cd34-ef56-ab1234567890",
-                "name": "Primary Clinical Model",
-                "description": "Comprehensive clinical model for treatment planning",
-                "features": [
-                    {
-                        "name": "diagnosis_primary",
-                        "value": "Major Depressive Disorder",
-                        "timestamp": "2025-03-28T04:00:00"
-                    }
-                ],
-                "created_at": "2025-03-28T04:00:00",
-                "updated_at": "2025-03-28T04:00:00"
-            }
-        }
-    )
+    medication: str = Field(..., description="Name of medication")
+    predicted_response: str = Field(..., description="Predicted response")
+    confidence: float = Field(..., description="Confidence in prediction")
 
 
-# Request schemas
-
-class CreateDigitalTwinRequest(BaseModel):
-    """Request schema for creating a digital twin."""
+class MedicationResponsePredictions(BaseModel):
+    """Medication response predictions."""
     
-    patient_id: str = Field(..., description="ID of associated patient")
-    name: Optional[str] = Field(None, description="Name of digital twin")
-    description: Optional[str] = Field(None, description="Description of digital twin")
-    initial_features: List[DigitalTwinFeatureSchema] = Field(default_factory=list, description="Initial features of digital twin")
+    predictions: List[MedicationResponsePrediction] = Field(..., description="Medication response predictions")
 
 
-class UpdateDigitalTwinRequest(BaseModel):
-    """Request schema for updating a digital twin."""
+class PharmacogenomicsInsights(BaseModel):
+    """Pharmacogenomics insights."""
     
-    name: Optional[str] = Field(None, description="Name of digital twin")
-    description: Optional[str] = Field(None, description="Description of digital twin")
+    medication_responses: MedicationResponsePredictions = Field(..., description="Medication response predictions")
 
 
-class AddFeatureRequest(BaseModel):
-    """Request schema for adding a feature to a digital twin."""
+class Recommendation(BaseModel):
+    """Information about a recommendation."""
     
-    feature: DigitalTwinFeatureSchema = Field(..., description="Feature to add")
+    source: str = Field(..., description="Source of recommendation")
+    type: str = Field(..., description="Type of recommendation")
+    recommendation: str = Field(..., description="Recommendation text")
+    importance: float = Field(..., description="Importance of recommendation")
 
 
-class ClinicalTextAnalysisRequest(BaseModel):
-    """Request schema for analyzing clinical text."""
+class PatientInsightsResponse(BaseModel):
+    """Response schema for patient insights."""
     
-    text: str = Field(..., description="Clinical text to analyze")
-    digital_twin_id: Optional[str] = Field(None, description="ID of associated digital twin")
-    patient_id: Optional[str] = Field(None, description="ID of associated patient")
-    analysis_type: str = Field("diagnostic_impression", description="Type of analysis to perform")
-    detect_phi: bool = Field(True, description="Whether to detect and remove PHI")
-    
-    @field_validator('text')
-    def text_not_empty(cls, v):
-        """Validate that text is not empty."""
-        if not v or not v.strip():
-            raise ValueError("Text cannot be empty")
-        return v
-    
-    @field_validator('analysis_type')
-    def validate_analysis_type(cls, v):
-        """Validate analysis type."""
-        valid_types = [
-            "diagnostic_impression", 
-            "risk_assessment", 
-            "treatment_recommendation", 
-            "clinical_insight"
-        ]
-        if v not in valid_types:
-            raise ValueError(f"Analysis type must be one of: {', '.join(valid_types)}")
-        return v
+    patient_id: str = Field(..., description="Patient ID")
+    generated_at: str = Field(..., description="ISO timestamp of generation")
+    symptom_forecasting: SymptomForecastingInsights = Field(..., description="Symptom forecasting insights")
+    biometric_correlation: BiometricCorrelationInsights = Field(..., description="Biometric correlation insights")
+    pharmacogenomics: PharmacogenomicsInsights = Field(..., description="Pharmacogenomics insights")
+    integrated_recommendations: List[Recommendation] = Field(..., description="Integrated recommendations")
 
 
-class PersonalizedInsightRequest(BaseModel):
-    """Request schema for getting personalized insight."""
+class ForecastPoint(BaseModel):
+    """A point in a symptom forecast."""
     
-    query: str = Field(..., description="Query for insight")
-    insight_type: str = Field("clinical", description="Type of insight to generate")
-    include_historical: bool = Field(True, description="Whether to include historical data")
-    
-    @field_validator('query')
-    def query_not_empty(cls, v):
-        """Validate that query is not empty."""
-        if not v or not v.strip():
-            raise ValueError("Query cannot be empty")
-        return v
-    
-    @field_validator('insight_type')
-    def validate_insight_type(cls, v):
-        """Validate insight type."""
-        valid_types = ["clinical", "behavioral", "therapeutic", "medication"]
-        if v not in valid_types:
-            raise ValueError(f"Insight type must be one of: {', '.join(valid_types)}")
-        return v
+    date: str = Field(..., description="Date of forecast")
+    symptom: str = Field(..., description="Name of symptom")
+    severity: float = Field(..., description="Predicted severity")
+    confidence_low: float = Field(..., description="Lower bound of confidence interval")
+    confidence_high: float = Field(..., description="Upper bound of confidence interval")
 
 
-class ClinicalRecommendationRequest(BaseModel):
-    """Request schema for getting clinical recommendation."""
+class SymptomForecastResponse(BaseModel):
+    """Response schema for symptom forecast."""
     
-    query: str = Field(..., description="Query for recommendation")
-    recommendation_type: str = Field("treatment", description="Type of recommendation to generate")
-    include_historical: bool = Field(True, description="Whether to include historical data")
+    patient_id: str = Field(..., description="Patient ID")
+    forecast_days: int = Field(..., description="Number of days in forecast")
+    generated_at: str = Field(..., description="ISO timestamp of generation")
+    forecast_points: List[ForecastPoint] = Field(..., description="Forecast points")
+    trending_symptoms: List[TrendingSymptom] = Field(..., description="Trending symptoms")
+    risk_alerts: List[RiskAlert] = Field(..., description="Risk alerts")
+
+
+class Anomaly(BaseModel):
+    """Information about a data anomaly."""
     
-    @field_validator('query')
-    def query_not_empty(cls, v):
-        """Validate that query is not empty."""
-        if not v or not v.strip():
-            raise ValueError("Query cannot be empty")
-        return v
+    data_type: str = Field(..., description="Type of data")
+    description: str = Field(..., description="Description of anomaly")
+    severity: float = Field(..., description="Severity of anomaly")
+    detected_at: str = Field(..., description="ISO timestamp of detection")
+
+
+class DataQuality(BaseModel):
+    """Information about data quality."""
     
-    @field_validator('recommendation_type')
-    def validate_recommendation_type(cls, v):
-        """Validate recommendation type."""
-        valid_types = ["treatment", "medication", "therapy", "lifestyle"]
-        if v not in valid_types:
-            raise ValueError(f"Recommendation type must be one of: {', '.join(valid_types)}")
-        return v
+    completeness: float = Field(..., description="Completeness of data")
+    consistency: float = Field(..., description="Consistency of data")
 
 
-class TreatmentPredictionRequest(BaseModel):
-    """Request schema for predicting treatment outcome."""
+class BiometricCorrelationResponse(BaseModel):
+    """Response schema for biometric correlations."""
     
-    treatment: str = Field(..., description="Treatment to predict outcome for")
-    condition: Optional[str] = Field(None, description="Condition being treated")
-    time_horizon: str = Field("short_term", description="Time horizon for prediction")
+    patient_id: str = Field(..., description="Patient ID")
+    window_days: int = Field(..., description="Number of days in window")
+    generated_at: str = Field(..., description="ISO timestamp of generation")
+    strong_correlations: List[BiometricCorrelation] = Field(..., description="Strong correlations")
+    anomalies: List[Anomaly] = Field(..., description="Data anomalies")
+    data_quality: DataQuality = Field(..., description="Data quality information")
+
+
+class GeneticFactor(BaseModel):
+    """Information about a genetic factor."""
     
-    @field_validator('treatment')
-    def treatment_not_empty(cls, v):
-        """Validate that treatment is not empty."""
-        if not v or not v.strip():
-            raise ValueError("Treatment cannot be empty")
-        return v
+    gene: str = Field(..., description="Gene name")
+    variant: str = Field(..., description="Gene variant")
+    impact: str = Field(..., description="Impact of variant")
+
+
+class MedicationPrediction(BaseModel):
+    """Information about a medication prediction."""
     
-    @field_validator('time_horizon')
-    def validate_time_horizon(cls, v):
-        """Validate time horizon."""
-        valid_horizons = ["short_term", "medium_term", "long_term"]
-        if v not in valid_horizons:
-            raise ValueError(f"Time horizon must be one of: {', '.join(valid_horizons)}")
-        return v
+    medication: str = Field(..., description="Name of medication")
+    predicted_response: str = Field(..., description="Predicted response")
+    confidence: float = Field(..., description="Confidence in prediction")
+    potential_side_effects: List[str] = Field(..., description="Potential side effects")
+    genetic_factors: List[GeneticFactor] = Field(..., description="Genetic factors")
 
 
-class RecordTreatmentOutcomeRequest(BaseModel):
-    """Request schema for recording treatment outcome."""
+class Insight(BaseModel):
+    """Information about an insight."""
     
-    treatment: str = Field(..., description="Treatment administered")
-    outcome: str = Field(..., description="Outcome observed")
-    effectiveness: str = Field(..., description="Treatment effectiveness")
-    notes: Optional[str] = Field(None, description="Additional notes")
+    insight_text: str = Field(..., description="Insight text")
+    importance: float = Field(..., description="Importance of insight")
+
+
+class MedicationResponsePredictionResponse(BaseModel):
+    """Response schema for medication response predictions."""
     
-    @field_validator('treatment', 'outcome', 'effectiveness')
-    def not_empty(cls, v, info):
-        """Validate that field is not empty."""
-        if not v or not v.strip():
-            raise ValueError(f"{info.field_name} cannot be empty")
-        return v
+    patient_id: str = Field(..., description="Patient ID")
+    generated_at: str = Field(..., description="ISO timestamp of generation")
+    predictions: List[MedicationPrediction] = Field(..., description="Medication predictions")
+    insights: List[Insight] = Field(..., description="Insights")
 
 
-# Response schemas
-
-class ClinicalTextAnalysisResponse(BaseModel):
-    """Response schema for clinical text analysis."""
+class TreatmentRecommendation(BaseModel):
+    """Information about a treatment recommendation."""
     
-    analysis_id: str = Field(..., description="Unique ID for analysis")
-    digital_twin_id: Optional[str] = Field(None, description="ID of associated digital twin")
-    analysis_type: str = Field(..., description="Type of analysis performed")
-    result: Dict[str, Any] = Field(..., description="Analysis result")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score for analysis")
-    timestamp: datetime = Field(..., description="Timestamp when analysis was performed")
-    phi_detected: bool = Field(..., description="Whether PHI was detected in the text")
+    type: str = Field(..., description="Type of recommendation")
+    recommendation_text: str = Field(..., description="Recommendation text")
+    importance: float = Field(..., description="Importance of recommendation")
+    evidence_level: str = Field(..., description="Level of evidence")
+    genetic_basis: Optional[List[GeneticFactor]] = Field(None, description="Genetic basis")
 
 
-class PersonalizedInsightResponse(BaseModel):
-    """Response schema for personalized insight."""
+class PersonalizationFactor(BaseModel):
+    """Information about a personalization factor."""
     
-    insight_id: str = Field(..., description="Unique ID for insight")
-    digital_twin_id: str = Field(..., description="ID of associated digital twin")
-    query: str = Field(..., description="Query used for insight")
-    insight_type: str = Field(..., description="Type of insight generated")
-    insight: str = Field(..., description="Generated insight")
-    key_points: List[str] = Field(..., description="Key points from the insight")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score for insight")
-    timestamp: datetime = Field(..., description="Timestamp when insight was generated")
+    factor: str = Field(..., description="Factor name")
+    impact: str = Field(..., description="Impact level")
+    description: str = Field(..., description="Description of impact")
 
 
-class ClinicalRecommendationResponse(BaseModel):
-    """Response schema for clinical recommendation."""
+class TreatmentRecommendations(BaseModel):
+    """Treatment recommendations."""
     
-    recommendation_id: str = Field(..., description="Unique ID for recommendation")
-    digital_twin_id: str = Field(..., description="ID of associated digital twin")
-    query: str = Field(..., description="Query used for recommendation")
-    recommendation_type: str = Field(..., description="Type of recommendation generated")
-    primary_recommendations: List[str] = Field(..., description="Primary recommendations")
-    alternative_recommendations: List[str] = Field(..., description="Alternative recommendations")
-    implementation: List[str] = Field(..., description="Implementation guidelines")
-    monitoring: List[str] = Field(..., description="Monitoring guidelines")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score for recommendation")
-    timestamp: datetime = Field(..., description="Timestamp when recommendation was generated")
+    medications: List[TreatmentRecommendation] = Field(..., description="Medication recommendations")
+    therapy: List[TreatmentRecommendation] = Field(..., description="Therapy recommendations")
+    lifestyle: List[TreatmentRecommendation] = Field(..., description="Lifestyle recommendations")
+    summary: List[TreatmentRecommendation] = Field(..., description="Summary recommendations")
 
 
-class TreatmentOutcomeResponse(BaseModel):
-    """Response schema for recorded treatment outcome."""
+class TreatmentPlanResponse(BaseModel):
+    """Response schema for treatment plan."""
     
-    outcome_id: str = Field(..., description="Unique ID for outcome record")
-    digital_twin_id: str = Field(..., description="ID of associated digital twin")
-    treatment: str = Field(..., description="Treatment administered")
-    outcome: str = Field(..., description="Outcome observed")
-    effectiveness: str = Field(..., description="Treatment effectiveness")
-    notes: Optional[str] = Field(None, description="Additional notes")
-    timestamp: datetime = Field(..., description="Timestamp when outcome was recorded")
+    patient_id: str = Field(..., description="Patient ID")
+    diagnosis: str = Field(..., description="Diagnosis")
+    generated_at: str = Field(..., description="ISO timestamp of generation")
+    recommendations: TreatmentRecommendations = Field(..., description="Treatment recommendations")
+    personalization_factors: List[PersonalizationFactor] = Field(..., description="Personalization factors")

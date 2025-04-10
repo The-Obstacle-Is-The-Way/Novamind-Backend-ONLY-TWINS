@@ -79,6 +79,25 @@ class InvalidRequestError(MLServiceError):
         super().__init__(message, *args, **kwargs)
 
 
+class ModelInferenceError(MLServiceError):
+    """Exception raised when an error occurs during model inference."""
+    
+    def __init__(self, message: str = "Error during model inference", model_id: str = None, *args, **kwargs):
+        """
+        Initialize model inference error.
+        
+        Args:
+            message: Error message
+            model_id: ID of the model that caused the error
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
+        if model_id:
+            message = f"{message} (model: {model_id})"
+        self.model_id = model_id
+        super().__init__(message, *args, **kwargs)
+
+
 class ModelNotFoundError(MLServiceError):
     """Exception raised when a requested ML model cannot be found."""
     
@@ -103,7 +122,7 @@ class MentalLLaMAInferenceError(MentaLLaMAServiceError):
     
     def __init__(self, message: str = "Error during MentalLLaMA inference", *args, **kwargs):
         """
-        Initialize MentalLLaMA inference error.
+        Initialize MentaLLaMA inference error.
         
         Args:
             message: Error message
@@ -114,9 +133,9 @@ class MentalLLaMAInferenceError(MentaLLaMAServiceError):
 
 
 class DigitalTwinError(MLServiceError):
-    """Exception raised for errors in Digital Twin service."""
+    """Base exception for Digital Twin service errors."""
     
-    def __init__(self, message: str = "Error in Digital Twin service", *args, **kwargs):
+    def __init__(self, message: str = "Digital Twin service error", *args, **kwargs):
         """
         Initialize Digital Twin service error.
         
@@ -129,7 +148,7 @@ class DigitalTwinError(MLServiceError):
 
 
 class DigitalTwinInferenceError(DigitalTwinError):
-    """Exception raised for errors during Digital Twin inference."""
+    """Exception raised for errors in Digital Twin inference."""
     
     def __init__(self, message: str = "Error during Digital Twin inference", *args, **kwargs):
         """
@@ -144,7 +163,7 @@ class DigitalTwinInferenceError(DigitalTwinError):
 
 
 class DigitalTwinSessionError(DigitalTwinError):
-    """Exception raised for errors with Digital Twin sessions."""
+    """Exception raised for errors related to Digital Twin sessions."""
     
     def __init__(self, message: str = "Error with Digital Twin session", session_id: str = None, *args, **kwargs):
         """
@@ -162,12 +181,12 @@ class DigitalTwinSessionError(DigitalTwinError):
         super().__init__(message, *args, **kwargs)
 
 
-class SimulationError(DigitalTwinError):
-    """Exception raised for errors during digital twin simulation."""
+class DigitalTwinConfigError(DigitalTwinError):
+    """Exception raised for errors in Digital Twin configuration."""
     
-    def __init__(self, message: str = "Error in digital twin simulation", *args, **kwargs):
+    def __init__(self, message: str = "Error in Digital Twin configuration", *args, **kwargs):
         """
-        Initialize simulation error.
+        Initialize Digital Twin configuration error.
         
         Args:
             message: Error message
@@ -177,12 +196,12 @@ class SimulationError(DigitalTwinError):
         super().__init__(message, *args, **kwargs)
 
 
-class DigitalTwinConfigError(DigitalTwinError):
-    """Exception raised for configuration errors in Digital Twin service."""
+class SimulationError(DigitalTwinError):
+    """Exception raised for errors during patient simulation."""
     
-    def __init__(self, message: str = "Digital Twin configuration error", *args, **kwargs):
+    def __init__(self, message: str = "Error during patient simulation", *args, **kwargs):
         """
-        Initialize Digital Twin configuration error.
+        Initialize simulation error.
         
         Args:
             message: Error message
@@ -212,4 +231,38 @@ class ServiceUnavailableError(MLServiceError):
             message = f"{message}: {reason}"
         self.service_name = service_name
         self.reason = reason
+        super().__init__(message, *args, **kwargs)
+
+
+class TwinNotFoundError(DigitalTwinError):
+    """Exception raised when a digital twin cannot be found."""
+    
+    def __init__(self, twin_id: str = None, *args, **kwargs):
+        """
+        Initialize twin not found error.
+        
+        Args:
+            twin_id: ID of the twin that was not found
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
+        message = "Digital twin not found"
+        if twin_id:
+            message = f"{message}: {twin_id}"
+        self.twin_id = twin_id
+        super().__init__(message, *args, **kwargs)
+
+
+class TwinStorageError(DigitalTwinError):
+    """Exception raised for errors when storing or retrieving digital twins."""
+    
+    def __init__(self, message: str = "Error storing or retrieving digital twin", *args, **kwargs):
+        """
+        Initialize twin storage error.
+        
+        Args:
+            message: Error message
+            args: Additional positional arguments
+            kwargs: Additional keyword arguments
+        """
         super().__init__(message, *args, **kwargs)
