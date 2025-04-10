@@ -26,7 +26,7 @@ class NeurotransmitterType(str, Enum):
     NOREPINEPHRINE = "norepinephrine"
     ACETYLCHOLINE = "acetylcholine"
     ENDORPHIN = "endorphin"
-OXYTOCIN = "oxytocin"
+    OXYTOCIN = "oxytocin"
 
 
 class TemporalPatternType(str, Enum):
@@ -38,7 +38,7 @@ class TemporalPatternType(str, Enum):
     SUDDEN_SPIKE = "sudden_spike"
     SUDDEN_DROP = "sudden_drop"
     STABLE = "stable"
-IRREGULAR = "irregular"
+    IRREGULAR = "irregular"
     CUSTOM = "custom"
 
 
@@ -79,8 +79,7 @@ class NeurotransmitterReading:
             "level": self.level,
             "timestamp": self.timestamp.isoformat(),
             "patient_id": self.patient_id,
-            "@pytest.mark.standalone
-source": self.source,
+            "source": self.source,
             "metadata": self.metadata
         }
 
@@ -629,8 +628,7 @@ def test_neurotransmitter_analyzer_with_pandas():
     result = analyzer.analyze_pattern(NeurotransmitterType.SEROTONIN)
     
     # The sine wave should be detected as a daily cycle
-    assert result["pattern_type"] == TemporalPatternType.DAI@pytest.mark.standalone
-LY_CYCLE.value
+    assert result["pattern_type"] == TemporalPatternType.DAILY_CYCLE.value
     assert result["has_daily_cycle"] == True
     assert "mean" in result
     assert "std" in result
@@ -692,8 +690,7 @@ def test_neurotransmitter_correlation_analysis():
     
     # Check results
     assert "correlation" in result
-    assert abs(result["correlation"]) >@pytest.mark.standalone
- 0.5, "Expected strong correlation"
+    assert abs(result["correlation"]) > 0.5, "Expected strong correlation"
     assert result["relationship"] == "positively_correlated"
     assert result["synchronized"] == True
     
@@ -721,8 +718,7 @@ def test_synthetic_data_generation():
     analyzer.add_readings(readings)
     result = analyzer.analyze_pattern(NeurotransmitterType.SEROTONIN)
     
-    # Since we gene@pytest.mark.standalone
-rated a daily cycle, it should be detected
+    # Since we generated a daily cycle, it should be detected
     assert result["has_daily_cycle"] == True
     assert result["pattern_type"] == TemporalPatternType.DAILY_CYCLE.value
     

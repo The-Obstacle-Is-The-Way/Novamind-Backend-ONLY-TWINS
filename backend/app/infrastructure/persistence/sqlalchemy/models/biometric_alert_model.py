@@ -46,7 +46,7 @@ class BiometricAlertModel(Base):
     
     # Additional data
     data_points = Column(JSON, nullable=False)  # Serialized list of data points that triggered the alert
-    metadata = Column(JSON, nullable=True)  # Additional contextual information
+    alert_metadata = Column(JSON, nullable=True)  # Renamed from metadata
     
     def __repr__(self) -> str:
         """String representation of the model."""

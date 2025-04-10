@@ -24,13 +24,13 @@ from app.core.services.ml.pat.mock import MockPATService # Corrected import
 
 
 @pytest.fixture
-def mock_pat() -> MockPAT:
+def mock_pat() -> MockPATService:
     """Create a MockPAT instance."""
-    return MockPAT()
+    return MockPATService()
 
 
 @pytest.fixture
-def initialized_mock_pat() -> MockPAT:
+def initialized_mock_pat() -> MockPATService:
     """Create and initialize a MockPAT instance."""
     pat = MockPAT()
     pat.initialize({"mock_delay_ms": 0})

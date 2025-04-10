@@ -184,6 +184,7 @@ class PHIType(Enum):
     NAME = auto()
     MRN = auto()
     CREDIT_CARD = auto() # Example, add others as needed
+    POLICY_NUMBER = auto() # Insurance/Policy Numbers
     OTHER = auto()
 
 

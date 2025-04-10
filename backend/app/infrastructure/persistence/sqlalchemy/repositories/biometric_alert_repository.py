@@ -368,7 +368,7 @@ class SQLAlchemyBiometricAlertRepository(BiometricAlertRepository):
             resolved_by=UUID(model.resolved_by) if model.resolved_by else None,
             resolved_at=model.resolved_at,
             resolution_notes=model.resolution_notes,
-            metadata=model.metadata or {}
+            metadata=model.alert_metadata or {} # Renamed
         )
     
     def _map_to_model(self, entity: BiometricAlert) -> BiometricAlertModel:
@@ -397,7 +397,7 @@ class SQLAlchemyBiometricAlertRepository(BiometricAlertRepository):
             resolved_by=str(entity.resolved_by) if entity.resolved_by else None,
             resolved_at=entity.resolved_at,
             resolution_notes=entity.resolution_notes,
-            metadata=entity.metadata
+            alert_metadata=entity.metadata # Renamed model attribute
         )
     
     def _update_model(self, model: BiometricAlertModel, entity: BiometricAlert) -> None:
@@ -419,4 +419,4 @@ class SQLAlchemyBiometricAlertRepository(BiometricAlertRepository):
         model.resolved_by = str(entity.resolved_by) if entity.resolved_by else None
         model.resolved_at = entity.resolved_at
         model.resolution_notes = entity.resolution_notes
-        model.metadata = entity.metadata
+        model.alert_metadata = entity.metadata # Renamed model attribute

@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime
 from botocore.exceptions import ClientError
 
-from app.core.services.ml.xgboost.aws import AWSXGBoostService, AWSPhiDetector
+from app.core.services.ml.xgboost.aws import AWSXGBoostService # Removed AWSPhiDetector import
 from app.core.services.ml.xgboost.exceptions import (
     ValidationError, DataPrivacyError, ResourceNotFoundError,
     ModelNotFoundError, PredictionError, ServiceUnavailableError,

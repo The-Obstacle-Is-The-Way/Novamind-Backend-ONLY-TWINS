@@ -34,7 +34,7 @@ class EnhancedPHIDetector(PHIDetector):
             r'\b\d+\s+[A-Za-z0-9\s,\.]+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St)\.?\b',
             re.IGNORECASE
         ),
-        PHIType.MEDICAL_RECORD: re.compile(
+        PHIType.MRN: re.compile(
             r'\b(?:MRN|Medical Record Number|Patient ID)[:\s]*[A-Za-z0-9_-]{4,}\b',
             re.IGNORECASE
         ),

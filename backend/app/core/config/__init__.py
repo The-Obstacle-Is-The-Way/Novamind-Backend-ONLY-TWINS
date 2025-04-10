@@ -6,5 +6,4 @@ environment variable parsing, application settings, and secrets management.
 """
 from app.core.config.settings import settings, Settings
 
-__all__ = ["settings", "Settings"]
 __all__ = ["settings"]
