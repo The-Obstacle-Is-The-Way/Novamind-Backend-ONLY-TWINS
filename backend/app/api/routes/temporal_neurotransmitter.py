@@ -163,6 +163,7 @@ async def analyze_neurotransmitter(
     request: AnalyzeNeurotransmitterRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
+    _: Dict = Depends(prevent_session_exposure),
 ) -> NeurotransmitterEffectResponse: # Corrected explicit return type annotation
     """
     Analyze neurotransmitter levels.
@@ -201,7 +202,7 @@ async def analyze_neurotransmitter(
             effect.comparison_period[1].strftime("%Y-%m-%dT%H:%M:%S")
         ]
     
-    return {
+    response_data = {
         "neurotransmitter": effect.neurotransmitter.value,
         "brain_region": effect.brain_region.value,
         "effect_size": effect.effect_size,
@@ -212,6 +213,7 @@ async def analyze_neurotransmitter(
         "time_series_data": time_series_data,
         "comparison_periods": comparison_periods
     }
+    return ensure_serializable_response(response_data)
 
 
 @router.post(

@@ -253,8 +253,8 @@ async def predict_risk(
         if "supporting_evidence" not in result:
             result["supporting_evidence"] = []
             
-        # Create response
-        return RiskPredictionResponse(**result)
+        # Create response and ensure no AsyncSession objects are returned
+        return ensure_serializable_response(RiskPredictionResponse(**result))
         
     except Exception as e:
         raise handle_xgboost_error(e)
@@ -274,7 +274,8 @@ async def predict_risk(
 async def predict_treatment_response(
     request: TreatmentResponseRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance)
+    service: XGBoostInterface = Depends(get_xgboost_service_instance),
+    _: Dict = Depends(prevent_session_exposure)
 ) -> TreatmentResponseResponse:
     """
     Predict response to a psychiatric treatment.
@@ -336,8 +337,8 @@ async def predict_treatment_response(
                 "functional_improvement": "Some improvement in daily functioning expected"
             }
             
-        # Create response
-        return TreatmentResponseResponse(**result)
+        # Create response and ensure no AsyncSession objects are returned
+        return ensure_serializable_response(TreatmentResponseResponse(**result))
         
     except Exception as e:
         raise handle_xgboost_error(e)
@@ -357,7 +358,8 @@ async def predict_treatment_response(
 async def predict_outcome(
     request: OutcomePredictionRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance)
+    service: XGBoostInterface = Depends(get_xgboost_service_instance),
+    _: Dict = Depends(prevent_session_exposure)
 ) -> OutcomePredictionResponse:
     """
     Predict clinical outcomes based on treatment plan.
@@ -437,8 +439,8 @@ async def predict_outcome(
                 ]
             }
             
-        # Create response
-        return OutcomePredictionResponse(**result)
+        # Create response and ensure no AsyncSession objects are returned
+        return ensure_serializable_response(OutcomePredictionResponse(**result))
         
     except Exception as e:
         raise handle_xgboost_error(e)
@@ -458,7 +460,8 @@ async def predict_outcome(
 async def get_feature_importance(
     request: FeatureImportanceRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance)
+    service: XGBoostInterface = Depends(get_xgboost_service_instance),
+    _: Dict = Depends(prevent_session_exposure)
 ) -> FeatureImportanceResponse:
     """
     Get feature importance for a prediction.
@@ -537,8 +540,8 @@ async def get_feature_importance(
                     }
                 }
         
-        # Create response
-        return FeatureImportanceResponse(**result)
+        # Create response and ensure no AsyncSession objects are returned
+        return ensure_serializable_response(FeatureImportanceResponse(**result))
         
     except Exception as e:
         raise handle_xgboost_error(e)
@@ -558,7 +561,8 @@ async def get_feature_importance(
 async def integrate_with_digital_twin(
     request: DigitalTwinIntegrationRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance)
+    service: XGBoostInterface = Depends(get_xgboost_service_instance),
+    _: Dict = Depends(prevent_session_exposure)
 ) -> DigitalTwinIntegrationResponse:
     """
     Integrate prediction with digital twin profile.
@@ -609,8 +613,8 @@ async def integrate_with_digital_twin(
         if "statistics_updated" not in result:
             result["statistics_updated"] = result.get("status", "") == "success"
         
-        # Create response
-        return DigitalTwinIntegrationResponse(**result)
+        # Create response and ensure no AsyncSession objects are returned
+        return ensure_serializable_response(DigitalTwinIntegrationResponse(**result))
         
     except Exception as e:
         raise handle_xgboost_error(e)
@@ -630,7 +634,8 @@ async def integrate_with_digital_twin(
 async def get_model_info(
     request: ModelInfoRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance)
+    service: XGBoostInterface = Depends(get_xgboost_service_instance),
+    _: Dict = Depends(prevent_session_exposure)
 ) -> ModelInfoResponse:
     """
     Get information about a model.
@@ -664,8 +669,8 @@ async def get_model_info(
                 "auc_roc": 0.88
             }
         
-        # Create response
-        return ModelInfoResponse(**result)
+        # Create response and ensure no AsyncSession objects are returned
+        return ensure_serializable_response(ModelInfoResponse(**result))
         
     except Exception as e:
         raise handle_xgboost_error(e)
