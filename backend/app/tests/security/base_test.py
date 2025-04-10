@@ -1,4 +1,4 @@
-"""
+*"""
 Base test class for all security and HIPAA compliance tests.
 
 This module provides test infrastructure for security-related tests,
@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.core.security.roles import Role
+# Removed import of non-existent Role from app.core.security.roles
 
 
 class BaseSecurityTest(TestCase):

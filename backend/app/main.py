@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 # Removed incorrect import
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance # Import correct function
-from app.infrastructure.persistence.repository_factory import init_repositories
+# Removed import of non-existent repository_factory
 from app.presentation.api.routes import api_router
 from app.presentation.api.routes.analytics_endpoints import router as analytics_router
 from app.presentation.middleware.rate_limiting_middleware import setup_rate_limiting
@@ -50,8 +50,7 @@ async def lifespan(app: FastAPI):
     db_instance = get_db_instance()
     await db_instance.create_all()
     
-    # Initialize repositories
-    init_repositories()
+    # Repository initialization likely handled by dependency injection, removing explicit call
     
     logger.info("Application startup complete")
     

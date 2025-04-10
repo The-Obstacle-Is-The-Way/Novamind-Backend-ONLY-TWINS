@@ -12,19 +12,8 @@ from typing import Dict, List, Any
 
 from app.domain.entities.digital_twin.digital_twin import DigitalTwin # Removed ModelConfidence
 # Removed import of non-existent state module and classes
-from app.domain.entities.digital_twin.treatment import (
-    Treatment,
-    TreatmentCategory,
-    TreatmentFrequency,
-    MedicationDetails,
-    MedicationType,
-    TreatmentPlan,
-    TreatmentResponse
-)
-from app.domain.entities.digital_twin.temporal import (
-    PatternStrength,
-    TrajectoryPrediction
-)
+# Removed import of non-existent treatment module and classes
+# Removed import of non-existent temporal module and classes
 
 
 class TestDigitalTwin(unittest.TestCase):

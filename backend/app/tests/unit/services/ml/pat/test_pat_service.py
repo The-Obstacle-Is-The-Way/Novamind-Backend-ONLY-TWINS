@@ -157,7 +157,7 @@ class TestMockPAT:
         assert isinstance(result["embeddings"], list)
         assert len(result["embeddings"]) == result["embedding_size"]
     
-    def test_get_analysis_by_id(self, mock_pat_service: MockPAT) -> None:
+    def test_get_analysis_by_id(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
         """Test retrieving an analysis by ID with the mock service."""
         # First create an analysis
         patient_id = "test-patient-1"
@@ -186,7 +186,7 @@ class TestMockPAT:
         assert result["patient_id"] == patient_id
         assert "sleep_metrics" in result
     
-    def test_get_patient_analyses(self, mock_pat_service: MockPAT) -> None:
+    def test_get_patient_analyses(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
         """Test retrieving analyses for a patient with the mock service."""
         # First create multiple analyses for the same patient
         patient_id = "test-patient-2"
@@ -236,7 +236,7 @@ class TestMockPAT:
         )
         assert len(offset_result["analyses"]) == 2
     
-    def test_get_model_info(self, mock_pat_service: MockPAT) -> None:
+    def test_get_model_info(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
         """Test retrieving model information with the mock service."""
         result = mock_pat_service.get_model_info()
         
@@ -248,7 +248,7 @@ class TestMockPAT:
         assert "supported_analysis_types" in result
         assert isinstance(result["supported_analysis_types"], list)
     
-    def test_integrate_with_digital_twin(self, mock_pat_service: MockPAT) -> None:
+    def test_integrate_with_digital_twin(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
         """Test integrating actigraphy analysis with a digital twin with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"

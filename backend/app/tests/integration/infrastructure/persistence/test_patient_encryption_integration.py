@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.entities.patient import Patient
 from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
-from app.domain.value_objects.insurance import Insurance
+# Removed import of non-existent Insurance value object
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
 from app.infrastructure.security.encryption import EncryptionService
 
@@ -46,11 +46,11 @@ class TestPatientEncryptionIntegration:
                 phone="555-123-4567",
                 relationship="Spouse"
             ),
-            insurance=Insurance(
-                provider="Premier Health",
-                policy_number="POL-654321",
-                group_number="GRP-987"
-            ),
+            insurance_info={ # Using dict as per Patient entity
+                "provider": "Premier Health",
+                "policy_number": "POL-654321",
+                "group_number": "GRP-987"
+            },
             active=True,
             created_by=None
         )
@@ -122,8 +122,9 @@ class TestPatientEncryptionIntegration:
         assert retrieved_patient.emergency_contact.name == sample_patient.emergency_contact.name
         assert retrieved_patient.emergency_contact.phone == sample_patient.emergency_contact.phone
         
-        assert retrieved_patient.insurance.provider == sample_patient.insurance.provider
-        assert retrieved_patient.insurance.policy_number == sample_patient.insurance.policy_number
+        # Verify insurance_info dictionary
+        assert retrieved_patient.insurance_info["provider"] == sample_patient.insurance_info["provider"]
+        assert retrieved_patient.insurance_info["policy_number"] == sample_patient.insurance_info["policy_number"]
     
     @pytest.mark.asyncio
     async def test_encryption_error_handling(self, db_session: AsyncSession):
