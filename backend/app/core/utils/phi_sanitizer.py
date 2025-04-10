@@ -1,0 +1,150 @@
+# -*- coding: utf-8 -*-
+"""
+PHI Sanitization Utility
+
+This module provides utilities for sanitizing Protected Health Information (PHI)
+to ensure HIPAA compliance in logs, error messages, and other outputs.
+"""
+
+import re
+from typing import Any, Dict, List, Optional, Pattern, Set, Union
+
+
+class PHISanitizer:
+    """
+    Utility class for sanitizing PHI data from various sources.
+    
+    This class provides methods to detect and redact PHI in strings, log messages,
+    error messages, and API responses to ensure HIPAA compliance.
+    """
+    
+    # PHI patterns to detect and sanitize
+    PHI_PATTERNS = {
+        'mrn': re.compile(r'\b\d{5,10}\b'),  # Medical Record Numbers
+        'ssn': re.compile(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b'),  # Social Security Numbers
+        'name': re.compile(r'\b(?:[A-Z][a-z]+ ){1,2}[A-Z][a-z]+\b'),  # Full names
+        'dob': re.compile(r'\b(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}[-/]\d{1,2}[-/]\d{1,2})\b'),  # Dates of birth
+        'address': re.compile(r'\b\d+\s+[A-Za-z\s]+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St)\.?\b', re.IGNORECASE),  # Addresses
+        'phone': re.compile(r'\b(?:\+\d{1,2}\s)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b'),  # Phone numbers
+        'email': re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'),  # Email addresses
+    }
+    
+    @classmethod
+    def sanitize_string(cls, text: str) -> str:
+        """
+        Sanitize a string by redacting potential PHI.
+        
+        Args:
+            text: The input string to sanitize
+            
+        Returns:
+            str: Sanitized string with PHI replaced by [REDACTED]
+        """
+        if not text:
+            return text
+            
+        sanitized = text
+        for phi_type, pattern in cls.PHI_PATTERNS.items():
+            sanitized = pattern.sub(f"[{phi_type.upper()} REDACTED]", sanitized)
+            
+        return sanitized
+    
+    @classmethod
+    def sanitize_dict(cls, data: Dict[str, Any], 
+                      exclude_keys: Optional[Set[str]] = None) -> Dict[str, Any]:
+        """
+        Sanitize a dictionary by redacting potential PHI in string values.
+        
+        Args:
+            data: The input dictionary to sanitize
+            exclude_keys: Optional set of keys to exclude from sanitization
+            
+        Returns:
+            Dict[str, Any]: Sanitized dictionary with PHI values replaced
+        """
+        if not data:
+            return data
+            
+        sanitized = {}
+        exclude = exclude_keys or set()
+        
+        for key, value in data.items():
+            if key in exclude:
+                sanitized[key] = value
+            elif isinstance(value, str):
+                sanitized[key] = cls.sanitize_string(value)
+            elif isinstance(value, dict):
+                sanitized[key] = cls.sanitize_dict(value, exclude_keys)
+            elif isinstance(value, list):
+                sanitized[key] = cls.sanitize_list(value, exclude_keys)
+            else:
+                sanitized[key] = value
+                
+        return sanitized
+    
+    @classmethod
+    def sanitize_list(cls, data: List[Any], 
+                      exclude_keys: Optional[Set[str]] = None) -> List[Any]:
+        """
+        Sanitize a list by redacting potential PHI in its items.
+        
+        Args:
+            data: The input list to sanitize
+            exclude_keys: Optional set of keys to exclude from sanitization
+                          (applies to dictionaries in the list)
+            
+        Returns:
+            List[Any]: Sanitized list with PHI values replaced
+        """
+        if not data:
+            return data
+            
+        sanitized = []
+        
+        for item in data:
+            if isinstance(item, str):
+                sanitized.append(cls.sanitize_string(item))
+            elif isinstance(item, dict):
+                sanitized.append(cls.sanitize_dict(item, exclude_keys))
+            elif isinstance(item, list):
+                sanitized.append(cls.sanitize_list(item, exclude_keys))
+            else:
+                sanitized.append(item)
+                
+        return sanitized
+    
+    @classmethod
+    def sanitize_error_message(cls, message: str) -> str:
+        """
+        Sanitize an error message by redacting potential PHI.
+        
+        Args:
+            message: The error message to sanitize
+            
+        Returns:
+            str: Sanitized error message with PHI replaced
+        """
+        return cls.sanitize_string(message)
+    
+    @classmethod
+    def sanitize_log_entry(cls, log_entry: str) -> str:
+        """
+        Sanitize a log entry by redacting potential PHI.
+        
+        Args:
+            log_entry: The log entry to sanitize
+            
+        Returns:
+            str: Sanitized log entry with PHI replaced
+        """
+        return cls.sanitize_string(log_entry)
+    
+    @classmethod
+    def update_patterns(cls, new_patterns: Dict[str, Pattern]) -> None:
+        """
+        Update the PHI detection patterns with new patterns.
+        
+        Args:
+            new_patterns: Dictionary of new pattern names and compiled regex patterns
+        """
+        cls.PHI_PATTERNS.update(new_patterns)

@@ -1,0 +1,335 @@
+# PHI Detection Patterns
+# This file contains regex patterns for detecting Protected Health Information (PHI)
+# Each category contains patterns with confidence scores and redaction formats
+
+name:
+  description: Person names (first, last, full)
+  replacement_format: "[NAME]"
+  patterns:
+    first_name:
+      regex: '\b(?:[A-Z][a-z]*(?:-[A-Z][a-z]*)?)\b'
+      confidence: 0.65
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    last_name:
+      regex: '\b(?:[A-Z][a-zA-Z''`-]+)\b'
+      confidence: 0.65
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    full_name:
+      regex: '\b(?:[A-Z][a-z]*(?:-[A-Z][a-z]*)?)\s+(?:[A-Z][a-zA-Z''`-]+)\b'
+      confidence: 0.85
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    prefix_name:
+      regex: '\b(?:Dr|Mr|Mrs|Ms|Miss|Prof|Rev)\.\s+(?:[A-Z][a-z]*(?:\s+[A-Z][a-zA-Z''`-]+)?)\b'
+      confidence: 0.90
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+date:
+  description: Date information (DOB, appointment dates, etc.)
+  replacement_format: "[DATE]"
+  patterns:
+    mm_dd_yyyy:
+      regex: '\b(?:0?[1-9]|1[0-2])[\/\-\.](0?[1-9]|[12]\d|3[01])[\/\-\.](?:19|20)\d{2}\b'
+      confidence: 0.90
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    dd_mm_yyyy:
+      regex: '\b(?:0?[1-9]|[12]\d|3[01])[\/\-\.](?:0?[1-9]|1[0-2])[\/\-\.](?:19|20)\d{2}\b'
+      confidence: 0.85
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    yyyy_mm_dd:
+      regex: '\b(?:19|20)\d{2}[\/\-\.](?:0?[1-9]|1[0-2])[\/\-\.](?:0?[1-9]|[12]\d|3[01])\b'
+      confidence: 0.90
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    month_dd_yyyy:
+      regex: '\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(?:0?[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?,?\s+(?:19|20)\d{2}\b'
+      confidence: 0.95
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    dob_pattern:
+      regex: '\bDOB\s*:?\s*(?:0?[1-9]|1[0-2])[\/\-\.](?:0?[1-9]|[12]\d|3[01])[\/\-\.](?:19|20)\d{2}\b'
+      confidence: 0.95
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    date_of_birth_pattern:
+      regex: '\bDate\s+of\s+Birth\s*:?\s*(?:0?[1-9]|1[0-2])[\/\-\.](?:0?[1-9]|[12]\d|3[01])[\/\-\.](?:19|20)\d{2}\b'
+      confidence: 0.98
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+phone:
+  description: Phone numbers
+  replacement_format: "[PHONE]"
+  patterns:
+    us_phone:
+      regex: '\b(?:\+?1[-\.\s]?)?(?:\(\d{3}\)|\d{3})[-\.\s]?\d{3}[-\.\s]?\d{4}\b'
+      confidence: 0.90
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    phone_with_extension:
+      regex: '\b(?:\+?1[-\.\s]?)?(?:\(\d{3}\)|\d{3})[-\.\s]?\d{3}[-\.\s]?\d{4}(?:\s*(?:x|ext|extension)\s*\d{1,5})?\b'
+      confidence: 0.92
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    tel_pattern:
+      regex: '\bTel(?:ephone)?\s*:?\s*(?:\+?1[-\.\s]?)?(?:\(\d{3}\)|\d{3})[-\.\s]?\d{3}[-\.\s]?\d{4}\b'
+      confidence: 0.95
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+address:
+  description: Address information
+  replacement_format: "[ADDRESS]"
+  patterns:
+    street_address:
+      regex: '\b\d+\s+[A-Z][a-zA-Z0-9\s\.,]*(Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Way|Court|Ct|Plaza|Trail|Tr|Terrace|Place|Pl|Square)\b'
+      confidence: 0.85
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    po_box:
+      regex: '\bP\.?O\.?\s*Box\s+\d+\b'
+      confidence: 0.95
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    zip_code:
+      regex: '\b\d{5}(?:-\d{4})?\b'
+      confidence: 0.70
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    city_state_zip:
+      regex: '\b[A-Z][a-zA-Z\s]+,\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?\b'
+      confidence: 0.90
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+
+ssn:
+  description: Social Security Numbers
+  replacement_format: "[SSN]"
+  patterns:
+    ssn_standard:
+      regex: '\b\d{3}-\d{2}-\d{4}\b'
+      confidence: 0.95
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    ssn_without_dashes:
+      regex: '\b\d{9}\b'
+      confidence: 0.75
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    ssn_with_label:
+      regex: '\bSSN\s*:?\s*\d{3}-\d{2}-\d{4}\b'
+      confidence: 0.98
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+medical_record:
+  description: Medical record numbers
+  replacement_format: "[MRN]"
+  patterns:
+    mrn_standard:
+      regex: '\bMRN\s*:?\s*\d{5,10}\b'
+      confidence: 0.95
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    medical_record_number:
+      regex: '\bMedical\s+Record\s+(?:Number|#)\s*:?\s*\d{5,10}\b'
+      confidence: 0.98
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    chart_number:
+      regex: '\bChart\s+(?:Number|#)\s*:?\s*\d{5,10}\b'
+      confidence: 0.90
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+email:
+  description: Email addresses
+  replacement_format: "[EMAIL]"
+  patterns:
+    email_standard:
+      regex: '\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b'
+      confidence: 0.95
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    email_with_label:
+      regex: '\bEmail\s*:?\s*[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b'
+      confidence: 0.98
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+ip_address:
+  description: IP addresses
+  replacement_format: "[IP_ADDRESS]"
+  patterns:
+    ipv4:
+      regex: '\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
+      confidence: 0.95
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    ipv6:
+      regex: '\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b'
+      confidence: 0.98
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+
+age:
+  description: Age information
+  replacement_format: "[AGE]"
+  patterns:
+    age_standard:
+      regex: '\b(?:Age|aged?)\s*:?\s*\d{1,3}\b'
+      confidence: 0.90
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    age_years_old:
+      regex: '\b\d{1,3}\s+(?:years?|yrs?)(?:\s+old)?\b'
+      confidence: 0.85
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    age_y_o:
+      regex: '\b\d{1,3}\s*y\.?o\.?\b'
+      confidence: 0.90
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+facility:
+  description: Facility or hospital names
+  replacement_format: "[FACILITY]"
+  patterns:
+    hospital:
+      regex: '\b(?:University|Community|Memorial|Regional|County|General|Saint|St\.|Mount|Mt\.)\s+[A-Z][a-zA-Z\s]*(?:Hospital|Medical\s+Center|Health|Healthcare|Clinic|Center)\b'
+      confidence: 0.85
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    clinic:
+      regex: '\b[A-Z][a-zA-Z\s]*(?:Clinic|Center|Practice|Associates|Care|Hospital|Physicians|Medicine)\b'
+      confidence: 0.80
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+    
+    medical_center:
+      regex: '\b[A-Z][a-zA-Z\s]*Medical\s+Center\b'
+      confidence: 0.90
+      case_insensitive: false
+      multi_line: false
+      dot_all: false
+
+url:
+  description: Web URLs that may contain identifying information
+  replacement_format: "[URL]"
+  patterns:
+    url_standard:
+      regex: '\bhttps?://(?:[-\w.]+)\.(?:[a-zA-Z]{2,})(?:/[^\s]*)?\b'
+      confidence: 0.90
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    url_with_www:
+      regex: '\bwww\.(?:[-\w.]+)\.(?:[a-zA-Z]{2,})(?:/[^\s]*)?\b'
+      confidence: 0.85
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+insurance:
+  description: Insurance information
+  replacement_format: "[INSURANCE]"
+  patterns:
+    insurance_id:
+      regex: '\b(?:Insurance|Policy)\s+(?:ID|Number|#)\s*:?\s*[A-Z0-9]{6,15}\b'
+      confidence: 0.95
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    insurance_provider:
+      regex: '\b(?:Aetna|Blue\s+Cross|Blue\s+Shield|BCBS|Cigna|Humana|Kaiser|Medicare|Medicaid|UnitedHealthcare|Anthem|Tricare)\b'
+      confidence: 0.90
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    group_number:
+      regex: '\bGroup\s+(?:Number|#)\s*:?\s*[A-Z0-9]{4,12}\b'
+      confidence: 0.92
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+
+device_id:
+  description: Medical device identifiers
+  replacement_format: "[DEVICE_ID]"
+  patterns:
+    device_id_standard:
+      regex: '\b(?:Device\s+ID|Serial\s+Number)\s*:?\s*[A-Z0-9]{4,15}\b'
+      confidence: 0.92
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
+    
+    implant_id:
+      regex: '\bImplant\s+(?:ID|Number|#)\s*:?\s*[A-Z0-9]{4,15}\b'
+      confidence: 0.95
+      case_insensitive: true
+      multi_line: false
+      dot_all: false
