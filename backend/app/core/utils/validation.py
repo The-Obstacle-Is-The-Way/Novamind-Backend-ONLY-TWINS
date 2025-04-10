@@ -1,320 +1,342 @@
 # -*- coding: utf-8 -*-
 """
-PHI Detection and Validation Utility.
+Validation utilities for Novamind Digital Twin Platform.
 
-This module provides utilities for detecting and validating Protected Health Information (PHI)
-in various formats to ensure HIPAA compliance across the platform.
+This module contains validation functions for various data types,
+including personal identifiable information (PII) and protected health
+information (PHI) detection.
 """
 
 import re
-from typing import List, Optional, Union, Dict, Any, Pattern
+from typing import Any, Dict, List, Optional, Pattern, Set, Tuple, NamedTuple
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-class PHIMatch:
-    """Represents a matched PHI instance in text content."""
-
-    def __init__(self, phi_type: str, value: str, position: int):
-        """
-        Initialize a PHI match.
-
-        Args:
-            phi_type: Type of PHI detected (e.g., SSN, NAME, EMAIL)
-            value: The PHI value that was detected
-            position: Character position in the text where PHI was found
-        """
-        self.phi_type = phi_type
-        self.value = value
-        self.position = position
-
-    def __repr__(self) -> str:
-        """Return string representation of the PHI match."""
-        # Mask the actual PHI value in logs
-        return f"PHIMatch(type={self.phi_type}, value=[REDACTED], position={self.position})"
+class PHIMatch(NamedTuple):
+    """Represents a match of PHI in text."""
+    phi_type: str
+    value: str
+    start: int
+    end: int
 
 
 class PHIDetector:
     """
-    Detects and validates Protected Health Information (PHI) in content.
+    Utility class for detecting PHI in strings.
     
-    This class provides robust pattern matching to identify various types of PHI
-    including SSNs, names, addresses, phone numbers, etc. to ensure HIPAA compliance.
+    This class provides methods to scan text for potential protected health
+    information to ensure HIPAA compliance.
     """
-
-    def __init__(self, custom_patterns: Optional[Dict[str, Pattern]] = None):
-        """
-        Initialize the PHI detector with configurable patterns.
-
-        Args:
-            custom_patterns: Optional dictionary of custom regex patterns to use
-                            instead of or in addition to the default patterns
-        """
-        # Default patterns for various PHI types
-        self.patterns = {
-            # Social Security Numbers in various formats
-            'SSN': re.compile(
-                r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b|'  # Basic formats: 123-45-6789, 123 45 6789
-                r'"\d{3}-\d{2}-\d{4}"|'              # Double-quoted: "123-45-6789"
-                r'"\d{3}\s\d{2}\s\d{4}"|'            # Double-quoted with spaces: "123 45 6789"
-                r'\'\d{3}-\d{2}-\d{4}\'|'            # Single-quoted: '123-45-6789'
-                r'\'(?:\d{3})[- ]?(?:\d{2})[- ]?(?:\d{4})\'|'  # General single-quoted
-                r'[=:]\s*[\'"]?\d{3}-\d{2}-\d{4}[\'"]?|'       # Assignment with quotes
-                r'ssn\s*[=:]\s*[\'"]?\d{3}[- ]?\d{2}[- ]?\d{4}[\'"]?',  # Explicit SSN assignment
-                re.IGNORECASE
-            ),
-            
-            # Email addresses
-            'EMAIL': re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'),
-            
-            # Phone numbers in various formats
-            'PHONE': re.compile(
-                r'\b(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b|'  # Standard formats
-                r'phone\s*[=:]\s*[\'"]?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}[\'"]?',  # Assignments
-                re.IGNORECASE
-            ),
-            
-            # Medical Record Numbers
-            'MRN': re.compile(
-                r'\bMRN\s*[#:]?\s*\d{5,10}\b|'  # Basic MRN format
-                r'medical[\s_-]*record[\s_-]*number[\s_-]*[#:]?\s*\d{5,10}',  # Explicit MRN
-                re.IGNORECASE
-            ),
-            
-            # Full names (2+ words starting with capital letters)
-            'NAME': re.compile(
-                r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b|'  # Basic name format: John Doe
-                r'name\s*[=:]\s*[\'"]?[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+[\'"]?',  # Assignment
-                re.IGNORECASE
-            ),
-            
-            # Dates of birth
-            'DOB': re.compile(
-                r'\b\d{1,2}/\d{1,2}/\d{4}\b|'  # MM/DD/YYYY
-                r'\b\d{4}-\d{1,2}-\d{1,2}\b|'  # YYYY-MM-DD
-                r'(?:DOB|Date\s+of\s+Birth)[:\s]+\d{1,2}[/.-]\d{1,2}[/.-]\d{4}',  # Labeled DOB
-                re.IGNORECASE
-            ),
-            
-            # Addresses with street information
-            'ADDRESS': re.compile(
-                r'\b\d+\s+[A-Za-z\s]+(?:St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Dr|Drive|Lane|Ln|Place|Pl|Court|Ct|Circle|Cir|Highway|Hwy|Way)\b',
-                re.IGNORECASE
-            ),
-            
-            # Credit card numbers
-            'CREDIT_CARD': re.compile(
-                r'\b(?:\d{4}[- ]?){3}\d{4}\b|'  # Basic 16-digit format with separators
-                r'\b\d{13,16}\b'  # Continuous digit format
-            )
-        }
-        
-        # Merge or replace with custom patterns if provided
-        if custom_patterns:
-            for key, pattern in custom_patterns.items():
-                self.patterns[key] = pattern
-
-    def detect_phi(self, content: str) -> List[PHIMatch]:
-        """
-        Detect PHI in the provided content.
-        
-        Args:
-            content: Text content to scan for PHI
-            
-        Returns:
-            List of PHIMatch objects for each detected PHI instance
-        """
-        if not isinstance(content, str):
-            return []
-            
-        found_phi = []
-        for phi_type, pattern in self.patterns.items():
-            matches = pattern.finditer(content)
-            for match in matches:
-                found_phi.append(PHIMatch(
-                    phi_type=phi_type,
-                    value=match.group(0),
-                    position=match.start()
-                ))
-                
-        return found_phi
     
-    def contains_phi(self, content: str) -> bool:
+    # Regex patterns for detecting common PHI
+    SSN_PATTERN = re.compile(r"\b\d{3}[-]?\d{2}[-]?\d{4}\b")
+    EMAIL_PATTERN = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+    PHONE_PATTERN = re.compile(r"\b(?:\+?1[-.]?)?(?:\(?([0-9]{3})\)?[-.]?)?([0-9]{3})[-.]?([0-9]{4})\b")
+    DATE_PATTERN = re.compile(r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b|\b\d{4}[/-]\d{1,2}[/-]\d{1,2}\b")
+    NAME_PATTERN = re.compile(r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\b")
+    MRN_PATTERN = re.compile(r"\bMRN\d+\b")
+    ADDRESS_PATTERN = re.compile(r"\b\d+\s+[A-Za-z\s]+(?:St|Ave|Rd|Blvd|Dr|Lane|Ln|Way|Pl|Plaza|Court|Ct)\b", re.IGNORECASE)
+    
+    # Lists of common first and last names to check against
+    COMMON_FIRST_NAMES = {
+        "john", "james", "robert", "michael", "william", "david", "richard", "joseph", "thomas", "charles",
+        "mary", "patricia", "jennifer", "linda", "elizabeth", "barbara", "susan", "jessica", "sarah", "karen"
+    }
+    
+    COMMON_LAST_NAMES = {
+        "smith", "johnson", "williams", "jones", "brown", "davis", "miller", "wilson", "moore", "taylor",
+        "anderson", "thomas", "jackson", "white", "harris", "martin", "thompson", "garcia", "martinez", "robinson"
+    }
+    
+    def __init__(self):
+        """Initialize the PHI detector."""
+        logger.debug("Initializing PHI detector")
+    
+    def contains_phi(self, text: str) -> bool:
         """
-        Check if the content contains any PHI.
+        Check if the provided text contains any PHI.
         
         Args:
-            content: Text content to check
+            text: The text to check for PHI
             
         Returns:
             True if PHI is detected, False otherwise
         """
-        return len(self.detect_phi(content)) > 0
-    
-    def sanitize_phi(self, content: str) -> str:
-        """
-        Replace all detected PHI with [REDACTED] marker.
-        
-        Args:
-            content: Text content to sanitize
+        if not text or not isinstance(text, str):
+            return False
             
-        Returns:
-            Sanitized content with PHI replaced by [REDACTED]
-        """
-        if not isinstance(content, str):
-            return content
-            
-        # Detect all PHI
-        phi_matches = self.detect_phi(content)
-        
-        # If no PHI, return original content
-        if not phi_matches:
-            return content
-            
-        # Sort matches by position (reversed to avoid messing up positions)
-        phi_matches.sort(key=lambda m: m.position, reverse=True)
-        
-        # Replace each match with [REDACTED]
-        sanitized = content
-        for match in phi_matches:
-            start = match.position
-            end = start + len(match.value)
-            sanitized = sanitized[:start] + "[REDACTED]" + sanitized[end:]
-            
-        return sanitized
-    
-    def is_phi_test_context(self, file_path: str, content: str) -> bool:
-        """
-        Determine if the file is a legitimate PHI test context.
-        
-        Args:
-            file_path: Path to the file
-            content: Content of the file
-            
-        Returns:
-            True if the file appears to be testing PHI detection, False otherwise
-        """
-        # PHI Test patterns
-        phi_test_patterns = [
-            r"test_phi_",
-            r"phi_test",
-            r"test_sanitiz",
-            r"sanitiz.*test",
-            r"test.*phi.*detect",
-            r"phi.*detect.*test",
-            r"test_audit_detects_phi",
-            r"test_phi_audit",
-            r"test.*audit.*phi"
-        ]
-        
-        # Check filename for PHI test patterns
-        filename = file_path.split("/")[-1]
-        if any(re.search(pattern, filename, re.IGNORECASE) for pattern in phi_test_patterns):
+        # Check for patterns
+        if (self.SSN_PATTERN.search(text) or
+            self.EMAIL_PATTERN.search(text) or
+            self.PHONE_PATTERN.search(text) or
+            self.DATE_PATTERN.search(text) or
+            self.MRN_PATTERN.search(text) or
+            self.ADDRESS_PATTERN.search(text)):
             return True
+            
+        # Check for names
+        for name_match in self.NAME_PATTERN.finditer(text):
+            name = name_match.group(0).lower()
+            first_last = name.split()
+            if len(first_last) >= 2:
+                first, last = first_last[0], first_last[-1]
+                if first in self.COMMON_FIRST_NAMES or last in self.COMMON_LAST_NAMES:
+                    return True
         
-        # Check for test-specific imports and context
-        test_indicators = [
-            "import pytest",
-            "from pytest",
-            "unittest",
-            "PHIDetector",
-            "LogSanitizer",
-            "PHISanitizer",
-            "test_detect_phi",
-            "test_phi_detection",
-            "test_phi_in_code"
-        ]
-        
-        # Is this code in a test context?
-        test_files = "/tests/" in file_path or file_path.endswith("_test.py") or file_path.endswith("test.py")
-        test_content = any(indicator in content for indicator in test_indicators)
-        
-        return test_files and test_content
-
-
-def validate_us_phone(phone_number: str) -> bool:
-    """
-    Validate if a string is a properly formatted US phone number.
-    
-    Args:
-        phone_number: Phone number string to validate
-        
-    Returns:
-        True if valid US phone number, False otherwise
-    """
-    # Remove any non-digit characters for validation
-    digits_only = re.sub(r'\D', '', phone_number)
-    
-    # US phone numbers should have 10 digits (or 11 with country code 1)
-    return (len(digits_only) == 10 or 
-            (len(digits_only) == 11 and digits_only.startswith('1')))
-
-
-def validate_ssn(ssn: str) -> bool:
-    """
-    Validate if a string is a properly formatted US Social Security Number.
-    
-    Args:
-        ssn: SSN string to validate
-        
-    Returns:
-        True if valid SSN, False otherwise
-    """
-    # Remove any non-digit characters for validation
-    digits_only = re.sub(r'\D', '', ssn)
-    
-    # Check basic format
-    if len(digits_only) != 9:
         return False
     
-    # Check for invalid values:
-    # - SSNs don't start with 000, 666, or 900-999
-    # - The middle two digits can't be 00
-    # - The last four digits can't be 0000
-    if (digits_only.startswith('000') or
-        digits_only.startswith('666') or
-        digits_only.startswith('9') or
-        digits_only[3:5] == '00' or
-        digits_only[5:] == '0000'):
+    def detect_phi(self, text: str) -> List[PHIMatch]:
+        """
+        Detect all instances of PHI in the provided text.
+        
+        Args:
+            text: The text to scan for PHI
+            
+        Returns:
+            List of PHIMatch tuples containing PHI type, value, start position, and end position
+        """
+        if not text or not isinstance(text, str):
+            return []
+            
+        matches = []
+        
+        # Check for SSNs
+        for match in self.SSN_PATTERN.finditer(text):
+            matches.append(PHIMatch(
+                phi_type="SSN",
+                value=match.group(0),
+                start=match.start(),
+                end=match.end()
+            ))
+        
+        # Check for email addresses
+        for match in self.EMAIL_PATTERN.finditer(text):
+            matches.append(PHIMatch(
+                phi_type="EMAIL",
+                value=match.group(0),
+                start=match.start(),
+                end=match.end()
+            ))
+        
+        # Check for phone numbers
+        for match in self.PHONE_PATTERN.finditer(text):
+            matches.append(PHIMatch(
+                phi_type="PHONE",
+                value=match.group(0),
+                start=match.start(),
+                end=match.end()
+            ))
+        
+        # Check for dates
+        for match in self.DATE_PATTERN.finditer(text):
+            matches.append(PHIMatch(
+                phi_type="DOB",
+                value=match.group(0),
+                start=match.start(),
+                end=match.end()
+            ))
+        
+        # Check for medical record numbers
+        for match in self.MRN_PATTERN.finditer(text):
+            matches.append(PHIMatch(
+                phi_type="MEDICAL_RECORD",
+                value=match.group(0),
+                start=match.start(),
+                end=match.end()
+            ))
+        
+        # Check for addresses
+        for match in self.ADDRESS_PATTERN.finditer(text):
+            matches.append(PHIMatch(
+                phi_type="ADDRESS",
+                value=match.group(0),
+                start=match.start(),
+                end=match.end()
+            ))
+        
+        # Check for names
+        for match in self.NAME_PATTERN.finditer(text):
+            name = match.group(0)
+            first_last = name.lower().split()
+            if len(first_last) >= 2:
+                first, last = first_last[0], first_last[-1]
+                if first in self.COMMON_FIRST_NAMES or last in self.COMMON_LAST_NAMES:
+                    matches.append(PHIMatch(
+                        phi_type="NAME",
+                        value=name,
+                        start=match.start(),
+                        end=match.end()
+                    ))
+        
+        return matches
+
+
+def validate_credit_card(cc_number: str) -> bool:
+    """
+    Validate a credit card number using the Luhn algorithm.
+    
+    Args:
+        cc_number: The credit card number to validate
+        
+    Returns:
+        True if the credit card number is valid, False otherwise
+    """
+    if not cc_number or not isinstance(cc_number, str):
         return False
         
-    return True
+    # Remove spaces and hyphens
+    cc_number = cc_number.replace(" ", "").replace("-", "")
+    
+    # Check if all characters are digits
+    if not cc_number.isdigit():
+        return False
+        
+    # Check length (most cards are 13-19 digits)
+    if not (13 <= len(cc_number) <= 19):
+        return False
+    
+    # Luhn algorithm
+    digits = [int(d) for d in cc_number]
+    checksum = 0
+    for i, digit in enumerate(reversed(digits)):
+        if i % 2 == 1:  # Odd position (0-indexed from right)
+            digit *= 2
+            if digit > 9:
+                digit -= 9
+        checksum += digit
+    
+    return checksum % 10 == 0
 
 
 def validate_email(email: str) -> bool:
     """
-    Validate if a string is a properly formatted email address.
+    Validate an email address.
     
     Args:
-        email: Email string to validate
+        email: The email address to validate
         
     Returns:
-        True if valid email, False otherwise
+        True if the email address is valid, False otherwise
     """
-    # Basic email validation pattern
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    return bool(re.match(pattern, email))
+    if not email or not isinstance(email, str):
+        return False
+        
+    pattern = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+    return bool(pattern.match(email))
 
 
-def validate_date_of_birth(dob: str) -> bool:
+def validate_phone_number(phone: str) -> bool:
     """
-    Validate if a string is a properly formatted date of birth.
+    Validate a phone number.
     
     Args:
-        dob: Date of birth string to validate
+        phone: The phone number to validate
         
     Returns:
-        True if valid date of birth, False otherwise
+        True if the phone number is valid, False otherwise
     """
-    # Try common date formats
-    date_patterns = [
-        r'^\d{1,2}/\d{1,2}/\d{4}$',  # MM/DD/YYYY
-        r'^\d{4}-\d{1,2}-\d{1,2}$',  # YYYY-MM-DD
-        r'^\d{1,2}-\d{1,2}-\d{4}$'   # MM-DD-YYYY
-    ]
+    if not phone or not isinstance(phone, str):
+        return False
+        
+    # Remove common non-digit characters
+    clean_phone = re.sub(r"[().\-\s]", "", phone)
     
-    for pattern in date_patterns:
-        if re.match(pattern, dob):
-            # Additional logic could be added to validate the date values
-            # (e.g., valid month/day ranges, no future dates for DOB)
-            return True
-            
-    return False
+    # Check if it's a valid format
+    if len(clean_phone) == 10 and clean_phone.isdigit():
+        return True
+    elif len(clean_phone) == 11 and clean_phone.startswith("1") and clean_phone.isdigit():
+        return True
+    else:
+        return False
+
+
+def validate_us_ssn(ssn: str) -> bool:
+    """
+    Validate a US Social Security Number.
+    
+    Args:
+        ssn: The SSN to validate
+        
+    Returns:
+        True if the SSN is valid, False otherwise
+    """
+    if not ssn or not isinstance(ssn, str):
+        return False
+        
+    # Remove hyphens
+    clean_ssn = ssn.replace("-", "")
+    
+    # Check if it's 9 digits
+    if not (clean_ssn.isdigit() and len(clean_ssn) == 9):
+        return False
+    
+    # Check for invalid patterns
+    if clean_ssn.startswith("000") or clean_ssn.startswith("666"):
+        return False
+    if clean_ssn.startswith("9"):
+        return False
+    if clean_ssn[3:5] == "00":
+        return False
+    if clean_ssn[5:] == "0000":
+        return False
+    
+    return True
+
+
+def validate_date(date_str: str, format_str: str = "%Y-%m-%d") -> bool:
+    """
+    Validate a date string against a format.
+    
+    Args:
+        date_str: The date string to validate
+        format_str: The expected format of the date
+        
+    Returns:
+        True if the date is valid, False otherwise
+    """
+    import datetime
+    
+    if not date_str or not isinstance(date_str, str):
+        return False
+        
+    try:
+        datetime.datetime.strptime(date_str, format_str)
+        return True
+    except ValueError:
+        return False
+
+
+def validate_ip_address(ip: str) -> bool:
+    """
+    Validate an IP address.
+    
+    Args:
+        ip: The IP address to validate
+        
+    Returns:
+        True if the IP address is valid, False otherwise
+    """
+    if not ip or not isinstance(ip, str):
+        return False
+        
+    # IPv4 pattern
+    ipv4_pattern = re.compile(
+        r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+    )
+    
+    # IPv6 pattern
+    ipv6_pattern = re.compile(
+        r"^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|"
+        r"(?:[0-9a-fA-F]{1,4}:){1,7}:|"
+        r"(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|"
+        r"(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|"
+        r"(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|"
+        r"(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|"
+        r"(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|"
+        r"[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|"
+        r":(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)"
+    )
+    
+    return bool(ipv4_pattern.match(ip) or ipv6_pattern.match(ip))

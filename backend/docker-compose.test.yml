@@ -1,12 +1,13 @@
 version: '3.8'
 
 services:
-  postgres:
+  db-test:
     image: postgres:15-alpine
+    container_name: novamind-db-test
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: novamind_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=novamind_test
     ports:
       - "15432:5432"
     volumes:
@@ -16,28 +17,41 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - novamind-test-network
 
-  backend:
-    build: 
-      context: .
-      dockerfile: Dockerfile.test
-    volumes:
-      - .:/app
-    depends_on:
-      postgres:
-        condition: service_healthy
+  pgadmin-test:
+    image: dpage/pgadmin4:latest
+    container_name: novamind-pgadmin-test
     environment:
-      - ENVIRONMENT=test
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/novamind_test
-      - TEST_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/novamind_test
-      - LOG_LEVEL=DEBUG
-      - ENCRYPTION_KEY=test-encryption-key-32-bytes-long!!
-      - JWT_SECRET_KEY=test-jwt-secret-key-for-testing-only
-      - AUDIT_LOG_LEVEL=20
-      - AUDIT_LOG_TO_FILE=False
-      - EXTERNAL_AUDIT_ENABLED=False
-      - PYTHONPATH=/app
-    command: sh -c "pytest -vv -s"
+      - PGADMIN_DEFAULT_EMAIL=admin@novamind.test
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_LISTEN_PORT=5050
+    ports:
+      - "15050:5050"
+    depends_on:
+      - db-test
+    volumes:
+      - pgadmin_test_data:/var/lib/pgadmin
+    networks:
+      - novamind-test-network
+
+  redis-test:
+    image: redis:alpine
+    container_name: novamind-redis-test
+    ports:
+      - "16379:6379"
+    volumes:
+      - redis_test_data:/data
+    networks:
+      - novamind-test-network
 
 volumes:
   postgres_test_data:
+  pgadmin_test_data:
+  redis_test_data:
+
+networks:
+  novamind-test-network:
+    driver: bridge
