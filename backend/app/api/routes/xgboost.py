@@ -7,11 +7,12 @@ error handling, and security.
 """
 
 import logging
-from typing import Annotated, Dict, Any
+from typing import Annotated, Dict, Any, cast
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status, Security
+from fastapi import APIRouter, Depends, HTTPException, status, Security, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.api.dependencies.response import ensure_serializable_response, prevent_session_exposure
 
 from app.api.schemas.xgboost import (
     RiskPredictionRequest, RiskPredictionResponse, 
@@ -190,7 +191,8 @@ def handle_xgboost_error(error: Exception) -> HTTPException:
 async def predict_risk(
     request: RiskPredictionRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance)
+    service: XGBoostInterface = Depends(get_xgboost_service_instance),
+    _: Dict = Depends(prevent_session_exposure)
 ) -> RiskPredictionResponse:
     """
     Predict risk level for a patient using clinical data.

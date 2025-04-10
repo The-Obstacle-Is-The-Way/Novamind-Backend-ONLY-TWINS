@@ -4,14 +4,15 @@ API endpoints for the temporal neurotransmitter system.
 This module provides FastAPI routes for the temporal neurotransmitter system,
 enabling access to time-series neurotransmitter data, analysis, and visualization.
 """
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, cast, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from pydantic import BaseModel
 
 from app.api.dependencies.auth import get_current_user_dict
 from app.api.dependencies.services import get_temporal_neurotransmitter_service
+from app.api.dependencies.response import ensure_serializable_response, prevent_session_exposure
 from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 
@@ -123,7 +124,8 @@ async def generate_time_series(
     request: TimeSeriesGenerateRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-) -> TimeSeriesResponse: # Add explicit return type annotation
+    _: Dict = Depends(prevent_session_exposure),
+) -> TimeSeriesResponse:
     """
     Generate neurotransmitter time series data.
     
@@ -138,7 +140,7 @@ async def generate_time_series(
         time_step_hours=request.time_step_hours
     )
     
-    return {
+    response_data = {
         "sequence_id": sequence_id,
         "patient_id": request.patient_id,
         "brain_region": request.brain_region.value,
@@ -146,6 +148,8 @@ async def generate_time_series(
         "time_range_days": request.time_range_days,
         "time_step_hours": request.time_step_hours
     }
+    
+    return ensure_serializable_response(response_data)
 
 
 @router.post(
@@ -257,7 +261,8 @@ async def get_visualization_data(
     request: VisualizationDataRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-) -> VisualizationDataResponse: # Add explicit return type annotation
+    _: Dict = Depends(prevent_session_exposure),
+) -> VisualizationDataResponse:
     """
     Get visualization data.
     
@@ -274,7 +279,7 @@ async def get_visualization_data(
             detail=f"No data found for sequence {request.sequence_id}"
         )
     
-    return data
+    return ensure_serializable_response(data)
 
 
 @router.post(
@@ -288,7 +293,8 @@ async def get_cascade_visualization(
     request: CascadeVisualizationRequest,
     current_user: Dict = Depends(get_current_user_dict),
     service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-) -> CascadeVisualizationResponse: # Add explicit return type annotation
+    _: Dict = Depends(prevent_session_exposure),
+) -> CascadeVisualizationResponse:
     """
     Get cascade visualization.
     
@@ -307,5 +313,5 @@ async def get_cascade_visualization(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No cascade data found for patient {request.patient_id} with {request.neurotransmitter.value} in {request.starting_region.value}"
         )
-    
+    return ensure_serializable_response(data)
     return data
