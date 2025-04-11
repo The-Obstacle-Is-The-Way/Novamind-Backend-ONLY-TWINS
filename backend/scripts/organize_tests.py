@@ -94,3 +94,59 @@ def move_test_file(source_path, target_category, dry_run=True):
             shutil.copy2(source_path, target_path)
             # Optionally remove the original file
             # os.remove(source_path)
+            print(f"Copied {source_path} to {target_path}")
+            return True
+        except Exception as e:
+            print(f"Error moving {source_path} to {target_path}: {e}")
+            return False
+    
+    return True
+
+
+def organize_tests(dry_run=True):
+    """Organize tests based on the classification report."""
+    # Ensure directories exist
+    ensure_directories_exist()
+    
+    # Extract misclassified tests
+    misclassified = extract_misclassified_tests()
+    
+    if not misclassified:
+        print("No misclassified tests found or could not parse the report.")
+        return
+    
+    # Count total test files to move
+    total_files = sum(len(files) for files in misclassified.values())
+    print(f"Found {total_files} misclassified test files to organize.")
+    
+    # Move files to the correct directories
+    moved_count = 0
+    for target_category, file_paths in misclassified.items():
+        print(f"\nMoving tests to {target_category} directory:")
+        
+        for file_path in file_paths:
+            if move_test_file(file_path, target_category, dry_run):
+                moved_count += 1
+    
+    # Print summary
+    action = "Would move" if dry_run else "Moved"
+    print(f"\n{action} {moved_count} test files.")
+    
+    if dry_run:
+        print("\nThis was a dry run. No files were actually moved.")
+        print("Run with --execute to perform the actual file moves.")
+
+
+def main():
+    """Main function to parse arguments and organize tests."""
+    parser = argparse.ArgumentParser(description="Organize tests based on classification report")
+    parser.add_argument('--execute', action='store_true', help='Execute actual file moves (default is dry run)')
+    parser.add_argument('--report', default="test-classification-report.md", help='Path to the classification report file')
+    
+    args = parser.parse_args()
+    
+    organize_tests(dry_run=not args.execute)
+
+
+if __name__ == "__main__":
+    main()
