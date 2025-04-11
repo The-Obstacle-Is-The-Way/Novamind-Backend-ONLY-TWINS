@@ -6,7 +6,7 @@ These tests verify that the biometric alert API endpoints correctly handle
 requests and responses, including validation, error handling, and authentication.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
@@ -77,7 +77,7 @@ def sample_alert_data():
             {
                 "data_type": "heart_rate",
                 "value": 120.0,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "source": "apple_watch"
             }
         ],
@@ -98,14 +98,14 @@ def sample_alert():
             {
                 "data_type": "heart_rate",
                 "value": 120.0,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "source": "apple_watch"
             }
         ],
         rule_id=uuid4(),
         alert_id=uuid4(),
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
         status=AlertStatus.NEW
     )
 

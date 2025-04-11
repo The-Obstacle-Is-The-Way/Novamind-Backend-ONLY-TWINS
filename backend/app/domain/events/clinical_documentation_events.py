@@ -7,7 +7,7 @@ concierge psychiatry practice, following the Domain-Driven Design pattern.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import List, Optional
 from uuid import UUID
 
@@ -21,7 +21,7 @@ class ClinicalDocumentationEvent:
     note_id: UUID
     patient_id: UUID
     provider_id: UUID
-    timestamp: datetime = datetime.utcnow()
+    timestamp: datetime = datetime.now(UTC)
 
 
 @dataclass

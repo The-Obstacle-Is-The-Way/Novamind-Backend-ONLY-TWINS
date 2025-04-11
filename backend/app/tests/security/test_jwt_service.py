@@ -3,7 +3,7 @@ import os
 import jwt
 import time
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from unittest.mock import MagicMock, patch
 
 from app.infrastructure.security.jwt_service import JWTService
@@ -79,7 +79,7 @@ class TestJWTService:
         )
         
         # Assert expiration is properly set (15 minutes from now, +/- 10 seconds for test timing)
-        expected_exp = datetime.utcnow() + timedelta(minutes=15)
+        expected_exp = datetime.now(UTC) + timedelta(minutes=15)
         actual_exp = datetime.utcfromtimestamp(decoded["exp"])
         difference = abs((expected_exp - actual_exp).total_seconds())
         
@@ -103,7 +103,7 @@ class TestJWTService:
         # Create a token that's already expired by setting a custom exp
         with patch.object(jwt_service, '_get_expiration_time') as mock_exp:
             # Set expiration to 1 second ago
-            mock_exp.return_value = datetime.utcnow() - timedelta(seconds=1)
+            mock_exp.return_value = datetime.now(UTC) - timedelta(seconds=1)
             expired_token = jwt_service.create_access_token(user_data)
         
         # Act/Assert

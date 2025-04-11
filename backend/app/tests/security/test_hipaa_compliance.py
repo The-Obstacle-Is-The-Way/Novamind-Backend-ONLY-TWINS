@@ -18,7 +18,7 @@ import os
 import json
 import secrets
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from unittest import mock
 
 import pytest
@@ -133,7 +133,7 @@ def test_jwt_token(test_user):
         "id": test_user["id"],
         "role": test_user["role"],
         "permissions": test_user["permissions"],
-        "exp": datetime.utcnow() + expires_delta
+        "exp": datetime.now(UTC) + expires_delta
     }
     return jwt.encode(data, settings.JWT_SECRET_KEY, algorithm="HS256")
 
@@ -224,7 +224,7 @@ class TestAuthentication:
         # Create an expired token
         expired_data = {
             "sub": "test_user",
-            "exp": datetime.utcnow() - timedelta(minutes=30)
+            "exp": datetime.now(UTC) - timedelta(minutes=30)
         }
         expired_token = jwt.encode(
             expired_data, settings.JWT_SECRET_KEY, algorithm="HS256"

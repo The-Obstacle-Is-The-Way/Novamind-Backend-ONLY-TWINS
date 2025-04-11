@@ -4,7 +4,7 @@ Security utilities for authentication and authorization.
 This module provides security utilities for JWT token handling, password hashing,
 and other security-related functionality required for HIPAA compliance.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, Optional, Union
 from uuid import UUID
 
@@ -39,14 +39,14 @@ def create_token(subject: Union[str, UUID], expires_delta: Optional[timedelta] =
         Encoded JWT token
     """
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode = {
         "sub": str(subject),
         "exp": expire.timestamp(),
-        "iat": datetime.utcnow().timestamp(),
+        "iat": datetime.now(UTC).timestamp(),
     }
     
     if roles:

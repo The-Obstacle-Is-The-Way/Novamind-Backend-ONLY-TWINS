@@ -7,7 +7,7 @@ caching, and response formatting.
 """
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from uuid import UUID, uuid4
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -106,7 +106,7 @@ class TestAnalyticsEndpoints:
     ):
         """Test patient treatment outcomes endpoint with cache miss."""
         patient_id = str(uuid4())
-        start_date = (datetime.utcnow() - timedelta(days=90)).isoformat()
+        start_date = (datetime.now(UTC) - timedelta(days=90)).isoformat()
         
         # Set cache miss
         mock_cache_service.get.return_value = None
@@ -132,12 +132,12 @@ class TestAnalyticsEndpoints:
     ):
         """Test patient treatment outcomes endpoint with cache hit."""
         patient_id = str(uuid4())
-        start_date = (datetime.utcnow() - timedelta(days=90)).isoformat()
+        start_date = (datetime.now(UTC) - timedelta(days=90)).isoformat()
         
         # Set cache hit
         cached_data = {
             "patient_id": patient_id,
-            "analysis_period": {"start": start_date, "end": datetime.utcnow().isoformat()},
+            "analysis_period": {"start": start_date, "end": datetime.now(UTC).isoformat()},
             "outcome_summary": "Patient shows improvement",
         }
         mock_cache_service.get.return_value = cached_data
@@ -325,8 +325,8 @@ class TestBackgroundProcessingFunctions:
     ):
         """Test background processing of treatment outcomes."""
         patient_id = uuid4()
-        start_date = datetime.utcnow() - timedelta(days=90)
-        end_date = datetime.utcnow()
+        start_date = datetime.now(UTC) - timedelta(days=90)
+        end_date = datetime.now(UTC)
         cache_key = f"treatment_outcomes:{patient_id}:{start_date.isoformat()}:{end_date.isoformat()}"
         
         # Set up mock analytics service response
@@ -374,8 +374,8 @@ class TestBackgroundProcessingFunctions:
     ):
         """Test error handling in treatment outcomes processing."""
         patient_id = uuid4()
-        start_date = datetime.utcnow() - timedelta(days=90)
-        end_date = datetime.utcnow()
+        start_date = datetime.now(UTC) - timedelta(days=90)
+        end_date = datetime.now(UTC)
         cache_key = f"treatment_outcomes:{patient_id}:{start_date.isoformat()}:{end_date.isoformat()}"
         
         # Set up mock analytics service to raise an exception
@@ -406,8 +406,8 @@ class TestBackgroundProcessingFunctions:
         self, mock_analytics_service, mock_cache_service
     ):
         """Test background processing of practice metrics."""
-        start_date = datetime.utcnow() - timedelta(days=30)
-        end_date = datetime.utcnow()
+        start_date = datetime.now(UTC) - timedelta(days=30)
+        end_date = datetime.now(UTC)
         provider_id = uuid4()
         cache_key = f"practice_metrics:{provider_id}:{start_date.isoformat()}:{end_date.isoformat()}"
         

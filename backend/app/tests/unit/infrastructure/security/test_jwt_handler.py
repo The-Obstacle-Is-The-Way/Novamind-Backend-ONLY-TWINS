@@ -8,7 +8,7 @@ meet HIPAA security requirements.
 
 import pytest
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from unittest.mock import patch, MagicMock
 
 from jose import jwt, JWTError
@@ -109,7 +109,7 @@ class TestJWTHandler:
         
         # Verify expiration is approximately 1 hour from now
         exp_time = datetime.fromtimestamp(decoded["exp"])
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         assert abs((exp_time - now).total_seconds() - 3600) < 10  # Within 10 seconds of 1 hour
     
     def test_verify_token_valid(self, jwt_handler):
@@ -148,8 +148,8 @@ class TestJWTHandler:
         # Create payload with expiration in the past
         to_encode = {
             "sub": user_id,
-            "exp": datetime.utcnow() - timedelta(minutes=5),
-            "iat": datetime.utcnow() - timedelta(minutes=10),
+            "exp": datetime.now(UTC) - timedelta(minutes=5),
+            "iat": datetime.now(UTC) - timedelta(minutes=10),
             "role": role,
             "permissions": permissions,
             "session_id": session_id
@@ -178,8 +178,8 @@ class TestJWTHandler:
         wrong_key = "wrongkey123456789012345678901234567"
         to_encode = {
             "sub": user_id,
-            "exp": datetime.utcnow() + timedelta(minutes=15),
-            "iat": datetime.utcnow(),
+            "exp": datetime.now(UTC) + timedelta(minutes=15),
+            "iat": datetime.now(UTC),
             "role": role,
             "permissions": permissions,
             "session_id": session_id
@@ -258,8 +258,8 @@ class TestJWTHandler:
         # Create payload with expiration in the past
         to_encode = {
             "sub": user_id,
-            "exp": datetime.utcnow() - timedelta(minutes=5),
-            "iat": datetime.utcnow() - timedelta(minutes=10),
+            "exp": datetime.now(UTC) - timedelta(minutes=5),
+            "iat": datetime.now(UTC) - timedelta(minutes=10),
             "role": role,
             "permissions": permissions,
             "session_id": session_id

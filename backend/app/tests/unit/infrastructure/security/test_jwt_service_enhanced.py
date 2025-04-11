@@ -8,7 +8,7 @@ validation, and management to ensure secure authentication within the platform.
 
 import pytest
 import jwt
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, UTC, UTC, timedelta, timezone
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.jwt_service import JWTService
@@ -131,7 +131,7 @@ class TestJWTService:
         # Create an expired token by patching datetime.utcnow
         with patch('app.infrastructure.security.jwt_service.datetime') as mock_datetime:
             # Set now to 31 minutes in the past
-            past_time = datetime.utcnow() - timedelta(minutes=31)
+            past_time = datetime.now(UTC) - timedelta(minutes=31)
             mock_datetime.utcnow.return_value = past_time
             
             # Create token with the mocked current time
@@ -236,8 +236,8 @@ class TestJWTService:
         # Create a special token without sub claim using direct JWT encoding
         payload = {
             "role": "patient",
-            "exp": datetime.utcnow() + timedelta(minutes=30),
-            "iat": datetime.utcnow(),
+            "exp": datetime.now(UTC) + timedelta(minutes=30),
+            "iat": datetime.now(UTC),
             "aud": jwt_service.audience,
             "iss": jwt_service.issuer
         }

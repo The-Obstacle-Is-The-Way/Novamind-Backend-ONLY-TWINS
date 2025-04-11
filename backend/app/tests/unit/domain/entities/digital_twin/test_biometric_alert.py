@@ -6,7 +6,7 @@ These tests verify that the BiometricAlert entity correctly implements
 its business logic and state transitions.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from uuid import UUID, uuid4
 
 import pytest
@@ -101,8 +101,8 @@ class TestBiometricAlert:
         """Test initializing a BiometricAlert with custom values."""
         # Arrange
         alert_id = uuid4()
-        created_at = datetime.utcnow() - timedelta(hours=1)
-        updated_at = datetime.utcnow() - timedelta(minutes=30)
+        created_at = datetime.now(UTC) - timedelta(hours=1)
+        updated_at = datetime.now(UTC) - timedelta(minutes=30)
         metadata = {"source_system": "test_system"}
         
         # Act

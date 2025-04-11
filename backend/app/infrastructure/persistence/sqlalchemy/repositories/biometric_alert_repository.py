@@ -6,7 +6,7 @@ This module provides a concrete implementation of the BiometricAlertRepository
 interface using SQLAlchemy ORM for database operations.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, List, Optional, Any
 from uuid import UUID
 
@@ -244,7 +244,7 @@ class SQLAlchemyBiometricAlertRepository(BiometricAlertRepository):
             else:
                 # Just update the status
                 alert.status = status
-                alert.updated_at = datetime.utcnow()
+                alert.updated_at = datetime.now(UTC)
             
             # Save the updated alert
             return await self.save(alert)

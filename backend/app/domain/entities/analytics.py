@@ -6,7 +6,7 @@ This module defines the core domain entities related to analytics
 within the Novamind Digital Twin platform.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, Any, List, Optional
 
 
@@ -43,7 +43,7 @@ class AnalyticsEvent:
         self.event_data = event_data
         self.user_id = user_id
         self.session_id = session_id
-        self.timestamp = timestamp or datetime.utcnow()
+        self.timestamp = timestamp or datetime.now(UTC)
         self.event_id = event_id
     
     def to_dict(self) -> Dict[str, Any]:
@@ -93,7 +93,7 @@ class AnalyticsBatch:
         self.batch_id = batch_id
         self.processed_count = processed_count
         self.failed_count = failed_count
-        self.timestamp = timestamp or datetime.utcnow()
+        self.timestamp = timestamp or datetime.now(UTC)
     
     @property
     def total_count(self) -> int:

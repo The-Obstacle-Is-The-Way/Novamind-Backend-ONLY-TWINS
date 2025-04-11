@@ -10,7 +10,7 @@ to comply with HIPAA regulations.
 import logging
 import os
 import json
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, Any, Optional
 
 
@@ -71,7 +71,7 @@ def format_log_message(message: str, source: str, additional_data: Optional[Dict
         A JSON string containing the log message and metadata.
     """
     log_data = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "level": "INFO",
         "message": message,
         "source": source

@@ -6,7 +6,7 @@ This module defines the domain entities for the biometric twin feature,
 including biometric data points and related concepts.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
@@ -131,7 +131,7 @@ class BiometricTwinState(BaseModel):
             self.data_points[data_type] = []
         
         self.data_points[data_type].append(data_point)
-        self.last_updated = datetime.utcnow()
+        self.last_updated = datetime.now(UTC)
     
     def get_latest_value(self, data_type: str) -> Optional[float]:
         """Get the latest value for a specific data type."""

@@ -7,7 +7,7 @@ PAT service implementation.
 
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Dict, Any
 
 import pytest
@@ -46,7 +46,7 @@ def auth_headers():
 def actigraphy_data():
     """Sample actigraphy data for testing."""
     # Generate 1 hour of data at 50Hz
-    start_time = datetime.utcnow().replace(microsecond=0)
+    start_time = datetime.now(UTC).replace(microsecond=0)
     readings = []
     
     for i in range(180):  # 3 minutes of data (simplified for testing)

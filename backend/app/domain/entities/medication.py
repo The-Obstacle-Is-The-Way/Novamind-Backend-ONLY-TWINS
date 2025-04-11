@@ -7,7 +7,7 @@ representing medications prescribed to patients in the concierge psychiatry prac
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from enum import Enum, auto
 from typing import Dict, List, Optional, Set
 from uuid import UUID, uuid4
@@ -108,7 +108,7 @@ class Medication:
         if not self.end_date:
             return None
 
-        remaining = (self.end_date - datetime.utcnow()).days
+        remaining = (self.end_date - datetime.now(UTC)).days
         return max(0, remaining)
 
     @property
@@ -128,10 +128,10 @@ class Medication:
             reason: The reason for discontinuation
         """
         self.status = MedicationStatus.DISCONTINUED
-        self.end_date = datetime.utcnow()
+        self.end_date = datetime.now(UTC)
         if reason:
             self.instructions = f"DISCONTINUED: {reason}"
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def put_on_hold(self, reason: Optional[str] = None) -> None:
         """
@@ -143,7 +143,7 @@ class Medication:
         self.status = MedicationStatus.ON_HOLD
         if reason:
             self.instructions = f"ON HOLD: {reason}"
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def resume(self) -> None:
         """Resume a medication that was on hold"""
@@ -154,13 +154,13 @@ class Medication:
         # Remove the ON HOLD prefix from instructions if it exists
         if self.instructions and self.instructions.startswith("ON HOLD:"):
             self.instructions = self.instructions[8:].strip()
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def complete(self) -> None:
         """Mark the medication as completed (course finished)"""
         self.status = MedicationStatus.COMPLETED
-        self.end_date = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.end_date = datetime.now(UTC)
+        self.updated_at = datetime.now(UTC)
 
     def request_refill(self) -> None:
         """Request a refill for the medication"""
@@ -168,7 +168,7 @@ class Medication:
             raise ValueError("Cannot request refill for inactive medication")
 
         self.refill_status = RefillStatus.PENDING
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def approve_refill(self, refills_granted: int = 1) -> None:
         """
@@ -185,8 +185,8 @@ class Medication:
 
         self.refills_remaining += refills_granted
         self.refill_status = RefillStatus.AVAILABLE
-        self.refill_history.append(datetime.utcnow())
-        self.updated_at = datetime.utcnow()
+        self.refill_history.append(datetime.now(UTC))
+        self.updated_at = datetime.now(UTC)
 
     def deny_refill(self, reason: Optional[str] = None) -> None:
         """
@@ -206,7 +206,7 @@ class Medication:
             self.instructions = (
                 f"{self.instructions or ''}\nREFILL DENIED: {reason}".strip()
             )
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def use_refill(self) -> None:
         """
@@ -221,7 +221,7 @@ class Medication:
         self.refills_remaining -= 1
         if self.refills_remaining <= 0:
             self.refill_status = RefillStatus.EXPIRED
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def report_side_effect(
         self,
@@ -248,13 +248,13 @@ class Medication:
         report = SideEffectReport(
             effect=effect,
             severity=severity,
-            reported_at=datetime.utcnow(),
+            reported_at=datetime.now(UTC),
             notes=notes,
             reported_by=reported_by,
         )
 
         self.side_effects.append(report)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def update_dosage(self, new_dosage: DosageSchedule) -> None:
         """
@@ -270,7 +270,7 @@ class Medication:
             raise ValueError("Cannot update dosage for inactive medication")
 
         self.dosage_schedule = new_dosage
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def extend_prescription(self, new_end_date: datetime) -> None:
         """
@@ -285,22 +285,22 @@ class Medication:
         if not self.is_active:
             raise ValueError("Cannot extend inactive medication")
 
-        if new_end_date <= datetime.utcnow():
+        if new_end_date <= datetime.now(UTC):
             raise ValueError("New end date must be in the future")
 
         if self.end_date and new_end_date <= self.end_date:
             raise ValueError("New end date must be later than current end date")
 
         self.end_date = new_end_date
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def add_tag(self, tag: str) -> None:
         """Add a tag to the medication"""
         self.tags.add(tag)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def remove_tag(self, tag: str) -> None:
         """Remove a tag from the medication"""
         if tag in self.tags:
             self.tags.remove(tag)
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(UTC)

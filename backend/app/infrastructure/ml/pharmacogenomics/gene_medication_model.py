@@ -10,7 +10,7 @@ Clean Architecture principles and ensuring HIPAA compliance.
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
@@ -181,7 +181,7 @@ class GeneMedicationModel(BaseModel):
                 "medications": self.medications,
                 "last_training_date": self.last_training_date,
                 "metrics": self.metrics,
-                "saved_at": datetime.utcnow().isoformat(),
+                "saved_at": datetime.now(UTC).isoformat(),
             }
 
             meta_path = os.path.join(save_path, "metadata.json")
@@ -379,7 +379,7 @@ class GeneMedicationModel(BaseModel):
                 "medication_predictions": medication_predictions,
                 "recommendations": recommendations,
                 "genetic_insights": genetic_insights,
-                "analysis_timestamp": datetime.utcnow().isoformat(),
+                "analysis_timestamp": datetime.now(UTC).isoformat(),
             }
 
             return results
@@ -786,7 +786,7 @@ class GeneMedicationModel(BaseModel):
             self.metrics = metrics
 
             # Update last training date
-            self.last_training_date = datetime.utcnow().isoformat()
+            self.last_training_date = datetime.now(UTC).isoformat()
 
             return metrics
 
@@ -831,7 +831,7 @@ class GeneMedicationModel(BaseModel):
             # Add metadata
             processed_results["metadata"] = {
                 "patient_id": str(patient_id),
-                "analysis_generated_at": datetime.utcnow().isoformat(),
+                "analysis_generated_at": datetime.now(UTC).isoformat(),
                 "model_name": self.model_name,
                 "model_version": self.version,
             }

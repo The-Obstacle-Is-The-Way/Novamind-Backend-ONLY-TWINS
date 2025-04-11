@@ -8,7 +8,7 @@ the AI Models Core Implementation documentation.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -214,7 +214,7 @@ class BiometricCorrelationModel:
                 "predictions": output_np,
                 "attention_weights": attention_weights_np,
                 "model_type": "lstm",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -275,7 +275,7 @@ class BiometricCorrelationModel:
                 "key_indicators": key_indicators[:10],  # Top 10 indicators
                 "correlation_matrix": correlations.tolist(),
                 "lstm_analysis": lstm_analysis,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -366,7 +366,7 @@ class BiometricCorrelationModel:
                 "z_scores": z_scores.tolist(),
                 "lstm_analysis": lstm_analysis,
                 "window_size": window_size,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -389,5 +389,5 @@ class BiometricCorrelationModel:
             "bidirectional": self.model.bidirectional,
             "device": self.device,
             "parameter_count": sum(p.numel() for p in self.model.parameters()),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

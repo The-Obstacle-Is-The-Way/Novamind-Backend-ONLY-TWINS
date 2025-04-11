@@ -7,7 +7,7 @@ into the patient's digital twin, enabling advanced analysis and personalized
 treatment recommendations based on physiological and neurological patterns.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Dict, List, Optional, Set, Tuple, Union, Any
 from uuid import UUID
 
@@ -97,7 +97,7 @@ class BiometricIntegrationService:
             data_point = BiometricDataPoint(
                 data_type=data_type,
                 value=value,
-                timestamp=timestamp or datetime.utcnow(),
+                timestamp=timestamp or datetime.now(UTC),
                 source=source,
                 metadata=metadata,
                 confidence=confidence
@@ -139,7 +139,7 @@ class BiometricIntegrationService:
                 data_point = BiometricDataPoint(
                     data_type=point_data["data_type"],
                     value=point_data["value"],
-                    timestamp=point_data.get("timestamp", datetime.utcnow()),
+                    timestamp=point_data.get("timestamp", datetime.now(UTC)),
                     source=point_data["source"],
                     metadata=point_data.get("metadata", {}),
                     confidence=point_data.get("confidence", 1.0)
@@ -228,7 +228,7 @@ class BiometricIntegrationService:
         """
         try:
             # Get data for the specified time window
-            end_time = datetime.utcnow()
+            end_time = datetime.now(UTC)
             start_time = end_time - timedelta(days=window_days)
             
             data_points = self.get_biometric_data(
@@ -319,7 +319,7 @@ class BiometricIntegrationService:
                 raise BiometricIntegrationError(f"No biometric twin found for patient {patient_id}")
             
             # Define time window
-            end_time = datetime.utcnow()
+            end_time = datetime.now(UTC)
             start_time = end_time - timedelta(days=window_days)
             
             # Get primary data
@@ -392,7 +392,7 @@ class BiometricIntegrationService:
             metadata = connection_metadata or {}
             metadata.update({
                 "device_type": device_type,
-                "connected_at": datetime.utcnow().isoformat()
+                "connected_at": datetime.now(UTC).isoformat()
             })
             
             # Connect the device

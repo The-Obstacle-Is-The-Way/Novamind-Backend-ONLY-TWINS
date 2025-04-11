@@ -6,7 +6,7 @@ These tests verify that the BiometricTwin and BiometricDataPoint entities
 correctly handle data and maintain their integrity.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from uuid import UUID, uuid4
 import pytest
 
@@ -27,7 +27,7 @@ def sample_data_point(sample_patient_id):
         patient_id=sample_patient_id,
         data_type="heart_rate",
         value=75.0,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(UTC),
         source="apple_watch",
         metadata={"activity": "resting"},
         confidence=0.95
@@ -37,7 +37,7 @@ def sample_data_point(sample_patient_id):
 @pytest.fixture
 def sample_twin(sample_patient_id):
     """Create a sample biometric twin."""
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     return BiometricTwin(
         twin_id=UUID("00000000-0000-0000-0000-000000000002"),
         patient_id=sample_patient_id,
@@ -53,7 +53,7 @@ class TestBiometricDataPoint:
     def test_initialization(self, sample_patient_id):
         """Test that a BiometricDataPoint can be initialized with all required attributes."""
         data_id = uuid4()
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         
         data_point = BiometricDataPoint(
             data_id=data_id,
@@ -76,7 +76,7 @@ class TestBiometricDataPoint:
     def test_initialization_with_optional_attributes(self, sample_patient_id):
         """Test that a BiometricDataPoint can be initialized with optional attributes."""
         data_id = uuid4()
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         metadata = {"activity": "running", "location": "outdoors"}
         
         data_point = BiometricDataPoint(
@@ -96,7 +96,7 @@ class TestBiometricDataPoint:
     def test_equality(self, sample_patient_id):
         """Test that BiometricDataPoint equality works correctly."""
         data_id = uuid4()
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         
         data_point1 = BiometricDataPoint(
             data_id=data_id,
@@ -146,7 +146,7 @@ class TestBiometricTwin:
     def test_initialization(self, sample_patient_id):
         """Test that a BiometricTwin can be initialized with all required attributes."""
         twin_id = uuid4()
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         
         twin = BiometricTwin(
             twin_id=twin_id,
@@ -185,7 +185,7 @@ class TestBiometricTwin:
             patient_id=uuid4(),  # Different patient ID
             data_type="heart_rate",
             value=75.0,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             source="apple_watch"
         )
         
@@ -221,7 +221,7 @@ class TestBiometricTwin:
     def test_get_data_points_in_range(self, sample_twin):
         """Test that data points within a time range can be retrieved."""
         # Create data points at different times
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         data_type = "heart_rate"
         
         data_points = [
@@ -253,7 +253,7 @@ class TestBiometricTwin:
     
     def test_get_data_points_in_range_no_data(self, sample_twin):
         """Test that get_data_points_in_range returns an empty dict when no data points exist."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         range_points = sample_twin.get_data_points_in_range(
             "heart_rate",
             now,

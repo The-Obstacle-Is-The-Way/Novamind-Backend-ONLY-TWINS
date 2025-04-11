@@ -6,7 +6,7 @@ This module defines the BiometricAlert entity, which represents a clinical alert
 generated from biometric data analysis that may require clinical intervention.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from enum import Enum
 from typing import Dict, List, Optional, Any
 from uuid import UUID, uuid4
@@ -85,8 +85,8 @@ class BiometricAlert:
         
         # Generate ID and timestamps if not provided
         self.alert_id = alert_id or uuid4()
-        self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(UTC)
+        self.updated_at = updated_at or datetime.now(UTC)
         
         # Status and acknowledgment
         self.status = status or AlertStatus.NEW
@@ -109,8 +109,8 @@ class BiometricAlert:
         if self.status == AlertStatus.NEW:
             self.status = AlertStatus.ACKNOWLEDGED
             self.acknowledged_by = provider_id
-            self.acknowledged_at = datetime.utcnow()
-            self.updated_at = datetime.utcnow()
+            self.acknowledged_at = datetime.now(UTC)
+            self.updated_at = datetime.now(UTC)
     
     def mark_in_progress(self, provider_id: UUID) -> None:
         """
@@ -125,9 +125,9 @@ class BiometricAlert:
             # If not already acknowledged, acknowledge it
             if not self.acknowledged_by:
                 self.acknowledged_by = provider_id
-                self.acknowledged_at = datetime.utcnow()
+                self.acknowledged_at = datetime.now(UTC)
             
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(UTC)
     
     def resolve(self, provider_id: UUID, notes: Optional[str] = None) -> None:
         """
@@ -140,7 +140,7 @@ class BiometricAlert:
         if self.status in [AlertStatus.NEW, AlertStatus.ACKNOWLEDGED, AlertStatus.IN_PROGRESS]:
             self.status = AlertStatus.RESOLVED
             self.resolved_by = provider_id
-            self.resolved_at = datetime.utcnow()
+            self.resolved_at = datetime.now(UTC)
             
             if notes:
                 self.resolution_notes = notes
@@ -148,9 +148,9 @@ class BiometricAlert:
             # If not already acknowledged, acknowledge it
             if not self.acknowledged_by:
                 self.acknowledged_by = provider_id
-                self.acknowledged_at = datetime.utcnow()
+                self.acknowledged_at = datetime.now(UTC)
             
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(UTC)
     
     def dismiss(self, provider_id: UUID, notes: Optional[str] = None) -> None:
         """
@@ -163,7 +163,7 @@ class BiometricAlert:
         if self.status in [AlertStatus.NEW, AlertStatus.ACKNOWLEDGED, AlertStatus.IN_PROGRESS]:
             self.status = AlertStatus.DISMISSED
             self.resolved_by = provider_id
-            self.resolved_at = datetime.utcnow()
+            self.resolved_at = datetime.now(UTC)
             
             if notes:
                 self.resolution_notes = notes
@@ -171,9 +171,9 @@ class BiometricAlert:
             # If not already acknowledged, acknowledge it
             if not self.acknowledged_by:
                 self.acknowledged_by = provider_id
-                self.acknowledged_at = datetime.utcnow()
+                self.acknowledged_at = datetime.now(UTC)
             
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(UTC)
     
     def __repr__(self) -> str:
         """String representation of the alert."""

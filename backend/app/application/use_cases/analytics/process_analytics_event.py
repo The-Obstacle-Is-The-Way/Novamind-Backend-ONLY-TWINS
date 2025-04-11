@@ -6,7 +6,7 @@ This module contains the use case for processing individual analytics events
 in real-time as they are received from the frontend or other sources.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, Any, Optional
 
 from app.core.utils.logging import get_logger
@@ -63,7 +63,7 @@ class ProcessAnalyticsEventUseCase:
         """
         # Set default timestamp if not provided
         if timestamp is None:
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now(UTC)
         
         # Create the analytics event entity
         analytics_event = AnalyticsEvent(

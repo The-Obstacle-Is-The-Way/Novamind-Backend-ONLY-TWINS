@@ -9,7 +9,7 @@ HIPAA compliance across all ML services.
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
@@ -167,7 +167,7 @@ class BaseModel(ABC):
             processed_results["model_metadata"] = {
                 "model_name": self.model_name,
                 "version": self.version,
-                "prediction_time": datetime.utcnow().isoformat(),
+                "prediction_time": datetime.now(UTC).isoformat(),
             }
 
             self.logger.info(f"Completed prediction with model {self.model_name}")

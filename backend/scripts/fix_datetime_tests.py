@@ -4,7 +4,7 @@
 Fix Datetime Test Issues
 
 This script fixes common issues with datetime usage in tests, particularly:
-1. Replace deprecated datetime.utcnow() with datetime.now(UTC)
+1. Replace deprecated datetime.now(UTC) with datetime.now(UTC)
 2. Fix timezone-aware vs naive datetime comparisons
 
 Usage:
@@ -38,10 +38,10 @@ def fix_datetime_tests():
         
         # Fix naive vs aware datetime comparison pattern 1
         (r'(\s*)timestamp = datetime\.fromisoformat\((.*?)\.rstrip\("Z"\)\)(.*?)assert \(datetime\.utcnow\(\) - timestamp\)\.total_seconds\(\) < (\d+)',
-         r'\1timestamp = datetime.fromisoformat(\2.rstrip("Z"))\1# Use timezone-aware comparison to prevent TypeError\1from datetime import UTC\1assert (datetime.now(UTC) - timestamp).total_seconds() < \4'),
+         r'\1timestamp = datetime.fromisoformat(\2.rstrip("Z"))\1# Use timezone-aware comparison to prevent TypeError\1from datetime import UTC\1assert (datetime, UTC.now(UTC) - timestamp).total_seconds() < \4'),
         
         # Import UTC along with datetime if it's not already imported
-        (r'from datetime import datetime(?!\s*,\s*UTC)', r'from datetime import datetime, UTC'),
+        (r'from datetime import datetime, UTC, UTC(?!\s*,\s*UTC)', r'from datetime import datetime, UTC, UTC'),
     ]
     
     total_files = 0

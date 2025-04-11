@@ -7,7 +7,7 @@ which are generated from biometric data analysis to notify clinical staff
 of concerning patterns in patient biometric data.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from sqlalchemy import Column, String, DateTime, Float, ForeignKey, JSON, Enum
 from sqlalchemy.orm import relationship
 

@@ -120,10 +120,10 @@ async def mentalllama_health_check(
     Returns:
         Health status
     """
-    from datetime import datetime
+    from datetime import datetime, UTC, UTC
     
     is_healthy = service.is_healthy()
-    timestamp = datetime.utcnow().isoformat() + "Z"
+    timestamp = datetime.now(UTC).isoformat() + "Z"
     
     return ServiceHealthResponse(
         is_healthy=is_healthy,
@@ -144,10 +144,10 @@ async def phi_health_check(
     Returns:
         Health status
     """
-    from datetime import datetime
+    from datetime import datetime, UTC, UTC
     
     is_healthy = service.is_healthy()
-    timestamp = datetime.utcnow().isoformat() + "Z"
+    timestamp = datetime.now(UTC).isoformat() + "Z"
     
     return ServiceHealthResponse(
         is_healthy=is_healthy,

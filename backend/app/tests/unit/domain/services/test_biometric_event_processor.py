@@ -6,7 +6,7 @@ These tests verify that the BiometricEventProcessor correctly processes
 biometric data points, evaluates rules, and notifies observers.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from unittest.mock import MagicMock, patch
 from uuid import UUID
 
@@ -47,7 +47,7 @@ def sample_data_point(sample_patient_id):
         patient_id=sample_patient_id,
         data_type="heart_rate",
         value=120.0,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(UTC),
         source="apple_watch",
         metadata={"activity": "resting"},
         confidence=0.95
@@ -125,7 +125,7 @@ class TestBiometricEventProcessor:
             patient_id=None,
             data_type="heart_rate",
             value=120.0,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             source="apple_watch",
             metadata={"activity": "resting"},
             confidence=0.95

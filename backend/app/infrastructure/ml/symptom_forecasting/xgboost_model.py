@@ -9,7 +9,7 @@ the AI Models Core Implementation documentation.
 
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional, Tuple
 
 import joblib
@@ -108,7 +108,7 @@ class XGBoostSymptomModel:
             "feature_names": self.feature_names,
             "target_names": self.target_names,
             "params": self.params,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         try:
@@ -378,5 +378,5 @@ class XGBoostSymptomModel:
             "target_names": self.target_names,
             "params": self.params,
             "num_models": len(self.models),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

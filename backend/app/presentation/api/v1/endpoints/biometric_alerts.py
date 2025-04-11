@@ -7,7 +7,7 @@ including creating and managing alert rules, viewing alerts, and
 acknowledging alerts.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, List, Optional, Any
 from uuid import UUID
 
@@ -380,7 +380,7 @@ async def update_alert_rule(
         if rule_data.is_active is not None:
             rule.is_active = rule_data.is_active
         
-        rule.updated_at = datetime.utcnow()
+        rule.updated_at = datetime.now(UTC)
         
         # Save the updated rule
         await rule_repository.update_rule(rule)

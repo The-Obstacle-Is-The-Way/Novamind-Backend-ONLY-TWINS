@@ -11,7 +11,7 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
@@ -201,10 +201,10 @@ class SymptomForecastingService:
             forecast_results.update(
                 {
                     "patient_id": str(patient_id),
-                    "forecast_generated_at": datetime.utcnow().isoformat(),
+                    "forecast_generated_at": datetime.now(UTC).isoformat(),
                     "forecast_horizon": horizon,
                     "forecast_dates": [
-                        (datetime.utcnow() + timedelta(days=i)).isoformat()
+                        (datetime.now(UTC) + timedelta(days=i)).isoformat()
                         for i in range(1, horizon + 1)
                     ],
                     "target_names": self.target_names,
@@ -338,7 +338,7 @@ class SymptomForecastingService:
                 "baseline_forecast": baseline_forecast,
                 "treatment_forecasts": treatment_forecasts,
                 "comparative_metrics": comparative_metrics,
-                "evaluation_generated_at": datetime.utcnow().isoformat(),
+                "evaluation_generated_at": datetime.now(UTC).isoformat(),
                 "forecast_horizon": horizon,
             }
 
@@ -447,7 +447,7 @@ class SymptomForecastingService:
                 "trends": trends,
                 "seasonality": seasonality,
                 "correlations": correlations,
-                "analysis_generated_at": datetime.utcnow().isoformat(),
+                "analysis_generated_at": datetime.now(UTC).isoformat(),
                 "data_points": preprocessed_data.shape[0],
             }
 
@@ -471,5 +471,5 @@ class SymptomForecastingService:
             "model_weights": self.model_weights,
             "feature_names": self.feature_names,
             "target_names": self.target_names,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

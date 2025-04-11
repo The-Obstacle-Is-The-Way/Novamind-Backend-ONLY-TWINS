@@ -10,7 +10,7 @@ import json
 import random
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from app.core.exceptions import (
@@ -118,8 +118,8 @@ class MockDigitalTwinService(DigitalTwinInterface): # Corrected base class
         session = {
             "session_id": session_id,
             "patient_id": patient_id,
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat() + "Z",
+            "created_at": datetime.now(UTC).isoformat() + "Z",
+            "expires_at": (datetime.now(UTC) + timedelta(hours=24)).isoformat() + "Z",
             "context": context or {},
             "history": [],
             "metadata": {
@@ -241,7 +241,7 @@ class MockDigitalTwinService(DigitalTwinInterface): # Corrected base class
         response = self._get_response_for_message(message, session)
         
         # Add to history
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(UTC).isoformat() + "Z"
         session["history"].append({
             "role": "user",
             "content": message,
@@ -370,7 +370,7 @@ class MockDigitalTwinService(DigitalTwinInterface): # Corrected base class
         result = {
             "session_id": session_id,
             "patient_id": session["patient_id"],
-            "ended_at": datetime.utcnow().isoformat() + "Z",
+            "ended_at": datetime.now(UTC).isoformat() + "Z",
             "metadata": {
                 "provider": "mock",
                 "status": "ended",
@@ -439,7 +439,7 @@ class MockDigitalTwinService(DigitalTwinInterface): # Corrected base class
             "patient_id": patient_id,
             "insight_type": insight_type or "all",
             "time_period": time_period or "last_30_days",
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": datetime.now(UTC).isoformat() + "Z",
             "insights": insights,
             "processing_time": elapsed,
             "metadata": {

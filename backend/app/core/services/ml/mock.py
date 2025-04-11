@@ -9,7 +9,7 @@ and provide realistic responses for testing without requiring actual ML models.
 
 import json
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Union
 
 from app.core.exceptions import (
@@ -105,7 +105,7 @@ These patterns would warrant further professional assessment to determine clinic
 Remember that this is a preliminary analysis based solely on the language patterns in the text provided. A comprehensive evaluation would include a structured clinical interview, standardized assessments, and consideration of medical, developmental, and psychosocial history.""",
             "model": "mock-gpt-4",
             "model_type": "general",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_depression_detection_response(self) -> Dict[str, Any]:
@@ -144,7 +144,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "depression_detection",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_risk_assessment_response(self) -> Dict[str, Any]:
@@ -176,7 +176,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "risk_assessment",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_sentiment_analysis_response(self) -> Dict[str, Any]:
@@ -217,7 +217,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "sentiment_analysis",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_wellness_dimensions_response(self) -> Dict[str, Any]:
@@ -263,7 +263,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "wellness_dimensions",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def _create_digital_twin_response(self) -> Dict[str, Any]:
@@ -272,7 +272,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             "digital_twin_model": {
                 "model_id": "dt-mock-123",
                 "model_type": "personalized-mental-health",
-                "created_at": datetime.utcnow().isoformat() + "Z",
+                "created_at": datetime.now(UTC).isoformat() + "Z",
                 "status": "active",
                 "metrics": {
                     "training_samples": 1250,
@@ -300,7 +300,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             },
             "model": "mock-gpt-4",
             "model_type": "digital_twin",
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
     
     def is_healthy(self) -> bool:
@@ -358,7 +358,7 @@ Remember that this is a preliminary analysis based solely on the language patter
         result = mock_response.copy()
         
         # Update timestamp
-        result["timestamp"] = datetime.utcnow().isoformat() + "Z"
+        result["timestamp"] = datetime.now(UTC).isoformat() + "Z"
         
         return result
     
@@ -535,13 +535,13 @@ Remember that this is a preliminary analysis based solely on the language patter
             raise InvalidRequestError("Patient ID must be a non-empty string")
         
         # Generate digital twin ID
-        digital_twin_id = f"dt-{patient_id}-{datetime.utcnow().strftime('%Y%m%d')}"
+        digital_twin_id = f"dt-{patient_id}-{datetime.now(UTC).strftime('%Y%m%d')}"
         
         # Create mock digital twin result
         result = {
             "patient_id": patient_id,
             "digital_twin_id": digital_twin_id,
-            "creation_timestamp": datetime.utcnow().isoformat() + "Z",
+            "creation_timestamp": datetime.now(UTC).isoformat() + "Z",
             "status": "active",
             "model_type": "digital_twin",
             "version": "1.0.0",
@@ -583,7 +583,7 @@ Remember that this is a preliminary analysis based solely on the language patter
         # Store the digital twin
         self._digital_twins[patient_id] = {
             "digital_twin_id": digital_twin_id,
-            "created_at": datetime.utcnow().isoformat() + "Z",
+            "created_at": datetime.now(UTC).isoformat() + "Z",
             "patient_data": patient_data or {},
             "model_data": result
         }
@@ -620,7 +620,7 @@ Remember that this is a preliminary analysis based solely on the language patter
             raise InvalidRequestError("Therapist ID must be a non-empty string")
         
         # Generate session ID
-        session_id = f"session-{random.randint(10000, 99999)}-{datetime.utcnow().strftime('%Y%m%d')}"
+        session_id = f"session-{random.randint(10000, 99999)}-{datetime.now(UTC).strftime('%Y%m%d')}"
         
         # Set default session type
         if not session_type:
@@ -633,8 +633,8 @@ Remember that this is a preliminary analysis based solely on the language patter
             "patient_id": patient_id,
             "session_type": session_type,
             "status": "active",
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "created_at": datetime.now(UTC).isoformat() + "Z",
+            "updated_at": datetime.now(UTC).isoformat() + "Z",
             "messages": [],
             "params": session_params or {}
         }
@@ -747,23 +747,23 @@ Remember that this is a preliminary analysis based solely on the language patter
             raise InvalidRequestError(f"Session is not active: {session_id}")
         
         # Create message
-        message_id = f"msg-{random.randint(10000, 99999)}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        message_id = f"msg-{random.randint(10000, 99999)}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
         message_obj = {
             "message_id": message_id,
             "session_id": session_id,
             "content": message,
             "sender_type": sender_type,
             "sender_id": sender_id,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(UTC).isoformat() + "Z",
             "params": message_params or {}
         }
         
         # Add message to session
         session["messages"].append(message_obj)
-        session["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        session["updated_at"] = datetime.now(UTC).isoformat() + "Z"
         
         # Generate Digital Twin response
-        dt_message_id = f"msg-{random.randint(10000, 99999)}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        dt_message_id = f"msg-{random.randint(10000, 99999)}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
         dt_response = self._generate_dt_response(message, session["session_type"])
         dt_message = {
             "message_id": dt_message_id,
@@ -771,13 +771,13 @@ Remember that this is a preliminary analysis based solely on the language patter
             "content": dt_response,
             "sender_type": "digital_twin",
             "sender_id": f"dt-{session.get('patient_id', 'anonymous')}",
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(UTC).isoformat() + "Z",
             "params": {}
         }
         
         # Add Digital Twin response to session
         session["messages"].append(dt_message)
-        session["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        session["updated_at"] = datetime.now(UTC).isoformat() + "Z"
         
         # Return response
         result = {
@@ -873,9 +873,9 @@ Remember that this is a preliminary analysis based solely on the language patter
         
         # Update session status
         session["status"] = "ended"
-        session["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        session["updated_at"] = datetime.now(UTC).isoformat() + "Z"
         session["end_reason"] = end_reason or "completed"
-        session["ended_at"] = datetime.utcnow().isoformat() + "Z"
+        session["ended_at"] = datetime.now(UTC).isoformat() + "Z"
         
         # Generate session summary
         session_summary = self._generate_session_summary(session)
@@ -1087,7 +1087,7 @@ Remember that this is a preliminary analysis based solely on the language patter
         
         # Basic insights (always included)
         insights["session_id"] = session_id
-        insights["generated_at"] = datetime.utcnow().isoformat() + "Z"
+        insights["generated_at"] = datetime.now(UTC).isoformat() + "Z"
         insights["session_type"] = session.get("session_type", "therapy")
         insights["message_count"] = len(session.get("messages", []))
         insights["session_status"] = session.get("status", "unknown")
@@ -1110,7 +1110,7 @@ Remember that this is a preliminary analysis based solely on the language patter
                     "language_complexity": "moderate to high",
                     "self_references": "frequent negative self-evaluation"
                 },
-                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.now(UTC).isoformat() + "Z",
                 "confidence": 0.82
             }
             insights_list.append(linguistic_insight)
@@ -1148,7 +1148,7 @@ Remember that this is a preliminary analysis based solely on the language patter
                         "Mindfulness-based stress reduction"
                     ]
                 },
-                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.now(UTC).isoformat() + "Z",
                 "confidence": 0.78
             }
             insights_list.append(clinical_insight)
@@ -1178,7 +1178,7 @@ Remember that this is a preliminary analysis based solely on the language patter
                     },
                     "therapeutic_alliance_strength": 0.76
                 },
-                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.now(UTC).isoformat() + "Z",
                 "confidence": 0.76
             }
             insights_list.append(therapeutic_insight)
@@ -1205,7 +1205,7 @@ Remember that this is a preliminary analysis based solely on the language patter
                     ],
                     "overall_trajectory": "positive with expected fluctuations"
                 },
-                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.now(UTC).isoformat() + "Z",
                 "confidence": 0.71
             }
             insights_list.append(progress_insight)
@@ -1304,7 +1304,7 @@ class MockPHIDetection(PHIDetectionInterface):
             "phi_instances": phi_instances,
             "model": "mock-phi-detection",
             "analysis_time_ms": 42,
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
         
         return result
@@ -1432,7 +1432,7 @@ Plan:
             "redacted_types": list({instance["type"] for instance in detection_result["phi_instances"]}),
             "detection_level": detection_result["detection_level"],
             "replacement_used": replacement,
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
         
         return result

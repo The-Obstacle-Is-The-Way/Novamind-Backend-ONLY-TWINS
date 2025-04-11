@@ -91,7 +91,7 @@ class AuditLogger:
             details: Additional context about the access (no PHI allowed here)
         """
         event_id = str(uuid.uuid4())
-        timestamp = datetime.datetime.utcnow().isoformat()
+        timestamp = datetime.datetime.now(datetime.UTC).isoformat()
 
         # Create audit entry
         audit_entry = {
@@ -129,7 +129,7 @@ class AuditLogger:
             details: Additional context about the event (no PHI allowed)
         """
         event_id = str(uuid.uuid4())
-        timestamp = datetime.datetime.utcnow().isoformat()
+        timestamp = datetime.datetime.now(datetime.UTC).isoformat()
 
         # Create audit entry
         audit_entry = {

@@ -6,7 +6,7 @@ This module contains the AnalyticsService, which encapsulates complex business l
 related to patient analytics and insights in the concierge psychiatry practice.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 from uuid import UUID
 
@@ -74,7 +74,7 @@ class AnalyticsService:
 
         # Set end date to now if not provided
         if end_date is None:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
 
         # Get clinical notes in date range
         notes = await self._note_repo.list_by_patient_date_range(
@@ -136,7 +136,7 @@ class AnalyticsService:
         """
         # Set end date to now if not provided
         if end_date is None:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
 
         # Get appointments in date range
         if provider_id:
@@ -204,7 +204,7 @@ class AnalyticsService:
         """
         # Set default dates if not provided
         if end_date is None:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
         if start_date is None:
             start_date = end_date - timedelta(days=365)  # Default to 1 year
 
@@ -274,7 +274,7 @@ class AnalyticsService:
         """
         # Set default dates if not provided
         if end_date is None:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
         if start_date is None:
             start_date = end_date - timedelta(days=365)  # Default to 1 year
 
@@ -334,7 +334,7 @@ class AnalyticsService:
         """
         # Set default dates if not provided
         if end_date is None:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
         if start_date is None:
             start_date = end_date - timedelta(days=365)  # Default to 1 year
 

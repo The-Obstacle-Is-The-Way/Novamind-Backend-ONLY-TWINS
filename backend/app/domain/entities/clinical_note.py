@@ -7,7 +7,7 @@ representing clinical documentation for patient care in the concierge psychiatry
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from enum import Enum, auto
 from typing import Dict, List, Optional, Set
 from uuid import UUID, uuid4
@@ -111,7 +111,7 @@ class ClinicalNote:
             raise ValueError("Cannot modify a locked note")
 
         self.content = new_content
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
         # If the note was signed, change status to amended
         if self.status == NoteStatus.SIGNED:
@@ -134,8 +134,8 @@ class ClinicalNote:
             raise ValueError("Only the note's provider can sign it")
 
         self.status = NoteStatus.SIGNED
-        self.signed_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.signed_at = datetime.now(UTC)
+        self.updated_at = datetime.now(UTC)
 
     def lock(self) -> None:
         """
@@ -148,7 +148,7 @@ class ClinicalNote:
             raise ValueError("Only signed or amended notes can be locked")
 
         self.status = NoteStatus.LOCKED
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def add_diagnosis(self, diagnosis: DiagnosisEntry) -> None:
         """
@@ -164,7 +164,7 @@ class ClinicalNote:
             raise ValueError("Cannot modify a locked note")
 
         self.diagnoses.append(diagnosis)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def add_medication(self, medication: MedicationEntry) -> None:
         """
@@ -180,7 +180,7 @@ class ClinicalNote:
             raise ValueError("Cannot modify a locked note")
 
         self.medications.append(medication)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def create_new_version(self) -> "ClinicalNote":
         """
@@ -227,7 +227,7 @@ class ClinicalNote:
             raise ValueError("Cannot modify a locked note")
 
         self.tags.add(tag)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
 
     def remove_tag(self, tag: str) -> None:
         """
@@ -244,7 +244,7 @@ class ClinicalNote:
 
         if tag in self.tags:
             self.tags.remove(tag)
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(UTC)
 
     def has_primary_diagnosis(self) -> bool:
         """

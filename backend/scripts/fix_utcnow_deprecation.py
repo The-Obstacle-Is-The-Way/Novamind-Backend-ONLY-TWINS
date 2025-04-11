@@ -3,7 +3,7 @@
 """
 Fix UTC Datetime Deprecation Warnings
 
-This script updates all instances of the deprecated datetime.utcnow() method
+This script updates all instances of the deprecated datetime.now(UTC) method
 to use the recommended timezone-aware datetime.now(datetime.UTC) instead.
 
 Usage:
@@ -14,76 +14,136 @@ import os
 import re
 from pathlib import Path
 import shutil
+from datetime import datetime, UTC, UTC
 
 
-def fix_utcnow_deprecation():
-    """Fix deprecated datetime.utcnow() calls in the codebase."""
+def fix_utcnow_deprecation(fix_all=True, dry_run=False):
+    """
+    Fix deprecated datetime.now(UTC) calls in the codebase.
+    
+    Args:
+        fix_all: If True, fix all occurrences in the codebase. If False, only fix ML services.
+        dry_run: If True, don't actually write changes, just report what would be changed.
+    """
     # Get the base directory
     base_dir = Path(__file__).resolve().parent.parent
-    ml_services_dir = base_dir / "app" / "core" / "services" / "ml"
-    
-    if not ml_services_dir.exists():
-        print(f"ML services directory not found: {ml_services_dir}")
-        return False
     
     # Files to update
-    target_files = list(ml_services_dir.glob("*.py"))
-    if not target_files:
-        print("No Python files found in ML services directory.")
-        return False
+    target_files = []
+    if fix_all:
+        # Find all Python files in the project
+        for root, _, files in os.walk(base_dir):
+            path = Path(root)
+            # Skip venv folders, __pycache__, etc.
+            if any(part.startswith('.') or part == '__pycache__' 
+                   or part == 'venv' or part == '.venv'
+                   for part in path.parts):
+                continue
+            
+            for file in files:
+                if file.endswith('.py'):
+                    target_files.append(path / file)
+    else:
+        # Only fix ML services directory
+        ml_services_dir = base_dir / "app" / "core" / "services" / "ml"
+        if not ml_services_dir.exists():
+            print(f"ML services directory not found: {ml_services_dir}")
+            return False
+        
+        target_files = list(ml_services_dir.glob("*.py"))
+        if not target_files:
+            print("No Python files found in ML services directory.")
+            return False
     
     # Backup directory
-    backup_dir = base_dir / "backup" / "ml_services"
-    backup_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_dir = base_dir / "backup" / f"utcnow_fix_{timestamp}"
+    if not dry_run:
+        backup_dir.mkdir(parents=True, exist_ok=True)
     
     updated_files = 0
+    updated_calls = 0
+    
+    # Regex patterns
+    import_patterns = [
+        # From import with only datetime
+        (r'from\s+datetime\s+import\s+datetime\b(?!,\s*UTC\b)', r'from datetime import datetime, UTC, UTC'),
+        # From import with multiple items but not UTC
+        (r'from\s+datetime\s+import\s+(.*?)\bdatetime\b(.*?)(?!\bUTC\b)', r'from datetime import \1datetime\2, UTC'),
+        # Direct import
+        (r'import\s+datetime\b', r'import datetime')
+    ]
+    
+    # Function call pattern
+    utcnow_patterns = [
+        # Direct call on datetime module
+        (r'datetime\.datetime\.utcnow\(\)', r'datetime.datetime.now(datetime.UTC)'),
+        # Call after from import
+        (r'datetime\.utcnow\(\)', r'datetime.now(UTC)')
+    ]
     
     for file_path in target_files:
-        print(f"Processing {file_path.relative_to(base_dir)}...")
-        
-        # Create a backup
-        backup_path = backup_dir / file_path.name
-        shutil.copy2(file_path, backup_path)
+        rel_path = file_path.relative_to(base_dir)
+        print(f"Processing {rel_path}...")
         
         # Read the content
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
         
-        # Check for datetime import
-        has_import = re.search(r'from\s+datetime\s+import\s+datetime', content)
-        if has_import:
-            # Replace imports to include UTC
-            content = re.sub(
-                r'from\s+datetime\s+import\s+datetime',
-                'from datetime import datetime, UTC',
-                content
-            )
-            
-            # Replace utcnow() calls
-            old_content = content
-            content = re.sub(
-                r'datetime\.utcnow\(\)',
-                'datetime.now(UTC)',
-                content
-            )
-            
-            if content != old_content:
+        # Skip files without utcnow
+        if 'utcnow' not in content:
+            print(f"⏭️ No utcnow() calls found in {rel_path}")
+            continue
+        
+        # Create a backup
+        if not dry_run:
+            backup_path = backup_dir / rel_path
+            backup_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(file_path, backup_path)
+        
+        old_content = content
+        
+        # First ensure proper imports
+        for pattern, replacement in import_patterns:
+            content = re.sub(pattern, replacement, content)
+        
+        # Then replace utcnow calls
+        for pattern, replacement in utcnow_patterns:
+            old_len = len(content)
+            content = re.sub(pattern, replacement, content)
+            new_len = len(content)
+            if old_len != new_len:
+                updated_calls += (old_len - new_len) // (len(pattern) - len(replacement))
+        
+        if content != old_content:
+            if not dry_run:
                 # Update the file
-                with open(file_path, "w") as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
                 
                 updated_files += 1
-                print(f"✅ Updated {file_path.name}")
+                print(f"✅ Updated {rel_path}")
             else:
-                print(f"⚠️ No utcnow() calls found in {file_path.name}")
-        else:
-            print(f"⚠️ No datetime import found in {file_path.name}")
+                updated_files += 1
+                print(f"🔍 Would update {rel_path} (dry run)")
     
-    print(f"\nProcess completed. Updated {updated_files} files.")
-    print(f"Backups stored in: {backup_dir}")
+    print(f"\nProcess completed. {'Would update' if dry_run else 'Updated'} {updated_files} files with {updated_calls} utcnow() call replacements.")
     
-    return True
+    if not dry_run and updated_files > 0:
+        print(f"Backups stored in: {backup_dir}")
+    
+    return updated_files > 0
 
 
 if __name__ == "__main__":
-    fix_utcnow_deprecation()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Fix deprecated datetime.now(UTC) calls")
+    parser.add_argument("--ml-only", action="store_true", 
+                       help="Only fix ML services directory")
+    parser.add_argument("--dry-run", action="store_true",
+                       help="Don't modify files, just show what would be changed")
+    
+    args = parser.parse_args()
+    
+    fix_utcnow_deprecation(fix_all=not args.ml_only, dry_run=args.dry_run)

@@ -6,7 +6,7 @@ This module defines the request and response schemas for the biometric data
 API endpoints, ensuring proper validation and serialization of data.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, List, Optional, Union, Any
 from uuid import UUID
 

@@ -10,7 +10,7 @@ Clean Architecture principles and ensuring HIPAA compliance.
 import json
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
@@ -179,7 +179,7 @@ class SymptomForecastingEnsemble(BaseModel):
                 "version": self.version,
                 "last_training_date": self.last_training_date,
                 "metrics": self.metrics,
-                "saved_at": datetime.utcnow().isoformat(),
+                "saved_at": datetime.now(UTC).isoformat(),
             }
 
             meta_path = f"{save_path}/ensemble.meta.json"
@@ -501,7 +501,7 @@ class SymptomForecastingEnsemble(BaseModel):
                 self._optimize_weights(validation_data)
 
             # Update last training date
-            self.last_training_date = datetime.utcnow().isoformat()
+            self.last_training_date = datetime.now(UTC).isoformat()
 
             # Evaluate on validation data if available
             if validation_data is not None:
@@ -634,7 +634,7 @@ class SymptomForecastingEnsemble(BaseModel):
             # Add metadata
             processed_results["metadata"] = {
                 "patient_id": str(patient_id),
-                "forecast_generated_at": datetime.utcnow().isoformat(),
+                "forecast_generated_at": datetime.now(UTC).isoformat(),
                 "forecast_days": forecast_days,
                 "model_name": self.model_name,
                 "model_version": self.version,

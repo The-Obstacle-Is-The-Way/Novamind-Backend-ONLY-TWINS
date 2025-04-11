@@ -7,7 +7,7 @@ for psychiatric symptom forecasting, following the architecture described in
 the AI Models Core Implementation documentation.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -573,5 +573,5 @@ class SymptomTransformerModel:
             "quantiles": self.model.quantiles,
             "device": self.device,
             "parameter_count": sum(p.numel() for p in self.model.parameters()),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

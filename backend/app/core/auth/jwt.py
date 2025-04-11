@@ -5,7 +5,7 @@ This module provides functions for JWT token validation, user authentication,
 and related security operations following HIPAA compliant practices.
 """
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Dict, Optional, Any, Union
 
 import jwt
@@ -40,9 +40,9 @@ def create_jwt_token(
     
     # Set expiration time
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire})
     

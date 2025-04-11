@@ -1,460 +1,292 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Test Classification Tool for Novamind Digital Twin Platform
+"""Test Classification Script for Novamind Backend.
 
-This script analyzes the test files to determine their dependency requirements and
-optionally adds appropriate markers to the test files.
+This script analyzes test files to classify them by dependency level:
+- standalone: No dependencies beyond Python stdlib
+- venv_only: Requires packages but no external services
+- db_required: Requires database or other external services
 
-The dependency levels are:
-- Standalone: No dependencies beyond Python itself
-- VENV-dependent: Require Python packages but no external services
-- DB-dependent: Require database connections or other external services
-
-Usage:
-    python -m scripts.classify_tests [options]
-
-Options:
-    --update           Update test files with appropriate markers (default: False)
-    --verbose          Show detailed classification information (default: False)
-    --dry-run          Show what would be updated without making changes (default: False)
-    --report-only      Only generate reports without any file operations (default: False)
+It can also add appropriate pytest markers to tests.
 """
 
-import argparse
-import logging
+import ast
+import importlib.util
 import os
 import re
 import sys
-from collections import defaultdict
-from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional, Any, Union, Iterator
+from typing import Dict, List, Optional, Set, Tuple
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)8s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger(__name__)
+# Root directory
+ROOT_DIR = Path(__file__).parent.parent
+TESTS_DIR = ROOT_DIR / "app" / "tests"
+
+# Add project root to path for imports
+sys.path.insert(0, str(ROOT_DIR))
 
 
-@dataclass
-class TestFileInfo:
-    """Information about a test file."""
-    path: Path
-    imports: Set[str]
-    markers: Set[str]
-    dependencies: Set[str]
-    skipped: bool = False
+class DependencyLevel(str, Enum):
+    """Test dependency levels."""
+    STANDALONE = "standalone"
+    VENV_ONLY = "venv_only"
+    DB_REQUIRED = "db_required"
+
+
+# External dependencies that require services
+DB_DEPENDENCIES = {
+    "sqlalchemy", "asyncpg", "psycopg2", "alembic", "redis", 
+    "aioredis", "motor", "beanie", "odmantic", "tortoise",
+    "databases", "mysql", "boto3", "aioboto3", "moto",
+    "aiohttp", "requests", "httpx", "websockets",
+    "kafka", "confluent_kafka", "aiokafka", "elasticsearch"
+}
+
+# Dependencies that can be mocked but still require the package
+VENV_DEPENDENCIES = {
+    "fastapi", "pydantic", "starlette", "passlib", "jose", "jwt",
+    "python-jose", "bcrypt", "argon2", "cryptography", "hashlib",
+    "pyotp", "python-multipart", "jinja2", "email-validator", 
+    "pyyaml", "ujson", "orjson", "msgpack", "numpy", "pandas",
+    "sklearn", "tensorflow", "torch", "transformers", "spacy"
+}
+
+# Skip directories when scanning
+SKIP_DIRS = {"__pycache__", ".mypy_cache", ".pytest_cache", ".hypothesis"}
+
+# Import standard library modules to know what's stdlib
+STDLIB_MODULES = set(sys.modules.keys())
+
+
+class ImportVisitor(ast.NodeVisitor):
+    """AST visitor to extract imports from Python files."""
     
-    @property
-    def category(self) -> str:
-        """Determine the test category based on dependencies."""
-        if self.skipped:
-            return "skipped"
-        if len(self.dependencies) == 0:
-            return "standalone"
-        if any(dep in self.dependencies for dep in ["database", "redis", "external_api", "network"]):
-            return "db_required"
-        return "venv_only"
+    def __init__(self):
+        self.imports = set()
+        self.from_imports = {}
+        
+    def visit_Import(self, node):
+        for name in node.names:
+            self.imports.add(name.name.split('.')[0])
+        self.generic_visit(node)
+        
+    def visit_ImportFrom(self, node):
+        if node.module is not None:
+            module = node.module.split('.')[0]
+            if node.level == 0:  # Absolute import
+                self.imports.add(module)
+            for name in node.names:
+                if module not in self.from_imports:
+                    self.from_imports[module] = []
+                self.from_imports[module].append(name.name)
+        self.generic_visit(node)
 
 
-class TestClassifier:
-    """
-    Test classifier for categorizing test files by dependency.
-    """
+def parse_imports(file_path: Path) -> Tuple[Set[str], Dict[str, List[str]]]:
+    """Parse imports from a Python file."""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        try:
+            tree = ast.parse(f.read())
+            visitor = ImportVisitor()
+            visitor.visit(tree)
+            return visitor.imports, visitor.from_imports
+        except SyntaxError:
+            print(f"Error parsing {file_path}")
+            return set(), {}
+
+
+def detect_db_usage(file_content: str) -> bool:
+    """Detect if file contains DB-related operations."""
+    db_patterns = [
+        r'Session\(',
+        r'engine\.',
+        r'Base\.',
+        r'create_engine',
+        r'sessionmaker',
+        r'MetaData',
+        r'Column\(',
+        r'Table\(',
+        r'relationship\(',
+        r'execute\(',
+        r'query\(',
+        r'cursor\(',
+        r'connect\(',
+        r'fetchall\(',
+        r'fetchone\(',
+        r'commit\(',
+        r'rollback\(',
+        r'redis\.',
+        r'r\.get',
+        r'r\.set',
+        r'bucket\.',
+        r's3\.',
+        r'dynamo\.',
+    ]
     
-    def __init__(self, project_root: Path):
-        """
-        Initialize the classifier.
-        
-        Args:
-            project_root: Path to the project root
-        """
-        self.project_root = project_root
-        self.test_dir = project_root / "app" / "tests"
-        self.standalone_dir = self.test_dir / "standalone"
-        self.test_files: Dict[Path, TestFileInfo] = {}
+    return any(re.search(pattern, file_content) for pattern in db_patterns)
 
-    def find_test_files(self) -> List[Path]:
-        """
-        Find all test files in the project.
-        
-        Returns:
-            List of paths to test files
-        """
-        test_files = []
-        
-        # Walk through the test directory
-        for root, _, files in os.walk(self.test_dir):
-            root_path = Path(root)
-            for file in files:
-                if file.startswith("test_") and file.endswith(".py"):
-                    test_files.append(root_path / file)
-        
-        return test_files
 
-    def extract_imports(self, content: str) -> Set[str]:
-        """
-        Extract import statements from file content.
-        
-        Args:
-            content: File content
-            
-        Returns:
-            Set of imported modules
-        """
-        imports = set()
-        
-        # Find all import statements
-        import_pattern = re.compile(r'^(?:from|import)\s+([\w.]+)', re.MULTILINE)
-        for match in import_pattern.finditer(content):
-            imports.add(match.group(1).split('.')[0])
-        
-        return imports
+def classify_test_file(file_path: Path) -> DependencyLevel:
+    """Classify a test file by its dependency level."""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Extract imports
+    imports, from_imports = parse_imports(file_path)
+    
+    # Check for DB dependencies
+    if any(dep in imports for dep in DB_DEPENDENCIES) or detect_db_usage(content):
+        return DependencyLevel.DB_REQUIRED
+    
+    # Check for VENV dependencies
+    if any(dep in imports for dep in VENV_DEPENDENCIES):
+        return DependencyLevel.VENV_ONLY
+    
+    # If file imports only from app but not DB or VENV deps, need to check what those imports use
+    app_imports = [imp for imp in imports if imp.startswith("app")]
+    if app_imports:
+        # This is a more complex case, we'd need to resolve transitive dependencies
+        # For simplicity, we'll classify it as VENV_ONLY until proven otherwise
+        return DependencyLevel.VENV_ONLY
+    
+    # If we get here, it's likely standalone
+    # But check for pytest.mark.db_required or venv_only
+    if "pytest.mark.db_required" in content or "@pytest.mark.db_required" in content:
+        return DependencyLevel.DB_REQUIRED
+    if "pytest.mark.venv_only" in content or "@pytest.mark.venv_only" in content:
+        return DependencyLevel.VENV_ONLY
+    if "pytest.mark.standalone" in content or "@pytest.mark.standalone" in content:
+        return DependencyLevel.STANDALONE
+    
+    # Default: if in standalone directory, treat as standalone
+    if "standalone" in str(file_path):
+        return DependencyLevel.STANDALONE
+    
+    return DependencyLevel.VENV_ONLY
 
-    def extract_markers(self, content: str) -> Set[str]:
-        """
-        Extract pytest markers from file content.
-        
-        Args:
-            content: File content
-            
-        Returns:
-            Set of pytest markers
-        """
-        markers = set()
-        
-        # Find all pytest markers
-        marker_pattern = re.compile(r'@pytest\.mark\.(\w+)')
-        for match in marker_pattern.finditer(content):
-            markers.add(match.group(1))
-        
-        return markers
 
-    def determine_dependencies(self, imports: Set[str], file_path: Path, content: str) -> Set[str]:
-        """
-        Determine dependencies based on imports and file content.
-        
-        Args:
-            imports: Set of imported modules
-            file_path: Path to the file
-            content: File content
-            
-        Returns:
-            Set of dependencies
-        """
-        dependencies = set()
-        
-        # Database dependencies
-        db_indicators = ["sqlalchemy", "databases", "postgres", "mysql", "sqlite", "mongodb"]
-        if any(indicator in imports for indicator in db_indicators) or "database" in content.lower():
-            dependencies.add("database")
-        
-        # Redis dependencies
-        redis_indicators = ["redis", "aioredis"]
-        if any(indicator in imports for indicator in redis_indicators) or "redis" in content.lower():
-            dependencies.add("redis")
-        
-        # External API dependencies
-        api_indicators = ["requests", "aiohttp", "httpx"]
-        if any(indicator in imports for indicator in api_indicators) or re.search(r'https?://', content):
-            dependencies.add("external_api")
-        
-        # Network dependencies
-        network_indicators = ["socket", "asyncio.streams"]
-        if any(indicator in imports for indicator in network_indicators):
-            dependencies.add("network")
-        
-        # Check for pytest.mark.db_required or similar markers
-        if "db_required" in self.extract_markers(content):
-            dependencies.add("database")
-        
-        # Exclude standalone tests
-        if "standalone" in self.extract_markers(content) or "standalone" in file_path.parts:
-            # Standalone tests should have no dependencies
-            return set()
-        
-        return dependencies
+def find_tests(directory: Path) -> List[Path]:
+    """Find all test files in a directory."""
+    test_files = []
+    
+    for item in directory.glob("**/*.py"):
+        if item.is_file() and (item.name.startswith("test_") or item.name.endswith("_test.py")):
+            # Skip files in excluded directories
+            if not any(skip_dir in str(item) for skip_dir in SKIP_DIRS):
+                test_files.append(item)
+    
+    return test_files
 
-    def is_skipped(self, content: str) -> bool:
-        """
-        Check if the test file is skipped.
-        
-        Args:
-            content: File content
-            
-        Returns:
-            True if the test file is skipped, False otherwise
-        """
-        # Check for pytest.mark.skip
-        if re.search(r'@pytest\.mark\.skip', content):
-            return True
-        
-        # Check for pytest.mark.skipif
-        if re.search(r'@pytest\.mark\.skipif', content):
-            return True
-        
+
+def add_marker_to_file(file_path: Path, level: DependencyLevel) -> bool:
+    """Add appropriate pytest marker to test file."""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Check if marker already exists
+    marker_pattern = f"@pytest.mark.{level}"
+    if marker_pattern in content:
+        print(f"Marker {level} already exists in {file_path}")
         return False
-
-    def classify_file(self, file_path: Path) -> TestFileInfo:
-        """
-        Classify a test file.
-        
-        Args:
-            file_path: Path to the test file
-            
-        Returns:
-            TestFileInfo object
-        """
-        with open(file_path, 'r') as f:
-            content = f.read()
-        
-        imports = self.extract_imports(content)
-        markers = self.extract_markers(content)
-        dependencies = self.determine_dependencies(imports, file_path, content)
-        skipped = self.is_skipped(content)
-        
-        return TestFileInfo(
-            path=file_path,
-            imports=imports,
-            markers=markers,
-            dependencies=dependencies,
-            skipped=skipped
+    
+    # Look for test classes and functions
+    with open(file_path, 'r', encoding='utf-8') as f:
+        tree = ast.parse(f.read())
+    
+    # Find all test classes and functions
+    test_classes = []
+    test_functions = []
+    
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef) and node.name.startswith("Test"):
+            test_classes.append(node)
+        elif isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
+            test_functions.append(node)
+    
+    if not test_classes and not test_functions:
+        print(f"No test classes or functions found in {file_path}")
+        return False
+    
+    # Add marker to first line of file before imports
+    import_match = re.search(r"(import|from)\s+", content, re.MULTILINE)
+    if import_match:
+        insert_pos = import_match.start()
+        new_content = (
+            content[:insert_pos] + 
+            f"import pytest\npytestmark = [pytest.mark.{level}]\n\n" + 
+            content[insert_pos:]
         )
-
-    def classify_all_files(self) -> None:
-        """Classify all test files."""
-        test_files = self.find_test_files()
-        logger.info(f"Found {len(test_files)} test files")
         
-        for file_path in test_files:
-            file_info = self.classify_file(file_path)
-            self.test_files[file_path] = file_info
-
-    def get_marker_for_category(self, category: str) -> str:
-        """
-        Get the appropriate pytest marker for a category.
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(new_content)
         
-        Args:
-            category: Test category
-            
-        Returns:
-            Pytest marker
-        """
-        if category == "standalone":
-            return "standalone"
-        elif category == "venv_only":
-            return "venv_only"
-        elif category == "db_required":
-            return "db_required"
-        else:
-            return ""
-
-    def update_test_file(self, file_path: Path, dry_run: bool = False) -> bool:
-        """
-        Update a test file with appropriate markers.
-        
-        Args:
-            file_path: Path to the test file
-            dry_run: Whether to perform a dry run
-            
-        Returns:
-            True if the file was updated, False otherwise
-        """
-        file_info = self.test_files[file_path]
-        marker = self.get_marker_for_category(file_info.category)
-        
-        # Don't add markers to skipped tests
-        if file_info.skipped or not marker:
-            return False
-        
-        # Read the content
-        with open(file_path, 'r') as f:
-            content = f.read()
-        
-        # Check if the marker is already present
-        if f"@pytest.mark.{marker}" in content:
-            return False
-        
-        # Find test functions and classes
-        class_pattern = re.compile(r'^class\s+(\w+)(?:\([^)]*\))?:', re.MULTILINE)
-        function_pattern = re.compile(r'^def\s+test_\w+\(', re.MULTILINE)
-        
-        # Add markers to test classes
-        modified_content = content
-        for match in class_pattern.finditer(content):
-            marker_line = f"@pytest.mark.{marker}\n"
-            # Check if there are already markers
-            if "@pytest.mark." not in content[max(0, match.start() - 100):match.start()]:
-                insert_pos = match.start()
-                modified_content = modified_content[:insert_pos] + marker_line + modified_content[insert_pos:]
-        
-        # Add markers to test functions (if they're not already in a marked class)
-        for match in function_pattern.finditer(content):
-            marker_line = f"@pytest.mark.{marker}\n"
-            context = content[max(0, match.start() - 200):match.start()]
-            # If this function is not part of a class or the class doesn't have our marker
-            if "class " not in context or f"@pytest.mark.{marker}" not in context:
-                # And it doesn't already have our marker
-                if f"@pytest.mark.{marker}" not in context:
-                    insert_pos = match.start()
-                    modified_content = modified_content[:insert_pos] + marker_line + modified_content[insert_pos:]
-        
-        # Check if we made any changes
-        if content == modified_content:
-            return False
-        
-        # Write the updated content
-        if not dry_run:
-            with open(file_path, 'w') as f:
-                f.write(modified_content)
-            logger.info(f"Updated {file_path.relative_to(self.project_root)} with {marker} marker")
-        else:
-            logger.info(f"Would update {file_path.relative_to(self.project_root)} with {marker} marker (dry run)")
-        
+        print(f"Added marker {level} to {file_path}")
         return True
-
-    def update_all_files(self, dry_run: bool = False) -> int:
-        """
-        Update all test files with appropriate markers.
-        
-        Args:
-            dry_run: Whether to perform a dry run
-            
-        Returns:
-            Number of updated files
-        """
-        updated_count = 0
-        
-        for file_path in self.test_files:
-            if self.update_test_file(file_path, dry_run):
-                updated_count += 1
-                
-        return updated_count
-
-    def generate_report(self, verbose: bool = False) -> Dict[str, Any]:
-        """
-        Generate a report of test file classification.
-        
-        Args:
-            verbose: Whether to include detailed information
-            
-        Returns:
-            Report dictionary
-        """
-        # Count by category
-        category_counts = defaultdict(int)
-        categories = {}
-        
-        for file_path, file_info in self.test_files.items():
-            relative_path = file_path.relative_to(self.project_root)
-            category = file_info.category
-            category_counts[category] += 1
-            
-            if category not in categories:
-                categories[category] = []
-                
-            if verbose:
-                categories[category].append({
-                    "path": str(relative_path),
-                    "imports": list(file_info.imports),
-                    "markers": list(file_info.markers),
-                    "dependencies": list(file_info.dependencies),
-                    "skipped": file_info.skipped
-                })
-            else:
-                categories[category].append(str(relative_path))
-        
-        report = {
-            "total_files": len(self.test_files),
-            "category_counts": dict(category_counts),
-            "categories": categories
-        }
-        
-        return report
-
-    def print_report(self, verbose: bool = False) -> None:
-        """
-        Print a report of test file classification.
-        
-        Args:
-            verbose: Whether to include detailed information
-        """
-        report = self.generate_report(verbose)
-        
-        print("\n" + "="*80)
-        print("Test Classification Report")
-        print("="*80)
-        
-        print(f"\nTotal test files: {report['total_files']}")
-        
-        # Print counts by category
-        print("\nCounts by category:")
-        for category, count in report['category_counts'].items():
-            print(f"  {category}: {count}")
-        
-        # Print categories
-        if verbose:
-            print("\nDetailed report by category:")
-            for category, files in report['categories'].items():
-                print(f"\n{category.upper()} ({len(files)} files):")
-                for file_info in files:
-                    print(f"  {file_info['path']}")
-                    print(f"    imports: {', '.join(file_info['imports'])}")
-                    print(f"    markers: {', '.join(file_info['markers'])}")
-                    print(f"    dependencies: {', '.join(file_info['dependencies'])}")
-                    print(f"    skipped: {file_info['skipped']}")
-        else:
-            # Print just file counts per category for non-verbose mode
-            print("\nTest files by category (counts):")
-            for category, files in report['categories'].items():
-                print(f"\n{category.upper()} ({len(files)} files)")
+    
+    return False
 
 
-def main() -> int:
-    """Main entry point."""
-    parser = argparse.ArgumentParser(description="Classify test files by dependency")
-    parser.add_argument(
-        "--update", action="store_true", help="Update test files with appropriate markers"
-    )
-    parser.add_argument(
-        "--verbose", action="store_true", help="Show detailed classification information"
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Show what would be updated without making changes"
-    )
-    parser.add_argument(
-        "--report-only", action="store_true", help="Only generate reports without any file operations"
-    )
+def analyze_tests():
+    """Analyze test files and print statistics."""
+    test_files = find_tests(TESTS_DIR)
+    classifications = {}
+    
+    for file in test_files:
+        relative_path = file.relative_to(ROOT_DIR)
+        level = classify_test_file(file)
+        classifications[relative_path] = level
+    
+    # Print statistics
+    stats = {level: 0 for level in DependencyLevel}
+    for level in classifications.values():
+        stats[level] += 1
+    
+    print("\n=== Test Classification Statistics ===")
+    total = sum(stats.values())
+    print(f"Total test files: {total}")
+    for level, count in stats.items():
+        percentage = (count / total) * 100 if total > 0 else 0
+        print(f"{level}: {count} ({percentage:.1f}%)")
+    
+    # Print files by level
+    for level in DependencyLevel:
+        print(f"\n=== {level.upper()} Tests ===")
+        level_files = [path for path, l in classifications.items() if l == level]
+        for path in sorted(level_files):
+            print(f"- {path}")
+    
+    return classifications
+
+
+def mark_tests(classifications):
+    """Add pytest markers to test files based on classification."""
+    print("\n=== Adding Markers to Tests ===")
+    marked_count = 0
+    
+    for file_path, level in classifications.items():
+        full_path = ROOT_DIR / file_path
+        if add_marker_to_file(full_path, level):
+            marked_count += 1
+    
+    print(f"\nAdded markers to {marked_count} files")
+
+
+def main():
+    """Main function."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Classify tests by dependency level")
+    parser.add_argument("--mode", choices=["analyze", "mark"], default="analyze",
+                       help="Mode: analyze (just report) or mark (add pytest markers)")
     
     args = parser.parse_args()
     
-    # Find the project root
-    current_dir = Path(__file__).resolve().parent
-    project_root = current_dir.parent  # Assuming this script is in the scripts directory
+    print("Analyzing test files...")
+    classifications = analyze_tests()
     
-    # Create classifier
-    classifier = TestClassifier(project_root)
-    
-    # Classify all files
-    classifier.classify_all_files()
-    
-    # Print report
-    classifier.print_report(args.verbose)
-    
-    # Update files if requested
-    if args.update and not args.report_only:
-        updated_count = classifier.update_all_files(dry_run=args.dry_run)
-        if args.dry_run:
-            logger.info(f"Would update {updated_count} files (dry run)")
-        else:
-            logger.info(f"Updated {updated_count} files")
-    
-    return 0
+    if args.mode == "mark":
+        mark_tests(classifications)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

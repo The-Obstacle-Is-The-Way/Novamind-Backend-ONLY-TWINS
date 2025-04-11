@@ -7,7 +7,7 @@ as the ORM for database operations.
 """
 
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 
 from sqlalchemy import select, func, and_, or_, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -63,8 +63,8 @@ class SQLAlchemyAnalyticsRepository(AnalyticsRepository):
                 event_data=event.event_data,
                 user_id=event.user_id,
                 session_id=event.session_id,
-                timestamp=event.timestamp or datetime.utcnow(),
-                processed_at=datetime.utcnow()
+                timestamp=event.timestamp or datetime.now(UTC),
+                processed_at=datetime.now(UTC)
             )
             
             # Add to session and flush to get ID
@@ -101,7 +101,7 @@ class SQLAlchemyAnalyticsRepository(AnalyticsRepository):
         try:
             # Convert all domain entities to ORM models
             models = []
-            now = datetime.utcnow()
+            now = datetime.now(UTC)
             
             for event in events:
                 model = AnalyticsEventModel(
@@ -413,7 +413,7 @@ class SQLAlchemyAnalyticsRepository(AnalyticsRepository):
                 dimensions=aggregate.dimensions,
                 metrics=aggregate.metrics,
                 time_period=aggregate.time_period,
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(UTC),
                 ttl=ttl_seconds
             )
             

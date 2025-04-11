@@ -7,7 +7,7 @@ correctly integrates biometric data into patient digital twins.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from unittest.mock import Mock, patch, MagicMock
 from uuid import UUID, uuid4
 
@@ -135,13 +135,13 @@ class TestBiometricIntegrationService:
                 "data_type": "heart_rate",
                 "value": 75,
                 "source": "smartwatch",
-                "timestamp": datetime.utcnow()
+                "timestamp": datetime.now(UTC)
             },
             {
                 "data_type": "blood_pressure",
                 "value": "120/80",
                 "source": "blood_pressure_monitor",
-                "timestamp": datetime.utcnow()
+                "timestamp": datetime.now(UTC)
             }
         ]
         
@@ -163,7 +163,7 @@ class TestBiometricIntegrationService:
         mock_twin = MagicMock(spec=BiometricTwin)
         
         # Create some test data points
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         data_points = [
             BiometricDataPoint(
                 data_type="heart_rate",
@@ -227,7 +227,7 @@ class TestBiometricIntegrationService:
         patient_id = uuid4()
         
         # Mock the get_biometric_data method to return test data
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         test_data = [
             BiometricDataPoint(
                 data_type="heart_rate",
@@ -296,7 +296,7 @@ class TestBiometricIntegrationService:
         mock_repository.get_by_patient_id.return_value = mock_twin
         
         # Mock the get_data_points_by_type method to return sufficient data
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         heart_rate_data = [
             BiometricDataPoint(
                 data_type="heart_rate",

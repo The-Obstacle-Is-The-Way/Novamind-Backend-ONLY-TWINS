@@ -8,7 +8,7 @@ asynchronously, providing efficient processing of large volumes of events.
 
 import asyncio
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 
 from app.core.utils.logging import get_logger
 from app.domain.entities.analytics import AnalyticsEvent, AnalyticsBatch
@@ -75,7 +75,7 @@ class BatchProcessAnalyticsUseCase:
                 batch_id=batch_id,
                 processed_count=0,
                 failed_count=0,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(UTC)
             )
         
         # Log batch processing start (no PHI)
@@ -104,7 +104,7 @@ class BatchProcessAnalyticsUseCase:
             batch_id=batch_id,
             processed_count=len(processed_events),
             failed_count=failed_count,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(UTC)
         )
         
         # Log completion (no PHI)
@@ -143,7 +143,7 @@ class BatchProcessAnalyticsUseCase:
                 try:
                     timestamp = datetime.fromisoformat(timestamp_str)
                 except (ValueError, TypeError):
-                    timestamp = datetime.utcnow()
+                    timestamp = datetime.now(UTC)
             
             # Skip invalid events
             if not event_type:

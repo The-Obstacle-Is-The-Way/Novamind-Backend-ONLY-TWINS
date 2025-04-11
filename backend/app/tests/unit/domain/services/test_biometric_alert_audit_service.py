@@ -7,7 +7,7 @@ maintains an audit trail for biometric alerts.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
@@ -75,7 +75,7 @@ class TestBiometricAlertAuditService:
                 {
                     "data_type": "heart_rate",
                     "value": 130,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "source": "smartwatch"
                 }
             ],
@@ -264,8 +264,8 @@ class TestBiometricAlertAuditService:
         """Test that search_audit_trail correctly builds search criteria."""
         # Setup
         mock_audit_logger.search_events.return_value = []
-        start_date = datetime.utcnow()
-        end_date = datetime.utcnow()
+        start_date = datetime.now(UTC)
+        end_date = datetime.now(UTC)
         
         # Execute
         await audit_service.search_audit_trail(

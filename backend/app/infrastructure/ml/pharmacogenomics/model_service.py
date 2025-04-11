@@ -12,7 +12,7 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
@@ -383,7 +383,7 @@ class PharmacogenomicsService:
                 "side_effect_predictions": side_effect_predictions,
                 "common_effects": common_effects,
                 "insights": insights,
-                "prediction_generated_at": datetime.utcnow().isoformat(),
+                "prediction_generated_at": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -647,7 +647,7 @@ class PharmacogenomicsService:
                     "gene_medication_interactions", []
                 ),
                 "recommendations": recommendations,
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -860,5 +860,5 @@ class PharmacogenomicsService:
             "service_name": "Pharmacogenomics Service",
             "model": self.model.get_model_info(),
             "medication_categories": self.medication_categories,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

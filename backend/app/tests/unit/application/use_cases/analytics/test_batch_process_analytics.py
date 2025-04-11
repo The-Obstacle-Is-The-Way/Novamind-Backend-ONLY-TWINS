@@ -9,7 +9,7 @@ ensuring proper handling of bulk events, error resilience, and concurrent proces
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock, call
 import asyncio
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 
 from app.domain.entities.analytics import AnalyticsEvent
 from app.application.use_cases.analytics.batch_process_analytics import BatchProcessAnalyticsUseCase
@@ -60,7 +60,7 @@ def mock_event_processor(mock_analytics_repository, mock_cache_service):
             raise ValueError("Simulated error in event processing")
             
         if timestamp is None:
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now(UTC)
             
         return AnalyticsEvent(
             event_type=event_type,

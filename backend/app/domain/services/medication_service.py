@@ -6,7 +6,7 @@ This module contains the MedicationService, which encapsulates complex business 
 related to medication management in the concierge psychiatry practice.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Dict, List, Optional, Set, Tuple
 from uuid import UUID
 
@@ -203,7 +203,7 @@ class MedicationService:
         # Update instructions if provided
         if instructions:
             medication.instructions = instructions
-            medication.updated_at = datetime.utcnow()
+            medication.updated_at = datetime.now(UTC)
 
         # Update refills if provided
         if refills is not None:
@@ -211,7 +211,7 @@ class MedicationService:
             medication.refill_status = (
                 RefillStatus.AVAILABLE if refills > 0 else RefillStatus.EXPIRED
             )
-            medication.updated_at = datetime.utcnow()
+            medication.updated_at = datetime.now(UTC)
 
         # Save to repository
         return await self._medication_repo.update(medication)

@@ -6,7 +6,7 @@ in FastAPI endpoints, including JWT token validation and role-based access contr
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Union, Any, Callable
 
@@ -325,9 +325,9 @@ class JWTHandler:
         to_encode = data.copy()
         
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(UTC) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(
+            expire = datetime.now(UTC) + timedelta(
                 minutes=self.config.access_token_expire_minutes
             )
             

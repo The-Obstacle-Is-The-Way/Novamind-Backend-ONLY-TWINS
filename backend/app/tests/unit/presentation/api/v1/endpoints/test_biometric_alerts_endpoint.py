@@ -8,7 +8,7 @@ with the biometric event processor.
 """
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Dict, List, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
@@ -191,7 +191,7 @@ def sample_data_point(sample_patient_id):
         patient_id=sample_patient_id,
         data_type="heart_rate",
         value=120.0,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(UTC),
         source="apple_watch",
         metadata={"activity": "resting"},
         confidence=0.95

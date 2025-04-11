@@ -7,7 +7,7 @@ mapping domain entities to database tables.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, Any, Optional
 
 from sqlalchemy import Column, String, DateTime, Integer, JSON, func, Index, ForeignKey

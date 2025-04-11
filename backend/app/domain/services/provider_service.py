@@ -6,7 +6,7 @@ This module contains the ProviderService, which encapsulates complex business lo
 related to provider management in the concierge psychiatry practice.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Dict, List, Optional, Set, Tuple
 from uuid import UUID
 
@@ -147,7 +147,7 @@ class ProviderService:
             raise ValidationError(f"Provider with ID {provider_id} does not exist")
 
         # Validate credential data
-        if expiration_date and expiration_date < datetime.utcnow():
+        if expiration_date and expiration_date < datetime.now(UTC):
             raise ValidationError("Credential expiration date cannot be in the past")
 
         # Create credential
@@ -240,7 +240,7 @@ class ProviderService:
                     f"Credential {credential.type} from {credential.issuer} is expired"
                 )
             elif credential.expires_soon:
-                days_left = (credential.expiration_date - datetime.utcnow()).days
+                days_left = (credential.expiration_date - datetime.now(UTC)).days
                 issues.append(
                     f"Credential {credential.type} from {credential.issuer} expires in {days_left} days"
                 )

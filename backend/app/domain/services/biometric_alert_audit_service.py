@@ -7,7 +7,7 @@ comprehensive records are maintained for regulatory compliance and
 clinical oversight.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, List, Optional, Any
 from uuid import UUID
 
@@ -209,7 +209,7 @@ class BiometricAlertAuditService(AlertObserver):
             resource_id=str(alert.alert_id),
             actor_id=str(actor_id) if actor_id else None,
             patient_id=str(alert.patient_id),  # This is necessary for compliance
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             notes=notes,
             data={
                 "alert": sanitized_alert_data,

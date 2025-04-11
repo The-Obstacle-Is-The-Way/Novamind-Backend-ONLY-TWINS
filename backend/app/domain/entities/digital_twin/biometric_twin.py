@@ -8,7 +8,7 @@ wearable devices, neuroimaging data, and other biometric sources to create a
 comprehensive digital model of the patient's biological state.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, List, Optional, Set, Tuple, Union
 from uuid import UUID, uuid4
 
@@ -111,7 +111,7 @@ class BiometricTwin:
         self.twin_id = twin_id or uuid4()
         self.patient_id = patient_id
         self.data_points = data_points or []
-        self.created_at = created_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(UTC)
         self.updated_at = updated_at or self.created_at
         self.baseline_established = baseline_established
         self.connected_devices = connected_devices or set()
@@ -127,7 +127,7 @@ class BiometricTwin:
             data_point: The biometric data point to add
         """
         self.data_points.append(data_point)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
         
         # Invalidate cached analyses that might be affected by this new data
         self._invalidate_affected_caches(data_point.data_type)
@@ -178,8 +178,8 @@ class BiometricTwin:
             return False
         
         # For each required type, ensure we have at least 7 days of data
-        now = datetime.utcnow()
-        seven_days_ago = datetime.utcnow()  # Simplified for example
+        now = datetime.now(UTC)
+        seven_days_ago = datetime.now(UTC)  # Simplified for example
         
         for data_type in required_types:
             points = self.get_data_points_by_type(data_type, seven_days_ago, now)
@@ -187,7 +187,7 @@ class BiometricTwin:
                 return False
         
         self.baseline_established = True
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
         return True
     
     def detect_anomalies(
@@ -277,7 +277,7 @@ class BiometricTwin:
             device_id: Identifier for the device to connect
         """
         self.connected_devices.add(device_id)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def disconnect_device(self, device_id: str) -> None:
         """
@@ -288,7 +288,7 @@ class BiometricTwin:
         """
         if device_id in self.connected_devices:
             self.connected_devices.remove(device_id)
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(UTC)
     
     def to_dict(self) -> Dict:
         """Convert the biometric twin to a dictionary representation."""

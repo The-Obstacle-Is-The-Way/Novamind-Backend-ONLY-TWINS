@@ -7,7 +7,7 @@ analytics data for dashboards and reporting.
 """
 
 from typing import Dict, Any, List, Optional, Union
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 
 from app.core.utils.logging import get_logger
 from app.domain.entities.analytics import AnalyticsAggregate
@@ -204,7 +204,7 @@ class RetrieveAggregatedAnalyticsUseCase:
         Returns:
             Tuple of (start_time, end_time) as datetime objects
         """
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         
         # Default to last 24 hours if no time range provided
         if not time_range:
@@ -306,7 +306,7 @@ class RetrieveAggregatedAnalyticsUseCase:
         Returns:
             TTL in seconds for the cache entry
         """
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         
         # Historical data can be cached longer
         if end_time < now - timedelta(days=1):

@@ -6,7 +6,7 @@ This module provides Pydantic schemas for the Digital Twin API endpoints,
 handling input validation and response serialization.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator

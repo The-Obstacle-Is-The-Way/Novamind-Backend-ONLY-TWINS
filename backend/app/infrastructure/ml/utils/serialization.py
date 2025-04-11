@@ -11,7 +11,7 @@ import json
 import logging
 import os
 import pickle
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, Optional, Union
 
 import joblib
@@ -64,7 +64,7 @@ class ModelSerializer:
         metadata.update(
             {
                 "model_type": model_type,
-                "saved_at": datetime.utcnow().isoformat(),
+                "saved_at": datetime.now(UTC).isoformat(),
                 "version": metadata.get("version", "1.0.0"),
             }
         )
@@ -193,7 +193,7 @@ class ModelSerializer:
             {
                 "ensemble_size": len(models),
                 "model_names": list(models.keys()),
-                "saved_at": datetime.utcnow().isoformat(),
+                "saved_at": datetime.now(UTC).isoformat(),
                 "version": metadata.get("version", "1.0.0"),
             }
         )

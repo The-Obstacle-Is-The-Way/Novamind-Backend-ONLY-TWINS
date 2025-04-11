@@ -6,7 +6,7 @@ to represent and simulate a patient's psychiatric state.
 """
 import unittest
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from uuid import UUID, uuid4
 from typing import Dict, List, Any
 
@@ -67,7 +67,7 @@ class TestDigitalTwin(unittest.TestCase):
             name="Fluoxetine",
             category=TreatmentCategory.MEDICATION,
             frequency=TreatmentFrequency.DAILY,
-            start_date=datetime.utcnow(),
+            start_date=datetime.now(UTC),
             medication_details=MedicationDetails(
                 type=MedicationType.SSRI,
                 dosage=20.0,
@@ -85,7 +85,7 @@ class TestDigitalTwin(unittest.TestCase):
             name="Cognitive Behavioral Therapy",
             category=TreatmentCategory.THERAPY,
             frequency=TreatmentFrequency.WEEKLY,
-            start_date=datetime.utcnow(),
+            start_date=datetime.now(UTC),
             # Removed therapy_details due to missing TherapyDetails/TherapyType
             predicted_effects={
                 "serotonin": 0.2,
@@ -100,7 +100,7 @@ class TestDigitalTwin(unittest.TestCase):
             patient_id=self.patient_id,
             name="Depression Treatment Plan",
             treatments=[self.ssri_treatment, self.therapy_treatment],
-            start_date=datetime.utcnow(),
+            start_date=datetime.now(UTC),
             status="active"
         )
         
@@ -135,8 +135,8 @@ class TestDigitalTwin(unittest.TestCase):
     
     def test_init_custom_values(self):
         """Test initialization with custom values."""
-        created_at = datetime.utcnow() - timedelta(days=10)
-        last_calibration = datetime.utcnow() - timedelta(days=5)
+        created_at = datetime.now(UTC) - timedelta(days=10)
+        last_calibration = datetime.now(UTC) - timedelta(days=5)
         
         twin = DigitalTwin(
             patient_id=self.patient_id,

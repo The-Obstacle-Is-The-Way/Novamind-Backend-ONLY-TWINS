@@ -8,7 +8,7 @@ analytics data for dashboards and reporting.
 
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 
 from app.domain.entities.analytics import AnalyticsAggregate
 from app.application.use_cases.analytics.retrieve_aggregated_analytics import RetrieveAggregatedAnalyticsUseCase
@@ -154,7 +154,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         aggregate_type = "avg"
         dimensions = ["user_role"]
         filters = {"platform": "web", "browser": "chrome"}
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         week_ago = now - timedelta(days=7)
         time_range = {"start": week_ago, "end": now}
         
@@ -326,7 +326,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         Test different TTL values based on query parameters.
         """
         # Historical data (older than 1 day)
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         historical_start = now - timedelta(days=10)
         historical_end = now - timedelta(days=2)
         
@@ -370,7 +370,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         aggregate_type = "count"
         dimensions = ["event_type", "user_role"]
         filters = {"platform": "web", "browser": "chrome"}
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         week_ago = now - timedelta(days=7)
         
         # Act
@@ -425,7 +425,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         Test limiting of very large time ranges.
         """
         # Arrange - huge time range (2 years)
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         start = now - timedelta(days=730)
         time_range = {"start": start, "end": now}
         

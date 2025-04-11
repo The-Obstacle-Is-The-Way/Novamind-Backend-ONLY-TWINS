@@ -11,7 +11,7 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
@@ -211,7 +211,7 @@ class BiometricCorrelationService:
                 "key_indicators": key_indicators,
                 "lag_correlations": lag_correlations,
                 "insights": insights,
-                "analysis_generated_at": datetime.utcnow().isoformat(),
+                "analysis_generated_at": datetime.now(UTC).isoformat(),
                 "data_points": biometric_data.shape[0],
                 "biometric_features": self.biometric_features,
                 "mental_health_indicators": self.mental_health_indicators,
@@ -415,7 +415,7 @@ class BiometricCorrelationService:
                 "biometric_anomalies": biometric_anomalies,
                 "mental_health_changes": mental_health_changes,
                 "insights": insights,
-                "analysis_generated_at": datetime.utcnow().isoformat(),
+                "analysis_generated_at": datetime.now(UTC).isoformat(),
                 "data_points": biometric_data.shape[0],
                 "biometric_features": self.biometric_features,
                 "mental_health_indicators": self.mental_health_indicators,
@@ -698,7 +698,7 @@ class BiometricCorrelationService:
                 "recommended_features": [
                     item["feature"] for item in monitoring_recommendations
                 ],
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -717,5 +717,5 @@ class BiometricCorrelationService:
             "model": self.model.get_model_info(),
             "biometric_features": self.biometric_features,
             "mental_health_indicators": self.mental_health_indicators,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

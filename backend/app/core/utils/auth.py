@@ -10,7 +10,7 @@ import hashlib
 import os
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import jwt
@@ -175,14 +175,14 @@ class AuthenticationService:
         """
         # Set expiration time
         expires_delta = expires_delta or timedelta(minutes=self.token_expire_minutes)
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
 
         # Create token payload
         payload = {
             "sub": str(user_id),
             "roles": roles,
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": datetime.now(UTC),
             "jti": str(uuid.uuid4()),
         }
 

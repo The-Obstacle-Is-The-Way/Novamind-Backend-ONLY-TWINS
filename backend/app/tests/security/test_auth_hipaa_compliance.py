@@ -10,7 +10,7 @@ import pytest
 import jwt
 import time
 from unittest.mock import patch, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 import json
 
 # Import JWT service or mock it if not available
@@ -31,7 +31,7 @@ except ImportError:
         def create_access_token(self, data, expires_delta=None):
             """Create a test JWT token."""
             to_encode = data.copy()
-            expire = datetime.utcnow() + timedelta(minutes=expires_delta or self.expires_delta)
+            expire = datetime.now(UTC) + timedelta(minutes=expires_delta or self.expires_delta)
             to_encode.update({"exp": expire})
             return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         

@@ -8,7 +8,7 @@ related to patient digital twins in the concierge psychiatry practice.
 
 import logging
 from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from uuid import UUID
 
 from app.domain.entities.digital_twin.digital_twin import DigitalTwin
@@ -97,7 +97,7 @@ class DigitalTwinService:
         # Create time series model
         time_series_model = TimeSeriesModel(
             patient_id=patient_id,
-            creation_date=datetime.utcnow(),
+            creation_date=datetime.now(UTC),
             data_points={},
             model_parameters={},
         )
@@ -105,7 +105,7 @@ class DigitalTwinService:
         # Create twin model
         twin_model = TwinModel(
             patient_id=patient_id,
-            creation_date=datetime.utcnow(),
+            creation_date=datetime.now(UTC),
             model_type="Initial",
             model_parameters={},
             version=1,
@@ -116,8 +116,8 @@ class DigitalTwinService:
             patient_id=patient_id,
             time_series_model=time_series_model,
             twin_model=twin_model,
-            creation_date=datetime.utcnow(),
-            last_updated=datetime.utcnow(),
+            creation_date=datetime.now(UTC),
+            last_updated=datetime.now(UTC),
             metadata=initial_data or {},
         )
 
@@ -158,11 +158,11 @@ class DigitalTwinService:
                 digital_twin.time_series_model.data_points[key] = []
 
             digital_twin.time_series_model.data_points[key].append(
-                {"timestamp": datetime.utcnow(), "value": value}
+                {"timestamp": datetime.now(UTC), "value": value}
             )
 
         # Update last updated timestamp
-        digital_twin.last_updated = datetime.utcnow()
+        digital_twin.last_updated = datetime.now(UTC)
 
         # Save to repository
         return await self._digital_twin_repo.update(digital_twin)
@@ -199,7 +199,7 @@ class DigitalTwinService:
         # Create new twin model
         new_model = TwinModel(
             patient_id=patient_id,
-            creation_date=datetime.utcnow(),
+            creation_date=datetime.now(UTC),
             model_type=model_type,
             model_parameters=model_parameters,
             version=digital_twin.twin_model.version + 1,
@@ -207,7 +207,7 @@ class DigitalTwinService:
 
         # Update digital twin with new model
         digital_twin.twin_model = new_model
-        digital_twin.last_updated = datetime.utcnow()
+        digital_twin.last_updated = datetime.now(UTC)
 
         # Save to repository
         return await self._digital_twin_repo.update(digital_twin)
@@ -290,7 +290,7 @@ class DigitalTwinService:
 
         # Set end date to now if not provided
         if end_date is None:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
 
         # In a real implementation, this would perform complex analysis
         # For now, we'll return a placeholder result
@@ -621,7 +621,7 @@ class DigitalTwinService:
                             {
                                 "description": f"Reduce {symptom} severity by 50% within 3 months",
                                 "target_date": (
-                                    datetime.utcnow() + timedelta(days=90)
+                                    datetime.now(UTC) + timedelta(days=90)
                                 ).isoformat(),
                                 "priority": "high",
                             }
@@ -645,7 +645,7 @@ class DigitalTwinService:
                     {
                         "description": "Improve overall mental health and functioning",
                         "target_date": (
-                            datetime.utcnow() + timedelta(days=180)
+                            datetime.now(UTC) + timedelta(days=180)
                         ).isoformat(),
                         "priority": "high",
                     }
@@ -668,8 +668,8 @@ class DigitalTwinService:
                 diagnosis=diagnosis,
                 goals=goals,
                 interventions=interventions,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=datetime.now(UTC),
+                updated_at=datetime.now(UTC),
             )
 
             return therapeutic_plan

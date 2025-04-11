@@ -1,83 +1,116 @@
-# Novamind Digital Twin Backend Scripts
+# Novamind Backend Scripts
 
-This directory contains utility scripts for the Novamind Digital Twin Backend project. The scripts have been organized into clear categories to facilitate development, testing, and maintenance.
+This directory contains utility scripts for the Novamind backend project. These scripts help with development, testing, and maintenance tasks.
 
-## Core Test Infrastructure
+## Testing Infrastructure
 
-| Script | Description |
-|--------|-------------|
-| `run_tests.sh` | **Main entry point** for running tests. Supports different dependency levels (standalone, venv, db) |
-| `run_dependency_tests.py` | Python implementation of dependency-based test runner |
-| `classify_tests.py` | Tool to classify tests by dependency level and update markers |
-| `debug_test_failures.py` | Tool for diagnosing and debugging test failures |
-| `identify_standalone_candidates.py` | Identifies tests that could be converted to standalone tests |
-| `run_simple_test.py` | Creates and runs a minimal test to verify test infrastructure |
+The Novamind test infrastructure is organized around three levels of test dependencies:
 
-## Test Environment Setup
+1. **Standalone Tests**: No dependencies beyond Python itself
+   - Execute quickly, perfect for fast feedback loops
+   - Isolated from external services and databases
+   - Located in `/app/tests/standalone/`
 
-| Script | Description |
-|--------|-------------|
-| `run_test_environment.sh` | Sets up Docker-based test environment with databases |
-| `install-test-dependencies.sh` | Installs all test dependencies |
+2. **VENV-dependent Tests**: Require Python packages but no external services
+   - Depend on Python packages but not on databases or external APIs
+   - Still relatively fast and reliable
+   - Majority of unit tests fall into this category
 
-## Reporting Tools
+3. **DB/Service-dependent Tests**: Require database connections or other external services
+   - Integration tests that need real databases or external services
+   - Slower and require more setup, but test real interactions
 
-| Script | Description |
-|--------|-------------|
-| `generate_coverage_report.py` | Generates test coverage reports |
-| `generate_compliance_summary.py` | Creates compliance documentation for HIPAA |
-| `run_hipaa_phi_audit.py` | Scans codebase for potential PHI exposure risks |
+## Test Utility Scripts
 
-## Maintenance Utilities
+### Test Classification (`classify_tests.py`)
 
-| Script | Description |
-|--------|-------------|
-| `fix_datetime_tests.py` | Fixes datetime-related test issues |
-| `fix_db_driver.py` | Configures database drivers correctly |
-| `fix_utcnow_deprecation.py` | Updates deprecated utcnow calls |
-| `lint_tests.py` | Lints test files for code quality |
-| `secure_logger.py` | Security-enhanced logging functionality |
+Analyzes test files and classifies them according to their dependency requirements.
 
-## Usage Examples
+```bash
+# Analyze all tests and print a report
+python scripts/classify_tests.py --mode analyze
 
-### Running Tests
+# Generate a detailed report and save to file
+python scripts/classify_tests.py --mode analyze --report --output test-report.txt
+
+# Add appropriate pytest markers to test files based on their imports
+python scripts/classify_tests.py --mode mark
+```
+
+### Dependency-based Test Runner (`run_dependency_tests.py`)
+
+Runs tests based on their dependency requirements in the most efficient order.
 
 ```bash
 # Run all tests in dependency order
-./run_tests.sh all
+python scripts/run_dependency_tests.py
 
 # Run only standalone tests
-./run_tests.sh standalone
+python scripts/run_dependency_tests.py --levels standalone
 
-# Run venv-dependent tests with coverage
-./run_tests.sh venv --coverage
+# Run standalone and venv-only tests with coverage
+python scripts/run_dependency_tests.py --levels standalone venv_only --coverage
 
-# Run database tests with verbose output
-./run_tests.sh db --verbose
+# Run all tests with JUnit XML reports
+python scripts/run_dependency_tests.py --junit test-reports
+
+# Run all tests but continue even if one level fails
+python scripts/run_dependency_tests.py --skip-failed
+
+# Run tests with additional pytest arguments
+python scripts/run_dependency_tests.py --extra-args "--maxfail=5 -k not_slow"
 ```
 
-### Test Classification
+## CI/CD Integration
 
-```bash
-# Classify tests by dependency
-python classify_tests.py --update
+For CI/CD pipelines, use these scripts to run tests in the most efficient order:
 
-# Identify standalone test candidates
-python identify_standalone_candidates.py
+```yaml
+# Example GitHub Actions workflow step
+- name: Run Standalone Tests
+  run: python backend/scripts/run_dependency_tests.py --levels standalone --junit test-reports
+
+- name: Run VENV Tests
+  if: success() || failure()  # Run even if previous step failed
+  run: python backend/scripts/run_dependency_tests.py --levels venv_only --junit test-reports
+
+- name: Run DB Tests
+  if: success() || failure()  # Run even if previous step failed
+  run: python backend/scripts/run_dependency_tests.py --levels db_required --junit test-reports
 ```
 
-### Generating Reports
+## Adding New Tests
 
-```bash
-# Generate test coverage report
-python generate_coverage_report.py
+When adding new tests to the codebase:
 
-# Run HIPAA PHI audit
-python run_hipaa_phi_audit.py
-```
+1. Consider which dependency level is appropriate:
+   - Can it run with no external dependencies? → Standalone
+   - Needs Python packages but no services? → VENV-only
+   - Requires database or external APIs? → DB-required
 
-## Note on Legacy Scripts
+2. Add the appropriate pytest marker to your test:
+   ```python
+   @pytest.mark.standalone
+   def test_something_standalone():
+       pass
+       
+   @pytest.mark.venv_only
+   def test_something_with_packages():
+       pass
+       
+   @pytest.mark.db_required
+   def test_something_with_database():
+       pass
+   ```
 
-Older scripts have been archived in the `legacy_backup` directory. These are maintained for reference but should not be used for new development.
+3. Use the classification script to verify:
+   ```bash
+   python scripts/classify_tests.py --mode analyze
+   ```
 
-For detailed documentation on the test infrastructure, see `/backend/docs/TEST_INFRASTRUCTURE.md`.
+## Best Practices
+
+- Always favor standalone tests when possible - they're faster and more reliable
+- Use mock objects (like our `patient_mock.py` example) to create standalone versions of tests
+- Run `classify_tests.py` periodically to ensure tests are correctly categorized
+- Use the dependency runner in development to get fast feedback from standalone tests

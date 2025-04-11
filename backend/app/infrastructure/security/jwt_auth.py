@@ -17,7 +17,7 @@ Features:
 import json
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import Request, Response, status
@@ -209,7 +209,7 @@ class JWTAuthService:
             content={
                 "error": message,
                 "error_type": error_type,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             },
             headers={"WWW-Authenticate": "Bearer"},
         )

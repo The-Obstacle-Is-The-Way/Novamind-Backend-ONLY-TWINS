@@ -7,7 +7,7 @@ the MentaLLaMA integration for clinical text processing.
 """
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
@@ -88,7 +88,7 @@ class TestMentalLLaMAEndpoints:
             "summary": "Patient shows signs of mild depression with sleep disturbance.",
             "summary_type": "comprehensive",
             "phi_detected": False,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         # Prepare request data
@@ -121,7 +121,7 @@ class TestMentalLLaMAEndpoints:
             "summary": "Patient shows signs of mild depression with sleep disturbance.",
             "summary_type": "comprehensive",
             "phi_detected": True,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         # Prepare request data
@@ -192,7 +192,7 @@ class TestMentalLLaMAEndpoints:
             },
             "entity_types": ["symptoms", "diagnoses"],
             "phi_detected": False,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         # Prepare request data
@@ -227,7 +227,7 @@ class TestMentalLLaMAEndpoints:
             },
             "entity_types": ["symptoms", "diagnoses"],
             "phi_detected": True,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         # Prepare request data

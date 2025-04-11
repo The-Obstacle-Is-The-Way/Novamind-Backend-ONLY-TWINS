@@ -6,7 +6,7 @@ This module contains the PatientService, which encapsulates complex business log
 related to patient management in the concierge psychiatry practice.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, UTC, timedelta
 from typing import Dict, List, Optional, Set, Tuple
 from uuid import UUID
 
@@ -407,7 +407,7 @@ class PatientService:
             List of patients with their upcoming appointments
         """
         # Calculate date range
-        start_date = datetime.utcnow()
+        start_date = datetime.now(UTC)
         end_date = start_date + timedelta(days=days_ahead)
 
         # Get appointments in date range

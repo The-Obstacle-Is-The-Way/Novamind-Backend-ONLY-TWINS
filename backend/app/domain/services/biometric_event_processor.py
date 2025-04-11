@@ -6,7 +6,7 @@ This module implements the Observer pattern to process biometric data streams
 and trigger clinical interventions when concerning patterns emerge.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from enum import Enum
 from typing import Dict, List, Any, Optional, Set, Callable
 from uuid import UUID # Corrected import
@@ -55,7 +55,7 @@ class AlertRule:
         self.condition = condition
         self.created_by = created_by
         self.patient_id = patient_id
-        self.created_at = datetime.utcnow()
+        self.created_at = datetime.now(UTC)
         self.updated_at = self.created_at
         self.is_active = True
     
@@ -133,7 +133,7 @@ class BiometricAlert:
         self.data_point = data_point
         self.message = message
         self.context = context
-        self.created_at = datetime.utcnow()
+        self.created_at = datetime.now(UTC)
         self.acknowledged = False
         self.acknowledged_at = None
         self.acknowledged_by = None
@@ -146,7 +146,7 @@ class BiometricAlert:
             user_id: ID of the user acknowledging the alert
         """
         self.acknowledged = True
-        self.acknowledged_at = datetime.utcnow()
+        self.acknowledged_at = datetime.now(UTC)
         self.acknowledged_by = user_id
 
 
@@ -437,7 +437,7 @@ class BiometricEventProcessor:
             if rule.evaluate(data_point, context):
                 # Create an alert
                 alert = BiometricAlert(
-                    alert_id=f"{rule_id}-{datetime.utcnow().isoformat()}",
+                    alert_id=f"{rule_id}-{datetime.now(UTC).isoformat()}",
                     patient_id=data_point.patient_id,
                     rule_id=rule_id,
                     rule_name=rule.name,

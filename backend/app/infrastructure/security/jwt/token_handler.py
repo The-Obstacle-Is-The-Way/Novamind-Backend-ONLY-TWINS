@@ -7,7 +7,7 @@ Implements HIPAA-compliant authentication with proper security measures.
 """
 
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Union
 
 from jose import JWTError, jwt
@@ -91,11 +91,11 @@ class JWTHandler:
             else self.access_token_expire_minutes
         )
 
-        expire = datetime.utcnow() + timedelta(minutes=expire_minutes)
+        expire = datetime.now(UTC) + timedelta(minutes=expire_minutes)
         to_encode = {
             "sub": str(user_id),
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": datetime.now(UTC),
             "role": role,
             "permissions": permissions,
             "session_id": session_id,
@@ -130,7 +130,7 @@ class JWTHandler:
             token_data = TokenPayload(**payload)
 
             # Check if token is expired
-            if datetime.fromtimestamp(token_data.exp) < datetime.utcnow():
+            if datetime.fromtimestamp(token_data.exp) < datetime.now(UTC):
                 logger.warning(f"Expired token attempt for user: {token_data.sub}")
                 raise AuthenticationException("Token has expired")
 

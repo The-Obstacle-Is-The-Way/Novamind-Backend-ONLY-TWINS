@@ -10,7 +10,7 @@ import json
 import logging
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional
 
 import boto3
@@ -226,7 +226,7 @@ class AWSPATService(PATInterface):
         
         # For now, return a mock response to illustrate the structure
         analysis_id = str(uuid.uuid4())
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(UTC).isoformat() + "Z"
         
         return {
             "analysis_id": analysis_id,
@@ -272,7 +272,7 @@ class AWSPATService(PATInterface):
         # Similar approach to analyze_actigraphy
         
         embedding_id = str(uuid.uuid4())
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(UTC).isoformat() + "Z"
         
         return {
             "embedding_id": embedding_id,
@@ -392,7 +392,7 @@ class AWSPATService(PATInterface):
         # 4. Store integration results
         
         integration_id = str(uuid.uuid4())
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(UTC).isoformat() + "Z"
         
         return {
             "integration_id": integration_id,

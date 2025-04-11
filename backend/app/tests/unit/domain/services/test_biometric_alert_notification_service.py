@@ -7,7 +7,7 @@ sends HIPAA-compliant notifications when biometric alerts are generated.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
@@ -72,7 +72,7 @@ class TestBiometricAlertNotificationService:
                 {
                     "data_type": "heart_rate",
                     "value": 130,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "source": "smartwatch"
                 }
             ],
@@ -91,7 +91,7 @@ class TestBiometricAlertNotificationService:
                 {
                     "data_type": "sleep_quality",
                     "value": 30,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "source": "sleep_tracker"
                 }
             ],
@@ -110,7 +110,7 @@ class TestBiometricAlertNotificationService:
                 {
                     "data_type": "step_count",
                     "value": 2000,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "source": "fitness_tracker"
                 }
             ],

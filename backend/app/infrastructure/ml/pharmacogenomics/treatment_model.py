@@ -9,7 +9,7 @@ the AI Models Core Implementation documentation and adhering to HIPAA compliance
 
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
@@ -158,7 +158,7 @@ class PharmacogenomicsModel:
                 "categorical": self.categorical_preprocessor,
                 "genetic": self.genetic_preprocessor,
             },
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         try:
@@ -366,7 +366,7 @@ class PharmacogenomicsModel:
                 "medications_trained": list(training_results.keys()),
                 "total_medications": len(self.medications),
                 "trained_medications": len(training_results),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -450,7 +450,7 @@ class PharmacogenomicsModel:
                 "recommended_medications": sorted_medications[
                     :3
                 ],  # Top 3 recommendations
-                "prediction_generated_at": datetime.utcnow().isoformat(),
+                "prediction_generated_at": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -557,7 +557,7 @@ class PharmacogenomicsModel:
                 "gene_medication_interactions": interactions,
                 "total_interactions": len(interactions),
                 "genes_analyzed": list(known_interactions.keys()),
-                "analysis_generated_at": datetime.utcnow().isoformat(),
+                "analysis_generated_at": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -734,7 +734,7 @@ class PharmacogenomicsModel:
                     "medication": medication,
                     "side_effects": [],
                     "message": "No side effect data available for this medication",
-                    "prediction_generated_at": datetime.utcnow().isoformat(),
+                    "prediction_generated_at": datetime.now(UTC).isoformat(),
                 }
 
             profile = side_effect_profiles[medication]
@@ -806,7 +806,7 @@ class PharmacogenomicsModel:
                 "high_risk_effects": [
                     e for e in side_effects if e["probability"] > 0.3
                 ],
-                "prediction_generated_at": datetime.utcnow().isoformat(),
+                "prediction_generated_at": datetime.now(UTC).isoformat(),
             }
 
         except Exception as e:
@@ -826,5 +826,5 @@ class PharmacogenomicsModel:
             "medications": self.medications,
             "trained_medications": list(self.models.keys()) if self.models else [],
             "patient_features": self.patient_features,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

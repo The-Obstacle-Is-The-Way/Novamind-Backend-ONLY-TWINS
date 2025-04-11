@@ -6,7 +6,7 @@ This module contains the ClinicalDocumentationService, which encapsulates comple
 related to clinical notes and documentation in the concierge psychiatry practice.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Dict, List, Optional, Set, Tuple
 from uuid import UUID
 
@@ -293,7 +293,7 @@ class ClinicalDocumentationService:
             description=description,
             primary=primary,
             notes=notes,
-            date_diagnosed=datetime.utcnow(),
+            date_diagnosed=datetime.now(UTC),
         )
 
         # Add to note

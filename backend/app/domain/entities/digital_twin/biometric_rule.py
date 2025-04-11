@@ -7,7 +7,7 @@ for evaluating biometric data and generating alerts when concerning patterns
 are detected.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from enum import Enum
 from typing import Dict, List, Optional, Any, Callable
 from uuid import UUID, uuid4
@@ -132,7 +132,7 @@ class BiometricRule:
         self.patient_id = patient_id  # None means rule applies to all patients
         self.provider_id = provider_id
         self.is_active = is_active
-        self.created_at = created_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(UTC)
         self.updated_at = updated_at or self.created_at
         self.metadata = metadata or {}
         
@@ -149,12 +149,12 @@ class BiometricRule:
     def activate(self) -> None:
         """Activate the rule."""
         self.is_active = True
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def deactivate(self) -> None:
         """Deactivate the rule."""
         self.is_active = False
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def update_conditions(
         self,
@@ -171,7 +171,7 @@ class BiometricRule:
         self.conditions = conditions
         if logical_operator:
             self.logical_operator = logical_operator
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
         self._validate()
     
     def to_dict(self) -> Dict[str, Any]:

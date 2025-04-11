@@ -7,7 +7,7 @@ clinical rules for biometric data. It enables psychiatrists to create custom
 alert thresholds for their patients.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC, UTC
 from typing import Dict, List, Optional, Any, Tuple
 from uuid import UUID
 
@@ -206,7 +206,7 @@ class ClinicalRuleEngine:
         if metadata is not None:
             rule.metadata.update(metadata)
         
-        rule.updated_at = datetime.utcnow()
+        rule.updated_at = datetime.now(UTC)
         
         # Save and return the updated rule
         return await self.rule_repository.save(rule)

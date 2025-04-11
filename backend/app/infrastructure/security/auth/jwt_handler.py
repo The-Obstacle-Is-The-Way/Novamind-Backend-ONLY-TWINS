@@ -25,7 +25,7 @@ Usage:
 
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, UTC, timedelta
 from typing import Any, Dict, List, Optional, Union
 
 import jwt
@@ -68,9 +68,9 @@ def create_access_token(
 
     # Set expiration time
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
@@ -78,7 +78,7 @@ def create_access_token(
     payload.update(
         {
             "exp": expire.timestamp(),
-            "iat": datetime.utcnow().timestamp(),
+            "iat": datetime.now(UTC).timestamp(),
             "sub": str(data.get("user_id", "")),
             "jti": str(uuid.uuid4()),  # Unique token ID for potential revocation
             "scope": scope,
