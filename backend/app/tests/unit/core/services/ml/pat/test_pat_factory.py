@@ -12,13 +12,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.core.services.ml.pat.bedrock import BedrockPAT
-from app.core.services.ml.pat.factory import PATFactory
+from app.core.services.ml.pat.factory import PATServiceFactory # Corrected class name
 from app.core.services.ml.pat.interface import PATInterface
-from app.core.services.ml.pat.mock import MockPAT
+from app.core.services.ml.pat.mock import MockPATService # Corrected class name
 
 
-class TestPATFactory(unittest.TestCase):
-    """Test cases for PATFactory."""
+class TestPATServiceFactory(unittest.TestCase): # Corrected class name
+    """Test cases for PATServiceFactory.""" # Corrected docstring
     
     def setUp(self) -> None:
         """Set up test fixtures.
@@ -26,10 +26,10 @@ class TestPATFactory(unittest.TestCase):
         This method runs before each test.
         """
         # Clear the instance cache before each test
-        PATFactory._instance_cache = {}
+        PATServiceFactory._instance_cache = {} # Corrected class name
         
         # Create patches for PAT implementations
-        self.mock_pat_patcher = patch("app.core.services.ml.pat.factory.MockPAT")
+        self.mock_pat_patcher = patch("app.core.services.ml.pat.factory.MockPATService") # Corrected class name
         self.bedrock_pat_patcher = patch("app.core.services.ml.pat.factory.BedrockPAT")
         
         # Start the patches
@@ -37,7 +37,7 @@ class TestPATFactory(unittest.TestCase):
         self.mock_bedrock_pat = self.bedrock_pat_patcher.start()
         
         # Configure the mocks
-        self.mock_mock_pat_instance = MagicMock(spec=MockPAT)
+        self.mock_mock_pat_instance = MagicMock(spec=MockPATService) # Corrected class name
         self.mock_mock_pat.return_value = self.mock_mock_pat_instance
         
         self.mock_bedrock_pat_instance = MagicMock(spec=BedrockPAT)
@@ -53,7 +53,7 @@ class TestPATFactory(unittest.TestCase):
         self.bedrock_pat_patcher.stop()
         
         # Clear the instance cache
-        PATFactory._instance_cache = {}
+        PATServiceFactory._instance_cache = {} # Corrected class name
 
     def test_get_mock_pat(self) -> None:
         """Test getting a MockPAT instance."""
@@ -64,7 +64,7 @@ class TestPATFactory(unittest.TestCase):
         }
         
         # Act
-        pat = PATFactory.get_pat_service(config)
+        pat = PATServiceFactory.get_pat_service(config) # Corrected class name
         
         # Assert
         self.assertEqual(pat, self.mock_mock_pat_instance)
@@ -83,7 +83,7 @@ class TestPATFactory(unittest.TestCase):
         }
         
         # Act
-        pat = PATFactory.get_pat_service(config)
+        pat = PATServiceFactory.get_pat_service(config) # Corrected class name
         
         # Assert
         self.assertEqual(pat, self.mock_bedrock_pat_instance)
@@ -99,7 +99,7 @@ class TestPATFactory(unittest.TestCase):
         }
         
         # Act
-        pat = PATFactory.get_pat_service(config)
+        pat = PATServiceFactory.get_pat_service(config) # Corrected class name
         
         # Assert
         self.assertEqual(pat, self.mock_mock_pat_instance)
@@ -116,7 +116,7 @@ class TestPATFactory(unittest.TestCase):
         
         # Act & Assert
         with self.assertRaises(ValueError) as context:
-            PATFactory.get_pat_service(config)
+            PATServiceFactory.get_pat_service(config) # Corrected class name
         
         self.assertIn("Unknown PAT provider", str(context.exception))
         self.mock_mock_pat.assert_not_called()
@@ -131,8 +131,8 @@ class TestPATFactory(unittest.TestCase):
         }
         
         # Act
-        pat1 = PATFactory.get_pat_service(config)
-        pat2 = PATFactory.get_pat_service(config)
+        pat1 = PATServiceFactory.get_pat_service(config) # Corrected class name
+        pat2 = PATServiceFactory.get_pat_service(config) # Corrected class name
         
         # Assert
         self.assertEqual(pat1, pat2)
@@ -153,13 +153,13 @@ class TestPATFactory(unittest.TestCase):
         }
         
         # Configure mocks for different instances
-        mock_instance1 = MagicMock(spec=MockPAT)
-        mock_instance2 = MagicMock(spec=MockPAT)
+        mock_instance1 = MagicMock(spec=MockPATService) # Corrected class name
+        mock_instance2 = MagicMock(spec=MockPATService) # Corrected class name
         self.mock_mock_pat.side_effect = [mock_instance1, mock_instance2]
         
         # Act
-        pat1 = PATFactory.get_pat_service(config1)
-        pat2 = PATFactory.get_pat_service(config2)
+        pat1 = PATServiceFactory.get_pat_service(config1) # Corrected class name
+        pat2 = PATServiceFactory.get_pat_service(config2) # Corrected class name
         
         # Assert
         self.assertNotEqual(pat1, pat2)
@@ -167,7 +167,7 @@ class TestPATFactory(unittest.TestCase):
         mock_instance1.initialize.assert_called_once_with(config1)
         mock_instance2.initialize.assert_called_once_with(config2)
 
-    @patch("app.core.services.ml.pat.factory.PATFactory._instance_cache")
+    @patch("app.core.services.ml.pat.factory.PATServiceFactory._instance_cache") # Corrected class name
     def test_cache_key_generation(self, mock_cache) -> None:
         """Test that cache keys are generated correctly."""
         # Arrange
@@ -182,7 +182,7 @@ class TestPATFactory(unittest.TestCase):
         }
         
         # Act
-        PATFactory.get_pat_service(config)
+        PATServiceFactory.get_pat_service(config) # Corrected class name
         
         # Assert
         # Verify that __setitem__ was called exactly once
@@ -206,7 +206,7 @@ class TestPATFactory(unittest.TestCase):
         mock_cache.__setitem__.reset_mock()
         
         # Act again with the reordered config
-        PATFactory.get_pat_service(config2)
+        PATServiceFactory.get_pat_service(config2) # Corrected class name
         
         # Assert
         # Verify that __setitem__ was called exactly once

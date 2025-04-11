@@ -49,7 +49,7 @@ from app.core.exceptions import (
     ModelNotFoundError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.factory import get_service_manager
+from app.core.services.ml.factory import MLServiceCache # Import the correct cache
 from app.core.services.ml.interface import MentaLLaMAInterface, PHIDetectionInterface
 from app.core.utils.logging import get_logger
 
@@ -74,8 +74,8 @@ def get_mentalllama_service() -> MentaLLaMAInterface:
         HTTPException: If service is unavailable
     """
     try:
-        service_manager = get_service_manager()
-        return service_manager.get_mentalllama_service()
+        # Use the MLServiceCache singleton to get the service
+        return MLServiceCache.get_instance().get_mentalllama_service()
     except ServiceUnavailableError as e:
         logger.error(f"Failed to get MentaLLaMA service: {str(e)}")
         raise HTTPException(
@@ -95,8 +95,8 @@ def get_phi_detection_service() -> PHIDetectionInterface:
         HTTPException: If service is unavailable
     """
     try:
-        service_manager = get_service_manager()
-        return service_manager.get_phi_detection_service()
+        # Use the MLServiceCache singleton to get the service
+        return MLServiceCache.get_instance().get_phi_detection_service()
     except ServiceUnavailableError as e:
         logger.error(f"Failed to get PHI detection service: {str(e)}")
         raise HTTPException(

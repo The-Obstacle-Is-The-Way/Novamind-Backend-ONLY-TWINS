@@ -18,7 +18,7 @@ from app.core.exceptions import (
     ResourceNotFoundError
 )
 from app.core.services.ml.mock_dt import MockDigitalTwinService
-from app.tests.unit.base_test import BaseUnitTest
+from app.tests.unit.base_test_unit import BaseUnitTest # Updated import path after rename
 
 
 class TestMockDigitalTwinService(BaseUnitTest):

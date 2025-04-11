@@ -5,7 +5,7 @@ Uses in-memory storage rather than actual database.
 from typing import Dict, List, Optional
 from uuid import UUID, uuid4
 
-from app.domain.entities.patient import Gender, Patient
+from app.domain.entities.patient import Patient # Removed Gender import
 from app.domain.repositories.patient_repository import PatientRepository
 
 

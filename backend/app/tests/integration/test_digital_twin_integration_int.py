@@ -8,7 +8,7 @@ from datetime import datetime, UTC, timedelta
 
 import pytest
 
-from app.domain.entities.patient import Gender, Diagnosis, Medication, Patient
+from app.domain.entities.patient import Patient # Removed Gender, Diagnosis, Medication
 from app.infrastructure.factories.mock_digital_twin_factory import MockDigitalTwinFactory
 
 
@@ -33,33 +33,19 @@ async def test_digital_twin_complete_workflow():
         first_name="Jane",
         last_name="Doe",
         date_of_birth=datetime.now() - timedelta(days=365 * 35),  # 35 years old
-        gender=Gender.FEMALE,
+        gender="female", # Use string literal
         contact_info={
             "email": "jane.doe@example.com",
             "phone": "+1-555-123-4567"
         },
+        # Use strings for diagnoses as per patient.py entity
         diagnoses=[
-            Diagnosis(
-                code="F32.1",
-                name="Major depressive disorder, single episode, moderate",
-                date_diagnosed=datetime.now() - timedelta(days=180),
-                is_active=True
-            ),
-            Diagnosis(
-                code="F41.1",
-                name="Generalized anxiety disorder",
-                date_diagnosed=datetime.now() - timedelta(days=180),
-                is_active=True
-            )
+            "F32.1: Major depressive disorder, single episode, moderate",
+            "F41.1: Generalized anxiety disorder"
         ],
+        # Use strings for medications as per patient.py entity
         medications=[
-            Medication(
-                name="Sertraline",
-                dosage="50mg",
-                frequency="daily",
-                start_date=datetime.now() - timedelta(days=90),
-                is_active=True
-            )
+            "Sertraline 50mg daily"
         ],
         allergies=["Penicillin"]
     )

@@ -22,7 +22,7 @@ from app.core.exceptions import (
     ModelNotFoundError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.interface import MentaLLaMAInterface, MLService
+from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-existent MLService
 
 
 # Local app/client fixtures removed; tests will use the client fixture from conftest.py

@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, status, Security
 
 from app.api.auth.jwt import verify_token, get_current_user
-from app.api.deps import get_ml_service_factory
+from app.api.dependencies.ml import get_ml_service_factory # Corrected import path
 from app.api.schemas.ml_schemas import (
     APIResponse,
     ProcessTextRequest,

@@ -18,7 +18,7 @@ from app.core.exceptions import (
     ServiceUnavailableError,
 )
 from app.core.services.ml.mock import MockMentaLLaMA
-from app.tests.unit.base_test import BaseUnitTest
+from app.tests.unit.base_test_unit import BaseUnitTest # Updated import path after rename
 
 
 class TestMockMentaLLaMA(BaseUnitTest):

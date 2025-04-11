@@ -21,7 +21,6 @@ from app.core.services.ml.pat.exceptions import (
     EmbeddingError,
     InitializationError,
     ResourceNotFoundError,
-    StorageError,
     ValidationError,
 )
 
