@@ -1,293 +1,412 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-Test Analyzer for Novamind Digital Twin
+Novamind Digital Twin Test Analyzer
 
-This script analyzes test files to determine their dependencies and
-suggests the appropriate directory in the dependency-based SSOT structure.
+This script analyzes the test suite to categorize tests by dependency level,
+identify syntax errors, and generate a migration plan.
 
 Usage:
-    python test_analyzer.py [file_or_directory]
-    python test_analyzer.py --all
+    python test_analyzer.py --output-file test_analysis_results.json
 """
 
-import ast
 import os
 import re
+import ast
+import json
+import argparse
 import sys
-from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Any, Union
+from dataclasses import dataclass, field, asdict
 
 
-# Add the project root to the Python path
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-
-
-class TestLevel(Enum):
-    """Test levels based on external dependencies."""
-    STANDALONE = "standalone"
-    VENV = "venv"
-    INTEGRATION = "integration"
-    UNKNOWN = "unknown"
+@dataclass
+class TestFileInfo:
+    """Information about a test file."""
+    file_path: str
+    relative_path: str
+    module_name: str
+    dependency_level: str = "unknown"
+    has_syntax_error: bool = False
+    error_message: Optional[str] = None
+    markers: List[str] = field(default_factory=list)
+    imports: List[str] = field(default_factory=list)
+    fixtures: List[str] = field(default_factory=list)
+    test_count: int = 0
+    destination_path: Optional[str] = None
 
 
 class TestAnalyzer:
     """
-    Analyzes test files to determine their appropriate test level based on dependencies.
+    Analyzes test files to determine their dependency level and other characteristics.
     """
     
-    # Python standard library modules (indicating standalone tests)
-    STDLIB_MODULES = {
-        "abc", "argparse", "array", "asyncio", "base64", "collections", "contextlib",
-        "copy", "csv", "datetime", "decimal", "enum", "functools", "hashlib", "io",
-        "itertools", "json", "logging", "math", "os", "pathlib", "pickle", "random",
-        "re", "string", "sys", "tempfile", "time", "typing", "uuid", "xml"
-    }
-    
-    # Modules that require venv but not external services
-    VENV_MODULES = {
-        "fastapi", "pydantic", "sqlalchemy", "sqlalchemy.orm", "pandas", "numpy", 
-        "sklearn", "pytest", "aiohttp", "requests", "uvicorn", "starlette",
-        "jose", "passlib", "bcrypt", "cryptography"
-    }
-    
-    # Modules that indicate integration test needs
-    INTEGRATION_MODULES = {
-        "databases", "motor", "aiomysql", "psycopg2", "httpx", "redis", "aioredis",
-        "elasticsearch", "boto3", "minio", "kafka", "azure", "google.cloud"
-    }
-    
-    # Patterns indicating database usage in code
-    DB_PATTERNS = [
-        r"\.execute\(", r"session\.", r"connection\.", r"cursor\.",
-        r"query\.", r"\.commit\(", r"\.rollback\(", r"\.fetchall\(",
-        r"repository", r"Repository", r"database", r"Database"
-    ]
-    
-    def __init__(self):
-        self.project_root = Path(__file__).resolve().parents[3]
-        self.test_root = self.project_root / "app" / "tests"
+    def __init__(self, project_root: Optional[Path] = None):
+        """
+        Initialize the test analyzer.
         
-    def analyze_all_tests(self) -> Dict[Path, TestLevel]:
+        Args:
+            project_root: Root directory of the project
+        """
+        self.project_root = project_root or Path(__file__).resolve().parents[4]
+        self.tests_dir = self.project_root / "backend" / "app" / "tests"
+        print(f"Project root: {self.project_root}")
+        print(f"Tests directory: {self.tests_dir}")
+        
+        # Patterns for identifying dependency levels
+        self.standalone_patterns = [
+            re.compile(r"@\s*pytest\.mark\.standalone", re.IGNORECASE),
+            re.compile(r"standalone", re.IGNORECASE),
+        ]
+        
+        self.venv_patterns = [
+            re.compile(r"@\s*pytest\.mark\.venv", re.IGNORECASE),
+            re.compile(r"venv", re.IGNORECASE),
+        ]
+        
+        self.integration_patterns = [
+            re.compile(r"@\s*pytest\.mark\.integration", re.IGNORECASE),
+            re.compile(r"integration", re.IGNORECASE),
+            re.compile(r"@\s*pytest\.mark\.dependency\(depends=", re.IGNORECASE),
+        ]
+        
+        # External dependency imports that indicate higher dependency level
+        self.external_deps = {
+            # Database dependencies
+            "sqlalchemy", "pymongo", "psycopg2", "motor", "databases",
+            # Network dependencies
+            "requests", "httpx", "aiohttp", "boto3", "fastapi.testclient",
+            # External services
+            "redis", "kafka", "elasticsearch", "cassandra",
+        }
+        
+    def analyze_all_tests(self) -> List[TestFileInfo]:
         """
         Analyze all test files in the project.
         
         Returns:
-            Dictionary mapping test files to their determined test level
+            List of TestFileInfo objects with analysis results
         """
-        results: Dict[Path, TestLevel] = {}
+        test_files = []
         
-        for test_file in self._find_test_files():
-            level = self.analyze_file(test_file)
-            results[test_file] = level
-            
-        return results
-    
-    def analyze_file(self, file_path: Path) -> TestLevel:
-        """
-        Analyze a single test file to determine its dependency level.
-        
-        Args:
-            file_path: Path to the test file
-            
-        Returns:
-            TestLevel enum indicating the appropriate test level
-        """
-        print(f"Analyzing {file_path.relative_to(self.project_root)}...")
-        
-        try:
-            # Check if file exists
-            if not file_path.exists():
-                print(f"  File not found: {file_path}")
-                return TestLevel.UNKNOWN
-            
-            # Open and parse the file
-            with open(file_path, "r", encoding="utf-8") as f:
-                file_content = f.read()
-                
-            # Check for pytest markers that might indicate type
-            if self._has_integration_marker(file_content):
-                print(f"  Integration test (marker): {file_path.name}")
-                return TestLevel.INTEGRATION
-                
-            # Try to parse with AST to get imports
-            try:
-                imports = self._extract_imports(file_content)
-                
-                # Check for integration dependencies
-                for module in imports:
-                    if any(module.startswith(m) for m in self.INTEGRATION_MODULES):
-                        print(f"  Integration test (imports): {file_path.name}")
-                        return TestLevel.INTEGRATION
-                
-                # Check for venv dependencies
-                if any(any(module.startswith(m) for m in self.VENV_MODULES) for module in imports):
-                    # Check file content for DB usage patterns
-                    if any(re.search(pattern, file_content) for pattern in self.DB_PATTERNS):
-                        print(f"  Integration test (db patterns): {file_path.name}")
-                        return TestLevel.INTEGRATION
-                    
-                    print(f"  VENV test: {file_path.name}")
-                    return TestLevel.VENV
-                
-                # If no external imports, it's likely standalone
-                print(f"  Standalone test: {file_path.name}")
-                return TestLevel.STANDALONE
-                
-            except SyntaxError:
-                # If AST parsing fails, fall back to simpler heuristics
-                return self._analyze_without_ast(file_content, file_path)
-                
-        except Exception as e:
-            print(f"  Error analyzing {file_path}: {str(e)}")
-            return TestLevel.UNKNOWN
-    
-    def _find_test_files(self) -> List[Path]:
-        """
-        Find all test files in the project.
-        
-        Returns:
-            List of paths to test files
-        """
-        test_files: List[Path] = []
-        
-        for root, _, files in os.walk(str(self.test_root)):
+        # Walk through the tests directory
+        for root, _, files in os.walk(str(self.tests_dir)):
             for file in files:
                 if file.startswith("test_") and file.endswith(".py"):
-                    test_files.append(Path(root) / file)
+                    file_path = os.path.join(root, file)
+                    relative_path = os.path.relpath(file_path, str(self.project_root))
+                    test_files.append(self._analyze_test_file(file_path, relative_path))
+        
+        # Determine destination paths based on analysis
+        for test_file in test_files:
+            if test_file.dependency_level == "standalone":
+                # Extract component from path
+                components = self._extract_component(test_file.relative_path)
+                test_file.destination_path = f"backend/app/tests/standalone/{components}/{os.path.basename(test_file.file_path)}"
+            elif test_file.dependency_level == "venv":
+                components = self._extract_component(test_file.relative_path)
+                test_file.destination_path = f"backend/app/tests/venv/{components}/{os.path.basename(test_file.file_path)}"
+            elif test_file.dependency_level == "integration":
+                components = self._extract_component(test_file.relative_path)
+                test_file.destination_path = f"backend/app/tests/integration/{components}/{os.path.basename(test_file.file_path)}"
         
         return test_files
     
-    def _extract_imports(self, content: str) -> Set[str]:
+    def _extract_component(self, relative_path: str) -> str:
         """
-        Extract all import module names from a Python file.
+        Extract the component (domain, application, etc.) from a file path.
         
         Args:
-            content: Python file content
+            relative_path: Relative path to the test file
             
         Returns:
-            Set of imported module names
+            Component name (domain, application, etc.)
         """
-        tree = ast.parse(content)
-        imports: Set[str] = set()
+        path_parts = relative_path.split(os.path.sep)
+        
+        # Look for known components
+        components = ["domain", "application", "infrastructure", "api", "core"]
+        for component in components:
+            if component in path_parts:
+                return component
+        
+        # Default to the directory structure after 'tests'
+        try:
+            tests_index = path_parts.index("tests")
+            if tests_index + 1 < len(path_parts) - 1:  # There's at least one directory between 'tests' and the file
+                return path_parts[tests_index + 1]
+        except ValueError:
+            pass
+        
+        # Fallback to 'core' if no component can be determined
+        return "core"
+    
+    def _analyze_test_file(self, file_path: str, relative_path: str) -> TestFileInfo:
+        """
+        Analyze a single test file to determine its characteristics.
+        
+        Args:
+            file_path: Path to the test file
+            relative_path: Path relative to project root
+            
+        Returns:
+            TestFileInfo object with analysis results
+        """
+        module_name = os.path.splitext(os.path.basename(file_path))[0]
+        test_info = TestFileInfo(
+            file_path=file_path,
+            relative_path=relative_path,
+            module_name=module_name
+        )
+        
+        # Try to parse the file
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+            # Extract markers from content using regex
+            for pattern in self.standalone_patterns:
+                if pattern.search(content):
+                    test_info.dependency_level = "standalone"
+                    if "standalone" not in test_info.markers:
+                        test_info.markers.append("standalone")
+            
+            for pattern in self.venv_patterns:
+                if pattern.search(content):
+                    # Only upgrade to venv if it's not already marked as integration
+                    if test_info.dependency_level != "integration":
+                        test_info.dependency_level = "venv"
+                        if "venv" not in test_info.markers:
+                            test_info.markers.append("venv")
+            
+            for pattern in self.integration_patterns:
+                if pattern.search(content):
+                    test_info.dependency_level = "integration"
+                    if "integration" not in test_info.markers:
+                        test_info.markers.append("integration")
+            
+            # Parse AST for deeper analysis
+            tree = ast.parse(content)
+            
+            # Extract imports
+            imports = self._extract_imports(tree)
+            test_info.imports = imports
+            
+            # Count tests
+            test_info.test_count = self._count_tests(tree)
+            
+            # Extract fixtures
+            test_info.fixtures = self._extract_fixtures(tree)
+            
+            # Determine dependency level based on imports if not already determined
+            if test_info.dependency_level == "unknown":
+                test_info.dependency_level = self._determine_dependency_from_imports(imports)
+                
+            # If still unknown, check path hints
+            if test_info.dependency_level == "unknown":
+                test_info.dependency_level = self._determine_dependency_from_path(relative_path)
+            
+        except SyntaxError as e:
+            test_info.has_syntax_error = True
+            test_info.error_message = f"Syntax error: {str(e)}"
+        except Exception as e:
+            test_info.has_syntax_error = True
+            test_info.error_message = f"Error analyzing file: {str(e)}"
+        
+        return test_info
+    
+    def _extract_imports(self, tree: ast.AST) -> List[str]:
+        """
+        Extract all imports from an AST.
+        
+        Args:
+            tree: AST of a Python file
+            
+        Returns:
+            List of imported module names
+        """
+        imports = []
         
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for name in node.names:
-                    imports.add(name.name)
+                    imports.append(name.name)
             elif isinstance(node, ast.ImportFrom):
                 if node.module:
-                    imports.add(node.module)
+                    imports.append(node.module)
         
         return imports
     
-    def _has_integration_marker(self, content: str) -> bool:
+    def _count_tests(self, tree: ast.AST) -> int:
         """
-        Check if a file has pytest markers indicating it's an integration test.
+        Count the number of test functions in an AST.
         
         Args:
-            content: Python file content
+            tree: AST of a Python file
             
         Returns:
-            True if file has integration markers
+            Number of test functions
         """
-        markers = [
-            "@pytest.mark.integration",
-            "@pytest.mark.database",
-            "@pytest.mark.external",
-            "@pytest.mark.usefixtures(\"db\"",
-            "@pytest.mark.usefixtures(\"database\""
-        ]
+        count = 0
         
-        return any(marker in content for marker in markers)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and (
+                node.name.startswith("test_") or 
+                any(decorator.id == "pytest.mark.parametrize" for decorator in node.decorator_list 
+                    if isinstance(decorator, ast.Attribute))
+            ):
+                count += 1
+        
+        return count
     
-    def _analyze_without_ast(self, content: str, file_path: Path) -> TestLevel:
+    def _extract_fixtures(self, tree: ast.AST) -> List[str]:
         """
-        Analyze a file without using AST (fallback method).
+        Extract fixture names defined in the file.
         
         Args:
-            content: Python file content
-            file_path: Path to the file
+            tree: AST of a Python file
             
         Returns:
-            TestLevel enum indicating the appropriate test level
+            List of fixture names
         """
-        # Check for import statements using regex
-        import_lines = re.findall(r"^\s*(?:from|import)\s+([a-zA-Z0-9_.]+)", content, re.MULTILINE)
+        fixtures = []
         
-        # Integration modules
-        for module in import_lines:
-            if any(module.startswith(m) for m in self.INTEGRATION_MODULES):
-                print(f"  Integration test (regex imports): {file_path.name}")
-                return TestLevel.INTEGRATION
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                for decorator in node.decorator_list:
+                    if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Name) and decorator.func.id == "pytest.fixture":
+                        fixtures.append(node.name)
         
-        # VENV modules
-        if any(any(module.startswith(m) for m in self.VENV_MODULES) for module in import_lines):
-            if any(re.search(pattern, content) for pattern in self.DB_PATTERNS):
-                print(f"  Integration test (regex db patterns): {file_path.name}")
-                return TestLevel.INTEGRATION
-            
-            print(f"  VENV test (regex): {file_path.name}")
-            return TestLevel.VENV
-        
-        # Default to standalone
-        print(f"  Standalone test (regex): {file_path.name}")
-        return TestLevel.STANDALONE
+        return fixtures
     
-    def generate_migration_plan(self) -> Dict[TestLevel, List[Path]]:
+    def _determine_dependency_from_imports(self, imports: List[str]) -> str:
         """
-        Generate a migration plan for all test files.
+        Determine dependency level based on imports.
         
+        Args:
+            imports: List of imported module names
+            
         Returns:
-            Dictionary mapping test levels to lists of files that should be in that level
+            Dependency level (standalone, venv, integration)
         """
-        results = self.analyze_all_tests()
-        migration_plan: Dict[TestLevel, List[Path]] = {
-            TestLevel.STANDALONE: [],
-            TestLevel.VENV: [],
-            TestLevel.INTEGRATION: [],
-            TestLevel.UNKNOWN: []
+        # Check for integration-level dependencies
+        for dep in self.external_deps:
+            if any(imp.startswith(dep) for imp in imports):
+                return "integration"
+        
+        # Check for venv-level dependencies
+        venv_deps = ["os", "sys", "io", "tempfile", "shutil"]
+        if any(imp in venv_deps for imp in imports):
+            return "venv"
+        
+        # Default to standalone if no other imports suggest higher level
+        return "standalone"
+    
+    def _determine_dependency_from_path(self, relative_path: str) -> str:
+        """
+        Determine dependency level based on file path.
+        
+        Args:
+            relative_path: Path relative to project root
+            
+        Returns:
+            Dependency level (standalone, venv, integration)
+        """
+        path_lower = relative_path.lower()
+        
+        if "integration" in path_lower:
+            return "integration"
+        
+        if "standalone" in path_lower:
+            return "standalone"
+        
+        if "venv" in path_lower:
+            return "venv"
+        
+        # Some common patterns
+        if "unit" in path_lower:
+            return "standalone"
+        
+        if "e2e" in path_lower:
+            return "integration"
+        
+        # Default to venv as a safer middle ground
+        return "venv"
+    
+    def generate_report(self, tests: List[TestFileInfo]) -> Dict[str, Any]:
+        """
+        Generate a report of test analysis.
+        
+        Args:
+            tests: List of TestFileInfo objects
+            
+        Returns:
+            Report as a dictionary
+        """
+        # Count by dependency level
+        dependency_counts = {
+            "standalone": 0,
+            "venv": 0,
+            "integration": 0,
+            "unknown": 0
         }
         
-        for file_path, level in results.items():
-            migration_plan[level].append(file_path)
+        for test in tests:
+            dependency_counts[test.dependency_level] += 1
         
-        return migration_plan
+        # Count syntax errors
+        syntax_error_count = sum(1 for test in tests if test.has_syntax_error)
+        
+        return {
+            "total_tests": len(tests),
+            "dependency_counts": dependency_counts,
+            "syntax_errors": syntax_error_count,
+            "tests": [asdict(test) for test in tests]
+        }
+
+
+def parse_args() -> argparse.Namespace:
+    """
+    Parse command-line arguments.
     
-    def print_migration_plan(self):
-        """Print a human-readable migration plan."""
-        plan = self.generate_migration_plan()
-        
-        print("\n============== Test Migration Plan ==============\n")
-        
-        for level, files in plan.items():
-            if level != TestLevel.UNKNOWN:
-                print(f"{level.value.upper()} Tests ({len(files)}):")
-                for file in sorted(files):
-                    current_dir = file.parent.relative_to(self.test_root)
-                    target_dir = f"tests/{level.value}"
-                    print(f"  {current_dir}/{file.name} -> {target_dir}/{file.name}")
-                print()
-        
-        if plan[TestLevel.UNKNOWN]:
-            print(f"UNKNOWN Tests ({len(plan[TestLevel.UNKNOWN])}):")
-            for file in sorted(plan[TestLevel.UNKNOWN]):
-                print(f"  {file.relative_to(self.project_root)}")
-            print()
-        
-        print("=============================================\n")
-        print(f"Total: {sum(len(files) for files in plan.values())} test files")
-        print(f"  - {len(plan[TestLevel.STANDALONE])} standalone tests")
-        print(f"  - {len(plan[TestLevel.VENV])} venv tests")
-        print(f"  - {len(plan[TestLevel.INTEGRATION])} integration tests")
-        print(f"  - {len(plan[TestLevel.UNKNOWN])} unknown tests")
-        
+    Returns:
+        Parsed arguments
+    """
+    parser = argparse.ArgumentParser(description="Novamind Digital Twin Test Analyzer")
+    
+    parser.add_argument(
+        "--output-file",
+        type=str,
+        help="Path to save analysis results",
+        default="test_analysis_results.json"
+    )
+    
+    return parser.parse_args()
+
 
 def main():
-    """Entry point for the script."""
+    """Main entry point for the test analyzer."""
+    args = parse_args()
+    
+    # Analyze tests
     analyzer = TestAnalyzer()
-    analyzer.print_migration_plan()
+    test_results = analyzer.analyze_all_tests()
+    report = analyzer.generate_report(test_results)
+    
+    # Save report to file
+    with open(args.output_file, 'w', encoding='utf-8') as f:
+        json.dump(report, f, indent=2)
+    
+    # Print summary to console
+    print(f"Total tests analyzed: {report['total_tests']}")
+    print("Dependency counts:")
+    for level, count in report['dependency_counts'].items():
+        print(f"  {level}: {count}")
+    print(f"Syntax errors: {report['syntax_errors']}")
+    print(f"Report saved to {args.output_file}")
+    
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

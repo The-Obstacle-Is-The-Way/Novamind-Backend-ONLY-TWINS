@@ -1,0 +1,11 @@
+{
+  "total_tests": 0,
+  "dependency_counts": {
+    "standalone": 0,
+    "venv": 0,
+    "integration": 0,
+    "unknown": 0
+  },
+  "syntax_errors": 0,
+  "tests": []
+}

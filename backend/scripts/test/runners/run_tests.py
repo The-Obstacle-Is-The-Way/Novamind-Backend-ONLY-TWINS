@@ -1,41 +1,30 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-Canonical Test Runner for Novamind Digital Twin
+Novamind Digital Twin Test Runner
 
-This script is the Single Source of Truth (SSOT) for running tests in the Novamind 
-Digital Twin platform. It provides a standardized interface for test execution with
-a dependency-based approach, running tests from most isolated to most integrated.
+This is the canonical test runner for the Novamind Digital Twin project.
+It provides a unified interface for running tests at different dependency levels,
+with appropriate test discovery and reporting.
 
 Usage:
-    python run_tests.py --standalone      # Run only standalone tests
-    python run_tests.py --venv            # Run standalone and venv tests
-    python run_tests.py --integration     # Run all tests
-    python run_tests.py --all             # Run all tests (same as --integration)
-    python run_tests.py --security        # Run only security-marked tests
-    python run_tests.py --coverage        # Generate coverage report
+    python run_tests.py --standalone  # Run standalone tests only
+    python run_tests.py --venv        # Run standalone and venv tests
+    python run_tests.py --all         # Run all tests
+    python run_tests.py --security    # Run security-focused tests
+    python run_tests.py --coverage    # Generate coverage report
 """
 
 import argparse
 import os
 import subprocess
 import sys
-import time
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import List, Optional
 
-# Add the project root to the Python path
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-# Define test levels with increasing dependency requirements
-class TestLevel(Enum):
-    STANDALONE = "standalone"
-    VENV = "venv"
-    INTEGRATION = "integration"
-    SECURITY = "security"  # Orthogonal concern
-
-# Define colors for output formatting
 class Colors:
+    """Terminal colors for output formatting."""
     HEADER = '\033[95m'
     BLUE = '\033[94m'
     GREEN = '\033[92m'
@@ -46,210 +35,147 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 
+class TestLevel(Enum):
+    """Dependency levels for tests."""
+    STANDALONE = "standalone"
+    VENV = "venv"
+    INTEGRATION = "integration"
+
+
 class TestRunner:
     """
-    Canonical test runner for the Novamind Digital Twin platform.
+    Test runner for the Novamind Digital Twin project.
     
-    This class implements the directory-based SSOT approach for running tests,
-    organizing them by dependency level rather than by architecture layer.
+    This class handles test discovery, execution, and reporting
+    based on the specified dependency level and test markers.
     """
     
-    def __init__(self):
-        self.project_root = Path(__file__).resolve().parents[3]
-        self.test_root = self.project_root / "app" / "tests"
-        self.results: Dict[TestLevel, Dict[str, int]] = {}
-        
-    def run(self, args: argparse.Namespace) -> int:
+    def __init__(self, project_root: Optional[Path] = None):
         """
-        Run the tests according to the specified arguments.
+        Initialize the test runner.
         
         Args:
-            args: Command-line arguments
+            project_root: Root directory of the project
+        """
+        self.project_root = project_root or Path(__file__).resolve().parents[3]
+        self.tests_dir = self.project_root / "app" / "tests"
+        
+    def run_tests(self, 
+                  level: TestLevel = TestLevel.STANDALONE,
+                  security: bool = False,
+                  coverage: bool = False,
+                  verbose: bool = False,
+                  html_report: bool = False,
+                  xml_report: bool = False,
+                  progressive: bool = False) -> bool:
+        """
+        Run tests at the specified dependency level.
+        
+        Args:
+            level: The highest dependency level to run
+            security: Whether to run security-focused tests
+            coverage: Whether to generate a coverage report
+            verbose: Whether to show verbose output
+            html_report: Whether to generate an HTML coverage report
+            xml_report: Whether to generate an XML coverage report
+            progressive: Whether to stop if tests at a lower level fail
             
         Returns:
-            Exit code (0 for success, non-zero for failure)
+            bool: True if all tests passed, False otherwise
         """
-        start_time = time.time()
+        print(f"{Colors.HEADER}Running Novamind Digital Twin tests...{Colors.ENDC}")
         
         # Determine which test levels to run
-        test_levels = self._get_test_levels(args)
+        levels_to_run = []
+        if level == TestLevel.STANDALONE:
+            levels_to_run = [TestLevel.STANDALONE]
+        elif level == TestLevel.VENV:
+            levels_to_run = [TestLevel.STANDALONE, TestLevel.VENV]
+        else:  # INTEGRATION or ALL
+            levels_to_run = [TestLevel.STANDALONE, TestLevel.VENV, TestLevel.INTEGRATION]
         
-        # Run the specified test levels
-        exit_code = 0
-        for level in test_levels:
-            level_success = self._run_test_level(level, args)
+        # Run tests for each level
+        success = True
+        for test_level in levels_to_run:
+            level_success = self._run_level_tests(
+                test_level,
+                security=security,
+                coverage=coverage,
+                verbose=verbose,
+                html_report=(html_report and test_level == levels_to_run[-1]),
+                xml_report=(xml_report and test_level == levels_to_run[-1])
+            )
+            
             if not level_success:
-                exit_code = 1
-                # If progressive execution is enabled and a level fails, stop
-                if args.progressive and not args.force_all:
-                    print(f"{Colors.RED}Stopping progressive execution due to failures in {level.value} tests{Colors.ENDC}")
+                print(f"{Colors.RED}Tests failed at {test_level.value} level.{Colors.ENDC}")
+                success = False
+                if progressive:
                     break
         
-        # Generate coverage report if requested
-        if args.coverage:
-            self._generate_coverage_report()
-        
-        # Print summary
-        self._print_summary(time.time() - start_time)
-        
-        return exit_code
+        return success
     
-    def _get_test_levels(self, args: argparse.Namespace) -> List[TestLevel]:
-        """
-        Determine which test levels to run based on the provided arguments.
-        
-        Args:
-            args: Command-line arguments
-            
-        Returns:
-            List of TestLevel enums to run
-        """
-        if args.security:
-            # Security is an orthogonal concern, not a dependency level
-            # We return all levels but will filter by marker
-            return [TestLevel.STANDALONE, TestLevel.VENV, TestLevel.INTEGRATION]
-        
-        if args.all or args.integration:
-            return [TestLevel.STANDALONE, TestLevel.VENV, TestLevel.INTEGRATION]
-        
-        if args.venv:
-            return [TestLevel.STANDALONE, TestLevel.VENV]
-        
-        if args.standalone:
-            return [TestLevel.STANDALONE]
-        
-        # Default to running all tests
-        return [TestLevel.STANDALONE, TestLevel.VENV, TestLevel.INTEGRATION]
-    
-    def _run_test_level(self, level: TestLevel, args: argparse.Namespace) -> bool:
+    def _run_level_tests(self,
+                         level: TestLevel,
+                         security: bool = False,
+                         coverage: bool = False,
+                         verbose: bool = False,
+                         html_report: bool = False,
+                         xml_report: bool = False) -> bool:
         """
         Run tests for a specific dependency level.
         
         Args:
-            level: Test level to run
-            args: Command-line arguments
+            level: The dependency level to run
+            security: Whether to run security-focused tests
+            coverage: Whether to generate a coverage report
+            verbose: Whether to show verbose output
+            html_report: Whether to generate an HTML coverage report
+            xml_report: Whether to generate an XML coverage report
             
         Returns:
-            True if all tests passed, False otherwise
+            bool: True if all tests passed, False otherwise
         """
-        print(f"\n{Colors.HEADER}Running {level.value} tests...{Colors.ENDC}\n")
+        print(f"{Colors.BLUE}Running {level.value} tests...{Colors.ENDC}")
         
-        # Build pytest command
+        # Construct the pytest command
         pytest_args = [
-            "pytest",
-            str(self.test_root / level.value),
-            "-v",
+            sys.executable, "-m", "pytest",
+            str(self.tests_dir / level.value),
+            "-v" if verbose else "-q"
         ]
         
-        # Add markers if specified
-        if args.security:
+        # Add markers if needed
+        if security:
             pytest_args.extend(["-m", "security"])
         
         # Add coverage options if requested
-        if args.coverage:
-            pytest_args.extend([
-                "--cov=app",
-                f"--cov-report=term-missing",
-                f"--cov-config={self.project_root / '.coveragerc'}"
-            ])
-        
-        # Add output file option if specified
-        if args.output:
-            output_file = Path(args.output)
-            output_file.parent.mkdir(parents=True, exist_ok=True)
-            pytest_args.extend([f"--junitxml={output_file}"])
-        
-        # Print the command being run
-        command_str = " ".join(pytest_args)
-        print(f"{Colors.BLUE}Running: {command_str}{Colors.ENDC}")
+        if coverage:
+            pytest_args.extend(["--cov=app", f"--cov-report=term-missing"])
+            if html_report:
+                pytest_args.append("--cov-report=html")
+            if xml_report:
+                pytest_args.append("--cov-report=xml")
         
         # Run the tests
         try:
             result = subprocess.run(
                 pytest_args,
                 cwd=str(self.project_root),
-                capture_output=not args.verbose,
-                text=True,
-                check=False  # Don't raise exception on test failure
+                check=False,
+                capture_output=not verbose
             )
             
-            # Store the results
-            self.results[level] = {
-                "exit_code": result.returncode,
-                "command": command_str
-            }
-            
-            # Print detailed output if requested or if tests failed
-            if args.verbose or result.returncode != 0:
-                if result.stdout:
-                    print(result.stdout)
-                if result.stderr:
-                    print(f"{Colors.RED}{result.stderr}{Colors.ENDC}")
-            
-            # Print status based on result
             if result.returncode == 0:
-                print(f"{Colors.GREEN}✓ {level.value} tests passed{Colors.ENDC}")
+                print(f"{Colors.GREEN}All {level.value} tests passed!{Colors.ENDC}")
                 return True
             else:
-                print(f"{Colors.RED}✗ {level.value} tests failed{Colors.ENDC}")
+                print(f"{Colors.RED}Some {level.value} tests failed.{Colors.ENDC}")
+                if not verbose and hasattr(result, 'stdout'):
+                    print(result.stdout.decode('utf-8'))
                 return False
-                
         except Exception as e:
             print(f"{Colors.RED}Error running {level.value} tests: {str(e)}{Colors.ENDC}")
-            self.results[level] = {
-                "exit_code": 1,
-                "command": command_str,
-                "error": str(e)
-            }
             return False
-    
-    def _generate_coverage_report(self):
-        """Generate HTML coverage report."""
-        print(f"\n{Colors.HEADER}Generating coverage report...{Colors.ENDC}\n")
-        
-        coverage_cmd = [
-            "coverage", "html",
-            "-d", str(self.project_root / "coverage_html"),
-            "--rcfile", str(self.project_root / ".coveragerc")
-        ]
-        
-        try:
-            subprocess.run(
-                coverage_cmd,
-                cwd=str(self.project_root),
-                check=True,
-                capture_output=True,
-                text=True
-            )
-            print(f"{Colors.GREEN}Coverage report generated at {self.project_root / 'coverage_html'}{Colors.ENDC}")
-        except subprocess.CalledProcessError as e:
-            print(f"{Colors.RED}Error generating coverage report: {e.stderr}{Colors.ENDC}")
-        except Exception as e:
-            print(f"{Colors.RED}Error generating coverage report: {str(e)}{Colors.ENDC}")
-    
-    def _print_summary(self, elapsed_time: float):
-        """
-        Print a summary of the test execution.
-        
-        Args:
-            elapsed_time: Total elapsed time for test execution
-        """
-        print(f"\n{Colors.HEADER}Test Execution Summary{Colors.ENDC}")
-        print(f"{Colors.BOLD}Total time: {elapsed_time:.2f} seconds{Colors.ENDC}")
-        
-        # Print results for each level
-        all_passed = True
-        for level, result in self.results.items():
-            status = "✓ Passed" if result["exit_code"] == 0 else "✗ Failed"
-            color = Colors.GREEN if result["exit_code"] == 0 else Colors.RED
-            print(f"{color}{level.value}: {status}{Colors.ENDC}")
-            all_passed = all_passed and result["exit_code"] == 0
-        
-        # Print overall status
-        if all_passed:
-            print(f"\n{Colors.GREEN}All tests passed!{Colors.ENDC}")
-        else:
-            print(f"\n{Colors.RED}Some tests failed.{Colors.ENDC}")
 
 
 def parse_args() -> argparse.Namespace:
@@ -261,30 +187,96 @@ def parse_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Novamind Digital Twin Test Runner")
     
-    # Test selection options
-    test_group = parser.add_argument_group("Test Selection")
-    test_group.add_argument("--standalone", action="store_true", help="Run standalone tests only")
-    test_group.add_argument("--venv", action="store_true", help="Run standalone and venv tests")
-    test_group.add_argument("--integration", action="store_true", help="Run all tests including integration")
-    test_group.add_argument("--all", action="store_true", help="Run all tests (same as --integration)")
-    test_group.add_argument("--security", action="store_true", help="Run security tests")
+    # Test level options
+    level_group = parser.add_mutually_exclusive_group(required=True)
+    level_group.add_argument(
+        "--standalone", 
+        action="store_true", 
+        help="Run standalone tests only"
+    )
+    level_group.add_argument(
+        "--venv", 
+        action="store_true", 
+        help="Run standalone and venv tests"
+    )
+    level_group.add_argument(
+        "--integration", 
+        action="store_true", 
+        help="Run integration tests only"
+    )
+    level_group.add_argument(
+        "--all", 
+        action="store_true", 
+        help="Run all tests"
+    )
+    
+    # Marker options
+    parser.add_argument(
+        "--security", 
+        action="store_true", 
+        help="Run security-focused tests"
+    )
+    
+    # Coverage options
+    parser.add_argument(
+        "--coverage", 
+        action="store_true", 
+        help="Generate coverage report"
+    )
+    parser.add_argument(
+        "--html", 
+        action="store_true", 
+        help="Generate HTML coverage report"
+    )
+    parser.add_argument(
+        "--xml", 
+        action="store_true", 
+        help="Generate XML coverage report"
+    )
     
     # Execution options
-    exec_group = parser.add_argument_group("Execution Options")
-    exec_group.add_argument("--progressive", action="store_true", help="Stop if a test level fails")
-    exec_group.add_argument("--force-all", action="store_true", help="Run all specified tests even if earlier levels fail")
-    exec_group.add_argument("--verbose", "-v", action="store_true", help="Show verbose test output")
-    
-    # Output options
-    output_group = parser.add_argument_group("Output Options")
-    output_group.add_argument("--coverage", action="store_true", help="Generate coverage report")
-    output_group.add_argument("--output", "-o", help="Output file for test results (JUnit XML format)")
+    parser.add_argument(
+        "--verbose", 
+        action="store_true", 
+        help="Show verbose output"
+    )
+    parser.add_argument(
+        "--progressive", 
+        action="store_true", 
+        help="Stop if tests at a lower level fail"
+    )
     
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the test runner."""
     args = parse_args()
+    
+    # Determine the test level
+    level = TestLevel.STANDALONE
+    if args.venv:
+        level = TestLevel.VENV
+    elif args.integration:
+        level = TestLevel.INTEGRATION
+    elif args.all:
+        level = TestLevel.INTEGRATION  # Run all tests
+    
+    # Run the tests
     runner = TestRunner()
-    exit_code = runner.run(args)
-    sys.exit(exit_code)
+    success = runner.run_tests(
+        level=level,
+        security=args.security,
+        coverage=args.coverage,
+        verbose=args.verbose,
+        html_report=args.html,
+        xml_report=args.xml,
+        progressive=args.progressive
+    )
+    
+    # Exit with the appropriate code
+    sys.exit(0 if success else 1)
+
+
+if __name__ == "__main__":
+    main()

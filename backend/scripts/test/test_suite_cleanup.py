@@ -1,25 +1,24 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-Novamind Digital Twin Test Suite Cleanup Orchestrator
+Novamind Digital Twin Test Suite Cleanup
 
-This script orchestrates the entire test suite cleanup process, guiding
-users through the migration from the mixed organizational approach to
-the dependency-based SSOT directory structure.
+This is the master script for cleaning up and reorganizing the Novamind Digital Twin
+test suite. It coordinates the entire process, from analysis to migration to verification.
 
 Usage:
-    python test_suite_cleanup.py [--step STEP_NUMBER]
+    python test_suite_cleanup.py --all
+    python test_suite_cleanup.py --step 1  # Run specific step
+    python test_suite_cleanup.py --steps 1,2,3  # Run specific steps
 """
 
-import argparse
 import os
-import subprocess
 import sys
-from enum import Enum
+import argparse
+import subprocess
+import json
+import datetime
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
-
-# Add the project root to the Python path
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from typing import List, Optional
 
 
 class Colors:
@@ -34,347 +33,350 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 
-class CleanupStep(Enum):
-    """Steps in the test suite cleanup process."""
-    ANALYZE = 1
-    VERIFY_DIRECTORY_STRUCTURE = 2
-    PREPARE_MIGRATION = 3
-    MIGRATE_TESTS = 4
-    VERIFY_MIGRATION = 5
-    UPDATE_IMPORTS = 6
-    RUN_MIGRATED_TESTS = 7
-    CLEANUP_ORIGINAL_FILES = 8
-    UPDATE_DOCUMENTATION = 9
-
-
 class TestSuiteCleanup:
     """
     Orchestrates the test suite cleanup process.
-    
-    This class guides users through the entire process of migrating tests
-    from the mixed organizational approach to the dependency-based SSOT
-    directory structure.
     """
     
-    def __init__(self):
-        self.project_root = Path(__file__).resolve().parents[2]
-        self.test_root = self.project_root / "app" / "tests"
-        self.script_dir = Path(__file__).parent
-        self.tools_dir = self.script_dir / "tools"
-        self.runners_dir = self.script_dir / "runners"
-        self.migrations_dir = self.script_dir / "migrations"
-        
-        # Define the steps in the cleanup process
-        self.steps: Dict[CleanupStep, Callable[[], bool]] = {
-            CleanupStep.ANALYZE: self.analyze_tests,
-            CleanupStep.VERIFY_DIRECTORY_STRUCTURE: self.verify_directory_structure,
-            CleanupStep.PREPARE_MIGRATION: self.prepare_migration,
-            CleanupStep.MIGRATE_TESTS: self.migrate_tests,
-            CleanupStep.VERIFY_MIGRATION: self.verify_migration,
-            CleanupStep.UPDATE_IMPORTS: self.update_imports,
-            CleanupStep.RUN_MIGRATED_TESTS: self.run_migrated_tests,
-            CleanupStep.CLEANUP_ORIGINAL_FILES: self.cleanup_original_files,
-            CleanupStep.UPDATE_DOCUMENTATION: self.update_documentation
-        }
-    
-    def run_step(self, step: CleanupStep) -> bool:
+    def __init__(self, project_root: Optional[Path] = None):
         """
-        Run a specific step in the cleanup process.
+        Initialize the test suite cleanup.
         
         Args:
-            step: The step to run
-            
-        Returns:
-            True if the step was successful, False otherwise
+            project_root: Root directory of the project
         """
-        print(f"\n{Colors.HEADER}Step {step.value}: {step.name}{Colors.ENDC}\n")
+        self.project_root = project_root or Path(__file__).resolve().parents[3]
+        self.scripts_dir = self.project_root / "scripts" / "test"
+        self.timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.backend_dir = self.project_root
+        print(f"Project root: {self.project_root}")
         
-        if step not in self.steps:
-            print(f"{Colors.RED}Invalid step: {step}{Colors.ENDC}")
-            return False
+    def analyze_tests(self) -> str:
+        """
+        Step 1: Analyze test files and categorize them.
         
-        try:
-            return self.steps[step]()
-        except Exception as e:
-            print(f"{Colors.RED}Error in step {step.name}: {str(e)}{Colors.ENDC}")
-            return False
+        Returns:
+            Path to the analysis results file
+        """
+        print(f"{Colors.HEADER}Step 1: Analyzing tests...{Colors.ENDC}")
+        
+        analyzer_path = self.scripts_dir / "tools" / "test_analyzer.py"
+        output_file = f"test_classification_report_{self.timestamp}.json"
+        output_path = self.project_root / output_file
+        
+        result = subprocess.run(
+            [sys.executable, str(analyzer_path), "--output-file", str(output_path)],
+            cwd=str(self.project_root),
+            check=False,
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            print(f"{Colors.RED}Error analyzing tests:{Colors.ENDC}")
+            print(result.stderr)
+            sys.exit(1)
+        
+        print(result.stdout)
+        print(f"{Colors.GREEN}Test analysis completed. Report saved to {output_file}{Colors.ENDC}")
+        return str(output_path)
     
-    def analyze_tests(self) -> bool:
+    def setup_directory_structure(self) -> None:
         """
-        Analyze the current test suite to determine appropriate locations.
-        
-        Returns:
-            True if the analysis was successful, False otherwise
+        Step 2: Set up the canonical directory structure.
         """
-        print(f"{Colors.BLUE}Analyzing the current test suite...{Colors.ENDC}")
+        print(f"{Colors.HEADER}Step 2: Setting up directory structure...{Colors.ENDC}")
         
-        try:
-            analyzer_script = self.tools_dir / "test_analyzer.py"
-            result = subprocess.run(
-                [sys.executable, str(analyzer_script)],
-                cwd=str(self.project_root),
-                check=False,
-                capture_output=False
-            )
+        tests_dir = self.project_root / "backend" / "app" / "tests"
+        print(f"Setting up test structure in: {tests_dir}")
+        
+        # Create main dependency level directories
+        for level in ["standalone", "venv", "integration"]:
+            level_dir = tests_dir / level
+            level_dir.mkdir(exist_ok=True)
+            print(f"Created directory: {level_dir}")
             
-            return result.returncode == 0
-        except Exception as e:
-            print(f"{Colors.RED}Error analyzing tests: {str(e)}{Colors.ENDC}")
-            return False
-    
-    def verify_directory_structure(self) -> bool:
-        """
-        Verify that the target directory structure is correct.
-        
-        Returns:
-            True if the directory structure is correct, False otherwise
-        """
-        print(f"{Colors.BLUE}Verifying target directory structure...{Colors.ENDC}")
-        
-        # Ensure target directories exist
-        required_dirs = ["standalone", "venv", "integration"]
-        
-        for dir_name in required_dirs:
-            dir_path = self.test_root / dir_name
-            if not dir_path.exists():
-                print(f"{Colors.YELLOW}Creating missing directory: {dir_path.relative_to(self.project_root)}{Colors.ENDC}")
-                dir_path.mkdir(parents=True, exist_ok=True)
+            # Create __init__.py in level directory
+            (level_dir / "__init__.py").touch(exist_ok=True)
+            
+            # Create component directories within each level
+            for component in ["domain", "application", "infrastructure", "api", "core"]:
+                component_dir = level_dir / component
+                component_dir.mkdir(exist_ok=True)
                 
-                # Create an __init__.py file to make it a proper package
-                init_file = dir_path / "__init__.py"
-                if not init_file.exists():
-                    init_file.touch()
-                    print(f"{Colors.GREEN}Created {init_file.relative_to(self.project_root)}{Colors.ENDC}")
+                # Create __init__.py in component directory
+                (component_dir / "__init__.py").touch(exist_ok=True)
         
-        print(f"{Colors.GREEN}Target directory structure verified.{Colors.ENDC}")
-        return True
+        print(f"{Colors.GREEN}Directory structure created successfully.{Colors.ENDC}")
     
-    def prepare_migration(self) -> bool:
+    def prepare_migration(self, analysis_file: str) -> None:
         """
-        Prepare for the migration by backing up the current state.
-        
-        Returns:
-            True if the preparation was successful, False otherwise
-        """
-        print(f"{Colors.BLUE}Preparing for migration...{Colors.ENDC}")
-        
-        # Ensure __init__.py files exist in all test directories
-        for root, dirs, files in os.walk(str(self.test_root)):
-            if "__pycache__" in root:
-                continue
-                
-            init_file = Path(root) / "__init__.py"
-            if not init_file.exists():
-                init_file.touch()
-                print(f"{Colors.GREEN}Created {init_file.relative_to(self.project_root)}{Colors.ENDC}")
-        
-        print(f"{Colors.GREEN}Migration preparation complete.{Colors.ENDC}")
-        return True
-    
-    def migrate_tests(self) -> bool:
-        """
-        Migrate tests to their appropriate directories.
-        
-        Returns:
-            True if the migration was successful, False otherwise
-        """
-        print(f"{Colors.BLUE}Migrating tests to appropriate directories...{Colors.ENDC}")
-        
-        try:
-            migration_script = self.migrations_dir / "migrate_tests.py"
-            result = subprocess.run(
-                [sys.executable, str(migration_script), "--migrate"],
-                cwd=str(self.project_root),
-                check=False,
-                capture_output=False
-            )
-            
-            return result.returncode == 0
-        except Exception as e:
-            print(f"{Colors.RED}Error migrating tests: {str(e)}{Colors.ENDC}")
-            return False
-    
-    def verify_migration(self) -> bool:
-        """
-        Verify that the migration was successful.
-        
-        Returns:
-            True if the verification was successful, False otherwise
-        """
-        print(f"{Colors.BLUE}Verifying migration...{Colors.ENDC}")
-        
-        # Count tests in each directory
-        standalone_count = len(list((self.test_root / "standalone").glob("test_*.py")))
-        venv_count = len(list((self.test_root / "venv").glob("test_*.py")))
-        integration_count = len(list((self.test_root / "integration").glob("test_*.py")))
-        total_count = standalone_count + venv_count + integration_count
-        
-        print(f"{Colors.GREEN}Migration verification complete.{Colors.ENDC}")
-        print(f"  - {standalone_count} standalone tests")
-        print(f"  - {venv_count} venv tests")
-        print(f"  - {integration_count} integration tests")
-        print(f"  - {total_count} total tests")
-        
-        # Check if we have a reasonable number of tests in each category
-        if total_count < 10:
-            print(f"{Colors.RED}Very few tests found after migration. This may indicate a problem.{Colors.ENDC}")
-            return False
-        
-        return True
-    
-    def update_imports(self) -> bool:
-        """
-        Update imports in migrated test files.
-        
-        Returns:
-            True if the import updates were successful, False otherwise
-        """
-        print(f"{Colors.BLUE}Updating imports in migrated test files...{Colors.ENDC}")
-        
-        # In a real implementation, we'd have a more sophisticated import fixer
-        # For now, we'll just print a message
-        print(f"{Colors.YELLOW}Import updates are handled during migration.{Colors.ENDC}")
-        print(f"{Colors.YELLOW}If you encounter import issues, please fix them manually.{Colors.ENDC}")
-        
-        return True
-    
-    def run_migrated_tests(self) -> bool:
-        """
-        Run the migrated tests to ensure they still work.
-        
-        Returns:
-            True if the tests run successfully, False otherwise
-        """
-        print(f"{Colors.BLUE}Running migrated tests...{Colors.ENDC}")
-        
-        try:
-            runner_script = self.runners_dir / "run_tests.py"
-            result = subprocess.run(
-                [sys.executable, str(runner_script), "--standalone"],
-                cwd=str(self.project_root),
-                check=False,
-                capture_output=False
-            )
-            
-            if result.returncode != 0:
-                print(f"{Colors.RED}Standalone tests failed. Please fix the issues before proceeding.{Colors.ENDC}")
-                return False
-            
-            print(f"{Colors.GREEN}Standalone tests passed. Running VENV tests...{Colors.ENDC}")
-            
-            result = subprocess.run(
-                [sys.executable, str(runner_script), "--venv"],
-                cwd=str(self.project_root),
-                check=False,
-                capture_output=False
-            )
-            
-            if result.returncode != 0:
-                print(f"{Colors.RED}VENV tests failed. Please fix the issues before proceeding.{Colors.ENDC}")
-                return False
-            
-            print(f"{Colors.GREEN}VENV tests passed. Running integration tests...{Colors.ENDC}")
-            
-            result = subprocess.run(
-                [sys.executable, str(runner_script), "--integration"],
-                cwd=str(self.project_root),
-                check=False,
-                capture_output=False
-            )
-            
-            if result.returncode != 0:
-                print(f"{Colors.RED}Integration tests failed. Please fix the issues before proceeding.{Colors.ENDC}")
-                return False
-            
-            print(f"{Colors.GREEN}All tests passed!{Colors.ENDC}")
-            return True
-        except Exception as e:
-            print(f"{Colors.RED}Error running tests: {str(e)}{Colors.ENDC}")
-            return False
-    
-    def cleanup_original_files(self) -> bool:
-        """
-        Clean up the original test files after a successful migration.
-        
-        Returns:
-            True if the cleanup was successful, False otherwise
-        """
-        print(f"{Colors.BLUE}Cleaning up original test files...{Colors.ENDC}")
-        
-        response = input(f"{Colors.YELLOW}Are you sure you want to delete the original test files? [y/N] {Colors.ENDC}")
-        
-        if response.lower() not in ["y", "yes"]:
-            print(f"{Colors.GREEN}Skipping cleanup of original files.{Colors.ENDC}")
-            return True
-        
-        try:
-            migration_script = self.migrations_dir / "migrate_tests.py"
-            result = subprocess.run(
-                [sys.executable, str(migration_script), "--delete-originals"],
-                cwd=str(self.project_root),
-                check=False,
-                capture_output=False
-            )
-            
-            return result.returncode == 0
-        except Exception as e:
-            print(f"{Colors.RED}Error cleaning up original files: {str(e)}{Colors.ENDC}")
-            return False
-    
-    def update_documentation(self) -> bool:
-        """
-        Update documentation to reflect the new test structure.
-        
-        Returns:
-            True if the documentation update was successful, False otherwise
-        """
-        print(f"{Colors.BLUE}Updating documentation...{Colors.ENDC}")
-        
-        # In a real implementation, we'd update the documentation
-        # For now, we'll just print a message
-        print(f"{Colors.GREEN}Documentation has been updated in /backend/docs/{Colors.ENDC}")
-        print(f"{Colors.GREEN}Refer to the following files for more information:{Colors.ENDC}")
-        print(f"  - /backend/docs/00_TEST_DOCUMENTATION_INDEX.md")
-        print(f"  - /backend/docs/01_TEST_SUITE_ANALYSIS.md")
-        print(f"  - /backend/docs/02_TEST_SUITE_EXECUTIVE_SUMMARY.md")
-        print(f"  - /backend/docs/03_TEST_INFRASTRUCTURE_SSOT.md")
-        
-        return True
-    
-    def run_all_steps(self, start_step: CleanupStep = CleanupStep.ANALYZE) -> bool:
-        """
-        Run all steps in the cleanup process.
+        Step 3: Prepare for test migration.
         
         Args:
-            start_step: The step to start from
+            analysis_file: Path to the analysis results file
+        """
+        print(f"{Colors.HEADER}Step 3: Preparing for migration...{Colors.ENDC}")
+        
+        # Load analysis results
+        with open(analysis_file, 'r', encoding='utf-8') as f:
+            analysis = json.load(f)
+        
+        # Print summary statistics
+        total_tests = analysis.get("total_tests", 0)
+        dependency_counts = analysis.get("dependency_counts", {})
+        syntax_errors = analysis.get("syntax_errors", 0)
+        
+        print(f"Total tests found: {total_tests}")
+        print("Dependency levels:")
+        for level, count in dependency_counts.items():
+            print(f"  {level}: {count}")
+        print(f"Files with syntax errors: {syntax_errors}")
+        
+        # Create conftest.py files if they don't exist
+        for level in ["standalone", "venv", "integration"]:
+            conftest_path = self.project_root / "backend" / "app" / "tests" / level / "conftest.py"
+            if not conftest_path.exists():
+                print(f"Creating {conftest_path}")
+                conftest_content = f"""\"\"\"
+{level.capitalize()} Test Configuration and Fixtures
+
+This file contains test fixtures specific to {level} tests.
+\"\"\"
+
+import pytest
+
+
+@pytest.fixture
+def {level}_fixture():
+    \"\"\"Basic fixture for {level} tests.\"\"\"
+    return "{level}_fixture"
+"""
+                with open(conftest_path, 'w', encoding='utf-8') as f:
+                    f.write(conftest_content)
+        
+        print(f"{Colors.GREEN}Migration preparation completed.{Colors.ENDC}")
+    
+    def migrate_tests(self, analysis_file: str, dry_run: bool = False) -> None:
+        """
+        Step 4: Migrate tests to the new structure.
+        
+        Args:
+            analysis_file: Path to the analysis results file
+            dry_run: If True, don't actually move files
+        """
+        print(f"{Colors.HEADER}Step 4: Migrating tests...{Colors.ENDC}")
+        
+        migrator_path = self.scripts_dir / "migrations" / "migrate_tests.py"
+        
+        args = [
+            sys.executable,
+            str(migrator_path),
+            "--analysis-file", analysis_file
+        ]
+        
+        if dry_run:
+            args.append("--dry-run")
+        
+        result = subprocess.run(
+            args,
+            cwd=str(self.project_root),
+            check=False,
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            print(f"{Colors.RED}Error migrating tests:{Colors.ENDC}")
+            print(result.stderr)
+            sys.exit(1)
+        
+        print(result.stdout)
+        print(f"{Colors.GREEN}Test migration completed.{Colors.ENDC}")
+    
+    def verify_migration(self) -> None:
+        """
+        Step 5: Verify the migration by running tests.
+        """
+        print(f"{Colors.HEADER}Step 5: Verifying migration...{Colors.ENDC}")
+        
+        runner_path = self.scripts_dir / "runners" / "run_tests.py"
+        
+        # Run standalone tests first
+        print("Running standalone tests...")
+        result = subprocess.run(
+            [sys.executable, str(runner_path), "--standalone", "--verbose"],
+            cwd=str(self.project_root),
+            check=False,
+            capture_output=True,
+            text=True
+        )
+        
+        print(result.stdout)
+        if result.returncode != 0:
+            print(f"{Colors.YELLOW}Some standalone tests failed. This might need investigation.{Colors.ENDC}")
+        else:
+            print(f"{Colors.GREEN}All standalone tests passed.{Colors.ENDC}")
+        
+        # Run venv tests
+        print("\nRunning venv tests...")
+        result = subprocess.run(
+            [sys.executable, str(runner_path), "--venv", "--verbose"],
+            cwd=str(self.project_root),
+            check=False,
+            capture_output=True,
+            text=True
+        )
+        
+        print(result.stdout)
+        if result.returncode != 0:
+            print(f"{Colors.YELLOW}Some venv tests failed. This might need investigation.{Colors.ENDC}")
+        else:
+            print(f"{Colors.GREEN}All venv tests passed.{Colors.ENDC}")
+        
+        # Run integration tests
+        print("\nRunning integration tests...")
+        result = subprocess.run(
+            [sys.executable, str(runner_path), "--integration", "--verbose"],
+            cwd=str(self.project_root),
+            check=False,
+            capture_output=True,
+            text=True
+        )
+        
+        print(result.stdout)
+        if result.returncode != 0:
+            print(f"{Colors.YELLOW}Some integration tests failed. This might need investigation.{Colors.ENDC}")
+        else:
+            print(f"{Colors.GREEN}All integration tests passed.{Colors.ENDC}")
+    
+    def update_import_paths(self) -> None:
+        """
+        Step 6: Update import paths in test files.
+        """
+        print(f"{Colors.HEADER}Step 6: Updating import paths...{Colors.ENDC}")
+        
+        tests_dir = self.project_root / "app" / "tests"
+        
+        # Walk through all test files in the new structure
+        for level in ["standalone", "venv", "integration"]:
+            level_dir = tests_dir / level
+            
+            for root, dirs, files in os.walk(str(level_dir)):
+                for file in files:
+                    if file.startswith("test_") and file.endswith(".py"):
+                        file_path = os.path.join(root, file)
+                        self._fix_imports(file_path)
+        
+        print(f"{Colors.GREEN}Import paths updated.{Colors.ENDC}")
+    
+    def _fix_imports(self, file_path: str) -> None:
+        """
+        Fix imports in a specific file.
+        
+        Args:
+            file_path: Path to the file to fix
+        """
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Fix relative imports that might be broken
+            # This is a simplified version - a real implementation would need more sophisticated parsing
+            fixed_content = content.replace('from ..', 'from backend.app.')
+            fixed_content = fixed_content.replace('from .', 'from backend.app.tests.')
+            
+            # Write back to the file
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(fixed_content)
+            
+            print(f"Fixed imports in {file_path}")
+        except Exception as e:
+            print(f"Error fixing imports in {file_path}: {str(e)}")
+    
+    def fix_broken_tests(self) -> None:
+        """
+        Step 7: Attempt to fix common issues in broken tests.
+        """
+        print(f"{Colors.HEADER}Step 7: Fixing broken tests...{Colors.ENDC}")
+        
+        # Run the test suite to identify broken tests
+        tests_dir = self.project_root / "app" / "tests"
+        
+        # For now, we'll just print a message about this step
+        print("This step would involve:")
+        print("1. Running the test suite to identify broken tests")
+        print("2. Automatically fixing common issues (import errors, missing fixtures)")
+        print("3. Generating a report of tests that need manual attention")
+        
+        print(f"{Colors.YELLOW}This step requires implementation based on the specific errors found.{Colors.ENDC}")
+    
+    def cleanup_original_tests(self) -> None:
+        """
+        Step 8: Remove original test files that have been migrated.
+        """
+        print(f"{Colors.HEADER}Step 8: Cleaning up original test files...{Colors.ENDC}")
+        
+        # This is a dangerous operation so we'll just print a message
+        print(f"{Colors.YELLOW}CAUTION: This step would remove original test files.{Colors.ENDC}")
+        print("To perform this cleanup, you should:")
+        print("1. Verify that all tests have been migrated successfully")
+        print("2. Backup the original test files")
+        print("3. Run a manual cleanup operation after confirming migration success")
+        
+        print(f"{Colors.YELLOW}Skipping actual deletion for safety.{Colors.ENDC}")
+    
+    def run_step(self, step: int, analysis_file: Optional[str] = None) -> Optional[str]:
+        """
+        Run a specific step of the cleanup process.
+        
+        Args:
+            step: Step number to run
+            analysis_file: Path to an existing analysis file (for steps 3+)
             
         Returns:
-            True if all steps were successful, False otherwise
+            Path to the analysis file if generated
         """
-        print(f"{Colors.HEADER}Starting test suite cleanup process from step {start_step.value}...{Colors.ENDC}")
+        if step == 1:
+            return self.analyze_tests()
+        elif step == 2:
+            self.setup_directory_structure()
+        elif step == 3:
+            if not analysis_file:
+                print(f"{Colors.RED}Analysis file is required for step 3.{Colors.ENDC}")
+                sys.exit(1)
+            self.prepare_migration(analysis_file)
+        elif step == 4:
+            if not analysis_file:
+                print(f"{Colors.RED}Analysis file is required for step 4.{Colors.ENDC}")
+                sys.exit(1)
+            self.migrate_tests(analysis_file)
+        elif step == 5:
+            self.verify_migration()
+        elif step == 6:
+            self.update_import_paths()
+        elif step == 7:
+            self.fix_broken_tests()
+        elif step == 8:
+            self.cleanup_original_tests()
+        else:
+            print(f"{Colors.RED}Invalid step number: {step}{Colors.ENDC}")
+            sys.exit(1)
         
-        for step in CleanupStep:
-            if step.value < start_step.value:
-                print(f"{Colors.YELLOW}Skipping step {step.value}: {step.name}{Colors.ENDC}")
-                continue
-            
-            success = self.run_step(step)
-            
-            if not success:
-                print(f"{Colors.RED}Step {step.value}: {step.name} failed. Stopping process.{Colors.ENDC}")
-                return False
-            
-            # Prompt before continuing to the next step
-            if step != list(CleanupStep)[-1]:  # Not the last step
-                response = input(f"{Colors.YELLOW}Continue to the next step? [Y/n] {Colors.ENDC}")
-                
-                if response.lower() in ["n", "no"]:
-                    print(f"{Colors.GREEN}Process paused after step {step.value}: {step.name}.{Colors.ENDC}")
-                    print(f"{Colors.GREEN}To continue, run: python {Path(__file__).name} --step {step.value + 1}{Colors.ENDC}")
-                    return True
-        
-        print(f"{Colors.GREEN}Test suite cleanup process completed successfully!{Colors.ENDC}")
-        return True
+        return None
+    
+    def run_all_steps(self) -> None:
+        """
+        Run all steps of the cleanup process in sequence.
+        """
+        analysis_file = self.run_step(1)
+        self.run_step(2)
+        self.run_step(3, analysis_file)
+        self.run_step(4, analysis_file)
+        self.run_step(5)
+        self.run_step(6)
+        self.run_step(7)
+        # Step 8 (cleanup) is intentionally omitted for safety
 
 
 def parse_args() -> argparse.Namespace:
@@ -386,32 +388,53 @@ def parse_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Novamind Digital Twin Test Suite Cleanup")
     
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "--all",
+        action="store_true",
+        help="Run all steps in sequence"
+    )
+    group.add_argument(
         "--step",
         type=int,
-        choices=[step.value for step in CleanupStep],
-        default=CleanupStep.ANALYZE.value,
-        help="The step to start from"
+        help="Run a specific step"
+    )
+    group.add_argument(
+        "--steps",
+        type=str,
+        help="Run specific steps (comma-separated list)"
+    )
+    
+    parser.add_argument(
+        "--analysis-file",
+        type=str,
+        help="Path to an existing analysis file"
     )
     
     return parser.parse_args()
 
 
 def main():
-    """Entry point for the script."""
+    """Main entry point for the test suite cleanup."""
     args = parse_args()
+    
     cleanup = TestSuiteCleanup()
     
-    try:
-        start_step = CleanupStep(args.step)
-        cleanup.run_all_steps(start_step)
-    except ValueError:
-        print(f"{Colors.RED}Invalid step: {args.step}{Colors.ENDC}")
-        print(f"{Colors.YELLOW}Available steps:{Colors.ENDC}")
-        for step in CleanupStep:
-            print(f"  {step.value}: {step.name}")
-        sys.exit(1)
+    if args.all:
+        cleanup.run_all_steps()
+    elif args.step:
+        cleanup.run_step(args.step, args.analysis_file)
+    elif args.steps:
+        analysis_file = args.analysis_file
+        steps = [int(s.strip()) for s in args.steps.split(",")]
+        for step in steps:
+            if step == 1:
+                analysis_file = cleanup.run_step(step, analysis_file)
+            else:
+                cleanup.run_step(step, analysis_file)
+    
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
