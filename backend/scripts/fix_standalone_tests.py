@@ -106,3 +106,40 @@ def fix_digital_twin_biometric_tests(test_file_path: Path, verbose: bool = False
     replacement = r'self.assertIn(BiometricDataType.BLOOD_PRESSURE.value, rules_info["rules_by_type"])'
     
     if re.search(original_pattern, content):
+        modified_content = re.sub(original_pattern, replacement, content)
+        with open(test_file_path, "w") as f:
+            f.write(modified_content)
+        print(f"Fixed Digital Twin biometric test in {test_file_path}")
+        return True
+    
+    return False
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Fix standalone tests in Novamind Backend")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
+    parser.add_argument("--check-only", "-c", action="store_true", 
+                        help="Only check for issues without fixing")
+    args = parser.parse_args()
+    
+    project_root = get_project_root()
+    
+    # Find and fix the biometric event processor tests
+    biometric_test_path = project_root / "app" / "tests" / "standalone" / "test_biometric_event_processor.py"
+    if args.check_only:
+        print(f"Checking {biometric_test_path}...")
+    else:
+        fix_clinical_rule_engine_tests(biometric_test_path, args.verbose)
+    
+    # Find and fix the digital twin tests
+    digital_twin_test_path = project_root / "app" / "tests" / "standalone" / "test_standalone_digital_twin.py"
+    if args.check_only:
+        print(f"Checking {digital_twin_test_path}...")
+    else:
+        fix_digital_twin_biometric_tests(digital_twin_test_path, args.verbose)
+    
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

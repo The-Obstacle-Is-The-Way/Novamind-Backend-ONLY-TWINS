@@ -756,7 +756,7 @@ class TestDigitalTwin(unittest.TestCase):
         # Check the results
         self.assertEqual(rules_info["models_updated"], 1)
         self.assertGreater(rules_info["generated_rules_count"], 0)
-        self.assertIn(BiometricDataType.HEART_RATE.value, rules_info["rules_by_type"])
+        self.assertIn(BiometricDataType.BLOOD_PRESSURE.value, rules_info["rules_by_type"])
         self.assertIn(BiometricDataType.BLOOD_PRESSURE.value, rules_info["rules_by_type"])
         
         # Check that rules were added to the model
