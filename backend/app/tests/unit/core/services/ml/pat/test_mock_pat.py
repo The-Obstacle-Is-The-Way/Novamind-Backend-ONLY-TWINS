@@ -14,14 +14,14 @@ from unittest.mock import patch
 import pytest
 
 from app.core.services.ml.pat.exceptions import (
-    AnalysisError,
-    AuthorizationError,
-    EmbeddingError,
-    InitializationError,
-    ResourceNotFoundError,
-    ValidationError,
+    AnalysisError,  
+    AuthorizationError,  
+    EmbeddingError,  
+    InitializationError,  
+    ResourceNotFoundError,  
+    ValidationError,  
 )
-from app.core.services.ml.pat.mock import MockPAT
+from app.core.services.ml.pat.mock import MockPATService as MockPAT
 
 @pytest.fixture
 def mock_pat():

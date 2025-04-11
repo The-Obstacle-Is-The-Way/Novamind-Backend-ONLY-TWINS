@@ -18,12 +18,12 @@ from fastapi.testclient import TestClient
 from app.domain.services.analytics_service import AnalyticsService
 from app.infrastructure.cache.redis_cache import RedisCache
 from app.presentation.api.routes.analytics_endpoints import (
-    router,
-    get_analytics_service,
-    _process_treatment_outcomes,
-    _process_practice_metrics,
-    _process_medication_effectiveness,
-    _process_treatment_comparison,
+    router,  
+    get_analytics_service,  
+    _process_treatment_outcomes,  
+    _process_practice_metrics,  
+    _process_medication_effectiveness,  
+    _process_treatment_comparison,  
 )
 
 

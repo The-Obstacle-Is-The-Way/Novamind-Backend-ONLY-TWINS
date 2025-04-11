@@ -74,7 +74,7 @@ class TestAuthentication:
         # Create an expired token (exp in the past)
         expired_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJyb2xlIjoicGF0aWVudCIsImV4cCI6MTU4MzI2MTIzNH0.signature"
         
-        with patch('app.presentation.api.auth.AuthHandler.decode_token', 
+        with patch('app.presentation.api.auth.AuthHandler.decode_token', ):
                   side_effect=HTTPException(status_code=401, detail="Token expired")):
             response = test_client.get(
                 "/api/v1/patients/me",
@@ -87,7 +87,7 @@ class TestAuthentication:
         # Token with modified payload
         tampered_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJoYWNrZXIiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjk5OTk5OTk5OTl9.invalid_signature"
         
-        with patch('app.presentation.api.auth.AuthHandler.decode_token', 
+        with patch('app.presentation.api.auth.AuthHandler.decode_token', ):
                   side_effect=HTTPException(status_code=401, detail="Invalid token")):
             response = test_client.get(
                 "/api/v1/patients/me",

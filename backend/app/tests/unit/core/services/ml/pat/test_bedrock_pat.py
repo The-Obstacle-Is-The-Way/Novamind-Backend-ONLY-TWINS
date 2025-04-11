@@ -2,8 +2,8 @@
 Unit tests for the BedrockPAT service.
 
 These tests verify the functionality of the BedrockPAT implementation
-while mocking all external dependencies (AWS services).
-"""
+while mocking all external dependencies (AWS services).:
+    """
 
 import json
 import unittest
@@ -16,12 +16,12 @@ from botocore.exceptions import ClientError
 
 from app.core.services.ml.pat.bedrock import BedrockPAT
 from app.core.services.ml.pat.exceptions import (
-    AnalysisError,
-    AuthorizationError,
-    EmbeddingError,
-    InitializationError,
-    ResourceNotFoundError,
-    ValidationError,
+    AnalysisError,  
+    AuthorizationError,  
+    EmbeddingError,  
+    InitializationError,  
+    ResourceNotFoundError,  
+    ValidationError,  
 )
 
 
@@ -261,7 +261,7 @@ class TestBedrockPAT:
         patient_id = "test-patient"
         readings = [
             {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
-            for _ in range(20)
+            for _ in range(20):
         ]
         start_time = "2025-01-01T00:00:00Z"
         end_time = "2025-01-01T08:00:00Z"
@@ -365,7 +365,7 @@ class TestBedrockPAT:
         patient_id = "test-patient"
         readings = [
             {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
-            for _ in range(20)
+            for _ in range(20):
         ]
         
         # Act & Assert
@@ -395,7 +395,7 @@ class TestBedrockPAT:
         patient_id = "test-patient"
         readings = [
             {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
-            for _ in range(20)
+            for _ in range(20):
         ]
         start_time = "2025-01-01T00:00:00Z"
         end_time = "2025-01-01T08:00:00Z"
@@ -484,7 +484,7 @@ class TestBedrockPAT:
                 "created_at": "2025-01-01T00:00:00Z",
                 "analysis_types": ["sleep"]
             }
-            for i in range(3)
+            for i in range(3):
         ]
         
         # Configure table mock for DynamoDB
@@ -528,7 +528,7 @@ class TestBedrockPAT:
         analysis_id = "test-analysis"
         
         # Mock get_analysis_by_id to return a valid analysis
-        with patch.object(
+        with patch.object(:
             bedrock_pat_service, 'get_analysis_by_id', return_value={"patient_id": patient_id}
         ):
             # Configure Bedrock response
@@ -574,7 +574,7 @@ class TestBedrockPAT:
         analysis_id = "test-analysis"
         
         # Mock get_analysis_by_id to return an analysis belonging to a different patient
-        with patch.object(
+        with patch.object(:
             bedrock_pat_service, 'get_analysis_by_id', return_value={"patient_id": "different-patient"}
         ):
             # Act & Assert

@@ -22,7 +22,7 @@ from app.infrastructure.factories.enhanced_mock_digital_twin_factory import Enha
 
 
 @pytest.fixture
-def enhanced_services() -> Tuple[
+def enhanced_services() -> Tuple[:
     EnhancedDigitalTwinCoreService,
     EnhancedMentalLLaMAService,
     EnhancedXGBoostService,
@@ -194,7 +194,7 @@ async def test_knowledge_graph_operations(enhanced_services, patient_id, initial
     
     # Verify that the new diagnosis node exists
     treatment_resistant_nodes = [node for node in updated_graph.nodes.values()
-                                 if node.label == "Treatment-Resistant Depression"]
+                                 if node.label == "Treatment-Resistant Depression"]:  # TODO: Fix this list comprehension  # TODO: Fix this list comprehension
     assert len(treatment_resistant_nodes) > 0
     
     # Verify that the REM sleep node and brain regions exist

@@ -12,12 +12,12 @@ from fastapi.testclient import TestClient
 
 # Import directly from app.api.schemas to avoid routes import issues
 from app.api.schemas.xgboost import (
-    RiskPredictionRequest, RiskPredictionResponse,
-    TreatmentResponseRequest, TreatmentResponseResponse,
-    OutcomePredictionRequest, OutcomePredictionResponse,
-    ModelInfoRequest, ModelInfoResponse,
-    RiskType, TreatmentType, OutcomeType,
-    TherapyDetails, MedicationDetails,
+    RiskPredictionRequest,   RiskPredictionResponse,  
+    TreatmentResponseRequest,   TreatmentResponseResponse,  
+    OutcomePredictionRequest,   OutcomePredictionResponse,  
+    ModelInfoRequest,   ModelInfoResponse,  
+    RiskType,   TreatmentType,   OutcomeType,  
+    TherapyDetails,   MedicationDetails,  
     TimeFrame
 )
 

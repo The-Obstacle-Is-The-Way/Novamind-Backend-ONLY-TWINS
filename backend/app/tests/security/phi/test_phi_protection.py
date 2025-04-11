@@ -58,7 +58,7 @@ class TestPHIProtection(BaseSecurityTest):
             ("SSN", self.sample_phi_data["ssn"]),
             ("PHONE", self.sample_phi_data["phone"]),
             ("EMAIL", self.sample_phi_data["email"]),
-            ("ADDRESS", self.sample_phi_data["address"])
+            ("ADDRESS", self.sample_phi_data["address"]),:
         ]:
             # Check if sanitization changes the text
             sanitized = self.sanitizer.sanitize(sample)

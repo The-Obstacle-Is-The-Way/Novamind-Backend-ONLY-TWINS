@@ -23,10 +23,10 @@ from app.api.routes.actigraphy import get_pat_service, router as actigraphy_rout
 from app.core.services.ml.pat.mock import MockPATService
 from app.presentation.api.dependencies import get_pat_service
 from app.api.schemas.actigraphy import (
-    AnalysisType,
-    DeviceInfo,
-    AnalyzeActigraphyRequest,
-    AccelerometerReading,
+    AnalysisType,  
+    DeviceInfo,  
+    AnalyzeActigraphyRequest,  
+    AccelerometerReading,  
 )
 from app.core.services.ml.pat.mock import MockPATService
 # Removed: from app.main import app
@@ -158,7 +158,7 @@ class TestActigraphyAPI:
                 y=reading["y"],
                 z=reading["z"]
             )
-            for reading in create_sample_readings(20)
+            for reading in create_sample_readings(20):
         ]
         start_time = (datetime.now() - timedelta(hours=1)).isoformat()
         end_time = datetime.now().isoformat()
@@ -218,7 +218,7 @@ class TestActigraphyAPI:
                 y=reading["y"],
                 z=reading["z"]
             )
-            for reading in create_sample_readings(20)
+            for reading in create_sample_readings(20):
         ]
         start_time = (datetime.now() - timedelta(hours=1)).isoformat()
         end_time = datetime.now().isoformat()

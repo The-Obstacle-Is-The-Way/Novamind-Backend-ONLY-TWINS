@@ -6,10 +6,10 @@ and perform calculations accurately.
 """
 import pytest
 from app.domain.entities.digital_twin import (
-    BrainRegion, Neurotransmitter, ClinicalSignificance
+    BrainRegion,   Neurotransmitter,   ClinicalSignificance
 )
 from app.domain.entities.neurotransmitter_mapping import (
-    NeurotransmitterMapping, ReceptorProfile, ReceptorType, ReceptorSubtype,
+    NeurotransmitterMapping,   ReceptorProfile,   ReceptorType,   ReceptorSubtype,  
     create_default_neurotransmitter_mapping
 )
 

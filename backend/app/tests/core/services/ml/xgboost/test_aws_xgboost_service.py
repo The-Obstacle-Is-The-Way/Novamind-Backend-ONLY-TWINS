@@ -2,7 +2,7 @@
 Unit tests for the AWS SageMaker implementation of the XGBoost service.
 
 These tests verify that the AWS XGBoost service implementation correctly interacts
-with AWS services and handles errors appropriately. All AWS services are mocked
+with AWS services and handles errors appropriately. All AWS services are mocked:
 to avoid external dependencies.
 """
 
@@ -18,11 +18,11 @@ from app.core.services.ml.xgboost.aws import AWSXGBoostService
 from app.api.schemas.xgboost import RiskLevel, TreatmentType # Renamed TreatmentCategory to TreatmentType, removed ValidationStatus
 # Import Exceptions from the service exception module
 from app.core.services.ml.xgboost.exceptions import (
-    ModelNotFoundError,
-    # PredictionNotFoundError, # Does not exist in exceptions module
-    # InvalidFeatureError, # Does not exist in exceptions module
-    PredictionError,
-    ServiceConfigurationError,
+    ModelNotFoundError,  
+    # PredictionNotFoundError,   # Does not exist in exceptions module
+    # InvalidFeatureError,   # Does not exist in exceptions module
+    PredictionError,  
+    ServiceConfigurationError,  
     ServiceConnectionError
 )
 # ModelType might be defined elsewhere or needs clarification

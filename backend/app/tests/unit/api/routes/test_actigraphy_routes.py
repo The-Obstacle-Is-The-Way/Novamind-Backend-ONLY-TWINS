@@ -17,11 +17,11 @@ from fastapi.testclient import TestClient
 from app.api.routes.actigraphy import router
 from app.api.schemas.actigraphy import AnalysisType
 from app.core.services.ml.pat.exceptions import (
-    AnalysisError,
-    AuthorizationError,
-    EmbeddingError,
-    ResourceNotFoundError,
-    ValidationError,
+    AnalysisError,  
+    AuthorizationError,  
+    EmbeddingError,  
+    ResourceNotFoundError,  
+    ValidationError,  
 )
 
 

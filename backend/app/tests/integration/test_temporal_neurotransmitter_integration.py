@@ -315,7 +315,7 @@ async def test_api_integration_with_service(
     This test verifies that the API layer correctly integrates with the service layer.
     """
     # Setup - patch dependencies to use our service instance
-    with mock_current_user, patch(
+    with mock_current_user, patch(:
         "app.api.dependencies.services.get_temporal_neurotransmitter_service",
         return_value=AsyncMock(return_value=temporal_service)
     ):

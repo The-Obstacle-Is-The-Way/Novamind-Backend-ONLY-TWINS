@@ -8,14 +8,14 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 from app.infrastructure.security.mfa_service import (
-    MFAService,
-    MFAType,
-    MFAException,
-    MFASetupException,
-    MFAVerificationException,
-    MFAStrategyFactory,
-    TOTPStrategy,
-    SMSStrategy,
+    MFAService,  
+    MFAType,  
+    MFAException,  
+    MFASetupException,  
+    MFAVerificationException,  
+    MFAStrategyFactory,  
+    TOTPStrategy,  
+    SMSStrategy,  
     EmailStrategy
 )
 

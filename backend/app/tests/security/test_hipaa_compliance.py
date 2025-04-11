@@ -4,7 +4,7 @@ HIPAA Compliance Test Suite
 
 This module contains comprehensive tests to verify HIPAA compliance for the
 NOVAMIND platform. It tests all security controls required for compliance
-with the HIPAA Security Rule.
+with the HIPAA Security Rule.:
 
 Key areas tested:
 - PHI encryption (at rest and in transit)
@@ -29,31 +29,31 @@ from jose import jwt
 try:
     from app.core.config import settings
     from app.domain.exceptions import (
-        AuthenticationError, 
-        AuthorizationError,
-        PHIAccessError,
-        SecurityError,
+        AuthenticationError,   
+        AuthorizationError,  
+        PHIAccessError,  
+        SecurityError,  
     )
     from app.infrastructure.security.encryption import (
-        encrypt_phi, 
-        decrypt_phi,
-        generate_phi_key,
-        encrypt_field,
+        encrypt_phi,   
+        decrypt_phi,  
+        generate_phi_key,  
+        encrypt_field,  
         decrypt_field
     )
     from app.infrastructure.security.auth.jwt_handler import (
-        create_access_token,
-        decode_token,
+        create_access_token,  
+        decode_token,  
         get_current_user
     )
     from app.infrastructure.security.rbac.role_manager import (
-        RoleBasedAccessControl,
+        RoleBasedAccessControl,  
         check_permission
     )
     from app.infrastructure.logging.audit_logger import (
-        AuditLogger,
-        log_phi_access,
-        sanitize_phi,
+        AuditLogger,  
+        log_phi_access,  
+        sanitize_phi,  
     )
 except ImportError as e:
     # Create placeholder for these modules if they don't exist yet

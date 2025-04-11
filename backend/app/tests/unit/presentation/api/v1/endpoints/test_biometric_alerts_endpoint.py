@@ -4,7 +4,7 @@ Unit tests for Biometric Alerts API endpoints.
 
 These tests verify that the Biometric Alerts API endpoints correctly handle
 requests and responses, maintain HIPAA compliance, and integrate properly
-with the biometric event processor.
+with the biometric event processor.:
 """
 
 import json
@@ -20,30 +20,30 @@ from pydantic import parse_obj_as
 
 from app.domain.exceptions import ValidationError
 from app.domain.services.biometric_event_processor import (
-    AlertPriority,
-    AlertRule,
-    BiometricAlert,
-    BiometricEventProcessor,
+    AlertPriority,  
+    AlertRule,  
+    BiometricAlert,  
+    BiometricEventProcessor,  
     ClinicalRuleEngine
 )
 from app.domain.entities.biometric_twin import BiometricDataPoint
 from app.presentation.api.v1.endpoints.biometric_alerts import (
-    router,
-    get_biometric_event_processor,
-    get_clinical_rule_engine,
-    get_alert_repository,
-    get_rule_repository,
+    router,  
+    get_biometric_event_processor,  
+    get_clinical_rule_engine,  
+    get_alert_repository,  
+    get_rule_repository,  
     get_current_user_id
 )
 from app.presentation.api.v1.schemas.biometric_alert_schemas import (
-    AlertRuleCreate,
-    AlertRuleResponse,
-    AlertRuleUpdate,
-    AlertRuleListResponse,
-    BiometricAlertResponse,
-    BiometricAlertListResponse,
-    AlertRuleTemplateResponse,
-    AlertRuleTemplateListResponse,
+    AlertRuleCreate,  
+    AlertRuleResponse,  
+    AlertRuleUpdate,  
+    AlertRuleListResponse,  
+    BiometricAlertResponse,  
+    BiometricAlertListResponse,  
+    AlertRuleTemplateResponse,  
+    AlertRuleTemplateListResponse,  
     AlertAcknowledgementRequest
 )
 

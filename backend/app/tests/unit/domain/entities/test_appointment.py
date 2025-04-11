@@ -8,13 +8,13 @@ import uuid
 import pytest
 
 from app.domain.entities.appointment import (
-    Appointment,
-    AppointmentStatus,
-    AppointmentType,
+    Appointment,  
+    AppointmentStatus,  
+    AppointmentType,  
     AppointmentPriority
 )
 from app.domain.exceptions import (
-    InvalidAppointmentStateError,
+    InvalidAppointmentStateError,  
     InvalidAppointmentTimeError
 )
 

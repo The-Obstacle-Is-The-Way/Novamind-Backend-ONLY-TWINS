@@ -30,7 +30,7 @@ async def test_temporal_endpoints_integration(
     without directly importing the router module.
     """
     # Setup - patch dependencies to use our service instance
-    with mock_current_user, patch(
+    with mock_current_user, patch(:
         "app.api.dependencies.services.get_temporal_neurotransmitter_service",
         return_value=AsyncMock(return_value=temporal_service)
     ):

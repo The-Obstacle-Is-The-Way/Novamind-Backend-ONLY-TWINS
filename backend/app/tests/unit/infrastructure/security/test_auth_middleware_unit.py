@@ -16,7 +16,7 @@ from starlette.responses import JSONResponse
 from typing import Dict, Any, List, Tuple, Union
 
 from app.infrastructure.security.auth_middleware import (
-    JWTAuthMiddleware as AuthMiddleware,
+    JWTAuthMiddleware as AuthMiddleware,  
     RoleBasedAccessControl
 )
 
@@ -35,7 +35,7 @@ class TokenAuthorizationError(Exception):
 
 # Import these from the domain exceptions where they're actually defined
 from app.domain.exceptions import (
-    AuthenticationError,
+    AuthenticationError,  
     TokenExpiredError
 )
 

@@ -13,7 +13,7 @@ from uuid import UUID, uuid4
 
 from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertPriority, AlertStatus
 from app.domain.services.biometric_alert_notification_service import (
-    BiometricAlertNotificationService, NotificationChannel
+    BiometricAlertNotificationService,   NotificationChannel
 )
 
 

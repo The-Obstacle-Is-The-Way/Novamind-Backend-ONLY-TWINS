@@ -57,7 +57,7 @@ class TestHIPAACompliantLogger:
         mock_settings.logging.LOG_TO_FILE = False
         logger = HIPAACompliantLogger("test_logger")
         assert any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler) 
-                  for h in logger.logger.handlers)
+                  for h in logger.logger.handlers):
         
         # Test with console logging disabled
         mock_settings.logging.LOG_TO_FILE = True
@@ -65,7 +65,7 @@ class TestHIPAACompliantLogger:
         logger = HIPAACompliantLogger("test_logger")
         assert any(isinstance(h, logging.FileHandler) for h in logger.logger.handlers)
         assert not any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler) 
-                      for h in logger.logger.handlers)
+                      for h in logger.logger.handlers):
     
     def test_get_formatter(self):
         """Test the formatter creation."""

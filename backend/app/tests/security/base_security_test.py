@@ -119,7 +119,7 @@ class BaseSecurityTest(TestCase):
         
         Args:
             token: The token to include in the headers. Default is generated 
-                   with get_auth_token().
+                   with get_auth_token().:
                    
         Returns:
             Dict[str, str]: Mock authorization headers

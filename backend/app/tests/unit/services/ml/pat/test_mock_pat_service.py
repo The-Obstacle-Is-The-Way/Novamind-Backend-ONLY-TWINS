@@ -11,13 +11,13 @@ import pytest
 from typing import Any, Dict, List
 
 from app.core.services.ml.pat.exceptions import (
-    AnalysisError,
-    AuthorizationError,
-    EmbeddingError,
-    InitializationError,
-    IntegrationError,
-    ResourceNotFoundError,
-    ValidationError,
+    AnalysisError,  
+    AuthorizationError,  
+    EmbeddingError,  
+    InitializationError,  
+    IntegrationError,  
+    ResourceNotFoundError,  
+    ValidationError,  
 )
 from app.core.services.ml.pat.interface import PATInterface
 from app.core.services.ml.pat.mock import MockPATService # Corrected import
@@ -106,7 +106,7 @@ class TestMockPAT:
         with pytest.raises(InitializationError):
             mock_pat.get_model_info()
     
-    def test_analyze_actigraphy(
+    def test_analyze_actigraphy(:
         self,
         initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
@@ -151,7 +151,7 @@ class TestMockPAT:
         analysis_id = result["analysis_id"]
         assert analysis_id in initialized_mock_pat._analyses
     
-    def test_analyze_actigraphy_validation_error(
+    def test_analyze_actigraphy_validation_error(:
         self,
         initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
@@ -206,7 +206,7 @@ class TestMockPAT:
                 analysis_types=["invalid_analysis_type"]
             )
     
-    def test_get_actigraphy_embeddings(
+    def test_get_actigraphy_embeddings(:
         self,
         initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]]
@@ -249,7 +249,7 @@ class TestMockPAT:
         embedding_id = result["embedding_id"]
         assert embedding_id in initialized_mock_pat._embeddings
     
-    def test_get_actigraphy_embeddings_validation_error(
+    def test_get_actigraphy_embeddings_validation_error(:
         self,
         initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]]
@@ -285,7 +285,7 @@ class TestMockPAT:
                 sampling_rate_hz=0.0
             )
     
-    def test_get_analysis_by_id(
+    def test_get_analysis_by_id(:
         self,
         initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
@@ -317,7 +317,7 @@ class TestMockPAT:
         with pytest.raises(ResourceNotFoundError):
             initialized_mock_pat.get_analysis_by_id("nonexistent_id")
     
-    def test_get_patient_analyses(
+    def test_get_patient_analyses(:
         self,
         initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
@@ -400,7 +400,7 @@ class TestMockPAT:
         assert isinstance(result["capabilities"], list)
         assert "activity_level_analysis" in result["capabilities"]
     
-    def test_integrate_with_digital_twin(
+    def test_integrate_with_digital_twin(:
         self,
         initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],
@@ -440,10 +440,10 @@ class TestMockPAT:
         assert len(result["insights"]) > 0
         assert all(
             key in result["profile_update"]
-            for key in ["updated_aspects", "confidence_score", "updated_at"]
+            for key in ["updated_aspects", "confidence_score", "updated_at"]:
         )
     
-    def test_integrate_with_digital_twin_resource_not_found(
+    def test_integrate_with_digital_twin_resource_not_found(:
         self,
         initialized_mock_pat: MockPATService
     ) -> None:
@@ -455,7 +455,7 @@ class TestMockPAT:
                 analysis_id="nonexistent_id"
             )
     
-    def test_integrate_with_digital_twin_authorization_error(
+    def test_integrate_with_digital_twin_authorization_error(:
         self,
         initialized_mock_pat: MockPATService,
         sample_readings: List[Dict[str, Any]],

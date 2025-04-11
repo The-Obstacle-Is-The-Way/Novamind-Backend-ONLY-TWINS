@@ -42,17 +42,18 @@ class BaseSecurityTest:
 class TestBaseSecurityTest:
     """Tests for the BaseSecurityTest class itself."""
     
-def test_init(self):
+    @pytest.mark.standalone
+    def test_init(self):
         """Test that BaseSecurityTest can be initialized."""
         security_test = BaseSecurityTest()
         security_test.setup_method()
         
         assert security_test.user is not None
         assert security_test.user.id == security_test.test_user_id
-        assert security_test.user.roles == security_@pytest.mark.standalone
-test.test_roles
+        assert security_test.user.roles == security_test.test_roles
     
-def test_create_custom_user(self):
+    @pytest.mark.standalone
+    def test_create_custom_user(self):
         """Test that a custom user can be created."""
         security_test = BaseSecurityTest()
         
@@ -73,11 +74,11 @@ class TestAuthenticationSystem(BaseSecurityTest):
     
     def setup_method(self):
         """Set up with admin role for testing."""
-        self.test_roles = [,Rol@pytest.mark.standalone
-e.ADMIN]
+        self.test_roles = [Role.ADMIN]
         super().setup_method()
     
-def test_user_authentication(self, monkeypatch):
+    @pytest.mark.standalone
+    def test_user_authentication(self, monkeypatch):
         """Test that user authentication works."""
         # Mock the authentication process
         def mock_authenticate(*args, **kwargs):
@@ -89,11 +90,11 @@ def test_user_authentication(self, monkeypatch):
         authenticated_user = authenticate_user(username="test_user", password="password")
         
         assert authenticated_user is not None
-        assert authenticated_user.id == self.tes@pytest.mark.standalone
-t_user_id
+        assert authenticated_user.id == self.test_user_id
         assert Role.ADMIN in authenticated_user.roles
     
-def test_get_current_user(self, monkeypatch):
+    @pytest.mark.standalone
+    def test_get_current_user(self, monkeypatch):
         """Test that the current user can be retrieved."""
         # Mock the token validation
         def mock_verify_token(*args, **kwargs):
@@ -118,28 +119,28 @@ class TestRBACSystem(BaseSecurityTest):
     """Tests for the RBAC system."""
     
     def setup_method(self):
-        """Set up with clinician role fo@pytest.mark.standalone
-r testing."""
+        """Set up with clinician role for testing."""
         self.test_roles = [Role.CLINICIAN]
         super().setup_method()
     
-def test_permission_check_success(self):
+    @pytest.mark.standalone
+    def test_permission_check_success(self):
         """Test that permission check succeeds for authorized roles."""
         # Should succeed because CLINICIAN has this permission
-        check_@pytest.mark.standalone
-permission(self.user, required_roles=[Role.CLINICIAN, Role.ADMIN])
+        check_permission(self.user, required_roles=[Role.CLINICIAN, Role.ADMIN])
         # No exception means the test passed
     
-def test_permission_check_failure(self):
+    @pytest.mark.standalone
+    def test_permission_check_failure(self):
         """Test that permission check fails for unauthorized roles."""
         # Should fail because user is not ADMIN
-        with pytest.raises(HTTPException) as e@pytest.mark.standalone
-xc_info:
+        with pytest.raises(HTTPException) as exc_info:
             check_permission(self.user, required_roles=[Role.ADMIN])
         
         assert exc_info.value.status_code == 403
     
-def test_rbac_middleware(self):
+    @pytest.mark.standalone
+    def test_rbac_middleware(self):
         """Test the RBAC middleware."""
         middleware = RBACMiddleware()
         

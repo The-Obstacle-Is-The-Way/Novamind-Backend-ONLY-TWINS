@@ -13,10 +13,10 @@ from typing import Dict, Any, List
 import json
 
 from app.core.exceptions import (
-    InvalidConfigurationError,
-    InvalidRequestError,
-    ModelNotFoundError,
-    ServiceUnavailableError,
+    InvalidConfigurationError,  
+    InvalidRequestError,  
+    ModelNotFoundError,  
+    ServiceUnavailableError,  
 )
 from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
 
@@ -104,7 +104,7 @@ class TestMockMentaLLaMA:
         assert (datetime.now(UTC) - timestamp).total_seconds() < 10
         
         # Test all available model types
-        for model_type in ["depression_detection", "risk_assessment", "sentiment_analysis", 
+        for model_type in ["depression_detection", "risk_assessment", "sentiment_analysis", :
                            "wellness_dimensions", "digital_twin"]:
             result = mock_service.process(sample_text, model_type)
             assert result["model_type"] == model_type

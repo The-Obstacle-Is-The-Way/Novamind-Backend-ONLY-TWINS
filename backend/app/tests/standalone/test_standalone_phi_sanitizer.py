@@ -26,7 +26,7 @@ class RedactionStrategy(Enum):
 class PHIPattern:
     """Represents a pattern for detecting PHI."""
     
-    def __init__(
+    def __init__(:
         self,
         name: str,
         regex: str = None,
@@ -45,7 +45,7 @@ class PHIPattern:
                               for pattern in fuzzy_match] if fuzzy_match else []
         self._context_patterns = [re.compile(pattern, re.IGNORECASE) 
                                 for pattern in context_patterns] if context_patterns else []
-                                
+                                :
     def matches(self, text: str) -> bool:
         """Check if this pattern matches the given text."""
         # Regex match
@@ -182,7 +182,7 @@ class RedactionStrategyFactory:
 class SanitizerConfig:
     """Configuration for the PHI sanitizer."""
     
-    def __init__(
+    def __init__(:
         self,
         enabled: bool = True,
         default_strategy: RedactionStrategy = RedactionStrategy.FULL,
@@ -210,7 +210,7 @@ class PHISanitizer:
     and replace them with safe placeholders to ensure HIPAA compliance.
     """
     
-    def __init__(
+    def __init__(:
         self, 
         config: SanitizerConfig = None,
         pattern_repository: PatternRepository = None

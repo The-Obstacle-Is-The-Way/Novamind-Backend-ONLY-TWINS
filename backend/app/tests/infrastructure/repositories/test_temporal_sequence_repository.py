@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.temporal_sequence import TemporalSequence
 from app.infrastructure.models.temporal_sequence_model import (
-    TemporalSequenceModel,
+    TemporalSequenceModel,  
     TemporalDataPointModel
 )
 from app.infrastructure.repositories.temporal_sequence_repository import (

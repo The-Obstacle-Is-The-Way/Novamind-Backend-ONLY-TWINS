@@ -17,13 +17,13 @@ from botocore.exceptions import ClientError
 
 from app.core.services.ml.pat.aws import AWSPATService
 from app.core.services.ml.pat.exceptions import (
-    AnalysisError,
-    AuthorizationError,
-    EmbeddingError,
-    InitializationError,
-    IntegrationError,
-    ResourceNotFoundError,
-    ValidationError,
+    AnalysisError,  
+    AuthorizationError,  
+    EmbeddingError,  
+    InitializationError,  
+    IntegrationError,  
+    ResourceNotFoundError,  
+    ValidationError,  
 )
 
 

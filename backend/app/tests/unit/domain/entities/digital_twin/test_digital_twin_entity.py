@@ -259,8 +259,8 @@ class TestDigitalTwin(unittest.TestCase):
         """Test detection of temporal patterns."""
         # Create temporal dynamics with pattern detectors
         from app.domain.entities.digital_twin.temporal import (
-            TemporalDynamics,
-            SeasonalPatternDetector,
+            TemporalDynamics,  
+            SeasonalPatternDetector,  
             EpisodicPatternDetector
         )
         

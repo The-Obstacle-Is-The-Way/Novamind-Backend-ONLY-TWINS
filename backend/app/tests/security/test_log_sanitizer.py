@@ -250,7 +250,7 @@ class TestLogSanitizer:
         log_message = "Retrieved record for patient ID P123456"
         
         # Act
-        with patch.object(log_sanitizer, 'patterns', {
+        with patch.object(log_sanitizer, 'patterns', {:
             'PATIENT-ID': r'P\d{6}'
         }):
             sanitized = log_sanitizer.sanitize(log_message)

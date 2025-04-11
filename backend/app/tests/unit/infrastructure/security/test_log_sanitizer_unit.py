@@ -11,11 +11,11 @@ import logging
 from unittest.mock import patch, MagicMock, call
 
 from app.infrastructure.security.log_sanitizer import (
-    LogSanitizer,
-    SanitizerConfig,
-    PHIPattern,
-    SanitizationStrategy,
-    PatternType,
+    LogSanitizer,  
+    SanitizerConfig,  
+    PHIPattern,  
+    SanitizationStrategy,  
+    PatternType,  
     RedactionMode
 )
 

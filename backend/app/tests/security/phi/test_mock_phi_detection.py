@@ -10,9 +10,9 @@ import pytest
 from typing import Dict, Any, List
 
 from app.core.exceptions import (
-    InvalidConfigurationError,
-    InvalidRequestError,
-    ServiceUnavailableError,
+    InvalidConfigurationError,  
+    InvalidRequestError,  
+    ServiceUnavailableError,  
 )
 from app.core.services.ml.mock import MockPHIDetection
 from app.tests.security.base_security_test import BaseSecurityTest

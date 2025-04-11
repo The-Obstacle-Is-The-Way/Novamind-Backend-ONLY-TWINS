@@ -12,9 +12,9 @@ import pytest
 from botocore.exceptions import ClientError
 
 from app.core.exceptions import (
-    InvalidConfigurationError,
-    InvalidRequestError,
-    ServiceUnavailableError,
+    InvalidConfigurationError,  
+    InvalidRequestError,  
+    ServiceUnavailableError,  
 )
 from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
 
@@ -106,7 +106,7 @@ class TestAWSComprehendMedicalPHIDetection:
 
     def test_detect_phi_with_phi(self, phi_detection_service, mock_comprehend_response_with_phi):
         """Test PHI detection with text containing PHI."""
-        with patch.object(
+        with patch.object(:
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             return_value=mock_comprehend_response_with_phi
@@ -120,7 +120,7 @@ class TestAWSComprehendMedicalPHIDetection:
 
     def test_detect_phi_without_phi(self, phi_detection_service, mock_comprehend_response_without_phi):
         """Test PHI detection with text not containing PHI."""
-        with patch.object(
+        with patch.object(:
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             return_value=mock_comprehend_response_without_phi
@@ -145,7 +145,7 @@ class TestAWSComprehendMedicalPHIDetection:
 
     def test_detect_phi_aws_error(self, phi_detection_service):
         """Test PHI detection with AWS Comprehend Medical error."""
-        with patch.object(
+        with patch.object(:
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             side_effect=ClientError(
@@ -157,7 +157,7 @@ class TestAWSComprehendMedicalPHIDetection:
 
     def test_redact_phi_with_phi(self, phi_detection_service, mock_comprehend_response_with_phi):
         """Test PHI redaction with text containing PHI."""
-        with patch.object(
+        with patch.object(:
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             return_value=mock_comprehend_response_with_phi
@@ -176,7 +176,7 @@ class TestAWSComprehendMedicalPHIDetection:
 
     def test_redact_phi_without_phi(self, phi_detection_service, mock_comprehend_response_without_phi):
         """Test PHI redaction with text not containing PHI."""
-        with patch.object(
+        with patch.object(:
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             return_value=mock_comprehend_response_without_phi

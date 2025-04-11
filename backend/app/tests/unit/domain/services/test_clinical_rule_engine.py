@@ -13,7 +13,7 @@ from uuid import UUID, uuid4
 
 from app.domain.entities.digital_twin.biometric_alert import AlertPriority
 from app.domain.entities.digital_twin.biometric_rule import (
-    BiometricRule, RuleCondition, RuleOperator, LogicalOperator
+    BiometricRule,   RuleCondition,   RuleOperator,   LogicalOperator
 )
 from app.domain.exceptions import ValidationError
 from app.domain.services.clinical_rule_engine import ClinicalRuleEngine

@@ -12,8 +12,8 @@ from uuid import UUID, uuid4
 import pytest
 
 from app.domain.entities.digital_twin.biometric_alert import (
-    BiometricAlert,
-    AlertPriority,
+    BiometricAlert,  
+    AlertPriority,  
     AlertStatus
 )
 

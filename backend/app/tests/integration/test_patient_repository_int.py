@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import pytest
 
 from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import (
-    PatientRepository,
+    PatientRepository,  
 )
 
 

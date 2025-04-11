@@ -218,7 +218,7 @@ class TestSqlAlchemyEventRepository:
         repo = SqlAlchemyEventRepository(session=mock_session)
         
         # Mock the get_events_by_correlation_id method
-        with patch.object(
+        with patch.object(:
             repo, 'get_events_by_correlation_id', 
             return_value=[
                 self._model_to_entity(mock_event_model),

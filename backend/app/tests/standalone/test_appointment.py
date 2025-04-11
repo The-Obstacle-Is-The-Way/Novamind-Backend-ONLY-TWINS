@@ -8,10 +8,10 @@ from datetime import datetime, timedelta
 import pytest
 
 from app.domain.entities.appointment import (
-    Appointment,
-    AppointmentPriority,
-    AppointmentStatus,
-    AppointmentType,
+    Appointment,  
+    AppointmentPriority,  
+    AppointmentStatus,  
+    AppointmentType,  
 )
 from app.domain.exceptions import InvalidAppointmentStateError, InvalidAppointmentTimeError
 

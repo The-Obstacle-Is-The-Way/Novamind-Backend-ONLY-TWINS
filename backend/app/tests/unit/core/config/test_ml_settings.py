@@ -74,7 +74,7 @@ def test_directory_creation(tmp_path):
     mentallama_dir = base_dir / "mentallama"
     
     # Set environment variables to use these directories
-    with patch.dict(os.environ, {
+    with patch.dict(os.environ, {}):
         "MODEL_BASE_DIR": str(base_dir),
         "XGBOOST_MODEL_DIR": str(xgboost_dir),
         "MENTALLAMA_MODEL_DIR": str(mentallama_dir)
@@ -115,7 +115,7 @@ def test_digital_twin_settings(default_ml_settings):
     assert default_ml_settings.DIGITAL_TWIN_REGIONS == 84  # Default brain atlas regions
     
     # Test with custom settings
-    with patch.dict(os.environ, {
+    with patch.dict(os.environ, {}):
         "DIGITAL_TWIN_RESOLUTION": "medium",
         "DIGITAL_TWIN_REGIONS": "42"
     }):
@@ -131,7 +131,7 @@ def test_xgboost_settings(default_ml_settings):
     assert default_ml_settings.XGBOOST_GPU_ENABLED is False
     
     # Test with custom settings
-    with patch.dict(os.environ, {
+    with patch.dict(os.environ, {}):
         "XGBOOST_THREADS": "8",
         "XGBOOST_GPU_ENABLED": "true"
     }):
@@ -147,7 +147,7 @@ def test_phi_detection_settings(default_ml_settings):
     assert default_ml_settings.PHI_REDACTION_ENABLED is True
     
     # Test with custom settings
-    with patch.dict(os.environ, {
+    with patch.dict(os.environ, {}):
         "PHI_PATTERN_FILE": "custom_patterns.yaml",
         "PHI_REDACTION_ENABLED": "false"
     }):

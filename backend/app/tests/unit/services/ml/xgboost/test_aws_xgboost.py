@@ -3,7 +3,7 @@ Unit tests for the AWS XGBoost service implementation.
 
 This module contains unit tests for the AWSXGBoostService class,
 verifying its functionality and compliance with the XGBoostInterface
-while mocking all AWS services to avoid actual API calls.
+while mocking all AWS services to avoid actual API calls.:
 """
 
 import pytest
@@ -17,9 +17,9 @@ from botocore.exceptions import ClientError
 
 from app.core.services.ml.xgboost.aws import AWSXGBoostService # Removed AWSPhiDetector import
 from app.core.services.ml.xgboost.exceptions import (
-    ValidationError, DataPrivacyError, ResourceNotFoundError,
-    ModelNotFoundError, PredictionError, ServiceConnectionError as ServiceUnavailableError, # Correct name, alias for compatibility
-    ThrottlingError, ConfigurationError
+    ValidationError,   DataPrivacyError,   ResourceNotFoundError,  
+    ModelNotFoundError,   PredictionError,   ServiceConnectionError as ServiceUnavailableError,   # Correct name,   alias for compatibility
+    ThrottlingError,   ConfigurationError
 )
 
 

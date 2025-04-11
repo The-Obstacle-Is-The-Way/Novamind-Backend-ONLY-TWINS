@@ -15,10 +15,10 @@ from fastapi.testclient import TestClient
 
 from app.domain.exceptions import AuthenticationError, AuthorizationError # Corrected exception names
 from app.presentation.api.v1.endpoints.biometric_endpoints import (
-    get_current_user_id,
-    get_patient_id,
-    get_current_user_role,
-    require_clinician_role,
+    get_current_user_id,  
+    get_patient_id,  
+    get_current_user_role,  
+    require_clinician_role,  
     require_admin_role
 )
 

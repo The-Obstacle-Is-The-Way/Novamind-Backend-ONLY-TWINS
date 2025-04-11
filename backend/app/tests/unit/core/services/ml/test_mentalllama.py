@@ -14,10 +14,10 @@ import pytest
 from botocore.exceptions import ClientError
 
 from app.core.exceptions import (
-    InvalidConfigurationError,
-    InvalidRequestError,
-    ModelNotFoundError,
-    ServiceUnavailableError,
+    InvalidConfigurationError,  
+    InvalidRequestError,  
+    ModelNotFoundError,  
+    ServiceUnavailableError,  
 )
 from app.core.services.ml.mentalllama import MentaLLaMA
 
@@ -130,7 +130,7 @@ class TestMentaLLaMA:
 
     def test_detect_depression(self, mentalllama_service, mock_bedrock_response):
         """Test depression detection with valid input."""
-        with patch.object(
+        with patch.object(:
             mentalllama_service._bedrock_client,
             "invoke_model",
             return_value=mock_bedrock_response
@@ -162,7 +162,7 @@ class TestMentaLLaMA:
         # Configure PHI detection mock to detect PHI
         mentalllama_service._phi_detection_service.detect_phi.return_value = {"has_phi": True}
         
-        with patch.object(
+        with patch.object(:
             mentalllama_service._bedrock_client,
             "invoke_model",
             return_value=mock_bedrock_response
@@ -179,7 +179,7 @@ class TestMentaLLaMA:
 
     def test_detect_depression_bedrock_error(self, mentalllama_service):
         """Test depression detection with Bedrock error."""
-        with patch.object(
+        with patch.object(:
             mentalllama_service._bedrock_client,
             "invoke_model",
             side_effect=ClientError(
@@ -198,7 +198,7 @@ class TestMentaLLaMA:
             "completion": "This is not a valid JSON response"
         })
         
-        with patch.object(
+        with patch.object(:
             mentalllama_service._bedrock_client,
             "invoke_model",
             return_value=mock_response

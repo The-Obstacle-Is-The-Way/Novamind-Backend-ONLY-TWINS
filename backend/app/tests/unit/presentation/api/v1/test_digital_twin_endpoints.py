@@ -16,21 +16,21 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 # from app.core.exceptions.ml_exceptions import ( # Commented out due to persistent ImportError during collection
-#     MentalLLaMAInferenceError,
-#     PhiDetectionError,
+#     MentalLLaMAInferenceError,  
+#     PhiDetectionError,  
 # )
 # Placeholder imports - tests using these will likely fail but allows collection
 @pytest.mark.db_required
 class MentalLLaMAInferenceError(Exception): pass
 class PhiDetectionError(Exception): pass
 from app.presentation.api.v1.endpoints.digital_twins import (
-    get_digital_twin_service,
-    router as digital_twins_router,
+    get_digital_twin_service,  
+    router as digital_twins_router,  
 )
 from app.presentation.api.v1.schemas.digital_twin_schemas import (
-    # ClinicalEntityExtractionRequest, # Removed non-existent schema
-    # ClinicalTextSummaryRequest, # Removed non-existent schema
-    ClinicalTextAnalysisResponse, # Renamed from MentalLLaMAResponse
+    # ClinicalEntityExtractionRequest,   # Removed non-existent schema
+    # ClinicalTextSummaryRequest,   # Removed non-existent schema
+    ClinicalTextAnalysisResponse,   # Renamed from MentalLLaMAResponse
     ClinicalTextAnalysisRequest
 )
 
@@ -52,9 +52,9 @@ def client(app):
 @pytest.fixture
 def mock_jwt_auth():
     """Mock the JWT authentication."""
-    with patch(
+    with patch()
         "app.presentation.api.v1.endpoints.biometric_endpoints.get_current_user_id",
-        return_value=UUID("00000000-0000-0000-0000-000000000001"),
+        return_value=UUID("00000000-0000-0000-0000-000000000001"),:
     ):
         yield
 
@@ -72,9 +72,9 @@ def mock_digital_twin_service():
     service_mock.mentallama_service = mentallama_mock
     
     # Return the mock service
-    with patch(
+    with patch()
         "app.presentation.api.v1.endpoints.digital_twins.get_digital_twin_service",
-        return_value=service_mock,
+        return_value=service_mock,:
     ):
         yield service_mock
 

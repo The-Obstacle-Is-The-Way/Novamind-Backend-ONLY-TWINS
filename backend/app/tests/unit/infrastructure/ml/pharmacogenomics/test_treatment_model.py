@@ -95,12 +95,13 @@ class TestTreatmentResponseModel:
 
     async def test_initialize_loads_model_and_medication_data(self):
         """Test that initialize loads the model and medication data correctly."""
-        # Setup
-        with patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True) as mock_joblib, \
-             patch('app.infrastructure.ml.pharmacogenomics.treatment_model.json', autospec=True) as mock_json, \
-             patch('app.infrastructure.ml.pharmacogenomics.treatment_model.open', autospec=True) as mock_open, \
-             patch('app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists', return_value=True):
-            
+        # Setup - Using patch as context manager
+        mock_joblib = patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True).start()
+        mock_json = patch('app.infrastructure.ml.pharmacogenomics.treatment_model.json', autospec=True).start()
+        mock_open = patch('app.infrastructure.ml.pharmacogenomics.treatment_model.open', autospec=True).start()
+        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists', return_value=True).start()
+        
+        try:
             # Create model instance
             model = TreatmentResponseModel(
                 model_path="test_model_path",
@@ -131,16 +132,20 @@ class TestTreatmentResponseModel:
             assert model._efficacy_model is not None
             assert model._side_effect_model is not None
             assert model._medication_data is not None
+        finally:
+            # Clean up all patches
+            patch.stopall()
 
     async def test_initialize_handles_missing_files(self):
         """Test that initialize handles missing model and medication data files gracefully."""
-        # Setup
-        with patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True), \
-             patch('app.infrastructure.ml.pharmacogenomics.treatment_model.json', autospec=True), \
-             patch('app.infrastructure.ml.pharmacogenomics.treatment_model.open', autospec=True), \
-             patch('app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists', return_value=False), \
-             patch('app.infrastructure.ml.pharmacogenomics.treatment_model.logging', autospec=True) as mock_logging:
-            
+        # Setup - Using patch as context manager
+        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True).start()
+        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.json', autospec=True).start()
+        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.open', autospec=True).start()
+        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists', return_value=False).start()
+        mock_logging = patch('app.infrastructure.ml.pharmacogenomics.treatment_model.logging', autospec=True).start()
+        
+        try:
             # Create model instance
             model = TreatmentResponseModel(
                 model_path="nonexistent_path",
@@ -156,6 +161,9 @@ class TestTreatmentResponseModel:
             assert model._efficacy_model is not None
             assert model._side_effect_model is not None
             assert model._medication_data is not None
+        finally:
+            # Clean up all patches
+            patch.stopall()
 
     async def test_predict_treatment_response_success(self, model, sample_patient_data):
         """Test that predict_treatment_response correctly processes patient data and returns predictions."""

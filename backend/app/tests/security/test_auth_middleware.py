@@ -5,11 +5,11 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.auth_middleware import (
-    JWTAuthMiddleware, 
-    verify_token, 
-    verify_patient_access,
-    verify_provider_access,
-    verify_admin_access,
+    JWTAuthMiddleware,   
+    verify_token,   
+    verify_patient_access,  
+    verify_provider_access,  
+    verify_admin_access,  
     get_current_user
 )
 from app.infrastructure.security.jwt_service import JWTService

@@ -16,9 +16,9 @@ from fastapi import Request, Response
 from starlette.datastructures import Headers, MutableHeaders
 
 from app.infrastructure.security.rate_limiter import (
-    DistributedRateLimiter,
-    RateLimitConfig,
-    RateLimitType,
+    DistributedRateLimiter,  
+    RateLimitConfig,  
+    RateLimitType,  
 )
 
 
@@ -278,7 +278,7 @@ class TestDistributedRateLimiter:
     @pytest.mark.asyncio
     async def test_process_request_default(self, rate_limiter, mock_request):
         """Test processing a basic request."""
-        with patch.object(
+        with patch.object(:
             rate_limiter, "is_rate_limited", AsyncMock(return_value=(False, {"remaining": 99}))
         ):
             is_limited, info = await rate_limiter.process_request(mock_request)
@@ -297,7 +297,7 @@ class TestDistributedRateLimiter:
         """Test processing a request with an API key."""
         mock_request.headers = Headers({"X-API-Key": "test-api-key"})
         
-        with patch.object(
+        with patch.object(:
             rate_limiter, "is_rate_limited", AsyncMock(return_value=(False, {"remaining": 99}))
         ):
             is_limited, info = await rate_limiter.process_request(mock_request)
@@ -316,7 +316,7 @@ class TestDistributedRateLimiter:
         """Test processing a request with a user."""
         mock_request.state.user = {"sub": "user123"}
         
-        with patch.object(
+        with patch.object(:
             rate_limiter, "is_rate_limited", AsyncMock(return_value=(False, {"remaining": 99}))
         ):
             is_limited, info = await rate_limiter.process_request(mock_request)
@@ -332,7 +332,7 @@ class TestDistributedRateLimiter:
     @pytest.mark.asyncio
     async def test_process_request_custom_limit_type(self, rate_limiter, mock_request):
         """Test processing a request with a custom limit type."""
-        with patch.object(
+        with patch.object(:
             rate_limiter, "is_rate_limited", AsyncMock(return_value=(False, {"remaining": 99}))
         ):
             is_limited, info = await rate_limiter.process_request(

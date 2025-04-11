@@ -11,13 +11,13 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 from app.core.services.ml.pat.exceptions import (
-    AnalysisError,
-    AuthorizationError,
-    EmbeddingError,
-    InitializationError,
-    IntegrationError,
-    ResourceNotFoundError,
-    ValidationError,
+    AnalysisError,  
+    AuthorizationError,  
+    EmbeddingError,  
+    InitializationError,  
+    IntegrationError,  
+    ResourceNotFoundError,  
+    ValidationError,  
 )
 from app.core.services.ml.pat.mock import MockPATService
 

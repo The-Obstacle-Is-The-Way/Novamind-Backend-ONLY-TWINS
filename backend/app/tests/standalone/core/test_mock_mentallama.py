@@ -12,10 +12,10 @@ from datetime import datetime, UTC, timedelta
 from typing import Dict, Any, List
 
 from app.core.exceptions import (
-    InvalidConfigurationError,
-    InvalidRequestError,
-    ModelNotFoundError,
-    ServiceUnavailableError,
+    InvalidConfigurationError,  
+    InvalidRequestError,  
+    ModelNotFoundError,  
+    ServiceUnavailableError,  
 )
 from app.core.services.ml.mock import MockMentaLLaMA
 from app.tests.unit.base_test_unit import BaseUnitTest # Updated import path after rename
@@ -102,7 +102,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.assertLess((datetime.now(UTC) - timestamp).total_seconds(), 10)
         
         # Test all available model types
-        for model_type in ["depression_detection", "risk_assessment", "sentiment_analysis", 
+        for model_type in ["depression_detection", "risk_assessment", "sentiment_analysis", :
                         "wellness_dimensions", "digital_twin"]:
             result = self.service.process(self.sample_text, model_type)
             self.assertEqual(result["model_type"], model_type)

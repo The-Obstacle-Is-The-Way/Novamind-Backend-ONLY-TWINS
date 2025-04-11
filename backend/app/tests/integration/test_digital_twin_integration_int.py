@@ -84,13 +84,13 @@ async def test_digital_twin_complete_workflow():
             {"date": (datetime.now() - timedelta(days=i)).date().isoformat(), 
              "steps": 5000 + i * 500, 
              "active_minutes": 30 + i * 5}
-            for i in range(7)
+            for i in range(7):
         ],
         "sleep_data": [
             {"date": (datetime.now() - timedelta(days=i)).date().isoformat(), 
              "duration_hours": 6.5 + (i % 3) * 0.5, 
              "efficiency": 0.8 + (i % 5) * 0.02}
-            for i in range(7)
+            for i in range(7):
         ]
     }
     

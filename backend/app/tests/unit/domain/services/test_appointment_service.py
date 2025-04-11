@@ -9,17 +9,17 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 from app.domain.entities.appointment import (
-    Appointment,
-    AppointmentStatus,
-    AppointmentType,
+    Appointment,  
+    AppointmentStatus,  
+    AppointmentType,  
     AppointmentPriority
 )
 from app.domain.exceptions import (
-    EntityNotFoundError,
-    AppointmentConflictError,
-    InvalidAppointmentStateError,
-    InvalidAppointmentTimeError,
-    # Removed AppointmentNotFoundException, PatientNotFoundException, ProviderNotFoundException
+    EntityNotFoundError,  
+    AppointmentConflictError,  
+    InvalidAppointmentStateError,  
+    InvalidAppointmentTimeError,  
+    # Removed AppointmentNotFoundException,   PatientNotFoundException,   ProviderNotFoundException
 )
 from app.domain.services.appointment_service import AppointmentService
 
@@ -264,7 +264,7 @@ class TestAppointmentService:
                 appointment_type=AppointmentType.FOLLOW_UP,
                 status=AppointmentStatus.SCHEDULED
             )
-            for i in range(8)  # 8 appointments (max per day)
+            for i in range(8)  # 8 appointments (max per day):
         ]
         
         with pytest.raises(AppointmentConflictError):

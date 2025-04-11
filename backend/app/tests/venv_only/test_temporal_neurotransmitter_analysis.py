@@ -17,8 +17,8 @@ from unittest.mock import MagicMock
 
 # ================= Model Classes =================
 
-@pytest.mark.db_required
-class NeurotransmitterType(str, Enum):
+@pytest.mark.db_required:
+    class NeurotransmitterType(str, Enum):
     """Types of neurotransmitters being analyzed."""
     SEROTONIN = "serotonin"
     DOPAMINE = "dopamine"
@@ -46,7 +46,7 @@ class TemporalPatternType(str, Enum):
 class NeurotransmitterReading:
     """A single reading of a neurotransmitter level."""
     
-    def __init__(
+    def __init__(:
         self,
         neurotransmitter: NeurotransmitterType,
         level: float,
@@ -154,7 +154,7 @@ class TemporalNeurotransmitterAnalyzer:
         
         return df
         
-    def analyze_pattern(
+    def analyze_pattern(:
         self, 
         neurotransmitter: NeurotransmitterType,
         timeframe_days: int = 30
@@ -327,7 +327,7 @@ class TemporalNeurotransmitterAnalyzer:
             
         return results
         
-    def generate_synthetic_data(
+    def generate_synthetic_data(:
         self,
         neurotransmitter: NeurotransmitterType,
         pattern: TemporalPatternType,
@@ -427,7 +427,7 @@ class TemporalNeurotransmitterAnalyzer:
             
         return readings
 
-    def get_pattern_correlation(
+    def get_pattern_correlation(:
         self, 
         neurotransmitter1: NeurotransmitterType,
         neurotransmitter2: NeurotransmitterType,

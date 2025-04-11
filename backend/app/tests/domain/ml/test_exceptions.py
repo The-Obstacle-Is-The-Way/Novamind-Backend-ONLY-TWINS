@@ -7,12 +7,12 @@ particularly the MentalLLaMA inference system exceptions.
 """
 
 from app.domain.ml.exceptions import (
-    MentalLLaMAAuthenticationError,
-    MentalLLaMABaseException,
-    MentalLLaMAConnectionError,
-    MentalLLaMAInferenceError,
-    MentalLLaMAQuotaExceededError,
-    MentalLLaMAValidationError,
+    MentalLLaMAAuthenticationError,  
+    MentalLLaMABaseException,  
+    MentalLLaMAConnectionError,  
+    MentalLLaMAInferenceError,  
+    MentalLLaMAQuotaExceededError,  
+    MentalLLaMAValidationError,  
 )
 
 

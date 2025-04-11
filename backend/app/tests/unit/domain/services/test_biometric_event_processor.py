@@ -15,14 +15,14 @@ import pytest
 from app.domain.entities.biometric_twin import BiometricDataPoint
 from app.domain.exceptions import ValidationError
 from app.domain.services.biometric_event_processor import (
-    AlertPriority,
-    AlertRule,
-    BiometricAlert,
-    BiometricEventProcessor,
-    AlertObserver,
-    EmailAlertObserver,
-    SMSAlertObserver,
-    InAppAlertObserver,
+    AlertPriority,  
+    AlertRule,  
+    BiometricAlert,  
+    BiometricEventProcessor,  
+    AlertObserver,  
+    EmailAlertObserver,  
+    SMSAlertObserver,  
+    InAppAlertObserver,  
     ClinicalRuleEngine
 )
 

@@ -13,8 +13,8 @@ from unittest.mock import patch, MagicMock
 from app.infrastructure.security.password.password_handler import PasswordHandler
 
 
-@pytest.fixture
-def password_handler():
+@pytest.fixture:
+    def password_handler():
     """
     Create a password handler instance for testing.
     
@@ -238,7 +238,7 @@ class TestPasswordHandler:
         # Generate multiple passwords
         passwords = [
             password_handler.generate_secure_password() 
-            for _ in range(10)
+            for _ in range(10):
         ]
         
         # Check that all are unique

@@ -8,8 +8,8 @@ import uuid
 import pytest
 
 from app.domain.entities.provider import (
-    Provider,
-    ProviderType,
+    Provider,  
+    ProviderType,  
     ProviderStatus
 )
 from app.domain.exceptions import ValidationException

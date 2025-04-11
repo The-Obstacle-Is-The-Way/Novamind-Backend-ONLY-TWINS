@@ -16,8 +16,8 @@ from datetime import datetime, timezone
 from app.api.routes.xgboost import router as xgboost_router
 from app.core.services.ml.xgboost.interface import XGBoostInterface
 from app.core.services.ml.xgboost.exceptions import (
-    ValidationError, DataPrivacyError, ResourceNotFoundError,
-    ModelNotFoundError, ServiceUnavailableError
+    ValidationError,   DataPrivacyError,   ResourceNotFoundError,  
+    ModelNotFoundError,   ServiceUnavailableError
 )
 
 
@@ -30,7 +30,7 @@ def mock_xgboost_service() -> Generator[MagicMock, None, None]:
     Create a mock XGBoost service.
     
     This patch replaces the get_xgboost_service dependency in the routes
-    with a mock implementation that can be controlled in tests.
+    with a mock implementation that can be controlled in tests.:
     """
     mock_service = MagicMock(spec=XGBoostInterface)
     

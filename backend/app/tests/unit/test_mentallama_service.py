@@ -13,7 +13,7 @@ from datetime import datetime
 from unittest.mock import patch, MagicMock, ANY
 
 import pytest
-from app.core.services.ml.mentalllama import MentaLLaMAService
+from app.core.services.ml.mentalllama import MentaLLaMA as MentaLLaMAService
 from app.core.exceptions import ServiceUnavailableError, ModelNotFoundError, InvalidRequestError
 
 class TestMentaLLaMAService:

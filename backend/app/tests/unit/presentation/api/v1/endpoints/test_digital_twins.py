@@ -4,7 +4,7 @@ Unit tests for Digital Twin API endpoints.
 
 These tests verify that the Digital Twin API endpoints correctly handle
 requests and responses, maintain HIPAA compliance, and integrate properly
-with the ML services.
+with the ML services.:
 """
 
 import json
@@ -21,16 +21,16 @@ from pydantic import parse_obj_as
 from app.domain.exceptions import ModelInferenceError, ValidationError
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 from app.presentation.api.v1.endpoints.digital_twins import (
-    router,
-    get_digital_twin_service,
+    router,  
+    get_digital_twin_service,  
     # Removed get_current_user_id - belongs in auth dependencies
 )
 from app.presentation.api.v1.schemas.digital_twin_schemas import (
-    # DigitalTwinStatusResponse, # Removed non-existent schema
-    PersonalizedInsightResponse, # Renamed from PatientInsightsResponse
-    # SymptomForecastResponse, # Schema does not exist
-    BiometricCorrelationResponse,
-    MedicationResponsePredictionResponse,
+    # DigitalTwinStatusResponse,   # Removed non-existent schema
+    PersonalizedInsightResponse,   # Renamed from PatientInsightsResponse
+    # SymptomForecastResponse,   # Schema does not exist
+    BiometricCorrelationResponse,  
+    MedicationResponsePredictionResponse,  
     TreatmentPlanResponse
 )
 

@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from starlette.testclient import TestClient
 
 from app.infrastructure.security.enhanced_phi_middleware import (
-    EnhancedPHIMiddleware,
+    EnhancedPHIMiddleware,  
     setup_enhanced_phi_middleware
 )
 
@@ -177,14 +177,14 @@ def test_setup_enhanced_phi_middleware():
     # Verify middleware was added
     assert any(
         isinstance(middleware, EnhancedPHIMiddleware)
-        for middleware in app.user_middleware
+        for middleware in app.user_middleware:
     )
     
     # Get the middleware instance
     phi_middleware = next(
         middleware.cls
-        for middleware in app.user_middleware
-        if middleware.cls == EnhancedPHIMiddleware
+        for middleware in app.user_middleware:
+        if middleware.cls == EnhancedPHIMiddleware:
     )
     
     # Verify middleware was configured correctly

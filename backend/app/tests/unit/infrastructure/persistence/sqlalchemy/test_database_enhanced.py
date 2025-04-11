@@ -16,10 +16,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 # Corrected imports
 from app.infrastructure.persistence.sqlalchemy.config.database import (
-    Database,
-    Base,
-    get_db_dependency,
-    get_db_instance,
+    Database,  
+    Base,  
+    get_db_dependency,  
+    get_db_instance,  
     get_db_session
 )
 
@@ -108,7 +108,7 @@ class TestDatabase:
     @pytest.mark.asyncio
     async def test_database_session_context_manager(self, mock_engine, mock_session_maker):
         """Test the database session context manager."""
-        with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',
+        with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',):
                   return_value=mock_engine):
             with patch('sqlalchemy.ext.asyncio.async_sessionmaker', return_value=mock_session_maker):
                 db = Database()
@@ -123,7 +123,7 @@ class TestDatabase:
     @pytest.mark.asyncio
     async def test_database_dispose(self, mock_engine):
         """Test the database engine disposal."""
-        with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',
+        with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',):
                   return_value=mock_engine):
             db = Database()
             
@@ -222,7 +222,7 @@ class TestDatabase:
     @pytest.mark.asyncio
     async def test_session_exception_handling(self, mock_engine, mock_session_maker):
         """Test session exception handling in the context manager."""
-        with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',
+        with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine',):
                   return_value=mock_engine):
             # Create a session that raises an exception
             mock_session = MagicMock(spec=AsyncSession)

@@ -18,18 +18,18 @@ from pydantic import ValidationError
 
 from app.api.routes.xgboost import router
 from app.core.services.ml.xgboost import (
-    ModelType,
-    RiskLevel,
-    ResponseLevel,
-    XGBoostServiceError,
-    ConfigurationError,
-    ModelNotFoundError,
-    PredictionError,
+    ModelType,  
+    RiskLevel,  
+    ResponseLevel,  
+    XGBoostServiceError,  
+    ConfigurationError,  
+    ModelNotFoundError,  
+    PredictionError,  
     ServiceConnectionError
 )
 from app.api.schemas.xgboost import (
-    RiskPredictionRequest,
-    TreatmentResponseRequest,
+    RiskPredictionRequest,  
+    TreatmentResponseRequest,  
     OutcomePredictionRequest
 )
 

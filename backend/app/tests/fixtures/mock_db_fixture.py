@@ -216,7 +216,7 @@ class MockRepository:
         """Configure the mock to return specific entities for get_all()."""
         self.entities = {
             entity.id: entity for entity in entities 
-            if hasattr(entity, 'id')
+            if hasattr(entity, 'id'):
         }
 
 
