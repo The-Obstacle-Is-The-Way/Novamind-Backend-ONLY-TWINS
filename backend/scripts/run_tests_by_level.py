@@ -71,6 +71,9 @@ def count_tests_by_level() -> Dict[str, int]:
     """Count how many tests exist at each dependency level based on directory location."""
     counts = {}
     
+    # Ensure we're in the correct directory for test discovery
+    cwd = os.getcwd()
+    
     for level, dirs in TEST_LEVELS.items():
         total_tests = 0
         
@@ -78,16 +81,26 @@ def count_tests_by_level() -> Dict[str, int]:
             if not os.path.exists(test_dir):
                 continue
                 
-            # Run pytest --collect-only to get test count
-            cmd = ["python", "-m", "pytest", test_dir, "--collect-only", "-q"]
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            # Extract test count from output (looking for lines like "collected X items")
-            import re
-            match = re.search(r"collected (\d+) items", result.stdout)
-            if match:
-                count = int(match.group(1))
+            # Run pytest in a more compatible way
+            cmd = ["python", "-m", "pytest", test_dir, "--collect-only", "-v"]
+            try:
+                # Explicitly change to backend directory for test discovery
+                if not cwd.endswith('backend'):
+                    os.chdir(str(ROOT_DIR))
+                
+                output = subprocess.check_output(cmd, universal_newlines=True)
+                
+                # Count the number of test cases in the output (each line starting with whitespace followed by 'test_')
+                count = len(re.findall(r"\s+test_\w+", output))
                 total_tests += count
+                
+            except subprocess.CalledProcessError as e:
+                print(f"Error counting tests in {test_dir}: {e}")
+                if e.output:
+                    print(e.output)
+            finally:
+                # Change back to original directory
+                os.chdir(cwd)
         
         counts[level] = total_tests
     
@@ -137,16 +150,25 @@ def run_tests(level: str, options: List[str] = None, is_docker: bool = False) ->
             "redis://novamind-redis-test:6379/0"
         )
     
-    # Build pytest command
+    # Build pytest command - ensure we're running from the correct directory
     cmd = ["python", "-m", "pytest"] + existing_dirs + options
+    
+    # Ensure we're in the backend directory for proper test running
+    cwd = os.getcwd()
+    if not cwd.endswith('backend'):
+        os.chdir(str(ROOT_DIR))
     
     print(f"\n=== Running {level.upper()} tests ===\n")
     print(f"Command: {' '.join(cmd)}")
     
     # Time the test run
     start_time = time.time()
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    duration = time.time() - start_time
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        duration = time.time() - start_time
+    finally:
+        # Restore original directory
+        os.chdir(cwd)
     
     # Print the output
     print(result.stdout)
