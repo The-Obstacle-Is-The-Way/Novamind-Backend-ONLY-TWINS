@@ -104,7 +104,6 @@ class TestMentaLLaMAService:
         """Test process method for task execution."""
         # Set up mocks
         mock_uuid.return_value = uuid.UUID('12345678-1234-5678-1234-567812345678')
-        mock_datetime.now.return_value = datetime(2025, 3, 28, 10, 0, 0)
         mock_now = datetime(2025, 3, 28, 10, 0, 0)
         mock_datetime.now.return_value = mock_now
         mock_datetime.now.return_value.isoformat.return_value = mock_now.isoformat()
@@ -553,10 +552,10 @@ class TestMentaLLaMAService:
                 "prompt", "model", "task", {"context": "data"}, 100, 0.7
             )
             
-            # Test unsupported provider
-            service._provider = "unsupported"
+            # Test unknown provider
+            service._provider = "unknown"
             
-            with pytest.raises(ValueError) as exc_info:
+            with pytest.raises(ServiceUnavailableError) as exc_info:
                 service._process_with_provider(
                     "prompt", "model", "task", {"context": "data"}, 100, 0.7
                 )
@@ -564,13 +563,12 @@ class TestMentaLLaMAService:
             assert "Unsupported provider" in str(exc_info.value)
 
     def test_estimate_tokens_used(self, service):
-        """Test token estimation function."""
-        prompt = "This is a test prompt"
-        response = "This is a model response"
+        """Test token estimation method."""
+        # Test with empty prompt
+        assert service._estimate_tokens_used("", 0) == 0
         
-        # Expected value based on (prompt + response) words * 1.3
-        expected_tokens = int(len(prompt.split() + response.split()) * 1.3)
+        # Test with short prompt and no response
+        assert service._estimate_tokens_used("Short prompt", 0) == 3
         
-        result = service._estimate_tokens_used(prompt, response)
-        
-        assert result == expected_tokens
+        # Test with longer prompt and some response tokens
+        assert service._estimate_tokens_used("This is a longer prompt that should be tokenized.", 10) == 19

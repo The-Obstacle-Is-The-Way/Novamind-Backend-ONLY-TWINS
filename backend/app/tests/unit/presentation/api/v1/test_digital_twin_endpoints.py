@@ -7,7 +7,7 @@ the MentaLLaMA integration for clinical text processing.
 """
 
 import json
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, UTC, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
@@ -52,9 +52,9 @@ def client(app):
 @pytest.fixture
 def mock_jwt_auth():
     """Mock the JWT authentication."""
-    with patch()
+    with patch(
         "app.presentation.api.v1.endpoints.biometric_endpoints.get_current_user_id",
-        return_value=UUID("00000000-0000-0000-0000-000000000001"),:
+        return_value=UUID("00000000-0000-0000-0000-000000000001")
     ):
         yield
 
@@ -72,9 +72,9 @@ def mock_digital_twin_service():
     service_mock.mentallama_service = mentallama_mock
     
     # Return the mock service
-    with patch()
+    with patch(
         "app.presentation.api.v1.endpoints.digital_twins.get_digital_twin_service",
-        return_value=service_mock,:
+        return_value=service_mock
     ):
         yield service_mock
 
