@@ -146,3 +146,33 @@ class RepositoryError(DomainException):
     """Raised for general repository or database interaction errors."""
     def __init__(self, message: str = "Repository error occurred"):
         super().__init__(message)
+
+
+class MissingTokenError(AuthenticationError):
+    """Raised when an authentication token is missing."""
+    def __init__(self, message: str = "Authentication token is missing"):
+        super().__init__(message)
+
+
+class InvalidTokenError(AuthenticationError):
+    """Raised when an authentication token is invalid."""
+    def __init__(self, message: str = "Invalid authentication token"):
+        super().__init__(message)
+
+
+class ResourceNotFoundException(DomainException):
+    """Raised when a requested resource is not found."""
+    def __init__(self, message: str = "Resource not found"):
+        super().__init__(message)
+
+
+class BusinessRuleViolationException(DomainException):
+    """Raised when a business rule is violated."""
+    def __init__(self, message: str = "Business rule violation"):
+        super().__init__(message)
+
+
+class IntegrationException(DomainException):
+    """Raised when integration with external systems fails."""
+    def __init__(self, message: str = "Integration error"):
+        super().__init__(message)

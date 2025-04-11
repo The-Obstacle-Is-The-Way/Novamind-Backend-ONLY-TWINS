@@ -14,7 +14,24 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.core.config import settings
+# Support both import structures for settings to maintain compatibility
+try:
+    from app.core.config import settings
+except (ImportError, AttributeError):
+    try:
+        from app.core.config.settings import settings
+    except ImportError:
+        # Fallback to a minimal settings implementation if neither import works
+        from pydantic_settings import BaseSettings
+        
+        class MinimalSettings(BaseSettings):
+            PROJECT_NAME: str = "Novamind Digital Twin"
+            APP_DESCRIPTION: str = "Advanced psychiatric digital twin platform for mental health analytics and treatment optimization"
+            VERSION: str = "1.0.0"
+            API_PREFIX: str = "/api/v1"
+            ENABLE_ANALYTICS: bool = False
+            
+        settings = MinimalSettings()
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance
 from app.api.routes import api_router, setup_routers  # Import the setup_routers function
 from app.presentation.api.routes.analytics_endpoints import router as analytics_router
@@ -66,10 +83,15 @@ def create_application() -> FastAPI:
     Returns:
         FastAPI: Configured FastAPI application
     """
+    # Get settings values with fallbacks to ensure we don't have AttributeError
+    project_name = getattr(settings, 'PROJECT_NAME', 'Novamind Digital Twin')
+    app_description = getattr(settings, 'APP_DESCRIPTION', 'Advanced psychiatric digital twin platform for mental health analytics and treatment optimization')
+    version = getattr(settings, 'VERSION', '1.0.0')
+    
     app = FastAPI(
-        title=getattr(settings, 'PROJECT_NAME', 'Novamind Digital Twin'),
-        description=getattr(settings, 'APP_DESCRIPTION', 'Advanced psychiatric digital twin platform for mental health analytics and treatment optimization'),
-        version=getattr(settings, 'VERSION', '1.0.0'),
+        title=project_name,
+        description=app_description,
+        version=version,
         lifespan=lifespan,
     )
     

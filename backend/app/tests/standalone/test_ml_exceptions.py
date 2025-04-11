@@ -1,12 +1,13 @@
 import pytest
+import unittest
+from typing import Any
+
 """
 Self-contained test for ML exceptions to verify test infrastructure.
 
 This test module includes both the necessary exception classes and tests in a single file
 to validate that the test infrastructure is working correctly.
 """
-import unittest
-from typing import Any
 
 
 # Exception classes that would normally be in app/core/ml/exceptions.py
@@ -74,7 +75,7 @@ class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     
     @pytest.mark.standalone
-def test_base_error(self):
+    def test_base_error(self):
         """Test the base error class."""
         # Arrange
         message = "Base error message"
@@ -89,7 +90,7 @@ def test_base_error(self):
         self.assertEqual(str(error), message)
     
     @pytest.mark.standalone
-def test_inference_error(self):
+    def test_inference_error(self):
         """Test the inference error class."""
         # Arrange
         message = "Inference error message"
@@ -120,7 +121,7 @@ def test_inference_error(self):
         self.assertNotIn("input_text", error.details)
         
     @pytest.mark.standalone
-def test_validation_error(self):
+    def test_validation_error(self):
         """Test the validation error class."""
         # Arrange
         message = "Validation error message"
@@ -139,7 +140,7 @@ def test_validation_error(self):
         self.assertEqual(error.validation_errors, validation_errors)
         self.assertEqual(error.details["validation_errors"], validation_errors)
         self.assertEqual(error.details["model_version"], "2.0")
-        
+
 
 if __name__ == "__main__":
     unittest.main()

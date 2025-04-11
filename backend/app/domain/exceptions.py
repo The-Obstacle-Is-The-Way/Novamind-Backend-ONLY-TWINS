@@ -1,186 +1,73 @@
-# -*- coding: utf-8 -*-
 """
-Custom exceptions for the Novamind HIPAA-compliant psychiatry platform.
+Domain-level exceptions for the NOVAMIND application.
 
-This module defines domain-specific exceptions that represent various error
-conditions in the application's business logic. These exceptions are designed
-to be caught and handled appropriately at the application boundaries.
+This module defines the exceptions that can be raised at the domain level,
+providing a clear separation between domain errors and infrastructure errors.
 """
 
+from typing import Any, Dict, Optional
 
-class ValidationError(Exception):
-    """
-    Exception raised when entity validation fails.
+
+class DomainException(Exception):
+    """Base exception for all domain-level exceptions."""
     
-    This exception is raised when an entity fails to meet its validation
-    requirements, such as required fields, format constraints, or business rules.
-    """
-    
-    def __init__(self, message: str) -> None:
-        """
-        Initialize a new ValidationError.
-        
-        Args:
-            message: Description of the validation error
-        """
+    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
         self.message = message
-        super().__init__(self.message)
+        self.details = details or {}
+        super().__init__(message)
 
 
-class EntityNotFoundError(Exception):
-    """
-    Exception raised when an entity cannot be found.
-    
-    This exception is raised when an attempt is made to retrieve an entity
-    that does not exist in the system.
-    """
-    
-    def __init__(self, entity_type: str, entity_id: str) -> None:
-        """
-        Initialize a new EntityNotFoundError.
-        
-        Args:
-            entity_type: Type of entity that was not found
-            entity_id: Identifier of the entity that was not found
-        """
-        self.entity_type = entity_type
-        self.entity_id = entity_id
-        self.message = f"{entity_type} with ID {entity_id} not found"
-        super().__init__(self.message)
+class ValidationException(DomainException):
+    """Exception raised when domain validation fails."""
+    pass
 
 
-class UnauthorizedAccessError(Exception):
-    """
-    Exception raised when an unauthorized access attempt is made.
-    
-    This exception is raised when a user attempts to access a resource
-    or perform an operation they are not authorized for.
-    """
-    
-    def __init__(self, message: str = "Unauthorized access") -> None:
-        """
-        Initialize a new UnauthorizedAccessError.
-        
-        Args:
-            message: Description of the unauthorized access attempt
-        """
-        self.message = message
-        super().__init__(self.message)
+class ResourceNotFoundException(DomainException):
+    """Exception raised when a requested resource is not found."""
+    pass
 
 
-class AppointmentConflictError(Exception):
-    """
-    Exception raised when there is a conflict in appointment scheduling.
-    
-    This exception is raised when an attempt is made to schedule an appointment
-    that conflicts with an existing appointment.
-    """
-    
-    def __init__(self, message: str) -> None:
-        """
-        Initialize a new AppointmentConflictError.
-        
-        Args:
-            message: Description of the appointment conflict
-        """
-        self.message = message
-        super().__init__(self.message)
+class AuthenticationError(DomainException):
+    """Exception raised when authentication fails."""
+    pass
 
 
-class BiometricIntegrationError(Exception):
-    """
-    Exception raised when there is an error in biometric data integration.
-    
-    This exception is raised when an error occurs during the integration
-    of biometric data into a patient's digital twin.
-    """
-    
-    def __init__(self, message: str) -> None:
-        """
-        Initialize a new BiometricIntegrationError.
-        
-        Args:
-            message: Description of the biometric integration error
-        """
-        self.message = message
-        super().__init__(self.message)
+class AuthorizationError(DomainException):
+    """Exception raised when a user is not authorized to access a resource."""
+    pass
 
 
-class DeviceConnectionError(Exception):
-    """
-    Exception raised when there is an error connecting to a biometric device.
+class TokenExpiredError(AuthenticationError):
+    """Exception raised when an authentication token has expired."""
     
-    This exception is raised when an error occurs while attempting to connect
-    to or communicate with a biometric monitoring device.
-    """
-    
-    def __init__(self, device_id: str, message: str) -> None:
-        """
-        Initialize a new DeviceConnectionError.
-        
-        Args:
-            device_id: Identifier of the device that failed to connect
-            message: Description of the connection error
-        """
-        self.device_id = device_id
-        self.message = f"Error connecting to device {device_id}: {message}"
-        super().__init__(self.message)
+    def __init__(self, message: str = "Token has expired", details: Optional[Dict[str, Any]] = None):
+        super().__init__(message, details)
 
 
-class DataProcessingError(Exception):
-    """
-    Exception raised when there is an error processing data.
+class InvalidTokenError(AuthenticationError):
+    """Exception raised when an authentication token is invalid."""
     
-    This exception is raised when an error occurs during the processing
-    of data, such as parsing, transformation, or analysis.
-    """
-    
-    def __init__(self, message: str) -> None:
-        """
-        Initialize a new DataProcessingError.
-        
-        Args:
-            message: Description of the data processing error
-        """
-        self.message = message
-        super().__init__(self.message)
+    def __init__(self, message: str = "Invalid token", details: Optional[Dict[str, Any]] = None):
+        super().__init__(message, details)
 
 
-class ConfigurationError(Exception):
-    """
-    Exception raised when there is an error in the application configuration.
+class MissingTokenError(AuthenticationError):
+    """Exception raised when no authentication token is provided."""
     
-    This exception is raised when the application configuration is invalid
-    or missing required settings.
-    """
-    
-    def __init__(self, message: str) -> None:
-        """
-        Initialize a new ConfigurationError.
-        
-        Args:
-            message: Description of the configuration error
-        """
-        self.message = message
-        super().__init__(self.message)
+    def __init__(self, message: str = "Authentication token is missing", details: Optional[Dict[str, Any]] = None):
+        super().__init__(message, details)
 
 
-class ExternalServiceError(Exception):
-    """
-    Exception raised when there is an error communicating with an external service.
-    
-    This exception is raised when an error occurs while communicating with
-    an external service, such as a third-party API or service.
-    """
-    
-    def __init__(self, service_name: str, message: str) -> None:
-        """
-        Initialize a new ExternalServiceError.
-        
-        Args:
-            service_name: Name of the external service
-            message: Description of the error
-        """
-        self.service_name = service_name
-        self.message = f"Error communicating with {service_name}: {message}"
-        super().__init__(self.message)
+class BusinessRuleViolationException(DomainException):
+    """Exception raised when a business rule is violated."""
+    pass
+
+
+class ConcurrencyException(DomainException):
+    """Exception raised when concurrent modification creates a conflict."""
+    pass
+
+
+class IntegrationException(DomainException):
+    """Exception raised when integration with external systems fails."""
+    pass

@@ -1,18 +1,19 @@
 import pytest
+from datetime import datetime, timedelta
+
 """
 Standalone tests for utility functions in the Novamind Digital Twin platform.
 
 These tests have no external dependencies and can run in complete isolation.
 They test pure functions and business logic.
 """
-from datetime import datetime, timedelta
 
 # Import utilities to test
 from app.core.utils.date_utils import format_date_iso, is_date_in_range
 from app.core.utils.string_utils import sanitize_name, truncate_text
 
 
-    @pytest.mark.standalone
+@pytest.mark.standalone
 def test_is_date_in_range():
     """Test date range validation logic."""
     # Base date
@@ -50,7 +51,7 @@ def test_is_date_in_range():
     )
 
 
-    @pytest.mark.standalone
+@pytest.mark.standalone
 def test_format_date_iso():
     """Test ISO date formatting."""
     # Test date
@@ -63,7 +64,7 @@ def test_format_date_iso():
     assert format_date_iso(test_date, include_time=False) == "2025-01-01"
 
 
-    @pytest.mark.standalone
+@pytest.mark.standalone
 def test_sanitize_name():
     """Test name sanitization for security and consistency."""
     # Test basic sanitization
@@ -79,7 +80,7 @@ def test_sanitize_name():
     assert sanitize_name(None) == ""
 
 
-    @pytest.mark.standalone
+@pytest.mark.standalone
 def test_truncate_text():
     """Test text truncation utility."""
     # Test no truncation needed

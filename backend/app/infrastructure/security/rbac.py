@@ -1,215 +1,207 @@
-# -*- coding: utf-8 -*-
 """
-Role-Based Access Control (RBAC) for Novamind Digital Twin
+Role-Based Access Control (RBAC) module for the NOVAMIND system.
 
-This module provides a robust RBAC implementation for the Novamind Digital Twin platform,
-ensuring proper authorization and access control in accordance with HIPAA requirements.
+This module provides role-based access control functionality for restricting
+access to resources based on user roles and permissions.
 """
 
-from typing import Dict, List, Set, Optional, Union, Any
-import logging
-from enum import Enum
-
-logger = logging.getLogger(__name__)
-
-
-class ResourceType(str, Enum):
-    """Enumeration of resource types in the system."""
-    PATIENT = "patient"
-    CLINICIAN = "clinician"
-    ANALYSIS = "analysis"
-    REPORT = "report"
-    TWIN = "digital_twin"
-    MEDICATION = "medication"
-    APPOINTMENT = "appointment"
-    ACTIGRAPHY = "actigraphy"
-    ADMIN = "admin"
-
-
-class Permission(str, Enum):
-    """Permissions that can be granted to roles."""
-    READ = "read"
-    WRITE = "write"
-    DELETE = "delete"
-    EXECUTE = "execute"
-    ADMIN = "admin"
-
-
-class Role(str, Enum):
-    """System roles available in the platform."""
-    PATIENT = "patient"
-    PSYCHIATRIST = "psychiatrist"
-    THERAPIST = "therapist"
-    RESEARCHER = "researcher"
-    ADMIN = "admin"
-    READONLY = "readonly"
-    SYSADMIN = "sysadmin"
+from typing import Dict, List, Set, Optional
 
 
 class RoleBasedAccessControl:
     """
-    Provides role-based access control for the Novamind Digital Twin platform.
+    Role-based access control system for the NOVAMIND application.
     
-    This class implements a comprehensive RBAC system that maps roles to permissions
-    on different resource types, and enforces access control based on those mappings.
+    This class implements a role-based access control system that defines
+    role hierarchies and permission mappings to enforce access control rules.
     """
-    
-    def __init__(self) -> None:
-        """Initialize the RBAC system with default role-permission mappings."""
-        # Initialize role -> permissions mapping
-        self._role_permissions: Dict[str, Dict[str, Set[str]]] = {
-            Role.PATIENT: {
-                ResourceType.PATIENT: {Permission.READ},
-                ResourceType.APPOINTMENT: {Permission.READ},
-                ResourceType.MEDICATION: {Permission.READ},
-                ResourceType.ANALYSIS: {Permission.READ},
-                ResourceType.ACTIGRAPHY: {Permission.READ, Permission.WRITE},
-            },
-            Role.PSYCHIATRIST: {
-                ResourceType.PATIENT: {Permission.READ, Permission.WRITE},
-                ResourceType.CLINICIAN: {Permission.READ},
-                ResourceType.ANALYSIS: {Permission.READ, Permission.WRITE, Permission.EXECUTE},
-                ResourceType.REPORT: {Permission.READ, Permission.WRITE},
-                ResourceType.TWIN: {Permission.READ, Permission.WRITE, Permission.EXECUTE},
-                ResourceType.MEDICATION: {Permission.READ, Permission.WRITE},
-                ResourceType.APPOINTMENT: {Permission.READ, Permission.WRITE},
-                ResourceType.ACTIGRAPHY: {Permission.READ, Permission.WRITE, Permission.EXECUTE},
-            },
-            Role.THERAPIST: {
-                ResourceType.PATIENT: {Permission.READ},
-                ResourceType.ANALYSIS: {Permission.READ},
-                ResourceType.REPORT: {Permission.READ, Permission.WRITE},
-                ResourceType.APPOINTMENT: {Permission.READ, Permission.WRITE},
-            },
-            Role.RESEARCHER: {
-                ResourceType.ANALYSIS: {Permission.READ, Permission.EXECUTE},
-                ResourceType.TWIN: {Permission.READ, Permission.EXECUTE},
-                ResourceType.REPORT: {Permission.READ},
-            },
-            Role.ADMIN: {
-                resource_type.value: {Permission.READ, Permission.WRITE, Permission.DELETE, Permission.EXECUTE, Permission.ADMIN}
-                for resource_type in ResourceType
-            },
-            Role.READONLY: {
-                resource_type.value: {Permission.READ}
-                for resource_type in ResourceType
-            },
-            Role.SYSADMIN: {
-                resource_type.value: {Permission.READ, Permission.WRITE, Permission.DELETE, Permission.EXECUTE, Permission.ADMIN}
-                for resource_type in ResourceType
-            },
+
+    def __init__(self):
+        """Initialize the RBAC system with default roles and permissions."""
+        # Define role hierarchy (higher roles include permissions of lower roles)
+        self.role_hierarchy = {
+            "patient": ["patient"],
+            "clinician": ["patient", "clinician"],
+            "researcher": ["patient", "researcher"],
+            "admin": ["patient", "clinician", "researcher", "admin"],
+        }
+
+        # Define permission mappings for operations
+        self.permission_mapping = {
+            # Patient data access
+            "view_own_data": ["patient", "clinician", "admin"],
+            "update_own_data": ["patient", "clinician", "admin"],
+            
+            # Clinical operations
+            "view_patient_data": ["clinician", "admin"],
+            "update_patient_data": ["clinician", "admin"],
+            "create_patient_record": ["clinician", "admin"],
+            
+            # Research operations
+            "view_anonymized_data": ["researcher", "admin"],
+            "run_analytics": ["researcher", "admin"],
+            
+            # Administrative operations
+            "manage_users": ["admin"],
+            "system_configuration": ["admin"],
+            "audit_logs": ["admin"],
         }
         
-        # Initialize method -> permissions mapping
-        self._method_permissions: Dict[str, str] = {
-            "GET": Permission.READ,
-            "HEAD": Permission.READ,
-            "OPTIONS": Permission.READ,
-            "POST": Permission.WRITE,
-            "PUT": Permission.WRITE,
-            "PATCH": Permission.WRITE,
-            "DELETE": Permission.DELETE,
+        # Define HTTP method to permission mapping
+        self.method_permissions = {
+            "GET": "read",
+            "HEAD": "read",
+            "OPTIONS": "read",
+            "POST": "write",
+            "PUT": "write",
+            "PATCH": "write",
+            "DELETE": "write",
         }
         
-        # Special owner relationships (e.g., patients can access their own data)
-        self._owner_permissions: Dict[str, Dict[str, Set[str]]] = {
-            Role.PATIENT: {
-                ResourceType.PATIENT: {Permission.READ, Permission.WRITE},
-                ResourceType.ANALYSIS: {Permission.READ},
-                ResourceType.REPORT: {Permission.READ},
-                ResourceType.MEDICATION: {Permission.READ},
-                ResourceType.APPOINTMENT: {Permission.READ, Permission.WRITE},
-                ResourceType.ACTIGRAPHY: {Permission.READ, Permission.WRITE, Permission.EXECUTE},
-            }
+        # Define resource to permission mapping
+        self.resource_permissions = {
+            "patients": {
+                "read": ["view_patient_data", "view_own_data"],
+                "write": ["update_patient_data", "create_patient_record"],
+            },
+            "clinical-notes": {
+                "read": ["view_patient_data"],
+                "write": ["update_patient_data"],
+            },
+            "medications": {
+                "read": ["view_patient_data"],
+                "write": ["update_patient_data"],
+            },
+            "analytics": {
+                "read": ["view_anonymized_data"],
+                "write": ["run_analytics"],
+            },
+            "users": {
+                "read": ["manage_users"],
+                "write": ["manage_users"],
+            },
+            "config": {
+                "read": ["system_configuration"],
+                "write": ["system_configuration"],
+            },
+            "audit": {
+                "read": ["audit_logs"],
+                "write": [], # Audit logs are immutable
+            },
         }
-        
-        logger.info("Role-Based Access Control system initialized")
-    
-    def has_permission(self, 
-                      user_role: str, 
-                      resource_type: str, 
-                      permission: str, 
-                      is_owner: bool = False) -> bool:
+
+    def has_role(self, user_role: str, required_role: str) -> bool:
         """
-        Check if a user role has a specific permission on a resource type.
+        Check if a user with the given role has the required role.
         
         Args:
-            user_role: The role of the user
-            resource_type: The type of resource being accessed
-            permission: The permission being checked
-            is_owner: Whether the user owns the resource
+            user_role: The user's role
+            required_role: The required role for access
             
         Returns:
-            bool: True if the user has permission, False otherwise
+            bool: True if the user has the required role or higher
         """
-        # Admin always has all permissions
-        if user_role == Role.ADMIN or user_role == Role.SYSADMIN:
-            return True
+        if user_role not in self.role_hierarchy:
+            return False
             
-        # Check owner-specific permissions first
-        if is_owner and user_role in self._owner_permissions:
-            owner_perms = self._owner_permissions.get(user_role, {})
-            if resource_type in owner_perms and permission in owner_perms[resource_type]:
-                return True
-        
-        # Check role-based permissions
-        role_perms = self._role_permissions.get(user_role, {})
-        if resource_type in role_perms and permission in role_perms[resource_type]:
-            return True
-            
-        return False
-    
-    def get_allowed_roles(self, resource_type: str, permission: str) -> List[str]:
+        return required_role in self.role_hierarchy[user_role]
+
+    def has_permission(self, user_role: str, required_permission: str) -> bool:
         """
-        Get all roles that have a specific permission on a resource type.
+        Check if a user with the given role has the required permission.
         
         Args:
-            resource_type: The type of resource being accessed
-            permission: The permission being checked
+            user_role: The user's role
+            required_permission: The required permission for access
             
         Returns:
-            List[str]: List of roles with the specified permission
+            bool: True if the user has the required permission
         """
-        allowed_roles = []
-        for role, permissions in self._role_permissions.items():
-            if resource_type in permissions and permission in permissions[resource_type]:
-                allowed_roles.append(role)
-        return allowed_roles
-    
-    def check_access(self, 
-                    user_roles: List[str], 
-                    resource_type: str, 
-                    http_method: str,
-                    is_owner: bool = False) -> bool:
-        """
-        Check if a user with given roles can access a resource with a specific HTTP method.
-        
-        Args:
-            user_roles: List of user roles
-            resource_type: The type of resource being accessed
-            http_method: The HTTP method being used (GET, POST, etc.)
-            is_owner: Whether the user owns the resource
+        if required_permission not in self.permission_mapping:
+            return False
             
-        Returns:
-            bool: True if access is allowed, False otherwise
-        """
-        required_permission = self._method_permissions.get(http_method.upper(), Permission.READ)
+        allowed_roles = self.permission_mapping[required_permission]
+        return user_role in allowed_roles
         
-        # Check each role
-        for role in user_roles:
-            if self.has_permission(role, resource_type, required_permission, is_owner):
-                return True
-                
-        return False
-    
-    def map_http_method_to_permission(self, http_method: str) -> str:
+    def get_method_permission(self, http_method: str) -> str:
         """
-        Map an HTTP method to a permission.
+        Get the permission type for a given HTTP method.
         
         Args:
             http_method: The HTTP method (GET, POST, etc.)
             
         Returns:
-            str: The corresponding permission
+            str: The permission type (read or write)
         """
-        return self._method_permissions.get(http_method.upper(), Permission.READ)
+        return self.method_permissions.get(http_method.upper(), "write")
+        
+    def get_resource_permissions(self, resource: str, operation: str) -> List[str]:
+        """
+        Get the required permissions for a resource and operation.
+        
+        Args:
+            resource: The resource being accessed
+            operation: The operation (read or write)
+            
+        Returns:
+            List[str]: List of required permissions
+        """
+        if resource not in self.resource_permissions:
+            return []
+            
+        return self.resource_permissions[resource].get(operation, [])
+        
+    def can_access_resource(self, user_role: str, resource: str, http_method: str) -> bool:
+        """
+        Check if a user can access a resource with a specific HTTP method.
+        
+        Args:
+            user_role: The user's role
+            resource: The resource being accessed
+            http_method: The HTTP method being used
+            
+        Returns:
+            bool: True if the user has permission to access the resource
+        """
+        # Admin role can access everything
+        if user_role == "admin":
+            return True
+            
+        # Get the operation type for the HTTP method
+        operation = self.get_method_permission(http_method)
+        
+        # Get the required permissions for the resource and operation
+        required_permissions = self.get_resource_permissions(resource, operation)
+        
+        # Check if the user has any of the required permissions
+        for permission in required_permissions:
+            if self.has_permission(user_role, permission):
+                return True
+                
+        return False
+        
+    def can_access_own_records(self, user_role: str, resource: str, 
+                              http_method: str, user_id: str, 
+                              resource_owner_id: str) -> bool:
+        """
+        Check if a user can access their own records.
+        
+        Args:
+            user_role: The user's role
+            resource: The resource being accessed
+            http_method: The HTTP method being used
+            user_id: The ID of the user making the request
+            resource_owner_id: The ID of the user who owns the resource
+            
+        Returns:
+            bool: True if the user has permission to access the resource
+        """
+        # If it's not the user's own record, use standard permission check
+        if user_id != resource_owner_id:
+            return self.can_access_resource(user_role, resource, http_method)
+            
+        # For own records, check if the user has permission to view/update own data
+        operation = self.get_method_permission(http_method)
+        permission = "view_own_data" if operation == "read" else "update_own_data"
+        
+        return self.has_permission(user_role, permission)
