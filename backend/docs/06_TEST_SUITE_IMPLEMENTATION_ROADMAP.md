@@ -1,201 +1,200 @@
-# Test Suite Implementation Roadmap
+# Novamind Digital Twin Test Suite: Implementation Roadmap
 
 ## Overview
 
-This document provides a detailed, actionable implementation roadmap for transforming the current Novamind Digital Twin test suite into a production-ready test infrastructure. It builds on the analysis in `04_TEST_SUITE_CURRENT_STATE_ANALYSIS.md` and outlines specific steps, code examples, and a timeline for implementation.
+This document provides a detailed, actionable implementation plan for migrating the Novamind Digital Twin test suite to the dependency-based Single Source of Truth (SSOT) structure. It outlines specific steps, commands, and procedures for each phase of the migration process.
 
-## Implementation Timeline
+## Phase 1: Preparation
 
-| Phase | Focus Area | Timeframe | Key Deliverables |
-|-------|------------|-----------|------------------|
-| 1 | Scripts Cleanup & Foundation | Weeks 1-2 | Reorganized scripts directory, Canonical test runners |
-| 2 | Test Migration & Quality | Weeks 3-4 | Migrated tests, Improved test isolation |
-| 3 | Coverage & CI/CD | Weeks 5-6 | Coverage improvements, CI/CD integration |
+### Step 1: Fix Syntax Errors
 
-## Phase 1: Scripts Cleanup & Foundation (Weeks 1-2)
+The analysis identified 21 test files with syntax errors. These must be fixed before migration.
 
-### Task 1.1: Script Directory Restructuring (2 days)
+1. **Create a syntax error fix branch**:
+   ```bash
+   git checkout -b fix/test-syntax-errors
+   ```
 
-```bash
-# Create the new directory structure
-mkdir -p backend/scripts/test/runners/legacy
-mkdir -p backend/scripts/test/tools/legacy
-mkdir -p backend/scripts/test/fixtures
-mkdir -p backend/scripts/test/ci
-mkdir -p backend/scripts/db
-mkdir -p backend/scripts/deployment
-mkdir -p backend/scripts/utils
+2. **Fix each identified file with syntax errors**:
 
-# Analyze existing scripts and categorize them
-python -c "
-import os
-import shutil
-from pathlib import Path
+   Files with syntax errors:
+   - `/backend/app/tests/integration/test_digital_twin_integration_int.py`
+   - `/backend/app/tests/integration/test_temporal_neurotransmitter_integration.py`
+   - `/backend/app/tests/integration/test_temporal_wrapper.py`
+   - `/backend/app/tests/integration/security/test_phi_sanitization_integration.py`
+   - `/backend/app/tests/integration/api/test_actigraphy_api.py`
+   - `/backend/app/tests/security/test_phi_audit_fixed.py`
+   - `/backend/app/tests/security/test_encryption.py`
+   - `/backend/app/tests/security/test_log_sanitization.py`
+   - `/backend/app/tests/security/test_hipaa_compliance.py`
+   - `/backend/app/tests/security/test_auth_hipaa_compliance.py`
+   - `/backend/app/tests/security/test_db_phi_protection.py`
+   - `/backend/app/tests/security/test_api_hipaa_compliance.py`
+   - `/backend/app/tests/security/test_phi_sanitizer.py`
+   - `/backend/app/tests/enhanced/test_enhanced_digital_twin_integration.py`
+   - `/backend/app/tests/infrastructure/ml/test_symptom_forecasting_service.py`
+   - `/backend/app/tests/unit/test_mentallama_service.py`
+   - `/backend/app/tests/unit/infrastructure/ml/pharmacogenomics/test_model_service_pgx.py`
+   - `/backend/app/tests/unit/infrastructure/ml/pharmacogenomics/test_treatment_model.py`
+   - `/backend/app/tests/unit/infrastructure/ml/symptom_forecasting/test_model_service_symptom.py`
+   - `/backend/app/tests/unit/infrastructure/ml/symptom_forecasting/test_ensemble_model.py`
+   - `/backend/app/tests/unit/infrastructure/ml/symptom_forecasting/test_transformer_model.py`
+   - `/backend/app/tests/unit/infrastructure/ml/biometric_correlation/test_lstm_model.py`
+   - `/backend/app/tests/unit/infrastructure/ml/biometric_correlation/test_model_service.py`
+   - `/backend/app/tests/unit/infrastructure/services/test_redis_cache_service.py`
+   - `/backend/app/tests/unit/infrastructure/cache/test_redis_cache.py`
+   - `/backend/app/tests/unit/services/ml/pat/test_pat_service.py`
+   - `/backend/app/tests/unit/presentation/api/v1/endpoints/test_biometric_endpoints.py`
 
-script_dir = Path('backend/scripts')
-scripts = list(script_dir.glob('*.py')) + list(script_dir.glob('*.sh'))
+3. **Fix procedure for each file**:
+   - Check for missing parentheses, quotes, or indentation
+   - Verify imports are correct
+   - Ensure test function definitions are complete
+   - Fix assert statements if needed
 
-# Analyze and categorize
-for script in scripts:
-    content = script.read_text()
-    
-    # Determine category based on name and content
-    if 'test' in script.name.lower() and 'run' in script.name.lower():
-        target_dir = script_dir / 'test' / 'runners' / 'legacy'
-    elif 'test' in script.name.lower() and any(x in script.name.lower() for x in ['analyze', 'classify', 'categorize']):
-        target_dir = script_dir / 'test' / 'tools' / 'legacy'
-    elif 'ci' in script.name.lower() or 'pipeline' in script.name.lower():
-        target_dir = script_dir / 'test' / 'ci'
-    elif 'db' in script.name.lower() or 'database' in script.name.lower():
-        target_dir = script_dir / 'db'
-    elif 'deploy' in script.name.lower():
-        target_dir = script_dir / 'deployment'
-    else:
-        target_dir = script_dir / 'utils'
-    
-    # Ensure target directory exists
-    target_dir.mkdir(exist_ok=True, parents=True)
-    
-    # Report categorization (but don't move yet)
-    print(f'Would categorize {script} → {target_dir / script.name}')
-"
-```
+4. **Verify fixes with pytest**:
+   ```bash
+   cd /workspaces/Novamind-Backend-ONLY-TWINS/backend
+   python -m pytest <path_to_fixed_file> -v
+   ```
 
-### Task 1.2: Implement Canonical Test Runner (3 days)
+5. **Commit fixes**:
+   ```bash
+   git add .
+   git commit -m "Fix syntax errors in test files"
+   git push origin fix/test-syntax-errors
+   ```
 
-Create the canonical test runner based on the implementation in `06_TEST_SCRIPTS_IMPLEMENTATION.md`:
+### Step 2: Create Target Directory Structure
 
-```python
-#!/usr/bin/env python3
-"""
-Novamind Digital Twin Canonical Test Runner
+1. **Create the directory structure required by the SSOT approach**:
+   ```bash
+   mkdir -p /workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/{standalone,venv,integration}/{domain,application,infrastructure,api,core,presentation,security}/
+   ```
 
-This script is the canonical test runner for the Novamind Digital Twin platform.
-It implements the directory-based SSOT approach where tests are organized by
-dependency level:
-  - standalone/ - No external dependencies (fastest)
-  - venv/ - Python package dependencies (medium)
-  - integration/ - External services required (slowest)
+2. **Create base `conftest.py` files**:
+   ```bash
+   # Create standalone conftest.py
+   cat > /workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/standalone/conftest.py << 'EOF'
+   """
+   Test fixtures for standalone tests.
+   
+   Standalone tests have no external dependencies and should run quickly.
+   """
+   import pytest
 
-Usage:
-    python scripts/test/runners/run_tests.py --standalone  # Run standalone tests
-    python scripts/test/runners/run_tests.py --venv        # Run venv tests
-    python scripts/test/runners/run_tests.py --integration # Run integration tests
-    python scripts/test/runners/run_tests.py --all         # Run all tests
-    python scripts/test/runners/run_tests.py --coverage    # Generate coverage
-"""
+   # Add standalone-specific fixtures here
+   EOF
 
-import os
-import sys
-import time
-import argparse
-import subprocess
-import platform
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Any, Set
+   # Create venv conftest.py
+   cat > /workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/venv/conftest.py << 'EOF'
+   """
+   Test fixtures for venv tests.
+   
+   VENV tests require Python packages but no external services.
+   """
+   import pytest
 
-# ANSI color codes for terminal output
-class Color:
-    """ANSI color codes for terminal output."""
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
+   # Add venv-specific fixtures here
+   EOF
 
-    @staticmethod
-    def disable_if_windows():
-        """Disable colors on Windows if not supported."""
-        if platform.system() == "Windows":
-            Color.BLUE = ''
-            Color.GREEN = ''
-            Color.YELLOW = ''
-            Color.RED = ''
-            Color.ENDC = ''
-            Color.BOLD = ''
+   # Create integration conftest.py
+   cat > /workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/integration/conftest.py << 'EOF'
+   """
+   Test fixtures for integration tests.
+   
+   Integration tests require external services like databases or APIs.
+   """
+   import pytest
 
+   # Add integration-specific fixtures here
+   EOF
+   ```
 
-def print_header(message: str) -> None:
-    """
-    Print a formatted header message.
-    
-    Args:
-        message: The message to print as a header
-    """
-    print(f"\n{Color.BOLD}{Color.BLUE}{'=' * 80}{Color.ENDC}")
-    print(f"{Color.BOLD}{Color.BLUE}{message.center(80)}{Color.ENDC}")
-    print(f"{Color.BOLD}{Color.BLUE}{'=' * 80}{Color.ENDC}\n")
+3. **Create placeholders for subdirectory conftest files**:
+   ```bash
+   for level in standalone venv integration; do
+     for domain in domain application infrastructure api core presentation security; do
+       mkdir -p /workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/$level/$domain
+       touch /workspaces/Novamind-Backend-ONLY-TWINS/backend/app/tests/$level/$domain/__init__.py
+     done
+   done
+   ```
 
+### Step 3: Enhance Migration Scripts
 
-def print_section(message: str) -> None:
-    """
-    Print a formatted section header.
-    
-    Args:
-        message: The message to print as a section header
-    """
-    print(f"\n{Color.BOLD}{Color.YELLOW}{message}{Color.ENDC}")
-    print(f"{Color.BOLD}{Color.YELLOW}{'-' * len(message)}{Color.ENDC}\n")
+1. **Update the migration script to fix import paths automatically**:
+   
+   Create a script that adds the import fix capability to the existing migration tool:
 
+   ```python
+   # /workspaces/Novamind-Backend-ONLY-TWINS/backend/scripts/test/migrations/enhance_migration_tool.py
+   
+   #!/usr/bin/env python3
+   """
+   Enhance the test migration tool with additional capabilities.
+   
+   This script adds:
+   1. Automatic import path fixing
+   2. Error reporting for tests that fail after migration
+   3. Test verification after migration
+   """
+   
+   import os
+   import sys
+   import re
+   from pathlib import Path
+   
+   # Add import path fixing to the migration tool
+   def enhance_migrate_tests_script():
+       migrate_tests_path = Path("/workspaces/Novamind-Backend-ONLY-TWINS/backend/scripts/test/migrations/migrate_tests.py")
+       
+       # Read the original file
+       with open(migrate_tests_path, 'r') as f:
+           content = f.read()
+       
+       # Enhance the script with import fixing capabilities
+       # [Implementation would go here]
+       
+       # Write back the enhanced script
+       with open(migrate_tests_path, 'w') as f:
+           f.write(content)
+       
+       print("Migration script enhanced with import path fixing")
+   
+   if __name__ == "__main__":
+       enhance_migrate_tests_script()
+   ```
 
-def run_command(cmd: List[str], env: Optional[Dict[str, str]] = None) -> Tuple[bool, str, float]:
-    """
-    Run a command and return success status, output, and execution time.
-    
-    Args:
-        cmd: The command to run as a list of strings
-        env: Optional environment variables to set
-        
-    Returns:
-        Tuple of (success, output, execution_time)
-    """
-    print(f"Running: {' '.join(cmd)}")
-    start_time = time.time()
-    
-    try:
-        # Use provided environment or current environment
-        env_vars = env or os.environ.copy()
-        
-        # Run the command
-        result = subprocess.run(
-            cmd,
-            env=env_vars,
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True
-        )
-        
-        # Check if the command succeeded
-        success = result.returncode == 0
-        output = result.stdout
-    except Exception as e:
-        success = False
-        output = str(e)
-    
-    # Calculate execution time
-    execution_time = time.time() - start_time
-    return success, output, execution_time
+2. **Run the enhancement script**:
+   ```bash
+   python /workspaces/Novamind-Backend-ONLY-TWINS/backend/scripts/test/migrations/enhance_migration_tool.py
+   ```
 
-# ... continue with implementation from 06_TEST_SCRIPTS_IMPLEMENTATION.md ...
-```
-
-### Task 1.3: Implement Security Test Runner (2 days)
-
-Create a specialized security test runner based on the implementation plan:
-
-```python
-#!/usr/bin/env python3
-"""
-Novamind Digital Twin Security Test Runner
-
-This script focuses specifically on security-related tests across all dependency
-levels. It provides specialized functionality for HIPAA compliance testing, PHI
-handling verification, and security vulnerability scanning.
-
-Usage:
+3. **Create test verification script**:
+   ```python
+   # /workspaces/Novamind-Backend-ONLY-TWINS/backend/scripts/test/migrations/verify_migration.py
+   
+   #!/usr/bin/env python3
+   """
+   Verify test migration by running tests in the new structure.
+   
+   This script:
+   1. Runs tests in the new directory structure
+   2. Reports tests that fail after migration
+   3. Provides guidance on fixing migration issues
+   """
+   
+   import os
+   import sys
+   import subprocess
+   from pathlib import Path
+   
+   def verify_migrated_tests():
+       """Run migrated tests and verify they pass."""
+       
+       # Test standalone tests
+       print("Verifying standalone tests...")
     python scripts/test/runners/run_security.py  # Run all security tests
     python scripts/test/runners/run_security.py --hipaa  # HIPAA compliance only
     python scripts/test/runners/run_security.py --phi    # PHI handling only
@@ -1276,6 +1275,194 @@ class TestPatientRepository:
         session.close()
     
     @pytest.fixture
+    def patient_repository(self, db_session):
+        """Create a real PatientRepository with a test database session."""
+        return SQLAlchemyPatientRepository(session=db_session)
+    
+    @pytest.fixture
+    def sample_patient_data(self):
+        """Create sample patient data for testing."""
+        return {
+            "first_name": "John",
+            "last_name": "Doe",
+            "date_of_birth": date(1980, 1, 1),
+            "gender": "male",
+            "email": f"john.doe.{uuid4()}@example.com"  # Ensure unique email
+        }
+    
+    def test_create_and_get_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be created and retrieved."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        
+        # Act
+        created_patient = patient_repository.create(patient)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert retrieved_patient is not None
+        assert retrieved_patient.id == created_patient.id
+        assert retrieved_patient.first_name == sample_patient_data["first_name"]
+        assert retrieved_patient.last_name == sample_patient_data["last_name"]
+        assert retrieved_patient.date_of_birth == sample_patient_data["date_of_birth"]
+        assert retrieved_patient.gender == sample_patient_data["gender"]
+        assert retrieved_patient.email == sample_patient_data["email"]
+    
+    def test_update_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be updated."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        created_patient = patient_repository.create(patient)
+        
+        # Act
+        created_patient.first_name = "Jane"
+        updated_patient = patient_repository.update(created_patient)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert updated_patient.first_name == "Jane"
+        assert retrieved_patient.first_name == "Jane"
+    
+    def test_delete_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be deleted."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        created_patient = patient_repository.create(patient)
+        
+        # Act
+        patient_repository.delete(created_patient.id)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert retrieved_patient is None
+    
+    def test_get_patients_with_filters(self, patient_repository, sample_patient_data):
+        """Test that patients can be retrieved with filters."""
+        # Arrange
+        # Create multiple patients
+        patient1 = Patient(id=str(uuid4()), **sample_patient_data)
+        patient2 = Patient(
+            id=str(uuid4()),
+            first_name="Jane",
+            last_name="Doe",
+            date_of_birth=date(1985, 5, 5),
+            gender="female",
+            email=f"jane.doe.{uuid4()}@example.com"
+        )
+        patient_repository.create(patient1)
+        patient_repository.create(patient2)
+        
+        # Act
+        results = patient_repository.get_patients(
+            filters={"last_name": "Doe", "gender": "female"}
+        )
+        
+        # Assert
+        assert len(results) == 1
+        assert results[0].first_name == "Jane"
+        assert results[0].gender == "female"
+```
+
+## Conclusion
+
+This implementation roadmap provides a detailed, step-by-step plan for transforming the current Novamind Digital Twin test suite into a production-ready test infrastructure. Following this roadmap will:
+
+1. Reorganize the chaotic scripts directory into a clean, logical structure
+2. Implement canonical test runners following the SSOT approach
+3. Migrate tests to the proper directory structure
+4. Improve test quality and coverage
+5. Integrate with CI/CD pipelines
+
+By the end of this implementation, the Novamind Digital Twin will have a robust, maintainable test infrastructure that ensures reliability, performance, and security while enabling rapid development.
+
+The roadmap is designed to be incremental and pragmatic, allowing for continuous improvement while maintaining the ability to run tests throughout the migration process. This approach minimizes disruption while maximizing the benefits of the new test infrastructure.
+    
+    def test_create_and_get_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be created and retrieved."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        
+        # Act
+        created_patient = patient_repository.create(patient)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert retrieved_patient is not None
+        assert retrieved_patient.id == created_patient.id
+        assert retrieved_patient.first_name == sample_patient_data["first_name"]
+        assert retrieved_patient.last_name == sample_patient_data["last_name"]
+        assert retrieved_patient.date_of_birth == sample_patient_data["date_of_birth"]
+        assert retrieved_patient.gender == sample_patient_data["gender"]
+        assert retrieved_patient.email == sample_patient_data["email"]
+    
+    def test_update_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be updated."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        created_patient = patient_repository.create(patient)
+        
+        # Act
+        created_patient.first_name = "Jane"
+        updated_patient = patient_repository.update(created_patient)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert updated_patient.first_name == "Jane"
+        assert retrieved_patient.first_name == "Jane"
+    
+    def test_delete_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be deleted."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        created_patient = patient_repository.create(patient)
+        
+        # Act
+        patient_repository.delete(created_patient.id)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert retrieved_patient is None
+    
+    def test_get_patients_with_filters(self, patient_repository, sample_patient_data):
+        """Test that patients can be retrieved with filters."""
+        # Arrange
+        # Create multiple patients
+        patient1 = Patient(id=str(uuid4()), **sample_patient_data)
+        patient2 = Patient(
+            id=str(uuid4()),
+            first_name="Jane",
+            last_name="Doe",
+            date_of_birth=date(1985, 5, 5),
+            gender="female",
+            email=f"jane.doe.{uuid4()}@example.com"
+        )
+        patient_repository.create(patient1)
+        patient_repository.create(patient2)
+        
+        # Act
+        results = patient_repository.get_patients(
+            filters={"last_name": "Doe", "gender": "female"}
+        )
+        
+        # Assert
+        assert len(results) == 1
+        assert results[0].first_name == "Jane"
+        assert results[0].gender == "female"
+```
+
+## Conclusion
+
+This implementation roadmap provides a detailed, step-by-step plan for transforming the current Novamind Digital Twin test suite into a production-ready test infrastructure. Following this roadmap will:
+
+1. Reorganize the chaotic scripts directory into a clean, logical structure
+2. Implement canonical test runners following the SSOT approach
+3. Migrate tests to the proper directory structure
+4. Improve test quality and coverage
+5. Integrate with CI/CD pipelines
+
+By the end of this implementation, the Novamind Digital Twin will have a robust, maintainable test infrastructure that ensures reliability, performance, and security while enabling rapid development.
+
+The roadmap is designed to be incremental and pragmatic, allowing for continuous improvement while maintaining the ability to run tests throughout the migration process. This approach minimizes disruption while maximizing the benefits of the new test infrastructure.
     def patient_repository(self, db_session):
         """Create a real PatientRepository with a test database session."""
         return SQLAlchemyPatientRepository(session=db_session)
