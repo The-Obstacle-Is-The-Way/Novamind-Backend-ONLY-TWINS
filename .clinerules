@@ -1,6 +1,10 @@
 # Novamind Digital Twin: Psychiatric Platform Architecture - Backend Only
+- first analyze what's already in the repository before creating new files
+- first analyze what's already in the repository before creating new files
+- first analyze what's already in the repository before creating new files
 
 ## Clean Architecture
+- first analyze what's already in the repository before creating new files
 - REMEMBER TO STAY IN THE CORRECT ROOT /BACKEND/ DIRECTORY FOR BACKEND SPECIFIC FILES. WE HAVE A ROOT /BACKEND/ BE CAREFUL ABOUT ROOT AND REDUNDANT FILES 
 - **No aliases, patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
@@ -11,6 +15,7 @@
 - **Core**: Cross-cutting concerns, shared utilities
 
 ## Backend Design Principles
+- first analyze what's already in the repository before creating new files
 - REMEMBER TO STAY IN THE CORRECT ROOT /BACKEND/ DIRECTORY FOR BACKEND SPECIFIC FILES. WE HAVE A ROOT /BACKEND/ BE CAREFUL ABOUT ROOT AND REDUNDANT FILES 
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
@@ -22,6 +27,7 @@
 - **Type Hints**: All Python code uses type annotations
 
 ## HIPAA Compliance
+- first analyze what's already in the repository before creating new files
 - REMEMBER TO STAY IN THE CORRECT ROOT /BACKEND/ DIRECTORY FOR BACKEND SPECIFIC FILES. WE HAVE A ROOT /BACKEND/ BE CAREFUL ABOUT ROOT AND REDUNDANT FILES 
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
@@ -34,6 +40,7 @@
 - **Authorization**: Role-based access control for all resources
 
 ## Data Security
+- first analyze what's already in the repository before creating new files
 - REMEMBER TO STAY IN THE CORRECT ROOT /BACKEND/ DIRECTORY FOR BACKEND SPECIFIC FILES. WE HAVE A ROOT /BACKEND/ BE CAREFUL ABOUT ROOT AND REDUNDANT FILES 
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
@@ -44,6 +51,7 @@
 - **Encryption**: TLS for data in transit, encryption for data at rest
 
 ## API Design
+first analyze what's already in the repository before creating new files
 - REMEMBER TO STAY IN THE CORRECT ROOT /BACKEND/ DIRECTORY FOR BACKEND SPECIFIC FILES. WE HAVE A ROOT /BACKEND/ BE CAREFUL ABOUT ROOT AND REDUNDANT FILES 
 - **No ALIASES, patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
@@ -54,6 +62,7 @@
 - **Response Formats**: Consistent JSON structure
 
 ## Testing
+- first analyze what's already in the repository before creating new files
 - REMEMBER TO STAY IN THE CORRECT ROOT /BACKEND/ DIRECTORY FOR BACKEND SPECIFIC FILES. WE HAVE A ROOT /BACKEND/ BE CAREFUL ABOUT ROOT AND REDUNDANT FILES 
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**
@@ -64,6 +73,7 @@
 - **Test Coverage**: Maintain high test coverage
 
 ## Reference Documentation
+- first analyze what's already in the repository before creating new files
 - REMEMBER TO STAY IN THE CORRECT ROOT /BACKEND/ DIRECTORY FOR BACKEND SPECIFIC FILES. WE HAVE A ROOT /BACKEND/ BE CAREFUL ABOUT ROOT AND REDUNDANT FILES 
 - **No patches, no legacy code, delete legacy code as you go, no adapters, no backward compatibility, just pure forward-focused clean code**
 - **Follow Robert C. Martin, GOF, SOLID, DRY Principles of CLEAN CODE with the BEST DESIGN PATTERN IMPLEMENTATIONS IN EVERY VERTICAL SLICE OR DOMAIN**

@@ -1377,3 +1377,90 @@ This implementation roadmap provides a detailed, step-by-step plan for transform
 By the end of this implementation, the Novamind Digital Twin will have a robust, maintainable test infrastructure that ensures reliability, performance, and security while enabling rapid development.
 
 The roadmap is designed to be incremental and pragmatic, allowing for continuous improvement while maintaining the ability to run tests throughout the migration process. This approach minimizes disruption while maximizing the benefits of the new test infrastructure.
+    
+    def test_create_and_get_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be created and retrieved."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        
+        # Act
+        created_patient = patient_repository.create(patient)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert retrieved_patient is not None
+        assert retrieved_patient.id == created_patient.id
+        assert retrieved_patient.first_name == sample_patient_data["first_name"]
+        assert retrieved_patient.last_name == sample_patient_data["last_name"]
+        assert retrieved_patient.date_of_birth == sample_patient_data["date_of_birth"]
+        assert retrieved_patient.gender == sample_patient_data["gender"]
+        assert retrieved_patient.email == sample_patient_data["email"]
+    
+    def test_update_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be updated."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        created_patient = patient_repository.create(patient)
+        
+        # Act
+        created_patient.first_name = "Jane"
+        updated_patient = patient_repository.update(created_patient)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert updated_patient.first_name == "Jane"
+        assert retrieved_patient.first_name == "Jane"
+    
+    def test_delete_patient(self, patient_repository, sample_patient_data):
+        """Test that a patient can be deleted."""
+        # Arrange
+        patient = Patient(id=str(uuid4()), **sample_patient_data)
+        created_patient = patient_repository.create(patient)
+        
+        # Act
+        patient_repository.delete(created_patient.id)
+        retrieved_patient = patient_repository.get_by_id(created_patient.id)
+        
+        # Assert
+        assert retrieved_patient is None
+    
+    def test_get_patients_with_filters(self, patient_repository, sample_patient_data):
+        """Test that patients can be retrieved with filters."""
+        # Arrange
+        # Create multiple patients
+        patient1 = Patient(id=str(uuid4()), **sample_patient_data)
+        patient2 = Patient(
+            id=str(uuid4()),
+            first_name="Jane",
+            last_name="Doe",
+            date_of_birth=date(1985, 5, 5),
+            gender="female",
+            email=f"jane.doe.{uuid4()}@example.com"
+        )
+        patient_repository.create(patient1)
+        patient_repository.create(patient2)
+        
+        # Act
+        results = patient_repository.get_patients(
+            filters={"last_name": "Doe", "gender": "female"}
+        )
+        
+        # Assert
+        assert len(results) == 1
+        assert results[0].first_name == "Jane"
+        assert results[0].gender == "female"
+```
+
+## Conclusion
+
+This implementation roadmap provides a detailed, step-by-step plan for transforming the current Novamind Digital Twin test suite into a production-ready test infrastructure. Following this roadmap will:
+
+1. Reorganize the chaotic scripts directory into a clean, logical structure
+2. Implement canonical test runners following the SSOT approach
+3. Migrate tests to the proper directory structure
+4. Improve test quality and coverage
+5. Integrate with CI/CD pipelines
+
+By the end of this implementation, the Novamind Digital Twin will have a robust, maintainable test infrastructure that ensures reliability, performance, and security while enabling rapid development.
+
+The roadmap is designed to be incremental and pragmatic, allowing for continuous improvement while maintaining the ability to run tests throughout the migration process. This approach minimizes disruption while maximizing the benefits of the new test infrastructure.
