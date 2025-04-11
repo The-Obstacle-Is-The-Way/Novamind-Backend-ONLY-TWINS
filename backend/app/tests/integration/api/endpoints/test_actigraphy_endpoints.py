@@ -20,7 +20,7 @@ from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.ml import get_pat_service
 from app.api.routes.actigraphy import router as actigraphy_router
 from app.domain.entities.user import User
-from app.core.services.ml.pat.mock import MockPAT
+from app.core.services.ml.pat.mock import MockPATService
 
 
 @pytest.fixture
@@ -35,16 +35,16 @@ def pat_storage() -> Generator[str, None, None]:
 
 
 @pytest.fixture
-def mock_pat(pat_storage: str) -> MockPAT:
-    """Fixture that returns a configured MockPAT instance.
+def mock_pat(pat_storage: str) -> MockPATService:
+    """Fixture that returns a configured MockPATService instance.
     
     Args:
         pat_storage: Temporary storage directory
         
     Returns:
-        Configured MockPAT instance
+        Configured MockPATService instance
     """
-    pat = MockPAT()
+    pat = MockPATService()
     pat.initialize({"storage_path": pat_storage})
     return pat
 

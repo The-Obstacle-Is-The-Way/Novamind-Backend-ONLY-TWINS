@@ -12,7 +12,7 @@ from fastapi.security import OAuth2PasswordBearer # Import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.db import get_session
+from app.core.db import get_session # Import get_session for AsyncSession dependency
 # Remove incorrect import of oauth2_scheme
 from app.core.auth import (
     validate_jwt,
@@ -45,7 +45,7 @@ async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> Dict
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    user_repository: UserRepository = Depends(get_user_repository),
+    session: AsyncSession = Depends(get_session), # Depend directly on the session
 ) -> User:
     """
     Get the current authenticated user.
@@ -67,6 +67,8 @@ async def get_current_user(
     user_id = get_current_user_id(payload)
     
     # Fetch user from repository
+    # Manually get the repository using the injected session
+    user_repository = await get_user_repository(session=session)
     user = await user_repository.get_by_id(user_id)
     
     if not user:
@@ -86,7 +88,7 @@ async def get_current_user(
 
 async def get_current_active_clinician(
     token: str = Depends(oauth2_scheme),
-    user_repository: UserRepository = Depends(get_user_repository),
+    session: AsyncSession = Depends(get_session), # Depend directly on the session
 ) -> User:
     """
     Get the current authenticated clinician user.
@@ -111,13 +113,14 @@ async def get_current_active_clinician(
         )
     
     # Get the user
-    user = await get_current_user(token, user_repository)
+    # Pass the session to get_current_user
+    user = await get_current_user(token=token, session=session)
     return user
 
 
 async def get_current_active_admin(
     token: str = Depends(oauth2_scheme),
-    user_repository: UserRepository = Depends(get_user_repository),
+    session: AsyncSession = Depends(get_session), # Depend directly on the session
 ) -> User:
     """
     Get the current authenticated admin user.
@@ -142,13 +145,14 @@ async def get_current_active_admin(
         )
     
     # Get the user
-    user = await get_current_user(token, user_repository)
+    # Pass the session to get_current_user
+    user = await get_current_user(token=token, session=session)
     return user
 
 
 async def get_current_user_dict(
     token: str = Depends(oauth2_scheme),
-    user_repository: UserRepository = Depends(get_user_repository)
+    session: AsyncSession = Depends(get_session) # Depend directly on the session
 ) -> Dict[str, Any]:
     """
     Get the current authenticated user as a dictionary.
@@ -163,7 +167,8 @@ async def get_current_user_dict(
         User information as a dictionary
     """
     # Get the user
-    user = await get_current_user(token, user_repository)
+    # Pass the session to get_current_user
+    user = await get_current_user(token=token, session=session)
     
     # Return just the essential information as a dictionary
     return {

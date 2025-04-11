@@ -58,6 +58,27 @@ class ValidationError(PATServiceError):
         )
 
 
+class InitializationError(PATServiceError):
+    """Exception raised when initialization of a service or component fails."""
+    
+    def __init__(self, message: str, component: Optional[str] = None, cause: Optional[str] = None, **kwargs):
+        """
+        Initialize an initialization error.
+        
+        Args:
+            message: Error message
+            component: Name of the component that failed to initialize
+            cause: Cause of the failure
+            **kwargs: Additional error context
+        """
+        super().__init__(
+            message,
+            component=component,
+            cause=cause,
+            **kwargs
+        )
+
+
 class AnalysisError(PATServiceError):
     """Exception raised when analysis of patient data fails."""
     
@@ -201,6 +222,52 @@ class IntegrationError(PATServiceError):
         super().__init__(
             message,
             system_name=system_name,
+            cause=cause,
+            **kwargs
+        )
+
+
+class AuthorizationError(PATServiceError):
+    """Exception raised when an operation is not authorized."""
+    
+    def __init__(self, message: str, user_id: Optional[str] = None, resource_id: Optional[str] = None, action: Optional[str] = None, **kwargs):
+        """
+        Initialize an authorization error.
+        
+        Args:
+            message: Error message
+            user_id: ID of the user who attempted the operation
+            resource_id: ID of the resource that was accessed
+            action: Type of action that was attempted
+            **kwargs: Additional error context
+        """
+        super().__init__(
+            message,
+            user_id=user_id,
+            resource_id=resource_id,
+            action=action,
+            **kwargs
+        )
+
+
+class EmbeddingError(PATServiceError):
+    """Exception raised when embedding generation fails."""
+    
+    def __init__(self, message: str, model_id: Optional[str] = None, data_type: Optional[str] = None, cause: Optional[str] = None, **kwargs):
+        """
+        Initialize an embedding error.
+        
+        Args:
+            message: Error message
+            model_id: ID of the embedding model
+            data_type: Type of data being embedded
+            cause: Cause of the failure
+            **kwargs: Additional error context
+        """
+        super().__init__(
+            message,
+            model_id=model_id,
+            data_type=data_type,
             cause=cause,
             **kwargs
         )

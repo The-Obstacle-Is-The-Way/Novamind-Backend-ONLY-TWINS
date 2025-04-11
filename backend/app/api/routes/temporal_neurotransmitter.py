@@ -21,25 +21,74 @@ from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 T = TypeVar('T')
 
 # Prevent module-level imports from causing FastAPI to analyze our dependencies
-# By using a late binding approach, FastAPI cannot "see" complex dependencies during router setup
+# By using a completely isolated dependency resolver that FastAPI never sees
 class LazyDependency(Generic[T]):
-    """Lazy dependency loader that prevents FastAPI from analyzing complex dependency chains at import time."""
+    """
+    Lazy dependency loader that completely isolates dependency chains from FastAPI.
+    
+    This implementation ensures FastAPI never attempts to analyze the dependency
+    chain, preventing AsyncSession from appearing in response models.
+    """
     
     def __init__(self, module_path: str, dependency_name: str):
         self.module_path = module_path
         self.dependency_name = dependency_name
         self._dependency = None
+        self._service_instance = None
     
-    def __call__(self) -> T:
+    async def __call__(self) -> T:
+        """
+        Get the service instance without FastAPI ever seeing the dependency chain.
+        
+        This is done by directly importing and calling the dependency function,
+        completely bypassing FastAPI's dependency injection system.
+        """
         if self._dependency is None:
             module = importlib.import_module(self.module_path)
             self._dependency = getattr(module, self.dependency_name)
-        return self._dependency()
+        
+        if self._service_instance is None:
+            # Import DB session at runtime to avoid FastAPI analyzing it
+            from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session as get_session_from_config
+            from sqlalchemy.ext.asyncio import AsyncSession
+            
+            # Get a database session directly, not through FastAPI
+            session_gen = get_session_from_config()
+            session = None
+            async for db_session in session_gen:
+                session = db_session
+                break
+                
+            if not session:
+                raise RuntimeError("Failed to obtain database session")
+            
+            # Import repositories at runtime
+            from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
+            from app.infrastructure.repositories.temporal_sequence_repository import SqlAlchemyTemporalSequenceRepository
+            
+            # Create repositories directly
+            seq_repo = SqlAlchemyTemporalSequenceRepository(session=session)
+            event_repo = SqlAlchemyEventRepository(session=session)
+            
+            # Import XGBoost service
+            from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
+            xgboost_service = EnhancedXGBoostService()
+            
+            # Import the service class directly
+            from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
+            
+            # Create the service instance directly
+            self._service_instance = TemporalNeurotransmitterService(
+                sequence_repository=seq_repo,
+                event_repository=event_repo,
+                xgboost_service=xgboost_service
+            )
+            
+        return self._service_instance
 
-# Create a lazy binding for the service dependency
-# This completely isolates the dependency chain from FastAPI's route analysis
+# Create a completely isolated service factory
 _get_neurotransmitter_service = LazyDependency(
-    'app.api.dependencies.services', 
+    'app.api.dependencies.services',
     'get_temporal_neurotransmitter_service'
 )
 
@@ -139,9 +188,32 @@ class CascadeVisualizationResponse(BaseModel):
     metadata: Optional[Dict] = None
 
 
+class TimeSeriesGenerateResponse(BaseModel):
+    """Response model for generating a neurotransmitter time series."""
+    sequence_id: UUID
+    patient_id: UUID
+    brain_region: str
+    neurotransmitter: str
+    time_range_days: int
+    time_step_hours: int
+
+
+class AnalysisResponse(BaseModel):
+    """Response model for neurotransmitter analysis."""
+    neurotransmitter: str
+    brain_region: str
+    effect_size: float
+    confidence_interval: Optional[List[float]]
+    p_value: Optional[float]
+    is_statistically_significant: bool
+    clinical_significance: Optional[str]
+    time_series_data: List[List[Union[str, float]]]
+    comparison_periods: Dict[str, List[str]]
+
+
 @router.post(
     "/time-series",
-    response_model=None,
+    response_model=TimeSeriesGenerateResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Generate neurotransmitter time series",
     description="Generate time series data for a specific neurotransmitter in a brain region.",
@@ -183,7 +255,7 @@ async def generate_time_series(
 
 @router.post(
     "/analyze",
-    response_model=None,
+    response_model=AnalysisResponse,
     status_code=status.HTTP_200_OK,
     summary="Analyze neurotransmitter levels",
     description="Analyze neurotransmitter levels for a specific patient, brain region, and neurotransmitter.",
@@ -249,7 +321,7 @@ async def analyze_neurotransmitter(
 
 @router.post(
     "/simulate-treatment",
-    response_model=None,
+    response_model=TreatmentSimulationResponse,
     status_code=status.HTTP_200_OK,
     summary="Simulate treatment response",
     description="Simulate treatment response for a specific patient, brain region, and neurotransmitter.",
@@ -289,7 +361,7 @@ async def simulate_treatment(
 
 @router.post(
     "/visualization-data",
-    response_model=None,
+    response_model=VisualizationDataResponse,
     status_code=status.HTTP_200_OK,
     summary="Get visualization data",
     description="Get visualization data for a specific sequence.",
@@ -323,7 +395,7 @@ async def get_visualization_data(
 
 @router.post(
     "/cascade-visualization",
-    response_model=None,
+    response_model=CascadeVisualizationResponse,
     status_code=status.HTTP_200_OK,
     summary="Get cascade visualization",
     description="Get cascade visualization for a specific patient, starting region, and neurotransmitter.",

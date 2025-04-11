@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 
 from app.core.config import settings
 from app.core.services.ml.pat.exceptions import InitializationError
-from app.core.services.ml.pat.interface import PATInterface
+from app.core.services.ml.pat.pat_interface import PATInterface
 from app.core.services.ml.pat.mock import MockPATService
 
 # Conditionally import the AWS implementation

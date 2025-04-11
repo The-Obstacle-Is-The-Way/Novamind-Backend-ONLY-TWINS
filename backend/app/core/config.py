@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     """
     # Project info
     PROJECT_NAME: str = "Novamind Digital Twin"
+    APP_DESCRIPTION: str = "Advanced psychiatric digital twin platform for mental health analytics and treatment optimization"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")

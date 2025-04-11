@@ -311,3 +311,43 @@ class TreatmentOutcomeResponse(BaseModel):
     effectiveness: str = Field(..., description="Treatment effectiveness")
     notes: Optional[str] = Field(None, description="Additional notes")
     timestamp: datetime = Field(..., description="Timestamp when outcome was recorded")
+
+
+class BiometricCorrelationResponse(BaseModel):
+    """Response schema for biometric correlation analysis."""
+    
+    correlation_id: str = Field(..., description="Unique ID for correlation analysis")
+    digital_twin_id: str = Field(..., description="ID of associated digital twin")
+    biometric_type: str = Field(..., description="Type of biometric data analyzed")
+    correlations: Dict[str, float] = Field(..., description="Correlation coefficients for each factor")
+    significance: Dict[str, float] = Field(..., description="Statistical significance of correlations")
+    sample_size: int = Field(..., gt=0, description="Sample size used for analysis")
+    confidence_interval: List[float] = Field(..., description="Confidence interval for correlations")
+    timestamp: datetime = Field(..., description="Timestamp when analysis was performed")
+
+
+class MedicationResponsePredictionResponse(BaseModel):
+    """Response schema for medication response prediction."""
+    
+    prediction_id: str = Field(..., description="Unique ID for prediction")
+    digital_twin_id: str = Field(..., description="ID of associated digital twin")
+    medication: str = Field(..., description="Medication being predicted")
+    response_likelihood: float = Field(..., ge=0.0, le=1.0, description="Likelihood of positive response")
+    potential_side_effects: List[str] = Field(..., description="Potential side effects")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score for prediction")
+    similar_cases: int = Field(..., ge=0, description="Number of similar cases used for prediction")
+    timestamp: datetime = Field(..., description="Timestamp when prediction was generated")
+
+
+class TreatmentPlanResponse(BaseModel):
+    """Response schema for treatment plan generation."""
+    
+    plan_id: str = Field(..., description="Unique ID for treatment plan")
+    digital_twin_id: str = Field(..., description="ID of associated digital twin")
+    treatment_goals: List[str] = Field(..., description="Goals of the treatment plan")
+    recommended_treatments: List[str] = Field(..., description="Recommended treatments")
+    timeline: Dict[str, Any] = Field(..., description="Timeline for treatment implementation")
+    monitoring_plan: List[str] = Field(..., description="Plan for monitoring treatment effectiveness")
+    adjustments: List[str] = Field(..., description="Potential adjustments based on response")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score for plan")
+    timestamp: datetime = Field(..., description="Timestamp when plan was generated")
