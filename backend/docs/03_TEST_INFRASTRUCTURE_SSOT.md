@@ -1,324 +1,321 @@
-# Test Infrastructure SSOT
+# Novamind Digital Twin Test Infrastructure: Single Source of Truth
 
 ## Overview
 
-This document defines the canonical Single Source of Truth (SSOT) for the Novamind Digital Twin test infrastructure. It serves as the definitive reference for test organization, execution, and management.
+This document serves as the definitive Single Source of Truth (SSOT) for the Novamind Digital Twin test infrastructure. It provides comprehensive technical details on test organization, execution, and best practices to ensure consistent implementation across the team.
 
-## Directory-Based Test Organization
+## Core Principles
 
-The Novamind test suite is organized primarily by dependency level, not by test type or architectural layer. This approach optimizes for:
+The Novamind Digital Twin test infrastructure is built on these foundational principles:
 
-1. **Test Execution Speed:** Fast tests run first, providing immediate feedback
-2. **Resource Efficiency:** Tests with similar requirements run together
-3. **Developer Experience:** Clear, consistent organization simplifies test development
-4. **CI/CD Integration:** Progressive test execution in CI pipelines
+1. **Dependency-Based Organization**: Tests are categorized by their external dependency requirements, not by architecture layer
+2. **Progressive Test Execution**: Tests run from most isolated to most integrated
+3. **SSOT Directory Structure**: Clear, consistent directory structure for all tests
+4. **Unified Test Runners**: Canonical tools for test execution
+5. **HIPAA-Compliant Testing**: Special considerations for protected health information (PHI)
 
-### Three-Tier Directory Structure
+## Directory Structure
 
-All tests must be organized into one of three top-level directories based on their dependency requirements:
-
-```
-backend/app/tests/
-├── standalone/  # No external dependencies
-├── venv/        # Python package dependencies only
-├── integration/ # External service dependencies
-├── conftest.py  # Shared fixtures
-└── helpers/     # Test utilities
-```
-
-#### 1. Standalone Tests (`backend/app/tests/standalone/`)
-
-Tests that require **no external dependencies** beyond Python standard library:
-
-- **Eligible Components:**
-  - Pure business logic
-  - Domain models and entities
-  - Utility functions
-  - Value objects
-  - Core algorithms
-
-- **Requirements:**
-  - No imports beyond standard library and pytest
-  - No database access
-  - No file system operations
-  - No network requests
-  - No dependency on installed packages beyond pytest
-
-- **Execution Environment:**
-  - Can run in any Python environment with pytest
-  - No container or service requirements
-  - Execute first in CI pipeline
-  - Should complete in seconds
-
-#### 2. VENV Tests (`backend/app/tests/venv/`)
-
-Tests that require **Python package dependencies but no external services**:
-
-- **Eligible Components:**
-  - Framework-dependent code (FastAPI, SQLAlchemy) with mocked backends
-  - Data analysis components (numpy, pandas)
-  - Tests requiring specialized libraries
-  - Components with complex package dependencies
-
-- **Requirements:**
-  - Depends on installed Python packages
-  - No database access (use in-memory SQLite or mocks)
-  - No external service dependencies
-  - May access filesystem for test data
-
-- **Execution Environment:**
-  - Requires specific virtualenv with dependencies installed
-  - No container or database requirements
-  - Execute after standalone tests in CI
-  - Should complete in under a minute
-
-#### 3. Integration Tests (`backend/app/tests/integration/`)
-
-Tests that require **external services** or infrastructure:
-
-- **Eligible Components:**
-  - Database repositories
-  - API endpoints
-  - External service clients
-  - Component-to-component integrations
-  - Security and authentication flows
-
-- **Requirements:**
-  - Requires running database
-  - May need API servers or external services
-  - May require Docker or other containers
-  - Tests full system behaviors
-
-- **Execution Environment:**
-  - Typically runs in Docker environment
-  - Requires service initialization and teardown
-  - Execute last in CI pipeline
-  - May take several minutes to complete
-
-### Sub-Organization Within Dependency Levels
-
-Within each dependency level, tests should be organized to reflect the clean architecture layers:
+The test suite follows this standardized directory structure:
 
 ```
-backend/app/tests/standalone/
-├── domain/          # Domain model tests
-├── application/     # Application service tests
-├── core/            # Core utility tests
-└── common/          # Shared component tests
-
-backend/app/tests/venv/
-├── api/             # API tests with mocked backends
-├── infrastructure/  # Infrastructure with mocked external services
-├── presentation/    # Presentation layer tests
-└── security/        # Security feature tests
-
-backend/app/tests/integration/
-├── api/             # API tests with real backends
-├── repositories/    # Repository tests with real databases
-├── e2e/             # End-to-end test flows
-└── security/        # Security integration tests
+/backend/app/tests/
+├── standalone/          # No external dependencies
+│   ├── domain/          # Domain-specific standalone tests
+│   ├── application/     # Application-specific standalone tests
+│   └── ...
+├── venv/                # Requires Python environment but no external services
+│   ├── domain/          # Domain-specific venv tests
+│   ├── application/     # Application-specific venv tests
+│   └── ...
+└── integration/         # Requires external services (DB, API, etc.)
+    ├── domain/          # Domain-specific integration tests
+    ├── application/     # Application-specific integration tests
+    └── ...
 ```
 
-## Test File Naming Conventions
+Within each dependency level, tests can be further organized by domain/module to maintain logical grouping. However, the primary organization is always by dependency level.
 
-### File Names
+## Test Categorization Criteria
 
-All test files must follow these naming conventions:
+### Standalone Tests
 
-- Prefix with `test_`
-- Use snake_case
-- Name should indicate what is being tested
-- Suffix can indicate test type for clarity
+Tests are categorized as **standalone** if they:
+- Have no external dependencies (file system, network, etc.)
+- Use only Python standard library and internal application code
+- Use mocks or stubs for all external interactions
+- Do not require environment variables or configuration
 
-Examples:
+Example: Unit tests for pure business logic, value objects, or utility functions.
+
+### VENV Tests
+
+Tests are categorized as **venv** if they:
+- Require installed Python packages beyond the standard library
+- May use the file system for temporary files
+- May use in-memory implementations of databases or services
+- Require environment variables or configuration
+- Do not require external network services or persistent databases
+
+Example: Tests for modules using ORM models with SQLite in-memory database, or tests using file system for configuration.
+
+### Integration Tests
+
+Tests are categorized as **integration** if they:
+- Require external network services (even if mocked)
+- Require persistent databases
+- Test multiple components together
+- Require specific environment configuration
+- May have side effects on external systems
+
+Example: Tests for repository implementations with real databases, API endpoints, or third-party services.
+
+## Test Runners
+
+The canonical way to run tests is through the `/backend/scripts/test/runners/run_tests.py` script, which provides a unified interface for test execution at different dependency levels.
+
+### Command-Line Interface
+
+```bash
+# Run only standalone tests
+python /backend/scripts/test/runners/run_tests.py --standalone
+
+# Run standalone and venv tests
+python /backend/scripts/test/runners/run_tests.py --venv
+
+# Run all tests
+python /backend/scripts/test/runners/run_tests.py --all
+
+# Run tests with security markers
+python /backend/scripts/test/runners/run_tests.py --security
+
+# Generate coverage report
+python /backend/scripts/test/runners/run_tests.py --all --coverage
+
+# Run tests with verbose output
+python /backend/scripts/test/runners/run_tests.py --all --verbose
 ```
-test_patient_repository.py
-test_auth_service.py
-test_digital_twin_integration.py
+
+### Progressive Execution
+
+The test runner supports progressive execution, where tests at higher dependency levels are only run if tests at lower levels pass:
+
+```bash
+python /backend/scripts/test/runners/run_tests.py --all --progressive
 ```
 
-### Class Names
+### Configuration
 
-Test classes should:
+The test runner uses configuration from:
+1. Command-line arguments
+2. Environment variables
+3. Configuration files (`pytest.ini`, `.coveragerc`)
 
-- Prefix with `Test`
-- Use PascalCase
-- Describe the component being tested
-- Inherit from appropriate base classes
+## Test Markers
 
-Examples:
+Test markers are used to categorize tests orthogonally to their dependency level. Common markers include:
+
+- `@pytest.mark.security` - Security-focused tests
+- `@pytest.mark.performance` - Performance tests
+- `@pytest.mark.hipaa` - Tests specifically for HIPAA compliance
+- `@pytest.mark.slow` - Tests that take a long time to run
+
+Example usage:
+
 ```python
-class TestPatientRepository(BaseRepositoryTest):
-    ...
-
-class TestAuthenticationService:
-    ...
-```
-
-### Method Names
-
-Test methods should:
-
-- Prefix with `test_`
-- Use snake_case
-- Describe the scenario and expected outcome
-- Be specific about what's being tested
-
-Examples:
-```python
-def test_create_patient_with_valid_data_succeeds():
-    ...
-
-def test_login_with_invalid_credentials_raises_auth_error():
-    ...
-```
-
-## Markers and Test Classification
-
-With directory structure as the primary organization method, pytest markers are reserved for orthogonal concerns only:
-
-| Marker    | Purpose                                      | Example Usage                        |
-|-----------|----------------------------------------------|--------------------------------------|
-| `slow`    | Tests taking >1 second even in their category| Long-running algorithmic tests       |
-| `security`| Tests specifically checking security features| HIPAA compliance, encryption tests    |
-| `flaky`   | Tests with occasional failures being fixed   | Tests with timing or race conditions |
-| `smoke`   | Critical functionality for verification      | Core patient and auth flows          |
-
-Example marker usage:
-```python
-@pytest.mark.slow
-def test_complex_algorithm_with_large_dataset():
-    ...
+import pytest
 
 @pytest.mark.security
-def test_phi_data_properly_encrypted():
-    ...
+def test_password_hashing():
+    # Test implementation
+    pass
 ```
 
-## Test Fixtures and Utilities
+## Test Creation Guidelines
 
-### Fixture Organization
+### Placing New Tests
 
-Fixtures should be organized by scope and purpose:
+When creating a new test, determine its appropriate location based on its dependencies:
 
-1. **Local fixtures** - Defined in the test file that uses them
-2. **Module fixtures** - Defined in `conftest.py` in the same directory as the tests
-3. **Package fixtures** - Defined in the top-level `conftest.py` for the test category
-4. **Global fixtures** - Defined in the main `backend/app/tests/conftest.py`
+1. Identify the minimal dependency requirements for the test
+2. Place it in the corresponding directory (standalone, venv, integration)
+3. Within that directory, organize by domain/module
 
-### Standard Fixture Naming
+### Test File Naming
 
-| Fixture Type     | Naming Convention | Example            |
-|------------------|-------------------|---------------------|
-| Factory fixtures | `{entity}_factory`| `patient_factory`  |
-| Instance fixtures| `{entity}`        | `test_patient`     |
-| Repository fixtures| `{entity}_repository`| `patient_repository` |
-| Service fixtures | `{name}_service`  | `auth_service`     |
-| Mocks           | `mock_{dependency}`| `mock_database`    |
+Test files should follow these naming conventions:
 
-## Test Data Management
+- All test files should start with `test_`
+- Name should reflect the module/functionality being tested
+- Example: `test_patient_repository.py`
 
-### Test Data Principles
+### Test Function Naming
 
-1. **Isolation** - Tests should create their own data and not depend on other tests
-2. **Cleanup** - Tests should clean up any created resources after execution
-3. **Deterministic** - Test data should be consistent across test runs
-4. **Minimal** - Use only the data needed for the specific test case
-5. **No PHI** - Never use real PHI, even in secured test environments
+Test functions should follow these naming conventions:
 
-### Test Database Management
+- All test functions should start with `test_`
+- Name should clearly describe the scenario being tested
+- Include success/failure condition in the name
+- Example: `test_create_patient_with_valid_data_succeeds()`
 
-Integration tests should use:
+### Test Fixtures
 
-1. **Isolated databases** - Each test run gets its own database
-2. **Migration verification** - Tests run against latest schema migrations
-3. **Cleanup** - Database is dropped or cleaned after tests complete
+Test fixtures should be placed based on their scope and dependency requirements:
 
-## Test Execution Infrastructure
+- Module-specific fixtures in the test module
+- Shared fixtures within a dependency level in a `conftest.py` file in that level
+- Cross-dependency fixtures are discouraged but can be placed in the root `conftest.py` if necessary
 
-### Running Standalone Tests
+### Example Test Structure
 
-```bash
-# Run all standalone tests
-python -m pytest backend/app/tests/standalone/
+```python
+import pytest
+from app.domain.entities import Patient
+from app.domain.value_objects import PatientId
+from unittest.mock import Mock
 
-# Run with coverage
-python -m pytest backend/app/tests/standalone/ --cov=app
+# Standalone test - no external dependencies
+def test_patient_initialization_with_valid_id_succeeds():
+    # Arrange
+    patient_id = PatientId("12345")
+    
+    # Act
+    patient = Patient(id=patient_id, name="Test Patient")
+    
+    # Assert
+    assert patient.id == patient_id
+    assert patient.name == "Test Patient"
 ```
 
-### Running VENV Tests
+## Migration Tools
+
+To help with the transition to the dependency-based structure, several tools are provided:
+
+### Test Analyzer
+
+The test analyzer examines existing tests to determine their appropriate dependency level:
 
 ```bash
-# Ensure you're in the right virtualenv
-python -m pytest backend/app/tests/venv/
-
-# Run with coverage
-python -m pytest backend/app/tests/venv/ --cov=app
+python /backend/scripts/test/tools/test_analyzer.py
 ```
 
-### Running Integration Tests
+### Test Migrator
+
+The test migrator helps move tests to their appropriate locations:
 
 ```bash
-# Start test infrastructure
-docker-compose -f backend/docker-compose.test.yml up -d
+# Analyze without migrating
+python /backend/scripts/test/migrations/migrate_tests.py --analyze
 
-# Run integration tests
-docker-compose -f backend/docker-compose.test.yml exec app python -m pytest backend/app/tests/integration/
+# Migrate tests
+python /backend/scripts/test/migrations/migrate_tests.py --migrate
 
-# Tear down test infrastructure
-docker-compose -f backend/docker-compose.test.yml down
+# Delete original files after migration
+python /backend/scripts/test/migrations/migrate_tests.py --delete-originals
+
+# Rollback migration
+python /backend/scripts/test/migrations/migrate_tests.py --rollback
 ```
 
-### Comprehensive Test Runner
+### Test Suite Cleanup
 
-The `run_tests.py` script provides a unified interface for test execution:
+For a guided process through the entire migration, use the cleanup orchestrator:
 
 ```bash
-# Run all tests in dependency order
-python backend/scripts/run_tests.py --all
-
-# Run only standalone tests
-python backend/scripts/run_tests.py --standalone
-
-# Run with coverage report
-python backend/scripts/run_tests.py --all --coverage
-
-# Continue even if earlier test categories fail
-python backend/scripts/run_tests.py --all --continue-on-failure
+python /backend/scripts/test/test_suite_cleanup.py
 ```
 
 ## CI/CD Integration
 
-The test infrastructure is designed to integrate with CI/CD pipelines, with tests executed in dependency order:
+The dependency-based test organization is designed to optimize CI/CD pipelines by:
 
-1. **Code quality checks** (linting, type checking)
-2. **Standalone tests** (fast, no dependencies)
-3. **VENV tests** (if standalone pass)
-4. **Integration tests** (if VENV tests pass)
-5. **Security scanning and analysis**
+1. Running standalone tests first (fastest, most reliable)
+2. Running venv tests next
+3. Running integration tests last (slowest, most dependencies)
 
-## Test Coverage Requirements
+A typical CI/CD configuration would look like:
 
-Minimum coverage requirements:
+```yaml
+stages:
+  - lint
+  - standalone-tests
+  - venv-tests
+  - integration-tests
+  - deploy
 
-| Component           | Coverage Target |
-|---------------------|----------------|
-| Domain layer        | 90%            |
-| Application layer   | 85%            |
-| Infrastructure layer| 75%            |
-| Overall coverage    | 80%            |
+standalone-tests:
+  script:
+    - python /backend/scripts/test/runners/run_tests.py --standalone
 
-Security-related code must maintain 100% test coverage.
+venv-tests:
+  script:
+    - python /backend/scripts/test/runners/run_tests.py --venv
+  needs:
+    - standalone-tests
 
-## Implementation and Migration
+integration-tests:
+  script:
+    - python /backend/scripts/test/runners/run_tests.py --integration
+  needs:
+    - venv-tests
+```
 
-The transition to this SSOT-based test organization will follow these steps:
+## HIPAA Compliance Considerations
 
-1. **Classification** - Categorize existing tests by dependency level
-2. **Migration** - Move tests to their appropriate directories
-3. **Standardization** - Update naming and fixtures to follow conventions
-4. **CI Integration** - Update CI pipelines to use the new structure
+Special care must be taken with tests involving PHI:
+
+1. Never use real PHI in tests, even in integration tests
+2. Use the provided `PHIGenerator` to create realistic but fake PHI
+3. Ensure test data is purged after test execution
+4. Use the `@pytest.mark.hipaa` marker to identify tests that deal with PHI-handling code
+5. Run separate HIPAA compliance checks on the test suite itself
+
+## Best Practices
+
+### Test Isolation
+
+- Each test should be independent of others
+- Tests should clean up after themselves
+- Don't rely on test execution order
+
+### Mocking
+
+- Prefer dependency injection to make mocking easier
+- Use `unittest.mock` or `pytest-mock` for mocking
+- Document mock behavior clearly
+
+### Fixtures
+
+- Keep fixtures simple and focused
+- Document fixture dependencies
+- Don't create fixtures with side effects
+
+### Test Coverage
+
+- Aim for high coverage in standalone tests
+- Focus integration tests on critical paths
+- Use `--coverage` flag to generate coverage reports
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Import Errors**: Often caused by moving tests without updating imports. Use the `--update-imports` flag with migration tools.
+
+2. **Missing Dependencies**: Integration tests failing due to missing external services. Make sure the test is categorized correctly.
+
+3. **Test Interference**: Tests affecting each other. Ensure tests clean up after themselves.
+
+4. **Slow Tests**: Review if tests are in the correct category. Standalone tests should run quickly.
+
+### Getting Help
+
+For issues with the test infrastructure, consult:
+
+1. This documentation
+2. The test tool help menus (`--help` flag)
+3. The test infrastructure team
 
 ## Conclusion
 
-This directory-based SSOT approach represents the official, forward-looking foundation for the Novamind test infrastructure. All new tests should follow this organization, and existing tests should be migrated to align with these principles.
+The dependency-based SSOT approach to testing provides a clear, consistent, and maintainable structure for the Novamind Digital Twin test suite. By following these guidelines, we ensure that our tests are reliable, efficient, and effectively support the development of high-quality, HIPAA-compliant software.

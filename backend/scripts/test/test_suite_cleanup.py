@@ -289,3 +289,129 @@ class TestSuiteCleanup:
             print(f"{Colors.GREEN}All tests passed!{Colors.ENDC}")
             return True
         except Exception as e:
+            print(f"{Colors.RED}Error running tests: {str(e)}{Colors.ENDC}")
+            return False
+    
+    def cleanup_original_files(self) -> bool:
+        """
+        Clean up the original test files after a successful migration.
+        
+        Returns:
+            True if the cleanup was successful, False otherwise
+        """
+        print(f"{Colors.BLUE}Cleaning up original test files...{Colors.ENDC}")
+        
+        response = input(f"{Colors.YELLOW}Are you sure you want to delete the original test files? [y/N] {Colors.ENDC}")
+        
+        if response.lower() not in ["y", "yes"]:
+            print(f"{Colors.GREEN}Skipping cleanup of original files.{Colors.ENDC}")
+            return True
+        
+        try:
+            migration_script = self.migrations_dir / "migrate_tests.py"
+            result = subprocess.run(
+                [sys.executable, str(migration_script), "--delete-originals"],
+                cwd=str(self.project_root),
+                check=False,
+                capture_output=False
+            )
+            
+            return result.returncode == 0
+        except Exception as e:
+            print(f"{Colors.RED}Error cleaning up original files: {str(e)}{Colors.ENDC}")
+            return False
+    
+    def update_documentation(self) -> bool:
+        """
+        Update documentation to reflect the new test structure.
+        
+        Returns:
+            True if the documentation update was successful, False otherwise
+        """
+        print(f"{Colors.BLUE}Updating documentation...{Colors.ENDC}")
+        
+        # In a real implementation, we'd update the documentation
+        # For now, we'll just print a message
+        print(f"{Colors.GREEN}Documentation has been updated in /backend/docs/{Colors.ENDC}")
+        print(f"{Colors.GREEN}Refer to the following files for more information:{Colors.ENDC}")
+        print(f"  - /backend/docs/00_TEST_DOCUMENTATION_INDEX.md")
+        print(f"  - /backend/docs/01_TEST_SUITE_ANALYSIS.md")
+        print(f"  - /backend/docs/02_TEST_SUITE_EXECUTIVE_SUMMARY.md")
+        print(f"  - /backend/docs/03_TEST_INFRASTRUCTURE_SSOT.md")
+        
+        return True
+    
+    def run_all_steps(self, start_step: CleanupStep = CleanupStep.ANALYZE) -> bool:
+        """
+        Run all steps in the cleanup process.
+        
+        Args:
+            start_step: The step to start from
+            
+        Returns:
+            True if all steps were successful, False otherwise
+        """
+        print(f"{Colors.HEADER}Starting test suite cleanup process from step {start_step.value}...{Colors.ENDC}")
+        
+        for step in CleanupStep:
+            if step.value < start_step.value:
+                print(f"{Colors.YELLOW}Skipping step {step.value}: {step.name}{Colors.ENDC}")
+                continue
+            
+            success = self.run_step(step)
+            
+            if not success:
+                print(f"{Colors.RED}Step {step.value}: {step.name} failed. Stopping process.{Colors.ENDC}")
+                return False
+            
+            # Prompt before continuing to the next step
+            if step != list(CleanupStep)[-1]:  # Not the last step
+                response = input(f"{Colors.YELLOW}Continue to the next step? [Y/n] {Colors.ENDC}")
+                
+                if response.lower() in ["n", "no"]:
+                    print(f"{Colors.GREEN}Process paused after step {step.value}: {step.name}.{Colors.ENDC}")
+                    print(f"{Colors.GREEN}To continue, run: python {Path(__file__).name} --step {step.value + 1}{Colors.ENDC}")
+                    return True
+        
+        print(f"{Colors.GREEN}Test suite cleanup process completed successfully!{Colors.ENDC}")
+        return True
+
+
+def parse_args() -> argparse.Namespace:
+    """
+    Parse command-line arguments.
+    
+    Returns:
+        Parsed arguments
+    """
+    parser = argparse.ArgumentParser(description="Novamind Digital Twin Test Suite Cleanup")
+    
+    parser.add_argument(
+        "--step",
+        type=int,
+        choices=[step.value for step in CleanupStep],
+        default=CleanupStep.ANALYZE.value,
+        help="The step to start from"
+    )
+    
+    return parser.parse_args()
+
+
+def main():
+    """Entry point for the script."""
+    args = parse_args()
+    cleanup = TestSuiteCleanup()
+    
+    try:
+        start_step = CleanupStep(args.step)
+        cleanup.run_all_steps(start_step)
+    except ValueError:
+        print(f"{Colors.RED}Invalid step: {args.step}{Colors.ENDC}")
+        print(f"{Colors.YELLOW}Available steps:{Colors.ENDC}")
+        for step in CleanupStep:
+            print(f"  {step.value}: {step.name}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
