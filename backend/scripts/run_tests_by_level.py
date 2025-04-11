@@ -31,6 +31,7 @@ import sys
 import os
 import re
 import subprocess
+import signal
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 import argparse
@@ -47,6 +48,13 @@ TEST_LEVELS = {
     "standalone": [str(TEST_DIR / "standalone")],
     "venv_only": [str(TEST_DIR / "unit"), str(TEST_DIR / "venv_only")],
     "db_required": [str(TEST_DIR / "integration"), str(TEST_DIR / "api"), str(TEST_DIR / "e2e")]
+}
+
+# Default timeouts for different test levels (in seconds)
+TEST_TIMEOUTS = {
+    "standalone": 120,    # 2 minutes
+    "venv_only": 300,     # 5 minutes
+    "db_required": 600,   # 10 minutes
 }
 
 # Define expected test counts based on our analysis
@@ -107,7 +115,7 @@ def count_tests_by_level() -> Dict[str, int]:
     return counts
 
 
-def run_tests(level: str, options: List[str] = None, is_docker: bool = False) -> Tuple[int, float, int]:
+def run_tests(level: str, options: List[str] = None, is_docker: bool = False, timeout: int = None) -> Tuple[int, float, int]:
     """
     Run tests for a specified dependency level.
     
@@ -115,6 +123,7 @@ def run_tests(level: str, options: List[str] = None, is_docker: bool = False) ->
         level: The dependency level (standalone, venv_only, db_required)
         options: Additional pytest options
         is_docker: Whether tests are running in Docker environment
+        timeout: Maximum time in seconds to allow tests to run before terminating
         
     Returns:
         Tuple of (exit_code, duration_in_seconds, test_count)
@@ -158,35 +167,67 @@ def run_tests(level: str, options: List[str] = None, is_docker: bool = False) ->
     if not cwd.endswith('backend'):
         os.chdir(str(ROOT_DIR))
     
-    print(f"\n=== Running {level.upper()} tests ===\n")
+    # Use the specified timeout or get it from the TEST_TIMEOUTS dictionary
+    if timeout is None:
+        timeout = TEST_TIMEOUTS.get(level, 300)  # Default to 5 minutes
+    
+    print(f"\n=== Running {level.upper()} tests with {timeout}s timeout ===\n")
     print(f"Command: {' '.join(cmd)}")
     
     # Time the test run
     start_time = time.time()
+    process = None
+    result_stdout = ""
+    result_stderr = ""
+    return_code = 1
+    
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        duration = time.time() - start_time
+        # Start the process
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                text=True, bufsize=1, universal_newlines=True)
+        
+        # Read output with timeout
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+            return_code = process.returncode
+            result_stdout = stdout
+            result_stderr = stderr
+        except subprocess.TimeoutExpired:
+            print(f"\n⚠️ Tests timed out after {timeout} seconds. Terminating process.")
+            process.kill()
+            stdout, stderr = process.communicate()
+            result_stdout = stdout + f"\n\n⚠️ Test execution timed out after {timeout} seconds"
+            result_stderr = stderr
+            return_code = 124  # Standard timeout exit code
+    except Exception as e:
+        print(f"\n❌ Error running tests: {str(e)}")
+        return_code = 1
     finally:
+        # Clean up the process if it's still running
+        if process and process.poll() is None:
+            process.kill()
+        
         # Restore original directory
         os.chdir(cwd)
     
+    duration = time.time() - start_time
+    
     # Print the output
-    print(result.stdout)
-    if result.stderr:
-        print(result.stderr)
+    print(result_stdout)
+    if result_stderr:
+        print(result_stderr)
     
     # Extract test count from output
     test_count = 0
-    collected_match = re.search(r"collected (\d+) items", result.stdout or "")
+    collected_match = re.search(r"collected (\d+) items", result_stdout or "")
     if collected_match:
         test_count = int(collected_match.group(1))
     
     print(f"\n=== {level.upper()} tests completed in {duration:.2f} seconds ===\n")
     
-    return result.returncode, duration, test_count
+    return return_code, duration, test_count
 
-
-def run_all_tests(options: List[str] = None, is_docker: bool = False, fail_fast: bool = False) -> Dict[str, Dict]:
+def run_all_tests(options: List[str] = None, is_docker: bool = False, fail_fast: bool = False, timeout: int = None) -> Dict[str, Dict]:
     """
     Run all tests in dependency order (standalone -> venv_only -> db_required).
     
@@ -194,6 +235,8 @@ def run_all_tests(options: List[str] = None, is_docker: bool = False, fail_fast:
         options: Additional pytest options
         is_docker: Whether tests are running in Docker environment
         fail_fast: Whether to stop after first failed test level
+        timeout: Maximum time in seconds to allow tests to run before terminating
+        
         
     Returns:
         A dictionary with results for each level.
@@ -202,7 +245,9 @@ def run_all_tests(options: List[str] = None, is_docker: bool = False, fail_fast:
     
     # Run tests in dependency order
     for level in ["standalone", "venv_only", "db_required"]:
-        exit_code, duration, test_count = run_tests(level, options, is_docker)
+        # Get level-specific timeout or use the provided one
+        level_timeout = timeout or TEST_TIMEOUTS.get(level, 300)
+        exit_code, duration, test_count = run_tests(level, options, is_docker, level_timeout)
         
         results[level] = {
             "exit_code": exit_code,
@@ -290,6 +335,7 @@ def parse_args():
     parser.add_argument('level', choices=['standalone', 'venv_only', 'db_required', 'all', 'count'],
                         help='Test level to run, or "all" to run all levels, or "count" to count tests')
     parser.add_argument('--xvs', action='store_true', help='Add -xvs to pytest options')
+    parser.add_argument('--timeout', type=int, help='Timeout in seconds for test execution')
     parser.add_argument('--keywords', '-k', help='Only run tests matching these keywords')
     parser.add_argument('--fail-fast', action='store_true', help='Stop on first failure')
     parser.add_argument('--xml', action='store_true', help='Generate XML reports')
@@ -337,7 +383,7 @@ def main():
         return 0
     
     if args.level == 'all':
-        results = run_all_tests(options, is_docker, args.fail_fast)
+        results = run_all_tests(options, is_docker, args.fail_fast, args.timeout)
         print_summary(results)
         
         # Clean up if requested
@@ -347,7 +393,7 @@ def main():
         # Return highest exit code (to fail CI if any test level failed)
         return max(result.get("exit_code", 0) for result in results.values())
     else:
-        exit_code, _, _ = run_tests(args.level, options, is_docker)
+        exit_code, _, _ = run_tests(args.level, options, is_docker, args.timeout)
         
         # Clean up if requested
         if args.cleanup:
