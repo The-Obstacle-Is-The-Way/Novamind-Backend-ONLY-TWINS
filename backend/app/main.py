@@ -68,8 +68,8 @@ def create_application() -> FastAPI:
     """
     app = FastAPI(
         title=settings.PROJECT_NAME,
-        description="Advanced psychiatric digital twin platform for mental health analytics and treatment optimization",
-        version="1.0.0",
+        description=settings.APP_DESCRIPTION,
+        version=settings.VERSION,
         lifespan=lifespan,
     )
     

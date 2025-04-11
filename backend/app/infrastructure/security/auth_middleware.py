@@ -13,6 +13,9 @@ from datetime import datetime, timedelta
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Union
 
+# Import the RoleBasedAccessControl class from rbac module
+from app.infrastructure.security.rbac import RoleBasedAccessControl
+
 from fastapi import Cookie, Depends, Header, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
