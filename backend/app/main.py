@@ -68,16 +68,18 @@ def create_application() -> FastAPI:
     """
     app = FastAPI(
         title=settings.PROJECT_NAME,
-        description=settings.APP_DESCRIPTION,
-        version=settings.APP_VERSION,
+        description="Advanced psychiatric digital twin platform for mental health analytics and treatment optimization",
+        version="1.0.0",
         lifespan=lifespan,
     )
     
     # Set up CORS middleware
-    if settings.BACKEND_CORS_ORIGINS:
+    # Default to empty list if BACKEND_CORS_ORIGINS not defined in settings
+    origins = getattr(settings, 'BACKEND_CORS_ORIGINS', [])
+    if origins:
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+            allow_origins=[str(origin) for origin in origins],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],

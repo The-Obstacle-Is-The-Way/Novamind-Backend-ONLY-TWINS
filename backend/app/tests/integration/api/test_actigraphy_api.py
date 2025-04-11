@@ -11,24 +11,25 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from unittest.mock import patch
-
 import pytest
-from fastapi import status
+from fastapi import status, FastAPI
 from fastapi.testclient import TestClient
 
-from app.presentation.api.dependencies import get_pat_service # Corrected import path
+
+# Use create_application factory instead of importing the instance directly
+from app.main import create_application
+from app.presentation.api.dependencies import get_pat_service
 from app.api.schemas.actigraphy import (
     AnalysisType,
     DeviceInfo,
-    AnalyzeActigraphyRequest, # Corrected schema name
+    AnalyzeActigraphyRequest,
     AccelerometerReading,
 )
-from app.core.services.ml.pat.mock import MockPATService # Corrected class name
-from app.main import app
+from app.core.services.ml.pat.mock import MockPATService
+# Removed: from app.main import app
 
 
-# Create test client
-client = TestClient(app)
+# Test client will be created within a fixture using a fixture-created app
 
 
 # Helper function to create sample readings
@@ -65,30 +66,46 @@ def mock_get_current_user_id(payload: Dict[str, Any]) -> str:
 @pytest.fixture
 def mock_pat_service():
     """Fixture for a mock PAT service."""
-    service = MockPAT()
+    # Use MockPATService as per previous correction
+    service = MockPATService()
     service.initialize({})
     return service
 
 
 # Override dependencies for testing
-@pytest.fixture(autouse=True)
-def override_dependencies(mock_pat_service):
-    """Override dependencies for testing."""
-    app.dependency_overrides[get_pat_service] = lambda: mock_pat_service
-    
-    # Mock JWT token validation
-    with patch("app.api.routes.actigraphy.validate_token", side_effect=mock_validate_token), \
-         patch("app.api.routes.actigraphy.get_current_user_id", side_effect=mock_get_current_user_id):
-        yield
-    
-    # Reset dependencies after test
-    app.dependency_overrides = {}
+@pytest.fixture
+def test_app(mock_pat_service) -> FastAPI:
+    """Create a test app instance with overridden dependencies."""
+    # Patch the settings object *before* creating the application
+    with patch("app.main.settings") as mock_settings:
+        # Ensure the mocked settings object has the required attribute
+        mock_settings.APP_DESCRIPTION = "Test App Description"
+        # Add any other settings needed for app creation if they cause issues
+
+        # Create app instance inside the fixture *after* patching settings
+        app_instance = create_application()
+        app_instance.dependency_overrides[get_pat_service] = lambda: mock_pat_service
+
+        # Mock JWT token validation within the app's context if needed
+        with patch("app.api.routes.actigraphy.validate_token", side_effect=mock_validate_token), \
+             patch("app.api.routes.actigraphy.get_current_user_id", side_effect=mock_get_current_user_id):
+            yield app_instance # Provide the app instance
+
+    # Clean up overrides after tests using this fixture are done
+    # No need to access app_instance here as it's yielded within the 'with' block
+
+
+@pytest.fixture
+def client(test_app: FastAPI) -> TestClient:
+    """Create a TestClient instance using the fixture-created app."""
+    return TestClient(test_app)
 
 
 class TestActigraphyAPI:
     """Integration tests for the actigraphy API endpoints."""
     
-    def test_analyze_actigraphy(self):
+    # Pass the client fixture to the test methods
+    def test_analyze_actigraphy(self, client: TestClient):
         """Test the analyze actigraphy endpoint."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -148,7 +165,7 @@ class TestActigraphyAPI:
         assert "moderate" in activity_levels
         assert "vigorous" in activity_levels
     
-    def test_get_embeddings(self):
+    def test_get_embeddings(self, client: TestClient):
         """Test the get embeddings endpoint."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -190,7 +207,7 @@ class TestActigraphyAPI:
         assert isinstance(data["embeddings"], list)
         assert len(data["embeddings"]) == data["embedding_size"]
     
-    def test_get_analysis_by_id(self, mock_pat_service):
+    def test_get_analysis_by_id(self, client: TestClient, mock_pat_service: MockPATService):
         """Test retrieving an analysis by ID."""
         # First create an analysis
         patient_id = "test-patient-1"
@@ -223,7 +240,7 @@ class TestActigraphyAPI:
         assert data["patient_id"] == patient_id
         assert "sleep_metrics" in data
     
-    def test_get_patient_analyses(self, mock_pat_service):
+    def test_get_patient_analyses(self, client: TestClient, mock_pat_service: MockPATService):
         """Test retrieving analyses for a patient."""
         # First create multiple analyses for the same patient
         patient_id = "test-patient-2"
@@ -259,7 +276,7 @@ class TestActigraphyAPI:
         assert len(data["analyses"]) == 3
         assert data["total"] == 3
     
-    def test_get_model_info(self):
+    def test_get_model_info(self, client: TestClient):
         """Test retrieving model information."""
         # Make request
         response = client.get(
@@ -276,7 +293,7 @@ class TestActigraphyAPI:
         assert "supported_analysis_types" in data
         assert isinstance(data["supported_analysis_types"], list)
     
-    def test_integrate_with_digital_twin(self, mock_pat_service):
+    def test_integrate_with_digital_twin(self, client: TestClient, mock_pat_service: MockPATService):
         """Test integrating actigraphy analysis with a digital twin."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -320,7 +337,7 @@ class TestActigraphyAPI:
         assert "timestamp" in data
         assert "integrated_profile" in data
     
-    def test_unauthorized_access(self):
+    def test_unauthorized_access(self, client: TestClient):
         """Test unauthorized access to the API."""
         # Make request without token
         response = client.get(

@@ -151,19 +151,20 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
     all PHI access in the application.
     """
 
-    def __init__(self, app, jwt_service=None):
+    def __init__(self, app, jwt_service=None, config=None):
         """
         Initialize the middleware with application settings.
 
         Args:
             app: The FastAPI application
             jwt_service: Optional JWTService instance for dependency injection
+            config: Optional config object for testing
         """
         super().__init__(app)
-        self.settings = settings
+        self.settings = config or settings
         self.logger = logging.getLogger("app.infrastructure.security.auth_middleware")
         # Allow dependency injection of jwt_service for testing
-        self.jwt_service = jwt_service or JWTService(self.settings.JWT_SECRET_KEY)
+        self.jwt_service = jwt_service or JWTService(self.settings.jwt_secret_key if hasattr(self.settings, 'jwt_secret_key') else self.settings.SECRET_KEY)
 
         # Routes that don't require authentication
         self.public_paths = [
