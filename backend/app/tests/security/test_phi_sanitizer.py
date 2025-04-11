@@ -4,8 +4,8 @@ import re
 import json
 from unittest.mock import patch, MagicMock
 
-from app.infrastructure.security.log_sanitizer import LogSanitizer # Corrected @pytest.mark.db_required
-class name
+from app.infrastructure.security.log_sanitizer import LogSanitizer
+from app.infrastructure.security.phi_sanitizer import PHISanitizer
 from app.core.utils.validation import PHIDetector
 
 
