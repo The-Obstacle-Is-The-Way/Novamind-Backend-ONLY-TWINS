@@ -19,7 +19,18 @@ from app.infrastructure.security.auth_middleware import (
     JWTAuthMiddleware as AuthMiddleware,
     RoleBasedAccessControl
 )
-from app.infrastructure.security.auth import TokenAuthorizationError, RolePermission
+
+# Mock RolePermission for testing purposes
+class RolePermission:
+    """Mock RolePermission class for testing"""
+    def __init__(self, name, roles=None):
+        self.name = name
+        self.roles = roles or []
+
+# Mock TokenAuthorizationError for testing
+class TokenAuthorizationError(Exception):
+    """Mock TokenAuthorizationError for testing"""
+    pass
 
 # Import these from the domain exceptions where they're actually defined
 from app.domain.exceptions import (

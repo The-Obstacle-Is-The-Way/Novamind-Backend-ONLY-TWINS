@@ -36,8 +36,44 @@ ROLES = {
 }
 
 class RoleBasedAccessControl:
-    """Role-based access control for API endpoints."""
+    """
+    Role-based access control for API endpoints.
     
+    This class provides methods for checking if a user has the required role
+    or permission to access a specific endpoint.
+    """
+
+    def __init__(self):
+        """Initialize the RBAC system."""
+        # Define role hierarchy (higher roles include permissions of lower roles)
+        self.role_hierarchy = {
+            "patient": ["patient"],
+            "clinician": ["patient", "clinician"],
+            "researcher": ["patient", "researcher"],
+            "admin": ["patient", "clinician", "researcher", "admin"],
+        }
+
+        # Define permission mappings for operations
+        self.permission_mapping = {
+            # Patient data access
+            "view_own_data": ["patient", "clinician", "admin"],
+            "update_own_data": ["patient", "clinician", "admin"],
+            
+            # Clinical operations
+            "view_patient_data": ["clinician", "admin"],
+            "update_patient_data": ["clinician", "admin"],
+            "create_patient_record": ["clinician", "admin"],
+            
+            # Research operations
+            "view_anonymized_data": ["researcher", "admin"],
+            "run_analytics": ["researcher", "admin"],
+            
+            # Administrative operations
+            "manage_users": ["admin"],
+            "system_configuration": ["admin"],
+            "audit_logs": ["admin"],
+        }
+
     @staticmethod
     def has_required_role(user: Dict[str, Any], required_roles: List[str]) -> bool:
         """
@@ -81,6 +117,39 @@ class RoleBasedAccessControl:
             bool: True if the user has any provider role, False otherwise
         """
         return RoleBasedAccessControl.has_required_role(user, ROLES["provider"])
+    
+    def has_role(self, user_role: str, required_role: str) -> bool:
+        """
+        Check if a user with the given role has the required role.
+        
+        Args:
+            user_role: The user's role
+            required_role: The required role for access
+            
+        Returns:
+            bool: True if the user has the required role or higher
+        """
+        if user_role not in self.role_hierarchy:
+            return False
+            
+        return required_role in self.role_hierarchy[user_role]
+
+    def has_permission(self, user_role: str, required_permission: str) -> bool:
+        """
+        Check if a user with the given role has the required permission.
+        
+        Args:
+            user_role: The user's role
+            required_permission: The required permission for access
+            
+        Returns:
+            bool: True if the user has the required permission
+        """
+        if required_permission not in self.permission_mapping:
+            return False
+            
+        allowed_roles = self.permission_mapping[required_permission]
+        return user_role in allowed_roles
 
 async def verify_admin_access(request: Request) -> None:
     """
@@ -193,79 +262,6 @@ class AuthorizationScopes(str, Enum):
     READ = "read"
     WRITE = "write"
     ADMIN = "admin"
-
-
-class RoleBasedAccessControl:
-    """
-    Role-based access control for API endpoints.
-
-    This class provides methods for checking if a user has the required role
-    or permission to access a specific endpoint.
-    """
-
-    def __init__(self):
-        """Initialize the RBAC system."""
-        # Define role hierarchy (higher roles include permissions of lower roles)
-        self.role_hierarchy = {
-            "patient": ["patient"],
-            "clinician": ["patient", "clinician"],
-            "researcher": ["patient", "researcher"],
-            "admin": ["patient", "clinician", "researcher", "admin"],
-        }
-
-        # Define permission mappings for operations
-        self.permission_mapping = {
-            # Patient data access
-            "view_own_data": ["patient", "clinician", "admin"],
-            "update_own_data": ["patient", "clinician", "admin"],
-            
-            # Clinical operations
-            "view_patient_data": ["clinician", "admin"],
-            "update_patient_data": ["clinician", "admin"],
-            "create_patient_record": ["clinician", "admin"],
-            
-            # Research operations
-            "view_anonymized_data": ["researcher", "admin"],
-            "run_analytics": ["researcher", "admin"],
-            
-            # Administrative operations
-            "manage_users": ["admin"],
-            "system_configuration": ["admin"],
-            "audit_logs": ["admin"],
-        }
-
-    def has_role(self, user_role: str, required_role: str) -> bool:
-        """
-        Check if a user with the given role has the required role.
-        
-        Args:
-            user_role: The user's role
-            required_role: The required role for access
-            
-        Returns:
-            bool: True if the user has the required role or higher
-        """
-        if user_role not in self.role_hierarchy:
-            return False
-            
-        return required_role in self.role_hierarchy[user_role]
-
-    def has_permission(self, user_role: str, required_permission: str) -> bool:
-        """
-        Check if a user with the given role has the required permission.
-        
-        Args:
-            user_role: The user's role
-            required_permission: The required permission for access
-            
-        Returns:
-            bool: True if the user has the required permission
-        """
-        if required_permission not in self.permission_mapping:
-            return False
-            
-        allowed_roles = self.permission_mapping[required_permission]
-        return user_role in allowed_roles
 
 
 class AuthConfig:
