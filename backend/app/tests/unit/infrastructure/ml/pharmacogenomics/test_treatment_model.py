@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel # Corrected @pytest.mark.db_required
-class name
+class name:
 
 
 class TestTreatmentResponseModel:

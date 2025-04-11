@@ -74,7 +74,7 @@ except ImportError as e:
     )
     
     @pytest.mark.db_required
-class AuthenticationError(Exception): pass
+    class AuthenticationError(Exception): pass
     class AuthorizationError(Exception): pass
     class PHIAccessError(Exception): pass
     class SecurityError(Exception): pass

@@ -16,7 +16,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.pharmacogenomics.model_service import PharmacogenomicsService
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
 from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel # Corrected @pytest.mark.db_required
-class name
+class name:
 
 
 class TestPharmacogenomicsService:

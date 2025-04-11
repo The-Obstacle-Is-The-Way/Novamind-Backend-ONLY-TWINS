@@ -14,8 +14,7 @@ from unittest.mock import patch, MagicMock, ANY
 
 import pytest
 
-from app.core.services.ml.mentalllama import MentaLLaMA # Corrected @pytest.mark.db_required
-class name
+from app.core.services.ml.mentalllama import MentaLLaMAService
 from app.core.exceptions import ServiceUnavailableError, ModelNotFoundError, InvalidRequestError
 
 

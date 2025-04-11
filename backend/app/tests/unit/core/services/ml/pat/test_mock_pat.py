@@ -22,7 +22,7 @@ from app.core.services.ml.pat.exceptions import (
     ValidationError,
 )
 from app.core.services.ml.pat.mock import MockPATService # Corrected @pytest.mark.venv_only
-class name
+class name:
 
 
 @pytest.fixture

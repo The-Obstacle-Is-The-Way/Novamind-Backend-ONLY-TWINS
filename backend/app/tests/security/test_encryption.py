@@ -1,6 +1,6 @@
-import pytest
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import pytest
 """
 HIPAA Security Test Suite - Encryption Tests
 
@@ -29,8 +29,7 @@ try:
     )
 except ImportError:
     # Mock implementations for testing purposes if real modules aren't available
-    @pytest.mark.db_required
-class EncryptionError(Exception):
+    class EncryptionError(Exception):
         """Exception raised for encryption-related errors"""
         pass
 

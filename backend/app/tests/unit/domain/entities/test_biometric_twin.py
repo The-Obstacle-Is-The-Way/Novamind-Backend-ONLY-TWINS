@@ -2,16 +2,15 @@
 """
 Unit tests for BiometricTwin domain entities.
 
-These tests verify that the BiometricTwin and BiometricDataPoint entities
+These tests verify that the BiometricTwin and related entities
 correctly handle data and maintain their integrity.
 """
 
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, UTC, timedelta
 from uuid import UUID, uuid4
 import pytest
 
-from app.domain.entities.biometric_twin import BiometricDataPoint, BiometricTwinState # Corrected @pytest.mark.venv_only
-class name
+from app.domain.entities.biometric_twin import BiometricDataPoint, BiometricTwin
 
 
 @pytest.fixture

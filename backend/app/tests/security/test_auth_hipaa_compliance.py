@@ -21,7 +21,7 @@ try:
 except ImportError:
     # Mock classes for testing auth functionality
     @pytest.mark.db_required
-class JWTService:
+    class JWTService:
         """Mock JWT service for testing."""
         
         def __init__(self, secret_key="test_secret", algorithm="HS256", expires_delta=30):

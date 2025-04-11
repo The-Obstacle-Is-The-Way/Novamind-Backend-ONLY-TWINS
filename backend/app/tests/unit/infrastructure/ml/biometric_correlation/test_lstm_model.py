@@ -13,10 +13,10 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
-from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel # Corrected @pytest.mark.db_required
-class name
+from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel
 
 
+@pytest.mark.db_required
 class TestBiometricLSTMModel:
     """Tests for the BiometricLSTMModel."""
 
@@ -25,7 +25,7 @@ class TestBiometricLSTMModel:
         """Create a BiometricLSTMModel with mocked internals."""
         with patch('app.infrastructure.ml.biometric_correlation.lstm_model.torch', autospec=True), \
              patch('app.infrastructure.ml.biometric_correlation.lstm_model.LSTMCorrelationModel', autospec=True):
-            model = BiometricLSTMModel(
+            model = BiometricCorrelationModel(
                 model_path="test_model_path",
                 device="cpu",
                 hidden_size=64,
@@ -116,7 +116,7 @@ class TestBiometricLSTMModel:
              patch('app.infrastructure.ml.biometric_correlation.lstm_model.os.path.exists', return_value=True):
             
             # Create model instance
-            model = BiometricLSTMModel(model_path="test_model_path")
+            model = BiometricCorrelationModel(model_path="test_model_path")
             
             # Mock torch.load to return a mock model
             mock_model = MagicMock()
@@ -143,7 +143,7 @@ class TestBiometricLSTMModel:
              patch('app.infrastructure.ml.biometric_correlation.lstm_model.os.path.exists', return_value=False):
             
             # Create model instance
-            model = BiometricLSTMModel(model_path="nonexistent_path")
+            model = BiometricCorrelationModel(model_path="nonexistent_path")
             
             # Execute
             await model.initialize()

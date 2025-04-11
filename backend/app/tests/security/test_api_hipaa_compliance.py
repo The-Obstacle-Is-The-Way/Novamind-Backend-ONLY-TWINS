@@ -21,7 +21,7 @@ try:
 except ImportError:
     # Mock FastAPI components for testing
     @pytest.mark.db_required
-class HTTPException(Exception):
+    class HTTPException(Exception):
         """Mock HTTPException."""
         def __init__(self, status_code, detail=None, headers=None):
             self.status_code = status_code

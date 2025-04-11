@@ -73,7 +73,7 @@ class TestAuthenticationSystem(BaseSecurityTest):
     
     def setup_method(self):
         """Set up with admin role for testing."""
-        self.test_roles = [Rol@pytest.mark.standalone
+        self.test_roles = [,Rol@pytest.mark.standalone
 e.ADMIN]
         super().setup_method()
     

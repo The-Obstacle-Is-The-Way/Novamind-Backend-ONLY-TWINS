@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 """
 Test suite for PHI (Protected Health Information) log sanitization.
 This validates that our logging system properly sanitizes PHI before writing to logs.
@@ -14,8 +13,7 @@ import tempfile
 from unittest.mock import patch, MagicMock
 
 # Path to the log sanitizer module
-from app.infrastructure.security.log_sanitizer import LogSanitizer # Corrected @pytest.mark.db_required
-class name
+from app.infrastructure.security.log_sanitizer import PHISanitizer
 
 
 class TestLogSanitization:

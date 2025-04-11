@@ -22,7 +22,7 @@ try:
 except ImportError:
     # Mock classes for testing database PHI protection
     @pytest.mark.db_required
-class Database:
+    class Database:
         """Mock database for testing."""
         
         def __init__(self):
