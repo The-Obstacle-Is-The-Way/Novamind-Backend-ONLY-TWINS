@@ -1,0 +1,31 @@
+
+================================================================================
+NOVAMIND TEST DEPENDENCY REPORT
+================================================================================
+
+Total tests: 1837
+
+DEPENDENCY BREAKDOWN:
+----------------------------------------
+STANDALONE:
+  Description: No dependencies beyond Python itself
+  Tests: 189 (10.3%)
+
+VENV:
+  Description: Requires Python packages but no external services
+  Tests: 0 (0.0%)
+
+DB:
+  Description: Requires database connections
+  Tests: 15 (0.8%)
+
+NETWORK:
+  Description: Requires network connections
+  Tests: 0 (0.0%)
+
+UNMARKED TESTS:
+  Tests: 1633 (88.9%)
+  These tests don't have explicit dependency markers and might need to be categorized
+
+RECOMMENDATIONS:
+  ⚠️ Over 20% of tests are unmarked. Consider adding dependency markers for better organization.
