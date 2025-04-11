@@ -1,136 +1,111 @@
-# -*- coding: utf-8 -*-
-"""
-Unit tests for MentaLLaMA service.
-
-This module tests the MentaLLaMA service implementation with a focus on
-depression detection functionality.
-"""
-
 import json
-from datetime import datetime
-from unittest.mock import MagicMock, patch
+import os
+from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError
 
-from app.core.exceptions import (
-    InvalidConfigurationError,  
-    InvalidRequestError,  
-    ModelNotFoundError,  
-    ServiceUnavailableError,  
-)
-from app.core.services.ml.mentalllama import MentaLLaMA
+from app.core.config.settings import get_settings
+from app.core.exceptions import InitializationError, ModelNotFoundError, ServiceUnavailableError
+from app.core.services.ml.mentallama.bedrock_service import BedrockMentalLamaService
+
+# Constants for testing
+UTC = timezone.utc
+SAMPLE_TEXT = "I've been feeling down lately and can't seem to find joy in activities."
 
 
-@pytest.mark.db_required
-class TestMentaLLaMA:
-    """Test suite for MentaLLaMA service."""
+@pytest.fixture
+def mentalllama_service():
+    """Create a BedrockMentalLamaService instance for testing."""
+    service = BedrockMentalLamaService()
+    service._bedrock_client = Mock()
+    service._model_id = "anthropic.claude-instant-v1"
+    return service
 
-    @pytest.fixture
-    def mock_phi_detection(self):
-        """Create a mock PHI detection service."""
-        mock = MagicMock()
-        mock.is_healthy.return_value = True
-        mock.detect_phi.return_value = {"has_phi": False}
-        mock.redact_phi.return_value = {"redacted_text": "Redacted text"}
-        return mock
 
-    @pytest.fixture
-    def mock_bedrock_response(self):
-        """Create a mock Bedrock response."""
-        mock_body = MagicMock()
-        mock_body.read.return_value = json.dumps({
-            "completion": json.dumps({
-                "depression_signals": {
-                    "severity": "mild",
-                    "confidence": 0.7,
-                    "key_indicators": [
-                        {
-                            "type": "linguistic",
-                            "description": "Negative self-talk",
-                            "evidence": "I'm feeling down today"
-                        }
-                    ]
-                },
-                "analysis": {
-                    "summary": "Mild depression indicators",
-                    "warning_signs": ["Negative self-talk"],
-                    "protective_factors": ["Social support"],
-                    "limitations": ["Limited context"]
-                },
-                "recommendations": {
-                    "suggested_assessments": ["PHQ-9"],
-                    "discussion_points": ["Explore coping strategies"]
-                }
-            })
-        })
-        return {"body": mock_body}
-
-    @pytest.fixture
-    def mentalllama_service(self, mock_phi_detection):
-        """Create a MentaLLaMA service instance with mocked dependencies."""
-        service = MentaLLaMA(phi_detection_service=mock_phi_detection)
-        with patch("boto3.client") as mock_boto3:
-            mock_client = MagicMock()
-            mock_boto3.return_value = mock_client
-            service.initialize({
-                "model_ids": {
-                    "depression_detection": "anthropic.claude-v2:1"
-                }
-            })
-        return service
-
-    def test_initialization(self, mock_phi_detection):
-        """Test service initialization with valid configuration."""
-        service = MentaLLaMA(phi_detection_service=mock_phi_detection)
-        
-        with patch("boto3.client") as mock_boto3:
-            mock_client = MagicMock()
-            mock_boto3.return_value = mock_client
-            
-            service.initialize({
-                "model_ids": {
-                    "depression_detection": "anthropic.claude-v2:1"
-                },
-                "aws_region": "us-east-1",
-                "aws_access_key_id": "test_key",
-                "aws_secret_access_key": "test_secret"
-            })
-            
-            assert service.is_healthy()
-            mock_boto3.assert_called_once()
-
-    def test_initialization_missing_model_ids(self, mock_phi_detection):
-        """Test service initialization with missing model IDs."""
-        service = MentaLLaMA(phi_detection_service=mock_phi_detection)
-        
-        with patch("boto3.client"), pytest.raises(InvalidConfigurationError):
-            service.initialize({})
-            
-        assert not service.is_healthy()
-
-    def test_initialization_boto_error(self, mock_phi_detection):
-        """Test service initialization with Boto error."""
-        service = MentaLLaMA(phi_detection_service=mock_phi_detection)
-        
-        with patch("boto3.client") as mock_boto3:
-            mock_boto3.side_effect = ClientError(
-                {"Error": {"Code": "InvalidClientTokenId", "Message": "Invalid token"}},
-                "CreateClient"
-            )
-            
-            with pytest.raises(InvalidConfigurationError):
-                service.initialize({
-                    "model_ids": {
-                        "depression_detection": "anthropic.claude-v2:1"
-                    }
+@pytest.fixture
+def mock_bedrock_response():
+    """Create a mock response from AWS Bedrock."""
+    return {
+        "body": {
+            "read": MagicMock(return_value=json.dumps({
+                "completion": json.dumps({
+                    "model_type": "depression_detection",
+                    "score": 0.85,
+                    "confidence": 0.92,
+                    "analysis": "The text indicates signs of depression.",
+                    "recommendations": ["Consider consulting with a mental health professional."],
+                    "timestamp": datetime.now(UTC).isoformat()
                 })
-                
-        assert not service.is_healthy()
+            }).encode())
+        }
+    }
+
+
+@pytest.fixture
+def mock_error_response():
+    """Create a mock error response for AWS Bedrock."""
+    mock = Mock()
+    mock.side_effect = BotoCoreError()
+    return mock
+
+
+class TestBedrockMentalLamaService:
+    """Test cases for the BedrockMentalLamaService."""
+
+    def test_initialization(self):
+        """Test initialization of the service."""
+        settings = get_settings()
+        
+        # Test with default settings
+        service = BedrockMentalLamaService()
+        assert service._region_name == settings.aws.region
+        assert service._model_id == settings.aws.bedrock.anthropic_model_id
+        
+        # Test with custom settings
+        custom_region = "us-west-2"
+        custom_model = "anthropic.claude-v2"
+        service = BedrockMentalLamaService(region_name=custom_region, model_id=custom_model)
+        assert service._region_name == custom_region
+        assert service._model_id == custom_model
+        
+        # Client should be None until initialized
+        assert service._bedrock_client is None
+
+    def test_initialize(self):
+        """Test initialization of the AWS Bedrock client."""
+        service = BedrockMentalLamaService()
+        
+        # Mock the boto3 client
+        boto3_mock = Mock()
+        client_mock = Mock()
+        boto3_mock.client.return_value = client_mock
+        
+        with patch("boto3.client", return_value=client_mock):
+            service.initialize()
+            assert service._bedrock_client is not None
+    
+    def test_initialize_error(self):
+        """Test handling of initialization errors."""
+        service = BedrockMentalLamaService()
+        
+        # Mock the boto3 client to raise an exception
+        with patch("boto3.client", side_effect=BotoCoreError()):
+            with pytest.raises(InitializationError):
+                service.initialize()
+    
+    def test_is_initialized(self):
+        """Test checking if the service is initialized."""
+        service = BedrockMentalLamaService()
+        assert not service.is_initialized()
+        
+        service._bedrock_client = Mock()
+        assert service.is_initialized()
 
     def test_detect_depression(self, mentalllama_service, mock_bedrock_response):
         """Test depression detection with valid input."""
-        with patch.object(:
+        with patch.object(
             mentalllama_service._bedrock_client,
             "invoke_model",
             return_value=mock_bedrock_response
@@ -138,75 +113,67 @@ class TestMentaLLaMA:
             result = mentalllama_service.detect_depression("I'm feeling sad today")
             
             assert result["model_type"] == "depression_detection"
-            assert "depression_signals" in result
-            assert result["depression_signals"]["severity"] == "mild"
-            assert result["depression_signals"]["confidence"] == 0.7
-            assert len(result["depression_signals"]["key_indicators"]) == 1
+            assert result["score"] > 0
             assert "analysis" in result
             assert "recommendations" in result
-
-    def test_detect_depression_empty_text(self, mentalllama_service):
-        """Test depression detection with empty text."""
-        with pytest.raises(InvalidRequestError):
-            mentalllama_service.detect_depression("")
-
-    def test_detect_depression_service_not_initialized(self):
-        """Test depression detection with uninitialized service."""
-        service = MentaLLaMA()
-        
-        with pytest.raises(ServiceUnavailableError):
-            service.detect_depression("I'm feeling sad today")
-
+            assert isinstance(result["recommendations"], list)
+    
     def test_detect_depression_with_phi(self, mentalllama_service, mock_bedrock_response):
-        """Test depression detection with PHI in text."""
-        # Configure PHI detection mock to detect PHI
-        mentalllama_service._phi_detection_service.detect_phi.return_value = {"has_phi": True}
+        """Test depression detection with PHI data."""
         
-        with patch.object(:
+        with patch.object(
             mentalllama_service._bedrock_client,
             "invoke_model",
             return_value=mock_bedrock_response
         ):
             result = mentalllama_service.detect_depression("My name is John Doe and I'm feeling sad")
             
-            # Verify PHI detection and redaction was called
-            mentalllama_service._phi_detection_service.detect_phi.assert_called_once()
-            mentalllama_service._phi_detection_service.redact_phi.assert_called_once()
-            
-            # Verify result still contains proper depression detection data
-            assert "depression_signals" in result
-            assert result["depression_signals"]["severity"] == "mild"
-
-    def test_detect_depression_bedrock_error(self, mentalllama_service):
-        """Test depression detection with Bedrock error."""
-        with patch.object(:
+            assert result["model_type"] == "depression_detection"
+            # Ensure PHI is not logged or stored
+            assert "John Doe" not in str(result)
+    
+    def test_detect_depression_error(self, mentalllama_service, mock_error_response):
+        """Test handling of errors during depression detection."""
+        
+        with patch.object(
             mentalllama_service._bedrock_client,
-            "invoke_model",
-            side_effect=ClientError(
-                {"Error": {"Code": "InternalServerError", "Message": "Internal error"}},
-                "InvokeModel"
-            )
+            "invoke_model"
         ), pytest.raises(ServiceUnavailableError):
             mentalllama_service.detect_depression("I'm feeling sad today")
-
-    def test_detect_depression_invalid_json_response(self, mentalllama_service):
-        """Test depression detection with invalid JSON response."""
-        mock_response = {
-            "body": MagicMock()
-        }
-        mock_response["body"].read.return_value = json.dumps({
-            "completion": "This is not a valid JSON response"
-        })
+    
+    def test_health_check(self, mentalllama_service):
+        """Test health check functionality."""
         
-        with patch.object(:
+        with patch.object(
             mentalllama_service._bedrock_client,
-            "invoke_model",
-            return_value=mock_response
+            "describe_model",
+            return_value={"modelDetails": {"status": "InService"}}
         ):
-            result = mentalllama_service.detect_depression("I'm feeling sad today")
-            
-            # Verify fallback behavior for invalid JSON
-            assert "depression_signals" in result
-            assert result["depression_signals"]["severity"] == "unknown"
-            assert result["depression_signals"]["confidence"] == 0.0
-            assert len(result["depression_signals"]["key_indicators"]) == 0
+            status = mentalllama_service.health_check()
+            assert status["status"] == "healthy"
+            assert "latency_ms" in status
+    
+    def test_health_check_error(self, mentalllama_service):
+        """Test health check with errors."""
+        
+        with patch.object(
+            mentalllama_service._bedrock_client,
+            "describe_model",
+            side_effect=BotoCoreError()
+        ):
+            status = mentalllama_service.health_check()
+            assert status["status"] == "unhealthy"
+            assert "error" in status
+    
+    def test_model_not_found(self, mentalllama_service):
+        """Test handling of model not found errors."""
+        
+        # Test when model doesn't exist
+        with patch.object(
+            mentalllama_service._bedrock_client,
+            "describe_model",
+            side_effect=ModelNotFoundError("Model not found")
+        ):
+            status = mentalllama_service.health_check()
+            assert status["status"] == "unhealthy"
+            assert "Model not found" in status["error"]

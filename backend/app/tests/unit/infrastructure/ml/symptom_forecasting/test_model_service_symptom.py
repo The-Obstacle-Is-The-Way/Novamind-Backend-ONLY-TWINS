@@ -175,7 +175,7 @@ class TestSymptomForecastingService:
         assert "required fields" in str(excinfo.value).lower()
 
     async def test_forecast_symptom_severity_success(self, service, sample_patient_data, 
-                                                    mock_transformer_model, mock_xgboost_model):
+                                                   mock_transformer_model, mock_xgboost_model):
         """Test successful symptom severity forecasting."""
         # Execute
         result = await service.forecast_symptom_severity(

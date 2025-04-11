@@ -233,7 +233,7 @@ class TestBiometricTwin:
                 timestamp=now + timedelta(hours=i),
                 source="apple_watch"
             )
-            for i in range(5):
+            for i in range(5)
         ]
         
         # Add the data points to the twin

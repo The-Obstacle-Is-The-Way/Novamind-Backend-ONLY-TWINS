@@ -28,7 +28,6 @@ class BaseSecurityTest(TestCase):
     All security tests should inherit from this class to ensure consistent
     test structure and behavior.
     """
-    :
     # Default user ID for testing:
     test_user_id: str = "test-user-id-12345"
     

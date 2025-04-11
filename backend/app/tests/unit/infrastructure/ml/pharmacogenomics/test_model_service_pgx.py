@@ -17,6 +17,7 @@ from app.infrastructure.ml.pharmacogenomics.model_service import Pharmacogenomic
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
 from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel
 
+
 class TestPharmacogenomicsService:
     """Tests for the PharmacogenomicsService."""
 
@@ -172,8 +173,8 @@ class TestPharmacogenomicsService:
         return str(uuid4())
 
     async def test_predict_medication_response_success(self, service, mock_gene_medication_model, 
-                                                       mock_treatment_model, sample_genetic_data, 
-                                                       sample_patient_data, sample_patient_id):
+                                                        mock_treatment_model, sample_genetic_data, 
+                                                        sample_patient_data, sample_patient_id):
         """Test that predict_medication_response correctly processes data and returns predictions."""
         # Setup
         medications = ["fluoxetine", "sertraline", "bupropion"]
@@ -241,7 +242,7 @@ class TestPharmacogenomicsService:
         assert "patient data is required" in str(excinfo.value).lower()
 
     async def test_predict_medication_response_no_medications(self, service, sample_genetic_data, 
-                                                             sample_patient_data, sample_patient_id):
+                                                              sample_patient_data, sample_patient_id):
         """Test that predict_medication_response handles empty medications list."""
         # Execute/Assert
         with pytest.raises(ValueError) as excinfo:
@@ -255,8 +256,8 @@ class TestPharmacogenomicsService:
         assert "medications list cannot be empty" in str(excinfo.value).lower()
 
     async def test_predict_medication_response_model_error(self, service, mock_gene_medication_model,
-                                                          sample_genetic_data, sample_patient_data, 
-                                                          sample_patient_id):
+                                                           sample_genetic_data, sample_patient_data, 
+                                                           sample_patient_id):
         """Test that predict_medication_response handles model errors correctly."""
         # Setup
         medications = ["fluoxetine", "sertraline"]
@@ -275,7 +276,7 @@ class TestPharmacogenomicsService:
 
     @patch('app.infrastructure.ml.pharmacogenomics.model_service.log_phi_access')
     async def test_phi_access_logging(self, mock_log_phi_access, service, sample_genetic_data,
-                                     sample_patient_data, sample_patient_id):
+                                      sample_patient_data, sample_patient_id):
         """Test that PHI access is properly logged."""
         # Setup
         medications = ["fluoxetine", "sertraline"]
@@ -295,7 +296,7 @@ class TestPharmacogenomicsService:
         assert log_args[1] == sample_patient_id
 
     async def test_analyze_medication_interactions(self, service, mock_gene_medication_model,
-                                                 sample_genetic_data):
+                                                  sample_genetic_data):
         """Test the analyze_medication_interactions method."""
         # Setup
         medications = ["fluoxetine", "sertraline"]

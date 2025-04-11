@@ -33,7 +33,7 @@ async def test_temporal_endpoints_integration(
     with mock_current_user, patch(:
         "app.api.dependencies.services.get_temporal_neurotransmitter_service",
         return_value=AsyncMock(return_value=temporal_service)
-    ):
+)
         # Test 1: Generate time series
         time_series_response = client.post(
             "/api/v1/temporal-neurotransmitter/time-series",
@@ -44,7 +44,7 @@ async def test_temporal_endpoints_integration(
                 "time_range_days": 14,
                 "time_step_hours": 6
             }
-        )
+)
         
         # Verify response
         assert time_series_response.status_code == 201
@@ -60,7 +60,7 @@ async def test_temporal_endpoints_integration(
                 "treatment_effect": 0.5,
                 "simulation_days": 14
             }
-        )
+)
         
         # Verify response
         assert treatment_response.status_code == 200
@@ -75,10 +75,10 @@ async def test_temporal_endpoints_integration(
             json={
                 "sequence_id": first_sequence_id
             }
-        )
+)
         
         # Verify response
         assert viz_response.status_code == 200
         assert "time_points" in viz_response.json()
-        assert "features" in viz_response.json()
-        assert "values" in viz_response.json()
+assert "features" in viz_response.json()
+assert "values" in viz_response.json()

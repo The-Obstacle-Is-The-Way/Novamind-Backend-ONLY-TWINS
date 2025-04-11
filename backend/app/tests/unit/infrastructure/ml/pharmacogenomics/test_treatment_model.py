@@ -129,6 +129,136 @@ class TestTreatmentResponseModel:
             # Verify
             mock_joblib.load.assert_called_once_with("test_model_path")
             mock_json.load.assert_called_once()
+            assert model.is_initialized
+            assert model._efficacy_model is not None
+            assert model._side_effect_model is not None
+            assert model._medication_data is not None
+        finally:
+            # Clean up all patches
+            patch.stopall()
+
+    async def test_initialize_handles_missing_files(self):
+        """Test that initialize handles missing model and medication data files gracefully."""
+        # Setup
+        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists', return_value=False).start()
+        
+        try:
+            # Create model instance
+            model = TreatmentResponseModel(
+                model_path="nonexistent_path",
+                medication_data_path="nonexistent_path"
+            )
+            
+            # Execute and assert
+            with pytest.raises(FileNotFoundError):
+                await model.initialize()
+            
+            # Verify the model is not initialized
+            assert not model.is_initialized
+        finally:
+            # Clean up all patches
+            patch.stopall()
+
+    async def test_predict_treatment_response_success(self, model, sample_patient_data):
+        """Test successful treatment response prediction."""
+        # Setup
+        medications = ["fluoxetine", "sertraline", "bupropion"]
+        metabolizer_status = {
+            "CYP2D6": "normal",
+            "CYP2C19": "intermediate"
+        }
+        
+        # Execute
+        result = await model.predict_treatment_response(
+            patient_data=sample_patient_data,
+            medications=medications,
+            metabolizer_status=metabolizer_status
+        )
+        
+        # Verify
+        assert "medication_predictions" in result
+        assert len(result["medication_predictions"]) == len(medications)
+        
+        # Check first medication
+        fluoxetine = result["medication_predictions"]["fluoxetine"]
+        assert "efficacy" in fluoxetine
+        assert "side_effects" in fluoxetine
+        assert fluoxetine["efficacy"]["score"] > 0
+        assert len(fluoxetine["side_effects"]) > 0
+        
+        # Check comparative analysis
+        assert "comparative_analysis" in result
+        assert "highest_efficacy" in result["comparative_analysis"]
+        assert "lowest_side_effects" in result["comparative_analysis"]
+
+    async def test_predict_treatment_response_no_medications(self, model, sample_patient_data):
+        """Test prediction with empty medications list."""
+        # Execute and assert
+        with pytest.raises(ValueError):
+            await model.predict_treatment_response(
+                patient_data=sample_patient_data,
+                medications=[],
+                metabolizer_status={"CYP2D6": "normal"}
+            )
+
+    async def test_predict_treatment_response_invalid_medication(self, model, sample_patient_data):
+        """Test prediction with invalid medication."""
+        # Setup - A medication not in the model's data
+        medications = ["invalid_medication"]
+        
+        # Execute
+        result = await model.predict_treatment_response(
+            patient_data=sample_patient_data,
+            medications=medications,
+            metabolizer_status={"CYP2D6": "normal"}
+        )
+        
+        # Verify that the result still contains valid structure but with default/warning values
+        assert "medication_predictions" in result
+        assert len(result["medication_predictions"]) == 0
+        assert "comparative_analysis" in result
+        assert result["comparative_analysis"] == {}
+
+    async def test_preprocess_patient_data(self, model, sample_patient_data):
+        """Test patient data preprocessing."""
+        # Execute
+        features = model._preprocess_patient_data(sample_patient_data)
+        
+        # Verify
+        assert isinstance(features, np.ndarray)
+        assert features.shape[0] == 1  # One patient
+        assert features.shape[1] > 0   # Multiple features
+
+    async def test_format_efficacy_result(self, model):
+        """Test efficacy result formatting."""
+        # Setup
+        efficacy_score = 0.72
+        confidence = 0.85
+        
+        # Execute
+        result = model._format_efficacy_result(efficacy_score, confidence)
+        
+        # Verify
+        assert "score" in result
+        assert "confidence" in result
+        assert "percentile" in result
+        assert result["score"] == efficacy_score
+        assert result["confidence"] == confidence
+        assert 0 <= result["percentile"] <= 100
+
+    async def test_format_side_effects_result(self, model):
+        """Test side effects result formatting."""
+        # Setup
+        medication = "fluoxetine"
+        side_effect_risks = np.array([0.35, 0.28, 0.15])
+        
+        # Execute
+        result = model._format_side_effects_result(medication, side_effect_risks)
+        
+        # Verify
+        assert len(result) == 3  # Three side effects
+        assert "name" in result[0]
+        assert "risk" in result[0]
         assert "severity" in result[0]
         assert "onset_days" in result[0]
         

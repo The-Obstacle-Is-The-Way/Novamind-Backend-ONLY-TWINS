@@ -12,9 +12,8 @@ from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.password.password_handler import PasswordHandler
 
-
-@pytest.fixture:
-    def password_handler():
+@pytest.fixture
+def password_handler():
     """
     Create a password handler instance for testing.
     
@@ -96,7 +95,7 @@ class TestPasswordHandler:
         assert any(c.isupper() for c in password)
         assert any(c.islower() for c in password)
         assert any(c.isdigit() for c in password)
-        assert any(c in "!@#$%^&*()-_=+[]{}|;:,.<>?/" for c in password)
+        assert any(c in "!@#$%^&*()-_=+[]{}|;,.<>?/" for c in password)
     
     def test_generate_secure_password_custom_length(self, password_handler):
         """Test secure password generation with custom length."""
@@ -110,7 +109,7 @@ class TestPasswordHandler:
         assert any(c.isupper() for c in password)
         assert any(c.islower() for c in password)
         assert any(c.isdigit() for c in password)
-        assert any(c in "!@#$%^&*()-_=+[]{}|;:,.<>?/" for c in password)
+        assert any(c in "!@#$%^&*()-_=+[]{}|;,.<>?/" for c in password)
     
     def test_generate_secure_password_minimum_length(self, password_handler):
         """Test secure password generation with length below minimum."""
@@ -238,7 +237,7 @@ class TestPasswordHandler:
         # Generate multiple passwords
         passwords = [
             password_handler.generate_secure_password() 
-            for _ in range(10):
+            for _ in range(10)
         ]
         
         # Check that all are unique

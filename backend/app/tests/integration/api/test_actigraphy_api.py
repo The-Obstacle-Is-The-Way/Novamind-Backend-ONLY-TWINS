@@ -158,7 +158,7 @@ class TestActigraphyAPI:
                 y=reading["y"],
                 z=reading["z"]
             )
-            for reading in create_sample_readings(20):
+            for reading in create_sample_readings(20)
         ]
         start_time = (datetime.now() - timedelta(hours=1)).isoformat()
         end_time = datetime.now().isoformat()
@@ -218,7 +218,7 @@ class TestActigraphyAPI:
                 y=reading["y"],
                 z=reading["z"]
             )
-            for reading in create_sample_readings(20):
+            for reading in create_sample_readings(20)
         ]
         start_time = (datetime.now() - timedelta(hours=1)).isoformat()
         end_time = datetime.now().isoformat()

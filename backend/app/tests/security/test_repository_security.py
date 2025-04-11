@@ -231,7 +231,7 @@ def test_bulk_operations_maintain_encryption(patient_repository, encryption_serv
     # Create multiple patients
     patients = [
         Patient(id=str(uuid.uuid4()), first_name=f"Patient-{i}", ssn=f"123-45-{1000+i}")
-        for i in range(5):
+        for i in range(5)
     ]
     
     # Spy on encryption

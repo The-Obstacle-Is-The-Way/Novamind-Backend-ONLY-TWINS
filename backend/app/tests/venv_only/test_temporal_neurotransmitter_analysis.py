@@ -17,9 +17,9 @@ from unittest.mock import MagicMock
 
 # ================= Model Classes =================
 
-@pytest.mark.db_required:
-    class NeurotransmitterType(str, Enum):
-    """Types of neurotransmitters being analyzed."""
+@pytest.mark.db_required
+class NeurotransmitterType(str, Enum):
+        """Types of neurotransmitters being analyzed."""
     SEROTONIN = "serotonin"
     DOPAMINE = "dopamine"
     GABA = "gaba"
@@ -28,10 +28,8 @@ from unittest.mock import MagicMock
     ACETYLCHOLINE = "acetylcholine"
     ENDORPHIN = "endorphin"
     OXYTOCIN = "oxytocin"
-
-
 class TemporalPatternType(str, Enum):
-    """Types of temporal patterns that can be identified."""
+        """Types of temporal patterns that can be identified."""
     DAILY_CYCLE = "daily_cycle"
     WEEKLY_CYCLE = "weekly_cycle"
     GRADUAL_INCREASE = "gradual_increase"
@@ -41,12 +39,9 @@ class TemporalPatternType(str, Enum):
     STABLE = "stable"
     IRREGULAR = "irregular"
     CUSTOM = "custom"
-
-
 class NeurotransmitterReading:
-    """A single reading of a neurotransmitter level."""
-    
-    def __init__(:
+        """A single reading of a neurotransmitter level."""
+def __init__(:
         self,
         neurotransmitter: NeurotransmitterType,
         level: float,
@@ -61,10 +56,10 @@ class NeurotransmitterReading:
         Args:
             neurotransmitter: Type of neurotransmitter
             level: Measured level (normalized 0-100)
-            timestamp: When the reading was taken
+    timestamp: When the reading was taken
             patient_id: ID of the patient
             source: Source of the reading (e.g., "lab", "simulated")
-            metadata: Additional metadata about the reading
+metadata: Additional metadata about the reading
         """
         self.neurotransmitter = neurotransmitter
         self.level = level
@@ -72,10 +67,8 @@ class NeurotransmitterReading:
         self.patient_id = patient_id
         self.source = source
         self.metadata = metadata or {}
-        
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary."""
-        return {
+def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""    return {
             "neurotransmitter": self.neurotransmitter.value,
             "level": self.level,
             "timestamp": self.timestamp.isoformat(),
@@ -83,13 +76,10 @@ class NeurotransmitterReading:
             "source": self.source,
             "metadata": self.metadata
         }
-
-
 class TemporalNeurotransmitterAnalyzer:
-    """Analyzer for temporal patterns in neurotransmitter levels."""
-    
-    def __init__(self, patient_id: str):
-        """
+                """Analyzer for temporal patterns in neurotransmitter levels."""
+def __init__(self, patient_id: str):
+            """
         Initialize the analyzer.
         
         Args:
@@ -99,44 +89,40 @@ class TemporalNeurotransmitterAnalyzer:
         self.readings: Dict[NeurotransmitterType, List[NeurotransmitterReading]] = {
             nt_type: [] for nt_type in NeurotransmitterType
         }
-        
-    def add_reading(self, reading: NeurotransmitterReading) -> None:
-        """
+def add_reading(self, reading: NeurotransmitterReading) -> None:
+                """
         Add a neurotransmitter reading.
         
-        Args:
-            reading: The reading to add
+                Args:
+                    reading: The reading to add
         """
         if reading.patient_id != self.patient_id:
-            raise ValueError("Reading patient ID does not match analyzer patient ID")
+                        raise ValueError("Reading patient ID does not match analyzer patient ID")
             
-        self.readings[reading.neurotransmitter].append(reading)
-        
-    def add_readings(self, readings: List[NeurotransmitterReading]) -> None:
-        """
+                        self.readings[reading.neurotransmitter].append(reading)
+def add_readings(self, readings: List[NeurotransmitterReading]) -> None:
+                            """
         Add multiple neurotransmitter readings.
         
-        Args:
-            readings: The readings to add
+                            Args:
+                                readings: The readings to add
         """
         for reading in readings:
-            self.add_reading(reading)
-            
-    def get_dataframe(self, neurotransmitter: NeurotransmitterType) -> pd.DataFrame:
-        """
+                                    self.add_reading(reading)
+def get_dataframe(self, neurotransmitter: NeurotransmitterType) -> pd.DataFrame:
+                                        """
         Get a pandas DataFrame of readings for a neurotransmitter.
         
-        Args:
-            neurotransmitter: The neurotransmitter to get readings for
+                                        Args:
+                                            neurotransmitter: The neurotransmitter to get readings for
             
-        Returns:
-            DataFrame with columns: timestamp, level
+                                            Returns:
+                                                DataFrame with columns: timestamp, level
         """
         readings = self.readings[neurotransmitter]
         
-        if not readings:
-            # Return empty DataFrame with correct columns
-            return pd.DataFrame(columns=["timestamp", "level"])
+                                                if not readings:
+            # Return empty DataFrame with correct columns    return pd.DataFrame(columns=["timestamp", "level"])
             
         # Create DataFrame
         data = {
@@ -144,36 +130,32 @@ class TemporalNeurotransmitterAnalyzer:
             "level": [r.level for r in readings]
         }
         
-        df = pd.DataFrame(data)
+                                            df = pd.DataFrame(data)
         
         # Sort by timestamp
         df = df.sort_values("timestamp")
         
         # Set timestamp as index
-        df = df.set_index("timestamp")
-        
-        return df
-        
-    def analyze_pattern(:
-        self, 
+        df = df.set_index("timestamp")    return df
+def analyze_pattern(:
+                                                self, 
         neurotransmitter: NeurotransmitterType,
         timeframe_days: int = 30
     ) -> Dict[str, Any]:
-        """
+                                                    """
         Analyze the temporal pattern of a neurotransmitter.
         
-        Args:
-            neurotransmitter: The neurotransmitter to analyze
+                                                    Args:
+                                                        neurotransmitter: The neurotransmitter to analyze
             timeframe_days: Number of past days to analyze
             
-        Returns:
-            Analysis results including pattern type, statistics, etc.
+                                                        Returns:
+                                                            Analysis results including pattern type, statistics, etc.
         """
         # Get DataFrame for this neurotransmitter
         df = self.get_dataframe(neurotransmitter)
         
-        if df.empty:
-            return {
+                                                            if df.empty:    return {
                 "pattern_type": None,
                 "confidence": 0.0,
                 "mean": None,
@@ -193,8 +175,7 @@ class TemporalNeurotransmitterAnalyzer:
         cutoff_date = datetime.now() - timedelta(days=timeframe_days)
         df = df[df.index >= cutoff_date]
         
-        if df.empty:
-            return {
+                                                            if df.empty:    return {
                 "pattern_type": None,
                 "confidence": 0.0,
                 "mean": None,
@@ -220,7 +201,7 @@ class TemporalNeurotransmitterAnalyzer:
         df = df.reset_index()
         df["days"] = (df["timestamp"] - df["timestamp"].min()).dt.total_seconds() / (24 * 3600)
         
-        if len(df) >= 2:
+                                            if len(df) >= 2:
             # Use numpy for linear regression
             slope, _ = np.polyfit(df["days"], df["level"], 1)
             
@@ -228,18 +209,18 @@ class TemporalNeurotransmitterAnalyzer:
             if abs(slope) < 0.1:  # Very small slope
                 trend = "stable"
             elif slope > 0:
-                trend = "increasing"
+                                                trend = "increasing"
             else:
-                trend = "decreasing"
+                                                    trend = "decreasing"
         else:
-            trend = "unknown"
+                                                        trend = "unknown"
             slope = 0
             
         # Check for daily cycles
         has_daily_cycle = False
         daily_cycle_confidence = 0.0
         
-        if len(df) >= 24:  # Need at least 24 hours of data
+                                                        if len(df) >= 24:  # Need at least 24 hours of data
             # Group by hour of day
             df["hour"] = df["timestamp"].dt.hour
             hourly_means = df.groupby("hour")["level"].mean()
@@ -254,7 +235,7 @@ class TemporalNeurotransmitterAnalyzer:
         has_weekly_cycle = False
         weekly_cycle_confidence = 0.0
         
-        if len(df) >= 7 * 24:  # Need at least a week of data
+                                                    if len(df) >= 7 * 24:  # Need at least a week of data
             # Group by day of week
             df["day_of_week"] = df["timestamp"].dt.dayofweek
             daily_means = df.groupby("day_of_week")["level"].mean()
@@ -267,22 +248,22 @@ class TemporalNeurotransmitterAnalyzer:
         
         # Determine overall pattern type
         if has_daily_cycle and daily_cycle_confidence > 0.6:
-            pattern_type = TemporalPatternType.DAILY_CYCLE
+                                                    pattern_type = TemporalPatternType.DAILY_CYCLE
             confidence = daily_cycle_confidence
         elif has_weekly_cycle and weekly_cycle_confidence > 0.6:
-            pattern_type = TemporalPatternType.WEEKLY_CYCLE
+                                                        pattern_type = TemporalPatternType.WEEKLY_CYCLE
             confidence = weekly_cycle_confidence
         elif trend == "increasing" and abs(slope) > 0.5:
-            pattern_type = TemporalPatternType.GRADUAL_INCREASE
+                                                            pattern_type = TemporalPatternType.GRADUAL_INCREASE
             confidence = min(1.0, abs(slope) / 2.0)
         elif trend == "decreasing" and abs(slope) > 0.5:
-            pattern_type = TemporalPatternType.GRADUAL_DECREASE
+                                                            pattern_type = TemporalPatternType.GRADUAL_DECREASE
             confidence = min(1.0, abs(slope) / 2.0)
         elif std_level < 5.0 and len(df) >= 10:
-            pattern_type = TemporalPatternType.STABLE
+                                                            pattern_type = TemporalPatternType.STABLE
             confidence = min(1.0, 10.0 / std_level) if std_level > 0 else 0.95
         else:
-            pattern_type = TemporalPatternType.IRREGULAR
+                                                                pattern_type = TemporalPatternType.IRREGULAR
             confidence = 0.7
             
         # Create result dictionary
@@ -303,32 +284,26 @@ class TemporalNeurotransmitterAnalyzer:
             "neurotransmitter": neurotransmitter.value,
             "timeframe_days": timeframe_days,
             "data_points": len(df)
-        }
-        
-        return result
-        
-    def analyze_all(self, timeframe_days: int = 30) -> Dict[str, Dict[str, Any]]:
-        """
+        }    return result
+def analyze_all(self, timeframe_days: int = 30) -> Dict[str, Dict[str, Any]]:
+                                                                """
         Analyze patterns for all neurotransmitters.
         
-        Args:
-            timeframe_days: Number of past days to analyze
+                                                                Args:
+                                                                    timeframe_days: Number of past days to analyze
             
-        Returns:
-            Dictionary mapping neurotransmitter names to analysis results
+                                                                    Returns:
+                                                                        Dictionary mapping neurotransmitter names to analysis results
         """
         results = {}
         
-        for nt_type in NeurotransmitterType:
-            if not self.readings[nt_type]:
-                continue
+                                                                        for nt_type in NeurotransmitterType:
+                                                                            if not self.readings[nt_type]:
+                                                                                continue
                 
-            results[nt_type.value] = self.analyze_pattern(nt_type, timeframe_days)
-            
-        return results
-        
-    def generate_synthetic_data(:
-        self,
+                                                                                results[nt_type.value] = self.analyze_pattern(nt_type, timeframe_days)    return results
+def generate_synthetic_data(:
+                                                                                    self,
         neurotransmitter: NeurotransmitterType,
         pattern: TemporalPatternType,
         days: int = 30,
@@ -336,19 +311,19 @@ class TemporalNeurotransmitterAnalyzer:
         base_level: float = 50.0,
         variation: float = 10.0
     ) -> List[NeurotransmitterReading]:
-        """
+                                                                                        """
         Generate synthetic data with a specific pattern.
         
-        Args:
-            neurotransmitter: The neurotransmitter to generate data for
+                                                                                        Args:
+                                                                                            neurotransmitter: The neurotransmitter to generate data for
             pattern: The pattern to generate
             days: Number of days of data to generate
             readings_per_day: Number of readings per day
             base_level: Base neurotransmitter level
             variation: Amount of random variation
             
-        Returns:
-            List of synthetic neurotransmitter readings
+                                                                                            Returns:
+                                                                                                List of synthetic neurotransmitter readings
         """
         readings = []
         
@@ -362,7 +337,7 @@ class TemporalNeurotransmitterAnalyzer:
         
         # Generate readings based on pattern
         for i in range(total_readings):
-            timestamp = start_time + time_step * i
+                                                                                                timestamp = start_time + time_step * i
             
             # Base level with noise
             level = base_level + np.random.normal(0, variation / 3)
@@ -374,37 +349,37 @@ class TemporalNeurotransmitterAnalyzer:
                 daily_factor = np.sin(hour / 24 * 2 * np.pi)
                 level += daily_factor * variation
                 
-            elif pattern == TemporalPatternType.WEEKLY_CYCLE:
+                                                                                            elif pattern == TemporalPatternType.WEEKLY_CYCLE:
                 # Add weekly cycle: higher on weekends
                 day_of_week = timestamp.weekday()
                 weekend_factor = 1.0 if day_of_week >= 5 else 0.0  # Weekend boost
                 level += weekend_factor * variation
                 
-            elif pattern == TemporalPatternType.GRADUAL_INCREASE:
+                                                                                        elif pattern == TemporalPatternType.GRADUAL_INCREASE:
                 # Gradual increase over time
                 progress = i / total_readings
                 level += progress * variation * 2
                 
-            elif pattern == TemporalPatternType.GRADUAL_DECREASE:
+                                                                                        elif pattern == TemporalPatternType.GRADUAL_DECREASE:
                 # Gradual decrease over time
                 progress = i / total_readings
                 level -= progress * variation * 2
                 
-            elif pattern == TemporalPatternType.SUDDEN_SPIKE:
+                                                                                        elif pattern == TemporalPatternType.SUDDEN_SPIKE:
                 # Occasional spikes
                 if np.random.random() < 0.05:  # 5% chance of spike
                     level += variation * 2
                     
-            elif pattern == TemporalPatternType.SUDDEN_DROP:
+                                                                                        elif pattern == TemporalPatternType.SUDDEN_DROP:
                 # Occasional drops
                 if np.random.random() < 0.05:  # 5% chance of drop
                     level -= variation * 2
                     
-            elif pattern == TemporalPatternType.STABLE:
+                                                                                        elif pattern == TemporalPatternType.STABLE:
                 # Just the base level with minimal noise
                 level = base_level + np.random.normal(0, variation / 10)
                 
-            elif pattern == TemporalPatternType.IRREGULAR:
+                                                                                        elif pattern == TemporalPatternType.IRREGULAR:
                 # Add more noise and some random spikes and drops
                 level += np.random.normal(0, variation)
                 if np.random.random() < 0.1:  # 10% chance of spike or drop
@@ -423,33 +398,29 @@ class TemporalNeurotransmitterAnalyzer:
                 metadata={"pattern": pattern.value}
             )
             
-            readings.append(reading)
-            
-        return readings
-
-    def get_pattern_correlation(:
-        self, 
+                                                                                readings.append(reading)    return readings
+def get_pattern_correlation(:
+                                                                                    self, 
         neurotransmitter1: NeurotransmitterType,
         neurotransmitter2: NeurotransmitterType,
         timeframe_days: int = 30
     ) -> Dict[str, Any]:
-        """
+                                                                                        """
         Analyze correlations between two neurotransmitters over time.
         
-        Args:
-            neurotransmitter1: First neurotransmitter
+                                                                                        Args:
+                                                                                            neurotransmitter1: First neurotransmitter
             neurotransmitter2: Second neurotransmitter
             timeframe_days: Number of past days to analyze
             
-        Returns:
-            Correlation analysis results
+                                                                                            Returns:
+                                                                                                Correlation analysis results
         """
         # Get DataFrames
         df1 = self.get_dataframe(neurotransmitter1)
         df2 = self.get_dataframe(neurotransmitter2)
         
-        if df1.empty or df2.empty:
-            return {
+                                                                                            if df1.empty or df2.empty:    return {
                 "correlation": 0,
                 "p_value": 1.0,
                 "synchronized": False,
@@ -463,8 +434,7 @@ class TemporalNeurotransmitterAnalyzer:
         df1 = df1[df1.index >= cutoff_date]
         df2 = df2[df2.index >= cutoff_date]
         
-        if df1.empty or df2.empty:
-            return {
+                                                                                        if df1.empty or df2.empty:    return {
                 "correlation": 0,
                 "p_value": 1.0, 
                 "synchronized": False,
@@ -478,7 +448,7 @@ class TemporalNeurotransmitterAnalyzer:
         df1_hourly["hour"] = df1_hourly["timestamp"].dt.floor("H")
         df1_hourly = df1_hourly.groupby("hour").mean()
         
-        df2_hourly = df2.reset_index()
+                                                                                    df2_hourly = df2.reset_index()
         df2_hourly["hour"] = df2_hourly["timestamp"].dt.floor("H")
         df2_hourly = df2_hourly.groupby("hour").mean()
         
@@ -491,8 +461,7 @@ class TemporalNeurotransmitterAnalyzer:
             suffixes=(f"_{neurotransmitter1.value}", f"_{neurotransmitter2.value}")
         )
         
-        if df_merged.empty or len(df_merged) < 3:  # Need at least 3 points for correlation
-            return {
+                                                                        if df_merged.empty or len(df_merged) < 3:  # Need at least 3 points for correlation    return {
                 "correlation": 0,
                 "p_value": 1.0,
                 "synchronized": False,
@@ -515,13 +484,13 @@ class TemporalNeurotransmitterAnalyzer:
         
         # Determine relationship
         if abs(correlation) < 0.3:
-            relationship = "unrelated"
+                                                            relationship = "unrelated"
             synchronized = False
         elif correlation >= 0.3:
-            relationship = "positively_correlated"
+                                                                relationship = "positively_correlated"
             synchronized = True
         else:
-            relationship = "negatively_correlated"
+                                                                    relationship = "negatively_correlated"
             synchronized = True
             
         # In a real implementation, we would calculate lag using cross-correlation
@@ -539,15 +508,12 @@ class TemporalNeurotransmitterAnalyzer:
             "neurotransmitter2": neurotransmitter2.value,
             "timeframe_days": timeframe_days,
             "data_points": len(df_merged)
-        }
-   
-        return result
+        }    return result
 
 
 # ================= Tests =================
-
 def test_neurotransmitter_analyzer_pattern_detection():
-    """Test that the analyzer can detect different temporal patterns."""
+        """Test that the analyzer can detect different temporal patterns."""
     # Set up analyzer
     analyzer = TemporalNeurotransmitterAnalyzer(patient_id="test_patient")
     
@@ -560,11 +526,11 @@ def test_neurotransmitter_analyzer_pattern_detection():
         TemporalPatternType.STABLE
     ]
     
-    for i, pattern in enumerate(patterns_to_test):
+                                                            for i, pattern in enumerate(patterns_to_test)
         # Generate synthetic data with this pattern
         nt_type = list(NeurotransmitterType)[i % len(NeurotransmitterType)]
         
-        readings = analyzer.generate_synthetic_data(
+                                                            readings = analyzer.generate_synthetic_data(
             neurotransmitter=nt_type,
             pattern=pattern,
             days=30,
@@ -583,10 +549,8 @@ def test_neurotransmitter_analyzer_pattern_detection():
         assert result["confidence"] > 0.5, \
 f"Confidence too low: {result['confidence']}"
         assert result["data_points"] > 0
-        
-
 def test_neurotransmitter_analyzer_with_pandas():
-    """Test that the analyzer correctly uses pandas for data analysis."""
+        """Test that the analyzer correctly uses pandas for data analysis."""
     # Set up analyzer
     analyzer = TemporalNeurotransmitterAnalyzer(patient_id="test_patient")
     
@@ -597,13 +561,13 @@ def test_neurotransmitter_analyzer_with_pandas():
     start_time = end_time - timedelta(days=days)
     time_step = timedelta(days=1) / readings_per_day
     
-    readings = []
+                                                readings = []
     for i in range(days * readings_per_day):
-        timestamp = start_time + time_step * i
+                                                timestamp = start_time + time_step * i
         # Create a sine wave pattern
         level = 50 + 20 * np.sin(i / 24 * 2 * np.pi)
         
-        reading = NeurotransmitterReading(
+                                                reading = NeurotransmitterReading(
             neurotransmitter=NeurotransmitterType.SEROTONIN,
             level=level,
             timestamp=timestamp,
@@ -633,10 +597,8 @@ def test_neurotransmitter_analyzer_with_pandas():
     assert result["has_daily_cycle"] == True
     assert "mean" in result
     assert "std" in result
-    
-
 def test_neurotransmitter_correlation_analysis():
-    """Test that correlations between neurotransmitters can be analyzed."""
+        """Test that correlations between neurotransmitters can be analyzed."""
     # Set up analyzer
     analyzer = TemporalNeurotransmitterAnalyzer(patient_id="test_patient")
     
@@ -647,12 +609,12 @@ def test_neurotransmitter_correlation_analysis():
     start_time = end_time - timedelta(days=days)
     time_step = timedelta(days=1) / readings_per_day
     
-    serotonin_readings = []
+                            serotonin_readings = []
     dopamine_readings = []
     
     # Generate correlated data: dopamine follows serotonin with some noise
     for i in range(days * readings_per_day):
-        timestamp = start_time + time_step * i
+                            timestamp = start_time + time_step * i
         
         # Base pattern is a sine wave
         base = np.sin(i / 24 * 2 * np.pi)
@@ -665,14 +627,14 @@ def test_neurotransmitter_correlation_analysis():
         dopamine = 40 + 0.7 * (serotonin - 50) + np.random.normal(0, 5)
         dopamine = max(0, min(100, dopamine))
         
-        serotonin_readings.append(NeurotransmitterReading(
+                    serotonin_readings.append(NeurotransmitterReading(
             neurotransmitter=NeurotransmitterType.SEROTONIN,
             level=serotonin,
             timestamp=timestamp,
             patient_id="test_patient"
         ))
         
-        dopamine_readings.append(NeurotransmitterReading(
+                    dopamine_readings.append(NeurotransmitterReading(
             neurotransmitter=NeurotransmitterType.DOPAMINE,
             level=dopamine,
             timestamp=timestamp,
@@ -694,10 +656,8 @@ def test_neurotransmitter_correlation_analysis():
     assert abs(result["correlation"]) > 0.5, "Expected strong correlation"
     assert result["relationship"] == "positively_correlated"
     assert result["synchronized"] == True
-    
-
 def test_synthetic_data_generation():
-    """Test that synthetic data generation creates the expected patterns."""
+        """Test that synthetic data generation creates the expected patterns."""
     # Set up analyzer
     analyzer = TemporalNeurotransmitterAnalyzer(patient_id="test_patient")
     
@@ -713,17 +673,15 @@ def test_synthetic_data_generation():
     assert len(readings) == 7 * 24
     assert all(r.neurotransmitter == NeurotransmitterType.SEROTONIN for r in readings)
     assert all(r.patient_id == "test_patient" for r in readings)
-    assert all(0 <= r.level <= 100 for r in readings)
+assert all(0 <= r.level <= 100 for r in readings)
     
     # Add the readings and analyze
     analyzer.add_readings(readings)
-    result = analyzer.analyze_pattern(NeurotransmitterType.SEROTONIN)
+result = analyzer.analyze_pattern(NeurotransmitterType.SEROTONIN)
     
     # Since we generated a daily cycle, it should be detected
     assert result["has_daily_cycle"] == True
     assert result["pattern_type"] == TemporalPatternType.DAILY_CYCLE.value
-    
-
 def test_analyze_all_neurotransmitters():
     """Test analyzing all neurotransmitters at once."""
     # Set up analyzer
@@ -743,14 +701,14 @@ def test_analyze_all_neurotransmitters():
             days=10,
             readings_per_day=24
         )
-        analyzer.add_readings(readings)
+analyzer.add_readings(readings)
     
     # Analyze all
     results = analyzer.analyze_all(timeframe_days=10)
     
     # Check results
     assert len(results) == len(patterns)
-    for nt_type, pattern in patterns.items():
+for nt_type, pattern in patterns.items():
         assert nt_type.value in results
         assert results[nt_type.value]["pattern_type"] == pattern.value
         assert results[nt_type.value]["data_points"] > 0

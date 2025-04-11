@@ -436,7 +436,7 @@ async def test_analyze_treatment_neurotransmitter_effects_creates_mapping_if_nee
     treatment_id = uuid.uuid4()
     time_points = [
         datetime.now() + timedelta(days=i*7)
-        for i in range(3):
+        for i in range(3)
     ]
     
     # Call the method without initializing a mapping first
@@ -468,7 +468,7 @@ async def test_analyze_treatment_neurotransmitter_effects_with_parameters(mock_s
     treatment_id = uuid.uuid4()
     time_points = [
         datetime.now() + timedelta(days=i*7)
-        for i in range(5)  # 0, 7, 14, 21, 28 days:
+        for i in range(5)  # 0, 7, 14, 21, 28 days
     ]
     neurotransmitters = [
         Neurotransmitter.SEROTONIN,
