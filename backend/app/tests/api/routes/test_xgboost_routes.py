@@ -8,7 +8,7 @@ import json
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 from fastapi import status
-, from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient
 
 # Import directly from app.api.schemas to avoid routes import issues
 from app.api.schemas.xgboost import (
@@ -32,22 +32,30 @@ mock_xgboost_service = AsyncMock()
 def client():
     """Create a test client for testing API routes."""
     from fastapi import FastAPI
-    , app = FastAPI()
+    app = FastAPI()
     
     # Attach a mock router
     from fastapi import APIRouter
-    , mock_router = APIRouter()
+    mock_router = APIRouter()
     
     # Define mock endpoints matching the real router
     @mock_router.post("/risk-prediction")
     async def mock_predict_risk():
-        return mock_xgboost_service.predict_risk.return_value=@mock_router.post("/treatment-response")
+        return mock_xgboost_service.predict_risk.return_value
+        
+    @mock_router.post("/treatment-response")
     async def mock_predict_treatment_response():
-        return mock_xgboost_service.predict_treatment_response.return_value=@mock_router.post("/outcome-prediction")
+        return mock_xgboost_service.predict_treatment_response.return_value
+        
+    @mock_router.post("/outcome-prediction")
     async def mock_predict_outcome():
-        return mock_xgboost_service.predict_outcome.return_value=@mock_router.post("/model-info")
+        return mock_xgboost_service.predict_outcome.return_value
+        
+    @mock_router.post("/model-info")
     async def mock_get_model_info():
-        return mock_xgboost_service.get_model_info.return_value=app.include_router(mock_router, prefix="/api/xgboost")
+        return mock_xgboost_service.get_model_info.return_value
+        
+    app.include_router(mock_router, prefix="/api/xgboost")
     
     return TestClient(app)
 

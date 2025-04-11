@@ -62,7 +62,8 @@ class TestMFAService:
     def test_setup_totp(self, mock_qrcode, mock_totp, mfa_service):
         """Test setting up TOTP."""
         # Mock the TOTP object
-        mock_totp_instance = mock_totp.return_value=mock_totp_instance.provisioning_uri.return_value = "otpauth://totp/Novamind%20Psychiatry:test%40example.com?secret=ABCDEFGH&issuer=Novamind%20Psychiatry"
+        mock_totp_instance = mock_totp.return_value
+        mock_totp_instance.provisioning_uri.return_value = "otpauth://totp/Novamind%20Psychiatry:test%40example.com?secret=ABCDEFGH&issuer=Novamind%20Psychiatry"
         
         # Mock the QR code
         mock_qrcode_instance = mock_qrcode.return_value
@@ -84,28 +85,30 @@ class TestMFAService:
     def test_verify_totp_valid(self, mock_totp, mfa_service):
         """Test verifying a valid TOTP code."""
         # Mock the TOTP object
-        mock_totp_instance = mock_totp.return_value=mock_totp_instance.verify.return_value = True
+        mock_totp_instance = mock_totp.return_value
+        mock_totp_instance.verify.return_value = True
         
         # Verify the code
         result = mfa_service.verify_totp("ABCDEFGH", "123456")
         
         # Check the result
         assert result is True
-        mock_totp_instance.verify.assert _called_once_with("123456")
+        mock_totp_instance.verify.assert_called_once_with("123456")
     
     @patch('pyotp.TOTP')
     @pytest.mark.standalone()
     def test_verify_totp_invalid(self, mock_totp, mfa_service):
         """Test verifying an invalid TOTP code."""
         # Mock the TOTP object
-        mock_totp_instance = mock_totp.return_value=mock_totp_instance.verify.return_value = False
+        mock_totp_instance = mock_totp.return_value
+        mock_totp_instance.verify.return_value = False
         
         # Verify the code
         result = mfa_service.verify_totp("ABCDEFGH", "123456")
         
         # Check the result
         assert result is False
-        mock_totp_instance.verify.assert _called_once_with("123456")
+        mock_totp_instance.verify.assert_called_once_with("123456")
     
     @patch('random.choice')
     @pytest.mark.standalone()
@@ -200,8 +203,10 @@ class TestMFAService:
     @pytest.mark.standalone()
     def test_get_backup_codes(self, mock_uuid, mfa_service):
         """Test generating backup codes."""
-        # Mock the UUID
-        mock_uuid.return_value.hex = "abcdef1234567890"
+        # Create a mock UUID object that returns a specific string representation
+        mock_uuid_instance = MagicMock()
+        mock_uuid_instance.__str__.return_value = "abcdef12-3456-7890-abcd-ef1234567890"
+        mock_uuid.return_value = mock_uuid_instance
         
         # Generate backup codes
         codes = mfa_service.get_backup_codes(3)
@@ -209,7 +214,7 @@ class TestMFAService:
         # Check the codes
         assert len(codes) == 3
         assert all(len(code) == 10 for code in codes)
-        assert all(code == "ABCDEF1234" for code in codes)  # All the same due to our mock
+        assert all(code == "ABCDEF1234" for code in codes)  # First 10 chars of UUID hex, uppercase
     
     @pytest.mark.standalone()
     def test_hash_backup_code(self, mfa_service):
@@ -290,7 +295,7 @@ class TestTOTPStrategy:
             
             # Check the result
             assert result  ==  {"result": "success"}
-            mfa_service.setup_totp.assert _called_once_with("user123", "test@example.com")
+            mfa_service.setup_totp.assert_called_once_with("user123", "test@example.com")
     
     @pytest.mark.standalone()
     def test_setup_missing_email(self, mfa_service):
@@ -315,7 +320,7 @@ class TestTOTPStrategy:
             
             # Check the result
             assert result is True
-            mfa_service.verify_totp.assert _called_once_with("ABCDEFGH", "123456")
+            mfa_service.verify_totp.assert_called_once_with("ABCDEFGH", "123456")
     
     @pytest.mark.standalone()
     def test_verify_missing_parameters(self, mfa_service):
@@ -344,7 +349,7 @@ class TestSMSStrategy:
             
             # Check the result
             assert result  ==  {"result": "success"}
-            mfa_service.setup_sms_mfa.assert _called_once_with("user123", "+1234567890")
+            mfa_service.setup_sms_mfa.assert_called_once_with("user123", "+1234567890")
     
     @pytest.mark.standalone()
     def test_setup_missing_phone_number(self, mfa_service):
@@ -373,7 +378,7 @@ class TestSMSStrategy:
             
             # Check the result
             assert result is True
-            mfa_service.verify_code.assert _called_once_with("123456", "123456", 1300)
+            mfa_service.verify_code.assert_called_once_with("123456", "123456", 1300)
     
     @pytest.mark.standalone()
     def test_verify_missing_parameters(self, mfa_service):
@@ -402,7 +407,7 @@ class TestEmailStrategy:
             
             # Check the result
             assert result  ==  {"result": "success"}
-            mfa_service.setup_email_mfa.assert _called_once_with("user123", "test@example.com")
+            mfa_service.setup_email_mfa.assert_called_once_with("user123", "test@example.com")
     
     @pytest.mark.standalone()
     def test_setup_missing_email(self, mfa_service):
@@ -431,7 +436,7 @@ class TestEmailStrategy:
             
             # Check the result
             assert result is True
-            mfa_service.verify_code.assert _called_once_with("12345678", "12345678", 1300)
+            mfa_service.verify_code.assert_called_once_with("12345678", "12345678", 1300)
     
     @pytest.mark.standalone()
     def test_verify_missing_parameters(self, mfa_service):

@@ -7,7 +7,7 @@ in a single file to validate that the test infrastructure is working correctly.
 """
 import unittest
 from enum import Enum
-, from typing import Any
+from typing import Any
 from unittest.mock import MagicMock
 
 
@@ -63,24 +63,24 @@ class TestBaseSecurityTest(BaseSecurityTest):
     def test_default_attributes(self):
         """Test that the default attributes are set correctly."""
         # Verify test_user_id attribute
-        self.assert Equal(self.test_user_id, "test-user-id-12345")
+        self.assertEqual(self.test_user_id, "test-user-id-12345")
         
         # Verify test_roles attribute
-        self.assert Equal(self.test_roles, [Role.USER])
+        self.assertEqual(self.test_roles, [Role.USER])
         
         # Verify test_user was created correctly
-        self.assert Equal(self.test_user["id"], self.test_user_id)
-        self.assert Equal(self.test_user["roles"], self.test_roles)
+        self.assertEqual(self.test_user["id"], self.test_user_id)
+        self.assertEqual(self.test_user["roles"], self.test_roles)
     
     @pytest.mark.standalone()
     def test_mock_auth_service(self):
         """Test that the mock auth service is configured correctly."""
         # Verify authenticate method
-        self.assert True(self.mock_auth_service.authenticate())
+        self.assertTrue(self.mock_auth_service.authenticate())
         
         # Verify get_user_by_id method
         user = self.mock_auth_service.get_user_by_id(self.test_user_id)
-        self.assert Equal(user, self.test_user)
+        self.assertEqual(user, self.test_user)
 
 
 class AdminSecurityTest(BaseSecurityTest):
@@ -92,8 +92,8 @@ class AdminSecurityTest(BaseSecurityTest):
     @pytest.mark.standalone()
     def test_admin_roles(self):
         """Test that the admin roles are set correctly."""
-        self.assert Equal(self.test_roles, [Role.ADMIN, Role.USER])
-        self.assert Equal(self.test_user["roles"], [Role.ADMIN, Role.USER])
+        self.assertEqual(self.test_roles, [Role.ADMIN, Role.USER])
+        self.assertEqual(self.test_user["roles"], [Role.ADMIN, Role.USER])
 
 
 class ClinicianSecurityTest(BaseSecurityTest):
@@ -105,8 +105,8 @@ class ClinicianSecurityTest(BaseSecurityTest):
     @pytest.mark.standalone()
     def test_clinician_roles(self):
         """Test that the clinician roles are set correctly."""
-        self.assert Equal(self.test_roles, [Role.CLINICIAN, Role.USER])
-        self.assert Equal(self.test_user["roles"], [Role.CLINICIAN, Role.USER])
+        self.assertEqual(self.test_roles, [Role.CLINICIAN, Role.USER])
+        self.assertEqual(self.test_user["roles"], [Role.CLINICIAN, Role.USER])
 
 
 if __name__ == "__main__":

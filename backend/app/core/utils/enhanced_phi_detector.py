@@ -197,6 +197,9 @@ class EnhancedPHISanitizer:
     sanitization capabilities to ensure HIPAA compliance.
     """
     
+    # Pattern to identify appointment dates (future dates) that should not be sanitized
+    APPOINTMENT_DATE_PATTERN = re.compile(r'\b20[2-9]\d[-/]\d{1,2}[-/]\d{1,2}\b')
+    
     @staticmethod
     def generate_anonymous_value(phi_type: PHIType) -> str:
         """Generate an anonymous replacement value based on PHI type.
@@ -219,7 +222,7 @@ class EnhancedPHISanitizer:
             return "ANONYMIZED_NAME"
         elif phi_type == PHIType.ADDRESS:
             return "ANONYMIZED_ADDRESS"
-        elif phi_type == PHIType.MEDICAL_RECORD:
+        elif phi_type == PHIType.MEDICAL_RECORD or phi_type == PHIType.MRN:
             return f"MRN-{uuid.uuid4().hex[:8]}"
         elif phi_type == PHIType.POLICY_NUMBER:
             return f"POLICY-{uuid.uuid4().hex[:8]}"
@@ -240,12 +243,25 @@ class EnhancedPHISanitizer:
             return text
             
         sanitized = text
-        phi_instances = EnhancedPHIDetector.detect_phi_types(text)
+        
+        # Preserve appointment dates (future dates)
+        appointment_dates = {}
+        for i, match in enumerate(cls.APPOINTMENT_DATE_PATTERN.finditer(text)):
+            placeholder = f"__APPOINTMENT_DATE_{i}__"
+            appointment_dates[placeholder] = match.group(0)
+            sanitized = sanitized.replace(match.group(0), placeholder)
+        
+        # Detect and sanitize PHI
+        phi_instances = EnhancedPHIDetector.detect_phi_types(sanitized)
         
         # Replace PHI instances with anonymous values
         for phi_type, matching_text in phi_instances:
             anonymous_value = cls.generate_anonymous_value(phi_type)
             sanitized = sanitized.replace(matching_text, anonymous_value)
+            
+        # Restore appointment dates
+        for placeholder, date_value in appointment_dates.items():
+            sanitized = sanitized.replace(placeholder, date_value)
             
         return sanitized
     
@@ -306,7 +322,14 @@ class EnhancedPHISanitizer:
             The sanitized structured data
         """
         if isinstance(data, dict):
-            return {k: cls.sanitize_structured_data(v) for k, v in data.items()}
+            result = {}
+            for k, v in data.items():
+                # Special handling for appointment_date key
+                if k == "appointment_date" and isinstance(v, str) and cls.APPOINTMENT_DATE_PATTERN.match(v):
+                    result[k] = v  # Preserve appointment dates
+                else:
+                    result[k] = cls.sanitize_structured_data(v)
+            return result
         elif isinstance(data, list):
             return [cls.sanitize_structured_data(item) for item in data]
         elif isinstance(data, str):

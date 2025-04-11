@@ -1,4 +1,3 @@
-import pytest
 """
 PHI Sanitizer Tests
 
@@ -7,6 +6,7 @@ to ensure proper detection and redaction of Protected Health Information.
 """
 
 import unittest
+import pytest
 from typing import Dict, Any
 
 from app.core.utils.phi_sanitizer import PHISanitizer
@@ -45,7 +45,7 @@ class TestPHISanitizer(unittest.TestCase):
         
         for input_text, expected_output in test_cases:
             sanitized = PHISanitizer.sanitize_string(input_text)
-            self.assert Equal(sanitized, expected_output)
+            self.assertEqual(sanitized, expected_output)
     
     def test_sanitize_string_without_phi(self):
         """Test sanitization of strings without PHI."""
@@ -59,16 +59,16 @@ class TestPHISanitizer(unittest.TestCase):
         
         for text in non_phi_strings:
             sanitized = PHISanitizer.sanitize_string(text)
-            self.assert Equal(sanitized, text)
+            self.assertEqual(sanitized, text)
     
     def test_sanitize_empty_and_none_inputs(self):
         """Test sanitization with empty or None inputs."""
-        self.assert Equal(PHISanitizer.sanitize_string(""), "")
-        self.assert Equal(PHISanitizer.sanitize_string(None), None)
-        self.assert Equal(PHISanitizer.sanitize_dict({}), {})
-        self.assert Equal(PHISanitizer.sanitize_dict(None), None)
-        self.assert Equal(PHISanitizer.sanitize_list([]), [])
-        self.assert Equal(PHISanitizer.sanitize_list(None), None)
+        self.assertEqual(PHISanitizer.sanitize_string(""), "")
+        self.assertEqual(PHISanitizer.sanitize_string(None), None)
+        self.assertEqual(PHISanitizer.sanitize_dict({}), {})
+        self.assertEqual(PHISanitizer.sanitize_dict(None), None)
+        self.assertEqual(PHISanitizer.sanitize_list([]), [])
+        self.assertEqual(PHISanitizer.sanitize_list(None), None)
     
     def test_sanitize_dict(self):
         """Test sanitization of dictionaries with PHI."""
@@ -110,7 +110,7 @@ class TestPHISanitizer(unittest.TestCase):
         }
         
         sanitized = PHISanitizer.sanitize_dict(test_dict)
-        self.assert Equal(sanitized, expected_output)
+        self.assertEqual(sanitized, expected_output)
     
     def test_sanitize_dict_with_excluded_keys(self):
         """Test dictionary sanitization with excluded keys."""
@@ -133,7 +133,7 @@ class TestPHISanitizer(unittest.TestCase):
             }
         }
         
-        self.assert Equal(sanitized, expected)
+        self.assertEqual(sanitized, expected)
     
     def test_sanitize_list(self):
         """Test sanitization of lists containing PHI."""
@@ -152,7 +152,7 @@ class TestPHISanitizer(unittest.TestCase):
         ]
 
         sanitized = PHISanitizer.sanitize_list(test_list)
-        self.assert Equal(sanitized, expected_output)
+        self.assertEqual(sanitized, expected_output)
     
     def test_sanitize_error_message(self):
         """Test sanitization of error messages containing PHI."""
@@ -160,7 +160,7 @@ class TestPHISanitizer(unittest.TestCase):
         expected = "Error processing data for [NAME REDACTED] (SSN: [SSN REDACTED])"
         
         sanitized = PHISanitizer.sanitize_error_message(error_message)
-        self.assert Equal(sanitized, expected)
+        self.assertEqual(sanitized, expected)
     
     def test_sanitize_log_entry(self):
         """Test sanitization of log entries containing PHI."""
@@ -168,14 +168,14 @@ class TestPHISanitizer(unittest.TestCase):
         expected = "User accessed record for patient [NAME REDACTED] (DOB: [DOB REDACTED])"
         
         sanitized = PHISanitizer.sanitize_log_entry(log_entry)
-        self.assert Equal(sanitized, expected)
+        self.assertEqual(sanitized, expected)
     
     def test_update_patterns(self):
         """Test updating PHI detection patterns."""
         # Original string with custom pattern
         test_string = "Patient ID: PT-12345-ABC"
         # Should not be redacted with default patterns
-        self.assert Equal(PHISanitizer.sanitize_string(test_string), test_string)
+        self.assertEqual(PHISanitizer.sanitize_string(test_string), test_string)
         
         # Add new pattern
         import re
@@ -185,7 +185,7 @@ class TestPHISanitizer(unittest.TestCase):
         
         # Now should be redacted
         expected = "Patient ID: [PATIENT_ID REDACTED]"
-        self.assert Equal(PHISanitizer.sanitize_string(test_string), expected)
+        self.assertEqual(PHISanitizer.sanitize_string(test_string), expected)
 
 
 if __name__ == "__main__":

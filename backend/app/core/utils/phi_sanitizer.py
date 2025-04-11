@@ -7,8 +7,23 @@ to ensure HIPAA compliance in logs, error messages, and other outputs.
 """
 
 import re
-from typing import Any, Dict, List, Optional, Pattern, Set, Union
+from typing import Any, Dict, List, Optional, Pattern, Set, Union, Tuple
 from enum import Enum, auto
+
+
+class PHIType(Enum):
+    """Enumeration of PHI types for classification."""
+    SSN = auto()
+    ADDRESS = auto()
+    EMAIL = auto()
+    PHONE = auto()
+    DOB = auto()
+    NAME = auto()
+    MRN = auto()
+    CREDIT_CARD = auto() # Example, add others as needed
+    POLICY_NUMBER = auto() # Insurance/Policy Numbers
+    MEDICAL_RECORD = auto() # Medical Record Numbers
+    OTHER = auto()
 
 
 class PHISanitizer:
@@ -172,27 +187,66 @@ class PHISanitizer:
                 cls.PATTERN_ORDER.append(pattern_type)
 
 
-# --- Added Missing Definitions ---
-
-class PHIType(Enum):
-    """Enumeration of PHI types for classification."""
-    SSN = auto()
-    ADDRESS = auto()
-    EMAIL = auto()
-    PHONE = auto()
-    DOB = auto()
-    NAME = auto()
-    MRN = auto()
-    CREDIT_CARD = auto() # Example, add others as needed
-    POLICY_NUMBER = auto() # Insurance/Policy Numbers
-    OTHER = auto()
-
-
 class PHIDetector:
-    """Base class or interface placeholder for PHI detection logic."""
-    # In a real implementation, this might define abstract methods
-    # for detecting PHI based on patterns or models.
-    def detect(self, text: str) -> List[Dict[str, Any]]:
-        """Detect PHI instances in text."""
-        # Placeholder implementation
-        return []
+    """Base class for PHI detection logic."""
+    
+    @classmethod
+    def contains_phi(cls, text: str) -> bool:
+        """
+        Check if a string contains any recognizable PHI.
+        
+        Args:
+            text: The string to check for PHI
+            
+        Returns:
+            True if PHI is detected, False otherwise
+        """
+        if not text or not isinstance(text, str):
+            return False
+            
+        # Use PHISanitizer patterns to check for PHI
+        for phi_type in PHISanitizer.PATTERN_ORDER:
+            pattern = PHISanitizer.PHI_PATTERNS.get(phi_type)
+            if pattern and pattern.search(text):
+                return True
+                
+        return False
+    
+    @classmethod
+    def detect_phi_types(cls, text: str) -> List[Tuple[PHIType, str]]:
+        """
+        Detect all PHI types and the specific matching text.
+        
+        Args:
+            text: The string to check for PHI
+            
+        Returns:
+            List of tuples with (PHIType, matching_text)
+        """
+        results = []
+        
+        if not text or not isinstance(text, str):
+            return results
+            
+        # Map pattern keys to PHIType enum values
+        type_mapping = {
+            'ssn': PHIType.SSN,
+            'address': PHIType.ADDRESS,
+            'email': PHIType.EMAIL,
+            'phone': PHIType.PHONE,
+            'dob': PHIType.DOB,
+            'name': PHIType.NAME,
+            'mrn': PHIType.MRN,
+        }
+        
+        # Check each pattern and collect matches
+        for pattern_key in PHISanitizer.PATTERN_ORDER:
+            pattern = PHISanitizer.PHI_PATTERNS.get(pattern_key)
+            if pattern:
+                matches = pattern.finditer(text)
+                for match in matches:
+                    match_text = match.group(0)
+                    phi_type = type_mapping.get(pattern_key, PHIType.OTHER)
+                    results.append((phi_type, match_text))
+        
+        return results

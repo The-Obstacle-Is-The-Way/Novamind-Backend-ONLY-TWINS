@@ -9,10 +9,10 @@ from datetime import datetime, UTC, UTC
 from unittest.mock import MagicMock, patch
 from uuid import UUID
 
-, import pytest
+import pytest
 
 from app.domain.entities.biometric_twin import BiometricDataPoint
-, from app.domain.exceptions import ValidationError
+from app.domain.exceptions import ValidationError
 from app.domain.services.biometric_event_processor import (
     AlertObserver,  
     AlertPriority,  
@@ -175,7 +175,7 @@ class TestBiometricEventProcessor:
         assert alerts[0].priority == sample_rule.priority
         assert alerts[0].data_point == sample_data_point
         
-        mock_observer.notify.assert _called_once()
+        mock_observer.notify.assert_called_once()
         assert mock_observer.notify.call_args[0][0] == alerts[0]
     
     @pytest.mark.standalone()
@@ -546,7 +546,7 @@ class TestClinicalRuleEngine:
         engine = ClinicalRuleEngine()
         
         # Define a custom condition function
-    def custom_condition(data_point, context, **kwargs):
+        def custom_condition(data_point, context, **kwargs):
             return data_point.value > kwargs.get("threshold", 0)
         
         engine.register_custom_condition("custom_gt", custom_condition)
