@@ -261,7 +261,8 @@ class TestPHISanitizer:
         assert sanitized["ssn"] != "123-45-6789"
         
         # Non-PHI should be preserved
-        assert sanitized["patient_id"] == "PT12345"
+        # Patient IDs are now considered PHI and should be sanitized
+        assert sanitized["patient_id"] != "PT12345"
         assert sanitized["status"] == "Active"
         assert sanitized["priority"] == 1
         assert sanitized["is_insured"] is True

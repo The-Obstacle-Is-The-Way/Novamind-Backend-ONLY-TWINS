@@ -69,7 +69,8 @@ async def initialized_patient(enhanced_services, patient_id, initial_data) -> Di
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
+@pytest.mark.venv_only
+async
 def test_initialize_neurotransmitter_mapping(enhanced_services, patient_id, initialized_patient):
     """Test initializing a neurotransmitter mapping for a patient."""
     digital_twin_service, = enhanced_services

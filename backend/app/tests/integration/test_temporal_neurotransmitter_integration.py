@@ -112,7 +112,8 @@ def patient_id():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
+@pytest.mark.db_required
+async
 def test_temporal_service_with_xgboost_integration(
     temporal_service: TemporalNeurotransmitterService,
     xgboost_service: EnhancedXGBoostService,

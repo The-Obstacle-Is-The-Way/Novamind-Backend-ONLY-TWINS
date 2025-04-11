@@ -148,7 +148,8 @@ def patient_data():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.venv_only
+@pytest.mark.venv_only
+async
 def test_generate_comprehensive_patient_insights(integration_service, patient_data):
     """Test generating comprehensive patient insights."""
     patient_id = uuid4()

@@ -67,7 +67,7 @@ Total Tests: 185
 ### Should be INTEGRATION tests:
 - app/tests/venv_only/test_temporal_neurotransmitter_analysis.py (currently in venv)
    - Uses database dependencies
-   - Uses non-standalone imports: pandas, numpy
+   - Uses non-standalone imports: numpy, pandas
 - app/tests/standalone/test_standalone_digital_twin.py (currently in standalone)
    - Uses database dependencies
 - app/tests/standalone/test_standalone_phi_sanitizer.py (currently in standalone)

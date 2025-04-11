@@ -16,7 +16,8 @@ from app.application.services.temporal_neurotransmitter_service import TemporalN
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
+@pytest.mark.db_required
+async
 def test_temporal_endpoints_integration(
     client,
     mock_current_user,

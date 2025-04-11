@@ -1,91 +1,127 @@
-# Novamind Backend Test Infrastructure
+# Novamind Digital Twin Test Infrastructure
 
-## Overview
+This document provides an overview of the Novamind test infrastructure organization and tools. The test infrastructure follows a directory-based Single Source of Truth (SSOT) approach, organizing tests by their dependency requirements.
 
-This directory contains a comprehensive testing infrastructure for the Novamind Backend. The test suite has been organized to support:
+## Directory Organization (SSOT)
 
-1. **Test Directory Classification**: Tests are separated based on their dependencies
-2. **Progressive Test Execution**: Tests run in dependency order
-3. **Comprehensive Test Coverage**: Covering unit, integration, and system tests
-4. **CI/CD Integration**: Ready for GitHub Actions
+Tests are organized into three directories based on their dependency level:
 
-## Fixes Implemented
-
-The following test issues have been fixed:
-
-1. **PAT Mock Service Tests**: All 29 test cases now pass with proper mock implementation.
-2. **Enhanced Log Sanitizer Tests**: All tests now pass with appropriate PHI detection.
-3. **Clinical Rule Engine Tests**: Fixed parameter issues in test implementations.
-4. **PHI Sanitizer**: Created corrected tests that properly handle patient IDs as PHI.
-
-## Directory-Based Test Organization
-
-Tests are organized into three main directories:
-
-- **app/tests/standalone/**: Tests with no external dependencies
-- **app/tests/venv/**: Tests requiring environment setup but no database
-- **app/tests/integration/**: Tests requiring database and external services
-
-## Using the Test Infrastructure
-
-### Running Tests
-
-```bash
-# Run all standalone tests
-python scripts/run_tests.py --standalone
-
-# Run all VENV tests
-python scripts/run_tests.py --venv
-
-# Run all integration tests
-python scripts/run_tests.py --integration
-
-# Run all tests with coverage reporting
-python scripts/run_tests.py --all --coverage
-
-# Run the complete test suite with the shell script
-./scripts/run_all_tests.sh --all
+```
+app/tests/
+├── standalone/  # No external dependencies beyond Python std lib
+├── venv/        # Requires Python packages but no external services
+└── integration/ # Requires databases or other external services
 ```
 
-### Classifying Tests
+This directory-based organization provides several advantages:
+- Clear dependency requirements for each test
+- Faster feedback in CI/CD pipelines
+- Simple discovery and execution rules
+- Self-documenting structure
+
+## Test Infrastructure Tools
+
+### 1. Test Execution
+
+The `run_tests.py` script executes tests based on the directory structure:
 
 ```bash
-# Generate a classification report
-python scripts/classify_tests.py --report
+# Run all tests
+python scripts/run_tests.py --all
 
-# See what tests would be moved (dry run)
-python scripts/organize_tests.py
+# Run standalone tests only
+python scripts/run_tests.py --standalone
 
-# Actually move tests to their correct directories
+# Run tests with coverage reporting
+python scripts/run_tests.py --standalone --coverage
+```
+
+### 2. Test Organization
+
+The `organize_tests.py` script helps organize tests into the correct directories:
+
+```bash
+# Analyze where tests should be located
+python scripts/organize_tests.py --analyze
+
+# Move tests to their correct directories
 python scripts/organize_tests.py --execute
 ```
 
-## GitHub Actions Integration
+### 3. Migration from Markers
 
-A GitHub Actions workflow has been configured in `.github/workflows/backend-ci.yml` that:
+The `migrate_to_directory_ssot.py` script assists with migrating from marker-based organization:
 
-1. Runs code quality and linting checks
-2. Runs standalone tests
-3. Runs VENV tests if standalone tests pass
-4. Runs integration tests if VENV tests pass
-5. Performs security scanning
+```bash
+# Generate a migration plan
+python scripts/migrate_to_directory_ssot.py --analyze
 
-## Next Steps
+# Execute the migration
+python scripts/migrate_to_directory_ssot.py --execute
+```
 
-1. **Test Organization**: Use `scripts/organize_tests.py --execute` to move tests to their correct directories.
-2. **Database Configuration**: Ensure the test database is properly configured for integration tests.
-3. **Docker Integration**: Verify that the Docker setup for integration tests works correctly.
-4. **Complete CI/CD**: Integrate with your GitHub repository to enable CI/CD.
+### 4. Fixing Failing Tests
 
-## File Overview
+The `fix_standalone_tests.py` script identifies and fixes common issues in standalone tests:
 
-- `scripts/run_tests.py`: Main test runner with coverage support
-- `scripts/classify_tests.py`: Analyzes and classifies tests
-- `scripts/organize_tests.py`: Moves tests to their correct directories
-- `scripts/run_all_tests.sh`: Shell script to run all tests in sequence
-- `.github/workflows/backend-ci.yml`: GitHub Actions workflow
-- `docs/test-infrastructure-guide.md`: Comprehensive documentation
+```bash
+# Analyze failing tests
+python scripts/fix_standalone_tests.py --analyze
 
-## Conclusion
+# Fix failing tests
+python scripts/fix_standalone_tests.py --fix
+```
 
-This test infrastructure provides a robust foundation for ensuring the quality and reliability of the Novamind Backend. By organizing tests according to their dependencies and running them in a logical sequence, we can catch issues early and maintain high code quality.
+## CI/CD Integration
+
+The test infrastructure integrates with our CI/CD pipeline via GitHub Actions:
+
+1. The workflow runs tests in dependency order:
+   - Code quality checks
+   - Standalone tests
+   - VENV tests (if standalone pass)
+   - Integration tests (if VENV tests pass)
+
+2. Coverage reports are generated and combined for all test levels
+
+3. Security scans run in parallel with tests
+
+## Getting Started
+
+To get started with the test infrastructure:
+
+1. **Set up the directory structure**:
+   ```bash
+   python scripts/organize_tests.py --execute
+   ```
+
+2. **Fix failing standalone tests**:
+   ```bash
+   python scripts/fix_standalone_tests.py --fix
+   ```
+
+3. **Run the tests**:
+   ```bash
+   python scripts/run_tests.py --all
+   ```
+
+## Documentation
+
+For more detailed information, see the following documentation:
+
+- [50_TESTING_STRATEGY.md](docs/50_TESTING_STRATEGY.md) - Overall testing strategy
+- [51_TEST_ORGANIZATION_SSOT.md](docs/51_TEST_ORGANIZATION_SSOT.md) - Directory SSOT approach
+- [52_TEST_SEPARATION_RATIONALE.md](docs/52_TEST_SEPARATION_RATIONALE.md) - Why we separate tests by dependency
+
+## Test Coverage Goals
+
+Our test coverage goals:
+
+- Domain layer: 90% coverage
+- Application layer: 85% coverage
+- Infrastructure layer: 75% coverage
+- Overall: 80% coverage
+
+Current coverage can be viewed by running:
+```bash
+python scripts/run_tests.py --all --coverage
