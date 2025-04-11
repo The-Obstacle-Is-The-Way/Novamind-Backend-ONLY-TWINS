@@ -170,7 +170,7 @@ class TestEnhancedPHISecureLogger:
         logger.debug("Patient John Doe (SSN: 123-45-6789) has an appointment")
         
         # Verify the sanitized message was logged
-        mock_debug.assert _called_once()
+        mock_debug.assert_called_once()
         logged_message = mock_debug.call_args[0][0]
         
         assert "John Doe" not in logged_message
@@ -185,7 +185,7 @@ class TestEnhancedPHISecureLogger:
         logger.info("Email sent to {email}", email="patient@example.com")
         
         # Verify the sanitized message was logged
-        mock_info.assert _called_once()
+        mock_info.assert_called_once()
         logged_message = mock_info.call_args[0][0]
         
         assert "patient@example.com" not in logged_message
@@ -198,7 +198,7 @@ class TestEnhancedPHISecureLogger:
         logger.error("Failed to process record for MRN: 12345678")
         
         # Verify the sanitized message was logged
-        mock_error.assert _called_once()
+        mock_error.assert_called_once()
         logged_message = mock_error.call_args[0][0]
         
         assert "12345678" not in logged_message
@@ -214,14 +214,14 @@ class TestEnhancedPHISecureLogger:
             logger.exception("Exception occurred")
         
         # Verify the sanitized message was logged
-        mock_exception.assert _called_once()
+        mock_exception.assert_called_once()
         # Exception message is handled separately by the logging module
         # We're just checking that our message was sanitized
         assert "Exception occurred" in mock_exception.call_args[0][0]
 
 
-    def test_get_enhanced_phi_secure_logger():
+def test_get_enhanced_phi_secure_logger():
     """Test the factory function for getting a logger."""
     logger = get_enhanced_phi_secure_logger("test_module")
     assert isinstance(logger, EnhancedPHISecureLogger)
-    assert logger.logger.name  ==  "test_module"
+    assert logger.logger.name == "test_module"
