@@ -1,130 +1,189 @@
-# Novamind Digital Twin Test Documentation
+# Novamind Digital Twin Testing Framework
 
 ## Overview
 
-This documentation set provides comprehensive guidance on the Novamind Digital Twin testing infrastructure, organization, implementation, and best practices. These documents represent the canonical Single Source of Truth (SSOT) for all testing-related matters.
+This document serves as the comprehensive guide to the Novamind Digital Twin testing infrastructure. It provides an overview of our testing philosophy, architecture, and practical guidance for maintaining and extending the test suite.
 
-## Document Index
+## Table of Contents
 
-| Document | Purpose | Primary Audience |
-|----------|---------|------------------|
-| [01_TEST_SUITE_ANALYSIS.md](01_TEST_SUITE_ANALYSIS.md) | Analysis of current test suite organization and issues | Developers, Architects |
-| [02_TEST_INFRASTRUCTURE_SSOT.md](02_TEST_INFRASTRUCTURE_SSOT.md) | Definitive test infrastructure organization and standards | All Team Members |
-| [03_TEST_SUITE_IMPLEMENTATION_PLAN.md](03_TEST_SUITE_IMPLEMENTATION_PLAN.md) | Actionable plan for implementing the SSOT approach | DevOps, Developers |
-| [04_SECURITY_TESTING_GUIDELINES.md](04_SECURITY_TESTING_GUIDELINES.md) | Security-specific testing requirements and guidance | Security Engineers, Developers |
+1. [Testing Philosophy](#testing-philosophy)
+2. [Test Organization](#test-organization)
+3. [Test Types](#test-types)
+4. [Running Tests](#running-tests)
+5. [Test Documentation](#test-documentation)
+6. [Adding New Tests](#adding-new-tests)
+7. [Continuous Integration](#continuous-integration)
+8. [HIPAA Compliance in Testing](#hipaa-compliance-in-testing)
+9. [Performance and Scalability Testing](#performance-and-scalability-testing)
+10. [Further Reading](#further-reading)
 
-## Document Synopses
+## Testing Philosophy
 
-### [01_TEST_SUITE_ANALYSIS.md](01_TEST_SUITE_ANALYSIS.md)
+The Novamind Digital Twin project follows these core testing principles:
 
-This document provides a detailed analysis of the current state of the test suite, identifying:
+- **Clean Tests**: Tests should be readable, maintainable, and follow SOLID principles
+- **Fast Feedback**: Tests should run quickly to provide rapid developer feedback
+- **Isolation**: Tests should be independent and not rely on other tests
+- **Deterministic**: Tests should produce the same result every time they run
+- **Comprehensive**: Tests should cover business logic, security, and integration points
 
-- Current directory structure and organization
-- Observed issues and inconsistencies
-- Distribution of test files across categories
-- Key test dependencies
-- Current test running approaches
-- Open issues and challenges
+Our testing strategy is built on a "shift-left" approach, where testing begins early in the development cycle and defects are caught before they reach production. We prioritize test organization by dependency level to enable rapid, incremental testing during development.
 
-**Primary Use**: Understanding the current state of the test suite and the rationale for reorganization.
+## Test Organization
 
-### [02_TEST_INFRASTRUCTURE_SSOT.md](02_TEST_INFRASTRUCTURE_SSOT.md)
+### Directory-Based SSOT Approach
 
-This document establishes the definitive structure and standards for the Novamind test infrastructure:
-
-- Directory-based SSOT approach (standalone/venv/integration)
-- Test file naming conventions
-- Marker usage guidelines
-- Fixture organization principles
-- Test data management
-- Test execution infrastructure
-
-**Primary Use**: Reference for the official test organization and standards.
-
-### [03_TEST_SUITE_IMPLEMENTATION_PLAN.md](03_TEST_SUITE_IMPLEMENTATION_PLAN.md)
-
-This document provides a concrete, step-by-step implementation plan to migrate the existing test suite to the SSOT approach:
-
-- Detailed implementation phases
-- Classification and migration scripts
-- Fixture consolidation approach
-- CI/CD pipeline updates
-- Implementation timeline and success criteria
-
-**Primary Use**: Executing the migration to the new test infrastructure.
-
-### [04_SECURITY_TESTING_GUIDELINES.md](04_SECURITY_TESTING_GUIDELINES.md)
-
-This document focuses specifically on security testing requirements for the Novamind platform:
-
-- Security testing principles
-- Security test categories and examples
-- Security test organization
-- Coverage requirements for security code
-- Security test fixtures and markers
-- Best practices for security testing
-
-**Primary Use**: Ensuring comprehensive security testing and HIPAA compliance.
-
-## How to Use This Documentation
-
-### For New Team Members
-
-1. Start with **02_TEST_INFRASTRUCTURE_SSOT.md** to understand the test organization
-2. Review **04_SECURITY_TESTING_GUIDELINES.md** to understand security testing requirements
-3. Reference the other documents as needed
-
-### For Developers Writing Tests
-
-1. Refer to **02_TEST_INFRASTRUCTURE_SSOT.md** for test structure and conventions
-2. Follow the security guidelines in **04_SECURITY_TESTING_GUIDELINES.md**
-3. Use the test directory structure to determine where to place new tests
-
-### For DevOps and CI/CD Engineers
-
-1. Review **03_TEST_SUITE_IMPLEMENTATION_PLAN.md** for test execution infrastructure
-2. Implement the CI/CD pipeline updates as specified
-
-### For Project Managers and Architects
-
-1. Review **01_TEST_SUITE_ANALYSIS.md** to understand the state of the test suite
-2. Reference **02_TEST_INFRASTRUCTURE_SSOT.md** for the target architecture
-3. Use **03_TEST_SUITE_IMPLEMENTATION_PLAN.md** for planning and resource allocation
-
-## Test Organization Principles
-
-The core principle of our test organization is the dependency-based directory structure:
+We organize tests using a directory-based Single Source of Truth (SSOT) approach, where tests are categorized by their external dependencies rather than by the traditional unit/integration classification:
 
 ```
 backend/app/tests/
-├── standalone/  # No external dependencies
-├── venv/        # Python package dependencies only
-├── integration/ # External service dependencies
-├── conftest.py  # Shared fixtures
-└── helpers/     # Test utilities
+├── standalone/     # Tests with no external dependencies (fastest)
+├── venv/           # Tests requiring Python packages but no external services
+├── integration/    # Tests requiring external services like databases
+└── security/       # Cross-cutting security and HIPAA compliance tests
 ```
 
-This structure:
+This organization allows for efficient test execution, starting with the fastest, most isolated tests and progressively moving to more integrated tests.
 
-1. **Optimizes for speed** - Faster tests run first
-2. **Clarifies dependencies** - Tests are organized by what they need to run
-3. **Simplifies CI/CD** - Progressive test execution
-4. **Improves maintainability** - Clear, consistent organization
+## Test Types
 
-## Test Coverage Requirements
+### Standalone Tests
 
-Overall test coverage requirements:
+- **Dependencies**: None beyond the Python standard library and pytest
+- **Examples**: Domain model tests, utility function tests, pure business logic
+- **Run Time**: Fastest (milliseconds to seconds)
+- **When to Run**: Continuously during development
 
-| Component           | Coverage Target |
-|---------------------|----------------|
-| Domain layer        | 90%            |
-| Application layer   | 85%            |
-| Infrastructure layer| 75%            |
-| Security code       | 100%           |
-| Overall coverage    | 80%            |
+### VENV Tests
 
-## Conclusion
+- **Dependencies**: Python packages like FastAPI, SQLAlchemy, numpy, pandas
+- **Examples**: Pydantic model validation, service layer tests with mocks
+- **Run Time**: Medium (seconds to minutes)
+- **When to Run**: After code changes, before commits
 
-This documentation set provides a comprehensive foundation for the Novamind Digital Twin test infrastructure. By following these guidelines, we ensure a consistent, maintainable, and effective testing approach that supports our commitment to quality, security, and HIPAA compliance.
+### Integration Tests
 
-For any questions or clarifications regarding testing, refer first to these documents, particularly the **02_TEST_INFRASTRUCTURE_SSOT.md**, which serves as the definitive reference for all testing matters.
+- **Dependencies**: External services like databases, Redis, third-party APIs
+- **Examples**: Repository tests, API endpoint tests, workflow tests
+- **Run Time**: Slowest (minutes)
+- **When to Run**: Before PRs, in CI/CD pipelines
+
+### Security Tests
+
+- **Dependencies**: Varies (can be standalone, venv, or integration)
+- **Examples**: Authentication tests, authorization tests, PHI handling
+- **Run Time**: Varies
+- **When to Run**: Before PRs, in CI/CD pipelines
+
+## Running Tests
+
+### Using the Canonical Test Runner
+
+Our primary test runner is `backend/scripts/test/runners/run_tests.py`, which provides flexible options for running different test categories:
+
+```bash
+# Run standalone tests only
+python backend/scripts/test/runners/run_tests.py --standalone
+
+# Run all tests
+python backend/scripts/test/runners/run_tests.py --all
+
+# Run with coverage
+python backend/scripts/test/runners/run_tests.py --all --coverage
+
+# Run security tests across all levels
+python backend/scripts/test/runners/run_tests.py --all --markers security
+```
+
+See [Test Scripts Implementation](06_TEST_SCRIPTS_IMPLEMENTATION.md) for detailed documentation of the test runner.
+
+### Using pytest Directly
+
+For more targeted testing during development, you can use pytest directly:
+
+```bash
+# Run a specific test file
+pytest backend/app/tests/standalone/test_neurotransmitter_model.py
+
+# Run tests matching a pattern
+pytest backend/app/tests/standalone/ -k "neurotransmitter"
+
+# Run tests with specific markers
+pytest backend/app/tests/ -m "security"
+```
+
+## Test Documentation
+
+Our test documentation consists of the following documents:
+
+1. [Test Suite Analysis](01_TEST_SUITE_ANALYSIS.md) - Analysis of the current test suite structure
+2. [Test Best Practices](02_TEST_BEST_PRACTICES.md) - Guidelines for writing effective tests
+3. [Test Fixtures Guide](03_TEST_FIXTURES_GUIDE.md) - Documentation for shared test fixtures
+4. [Test Mocking Strategy](04_TEST_MOCKING_STRATEGY.md) - Approach to mocking dependencies
+5. [Test Scripts Analysis](05_TEST_SCRIPTS_ANALYSIS.md) - Analysis of test automation scripts
+6. [Test Scripts Implementation](06_TEST_SCRIPTS_IMPLEMENTATION.md) - Implementation details for test scripts
+
+## Adding New Tests
+
+When adding new tests to the Novamind Digital Twin platform, follow these guidelines:
+
+1. **Determine Dependency Level**: Identify whether your test is standalone, venv, or integration
+2. **Place in Correct Directory**: Add the test file to the appropriate directory
+3. **Follow Naming Conventions**: Name test files with `test_` prefix
+4. **Add Appropriate Markers**: Use pytest markers like `@pytest.mark.security` for special categories
+5. **Use Fixtures Correctly**: Leverage existing fixtures; create new ones if needed
+6. **Ensure Independence**: Tests should not depend on other tests
+
+Example of adding a new standalone test:
+
+```python
+# backend/app/tests/standalone/test_patient_model.py
+import pytest
+from app.domain.models.patient import Patient
+
+def test_patient_name_formatting():
+    """Test that patient names are formatted correctly."""
+    patient = Patient(first_name="John", last_name="Doe")
+    assert patient.full_name == "John Doe"
+```
+
+## Continuous Integration
+
+Our CI/CD pipeline automatically runs tests on branches and pull requests, following this sequence:
+
+1. **Early Stage**: Run standalone tests only
+2. **Mid Stage**: Add venv tests if standalone tests pass
+3. **Late Stage**: Run integration tests if earlier tests pass
+4. **Final Stage**: Run security tests and generate reports
+
+See the CI configuration in `.github/workflows/test.yml` for implementation details.
+
+## HIPAA Compliance in Testing
+
+The Novamind Digital Twin platform requires special consideration for HIPAA compliance in testing:
+
+- **Synthetic Data**: All test data must be synthetic, never real PHI
+- **Data Sanitization**: Test output must be sanitized to avoid accidental PHI exposure
+- **Comprehensive Coverage**: Security tests must cover all HIPAA Security Rule requirements
+- **PHI Handling**: Tests must verify proper encryption, access controls, and audit logging
+
+See our [HIPAA Compliance Testing Guide](backend/docs/legacy/hipaa_compliance_testing.md) for detailed information.
+
+## Performance and Scalability Testing
+
+In addition to functional testing, we conduct performance and scalability testing:
+
+- **Load Tests**: Verify system behavior under expected load
+- **Stress Tests**: Identify breaking points under extreme conditions
+- **Endurance Tests**: Verify system stability over extended periods
+- **Scalability Tests**: Verify system can scale with increasing load
+
+These tests are run on a scheduled basis in our CI/CD pipeline, not as part of the regular development cycle.
+
+## Further Reading
+
+- [pytest Documentation](https://docs.pytest.org/)
+- [FastAPI Testing](https://fastapi.tiangolo.com/tutorial/testing/)
+- [SQLAlchemy Testing](https://docs.sqlalchemy.org/en/14/orm/session_transaction.html)
+- [Clean Architecture in Python](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [HIPAA Security Rule](https://www.hhs.gov/hipaa/for-professionals/security/index.html)
