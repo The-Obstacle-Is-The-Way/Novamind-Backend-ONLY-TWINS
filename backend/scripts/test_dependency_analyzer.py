@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-Test Dependency Manager for Novamind Backend.
+Test Dependency Analyzer for Novamind Backend.
 
-This script helps manage test dependencies, analyze existing tests, and run tests based on 
-their dependency requirements.
+This script helps analyze existing tests and provides statistics on test markers
+without modifying any files. It's designed to give insights into test organization
+without introducing any risks to the codebase.
 
 Usage:
-    python -m backend.scripts.test_dependency_manager analyze
-    python -m backend.scripts.test_dependency_manager count-markers
-    python -m backend.scripts.test_dependency_manager run standalone|venv_only|db_required
+    python -m backend.scripts.test_dependency_analyzer count-markers
+    python -m backend.scripts.test_dependency_analyzer analyze
+    python -m backend.scripts.test_dependency_analyzer run standalone|venv_only|db_required
 """
 import os
 import sys
@@ -27,7 +28,7 @@ OTHER_MARKERS = ['unit', 'integration', 'security', 'slow', 'network_required', 
 ALL_MARKERS = DEPENDENCY_MARKERS + OTHER_MARKERS
 
 def count_marker_usage() -> Dict[str, int]:
-    """Count how many tests are marked with each marker."""
+    """Count how many tests are marked with each marker without modifying files."""
     marker_counts = {marker: 0 for marker in ALL_MARKERS}
     
     # Run pytest --collect-only with markers
@@ -44,7 +45,7 @@ def count_marker_usage() -> Dict[str, int]:
     return marker_counts
 
 def run_tests_by_dependency(dependency_level: str) -> int:
-    """Run tests based on their dependency level."""
+    """Run tests based on their dependency level without modifying files."""
     if dependency_level not in DEPENDENCY_MARKERS:
         print(f"Error: {dependency_level} is not a valid dependency level.")
         print(f"Valid levels: {', '.join(DEPENDENCY_MARKERS)}")
@@ -52,25 +53,15 @@ def run_tests_by_dependency(dependency_level: str) -> int:
     
     print(f"\n=== Running {dependency_level.upper()} tests ===\n")
     
-    # Set up target directories based on dependency level
-    if dependency_level == 'standalone':
-        target_dirs = [str(TEST_DIR / "standalone")]
-    elif dependency_level == 'venv_only':
-        target_dirs = [str(TEST_DIR / "unit")]
-    elif dependency_level == 'db_required':
-        target_dirs = [str(TEST_DIR / "integration")]
-    else:
-        target_dirs = [str(TEST_DIR)]
-    
-    # Build the pytest command
-    cmd = ["python", "-m", "pytest"] + target_dirs + ["-m", dependency_level, "-v"]
+    # Set up the pytest command
+    cmd = ["python", "-m", "pytest", str(TEST_DIR), "-m", dependency_level, "-v"]
     
     # Execute the command and return its exit code
     return subprocess.call(cmd)
 
 def analyze_tests() -> Dict[str, List[str]]:
     """
-    Analyze tests to suggest appropriate dependency markers.
+    Analyze tests to suggest appropriate dependency markers without modifying any files.
     
     Returns a dictionary mapping dependency levels to lists of test files.
     """
@@ -83,11 +74,11 @@ def analyze_tests() -> Dict[str, List[str]]:
             if file.startswith("test_") and file.endswith(".py"):
                 test_files.append(os.path.join(root, file))
     
-    # Get the current marker usage per test file
+    # Analyze files by location (a safe heuristic without content inspection)
     for test_file in test_files:
         rel_path = os.path.relpath(test_file, ROOT_DIR)
         
-        # Simple heuristics based on file path and content
+        # Simple heuristics based on file path
         if "standalone" in test_file:
             results['standalone'].append(rel_path)
         elif "unit" in test_file:
@@ -95,19 +86,9 @@ def analyze_tests() -> Dict[str, List[str]]:
         elif "integration" in test_file or "api" in test_file:
             results['db_required'].append(rel_path)
         else:
-            # Look inside file for imports that might indicate dependencies
-            with open(test_file, 'r') as f:
-                content = f.read()
-                
-                # Look for database imports
-                if re.search(r'import\s+.*\b(database|asyncpg|sqlalchemy)\b', content):
-                    results['db_required'].append(rel_path)
-                # Look for external API imports
-                elif re.search(r'import\s+.*\b(requests|aiohttp|httpx)\b', content):
-                    results['db_required'].append(rel_path)
-                # Otherwise assume it could be venv_only
-                else:
-                    results['venv_only'].append(rel_path)
+            # For files that don't clearly match a pattern, just put in venv_only
+            # This is conservative and doesn't require content inspection
+            results['venv_only'].append(rel_path)
     
     return results
 
@@ -116,7 +97,7 @@ def print_analysis_report(analysis: Dict[str, List[str]]) -> None:
     print("\n=== Test Analysis Report ===\n")
     
     for marker, files in analysis.items():
-        print(f"{marker.upper()} tests: {len(files)}")
+        print(f"{marker.upper()} tests (by directory location): {len(files)}")
         for file in sorted(files[:5]):  # Show first 5 examples
             print(f"  - {file}")
         if len(files) > 5:
@@ -128,11 +109,6 @@ def print_analysis_report(analysis: Dict[str, List[str]]) -> None:
     print("@pytest.mark.standalone  # No dependencies")
     print("@pytest.mark.venv_only   # Requires packages but no external services")
     print("@pytest.mark.db_required # Requires database connection")
-    print()
-    
-    # Warning about unmarked tests
-    print("Warning: Many tests aren't explicitly marked with dependency markers.")
-    print("Consider adding dependency markers to improve test organization and CI/CD efficiency.")
     print()
 
 def print_marker_usage_report(marker_counts: Dict[str, int]) -> None:
@@ -157,15 +133,23 @@ def print_marker_usage_report(marker_counts: Dict[str, int]) -> None:
     
     print(f"\nTotal tests: {total_tests}")
     print(f"Tests with dependency markers: {sum(marker_counts[m] for m in DEPENDENCY_MARKERS)}")
-    print(f"Percentage of tests with dependency markers: {sum(marker_counts[m] for m in DEPENDENCY_MARKERS) / total_tests * 100:.1f}%")
+    
+    if total_tests > 0:
+        percentage = sum(marker_counts[m] for m in DEPENDENCY_MARKERS) / total_tests * 100
+        print(f"Percentage of tests with dependency markers: {percentage:.1f}%")
     
     # Print warning if tests aren't marked
-    if sum(marker_counts[m] for m in DEPENDENCY_MARKERS) < total_tests * 0.5:
+    if total_tests > 0 and sum(marker_counts[m] for m in DEPENDENCY_MARKERS) < total_tests * 0.5:
         print("\nWarning: Less than 50% of tests have dependency markers.")
         print("Consider adding markers to improve test organization and CI/CD efficiency.")
+        print("Example of how to add a marker to a test file:")
+        print("\nimport pytest\n")
+        print("@pytest.mark.standalone  # Choose the appropriate marker")
+        print("def test_example():")
+        print("    assert True")
 
 def main():
-    """Main function for the test dependency manager."""
+    """Main function for the test dependency analyzer."""
     if len(sys.argv) < 2:
         print("Please specify a command: analyze, count-markers, or run")
         sys.exit(1)

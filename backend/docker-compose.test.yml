@@ -79,7 +79,7 @@ services:
 
     # Command can be overridden when running docker-compose
     # Default runs all tests in stages, but CI can specify specific test types
-    command: python -m scripts.run_tests_by_dependency --all --xml --cleanup
+    command: python -m scripts.run_tests_by_level all --xml --cleanup --docker
 
 volumes:
   pg_data_test:
