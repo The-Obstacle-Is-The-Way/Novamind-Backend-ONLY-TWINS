@@ -15,8 +15,7 @@ from uuid import UUID, uuid4
 
 from app.infrastructure.ml.pharmacogenomics.model_service import PharmacogenomicsService
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
-from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel # Corrected @pytest.mark.db_required
-class name:
+from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel
 
 
 class TestPharmacogenomicsService:
@@ -59,7 +58,7 @@ class TestPharmacogenomicsService:
     @pytest.fixture
     def mock_treatment_model(self):
         """Create a mock TreatmentResponseModel."""
-        model = AsyncMock(spec=TreatmentResponseModel)
+        model = AsyncMock(spec=PharmacogenomicsModel)
         model.is_initialized = True
         model.predict_treatment_response = AsyncMock(return_value={
             "medication_predictions": {
@@ -174,8 +173,8 @@ class TestPharmacogenomicsService:
         return str(uuid4())
 
     async def test_predict_medication_response_success(self, service, mock_gene_medication_model, 
-                                                     mock_treatment_model, sample_genetic_data, 
-                                                     sample_patient_data, sample_patient_id):
+                                                      mock_treatment_model, sample_genetic_data, 
+                                                      sample_patient_data, sample_patient_id):
         """Test that predict_medication_response correctly processes data and returns predictions."""
         # Setup
         medications = ["fluoxetine", "sertraline", "bupropion"]
@@ -234,7 +233,7 @@ class TestPharmacogenomicsService:
         assert "Empty genetic data" in str(excinfo.value)
 
     async def test_predict_medication_response_empty_medications(self, service, sample_genetic_data, 
-                                                               sample_patient_data, sample_patient_id):
+                                                                sample_patient_data, sample_patient_id):
         """Test that predict_medication_response handles empty medications list gracefully."""
         # Setup
         empty_medications = []
@@ -251,8 +250,8 @@ class TestPharmacogenomicsService:
         assert "No medications specified" in str(excinfo.value)
 
     async def test_predict_medication_response_model_error(self, service, mock_gene_medication_model,
-                                                         sample_genetic_data, sample_patient_data, 
-                                                         sample_patient_id):
+                                                          sample_genetic_data, sample_patient_data, 
+                                                          sample_patient_id):
         """Test that predict_medication_response handles model errors gracefully."""
         # Setup
         mock_gene_medication_model.predict_medication_interactions.side_effect = Exception("Model error")
