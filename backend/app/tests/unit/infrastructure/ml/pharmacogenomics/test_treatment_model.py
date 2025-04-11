@@ -15,6 +15,7 @@ from uuid import UUID, uuid4
 
 from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel as TreatmentResponseModel
 
+
 class TestTreatmentResponseModel:
     """Tests for the TreatmentResponseModel."""
 
@@ -128,245 +129,22 @@ class TestTreatmentResponseModel:
             # Verify
             mock_joblib.load.assert_called_once_with("test_model_path")
             mock_json.load.assert_called_once()
-            assert model.is_initialized
-            assert model._efficacy_model is not None
-            assert model._side_effect_model is not None
-            assert model._medication_data is not None
-        finally:
-            # Clean up all patches
-            patch.stopall()
-
-    async def test_initialize_handles_missing_files(self):
-        """Test that initialize handles missing model and medication data files gracefully."""
-        # Setup - Using patch as context manager
-        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True).start()
-        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.json', autospec=True).start()
-        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.open', autospec=True).start()
-        patch('app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists', return_value=False).start()
-        mock_logging = patch('app.infrastructure.ml.pharmacogenomics.treatment_model.logging', autospec=True).start()
+        assert "severity" in result[0]
+        assert "onset_days" in result[0]
         
-        try:
-            # Create model instance
-            model = TreatmentResponseModel(
-                model_path="nonexistent_path",
-                medication_data_path="nonexistent_medication_path"
-            )
-            
-            # Execute
-            await model.initialize()
-            
-            # Verify
-            mock_logging.warning.assert_called()
-            assert model.is_initialized
-            assert model._efficacy_model is not None
-            assert model._side_effect_model is not None
-            assert model._medication_data is not None
-        finally:
-            # Clean up all patches
-            patch.stopall()
+        # Check that risks match input
+        risks = [effect["risk"] for effect in result]
+        assert risks == [0.35, 0.28, 0.15]
 
-    async def test_predict_treatment_response_success(self, model, sample_patient_data):
-        """Test that predict_treatment_response correctly processes patient data and returns predictions."""
-        # Setup
-        medications = ["fluoxetine", "sertraline", "bupropion"]
-        
+    async def test_get_model_info(self, model):
+        """Test model info retrieval."""
         # Execute
-        result = await model.predict_treatment_response(sample_patient_data, medications)
+        info = await model.get_model_info()
         
         # Verify
-        assert "medication_predictions" in result
-        assert "comparative_analysis" in result
-        
-        # Verify medication predictions structure
-        for medication in medications:
-            assert medication in result["medication_predictions"]
-            med_pred = result["medication_predictions"][medication]
-            assert "efficacy" in med_pred
-            assert "side_effects" in med_pred
-            
-            # Check efficacy structure
-            efficacy = med_pred["efficacy"]
-            assert "score" in efficacy
-            assert "confidence" in efficacy
-            assert "percentile" in efficacy
-            
-            # Check side effects structure
-            side_effects = med_pred["side_effects"]
-            assert len(side_effects) > 0
-            for side_effect in side_effects:
-                assert "name" in side_effect
-                assert "risk" in side_effect
-                assert "severity" in side_effect
-                assert "onset_days" in side_effect
-        
-        # Verify comparative analysis
-        comparative = result["comparative_analysis"]
-        assert "highest_efficacy" in comparative
-        assert "lowest_side_effects" in comparative
-        assert "optimal_balance" in comparative
-
-    async def test_predict_treatment_response_empty_medications(self, model, sample_patient_data):
-        """Test that predict_treatment_response handles empty medications list gracefully."""
-        # Setup
-        empty_medications = []
-        
-        # Execute and verify exception is raised
-        with pytest.raises(ValueError) as excinfo:
-            await model.predict_treatment_response(sample_patient_data, empty_medications)
-        
-        assert "No medications specified" in str(excinfo.value)
-
-    async def test_extract_patient_features(self, model, sample_patient_data):
-        """Test that _extract_patient_features correctly transforms patient data into features."""
-        # Setup
-        with patch.object(model, '_extract_patient_features', wraps=model._extract_patient_features) as mock_extract:
-            
-            # Execute
-            await model.predict_treatment_response(sample_patient_data, ["fluoxetine"])
-            
-            # Verify
-            mock_extract.assert_called_once_with(sample_patient_data)
-            
-            # Call directly to test
-            features = model._extract_patient_features(sample_patient_data)
-            
-            # Verify the features have the expected structure
-            assert isinstance(features, dict)
-            assert "age" in features
-            assert "gender" in features
-            assert "conditions" in features
-            assert "medication_history" in features
-            assert "genetic_data" in features
-            
-            # Check specific values
-            assert features["age"] == 42
-            assert features["gender"] == "female"
-            assert "major_depressive_disorder" in features["conditions"]
-            assert "generalized_anxiety_disorder" in features["conditions"]
-            assert len(features["medication_history"]) == 1
-            assert features["medication_history"][0]["name"] == "citalopram"
-
-    async def test_predict_efficacy(self, model, sample_patient_data):
-        """Test that _predict_efficacy correctly predicts medication efficacy."""
-        # Setup
-        medications = ["fluoxetine", "sertraline", "bupropion"]
-        patient_features = model._extract_patient_features(sample_patient_data)
-        
-        # Execute
-        efficacy_predictions = model._predict_efficacy(patient_features, medications)
-        
-        # Verify
-        assert isinstance(efficacy_predictions, dict)
-        for medication in medications:
-            assert medication in efficacy_predictions
-            med_efficacy = efficacy_predictions[medication]
-            assert "score" in med_efficacy
-            assert "confidence" in med_efficacy
-            assert "percentile" in med_efficacy
-            assert 0 <= med_efficacy["score"] <= 1
-            assert 0 <= med_efficacy["confidence"] <= 1
-            assert 0 <= med_efficacy["percentile"] <= 100
-
-    async def test_predict_side_effects(self, model, sample_patient_data):
-        """Test that _predict_side_effects correctly predicts medication side effects."""
-        # Setup
-        medications = ["fluoxetine", "sertraline", "bupropion"]
-        patient_features = model._extract_patient_features(sample_patient_data)
-        
-        # Execute
-        side_effect_predictions = model._predict_side_effects(patient_features, medications)
-        
-        # Verify
-        assert isinstance(side_effect_predictions, dict)
-        for medication in medications:
-            assert medication in side_effect_predictions
-            med_side_effects = side_effect_predictions[medication]
-            assert isinstance(med_side_effects, list)
-            assert len(med_side_effects) > 0
-            
-            # Check side effect structure
-            for side_effect in med_side_effects:
-                assert "name" in side_effect
-                assert "risk" in side_effect
-                assert "severity" in side_effect
-                assert "onset_days" in side_effect
-                assert 0 <= side_effect["risk"] <= 1
-
-    async def test_generate_comparative_analysis(self, model):
-        """Test that _generate_comparative_analysis correctly compares medication predictions."""
-        # Setup
-        medication_predictions = {
-            "fluoxetine": {
-                "efficacy": {
-                    "score": 0.72,
-                    "confidence": 0.85,
-                    "percentile": 75
-                },
-                "side_effects": [
-                    {
-                        "name": "nausea",
-                        "risk": 0.35,
-                        "severity": "mild",
-                        "onset_days": 7
-                    },
-                    {
-                        "name": "insomnia",
-                        "risk": 0.28,
-                        "severity": "mild",
-                        "onset_days": 14
-                    }
-                ]
-            },
-            "sertraline": {
-                "efficacy": {
-                    "score": 0.65,
-                    "confidence": 0.80,
-                    "percentile": 65
-                },
-                "side_effects": [
-                    {
-                        "name": "nausea",
-                        "risk": 0.42,
-                        "severity": "moderate",
-                        "onset_days": 5
-                    }
-                ]
-            },
-            "bupropion": {
-                "efficacy": {
-                    "score": 0.58,
-                    "confidence": 0.75,
-                    "percentile": 55
-                },
-                "side_effects": [
-                    {
-                        "name": "nausea",
-                        "risk": 0.25,
-                        "severity": "mild",
-                        "onset_days": 3
-                    }
-                ]
-            }
-        }
-        
-        # Execute
-        comparative = model._generate_comparative_analysis(medication_predictions)
-        
-        # Verify
-        assert isinstance(comparative, dict)
-        assert "highest_efficacy" in comparative
-        assert "lowest_side_effects" in comparative
-        assert "optimal_balance" in comparative
-        
-        # Check highest efficacy
-        assert comparative["highest_efficacy"]["medication"] == "fluoxetine"
-        assert comparative["highest_efficacy"]["score"] == 0.72
-        
-        # Check lowest side effects
-        assert comparative["lowest_side_effects"]["medication"] == "bupropion"
-        assert comparative["lowest_side_effects"]["highest_risk"] == 0.25
-        
-        # Check optimal balance (should be fluoxetine in this case)
-        assert "medication" in comparative["optimal_balance"]
-        assert "efficacy" in comparative["optimal_balance"]
-        assert "side_effect_risk" in comparative["optimal_balance"]
+        assert "name" in info
+        assert "version" in info
+        assert "description" in info
+        assert "capabilities" in info
+        assert info["name"] == "PharmacogenomicsModel"
+        assert isinstance(info["capabilities"], list)

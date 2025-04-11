@@ -198,218 +198,173 @@ class TestPharmacogenomicsService:
         mock_gene_medication_model.predict_medication_interactions.assert_called_once()
         mock_treatment_model.predict_treatment_response.assert_called_once()
         
-        # Verify medication predictions structure
-        for medication in medications:
-            assert medication in result["medication_predictions"]
-            med_pred = result["medication_predictions"][medication]
-            assert "efficacy" in med_pred
-            assert "side_effects" in med_pred
-            assert "recommendation" in med_pred
-            
-        # Verify gene interactions structure
-        for interaction in result["gene_medication_interactions"]:
-            assert "gene" in interaction
-            assert "variant" in interaction
-            assert "medication" in interaction
-            assert "effect" in interaction
-            assert "recommendation" in interaction
+        # Verify model arguments
+        gene_model_args = mock_gene_medication_model.predict_medication_interactions.call_args[1]
+        assert gene_model_args["genetic_data"] == sample_genetic_data
+        assert gene_model_args["medications"] == medications
+        
+        treatment_model_args = mock_treatment_model.predict_treatment_response.call_args[1]
+        assert treatment_model_args["patient_data"] == sample_patient_data
+        assert treatment_model_args["medications"] == medications
+        assert "metabolizer_status" in treatment_model_args
 
-    async def test_predict_medication_response_empty_genetic_data(self, service, sample_patient_data, sample_patient_id):
-        """Test that predict_medication_response handles empty genetic data gracefully."""
+    async def test_predict_medication_response_no_genetic_data(self, service, sample_patient_data, sample_patient_id):
+        """Test that predict_medication_response handles missing genetic data."""
         # Setup
-        empty_genetic_data = {"genes": []}
         medications = ["fluoxetine", "sertraline"]
         
-        # Execute and verify exception is raised
+        # Execute/Assert
         with pytest.raises(ValueError) as excinfo:
             await service.predict_medication_response(
                 patient_id=sample_patient_id,
-                genetic_data=empty_genetic_data,
+                genetic_data=None,
                 patient_data=sample_patient_data,
                 medications=medications
             )
         
-        assert "Empty genetic data" in str(excinfo.value)
+        assert "genetic data is required" in str(excinfo.value).lower()
 
-    async def test_predict_medication_response_empty_medications(self, service, sample_genetic_data, 
-                                                                 sample_patient_data, sample_patient_id):
-        """Test that predict_medication_response handles empty medications list gracefully."""
+    async def test_predict_medication_response_no_patient_data(self, service, sample_genetic_data, sample_patient_id):
+        """Test that predict_medication_response handles missing patient data."""
         # Setup
-        empty_medications = []
+        medications = ["fluoxetine", "sertraline"]
         
-        # Execute and verify exception is raised
+        # Execute/Assert
+        with pytest.raises(ValueError) as excinfo:
+            await service.predict_medication_response(
+                patient_id=sample_patient_id,
+                genetic_data=sample_genetic_data,
+                patient_data=None,
+                medications=medications
+            )
+        
+        assert "patient data is required" in str(excinfo.value).lower()
+
+    async def test_predict_medication_response_no_medications(self, service, sample_genetic_data, 
+                                                             sample_patient_data, sample_patient_id):
+        """Test that predict_medication_response handles empty medications list."""
+        # Execute/Assert
         with pytest.raises(ValueError) as excinfo:
             await service.predict_medication_response(
                 patient_id=sample_patient_id,
                 genetic_data=sample_genetic_data,
                 patient_data=sample_patient_data,
-                medications=empty_medications
+                medications=[]
             )
         
-        assert "No medications specified" in str(excinfo.value)
+        assert "medications list cannot be empty" in str(excinfo.value).lower()
 
     async def test_predict_medication_response_model_error(self, service, mock_gene_medication_model,
-                                                           sample_genetic_data, sample_patient_data, 
-                                                           sample_patient_id):
-        """Test that predict_medication_response handles model errors gracefully."""
+                                                          sample_genetic_data, sample_patient_data, 
+                                                          sample_patient_id):
+        """Test that predict_medication_response handles model errors correctly."""
         # Setup
+        medications = ["fluoxetine", "sertraline"]
         mock_gene_medication_model.predict_medication_interactions.side_effect = Exception("Model error")
+        
+        # Execute/Assert
+        with pytest.raises(RuntimeError) as excinfo:
+            await service.predict_medication_response(
+                patient_id=sample_patient_id,
+                genetic_data=sample_genetic_data,
+                patient_data=sample_patient_data,
+                medications=medications
+            )
+        
+        assert "prediction failed" in str(excinfo.value).lower()
+
+    @patch('app.infrastructure.ml.pharmacogenomics.model_service.log_phi_access')
+    async def test_phi_access_logging(self, mock_log_phi_access, service, sample_genetic_data,
+                                     sample_patient_data, sample_patient_id):
+        """Test that PHI access is properly logged."""
+        # Setup
         medications = ["fluoxetine", "sertraline"]
         
         # Execute
-        result = await service.predict_medication_response(
+        await service.predict_medication_response(
             patient_id=sample_patient_id,
             genetic_data=sample_genetic_data,
             patient_data=sample_patient_data,
             medications=medications
         )
         
-        # Verify
-        assert "patient_id" in result
-        assert result["patient_id"] == sample_patient_id
-        assert "error" in result
-        assert "Model error" in result["error"]
-        assert "medication_predictions" not in result
-        assert "gene_medication_interactions" not in result
+        # Verify PHI access logging
+        mock_log_phi_access.assert_called_once()
+        log_args = mock_log_phi_access.call_args[0]
+        assert log_args[0] == "PharmacogenomicsService.predict_medication_response"
+        assert log_args[1] == sample_patient_id
 
-    async def test_generate_medication_recommendations(self, service, sample_genetic_data, sample_patient_data):
-        """Test that _generate_medication_recommendations creates meaningful recommendations."""
+    async def test_analyze_medication_interactions(self, service, mock_gene_medication_model,
+                                                 sample_genetic_data):
+        """Test the analyze_medication_interactions method."""
         # Setup
-        gene_interactions = [
-            {
-                "gene": "CYP2D6",
-                "variant": "*1/*1",
-                "medication": "fluoxetine",
-                "interaction_type": "metabolism",
-                "effect": "normal",
-                "evidence_level": "high",
-                "recommendation": "standard_dosing"
-            },
-            {
-                "gene": "CYP2C19",
-                "variant": "*1/*2",
-                "medication": "escitalopram",
-                "interaction_type": "metabolism",
-                "effect": "reduced",
-                "evidence_level": "high",
-                "recommendation": "dose_reduction"
-            }
-        ]
-        
-        treatment_predictions = {
-            "fluoxetine": {
-                "efficacy": {
-                    "score": 0.72,
-                    "confidence": 0.85
-                },
-                "side_effects": [
-                    {
-                        "name": "nausea",
-                        "risk": 0.35,
-                        "severity": "mild"
-                    }
-                ]
-            },
-            "escitalopram": {
-                "efficacy": {
-                    "score": 0.65,
-                    "confidence": 0.80
-                },
-                "side_effects": [
-                    {
-                        "name": "nausea",
-                        "risk": 0.42,
-                        "severity": "moderate"
-                    }
-                ]
-            }
-        }
+        medications = ["fluoxetine", "sertraline"]
         
         # Execute
-        recommendations = service._generate_medication_recommendations(
-            gene_interactions, 
-            treatment_predictions,
-            sample_patient_data
+        result = await service.analyze_medication_interactions(
+            genetic_data=sample_genetic_data,
+            medications=medications
         )
         
         # Verify
-        assert isinstance(recommendations, dict)
-        assert "fluoxetine" in recommendations
-        assert "escitalopram" in recommendations
-        
-        # Check recommendation structure
-        for medication, rec in recommendations.items():
-            assert "action" in rec
-            assert "rationale" in rec
-            assert "caution_level" in rec
-            assert "dosing_guidance" in rec
-            
-        # Verify specific recommendations
-        assert recommendations["fluoxetine"]["action"] == "standard_dosing"
-        assert recommendations["escitalopram"]["action"] == "dose_reduction"
-        assert "reduced metabolism" in recommendations["escitalopram"]["rationale"].lower()
+        assert "gene_medication_interactions" in result
+        assert "metabolizer_status" in result
+        mock_gene_medication_model.predict_medication_interactions.assert_called_once()
 
-    async def test_combine_predictions(self, service):
-        """Test that _combine_predictions correctly combines predictions from different models."""
+    async def test_analyze_medication_interactions_no_genetic_data(self, service):
+        """Test analyze_medication_interactions with no genetic data."""
         # Setup
-        gene_predictions = {
-            "gene_medication_interactions": [
-                {
-                    "gene": "CYP2D6",
-                    "variant": "*1/*1",
-                    "medication": "fluoxetine",
-                    "interaction_type": "metabolism",
-                    "effect": "normal",
-                    "recommendation": "standard_dosing"
-                }
-            ],
-            "metabolizer_status": {
-                "CYP2D6": "normal"
-            }
-        }
+        medications = ["fluoxetine", "sertraline"]
         
-        treatment_predictions = {
-            "medication_predictions": {
-                "fluoxetine": {
-                    "efficacy": {
-                        "score": 0.72
-                    },
-                    "side_effects": [
-                        {
-                            "name": "nausea",
-                            "risk": 0.35
-                        }
-                    ]
-                }
-            },
-            "comparative_analysis": {
-                "highest_efficacy": {
-                    "medication": "fluoxetine",
-                    "score": 0.72
-                }
-            }
-        }
+        # Execute/Assert
+        with pytest.raises(ValueError) as excinfo:
+            await service.analyze_medication_interactions(
+                genetic_data=None,
+                medications=medications
+            )
         
-        patient_data = {
-            "conditions": ["major_depressive_disorder"]
-        }
+        assert "genetic data is required" in str(excinfo.value).lower()
+
+    async def test_is_model_healthy(self, service, mock_gene_medication_model, mock_treatment_model):
+        """Test the is_model_healthy method."""
+        # Both models are healthy
+        assert await service.is_model_healthy() is True
+        
+        # Gene medication model is not initialized
+        mock_gene_medication_model.is_initialized = False
+        assert await service.is_model_healthy() is False
+        
+        # Gene medication model is initialized, but treatment model is not
+        mock_gene_medication_model.is_initialized = True
+        mock_treatment_model.is_initialized = False
+        assert await service.is_model_healthy() is False
+        
+        # Both models are initialized again
+        mock_treatment_model.is_initialized = True
+        assert await service.is_model_healthy() is True
+
+    async def test_get_model_info(self, service, mock_gene_medication_model, mock_treatment_model):
+        """Test the get_model_info method."""
+        # Setup mock responses
+        mock_gene_medication_model.get_model_info = AsyncMock(return_value={
+            "name": "GeneMedicationModel",
+            "version": "1.0.0",
+            "description": "Predicts medication interactions based on genetic variants"
+        })
+        
+        mock_treatment_model.get_model_info = AsyncMock(return_value={
+            "name": "PharmacogenomicsModel",
+            "version": "1.0.0",
+            "description": "Predicts treatment response based on genetic and patient data"
+        })
         
         # Execute
-        combined = service._combine_predictions(
-            gene_predictions, 
-            treatment_predictions,
-            patient_data
-        )
+        result = await service.get_model_info()
         
         # Verify
-        assert "medication_predictions" in combined
-        assert "gene_medication_interactions" in combined
-        assert "metabolizer_status" in combined
-        assert "comparative_analysis" in combined
-        
-        # Check that medication predictions include both efficacy and gene data
-        fluoxetine_pred = combined["medication_predictions"]["fluoxetine"]
-        assert "efficacy" in fluoxetine_pred
-        assert "side_effects" in fluoxetine_pred
-        assert "recommendation" in fluoxetine_pred
-        assert fluoxetine_pred["recommendation"]["action"] == "standard_dosing"
+        assert "service_info" in result
+        assert result["service_info"]["name"] == "PharmacogenomicsService"
+        assert "gene_medication_model" in result
+        assert "treatment_model" in result
+        assert result["gene_medication_model"]["name"] == "GeneMedicationModel"
+        assert result["treatment_model"]["name"] == "PharmacogenomicsModel"

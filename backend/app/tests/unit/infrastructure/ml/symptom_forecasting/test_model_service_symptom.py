@@ -18,6 +18,7 @@ from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomT
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel
 from app.core.interfaces.ml.base_model import BaseMLModel
 
+
 class TestSymptomForecastingService:
     """Tests for the SymptomForecastingService."""
 
@@ -160,100 +161,154 @@ class TestSymptomForecastingService:
             "patient_id": str(uuid4()),
             "symptom_history": [
                 {
-                    "date": (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d"),
+                    "date": datetime.now().strftime("%Y-%m-%d"),
                     # Missing symptom_type
                     "severity": 5
                 }
             ]
         }
 
+        # Execute/Verify
+        with pytest.raises(ValueError) as excinfo:
+            await service.preprocess_patient_data(patient_data)
+        
+        assert "required fields" in str(excinfo.value).lower()
+
+    async def test_forecast_symptom_severity_success(self, service, sample_patient_data, 
+                                                    mock_transformer_model, mock_xgboost_model):
+        """Test successful symptom severity forecasting."""
         # Execute
-        df, metadata = await service.preprocess_patient_data(patient_data)
-
+        result = await service.forecast_symptom_severity(
+            patient_data=sample_patient_data,
+            symptom_type="anxiety",
+            models=["transformer", "xgboost", "ensemble"]
+        )
+        
         # Verify
-        assert df.empty
-        assert "error" in metadata
-        assert metadata["error"] == "missing_columns"
-
-    async def test_generate_forecast_success(self, service, sample_patient_data, mock_transformer_model, mock_xgboost_model):
-        """Test that generate_forecast correctly generates a forecast for valid patient data."""
-        # Execute
-        forecast = await service.generate_forecast(sample_patient_data)
-
-        # Verify
-        assert "forecast" in forecast
-        assert "confidence_intervals" in forecast
-        assert "reliability" in forecast
-        assert "forecast_dates" in forecast
-        assert "patient_id" in forecast
-        assert forecast["patient_id"] == sample_patient_data["patient_id"]
-        assert len(forecast["forecast"]) == 4  # 4 days forecast
-        assert "80%" in forecast["confidence_intervals"]
-        assert "95%" in forecast["confidence_intervals"]
-        assert "lower" in forecast["confidence_intervals"]["80%"]
-        assert "upper" in forecast["confidence_intervals"]["80%"]
-        assert "contributing_models" in forecast
-        assert "transformer" in forecast["contributing_models"]
-        assert "xgboost" in forecast["contributing_models"]
-
-        # Verify models were called
+        assert "patient_id" in result
+        assert result["patient_id"] == sample_patient_data["patient_id"]
+        assert "forecast_days" in result
+        assert result["forecast_days"] == 4
+        assert "symptom_type" in result
+        assert result["symptom_type"] == "anxiety"
+        
+        # Check forecasts
+        assert "transformer_forecast" in result
+        assert "xgboost_forecast" in result
+        assert "ensemble_forecast" in result
+        
+        # Check confidence intervals
+        assert "confidence_intervals" in result
+        assert "80%" in result["confidence_intervals"]
+        assert "95%" in result["confidence_intervals"]
+        
+        # Verify model calls
         mock_transformer_model.predict.assert_called_once()
         mock_xgboost_model.predict.assert_called_once()
 
-    async def test_generate_forecast_insufficient_data(self, service, mock_transformer_model, mock_xgboost_model):
-        """Test that generate_forecast handles insufficient data."""
-        # Setup
+    async def test_forecast_symptom_severity_single_model(self, service, sample_patient_data, 
+                                                        mock_transformer_model, mock_xgboost_model):
+        """Test forecasting using only a single model."""
+        # Execute with only transformer model
+        result = await service.forecast_symptom_severity(
+            patient_data=sample_patient_data,
+            symptom_type="anxiety",
+            models=["transformer"]
+        )
+        
+        # Verify
+        assert "transformer_forecast" in result
+        assert "xgboost_forecast" not in result
+        assert "ensemble_forecast" not in result
+        
+        mock_transformer_model.predict.assert_called_once()
+        mock_xgboost_model.predict.assert_not_called()
+        
+        # Reset mocks
+        mock_transformer_model.reset_mock()
+        mock_xgboost_model.reset_mock()
+        
+        # Execute with only xgboost model
+        result = await service.forecast_symptom_severity(
+            patient_data=sample_patient_data,
+            symptom_type="anxiety",
+            models=["xgboost"]
+        )
+        
+        # Verify
+        assert "transformer_forecast" not in result
+        assert "xgboost_forecast" in result
+        assert "ensemble_forecast" not in result
+        
+        mock_transformer_model.predict.assert_not_called()
+        mock_xgboost_model.predict.assert_called_once()
+
+    async def test_forecast_symptom_severity_invalid_model(self, service, sample_patient_data):
+        """Test forecasting with an invalid model name."""
+        # Execute and verify
+        with pytest.raises(ValueError) as excinfo:
+            await service.forecast_symptom_severity(
+                patient_data=sample_patient_data,
+                symptom_type="anxiety",
+                models=["invalid_model_name"]
+            )
+        
+        assert "unknown model" in str(excinfo.value).lower()
+
+    async def test_forecast_symptom_severity_insufficient_data(self, service):
+        """Test forecasting with insufficient data."""
+        # Setup patient with very little history
         patient_data = {
             "patient_id": str(uuid4()),
-            "symptom_history": []
+            "symptom_history": [
+                {
+                    "date": datetime.now().strftime("%Y-%m-%d"),
+                    "symptom_type": "anxiety",
+                    "severity": 5
+                }
+            ]
         }
-
+        
         # Execute
-        forecast = await service.generate_forecast(patient_data)
-
-        # Verify
-        assert "error" in forecast
-        assert forecast["error"] == "insufficient_data"
-        assert forecast["forecast"] is None
-        assert forecast["confidence_intervals"] is None
-        assert forecast["reliability"] == "none"
-
-        # Verify models were not called
-        mock_transformer_model.predict.assert_not_called()
-        mock_xgboost_model.predict.assert_not_called()
-
-    async def test_generate_forecast_model_error(self, service, sample_patient_data, mock_transformer_model):
-        """Test that generate_forecast handles model errors gracefully."""
-        # Setup
-        mock_transformer_model.predict.side_effect = Exception("Model error")
-
-        # Execute
-        forecast = await service.generate_forecast(sample_patient_data)
-
-        # Verify
-        assert "error" in forecast
-        assert "Model error" in forecast["error"]
-        assert forecast["forecast"] is None
-        assert forecast["confidence_intervals"] is None
-        assert forecast["reliability"] == "none"
-
-    async def test_model_initialization(self):
-        """Test that models are initialized if not already initialized."""
-        # Setup
-        mock_transformer = AsyncMock(spec=SymptomTransformerModel)
-        mock_transformer.is_initialized = False
-        mock_transformer.initialize = AsyncMock()
-
-        mock_xgboost = AsyncMock(spec=XGBoostSymptomModel)
-        mock_xgboost.is_initialized = False
-        mock_xgboost.initialize = AsyncMock()
-
-        # Execute
-        service = SymptomForecastingService(
-            transformer_model=mock_transformer,
-            xgboost_model=mock_xgboost
+        result = await service.forecast_symptom_severity(
+            patient_data=patient_data,
+            symptom_type="anxiety",
+            models=["ensemble"]
         )
-
+        
         # Verify
-        mock_transformer.initialize.assert_called_once()
-        mock_xgboost.initialize.assert_called_once()
+        assert "error" in result
+        assert result["error"] == "insufficient_data"
+
+    async def test_model_initialization(self, mock_transformer_model, mock_xgboost_model):
+        """Test that the service initializes models correctly."""
+        # Setup
+        service = SymptomForecastingService(
+            transformer_model=mock_transformer_model,
+            xgboost_model=mock_xgboost_model,
+            forecast_days=4
+        )
+        
+        # Execute
+        await service.initialize()
+        
+        # Verify
+        mock_transformer_model.initialize.assert_called_once()
+        mock_xgboost_model.initialize.assert_called_once()
+        
+    async def test_handle_model_failure(self, service, sample_patient_data, mock_transformer_model):
+        """Test service handles model failures gracefully."""
+        # Setup - make transformer model fail
+        mock_transformer_model.predict.side_effect = Exception("Model inference failed")
+        
+        # Execute
+        result = await service.forecast_symptom_severity(
+            patient_data=sample_patient_data,
+            symptom_type="anxiety",
+            models=["transformer"]
+        )
+        
+        # Verify error handling
+        assert "error" in result
+        assert "model_failure" in result["error"]
+        assert "transformer" in result["error"]

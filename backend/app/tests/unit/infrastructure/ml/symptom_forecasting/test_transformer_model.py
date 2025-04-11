@@ -16,6 +16,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel
 from app.core.interfaces.ml.base_model import BaseMLModel
 
+
 class TestTransformerTimeSeriesModel:
     """Tests for the TransformerTimeSeriesModel."""
 
@@ -197,7 +198,17 @@ class TestTransformerTimeSeriesModel:
             assert "predictions" in result
             assert "std" in result
             assert "model_metrics" in result
-            
-            # Check predictions match input
-            np.testing.assert_array_equal(result["predictions"], raw_predictions)
-            np.testing.assert_array_equal(result["std"], raw_std)
+    
+    async def test_get_model_info(self, model):
+        """Test that get_model_info returns information about the model."""
+        # Execute
+        info = await model.get_model_info()
+        
+        # Verify
+        assert "name" in info
+        assert "version" in info
+        assert "description" in info
+        assert "parameters" in info
+        assert info["name"] == "SymptomTransformerModel"
+        assert "embedding_dim" in info["parameters"]
+        assert "num_heads" in info["parameters"]

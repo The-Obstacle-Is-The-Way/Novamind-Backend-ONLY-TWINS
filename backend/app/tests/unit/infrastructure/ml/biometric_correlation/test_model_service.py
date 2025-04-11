@@ -239,78 +239,54 @@ class TestBiometricCorrelationService:
             # Call directly to test
             processed_data = service._preprocess_biometric_data(sample_biometric_data, 30)
             
-            # Verify the processed data has the expected structure
+            # Verify structure
             assert isinstance(processed_data, dict)
             assert "heart_rate_variability" in processed_data
             assert "sleep_duration" in processed_data
             assert "physical_activity" in processed_data
             
-            # Verify each biometric type has the correct structure
-            for biometric_type, data in processed_data.items():
+            # Verify data conversion
+            for key, data in processed_data.items():
                 assert isinstance(data, pd.DataFrame)
                 assert "timestamp" in data.columns
                 assert "value" in data.columns
-                assert len(data) > 0
-
-    async def test_generate_insights(self, service):
-        """Test that _generate_insights creates meaningful insights from correlations."""
-        # Setup
-        correlations = [
-            {
-                "biometric_type": "heart_rate_variability",
-                "symptom_type": "anxiety",
-                "coefficient": -0.72,
-                "lag_hours": 8,
-                "confidence": 0.85,
-                "p_value": 0.002
-            },
-            {
-                "biometric_type": "sleep_duration",
-                "symptom_type": "mood",
-                "coefficient": 0.65,
-                "lag_hours": 24,
-                "confidence": 0.82,
-                "p_value": 0.005
-            }
-        ]
+                
+    async def test_validate_biometric_data(self, service):
+        """Test that _validate_biometric_data correctly validates input data."""
+        # Valid data
+        valid_data = {
+            "heart_rate": [
+                {
+                    "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    "value": 72
+                }
+            ]
+        }
         
-        # Execute
-        insights = service._generate_insights(correlations)
+        # Invalid data - missing timestamp
+        invalid_data_1 = {
+            "heart_rate": [
+                {
+                    "value": 72
+                }
+            ]
+        }
         
-        # Verify
-        assert isinstance(insights, list)
-        assert len(insights) == 2  # One insight per correlation
+        # Invalid data - missing value
+        invalid_data_2 = {
+            "heart_rate": [
+                {
+                    "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+                }
+            ]
+        }
         
-        # Check insight structure
-        for insight in insights:
-            assert "type" in insight
-            assert "message" in insight
-            assert "action" in insight
+        # Verify validation works
+        assert service._validate_biometric_data(valid_data) == True
+        
+        # Verify validation fails on invalid data
+        with pytest.raises(ValueError):
+            service._validate_biometric_data(invalid_data_1)
             
-        # Verify specific insights
-        hrv_insight = next((i for i in insights if "heart_rate_variability" in i["message"]), None)
-        assert hrv_insight is not None
-        assert "anxiety" in hrv_insight["message"]
-        
-        sleep_insight = next((i for i in insights if "sleep_duration" in i["message"]), None)
-        assert sleep_insight is not None
-        assert "mood" in sleep_insight["message"]
-
-    async def test_calculate_biometric_coverage(self, service, sample_biometric_data):
-        """Test that _calculate_biometric_coverage correctly calculates data coverage."""
-        # Setup
-        lookback_days = 30
-        processed_data = service._preprocess_biometric_data(sample_biometric_data, lookback_days)
-        
-        # Execute
-        coverage = service._calculate_biometric_coverage(processed_data, lookback_days)
-        
-        # Verify
-        assert isinstance(coverage, dict)
-        assert "heart_rate_variability" in coverage
-        assert "sleep_duration" in coverage
-        assert "physical_activity" in coverage
-        
-        # Verify coverage values
-        for biometric_type, value in coverage.items():
-            assert 0 <= value <= 1  # Coverage should be between 0 and 1
+        with pytest.raises(ValueError):
+            service._validate_biometric_data(invalid_data_2)

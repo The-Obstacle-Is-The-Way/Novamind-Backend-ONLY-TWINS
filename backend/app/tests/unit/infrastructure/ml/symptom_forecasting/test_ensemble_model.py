@@ -15,6 +15,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomForecastingEnsemble
 from app.core.interfaces.ml.base_model import BaseMLModel
 
+
 class TestSymptomForecastEnsembleModel:
     """Tests for the SymptomForecastEnsembleModel."""
 
@@ -186,3 +187,42 @@ class TestSymptomForecastEnsembleModel:
         
         # 95% interval should be wider than 80% interval
         assert np.all(ci_95_width > ci_80_width)
+
+    async def test_initialize(self, mock_model_1, mock_model_2):
+        """Test that initialize initializes all component models."""
+        # Setup
+        mock_model_1.initialize = AsyncMock()
+        mock_model_2.initialize = AsyncMock()
+        ensemble = SymptomForecastingEnsemble(
+            models=[mock_model_1, mock_model_2],
+            weights={"Model1": 0.5, "Model2": 0.5}
+        )
+        
+        # Execute
+        await ensemble.initialize()
+        
+        # Verify
+        mock_model_1.initialize.assert_called_once()
+        mock_model_2.initialize.assert_called_once()
+
+    async def test_get_model_info(self, mock_model_1, mock_model_2):
+        """Test that get_model_info returns information about the ensemble and its component models."""
+        # Setup
+        mock_model_1.get_model_info = AsyncMock(return_value={"name": "Model1", "version": "1.0"})
+        mock_model_2.get_model_info = AsyncMock(return_value={"name": "Model2", "version": "1.0"})
+        ensemble = SymptomForecastingEnsemble(
+            models=[mock_model_1, mock_model_2],
+            weights={"Model1": 0.7, "Model2": 0.3}
+        )
+        
+        # Execute
+        info = await ensemble.get_model_info()
+        
+        # Verify
+        assert info["name"] == "SymptomForecastingEnsemble"
+        assert "component_models" in info
+        assert len(info["component_models"]) == 2
+        assert info["component_models"][0]["name"] == "Model1"
+        assert info["component_models"][0]["weight"] == 0.7
+        assert info["component_models"][1]["name"] == "Model2"
+        assert info["component_models"][1]["weight"] == 0.3
