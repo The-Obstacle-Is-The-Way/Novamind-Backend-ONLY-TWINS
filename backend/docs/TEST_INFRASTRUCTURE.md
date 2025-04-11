@@ -1,216 +1,131 @@
-# Novamind Digital Twin Backend: Test Infrastructure (SSOT)
+# Novamind Digital Twin Test Infrastructure
 
-This document serves as the Single Source of Truth (SSOT) for the testing infrastructure of the Novamind Digital Twin Backend. It defines the test organization, execution, and tooling following Clean Architecture principles with a focus on efficiency and HIPAA compliance.
+## Implementation Summary
 
-## 1. Dependency-Based Test Organization
+We've implemented a comprehensive test infrastructure for the Novamind Digital Twin backend platform to optimize CI/CD pipelines and test execution efficiency. The infrastructure is based on a dependency-based test organization strategy that enables faster feedback and more reliable test execution.
 
-The Novamind testing infrastructure organizes tests into three distinct dependency levels:
+## Key Components
 
-### Dependency Levels
+### 1. Test Classification System
 
-| Level | Description | Directory | Characteristics |
-|-------|-------------|-----------|-----------------|
-| **Standalone** | No dependencies beyond Python itself | `/app/tests/standalone/` | Fastest to run, ideal for CI/CD early feedback |
-| **VENV-Only** | Require Python packages but no external services | `/app/tests/venv_only/` | Medium execution speed |
-| **DB-Required** | Require database connections or external services | Various directories | Most comprehensive but slowest to run |
+The system categorizes tests into three dependency levels:
 
-This approach allows for optimized test execution where faster tests run first, providing early feedback on failures before launching more complex tests.
+1. **Standalone Tests** (`standalone`)
+   - No external dependencies beyond Python itself
+   - Located in `app/tests/standalone/`
+   - Fastest execution, ideal for early CI/CD stages
 
-### Directory Structure
+2. **VENV-Only Tests** (`venv_only`)
+   - Require Python packages but no external services
+   - Located throughout `app/tests/unit/`
+   - Medium execution speed
 
-```
-/backend/app/tests/              # Unified root for all tests
-  __init__.py
-  conftest.py                    # Global/shared fixtures
-  /standalone/                   # Dependency-free tests
-  /venv_only/                    # Tests needing only Python packages
-  /unit/                         # Unit tests (isolated components)
-    /domain/                     # Mirrors /app/domain
-    /application/                # Mirrors /app/application
-    /core/                       # Mirrors /app/core
-    /infrastructure/             # Mirrors /app/infrastructure
-  /integration/                  # Integration tests (components working together)
-    /api/                        # API endpoint tests
-    /application/                # Service/Use Case integration tests
-    /infrastructure/             # Infrastructure integration tests
-  /security/                     # Dedicated Security & HIPAA Compliance Tests
-  /e2e/                          # End-to-end tests
-  /fixtures/                     # Shared Pytest fixtures
-```
+3. **DB-Required Tests** (`db_required`)
+   - Require database connections or other external services
+   - Located in `app/tests/integration/` or test files that explicitly need DB
+   - Slowest execution, run last in CI/CD
 
-## 2. Test Execution and CI/CD
+### 2. Implementation Tools
 
-### Test Execution Flow
+We've created several tools to manage and run the test suite:
 
-For maximum efficiency, tests should be run in the following order:
+#### 2.1 Test Classification Script
+- **`scripts/classify_tests.py`**
+- Analyzes test files and identifies their dependency level
+- Generates a report of test classification
+- Can be run with `--update` to add markers to tests
 
-1. **Standalone Tests**: No dependencies, fastest to run
-2. **VENV-Only Tests**: Require Python packages but no external services
-3. **DB-Required Tests**: Require full environment setup
+#### 2.2 Standalone Test Identifier
+- **`scripts/identify_standalone_candidates.py`**
+- Identifies unit tests that could be migrated to standalone
+- Helps incrementally improve the test suite organization
+- Can be run with `--migrate` to automatically move eligible tests
 
-### CI/CD Pipeline Integration
+#### 2.3 Test Marker Updater
+- **`scripts/update_test_markers.py`**
+- Adds appropriate pytest markers to test files
+- Ensures tests are properly categorized for dependency-based execution
 
-```mermaid
-graph TD
-    A[Code Push] --> B[Linting]
-    B --> C[Standalone Tests]
-    C --> D[VENV-Only Tests]
-    D --> E[DB Tests]
-    E --> F[Coverage Report]
-    F --> G[Security Scan]
-    G --> H[Deploy if all pass]
-```
+#### 2.4 Multi-Stage Test Runner
+- **`scripts/run_test_suite.sh`**
+- Runs tests in dependency order
+- Supports various options for reporting and environment
+- Can run standalone, venv-only, or DB-required tests separately
 
-This staged approach ensures:
-- Quick feedback for simple issues (within minutes)
-- Detailed tests only run if basic tests pass
-- Maximum efficiency in the CI/CD pipeline
+#### 2.5 CI/CD Pipeline Configuration
+- **`.github/workflows/test-suite.yml`**
+- GitHub Actions workflow to run tests in stages
+- Includes linting and code quality checks
+- Generates test reports for each stage
 
-## 3. Key Testing Tools
+### 3. Current Status
 
-### Test Runners
+The infrastructure is in place, but there are some issues to address:
 
-| Script | Purpose | Usage |
-|--------|---------|-------|
-| `run_tests.sh` | Main test runner | `./scripts/run_tests.sh [all|standalone|venv|db]` |
-| `run_dependency_tests.py` | Python implementation for dependency-based testing | `python scripts/run_dependency_tests.py [category]` |
+- Import errors in some test modules
+- Missing implementation of certain modules (e.g., `BrainRegion`, `ClinicalInsight`)
+- Tests in the standalone directory need fixes to pass
 
-### Test Maintenance Tools
+## Next Steps
 
-| Script | Purpose | Usage |
-|--------|---------|-------|
-| `classify_tests.py` | Classify tests by dependency | `python scripts/classify_tests.py --update` |
-| `identify_standalone_candidates.py` | Find standalone candidates | `python scripts/identify_standalone_candidates.py` |
-| `debug_test_failures.py` | Debug test failures | `python scripts/debug_test_failures.py [category]` |
+To fully leverage the test infrastructure, the following steps are recommended:
 
-## 4. Test Implementation Guidelines
+1. **Fix Import Errors**: Resolve missing imports and implementation errors in the codebase.
 
-### 4.1 Naming Conventions
+2. **Fix Failing Tests**: Address issues in existing standalone tests to ensure they pass.
 
-- **Files**: `test_[module_or_feature].py`
-- **Functions/Methods**: `test_[behavior]_[conditions]_[expected_outcome]`
-- **Classes**: `Test[Feature]` or `[Feature]Test`
+3. **Update Test Markers**: Run the update script to properly mark all tests with the correct dependency level:
+   ```bash
+   python backend/scripts/update_test_markers.py
+   ```
 
-### 4.2 Test Structure
+4. **Migrate Eligible Tests**: Move eligible unit tests to the standalone directory:
+   ```bash
+   python backend/scripts/identify_standalone_candidates.py --migrate
+   ```
 
-Follow the Arrange-Act-Assert pattern:
+5. **Update CI Pipeline**: Integrate the test-suite.yml workflow into your CI system.
 
-```python
-def test_user_service_creates_user_with_valid_data_returns_user(self):
-    # Arrange
-    user_data = {"name": "Test User", "email": "test@example.com"}
-    user_service = UserService(user_repository=MockUserRepository())
-    
-    # Act
-    result = user_service.create_user(user_data)
-    
-    # Assert
-    assert result.name == "Test User"
-    assert result.email == "test@example.com"
-    assert result.id is not None
-```
+## Usage Examples
 
-### 4.3 Dependency Markers
-
-Use pytest markers to indicate dependency level:
-
-```python
-@pytest.mark.standalone
-def test_something_simple():
-    # Test with no dependencies
-
-@pytest.mark.venv_only
-def test_something_with_packages():
-    # Test requiring only Python packages
-
-@pytest.mark.db_required
-def test_something_with_database():
-    # Test requiring database access
-```
-
-### 4.4 HIPAA Compliance Testing
-
-- Use synthetic data that mimics PHI structure without containing actual PHI
-- Test sanitization/redaction functionality thoroughly
-- Test access controls and authorization at all layers
-- Validate that PHI is never logged or exposed in error messages
-
-## 5. Coverage Requirements
-
-| Component Type | Minimum Coverage |
-|----------------|------------------|
-| Domain Layer | 95% |
-| Application Services | 90% |
-| Infrastructure | 85% |
-| Security Components | 95% |
-| PHI Handling | 100% |
-| Overall | 85% |
-
-## 6. Test Creation Process
-
-### 6.1 Adding New Standalone Tests
-
-1. Identify pure logical components that require no external dependencies
-2. Create test file in `/app/tests/standalone/`
-3. Add `@pytest.mark.standalone` marker to test functions
-4. Run test to verify it passes with no dependencies
-
-### 6.2 Converting Unit Tests to Standalone
-
-1. Run `python scripts/identify_standalone_candidates.py`
-2. Review candidates and select suitable options
-3. Create copies in standalone directory with necessary mocks
-4. Verify tests work in standalone environment
-
-### 6.3 Database Test Setup
-
-1. Use fixtures from `/app/tests/fixtures/` for database access
-2. Ensure proper isolation with transactions
-3. Mark with `@pytest.mark.db_required`
-4. Consider using SQLite for faster tests where possible
-
-## 7. Test Execution Examples
-
-### 7.1 Run All Tests in Optimal Order
+### Running Standalone Tests
 
 ```bash
-./scripts/run_tests.sh all
+# Using Python directly
+python -m pytest -m standalone
+
+# Using the test runner script
+./backend/scripts/run_test_suite.sh --stage standalone
 ```
 
-### 7.2 Run Only Standalone Tests
+### Running All Tests in Dependency Order
 
 ```bash
-./scripts/run_tests.sh standalone
+./backend/scripts/run_test_suite.sh
 ```
 
-### 7.3 Run Only VENV Tests
+### Running Tests with Coverage Reports
 
 ```bash
-./scripts/run_tests.sh venv
+./backend/scripts/run_test_suite.sh --coverage
 ```
 
-### 7.4 Run DB Tests
+### Analyzing Test Classification
 
 ```bash
-./scripts/run_tests.sh db
+python backend/scripts/classify_tests.py --report
 ```
 
-### 7.5 Generate Classification Report
+## Benefits
 
-```bash
-python scripts/classify_tests.py --verbose
-```
+This test infrastructure provides significant benefits:
 
-## 8. Common Issues and Solutions
+1. **Faster Feedback**: Standalone tests run first, providing immediate feedback.
+2. **Reduced CI/CD Time**: Jobs can fail early on simple issues before running expensive tests.
+3. **Clearer Organization**: Tests are categorized by their dependencies.
+4. **Improved Maintainability**: New tests can be easily classified and executed appropriately.
+5. **Better Resource Usage**: DB tests only run when necessary.
 
-| Issue | Solution |
-|-------|----------|
-| Import Errors | Check correct Python path is set (`export PYTHONPATH=$(pwd)`) |
-| DB Connection Failures | Verify the test database is running (`docker-compose -f docker-compose.test.yml up -d`) |
-| Permission Issues | Ensure scripts are executable (`chmod +x scripts/*.sh`) |
-| Test Discovery Issues | Check that `__init__.py` exists in all test directories |
-| Test Collection Errors | Run with `pytest --collect-only` to debug import issues |
+## Conclusion
 
-## 9. Conclusion
-
-This test infrastructure provides a robust, efficient approach to testing the Novamind Digital Twin Backend. By following this SSOT guide, teams can maintain consistency, improve test quality, and ensure continuous compliance with HIPAA requirements.
+The dependency-based test organization strategy aligns with best practices for modern Python applications. By continuing to expand the standalone test suite and properly categorizing existing tests, the Novamind Digital Twin platform can achieve faster, more reliable test execution in both development and CI/CD environments.
