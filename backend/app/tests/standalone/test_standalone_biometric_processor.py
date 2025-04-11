@@ -1,3 +1,4 @@
+import pytest
 """
 Self-contained test for Biometric Event Processor.
 
@@ -693,6 +694,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         """Set up a processor for each test."""
         self.processor = BiometricEventProcessor()
         
+    @pytest.mark.standalone
     def test_add_rule(self):
         """Test adding a rule to the processor."""
         # Create a rule
@@ -710,6 +712,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         self.assertIn(rule.id, self.processor.rules)
         self.assertEqual(self.processor.rules[rule.id], rule)
         
+    @pytest.mark.standalone
     def test_remove_rule(self):
         """Test removing a rule from the processor."""
         # Create and add a rule
@@ -734,6 +737,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         # Check that the result is False
         self.assertFalse(result)
         
+    @pytest.mark.standalone
     def test_register_observer(self):
         """Test registering an observer."""
         # Create an observer
@@ -745,6 +749,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         # Check that the observer was registered
         self.assertIn(observer, self.processor.observers)
         
+    @pytest.mark.standalone
     def test_unregister_observer(self):
         """Test unregistering an observer."""
         # Create and register an observer
@@ -761,6 +766,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         observer2 = EmailAlertObserver(recipients=["nurse@example.com"])
         self.processor.unregister_observer(observer2)  # Should not raise an error
         
+    @pytest.mark.standalone
     def test_process_data_point_no_patient_id(self):
         """Test processing a data point with no patient ID."""
         # Create a data point with no patient ID
@@ -776,6 +782,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         # Check that no alerts were generated
         self.assertEqual(len(alerts), 0)
         
+    @pytest.mark.standalone
     def test_process_data_point_no_matching_rules(self):
         """Test processing a data point with no matching rules."""
         # Create a rule for blood pressure
@@ -800,6 +807,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         # Check that no alerts were generated
         self.assertEqual(len(alerts), 0)
         
+    @pytest.mark.standalone
     def test_process_data_point_matching_rule(self):
         """Test processing a data point that matches a rule."""
         # Create a rule for heart rate
@@ -828,6 +836,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         self.assertEqual(alerts[0].patient_id, "patient1")
         self.assertEqual(alerts[0].severity, AlertSeverity.HIGH)
         
+    @pytest.mark.standalone
     def test_process_data_point_patient_specific_rule(self):
         """Test processing a data point with a patient-specific rule."""
         # Create a patient-specific rule
@@ -865,6 +874,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         
         self.assertEqual(len(alerts2), 0)
         
+    @pytest.mark.standalone
     def test_process_data_point_inactive_rule(self):
         """Test processing a data point with an inactive rule."""
         # Create an inactive rule
@@ -890,6 +900,7 @@ class TestBiometricEventProcessor(unittest.TestCase):
         # Check that no alerts were generated
         self.assertEqual(len(alerts), 0)
         
+    @pytest.mark.standalone
     def test_process_data_point_updates_context(self):
         """Test that processing a data point updates the context."""
         # Create a data point
@@ -939,6 +950,7 @@ class TestAlertRule(unittest.TestCase):
         # Restore original __init__ method
         AlertRule.__init__ = self._original_init
     
+    @pytest.mark.standalone
     def test_evaluate_data_type_mismatch(self):
         """Test evaluating a rule with a data type mismatch."""
         # Create a rule for heart rate
@@ -962,6 +974,7 @@ class TestAlertRule(unittest.TestCase):
         # Check that the result is False
         self.assertFalse(result)
         
+    @pytest.mark.standalone
     def test_evaluate_greater_than(self):
         """Test evaluating a rule with the greater than operator."""
         # Create a rule
@@ -1003,6 +1016,7 @@ class TestAlertRule(unittest.TestCase):
         self.assertFalse(result2)
         self.assertFalse(result3)
         
+    @pytest.mark.standalone
     def test_evaluate_greater_than_or_equal(self):
         """Test evaluating a rule with the greater than or equal operator."""
         # Create a rule
@@ -1044,6 +1058,7 @@ class TestAlertRule(unittest.TestCase):
         self.assertTrue(result2)
         self.assertFalse(result3)
         
+    @pytest.mark.standalone
     def test_evaluate_less_than(self):
         """Test evaluating a rule with the less than operator."""
         # Create a rule
@@ -1085,6 +1100,7 @@ class TestAlertRule(unittest.TestCase):
         self.assertFalse(result2)
         self.assertFalse(result3)
         
+    @pytest.mark.standalone
     def test_evaluate_less_than_or_equal(self):
         """Test evaluating a rule with the less than or equal operator."""
         # Create a rule
@@ -1126,6 +1142,7 @@ class TestAlertRule(unittest.TestCase):
         self.assertTrue(result2)
         self.assertFalse(result3)
         
+    @pytest.mark.standalone
     def test_evaluate_equal(self):
         """Test evaluating a rule with the equal operator."""
         # Create a rule
@@ -1167,6 +1184,7 @@ class TestAlertRule(unittest.TestCase):
         self.assertTrue(result2)
         self.assertFalse(result3)
         
+    @pytest.mark.standalone
     def test_evaluate_not_equal(self):
         """Test evaluating a rule with the not equal operator."""
         # Create a rule
@@ -1212,6 +1230,7 @@ class TestAlertRule(unittest.TestCase):
 class TestBiometricAlert(unittest.TestCase):
     """Test the biometric alert class."""
     
+    @pytest.mark.standalone
     def test_acknowledge(self):
         """Test acknowledging an alert."""
         # Create a data point
@@ -1267,6 +1286,7 @@ class TestAlertObservers(unittest.TestCase):
             message="Heart rate is too high"
         )
         
+    @pytest.mark.standalone
     def test_email_alert_observer(self):
         """Test the email alert observer."""
         # Create an email observer
@@ -1285,6 +1305,7 @@ class TestAlertObservers(unittest.TestCase):
         self.assertIn("recipients", result)
         self.assertEqual(result["recipients"], ["doctor@example.com"])
         
+    @pytest.mark.standalone
     def test_sms_alert_observer_urgent(self):
         """Test the SMS alert observer with urgent alerts."""
         # Create an SMS observer that only sends urgent alerts
@@ -1322,6 +1343,7 @@ class TestAlertObservers(unittest.TestCase):
         self.assertIsNotNone(high_result)
         self.assertIsNone(medium_result)
         
+    @pytest.mark.standalone
     def test_sms_alert_observer_non_urgent(self):
         """Test the SMS alert observer with non-urgent alerts."""
         # Create an SMS observer that sends all alerts
@@ -1350,6 +1372,7 @@ class TestAlertObservers(unittest.TestCase):
         self.assertIn("phone_numbers", result)
         self.assertEqual(result["phone_numbers"], ["555-1234"])
         
+    @pytest.mark.standalone
     def test_in_app_alert_observer(self):
         """Test the in-app alert observer."""
         # Create an in-app observer
@@ -1377,6 +1400,7 @@ class TestClinicalRuleEngine(unittest.TestCase):
         """Set up a rule engine for each test."""
         self.engine = ClinicalRuleEngine()
         
+    @pytest.mark.standalone
     def test_register_rule_template(self):
         """Test registering a rule template."""
         # Register a template
@@ -1401,6 +1425,7 @@ class TestClinicalRuleEngine(unittest.TestCase):
         self.assertEqual(template["severity"], AlertSeverity.MEDIUM)
         self.assertEqual(template["parameters"], ["threshold", "severity"])
         
+    @pytest.mark.standalone
     def test_register_custom_condition(self):
         """Test registering a custom condition."""
         # Define a custom condition
@@ -1432,6 +1457,7 @@ class TestClinicalRuleEngine(unittest.TestCase):
         self.assertTrue(self.engine.custom_conditions["is_fever"](data_point1))
         self.assertFalse(self.engine.custom_conditions["is_fever"](data_point2))
         
+    @pytest.mark.standalone
     def test_create_rule_from_template(self):
         """Test creating a rule from a template."""
         # Register a template
@@ -1464,6 +1490,7 @@ class TestClinicalRuleEngine(unittest.TestCase):
         self.assertEqual(rule.severity, AlertSeverity.HIGH)
         self.assertEqual(rule.patient_id, "patient1")
         
+    @pytest.mark.standalone
     def test_create_rule_from_template_missing_parameter(self):
         """Test creating a rule from a template with a missing parameter."""
         # Register a template
@@ -1489,6 +1516,7 @@ class TestClinicalRuleEngine(unittest.TestCase):
                 patient_id="patient1"
             )
             
+    @pytest.mark.standalone
     def test_create_rule_from_template_unknown_template(self):
         """Test creating a rule from an unknown template."""
         # Try to create a rule from an unknown template

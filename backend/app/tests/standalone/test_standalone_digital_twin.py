@@ -1,3 +1,4 @@
+import pytest
 """
 Standalone test for Digital Twin entity and related components.
 
@@ -627,6 +628,7 @@ class TestDigitalTwin(unittest.TestCase):
         self.patient_id = "patient123"
         self.digital_twin = DigitalTwin(patient_id=self.patient_id)
         
+    @pytest.mark.standalone
     def test_creation(self):
         """Test creating a DigitalTwin."""
         # Check basic attributes
@@ -647,6 +649,7 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(custom_twin.description, "Custom description")
         self.assertEqual(custom_twin.metadata["key"], "value")
         
+    @pytest.mark.standalone
     def test_add_model(self):
         """Test adding a model to the DigitalTwin."""
         # Create a model
@@ -674,6 +677,7 @@ class TestDigitalTwin(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.digital_twin.add_model(invalid_model)
             
+    @pytest.mark.standalone
     def test_remove_model(self):
         """Test removing a model from the DigitalTwin."""
         # Create and add a model
@@ -697,6 +701,7 @@ class TestDigitalTwin(unittest.TestCase):
         # Check that the result is False
         self.assertFalse(result)
         
+    @pytest.mark.standalone
     def test_get_models_by_type(self):
         """Test getting models by type."""
         # Create and add models of different types
@@ -734,6 +739,7 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertIn(model3, psychiatric_models)
         self.assertIn(model2, biometric_models)
         
+    @pytest.mark.standalone
     def test_generate_biometric_alert_rules(self):
         """Test generating biometric alert rules."""
         # Create and add a biometric model
@@ -756,6 +762,7 @@ class TestDigitalTwin(unittest.TestCase):
         # Check that rules were added to the model
         self.assertGreater(len(model.alert_rules), 0)
         
+    @pytest.mark.standalone
     def test_process_biometric_data(self):
         """Test processing biometric data."""
         # Create and add a biometric model
@@ -805,6 +812,7 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(alert["threshold"], 100)
         self.assertEqual(alert["operator"], ">")
         
+    @pytest.mark.standalone
     def test_predict_symptoms(self):
         """Test predicting symptoms."""
         # Create and add a time series model
@@ -832,6 +840,7 @@ class TestDigitalTwin(unittest.TestCase):
         # Check that the forecast horizon was reset
         self.assertEqual(model.forecast_horizon, 7)
         
+    @pytest.mark.standalone
     def test_to_dict(self):
         """Test converting to dictionary."""
         # Create and add a model
@@ -867,6 +876,7 @@ class TestTimeSeriesModel(unittest.TestCase):
             forecast_horizon=7
         )
         
+    @pytest.mark.standalone
     def test_creation(self):
         """Test creating a TimeSeriesModel."""
         # Check basic attributes
@@ -889,6 +899,7 @@ class TestTimeSeriesModel(unittest.TestCase):
         self.assertEqual(string_model.data_type, BiometricDataType.CUSTOM)
         self.assertEqual(string_model.prediction_interval, PredictionInterval.WEEKLY)
         
+    @pytest.mark.standalone
     def test_train(self):
         """Test training the model."""
         # Create sample data
@@ -910,6 +921,7 @@ class TestTimeSeriesModel(unittest.TestCase):
         self.assertIn("rmse", metrics)
         self.assertIn("r2", metrics)
         
+    @pytest.mark.standalone
     def test_predict(self):
         """Test generating predictions."""
         # Generate predictions
@@ -941,6 +953,7 @@ class TestTimeSeriesModel(unittest.TestCase):
         # Check the results
         self.assertEqual(len(hourly_predictions), 5)  # 5 hours of predictions
         
+    @pytest.mark.standalone
     def test_to_dict(self):
         """Test converting to dictionary."""
         # Train the model to populate performance metrics
@@ -977,6 +990,7 @@ class TestBiometricTwinModel(unittest.TestCase):
             biometric_types=[BiometricDataType.HEART_RATE, BiometricDataType.BLOOD_PRESSURE]
         )
         
+    @pytest.mark.standalone
     def test_creation(self):
         """Test creating a BiometricTwinModel."""
         # Check basic attributes
@@ -988,6 +1002,7 @@ class TestBiometricTwinModel(unittest.TestCase):
         self.assertEqual(self.model.alert_rules, [])
         self.assertEqual(self.model.baseline_values, {})
         
+    @pytest.mark.standalone
     def test_add_alert_rule(self):
         """Test adding an alert rule."""
         # Create a rule
@@ -1007,6 +1022,7 @@ class TestBiometricTwinModel(unittest.TestCase):
         self.assertEqual(self.model.alert_rules[0]["name"], "High Heart Rate")
         self.assertEqual(self.model.alert_rules[0]["id"], rule_id)
         
+    @pytest.mark.standalone
     def test_remove_alert_rule(self):
         """Test removing an alert rule."""
         # Add a rule
@@ -1031,6 +1047,7 @@ class TestBiometricTwinModel(unittest.TestCase):
         # Check the result
         self.assertFalse(result)
         
+    @pytest.mark.standalone
     def test_set_baseline(self):
         """Test setting a baseline value."""
         # Set a baseline
@@ -1046,6 +1063,7 @@ class TestBiometricTwinModel(unittest.TestCase):
         # Check the result
         self.assertEqual(self.model.baseline_values[BiometricDataType.BLOOD_PRESSURE.value], range_baseline)
         
+    @pytest.mark.standalone
     def test_process_biometric_data(self):
         """Test processing biometric data."""
         # Add alert rules
@@ -1122,6 +1140,7 @@ class TestBiometricTwinModel(unittest.TestCase):
         self.assertEqual(low_alert["operator"], "<")
         self.assertEqual(low_alert["severity"], "high")
         
+    @pytest.mark.standalone
     def test_to_dict(self):
         """Test converting to dictionary."""
         # Add a rule and baseline

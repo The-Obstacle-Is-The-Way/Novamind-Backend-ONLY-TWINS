@@ -1,3 +1,4 @@
+import pytest
 """
 Self-contained test for PHI Sanitizer functionality.
 
@@ -436,6 +437,7 @@ class TestPHISanitizer(unittest.TestCase):
         """Set up a PHI sanitizer for each test."""
         self.sanitizer = PHISanitizer()
     
+    @pytest.mark.standalone
     def test_sanitize_string_with_ssn(self):
         """Test sanitizing a string with a Social Security Number."""
         # SSN with hyphens
@@ -449,6 +451,7 @@ class TestPHISanitizer(unittest.TestCase):
         sanitized = self.sanitizer.sanitize(text)
         self.assertNotIn("123456789", sanitized)
     
+    @pytest.mark.standalone
     def test_sanitize_string_with_multiple_phi(self):
         """Test sanitizing a string with multiple types of PHI."""
         text = """
@@ -471,6 +474,7 @@ class TestPHISanitizer(unittest.TestCase):
         # Check that [REDACTED] appears appropriately
         self.assertIn("[REDACTED]", sanitized)
     
+    @pytest.mark.standalone
     def test_sanitize_json_with_phi(self):
         """Test sanitizing JSON with PHI."""
         json_data = json.dumps({
@@ -498,6 +502,7 @@ class TestPHISanitizer(unittest.TestCase):
         # But non-PHI data should still be intact
         self.assertEqual(sanitized_dict["appointment"]["date"], "2025-05-15")
     
+    @pytest.mark.standalone
     def test_sanitize_dict_with_phi(self):
         """Test sanitizing a dictionary with PHI."""
         data = {
@@ -525,6 +530,7 @@ class TestPHISanitizer(unittest.TestCase):
         self.assertNotEqual(sanitized["contact"]["phone"], "555-123-4567")
         self.assertNotEqual(sanitized["contact"]["email"], "john.smith@example.com")
     
+    @pytest.mark.standalone
     def test_sanitize_nested_dict_with_phi(self):
         """Test sanitizing a nested dictionary with PHI."""
         data = {
@@ -548,6 +554,7 @@ class TestPHISanitizer(unittest.TestCase):
         self.assertNotIn("123-45-6789", str(sanitized))
         self.assertNotIn("John Smith", str(sanitized))
     
+    @pytest.mark.standalone
     def test_sanitize_list_with_phi(self):
         """Test sanitizing a list with PHI."""
         data = [
@@ -563,6 +570,7 @@ class TestPHISanitizer(unittest.TestCase):
         self.assertNotIn("01/15/1985", sanitized[1])
         self.assertNotIn("555-123-4567", sanitized[2])
     
+    @pytest.mark.standalone
     def test_sanitize_complex_structure(self):
         """Test sanitizing a complex data structure with PHI."""
         data = {
@@ -609,6 +617,7 @@ class TestPHISanitizer(unittest.TestCase):
         self.assertIn("Hypertension diagnosed 2020", sanitized["patients"][0]["medical_history"][0])
         self.assertIn("No significant history", sanitized["patients"][1]["medical_history"][0])
     
+    @pytest.mark.standalone
     def test_sanitize_phi_in_logs(self):
         """Test sanitizing PHI in log messages."""
         # Create a memory handler to capture log messages
@@ -636,6 +645,7 @@ class TestPHISanitizer(unittest.TestCase):
         self.assertNotIn("123-45-6789", log_capture[0])
         self.assertIn("[REDACTED]", log_capture[0])
     
+    @pytest.mark.standalone
     def test_phi_detection_integration(self):
         """Test integration of all PHI detection components."""
         # Create a sanitizer with custom patterns
@@ -656,6 +666,7 @@ class TestPHISanitizer(unittest.TestCase):
         self.assertNotIn("PT123456", sanitized)
         self.assertNotIn("John Smith", sanitized)
     
+    @pytest.mark.standalone
     def test_phi_sanitizer_performance(self):
         """Test performance of PHI sanitizer."""
         # In a real test, you would use performance metrics
@@ -670,6 +681,7 @@ class TestPHISanitizer(unittest.TestCase):
         # Just check that it completed without error
         self.assertIsInstance(sanitized, str)
     
+    @pytest.mark.standalone
     def test_preservation_of_non_phi(self):
         """Test that non-PHI information is preserved."""
         text = """
@@ -684,6 +696,7 @@ class TestPHISanitizer(unittest.TestCase):
         # Non-PHI should be preserved
         self.assertEqual(sanitized, text)
     
+    @pytest.mark.standalone
     def test_sanitizer_edge_cases(self):
         """Test sanitizer behavior with edge cases."""
         # Empty string
@@ -702,6 +715,7 @@ class TestPHISanitizer(unittest.TestCase):
         self.assertEqual(self.sanitizer.sanitize(123), 123)
         self.assertEqual(self.sanitizer.sanitize(True), True)
     
+    @pytest.mark.standalone
     def test_redaction_format_consistency(self):
         """Test that redaction formats are consistent."""
         # Full redaction

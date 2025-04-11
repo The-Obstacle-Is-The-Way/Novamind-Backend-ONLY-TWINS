@@ -1,3 +1,4 @@
+import pytest
 """
 Self-contained test for BaseSecurityTest infrastructure.
 
@@ -58,6 +59,7 @@ class BaseSecurityTest(unittest.TestCase):
 class TestBaseSecurityTest(BaseSecurityTest):
     """Test the BaseSecurityTest class itself."""
     
+    @pytest.mark.standalone
     def test_default_attributes(self):
         """Test that the default attributes are set correctly."""
         # Verify test_user_id attribute
@@ -70,6 +72,7 @@ class TestBaseSecurityTest(BaseSecurityTest):
         self.assertEqual(self.test_user["id"], self.test_user_id)
         self.assertEqual(self.test_user["roles"], self.test_roles)
     
+    @pytest.mark.standalone
     def test_mock_auth_service(self):
         """Test that the mock auth service is configured correctly."""
         # Verify authenticate method
@@ -86,6 +89,7 @@ class AdminSecurityTest(BaseSecurityTest):
     # Override test_roles for admin testing
     test_roles = [Role.ADMIN, Role.USER]
     
+    @pytest.mark.standalone
     def test_admin_roles(self):
         """Test that the admin roles are set correctly."""
         self.assertEqual(self.test_roles, [Role.ADMIN, Role.USER])
@@ -98,6 +102,7 @@ class ClinicianSecurityTest(BaseSecurityTest):
     # Override test_roles for clinician testing
     test_roles = [Role.CLINICIAN, Role.USER]
     
+    @pytest.mark.standalone
     def test_clinician_roles(self):
         """Test that the clinician roles are set correctly."""
         self.assertEqual(self.test_roles, [Role.CLINICIAN, Role.USER])

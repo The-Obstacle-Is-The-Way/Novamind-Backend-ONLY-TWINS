@@ -1,3 +1,4 @@
+import pytest
 """
 Self-contained test for ML exceptions to verify test infrastructure.
 
@@ -72,6 +73,7 @@ class MentalLLaMAValidationError(MentalLLaMABaseError):
 class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     
+    @pytest.mark.standalone
 def test_base_error(self):
         """Test the base error class."""
         # Arrange
@@ -86,6 +88,7 @@ def test_base_error(self):
         self.assertEqual(error.details, details)
         self.assertEqual(str(error), message)
     
+    @pytest.mark.standalone
 def test_inference_error(self):
         """Test the inference error class."""
         # Arrange
@@ -116,6 +119,7 @@ def test_inference_error(self):
         # Ensure input_text is NOT included in details to prevent PHI leakage
         self.assertNotIn("input_text", error.details)
         
+    @pytest.mark.standalone
 def test_validation_error(self):
         """Test the validation error class."""
         # Arrange

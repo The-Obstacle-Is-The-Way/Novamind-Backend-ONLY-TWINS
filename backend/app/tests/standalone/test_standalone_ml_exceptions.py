@@ -1,3 +1,4 @@
+import pytest
 """
 Self-contained test for Machine Learning (ML) exceptions.
 
@@ -258,6 +259,7 @@ class MLServiceRateLimitError(MLServiceUnavailableError):
 class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     
+    @pytest.mark.standalone
     def test_base_error(self):
         """Test the base error class."""
         # Create a base error
@@ -286,6 +288,7 @@ class TestMLExceptions(unittest.TestCase):
         self.assertEqual(error_dict["message"], "Test error message")
         self.assertEqual(error_dict["details"], {"test_key": "test_value"})
     
+    @pytest.mark.standalone
     def test_inference_error(self):
         """Test the inference error class."""
         # Create an inference error
@@ -318,6 +321,7 @@ class TestMLExceptions(unittest.TestCase):
         # Check details contain keys info
         self.assertEqual(error.get_detail("input_keys"), ["x", "y"])
     
+    @pytest.mark.standalone
     def test_validation_error(self):
         """Test the validation error class."""
         # Create a validation error
@@ -353,6 +357,7 @@ class TestMLExceptions(unittest.TestCase):
         # Check details
         self.assertEqual(len(error.get_detail("validation_errors")), 2)
     
+    @pytest.mark.standalone
     def test_model_not_found_error(self):
         """Test the model not found error class."""
         # Create a model not found error
@@ -374,6 +379,7 @@ class TestMLExceptions(unittest.TestCase):
         self.assertEqual(error.get_detail("model_name"), "non_existent_model")
         self.assertEqual(error.get_detail("available_models"), ["model1", "model2", "model3"])
     
+    @pytest.mark.standalone
     def test_service_unavailable_error(self):
         """Test the service unavailable error class."""
         # Create a service unavailable error
@@ -396,6 +402,7 @@ class TestMLExceptions(unittest.TestCase):
         self.assertEqual(error.get_detail("reason"), "Maintenance in progress")
         self.assertEqual(error.get_detail("retry_after"), 3600)
     
+    @pytest.mark.standalone
     def test_rate_limit_error(self):
         """Test the rate limit error class."""
         # Create a rate limit error
@@ -420,6 +427,7 @@ class TestMLExceptions(unittest.TestCase):
         self.assertEqual(error.get_detail("limit"), 100)
         self.assertEqual(error.get_detail("retry_after"), 60)
     
+    @pytest.mark.standalone
     def test_error_hierarchy(self):
         """Test the exception class hierarchy."""
         # Create instances of each exception type

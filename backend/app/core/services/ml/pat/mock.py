@@ -27,6 +27,7 @@ class MockPATService(PATInterface):
         """Initialize the mock PAT service."""
         self._initialized = False
         self._config = config or {}
+        self._mock_delay_ms = 0  # Default mock delay
         self._assessments = {}
         self._form_templates = {}
         
@@ -36,6 +37,7 @@ class MockPATService(PATInterface):
     def initialize(self, config: Dict[str, Any]) -> None:
         """Initialize the service with configuration."""
         self._config.update(config)
+        self._mock_delay_ms = config.get("mock_delay_ms", 0)  # Get mock delay from config
         self._initialized = True
         logger.info("Mock PAT service initialized")
     

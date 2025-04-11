@@ -1,3 +1,4 @@
+import pytest
 """
 Self-contained test for Patient entity.
 
@@ -457,6 +458,7 @@ class Patient:
 class TestPatient(unittest.TestCase):
     """Tests for the Patient class."""
     
+    @pytest.mark.standalone
     def test_create_patient(self):
         """Test creating a patient."""
         patient = Patient(
@@ -478,6 +480,7 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(patient.address, "123 Main St, Anytown, USA")
         self.assertEqual(patient.status, PatientStatus.ONBOARDING)
         
+    @pytest.mark.standalone
     def test_create_patient_with_string_enums(self):
         """Test creating a patient with string enums."""
         patient = Patient(
@@ -493,6 +496,7 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(patient.status, PatientStatus.ACTIVE)
         self.assertEqual(patient.insurance_status, InsuranceStatus.ACTIVE)
         
+    @pytest.mark.standalone
     def test_create_patient_with_string_date(self):
         """Test creating a patient with a string date."""
         patient = Patient(
@@ -504,6 +508,7 @@ class TestPatient(unittest.TestCase):
         
         self.assertEqual(patient.date_of_birth, date(1990, 10, 25))
         
+    @pytest.mark.standalone
     def test_create_patient_with_auto_id(self):
         """Test creating a patient with auto-generated ID."""
         patient = Patient(
@@ -517,6 +522,7 @@ class TestPatient(unittest.TestCase):
         self.assertIsInstance(patient.id, str)
         self.assertTrue(len(patient.id) > 0)
         
+    @pytest.mark.standalone
     def test_validate_required_fields(self):
         """Test validation of required fields."""
         # Missing first name
@@ -555,6 +561,7 @@ class TestPatient(unittest.TestCase):
                 gender=None
             )
             
+    @pytest.mark.standalone
     def test_validate_email_format(self):
         """Test validation of email format."""
         with self.assertRaises(ValueError):
@@ -566,6 +573,7 @@ class TestPatient(unittest.TestCase):
                 email="invalid-email"
             )
             
+    @pytest.mark.standalone
     def test_validate_phone_format(self):
         """Test validation of phone format."""
         with self.assertRaises(ValueError):
@@ -577,6 +585,7 @@ class TestPatient(unittest.TestCase):
                 phone="invalid-phone-no-digits"
             )
             
+    @pytest.mark.standalone
     def test_update_personal_info(self):
         """Test updating personal information."""
         patient = Patient(
@@ -604,6 +613,7 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(patient.phone, "555-987-6543")
         self.assertEqual(patient.address, "456 Oak St, Newtown, USA")
         
+    @pytest.mark.standalone
     def test_update_personal_info_with_string_date(self):
         """Test updating personal information with a string date."""
         patient = Patient(
@@ -617,6 +627,7 @@ class TestPatient(unittest.TestCase):
         
         self.assertEqual(patient.date_of_birth, date(1981, 2, 16))
         
+    @pytest.mark.standalone
     def test_update_personal_info_with_string_gender(self):
         """Test updating personal information with a string gender."""
         patient = Patient(
@@ -630,6 +641,7 @@ class TestPatient(unittest.TestCase):
         
         self.assertEqual(patient.gender, Gender.NON_BINARY)
         
+    @pytest.mark.standalone
     def test_update_insurance_info(self):
         """Test updating insurance information."""
         patient = Patient(
@@ -651,6 +663,7 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(patient.insurance_group, "GROUP789")
         self.assertEqual(patient.insurance_status, InsuranceStatus.ACTIVE)
         
+    @pytest.mark.standalone
     def test_update_insurance_info_with_string_status(self):
         """Test updating insurance information with a string status."""
         patient = Patient(
@@ -664,6 +677,7 @@ class TestPatient(unittest.TestCase):
         
         self.assertEqual(patient.insurance_status, InsuranceStatus.PENDING)
         
+    @pytest.mark.standalone
     def test_add_emergency_contact(self):
         """Test adding an emergency contact."""
         patient = Patient(
@@ -687,6 +701,7 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(contact.phone, "555-123-4567")
         self.assertEqual(contact.email, "jane.doe@example.com")
         
+    @pytest.mark.standalone
     def test_add_emergency_contact_validation(self):
         """Test validation when adding an emergency contact."""
         patient = Patient(
@@ -720,6 +735,7 @@ class TestPatient(unittest.TestCase):
                 phone=""
             )
             
+    @pytest.mark.standalone
     def test_remove_emergency_contact(self):
         """Test removing an emergency contact."""
         patient = Patient(
@@ -749,6 +765,7 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(removed, contact1)
         self.assertEqual(patient.emergency_contacts[0], contact2)
         
+    @pytest.mark.standalone
     def test_remove_emergency_contact_invalid_index(self):
         """Test removing an emergency contact with an invalid index."""
         patient = Patient(
