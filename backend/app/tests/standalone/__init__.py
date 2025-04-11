@@ -1,17 +1,10 @@
 """
-Standalone Tests Package for Novamind Digital Twin Platform.
+Standalone Tests Package
 
-This package contains all tests that can run without external dependencies such as:
-- Databases
-- External APIs
-- Other services
-
-Tests in this package:
-- Should be fast and reliable
-- Should use mocks for any external dependencies
-- Should focus on business logic, domain models, and utilities
-- Should not require network access or actual database connections
-
-These tests are run as the first phase of the CI/CD pipeline before
-integration tests are executed.
+This package contains tests that have no external dependencies and can run in isolation.
+Tests in this package should:
+- Only depend on the Python standard library and application code
+- Use mocks for all external interactions
+- Not require configuration or environment variables
+- Run quickly and reliably in any environment
 """
