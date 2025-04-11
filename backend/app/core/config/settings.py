@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Novamind Digital Twin"
     API_VERSION: str = "v1"
     API_PREFIX: str = f"/api/{API_VERSION}"
+    APP_DESCRIPTION: str = "Advanced psychiatric digital twin platform for mental health analytics and treatment optimization"
+    VERSION: str = "1.0.0"
     DEBUG: bool = False
     ENVIRONMENT: str = "development"
     

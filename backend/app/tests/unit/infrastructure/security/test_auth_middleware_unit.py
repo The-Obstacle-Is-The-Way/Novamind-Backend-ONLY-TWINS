@@ -14,7 +14,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.datastructures import Headers
 from starlette.responses import JSONResponse
 
-from app.infrastructure.security.auth_middleware import AuthMiddleware
+from app.infrastructure.security.auth_middleware import JWTAuthMiddleware as AuthMiddleware
+from app.infrastructure.security.rbac import RoleBasedAccessControl
+from app.infrastructure.security.auth import TokenAuthorizationError, RolePermission
 
 # Import these from the domain exceptions where they're actually defined
 from app.domain.exceptions import (

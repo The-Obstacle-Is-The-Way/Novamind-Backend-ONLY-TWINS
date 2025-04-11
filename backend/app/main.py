@@ -67,9 +67,9 @@ def create_application() -> FastAPI:
         FastAPI: Configured FastAPI application
     """
     app = FastAPI(
-        title=settings.PROJECT_NAME,
-        description=settings.APP_DESCRIPTION,
-        version=settings.VERSION,
+        title=getattr(settings, 'PROJECT_NAME', 'Novamind Digital Twin'),
+        description=getattr(settings, 'APP_DESCRIPTION', 'Advanced psychiatric digital twin platform for mental health analytics and treatment optimization'),
+        version=getattr(settings, 'VERSION', '1.0.0'),
         lifespan=lifespan,
     )
     
@@ -87,17 +87,22 @@ def create_application() -> FastAPI:
     
     # Set up rate limiting middleware
     setup_rate_limiting(app)
-    
     # Setup routers lazily to prevent FastAPI from analyzing AsyncSession dependencies
     # during router setup, which causes issues with test collection and OpenAPI generation
     setup_routers()
     
+    # Get API prefix and ensure it doesn't end with a slash
+    api_prefix = getattr(settings, 'API_PREFIX', '/api/v1')
+    if api_prefix.endswith('/'):
+        api_prefix = api_prefix[:-1]
+    
     # Include API router after lazy setup
-    app.include_router(api_router, prefix=settings.API_PREFIX)
+    app.include_router(api_router, prefix=api_prefix)
     
     # Include analytics router if analytics are enabled
     if getattr(settings, "ENABLE_ANALYTICS", False):
-        app.include_router(analytics_router, prefix=settings.API_PREFIX)
+        app.include_router(analytics_router, prefix=api_prefix)
+    
     
     # Mount static files if STATIC_DIR is defined in settings
     static_dir = getattr(settings, "STATIC_DIR", None)

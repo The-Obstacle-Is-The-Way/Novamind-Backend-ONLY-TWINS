@@ -16,6 +16,9 @@ from typing import Any, Callable, Dict, List, Optional, Union
 # Import the RoleBasedAccessControl class from rbac module
 from app.infrastructure.security.rbac import RoleBasedAccessControl
 
+# Re-export RoleBasedAccessControl for backward compatibility
+__all__ = ["AuthMiddleware", "JWTAuthMiddleware", "get_auth_middleware", "RoleBasedAccessControl"]
+
 from fastapi import Cookie, Depends, Header, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint

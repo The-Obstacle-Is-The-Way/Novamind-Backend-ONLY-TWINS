@@ -36,6 +36,13 @@ def setup_routers() -> None:
         tags=["Temporal Neurotransmitter System"]
     )
     
+    # Actigraphy router
+    api_router.include_router(
+        get_router("actigraphy"),
+        prefix="/actigraphy",
+        tags=["Actigraphy Analysis"]
+    )
+    
     # XGBoost router (uncomment when ready to use)
     # api_router.include_router(
     #     get_router("xgboost"),
