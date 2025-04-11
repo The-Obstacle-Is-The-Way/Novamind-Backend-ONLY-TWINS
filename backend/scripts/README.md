@@ -1,116 +1,116 @@
 # Novamind Backend Scripts
 
-This directory contains utility scripts for the Novamind backend project. These scripts help with development, testing, and maintenance tasks.
+This directory contains utility scripts for the Novamind Backend project. These scripts are designed to help with development, testing, and CI/CD processes.
 
-## Testing Infrastructure
+## Testing Scripts
 
-The Novamind test infrastructure is organized around three levels of test dependencies:
+### `run_tests.py`
 
-1. **Standalone Tests**: No dependencies beyond Python itself
-   - Execute quickly, perfect for fast feedback loops
-   - Isolated from external services and databases
-   - Located in `/app/tests/standalone/`
-
-2. **VENV-dependent Tests**: Require Python packages but no external services
-   - Depend on Python packages but not on databases or external APIs
-   - Still relatively fast and reliable
-   - Majority of unit tests fall into this category
-
-3. **DB/Service-dependent Tests**: Require database connections or other external services
-   - Integration tests that need real databases or external services
-   - Slower and require more setup, but test real interactions
-
-## Test Utility Scripts
-
-### Test Classification (`classify_tests.py`)
-
-Analyzes test files and classifies them according to their dependency requirements.
+A comprehensive test runner that executes tests in dependency order.
 
 ```bash
-# Analyze all tests and print a report
-python scripts/classify_tests.py --mode analyze
-
-# Generate a detailed report and save to file
-python scripts/classify_tests.py --mode analyze --report --output test-report.txt
-
-# Add appropriate pytest markers to test files based on their imports
-python scripts/classify_tests.py --mode mark
-```
-
-### Dependency-based Test Runner (`run_dependency_tests.py`)
-
-Runs tests based on their dependency requirements in the most efficient order.
-
-```bash
-# Run all tests in dependency order
-python scripts/run_dependency_tests.py
+# Run all tests in order (standalone → venv → integration)
+./scripts/run_tests.py
 
 # Run only standalone tests
-python scripts/run_dependency_tests.py --levels standalone
+./scripts/run_tests.py --skip-venv --skip-integration
 
-# Run standalone and venv-only tests with coverage
-python scripts/run_dependency_tests.py --levels standalone venv_only --coverage
+# Run specific test files
+./scripts/run_tests.py app/tests/standalone/test_enhanced_log_sanitizer.py
 
-# Run all tests with JUnit XML reports
-python scripts/run_dependency_tests.py --junit test-reports
+# Continue running tests even if previous stages fail
+./scripts/run_tests.py --continue-on-failure
 
-# Run all tests but continue even if one level fails
-python scripts/run_dependency_tests.py --skip-failed
-
-# Run tests with additional pytest arguments
-python scripts/run_dependency_tests.py --extra-args "--maxfail=5 -k not_slow"
+# Show commands without executing them
+./scripts/run_tests.py --dry-run
 ```
 
-## CI/CD Integration
+### `ci_test_runner.sh`
 
-For CI/CD pipelines, use these scripts to run tests in the most efficient order:
+A shell script designed for CI/CD environments that runs all tests and generates reports.
 
-```yaml
-# Example GitHub Actions workflow step
-- name: Run Standalone Tests
-  run: python backend/scripts/run_dependency_tests.py --levels standalone --junit test-reports
+```bash
+# Run standalone and venv tests
+./scripts/ci_test_runner.sh
 
-- name: Run VENV Tests
-  if: success() || failure()  # Run even if previous step failed
-  run: python backend/scripts/run_dependency_tests.py --levels venv_only --junit test-reports
+# Run all tests including integration tests
+WITH_INTEGRATION=true ./scripts/ci_test_runner.sh
 
-- name: Run DB Tests
-  if: success() || failure()  # Run even if previous step failed
-  run: python backend/scripts/run_dependency_tests.py --levels db_required --junit test-reports
+# Continue even if tests fail
+CONTINUE_ON_FAILURE=true ./scripts/ci_test_runner.sh
 ```
 
-## Adding New Tests
+### `fix_pat_mock.py`
 
-When adding new tests to the codebase:
+Applies fixes to the PAT mock service to address test failures.
 
-1. Consider which dependency level is appropriate:
-   - Can it run with no external dependencies? → Standalone
-   - Needs Python packages but no services? → VENV-only
-   - Requires database or external APIs? → DB-required
+```bash
+./scripts/fix_pat_mock.py
+```
 
-2. Add the appropriate pytest marker to your test:
-   ```python
-   @pytest.mark.standalone
-   def test_something_standalone():
-       pass
-       
-   @pytest.mark.venv_only
-   def test_something_with_packages():
-       pass
-       
-   @pytest.mark.db_required
-   def test_something_with_database():
-       pass
-   ```
+### `create_test_classification.py`
 
-3. Use the classification script to verify:
-   ```bash
-   python scripts/classify_tests.py --mode analyze
-   ```
+Generates a comprehensive report about test organization and dependencies.
 
-## Best Practices
+```bash
+# Generate markdown report (default)
+./scripts/create_test_classification.py
 
-- Always favor standalone tests when possible - they're faster and more reliable
-- Use mock objects (like our `patient_mock.py` example) to create standalone versions of tests
-- Run `classify_tests.py` periodically to ensure tests are correctly categorized
-- Use the dependency runner in development to get fast feedback from standalone tests
+# Generate JSON report
+./scripts/create_test_classification.py --format json
+
+# Specify output file name
+./scripts/create_test_classification.py --output my-test-report
+```
+
+## Directory Structure
+
+The scripts follow these conventions:
+
+- Testing scripts are prefixed with `test_` or contain `test` in their name
+- CI/CD scripts are prefixed with `ci_`
+- Utility scripts focus on a specific functionality
+
+## Contributing
+
+When adding new scripts:
+
+1. Follow the naming conventions
+2. Add proper documentation
+3. Make scripts executable (`chmod +x script_name.py`)
+4. Update this README with usage instructions
+
+## Running Scripts
+
+Most Python scripts can be run directly if they have the executable bit set:
+
+```bash
+./scripts/script_name.py
+```
+
+Or they can be run with the Python interpreter:
+
+```bash
+python scripts/script_name.py
+```
+
+Shell scripts should be run with:
+
+```bash
+./scripts/script_name.sh
+```
+
+## Troubleshooting
+
+If you encounter permission issues with scripts:
+
+```bash
+# Make script executable
+chmod +x scripts/script_name.py
+```
+
+If a script fails with import errors, ensure you're running from the project root:
+
+```bash
+cd /path/to/Novamind-Backend-ONLY-TWINS/backend
+./scripts/script_name.py

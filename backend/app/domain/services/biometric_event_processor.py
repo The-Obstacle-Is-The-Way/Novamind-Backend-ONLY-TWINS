@@ -496,14 +496,20 @@ class ClinicalRuleEngine:
         self.rule_templates: dict[str, dict[str, Any]] = {}
         self.custom_conditions: dict[str, Callable] = {}
     
-    def register_rule_template(self, template_id: str, template: dict[str, Any]) -> None:
+    def register_rule_template(self, template: dict[str, Any], template_id: str = None) -> None:
         """
         Register a rule template.
         
         Args:
-            template_id: ID of the template
             template: Template definition
+            template_id: Optional ID of the template (defaults to template['id'])
         """
+        # Extract template_id from the template if not provided directly
+        if template_id is None and 'id' in template:
+            template_id = template['id']
+        elif template_id is None:
+            raise ValueError("Template ID must be provided either as an argument or in the template")
+        
         self.rule_templates[template_id] = template
     
     def register_custom_condition(self, condition_id: str, condition_func: Callable) -> None:
@@ -520,11 +526,11 @@ class ClinicalRuleEngine:
         self,
         template_id: str,
         rule_id: str,
-        name: str,
-        description: str,
-        priority: AlertPriority,
-        parameters: dict[str, Any],
-        created_by: UUID,
+        name: str = None,
+        description: str = None,
+        priority: AlertPriority = None,
+        parameters: dict[str, Any] = None,
+        created_by: UUID = None,
         patient_id: UUID | None = None
     ) -> AlertRule:
         """
@@ -547,10 +553,22 @@ class ClinicalRuleEngine:
             ValidationError: If the template doesn't exist or parameters are invalid
         """
         if template_id not in self.rule_templates:
-            raise ValidationError(f"Rule template '{template_id}' not found")
+            raise ValueError(f"Rule template '{template_id}' not found")
         
         template = self.rule_templates[template_id]
         
+        # Use values from template if not provided
+        if name is None:
+            name = template.get("name", "Unnamed Rule")
+        if description is None:
+            description = template.get("description", "No description")
+        if priority is None:
+            priority = template.get("priority", AlertPriority.WARNING)
+        if parameters is None:
+            parameters = {}
+        if created_by is None:
+            raise ValueError("Creator ID is required")
+            
         # Validate parameters
         required_params = template.get("required_parameters", [])
         for param in required_params:
@@ -586,16 +604,29 @@ class ClinicalRuleEngine:
         Returns:
             The created condition
         """
+        # Look for condition in the template
         condition_template = template.get("condition_template", {})
+        if not condition_template and "condition" in template:
+            condition_template = template.get("condition", {})
         condition = {}
         
         # Apply parameters to the template
         for key, value in condition_template.items():
-            if isinstance(value, str) and value.startswith("$"):
-                param_name = value[1:]
+            if isinstance(value, str) and (value.startswith("$") or value.startswith("${") and value.endswith("}")):
+                # Extract parameter name (handle both ${name} and $name formats)
+                if value.startswith("${") and value.endswith("}"):
+                    param_name = value[2:-1]
+                else:
+                    param_name = value[1:]
+                    
+                # Apply parameter if available
                 if param_name in parameters:
                     condition[key] = parameters[param_name]
                 else:
+                    # Check if this is a required parameter
+                    required_params = template.get("parameters", [])
+                    if param_name in required_params:
+                        raise ValidationError(f"Missing required parameter '{param_name}'")
                     condition[key] = value
             else:
                 condition[key] = value

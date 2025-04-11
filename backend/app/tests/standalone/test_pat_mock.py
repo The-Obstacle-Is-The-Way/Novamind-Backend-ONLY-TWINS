@@ -119,8 +119,8 @@ class TestMockPATAnalyzeActigraphy:
         assert analysis_id in initialized_mock_pat._analyses
         
         # Verify analysis is associated with patient
-        assert "patient-123" in initialized_mock_pat._patients_analyses
-        assert analysis_id in initialized_mock_pat._patients_analyses["patient-123"]
+        assert "patient-123" in initialized_mock_pat._patient_analyses
+        assert analysis_id in initialized_mock_pat._patient_analyses["patient-123"]
     
     def test_analyze_actigraphy_not_initialized(self, mock_pat, valid_readings, valid_device_info, valid_analysis_types):
         """Test actigraphy analysis fails when service is not initialized."""

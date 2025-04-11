@@ -1,196 +1,102 @@
-# Novamind Backend Test Classification Report
+# Test Classification Report
 
-Total Test Files: 183
+## Summary
+- Standalone Tests: 24
+- VENV Tests: 77
+- Integration Tests: 84
 
-## VENV_ONLY Tests: 140
+Total Tests: 185
 
-- app/tests/api/integration/test_xgboost_integration.py
-- app/tests/api/routes/test_xgboost_routes.py
-- app/tests/api/unit/test_xgboost_endpoints.py
-- app/tests/application/services/test_temporal_neurotransmitter_service.py
-- app/tests/core/security/test_rbac.py
-- app/tests/core/services/ml/xgboost/test_aws_xgboost_service.py
-- app/tests/core/test_config.py
-- app/tests/core/utils/test_phi_sanitizer.py
-- app/tests/domain/entities/test_neurotransmitter_mapping.py
-- app/tests/domain/entities/test_temporal_neurotransmitter.py
-- app/tests/domain/ml/test_exceptions.py
-- app/tests/domain/services/test_enhanced_xgboost_service.py
-- app/tests/e2e/test_patient_flow.py
-- app/tests/enhanced/test_enhanced_digital_twin_integration.py
-- app/tests/enhanced/test_neurotransmitter_mapping_integration.py
-- app/tests/infrastructure/ml/test_digital_twin_integration.py
-- app/tests/infrastructure/ml/test_symptom_forecasting_service.py
-- app/tests/infrastructure/services/test_mock_enhanced_digital_twin_neurotransmitter_service.py
-- app/tests/integration/api/endpoints/test_actigraphy_endpoints.py
-- app/tests/integration/api/test_actigraphy_api.py
-- app/tests/integration/api/test_actigraphy_api_integration.py
-- app/tests/integration/api/test_xgboost_api_integration.py
-- app/tests/integration/test_mentallama_api.py
-- app/tests/security/phi/test_mock_phi.py
-- app/tests/security/phi/test_mock_phi_detection.py
-- app/tests/security/phi/test_phi_protection.py
-- app/tests/security/phi/test_phi_sanitizer_phi.py
-- app/tests/security/test_api_hipaa_compliance.py
-- app/tests/security/test_api_security.py
-- app/tests/security/test_audit_logging.py
-- app/tests/security/test_auth_hipaa_compliance.py
-- app/tests/security/test_auth_middleware.py
-- app/tests/security/test_base_security_test.py
-- app/tests/security/test_db_phi_protection.py
-- app/tests/security/test_encryption.py
-- app/tests/security/test_hipaa_compliance.py
-- app/tests/security/test_jwt_auth.py
-- app/tests/security/test_jwt_service.py
-- app/tests/security/test_log_sanitization.py
-- app/tests/security/test_log_sanitizer.py
-- app/tests/security/test_ml_encryption.py
-- app/tests/security/test_ml_phi_security.py
-- app/tests/security/test_patient_phi_security.py
-- app/tests/security/test_phi_audit.py
-- app/tests/security/test_phi_audit_fixed.py
-- app/tests/security/test_phi_audit_logic.py
-- app/tests/security/test_phi_code_patterns.py
-- app/tests/security/test_phi_detection.py
-- app/tests/security/test_phi_middleware.py
-- app/tests/security/test_phi_sanitizer.py
-- app/tests/security/test_repository_security.py
-- app/tests/unit/api/dependencies/test_auth_dependencies.py
-- app/tests/unit/api/routes/test_actigraphy_routes.py
-- app/tests/unit/application/use_cases/analytics/test_batch_process_analytics.py
-- app/tests/unit/application/use_cases/analytics/test_process_analytics_event.py
-- app/tests/unit/application/use_cases/analytics/test_retrieve_aggregated_analytics.py
-- app/tests/unit/application/use_cases/test_create_patient.py
-- app/tests/unit/application/use_cases/test_generate_digital_twin.py
-- app/tests/unit/core/config/test_ml_settings.py
-- app/tests/unit/core/services/ml/pat/test_bedrock_pat.py
-- app/tests/unit/core/services/ml/pat/test_mock_pat.py
-- app/tests/unit/core/services/ml/pat/test_pat_factory.py
-- app/tests/unit/core/services/ml/pat/test_pat_service_core.py
-- app/tests/unit/core/services/ml/test_factory.py
-- app/tests/unit/core/services/ml/test_mentalllama.py
-- app/tests/unit/core/services/ml/test_mock.py
-- app/tests/unit/core/services/ml/test_mock_digital_twin.py
-- app/tests/unit/core/services/ml/test_mock_dt.py
-- app/tests/unit/core/services/ml/test_mock_mentallama.py
-- app/tests/unit/core/services/ml/test_phi_detection_core.py
-- app/tests/unit/core/utils/test_encryption_unit.py
-- app/tests/unit/core/utils/test_enhanced_phi_detector.py
-- app/tests/unit/core/utils/test_logging.py
-- app/tests/unit/core/utils/test_logging_enhanced.py
-- app/tests/unit/core/utils/test_phi_sanitizer_unit.py
-- app/tests/unit/domain/entities/digital_twin/test_biometric_alert.py
-- app/tests/unit/domain/entities/digital_twin/test_digital_twin_entity.py
-- app/tests/unit/domain/entities/digital_twin/test_patient_integration.py
-- app/tests/unit/domain/entities/test_appointment.py
-- app/tests/unit/domain/entities/test_biometric_twin.py
-- app/tests/unit/domain/entities/test_patient_entity.py
-- app/tests/unit/domain/entities/test_provider.py
-- app/tests/unit/domain/services/test_appointment_service.py
-- app/tests/unit/domain/services/test_biometric_alert_audit_service.py
-- app/tests/unit/domain/services/test_biometric_alert_notification_service.py
-- app/tests/unit/domain/services/test_biometric_event_processor.py
-- app/tests/unit/domain/services/test_biometric_integration_service.py
-- app/tests/unit/domain/services/test_clinical_rule_engine.py
-- app/tests/unit/domain/test_digital_twin.py
-- app/tests/unit/domain/test_patient.py
-- app/tests/unit/domain/value_objects/test_value_objects_enhanced.py
-- app/tests/unit/infrastructure/cache/test_redis_cache.py
-- app/tests/unit/infrastructure/messaging/test_secure_messaging_service.py
-- app/tests/unit/infrastructure/ml/biometric_correlation/test_lstm_model.py
-- app/tests/unit/infrastructure/ml/biometric_correlation/test_model_service.py
-- app/tests/unit/infrastructure/ml/pharmacogenomics/test_gene_medication_model.py
-- app/tests/unit/infrastructure/ml/pharmacogenomics/test_model_service_pgx.py
-- app/tests/unit/infrastructure/ml/pharmacogenomics/test_treatment_model.py
-- app/tests/unit/infrastructure/ml/phi_detection/test_phi_detection_service.py
-- app/tests/unit/infrastructure/ml/symptom_forecasting/test_ensemble_model.py
-- app/tests/unit/infrastructure/ml/symptom_forecasting/test_model_service_symptom.py
-- app/tests/unit/infrastructure/ml/symptom_forecasting/test_transformer_model.py
-- app/tests/unit/infrastructure/ml/symptom_forecasting/test_xgboost_model.py
-- app/tests/unit/infrastructure/ml/test_digital_twin_integration_service.py
-- app/tests/unit/infrastructure/ml/test_phi_detection_infra.py
-- app/tests/unit/infrastructure/persistence/sqlalchemy/models/test_patient_encryption.py
-- app/tests/unit/infrastructure/persistence/test_patient_repository_unit.py
-- app/tests/unit/infrastructure/security/test_auth_middleware_unit.py
-- app/tests/unit/infrastructure/security/test_encryption_enhanced.py
-- app/tests/unit/infrastructure/security/test_enhanced_log_sanitizer.py
-- app/tests/unit/infrastructure/security/test_enhanced_phi_middleware.py
-- app/tests/unit/infrastructure/security/test_jwt_handler.py
-- app/tests/unit/infrastructure/security/test_jwt_service_enhanced.py
-- app/tests/unit/infrastructure/security/test_jwt_service_unit.py
-- app/tests/unit/infrastructure/security/test_log_sanitizer_unit.py
-- app/tests/unit/infrastructure/security/test_mfa_service.py
-- app/tests/unit/infrastructure/security/test_password_handler.py
-- app/tests/unit/infrastructure/security/test_rate_limiter.py
-- app/tests/unit/infrastructure/services/test_redis_cache_service.py
-- app/tests/unit/presentation/api/endpoints/test_analytics_endpoints.py
-- app/tests/unit/presentation/api/routes/test_analytics_routes.py
-- app/tests/unit/presentation/api/routes/test_biometric_alerts.py
-- app/tests/unit/presentation/api/test_patient_endpoints.py
-- app/tests/unit/presentation/api/v1/endpoints/test_biometric_alert_system.py
-- app/tests/unit/presentation/api/v1/endpoints/test_biometric_alerts_endpoint.py
-- app/tests/unit/presentation/api/v1/endpoints/test_biometric_endpoints.py
-- app/tests/unit/presentation/api/v1/endpoints/test_digital_twins.py
-- app/tests/unit/presentation/api/v1/test_digital_twin_endpoints.py
-- app/tests/unit/presentation/middleware/test_rate_limiting_middleware.py
-- app/tests/unit/services/ml/pat/test_aws_pat.py
-- app/tests/unit/services/ml/pat/test_mock_pat_service.py
-- app/tests/unit/services/ml/pat/test_pat_service.py
-- app/tests/unit/services/ml/test_mentalllama_mock.py
-- app/tests/unit/services/ml/xgboost/test_aws_xgboost.py
-- app/tests/unit/services/ml/xgboost/test_mock_xgboost.py
-- app/tests/unit/services/test_pat_mock.py
-- app/tests/unit/test_mentallama_service.py
-- app/tests/unit/test_patient_service.py
+## Misclassified Tests
+
+26 tests are in the wrong directory:
+
+### Should be STANDALONE tests:
+- app/tests/enhanced/test_neurotransmitter_mapping_integration.py (currently in integration)
+   - 
+- app/tests/infrastructure/ml/test_digital_twin_integration.py (currently in integration)
+   - 
+- app/tests/unit/domain/entities/digital_twin/test_patient_integration.py (currently in integration)
+   - 
+
+### Should be VENV tests:
+- app/tests/integration/test_mentallama_api.py (currently in integration)
+   - Uses external service dependencies
+   - Uses non-standalone imports: fastapi, app
+- app/tests/integration/api/test_patient_api.py (currently in integration)
+   - Uses external service dependencies
+- app/tests/integration/api/test_actigraphy_api_integration.py (currently in integration)
+   - Uses external service dependencies
+   - Uses non-standalone imports: fastapi, app
+- app/tests/integration/api/test_actigraphy_api.py (currently in integration)
+   - Uses external service dependencies
+- app/tests/standalone/test_biometric_event_processor.py (currently in standalone)
+   - Uses external service dependencies
+   - Uses non-standalone imports: app
+- app/tests/standalone/test_utils.py (currently in standalone)
+   - Uses non-standalone imports: app
+- app/tests/standalone/test_mfa_service.py (currently in standalone)
+   - Uses external service dependencies
+   - Uses non-standalone imports: time, app
+- app/tests/standalone/test_patient_api.py (currently in standalone)
+   - Uses external service dependencies
+- app/tests/standalone/test_patient.py (currently in standalone)
+   - Uses non-standalone imports: time, app
+- app/tests/standalone/test_debugging.py (currently in standalone)
+   - Uses non-standalone imports: sys
+- app/tests/standalone/test_appointment.py (currently in standalone)
+   - Uses non-standalone imports: app
+- app/tests/standalone/test_pat_mock.py (currently in standalone)
+   - Uses non-standalone imports: logging, app
+- app/tests/standalone/test_provider.py (currently in standalone)
+   - Uses non-standalone imports: time, app
+- app/tests/standalone/test_phi_sanitizer_fix.py (currently in standalone)
+   - Uses non-standalone imports: app
+- app/tests/standalone/test_standalone_pat_mock.py (currently in standalone)
+   - Uses non-standalone imports: app
+- app/tests/standalone/test_phi_sanitizer.py (currently in standalone)
+   - Uses external service dependencies
+   - Uses non-standalone imports: time, app
+- app/tests/standalone/test_standalone_biometric_processor.py (currently in standalone)
+   - Uses external service dependencies
+- app/tests/api/integration/test_xgboost_integration.py (currently in integration)
+   - Uses external service dependencies
+   - Uses session-scoped or autouse fixtures
+   - Uses non-standalone imports: fastapi, app
+
+### Should be INTEGRATION tests:
+- app/tests/venv_only/test_temporal_neurotransmitter_analysis.py (currently in venv)
+   - Uses database dependencies
+   - Uses non-standalone imports: pandas, numpy
+- app/tests/standalone/test_standalone_digital_twin.py (currently in standalone)
+   - Uses database dependencies
+- app/tests/standalone/test_standalone_phi_sanitizer.py (currently in standalone)
+   - Uses database dependencies
+   - Uses non-standalone imports: logging
+- app/tests/standalone/test_sqlalchemy_repositories.py (currently in standalone)
+   - Uses database dependencies
+- app/tests/standalone/test_enhanced_log_sanitizer.py (currently in standalone)
+   - Uses database dependencies
+   - Uses external service dependencies
+   - Uses non-standalone imports: logging, app
+
+## Correctly Classified Tests
+
+### STANDALONE tests:
+- app/tests/standalone/test_patient_flow.py
+- app/tests/standalone/test_create_patient.py
+- app/tests/standalone/test_generate_digital_twin.py
+- app/tests/standalone/test_standalone_ml_exceptions.py
+- app/tests/standalone/test_ml_exceptions.py
+- ... and 5 more
+
+### VENV tests:
 - app/tests/venv_only/test_sample_venv.py
-- app/tests/venv_only/test_temporal_neurotransmitter_analysis.py
 
-## DB_REQUIRED Tests: 18
-
-- app/tests/core/test_db.py
-- app/tests/fixtures/test_mock_db.py
-- app/tests/infrastructure/repositories/test_patient_repository.py
-- app/tests/infrastructure/repositories/test_temporal_event_repository.py
-- app/tests/infrastructure/repositories/test_temporal_sequence_repository.py
-- app/tests/integration/api/test_patient_api.py
-- app/tests/integration/infrastructure/persistence/test_patient_encryption_integration.py
-- app/tests/integration/security/test_phi_sanitization_integration.py
-- app/tests/integration/security/test_security_boundary.py
-- app/tests/integration/test_digital_twin_integration_int.py
+### INTEGRATION tests:
 - app/tests/integration/test_patient_repository_int.py
+- app/tests/integration/test_digital_twin_integration_int.py
 - app/tests/integration/test_temporal_neurotransmitter_integration.py
 - app/tests/integration/test_temporal_wrapper.py
-- app/tests/security/test_database_security.py
-- app/tests/security/test_unit_of_work.py
-- app/tests/standalone/test_pat_mock.py
-- app/tests/unit/infrastructure/persistence/sqlalchemy/repositories/test_biometric_alert_repository.py
-- app/tests/unit/infrastructure/persistence/sqlalchemy/test_database_enhanced.py
-
-## STANDALONE Tests: 25
-
-- app/tests/core/security/test_phi_sanitizer.py
-- app/tests/standalone/test_appointment.py
-- app/tests/standalone/test_base_security_test.py
-- app/tests/standalone/test_biometric_event_processor.py
-- app/tests/standalone/test_create_patient.py
-- app/tests/standalone/test_debugging.py
-- app/tests/standalone/test_digital_twin.py
-- app/tests/standalone/test_enhanced_log_sanitizer.py
-- app/tests/standalone/test_generate_digital_twin.py
-- app/tests/standalone/test_mfa_service.py
-- app/tests/standalone/test_ml_exceptions.py
-- app/tests/standalone/test_patient.py
-- app/tests/standalone/test_patient_api.py
-- app/tests/standalone/test_patient_endpoints.py
-- app/tests/standalone/test_patient_flow.py
-- app/tests/standalone/test_phi_sanitizer.py
-- app/tests/standalone/test_provider.py
-- app/tests/standalone/test_sqlalchemy_repositories.py
-- app/tests/standalone/test_standalone_biometric_processor.py
-- app/tests/standalone/test_standalone_digital_twin.py
-- app/tests/standalone/test_standalone_ml_exceptions.py
-- app/tests/standalone/test_standalone_patient.py
-- app/tests/standalone/test_standalone_phi_sanitizer.py
-- app/tests/standalone/test_temporal.py
-- app/tests/standalone/test_utils.py
-
+- app/tests/integration/security/test_phi_sanitization_integration.py
+- ... and 7 more
