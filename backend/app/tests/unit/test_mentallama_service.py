@@ -53,8 +53,8 @@ class TestMentaLLaMAService:
             
             # Check if initialization was successful
             assert service._initialized is True
-            assert service._config == mock_config
-            assert service._provider == "internal"
+            assert service._config  ==  mock_config
+            assert service._provider  ==  "internal"
 
     def test_initialization_failure(self, service, mock_config):
         """Test service initialization failure."""
@@ -165,11 +165,11 @@ class TestMentaLLaMAService:
             
             # Check that process_with_provider was called with correct args
             service._process_with_provider.assert_called_once_with(
-                "Sanitized prompt", 
-                "mentallama-33b-lora", 
-                "depression_detection", 
+                "Sanitized prompt",
+                "mentallama-33b-lora",
+                "depression_detection",
                 {"patient_history": "Brief history"},
-                100, 
+                100,
                 0.7
             )
 
@@ -231,7 +231,7 @@ class TestMentaLLaMAService:
         
         result = service._sanitize_input("Original text with PHI")
         
-        assert result == "Sanitized text without PHI"
+        assert result  ==  "Sanitized text without PHI"
         mock_sanitize.assert_called_once_with("Original text with PHI")
 
     def test_post_process_response_depression_detection(self, service):
@@ -333,7 +333,7 @@ class TestMentaLLaMAService:
                 context={"include_rationale": True, "severity_assessment": True},
                 **{}
             )
-            assert result == {"result": "success"}
+            assert result  ==  {"result": "success"}
             
             # Test risk_assessment method
             result = service.risk_assessment(
@@ -349,7 +349,7 @@ class TestMentaLLaMAService:
                 context={"include_key_phrases": True, "include_suggested_actions": True},
                 **{}
             )
-            assert result == {"result": "success"}
+            assert result  ==  {"result": "success"}
             
             # Test sentiment_analysis method
             result = service.sentiment_analysis(
@@ -364,7 +364,7 @@ class TestMentaLLaMAService:
                 context={"include_emotion_distribution": True},
                 **{}
             )
-            assert result == {"result": "success"}
+            assert result  ==  {"result": "success"}
             
             # Test wellness_dimensions method with dimensions
             dimensions = ["emotional", "social", "physical"]
@@ -381,7 +381,7 @@ class TestMentaLLaMAService:
                 context={"dimensions": dimensions, "include_recommendations": True},
                 **{}
             )
-            assert result == {"result": "success"}
+            assert result  ==  {"result": "success"}
 
     @patch('app.core.services.ml.mentalllama.boto3')
     def test_setup_aws_client(self, mock_boto3, service):
@@ -505,7 +505,7 @@ class TestMentaLLaMAService:
             result = service._process_with_provider(
                 "Test prompt", "test-model", "test-task", {}, 100, 0.7
             )
-            assert result == "Internal result"
+            assert result  ==  "Internal result"
             mock_internal.assert_called_once()
             mock_aws.assert_not_called()
             mock_openai.assert_not_called()
@@ -517,7 +517,7 @@ class TestMentaLLaMAService:
             result = service._process_with_provider(
                 "Test prompt", "test-model", "test-task", {}, 100, 0.7
             )
-            assert result == "AWS result"
+            assert result  ==  "AWS result"
             mock_aws.assert_called_once()
             
             # Test OpenAI provider
@@ -527,7 +527,7 @@ class TestMentaLLaMAService:
             result = service._process_with_provider(
                 "Test prompt", "test-model", "test-task", {}, 100, 0.7
             )
-            assert result == "OpenAI result"
+            assert result  ==  "OpenAI result"
             mock_openai.assert_called_once()
             
             # Test unknown provider

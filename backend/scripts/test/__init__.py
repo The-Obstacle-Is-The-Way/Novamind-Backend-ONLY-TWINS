@@ -1,6 +1,5 @@
 """
-Novamind Digital Twin Test Infrastructure
+NovaMind Digital Twin Backend - Test Suite Utilities Package
 
-This package contains tools, runners, and migration scripts for managing
-the Novamind Digital Twin test suite.
+This package contains utilities for testing, test management, and test quality assurance.
 """

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.jwt.token_handler import JWTHandler
-from app.infrastructure.security.password.password_handler import PasswordHandler
+, from app.infrastructure.security.password.password_handler import PasswordHandler
 from app.infrastructure.security.rbac.role_manager import RoleBasedAccessControl # Removed Role, Permission
 
 
@@ -37,7 +37,7 @@ def security_components():
     return jwt_handler, password_handler, role_manager
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestSecurityBoundary:
     """Test suite for integrated security boundaries."""
     
@@ -69,8 +69,8 @@ class TestSecurityBoundary:
         
         # 4. Verify and decode token (as would happen on API requests)
         token_data = jwt_handler.verify_token(token)
-        assert token_data.sub == user_id
-        assert token_data.role == role
+        assert token_data.sub  ==  user_id
+        assert token_data.role  ==  role
         
         # 5. Check permissions based on token (as would happen during API endpoint access)
         # This combines the JWT token verification with RBAC checks
@@ -144,7 +144,7 @@ class TestSecurityBoundary:
         
         # Token should be valid initially
         token_data = jwt_handler.verify_token(token)
-        assert token_data.sub == "user123"
+        assert token_data.sub  ==  "user123"
         
         # Wait for token to expire
         time.sleep(2)

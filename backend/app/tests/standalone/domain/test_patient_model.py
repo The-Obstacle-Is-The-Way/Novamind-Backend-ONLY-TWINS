@@ -7,11 +7,11 @@ These tests verify the behavior of the Patient model without any external depend
 import pytest
 from datetime import date
 
-from backend.app.domain.models.patient import Patient
+, from backend.app.domain.models.patient import Patient
 from backend.app.domain.value_objects import PatientId, MedicalRecordNumber
 
 
-@pytest.mark.standalone
+@pytest.mark.standalone()
 class TestPatientModel:
     """Tests for the Patient domain model."""
     
@@ -32,10 +32,10 @@ class TestPatientModel:
         )
         
         # Assert
-        assert patient.id == patient_id
-        assert patient.medical_record_number == mrn
-        assert patient.name == name
-        assert patient.date_of_birth == dob
+        assert patient.id  ==  patient_id
+        assert patient.medical_record_number  ==  mrn
+        assert patient.name  ==  name
+        assert patient.date_of_birth  ==  dob
         assert patient.age > 0
     
     @pytest.mark.parametrize("invalid_name", [
@@ -80,4 +80,4 @@ class TestPatientModel:
         )
         
         # Assert
-        assert patient.age == 30
+        assert patient.age  ==  30

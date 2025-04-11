@@ -32,7 +32,7 @@ def jwt_handler():
     )
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestJWTHandler:
     """Test suite for JWT token handler."""
     
@@ -44,9 +44,9 @@ class TestJWTHandler:
             access_token_expire_minutes=15
         )
         
-        assert handler.secret_key == "testkey12345678901234567890123456789"
-        assert handler.algorithm == "HS256"
-        assert handler.access_token_expire_minutes == 15
+        assert handler.secret_key  ==  "testkey12345678901234567890123456789"
+        assert handler.algorithm  ==  "HS256"
+        assert handler.access_token_expire_minutes  ==  15
     
     def test_init_with_invalid_secret_key(self):
         """Test initialization with invalid secret key."""
@@ -132,10 +132,10 @@ class TestJWTHandler:
         token_data = jwt_handler.verify_token(token)
         
         # Assert
-        assert token_data.sub == user_id
-        assert token_data.role == role
-        assert token_data.permissions == permissions
-        assert token_data.session_id == session_id
+        assert token_data.sub  ==  user_id
+        assert token_data.role  ==  role
+        assert token_data.permissions  ==  permissions
+        assert token_data.session_id  ==  session_id
     
     def test_verify_token_expired(self, jwt_handler):
         """Test verifying an expired token."""
@@ -296,7 +296,7 @@ class TestJWTHandler:
         extracted_user_id = jwt_handler.get_user_id_from_token(token)
         
         # Assert
-        assert extracted_user_id == user_id
+        assert extracted_user_id  ==  user_id
     
     def test_get_permissions_from_token(self, jwt_handler):
         """Test extracting permissions from token."""
@@ -317,7 +317,7 @@ class TestJWTHandler:
         extracted_permissions = jwt_handler.get_permissions_from_token(token)
         
         # Assert
-        assert extracted_permissions == permissions
+        assert extracted_permissions  ==  permissions
     
     def test_get_role_from_token(self, jwt_handler):
         """Test extracting role from token."""
@@ -338,7 +338,7 @@ class TestJWTHandler:
         extracted_role = jwt_handler.get_role_from_token(token)
         
         # Assert
-        assert extracted_role == role
+        assert extracted_role  ==  role
     
     @patch('app.infrastructure.security.jwt.token_handler.logger')
     def test_logging_behavior(self, mock_logger, jwt_handler):
@@ -358,7 +358,7 @@ class TestJWTHandler:
         )
         
         # Assert logger was called but didn't contain the token
-        mock_logger.info.assert_called_once()
+        mock_logger.info.assert _called_once()
         # Verify the log message contains user ID but not the token
         log_message = mock_logger.info.call_args[0][0]
         assert user_id in log_message

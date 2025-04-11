@@ -12,12 +12,12 @@ import pytest
 from typing import Dict, List, Tuple
 from uuid import UUID
 
-from app.domain.entities.digital_twin import BrainRegion, ClinicalInsight, ClinicalSignificance, Neurotransmitter
+, from app.domain.entities.digital_twin import BrainRegion, ClinicalInsight, ClinicalSignificance, Neurotransmitter
 from app.domain.entities.knowledge_graph import BayesianBeliefNetwork, NodeType, TemporalKnowledgeGraph
 from app.domain.services.enhanced_digital_twin_core_service import EnhancedDigitalTwinCoreService
-from app.domain.services.enhanced_mentalllama_service import EnhancedMentalLLaMAService
+, from app.domain.services.enhanced_mentalllama_service import EnhancedMentalLLaMAService
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
-from app.domain.services.enhanced_pat_service import EnhancedPATService
+, from app.domain.services.enhanced_pat_service import EnhancedPATService
 from app.infrastructure.factories.enhanced_mock_digital_twin_factory import EnhancedMockDigitalTwinFactory
 @pytest.fixture
 def enhanced_services() -> Tuple[:
@@ -42,10 +42,10 @@ def initial_data() -> Dict:
     }
 
 
-        @pytest.mark.asyncio
-@pytest.mark.db_required
+        @pytest.mark.asyncio()
+@pytest.mark.db_required()
 async def test_factory_creates_services(enhanced_services):
-        """Test that the factory correctly creates all enhanced services."""
+            """Test that the factory correctly creates all enhanced services."""
     digital_twin_service, mental_llama_service, xgboost_service, pat_service = enhanced_services
     
     # Check that each service is of the correct type
@@ -55,9 +55,9 @@ assert isinstance(xgboost_service, EnhancedXGBoostService)
 assert isinstance(pat_service, EnhancedPATService)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_initialize_digital_twin(enhanced_services, patient_id, initial_data):
-    """Test initializing a Digital Twin with knowledge graph and belief network."""
+        """Test initializing a Digital Twin with knowledge graph and belief network."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
@@ -70,7 +70,7 @@ async def test_initialize_digital_twin(enhanced_services, patient_id, initial_da
     
     # Check that all components were created
     assert digital_twin_state is not None
-    assert digital_twin_state.patient_id == patient_id
+    assert digital_twin_state.patient_id  ==  patient_id
     assert knowledge_graph is not None
     assert isinstance(knowledge_graph, TemporalKnowledgeGraph)
 assert belief_network is not None
@@ -87,9 +87,9 @@ assert belief_network is not None
     assert len(belief_network.variables) > 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_process_multimodal_data(enhanced_services, patient_id, initial_data):
-    """Test processing multimodal data through the Digital Twin."""
+        """Test processing multimodal data through the Digital Twin."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin first
@@ -129,14 +129,14 @@ async def test_process_multimodal_data(enhanced_services, patient_id, initial_da
     
     # Check results
     assert updated_state is not None
-    assert updated_state.patient_id == patient_id
+    assert updated_state.patient_id  ==  patient_id
     assert updated_state.version > 1  # Should be incremented from initial state
     assert len(results) >= 0  # May have results depending on mock implementation
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_knowledge_graph_operations(enhanced_services, patient_id, initial_data):
-    """Test operations on the knowledge graph."""
+        """Test operations on the knowledge graph."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin with knowledge graph
@@ -194,9 +194,9 @@ assert any(node.node_type == NodeType.BRAIN_REGION for node in updated_graph.nod
 assert len(updated_graph.edges) >= len(knowledge_graph.edges)  # May have added edges
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_belief_network_operations(enhanced_services, patient_id, initial_data):
-    """Test operations on the belief network."""
+        """Test operations on the belief network."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin with belief network
@@ -223,12 +223,12 @@ async def test_belief_network_operations(enhanced_services, patient_id, initial_
     # Check that the network was updated
     assert updated_network is not None
     # Check that the evidence was properly set
-    assert updated_network.evidence == evidence
+    assert updated_network.evidence  ==  evidence
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_event_system(enhanced_services, patient_id):
-    """Test the event subscription and publication system."""
+        """Test the event subscription and publication system."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Create a listener to capture events
@@ -261,9 +261,9 @@ async def test_event_system(enhanced_services, patient_id):
     assert unsubscribed is True
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
-    """Test advanced analyses provided by the Enhanced Digital Twin."""
+        """Test advanced analyses provided by the Enhanced Digital Twin."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
@@ -315,9 +315,9 @@ assert "confidence" in cascade_results[0]
     assert "phenotype" in phenotype_results["primary_phenotype"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_counterfactual_simulation(enhanced_services, patient_id, initial_data):
-    """Test counterfactual simulation of intervention scenarios."""
+        """Test counterfactual simulation of intervention scenarios."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
@@ -384,9 +384,9 @@ assert "variable_trajectories" in simulation_results[0]
 assert len(simulation_results[0]["variable_trajectories"]["mood"]) > 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_clinical_summary_generation(enhanced_services, patient_id, initial_data):
-    """Test generation of a comprehensive clinical summary."""
+        """Test generation of a comprehensive clinical summary."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
@@ -414,9 +414,9 @@ async def test_clinical_summary_generation(enhanced_services, patient_id, initia
 assert "trajectory" in summary["sections"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_visualization_data_generation(enhanced_services, patient_id, initial_data):
-    """Test generation of visualization data."""
+        """Test generation of visualization data."""
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin

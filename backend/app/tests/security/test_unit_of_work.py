@@ -3,11 +3,11 @@ import pytest
 from unittest.mock import MagicMock, patch, call
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.infrastructure.persistence.sqlalchemy.unit_of_work import SQLAlchemyUnitOfWork
+, from app.infrastructure.persistence.sqlalchemy.unit_of_work import SQLAlchemyUnitOfWork
 from app.domain.exceptions import RepositoryError # Changed from TransactionError
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestSQLAlchemyUnitOfWork:
     """
     Tests for the SQLAlchemy Unit of Work to ensure HIPAA-compliant data integrity.
@@ -48,9 +48,9 @@ class TestSQLAlchemyUnitOfWork:
             unit_of_work.commit()
         
         # Assert
-        mock_session.begin.assert_called_once()
-        mock_session.commit.assert_called_once()
-        mock_session.close.assert_called_once()
+        mock_session.begin.assert _called_once()
+        mock_session.commit.assert _called_once()
+        mock_session.close.assert _called_once()
     
     def test_transaction_rollback_on_exception(self, unit_of_work, mock_session_factory):
         """Test that an exception inside the transaction triggers rollback."""
@@ -64,10 +64,10 @@ class TestSQLAlchemyUnitOfWork:
                 raise ValueError("Simulated error")
         
         # Assert
-        mock_session.begin.assert_called_once()
-        mock_session.rollback.assert_called_once()
-        mock_session.close.assert_called_once()
-        mock_session.commit.assert_not_called()
+        mock_session.begin.assert _called_once()
+        mock_session.rollback.assert _called_once()
+        mock_session.close.assert _called_once()
+        mock_session.commit.assert _not_called()
     
     def test_explicit_rollback(self, unit_of_work, mock_session_factory):
         """Test explicitly calling rollback in transaction."""
@@ -80,10 +80,10 @@ class TestSQLAlchemyUnitOfWork:
             unit_of_work.rollback()
         
         # Assert
-        mock_session.begin.assert_called_once()
-        mock_session.rollback.assert_called_once()
-        mock_session.close.assert_called_once()
-        mock_session.commit.assert_not_called()
+        mock_session.begin.assert _called_once()
+        mock_session.rollback.assert _called_once()
+        mock_session.close.assert _called_once()
+        mock_session.commit.assert _not_called()
     
     def test_nested_transactions(self, unit_of_work, mock_session_factory):
         """Test nested transactions behavior."""
@@ -104,11 +104,11 @@ class TestSQLAlchemyUnitOfWork:
             unit_of_work.commit()
         
         # Assert
-        mock_session.begin.assert_called_once()
-        mock_session.begin_nested.assert_called_once()
-        mock_nested_transaction.__exit__.assert_called_once()
-        mock_session.commit.assert_called_once()
-        mock_session.close.assert_called_once()
+        mock_session.begin.assert _called_once()
+        mock_session.begin_nested.assert _called_once()
+        mock_nested_transaction.__exit__.assert _called_once()
+        mock_session.commit.assert _called_once()
+        mock_session.close.assert _called_once()
     
     def test_rollback_in_nested_transaction(self, unit_of_work, mock_session_factory):
         """Test that errors in nested transactions can be contained."""
@@ -131,11 +131,11 @@ class TestSQLAlchemyUnitOfWork:
             unit_of_work.commit()
         
         # Assert
-        mock_session.begin.assert_called_once()
-        mock_session.begin_nested.assert_called_once()
+        mock_session.begin.assert _called_once()
+        mock_session.begin_nested.assert _called_once()
         # The outer transaction should still commit
-        mock_session.commit.assert_called_once()
-        mock_session.close.assert_called_once()
+        mock_session.commit.assert _called_once()
+        mock_session.close.assert _called_once()
     
     def test_transaction_atomicity_multiple_repositories(self, unit_of_work, mock_session_factory):
         """Test that multiple repository operations are atomic."""
@@ -157,9 +157,9 @@ class TestSQLAlchemyUnitOfWork:
             unit_of_work.commit()
         
         # Assert
-        patient_repo.update.assert_called_once()
-        appointment_repo.add.assert_called_once()
-        mock_session.commit.assert_called_once()
+        patient_repo.update.assert _called_once()
+        appointment_repo.add.assert _called_once()
+        mock_session.commit.assert _called_once()
     
     def test_transaction_atomicity_error_in_second_operation(self, unit_of_work, mock_session_factory):
         """Test that an error in any operation rolls back all previous operations."""
@@ -185,10 +185,10 @@ class TestSQLAlchemyUnitOfWork:
                 unit_of_work.commit()
         
         # Assert
-        patient_repo.update.assert_called_once()
-        appointment_repo.add.assert_called_once()
-        mock_session.rollback.assert_called_once()
-        mock_session.commit.assert_not_called()
+        patient_repo.update.assert _called_once()
+        appointment_repo.add.assert _called_once()
+        mock_session.rollback.assert _called_once()
+        mock_session.commit.assert _not_called()
     
     def test_commit_error_handling(self, unit_of_work, mock_session_factory):
         """Test handling of errors during commit."""
@@ -205,10 +205,10 @@ class TestSQLAlchemyUnitOfWork:
                 unit_of_work.commit()
         
         # Assert
-        mock_session.begin.assert_called_once()
-        mock_session.commit.assert_called_once()
-        mock_session.rollback.assert_called_once()
-        mock_session.close.assert_called_once()
+        mock_session.begin.assert _called_once()
+        mock_session.commit.assert _called_once()
+        mock_session.rollback.assert _called_once()
+        mock_session.close.assert _called_once()
     
     def test_session_closed_after_exception_in_rollback(self, unit_of_work, mock_session_factory):
         """Test that session is always closed, even if rollback fails."""
@@ -224,7 +224,7 @@ class TestSQLAlchemyUnitOfWork:
                 raise ValueError("Operation failed")
         
         # Assert - session should still be closed
-        mock_session.close.assert_called_once()
+        mock_session.close.assert _called_once()
     
     def test_connection_isolation_level(self, mock_session_factory):
         """Test that connections use proper isolation level for PHI."""
@@ -247,10 +247,10 @@ class TestSQLAlchemyUnitOfWork:
             unit_of_work.commit()
         
         # Assert
-        mock_session.connection.assert_called()
+        mock_session.connection.assert _called()
         # Verify isolation level was set properly
         # (Implementation details may vary based on SQLAlchemy version and dialect)
-        assert unit_of_work.isolation_level == "SERIALIZABLE"
+        assert unit_of_work.isolation_level  ==  "SERIALIZABLE"
     
     def test_read_only_transaction(self, unit_of_work, mock_session_factory):
         """Test read-only transaction support for safer PHI access."""
@@ -263,11 +263,11 @@ class TestSQLAlchemyUnitOfWork:
             pass
         
         # Assert
-        mock_session.begin.assert_called_once()
+        mock_session.begin.assert _called_once()
         # Should rollback instead of commit to ensure no changes
-        mock_session.rollback.assert_called_once()
-        mock_session.commit.assert_not_called()
-        mock_session.close.assert_called_once()
+        mock_session.rollback.assert _called_once()
+        mock_session.commit.assert _not_called()
+        mock_session.close.assert _called_once()
     
     def test_read_only_transaction_prevents_commits(self, unit_of_work, mock_session_factory):
         """Test that read-only transactions cannot commit changes."""
@@ -280,8 +280,8 @@ class TestSQLAlchemyUnitOfWork:
                 unit_of_work.commit()
         
         # Assert
-        mock_session.commit.assert_not_called()
-        mock_session.rollback.assert_called()
+        mock_session.commit.assert _not_called()
+        mock_session.rollback.assert _called()
     
     def test_transaction_metadata_for_audit(self, unit_of_work, mock_session_factory):
         """Test that transaction metadata is captured for HIPAA audit purposes."""
@@ -301,7 +301,7 @@ class TestSQLAlchemyUnitOfWork:
         
         # Assert
         # Verify the audit logger was called with the metadata
-        mock_audit.assert_called_once()
+        mock_audit.assert _called_once()
         call_args = mock_audit.call_args[0][0]
         assert call_args["user_id"] == "provider123"
         assert call_args["action"] == "update_patient_record"

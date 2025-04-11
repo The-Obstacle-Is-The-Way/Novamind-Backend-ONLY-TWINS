@@ -10,7 +10,7 @@ import pytest
 from typing import Dict, Any
 
 from app.core.exceptions import InvalidConfigurationError
-from app.core.services.ml.providers.mock import MockMentaLLaMA
+, from app.core.services.ml.providers.mock import MockMentaLLaMA
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def mock_service():
     return service
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 def test_initialization_success():
     """Test successful initialization of mock service."""
     # Arrange
@@ -211,7 +211,7 @@ def test_service_shutdown(mock_service):
     # Assert
     assert mock_service._initialized is False
     assert mock_service._config is None
-    assert mock_service._available_models == {}
+    assert mock_service._available_models  ==  {}
 
 
 def test_mock_response_parsing():

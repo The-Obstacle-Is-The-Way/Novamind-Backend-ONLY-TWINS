@@ -10,7 +10,7 @@ import json
 import pytest
 import uuid
 from datetime import datetime
-from typing import Dict, Any, List
+, from typing import Dict, Any, List
 
 # Test data
 TEST_USER = {
@@ -25,7 +25,7 @@ TEST_PATIENT = {
 }
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestAuditLogging:
     """Test the audit logging system for HIPAA compliance"""
     
@@ -34,7 +34,7 @@ class TestAuditLogging:
         """Return the audit logger to test"""
         try:
             from app.infrastructure.security.audit_logger import AuditLogger
-            return AuditLogger()
+            , return AuditLogger()
         except ImportError:
             pytest.skip("Audit logger not implemented yet")
     

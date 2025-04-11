@@ -58,7 +58,7 @@ def sample_patient_data():
 
 
 # TODO: Review and potentially reimplement these tests using current PHI handling components (e.g., PHISanitizer)
-# @pytest.mark.venv_only
+# @pytest.mark.venv_only()
 class TestPHIHandling:
 #     """Test proper handling of PHI in ML components."""
 #

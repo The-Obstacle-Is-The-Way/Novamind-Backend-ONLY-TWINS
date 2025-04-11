@@ -15,12 +15,12 @@ from typing import Dict, List, Any, Optional
 try:
     from fastapi import FastAPI, Depends, HTTPException, status
     from fastapi.security import OAuth2PasswordBearer
-    from fastapi.testclient import TestClient
-    from app.presentation.api.v1.endpoints.patients import router as patients_router
+    , from fastapi.testclient import TestClient
+    from app.presentation.api.v1.endpoints.patients import router , as patients_router
     from app.presentation.api.v1.middleware.logging_middleware import PHISanitizingMiddleware
-except ImportError:
+, except ImportError:
     # Mock FastAPI components for testing
-    @pytest.mark.db_required
+    @pytest.mark.db_required()
     class HTTPException(Exception):
         """Mock HTTPException."""
         def __init__(self, status_code, detail=None, headers=None):
@@ -83,28 +83,28 @@ except ImportError:
             
         def get(self, path, **kwargs):
             """Register a GET endpoint."""
-            def decorator(func):
+        def decorator(func):
                 self.routes.append(("GET", path, func, kwargs))
                 return func
             return decorator
             
         def post(self, path, **kwargs):
             """Register a POST endpoint."""
-            def decorator(func):
+        def decorator(func):
                 self.routes.append(("POST", path, func, kwargs))
                 return func
             return decorator
             
         def put(self, path, **kwargs):
             """Register a PUT endpoint."""
-            def decorator(func):
+        def decorator(func):
                 self.routes.append(("PUT", path, func, kwargs))
                 return func
             return decorator
             
         def delete(self, path, **kwargs):
             """Register a DELETE endpoint."""
-            def decorator(func):
+        def decorator(func):
                 self.routes.append(("DELETE", path, func, kwargs))
                 return func
             return decorator
@@ -251,7 +251,7 @@ class TestAPIHIPAACompliance:
     def test_unauthenticated_request_rejected(self, client):
         """Test that unauthenticated requests to PHI endpoints are rejected."""
         response = client.get("/api/v1/patients/P12345")
-        assert response.status_code == 401
+        assert response.status_code  ==  401
         
     def test_patient_data_isolation(self, client, patient_token):
         """Test that patients can only access their own data."""
@@ -260,14 +260,14 @@ class TestAPIHIPAACompliance:
             "/api/v1/patients/P12345", 
             headers={"Authorization": patient_token}
         )
-        assert own_response.status_code == 200
+        assert own_response.status_code  ==  200
         
         # Someone else's data - should be forbidden
         other_response = client.get(
             "/api/v1/patients/P67890", 
             headers={"Authorization": patient_token}
         )
-        assert other_response.status_code == 403
+        assert other_response.status_code  ==  403
         
     def test_phi_sanitization_in_response(self, client, admin_token):
         """Test that PHI is properly sanitized in API responses."""
@@ -275,7 +275,7 @@ class TestAPIHIPAACompliance:
             "/api/v1/patients/P12345", 
             headers={"Authorization": admin_token}
         )
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         
         # Check PHI is sanitized
         data = response.json()
@@ -289,7 +289,7 @@ class TestAPIHIPAACompliance:
         # Mock the request method to inspect query parameters
         original_get = client.get
         
-        def mock_get(url, headers=None, params=None):
+    def mock_get(url, headers=None, params=None):
             """Mock GET to inspect query parameters."""
             # Check params don't contain PHI
             if params:
@@ -313,7 +313,7 @@ class TestAPIHIPAACompliance:
         # Mock the request method to inspect request body
         original_post = client.post
         
-        def mock_post(url, headers=None, json=None, data=None):
+    def mock_post(url, headers=None, json=None, data=None):
             """Mock POST to inspect request body."""
             # For a real test, we would verify the request is sent over HTTPS
             # and that the body is properly encrypted or sanitized
@@ -335,7 +335,7 @@ class TestAPIHIPAACompliance:
             }
         )
         
-        assert response.status_code == 201
+        assert response.status_code  ==  201
         
         # Verify PHI is sanitized in response
         data = response.json()
@@ -354,21 +354,21 @@ class TestAPIHIPAACompliance:
             "/api/v1/patients/P67890", 
             headers={"Authorization": admin_token}
         )
-        assert admin_response.status_code == 200
+        assert admin_response.status_code  ==  200
         
         # Doctor can access any patient
         doctor_response = client.get(
             "/api/v1/patients/P67890", 
             headers={"Authorization": doctor_token}
         )
-        assert doctor_response.status_code == 200
+        assert doctor_response.status_code  ==  200
         
         # Patient can only access their own data
         patient_response = client.get(
             "/api/v1/patients/P67890", 
             headers={"Authorization": patient_token}
         )
-        assert patient_response.status_code == 403
+        assert patient_response.status_code  ==  403
         
     def test_phi_security_headers(self, client, admin_token):
         """Test that appropriate security headers are applied to responses."""
@@ -383,7 +383,7 @@ class TestAPIHIPAACompliance:
             "/api/v1/patients/P12345", 
             headers={"Authorization": admin_token}
         )
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         
     def test_api_rate_limiting(self, client, admin_token):
         """Test that rate limiting is applied to prevent brute force attacks."""

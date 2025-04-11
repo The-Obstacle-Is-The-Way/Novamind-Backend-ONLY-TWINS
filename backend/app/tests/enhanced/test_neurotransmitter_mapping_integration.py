@@ -13,7 +13,7 @@ import math
 from typing import Dict, List, Tuple, Optional
 from uuid import UUID
 
-from app.domain.entities.digital_twin import (
+, from app.domain.entities.digital_twin import (
     BrainRegion,   ClinicalInsight,   ClinicalSignificance,   Neurotransmitter,  
     DigitalTwinState
 )
@@ -22,7 +22,7 @@ from app.domain.entities.neurotransmitter_mapping import (
     create_default_neurotransmitter_mapping
 )
 from app.domain.services.enhanced_digital_twin_core_service import EnhancedDigitalTwinCoreService
-from app.infrastructure.factories.enhanced_mock_digital_twin_factory import EnhancedMockDigitalTwinFactory
+, from app.infrastructure.factories.enhanced_mock_digital_twin_factory import EnhancedMockDigitalTwinFactory
 
 
 @pytest.fixture
@@ -65,8 +65,8 @@ async def initialized_patient(enhanced_services, patient_id, initial_data) -> Di
     return digital_twin_state
 
 
-@pytest.mark.asyncio
-@pytest.mark.venv_only
+@pytest.mark.asyncio()
+@pytest.mark.venv_only()
 async def test_initialize_neurotransmitter_mapping(enhanced_services, patient_id, initialized_patient):
     """Test initializing a neurotransmitter mapping for a patient."""
     digital_twin_service, = enhanced_services
@@ -90,7 +90,7 @@ async def test_initialize_neurotransmitter_mapping(enhanced_services, patient_id
         assert len(producing_regions) > 0, f"No production sites for {nt}"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_custom_neurotransmitter_mapping(enhanced_services, patient_id, initialized_patient):
     """Test creating a custom neurotransmitter mapping for a patient."""
     digital_twin_service, = enhanced_services
@@ -158,7 +158,7 @@ async def test_custom_neurotransmitter_mapping(enhanced_services, patient_id, in
     assert BrainRegion.RAPHE_NUCLEI in serotonin_sites
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_update_receptor_profiles(enhanced_services, patient_id, initialized_patient):
     """Test updating receptor profiles in the neurotransmitter mapping."""
     digital_twin_service, = enhanced_services
@@ -215,7 +215,7 @@ async def test_update_receptor_profiles(enhanced_services, patient_id, initializ
     assert any(p.receptor_subtype == ReceptorSubtype.ACETYLCHOLINE_NICOTINIC for p in hippocampus_profiles)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_get_neurotransmitter_effects(enhanced_services, patient_id, initialized_patient):
     """Test getting neurotransmitter effects on brain regions."""
     digital_twin_service, = enhanced_services
@@ -251,7 +251,7 @@ async def test_get_neurotransmitter_effects(enhanced_services, patient_id, initi
     assert "is_produced_here" in pfc_effect
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_get_brain_region_neurotransmitter_sensitivity(enhanced_services, patient_id, initialized_patient):
     """Test getting brain region sensitivity to neurotransmitters."""
     digital_twin_service, = enhanced_services
@@ -290,7 +290,7 @@ async def test_get_brain_region_neurotransmitter_sensitivity(enhanced_services, 
         assert "is_produced_here" in serotonin_data
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_simulate_neurotransmitter_cascade(enhanced_services, patient_id, initialized_patient):
     """Test simulating neurotransmitter cascade effects."""
     digital_twin_service, = enhanced_services
@@ -342,7 +342,7 @@ async def test_simulate_neurotransmitter_cascade(enhanced_services, patient_id, 
     assert "initial_changes" in params
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_analyze_treatment_neurotransmitter_effects(enhanced_services, patient_id, initialized_patient):
     """Test analyzing treatment effects on neurotransmitters over time."""
     digital_twin_service, = enhanced_services
@@ -408,7 +408,7 @@ async def test_analyze_treatment_neurotransmitter_effects(enhanced_services, pat
     assert "clinical_significance" in region_data
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_integrated_neurotransmitter_mapping_with_visualization(enhanced_services, patient_id, initialized_patient):
     """Test integration of neurotransmitter mapping with visualization data generation."""
     digital_twin_service, = enhanced_services

@@ -4,10 +4,10 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from scripts.run_hipaa_phi_audit import PHIAuditor, PHIDetector
+, from scripts.run_hipaa_phi_audit import PHIAuditor, PHIDetector
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPHIDetection:
     """Test PHI detection capabilities in our HIPAA compliance system."""
 
@@ -82,7 +82,7 @@ class TestPHIDetection:
         content = """
         import pytest
         
-        def test_phi_detection():
+    def test_phi_detection():
             # This is a legitimate test case with PHI for testing detection
             test_ssn = "123-45-6789"
             assert is_valid_ssn(test_ssn)
@@ -106,19 +106,19 @@ class TestPHIDetection:
         from fastapi import APIRouter, Depends
         from app.core.auth import get_current_user
         
-        router = APIRouter()
+        , router = APIRouter()
         
         @router.get("/protected")
-        def protected_endpoint(user = Depends(get_current_user)):
+    def protected_endpoint(user = Depends(get_current_user)):
             return {"status": "protected"}
             
         @router.get("/unprotected")
-        def unprotected_endpoint():
+    def unprotected_endpoint():
             return {"status": "unprotected"}
             
         # This endpoint handles patient data but lacks auth
         @router.get("/patient/{patient_id}")
-        def get_patient(patient_id: str):
+    def get_patient(patient_id: str):
             return {"patient_id": patient_id}
         """
         filepath = self.create_test_file("api_routes.py", content)

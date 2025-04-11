@@ -130,16 +130,16 @@ class TestEncryption(unittest.TestCase):
         key = self.key_manager.get_encryption_key()
         
         # Verify key exists and has correct length
-        self.assertIsNotNone(key)
-        self.assertEqual(len(key), 32)  # AES-256 key length
+        self.assert IsNotNone(key)
+        self.assert Equal(len(key), 32)  # AES-256 key length
         
         # Test key rotation
         new_key = self.key_manager.rotate_encryption_key()
-        self.assertIsNotNone(new_key)
-        self.assertEqual(len(new_key), 32)
+        self.assert IsNotNone(new_key)
+        self.assert Equal(len(new_key), 32)
         
         # Keys should be different after rotation
-        self.assertNotEqual(key, new_key)
+        self.assert NotEqual(key, new_key)
 
     def test_field_encryption(self):
         """Test field-level encryption and decryption"""
@@ -148,11 +148,11 @@ class TestEncryption(unittest.TestCase):
         encrypted_ssn = self.encryption.encrypt(ssn)
         
         # Encrypted value should be different from original
-        self.assertNotEqual(ssn, encrypted_ssn)
+        self.assert NotEqual(ssn, encrypted_ssn)
         
         # Decryption should restore the original value
         decrypted_ssn = self.encryption.decrypt(encrypted_ssn)
-        self.assertEqual(ssn, decrypted_ssn)
+        self.assert Equal(ssn, decrypted_ssn)
 
     def test_dict_encryption(self):
         """Test encryption of multiple fields in a dictionary"""
@@ -164,7 +164,7 @@ class TestEncryption(unittest.TestCase):
         # Verify PHI fields are encrypted
         for field in self.phi_fields:
             if field in self.patient_data and isinstance(self.patient_data[field], str):
-                self.assertNotEqual(
+                self.assert NotEqual(
                     self.patient_data[field], 
                     encrypted_data[field], 
                     f"Field {field} was not encrypted"
@@ -174,7 +174,7 @@ class TestEncryption(unittest.TestCase):
         non_phi_fields = [f for f in self.patient_data.keys() if f not in self.phi_fields]
         for field in non_phi_fields:
             if isinstance(self.patient_data[field], (str, int, float, bool)):
-                self.assertEqual(
+                self.assert Equal(
                     self.patient_data[field], 
                     encrypted_data[field], 
                     f"Field {field} was incorrectly encrypted"
@@ -188,7 +188,7 @@ class TestEncryption(unittest.TestCase):
         # Verify decryption restores original values
         for field in self.phi_fields:
             if field in self.patient_data and isinstance(self.patient_data[field], str):
-                self.assertEqual(
+                self.assert Equal(
                     self.patient_data[field], 
                     decrypted_data[field], 
                     f"Field {field} was not correctly decrypted"
@@ -197,12 +197,12 @@ class TestEncryption(unittest.TestCase):
     def test_empty_values(self):
         """Test handling of empty or null values"""
         # Test with empty string
-        self.assertEqual("", self.encryption.encrypt(""))
-        self.assertEqual("", self.encryption.decrypt(""))
+        self.assert Equal("", self.encryption.encrypt(""))
+        self.assert Equal("", self.encryption.decrypt(""))
         
         # Test with None value
-        self.assertIsNone(self.encryption.encrypt(None))
-        self.assertIsNone(self.encryption.decrypt(None))
+        self.assert IsNone(self.encryption.encrypt(None))
+        self.assert IsNone(self.encryption.decrypt(None))
 
     def test_nested_data_handling(self):
         """Test encryption with nested data structures"""
@@ -244,7 +244,7 @@ class TestEncryption(unittest.TestCase):
             decrypted_nested = self.encryption.decrypt_dict(encrypted_nested, nested_phi_fields)
             
             # If we reach here, verify the values match
-            self.assertEqual(nested_data["patient"]["name"], decrypted_nested["patient"]["name"])
+            self.assert Equal(nested_data["patient"]["name"], decrypted_nested["patient"]["name"])
         except (NotImplementedError, AttributeError):
             # If nested encryption isn't implemented, skip this test
             self.skipTest("Nested field encryption not implemented in mock")
@@ -261,7 +261,7 @@ class TestEncryption(unittest.TestCase):
             data = self.encryption.decrypt_dict(data, self.phi_fields)
         
         # Data should remain unchanged
-        self.assertEqual(original_data, data)
+        self.assert Equal(original_data, data)
 
     def test_error_handling(self):
         """Test error handling during encryption/decryption"""
@@ -271,7 +271,7 @@ class TestEncryption(unittest.TestCase):
         try:
             result = self.encryption.decrypt(invalid_encrypted)
             # If no exception is raised, the function should return the original value
-            self.assertEqual(invalid_encrypted, result)
+            self.assert Equal(invalid_encrypted, result)
         except EncryptionError:
             # If an exception is raised, that's also acceptable
             pass
@@ -291,17 +291,17 @@ class TestEncryption(unittest.TestCase):
         )
         
         # HIPAA requires that PHI is not visible in storage
-        self.assertNotEqual(
+        self.assert NotEqual(
             test_data["medical_record_number"], 
             encrypted_data["medical_record_number"]
         )
-        self.assertNotEqual(
+        self.assert NotEqual(
             test_data["treatment_notes"], 
             encrypted_data["treatment_notes"]
         )
         
         # Diagnosis code (not considered direct PHI) should remain unchanged
-        self.assertEqual(
+        self.assert Equal(
             test_data["diagnosis_code"], 
             encrypted_data["diagnosis_code"]
         )
@@ -310,7 +310,7 @@ class TestEncryption(unittest.TestCase):
         decrypted_data = self.encryption.decrypt_dict(
             encrypted_data, ["medical_record_number", "treatment_notes"]
         )
-        self.assertEqual(test_data, decrypted_data)
+        self.assert Equal(test_data, decrypted_data)
 
 
 # Run the tests if the script is executed directly

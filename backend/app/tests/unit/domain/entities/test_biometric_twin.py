@@ -64,14 +64,14 @@ class TestBiometricDataPoint:
             source="apple_watch"
         )
         
-        assert data_point.data_id == data_id
-        assert data_point.patient_id == sample_patient_id
-        assert data_point.data_type == "heart_rate"
-        assert data_point.value == 75.0
-        assert data_point.timestamp == timestamp
-        assert data_point.source == "apple_watch"
-        assert data_point.metadata == {}
-        assert data_point.confidence == 1.0
+        assert data_point.data_id  ==  data_id
+        assert data_point.patient_id  ==  sample_patient_id
+        assert data_point.data_type  ==  "heart_rate"
+        assert data_point.value  ==  75.0
+        assert data_point.timestamp  ==  timestamp
+        assert data_point.source  ==  "apple_watch"
+        assert data_point.metadata  ==  {}
+        assert data_point.confidence  ==  1.0
     
     def test_initialization_with_optional_attributes(self, sample_patient_id):
         """Test that a BiometricDataPoint can be initialized with optional attributes."""
@@ -90,8 +90,8 @@ class TestBiometricDataPoint:
             confidence=0.85
         )
         
-        assert data_point.metadata == metadata
-        assert data_point.confidence == 0.85
+        assert data_point.metadata  ==  metadata
+        assert data_point.confidence  ==  0.85
     
     def test_equality(self, sample_patient_id):
         """Test that BiometricDataPoint equality works correctly."""
@@ -125,9 +125,9 @@ class TestBiometricDataPoint:
             source="apple_watch"
         )
         
-        assert data_point1 == data_point2
-        assert data_point1 != data_point3
-        assert data_point1 != "not a data point"
+        assert data_point1  ==  data_point2
+        assert data_point1  !=  data_point3
+        assert data_point1  !=  "not a data point"
     
     def test_representation(self, sample_data_point):
         """Test that the string representation of a BiometricDataPoint is correct."""
@@ -156,14 +156,14 @@ class TestBiometricTwin:
             status="initializing"
         )
         
-        assert twin.twin_id == twin_id
-        assert twin.patient_id == sample_patient_id
-        assert twin.created_at == now
-        assert twin.updated_at == now
-        assert twin.status == "initializing"
-        assert twin.data_points == {}
-        assert twin.models == {}
-        assert twin.insights == {}
+        assert twin.twin_id  ==  twin_id
+        assert twin.patient_id  ==  sample_patient_id
+        assert twin.created_at  ==  now
+        assert twin.updated_at  ==  now
+        assert twin.status  ==  "initializing"
+        assert twin.data_points  ==  {}
+        assert twin.models  ==  {}
+        assert twin.insights  ==  {}
     
     def test_add_data_point(self, sample_twin, sample_data_point):
         """Test that a data point can be added to a twin."""
@@ -212,7 +212,7 @@ class TestBiometricTwin:
         latest = sample_twin.get_latest_data_point(sample_data_point.data_type)
         
         # Check that it's the later one
-        assert latest == later_data_point
+        assert latest  ==  later_data_point
     
     def test_get_latest_data_point_no_data(self, sample_twin):
         """Test that get_latest_data_point returns None when no data points exist."""
@@ -259,7 +259,7 @@ class TestBiometricTwin:
             now,
             now + timedelta(hours=1)
         )
-        assert range_points == {}
+        assert range_points  ==  {}
     
     def test_representation(self, sample_twin, sample_data_point):
         """Test that the string representation of a BiometricTwin is correct."""

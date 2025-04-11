@@ -9,13 +9,13 @@ import json
 import logging
 import uuid
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+, from unittest.mock import MagicMock, patch
 
 import boto3
 import pytest
 from botocore.exceptions import ClientError
 
-from app.core.services.ml.pat.aws import AWSPATService
+, from app.core.services.ml.pat.aws import AWSPATService
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,  
     AuthorizationError,  
@@ -87,7 +87,7 @@ def aws_pat_service(mock_boto3, aws_config):
     return service
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestAWSPATService:
     """Test the AWS PAT service implementation."""
     
@@ -97,11 +97,11 @@ class TestAWSPATService:
         service.initialize(aws_config)
         
         assert service._initialized is True
-        assert service._endpoint_name == aws_config["endpoint_name"]
-        assert service._bucket_name == aws_config["bucket_name"]
-        assert service._analyses_table == aws_config["analyses_table"]
-        assert service._embeddings_table == aws_config["embeddings_table"]
-        assert service._integrations_table == aws_config["integrations_table"]
+        assert service._endpoint_name  ==  aws_config["endpoint_name"]
+        assert service._bucket_name  ==  aws_config["bucket_name"]
+        assert service._analyses_table  ==  aws_config["analyses_table"]
+        assert service._embeddings_table  ==  aws_config["embeddings_table"]
+        assert service._integrations_table  ==  aws_config["integrations_table"]
     
     def test_initialization_failure(self, mock_boto3, aws_config):
         """Test initialization failure."""
@@ -149,7 +149,7 @@ class TestAWSPATService:
         sanitized = aws_pat_service._sanitize_phi(text)
         
         # Verify that a placeholder is returned to avoid leaking PHI
-        assert sanitized == "[PHI SANITIZATION ERROR]"
+        assert sanitized  ==  "[PHI SANITIZATION ERROR]"
     
     def test_analyze_actigraphy(self, aws_pat_service):
         """Test actigraphy analysis."""

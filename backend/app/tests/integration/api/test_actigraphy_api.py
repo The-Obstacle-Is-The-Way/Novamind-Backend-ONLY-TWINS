@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from unittest.mock import patch
-import pytest
+, import pytest
 from fastapi import status, FastAPI
 from fastapi.testclient import TestClient
 
@@ -21,7 +21,7 @@ from app.main import create_application
 # Import necessary components for testing actigraphy API
 from app.api.routes.actigraphy import get_pat_service, router as actigraphy_router
 from app.core.services.ml.pat.mock import MockPATService
-from app.presentation.api.dependencies import get_pat_service
+, from app.presentation.api.dependencies import get_pat_service
 from app.api.schemas.actigraphy import (
     AnalysisType,  
     DeviceInfo,  
@@ -187,7 +187,7 @@ class TestActigraphyAPI:
         )
         
         # Verify response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         assert "analysis_id" in data
         assert "patient_id" in data
@@ -239,7 +239,7 @@ class TestActigraphyAPI:
         )
         
         # Verify response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         assert "embedding_id" in data
         assert "patient_id" in data
@@ -276,7 +276,7 @@ class TestActigraphyAPI:
         )
         
         # Verify response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         assert data["analysis_id"] == analysis_id
         assert data["patient_id"] == patient_id
@@ -310,7 +310,7 @@ class TestActigraphyAPI:
         )
         
         # Verify response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         assert data["patient_id"] == patient_id
         assert "analyses" in data
@@ -327,7 +327,7 @@ class TestActigraphyAPI:
         )
         
         # Verify response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Check for expected fields from our mock implementation
@@ -375,7 +375,7 @@ class TestActigraphyAPI:
         )
         
         # Verify response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         assert "profile_id" in data
         assert data["profile_id"] == profile_id
@@ -392,4 +392,4 @@ class TestActigraphyAPI:
         )
         
         # Verify response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code  ==  status.HTTP_403_FORBIDDEN

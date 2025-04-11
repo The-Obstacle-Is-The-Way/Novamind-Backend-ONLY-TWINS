@@ -13,14 +13,14 @@ import asyncio
 import logging
 import uuid
 from datetime import date
-from typing import List, Dict, Any, Optional
+, from typing import List, Dict, Any, Optional
 from io import StringIO
 
-from app.domain.entities.patient import Patient
+, from app.domain.entities.patient import Patient
 from app.domain.value_objects.address import Address
-from app.domain.value_objects.emergency_contact import EmergencyContact
+, from app.domain.value_objects.emergency_contact import EmergencyContact
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
-from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
+, from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
 from app.core.utils.phi_sanitizer import PHIDetector, PHISanitizer
 # Removed incorrect import
 # Import the correct function for getting a sanitized logger
@@ -28,7 +28,7 @@ from app.infrastructure.security.log_sanitizer import get_sanitized_logger
 
 
 @pytest.fixture
-@pytest.mark.db_required
+@pytest.mark.db_required()
 async def test_patient() -> Patient:
     """Create a test patient with PHI for testing."""
     patient_id = uuid.uuid4()
@@ -91,7 +91,7 @@ class TestPHISanitizationIntegration:
     even when crossing module boundaries and during exception handling.
     """
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_patient_phi_database_encryption(self, test_patient: Patient):
         """Test that PHI is encrypted in database and decrypted when retrieved."""
         # Convert to model (encrypts PHI)
@@ -118,24 +118,24 @@ class TestPHISanitizationIntegration:
                 row = result.fetchone()
                 
                 # Verify PHI is stored encrypted (raw DB values)
-                assert row.first_name != test_patient.first_name, "First name not encrypted in database"
-                assert row.email != test_patient.email, "Email not encrypted in database"
-                assert row.phone != test_patient.phone, "Phone not encrypted in database"
+                assert row.first_name  !=  test_patient.first_name, "First name not encrypted in database"
+                assert row.email  !=  test_patient.email, "Email not encrypted in database"
+                assert row.phone  !=  test_patient.phone, "Phone not encrypted in database"
                 
                 # Retrieve through ORM and convert back to domain
                 db_patient_model = await new_session.get(PatientModel, patient_id)
                 retrieved_patient = db_patient_model.to_domain()
                 
                 # Verify domain entity has decrypted PHI
-                assert retrieved_patient.first_name == test_patient.first_name, "First name mismatch"
-                assert retrieved_patient.email == test_patient.email, "Email mismatch"
-                assert retrieved_patient.phone == test_patient.phone, "Phone mismatch"
+                assert retrieved_patient.first_name  ==  test_patient.first_name, "First name mismatch"
+                assert retrieved_patient.email  ==  test_patient.email, "Email mismatch"
+                assert retrieved_patient.phone  ==  test_patient.phone, "Phone mismatch"
                 
                 # Clean up test data
                 await new_session.delete(db_patient_model)
                 await new_session.commit()
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
         """Test that PHI is properly sanitized in logs."""
         # Set up logger
@@ -163,7 +163,7 @@ class TestPHISanitizationIntegration:
         # Verify patient ID (non-PHI) is in logs
         assert str(test_patient.id) in log_content, "Patient ID should be in logs"
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_phi_sanitization_during_errors(self, test_patient: Patient, log_capture: StringIO):
         """Test that PHI is sanitized even during error handling."""
         # Set up logger
@@ -198,7 +198,7 @@ class TestPHISanitizationIntegration:
         # Verify sanitized placeholders are in logs instead
         assert "ANONYMIZED" in log_content or "REDACTED" in log_content, "No sanitization markers found"
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_cross_module_phi_protection(self, test_patient: Patient, log_capture: StringIO):
         """Test PHI protection across module boundaries."""
         # This test simulates a full pipeline that processes patient data
@@ -207,7 +207,7 @@ class TestPHISanitizationIntegration:
         patient_model = PatientModel.from_domain(test_patient)
         
         # Simulate processing in service layer
-        def process_patient_data(model: PatientModel) -> Dict[str, Any]:
+    def process_patient_data(model: PatientModel) -> Dict[str, Any]:
             """Simulate processing in another module."""
             logger = get_sanitized_logger("service.patient") # Use correct function
             

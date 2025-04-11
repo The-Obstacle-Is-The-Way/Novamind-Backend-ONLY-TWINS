@@ -15,9 +15,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import BackgroundTasks, FastAPI, status
 from fastapi.testclient import TestClient
 
-from app.domain.services.analytics_service import AnalyticsService
+, from app.domain.services.analytics_service import AnalyticsService
 from app.infrastructure.cache.redis_cache import RedisCache
-from app.presentation.api.routes.analytics_endpoints import (
+, from app.presentation.api.routes.analytics_endpoints import (
     router,  
     get_analytics_service,  
     _process_treatment_outcomes,  
@@ -98,7 +98,7 @@ def client(app):
     return TestClient(app)
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestAnalyticsEndpoints:
     """Tests for analytics endpoints."""
 
@@ -116,7 +116,7 @@ class TestAnalyticsEndpoints:
             f"/api/v1/analytics/patient/{patient_id}/treatment-outcomes?start_date={start_date}"
         )
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify async response format for cache miss
@@ -125,7 +125,7 @@ class TestAnalyticsEndpoints:
         assert "check_url" in data
         
         # Verify cache was checked and task was added
-        mock_cache_service.get.assert_called_once()
+        mock_cache_service.get.assert _called_once()
         # BackgroundTasks would be called, but we can't easily verify that in the test
 
     def test_get_patient_treatment_outcomes_cached(
@@ -147,16 +147,16 @@ class TestAnalyticsEndpoints:
             f"/api/v1/analytics/patient/{patient_id}/treatment-outcomes?start_date={start_date}"
         )
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify cached data is returned
-        assert data == cached_data
+        assert data  ==  cached_data
         assert "status" not in data  # Not an async processing response
         
         # Verify cache was checked but analytics service was not called
-        mock_cache_service.get.assert_called_once()
-        mock_analytics_service.get_patient_treatment_outcomes.assert_not_called()
+        mock_cache_service.get.assert _called_once()
+        mock_analytics_service.get_patient_treatment_outcomes.assert _not_called()
 
     def test_get_analytics_job_status_completed(
         self, client, mock_cache_service
@@ -172,7 +172,7 @@ class TestAnalyticsEndpoints:
         
         response = client.get(f"/api/v1/analytics/status/{job_id}")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify job status is returned
@@ -180,7 +180,7 @@ class TestAnalyticsEndpoints:
         assert "data" in data
         
         # Verify cache was checked for status
-        mock_cache_service.get.assert_called_once_with(f"status:{job_id}")
+        mock_cache_service.get.assert _called_once_with(f"status:{job_id}")
 
     def test_get_analytics_job_status_not_found(
         self, client, mock_cache_service
@@ -192,7 +192,7 @@ class TestAnalyticsEndpoints:
         
         response = client.get(f"/api/v1/analytics/status/{job_id}")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify not found status is returned
@@ -200,7 +200,7 @@ class TestAnalyticsEndpoints:
         assert "message" in data
         
         # Verify cache was checked for status
-        mock_cache_service.get.assert_called_once_with(f"status:{job_id}")
+        mock_cache_service.get.assert _called_once_with(f"status:{job_id}")
 
     def test_get_practice_metrics(
         self, client, mock_analytics_service, mock_cache_service
@@ -211,7 +211,7 @@ class TestAnalyticsEndpoints:
         
         response = client.get("/api/v1/analytics/practice-metrics")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify async response format
@@ -219,7 +219,7 @@ class TestAnalyticsEndpoints:
         assert "check_url" in data
         
         # Verify cache was checked
-        mock_cache_service.get.assert_called_once()
+        mock_cache_service.get.assert _called_once()
 
     def test_get_diagnosis_distribution(
         self, client, mock_analytics_service, mock_cache_service
@@ -234,15 +234,15 @@ class TestAnalyticsEndpoints:
         
         response = client.get("/api/v1/analytics/diagnosis-distribution")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify expected data is returned
-        assert data == expected_data
+        assert data  ==  expected_data
         
         # Verify cache was checked and service was called
-        mock_cache_service.get.assert_called_once()
-        mock_analytics_service.get_diagnosis_distribution.assert_called_once()
+        mock_cache_service.get.assert _called_once()
+        mock_analytics_service.get_diagnosis_distribution.assert _called_once()
 
     def test_get_medication_effectiveness(
         self, client, mock_analytics_service, mock_cache_service
@@ -255,7 +255,7 @@ class TestAnalyticsEndpoints:
         
         response = client.get(f"/api/v1/analytics/medications/{medication_name}/effectiveness")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify async response format
@@ -264,7 +264,7 @@ class TestAnalyticsEndpoints:
         assert "check_url" in data
         
         # Verify cache was checked
-        mock_cache_service.get.assert_called_once()
+        mock_cache_service.get.assert _called_once()
 
     def test_get_treatment_comparison(
         self, client, mock_analytics_service, mock_cache_service
@@ -280,7 +280,7 @@ class TestAnalyticsEndpoints:
             f"/api/v1/analytics/treatment-comparison/{diagnosis_code}?treatments={treatments[0]}&treatments={treatments[1]}"
         )
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify async response format
@@ -290,7 +290,7 @@ class TestAnalyticsEndpoints:
         assert "check_url" in data
         
         # Verify cache was checked
-        mock_cache_service.get.assert_called_once()
+        mock_cache_service.get.assert _called_once()
 
     def test_get_patient_risk_stratification(
         self, client, mock_analytics_service, mock_cache_service
@@ -306,21 +306,21 @@ class TestAnalyticsEndpoints:
         
         response = client.get("/api/v1/analytics/patient-risk-stratification")
         
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         data = response.json()
         
         # Verify expected data is returned
-        assert data == expected_data
+        assert data  ==  expected_data
         
         # Verify cache was checked and service was called
-        mock_cache_service.get.assert_called_once()
-        mock_analytics_service.get_patient_risk_stratification.assert_called_once()
+        mock_cache_service.get.assert _called_once()
+        mock_analytics_service.get_patient_risk_stratification.assert _called_once()
 
 
 class TestBackgroundProcessingFunctions:
     """Tests for background processing functions."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_process_treatment_outcomes_success(
         self, mock_analytics_service, mock_cache_service
     ):
@@ -349,14 +349,14 @@ class TestBackgroundProcessingFunctions:
         )
         
         # Verify analytics service was called with correct parameters
-        mock_analytics_service.get_patient_treatment_outcomes.assert_called_once_with(
+        mock_analytics_service.get_patient_treatment_outcomes.assert _called_once_with(
             patient_id=patient_id,
             start_date=start_date,
             end_date=end_date,
         )
         
         # Verify results were cached properly
-        assert mock_cache_service.set.call_count == 2  # Main result and status
+        assert mock_cache_service.set.call_count  ==  2  # Main result and status
         
         # Check main result cache
         main_cache_call = mock_cache_service.set.call_args_list[0]
@@ -369,7 +369,7 @@ class TestBackgroundProcessingFunctions:
         assert status_cache_call[1]["value"]["status"] == "completed"
         assert status_cache_call[1]["value"]["data"] == expected_result
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_process_treatment_outcomes_error(
         self, mock_analytics_service, mock_cache_service
     ):
@@ -393,16 +393,16 @@ class TestBackgroundProcessingFunctions:
         )
         
         # Verify analytics service was called
-        mock_analytics_service.get_patient_treatment_outcomes.assert_called_once()
+        mock_analytics_service.get_patient_treatment_outcomes.assert _called_once()
         
         # Verify error status was cached
-        mock_cache_service.set.assert_called_once()
+        mock_cache_service.set.assert _called_once()
         cache_call = mock_cache_service.set.call_args
         assert cache_call[1]["key"] == f"status:{cache_key}"
         assert cache_call[1]["value"]["status"] == "error"
         assert "Test error" in cache_call[1]["value"]["message"]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_process_practice_metrics(
         self, mock_analytics_service, mock_cache_service
     ):
@@ -423,11 +423,11 @@ class TestBackgroundProcessingFunctions:
         )
         
         # Verify analytics service was called with correct parameters
-        mock_analytics_service.get_practice_metrics.assert_called_once_with(
+        mock_analytics_service.get_practice_metrics.assert _called_once_with(
             start_date=start_date,
             end_date=end_date,
             provider_id=provider_id,
         )
         
         # Verify results were cached
-        assert mock_cache_service.set.call_count == 2  # Main result and status
+        assert mock_cache_service.set.call_count  ==  2  # Main result and status

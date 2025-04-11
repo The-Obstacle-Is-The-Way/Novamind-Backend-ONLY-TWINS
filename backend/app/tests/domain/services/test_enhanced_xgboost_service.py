@@ -14,7 +14,7 @@ from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestEnhancedXGBoostService:
     """Test suite for the EnhancedXGBoostService."""
     
@@ -200,8 +200,8 @@ class TestEnhancedXGBoostService:
         assert 0 <= nt_encoding2 <= 1
         
         # Different values should have different encodings
-        assert region_encoding1 != region_encoding2
-        assert nt_encoding1 != nt_encoding2
+        assert region_encoding1  !=  region_encoding2
+        assert nt_encoding1  !=  nt_encoding2
     
     def test_consistency_of_predictions(self, xgboost_service, test_patient_id):
         """Test that predictions are consistent for the same inputs."""

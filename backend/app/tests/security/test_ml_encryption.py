@@ -9,7 +9,7 @@ from app.infrastructure.security.encryption import EncryptionService # Removed F
 # Removed import of non-existent exceptions
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestEncryptionService:
     """
     Tests for the EncryptionService to ensure HIPAA-compliant data protection.
@@ -53,9 +53,9 @@ class TestEncryptionService:
         
         # Assert
         # The encrypted data should be different from the original
-        assert encrypted != json.dumps(sensitive_data)
+        assert encrypted  !=  json.dumps(sensitive_data)
         # The decrypted data should match the original
-        assert decrypted_data == sensitive_data
+        assert decrypted_data  ==  sensitive_data
         # Encrypted data should contain the version header
         assert encrypted.startswith("v1:")
     
@@ -68,7 +68,7 @@ class TestEncryptionService:
         encrypted2 = encryption_service.encrypt(json.dumps(sensitive_data))
         
         # Assert - Encryption should be deterministic with same key
-        assert encrypted1 == encrypted2
+        assert encrypted1  ==  encrypted2
     
     def test_encryption_with_different_keys(self, sensitive_data):
         """Test that encryption with different keys produces different results."""
@@ -84,7 +84,7 @@ class TestEncryptionService:
         encrypted2 = service2.encrypt(json.dumps(sensitive_data))
         
         # Assert
-        assert encrypted1 != encrypted2
+        assert encrypted1  !=  encrypted2
         
         # Verify each service can only decrypt its own data
         decrypted1 = service1.decrypt(encrypted1)
@@ -160,7 +160,7 @@ class TestEncryptionService:
         assert json.loads(decrypted_new) == sensitive_data
         
         # Verify old and new encrypted formats are different
-        assert old_encrypted != new_encrypted
+        assert old_encrypted  !=  new_encrypted
     
     def test_encryption_performance(self, encryption_service, sensitive_data):
         """Test encryption/decryption performance for large data sets."""

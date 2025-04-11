@@ -2,7 +2,7 @@
 import pytest
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+, from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.auth_middleware import (
     JWTAuthMiddleware,   
@@ -13,10 +13,10 @@ from app.infrastructure.security.auth_middleware import (
     get_current_user
 )
 from app.infrastructure.security.jwt_service import JWTService
-from app.domain.exceptions import AuthenticationError, TokenExpiredError
+, from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestAuthMiddleware:
     """
     Tests for the Authentication Middleware to ensure HIPAA-compliant access control.
@@ -59,7 +59,7 @@ class TestAuthMiddleware:
         }
         
         # Setup mock verify_token to return appropriate payload based on token
-        def mock_verify_token(token):
+    def mock_verify_token(token):
             if token == "patient_token":
                 return self.patient_payload
             elif token == "other_patient_token":
@@ -76,7 +76,7 @@ class TestAuthMiddleware:
         mock_service.verify_token.side_effect = mock_verify_token
         
         # Setup mock has_role
-        def mock_has_role(token, required_role):
+    def mock_has_role(token, required_role):
             payload = mock_verify_token(token)
             if required_role == "patient":
                 return True  # All roles can access patient resources
@@ -101,23 +101,23 @@ class TestAuthMiddleware:
             
             # Add test routes
             @app.get("/public")
-            def public_route():
+    def public_route():
                 return {"message": "public access"}
             
             @app.get("/patient-only")
-            def patient_route(user = Depends(verify_patient_access)):
+    def patient_route(user = Depends(verify_patient_access)):
                 return {"message": "patient access", "user": user}
             
             @app.get("/provider-only")
-            def provider_route(user = Depends(verify_provider_access)):
+    def provider_route(user = Depends(verify_provider_access)):
                 return {"message": "provider access", "user": user}
             
             @app.get("/admin-only")
-            def admin_route(user = Depends(verify_admin_access)):
+    def admin_route(user = Depends(verify_admin_access)):
                 return {"message": "admin access", "user": user}
             
             @app.get("/patient-specific/{patient_id}")
-            def patient_specific_route(patient_id: str, user = Depends(verify_patient_access)):
+    def patient_specific_route(patient_id: str, user = Depends(verify_patient_access)):
                 # Simulate access to patient-specific resources
                 if user["role"] == "patient" and user["user_id"] != patient_id:
                     raise HTTPException(
@@ -139,7 +139,7 @@ class TestAuthMiddleware:
         response = test_client.get("/public")
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == {"message": "public access"}
     
     def test_patient_route_without_token(self, test_client):
@@ -148,7 +148,7 @@ class TestAuthMiddleware:
         response = test_client.get("/patient-only")
         
         # Assert
-        assert response.status_code == 401
+        assert response.status_code  ==  401
     
     def test_patient_route_with_patient_token(self, test_client, mock_jwt_service):
         """Test that patient routes are accessible with patient token."""
@@ -159,7 +159,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["message"] == "patient access"
     
     def test_patient_route_with_provider_token(self, test_client, mock_jwt_service):
@@ -171,7 +171,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["message"] == "patient access"
     
     def test_provider_route_with_patient_token(self, test_client, mock_jwt_service):
@@ -183,7 +183,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 403  # Forbidden
+        assert response.status_code  ==  403  # Forbidden
     
     def test_provider_route_with_provider_token(self, test_client, mock_jwt_service):
         """Test that provider routes are accessible with provider token."""
@@ -194,7 +194,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["message"] == "provider access"
     
     def test_admin_route_with_provider_token(self, test_client, mock_jwt_service):
@@ -206,7 +206,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 403  # Forbidden
+        assert response.status_code  ==  403  # Forbidden
     
     def test_admin_route_with_admin_token(self, test_client, mock_jwt_service):
         """Test that admin routes are accessible with admin token."""
@@ -217,7 +217,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["message"] == "admin access"
     
     def test_expired_token(self, test_client, mock_jwt_service):
@@ -229,7 +229,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 401
+        assert response.status_code  ==  401
         assert "expired" in response.json()["detail"].lower()
     
     def test_invalid_token(self, test_client, mock_jwt_service):
@@ -241,7 +241,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 401
+        assert response.status_code  ==  401
         assert "invalid" in response.json()["detail"].lower()
     
     def test_patient_accessing_own_data(self, test_client, mock_jwt_service):
@@ -253,7 +253,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["patient_id"] == "patient123"
     
     def test_patient_accessing_other_patient_data(self, test_client, mock_jwt_service):
@@ -265,7 +265,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 403
+        assert response.status_code  ==  403
         assert "access denied" in response.json()["detail"].lower()
     
     def test_provider_accessing_patient_data(self, test_client, mock_jwt_service):
@@ -277,7 +277,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["patient_id"] == "patient123"
     
     def test_malformed_authorization_header(self, test_client):
@@ -289,7 +289,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 401
+        assert response.status_code  ==  401
         
         # Act - Empty token
         response = test_client.get(
@@ -298,7 +298,7 @@ class TestAuthMiddleware:
         )
         
         # Assert
-        assert response.status_code == 401
+        assert response.status_code  ==  401
     
     def test_rate_limiting(self, test_client, mock_jwt_service):
         """Test that rate limiting is applied to prevent brute force attacks."""
@@ -332,7 +332,7 @@ class TestAuthMiddleware:
         # Assert - Your implementation might vary
         # For APIs using JWT, often the presence of a valid token is considered
         # sufficient protection against CSRF
-        assert response.status_code != 403, "CSRF protection should not block valid API requests"
+        assert response.status_code  !=  403, "CSRF protection should not block valid API requests"
     
     def test_logging_of_access_attempts(self, test_client, mock_jwt_service):
         """Test that access attempts are properly logged."""

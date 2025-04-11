@@ -8,16 +8,16 @@ This module contains integration tests for the MentaLLaMA API routes.
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+, from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+, from fastapi.testclient import TestClient
 
-from app.api.routes.ml import router as ml_router
+from app.api.routes.ml import router , as ml_router
 from app.core.config.ml_settings import ml_settings
-from app.core.exceptions import (
+, from app.core.exceptions import (
     InvalidRequestError,  
     ModelNotFoundError,  
     ServiceUnavailableError,  
@@ -29,7 +29,7 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
 
 
 # Mock services
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class MockMentaLLaMAService(MentaLLaMAInterface):
     """Mock MentaLLaMA service for testing."""
     
@@ -253,7 +253,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 # Mock authentication
 @pytest.fixture
-def mock_auth(client: TestClient): # Add client fixture dependency if needed by patch target
+    def mock_auth(client: TestClient): # Add client fixture dependency if needed by patch target
     """Mock authentication."""
     with patch("app.api.auth.dependencies.get_current_user") as mock:
         mock.return_value = {
@@ -265,7 +265,7 @@ def mock_auth(client: TestClient): # Add client fixture dependency if needed by 
 
 
 @pytest.fixture
-def mock_services(client: TestClient): # Add client fixture dependency if needed by patch target
+    def mock_services(client: TestClient): # Add client fixture dependency if needed by patch target
     """Mock ML services."""
     # Enable services in settings
     ml_settings.enable_mentallama = True
@@ -280,7 +280,7 @@ def mock_services(client: TestClient): # Add client fixture dependency if needed
 
 
 # Tests
-def test_process_text(client: TestClient, mock_auth, mock_services):
+    def test_process_text(client: TestClient, mock_auth, mock_services):
     """Test process text endpoint."""
     request_data = {
         "prompt": "This is a test prompt for processing.",
@@ -291,7 +291,7 @@ def test_process_text(client: TestClient, mock_auth, mock_services):
     
     response = client.post("/api/v1/ml/process", json=request_data)
     
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert "response_id" in data
     assert data["model"] == "mentallama-33b-lora"
@@ -305,7 +305,7 @@ def test_process_text(client: TestClient, mock_auth, mock_services):
     assert data["metadata"]["task"] == "general_analysis"
 
 
-def test_process_text_with_missing_prompt(client: TestClient, mock_auth, mock_services):
+    def test_process_text_with_missing_prompt(client: TestClient, mock_auth, mock_services):
     """Test process text endpoint with missing prompt."""
     request_data = {
         "prompt": "",  # Empty prompt
@@ -317,11 +317,11 @@ def test_process_text_with_missing_prompt(client: TestClient, mock_auth, mock_se
     
     response = client.post("/api/v1/ml/process", json=request_data)
     
-    assert response.status_code == 400
+    assert response.status_code  ==  400
     assert "detail" in response.json()
 
 
-def test_process_text_with_nonexistent_model(client: TestClient, mock_auth, mock_services):
+    def test_process_text_with_nonexistent_model(client: TestClient, mock_auth, mock_services):
     """Test process text endpoint with nonexistent model."""
     request_data = {
         "prompt": "This is a test prompt for processing.",
@@ -335,11 +335,11 @@ def test_process_text_with_nonexistent_model(client: TestClient, mock_auth, mock
     
     response = client.post("/api/v1/ml/process", json=request_data)
     
-    assert response.status_code == 404
+    assert response.status_code  ==  404
     assert "detail" in response.json()
 
 
-def test_depression_detection(client: TestClient, mock_auth, mock_services):
+    def test_depression_detection(client: TestClient, mock_auth, mock_services):
     """Test depression detection endpoint."""
     request_data = {
         "text": "This is a test text for depression detection.",
@@ -351,7 +351,7 @@ def test_depression_detection(client: TestClient, mock_auth, mock_services):
     
     response = client.post("/api/v1/ml/depression-detection", json=request_data)
     
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert "response_id" in data
     assert data["model"] == "mentallama-33b-lora"
@@ -368,7 +368,7 @@ def test_depression_detection(client: TestClient, mock_auth, mock_services):
     assert "created_at" in data
 
 
-def test_risk_assessment(client: TestClient, mock_auth, mock_services):
+    def test_risk_assessment(client: TestClient, mock_auth, mock_services):
     """Test risk assessment endpoint."""
     request_data = {
         "text": "This is a test text for risk assessment.",
@@ -380,7 +380,7 @@ def test_risk_assessment(client: TestClient, mock_auth, mock_services):
     
     response = client.post("/api/v1/ml/risk-assessment", json=request_data)
     
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert "response_id" in data
     assert data["model"] == "mentallama-33b-lora"
@@ -397,7 +397,7 @@ def test_risk_assessment(client: TestClient, mock_auth, mock_services):
     assert "created_at" in data
 
 
-def test_sentiment_analysis(client: TestClient, mock_auth, mock_services):
+    def test_sentiment_analysis(client: TestClient, mock_auth, mock_services):
     """Test sentiment analysis endpoint."""
     request_data = {
         "text": "This is a test text for sentiment analysis.",
@@ -408,7 +408,7 @@ def test_sentiment_analysis(client: TestClient, mock_auth, mock_services):
     
     response = client.post("/api/v1/ml/sentiment-analysis", json=request_data)
     
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert "response_id" in data
     assert data["model"] == "mentallama-33b-lora"
@@ -425,7 +425,7 @@ def test_sentiment_analysis(client: TestClient, mock_auth, mock_services):
     assert "created_at" in data
 
 
-def test_wellness_dimensions(client: TestClient, mock_auth, mock_services):
+    def test_wellness_dimensions(client: TestClient, mock_auth, mock_services):
     """Test wellness dimensions endpoint."""
     request_data = {
         "text": "This is a test text for wellness dimensions analysis.",
@@ -437,7 +437,7 @@ def test_wellness_dimensions(client: TestClient, mock_auth, mock_services):
     
     response = client.post("/api/v1/ml/wellness-dimensions", json=request_data)
     
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert "response_id" in data
     assert data["model"] == "mentallama-33b-lora"
@@ -454,11 +454,11 @@ def test_wellness_dimensions(client: TestClient, mock_auth, mock_services):
     assert "created_at" in data
 
 
-def test_health_check(client: TestClient, mock_services):
+    def test_health_check(client: TestClient, mock_services):
     """Test health check endpoint."""
     response = client.get("/api/v1/ml/health")
     
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert data["status"] == "ok"
     assert "timestamp" in data
@@ -468,7 +468,7 @@ def test_health_check(client: TestClient, mock_services):
     assert data["services"]["mentalllama"]["healthy"] is True
 
 
-def test_service_unavailable(client: TestClient, mock_auth):
+    def test_service_unavailable(client: TestClient, mock_auth):
     """Test service unavailable error."""
     # Disable MentaLLaMA service
     ml_settings.enable_mentallama = False
@@ -480,7 +480,7 @@ def test_service_unavailable(client: TestClient, mock_auth):
     
     response = client.post("/api/v1/ml/process", json=request_data)
     
-    assert response.status_code == 503
+    assert response.status_code  ==  503
     assert "detail" in response.json()
     
     # Re-enable MentaLLaMA service after test

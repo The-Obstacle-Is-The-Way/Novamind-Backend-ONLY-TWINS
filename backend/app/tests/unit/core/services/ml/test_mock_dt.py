@@ -25,7 +25,7 @@ from app.core.services.ml.mock_dt import MockDigitalTwinService
 from app.core.services.ml.interface import DigitalTwinInterface
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestMockDigitalTwinService:
     """Test suite for MockDigitalTwinService class."""
 

@@ -15,7 +15,7 @@ import pytest
 from fastapi.testclient import TestClient # Keep for type hinting
 from unittest.mock import patch
 
-from app.core.services.ml.pat.mock import MockPATService
+, from app.core.services.ml.pat.mock import MockPATService
 from app.presentation.api.dependencies import get_pat_service # Corrected import path
 # Removed direct app import
 
@@ -76,7 +76,7 @@ def actigraphy_data():
     }
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestActigraphyAPI:
     """Integration tests for the Actigraphy API."""
     
@@ -88,7 +88,7 @@ class TestActigraphyAPI:
             json=actigraphy_data
         )
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert "analysis_id" in data
         assert "patient_id" in data
@@ -115,7 +115,7 @@ class TestActigraphyAPI:
             json=embedding_data
         )
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert "embedding_id" in data
         assert "patient_id" in data
@@ -145,7 +145,7 @@ class TestActigraphyAPI:
             headers=auth_headers
         )
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert "analysis_id" in data
         assert data["analysis_id"] == analysis_id
@@ -173,7 +173,7 @@ class TestActigraphyAPI:
             headers=auth_headers
         )
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert "analyses" in data
         assert isinstance(data["analyses"], list)
@@ -187,7 +187,7 @@ class TestActigraphyAPI:
             headers=auth_headers
         )
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert "name" in data
         assert "version" in data
@@ -219,7 +219,7 @@ class TestActigraphyAPI:
             json=integration_data
         )
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert "integration_id" in data
         assert "patient_id" in data
@@ -239,4 +239,4 @@ class TestActigraphyAPI:
         )
         
         # Should fail with 401 Unauthorized
-        assert response.status_code == 401
+        assert response.status_code  ==  401

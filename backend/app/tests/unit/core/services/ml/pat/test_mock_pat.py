@@ -8,10 +8,10 @@ work correctly and handle edge cases properly.
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List
+, from typing import Any, Dict, List
 from unittest.mock import patch
 
-import pytest
+, import pytest
 
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,  
@@ -21,7 +21,7 @@ from app.core.services.ml.pat.exceptions import (
     ResourceNotFoundError,  
     ValidationError,  
 )
-from app.core.services.ml.pat.mock import MockPATService as MockPAT
+from app.core.services.ml.pat.mock import MockPATService , as MockPAT
 
 @pytest.fixture
 def mock_pat():
@@ -73,7 +73,7 @@ class TestMockPAT:
         pat.initialize({})
         
         assert pat.configured is True
-        assert pat.delay_ms == 0
+        assert pat.delay_ms  ==  0
     
     def test_initialization_with_delay(self):
         """Test initialization with delay parameter."""
@@ -81,7 +81,7 @@ class TestMockPAT:
         pat.initialize({"delay_ms": 100})
         
         assert pat.configured is True
-        assert pat.delay_ms == 100
+        assert pat.delay_ms  ==  100
     
     def test_analyze_actigraphy_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful actigraphy analysis."""
@@ -331,7 +331,7 @@ class TestMockPAT:
         
         # Verify that the analyses are sorted by timestamp (newest first)
         timestamps = [analysis["timestamp"] for analysis in result["analyses"]]
-        assert timestamps == sorted(timestamps, reverse=True)
+        assert timestamps  ==  sorted(timestamps, reverse=True)
     
     def test_get_patient_analyses_with_pagination(self, mock_pat, sample_readings, sample_device_info):
         """Test retrieval of patient analyses with pagination."""

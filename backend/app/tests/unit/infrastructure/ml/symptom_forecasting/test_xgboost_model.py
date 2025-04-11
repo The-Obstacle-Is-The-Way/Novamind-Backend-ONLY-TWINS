@@ -16,7 +16,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestXGBoostSymptomModel:
     """Tests for the XGBoostSymptomModel."""
 
@@ -49,10 +49,10 @@ class TestXGBoostSymptomModel:
             model = XGBoostSymptomModel(model_path="test/model/path.json")
             
             # Verify
-            mock_joblib.load.assert_called_once_with("test/model/path.json")
+            mock_joblib.load.assert _called_once_with("test/model/path.json")
             assert "depression_score" in model.models
-            assert model.feature_names == ["f1", "f2", "f3"]
-            assert model.target_names == ["t1"]
+            assert model.feature_names  ==  ["f1", "f2", "f3"]
+            assert model.target_names  ==  ["t1"]
             assert model.params["n_estimators"] == 100
 
     def test_save_model(self, model, tmp_path):
@@ -62,7 +62,7 @@ class TestXGBoostSymptomModel:
             model.save_model(f"{tmp_path}/model.json")
             
             # Verify
-            mock_joblib.dump.assert_called_once()
+            mock_joblib.dump.assert _called_once()
             # Check that the model data was passed to dump
             args, _ = mock_joblib.dump.call_args
             assert "models" in args[0]
@@ -71,7 +71,7 @@ class TestXGBoostSymptomModel:
             assert "params" in args[0]
             assert "timestamp" in args[0]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_predict(self, model):
         """Test that the model predicts correctly."""
         # Setup
@@ -115,7 +115,7 @@ class TestXGBoostSymptomModel:
         # Verify
         assert "depression_score" in result
         assert result["depression_score"]["medication_adherence"] == 25.7
-        mock_model.get_score.assert_called_once_with(importance_type="gain")
+        mock_model.get_score.assert _called_once_with(importance_type="gain")
 
     def test_get_model_info(self, model):
         """Test that model info is correctly reported."""
@@ -148,8 +148,7 @@ class TestXGBoostSymptomModel:
             mock_xgb.train.return_value = MagicMock()
             
             # Set up the model to return feature importance
-            mock_model = mock_xgb.train.return_value
-            mock_model.get_score.return_value = {
+            mock_model = mock_xgb.train.return_value=mock_model.get_score.return_value = {
                 "symptom_history_1": 15.5,
                 "symptom_history_2": 12.3,
                 "medication_adherence": 25.7,

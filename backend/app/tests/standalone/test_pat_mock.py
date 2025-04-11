@@ -8,7 +8,7 @@ verifying both success paths and error handling.
 import logging
 import pytest
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+, from unittest.mock import MagicMock, patch
 
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,  
@@ -71,15 +71,15 @@ class TestMockPATInitialization:
         mock_pat.initialize(config)
         
         assert mock_pat._initialized is True
-        assert mock_pat._mock_delay_ms == 100
+        assert mock_pat._mock_delay_ms  ==  100
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_initialize_with_empty_config(self, mock_pat):
         """Test initialization with empty config."""
         mock_pat.initialize({})
         
         assert mock_pat._initialized is True
-        assert mock_pat._mock_delay_ms == 0
+        assert mock_pat._mock_delay_ms  ==  0
         
     def test_not_initialized_check(self, mock_pat):
         """Test _check_initialized raises exception when not initialized."""

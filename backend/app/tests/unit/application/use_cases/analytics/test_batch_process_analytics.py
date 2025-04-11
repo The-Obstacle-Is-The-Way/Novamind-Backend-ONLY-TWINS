@@ -12,7 +12,7 @@ import asyncio
 from datetime import datetime, UTC, UTC
 
 from app.domain.entities.analytics import AnalyticsEvent
-from app.application.use_cases.analytics.batch_process_analytics import BatchProcessAnalyticsUseCase
+, from app.application.use_cases.analytics.batch_process_analytics import BatchProcessAnalyticsUseCase
 from app.application.use_cases.analytics.process_analytics_event import ProcessAnalyticsEventUseCase
 
 
@@ -88,16 +88,16 @@ def use_case(mock_analytics_repository, mock_cache_service, mock_event_processor
             event_processor=mock_event_processor
         )
         
-        # Attach the mock logger for assertions
+        # Attach the mock logger for assert ions
         use_case._logger = mock_logger_instance
         return use_case
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestBatchProcessAnalyticsUseCase:
     """Test suite for the BatchProcessAnalyticsUseCase."""
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_execute_with_empty_batch(self, use_case):
         """
         Test processing an empty batch returns appropriate result.
@@ -110,15 +110,15 @@ class TestBatchProcessAnalyticsUseCase:
         result = await use_case.execute(events, batch_id)
         
         # Assert
-        assert result.events == []
-        assert result.batch_id == batch_id
-        assert result.processed_count == 0
-        assert result.failed_count == 0
+        assert result.events  ==  []
+        assert result.batch_id  ==  batch_id
+        assert result.processed_count  ==  0
+        assert result.failed_count  ==  0
         
         # Verify warning was logged
-        use_case._logger.warning.assert_called_with("Received empty batch of analytics events")
+        use_case._logger.warning.assert _called_with("Received empty batch of analytics events")
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_execute_with_valid_events(self, use_case, mock_event_processor):
         """
         Test processing a batch of valid events.
@@ -144,25 +144,25 @@ class TestBatchProcessAnalyticsUseCase:
         
         # Assert
         assert len(result.events) == 2
-        assert result.batch_id == batch_id
-        assert result.processed_count == 2
-        assert result.failed_count == 0
+        assert result.batch_id  ==  batch_id
+        assert result.processed_count  ==  2
+        assert result.failed_count  ==  0
         
         # Verify events were processed
-        assert mock_event_processor.execute.call_count == 2
+        assert mock_event_processor.execute.call_count  ==  2
         
         # Verify appropriate logging
-        use_case._logger.info.assert_any_call(
+        use_case._logger.info.assert _any_call(
             f"Starting batch processing of {len(events)} analytics events",
             {"batch_id": batch_id}
         )
-        use_case._logger.info.assert_any_call(
+        use_case._logger.info.assert _any_call(
             f"Completed batch processing: {result.processed_count} succeeded, "
             f"{result.failed_count} failed",
             {"batch_id": batch_id}
         )
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_partial_failure_handling(self, use_case, mock_event_processor):
         """
         Test batch processing continues even if some events fail.
@@ -188,13 +188,13 @@ class TestBatchProcessAnalyticsUseCase:
         
         # Assert
         assert len(result.events) == 1  # Only one valid event
-        assert result.processed_count == 1
-        assert result.failed_count == 2
+        assert result.processed_count  ==  1
+        assert result.failed_count  ==  2
         
         # Verify error logging
-        assert use_case._logger.error.call_count == 2
+        assert use_case._logger.error.call_count  ==  2
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_event_timestamp_handling(self, use_case, mock_event_processor):
         """
         Test proper handling of event timestamps.
@@ -242,7 +242,7 @@ class TestBatchProcessAnalyticsUseCase:
         # We can only check that it's a datetime object since we can't predict exact time
         assert isinstance(call_args_list[2][1]["timestamp"], datetime)
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_batch_metadata_saved(self, use_case, mock_cache_service):
         """
         Test that batch metadata is properly saved.
@@ -267,19 +267,19 @@ class TestBatchProcessAnalyticsUseCase:
         await use_case.execute(events)
         
         # Assert - check batch counter was incremented
-        mock_cache_service.increment.assert_any_call("analytics:batches:processed")
+        mock_cache_service.increment.assert _any_call("analytics:batches:processed")
         
         # Check event type counters were updated
-        mock_cache_service.increment.assert_any_call(
+        mock_cache_service.increment.assert _any_call(
             "analytics:batches:event_types:type1", 
             increment=2
         )
-        mock_cache_service.increment.assert_any_call(
+        mock_cache_service.increment.assert _any_call(
             "analytics:batches:event_types:type2", 
             increment=1
         )
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_large_batch_chunking(self, use_case, mock_event_processor):
         """
         Test that large batches are processed in chunks.
@@ -297,12 +297,12 @@ class TestBatchProcessAnalyticsUseCase:
         result = await use_case.execute(events)
         
         # Assert
-        assert result.processed_count == 250
-        assert result.failed_count == 0
+        assert result.processed_count  ==  250
+        assert result.failed_count  ==  0
         assert len(result.events) == 250
         
         # Verify all events were processed
-        assert mock_event_processor.execute.call_count == 250
+        assert mock_event_processor.execute.call_count  ==  250
         
         # Verify the _process_chunk method was called 3 times
         # We'll need to check this through the implementation details

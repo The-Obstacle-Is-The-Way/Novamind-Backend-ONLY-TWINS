@@ -9,14 +9,14 @@ edge cases appropriately.
 import pytest
 from unittest.mock import MagicMock
 
-from app.core.services.ml.xgboost.mock import MockXGBoostService
+, from app.core.services.ml.xgboost.mock import MockXGBoostService
 from app.core.services.ml.xgboost.exceptions import (
     ValidationError,   DataPrivacyError,   ResourceNotFoundError,  
     ModelNotFoundError
 )
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestMockXGBoostService:
     """Test case for the MockXGBoostService class."""
     
@@ -63,9 +63,9 @@ class TestMockXGBoostService:
         
         service.initialize(config)
         
-        assert service.config == config
+        assert service.config  ==  config
         assert service.phi_detector is not None
-        assert service.phi_detector.privacy_level == 3
+        assert service.phi_detector.privacy_level  ==  3
     
     def test_predict_risk_with_valid_data(self, service, sample_patient_id, sample_clinical_data):
         """Test risk prediction with valid data."""
@@ -272,7 +272,7 @@ class TestMockXGBoostService:
         )
         
         # Verify notification was sent
-        observer.notify_prediction.assert_called_once()
+        observer.notify_prediction.assert _called_once()
         
         # Unregister observer
         result = service.unregister_prediction_observer(observer_id)

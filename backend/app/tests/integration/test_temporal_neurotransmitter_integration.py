@@ -13,22 +13,22 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+, from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.api.routes.temporal_neurotransmitter import router as temporal_router
+, from app.api.routes.temporal_neurotransmitter import router as temporal_router
 from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
-from app.core.config import settings
+, from app.core.config import settings
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, ClinicalSignificance
 from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
-from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
+, from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
 from app.domain.entities.temporal_sequence import TemporalSequence
-from app.domain.repositories.temporal_repository import TemporalSequenceRepository, EventRepository
+, from app.domain.repositories.temporal_repository import TemporalSequenceRepository, EventRepository
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
-from app.domain.services.visualization_preprocessor import NeurotransmitterVisualizationPreprocessor
+, from app.domain.services.visualization_preprocessor import NeurotransmitterVisualizationPreprocessor
 from app.infrastructure.models.temporal_sequence_model import Base
-from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
+, from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
 from app.infrastructure.repositories.temporal_sequence_repository import SqlAlchemyTemporalSequenceRepository
 
 
@@ -50,7 +50,7 @@ test_user = {
 }
 @pytest.fixture
 async def db_session():
-    """Create an async SQLAlchemy session for testing with in-memory database."""
+        """Create an async SQLAlchemy session for testing with in-memory database."""
     async with engine.begin() as conn:
         # Create tables
         await conn.run_sync(Base.metadata.create_all)
@@ -63,16 +63,16 @@ async def db_session():
             await conn.run_sync(Base.metadata.drop_all)
 @pytest.fixture
 async def sequence_repository(db_session):
-        """Create sequence repository with test session."""    return SqlAlchemyTemporalSequenceRepository(session=db_session)
+            """Create sequence repository with test session."""    return SqlAlchemyTemporalSequenceRepository(session=db_session)
 @pytest.fixture
 async def event_repository(db_session):
-    """Create event repository with test session."""    return SqlAlchemyEventRepository(session=db_session)
+        """Create event repository with test session."""    return SqlAlchemyEventRepository(session=db_session)
 @pytest.fixture
 def xgboost_service():
-        """Create XGBoost service for testing."""    return EnhancedXGBoostService()
+                """Create XGBoost service for testing."""    return EnhancedXGBoostService()
 @pytest.fixture
 async def temporal_service(sequence_repository, event_repository, xgboost_service):
-    """Create temporal neurotransmitter service with repositories and XGBoost."""    return TemporalNeurotransmitterService(
+        """Create temporal neurotransmitter service with repositories and XGBoost."""    return TemporalNeurotransmitterService(
         sequence_repository=sequence_repository,
         event_repository=event_repository,
         xgboost_service=xgboost_service
@@ -82,23 +82,23 @@ async def temporal_service(sequence_repository, event_repository, xgboost_servic
 # Local test_app and test_client fixtures removed; tests will use the client fixture from conftest.py
 @pytest.fixture
 def mock_current_user():
-        """Mock current user dependency."""    return patch(
+                """Mock current user dependency."""    return patch(
         "app.api.dependencies.auth.get_current_user_dict",
-        return_value=AsyncMock(return_value=test_user)
+        return_value=AsyncMock(return_value=test_user))
 )
 @pytest.fixture
 def patient_id():
-        """Generate a patient ID for testing."""    return uuid4()
+                """Generate a patient ID for testing."""    return uuid4()
 
 
-@pytest.mark.asyncio
-@pytest.mark.db_required
+@pytest.mark.asyncio()
+@pytest.mark.db_required()
 async def test_temporal_service_with_xgboost_integration(
     temporal_service: TemporalNeurotransmitterService,
     xgboost_service: EnhancedXGBoostService,
     patient_id: UUID
 ):
-    """
+        """
     Test the integration between TemporalNeurotransmitterService and EnhancedXGBoostService.
     
     This test verifies that the temporal service correctly leverages XGBoost predictions
@@ -169,12 +169,12 @@ assert prediction_calls[0]["treatment_effect"] == treatment_effect
     assert "xgboost_prediction" in sequence.metadata
 
 
-        @pytest.mark.asyncio
+        @pytest.mark.asyncio()
 async def test_full_brain_region_coverage_with_visualization(
     temporal_service: TemporalNeurotransmitterService,
     patient_id: UUID
 ):
-    """
+        """
     Test complete horizontal coverage across brain regions with visualization.
     
     This test ensures that the service can generate visualizations for all brain regions.
@@ -226,12 +226,12 @@ async def test_full_brain_region_coverage_with_visualization(
         "Different regions should produce different visualization structures"
 
 
-            @pytest.mark.asyncio
+            @pytest.mark.asyncio()
 async def test_full_neurotransmitter_coverage_with_treatment(
     temporal_service: TemporalNeurotransmitterService,
     patient_id: UUID
 ):
-    """
+        """
     Test complete horizontal coverage across neurotransmitters with treatment simulation.
     
     This test ensures that the service can simulate treatment effects for all neurotransmitters.
@@ -280,7 +280,7 @@ assert sequence is not None
         "Different neurotransmitter treatments should affect different numbers of secondary neurotransmitters"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_api_integration_with_service(
     client: TestClient, # Use client fixture from conftest.py
     mock_current_user,
@@ -288,7 +288,7 @@ async def test_api_integration_with_service(
     temporal_service,
     patient_id
 ):
-    """
+        """
     Test API integration with the neurotransmitter service.
     
     This test verifies that the API layer correctly integrates with the service layer.
@@ -296,7 +296,7 @@ async def test_api_integration_with_service(
     # Setup - patch dependencies to use our service instance
     with mock_current_user, patch(:
         "app.api.dependencies.services.get_temporal_neurotransmitter_service",
-        return_value=AsyncMock(return_value=temporal_service)
+        return_value=AsyncMock(return_value=temporal_service))
 )
         # Test 1: Generate time series
         time_series_response = client.post( # Use client fixture
@@ -311,7 +311,7 @@ async def test_api_integration_with_service(
 )
         
         # Verify response
-        assert time_series_response.status_code == 201
+        assert time_series_response.status_code  ==  201
         assert "sequence_id" in time_series_response.json()
         
         # Test 2: Simulate treatment
@@ -327,7 +327,7 @@ async def test_api_integration_with_service(
 )
         
         # Verify response
-        assert treatment_response.status_code == 200
+        assert treatment_response.status_code  ==  200
         assert "sequence_ids" in treatment_response.json()
         
         # Extract a sequence ID for visualization test
@@ -342,7 +342,7 @@ async def test_api_integration_with_service(
 )
         
         # Verify response
-        assert viz_response.status_code == 200
+        assert viz_response.status_code  ==  200
         assert "time_points" in viz_response.json()
 assert "features" in viz_response.json()
 assert "values" in viz_response.json()

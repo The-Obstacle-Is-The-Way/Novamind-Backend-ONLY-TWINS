@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel
-from app.core.interfaces.ml.base_model import BaseMLModel
+, from app.core.interfaces.ml.base_model import BaseMLModel
 
 
 class TestTransformerTimeSeriesModel:
@@ -72,7 +72,7 @@ class TestTransformerTimeSeriesModel:
             await model.initialize()
             
             # Verify
-            mock_torch.load.assert_called_once()
+            mock_torch.load.assert _called_once()
             assert model.is_initialized
             assert model._model is not None
 
@@ -90,7 +90,7 @@ class TestTransformerTimeSeriesModel:
             await model.initialize()
             
             # Verify
-            mock_transformer_cls.assert_called_once()
+            mock_transformer_cls.assert _called_once()
             assert model.is_initialized
             assert model._model is not None
 
@@ -167,14 +167,12 @@ class TestTransformerTimeSeriesModel:
             await model.predict(sample_input_data, horizon=4)
             
             # Verify
-            mock_preprocess.assert_called_once_with(sample_input_data)
+            mock_preprocess.assert _called_once_with(sample_input_data)
             
             # Get the processed data
-            processed_data = mock_preprocess.return_value
-            
-            # Verify the processed data has the expected structure
+            processed_data = mock_preprocess.return_value=# Verify the processed data has the expected structure
             assert isinstance(processed_data, np.ndarray)
-            assert processed_data.ndim == 2  # 2D array: [time_steps, features]
+            assert processed_data.ndim  ==  2  # 2D array: [time_steps, features]
             assert processed_data.shape[0] == len(sample_input_data)  # Same number of time steps
 
     async def test_postprocess_predictions(self, model, sample_input_data):
@@ -189,7 +187,7 @@ class TestTransformerTimeSeriesModel:
             await model.predict(sample_input_data, horizon=4)
             
             # Verify
-            mock_postprocess.assert_called_once()
+            mock_postprocess.assert _called_once()
             
             # Call directly to test
             result = model._postprocess_predictions(raw_predictions, raw_std)

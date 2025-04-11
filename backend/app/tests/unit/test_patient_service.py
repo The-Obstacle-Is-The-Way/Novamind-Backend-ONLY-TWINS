@@ -5,16 +5,16 @@ These tests require Python packages but mock database access.
 They test service layer functionality in isolation from actual database.
 """
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock
+, from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from app.application.services.patient_service import PatientService
-from app.domain.entities.patient import Patient
+, from app.domain.entities.patient import Patient
 from app.domain.exceptions.patient_exceptions import PatientNotFoundError
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPatientService:
     """Test suite for PatientService."""
     
@@ -57,8 +57,8 @@ class TestPatientService:
         result = await self.service.get_by_id(self.patient_id)
         
         # Assertions
-        assert result == self.patient
-        self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
+        assert result  ==  self.patient
+        self.mock_repository.get_by_id.assert _called_once_with(self.patient_id)
     
     async def test_get_patient_by_id_not_found(self):
         """Test retrieving a non-existent patient by ID."""
@@ -70,7 +70,7 @@ class TestPatientService:
             await self.service.get_by_id(self.patient_id)
         
         # Verify mock was called
-        self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
+        self.mock_repository.get_by_id.assert _called_once_with(self.patient_id)
     
     async def test_create_patient_success(self):
         """Test successfully creating a patient."""
@@ -81,11 +81,11 @@ class TestPatientService:
         result = await self.service.create(self.patient_data)
         
         # Assertions
-        assert result == self.patient
-        self.mock_repository.create.assert_called_once()
+        assert result  ==  self.patient
+        self.mock_repository.create.assert _called_once()
         
         # Verify logger was called
-        self.mock_logger.info.assert_called_once()
+        self.mock_logger.info.assert _called_once()
     
     async def test_update_patient_success(self):
         """Test successfully updating a patient."""
@@ -100,9 +100,9 @@ class TestPatientService:
         result = await self.service.update(self.patient_id, updated_data)
         
         # Assertions
-        assert result == self.patient
-        self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
-        self.mock_repository.update.assert_called_once()
+        assert result  ==  self.patient
+        self.mock_repository.get_by_id.assert _called_once_with(self.patient_id)
+        self.mock_repository.update.assert _called_once()
     
     async def test_delete_patient_success(self):
         """Test successfully deleting a patient."""
@@ -115,5 +115,5 @@ class TestPatientService:
         
         # Assertions
         assert result is True
-        self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
-        self.mock_repository.delete.assert_called_once_with(self.patient_id)
+        self.mock_repository.get_by_id.assert _called_once_with(self.patient_id)
+        self.mock_repository.delete.assert _called_once_with(self.patient_id)

@@ -12,9 +12,9 @@ from unittest.mock import patch, MagicMock, mock_open
 import base64
 import hashlib
 from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
+, from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.backends import default_backend
+, from cryptography.hazmat.backends import default_backend
 
 from app.infrastructure.security.encryption import (
     EncryptionService,  
@@ -27,7 +27,7 @@ from app.infrastructure.security.encryption import (
 from app.core.config import Settings
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestEncryptionUtils:
     """Tests for the encryption utility functions."""
     
@@ -46,14 +46,14 @@ class TestEncryptionUtils:
         
         # Verify deterministic output (same inputs yield same key)
         key2 = derive_key(password, salt)
-        assert key == key2
+        assert key  ==  key2
         
         # Verify different inputs yield different keys
         key3 = derive_key(b"different_password", salt)
-        assert key != key3
+        assert key  !=  key3
         
         key4 = derive_key(password, b"different_salt")
-        assert key != key4
+        assert key  !=  key4
     
     def test_encrypt_decrypt_data(self):
         """Test encryption and decryption of data."""
@@ -65,14 +65,14 @@ class TestEncryptionUtils:
         encrypted = encrypt_data(data, key)
         
         # Verify encrypted data is different from original and in bytes
-        assert encrypted != data
+        assert encrypted  !=  data
         assert isinstance(encrypted, bytes)
         
         # Decrypt the data
         decrypted = decrypt_data(encrypted, key)
         
         # Verify decryption recovers the original data
-        assert decrypted == data
+        assert decrypted  ==  data
     
     def test_encrypt_decrypt_with_wrong_key(self):
         """Test decryption with wrong key fails."""
@@ -102,7 +102,7 @@ class TestEncryptionUtils:
         
         # Verify hashing with same input produces different output (due to salt)
         hashed2 = hash_data(data)
-        assert hashed != hashed2  # Different due to random salt
+        assert hashed  !=  hashed2  # Different due to random salt
         
         # Verify secure_compare can validate the hash
         assert secure_compare(data, hashed)
@@ -163,7 +163,7 @@ class TestEncryptionService:
         
         # Verify pepper is initialized
         assert encryption_service.pepper is not None
-        assert encryption_service.pepper == mock_settings.security.HASH_PEPPER
+        assert encryption_service.pepper  ==  mock_settings.security.HASH_PEPPER
     
     def test_encrypt_decrypt(self, encryption_service):
         """Test encryption and decryption with the service."""
@@ -174,14 +174,14 @@ class TestEncryptionService:
         encrypted = encryption_service.encrypt(data)
         
         # Verify encrypted data is different and in bytes
-        assert encrypted != data
+        assert encrypted  !=  data
         assert isinstance(encrypted, bytes)
         
         # Decrypt the data
         decrypted = encryption_service.decrypt(encrypted)
         
         # Verify decryption recovers the original data
-        assert decrypted == data
+        assert decrypted  ==  data
     
     def test_encrypt_decrypt_with_metadata(self, encryption_service):
         """Test encryption and decryption with metadata."""
@@ -199,7 +199,7 @@ class TestEncryptionService:
         decrypted, retrieved_metadata = encryption_service.decrypt(encrypted, return_metadata=True)
         
         # Verify decryption recovers original data and metadata
-        assert decrypted == data
+        assert decrypted  ==  data
         assert retrieved_metadata["patient_id"] == "123"
         assert retrieved_metadata["record_type"] == "medical"
     
@@ -217,7 +217,7 @@ class TestEncryptionService:
         
         # Verify hashing with same password produces different output (due to salt)
         hashed2 = encryption_service.hash_password(password)
-        assert hashed != hashed2
+        assert hashed  !=  hashed2
         
         # Verify password verification works
         assert encryption_service.verify_password(password, hashed)
@@ -232,11 +232,11 @@ class TestEncryptionService:
         peppered = encryption_service._pepper_text(text)
         
         # Verify peppered text is different from original
-        assert peppered != text
+        assert peppered  !=  text
         
         # Verify deterministic output with same text and pepper
         peppered2 = encryption_service._pepper_text(text)
-        assert peppered == peppered2
+        assert peppered  ==  peppered2
         
         # Verify different text yields different peppered result
         assert encryption_service._pepper_text("Different text") != peppered
@@ -260,7 +260,7 @@ class TestEncryptionService:
         decrypted_phi = encryption_service.decrypt_phi(encrypted_phi)
         
         # Verify decryption recovers original PHI
-        assert decrypted_phi == phi_data
+        assert decrypted_phi  ==  phi_data
     
     def test_encrypt_file_decrypt_file(self, encryption_service, tmp_path):
         """Test file encryption and decryption."""

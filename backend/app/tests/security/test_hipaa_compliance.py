@@ -21,14 +21,14 @@ import uuid
 from datetime import datetime, UTC, UTC, timedelta
 from unittest import mock
 
-import pytest
+, import pytest
 from fastapi import HTTPException, status
 from jose import jwt
 
 # Import application code
 try:
     from app.core.config import settings
-    from app.domain.exceptions import (
+    , from app.domain.exceptions import (
         AuthenticationError,   
         AuthorizationError,  
         PHIAccessError,  
@@ -73,7 +73,7 @@ except ImportError as e:
         USE_TLS=True # Assuming this is needed based on later test
     )
     
-    @pytest.mark.db_required
+    @pytest.mark.db_required()
     class AuthenticationError(Exception): pass
     class AuthorizationError(Exception): pass
     class PHIAccessError(Exception): pass
@@ -99,7 +99,7 @@ except ImportError as e:
 
 # Test fixtures
 @pytest.fixture
-def test_user():
+        def test_user():
     """Create a test user for authentication tests."""
     return {
         "id": str(uuid.uuid4()),
@@ -111,7 +111,7 @@ def test_user():
 
 
 @pytest.fixture
-def test_phi_data():
+        def test_phi_data():
     """Create test PHI data for encryption tests."""
     return {
         "patient_id": str(uuid.uuid4()),
@@ -126,7 +126,7 @@ def test_phi_data():
 
 
 @pytest.fixture
-def test_jwt_token(test_user):
+        def test_jwt_token(test_user):
     """Create a valid JWT token for testing."""
     expires_delta = timedelta(minutes=30)
     data = {
@@ -140,14 +140,14 @@ def test_jwt_token(test_user):
 
 
 @pytest.fixture
-def mock_audit_logger():
+        def mock_audit_logger():
     """Create a mock audit logger for testing."""
     with mock.patch("app.infrastructure.logging.audit_logger.log_phi_access") as mock_logger:
         yield mock_logger
 
 
 @pytest.fixture
-def mock_rbac():
+        def mock_rbac():
     """Create a mock RBAC system for testing."""
     with mock.patch("app.infrastructure.security.rbac.role_manager.check_permission") as mock_check:
         mock_check.return_value = True
@@ -164,14 +164,14 @@ class TestPHIEncryption:
         encrypted_data = encrypt_phi(test_phi_data)
         
         # Verify the encrypted data is not the same as the original
-        assert encrypted_data != test_phi_data
+        assert encrypted_data  !=  test_phi_data
         assert isinstance(encrypted_data, str)
         
         # Decrypt the data
         decrypted_data = decrypt_phi(encrypted_data)
         
         # Verify the decrypted data matches the original
-        assert decrypted_data == test_phi_data
+        assert decrypted_data  ==  test_phi_data
     
     def test_encrypt_field_sensitive_data(self):
         """Test that specific fields can be encrypted individually."""
@@ -179,14 +179,14 @@ class TestPHIEncryption:
         encrypted_ssn = encrypt_field(ssn)
         
         # Verify the encrypted field is not the same as the original
-        assert encrypted_ssn != ssn
+        assert encrypted_ssn  !=  ssn
         assert isinstance(encrypted_ssn, str)
         
         # Decrypt the field
         decrypted_ssn = decrypt_field(encrypted_ssn)
         
         # Verify the decrypted field matches the original
-        assert decrypted_ssn == ssn
+        assert decrypted_ssn  ==  ssn
     
     def test_encryption_key_requirements(self):
         """Test that encryption key meets strength requirements."""
@@ -260,7 +260,7 @@ class TestAuthorization:
         
         # Verify permission check succeeds
         assert result is True
-        mock_rbac.assert_called_once()
+        mock_rbac.assert _called_once()
     
     def test_rbac_permission_denied(self, test_user, mock_rbac):
         """Test that RBAC denies unauthorized access."""
@@ -305,7 +305,7 @@ class TestAuditLogging:
         )
         
         # Verify the logger was called with the correct parameters
-        mock_audit_logger.assert_called_once()
+        mock_audit_logger.assert _called_once()
         args, kwargs = mock_audit_logger.call_args
         assert kwargs["user_id"] == test_user["id"]
         assert kwargs["action"] == "view"
@@ -360,8 +360,8 @@ class TestHIPAACompliance:
                 decrypted = decrypt_field(encrypted)
                 
                 # Verify encryption and decryption work
-                assert encrypted != value
-                assert decrypted == value
+                assert encrypted  !=  value
+                assert decrypted  ==  value
     
     def test_minimum_necessary_principle(self, test_phi_data):
         """Test that only necessary PHI fields are included in responses."""

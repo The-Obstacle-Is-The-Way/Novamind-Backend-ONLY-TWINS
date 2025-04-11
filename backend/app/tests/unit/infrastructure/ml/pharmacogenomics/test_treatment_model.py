@@ -264,7 +264,7 @@ class TestTreatmentResponseModel:
         
         # Check that risks match input
         risks = [effect["risk"] for effect in result]
-        assert risks == [0.35, 0.28, 0.15]
+        assert risks  ==  [0.35, 0.28, 0.15]
 
     async def test_get_model_info(self, model):
         """Test model info retrieval."""

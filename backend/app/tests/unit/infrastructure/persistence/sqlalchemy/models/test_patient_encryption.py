@@ -8,16 +8,16 @@ and decrypted according to HIPAA compliance requirements.
 
 import pytest
 from datetime import date
-from unittest.mock import patch, MagicMock
+, from unittest.mock import patch, MagicMock
 
 from app.domain.entities.patient import Patient
-from app.domain.value_objects.address import Address
+, from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
 # from app.domain.value_objects.insurance import Insurance # Commented out - Module not found
 from app.infrastructure.security.encryption import EncryptionService
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPatientModelEncryption:
     """Test suite for PatientModel encryption/decryption functionality."""
     
@@ -76,32 +76,32 @@ class TestPatientModelEncryption:
             patient_model = PatientModel.from_domain(sample_patient)
             
             # Verify PHI data is encrypted
-            assert patient_model.first_name == f"ENC:{sample_patient.first_name}"
-            assert patient_model.last_name == f"ENC:{sample_patient.last_name}"
-            assert patient_model.date_of_birth == f"ENC:{sample_patient.date_of_birth.isoformat()}"
-            assert patient_model.email == f"ENC:{sample_patient.email}"
-            assert patient_model.phone == f"ENC:{sample_patient.phone}"
+            assert patient_model.first_name  ==  f"ENC:{sample_patient.first_name}"
+            assert patient_model.last_name  ==  f"ENC:{sample_patient.last_name}"
+            assert patient_model.date_of_birth  ==  f"ENC:{sample_patient.date_of_birth.isoformat()}"
+            assert patient_model.email  ==  f"ENC:{sample_patient.email}"
+            assert patient_model.phone  ==  f"ENC:{sample_patient.phone}"
             
             # Verify address fields are encrypted
-            assert patient_model.address_line1 == f"ENC:{sample_patient.address.line1}"
-            assert patient_model.address_line2 == f"ENC:{sample_patient.address.line2}"
-            assert patient_model.city == f"ENC:{sample_patient.address.city}"
-            assert patient_model.state == f"ENC:{sample_patient.address.state}"
-            assert patient_model.postal_code == f"ENC:{sample_patient.address.postal_code}"
-            assert patient_model.country == f"ENC:{sample_patient.address.country}"
+            assert patient_model.address_line1  ==  f"ENC:{sample_patient.address.line1}"
+            assert patient_model.address_line2  ==  f"ENC:{sample_patient.address.line2}"
+            assert patient_model.city  ==  f"ENC:{sample_patient.address.city}"
+            assert patient_model.state  ==  f"ENC:{sample_patient.address.state}"
+            assert patient_model.postal_code  ==  f"ENC:{sample_patient.address.postal_code}"
+            assert patient_model.country  ==  f"ENC:{sample_patient.address.country}"
             
             # Verify emergency contact fields are encrypted
-            assert patient_model.emergency_contact_name == f"ENC:{sample_patient.emergency_contact.name}"
-            assert patient_model.emergency_contact_phone == f"ENC:{sample_patient.emergency_contact.phone}"
-            assert patient_model.emergency_contact_relationship == f"ENC:{sample_patient.emergency_contact.relationship}"
+            assert patient_model.emergency_contact_name  ==  f"ENC:{sample_patient.emergency_contact.name}"
+            assert patient_model.emergency_contact_phone  ==  f"ENC:{sample_patient.emergency_contact.phone}"
+            assert patient_model.emergency_contact_relationship  ==  f"ENC:{sample_patient.emergency_contact.relationship}"
             
             # # Verify insurance fields are encrypted # Commented out - Module not found
-            # assert patient_model.insurance_provider == f"ENC:{sample_patient.insurance.provider}"
-            # assert patient_model.insurance_policy_number == f"ENC:{sample_patient.insurance.policy_number}"
-            # assert patient_model.insurance_group_number == f"ENC:{sample_patient.insurance.group_number}"
+            # assert patient_model.insurance_provider  ==  f"ENC:{sample_patient.insurance.provider}"
+            # assert patient_model.insurance_policy_number  ==  f"ENC:{sample_patient.insurance.policy_number}"
+            # assert patient_model.insurance_group_number  ==  f"ENC:{sample_patient.insurance.group_number}"
             
             # Verify non-PHI fields are not encrypted
-            assert patient_model.active == sample_patient.active
+            assert patient_model.active  ==  sample_patient.active
     
     def test_decrypt_patient_data(self, sample_patient, mock_encryption_service):
         """Test that encrypted patient data is properly decrypted when retrieved."""
@@ -117,29 +117,29 @@ class TestPatientModelEncryption:
             decrypted_patient = patient_model.to_domain()
             
             # Verify identity information is decrypted correctly
-            assert decrypted_patient.first_name == sample_patient.first_name
-            assert decrypted_patient.last_name == sample_patient.last_name
-            assert decrypted_patient.date_of_birth == sample_patient.date_of_birth
-            assert decrypted_patient.email == sample_patient.email
-            assert decrypted_patient.phone == sample_patient.phone
+            assert decrypted_patient.first_name  ==  sample_patient.first_name
+            assert decrypted_patient.last_name  ==  sample_patient.last_name
+            assert decrypted_patient.date_of_birth  ==  sample_patient.date_of_birth
+            assert decrypted_patient.email  ==  sample_patient.email
+            assert decrypted_patient.phone  ==  sample_patient.phone
             
             # Verify address is decrypted correctly
-            assert decrypted_patient.address.line1 == sample_patient.address.line1
-            assert decrypted_patient.address.line2 == sample_patient.address.line2
-            assert decrypted_patient.address.city == sample_patient.address.city
-            assert decrypted_patient.address.state == sample_patient.address.state
-            assert decrypted_patient.address.postal_code == sample_patient.address.postal_code
-            assert decrypted_patient.address.country == sample_patient.address.country
+            assert decrypted_patient.address.line1  ==  sample_patient.address.line1
+            assert decrypted_patient.address.line2  ==  sample_patient.address.line2
+            assert decrypted_patient.address.city  ==  sample_patient.address.city
+            assert decrypted_patient.address.state  ==  sample_patient.address.state
+            assert decrypted_patient.address.postal_code  ==  sample_patient.address.postal_code
+            assert decrypted_patient.address.country  ==  sample_patient.address.country
             
             # Verify emergency contact is decrypted correctly
-            assert decrypted_patient.emergency_contact.name == sample_patient.emergency_contact.name
-            assert decrypted_patient.emergency_contact.phone == sample_patient.emergency_contact.phone
-            assert decrypted_patient.emergency_contact.relationship == sample_patient.emergency_contact.relationship
+            assert decrypted_patient.emergency_contact.name  ==  sample_patient.emergency_contact.name
+            assert decrypted_patient.emergency_contact.phone  ==  sample_patient.emergency_contact.phone
+            assert decrypted_patient.emergency_contact.relationship  ==  sample_patient.emergency_contact.relationship
             
             # # Verify insurance is decrypted correctly # Commented out - Module not found
-            # assert decrypted_patient.insurance.provider == sample_patient.insurance.provider
-            # assert decrypted_patient.insurance.policy_number == sample_patient.insurance.policy_number
-            # assert decrypted_patient.insurance.group_number == sample_patient.insurance.group_number
+            # assert decrypted_patient.insurance.provider  ==  sample_patient.insurance.provider
+            # assert decrypted_patient.insurance.policy_number  ==  sample_patient.insurance.policy_number
+            # assert decrypted_patient.insurance.group_number  ==  sample_patient.insurance.group_number
             assert decrypted_patient.insurance is None # Check placeholder
     
     def test_null_values_handling(self, mock_encryption_service):
@@ -169,9 +169,9 @@ class TestPatientModelEncryption:
             decrypted_patient = patient_model.to_domain()
             
             # Verify required fields
-            assert decrypted_patient.first_name == minimal_patient.first_name
-            assert decrypted_patient.last_name == minimal_patient.last_name
-            assert decrypted_patient.date_of_birth == minimal_patient.date_of_birth
+            assert decrypted_patient.first_name  ==  minimal_patient.first_name
+            assert decrypted_patient.last_name  ==  minimal_patient.last_name
+            assert decrypted_patient.date_of_birth  ==  minimal_patient.date_of_birth
             
             # Verify optional fields are None
             assert decrypted_patient.email is None
@@ -181,4 +181,4 @@ class TestPatientModelEncryption:
             assert decrypted_patient.insurance is None # Already None in minimal_patient
             
             # Verify non-PHI field
-            assert decrypted_patient.active == minimal_patient.active
+            assert decrypted_patient.active  ==  minimal_patient.active

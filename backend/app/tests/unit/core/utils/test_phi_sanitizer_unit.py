@@ -14,7 +14,7 @@ from app.core.utils.phi_sanitizer import PHISanitizer, PHIDetector, PHIType # Re
 from app.infrastructure.security.log_sanitizer import get_sanitized_logger
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestPHIDetector:
     """Test suite for the PHI detector functionality."""
 
@@ -89,7 +89,7 @@ class TestPHISanitizer:
         sanitized = PHISanitizer.sanitize_text(sample_phi_text)
         
         # Assert
-        assert sanitized != sample_phi_text, "Sanitized text should differ from original"
+        assert sanitized  !=  sample_phi_text, "Sanitized text should differ from original"
         
         # Check that PHI has been redacted
         assert "123-45-6789" not in sanitized, "SSN should be redacted"
@@ -108,7 +108,7 @@ class TestPHISanitizer:
         sanitized = PHISanitizer.sanitize_text(sample_non_phi_text)
         
         # Assert
-        assert sanitized == sample_non_phi_text, "Text without PHI should remain unchanged"
+        assert sanitized  ==  sample_non_phi_text, "Text without PHI should remain unchanged"
 
     def test_sanitize_structured_data(self, sample_patient_data):
         """Test sanitization of structured data containing PHI."""
@@ -116,7 +116,7 @@ class TestPHISanitizer:
         sanitized = PHISanitizer.sanitize_structured_data(sample_patient_data)
         
         # Assert
-        assert sanitized != sample_patient_data, "Sanitized data should differ from original"
+        assert sanitized  !=  sample_patient_data, "Sanitized data should differ from original"
         
         # Check that PHI has been redacted
         assert sanitized["email"] != sample_patient_data["email"], "Email should be redacted"
@@ -149,7 +149,7 @@ class TestPHISanitizer:
         sanitized = PHISanitizer.sanitize_structured_data(nested_data)
         
         # Assert
-        assert sanitized != nested_data, "Sanitized data should differ from original"
+        assert sanitized  !=  nested_data, "Sanitized data should differ from original"
         
         # Check that PHI has been redacted at all levels
         assert sanitized["patient"]["personal"]["ssn"] != nested_data["patient"]["personal"]["ssn"]

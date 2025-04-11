@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomForecastingEnsemble
-from app.core.interfaces.ml.base_model import BaseMLModel
+, from app.core.interfaces.ml.base_model import BaseMLModel
 
 
 class TestSymptomForecastEnsembleModel:
@@ -75,8 +75,8 @@ class TestSymptomForecastEnsembleModel:
         result = await ensemble_model.predict(sample_input_data, horizon=4)
 
         # Verify component models were called
-        mock_model_1.predict.assert_called_once()
-        mock_model_2.predict.assert_called_once()
+        mock_model_1.predict.assert _called_once()
+        mock_model_2.predict.assert _called_once()
 
         # Verify result structure
         assert "predictions" in result
@@ -89,7 +89,7 @@ class TestSymptomForecastEnsembleModel:
             mock_model_1.predict.return_value["predictions"] * 0.7 +
             mock_model_2.predict.return_value["predictions"] * 0.3
         )
-        np.testing.assert_array_almost_equal(result["predictions"], expected_predictions)
+        np.testing.assert _array_almost_equal(result["predictions"], expected_predictions)
 
         # Verify contributing models are included
         assert "Model1" in result["contributing_models"]
@@ -114,7 +114,7 @@ class TestSymptomForecastEnsembleModel:
             mock_model_1.predict.return_value["predictions"] * 0.4 +
             mock_model_2.predict.return_value["predictions"] * 0.6
         )
-        np.testing.assert_array_almost_equal(result["predictions"], expected_predictions)
+        np.testing.assert _array_almost_equal(result["predictions"], expected_predictions)
 
         # Verify contributing models reflect custom weights
         assert result["contributing_models"]["Model1"]["weight"] == 0.4
@@ -138,7 +138,7 @@ class TestSymptomForecastEnsembleModel:
         assert result["contributing_models"]["Model2"]["weight"] == 1.0
 
         # Verify predictions match the working model
-        np.testing.assert_array_almost_equal(
+        np.testing.assert _array_almost_equal(
             result["predictions"],
             mock_model_2.predict.return_value["predictions"]
         )
@@ -202,8 +202,8 @@ class TestSymptomForecastEnsembleModel:
         await ensemble.initialize()
         
         # Verify
-        mock_model_1.initialize.assert_called_once()
-        mock_model_2.initialize.assert_called_once()
+        mock_model_1.initialize.assert _called_once()
+        mock_model_2.initialize.assert _called_once()
 
     async def test_get_model_info(self, mock_model_1, mock_model_2):
         """Test that get_model_info returns information about the ensemble and its component models."""

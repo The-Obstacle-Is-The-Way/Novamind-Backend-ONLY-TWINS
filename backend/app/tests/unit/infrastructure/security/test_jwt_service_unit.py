@@ -11,11 +11,11 @@ import datetime
 import time
 from unittest.mock import patch, MagicMock
 from freezegun import freeze_time
-from typing import Dict, Any # Added Any
+, from typing import Dict, Any # Added Any
 
 # Corrected imports: Removed non-existent classes/enums
 from app.infrastructure.security.jwt_service import JWTService
-from jwt.exceptions import PyJWTError # Import standard JWT errors
+, from jwt.exceptions import PyJWTError # Import standard JWT errors
 
 # Removed JWTConfig and related imports as they don't exist in jwt_service.py
 
@@ -72,11 +72,11 @@ async def token_pair(jwt_service, user_claims):
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestJWTService:
     """Test suite for the JWT service."""
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_create_access_token(self, jwt_service, user_claims):
         """Test creating an access token with user claims."""
         access_token = await jwt_service.create_token(user_claims, expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60)
@@ -97,7 +97,7 @@ class TestJWTService:
         assert "exp" in decoded
         assert "iat" in decoded # Check for issued at time
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_create_refresh_token(self, jwt_service, user_claims):
         """Test creating a refresh token with user claims."""
         # Add jti for refresh token simulation
@@ -121,7 +121,7 @@ class TestJWTService:
 
     # Removed test_create_token_pair as the method doesn't exist
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_validate_token_valid(self, jwt_service, token_pair):
         """Test validation of a valid token."""
         payload = await jwt_service.verify_token(token_pair["access_token"])
@@ -130,7 +130,7 @@ class TestJWTService:
         assert payload["sub"] == "user123"
         # Removed checks for TokenValidationResult as it doesn't exist
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_validate_token_invalid_signature(self, jwt_service, token_pair):
         """Test validation of a token with invalid signature."""
         tampered_token = token_pair["access_token"][:-5] + "XXXXX"
@@ -141,7 +141,7 @@ class TestJWTService:
         # Removed checks for TokenValidationResult
 
     @freeze_time("2025-03-27 12:00:00")
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_validate_token_expired(self, jwt_service, user_claims):
         """Test validation of an expired token."""
         # Create a token that expires immediately (or very soon)
@@ -156,7 +156,7 @@ class TestJWTService:
 
     # Removed test_validate_token_revoked as token store/revocation is not in current JWTService
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_validate_token_missing_claim(self, jwt_service, user_claims):
         """Test validation of a token with missing required claim."""
         # Current implementation doesn't enforce specific claims beyond JWT standard ones (exp, iat, sub)
@@ -177,14 +177,14 @@ class TestJWTService:
 
     # Removed test_token_required_decorator as it's not part of JWTService
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_refresh_tokens(self, jwt_service, token_pair, mock_token_store):
         """Test refreshing tokens using a valid refresh token."""
         # Refresh tokens
         new_access_token = await jwt_service.refresh_token(token_pair["refresh_token"], expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60)
         
         assert new_access_token is not None
-        assert new_access_token != token_pair["access_token"]
+        assert new_access_token  !=  token_pair["access_token"]
 
         # Decode new access token to verify claims
         new_payload = await jwt_service.verify_token(new_access_token)
@@ -199,7 +199,7 @@ class TestJWTService:
 
     # Removed test_revoke_all_refresh_tokens
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_extract_claims_invalid_token(self, jwt_service):
         """Test extracting claims from an invalid token."""
         with pytest.raises(ValueError) as excinfo:
@@ -209,7 +209,7 @@ class TestJWTService:
     # Removed test_validate_token_type as token_type isn't explicitly handled/validated
 
     @freeze_time("2025-03-27 12:00:00")
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_token_expiry_time(self, jwt_service, user_claims):
         """Test token expiration times."""
         access_token = await jwt_service.create_token(user_claims, expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60)
@@ -229,7 +229,7 @@ class TestJWTService:
 
     # Removed test_validate_claims as specific claim validation isn't implemented beyond standard JWT
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_verify_token_not_before(self, jwt_service, user_claims):
         """Test token validation with 'not before' (nbf) claim."""
         future_time = int(time.time()) + 3600
@@ -243,7 +243,7 @@ class TestJWTService:
 
     # Removed test_additional_audience_validation as audience isn't handled in current JWTService
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_custom_claims(self, jwt_service, user_claims):
         """Test adding custom claims."""
         # Add custom claims (no namespacing in current implementation)
@@ -268,7 +268,7 @@ class TestJWTService:
 
     # Removed test_token_store_integration
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_error_handling(self, jwt_service):
         """Test general error handling."""
         # Test with completely invalid token format

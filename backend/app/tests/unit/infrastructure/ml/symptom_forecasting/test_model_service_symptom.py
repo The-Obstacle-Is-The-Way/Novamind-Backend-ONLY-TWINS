@@ -16,7 +16,6 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.model_service import SymptomForecastingService
 from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel
-from app.core.interfaces.ml.base_model import BaseMLModel
 
 
 class TestSymptomForecastingService:

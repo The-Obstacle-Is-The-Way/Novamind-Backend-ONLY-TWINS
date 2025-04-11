@@ -9,18 +9,18 @@ the database and decrypted when retrieved, according to HIPAA requirements.
 import uuid
 import pytest
 from datetime import date
-from sqlalchemy import text
+, from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.entities.patient import Patient
+, from app.domain.entities.patient import Patient
 from app.domain.value_objects.address import Address
-from app.domain.value_objects.emergency_contact import EmergencyContact
+, from app.domain.value_objects.emergency_contact import EmergencyContact
 # Removed import of non-existent Insurance value object
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
-from app.infrastructure.security.encryption import EncryptionService
+, from app.infrastructure.security.encryption import EncryptionService
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPatientEncryptionIntegration:
     """Integration test suite for Patient model encryption with database."""
     
@@ -56,7 +56,7 @@ class TestPatientEncryptionIntegration:
             created_by=None
         )
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_phi_encrypted_in_database(self, db_session: AsyncSession, sample_patient):
         """Test that PHI is stored encrypted in the database."""
         # Create a real encryption service
@@ -79,21 +79,21 @@ class TestPatientEncryptionIntegration:
         row = result.fetchone()
         
         # Verify PHI data is stored encrypted (check that it doesn't match plaintext)
-        assert row.first_name != sample_patient.first_name
-        assert row.last_name != sample_patient.last_name
-        assert row.date_of_birth != sample_patient.date_of_birth.isoformat()
-        assert row.email != sample_patient.email
-        assert row.phone != sample_patient.phone
-        assert row.address_line1 != sample_patient.address.line1
+        assert row.first_name  !=  sample_patient.first_name
+        assert row.last_name  !=  sample_patient.last_name
+        assert row.date_of_birth  !=  sample_patient.date_of_birth.isoformat()
+        assert row.email  !=  sample_patient.email
+        assert row.phone  !=  sample_patient.phone
+        assert row.address_line1  !=  sample_patient.address.line1
         
         # Verify we can decrypt the data correctly
         decrypted_first_name = encryption_service.decrypt(row.first_name)
         decrypted_email = encryption_service.decrypt(row.email)
         
-        assert decrypted_first_name == sample_patient.first_name
-        assert decrypted_email == sample_patient.email
+        assert decrypted_first_name  ==  sample_patient.first_name
+        assert decrypted_email  ==  sample_patient.email
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_phi_decrypted_in_repository(self, db_session: AsyncSession, sample_patient):
         """Test that PHI is automatically decrypted when retrieved through repository."""
         # Save encrypted patient to database
@@ -110,24 +110,24 @@ class TestPatientEncryptionIntegration:
         retrieved_patient = retrieved_patient_model.to_domain()
         
         # Verify PHI fields are correctly decrypted
-        assert retrieved_patient.first_name == sample_patient.first_name
-        assert retrieved_patient.last_name == sample_patient.last_name
-        assert retrieved_patient.date_of_birth == sample_patient.date_of_birth
-        assert retrieved_patient.email == sample_patient.email
-        assert retrieved_patient.phone == sample_patient.phone
+        assert retrieved_patient.first_name  ==  sample_patient.first_name
+        assert retrieved_patient.last_name  ==  sample_patient.last_name
+        assert retrieved_patient.date_of_birth  ==  sample_patient.date_of_birth
+        assert retrieved_patient.email  ==  sample_patient.email
+        assert retrieved_patient.phone  ==  sample_patient.phone
         
         # Verify complex PHI objects are decrypted
-        assert retrieved_patient.address.line1 == sample_patient.address.line1
-        assert retrieved_patient.address.city == sample_patient.address.city
+        assert retrieved_patient.address.line1  ==  sample_patient.address.line1
+        assert retrieved_patient.address.city  ==  sample_patient.address.city
         
-        assert retrieved_patient.emergency_contact.name == sample_patient.emergency_contact.name
-        assert retrieved_patient.emergency_contact.phone == sample_patient.emergency_contact.phone
+        assert retrieved_patient.emergency_contact.name  ==  sample_patient.emergency_contact.name
+        assert retrieved_patient.emergency_contact.phone  ==  sample_patient.emergency_contact.phone
         
         # Verify insurance_info dictionary
         assert retrieved_patient.insurance_info["provider"] == sample_patient.insurance_info["provider"]
         assert retrieved_patient.insurance_info["policy_number"] == sample_patient.insurance_info["policy_number"]
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_encryption_error_handling(self, db_session: AsyncSession):
         """Test that encryption/decryption errors are handled gracefully."""
         # Create patient with an ID that can be referenced in logs without exposing PHI
@@ -165,6 +165,6 @@ class TestPatientEncryptionIntegration:
         retrieved_patient = retrieved_model.to_domain()
         
         # The decryption failure for first_name should result in None rather than crashing
-        assert retrieved_patient.id == patient_id  # ID should still match
+        assert retrieved_patient.id  ==  patient_id  # ID should still match
         assert retrieved_patient.first_name is None  # Failed decryption should return None
-        assert retrieved_patient.last_name == patient.last_name  # Other fields should be fine
+        assert retrieved_patient.last_name  ==  patient.last_name  # Other fields should be fine

@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime, UTC, UTC, timedelta
 
 from app.domain.entities.analytics import AnalyticsAggregate
-from app.application.use_cases.analytics.retrieve_aggregated_analytics import RetrieveAggregatedAnalyticsUseCase
+, from app.application.use_cases.analytics.retrieve_aggregated_analytics import RetrieveAggregatedAnalyticsUseCase
 
 
 @pytest.fixture
@@ -101,16 +101,16 @@ def use_case(mock_analytics_repository, mock_cache_service):
             cache_service=mock_cache_service
         )
         
-        # Attach the mock logger for assertions
+        # Attach the mock logger for assert ions
         use_case._logger = mock_logger_instance
         return use_case
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestRetrieveAggregatedAnalyticsUseCase:
     """Test suite for the RetrieveAggregatedAnalyticsUseCase."""
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_execute_with_basic_parameters(self, use_case, mock_analytics_repository):
         """
         Test retrieving aggregated data with basic parameters.
@@ -132,13 +132,13 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         assert result[1].dimensions["event_type"] == "feature_usage"
         
         # Verify repository was called with correct parameters
-        mock_analytics_repository.get_aggregates.assert_called_once()
+        mock_analytics_repository.get_aggregates.assert _called_once()
         call_args = mock_analytics_repository.get_aggregates.call_args[1]
         assert call_args["aggregate_type"] == aggregate_type
         assert call_args["dimensions"] == dimensions
         
         # Verify appropriate logging
-        use_case._logger.info.assert_any_call(
+        use_case._logger.info.assert _any_call(
             f"Retrieving {aggregate_type} analytics",
             {
                 "dimensions": dimensions,
@@ -146,7 +146,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
             }
         )
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_execute_with_filters_and_time_range(self, use_case, mock_analytics_repository):
         """
         Test retrieving data with filters and custom time range.
@@ -180,7 +180,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         assert call_args["start_time"] == week_ago
         assert call_args["end_time"] == now
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_time_range_string_handling(self, use_case, mock_analytics_repository):
         """
         Test handling of string format time ranges.
@@ -207,7 +207,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         assert call_args["end_time"].month == 3
         assert call_args["end_time"].day == 30
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_invalid_time_range_handling(self, use_case, mock_analytics_repository):
         """
         Test handling of invalid time ranges.
@@ -233,7 +233,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         # End time should be current time (can't test exact value)
         assert isinstance(call_args["end_time"], datetime)
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_dimension_sanitization(self, use_case, mock_analytics_repository):
         """
         Test sanitization of dimension parameters.
@@ -253,7 +253,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         assert "user_role" in call_args["dimensions"]
         assert "invalid_dimension" not in call_args["dimensions"]
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_filter_sanitization(self, use_case, mock_analytics_repository):
         """
         Test sanitization of filter parameters.
@@ -281,7 +281,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         assert "platform" in call_args["filters"]
         assert isinstance(call_args["filters"]["platform"], str)
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_caching_behavior(self, use_case, mock_analytics_repository, mock_cache_service):
         """
         Test caching of aggregation results.
@@ -298,7 +298,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         )
         
         # Repository should have been called
-        assert mock_analytics_repository.get_aggregates.call_count == 1
+        assert mock_analytics_repository.get_aggregates.call_count  ==  1
         
         # Get the cache key that was used
         cache_keys = list(mock_cache_service._cache_data.keys())
@@ -313,15 +313,15 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         )
         
         # Repository should not have been called again
-        assert mock_analytics_repository.get_aggregates.call_count == 1
+        assert mock_analytics_repository.get_aggregates.call_count  ==  1
         
         # Cache retrieval should have been logged
-        use_case._logger.info.assert_any_call(
+        use_case._logger.info.assert _any_call(
             f"Retrieved cached analytics for {aggregate_type}",
             {"dimensions": dimensions}
         )
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_cache_ttl_determination(self, use_case):
         """
         Test different TTL values based on query parameters.
@@ -358,11 +358,11 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         )
         
         # Assert appropriate TTLs
-        assert historical_ttl == 3600 * 24  # 24 hours for historical data
-        assert recent_ttl == 300  # 5 minutes for recent data
-        assert regular_ttl == 3600  # 1 hour for regular data
+        assert historical_ttl  ==  3600 * 24  # 24 hours for historical data
+        assert recent_ttl  ==  300  # 5 minutes for recent data
+        assert regular_ttl  ==  3600  # 1 hour for regular data
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_cache_key_generation(self, use_case):
         """
         Test generation of cache keys from parameters.
@@ -400,9 +400,9 @@ class TestRetrieveAggregatedAnalyticsUseCase:
             end_time=now
         )
         
-        assert key != key2
+        assert key  !=  key2
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_empty_dimensions_default(self, use_case, mock_analytics_repository):
         """
         Test default dimension when empty list provided.
@@ -420,7 +420,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         call_args = mock_analytics_repository.get_aggregates.call_args[1]
         assert call_args["dimensions"] == ["event_type"]
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_very_large_time_range_limit(self, use_case, mock_analytics_repository):
         """
         Test limiting of very large time ranges.

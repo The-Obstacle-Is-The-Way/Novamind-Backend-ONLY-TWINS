@@ -10,12 +10,12 @@ import pytest
 from typing import Dict, Any, Generator
 from unittest.mock import patch, MagicMock
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+, from fastapi.testclient import TestClient
 from datetime import datetime, timezone
 
-from app.api.routes.xgboost import router as xgboost_router
+from app.api.routes.xgboost import router , as xgboost_router
 from app.core.services.ml.xgboost.interface import XGBoostInterface
-from app.core.services.ml.xgboost.exceptions import (
+, from app.core.services.ml.xgboost.exceptions import (
     ValidationError,   DataPrivacyError,   ResourceNotFoundError,  
     ModelNotFoundError,   ServiceUnavailableError
 )
@@ -292,7 +292,7 @@ def valid_outcome_prediction_data() -> Dict[str, Any]:
     }
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestXGBoostAPIIntegration:
     """Integration tests for XGBoost API endpoints."""
 
@@ -328,7 +328,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         result = response.json()
         assert result["prediction_id"] == "risk-123"
         assert result["patient_id"] == "test-patient-123"
@@ -339,7 +339,7 @@ class TestXGBoostAPIIntegration:
         assert len(result["factors"]) == 2
         
         # Verify service was called with correct data
-        mock_xgboost_service.predict_risk.assert_called_once_with(
+        mock_xgboost_service.predict_risk.assert _called_once_with(
             patient_id="test-patient-123",
             risk_type="relapse",
             clinical_data=valid_risk_prediction_data["clinical_data"],
@@ -372,7 +372,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 400
+        assert response.status_code  ==  400
         result = response.json()
         assert "detail" in result
         assert "Invalid risk type" in result["detail"]
@@ -406,7 +406,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 400
+        assert response.status_code  ==  400
         result = response.json()
         assert "detail" in result
         assert "sensitive information" in result["detail"]
@@ -478,7 +478,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         result = response.json()
         assert result["prediction_id"] == "treatment-123"
         assert result["patient_id"] == "test-patient-123"
@@ -490,7 +490,7 @@ class TestXGBoostAPIIntegration:
         assert len(result["factors"]) == 2
         
         # Verify service was called with correct data
-        mock_xgboost_service.predict_treatment_response.assert_called_once_with(
+        mock_xgboost_service.predict_treatment_response.assert _called_once_with(
             patient_id="test-patient-123",
             treatment_type="medication",
             treatment_details=valid_treatment_response_data["treatment_details"],
@@ -555,7 +555,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         result = response.json()
         assert result["prediction_id"] == "outcome-123"
         assert result["patient_id"] == "test-patient-123"
@@ -566,7 +566,7 @@ class TestXGBoostAPIIntegration:
         assert len(result["recommendations"]) == 2
         
         # Verify service was called with correct data
-        mock_xgboost_service.predict_outcome.assert_called_once_with(
+        mock_xgboost_service.predict_outcome.assert _called_once_with(
             patient_id="test-patient-123",
             outcome_timeframe=valid_outcome_prediction_data["outcome_timeframe"],
             clinical_data=valid_outcome_prediction_data["clinical_data"],
@@ -616,7 +616,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         result = response.json()
         assert result["prediction_id"] == "risk-123"
         assert result["patient_id"] == "test-patient-123"
@@ -626,7 +626,7 @@ class TestXGBoostAPIIntegration:
         assert "local_importance" in result
         
         # Verify service was called with correct data
-        mock_xgboost_service.get_feature_importance.assert_called_once_with(
+        mock_xgboost_service.get_feature_importance.assert _called_once_with(
             patient_id="test-patient-123",
             model_type="risk",
             prediction_id="risk-123"
@@ -656,7 +656,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 404
+        assert response.status_code  ==  404
         result = response.json()
         assert "detail" in result
         assert "not found" in result["detail"]
@@ -696,7 +696,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         result = response.json()
         assert result["integration_id"] == "integration-123"
         assert result["patient_id"] == "test-patient-123"
@@ -706,7 +706,7 @@ class TestXGBoostAPIIntegration:
         assert "details" in result
         
         # Verify service was called with correct data
-        mock_xgboost_service.integrate_with_digital_twin.assert_called_once_with(
+        mock_xgboost_service.integrate_with_digital_twin.assert _called_once_with(
             patient_id="test-patient-123",
             profile_id="profile-123",
             prediction_id="risk-123"
@@ -747,7 +747,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         result = response.json()
         assert result["model_type"] == "relapse_risk"
         assert result["version"] == "1.0.0"
@@ -756,7 +756,7 @@ class TestXGBoostAPIIntegration:
         assert "description" in result
         
         # Verify service was called with correct data
-        mock_xgboost_service.get_model_info.assert_called_once_with(
+        mock_xgboost_service.get_model_info.assert _called_once_with(
             model_type="relapse_risk"
         )
 
@@ -780,7 +780,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 404
+        assert response.status_code  ==  404
         result = response.json()
         assert "detail" in result
         assert "not found" in result["detail"]
@@ -806,7 +806,7 @@ class TestXGBoostAPIIntegration:
         )
         
         # Verify response
-        assert response.status_code == 503
+        assert response.status_code  ==  503
         result = response.json()
         assert "detail" in result
         assert "unavailable" in result["detail"]

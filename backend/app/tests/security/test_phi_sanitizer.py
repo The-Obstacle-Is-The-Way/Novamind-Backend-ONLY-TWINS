@@ -5,11 +5,11 @@ import json
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.log_sanitizer import LogSanitizer
-from app.infrastructure.security.phi_sanitizer import PHISanitizer
+, from app.infrastructure.security.phi_sanitizer import PHISanitizer
 from app.core.utils.validation import PHIDetector
 
 
-class TestPHISanitizer:
+, class TestPHISanitizer:
     """Test suite for the PHI Sanitizer component."""
 
     @pytest.fixture
@@ -205,7 +205,7 @@ class TestPHISanitizer:
             result = test_sanitizer.sanitize_text("Patient SSN: 123-45-6789")
             
             # Verify PHI detector was called
-            mock_detector_instance.detect_phi.assert_called_once()
+            mock_detector_instance.detect_phi.assert _called_once()
             assert "123-45-6789" not in result
 
     def test_phi_sanitizer_performance(self, sanitizer, sample_phi_data):

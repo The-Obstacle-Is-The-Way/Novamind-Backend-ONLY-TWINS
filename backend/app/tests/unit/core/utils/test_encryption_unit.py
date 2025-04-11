@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 from app.core.utils.encryption import EncryptionService
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestEncryptionService:
     """Tests for the HIPAA-compliant encryption service."""
     
@@ -24,7 +24,7 @@ class TestEncryptionService:
         """Test encryption service initialization."""
         with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_key"}):
             service = EncryptionService()
-            assert service.secret_key == "test_key"
+            assert service.secret_key  ==  "test_key"
             assert service.salt is not None
             assert service.key is not None
             assert service.cipher is not None
@@ -44,13 +44,13 @@ class TestEncryptionService:
         encrypted = encryption_service.encrypt_string(plaintext)
         
         # Verify the encrypted text is different from plaintext
-        assert encrypted != plaintext
+        assert encrypted  !=  plaintext
         
         # Decrypt the string
         decrypted = encryption_service.decrypt_string(encrypted)
         
         # Verify the decrypted text matches the original
-        assert decrypted == plaintext
+        assert decrypted  ==  plaintext
     
     def test_encrypt_decrypt_empty_string(self, encryption_service):
         """Test encrypting and decrypting an empty string."""
@@ -60,13 +60,13 @@ class TestEncryptionService:
         encrypted = encryption_service.encrypt_string(plaintext)
         
         # Verify the encrypted text is also empty
-        assert encrypted == ""
+        assert encrypted  ==  ""
         
         # Decrypt the string
         decrypted = encryption_service.decrypt_string(encrypted)
         
         # Verify the decrypted text is empty
-        assert decrypted == ""
+        assert decrypted  ==  ""
     
     def test_decrypt_invalid_string(self, encryption_service):
         """Test decrypting an invalid string raises error."""
@@ -107,7 +107,7 @@ class TestEncryptionService:
         decrypted_data = encryption_service.decrypt_dict(encrypted_data, sensitive_fields)
         
         # Verify all fields match the original
-        assert decrypted_data == data
+        assert decrypted_data  ==  data
     
     def test_encrypt_decrypt_nested_dict(self, encryption_service):
         """Test encrypting and decrypting a nested dictionary."""
@@ -144,7 +144,7 @@ class TestEncryptionService:
         decrypted_data = encryption_service.decrypt_dict(encrypted_data, sensitive_fields)
         
         # Verify all fields match the original
-        assert decrypted_data == data
+        assert decrypted_data  ==  data
     
     def test_generate_verify_hash(self, encryption_service):
         """Test generating and verifying a hash."""

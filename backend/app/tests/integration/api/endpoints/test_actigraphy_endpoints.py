@@ -16,11 +16,11 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.testclient import TestClient
 
-from app.api.dependencies.auth import get_current_user
+, from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.ml import get_pat_service
-from app.api.routes.actigraphy import router as actigraphy_router
+, from app.api.routes.actigraphy import router as actigraphy_router
 from app.domain.entities.user import User
-from app.core.services.ml.pat.mock import MockPATService
+, from app.core.services.ml.pat.mock import MockPATService
 
 
 @pytest.fixture
@@ -124,7 +124,7 @@ def sample_device_info() -> Dict[str, Any]:
     }
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 def test_unauthenticated_access(client: TestClient) -> None:
     """Test that unauthenticated requests are rejected.
     
@@ -135,7 +135,7 @@ def test_unauthenticated_access(client: TestClient) -> None:
     response = client.get("/api/v1/actigraphy/model-info")
     
     # Should return 401 Unauthorized
-    assert response.status_code == 401
+    assert response.status_code  ==  401
     assert "Not authenticated" in response.text
 
 
@@ -153,7 +153,7 @@ def test_authorized_access(client: TestClient, patient_token: str) -> None:
     )
     
     # Should return 200 OK
-    assert response.status_code == 200
+    assert response.status_code  ==  200
 
 
 def test_input_validation(client: TestClient, patient_token: str) -> None:
@@ -181,7 +181,7 @@ def test_input_validation(client: TestClient, patient_token: str) -> None:
     )
     
     # Should return 422 Unprocessable Entity
-    assert response.status_code == 422
+    assert response.status_code  ==  422
     # Check for validation error messages
     assert "value_error" in response.text
 
@@ -223,7 +223,7 @@ def test_phi_data_sanitization(
     )
     
     # Should return 200 OK because sanitization happens internally
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     
     # Get analysis ID
     analysis_id = response.json()["analysis_id"]
@@ -277,7 +277,7 @@ def test_role_based_access_control(
         headers={"Authorization": f"Bearer {provider_token}"}
     )
     
-    assert provider_response.status_code == 200
+    assert provider_response.status_code  ==  200
     analysis_id = provider_response.json()["analysis_id"]
     
     # Patient can view their own analysis
@@ -286,7 +286,7 @@ def test_role_based_access_control(
         headers={"Authorization": f"Bearer {patient_token}"}
     )
     
-    assert patient_view_response.status_code == 200
+    assert patient_view_response.status_code  ==  200
     
     # Admin can view any analysis
     admin_view_response = client.get(
@@ -294,7 +294,7 @@ def test_role_based_access_control(
         headers={"Authorization": f"Bearer {admin_token}"}
     )
     
-    assert admin_view_response.status_code == 200
+    assert admin_view_response.status_code  ==  200
     
     # Patient can't access certain admin features
     patient_admin_response = client.get(
@@ -345,7 +345,7 @@ def test_hipaa_audit_logging(
                 headers={"Authorization": f"Bearer {provider_token}"}
             )
             
-            assert provider_response.status_code == 200
+            assert provider_response.status_code  ==  200
             analysis_id = provider_response.json()["analysis_id"]
             
             # Get the analysis
@@ -416,7 +416,7 @@ def test_secure_data_transmission(
         headers={"Authorization": f"Bearer {provider_token}"}
     )
     
-    assert provider_response.status_code == 200
+    assert provider_response.status_code  ==  200
     analysis_id = provider_response.json()["analysis_id"]
     
     # Create a client that captures request details
@@ -471,7 +471,7 @@ def test_secure_data_transmission(
     assert not any("test-patient" in str(v) for v in query_params.values())
 
 
-def test_api_response_structure(
+        def test_api_response_structure(
     client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],

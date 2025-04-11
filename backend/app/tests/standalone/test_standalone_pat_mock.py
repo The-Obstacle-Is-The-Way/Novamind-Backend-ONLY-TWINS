@@ -7,7 +7,7 @@ without requiring external dependencies.
 
 import pytest
 from datetime import datetime
-from unittest.mock import MagicMock
+, from unittest.mock import MagicMock
 
 from app.core.services.ml.pat.exceptions import (
     ValidationError,  
@@ -72,7 +72,7 @@ class TestStandaloneMockPAT:
         # Initialize and check state
         mock_pat.initialize({"mock_delay_ms": 100})
         assert mock_pat._initialized
-        assert mock_pat._mock_delay_ms == 100
+        assert mock_pat._mock_delay_ms  ==  100
         
         # Should not raise error now
         mock_pat._check_initialized()

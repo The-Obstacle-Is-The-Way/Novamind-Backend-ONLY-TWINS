@@ -70,7 +70,7 @@ def valid_patient(valid_patient_data):
     return Patient(**valid_patient_data)
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestPatient:
     """Tests for the Patient class."""
     
@@ -78,22 +78,22 @@ class TestPatient:
         """Test creating a patient."""
         patient = Patient(**valid_patient_data)
         
-        assert patient.id == valid_patient_data["id"]
-        assert patient.first_name == valid_patient_data["first_name"]
-        assert patient.last_name == valid_patient_data["last_name"]
-        assert patient.date_of_birth == valid_patient_data["date_of_birth"]
-        assert patient.gender == valid_patient_data["gender"]
-        assert patient.email == valid_patient_data["email"]
-        assert patient.phone == valid_patient_data["phone"]
-        assert patient.address == valid_patient_data["address"]
-        assert patient.emergency_contacts == valid_patient_data["emergency_contacts"]
-        assert patient.insurance_info == valid_patient_data["insurance_info"]
-        assert patient.insurance_status == valid_patient_data["insurance_status"]
-        assert patient.medical_history == valid_patient_data["medical_history"]
-        assert patient.medications == valid_patient_data["medications"]
-        assert patient.allergies == valid_patient_data["allergies"]
-        assert patient.notes == valid_patient_data["notes"]
-        assert patient.status == valid_patient_data["status"]
+        assert patient.id  ==  valid_patient_data["id"]
+        assert patient.first_name  ==  valid_patient_data["first_name"]
+        assert patient.last_name  ==  valid_patient_data["last_name"]
+        assert patient.date_of_birth  ==  valid_patient_data["date_of_birth"]
+        assert patient.gender  ==  valid_patient_data["gender"]
+        assert patient.email  ==  valid_patient_data["email"]
+        assert patient.phone  ==  valid_patient_data["phone"]
+        assert patient.address  ==  valid_patient_data["address"]
+        assert patient.emergency_contacts  ==  valid_patient_data["emergency_contacts"]
+        assert patient.insurance_info  ==  valid_patient_data["insurance_info"]
+        assert patient.insurance_status  ==  valid_patient_data["insurance_status"]
+        assert patient.medical_history  ==  valid_patient_data["medical_history"]
+        assert patient.medications  ==  valid_patient_data["medications"]
+        assert patient.allergies  ==  valid_patient_data["allergies"]
+        assert patient.notes  ==  valid_patient_data["notes"]
+        assert patient.status  ==  valid_patient_data["status"]
     
     def test_create_patient_with_string_enums(self, valid_patient_data):
         """Test creating a patient with string enums."""
@@ -105,9 +105,9 @@ class TestPatient:
         
         patient = Patient(**data)
         
-        assert patient.gender == Gender.MALE
-        assert patient.insurance_status == InsuranceStatus.VERIFIED
-        assert patient.status == PatientStatus.ACTIVE
+        assert patient.gender  ==  Gender.MALE
+        assert patient.insurance_status  ==  InsuranceStatus.VERIFIED
+        assert patient.status  ==  PatientStatus.ACTIVE
     
     def test_create_patient_with_string_date(self, valid_patient_data):
         """Test creating a patient with string date."""
@@ -117,7 +117,7 @@ class TestPatient:
         
         patient = Patient(**data)
         
-        assert patient.date_of_birth == date(1980, 1, 1)
+        assert patient.date_of_birth  ==  date(1980, 1, 1)
     
     def test_create_patient_with_auto_id(self, valid_patient_data):
         """Test creating a patient with auto-generated ID."""
@@ -210,13 +210,13 @@ class TestPatient:
             }
         )
         
-        assert valid_patient.first_name == "Jane"
-        assert valid_patient.last_name == "Smith"
-        assert valid_patient.date_of_birth == date(1981, 2, 2)
-        assert valid_patient.gender == Gender.FEMALE
-        assert valid_patient.email == "jane.smith@example.com"
-        assert valid_patient.phone == "555-987-6543"
-        assert valid_patient.address == {
+        assert valid_patient.first_name  ==  "Jane"
+        assert valid_patient.last_name  ==  "Smith"
+        assert valid_patient.date_of_birth  ==  date(1981, 2, 2)
+        assert valid_patient.gender  ==  Gender.FEMALE
+        assert valid_patient.email  ==  "jane.smith@example.com"
+        assert valid_patient.phone  ==  "555-987-6543"
+        assert valid_patient.address  ==  {
             "street": "456 Oak St",
             "city": "Othertown",
             "state": "NY",
@@ -230,7 +230,7 @@ class TestPatient:
             date_of_birth="1981-02-02"
         )
         
-        assert valid_patient.date_of_birth == date(1981, 2, 2)
+        assert valid_patient.date_of_birth  ==  date(1981, 2, 2)
     
     def test_update_personal_info_with_string_gender(self, valid_patient):
         """Test updating personal information with string gender."""
@@ -238,7 +238,7 @@ class TestPatient:
             gender="female"
         )
         
-        assert valid_patient.gender == Gender.FEMALE
+        assert valid_patient.gender  ==  Gender.FEMALE
     
     def test_update_insurance_info(self, valid_patient):
         """Test updating insurance information."""
@@ -253,8 +253,8 @@ class TestPatient:
             insurance_status=InsuranceStatus.PENDING
         )
         
-        assert valid_patient.insurance_info == new_insurance_info
-        assert valid_patient.insurance_status == InsuranceStatus.PENDING
+        assert valid_patient.insurance_info  ==  new_insurance_info
+        assert valid_patient.insurance_status  ==  InsuranceStatus.PENDING
         assert valid_patient.updated_at > valid_patient.created_at
     
     def test_update_insurance_info_with_string_status(self, valid_patient):
@@ -264,7 +264,7 @@ class TestPatient:
             insurance_status="pending"
         )
         
-        assert valid_patient.insurance_status == InsuranceStatus.PENDING
+        assert valid_patient.insurance_status  ==  InsuranceStatus.PENDING
     
     def test_add_emergency_contact(self, valid_patient):
         """Test adding an emergency contact."""
@@ -395,7 +395,7 @@ class TestPatient:
         valid_patient.add_allergy("Penicillin")
         
         assert len(valid_patient.allergies) == 1
-        assert valid_patient.updated_at == original_updated_at
+        assert valid_patient.updated_at  ==  original_updated_at
     
     def test_remove_allergy(self, valid_patient):
         """Test removing an allergy."""
@@ -415,20 +415,20 @@ class TestPatient:
         valid_patient.remove_allergy("Sulfa")
         
         assert len(valid_patient.allergies) == 1
-        assert valid_patient.updated_at == original_updated_at
+        assert valid_patient.updated_at  ==  original_updated_at
     
     def test_update_status(self, valid_patient):
         """Test updating the patient's status."""
         valid_patient.update_status(PatientStatus.INACTIVE)
         
-        assert valid_patient.status == PatientStatus.INACTIVE
+        assert valid_patient.status  ==  PatientStatus.INACTIVE
         assert valid_patient.updated_at > valid_patient.created_at
     
     def test_update_status_with_string(self, valid_patient):
         """Test updating the patient's status with a string."""
         valid_patient.update_status("inactive")
         
-        assert valid_patient.status == PatientStatus.INACTIVE
+        assert valid_patient.status  ==  PatientStatus.INACTIVE
     
     def test_update_notes(self, valid_patient):
         """Test updating the patient's notes."""
@@ -436,7 +436,7 @@ class TestPatient:
         
         valid_patient.update_notes(new_notes)
         
-        assert valid_patient.notes == new_notes
+        assert valid_patient.notes  ==  new_notes
         assert valid_patient.updated_at > valid_patient.created_at
     
     def test_update_appointment_times(self, valid_patient):
@@ -449,8 +449,8 @@ class TestPatient:
             next_appointment=next_appointment
         )
         
-        assert valid_patient.last_appointment == last_appointment
-        assert valid_patient.next_appointment == next_appointment
+        assert valid_patient.last_appointment  ==  last_appointment
+        assert valid_patient.next_appointment  ==  next_appointment
         assert valid_patient.updated_at > valid_patient.created_at
     
     def test_set_preferred_provider(self, valid_patient):
@@ -459,7 +459,7 @@ class TestPatient:
         
         valid_patient.set_preferred_provider(provider_id)
         
-        assert valid_patient.preferred_provider_id == provider_id
+        assert valid_patient.preferred_provider_id  ==  provider_id
         assert valid_patient.updated_at > valid_patient.created_at
     
     def test_to_dict(self, valid_patient):
@@ -488,29 +488,29 @@ class TestPatient:
         patient_dict = valid_patient.to_dict()
         new_patient = Patient.from_dict(patient_dict)
         
-        assert new_patient.id == valid_patient.id
-        assert new_patient.first_name == valid_patient.first_name
-        assert new_patient.last_name == valid_patient.last_name
-        assert new_patient.date_of_birth == valid_patient.date_of_birth
-        assert new_patient.gender == valid_patient.gender
-        assert new_patient.email == valid_patient.email
-        assert new_patient.phone == valid_patient.phone
-        assert new_patient.address == valid_patient.address
-        assert new_patient.emergency_contacts == valid_patient.emergency_contacts
-        assert new_patient.insurance_info == valid_patient.insurance_info
-        assert new_patient.insurance_status == valid_patient.insurance_status
-        assert new_patient.medical_history == valid_patient.medical_history
-        assert new_patient.medications == valid_patient.medications
-        assert new_patient.allergies == valid_patient.allergies
-        assert new_patient.notes == valid_patient.notes
-        assert new_patient.status == valid_patient.status
+        assert new_patient.id  ==  valid_patient.id
+        assert new_patient.first_name  ==  valid_patient.first_name
+        assert new_patient.last_name  ==  valid_patient.last_name
+        assert new_patient.date_of_birth  ==  valid_patient.date_of_birth
+        assert new_patient.gender  ==  valid_patient.gender
+        assert new_patient.email  ==  valid_patient.email
+        assert new_patient.phone  ==  valid_patient.phone
+        assert new_patient.address  ==  valid_patient.address
+        assert new_patient.emergency_contacts  ==  valid_patient.emergency_contacts
+        assert new_patient.insurance_info  ==  valid_patient.insurance_info
+        assert new_patient.insurance_status  ==  valid_patient.insurance_status
+        assert new_patient.medical_history  ==  valid_patient.medical_history
+        assert new_patient.medications  ==  valid_patient.medications
+        assert new_patient.allergies  ==  valid_patient.allergies
+        assert new_patient.notes  ==  valid_patient.notes
+        assert new_patient.status  ==  valid_patient.status
     
     def test_equality(self, valid_patient_data):
         """Test patient equality."""
         patient1 = Patient(**valid_patient_data)
         patient2 = Patient(**valid_patient_data)
         
-        assert patient1 == patient2
+        assert patient1  ==  patient2
         assert hash(patient1) == hash(patient2)
     
     def test_inequality(self, valid_patient_data):
@@ -521,9 +521,9 @@ class TestPatient:
         data2["id"] = str(uuid.uuid4())
         patient2 = Patient(**data2)
         
-        assert patient1 != patient2
+        assert patient1  !=  patient2
         assert hash(patient1) != hash(patient2)
-        assert patient1 != "not a patient"
+        assert patient1  !=  "not a patient"
     
     def test_string_representation(self, valid_patient):
         """Test string representation of a patient."""

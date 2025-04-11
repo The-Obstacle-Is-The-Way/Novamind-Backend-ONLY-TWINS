@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.entities.temporal_sequence import TemporalSequence
+, from app.domain.entities.temporal_sequence import TemporalSequence
 from app.infrastructure.models.temporal_sequence_model import (
     TemporalSequenceModel,  
     TemporalDataPointModel
@@ -38,7 +38,7 @@ def mock_session():
 
 
 @pytest.fixture
-@pytest.mark.db_required
+@pytest.mark.db_required()
 def test_sequence():
     """Create a test temporal sequence for tests."""
     now = datetime.now()
@@ -105,9 +105,9 @@ class TestSqlAlchemyTemporalSequenceRepository:
     def test_init(self, mock_session):
         """Test repository initialization."""
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
-        assert repo.session == mock_session
+        assert repo.session  ==  mock_session
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_save(self, mock_session, test_sequence):
         """Test saving a temporal sequence."""
         # Setup
@@ -117,30 +117,30 @@ class TestSqlAlchemyTemporalSequenceRepository:
         result = await repo.save(test_sequence)
         
         # Verify
-        assert result == test_sequence.sequence_id
-        mock_session.add.assert_called_once()
-        mock_session.add_all.assert_called_once()
-        mock_session.flush.assert_awaited_once()
+        assert result  ==  test_sequence.sequence_id
+        mock_session.add.assert _called_once()
+        mock_session.add_all.assert _called_once()
+        mock_session.flush.assert _awaited_once()
         
         # Verify model creation
         added_model = mock_session.add.call_args[0][0]
         assert isinstance(added_model, TemporalSequenceModel)
-        assert added_model.sequence_id == test_sequence.sequence_id
-        assert added_model.patient_id == test_sequence.patient_id
-        assert added_model.feature_names == test_sequence.feature_names
-        assert added_model.sequence_metadata == test_sequence.sequence_metadata # Renamed
+        assert added_model.sequence_id  ==  test_sequence.sequence_id
+        assert added_model.patient_id  ==  test_sequence.patient_id
+        assert added_model.feature_names  ==  test_sequence.feature_names
+        assert added_model.sequence_metadata  ==  test_sequence.sequence_metadata # Renamed
         
         # Verify data points creation
         data_points = mock_session.add_all.call_args[0][0]
         assert len(data_points) == len(test_sequence.timestamps)
         for i, point in enumerate(data_points):
             assert isinstance(point, TemporalDataPointModel)
-            assert point.sequence_id == test_sequence.sequence_id
-            assert point.position == i
-            assert point.timestamp == test_sequence.timestamps[i]
-            assert point.values == test_sequence.values[i]
+            assert point.sequence_id  ==  test_sequence.sequence_id
+            assert point.position  ==  i
+            assert point.timestamp  ==  test_sequence.timestamps[i]
+            assert point.values  ==  test_sequence.values[i]
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_by_id_found(self, mock_session, mock_sequence_model, mock_data_points):
         """Test getting a sequence by ID when found."""
         # Setup
@@ -165,17 +165,17 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result is not None
-        assert result.sequence_id == mock_sequence_model.sequence_id
-        assert result.patient_id == mock_sequence_model.patient_id
-        assert result.feature_names == mock_sequence_model.feature_names
-        assert result.sequence_metadata == mock_sequence_model.sequence_metadata # Renamed
+        assert result.sequence_id  ==  mock_sequence_model.sequence_id
+        assert result.patient_id  ==  mock_sequence_model.patient_id
+        assert result.feature_names  ==  mock_sequence_model.feature_names
+        assert result.sequence_metadata  ==  mock_sequence_model.sequence_metadata # Renamed
         assert len(result.timestamps) == len(mock_data_points)
         assert len(result.values) == len(mock_data_points)
         
         # Verify that execute was called twice
-        assert mock_session.execute.call_count == 2
+        assert mock_session.execute.call_count  ==  2
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_by_id_not_found(self, mock_session):
         """Test getting a sequence by ID when not found."""
         # Setup
@@ -193,9 +193,9 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result is None
-        mock_session.execute.assert_called_once()
+        mock_session.execute.assert _called_once()
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_by_patient_id(self, mock_session, mock_sequence_model, mock_data_points):
         """Test getting sequences by patient ID."""
         # Setup
@@ -225,9 +225,9 @@ class TestSqlAlchemyTemporalSequenceRepository:
         assert len(results[0].timestamps) == len(mock_data_points)
         
         # Verify that execute was called twice
-        assert mock_session.execute.call_count == 2
+        assert mock_session.execute.call_count  ==  2
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_delete_success(self, mock_session):
         """Test deleting a sequence successfully."""
         # Setup
@@ -247,9 +247,9 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result is True
-        assert mock_session.execute.call_count == 2
+        assert mock_session.execute.call_count  ==  2
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_delete_not_found(self, mock_session):
         """Test deleting a sequence that doesn't exist."""
         # Setup
@@ -269,9 +269,9 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result is False
-        assert mock_session.execute.call_count == 2
+        assert mock_session.execute.call_count  ==  2
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_latest_by_feature(self, mock_session, mock_sequence_model, mock_data_points):
         """Test getting the latest sequence containing a specific feature."""
         # Setup
@@ -300,17 +300,17 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result is not None
-        assert result.sequence_id == mock_sequence_model.sequence_id
-        assert result.patient_id == mock_sequence_model.patient_id
+        assert result.sequence_id  ==  mock_sequence_model.sequence_id
+        assert result.patient_id  ==  mock_sequence_model.patient_id
         assert len(result.timestamps) == len(mock_data_points)
         
         # Verify that execute was called twice
-        assert mock_session.execute.call_count == 2
+        assert mock_session.execute.call_count  ==  2
         
         # Verify the limit parameter was used
         assert "limit(5)" in str(mock_session.execute.call_args_list[0])
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_latest_by_feature_not_found(self, mock_session):
         """Test getting the latest sequence by feature when not found."""
         # Setup
@@ -331,4 +331,4 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result is None
-        mock_session.execute.assert_called_once()
+        mock_session.execute.assert _called_once()

@@ -13,19 +13,19 @@ import asyncio
 from typing import Any, Dict, List, Optional, Callable, AsyncGenerator, Generator
 from contextlib import asynccontextmanager
 
-from sqlalchemy.ext.asyncio import (
+, from sqlalchemy.ext.asyncio import (
     AsyncSession,   
     AsyncEngine,  
     create_async_engine,   
     async_sessionmaker
 )
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import NullPool
+, from sqlalchemy.pool import NullPool
 from sqlalchemy import text
 
-from app.infrastructure.persistence.sqlalchemy.models.base import Base
+, from app.infrastructure.persistence.sqlalchemy.models.base import Base
 from app.core.config import get_test_settings
-from app.core.db import get_session
+, from app.core.db import get_session
 
 
 # Test database URL from environment or default to a test PostgreSQL DB
@@ -300,7 +300,7 @@ class TransactionalTestContext:
 
 
 @pytest.fixture
-def transactional_test(db_session: AsyncSession) -> Callable:
+    def transactional_test(db_session: AsyncSession) -> Callable:
     """
     Create a function to run tests in a nested transaction.
     

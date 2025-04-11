@@ -15,7 +15,7 @@ import uuid
 from unittest.mock import patch, MagicMock, ANY
 
 from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
-from app.infrastructure.security.encryption_service import EncryptionService
+, from app.infrastructure.security.encryption_service import EncryptionService
 from app.domain.entities.patient import Patient
 
 
@@ -51,7 +51,7 @@ def patient_repository(db_session, encryption_service):
     return PatientRepository(db_session, encryption_service)
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 def test_patient_creation_encrypts_phi(patient_repository, encryption_service):
     """Test that patient creation encrypts PHI fields."""
     # Spy on the encryption service
@@ -114,8 +114,8 @@ def test_patient_retrieval_decrypts_phi(patient_repository, encryption_service, 
         assert mock_decrypt.call_count >= 2, "Expected at least 2 decryption calls"
         
         # Verify the decrypted values
-        assert patient.ssn == "123-45-6789"
-        assert patient.email == "john.doe@example.com"
+        assert patient.ssn  ==  "123-45-6789"
+        assert patient.email  ==  "john.doe@example.com"
 
 
 def test_repository_filters_inactive_records(patient_repository, db_session):
@@ -127,7 +127,7 @@ def test_repository_filters_inactive_records(patient_repository, db_session):
     patient_repository.get_all()
     
     # Verify filter was called with is_active=True
-    db_session.filter.assert_called_once()
+    db_session.filter.assert _called_once()
     # Extract the filter criteria (varies by ORM implementation)
     filter_args = db_session.filter.call_args[0][0]
     assert "is_active" in str(filter_args), "Should filter by is_active"
@@ -153,9 +153,9 @@ def test_audit_logging_on_patient_changes(patient_repository, encryption_service
         patient_repository.delete(patient_id)
         
         # Verify audit logging for each operation
-        assert mock_logger.log_create.call_count == 1
-        assert mock_logger.log_update.call_count == 1
-        assert mock_logger.log_delete.call_count == 1
+        assert mock_logger.log_create.call_count  ==  1
+        assert mock_logger.log_update.call_count  ==  1
+        assert mock_logger.log_delete.call_count  ==  1
         
         # Verify no PHI in audit logs
         for call in mock_logger.log_create.call_args_list:
@@ -304,12 +304,12 @@ def test_encryption_key_rotation(encryption_service):
     new_encrypted = reencrypt(encrypted, old_key, new_key)
     
     # Verify the new encrypted value is different
-    assert encrypted != new_encrypted
+    assert encrypted  !=  new_encrypted
     
     # Check that we can decrypt with the new key
     encryption_service._encryption_key = new_key
     decrypted = encryption_service.decrypt(new_encrypted)
-    assert decrypted == original_text
+    assert decrypted  ==  original_text
 
 
 def test_field_level_encryption(encryption_service):
@@ -324,9 +324,9 @@ def test_field_level_encryption(encryption_service):
     encrypted_phone = encryption_service.encrypt(phone)
     
     # Verify each field has different encryption
-    assert encrypted_ssn != encrypted_email
-    assert encrypted_email != encrypted_phone
-    assert encrypted_ssn != encrypted_phone
+    assert encrypted_ssn  !=  encrypted_email
+    assert encrypted_email  !=  encrypted_phone
+    assert encrypted_ssn  !=  encrypted_phone
     
     # Verify we can decrypt each independently
     assert encryption_service.decrypt(encrypted_ssn) == ssn

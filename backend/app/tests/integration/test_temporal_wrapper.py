@@ -6,7 +6,7 @@ FastAPI from analyzing AsyncSession dependencies at module import time.
 """
 import pytest
 from uuid import UUID
-import asyncio
+, import asyncio
 from unittest.mock import patch, AsyncMock
 
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
@@ -15,15 +15,15 @@ from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
 
 
-@pytest.mark.asyncio
-@pytest.mark.db_required
+@pytest.mark.asyncio()
+@pytest.mark.db_required()
 async def test_temporal_endpoints_integration(
     client,
     mock_current_user,
     temporal_service: TemporalNeurotransmitterService,
     patient_id: UUID
 ):
-    """
+        """
     Test API integration with the neurotransmitter service.
     
     This test verifies that the API layer correctly integrates with the service layer
@@ -32,7 +32,7 @@ async def test_temporal_endpoints_integration(
     # Setup - patch dependencies to use our service instance
     with mock_current_user, patch(:
         "app.api.dependencies.services.get_temporal_neurotransmitter_service",
-        return_value=AsyncMock(return_value=temporal_service)
+        return_value=AsyncMock(return_value=temporal_service))
 )
         # Test 1: Generate time series
         time_series_response = client.post(
@@ -47,7 +47,7 @@ async def test_temporal_endpoints_integration(
 )
         
         # Verify response
-        assert time_series_response.status_code == 201
+        assert time_series_response.status_code  ==  201
         assert "sequence_id" in time_series_response.json()
         
         # Test 2: Simulate treatment
@@ -63,7 +63,7 @@ async def test_temporal_endpoints_integration(
 )
         
         # Verify response
-        assert treatment_response.status_code == 200
+        assert treatment_response.status_code  ==  200
         assert "sequence_ids" in treatment_response.json()
         
         # Extract a sequence ID for visualization test
@@ -78,7 +78,7 @@ async def test_temporal_endpoints_integration(
 )
         
         # Verify response
-        assert viz_response.status_code == 200
+        assert viz_response.status_code  ==  200
         assert "time_points" in viz_response.json()
 assert "features" in viz_response.json()
 assert "values" in viz_response.json()

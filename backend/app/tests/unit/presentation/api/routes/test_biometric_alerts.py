@@ -14,7 +14,7 @@ import pytest
 from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
-from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertStatus, AlertPriority
+, from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertStatus, AlertPriority
 from app.domain.exceptions import EntityNotFoundError, RepositoryError
 from app.presentation.api.routes.biometric_alerts import router, get_alert_repository
 from app.presentation.api.schemas.biometric_alert import (
@@ -128,7 +128,7 @@ def override_auth(app, mock_current_user, mock_current_provider):
     return mock_current_user, mock_current_provider
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestCreateAlert:
     """Tests for the create_alert endpoint."""
     
@@ -142,14 +142,14 @@ class TestCreateAlert:
         response = client.post("/biometric-alerts/", json=sample_alert_data)
         
         # Verify
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code  ==  status.HTTP_201_CREATED
         assert response.json()["alert_id"] == str(sample_alert.alert_id)
         assert response.json()["patient_id"] == str(sample_alert.patient_id)
         assert response.json()["alert_type"] == sample_alert.alert_type
         assert response.json()["priority"] == sample_alert.priority.value
         
         # Verify repository was called
-        mock_repository.save.assert_called_once()
+        mock_repository.save.assert _called_once()
     
     async def test_create_alert_validation_error(self, client, override_get_repository, override_auth):
         """Test validation error when creating a biometric alert with invalid data."""
@@ -164,7 +164,7 @@ class TestCreateAlert:
         response = client.post("/biometric-alerts/", json=invalid_data)
         
         # Verify
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code  ==  status.HTTP_422_UNPROCESSABLE_ENTITY
     
     async def test_create_alert_repository_error(self, client, override_get_repository, override_auth, sample_alert_data):
         """Test error handling when the repository raises an error."""
@@ -176,7 +176,7 @@ class TestCreateAlert:
         response = client.post("/biometric-alerts/", json=sample_alert_data)
         
         # Verify
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Error creating biometric alert" in response.json()["detail"]
 
 
@@ -195,14 +195,14 @@ class TestGetPatientAlerts:
         response = client.get(f"/biometric-alerts/patient/{patient_id}")
         
         # Verify
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         assert response.json()["total"] == 1
         assert response.json()["page"] == 1
         assert len(response.json()["items"]) == 1
         assert response.json()["items"][0]["alert_id"] == str(sample_alert.alert_id)
         
         # Verify repository was called with correct parameters
-        mock_repository.get_by_patient_id.assert_called_once()
+        mock_repository.get_by_patient_id.assert _called_once()
         call_args = mock_repository.get_by_patient_id.call_args[1]
         assert call_args["patient_id"] == patient_id
         assert call_args["limit"] == 20  # Default page size
@@ -222,10 +222,10 @@ class TestGetPatientAlerts:
         )
         
         # Verify
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         
         # Verify repository was called with correct parameters
-        mock_repository.get_by_patient_id.assert_called_once()
+        mock_repository.get_by_patient_id.assert _called_once()
         call_args = mock_repository.get_by_patient_id.call_args[1]
         assert call_args["patient_id"] == patient_id
         assert call_args["status"] == AlertStatus.NEW
@@ -243,7 +243,7 @@ class TestGetPatientAlerts:
         response = client.get(f"/biometric-alerts/patient/{patient_id}")
         
         # Verify
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Error retrieving biometric alerts" in response.json()["detail"]
 
 
@@ -260,14 +260,14 @@ class TestGetActiveAlerts:
         response = client.get("/biometric-alerts/active")
         
         # Verify
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         assert response.json()["total"] == 1
         assert response.json()["page"] == 1
         assert len(response.json()["items"]) == 1
         assert response.json()["items"][0]["alert_id"] == str(sample_alert.alert_id)
         
         # Verify repository was called with correct parameters
-        mock_repository.get_active_alerts.assert_called_once()
+        mock_repository.get_active_alerts.assert _called_once()
         call_args = mock_repository.get_active_alerts.call_args[1]
         assert call_args["priority"] is None  # No priority filter
         assert call_args["limit"] == 20  # Default page size
@@ -285,10 +285,10 @@ class TestGetActiveAlerts:
         )
         
         # Verify
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         
         # Verify repository was called with correct parameters
-        mock_repository.get_active_alerts.assert_called_once()
+        mock_repository.get_active_alerts.assert _called_once()
         call_args = mock_repository.get_active_alerts.call_args[1]
         assert call_args["priority"] == AlertPriority.URGENT
         assert call_args["limit"] == 10  # Custom page size
@@ -304,7 +304,7 @@ class TestGetActiveAlerts:
         response = client.get("/biometric-alerts/active")
         
         # Verify
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Error retrieving active alerts" in response.json()["detail"]
 
 
@@ -322,13 +322,13 @@ class TestGetAlert:
         response = client.get(f"/biometric-alerts/{alert_id}")
         
         # Verify
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         assert response.json()["alert_id"] == str(sample_alert.alert_id)
         assert response.json()["patient_id"] == str(sample_alert.patient_id)
         assert response.json()["alert_type"] == sample_alert.alert_type
         
         # Verify repository was called with correct parameters
-        mock_repository.get_by_id.assert_called_once_with(alert_id)
+        mock_repository.get_by_id.assert _called_once_with(alert_id)
     
     async def test_get_alert_not_found(self, client, override_get_repository, override_auth):
         """Test error handling when the alert doesn't exist."""
@@ -341,7 +341,7 @@ class TestGetAlert:
         response = client.get(f"/biometric-alerts/{alert_id}")
         
         # Verify
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code  ==  status.HTTP_404_NOT_FOUND
         assert f"Biometric alert with ID {alert_id} not found" in response.json()["detail"]
     
     async def test_get_alert_repository_error(self, client, override_get_repository, override_auth):
@@ -355,7 +355,7 @@ class TestGetAlert:
         response = client.get(f"/biometric-alerts/{alert_id}")
         
         # Verify
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Error retrieving biometric alert" in response.json()["detail"]
 
 
@@ -379,11 +379,11 @@ class TestUpdateAlertStatus:
         response = client.patch(f"/biometric-alerts/{alert_id}/status", json=status_update)
         
         # Verify
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         assert response.json()["alert_id"] == str(sample_alert.alert_id)
         
         # Verify repository was called with correct parameters
-        mock_repository.update_status.assert_called_once()
+        mock_repository.update_status.assert _called_once()
         call_args = mock_repository.update_status.call_args[1]
         assert call_args["alert_id"] == alert_id
         assert call_args["status"] == AlertStatus.ACKNOWLEDGED
@@ -405,7 +405,7 @@ class TestUpdateAlertStatus:
         response = client.patch(f"/biometric-alerts/{alert_id}/status", json=status_update)
         
         # Verify
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code  ==  status.HTTP_404_NOT_FOUND
         assert f"Biometric alert with ID {alert_id} not found" in response.json()["detail"]
     
     async def test_update_alert_status_repository_error(self, client, override_get_repository, override_auth):
@@ -424,7 +424,7 @@ class TestUpdateAlertStatus:
         response = client.patch(f"/biometric-alerts/{alert_id}/status", json=status_update)
         
         # Verify
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Error updating biometric alert status" in response.json()["detail"]
 
 
@@ -443,12 +443,12 @@ class TestDeleteAlert:
         response = client.delete(f"/biometric-alerts/{alert_id}")
         
         # Verify
-        assert response.status_code == status.HTTP_204_NO_CONTENT
-        assert response.content == b''  # No content in response
+        assert response.status_code  ==  status.HTTP_204_NO_CONTENT
+        assert response.content  ==  b''  # No content in response
         
         # Verify repository was called with correct parameters
-        mock_repository.get_by_id.assert_called_once_with(alert_id)
-        mock_repository.delete.assert_called_once_with(alert_id)
+        mock_repository.get_by_id.assert _called_once_with(alert_id)
+        mock_repository.delete.assert _called_once_with(alert_id)
     
     async def test_delete_alert_not_found(self, client, override_get_repository, override_auth):
         """Test error handling when the alert doesn't exist."""
@@ -461,7 +461,7 @@ class TestDeleteAlert:
         response = client.delete(f"/biometric-alerts/{alert_id}")
         
         # Verify
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code  ==  status.HTTP_404_NOT_FOUND
         assert f"Biometric alert with ID {alert_id} not found" in response.json()["detail"]
     
     async def test_delete_alert_repository_error(self, client, override_get_repository, override_auth):
@@ -475,5 +475,5 @@ class TestDeleteAlert:
         response = client.delete(f"/biometric-alerts/{alert_id}")
         
         # Verify
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Error deleting biometric alert" in response.json()["detail"]

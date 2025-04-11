@@ -16,10 +16,10 @@ import shutil
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 
-from scripts.run_hipaa_phi_audit import PHIAuditor, PHIAuditResult
+, from scripts.run_hipaa_phi_audit import PHIAuditor, PHIAuditResult
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPHIAuditLogic:
     """Test suite for PHI audit decision-making logic."""
 
@@ -109,7 +109,7 @@ class TestPHIAuditLogic:
             f.write("""
 import pytest
 
-def test_something():
+    def test_something():
     assert 1 + 1 == 2
 """)
         
@@ -120,7 +120,7 @@ def test_something():
 import pytest
 from app.core.utils.validation import PHIDetector
 
-def test_phi_detection():
+    , def test_phi_detection():
     detector = PHIDetector()
     assert detector.contains_phi("123-45-6789") is True
 """)
@@ -145,7 +145,7 @@ def test_phi_detection():
         test_file = os.path.join(clean_app_dir, "test_phi.py")
         with open(test_file, "w") as f:
             f.write("""
-def test_function():
+    def test_function():
     ssn = "123-45-6789"
     return ssn
 """)
@@ -200,7 +200,7 @@ def test_function():
         phi_file = os.path.join(clean_app_dir, "test_data.py")
         with open(phi_file, "w") as f:
             f.write("""
-def get_test_data():
+    def get_test_data():
     return {
         "ssn": "123-45-6789",
         "name": "John Smith"
@@ -213,7 +213,7 @@ def get_test_data():
         
         # Verify PHI was found but allowed
         assert report.files_with_phi > 0, "Report should show files with PHI"
-        assert report.files_with_phi == report.files_with_allowed_phi, \
+        assert report.files_with_phi  ==  report.files_with_allowed_phi, \
             "All PHI files should be counted as allowed"
         
         # The audit should have passed
@@ -240,7 +240,7 @@ def get_test_data():
         assert result.files_with_phi > 0, "PHI should be detected"
         
         # Verify all PHI was allowed
-        assert result.files_with_phi == result.files_with_allowed_phi, \
+        assert result.files_with_phi  ==  result.files_with_allowed_phi, \
             "All PHI should be allowed in clean_app directory"
         
         # Verify audit passed

@@ -11,7 +11,7 @@ import logging
 from unittest.mock import patch, MagicMock, AsyncMock, PropertyMock
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import NullPool
+, from sqlalchemy.pool import NullPool
 from sqlalchemy.exc import SQLAlchemyError
 
 # Corrected imports
@@ -24,7 +24,7 @@ from app.infrastructure.persistence.sqlalchemy.config.database import (
 )
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestDatabase:
     """Comprehensive tests for the Database class and database utilities."""
     
@@ -84,7 +84,7 @@ class TestDatabase:
         mock_maker.return_value = mock_session
         return mock_maker
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_database_initialization(self, mock_settings):
         """Test database class initialization."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
@@ -95,7 +95,7 @@ class TestDatabase:
             db = Database()
             
             # Check that engine was created with correct URL and parameters
-            mock_create_engine.assert_called_once()
+            mock_create_engine.assert _called_once()
             args, kwargs = mock_create_engine.call_args
             
             # Check DB URL construction
@@ -105,7 +105,7 @@ class TestDatabase:
             assert kwargs["echo"] is False
             assert kwargs["pool_pre_ping"] is True
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_database_session_context_manager(self, mock_engine, mock_session_maker):
         """Test the database session context manager."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine', 
@@ -114,13 +114,11 @@ class TestDatabase:
                 db = Database()
                 async with db.session() as session:
                     # Session should be returned by the factory
-                    assert session == mock_session_maker.return_value
-                
-                # Check session lifecycle methods were called
-                mock_session_maker.return_value.commit.assert_called_once()
-                mock_session_maker.return_value.close.assert_called_once()
+                    assert session  ==  mock_session_maker.return_value=# Check session lifecycle methods were called
+                mock_session_maker.return_value.commit.assert _called_once()
+                mock_session_maker.return_value.close.assert _called_once()
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_database_dispose(self, mock_engine):
         """Test the database engine disposal."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine', 
@@ -131,9 +129,9 @@ class TestDatabase:
             await db.dispose()
             
             # Check that engine was disposed
-            mock_engine.dispose.assert_called_once()
+            mock_engine.dispose.assert _called_once()
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_db_dependency(self, mock_engine, mock_session_maker):
         """Test the get_db dependency injection function."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.Database') as MockDatabase:
@@ -157,9 +155,9 @@ class TestDatabase:
             session = await db_gen.__anext__()
             
             # Check returned session
-            assert session == mock_session
+            assert session  ==  mock_session
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_create_tables(self, mock_engine, mock_settings): # Added mock_settings fixture
         """Test table creation method of the Database class."""
         # Patch the engine creation used by Database.__init__
@@ -175,13 +173,13 @@ class TestDatabase:
                 await db_instance.create_all()
                 
                 # Check that the engine's begin method was called
-                mock_engine.begin.assert_called_once()
+                mock_engine.begin.assert _called_once()
                 
                 # Check that Base.metadata.create_all was called (via run_sync)
                 # The argument check is complex due to run_sync, so we just check if it was called.
-                mock_metadata_create_all.assert_called_once()
+                mock_metadata_create_all.assert _called_once()
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_engine(self, mock_settings): # Added mock_settings
         """Test getting the engine from the Database instance."""
         # Patch the engine creation used by Database.__init__
@@ -191,7 +189,7 @@ class TestDatabase:
             
             # Reset the global instance to force re-initialization with mock
             from app.infrastructure.persistence.sqlalchemy.config import database
-            database._db_instance = None
+            , database._db_instance = None
             
             # Get the database instance (which will now use the mocked engine)
             db_instance = database.get_db_instance()
@@ -200,10 +198,10 @@ class TestDatabase:
             engine = db_instance.engine
             
             # Check returned engine
-            assert engine == mock_engine_instance
-            mock_create_engine.assert_called_once() # Ensure engine was created
+            assert engine  ==  mock_engine_instance
+            mock_create_engine.assert _called_once() # Ensure engine was created
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_connection_error_handling(self, mock_settings):
         """Test error handling for database connection failures."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
@@ -216,10 +214,10 @@ class TestDatabase:
                     db = Database()
                 
                 # Check error was logged
-                mock_logger.error.assert_called_once()
+                mock_logger.error.assert _called_once()
                 assert "Failed to initialize database engine" in mock_logger.error.call_args[0][0]
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_session_exception_handling(self, mock_engine, mock_session_maker):
         """Test session exception handling in the context manager."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine', 
@@ -240,10 +238,10 @@ class TestDatabase:
                         await session.execute("SELECT 1")
                 
                 # Verify rollback was called
-                mock_session.rollback.assert_called_once()
-                mock_session.close.assert_called_once()
+                mock_session.rollback.assert _called_once()
+                mock_session.close.assert _called_once()
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_pool_configuration(self, mock_settings):
         """Test database pool configuration."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
@@ -251,14 +249,14 @@ class TestDatabase:
             db = Database()
             
             # Check engine configuration
-            mock_create_engine.assert_called_once()
+            mock_create_engine.assert _called_once()
             kwargs = mock_create_engine.call_args[1]
             assert kwargs["pool_size"] == mock_settings.database.POOL_SIZE
             assert kwargs["max_overflow"] == mock_settings.database.MAX_OVERFLOW
             assert kwargs["pool_recycle"] == mock_settings.database.POOL_RECYCLE
             assert kwargs["echo"] == mock_settings.database.ECHO
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_test_mode_configuration(self, mock_settings):
         """Test database configuration in test mode."""
         with patch('app.infrastructure.persistence.sqlalchemy.config.database.create_async_engine') as mock_create_engine:
@@ -269,7 +267,7 @@ class TestDatabase:
             db = Database()
             
             # Check engine configuration
-            mock_create_engine.assert_called_once()
+            mock_create_engine.assert _called_once()
             args, kwargs = mock_create_engine.call_args
             
             # Should not have pool settings for SQLite
@@ -277,7 +275,7 @@ class TestDatabase:
             assert "max_overflow" not in kwargs
             assert "pool_recycle" not in kwargs
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_get_session_generator(self, mock_engine, mock_session_maker):
         """Test the get_session generator function."""
         # Patch get_db_instance instead of the non-existent db
@@ -298,7 +296,7 @@ class TestDatabase:
             session = await session_gen.__anext__()
             
             # Check returned session
-            assert session == mock_session
+            assert session  ==  mock_session
 
 
 # Need to define asynccontextmanager for our test

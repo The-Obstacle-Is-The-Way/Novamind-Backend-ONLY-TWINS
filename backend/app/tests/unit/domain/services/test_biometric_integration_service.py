@@ -13,10 +13,10 @@ from uuid import UUID, uuid4
 
 from app.domain.entities.digital_twin.biometric_twin import BiometricTwin, BiometricDataPoint
 from app.domain.exceptions import BiometricIntegrationError
-from app.domain.services.biometric_integration_service import BiometricIntegrationService
+, from app.domain.services.biometric_integration_service import BiometricIntegrationService
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestBiometricIntegrationService:
     """Tests for the BiometricIntegrationService class."""
     
@@ -41,9 +41,9 @@ class TestBiometricIntegrationService:
         result = service.get_or_create_biometric_twin(patient_id)
         
         # Assert
-        assert result == mock_twin
-        mock_repository.get_by_patient_id.assert_called_once_with(patient_id)
-        mock_repository.save.assert_not_called()
+        assert result  ==  mock_twin
+        mock_repository.get_by_patient_id.assert _called_once_with(patient_id)
+        mock_repository.save.assert _not_called()
     
     def test_get_or_create_biometric_twin_new(self, service, mock_repository):
         """Test creating a new biometric twin when one doesn't exist."""
@@ -57,9 +57,9 @@ class TestBiometricIntegrationService:
         
         # Assert
         assert isinstance(result, BiometricTwin)
-        assert result.patient_id == patient_id
-        mock_repository.get_by_patient_id.assert_called_once_with(patient_id)
-        mock_repository.save.assert_called_once()
+        assert result.patient_id  ==  patient_id
+        mock_repository.get_by_patient_id.assert _called_once_with(patient_id)
+        mock_repository.save.assert _called_once()
     
     def test_get_or_create_biometric_twin_error(self, service, mock_repository):
         """Test error handling when repository operations fail."""
@@ -94,14 +94,14 @@ class TestBiometricIntegrationService:
         )
         
         # Assert
-        assert data_point.data_type == "heart_rate"
-        assert data_point.value == 75
-        assert data_point.source == "smartwatch"
-        assert data_point.metadata == {"activity": "resting"}
-        assert data_point.confidence == 0.95
+        assert data_point.data_type  ==  "heart_rate"
+        assert data_point.value  ==  75
+        assert data_point.source  ==  "smartwatch"
+        assert data_point.metadata  ==  {"activity": "resting"}
+        assert data_point.confidence  ==  0.95
         
-        mock_twin.add_data_point.assert_called_once()
-        mock_repository.save.assert_called_once_with(mock_twin)
+        mock_twin.add_data_point.assert _called_once()
+        mock_repository.save.assert _called_once_with(mock_twin)
     
     def test_add_biometric_data_with_error(self, service, mock_repository):
         """Test error handling when adding biometric data fails."""
@@ -154,8 +154,8 @@ class TestBiometricIntegrationService:
         assert result[0].data_type == "heart_rate"
         assert result[1].data_type == "blood_pressure"
         
-        assert mock_twin.add_data_point.call_count == 2
-        mock_repository.save.assert_called_once_with(mock_twin)
+        assert mock_twin.add_data_point.call_count  ==  2
+        mock_repository.save.assert _called_once_with(mock_twin)
     
     def test_get_biometric_data(self, service, mock_repository):
         """Test retrieving biometric data with filtering."""
@@ -220,7 +220,7 @@ class TestBiometricIntegrationService:
         result = service.get_biometric_data(patient_id)
         
         # Assert
-        assert result == []
+        assert result  ==  []
     
     def test_analyze_trends(self, service, mock_repository):
         """Test analyzing trends in biometric data."""
@@ -317,7 +317,7 @@ class TestBiometricIntegrationService:
         ]
         
         # Configure the mock to return different data based on the data_type argument
-        def get_data_points_by_type_side_effect(data_type, *args, **kwargs):
+    def get_data_points_by_type_side_effect(data_type, *args, **kwargs):
             if data_type == "heart_rate":
                 return heart_rate_data
             elif data_type == "sleep_quality":
@@ -325,9 +325,7 @@ class TestBiometricIntegrationService:
             else:
                 return []
         
-        mock_twin.get_data_points_by_type.side_effect = get_data_points_by_type_side_effect
-        
-        # Act
+        mock_twin.get_data_points_by_type.side_effect = get_data_points_by_type_side_effect=# Act
         result = service.detect_correlations(
             patient_id=patient_id,
             primary_data_type="heart_rate",
@@ -362,9 +360,9 @@ class TestBiometricIntegrationService:
         
         # Assert
         assert result is True
-        mock_twin.connect_device.assert_called_once_with("smartwatch-123")
-        service.add_biometric_data.assert_called_once()
-        mock_repository.save.assert_called_once_with(mock_twin)
+        mock_twin.connect_device.assert _called_once_with("smartwatch-123")
+        service.add_biometric_data.assert _called_once()
+        mock_repository.save.assert _called_once_with(mock_twin)
     
     def test_disconnect_device(self, service, mock_repository):
         """Test disconnecting a device from a biometric twin."""
@@ -385,9 +383,9 @@ class TestBiometricIntegrationService:
         
         # Assert
         assert result is True
-        mock_twin.disconnect_device.assert_called_once_with("smartwatch-123")
-        service.add_biometric_data.assert_called_once()
-        mock_repository.save.assert_called_once_with(mock_twin)
+        mock_twin.disconnect_device.assert _called_once_with("smartwatch-123")
+        service.add_biometric_data.assert _called_once()
+        mock_repository.save.assert _called_once_with(mock_twin)
     
     def test_disconnect_device_no_twin(self, service, mock_repository):
         """Test disconnecting a device when no twin exists."""

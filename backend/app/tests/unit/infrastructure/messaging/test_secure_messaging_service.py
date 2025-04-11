@@ -8,13 +8,13 @@ import json
 import time
 import uuid
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+, from unittest.mock import MagicMock, patch
 
 import pytest
 from cryptography.fernet import Fernet
-from cryptography.hazmat.backends import default_backend
+, from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
+, from cryptography.hazmat.primitives.asymmetric import rsa
 
 from app.infrastructure.messaging.secure_messaging_service import (
     SecureMessagingService,  
@@ -85,7 +85,7 @@ def secure_messaging_service(encryption_service):
     )
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestSecureMessagingService:
     """Tests for the SecureMessagingService class."""
     
@@ -123,7 +123,7 @@ class TestSecureMessagingService:
         )
         
         # Check that the decrypted key matches the original
-        assert decrypted_key == symmetric_key
+        assert decrypted_key  ==  symmetric_key
     
     def test_encrypt_decrypt_message(self, secure_messaging_service):
         """Test encrypting and decrypting a message."""
@@ -146,7 +146,7 @@ class TestSecureMessagingService:
         )
         
         # Check that the decrypted message matches the original
-        assert decrypted_message == original_message
+        assert decrypted_message  ==  original_message
     
     def test_encrypt_message_for_recipient(self, secure_messaging_service, key_pair):
         """Test encrypting a message for a recipient."""
@@ -193,7 +193,7 @@ class TestSecureMessagingService:
         )
         
         # Check that the decrypted message matches the original
-        assert decrypted_message == original_message
+        assert decrypted_message  ==  original_message
     
     def test_decrypt_expired_message(self, secure_messaging_service, key_pair):
         """Test decrypting an expired message."""
@@ -257,7 +257,7 @@ class TestSecureMessagingService:
         assert message["has_attachments"] is False
         
         # Check that the encryption service was called
-        encryption_service.encrypt_field.assert_called_once_with("Test Subject")
+        encryption_service.encrypt_field.assert _called_once_with("Test Subject")
     
     def test_create_message_with_attachments(self, secure_messaging_service, key_pair):
         """Test creating a message with attachments."""
@@ -318,7 +318,7 @@ class TestSecureMessagingService:
         assert sent_message["updated_at"] == sent_message["sent_at"]
         
         # Check that the repository was called
-        message_repository.save.assert_called_once()
+        message_repository.save.assert _called_once()
     
     def test_mark_as_delivered(self, secure_messaging_service, message_repository):
         """Test marking a message as delivered."""
@@ -344,8 +344,8 @@ class TestSecureMessagingService:
         assert delivered_message["updated_at"] == delivered_message["delivered_at"]
         
         # Check that the repository was called
-        message_repository.get_by_id.assert_called_once_with(message["id"])
-        message_repository.save.assert_called_once()
+        message_repository.get_by_id.assert _called_once_with(message["id"])
+        message_repository.save.assert _called_once()
     
     def test_mark_as_delivered_not_found(self, secure_messaging_service, message_repository):
         """Test marking a non-existent message as delivered."""
@@ -383,8 +383,8 @@ class TestSecureMessagingService:
         assert read_message["updated_at"] == read_message["read_at"]
         
         # Check that the repository was called
-        message_repository.get_by_id.assert_called_once_with(message["id"])
-        message_repository.save.assert_called_once()
+        message_repository.get_by_id.assert _called_once_with(message["id"])
+        message_repository.save.assert _called_once()
     
     def test_mark_as_read_not_found(self, secure_messaging_service, message_repository):
         """Test marking a non-existent message as read."""
@@ -428,8 +428,8 @@ class TestSecureMessagingService:
         assert deleted_message["updated_at"] == deleted_message["deleted_at"]
         
         # Check that the repository was called
-        message_repository.get_by_id.assert_called_once_with(message["id"])
-        message_repository.save.assert_called_once()
+        message_repository.get_by_id.assert _called_once_with(message["id"])
+        message_repository.save.assert _called_once()
     
     def test_delete_message_not_found(self, secure_messaging_service, message_repository):
         """Test deleting a non-existent message."""

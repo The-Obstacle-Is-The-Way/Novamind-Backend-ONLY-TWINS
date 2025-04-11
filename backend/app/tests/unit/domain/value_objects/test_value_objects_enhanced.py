@@ -9,15 +9,15 @@ proper data encapsulation and validation.
 
 import pytest
 from datetime import date
-from typing import Dict, Any, Optional
+, from typing import Dict, Any, Optional
 
 from app.domain.value_objects.emergency_contact import EmergencyContact
-from app.domain.value_objects.psychiatric_assessment import PsychiatricAssessment
+, from app.domain.value_objects.psychiatric_assessment import PsychiatricAssessment
 from app.domain.value_objects.address import Address
-from app.domain.value_objects.contact_info import ContactInfo
+, from app.domain.value_objects.contact_info import ContactInfo
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestEmergencyContact:
     """Comprehensive tests for the EmergencyContact value object."""
     
@@ -43,13 +43,13 @@ class TestEmergencyContact:
         contact = EmergencyContact(**valid_contact_data)
         
         # Verify all attributes
-        assert contact.name == valid_contact_data["name"]
-        assert contact.relationship == valid_contact_data["relationship"]
-        assert contact.phone == valid_contact_data["phone"]
-        assert contact.email == valid_contact_data["email"]
+        assert contact.name  ==  valid_contact_data["name"]
+        assert contact.relationship  ==  valid_contact_data["relationship"]
+        assert contact.phone  ==  valid_contact_data["phone"]
+        assert contact.email  ==  valid_contact_data["email"]
         assert isinstance(contact.address, Address)
-        assert contact.address.street == valid_contact_data["address"]["street"]
-        assert contact.address.city == valid_contact_data["address"]["city"]
+        assert contact.address.street  ==  valid_contact_data["address"]["street"]
+        assert contact.address.city  ==  valid_contact_data["address"]["city"]
     
     def test_emergency_contact_validation(self):
         """Test validation of emergency contact data."""
@@ -108,13 +108,13 @@ class TestEmergencyContact:
         contact2 = EmergencyContact(**valid_contact_data)
         
         # Same data should be equal
-        assert contact1 == contact2
+        assert contact1  ==  contact2
         
         # Different data should not be equal
         different_data = valid_contact_data.copy()
         different_data["name"] = "Different Name"
         contact3 = EmergencyContact(**different_data)
-        assert contact1 != contact3
+        assert contact1  !=  contact3
     
     def test_emergency_contact_repr(self, valid_contact_data):
         """Test string representation of emergency contact."""
@@ -159,11 +159,11 @@ class TestPsychiatricAssessment:
         assessment = PsychiatricAssessment(**valid_assessment_data)
         
         # Verify all attributes
-        assert assessment.assessment_date == valid_assessment_data["assessment_date"]
-        assert assessment.diagnosis == valid_assessment_data["diagnosis"]
-        assert assessment.severity == valid_assessment_data["severity"]
-        assert assessment.treatment_plan == valid_assessment_data["treatment_plan"]
-        assert assessment.notes == valid_assessment_data["notes"]
+        assert assessment.assessment_date  ==  valid_assessment_data["assessment_date"]
+        assert assessment.diagnosis  ==  valid_assessment_data["diagnosis"]
+        assert assessment.severity  ==  valid_assessment_data["severity"]
+        assert assessment.treatment_plan  ==  valid_assessment_data["treatment_plan"]
+        assert assessment.notes  ==  valid_assessment_data["notes"]
     
     def test_psychiatric_assessment_validation(self):
         """Test validation of psychiatric assessment data."""
@@ -206,13 +206,13 @@ class TestPsychiatricAssessment:
         assessment2 = PsychiatricAssessment(**valid_assessment_data)
         
         # Same data should be equal
-        assert assessment1 == assessment2
+        assert assessment1  ==  assessment2
         
         # Different data should not be equal
         different_data = valid_assessment_data.copy()
         different_data["diagnosis"] = "Different Diagnosis"
         assessment3 = PsychiatricAssessment(**different_data)
-        assert assessment1 != assessment3
+        assert assessment1  !=  assessment3
     
     def test_psychiatric_assessment_repr(self, valid_assessment_data):
         """Test string representation of psychiatric assessment."""
@@ -245,9 +245,9 @@ class TestPsychiatricAssessment:
         assessment = PsychiatricAssessment.from_dict(dict_data)
         
         # Verify all attributes
-        assert assessment.assessment_date == valid_assessment_data["assessment_date"]
-        assert assessment.diagnosis == valid_assessment_data["diagnosis"]
-        assert assessment.severity == valid_assessment_data["severity"]
+        assert assessment.assessment_date  ==  valid_assessment_data["assessment_date"]
+        assert assessment.diagnosis  ==  valid_assessment_data["diagnosis"]
+        assert assessment.severity  ==  valid_assessment_data["severity"]
 
 
 class TestAddressValueObject:
@@ -269,11 +269,11 @@ class TestAddressValueObject:
         address = Address(**valid_address_data)
         
         # Verify all attributes
-        assert address.street == valid_address_data["street"]
-        assert address.city == valid_address_data["city"]
-        assert address.state == valid_address_data["state"]
-        assert address.zip_code == valid_address_data["zip_code"]
-        assert address.country == valid_address_data["country"]
+        assert address.street  ==  valid_address_data["street"]
+        assert address.city  ==  valid_address_data["city"]
+        assert address.state  ==  valid_address_data["state"]
+        assert address.zip_code  ==  valid_address_data["zip_code"]
+        assert address.country  ==  valid_address_data["country"]
     
     def test_address_validation(self):
         """Test validation of address data."""
@@ -302,7 +302,7 @@ class TestAddressValueObject:
         address_dict = address.to_dict()
         
         # Dictionary should contain all attributes
-        assert address_dict == valid_address_data
+        assert address_dict  ==  valid_address_data
 
 
 class TestContactInfoValueObject:
@@ -322,9 +322,9 @@ class TestContactInfoValueObject:
         contact_info = ContactInfo(**valid_contact_info_data)
         
         # Verify all attributes
-        assert contact_info.email == valid_contact_info_data["email"]
-        assert contact_info.phone == valid_contact_info_data["phone"]
-        assert contact_info.preferred_contact_method == valid_contact_info_data["preferred_contact_method"]
+        assert contact_info.email  ==  valid_contact_info_data["email"]
+        assert contact_info.phone  ==  valid_contact_info_data["phone"]
+        assert contact_info.preferred_contact_method  ==  valid_contact_info_data["preferred_contact_method"]
     
     def test_contact_info_validation(self):
         """Test validation of contact info data."""
@@ -372,4 +372,4 @@ class TestContactInfoValueObject:
         contact_info_dict = contact_info.to_dict()
         
         # Dictionary should contain all attributes
-        assert contact_info_dict == valid_contact_info_data
+        assert contact_info_dict  ==  valid_contact_info_data

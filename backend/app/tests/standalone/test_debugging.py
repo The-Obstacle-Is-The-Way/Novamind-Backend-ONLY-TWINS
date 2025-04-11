@@ -17,8 +17,8 @@ class ComparisonOperator(str, Enum):
     NOT_EQUAL = "not_equal"
 
 
-@pytest.mark.standalone
-def test_enum_behavior():
+@pytest.mark.standalone()
+    def test_enum_behavior():
     """Test the behavior of Enum classes."""
     print("\nDEBUG: Testing enum behavior")
     
@@ -45,12 +45,12 @@ def test_enum_behavior():
     print(f"op1.value == 'greater_than_or_equal': {op1.value == 'greater_than_or_equal'}")
     
     # 6. Force the test to pass or fail based on expected behavior
-    assert op1 == op2
-    assert op1 == op3
-    assert op1 == "greater_than_or_equal"  # This is key!
+    assert op1  ==  op2
+    assert op1  ==  op3
+    assert op1  ==  "greater_than_or_equal"  # This is key!
 
 
-def simulate_rule_evaluation():
+    def simulate_rule_evaluation():
     """Simulate the rule evaluation with the enum."""
     print("\nDEBUG: Simulating rule evaluation")
     

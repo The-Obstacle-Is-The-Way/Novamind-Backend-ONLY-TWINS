@@ -7,11 +7,11 @@ without any external dependencies.
 
 import pytest
 from unittest.mock import Mock
-from datetime import date
+, from datetime import date
 
 # Import the domain entity class
 from app.domain.entities.patient import Patient
-from app.domain.value_objects.patient_id import PatientId
+, from app.domain.value_objects.patient_id import PatientId
 
 
 def test_patient_creation_with_valid_data_succeeds():
@@ -30,10 +30,10 @@ def test_patient_creation_with_valid_data_succeeds():
     )
     
     # Assert
-    assert patient.id == patient_id
-    assert patient.name == name
-    assert patient.date_of_birth == date_of_birth
-    assert patient.medical_record_number == "MRN12345"
+    assert patient.id  ==  patient_id
+    assert patient.name  ==  name
+    assert patient.date_of_birth  ==  date_of_birth
+    assert patient.medical_record_number  ==  "MRN12345"
 
 
 def test_patient_age_calculation_is_correct():
@@ -51,7 +51,7 @@ def test_patient_age_calculation_is_correct():
     patient._get_today = today_mock
     
     # Assert
-    assert patient.age == 33
+    assert patient.age  ==  33
 
 
 def test_patient_equality_based_on_id():
@@ -80,7 +80,7 @@ def test_patient_equality_based_on_id():
     )
     
     # Assert
-    assert patient1 == patient2  # Same ID, different attributes
-    assert patient1 != patient3  # Different ID, same attributes
+    assert patient1  ==  patient2  # Same ID, different attributes
+    assert patient1  !=  patient3  # Different ID, same attributes
     assert hash(patient1) == hash(patient2)  # Same hash for same ID
     assert hash(patient1) != hash(patient3)  # Different hash for different ID

@@ -6,7 +6,7 @@ import datetime
 import math
 import uuid
 from unittest import mock
-import pytest
+, import pytest
 import numpy as np
 from typing import Dict, List, Set, Tuple
 
@@ -18,7 +18,7 @@ from app.domain.entities.digital_twin_enums import (
 )
 from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
 from app.domain.entities.temporal_sequence import TemporalSequence
-from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
+, from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
 from app.domain.entities.neurotransmitter_mapping import (
     NeurotransmitterMapping,   
     ReceptorProfile,  
@@ -35,7 +35,7 @@ from app.domain.services.visualization_preprocessor import (
 )
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestTemporalEvents:
     """Test suite for temporal event correlation tracking."""
     
@@ -48,7 +48,7 @@ class TestTemporalEvents:
         )
         
         # Verify root event properties
-        assert root_event.event_type == "test_event"
+        assert root_event.event_type  ==  "test_event"
         assert root_event.metadata["test_key"] == "test_value"
         assert root_event.parent_event_id is None
         assert root_event.id is not None
@@ -62,11 +62,11 @@ class TestTemporalEvents:
         )
         
         # Verify child event properties
-        assert child_event.event_type == "child_event"
+        assert child_event.event_type  ==  "child_event"
         assert child_event.metadata["additional_data"] == "child_data"
-        assert child_event.parent_event_id == root_event.id
-        assert child_event.correlation_id == root_event.correlation_id
-        assert child_event.id != root_event.id
+        assert child_event.parent_event_id  ==  root_event.id
+        assert child_event.correlation_id  ==  root_event.correlation_id
+        assert child_event.id  !=  root_event.id
     
     def test_event_chain(self):
         """Test event chain functionality."""
@@ -156,8 +156,8 @@ class TestTemporalSequence:
         )
         
         # Verify properties
-        assert sequence.sequence_length == 5
-        assert sequence.feature_dimension == 2
+        assert sequence.sequence_length  ==  5
+        assert sequence.feature_dimension  ==  2
         assert sequence.metadata["source"] == "test"
         
         # Test factory method
@@ -168,8 +168,8 @@ class TestTemporalSequence:
             patient_id=patient_id
         )
         
-        assert sequence2.sequence_length == 5
-        assert sequence2.feature_dimension == 2
+        assert sequence2.sequence_length  ==  5
+        assert sequence2.feature_dimension  ==  2
         
         # Test validation
         with pytest.raises(ValueError):
@@ -213,8 +213,8 @@ class TestTemporalSequence:
         
         # Test numpy conversion
         X, y = sequence.to_numpy_arrays()
-        assert X.shape == (9, 2)  # 9 input time steps (last is target)
-        assert y.shape == (9, 2)  # 9 target time steps (first is input)
+        assert X.shape  ==  (9, 2)  # 9 input time steps (last is target)
+        assert y.shape  ==  (9, 2)  # 9 target time steps (first is input)
         assert np.array_equal(X[0], [0.0, 1.0])
         assert np.array_equal(y[0], [0.1, 0.9])
         
@@ -227,8 +227,8 @@ class TestTemporalSequence:
         
         # Test subsequence extraction
         subsequence = sequence.extract_subsequence(2, 7)
-        assert subsequence.sequence_length == 5
-        assert subsequence.feature_dimension == 2
+        assert subsequence.sequence_length  ==  5
+        assert subsequence.feature_dimension  ==  2
         assert subsequence.values[0][0] == 0.2  # First value of extracted sequence
         
         # Test statistics
@@ -264,12 +264,12 @@ class TestNeurotransmitterEffect:
         )
         
         # Verify properties
-        assert effect.neurotransmitter == Neurotransmitter.DOPAMINE
-        assert effect.effect_size == 0.75
+        assert effect.neurotransmitter  ==  Neurotransmitter.DOPAMINE
+        assert effect.effect_size  ==  0.75
         assert effect.is_statistically_significant is True
-        assert effect.precision == 2.0  # 1.0 / (1.0 - 0.5)
-        assert effect.effect_magnitude == "medium"
-        assert effect.direction == "increase"
+        assert effect.precision  ==  2.0  # 1.0 / (1.0 - 0.5)
+        assert effect.effect_magnitude  ==  "medium"
+        assert effect.direction  ==  "increase"
         
         # Test validation
         with pytest.raises(ValueError):
@@ -309,12 +309,12 @@ class TestNeurotransmitterEffect:
         )
         
         # Verify calculated properties
-        assert effect.neurotransmitter == Neurotransmitter.SEROTONIN
-        assert effect.sample_size == 10  # 5 baseline + 5 intervention
+        assert effect.neurotransmitter  ==  Neurotransmitter.SEROTONIN
+        assert effect.sample_size  ==  10  # 5 baseline + 5 intervention
         assert effect.effect_size > 0  # Should be positive
         assert effect.p_value < 0.05  # Should be significant
         assert effect.is_statistically_significant is True
-        assert effect.direction == "increase"
+        assert effect.direction  ==  "increase"
         
         # Test visualization data
         viz_data = effect.to_visualization_data()
@@ -357,7 +357,7 @@ class TestTemporalNeurotransmitterMapping:
         )
         
         # Verify the sequence
-        assert sequence.sequence_length == 10
+        assert sequence.sequence_length  ==  10
         assert len(sequence.feature_names) == len(Neurotransmitter)
         assert sequence.metadata["brain_region"] == BrainRegion.PREFRONTAL_CORTEX.value
         assert sequence.metadata["primary_neurotransmitter"] == Neurotransmitter.SEROTONIN.value
@@ -407,11 +407,11 @@ class TestTemporalNeurotransmitterMapping:
         )
         
         # Verify the analysis
-        assert effect.neurotransmitter == Neurotransmitter.SEROTONIN
+        assert effect.neurotransmitter  ==  Neurotransmitter.SEROTONIN
         assert effect.effect_size > 0  # Should be positive
-        assert effect.is_statistically_significant == True  # Compare to Python boolean
+        assert effect.is_statistically_significant  ==  True  # Compare to Python boolean
         assert effect.effect_magnitude in ["large", "medium"]  # Should be substantial
-        assert effect.direction == "increase"
+        assert effect.direction  ==  "increase"
     
     def test_simulate_treatment_response(self, extended_mapping):
         """Test simulation of treatment response."""
@@ -480,11 +480,11 @@ class TestVisualizationPreprocessor:
         
         # First time step should have only amygdala active
         active_t0 = len(geometry["vertices_by_time"][0]) // 3  # 3 coordinates per point
-        assert active_t0 == 1  # Just amygdala
+        assert active_t0  ==  1  # Just amygdala
         
         # Last time step should have all regions active
         active_t4 = len(geometry["vertices_by_time"][4]) // 3
-        assert active_t4 == 3  # All 3 regions
+        assert active_t4  ==  3  # All 3 regions
     
     def test_neurotransmitter_effect_visualizer(self):
         """Test visualization of neurotransmitter effects."""

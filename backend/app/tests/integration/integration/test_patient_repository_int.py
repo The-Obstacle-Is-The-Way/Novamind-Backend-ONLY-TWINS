@@ -14,7 +14,7 @@ from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository i
 )
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPatientRepository:
     """
     Integration tests for the PatientRepository.
@@ -51,9 +51,9 @@ class TestPatientRepository:
         
         # Verify patient was created
         assert patient is not None
-        assert patient.id == sample_patient_data["id"]
-        assert patient.name == sample_patient_data["name"]
-        assert patient.email == sample_patient_data["email"]
+        assert patient.id  ==  sample_patient_data["id"]
+        assert patient.name  ==  sample_patient_data["name"]
+        assert patient.email  ==  sample_patient_data["email"]
         
         # Clean up - delete the patient
         await repository.delete(patient.id)
@@ -68,9 +68,9 @@ class TestPatientRepository:
         
         # Verify the patient was retrieved correctly
         assert retrieved_patient is not None
-        assert retrieved_patient.id == created_patient.id
-        assert retrieved_patient.name == created_patient.name
-        assert retrieved_patient.email == created_patient.email
+        assert retrieved_patient.id  ==  created_patient.id
+        assert retrieved_patient.name  ==  created_patient.name
+        assert retrieved_patient.email  ==  created_patient.email
         
         # Clean up
         await repository.delete(created_patient.id)
@@ -91,13 +91,13 @@ class TestPatientRepository:
         
         # Verify the update
         assert updated_patient is not None
-        assert updated_patient.id == created_patient.id
-        assert updated_patient.name == update_data["name"]
-        assert updated_patient.email == update_data["email"]
+        assert updated_patient.id  ==  created_patient.id
+        assert updated_patient.name  ==  update_data["name"]
+        assert updated_patient.email  ==  update_data["email"]
         
         # Double-check by retrieving again
         retrieved_patient = await repository.get_by_id(created_patient.id)
-        assert retrieved_patient.name == update_data["name"]
+        assert retrieved_patient.name  ==  update_data["name"]
         
         # Clean up
         await repository.delete(created_patient.id)

@@ -65,7 +65,7 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
     )
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestBiometricAlert:
     """Tests for the BiometricAlert domain entity."""
     
@@ -82,14 +82,14 @@ class TestBiometricAlert:
         )
         
         # Assert
-        assert alert.patient_id == sample_patient_id
-        assert alert.alert_type == "elevated_heart_rate"
-        assert alert.description == "Heart rate exceeded threshold"
-        assert alert.priority == AlertPriority.WARNING
-        assert alert.data_points == sample_data_points
-        assert alert.rule_id == sample_rule_id
+        assert alert.patient_id  ==  sample_patient_id
+        assert alert.alert_type  ==  "elevated_heart_rate"
+        assert alert.description  ==  "Heart rate exceeded threshold"
+        assert alert.priority  ==  AlertPriority.WARNING
+        assert alert.data_points  ==  sample_data_points
+        assert alert.rule_id  ==  sample_rule_id
         assert alert.alert_id is not None
-        assert alert.status == AlertStatus.NEW
+        assert alert.status  ==  AlertStatus.NEW
         assert alert.acknowledged_by is None
         assert alert.acknowledged_at is None
         assert alert.resolved_by is None
@@ -122,16 +122,16 @@ class TestBiometricAlert:
         )
         
         # Assert
-        assert alert.alert_id == alert_id
-        assert alert.created_at == created_at
-        assert alert.updated_at == updated_at
-        assert alert.status == AlertStatus.ACKNOWLEDGED
-        assert alert.metadata == metadata
+        assert alert.alert_id  ==  alert_id
+        assert alert.created_at  ==  created_at
+        assert alert.updated_at  ==  updated_at
+        assert alert.status  ==  AlertStatus.ACKNOWLEDGED
+        assert alert.metadata  ==  metadata
     
     def test_acknowledge(self, sample_alert, sample_provider_id):
         """Test acknowledging an alert."""
         # Arrange
-        assert sample_alert.status == AlertStatus.NEW
+        assert sample_alert.status  ==  AlertStatus.NEW
         assert sample_alert.acknowledged_by is None
         assert sample_alert.acknowledged_at is None
         
@@ -139,8 +139,8 @@ class TestBiometricAlert:
         sample_alert.acknowledge(sample_provider_id)
         
         # Assert
-        assert sample_alert.status == AlertStatus.ACKNOWLEDGED
-        assert sample_alert.acknowledged_by == sample_provider_id
+        assert sample_alert.status  ==  AlertStatus.ACKNOWLEDGED
+        assert sample_alert.acknowledged_by  ==  sample_provider_id
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
     
@@ -155,21 +155,21 @@ class TestBiometricAlert:
         sample_alert.acknowledge(sample_provider_id)
         
         # Assert - Should not change the acknowledgment
-        assert sample_alert.status == AlertStatus.ACKNOWLEDGED
-        assert sample_alert.acknowledged_by == original_provider_id
-        assert sample_alert.acknowledged_at == original_acknowledged_at
+        assert sample_alert.status  ==  AlertStatus.ACKNOWLEDGED
+        assert sample_alert.acknowledged_by  ==  original_provider_id
+        assert sample_alert.acknowledged_at  ==  original_acknowledged_at
     
     def test_mark_in_progress(self, sample_alert, sample_provider_id):
         """Test marking an alert as in progress."""
         # Arrange
-        assert sample_alert.status == AlertStatus.NEW
+        assert sample_alert.status  ==  AlertStatus.NEW
         
         # Act
         sample_alert.mark_in_progress(sample_provider_id)
         
         # Assert
-        assert sample_alert.status == AlertStatus.IN_PROGRESS
-        assert sample_alert.acknowledged_by == sample_provider_id
+        assert sample_alert.status  ==  AlertStatus.IN_PROGRESS
+        assert sample_alert.acknowledged_by  ==  sample_provider_id
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
     
@@ -177,89 +177,89 @@ class TestBiometricAlert:
         """Test marking an acknowledged alert as in progress."""
         # Arrange
         sample_alert.acknowledge(sample_provider_id)
-        assert sample_alert.status == AlertStatus.ACKNOWLEDGED
+        assert sample_alert.status  ==  AlertStatus.ACKNOWLEDGED
         
         # Act
         sample_alert.mark_in_progress(sample_provider_id)
         
         # Assert
-        assert sample_alert.status == AlertStatus.IN_PROGRESS
-        assert sample_alert.acknowledged_by == sample_provider_id
+        assert sample_alert.status  ==  AlertStatus.IN_PROGRESS
+        assert sample_alert.acknowledged_by  ==  sample_provider_id
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
     
     def test_resolve(self, sample_alert, sample_provider_id):
         """Test resolving an alert."""
         # Arrange
-        assert sample_alert.status == AlertStatus.NEW
+        assert sample_alert.status  ==  AlertStatus.NEW
         notes = "Issue resolved after patient reduced activity"
         
         # Act
         sample_alert.resolve(sample_provider_id, notes)
         
         # Assert
-        assert sample_alert.status == AlertStatus.RESOLVED
-        assert sample_alert.acknowledged_by == sample_provider_id
+        assert sample_alert.status  ==  AlertStatus.RESOLVED
+        assert sample_alert.acknowledged_by  ==  sample_provider_id
         assert sample_alert.acknowledged_at is not None
-        assert sample_alert.resolved_by == sample_provider_id
+        assert sample_alert.resolved_by  ==  sample_provider_id
         assert sample_alert.resolved_at is not None
-        assert sample_alert.resolution_notes == notes
+        assert sample_alert.resolution_notes  ==  notes
         assert sample_alert.updated_at is not None
     
     def test_resolve_from_in_progress(self, sample_alert, sample_provider_id):
         """Test resolving an in-progress alert."""
         # Arrange
         sample_alert.mark_in_progress(sample_provider_id)
-        assert sample_alert.status == AlertStatus.IN_PROGRESS
+        assert sample_alert.status  ==  AlertStatus.IN_PROGRESS
         notes = "Issue resolved after patient reduced activity"
         
         # Act
         sample_alert.resolve(sample_provider_id, notes)
         
         # Assert
-        assert sample_alert.status == AlertStatus.RESOLVED
-        assert sample_alert.acknowledged_by == sample_provider_id
+        assert sample_alert.status  ==  AlertStatus.RESOLVED
+        assert sample_alert.acknowledged_by  ==  sample_provider_id
         assert sample_alert.acknowledged_at is not None
-        assert sample_alert.resolved_by == sample_provider_id
+        assert sample_alert.resolved_by  ==  sample_provider_id
         assert sample_alert.resolved_at is not None
-        assert sample_alert.resolution_notes == notes
+        assert sample_alert.resolution_notes  ==  notes
         assert sample_alert.updated_at is not None
     
     def test_dismiss(self, sample_alert, sample_provider_id):
         """Test dismissing an alert."""
         # Arrange
-        assert sample_alert.status == AlertStatus.NEW
+        assert sample_alert.status  ==  AlertStatus.NEW
         notes = "False positive due to device calibration"
         
         # Act
         sample_alert.dismiss(sample_provider_id, notes)
         
         # Assert
-        assert sample_alert.status == AlertStatus.DISMISSED
-        assert sample_alert.acknowledged_by == sample_provider_id
+        assert sample_alert.status  ==  AlertStatus.DISMISSED
+        assert sample_alert.acknowledged_by  ==  sample_provider_id
         assert sample_alert.acknowledged_at is not None
-        assert sample_alert.resolved_by == sample_provider_id
+        assert sample_alert.resolved_by  ==  sample_provider_id
         assert sample_alert.resolved_at is not None
-        assert sample_alert.resolution_notes == notes
+        assert sample_alert.resolution_notes  ==  notes
         assert sample_alert.updated_at is not None
     
     def test_dismiss_from_acknowledged(self, sample_alert, sample_provider_id):
         """Test dismissing an acknowledged alert."""
         # Arrange
         sample_alert.acknowledge(sample_provider_id)
-        assert sample_alert.status == AlertStatus.ACKNOWLEDGED
+        assert sample_alert.status  ==  AlertStatus.ACKNOWLEDGED
         notes = "False positive due to device calibration"
         
         # Act
         sample_alert.dismiss(sample_provider_id, notes)
         
         # Assert
-        assert sample_alert.status == AlertStatus.DISMISSED
-        assert sample_alert.acknowledged_by == sample_provider_id
+        assert sample_alert.status  ==  AlertStatus.DISMISSED
+        assert sample_alert.acknowledged_by  ==  sample_provider_id
         assert sample_alert.acknowledged_at is not None
-        assert sample_alert.resolved_by == sample_provider_id
+        assert sample_alert.resolved_by  ==  sample_provider_id
         assert sample_alert.resolved_at is not None
-        assert sample_alert.resolution_notes == notes
+        assert sample_alert.resolution_notes  ==  notes
         assert sample_alert.updated_at is not None
     
     def test_string_representation(self, sample_alert):

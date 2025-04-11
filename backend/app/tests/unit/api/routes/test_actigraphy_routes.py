@@ -14,9 +14,9 @@ import pytest
 from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
 
-from app.api.routes.actigraphy import router
+, from app.api.routes.actigraphy import router
 from app.api.schemas.actigraphy import AnalysisType
-from app.core.services.ml.pat.exceptions import (
+, from app.core.services.ml.pat.exceptions import (
     AnalysisError,  
     AuthorizationError,  
     EmbeddingError,  
@@ -338,7 +338,7 @@ def mock_get_pat_service(mock_pat_service: MagicMock) -> None:
         yield
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestActigraphyRoutes:
     """Tests for the actigraphy API routes."""
     
@@ -359,11 +359,11 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code  ==  status.HTTP_201_CREATED
         assert response.json() == analysis_result
         
         # Verify service call
-        mock_pat_service.analyze_actigraphy.assert_called_once()
+        mock_pat_service.analyze_actigraphy.assert _called_once()
     
     def test_analyze_actigraphy_unauthorized(
         self,
@@ -384,7 +384,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
     def test_analyze_actigraphy_validation_error(
@@ -406,7 +406,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code  ==  status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid input" in response.json()["detail"]
     
     def test_analyze_actigraphy_analysis_error(
@@ -428,7 +428,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Analysis failed" in response.json()["detail"]
     
     def test_get_actigraphy_embeddings_success(
@@ -448,11 +448,11 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code  ==  status.HTTP_201_CREATED
         assert response.json() == embedding_result
         
         # Verify service call
-        mock_pat_service.get_actigraphy_embeddings.assert_called_once()
+        mock_pat_service.get_actigraphy_embeddings.assert _called_once()
     
     def test_get_actigraphy_embeddings_unauthorized(
         self,
@@ -473,7 +473,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
     def test_get_actigraphy_embeddings_validation_error(
@@ -495,7 +495,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code  ==  status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid input" in response.json()["detail"]
     
     def test_get_actigraphy_embeddings_embedding_error(
@@ -517,7 +517,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Embedding failed" in response.json()["detail"]
     
     def test_get_analysis_by_id_success(
@@ -535,11 +535,11 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         assert response.json() == analysis_result
         
         # Verify service call
-        mock_pat_service.get_analysis_by_id.assert_called_once_with(analysis_result["analysis_id"])
+        mock_pat_service.get_analysis_by_id.assert _called_once_with(analysis_result["analysis_id"])
     
     def test_get_analysis_by_id_not_found(
         self,
@@ -558,7 +558,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code  ==  status.HTTP_404_NOT_FOUND
         assert "not found" in response.json()["detail"]
     
     def test_get_analysis_by_id_unauthorized(
@@ -581,7 +581,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
     def test_get_patient_analyses_success(
@@ -600,11 +600,11 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         assert response.json() == analyses_list
         
         # Verify service call
-        mock_pat_service.get_patient_analyses.assert_called_once_with(
+        mock_pat_service.get_patient_analyses.assert _called_once_with(
             patient_id=patient_id,
             limit=10,
             offset=0
@@ -623,7 +623,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
     def test_get_model_info_success(
@@ -641,11 +641,11 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code  ==  status.HTTP_200_OK
         assert response.json() == model_info
         
         # Verify service call
-        mock_pat_service.get_model_info.assert_called_once()
+        mock_pat_service.get_model_info.assert _called_once()
     
     def test_integrate_with_digital_twin_success(
         self,
@@ -664,11 +664,11 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code  ==  status.HTTP_201_CREATED
         assert response.json() == integration_result
         
         # Verify service call
-        mock_pat_service.integrate_with_digital_twin.assert_called_once()
+        mock_pat_service.integrate_with_digital_twin.assert _called_once()
     
     def test_integrate_with_digital_twin_unauthorized(
         self,
@@ -689,7 +689,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
     def test_integrate_with_digital_twin_not_found(
@@ -711,7 +711,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code  ==  status.HTTP_404_NOT_FOUND
         assert "not found" in response.json()["detail"]
     
     def test_integrate_with_digital_twin_authorization_error(
@@ -733,7 +733,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
     
     def test_integrate_with_digital_twin_validation_error(
@@ -755,7 +755,7 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code  ==  status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid input" in response.json()["detail"]
     
     def test_integrate_with_digital_twin_integration_error(
@@ -777,5 +777,5 @@ class TestActigraphyRoutes:
         )
         
         # Check the response
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Integration failed" in response.json()["detail"]

@@ -14,18 +14,18 @@ import logging
 import pytest
 import uuid
 from datetime import date
-from unittest.mock import patch, MagicMock, ANY
+, from unittest.mock import patch, MagicMock, ANY
 
 from app.domain.entities.patient import Patient
-from app.domain.value_objects.address import Address
+, from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
 # from app.domain.value_objects.insurance import Insurance # Insurance VO removed or refactored
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
-from app.infrastructure.security.encryption import EncryptionService
+, from app.infrastructure.security.encryption import EncryptionService
 from app.core.utils.logging import get_logger
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPatientPHISecurity:
     """Test suite for HIPAA security compliance of Patient PHI."""
     
@@ -161,7 +161,7 @@ class TestPatientPHISecurity:
         
         # Check each field was encrypted
         for field in expected_encrypted_fields:
-            mock_encrypt.assert_any_call(field)
+            mock_encrypt.assert _any_call(field)
     
     @patch('app.infrastructure.security.audit.AuditLogger.log_data_access')
     def test_phi_access_is_audited(self, mock_log_data_access, sample_patient_with_phi):
@@ -181,7 +181,7 @@ class TestPatientPHISecurity:
         assert mock_log_data_access.called
         
         # Verify the audit log contains patient ID but not the actual PHI
-        mock_log_data_access.assert_any_call(
+        mock_log_data_access.assert _any_call(
             resource_type="Patient",
             resource_id=ANY,  # The patient ID
             action_type="read",

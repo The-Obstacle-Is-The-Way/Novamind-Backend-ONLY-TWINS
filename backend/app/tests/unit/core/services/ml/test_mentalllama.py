@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from botocore.exceptions import BotoCoreError
 
-from app.core.config.settings import get_settings
+, from app.core.config.settings import get_settings
 from app.core.exceptions import InitializationError, ModelNotFoundError, ServiceUnavailableError
 from app.core.services.ml.mentallama.bedrock_service import BedrockMentalLamaService
 
@@ -60,15 +60,15 @@ class TestBedrockMentalLamaService:
         
         # Test with default settings
         service = BedrockMentalLamaService()
-        assert service._region_name == settings.aws.region
-        assert service._model_id == settings.aws.bedrock.anthropic_model_id
+        assert service._region_name  ==  settings.aws.region
+        assert service._model_id  ==  settings.aws.bedrock.anthropic_model_id
         
         # Test with custom settings
         custom_region = "us-west-2"
         custom_model = "anthropic.claude-v2"
         service = BedrockMentalLamaService(region_name=custom_region, model_id=custom_model)
-        assert service._region_name == custom_region
-        assert service._model_id == custom_model
+        assert service._region_name  ==  custom_region
+        assert service._model_id  ==  custom_model
         
         # Client should be None until initialized
         assert service._bedrock_client is None

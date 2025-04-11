@@ -16,7 +16,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestBiometricLSTMModel:
     """Tests for the BiometricLSTMModel."""
 
@@ -130,10 +130,10 @@ class TestBiometricLSTMModel:
             await model.initialize()
             
             # Verify
-            mock_torch.load.assert_called_once()
+            mock_torch.load.assert _called_once()
             assert model.is_initialized
             assert model._model is not None
-            assert model._metadata == {'version': '1.0'}
+            assert model._metadata  ==  {'version': '1.0'}
 
     async def test_initialize_handles_missing_model(self):
         """Test that initialize handles missing model files gracefully."""
@@ -149,7 +149,7 @@ class TestBiometricLSTMModel:
             await model.initialize()
             
             # Verify
-            mock_lstm_cls.assert_called_once()
+            mock_lstm_cls.assert _called_once()
             assert model.is_initialized
             assert model._model is not None
 
@@ -214,7 +214,7 @@ class TestBiometricLSTMModel:
             await model.analyze_correlations(sample_biometric_data, sample_symptom_data)
             
             # Verify
-            mock_preprocess.assert_called_once_with(sample_biometric_data, sample_symptom_data)
+            mock_preprocess.assert _called_once_with(sample_biometric_data, sample_symptom_data)
             
             # Call directly to test
             processed_biometric, processed_symptom = model._preprocess_data(sample_biometric_data, sample_symptom_data)
@@ -226,12 +226,12 @@ class TestBiometricLSTMModel:
             # Check biometric data
             for biometric_type, data in processed_biometric.items():
                 assert isinstance(data, np.ndarray)
-                assert data.ndim == 2  # 2D array: [time_steps, features]
+                assert data.ndim  ==  2  # 2D array: [time_steps, features]
                 
             # Check symptom data
             for symptom_type, data in processed_symptom.items():
                 assert isinstance(data, np.ndarray)
-                assert data.ndim == 1  # 1D array: [time_steps]
+                assert data.ndim  ==  1  # 1D array: [time_steps]
 
     async def test_align_time_series(self, model):
         """Test that _align_time_series correctly aligns time series data."""
@@ -254,8 +254,8 @@ class TestBiometricLSTMModel:
         assert len(aligned_biometric) == 8  # Should match the overlap period
         
         # Check values are correctly aligned
-        np.testing.assert_array_equal(aligned_biometric, [3, 4, 5, 6, 7, 8, 9, 10])
-        np.testing.assert_array_equal(aligned_symptom, [5, 6, 7, 8, 9, 10, 11, 12])
+        np.testing.assert _array_equal(aligned_biometric, [3, 4, 5, 6, 7, 8, 9, 10])
+        np.testing.assert _array_equal(aligned_symptom, [5, 6, 7, 8, 9, 10, 11, 12])
 
     async def test_calculate_lag_correlations(self, model):
         """Test that _calculate_lag_correlations correctly calculates lagged correlations."""

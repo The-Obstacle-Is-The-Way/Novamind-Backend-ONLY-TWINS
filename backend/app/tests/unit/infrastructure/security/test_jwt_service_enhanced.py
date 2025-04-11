@@ -12,10 +12,10 @@ from datetime import datetime, UTC, UTC, timedelta, timezone
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.jwt_service import JWTService
-from app.core.config import Settings
+, from app.core.config import Settings
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestJWTService:
     """Comprehensive tests for the JWTService class."""
     
@@ -40,12 +40,12 @@ class TestJWTService:
     
     def test_initialization(self, jwt_service, test_settings):
         """Test JWT service initialization with settings."""
-        assert jwt_service.secret_key == test_settings.security.JWT_SECRET_KEY
-        assert jwt_service.algorithm == test_settings.security.JWT_ALGORITHM
-        assert jwt_service.access_token_expire_minutes == test_settings.security.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-        assert jwt_service.refresh_token_expire_days == test_settings.security.JWT_REFRESH_TOKEN_EXPIRE_DAYS
-        assert jwt_service.audience == test_settings.security.JWT_AUDIENCE
-        assert jwt_service.issuer == test_settings.security.JWT_ISSUER
+        assert jwt_service.secret_key  ==  test_settings.security.JWT_SECRET_KEY
+        assert jwt_service.algorithm  ==  test_settings.security.JWT_ALGORITHM
+        assert jwt_service.access_token_expire_minutes  ==  test_settings.security.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+        assert jwt_service.refresh_token_expire_days  ==  test_settings.security.JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        assert jwt_service.audience  ==  test_settings.security.JWT_AUDIENCE
+        assert jwt_service.issuer  ==  test_settings.security.JWT_ISSUER
     
     def test_create_access_token(self, jwt_service):
         """Test creation of access tokens."""
@@ -230,7 +230,7 @@ class TestJWTService:
         identity = jwt_service.get_token_identity(token)
         
         # Verify identity
-        assert identity == user_id
+        assert identity  ==  user_id
     
     def test_get_token_identity_missing_sub(self, jwt_service):
         """Test extracting identity from token without sub claim."""

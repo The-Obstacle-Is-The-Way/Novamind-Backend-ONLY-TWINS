@@ -8,10 +8,10 @@ ensuring HIPAA compliance for all data handling processes.
 """
 
 from app.core.security.phi_sanitizer import PHISanitizer
-from app.tests.security.base_test import BaseSecurityTest
+, from app.tests.security.base_test import BaseSecurityTest
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestPHISanitization(BaseSecurityTest):
     """Tests for PHI detection and sanitization functionality."""
     
@@ -20,19 +20,19 @@ class TestPHISanitization(BaseSecurityTest):
         super().setUp()
         self.sanitizer = PHISanitizer()
         
-def test_sanitize_text_with_names(self):
+    def test_sanitize_text_with_names(self):
         """Test that patient names are properly sanitized."""
         # Test text with common name patterns
         text = "Patient John Smith reported symptoms."
         sanitized = self.sanitizer.sanitize(text)
         
         # Verify name is replaced with [REDACTED]
-        self.assertNotIn("John Smith", sanitized)
-        self.assertIn("[REDACTED]", sanitized)
-        self.assertIn("Patient", sanitized)
-        self.assertIn("reported symptoms", sanitized)
+        self.assert NotIn("John Smith", sanitized)
+        self.assert In("[REDACTED]", sanitized)
+        self.assert In("Patient", sanitized)
+        self.assert In("reported symptoms", sanitized)
         
-def test_sanitize_text_with_phone_numbers(self):
+    def test_sanitize_text_with_phone_numbers(self):
         """Test that phone numbers are properly sanitized."""
         # Test various phone number formats
         formats = [
@@ -43,12 +43,12 @@ def test_sanitize_text_with_phone_numbers(self):
         
         for text in formats:
             sanitized = self.sanitizer.sanitize(text)
-            self.assertNotIn("555", sanitized)
-            self.assertNotIn("123", sanitized)
-            self.assertNotIn("4567", sanitized)
-            self.assertIn("[REDACTED]", sanitized)
+            self.assert NotIn("555", sanitized)
+            self.assert NotIn("123", sanitized)
+            self.assert NotIn("4567", sanitized)
+            self.assert In("[REDACTED]", sanitized)
             
-def test_sanitize_text_with_dates(self):
+    def test_sanitize_text_with_dates(self):
         """Test that dates are properly sanitized."""
         # Test various date formats
         formats = [
@@ -59,13 +59,13 @@ def test_sanitize_text_with_dates(self):
         
         for text in formats:
             sanitized = self.sanitizer.sanitize(text)
-            self.assertNotIn("1980", sanitized)
-            self.assertNotIn("01/15", sanitized)
-            self.assertNotIn("January 15", sanitized)
-            self.assertNotIn("1980-01-15", sanitized)
-            self.assertIn("[REDACTED]", sanitized)
+            self.assert NotIn("1980", sanitized)
+            self.assert NotIn("01/15", sanitized)
+            self.assert NotIn("January 15", sanitized)
+            self.assert NotIn("1980-01-15", sanitized)
+            self.assert In("[REDACTED]", sanitized)
             
-def test_sanitize_text_with_ssn(self):
+    def test_sanitize_text_with_ssn(self):
         """Test that Social Security Numbers are properly sanitized."""
         # Test various SSN formats
         formats = [
@@ -76,22 +76,22 @@ def test_sanitize_text_with_ssn(self):
         
         for text in formats:
             sanitized = self.sanitizer.sanitize(text)
-            self.assertNotIn("123-45-6789", sanitized)
-            self.assertNotIn("123456789", sanitized)
-            self.assertIn("[REDACTED]", sanitized)
+            self.assert NotIn("123-45-6789", sanitized)
+            self.assert NotIn("123456789", sanitized)
+            self.assert In("[REDACTED]", sanitized)
             
-def test_sanitize_text_with_addresses(self):
+    def test_sanitize_text_with_addresses(self):
         """Test that addresses are properly sanitized."""
         # Test address formats
         text = "Lives at 123 Main St, Apt 4B, New York, NY 10001"
         sanitized = self.sanitizer.sanitize(text)
         
-        self.assertNotIn("123 Main St", sanitized)
-        self.assertNotIn("Apt 4B", sanitized)
-        self.assertNotIn("10001", sanitized)
-        self.assertIn("[REDACTED]", sanitized)
+        self.assert NotIn("123 Main St", sanitized)
+        self.assert NotIn("Apt 4B", sanitized)
+        self.assert NotIn("10001", sanitized)
+        self.assert In("[REDACTED]", sanitized)
         
-def test_sanitize_medical_record_numbers(self):
+    def test_sanitize_medical_record_numbers(self):
         """Test that medical record numbers are properly sanitized."""
         # Test MRN formats
         formats = [
@@ -102,12 +102,12 @@ def test_sanitize_medical_record_numbers(self):
         
         for text in formats:
             sanitized = self.sanitizer.sanitize(text)
-            self.assertNotIn("MR12345", sanitized)
-            self.assertNotIn("12345-A", sanitized)
-            self.assertNotIn("MR-12345-B", sanitized)
-            self.assertIn("[REDACTED]", sanitized)
+            self.assert NotIn("MR12345", sanitized)
+            self.assert NotIn("12345-A", sanitized)
+            self.assert NotIn("MR-12345-B", sanitized)
+            self.assert In("[REDACTED]", sanitized)
             
-def test_sanitize_nested_dictionary(self):
+    def test_sanitize_nested_dictionary(self):
         """Test that PHI in nested dictionary structures is properly sanitized."""
         # Test dictionary with nested PHI
         data = {
@@ -130,14 +130,14 @@ def test_sanitize_nested_dictionary(self):
         sanitized = self.sanitizer.sanitize(data)
         
         # Check that PHI is sanitized but other data is preserved
-        self.assertNotIn("John Smith", str(sanitized))
-        self.assertNotIn("555-123-4567", str(sanitized))
-        self.assertNotIn("1980-01-15", str(sanitized))
-        self.assertIn("[REDACTED]", str(sanitized))
-        self.assertIn("Patient reports symptoms", str(sanitized))
-        self.assertIn("Main Clinic", str(sanitized))
+        self.assert NotIn("John Smith", str(sanitized))
+        self.assert NotIn("555-123-4567", str(sanitized))
+        self.assert NotIn("1980-01-15", str(sanitized))
+        self.assert In("[REDACTED]", str(sanitized))
+        self.assert In("Patient reports symptoms", str(sanitized))
+        self.assert In("Main Clinic", str(sanitized))
         
-def test_sanitize_list_data(self):
+    def test_sanitize_list_data(self):
         """Test that PHI in list structures is properly sanitized."""
         # Test list with PHI
         data = [
@@ -150,13 +150,13 @@ def test_sanitize_list_data(self):
         sanitized = self.sanitizer.sanitize(data)
         
         # Check that PHI is sanitized but other data is preserved
-        self.assertNotIn("John Smith", str(sanitized))
-        self.assertNotIn("555-123-4567", str(sanitized))
-        self.assertNotIn("1980-01-15", str(sanitized))
-        self.assertIn("[REDACTED]", str(sanitized))
-        self.assertIn("Patient reports symptoms", str(sanitized))
+        self.assert NotIn("John Smith", str(sanitized))
+        self.assert NotIn("555-123-4567", str(sanitized))
+        self.assert NotIn("1980-01-15", str(sanitized))
+        self.assert In("[REDACTED]", str(sanitized))
+        self.assert In("Patient reports symptoms", str(sanitized))
         
-def test_audit_logging_on_phi_detection(self):
+    def test_audit_logging_on_phi_detection(self):
         """Test that PHI detection is properly audit logged."""
         # Replace the sanitizer's logger with our mock
         original_logger = self.sanitizer._logger
@@ -168,23 +168,23 @@ def test_audit_logging_on_phi_detection(self):
             self.sanitizer.sanitize(text)
             
             # Verify that PHI detection was logged
-            self.mock_audit_logger.log_phi_detection.assert_called()
+            self.mock_audit_logger.log_phi_detection.assert _called()
             
             # Verify log contains the right information
             args, kwargs = self.mock_audit_logger.log_phi_detection.call_args
-            self.assertEqual(kwargs.get('user_id'), self.test_user_id)
-            self.assertIn('text_length', kwargs.get('details', {}))
-            self.assertIn('detected_types', kwargs.get('details', {}))
+            self.assert Equal(kwargs.get('user_id'), self.test_user_id)
+            self.assert In('text_length', kwargs.get('details', {}))
+            self.assert In('detected_types', kwargs.get('details', {}))
             
         finally:
             # Restore the original logger
             self.sanitizer._logger = original_logger
             
-def test_no_false_positives(self):
+    def test_no_false_positives(self):
         """Test that non-PHI text is not incorrectly sanitized."""
         # Test text without PHI
         text = "The patient reported feeling better after treatment. Follow-up in 2 weeks."
         sanitized = self.sanitizer.sanitize(text)
         
         # The text should remain unchanged
-        self.assertEqual(text, sanitized)
+        self.assert Equal(text, sanitized)

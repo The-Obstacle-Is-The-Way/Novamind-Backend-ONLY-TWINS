@@ -15,7 +15,7 @@ from unittest.mock import patch, MagicMock
 # Path to the log sanitizer module
 from app.infrastructure.security.log_sanitizer import PHISanitizer
 
-class TestLogSanitization:
+, class TestLogSanitization:
     """Test PHI sanitization in logs to ensure HIPAA compliance."""
 
     @pytest.fixture
@@ -178,7 +178,7 @@ class TestLogSanitization:
         assert "John Smith" not in sanitized
         assert "123-45-6789" not in sanitized
         
-        # Performance assertion - sanitization should be reasonably fast
+        # Performance assert ion - sanitization should be reasonably fast
         # Even for large log entries, sanitization should complete in under 50ms
         assert (end_time - start_time) < 0.05, "Sanitization took too long"
 

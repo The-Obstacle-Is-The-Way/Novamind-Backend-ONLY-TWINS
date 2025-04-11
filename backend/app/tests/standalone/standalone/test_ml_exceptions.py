@@ -74,7 +74,7 @@ class MentalLLaMAValidationError(MentalLLaMABaseError):
 class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_base_error(self):
         """Test the base error class."""
         # Arrange
@@ -85,11 +85,11 @@ class TestMLExceptions(unittest.TestCase):
         error = MentalLLaMABaseError(message, details)
         
         # Assert
-        self.assertEqual(error.message, message)
-        self.assertEqual(error.details, details)
-        self.assertEqual(str(error), message)
+        self.assert Equal(error.message, message)
+        self.assert Equal(error.details, details)
+        self.assert Equal(str(error), message)
     
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_inference_error(self):
         """Test the inference error class."""
         # Arrange
@@ -109,18 +109,18 @@ class TestMLExceptions(unittest.TestCase):
         )
         
         # Assert
-        self.assertEqual(error.message, message)
-        self.assertEqual(error.model_id, model_id)
-        self.assertEqual(error.input_text, input_text)
-        self.assertEqual(error.error_type, error_type)
-        self.assertEqual(error.details["model_id"], model_id)
-        self.assertEqual(error.details["error_type"], error_type)
-        self.assertEqual(error.details["latency_ms"], 15000)
+        self.assert Equal(error.message, message)
+        self.assert Equal(error.model_id, model_id)
+        self.assert Equal(error.input_text, input_text)
+        self.assert Equal(error.error_type, error_type)
+        self.assert Equal(error.details["model_id"], model_id)
+        self.assert Equal(error.details["error_type"], error_type)
+        self.assert Equal(error.details["latency_ms"], 15000)
         
         # Ensure input_text is NOT included in details to prevent PHI leakage
-        self.assertNotIn("input_text", error.details)
+        self.assert NotIn("input_text", error.details)
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_validation_error(self):
         """Test the validation error class."""
         # Arrange
@@ -136,10 +136,10 @@ class TestMLExceptions(unittest.TestCase):
         )
         
         # Assert
-        self.assertEqual(error.message, message)
-        self.assertEqual(error.validation_errors, validation_errors)
-        self.assertEqual(error.details["validation_errors"], validation_errors)
-        self.assertEqual(error.details["model_version"], "2.0")
+        self.assert Equal(error.message, message)
+        self.assert Equal(error.validation_errors, validation_errors)
+        self.assert Equal(error.details["validation_errors"], validation_errors)
+        self.assert Equal(error.details["model_version"], "2.0")
 
 
 if __name__ == "__main__":

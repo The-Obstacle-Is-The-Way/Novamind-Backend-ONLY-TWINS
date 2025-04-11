@@ -15,13 +15,13 @@ from typing import Dict, List, Any, Optional
 # Import database components or mock them if not available
 try:
     from app.infrastructure.persistence.sqlalchemy.config.database import Database
-    from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
+    , from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
     from app.infrastructure.persistence.sqlalchemy.unit_of_work import UnitOfWork
-    from app.domain.entities.patient import Patient
+    , from app.domain.entities.patient import Patient
     from app.infrastructure.security.encryption import encrypt_phi, decrypt_phi
 except ImportError:
     # Mock classes for testing database PHI protection
-    @pytest.mark.db_required
+    @pytest.mark.db_required()
     class Database:
         """Mock database for testing."""
         
@@ -325,20 +325,20 @@ class TestDBPHIProtection:
         created_patient = repo.create(patient)
         
         # Verify PHI fields are encrypted
-        assert created_patient.ssn != "123-45-6789"
+        assert created_patient.ssn  !=  "123-45-6789"
         assert created_patient.ssn.startswith("ENCRYPTED_")
-        assert created_patient.email != "john.doe@example.com"
+        assert created_patient.email  !=  "john.doe@example.com"
         assert created_patient.email.startswith("ENCRYPTED_")
-        assert created_patient.phone != "555-123-4567"
+        assert created_patient.phone  !=  "555-123-4567"
         assert created_patient.phone.startswith("ENCRYPTED_")
-        assert created_patient.address != "123 Main St, Anytown, CA 12345"
+        assert created_patient.address  !=  "123 Main St, Anytown, CA 12345"
         assert created_patient.address.startswith("ENCRYPTED_")
         
         # Non-PHI fields should not be encrypted
-        assert created_patient.first_name == "John"
-        assert created_patient.last_name == "Doe"
-        assert created_patient.date_of_birth == "1980-01-01"
-        assert created_patient.medical_record_number == "MRN12345"
+        assert created_patient.first_name  ==  "John"
+        assert created_patient.last_name  ==  "Doe"
+        assert created_patient.date_of_birth  ==  "1980-01-01"
+        assert created_patient.medical_record_number  ==  "MRN12345"
     
     def test_role_based_access_control(self, db):
         """Test that access to PHI is properly controlled by role."""
@@ -444,17 +444,17 @@ class TestDBPHIProtection:
         
         # Admin and doctor should see all PHI
         assert admin_patient is not None
-        assert admin_patient.ssn == "123-45-6789"
-        assert admin_patient.email == "john.doe@example.com"
+        assert admin_patient.ssn  ==  "123-45-6789"
+        assert admin_patient.email  ==  "john.doe@example.com"
         
         assert doctor_patient is not None
-        assert doctor_patient.ssn == "123-45-6789"
-        assert doctor_patient.email == "john.doe@example.com"
+        assert doctor_patient.ssn  ==  "123-45-6789"
+        assert doctor_patient.email  ==  "john.doe@example.com"
         
         # Nurse should see most PHI but not SSN
         assert nurse_patient is not None
-        assert nurse_patient.ssn == "XXX-XX-XXXX"  # Masked
-        assert nurse_patient.email == "john.doe@example.com"  # Visible
+        assert nurse_patient.ssn  ==  "XXX-XX-XXXX"  # Masked
+        assert nurse_patient.email  ==  "john.doe@example.com"  # Visible
         
         # Guest should see no PHI
         assert guest_patient is None
@@ -488,7 +488,7 @@ class TestDBPHIProtection:
         repo.session = mock_session
         
         # Override methods to test query parameters
-        def execute_query(*args, **kwargs):
+    def execute_query(*args, **kwargs):
             """Mock query execution to inspect parameters."""
             # Check that parameters don't contain raw PHI
             if 'params' in kwargs:

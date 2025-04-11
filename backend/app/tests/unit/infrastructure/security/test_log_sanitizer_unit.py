@@ -98,7 +98,7 @@ def log_sanitizer(sanitizer_config, pattern_repository):
     return sanitizer
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestLogSanitizer:
     """Test suite for the log sanitizer."""
     
@@ -341,7 +341,7 @@ class TestLogSanitizer:
         
         # Hash values should be consistent for the same input
         sanitized2 = log_sanitizer.sanitize(log_message)
-        assert sanitized == sanitized2
+        assert sanitized  ==  sanitized2
     
     def test_log_message_sanitization(self, log_sanitizer):
         """Test sanitization of log messages."""
@@ -422,7 +422,7 @@ class TestLogSanitizer:
         sanitized = log_sanitizer.sanitize(log_message)
         
         # Verify no sanitization occurred
-        assert sanitized == log_message
+        assert sanitized  ==  log_message
         assert "123-45-6789" in sanitized
     
     def test_exception_handling(self, log_sanitizer):
@@ -434,7 +434,7 @@ class TestLogSanitizer:
         with patch.object(log_sanitizer, '_sanitize_value', side_effect=Exception("Test exception")):
             # With exceptions allowed, it should return fallback
             result = log_sanitizer.sanitize("Test message with PHI")
-            assert result == "[Sanitization Error]"
+            assert result  ==  "[Sanitization Error]"
         
         # Configure to not allow exceptions
         log_sanitizer.config.exceptions_allowed = False
@@ -442,7 +442,7 @@ class TestLogSanitizer:
         # With exceptions not allowed, it should handle gracefully
         with patch.object(log_sanitizer, '_sanitize_value', side_effect=Exception("Test exception")):
             result = log_sanitizer.sanitize("Test message with PHI")
-            assert result == "Test message with PHI"  # Original returned on error
+            assert result  ==  "Test message with PHI"  # Original returned on error
     
     def test_max_log_size(self, log_sanitizer):
         """Test handling of large log messages."""
@@ -462,7 +462,7 @@ class TestLogSanitizer:
     def test_sanitization_hook(self, log_sanitizer):
         """Test custom sanitization hooks."""
         # Define a custom sanitization hook
-        def custom_hook(value, context):
+    def custom_hook(value, context):
             if isinstance(value, str) and "CUSTOM_PHI" in value:
                 return value.replace("CUSTOM_PHI", "[CUSTOM_REDACTED]")
             return value

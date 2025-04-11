@@ -3,12 +3,12 @@
 
 import pytest
 from datetime import date
-from unittest.mock import MagicMock
+, from unittest.mock import MagicMock
 from uuid import UUID
 
-from app.domain.entities.patient import Patient
+, from app.domain.entities.patient import Patient
 from app.domain.value_objects.contact_info import ContactInfo
-from app.domain.value_objects.address import Address
+, from app.domain.value_objects.address import Address
 from app.infrastructure.security.encryption import EncryptionService
 
 
@@ -43,7 +43,7 @@ def valid_patient_data(mock_encryption_service):
     }
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 def test_create_patient(valid_patient_data, mock_encryption_service):
     """Test patient creation with valid data."""
     # Create patient
@@ -51,19 +51,19 @@ def test_create_patient(valid_patient_data, mock_encryption_service):
     
     # Verify basic attributes
     assert str(patient.id) == "12345678-1234-5678-1234-567812345678"
-    assert patient.first_name == "John"
-    assert patient.last_name == "Doe"
-    assert patient.date_of_birth == date(1990, 1, 1)
+    assert patient.first_name  ==  "John"
+    assert patient.last_name  ==  "Doe"
+    assert patient.date_of_birth  ==  date(1990, 1, 1)
     
     # Verify contact info
-    assert patient.contact_info.email == "john.doe@example.com"
-    assert patient.contact_info.phone == "123-456-7890"
+    assert patient.contact_info.email  ==  "john.doe@example.com"
+    assert patient.contact_info.phone  ==  "123-456-7890"
     
     # Verify address
-    assert patient.address.street == "123 Main St"
-    assert patient.address.city == "Anytown"
-    assert patient.address.state == "NY"
-    assert patient.address.zip_code == "12345"
+    assert patient.address.street  ==  "123 Main St"
+    assert patient.address.city  ==  "Anytown"
+    assert patient.address.state  ==  "NY"
+    assert patient.address.zip_code  ==  "12345"
     
     # Verify PHI fields are encrypted
     assert mock_encryption_service.encrypt.called
@@ -90,10 +90,10 @@ def test_update_patient(valid_patient_data, mock_encryption_service):
     )
     
     # Verify updates
-    assert patient.first_name == "Jane"
-    assert patient.last_name == "Smith"
-    assert patient.contact_info.email == "jane.smith@example.com"
-    assert patient.contact_info.phone == "987-654-3210"
+    assert patient.first_name  ==  "Jane"
+    assert patient.last_name  ==  "Smith"
+    assert patient.contact_info.email  ==  "jane.smith@example.com"
+    assert patient.contact_info.phone  ==  "987-654-3210"
     
     # Verify PHI fields are encrypted
     assert mock_encryption_service.encrypt.called

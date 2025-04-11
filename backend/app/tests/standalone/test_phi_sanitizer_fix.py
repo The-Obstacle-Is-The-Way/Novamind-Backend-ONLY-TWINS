@@ -12,7 +12,7 @@ def sanitizer():
 class TestPHISanitizer:
     """Test suite for PHI sanitization functionality."""
     
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_preservation_of_non_phi(self, sanitizer):
         """Test that non-PHI data is preserved during sanitization."""
         mixed_data = {

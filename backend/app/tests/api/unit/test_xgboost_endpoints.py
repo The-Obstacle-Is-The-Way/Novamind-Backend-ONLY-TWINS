@@ -10,13 +10,13 @@ import json
 import pytest
 import uuid
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+, from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+, from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from app.api.routes.xgboost import router
+, from app.api.routes.xgboost import router
 from app.core.services.ml.xgboost import (
     ModelType,  
     RiskLevel,  
@@ -38,7 +38,7 @@ from app.api.schemas.xgboost import (
 
 
 # Mock user for authentication
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class MockUser:
     def __init__(self, id="test-user-id", role="clinician"):
         self.id = id
@@ -176,7 +176,7 @@ class MockXGBoostService:
 
 # Mock dependency overrides
 @pytest.fixture
-def mock_dependencies():
+    def mock_dependencies():
     """Set up dependency overrides for testing."""
     with patch("app.api.routes.xgboost.get_current_clinician", return_value=MockUser()):
         with patch("app.api.routes.xgboost.get_xgboost_service") as mock_get_service:
@@ -188,7 +188,7 @@ def mock_dependencies():
 
 # Mock error dependency overrides
 @pytest.fixture
-def mock_error_dependencies():
+    def mock_error_dependencies():
     """Set up dependency overrides for error cases."""
     with patch("app.api.routes.xgboost.get_current_clinician", return_value=MockUser()):
         with patch("app.api.routes.xgboost.get_xgboost_service") as mock_get_service:
@@ -200,7 +200,7 @@ def mock_error_dependencies():
 
 # === Test Cases ===
 
-def test_predict_risk_endpoint(client: TestClient, mock_dependencies):
+    def test_predict_risk_endpoint(client: TestClient, mock_dependencies):
     """Test the risk prediction endpoint with valid data."""
     # Prepare request data
     request_data = {
@@ -221,7 +221,7 @@ def test_predict_risk_endpoint(client: TestClient, mock_dependencies):
     response = client.post("/api/v1/xgboost/risk-prediction", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert data["patient_id"] == "patient-123"
     assert data["risk_type"] == "risk_suicide"
@@ -232,7 +232,7 @@ def test_predict_risk_endpoint(client: TestClient, mock_dependencies):
     assert "explanations" in data
     
     # Verify service was called with correct arguments
-    mock_dependencies.predict_risk_async.assert_called_once()
+    mock_dependencies.predict_risk_async.assert _called_once()
     call_args = mock_dependencies.predict_risk_async.call_args[1]
     assert call_args["patient_id"] == "patient-123"
     assert call_args["model_type"] == ModelType.RISK_SUICIDE
@@ -242,7 +242,7 @@ def test_predict_risk_endpoint(client: TestClient, mock_dependencies):
     assert "age" in call_args["features"]
 
 
-def test_predict_treatment_response_endpoint(client: TestClient, mock_dependencies):
+    def test_predict_treatment_response_endpoint(client: TestClient, mock_dependencies):
     """Test the treatment response prediction endpoint with valid data."""
     # Prepare request data
     request_data = {
@@ -263,7 +263,7 @@ def test_predict_treatment_response_endpoint(client: TestClient, mock_dependenci
     response = client.post("/api/v1/xgboost/treatment-response", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert data["patient_id"] == "patient-123"
     assert data["treatment_type"] == "medication"
@@ -273,7 +273,7 @@ def test_predict_treatment_response_endpoint(client: TestClient, mock_dependenci
     assert "adjustments" in data
     
     # Verify service was called with correct arguments
-    mock_dependencies.predict_treatment_response_async.assert_called_once()
+    mock_dependencies.predict_treatment_response_async.assert _called_once()
     call_args = mock_dependencies.predict_treatment_response_async.call_args[1]
     assert call_args["patient_id"] == "patient-123"
     assert call_args["model_type"] == ModelType.TREATMENT_RESPONSE_MEDICATION
@@ -285,7 +285,7 @@ def test_predict_treatment_response_endpoint(client: TestClient, mock_dependenci
     assert "genetic_markers" in call_args["patient_features"]
 
 
-def test_predict_outcome_endpoint(client: TestClient, mock_dependencies):
+    def test_predict_outcome_endpoint(client: TestClient, mock_dependencies):
     """Test the outcome prediction endpoint with valid data."""
     # Prepare request data
     request_data = {
@@ -311,7 +311,7 @@ def test_predict_outcome_endpoint(client: TestClient, mock_dependencies):
     response = client.post("/api/v1/xgboost/outcome-prediction", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert data["patient_id"] == "patient-123"
     assert "overall_outcome_score" in data
@@ -320,7 +320,7 @@ def test_predict_outcome_endpoint(client: TestClient, mock_dependencies):
     assert "recommendations" in data
     
     # Verify service was called with correct arguments
-    mock_dependencies.predict_outcome_async.assert_called_once()
+    mock_dependencies.predict_outcome_async.assert _called_once()
     call_args = mock_dependencies.predict_outcome_async.call_args[1]
     assert call_args["patient_id"] == "patient-123"
     assert call_args["model_type"] == ModelType.OUTCOME_SHORT_TERM
@@ -331,7 +331,7 @@ def test_predict_outcome_endpoint(client: TestClient, mock_dependencies):
     assert "support_network" in call_args["patient_features"]
 
 
-def test_get_feature_importance_endpoint(client: TestClient, mock_dependencies):
+    def test_get_feature_importance_endpoint(client: TestClient, mock_dependencies):
     """Test the feature importance endpoint."""
     # Prepare request data
     request_data = {
@@ -344,7 +344,7 @@ def test_get_feature_importance_endpoint(client: TestClient, mock_dependencies):
     response = client.post("/api/v1/xgboost/feature-importance", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert data["patient_id"] == "patient-123"
     assert data["model_type"] == "risk-suicide"
@@ -352,12 +352,12 @@ def test_get_feature_importance_endpoint(client: TestClient, mock_dependencies):
     assert "visualization" in data
     
     # Verify service was called with correct arguments
-    mock_dependencies.get_feature_importance.assert_called_once()
+    mock_dependencies.get_feature_importance.assert _called_once()
     call_args = mock_dependencies.get_feature_importance.call_args[1]
     assert call_args["model_type"] == ModelType.RISK_SUICIDE
 
 
-def test_digital_twin_integration_endpoint(client: TestClient, mock_dependencies):
+    def test_digital_twin_integration_endpoint(client: TestClient, mock_dependencies):
     """Test the digital twin integration endpoint."""
     # Prepare request data
     request_data = {
@@ -370,7 +370,7 @@ def test_digital_twin_integration_endpoint(client: TestClient, mock_dependencies
     response = client.post("/api/v1/xgboost/digital-twin", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert data["patient_id"] == "patient-123"
     assert data["profile_id"] == "profile-123"
@@ -379,10 +379,10 @@ def test_digital_twin_integration_endpoint(client: TestClient, mock_dependencies
     assert "visualization_url" in data
     
     # Verify service was called
-    mock_dependencies.simulate_digital_twin.assert_called_once()
+    mock_dependencies.simulate_digital_twin.assert _called_once()
 
 
-def test_model_info_endpoint(client: TestClient, mock_dependencies):
+    def test_model_info_endpoint(client: TestClient, mock_dependencies):
     """Test the model info endpoint."""
     # Prepare request data
     request_data = {
@@ -393,7 +393,7 @@ def test_model_info_endpoint(client: TestClient, mock_dependencies):
     response = client.post("/api/v1/xgboost/model-info", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 200
+    assert response.status_code  ==  200
     data = response.json()
     assert data["model_type"] == "risk-suicide"
     assert "version" in data
@@ -401,14 +401,14 @@ def test_model_info_endpoint(client: TestClient, mock_dependencies):
     assert "features" in data
     
     # Verify service was called with correct arguments
-    mock_dependencies.get_model_info.assert_called_once()
+    mock_dependencies.get_model_info.assert _called_once()
     call_args = mock_dependencies.get_model_info.call_args[1]
     assert call_args["model_type"] == ModelType.RISK_SUICIDE
 
 
 # === Error Handling Tests ===
 
-def test_model_not_found_error(client: TestClient, mock_error_dependencies):
+    def test_model_not_found_error(client: TestClient, mock_error_dependencies):
     """Test handling of ModelNotFoundError."""
     # Prepare request data
     request_data = {
@@ -423,13 +423,13 @@ def test_model_not_found_error(client: TestClient, mock_error_dependencies):
     response = client.post("/api/v1/xgboost/risk-prediction", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 404
+    assert response.status_code  ==  404
     data = response.json()
     assert "detail" in data
     assert data["detail"]["error_type"] == "not_found"
 
 
-def test_prediction_error(client: TestClient, mock_error_dependencies):
+    def test_prediction_error(client: TestClient, mock_error_dependencies):
     """Test handling of PredictionError."""
     # Prepare request data
     request_data = {
@@ -445,13 +445,13 @@ def test_prediction_error(client: TestClient, mock_error_dependencies):
     response = client.post("/api/v1/xgboost/treatment-response", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 500
+    assert response.status_code  ==  500
     data = response.json()
     assert "detail" in data
     assert data["detail"]["error_type"] == "prediction_error"
 
 
-def test_service_connection_error(client: TestClient, mock_error_dependencies):
+    def test_service_connection_error(client: TestClient, mock_error_dependencies):
     """Test handling of ServiceConnectionError."""
     # Prepare request data
     request_data = {
@@ -469,13 +469,13 @@ def test_service_connection_error(client: TestClient, mock_error_dependencies):
     response = client.post("/api/v1/xgboost/outcome-prediction", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 503
+    assert response.status_code  ==  503
     data = response.json()
     assert "detail" in data
     assert data["detail"]["error_type"] == "service_unavailable"
 
 
-def test_validation_error(client: TestClient):
+    def test_validation_error(client: TestClient):
     """Test handling of validation errors with missing required fields."""
     # Prepare request data with missing required fields
     request_data = {
@@ -488,6 +488,6 @@ def test_validation_error(client: TestClient):
     response = client.post("/api/v1/xgboost/risk-prediction", json=request_data) # Corrected path
     
     # Verify response
-    assert response.status_code == 422  # Unprocessable Entity
+    assert response.status_code  ==  422  # Unprocessable Entity
     data = response.json()
     assert "detail" in data

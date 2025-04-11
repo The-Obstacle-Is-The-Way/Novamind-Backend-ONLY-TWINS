@@ -10,20 +10,20 @@ and process in a HIPAA-compliant manner.
 import json
 import pytest
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+, from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi import status
-from fastapi.testclient import TestClient
+, from fastapi.testclient import TestClient
 
 from app.presentation.api.endpoints.analytics_endpoints import router, AnalyticsEvent
 
 
 @pytest.fixture
-@pytest.mark.db_required
+@pytest.mark.db_required()
 def test_client():
     """Create a test client for the analytics endpoints."""
     from fastapi import FastAPI
-    app = FastAPI()
+    , app = FastAPI()
     app.include_router(router)
     return TestClient(app)
 
@@ -53,7 +53,7 @@ def mock_user():
     return {"sub": "test-user-123", "email": "test@example.com", "role": "provider"}
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_record_analytics_event(test_client, mock_cache, mock_background_tasks, mock_user):
     """Test the record_analytics_event endpoint."""
     # Arrange
@@ -77,8 +77,7 @@ async def test_record_analytics_event(test_client, mock_cache, mock_background_t
     # Mock phi detector to avoid real PHI detection logic
     with patch('app.infrastructure.ml.phi_detection.PHIDetectionService') as mock_phi_detector:
         # Configure mock PHI detector
-        mock_instance = mock_phi_detector.return_value
-        mock_instance.ensure_initialized = MagicMock(return_value=None)
+        mock_instance = mock_phi_detector.return_value=mock_instance.ensure_initialized = MagicMock(return_value=None)
         mock_instance.contains_phi = MagicMock(return_value=False)
         
         # Act
@@ -86,23 +85,23 @@ async def test_record_analytics_event(test_client, mock_cache, mock_background_t
             response = test_client.post("/analytics/events", json=event_data)
         
         # Assert
-        assert response.status_code == status.HTTP_202_ACCEPTED
+        assert response.status_code  ==  status.HTTP_202_ACCEPTED
         response_data = response.json()
         assert response_data["status"] == "success"
         assert "event_id" in response_data["data"]
         
         # Verify the event was enhanced with user info
-        mock_background_tasks.add_task.assert_called_once()
+        mock_background_tasks.add_task.assert _called_once()
         args, _ = mock_background_tasks.add_task.call_args
         process_func, event, user_id = args
-        assert event.user_id == mock_user["sub"]
+        assert event.user_id  ==  mock_user["sub"]
         
         # Verify cache was updated
-        mock_cache.increment.assert_called_once()
-        mock_cache.expire.assert_called_once()
+        mock_cache.increment.assert _called_once()
+        mock_cache.expire.assert _called_once()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_record_analytics_batch(test_client, mock_cache, mock_background_tasks, mock_user):
     """Test the record_analytics_batch endpoint."""
     # Arrange
@@ -138,8 +137,7 @@ async def test_record_analytics_batch(test_client, mock_cache, mock_background_t
     # Mock phi detector to avoid real PHI detection logic
     with patch('app.infrastructure.ml.phi_detection.PHIDetectionService') as mock_phi_detector:
         # Configure mock PHI detector
-        mock_instance = mock_phi_detector.return_value
-        mock_instance.ensure_initialized = MagicMock(return_value=None)
+        mock_instance = mock_phi_detector.return_value=mock_instance.ensure_initialized = MagicMock(return_value=None)
         mock_instance.contains_phi = MagicMock(return_value=False)
         
         # Act
@@ -147,26 +145,26 @@ async def test_record_analytics_batch(test_client, mock_cache, mock_background_t
             response = test_client.post("/analytics/events/batch", json=batch_data)
         
         # Assert
-        assert response.status_code == status.HTTP_202_ACCEPTED
+        assert response.status_code  ==  status.HTTP_202_ACCEPTED
         response_data = response.json()
         assert response_data["status"] == "success"
         assert response_data["data"]["batch_size"] == 2
         
         # Verify background task was called with the batch
-        mock_background_tasks.add_task.assert_called_once()
+        mock_background_tasks.add_task.assert _called_once()
         args, _ = mock_background_tasks.add_task.call_args
         process_func, events, user_id = args
         
         # Verify events were enhanced with user info
         for event in events:
-            assert event.user_id == mock_user["sub"]
+            assert event.user_id  ==  mock_user["sub"]
         
         # Verify cache was updated (called twice for 2 events)
-        assert mock_cache.increment.call_count == 2
-        assert mock_cache.expire.call_count == 1
+        assert mock_cache.increment.call_count  ==  2
+        assert mock_cache.expire.call_count  ==  1
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_phi_detection_in_analytics_event(test_client, mock_cache, mock_background_tasks, mock_user):
     """Test PHI detection in analytics events."""
     # Arrange
@@ -196,8 +194,7 @@ async def test_phi_detection_in_analytics_event(test_client, mock_cache, mock_ba
     # Mock phi detector to simulate PHI detection
     with patch('app.infrastructure.ml.phi_detection.PHIDetectionService') as mock_phi_detector:
         # Configure mock PHI detector to detect PHI
-        mock_instance = mock_phi_detector.return_value
-        mock_instance.ensure_initialized = MagicMock(return_value=None)
+        mock_instance = mock_phi_detector.return_value=mock_instance.ensure_initialized = MagicMock(return_value=None)
         mock_instance.contains_phi = MagicMock(return_value=True)
         mock_instance.redact_phi = MagicMock(
             return_value=str(event_data["data"]).replace("John Doe", "[REDACTED]")
@@ -208,16 +205,16 @@ async def test_phi_detection_in_analytics_event(test_client, mock_cache, mock_ba
             response = test_client.post("/analytics/events", json=event_data)
         
         # Assert
-        assert response.status_code == status.HTTP_202_ACCEPTED
+        assert response.status_code  ==  status.HTTP_202_ACCEPTED
         
         # Verify PHI detection was called
-        mock_instance.contains_phi.assert_called_once()
+        mock_instance.contains_phi.assert _called_once()
         
         # We expect the validator to have detected PHI and attempted redaction
-        mock_instance.redact_phi.assert_called_once()
+        mock_instance.redact_phi.assert _called_once()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_get_analytics_dashboard(test_client, mock_cache, mock_user):
     """Test the get_analytics_dashboard endpoint."""
     # Arrange
@@ -252,14 +249,14 @@ async def test_get_analytics_dashboard(test_client, mock_cache, mock_user):
     response = test_client.get("/analytics/dashboard?timeframe=daily")
     
     # Assert
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code  ==  status.HTTP_200_OK
     response_data = response.json()
     assert response_data["status"] == "success"
     assert response_data["data"] == mock_dashboard_data
     
     # Verify cache was checked
-    mock_cache.get.assert_called_once()
-    mock_cache.set.assert_not_called()
+    mock_cache.get.assert _called_once()
+    mock_cache.set.assert _not_called()
     
     # Test non-cached response
     mock_cache.get.reset_mock()
@@ -269,11 +266,11 @@ async def test_get_analytics_dashboard(test_client, mock_cache, mock_user):
     response = test_client.get("/analytics/dashboard?timeframe=weekly")
     
     # Assert
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code  ==  status.HTTP_200_OK
     response_data = response.json()
     assert response_data["status"] == "success"
     assert "event_count" in response_data["data"]
     
     # Verify cache was checked and data was cached
-    mock_cache.get.assert_called_once()
-    mock_cache.set.assert_called_once()
+    mock_cache.get.assert _called_once()
+    mock_cache.set.assert _called_once()

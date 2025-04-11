@@ -24,7 +24,7 @@ from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
 # Apply test markers for categorization
 pytestmark = [pytest.mark.unit, pytest.mark.ml]
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestMockMentaLLaMA:
     """Test suite for MockMentaLLaMA class."""
 
@@ -101,7 +101,7 @@ class TestMockMentaLLaMA:
         timestamp = datetime.fromisoformat(result["timestamp"].rstrip("Z"))
         # Use timezone-aware comparison to prevent TypeError
         from datetime import UTC
-        assert (datetime.now(UTC) - timestamp).total_seconds() < 10
+        , assert (datetime.now(UTC) - timestamp).total_seconds() < 10
         
         # Test all available model types
         for model_type in ["depression_detection", "risk_assessment", "sentiment_analysis"

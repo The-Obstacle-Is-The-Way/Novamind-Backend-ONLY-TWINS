@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime
 
-from app.domain.entities.analytics import AnalyticsEvent
+, from app.domain.entities.analytics import AnalyticsEvent
 from app.application.use_cases.analytics.process_analytics_event import ProcessAnalyticsEventUseCase
 
 
@@ -59,16 +59,16 @@ def use_case(mock_analytics_repository, mock_cache_service):
             cache_service=mock_cache_service
         )
         
-        # Attach the mock logger for assertions
+        # Attach the mock logger for assert ions
         use_case._logger = mock_logger_instance
         return use_case
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestProcessAnalyticsEventUseCase:
     """Test suite for the ProcessAnalyticsEventUseCase."""
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_execute_with_all_parameters(self, use_case, mock_analytics_repository):
         """
         Test processing an event with all parameters provided.
@@ -90,23 +90,23 @@ class TestProcessAnalyticsEventUseCase:
         )
         
         # Assert
-        assert result.event_type == event_type
-        assert result.event_data == event_data
-        assert result.user_id == user_id
-        assert result.session_id == session_id
-        assert result.timestamp == timestamp
-        assert result.event_id == "test-event-id-123"
+        assert result.event_type  ==  event_type
+        assert result.event_data  ==  event_data
+        assert result.user_id  ==  user_id
+        assert result.session_id  ==  session_id
+        assert result.timestamp  ==  timestamp
+        assert result.event_id  ==  "test-event-id-123"
         
         # Verify repository was called correctly
-        mock_analytics_repository.save_event.assert_called_once()
+        mock_analytics_repository.save_event.assert _called_once()
         
         # Verify appropriate logging (without PHI)
-        use_case._logger.info.assert_called_with(
+        use_case._logger.info.assert _called_with(
             f"Processing analytics event of type: {event_type}",
             {"session_id": session_id}
         )
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_execute_with_minimal_parameters(self, use_case):
         """
         Test processing an event with only required parameters.
@@ -122,20 +122,20 @@ class TestProcessAnalyticsEventUseCase:
         )
         
         # Assert
-        assert result.event_type == event_type
-        assert result.event_data == event_data
+        assert result.event_type  ==  event_type
+        assert result.event_data  ==  event_data
         assert result.user_id is None
         assert result.session_id is None
         assert isinstance(result.timestamp, datetime)
-        assert result.event_id == "test-event-id-123"
+        assert result.event_id  ==  "test-event-id-123"
         
         # Verify appropriate logging (without PHI)
-        use_case._logger.info.assert_called_with(
+        use_case._logger.info.assert _called_with(
             f"Processing analytics event of type: {event_type}",
             {"session_id": None}
         )
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_real_time_counter_updates(self, use_case, mock_cache_service):
         """
         Test that real-time counters are updated in cache.
@@ -153,10 +153,10 @@ class TestProcessAnalyticsEventUseCase:
         )
         
         # Assert - verify cache service was called to update counters
-        mock_cache_service.increment.assert_any_call(f"analytics:counter:{event_type}")
-        mock_cache_service.increment.assert_any_call(f"analytics:user:{user_id}:{event_type}")
+        mock_cache_service.increment.assert _any_call(f"analytics:counter:{event_type}")
+        mock_cache_service.increment.assert _any_call(f"analytics:user:{user_id}:{event_type}")
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_phi_not_logged(self, use_case):
         """
         Test that PHI is not included in logs even if present in event data.
@@ -176,7 +176,7 @@ class TestProcessAnalyticsEventUseCase:
         )
         
         # Assert - only non-PHI should be logged
-        use_case._logger.info.assert_called_with(
+        use_case._logger.info.assert _called_with(
             f"Processing analytics event of type: {event_type}",
             {"session_id": session_id}
         )
@@ -190,7 +190,7 @@ class TestProcessAnalyticsEventUseCase:
             assert "John Smith" not in str(args)
             assert "12345678" not in str(args)
     
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_repository_error_handling(self, use_case, mock_analytics_repository):
         """
         Test proper error handling when repository operations fail.

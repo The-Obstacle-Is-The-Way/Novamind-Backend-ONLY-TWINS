@@ -15,10 +15,10 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+, from fastapi.testclient import TestClient
 from pydantic import parse_obj_as
 
-from app.domain.exceptions import ValidationError
+, from app.domain.exceptions import ValidationError
 from app.domain.services.biometric_event_processor import (
     AlertPriority,  
     AlertRule,  
@@ -27,7 +27,7 @@ from app.domain.services.biometric_event_processor import (
     ClinicalRuleEngine
 )
 from app.domain.entities.biometric_twin import BiometricDataPoint
-from app.presentation.api.v1.endpoints.biometric_alerts import (
+, from app.presentation.api.v1.endpoints.biometric_alerts import (
     router,  
     get_biometric_event_processor,  
     get_clinical_rule_engine,  
@@ -213,7 +213,7 @@ def sample_alert(sample_rule, sample_data_point):
     )
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestBiometricAlertsEndpoints:
     """Tests for the Biometric Alerts API endpoints."""
     
@@ -226,14 +226,14 @@ class TestBiometricAlertsEndpoints:
         response = client.get("/biometric-alerts/rules")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["count"] == 1
         assert len(data["rules"]) == 1
         assert data["rules"][0]["rule_id"] == sample_rule.rule_id
         assert data["rules"][0]["name"] == sample_rule.name
         assert data["rules"][0]["priority"] == sample_rule.priority.value
-        mock_rule_repository.get_rules.assert_called_once()
+        mock_rule_repository.get_rules.assert _called_once()
     
     def test_create_alert_rule_from_template(
         self,
@@ -261,14 +261,14 @@ class TestBiometricAlertsEndpoints:
         response = client.post("/biometric-alerts/rules", json=rule_data)
         
         # Verify
-        assert response.status_code == 201
+        assert response.status_code  ==  201
         data = response.json()
         assert data["rule_id"] == sample_rule.rule_id
         assert data["name"] == sample_rule.name
         assert data["priority"] == sample_rule.priority.value
-        mock_clinical_rule_engine.create_rule_from_template.assert_called_once()
-        mock_rule_repository.create_rule.assert_called_once()
-        mock_biometric_event_processor.add_rule.assert_called_once()
+        mock_clinical_rule_engine.create_rule_from_template.assert _called_once()
+        mock_rule_repository.create_rule.assert _called_once()
+        mock_biometric_event_processor.add_rule.assert _called_once()
     
     def test_create_alert_rule_from_condition(
         self,
@@ -298,13 +298,13 @@ class TestBiometricAlertsEndpoints:
         response = client.post("/biometric-alerts/rules", json=rule_data)
         
         # Verify
-        assert response.status_code == 201
+        assert response.status_code  ==  201
         data = response.json()
         assert data["rule_id"] == rule_data["rule_id"]
         assert data["name"] == rule_data["name"]
         assert data["priority"] == rule_data["priority"]
-        mock_rule_repository.create_rule.assert_called_once()
-        mock_biometric_event_processor.add_rule.assert_called_once()
+        mock_rule_repository.create_rule.assert _called_once()
+        mock_biometric_event_processor.add_rule.assert _called_once()
     
     def test_create_alert_rule_validation_error(
         self,
@@ -329,9 +329,9 @@ class TestBiometricAlertsEndpoints:
         response = client.post("/biometric-alerts/rules", json=rule_data)
         
         # Verify
-        assert response.status_code == 400
+        assert response.status_code  ==  400
         assert "Missing required parameter" in response.json()["detail"]
-        mock_clinical_rule_engine.create_rule_from_template.assert_called_once()
+        mock_clinical_rule_engine.create_rule_from_template.assert _called_once()
     
     def test_get_alert_rule(self, client, mock_rule_repository, sample_rule):
         """Test that get_alert_rule returns the correct response."""
@@ -342,12 +342,12 @@ class TestBiometricAlertsEndpoints:
         response = client.get(f"/biometric-alerts/rules/{sample_rule.rule_id}")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["rule_id"] == sample_rule.rule_id
         assert data["name"] == sample_rule.name
         assert data["priority"] == sample_rule.priority.value
-        mock_rule_repository.get_rule_by_id.assert_called_once_with(sample_rule.rule_id)
+        mock_rule_repository.get_rule_by_id.assert _called_once_with(sample_rule.rule_id)
     
     def test_get_alert_rule_not_found(self, client, mock_rule_repository):
         """Test that get_alert_rule handles not found errors."""
@@ -358,9 +358,9 @@ class TestBiometricAlertsEndpoints:
         response = client.get("/biometric-alerts/rules/nonexistent-rule")
         
         # Verify
-        assert response.status_code == 404
+        assert response.status_code  ==  404
         assert "not found" in response.json()["detail"]
-        mock_rule_repository.get_rule_by_id.assert_called_once_with("nonexistent-rule")
+        mock_rule_repository.get_rule_by_id.assert _called_once_with("nonexistent-rule")
     
     def test_update_alert_rule(
         self,
@@ -385,16 +385,16 @@ class TestBiometricAlertsEndpoints:
         response = client.put(f"/biometric-alerts/rules/{sample_rule.rule_id}", json=update_data)
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["rule_id"] == sample_rule.rule_id
         assert data["name"] == update_data["name"]
         assert data["description"] == update_data["description"]
         assert data["priority"] == update_data["priority"]
         assert data["is_active"] == update_data["is_active"]
-        mock_rule_repository.get_rule_by_id.assert_called_once_with(sample_rule.rule_id)
-        mock_rule_repository.update_rule.assert_called_once()
-        mock_biometric_event_processor.add_rule.assert_called_once()
+        mock_rule_repository.get_rule_by_id.assert _called_once_with(sample_rule.rule_id)
+        mock_rule_repository.update_rule.assert _called_once()
+        mock_biometric_event_processor.add_rule.assert _called_once()
     
     def test_delete_alert_rule(
         self,
@@ -412,10 +412,10 @@ class TestBiometricAlertsEndpoints:
         response = client.delete(f"/biometric-alerts/rules/{sample_rule.rule_id}")
         
         # Verify
-        assert response.status_code == 204
-        mock_rule_repository.get_rule_by_id.assert_called_once_with(sample_rule.rule_id)
-        mock_rule_repository.delete_rule.assert_called_once_with(sample_rule.rule_id)
-        mock_biometric_event_processor.remove_rule.assert_called_once_with(sample_rule.rule_id)
+        assert response.status_code  ==  204
+        mock_rule_repository.get_rule_by_id.assert _called_once_with(sample_rule.rule_id)
+        mock_rule_repository.delete_rule.assert _called_once_with(sample_rule.rule_id)
+        mock_biometric_event_processor.remove_rule.assert _called_once_with(sample_rule.rule_id)
     
     def test_get_rule_templates(self, client, mock_clinical_rule_engine):
         """Test that get_rule_templates returns the correct response."""
@@ -426,7 +426,7 @@ class TestBiometricAlertsEndpoints:
         response = client.get("/biometric-alerts/rule-templates")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["count"] == 2
         assert len(data["templates"]) == 2
@@ -442,7 +442,7 @@ class TestBiometricAlertsEndpoints:
         response = client.get("/biometric-alerts/alerts")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["count"] == 1
         assert len(data["alerts"]) == 1
@@ -450,7 +450,7 @@ class TestBiometricAlertsEndpoints:
         assert data["alerts"][0]["patient_id"] == str(sample_alert.patient_id)
         assert data["alerts"][0]["rule_id"] == sample_alert.rule_id
         assert data["alerts"][0]["priority"] == sample_alert.priority.value
-        mock_alert_repository.get_alerts.assert_called_once()
+        mock_alert_repository.get_alerts.assert _called_once()
     
     def test_get_alerts_with_filters(self, client, mock_alert_repository, sample_alert, sample_patient_id):
         """Test that get_alerts handles filters correctly."""
@@ -470,10 +470,10 @@ class TestBiometricAlertsEndpoints:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["count"] == 1
-        mock_alert_repository.get_alerts.assert_called_once()
+        mock_alert_repository.get_alerts.assert _called_once()
         call_kwargs = mock_alert_repository.get_alerts.call_args[1]
         assert call_kwargs["patient_id"] == sample_patient_id
         assert call_kwargs["priority"].value == "warning"
@@ -494,13 +494,13 @@ class TestBiometricAlertsEndpoints:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["alert_id"] == sample_alert.alert_id
         assert data["acknowledged"] is True
         assert data["acknowledged_by"] == "00000000-0000-0000-0000-000000000001"
-        mock_alert_repository.get_alert_by_id.assert_called_once_with(sample_alert.alert_id)
-        mock_alert_repository.update_alert.assert_called_once()
+        mock_alert_repository.get_alert_by_id.assert _called_once_with(sample_alert.alert_id)
+        mock_alert_repository.update_alert.assert _called_once()
     
     def test_get_patient_alerts(self, client, mock_alert_repository, sample_alert, sample_patient_id):
         """Test that get_patient_alerts returns the correct response."""
@@ -511,13 +511,13 @@ class TestBiometricAlertsEndpoints:
         response = client.get(f"/biometric-alerts/patients/{sample_patient_id}/alerts")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["count"] == 1
         assert len(data["alerts"]) == 1
         assert data["alerts"][0]["alert_id"] == sample_alert.alert_id
         assert data["alerts"][0]["patient_id"] == str(sample_alert.patient_id)
-        mock_alert_repository.get_alerts.assert_called_once()
+        mock_alert_repository.get_alerts.assert _called_once()
         call_kwargs = mock_alert_repository.get_alerts.call_args[1]
         assert call_kwargs["patient_id"] == sample_patient_id
     
@@ -530,7 +530,7 @@ class TestBiometricAlertsEndpoints:
         response = client.get("/biometric-alerts/alerts")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         
         # Check that only necessary PHI is included

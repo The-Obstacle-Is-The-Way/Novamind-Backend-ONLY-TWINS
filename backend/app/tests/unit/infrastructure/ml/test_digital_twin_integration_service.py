@@ -17,7 +17,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestDigitalTwinIntegrationService:
     """Tests for the DigitalTwinIntegrationService."""
 
@@ -223,9 +223,9 @@ class TestDigitalTwinIntegrationService:
         assert "integrated_recommendations" in result
 
         # Verify all services were called
-        integration_service.symptom_forecasting_service.generate_forecast.assert_called_once()
-        integration_service.biometric_correlation_service.analyze_correlations.assert_called_once()
-        integration_service.medication_response_service.predict_medication_response.assert_called_once()
+        integration_service.symptom_forecasting_service.generate_forecast.assert _called_once()
+        integration_service.biometric_correlation_service.analyze_correlations.assert _called_once()
+        integration_service.medication_response_service.predict_medication_response.assert _called_once()
 
     async def test_generate_comprehensive_insights_partial_services(self, integration_service, sample_patient_id):
         """Test that generate_comprehensive_insights only calls requested services."""
@@ -250,9 +250,9 @@ class TestDigitalTwinIntegrationService:
         assert "integrated_recommendations" in result
 
         # Verify only requested services were called
-        integration_service.symptom_forecasting_service.generate_forecast.assert_called_once()
-        integration_service.medication_response_service.predict_medication_response.assert_called_once()
-        integration_service.biometric_correlation_service.analyze_correlations.assert_not_called()
+        integration_service.symptom_forecasting_service.generate_forecast.assert _called_once()
+        integration_service.medication_response_service.predict_medication_response.assert _called_once()
+        integration_service.biometric_correlation_service.analyze_correlations.assert _not_called()
 
     async def test_generate_comprehensive_insights_handles_service_errors(self, integration_service, sample_patient_id):
         """Test that generate_comprehensive_insights handles service errors gracefully."""
@@ -360,7 +360,7 @@ class TestDigitalTwinIntegrationService:
 
         # Verify
         assert patient_data is not None
-        mock_patient_repository.get_by_id.assert_called_once_with(sample_patient_id)
+        mock_patient_repository.get_by_id.assert _called_once_with(sample_patient_id)
 
     async def test_get_patient_data_handles_missing_patient(self, integration_service, sample_patient_id, mock_patient_repository):
         """Test that _get_patient_data handles missing patient data gracefully."""

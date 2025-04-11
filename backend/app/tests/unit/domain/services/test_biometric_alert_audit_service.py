@@ -15,7 +15,7 @@ from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, Ale
 from app.domain.services.biometric_alert_audit_service import BiometricAlertAuditService
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestBiometricAlertAuditService:
     """Tests for the BiometricAlertAuditService."""
     
@@ -91,7 +91,7 @@ class TestBiometricAlertAuditService:
         await audit_service.notify_alert(sample_alert)
         
         # Verify
-        assert mock_audit_logger.log_event.call_count == 1
+        assert mock_audit_logger.log_event.call_count  ==  1
         log_args = mock_audit_logger.log_event.call_args[1]
         
         assert log_args["event_type"] == "alert_generated"
@@ -128,15 +128,15 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
-        mock_alert_repository.update_status.assert_called_once_with(
+        mock_alert_repository.get_by_id.assert _called_once_with(sample_alert_id)
+        mock_alert_repository.update_status.assert _called_once_with(
             sample_alert_id,
             AlertStatus.ACKNOWLEDGED,
             sample_provider_id,
             "Acknowledged by Dr. Smith"
         )
         
-        assert mock_audit_logger.log_event.call_count == 1
+        assert mock_audit_logger.log_event.call_count  ==  1
         log_args = mock_audit_logger.log_event.call_args[1]
         
         assert log_args["event_type"] == "alert_acknowledged"
@@ -164,15 +164,15 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
-        mock_alert_repository.update_status.assert_called_once_with(
+        mock_alert_repository.get_by_id.assert _called_once_with(sample_alert_id)
+        mock_alert_repository.update_status.assert _called_once_with(
             sample_alert_id,
             AlertStatus.RESOLVED,
             sample_provider_id,
             "Patient contacted and advised to rest"
         )
         
-        assert mock_audit_logger.log_event.call_count == 1
+        assert mock_audit_logger.log_event.call_count  ==  1
         log_args = mock_audit_logger.log_event.call_args[1]
         
         assert log_args["event_type"] == "alert_resolved"
@@ -200,15 +200,15 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
-        mock_alert_repository.update_status.assert_called_once_with(
+        mock_alert_repository.get_by_id.assert _called_once_with(sample_alert_id)
+        mock_alert_repository.update_status.assert _called_once_with(
             sample_alert_id,
             AlertStatus.DISMISSED,
             sample_provider_id,
             "Dismissed: False positive due to device error"
         )
         
-        assert mock_audit_logger.log_event.call_count == 1
+        assert mock_audit_logger.log_event.call_count  ==  1
         log_args = mock_audit_logger.log_event.call_args[1]
         
         assert log_args["event_type"] == "alert_dismissed"
@@ -234,7 +234,7 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        assert mock_audit_logger.log_event.call_count == 1
+        assert mock_audit_logger.log_event.call_count  ==  1
         log_args = mock_audit_logger.log_event.call_args[1]
         
         assert log_args["event_type"] == "test_event"
@@ -281,7 +281,7 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        assert mock_audit_logger.search_events.call_count == 1
+        assert mock_audit_logger.search_events.call_count  ==  1
         search_args = mock_audit_logger.search_events.call_args[1]
         
         criteria = search_args["criteria"]
@@ -312,6 +312,6 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
-        mock_alert_repository.update_status.assert_not_called()
-        mock_audit_logger.log_event.assert_not_called()
+        mock_alert_repository.get_by_id.assert _called_once_with(sample_alert_id)
+        mock_alert_repository.update_status.assert _not_called()
+        mock_audit_logger.log_event.assert _not_called()

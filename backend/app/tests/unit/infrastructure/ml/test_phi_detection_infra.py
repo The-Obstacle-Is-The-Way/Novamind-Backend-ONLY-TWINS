@@ -11,7 +11,7 @@ from typing import List, Dict, Any
 from unittest.mock import patch, mock_open
 
 from app.infrastructure.ml.phi_detection import PHIDetectionService
-from app.infrastructure.security.log_sanitizer import PHIPattern # Corrected import path
+, from app.infrastructure.security.log_sanitizer import PHIPattern # Corrected import path
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def phi_detection_service():
     return service
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 def test_initialize_loads_default_patterns():
     """Test that initialize loads default patterns when file loading fails."""
     service = PHIDetectionService("nonexistent_file.yaml")
@@ -139,7 +139,7 @@ def test_detect_phi_results_format():
 def test_redact_phi(phi_detection_service, text, replacement, expected):
     """Test redacting PHI with different replacement strings."""
     redacted = phi_detection_service.redact_phi(text, replacement)
-    assert redacted == expected
+    assert redacted  ==  expected
 
 
 def test_redact_phi_empty_text():
@@ -160,7 +160,7 @@ def test_redact_phi_overlapping_matches():
     text = "Patient John Smith has SSN 123-45-6789"
     redacted = service.redact_phi(text)
     
-    # Exact assertion depends on how patterns are defined and how overlaps are handled
+    # Exact assert ion depends on how patterns are defined and how overlaps are handled
     # But at minimum, both the name and SSN should be redacted
     assert "[REDACTED]" in redacted
     assert "123-45-6789" not in redacted
@@ -210,8 +210,8 @@ def test_phi_pattern_creation(mock_re):
         category="test"
     )
     
-    assert pattern.name == "Test Pattern"
-    assert pattern.pattern == "mock_pattern"
-    assert pattern.description == "A test pattern"
-    assert pattern.risk_level == "high"
-    assert pattern.category == "test"
+    assert pattern.name  ==  "Test Pattern"
+    assert pattern.pattern  ==  "mock_pattern"
+    assert pattern.description  ==  "A test pattern"
+    assert pattern.risk_level  ==  "high"
+    assert pattern.category  ==  "test"

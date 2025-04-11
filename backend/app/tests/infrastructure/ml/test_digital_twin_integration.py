@@ -11,10 +11,10 @@ import os
 import json
 from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime
-from uuid import UUID, uuid4
+, from uuid import UUID, uuid4
 
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
-from app.domain.exceptions import ModelInferenceError, ValidationError
+, from app.domain.exceptions import ModelInferenceError, ValidationError
 
 
 @pytest.fixture
@@ -147,8 +147,8 @@ def patient_data():
     }
 
 
-@pytest.mark.asyncio
-@pytest.mark.venv_only
+@pytest.mark.asyncio()
+@pytest.mark.venv_only()
 async def test_generate_comprehensive_patient_insights(integration_service, patient_data):
     """Test generating comprehensive patient insights."""
     patient_id = uuid4()
@@ -185,7 +185,7 @@ async def test_generate_comprehensive_patient_insights(integration_service, pati
     assert len(insights["integrated_recommendations"]) > 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_generate_insights_with_missing_data(integration_service):
     """Test generating insights with missing data."""
     patient_id = uuid4()
@@ -214,7 +214,7 @@ async def test_generate_insights_with_missing_data(integration_service):
     assert "integrated_recommendations" in insights
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_generate_insights_with_invalid_data(integration_service):
     """Test generating insights with invalid data."""
     patient_id = uuid4()
@@ -230,7 +230,7 @@ async def test_generate_insights_with_invalid_data(integration_service):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_run_symptom_forecasting(integration_service, patient_data):
     """Test running symptom forecasting independently."""
     patient_id = uuid4()
@@ -247,7 +247,7 @@ async def test_run_symptom_forecasting(integration_service, patient_data):
     assert len(results["symptom_forecasting_insights"]) > 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_run_biometric_correlation(integration_service, patient_data):
     """Test running biometric correlation independently."""
     patient_id = uuid4()
@@ -264,7 +264,7 @@ async def test_run_biometric_correlation(integration_service, patient_data):
     assert len(results["biometric_correlation_insights"]) > 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_run_pharmacogenomics(integration_service, patient_data):
     """Test running pharmacogenomics independently."""
     patient_id = uuid4()
@@ -281,7 +281,7 @@ async def test_run_pharmacogenomics(integration_service, patient_data):
     assert len(results["pharmacogenomics_insights"]) > 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_generate_integrated_recommendations(integration_service):
     """Test generating integrated recommendations."""
     # Create mock results from individual microservices
@@ -328,7 +328,7 @@ async def test_generate_integrated_recommendations(integration_service):
         assert clinical_recs[0]["importance"] >= clinical_recs[1]["importance"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_handle_microservice_failure(integration_service, patient_data):
     """Test handling of microservice failures."""
     patient_id = uuid4()
@@ -349,7 +349,7 @@ async def test_handle_microservice_failure(integration_service, patient_data):
     assert "integrated_recommendations" in insights
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_sanitize_patient_data(integration_service, patient_data):
     """Test sanitization of patient data for HIPAA compliance."""
     # Add PHI to patient data

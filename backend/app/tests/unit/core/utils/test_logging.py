@@ -12,7 +12,7 @@ from unittest.mock import patch, MagicMock
 from app.core.utils.logging import get_logger, log_execution_time, log_method_calls # Corrected imports, removed HIPAACompliantLogger, PHIRedactor, log_function_call
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPHIRedactor:
     """Tests for the PHI redaction functionality."""
     
@@ -92,11 +92,11 @@ class TestHIPAACompliantLogger:
             log_file=temp_log_file
         )
         
-        assert logger.name == "test_logger"
-        assert logger.log_level == "DEBUG"
+        assert logger.name  ==  "test_logger"
+        assert logger.log_level  ==  "DEBUG"
         assert logger.enable_console is True
         assert logger.enable_file is True
-        assert logger.log_file == temp_log_file
+        assert logger.log_file  ==  temp_log_file
         assert isinstance(logger.logger, logging.Logger)
         assert isinstance(logger.redactor, PHIRedactor)
     
@@ -162,14 +162,14 @@ class TestHIPAACompliantLogger:
         mock_logger = MagicMock(spec=HIPAACompliantLogger)
         
         @log_function_call(logger=mock_logger)
-        def test_function(a, b):
+    def test_function(a, b):
             return a + b
         
         result = test_function(1, 2)
         
-        assert result == 3
-        assert mock_logger.debug.call_count == 2
-        mock_logger.debug.assert_any_call("Calling test_function")
+        assert result  ==  3
+        assert mock_logger.debug.call_count  ==  2
+        mock_logger.debug.assert _any_call("Calling test_function")
         # Second call contains execution time which we can't predict exactly
         assert "test_function completed in" in mock_logger.debug.call_args_list[1][0][0]
     
@@ -178,14 +178,14 @@ class TestHIPAACompliantLogger:
         mock_logger = MagicMock(spec=HIPAACompliantLogger)
         
         @log_function_call(logger=mock_logger)
-        def failing_function():
+    def failing_function():
             raise ValueError("Test error")
         
         with pytest.raises(ValueError):
             failing_function()
         
-        assert mock_logger.debug.call_count == 1
-        assert mock_logger.error.call_count == 1
-        mock_logger.debug.assert_called_with("Calling failing_function")
+        assert mock_logger.debug.call_count  ==  1
+        assert mock_logger.error.call_count  ==  1
+        mock_logger.debug.assert _called_with("Calling failing_function")
         assert "failing_function failed after" in mock_logger.error.call_args[0][0]
         assert "Test error" in mock_logger.error.call_args[0][0]

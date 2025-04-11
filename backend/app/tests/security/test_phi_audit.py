@@ -17,7 +17,7 @@ from unittest.mock import patch, MagicMock
 from scripts.run_hipaa_phi_audit import PHIAuditor
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPHIAudit:
     """Test the PHI audit functionality to ensure it correctly identifies PHI violations."""
 
@@ -66,7 +66,7 @@ from fastapi import APIRouter, Depends
 router = APIRouter()
 
 @router.get("/patients/{patient_id}")
-def get_patient(patient_id: str):
+    def get_patient(patient_id: str):
     # No authentication check - this should be flagged
     return {"name": "John Smith", "phone": "(555) 123-4567"}
 """,
@@ -82,10 +82,10 @@ DATABASE_URL = "postgresql://user:password@localhost/db"
 import logging
 from app.infrastructure.security.log_sanitizer import PHISanitizer
 
-logger = logging.getLogger(__name__)
+, logger = logging.getLogger(__name__)
 sanitizer = PHISanitizer()
 
-def process_user_data(data):
+    def process_user_data(data):
     \"\"\"Process user data with proper sanitization.\"\"\"
     # Correctly using sanitizer
     logger.info(sanitizer.sanitize(f"Processing data for {data['user_id']}"))
@@ -249,7 +249,7 @@ class TestPatient:
             ssn="123-45-6789",
             email="john.doe@example.com"
         )
-        assert patient.name == "John Doe"
+        assert patient.name  ==  "John Doe"
 """)
         
         # Run the audit on this special clean_app directory
@@ -341,7 +341,7 @@ class Utility:
             assert finding.get("is_allowed", False) is True
         
         # Verify logger was called with success message
-        mock_logger.info.assert_any_call("PHI audit complete. No issues found in 1 files.")
+        mock_logger.info.assert _any_call("PHI audit complete. No issues found in 1 files.")
         
     @patch('scripts.run_hipaa_phi_audit.logger')
     def test_clean_app_directory_special_case(self, mock_logger, temp_dir):
@@ -387,7 +387,7 @@ class TestData:
         with open(test_file_path, "w") as f:
             f.write("""
 # This file contains an SSN pattern that should be detected
-def process_patient_data():
+    def process_patient_data():
     # Example SSN that should be detected by the PHI pattern detection
     ssn = "123-45-6789"
     # Other patient data
@@ -435,7 +435,7 @@ def process_patient_data():
             with open(file_path, "w") as f:
                 f.write(f"""
 # Clean file {i}
-def function_{i}():
+    def function_{i}():
     \"\"\"This is a clean function.\"\"\"
     return {i}
 """)
@@ -444,7 +444,7 @@ def function_{i}():
         phi_file = os.path.join(app_dir, "phi_file.py")
         with open(phi_file, "w") as f:
             f.write("""
-def process_patient():
+    def process_patient():
     \"\"\"Process patient data.\"\"\"
     patient_ssn = "123-45-6789"  # This should be detected
     return patient_ssn

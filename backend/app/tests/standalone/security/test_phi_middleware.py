@@ -15,13 +15,13 @@ from unittest.mock import MagicMock, patch, AsyncMock
 import starlette.requests
 from fastapi import FastAPI, Request, Response
 from starlette.datastructures import Headers
-from starlette.types import Scope
+, from starlette.types import Scope
 
 from app.core.utils.validation import PHIDetector
-from app.infrastructure.security.phi_middleware import PHIMiddleware, add_phi_middleware
+, from app.infrastructure.security.phi_middleware import PHIMiddleware, add_phi_middleware
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPHIMiddleware:
     """Test suite for PHI middleware functionality."""
 
@@ -37,7 +37,7 @@ class TestPHIMiddleware:
             whitelist_patterns={"/api/allowed/*": ["allowed_field"]}
         )
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_exclude_path(self):
         """Test that excluded paths are not processed."""
         # Mock a request to an excluded path
@@ -49,10 +49,10 @@ class TestPHIMiddleware:
         await self.middleware.dispatch(request, call_next)
         
         # Verify call_next was called with the original request
-        call_next.assert_called_once_with(request)
+        call_next.assert _called_once_with(request)
         # No sanitization should occur for excluded paths
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_sanitize_request_with_phi(self):
         """Test that requests with PHI are logged but not modified."""
         # Mock a request with PHI in body
@@ -75,9 +75,9 @@ class TestPHIMiddleware:
             # Verify warning was logged
             assert mock_warning.called
             # The call_next should be called with the original request
-            call_next.assert_called_once()
+            call_next.assert _called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_sanitize_response_with_phi(self):
         """Test that responses with PHI are sanitized."""
         # Mock request
@@ -113,7 +113,7 @@ class TestPHIMiddleware:
         # Non-PHI data should remain untouched
         assert sanitized_data["appointment"]["date"] == "2023-04-15"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_whitelist_patterns(self):
         """Test that whitelisted patterns are not sanitized."""
         # Create middleware with whitelist
@@ -159,7 +159,7 @@ class TestPHIMiddleware:
         # Non-whitelisted field with PHI should be sanitized
         assert sanitized_data["address"] == "[REDACTED]"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_audit_mode(self):
         """Test that audit mode logs but doesn't redact PHI."""
         # Create middleware in audit mode
@@ -199,7 +199,7 @@ class TestPHIMiddleware:
             assert sanitized_data["patient"]["name"] == "John Doe"
             assert sanitized_data["patient"]["ssn"] == "123-45-6789"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_sanitize_non_json_response(self):
         """Test that non-JSON responses are not sanitized."""
         # Mock request
@@ -223,7 +223,7 @@ class TestPHIMiddleware:
         # Non-JSON responses should not be sanitized
         assert result_response.body.decode('utf-8') == html_response
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_sanitize_nested_json(self):
         """Test that deeply nested JSON is properly sanitized."""
         # Mock request
@@ -299,7 +299,7 @@ class TestPHIMiddleware:
         )
         
         # Verify add_middleware was called with correct arguments
-        app.add_middleware.assert_called_once()
+        app.add_middleware.assert _called_once()
         args, kwargs = app.add_middleware.call_args
         assert args[0] == PHIMiddleware
         assert "/custom/" in kwargs["exclude_paths"]

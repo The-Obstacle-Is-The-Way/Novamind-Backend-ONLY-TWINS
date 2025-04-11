@@ -12,12 +12,12 @@ import tempfile
 import os
 import re
 from pathlib import Path
-from unittest.mock import patch, mock_open
+, from unittest.mock import patch, mock_open
 
 from app.core.utils.validation import PHIDetector
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPHIInCodePatterns:
     """Test suite for PHI detection in common code patterns."""
 
@@ -106,13 +106,13 @@ class TestPHIInCodePatterns:
         test_samples = [
             # Python pytest test
             """
-            def test_process_patient():
+    def test_process_patient():
                 patient = {
                     "name": "John Smith",
                     "ssn": "123-45-6789"
                 }
                 result = process_patient(patient)
-                assert result.status == "success"
+                assert result.status  ==  "success"
             """,
 
             # JavaScript/Jest test
@@ -130,7 +130,7 @@ class TestPHIInCodePatterns:
             # Test fixture
             """
             @pytest.fixture
-            def test_patient_data():
+    def test_patient_data():
                 return {
                     "name": "John Smith",
                     "ssn": "123-45-6789",
@@ -201,7 +201,7 @@ class TestPHIInCodePatterns:
         """Test detection of PHI in more complex, realistic code samples."""
         complex_code = """
 
-        def process_patient_data(patient_data):
+    def process_patient_data(patient_data):
             \"\"\"Process patient data and store in database.\"\"\"
             # Validate SSN format
             if not is_valid_ssn(patient_data.get('ssn')):
@@ -374,7 +374,7 @@ class TestPHIInSourceFiles:
         #!/usr/bin/env python3
         # Test file with PHI data
 
-        def get_test_patient():
+    def get_test_patient():
             \"\"\"Return test patient data.\"\"\"
             return {
                 "name": "John Smith",
@@ -416,7 +416,7 @@ class TestPHIInSourceFiles:
             # Clean up
             os.unlink(path)
 
-    def test_js_file_with_phi(self, detector):
+            def test_js_file_with_phi(self, detector):
         """Test detection of PHI in JavaScript source files."""
         js_code = """
         // Test file with PHI data
@@ -468,7 +468,7 @@ class TestPHIInSourceFiles:
             # Clean up
             os.unlink(path)
 
-    def test_config_file_with_phi(self, detector):
+            def test_config_file_with_phi(self, detector):
         """Test detection of PHI in configuration files."""
         config_content = """
         [database]

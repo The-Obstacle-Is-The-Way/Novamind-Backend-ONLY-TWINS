@@ -11,7 +11,7 @@ import pytest
 from unittest.mock import patch, mock_open, MagicMock
 
 from app.core.exceptions.ml_exceptions import PHIDetectionError
-from app.infrastructure.ml.phi_detection import PHIDetectionService
+, from app.infrastructure.ml.phi_detection import PHIDetectionService
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ name:
             return service
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPHIDetectionService:
     """Test suite for PHI detection service."""
     

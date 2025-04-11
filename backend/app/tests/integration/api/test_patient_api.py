@@ -9,9 +9,9 @@ import pytest
 import json
 from fastapi.testclient import TestClient
 
-from backend.app.main import app
+, from backend.app.main import app
 from backend.app.infrastructure.database.models import PatientModel
-from backend.app.infrastructure.database.session import get_session
+, from backend.app.infrastructure.database.session import get_session
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def db_session():
     """Provide a database session for testing."""
     # This would typically be a test database connection
     from sqlalchemy.orm import Session
-    session = next(get_session())
+    , session = next(get_session())
     try:
         yield session
     finally:
@@ -55,7 +55,7 @@ def test_patient(db_session):
     db_session.commit()
 
 
-@pytest.mark.integration
+@pytest.mark.integration()
 class TestPatientAPI:
     """Tests for the Patient API endpoints."""
     
@@ -67,7 +67,7 @@ class TestPatientAPI:
         response = api_client.get(f"/api/v1/patients/{test_patient.id}")
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["id"] == test_patient.id
         assert data["name"] == test_patient.name
@@ -82,7 +82,7 @@ class TestPatientAPI:
         response = api_client.get(f"/api/v1/patients/{non_existent_id}")
         
         # Assert
-        assert response.status_code == 404
+        assert response.status_code  ==  404
         data = response.json()
         assert "detail" in data
         assert "not found" in data["detail"].lower()
@@ -106,7 +106,7 @@ class TestPatientAPI:
         )
         
         # Assert
-        assert response.status_code == 201
+        assert response.status_code  ==  201
         data = response.json()
         assert data["id"] == patient_data["id"]
         assert data["name"] == patient_data["name"]
@@ -114,7 +114,7 @@ class TestPatientAPI:
         # Verify the patient was actually saved to the database
         saved_patient = db_session.query(PatientModel).filter_by(id=patient_data["id"]).first()
         assert saved_patient is not None
-        assert saved_patient.name == patient_data["name"]
+        assert saved_patient.name  ==  patient_data["name"]
         
         # Clean up
         db_session.delete(saved_patient)
@@ -135,15 +135,15 @@ class TestPatientAPI:
         )
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         data = response.json()
         assert data["name"] == update_data["name"]
         assert data["email"] == update_data["email"]
         
         # Verify the changes were saved to the database
         db_session.refresh(test_patient)
-        assert test_patient.name == update_data["name"]
-        assert test_patient.email == update_data["email"]
+        assert test_patient.name  ==  update_data["name"]
+        assert test_patient.email  ==  update_data["email"]
     
     def test_delete_patient_success(self, api_client, db_session):
         """Test deleting a patient successfully."""
@@ -163,7 +163,7 @@ class TestPatientAPI:
         response = api_client.delete(f"/api/v1/patients/{patient_to_delete.id}")
         
         # Assert
-        assert response.status_code == 204
+        assert response.status_code  ==  204
         
         # Verify the patient was actually deleted from the database
         deleted_patient = db_session.query(PatientModel).filter_by(id=patient_to_delete.id).first()

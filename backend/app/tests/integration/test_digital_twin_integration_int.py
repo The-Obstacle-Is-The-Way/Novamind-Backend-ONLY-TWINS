@@ -12,8 +12,8 @@ from app.domain.entities.patient import Patient # Removed Gender, Diagnosis, Med
 from app.infrastructure.factories.mock_digital_twin_factory import MockDigitalTwinFactory
 
 
-@pytest.mark.asyncio
-@pytest.mark.db_required
+@pytest.mark.asyncio()
+@pytest.mark.db_required()
 async def test_digital_twin_complete_workflow():
     """
     Test a complete Digital Twin workflow from patient creation to treatment recommendations.
@@ -53,7 +53,7 @@ async def test_digital_twin_complete_workflow():
     
     # Save the patient
     saved_patient = await patient_repo.save(patient)
-    assert saved_patient.id == patient_id
+    assert saved_patient.id  ==  patient_id
     
     # 2. Initialize Digital Twin
     initial_twin_state = await digital_twin_core.initialize_digital_twin(
@@ -71,8 +71,8 @@ async def test_digital_twin_complete_workflow():
     )
     
     # Verify the initial state was created
-    assert initial_twin_state.patient_id == patient_id
-    assert initial_twin_state.version == 1
+    assert initial_twin_state.patient_id  ==  patient_id
+    assert initial_twin_state.version  ==  1
     assert "phq9_score" in initial_twin_state.clinical_metrics
     assert initial_twin_state.clinical_metrics["phq9_score"] == 14
     
@@ -101,7 +101,7 @@ async def test_digital_twin_complete_workflow():
     )
     
     # Verify the state was updated
-    assert updated_twin_state.version == 2
+    assert updated_twin_state.version  ==  2
     assert len(updated_twin_state.clinical_insights) > 0
     assert "sleep" in updated_twin_state.clinical_metrics  # PAT should have added sleep metrics
     
@@ -123,7 +123,7 @@ async def test_digital_twin_complete_workflow():
     )
     
     # Verify the state was updated with insights from the note
-    assert updated_twin_state.version == 3
+    assert updated_twin_state.version  ==  3
     assert len(updated_twin_state.clinical_insights) > len(initial_twin_state.clinical_insights)
     
     # Some brain regions should now have activation levels

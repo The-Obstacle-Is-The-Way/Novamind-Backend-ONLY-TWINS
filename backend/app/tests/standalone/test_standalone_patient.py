@@ -8,9 +8,9 @@ making it completely independent of the rest of the application.
 
 import unittest
 from datetime import date
-from enum import Enum
+, from enum import Enum
 from typing import Any
-from uuid import uuid4
+, from uuid import uuid4
 
 # ============= Patient Entity Implementation =============
 
@@ -458,7 +458,7 @@ class Patient:
 class TestPatient(unittest.TestCase):
     """Tests for the Patient class."""
     
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_create_patient(self):
         """Test creating a patient."""
         patient = Patient(
@@ -471,16 +471,16 @@ class TestPatient(unittest.TestCase):
             address="123 Main St, Anytown, USA"
         )
         
-        self.assertEqual(patient.first_name, "John")
-        self.assertEqual(patient.last_name, "Doe")
-        self.assertEqual(patient.date_of_birth, date(1980, 1, 15))
-        self.assertEqual(patient.gender, Gender.MALE)
-        self.assertEqual(patient.email, "john.doe@example.com")
-        self.assertEqual(patient.phone, "555-123-4567")
-        self.assertEqual(patient.address, "123 Main St, Anytown, USA")
-        self.assertEqual(patient.status, PatientStatus.ONBOARDING)
+        self.assert Equal(patient.first_name, "John")
+        self.assert Equal(patient.last_name, "Doe")
+        self.assert Equal(patient.date_of_birth, date(1980, 1, 15))
+        self.assert Equal(patient.gender, Gender.MALE)
+        self.assert Equal(patient.email, "john.doe@example.com")
+        self.assert Equal(patient.phone, "555-123-4567")
+        self.assert Equal(patient.address, "123 Main St, Anytown, USA")
+        self.assert Equal(patient.status, PatientStatus.ONBOARDING)
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_create_patient_with_string_enums(self):
         """Test creating a patient with string enums."""
         patient = Patient(
@@ -492,11 +492,11 @@ class TestPatient(unittest.TestCase):
             insurance_status="active"
         )
         
-        self.assertEqual(patient.gender, Gender.FEMALE)
-        self.assertEqual(patient.status, PatientStatus.ACTIVE)
-        self.assertEqual(patient.insurance_status, InsuranceStatus.ACTIVE)
+        self.assert Equal(patient.gender, Gender.FEMALE)
+        self.assert Equal(patient.status, PatientStatus.ACTIVE)
+        self.assert Equal(patient.insurance_status, InsuranceStatus.ACTIVE)
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_create_patient_with_string_date(self):
         """Test creating a patient with a string date."""
         patient = Patient(
@@ -506,9 +506,9 @@ class TestPatient(unittest.TestCase):
             gender=Gender.FEMALE
         )
         
-        self.assertEqual(patient.date_of_birth, date(1990, 10, 25))
+        self.assert Equal(patient.date_of_birth, date(1990, 10, 25))
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_create_patient_with_auto_id(self):
         """Test creating a patient with auto-generated ID."""
         patient = Patient(
@@ -518,15 +518,15 @@ class TestPatient(unittest.TestCase):
             gender=Gender.MALE
         )
         
-        self.assertIsNotNone(patient.id)
-        self.assertIsInstance(patient.id, str)
-        self.assertTrue(len(patient.id) > 0)
+        self.assert IsNotNone(patient.id)
+        self.assert IsInstance(patient.id, str)
+        self.assert True(len(patient.id) > 0)
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_validate_required_fields(self):
         """Test validation of required fields."""
         # Missing first name
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             Patient(
                 first_name="",
                 last_name="Doe",
@@ -535,7 +535,7 @@ class TestPatient(unittest.TestCase):
             )
             
         # Missing last name
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             Patient(
                 first_name="John",
                 last_name="",
@@ -544,7 +544,7 @@ class TestPatient(unittest.TestCase):
             )
             
         # Missing date of birth
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             Patient(
                 first_name="John",
                 last_name="Doe",
@@ -553,7 +553,7 @@ class TestPatient(unittest.TestCase):
             )
             
         # Missing gender
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             Patient(
                 first_name="John",
                 last_name="Doe",
@@ -561,10 +561,10 @@ class TestPatient(unittest.TestCase):
                 gender=None
             )
             
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_validate_email_format(self):
         """Test validation of email format."""
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             Patient(
                 first_name="John",
                 last_name="Doe",
@@ -573,10 +573,10 @@ class TestPatient(unittest.TestCase):
                 email="invalid-email"
             )
             
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_validate_phone_format(self):
         """Test validation of phone format."""
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             Patient(
                 first_name="John",
                 last_name="Doe",
@@ -585,7 +585,7 @@ class TestPatient(unittest.TestCase):
                 phone="invalid-phone-no-digits"
             )
             
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_update_personal_info(self):
         """Test updating personal information."""
         patient = Patient(
@@ -605,15 +605,15 @@ class TestPatient(unittest.TestCase):
             address="456 Oak St, Newtown, USA"
         )
         
-        self.assertEqual(patient.first_name, "Johnny")
-        self.assertEqual(patient.last_name, "Smith")
-        self.assertEqual(patient.date_of_birth, date(1981, 2, 16))
-        self.assertEqual(patient.gender, Gender.OTHER)
-        self.assertEqual(patient.email, "johnny.smith@example.com")
-        self.assertEqual(patient.phone, "555-987-6543")
-        self.assertEqual(patient.address, "456 Oak St, Newtown, USA")
+        self.assert Equal(patient.first_name, "Johnny")
+        self.assert Equal(patient.last_name, "Smith")
+        self.assert Equal(patient.date_of_birth, date(1981, 2, 16))
+        self.assert Equal(patient.gender, Gender.OTHER)
+        self.assert Equal(patient.email, "johnny.smith@example.com")
+        self.assert Equal(patient.phone, "555-987-6543")
+        self.assert Equal(patient.address, "456 Oak St, Newtown, USA")
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_update_personal_info_with_string_date(self):
         """Test updating personal information with a string date."""
         patient = Patient(
@@ -625,9 +625,9 @@ class TestPatient(unittest.TestCase):
         
         patient.update_personal_info(date_of_birth="1981-02-16")
         
-        self.assertEqual(patient.date_of_birth, date(1981, 2, 16))
+        self.assert Equal(patient.date_of_birth, date(1981, 2, 16))
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_update_personal_info_with_string_gender(self):
         """Test updating personal information with a string gender."""
         patient = Patient(
@@ -639,9 +639,9 @@ class TestPatient(unittest.TestCase):
         
         patient.update_personal_info(gender="non_binary")
         
-        self.assertEqual(patient.gender, Gender.NON_BINARY)
+        self.assert Equal(patient.gender, Gender.NON_BINARY)
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_update_insurance_info(self):
         """Test updating insurance information."""
         patient = Patient(
@@ -658,12 +658,12 @@ class TestPatient(unittest.TestCase):
             insurance_status=InsuranceStatus.ACTIVE
         )
         
-        self.assertEqual(patient.insurance_id, "INS123456")
-        self.assertEqual(patient.insurance_provider, "HealthCo")
-        self.assertEqual(patient.insurance_group, "GROUP789")
-        self.assertEqual(patient.insurance_status, InsuranceStatus.ACTIVE)
+        self.assert Equal(patient.insurance_id, "INS123456")
+        self.assert Equal(patient.insurance_provider, "HealthCo")
+        self.assert Equal(patient.insurance_group, "GROUP789")
+        self.assert Equal(patient.insurance_status, InsuranceStatus.ACTIVE)
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_update_insurance_info_with_string_status(self):
         """Test updating insurance information with a string status."""
         patient = Patient(
@@ -675,9 +675,9 @@ class TestPatient(unittest.TestCase):
         
         patient.update_insurance_info(insurance_status="pending")
         
-        self.assertEqual(patient.insurance_status, InsuranceStatus.PENDING)
+        self.assert Equal(patient.insurance_status, InsuranceStatus.PENDING)
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_add_emergency_contact(self):
         """Test adding an emergency contact."""
         patient = Patient(
@@ -694,14 +694,14 @@ class TestPatient(unittest.TestCase):
             email="jane.doe@example.com"
         )
         
-        self.assertEqual(len(patient.emergency_contacts), 1)
-        self.assertEqual(patient.emergency_contacts[0], contact)
-        self.assertEqual(contact.name, "Jane Doe")
-        self.assertEqual(contact.relationship, "Spouse")
-        self.assertEqual(contact.phone, "555-123-4567")
-        self.assertEqual(contact.email, "jane.doe@example.com")
+        self.assert Equal(len(patient.emergency_contacts), 1)
+        self.assert Equal(patient.emergency_contacts[0], contact)
+        self.assert Equal(contact.name, "Jane Doe")
+        self.assert Equal(contact.relationship, "Spouse")
+        self.assert Equal(contact.phone, "555-123-4567")
+        self.assert Equal(contact.email, "jane.doe@example.com")
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_add_emergency_contact_validation(self):
         """Test validation when adding an emergency contact."""
         patient = Patient(
@@ -712,7 +712,7 @@ class TestPatient(unittest.TestCase):
         )
         
         # Missing name
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             patient.add_emergency_contact(
                 name="",
                 relationship="Spouse",
@@ -720,7 +720,7 @@ class TestPatient(unittest.TestCase):
             )
             
         # Missing relationship
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             patient.add_emergency_contact(
                 name="Jane Doe",
                 relationship="",
@@ -728,14 +728,14 @@ class TestPatient(unittest.TestCase):
             )
             
         # Missing phone
-        with self.assertRaises(ValueError):
+        with self.assert Raises(ValueError):
             patient.add_emergency_contact(
                 name="Jane Doe",
                 relationship="Spouse",
                 phone=""
             )
             
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_remove_emergency_contact(self):
         """Test removing an emergency contact."""
         patient = Patient(
@@ -757,15 +757,15 @@ class TestPatient(unittest.TestCase):
             phone="555-987-6543"
         )
         
-        self.assertEqual(len(patient.emergency_contacts), 2)
+        self.assert Equal(len(patient.emergency_contacts), 2)
         
         removed = patient.remove_emergency_contact(0)
         
-        self.assertEqual(len(patient.emergency_contacts), 1)
-        self.assertEqual(removed, contact1)
-        self.assertEqual(patient.emergency_contacts[0], contact2)
+        self.assert Equal(len(patient.emergency_contacts), 1)
+        self.assert Equal(removed, contact1)
+        self.assert Equal(patient.emergency_contacts[0], contact2)
         
-    @pytest.mark.standalone
+    @pytest.mark.standalone()
     def test_remove_emergency_contact_invalid_index(self):
         """Test removing an emergency contact with an invalid index."""
         patient = Patient(
@@ -781,5 +781,5 @@ class TestPatient(unittest.TestCase):
             phone="555-123-4567"
         )
         
-        with self.assertRaises(IndexError):
+        with self.assert Raises(IndexError):
             patient.remove_emergency_contact(1)

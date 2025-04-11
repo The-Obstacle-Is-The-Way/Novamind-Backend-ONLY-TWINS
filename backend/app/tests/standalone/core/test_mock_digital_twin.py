@@ -18,10 +18,10 @@ from app.core.exceptions import (
     ResourceNotFoundError
 )
 from app.core.services.ml.mock_dt import MockDigitalTwinService
-from app.tests.unit.base_test_unit import BaseUnitTest # Updated import path after rename
+, from app.tests.unit.base_test_unit import BaseUnitTest # Updated import path after rename
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestMockDigitalTwinService(BaseUnitTest):
     """
     Test suite for MockDigitalTwinService class.
@@ -75,7 +75,7 @@ class TestMockDigitalTwinService(BaseUnitTest):
         # Test default initialization
         service = MockDigitalTwinService()
         service.initialize({})
-        self.assertTrue(service.is_healthy())
+        self.assert True(service.is_healthy())
         
         # Test with custom configuration
         custom_config = {
@@ -84,16 +84,16 @@ class TestMockDigitalTwinService(BaseUnitTest):
         }
         service = MockDigitalTwinService()
         service.initialize(custom_config)
-        self.assertTrue(service.is_healthy())
+        self.assert True(service.is_healthy())
         
         # Test initialization with invalid configuration
         service = MockDigitalTwinService()
-        with self.assertRaises(InvalidConfigurationError):
+        with self.assert Raises(InvalidConfigurationError):
             service.initialize({"response_style": 123})  # type: ignore
             
         # Test shutdown
         service.shutdown()
-        self.assertFalse(service.is_healthy())
+        self.assert False(service.is_healthy())
 
     def test_create_session(self) -> None:
         """Test creating a digital twin therapy session."""
@@ -105,20 +105,20 @@ class TestMockDigitalTwinService(BaseUnitTest):
             )
             
             # Verify result structure
-            self.assertIn("session_id", result)
-            self.assertIn("twin_id", result)
-            self.assertIn("session_type", result)
-            self.assertIn("start_time", result)
-            self.assertIn("status", result)
+            self.assert In("session_id", result)
+            self.assert In("twin_id", result)
+            self.assert In("session_type", result)
+            self.assert In("start_time", result)
+            self.assert In("status", result)
             
             # Verify values
-            self.assertEqual(result["twin_id"], self.twin_id)
-            self.assertEqual(result["session_type"], session_type)
-            self.assertEqual(result["status"], "active")
+            self.assert Equal(result["twin_id"], self.twin_id)
+            self.assert Equal(result["session_type"], session_type)
+            self.assert Equal(result["status"], "active")
             
             # Check that start_time is a recent timestamp
             start_time = datetime.fromisoformat(result["start_time"].rstrip("Z"))
-            self.assertLess((datetime.now(UTC) - start_time).total_seconds(), 10)
+            self.assert Less((datetime.now(UTC) - start_time).total_seconds(), 10)
 
     def test_get_session(self) -> None:
         """Test retrieving a digital twin therapy session."""
@@ -133,14 +133,14 @@ class TestMockDigitalTwinService(BaseUnitTest):
         get_result = self.service.get_session(session_id)
         
         # Verify result structure and values
-        self.assertEqual(get_result["session_id"], session_id)
-        self.assertEqual(get_result["twin_id"], self.twin_id)
-        self.assertEqual(get_result["status"], "active")
-        self.assertIn("messages", get_result)
-        self.assertIsInstance(get_result["messages"], list)
+        self.assert Equal(get_result["session_id"], session_id)
+        self.assert Equal(get_result["twin_id"], self.twin_id)
+        self.assert Equal(get_result["status"], "active")
+        self.assert In("messages", get_result)
+        self.assert IsInstance(get_result["messages"], list)
         
         # Test getting non-existent session
-        with self.assertRaises(ResourceNotFoundError):
+        with self.assert Raises(ResourceNotFoundError):
             self.service.get_session("nonexistent-session-id")
 
     def test_send_message(self) -> None:
@@ -159,18 +159,18 @@ class TestMockDigitalTwinService(BaseUnitTest):
         )
         
         # Verify result structure
-        self.assertIn("response", message_result)
-        self.assertIn("messages", message_result)
-        self.assertIsInstance(message_result["messages"], list)
-        self.assertEqual(len(message_result["messages"]), 2)  # User message + twin response
+        self.assert In("response", message_result)
+        self.assert In("messages", message_result)
+        self.assert IsInstance(message_result["messages"], list)
+        self.assert Equal(len(message_result["messages"]), 2)  # User message + twin response
         
         # Verify message content
-        self.assertEqual(message_result["messages"][0]["content"], self.sample_message)
-        self.assertEqual(message_result["messages"][0]["sender"], "user")
-        self.assertEqual(message_result["messages"][1]["sender"], "twin")
+        self.assert Equal(message_result["messages"][0]["content"], self.sample_message)
+        self.assert Equal(message_result["messages"][0]["sender"], "user")
+        self.assert Equal(message_result["messages"][1]["sender"], "twin")
         
         # Test sending to a non-existent session
-        with self.assertRaises(ResourceNotFoundError):
+        with self.assert Raises(ResourceNotFoundError):
             self.service.send_message(
                 session_id="nonexistent-session-id",
                 message=self.sample_message
@@ -196,11 +196,11 @@ class TestMockDigitalTwinService(BaseUnitTest):
         
         for topic, message in test_messages.items():
             result = self.service.send_message(session_id=session_id, message=message)
-            self.assertIn("response", result)
+            self.assert In("response", result)
             response = result["response"]
             
             # Response should be relevant to the topic
-            self.assertTrue(
+            self.assert True(
                 any(keyword in response.lower() for keyword in [topic, topic[:-1]]),
                 f"Response '{response}' not relevant to topic '{topic}'"
             )
@@ -224,22 +224,22 @@ class TestMockDigitalTwinService(BaseUnitTest):
         end_result = self.service.end_session(session_id)
         
         # Verify result structure
-        self.assertIn("session_id", end_result)
-        self.assertIn("status", end_result)
-        self.assertIn("duration", end_result)
-        self.assertIn("summary", end_result)
+        self.assert In("session_id", end_result)
+        self.assert In("status", end_result)
+        self.assert In("duration", end_result)
+        self.assert In("summary", end_result)
         
         # Verify values
-        self.assertEqual(end_result["session_id"], session_id)
-        self.assertEqual(end_result["status"], "completed")
-        self.assertIn("minutes", end_result["duration"])
+        self.assert Equal(end_result["session_id"], session_id)
+        self.assert Equal(end_result["status"], "completed")
+        self.assert In("minutes", end_result["duration"])
         
         # Test ending a non-existent session
-        with self.assertRaises(ResourceNotFoundError):
+        with self.assert Raises(ResourceNotFoundError):
             self.service.end_session("nonexistent-session-id")
         
         # Test ending an already ended session
-        with self.assertRaises(InvalidRequestError):
+        with self.assert Raises(InvalidRequestError):
             self.service.end_session(session_id)
 
     def test_get_insights(self) -> None:
@@ -269,16 +269,16 @@ class TestMockDigitalTwinService(BaseUnitTest):
         insights_result = self.service.get_insights(session_id)
         
         # Verify result structure
-        self.assertIn("session_id", insights_result)
-        self.assertIn("insights", insights_result)
-        self.assertIn("themes", insights_result["insights"])
-        self.assertIn("sentiment_analysis", insights_result["insights"])
-        self.assertIn("recommendations", insights_result["insights"])
+        self.assert In("session_id", insights_result)
+        self.assert In("insights", insights_result)
+        self.assert In("themes", insights_result["insights"])
+        self.assert In("sentiment_analysis", insights_result["insights"])
+        self.assert In("recommendations", insights_result["insights"])
         
         # Verify values
-        self.assertEqual(insights_result["session_id"], session_id)
-        self.assertIsInstance(insights_result["insights"]["themes"], list)
-        self.assertIsInstance(insights_result["insights"]["recommendations"], list)
+        self.assert Equal(insights_result["session_id"], session_id)
+        self.assert IsInstance(insights_result["insights"]["themes"], list)
+        self.assert IsInstance(insights_result["insights"]["recommendations"], list)
 
     def test_mood_insights(self) -> None:
         """Test mood tracking insights from digital twin sessions."""
@@ -310,15 +310,15 @@ class TestMockDigitalTwinService(BaseUnitTest):
         mood_insights = self.service.get_mood_insights(self.twin_id)
         
         # Verify result structure
-        self.assertIn("twin_id", mood_insights)
-        self.assertIn("mood_data", mood_insights)
-        self.assertIn("trend", mood_insights)
-        self.assertIn("analysis", mood_insights)
+        self.assert In("twin_id", mood_insights)
+        self.assert In("mood_data", mood_insights)
+        self.assert In("trend", mood_insights)
+        self.assert In("analysis", mood_insights)
         
         # Verify values
-        self.assertEqual(mood_insights["twin_id"], self.twin_id)
-        self.assertIsInstance(mood_insights["mood_data"], list)
-        self.assertGreaterEqual(len(mood_insights["mood_data"]), 3)  # One per session
+        self.assert Equal(mood_insights["twin_id"], self.twin_id)
+        self.assert IsInstance(mood_insights["mood_data"], list)
+        self.assert GreaterEqual(len(mood_insights["mood_data"]), 3)  # One per session
 
     def test_activity_insights(self) -> None:
         """Test activity tracking insights from digital twin."""
@@ -326,11 +326,11 @@ class TestMockDigitalTwinService(BaseUnitTest):
         activity_insights = self.service.get_activity_insights(self.twin_id)
         
         # Verify result structure
-        self.assertIn("twin_id", activity_insights)
-        self.assertIn("activity_data", activity_insights)
-        self.assertIn("averages", activity_insights)
-        self.assertIn("trends", activity_insights)
-        self.assertIn("recommendations", activity_insights)
+        self.assert In("twin_id", activity_insights)
+        self.assert In("activity_data", activity_insights)
+        self.assert In("averages", activity_insights)
+        self.assert In("trends", activity_insights)
+        self.assert In("recommendations", activity_insights)
 
     def test_sleep_insights(self) -> None:
         """Test sleep tracking insights from digital twin."""
@@ -338,12 +338,12 @@ class TestMockDigitalTwinService(BaseUnitTest):
         sleep_insights = self.service.get_sleep_insights(self.twin_id)
         
         # Verify result structure
-        self.assertIn("twin_id", sleep_insights)
-        self.assertIn("sleep_data", sleep_insights)
-        self.assertIn("average_duration", sleep_insights)
-        self.assertIn("quality_trend", sleep_insights)
-        self.assertIn("patterns", sleep_insights)
-        self.assertIn("recommendations", sleep_insights)
+        self.assert In("twin_id", sleep_insights)
+        self.assert In("sleep_data", sleep_insights)
+        self.assert In("average_duration", sleep_insights)
+        self.assert In("quality_trend", sleep_insights)
+        self.assert In("patterns", sleep_insights)
+        self.assert In("recommendations", sleep_insights)
 
     def test_medication_insights(self) -> None:
         """Test medication insights from digital twin."""
@@ -351,11 +351,11 @@ class TestMockDigitalTwinService(BaseUnitTest):
         medication_insights = self.service.get_medication_insights(self.twin_id)
         
         # Verify result structure
-        self.assertIn("twin_id", medication_insights)
-        self.assertIn("medications", medication_insights)
-        self.assertIn("adherence", medication_insights)
-        self.assertIn("reported_effects", medication_insights)
-        self.assertIn("recommendations", medication_insights)
+        self.assert In("twin_id", medication_insights)
+        self.assert In("medications", medication_insights)
+        self.assert In("adherence", medication_insights)
+        self.assert In("reported_effects", medication_insights)
+        self.assert In("recommendations", medication_insights)
 
     def test_treatment_insights(self) -> None:
         """Test treatment response insights from digital twin."""
@@ -363,8 +363,8 @@ class TestMockDigitalTwinService(BaseUnitTest):
         treatment_insights = self.service.get_treatment_insights(self.twin_id)
         
         # Verify result structure
-        self.assertIn("twin_id", treatment_insights)
-        self.assertIn("treatments", treatment_insights)
-        self.assertIn("efficacy", treatment_insights)
-        self.assertIn("progress", treatment_insights)
-        self.assertIn("recommendations", treatment_insights)
+        self.assert In("twin_id", treatment_insights)
+        self.assert In("treatments", treatment_insights)
+        self.assert In("efficacy", treatment_insights)
+        self.assert In("progress", treatment_insights)
+        self.assert In("recommendations", treatment_insights)

@@ -7,11 +7,11 @@ import pytest
 import os
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import engine, init_db, get_session, Base
+, from app.core.db import engine, init_db, get_session, Base
 
 
-@pytest.mark.asyncio
-@pytest.mark.db_required
+@pytest.mark.asyncio()
+@pytest.mark.db_required()
 async def test_engine_creation():
     """Test that the database engine is created with correct settings."""
     # Verify the engine is correctly configured for testing
@@ -28,8 +28,8 @@ async def test_engine_creation():
         assert "postgresql+asyncpg" in str(engine.url)
 
 
-@pytest.mark.asyncio
-@pytest.mark.db_required
+@pytest.mark.asyncio()
+@pytest.mark.db_required()
 async def test_init_db():
     """Test database initialization."""
     # Clear any existing tables
@@ -47,8 +47,8 @@ async def test_init_db():
     assert table_count > 0
 
 
-@pytest.mark.asyncio
-@pytest.mark.db_required
+@pytest.mark.asyncio()
+@pytest.mark.db_required()
 async def test_get_session():
     """Test that get_session returns valid sessions."""
     # Test that the session dependency yields an async session
@@ -64,7 +64,7 @@ async def test_get_session():
         # Just ping the database with a simple SQL expression
         result = await session.execute("SELECT 1")
         row = result.scalar()
-        assert row == 1
+        assert row  ==  1
     finally:
         # Clean up
         try:
@@ -82,8 +82,8 @@ async def test_get_session():
 class TestDatabaseBase:
     """Test base class for database-related tests."""
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_base_class_table_creation(self):
         """Test that Base can create tables."""
         # Model definition moved outside the test method

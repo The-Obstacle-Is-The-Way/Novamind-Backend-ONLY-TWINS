@@ -10,10 +10,10 @@ from datetime import datetime, UTC, UTC
 from unittest.mock import MagicMock, patch
 from uuid import UUID
 
-import pytest
+, import pytest
 
 from app.domain.entities.biometric_twin import BiometricDataPoint
-from app.domain.exceptions import ValidationError
+, from app.domain.exceptions import ValidationError
 from app.domain.services.biometric_event_processor import (
     AlertPriority,  
     AlertRule,  
@@ -79,7 +79,7 @@ def mock_observer():
     return observer
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestBiometricEventProcessor:
     """Tests for the BiometricEventProcessor."""
     
@@ -170,7 +170,7 @@ class TestBiometricEventProcessor:
         assert alerts[0].priority == sample_rule.priority
         assert alerts[0].data_point == sample_data_point
         
-        mock_observer.notify.assert_called_once()
+        mock_observer.notify.assert _called_once()
         assert mock_observer.notify.call_args[0][0] == alerts[0]
     
     def test_process_data_point_patient_specific_rule(self, sample_data_point, sample_rule, sample_clinician_id):
@@ -378,7 +378,7 @@ class TestBiometricAlert:
         # Now acknowledged
         assert alert.acknowledged is True
         assert alert.acknowledged_at is not None
-        assert alert.acknowledged_by == sample_clinician_id
+        assert alert.acknowledged_by  ==  sample_clinician_id
 
 
 class TestAlertObservers:
@@ -410,7 +410,7 @@ class TestAlertObservers:
             observer.notify(alert)
             
             # Check that the email service was not called (since it's commented out in the implementation)
-            # email_service.send_email.assert_called_once()
+            # email_service.send_email.assert _called_once()
     
     def test_sms_alert_observer_urgent(self, sample_data_point, sample_rule):
         """Test that SMSAlertObserver correctly notifies via SMS for urgent alerts."""
@@ -438,7 +438,7 @@ class TestAlertObservers:
             observer.notify(alert)
             
             # Check that the SMS service was not called (since it's commented out in the implementation)
-            # sms_service.send_sms.assert_called_once()
+            # sms_service.send_sms.assert _called_once()
     
     def test_sms_alert_observer_non_urgent(self, sample_data_point, sample_rule):
         """Test that SMSAlertObserver doesn't notify for non-urgent alerts."""
@@ -464,7 +464,7 @@ class TestAlertObservers:
         observer.notify(alert)
         
         # Check that the SMS service was not called
-        # sms_service.send_sms.assert_not_called()
+        # sms_service.send_sms.assert _not_called()
     
     def test_in_app_alert_observer(self, sample_data_point, sample_rule):
         """Test that InAppAlertObserver correctly notifies via in-app notifications."""
@@ -492,7 +492,7 @@ class TestAlertObservers:
             observer.notify(alert)
             
             # Check that the notification service was not called (since it's commented out in the implementation)
-            # notification_service.send_notification.assert_called()
+            # notification_service.send_notification.assert _called()
 
 
 class TestClinicalRuleEngine:
@@ -521,7 +521,7 @@ class TestClinicalRuleEngine:
         """Test that register_custom_condition correctly registers a condition function."""
         engine = ClinicalRuleEngine()
         
-        def custom_condition(data_point, context):
+    def custom_condition(data_point, context):
             return data_point.value > 100 and context.get("activity") == "resting"
         
         engine.register_custom_condition("high_resting_heart_rate", custom_condition)
@@ -554,14 +554,14 @@ class TestClinicalRuleEngine:
             created_by=sample_clinician_id
         )
         
-        assert rule.rule_id == "test-rule-1"
-        assert rule.name == "High Heart Rate"
-        assert rule.description == "Alert when heart rate exceeds 100 bpm"
-        assert rule.priority == AlertPriority.WARNING
+        assert rule.rule_id  ==  "test-rule-1"
+        assert rule.name  ==  "High Heart Rate"
+        assert rule.description  ==  "Alert when heart rate exceeds 100 bpm"
+        assert rule.priority  ==  AlertPriority.WARNING
         assert rule.condition["data_type"] == "heart_rate"
         assert rule.condition["operator"] == ">"
         assert rule.condition["threshold"] == 100.0
-        assert rule.created_by == sample_clinician_id
+        assert rule.created_by  ==  sample_clinician_id
     
     def test_create_rule_from_template_missing_parameter(self, sample_clinician_id):
         """Test that create_rule_from_template raises an error if a required parameter is missing."""

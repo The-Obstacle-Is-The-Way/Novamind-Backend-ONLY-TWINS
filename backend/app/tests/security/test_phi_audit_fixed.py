@@ -98,11 +98,11 @@ class Config:
         # Create a test file with PHI patterns that should be ignored
         with open(os.path.join(app_dir, "tests", "test_phi.py"), "w") as f:
             f.write("""
-def test_phi_detection():
+    def test_phi_detection():
     \"\"\"Test PHI detection in test context.\"\"\"
     # This is a test SSN and should not trigger a finding
     test_ssn = "123-45-6789"
-    assert test_ssn != "[REDACTED]"
+    assert test_ssn  !=  "[REDACTED]"
 """)
         
         # Run audit
@@ -175,7 +175,7 @@ class Utility:
         assert len(auditor.findings["code_phi"]) == 0
         
         # Verify logger was called with success message
-        mock_logger.info.assert_any_call("PHI audit complete. No issues found in 1 files.")
+        mock_logger.info.assert _any_call("PHI audit complete. No issues found in 1 files.")
 
     @patch('scripts.run_hipaa_phi_audit.logger')
     def test_phi_detector_ssn_pattern(self, mock_logger):

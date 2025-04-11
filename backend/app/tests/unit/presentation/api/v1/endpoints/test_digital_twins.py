@@ -15,12 +15,12 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+, from fastapi.testclient import TestClient
 from pydantic import parse_obj_as
 
-from app.domain.exceptions import ModelInferenceError, ValidationError
+, from app.domain.exceptions import ModelInferenceError, ValidationError
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
-from app.presentation.api.v1.endpoints.digital_twins import (
+, from app.presentation.api.v1.endpoints.digital_twins import (
     router,  
     get_digital_twin_service,  
     # Removed get_current_user_id - belongs in auth dependencies
@@ -206,7 +206,7 @@ def sample_forecast_response(sample_patient_id):
     }
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestDigitalTwinEndpoints:
     """Tests for the Digital Twin API endpoints."""
     
@@ -219,9 +219,9 @@ class TestDigitalTwinEndpoints:
         response = client.get(f"/digital-twins/patients/{sample_patient_id}/status")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == sample_status_response
-        mock_digital_twin_service.get_digital_twin_status.assert_called_once_with(sample_patient_id)
+        mock_digital_twin_service.get_digital_twin_status.assert _called_once_with(sample_patient_id)
     
     def test_get_patient_insights(self, client, mock_digital_twin_service, sample_patient_id, sample_insights_response):
         """Test that get_patient_insights returns the correct response."""
@@ -232,9 +232,9 @@ class TestDigitalTwinEndpoints:
         response = client.get(f"/digital-twins/patients/{sample_patient_id}/insights")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == sample_insights_response
-        mock_digital_twin_service.generate_comprehensive_patient_insights.assert_called_once()
+        mock_digital_twin_service.generate_comprehensive_patient_insights.assert _called_once()
     
     def test_update_digital_twin(self, client, mock_digital_twin_service, sample_patient_id, sample_status_response):
         """Test that update_digital_twin returns the correct response."""
@@ -259,10 +259,10 @@ class TestDigitalTwinEndpoints:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == sample_status_response
-        mock_digital_twin_service.update_digital_twin.assert_called_once()
-        mock_digital_twin_service.get_digital_twin_status.assert_called_once_with(sample_patient_id)
+        mock_digital_twin_service.update_digital_twin.assert _called_once()
+        mock_digital_twin_service.get_digital_twin_status.assert _called_once_with(sample_patient_id)
     
     def test_get_symptom_forecast(self, client, mock_digital_twin_service, sample_patient_id, sample_forecast_response):
         """Test that get_symptom_forecast returns the correct response."""
@@ -273,9 +273,9 @@ class TestDigitalTwinEndpoints:
         response = client.get(f"/digital-twins/patients/{sample_patient_id}/symptom-forecast")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == sample_forecast_response
-        mock_digital_twin_service.symptom_forecasting_service.forecast_symptoms.assert_called_once()
+        mock_digital_twin_service.symptom_forecasting_service.forecast_symptoms.assert _called_once()
     
     def test_get_biometric_correlations(self, client, mock_digital_twin_service, sample_patient_id):
         """Test that get_biometric_correlations returns the correct response."""
@@ -314,9 +314,9 @@ class TestDigitalTwinEndpoints:
         response = client.get(f"/digital-twins/patients/{sample_patient_id}/biometric-correlations")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == correlations_response
-        mock_digital_twin_service.biometric_correlation_service.analyze_correlations.assert_called_once()
+        mock_digital_twin_service.biometric_correlation_service.analyze_correlations.assert _called_once()
     
     def test_predict_medication_response(self, client, mock_digital_twin_service, sample_patient_id):
         """Test that predict_medication_response returns the correct response."""
@@ -360,9 +360,9 @@ class TestDigitalTwinEndpoints:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == medication_response
-        mock_digital_twin_service.pharmacogenomics_service.predict_medication_responses.assert_called_once()
+        mock_digital_twin_service.pharmacogenomics_service.predict_medication_responses.assert _called_once()
     
     def test_generate_treatment_plan(self, client, mock_digital_twin_service, sample_patient_id):
         """Test that generate_treatment_plan returns the correct response."""
@@ -444,9 +444,9 @@ class TestDigitalTwinEndpoints:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == treatment_plan
-        mock_digital_twin_service.pharmacogenomics_service.recommend_treatment_plan.assert_called_once()
+        mock_digital_twin_service.pharmacogenomics_service.recommend_treatment_plan.assert _called_once()
     
     def test_error_handling(self, client, mock_digital_twin_service, sample_patient_id):
         """Test that errors are properly handled and don't leak PHI."""
@@ -458,7 +458,7 @@ class TestDigitalTwinEndpoints:
         response = client.get(f"/digital-twins/patients/{sample_patient_id}/status")
         
         # Verify
-        assert response.status_code == 400
+        assert response.status_code  ==  400
         assert response.json()["detail"] == error_message
         
         # Ensure no PHI is leaked in the error
@@ -473,7 +473,7 @@ class TestDigitalTwinEndpoints:
         response = client.get(f"/digital-twins/patients/{sample_patient_id}/insights")
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         response_data = response.json()
         
         # Check that only necessary PHI is included

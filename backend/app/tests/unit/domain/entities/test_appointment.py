@@ -51,7 +51,7 @@ def valid_appointment(valid_appointment_data):
     return Appointment(**valid_appointment_data)
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestAppointment:
     """Tests for the Appointment class."""
     
@@ -59,17 +59,17 @@ class TestAppointment:
         """Test creating an appointment."""
         appointment = Appointment(**valid_appointment_data)
         
-        assert appointment.id == valid_appointment_data["id"]
-        assert appointment.patient_id == valid_appointment_data["patient_id"]
-        assert appointment.provider_id == valid_appointment_data["provider_id"]
-        assert appointment.start_time == valid_appointment_data["start_time"]
-        assert appointment.end_time == valid_appointment_data["end_time"]
-        assert appointment.appointment_type == valid_appointment_data["appointment_type"]
-        assert appointment.status == valid_appointment_data["status"]
-        assert appointment.priority == valid_appointment_data["priority"]
-        assert appointment.location == valid_appointment_data["location"]
-        assert appointment.notes == valid_appointment_data["notes"]
-        assert appointment.reason == valid_appointment_data["reason"]
+        assert appointment.id  ==  valid_appointment_data["id"]
+        assert appointment.patient_id  ==  valid_appointment_data["patient_id"]
+        assert appointment.provider_id  ==  valid_appointment_data["provider_id"]
+        assert appointment.start_time  ==  valid_appointment_data["start_time"]
+        assert appointment.end_time  ==  valid_appointment_data["end_time"]
+        assert appointment.appointment_type  ==  valid_appointment_data["appointment_type"]
+        assert appointment.status  ==  valid_appointment_data["status"]
+        assert appointment.priority  ==  valid_appointment_data["priority"]
+        assert appointment.location  ==  valid_appointment_data["location"]
+        assert appointment.notes  ==  valid_appointment_data["notes"]
+        assert appointment.reason  ==  valid_appointment_data["reason"]
     
     def test_create_appointment_with_string_enums(self, valid_appointment_data):
         """Test creating an appointment with string enums."""
@@ -81,9 +81,9 @@ class TestAppointment:
         
         appointment = Appointment(**data)
         
-        assert appointment.appointment_type == AppointmentType.INITIAL_CONSULTATION
-        assert appointment.status == AppointmentStatus.SCHEDULED
-        assert appointment.priority == AppointmentPriority.NORMAL
+        assert appointment.appointment_type  ==  AppointmentType.INITIAL_CONSULTATION
+        assert appointment.status  ==  AppointmentStatus.SCHEDULED
+        assert appointment.priority  ==  AppointmentPriority.NORMAL
     
     def test_create_appointment_with_auto_id(self, valid_appointment_data):
         """Test creating an appointment with auto-generated ID."""
@@ -168,7 +168,7 @@ class TestAppointment:
         """Test confirming an appointment."""
         valid_appointment.confirm()
         
-        assert valid_appointment.status == AppointmentStatus.CONFIRMED
+        assert valid_appointment.status  ==  AppointmentStatus.CONFIRMED
         assert valid_appointment.updated_at > valid_appointment.created_at
     
     def test_confirm_non_scheduled_appointment(self, valid_appointment):
@@ -182,7 +182,7 @@ class TestAppointment:
         """Test checking in an appointment."""
         valid_appointment.check_in()
         
-        assert valid_appointment.status == AppointmentStatus.CHECKED_IN
+        assert valid_appointment.status  ==  AppointmentStatus.CHECKED_IN
         assert valid_appointment.updated_at > valid_appointment.created_at
     
     def test_check_in_confirmed_appointment(self, valid_appointment):
@@ -190,7 +190,7 @@ class TestAppointment:
         valid_appointment.status = AppointmentStatus.CONFIRMED
         valid_appointment.check_in()
         
-        assert valid_appointment.status == AppointmentStatus.CHECKED_IN
+        assert valid_appointment.status  ==  AppointmentStatus.CHECKED_IN
     
     def test_check_in_invalid_appointment(self, valid_appointment):
         """Test checking in an invalid appointment."""
@@ -204,7 +204,7 @@ class TestAppointment:
         valid_appointment.status = AppointmentStatus.CHECKED_IN
         valid_appointment.start()
         
-        assert valid_appointment.status == AppointmentStatus.IN_PROGRESS
+        assert valid_appointment.status  ==  AppointmentStatus.IN_PROGRESS
         assert valid_appointment.updated_at > valid_appointment.created_at
     
     def test_start_invalid_appointment(self, valid_appointment):
@@ -217,7 +217,7 @@ class TestAppointment:
         valid_appointment.status = AppointmentStatus.IN_PROGRESS
         valid_appointment.complete()
         
-        assert valid_appointment.status == AppointmentStatus.COMPLETED
+        assert valid_appointment.status  ==  AppointmentStatus.COMPLETED
         assert valid_appointment.updated_at > valid_appointment.created_at
     
     def test_complete_invalid_appointment(self, valid_appointment):
@@ -232,10 +232,10 @@ class TestAppointment:
         
         valid_appointment.cancel(cancelled_by, reason)
         
-        assert valid_appointment.status == AppointmentStatus.CANCELLED
+        assert valid_appointment.status  ==  AppointmentStatus.CANCELLED
         assert valid_appointment.cancelled_at is not None
-        assert valid_appointment.cancelled_by == cancelled_by
-        assert valid_appointment.cancellation_reason == reason
+        assert valid_appointment.cancelled_by  ==  cancelled_by
+        assert valid_appointment.cancellation_reason  ==  reason
         assert valid_appointment.updated_at > valid_appointment.created_at
     
     def test_cancel_invalid_appointment(self, valid_appointment):
@@ -249,7 +249,7 @@ class TestAppointment:
         """Test marking an appointment as no-show."""
         valid_appointment.mark_no_show()
         
-        assert valid_appointment.status == AppointmentStatus.NO_SHOW
+        assert valid_appointment.status  ==  AppointmentStatus.NO_SHOW
         assert valid_appointment.updated_at > valid_appointment.created_at
     
     def test_mark_no_show_confirmed_appointment(self, valid_appointment):
@@ -257,7 +257,7 @@ class TestAppointment:
         valid_appointment.status = AppointmentStatus.CONFIRMED
         valid_appointment.mark_no_show()
         
-        assert valid_appointment.status == AppointmentStatus.NO_SHOW
+        assert valid_appointment.status  ==  AppointmentStatus.NO_SHOW
     
     def test_mark_no_show_invalid_appointment(self, valid_appointment):
         """Test marking an invalid appointment as no-show."""
@@ -274,9 +274,9 @@ class TestAppointment:
         
         valid_appointment.reschedule(new_start_time, new_end_time, reason)
         
-        assert valid_appointment.status == AppointmentStatus.RESCHEDULED
-        assert valid_appointment.start_time == new_start_time
-        assert valid_appointment.end_time == new_end_time
+        assert valid_appointment.status  ==  AppointmentStatus.RESCHEDULED
+        assert valid_appointment.start_time  ==  new_start_time
+        assert valid_appointment.end_time  ==  new_end_time
         assert reason in valid_appointment.notes
         assert valid_appointment.updated_at > valid_appointment.created_at
     
@@ -314,7 +314,7 @@ class TestAppointment:
         valid_appointment.schedule_follow_up(follow_up_id)
         
         assert valid_appointment.follow_up_scheduled is True
-        assert valid_appointment.follow_up_appointment_id == follow_up_id
+        assert valid_appointment.follow_up_appointment_id  ==  follow_up_id
         assert valid_appointment.updated_at > valid_appointment.created_at
     
     def test_schedule_follow_up_invalid_appointment(self, valid_appointment):
@@ -338,7 +338,7 @@ class TestAppointment:
         
         valid_appointment.update_notes(new_notes)
         
-        assert valid_appointment.notes == new_notes
+        assert valid_appointment.notes  ==  new_notes
         assert valid_appointment.updated_at > valid_appointment.created_at
     
     def test_to_dict(self, valid_appointment):
@@ -359,21 +359,21 @@ class TestAppointment:
         appointment_dict = valid_appointment.to_dict()
         new_appointment = Appointment.from_dict(appointment_dict)
         
-        assert new_appointment.id == valid_appointment.id
-        assert new_appointment.patient_id == valid_appointment.patient_id
-        assert new_appointment.provider_id == valid_appointment.provider_id
-        assert new_appointment.start_time == valid_appointment.start_time
-        assert new_appointment.end_time == valid_appointment.end_time
-        assert new_appointment.appointment_type == valid_appointment.appointment_type
-        assert new_appointment.status == valid_appointment.status
-        assert new_appointment.priority == valid_appointment.priority
+        assert new_appointment.id  ==  valid_appointment.id
+        assert new_appointment.patient_id  ==  valid_appointment.patient_id
+        assert new_appointment.provider_id  ==  valid_appointment.provider_id
+        assert new_appointment.start_time  ==  valid_appointment.start_time
+        assert new_appointment.end_time  ==  valid_appointment.end_time
+        assert new_appointment.appointment_type  ==  valid_appointment.appointment_type
+        assert new_appointment.status  ==  valid_appointment.status
+        assert new_appointment.priority  ==  valid_appointment.priority
     
     def test_equality(self, valid_appointment_data):
         """Test appointment equality."""
         appointment1 = Appointment(**valid_appointment_data)
         appointment2 = Appointment(**valid_appointment_data)
         
-        assert appointment1 == appointment2
+        assert appointment1  ==  appointment2
         assert hash(appointment1) == hash(appointment2)
     
     def test_inequality(self, valid_appointment_data):
@@ -384,9 +384,9 @@ class TestAppointment:
         data2["id"] = str(uuid.uuid4())
         appointment2 = Appointment(**data2)
         
-        assert appointment1 != appointment2
+        assert appointment1  !=  appointment2
         assert hash(appointment1) != hash(appointment2)
-        assert appointment1 != "not an appointment"
+        assert appointment1  !=  "not an appointment"
     
     def test_string_representation(self, valid_appointment):
         """Test string representation of an appointment."""

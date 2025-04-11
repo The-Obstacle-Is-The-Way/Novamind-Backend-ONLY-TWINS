@@ -13,14 +13,14 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+, from fastapi.testclient import TestClient
 
 # from app.core.exceptions.ml_exceptions import ( # Commented out due to persistent ImportError during collection
 #     MentalLLaMAInferenceError,  
 #     PhiDetectionError,  
 # )
 # Placeholder imports - tests using these will likely fail but allows collection
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class MentalLLaMAInferenceError(Exception): pass
 class PhiDetectionError(Exception): pass
 from app.presentation.api.v1.endpoints.digital_twins import (
@@ -36,7 +36,7 @@ from app.presentation.api.v1.schemas.digital_twin_schemas import (
 
 
 @pytest.fixture
-def app():
+    def app():
     """Create a FastAPI test application."""
     app = FastAPI()
     app.include_router(digital_twins_router)
@@ -44,13 +44,13 @@ def app():
 
 
 @pytest.fixture
-def client(app):
+    def client(app):
     """Create a test client for the FastAPI app."""
     return TestClient(app)
 
 
 @pytest.fixture
-def mock_jwt_auth():
+    def mock_jwt_auth():
     """Mock the JWT authentication."""
     with patch(
         "app.presentation.api.v1.endpoints.biometric_endpoints.get_current_user_id",
@@ -60,7 +60,7 @@ def mock_jwt_auth():
 
 
 @pytest.fixture
-def mock_digital_twin_service():
+    def mock_digital_twin_service():
     """Mock the digital twin service."""
     service_mock = MagicMock()
     
@@ -74,7 +74,7 @@ def mock_digital_twin_service():
     # Return the mock service
     with patch(
         "app.presentation.api.v1.endpoints.digital_twins.get_digital_twin_service",
-        return_value=service_mock
+        return_value=service_mock)
     ):
         yield service_mock
 
@@ -103,13 +103,13 @@ class TestMentalLLaMAEndpoints:
         response = client.post("/clinical-text/summarize", json=request_data)
         
         # Check response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert "result" in response.json()
         assert "summary" in response.json()["result"]
         assert response.json()["phi_detected"] is False
         
         # Verify mock was called correctly
-        mock_digital_twin_service.mentallama_service.summarize_clinical_document.assert_called_once_with(
+        mock_digital_twin_service.mentallama_service.summarize_clinical_document.assert _called_once_with(
             text=request_data["text"],
             summary_type=request_data["summary_type"],
             target_length=request_data["target_length"],
@@ -136,7 +136,7 @@ class TestMentalLLaMAEndpoints:
         response = client.post("/clinical-text/summarize", json=request_data)
         
         # Check response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert "result" in response.json()
         assert "summary" in response.json()["result"]
         assert response.json()["phi_detected"] is True
@@ -159,7 +159,7 @@ class TestMentalLLaMAEndpoints:
         response = client.post("/clinical-text/summarize", json=request_data)
         
         # Check response
-        assert response.status_code == 400
+        assert response.status_code  ==  400
         assert "PHI detection error" in response.json()["detail"]
 
     def test_summarize_clinical_text_inference_error(self, client, mock_jwt_auth, mock_digital_twin_service):
@@ -180,7 +180,7 @@ class TestMentalLLaMAEndpoints:
         response = client.post("/clinical-text/summarize", json=request_data)
         
         # Check response
-        assert response.status_code == 400
+        assert response.status_code  ==  400
         assert "Model inference failed" in response.json()["detail"]
 
     def test_extract_clinical_entities_success(self, client, mock_jwt_auth, mock_digital_twin_service):
@@ -206,14 +206,14 @@ class TestMentalLLaMAEndpoints:
         response = client.post("/clinical-text/extract-entities", json=request_data)
         
         # Check response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert "result" in response.json()
         assert "entities" in response.json()["result"]
         assert "symptoms" in response.json()["result"]["entities"]
         assert response.json()["phi_detected"] is False
         
         # Verify mock was called correctly
-        mock_digital_twin_service.mentallama_service.extract_clinical_entities.assert_called_once_with(
+        mock_digital_twin_service.mentallama_service.extract_clinical_entities.assert _called_once_with(
             text=request_data["text"],
             entity_types=request_data["entity_types"],
         )
@@ -241,7 +241,7 @@ class TestMentalLLaMAEndpoints:
         response = client.post("/clinical-text/extract-entities", json=request_data)
         
         # Check response
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert "result" in response.json()
         assert "entities" in response.json()["result"]
         assert response.json()["phi_detected"] is True
@@ -263,5 +263,5 @@ class TestMentalLLaMAEndpoints:
         response = client.post("/clinical-text/extract-entities", json=request_data)
         
         # Check response
-        assert response.status_code == 400
+        assert response.status_code  ==  400
         assert "Entity extraction failed" in response.json()["detail"]

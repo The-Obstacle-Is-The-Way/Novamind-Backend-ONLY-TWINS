@@ -13,7 +13,7 @@ from typing import Dict, Any
 from fastapi import HTTPException, Request
 from fastapi.responses import Response
 
-from app.core.constants import CacheNamespace
+, from app.core.constants import CacheNamespace
 from app.presentation.api.dependencies.rate_limiter import (
     # RateLimiter,   # Removed incorrect import
     # get_client_id,   # Removed non-existent import
@@ -21,7 +21,7 @@ from app.presentation.api.dependencies.rate_limiter import (
 )
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class MockCacheService:
     """Mock implementation of CacheService for testing."""
     
@@ -80,18 +80,18 @@ class MockCacheService:
 
 
 @pytest.fixture
-def mock_cache():
+    def mock_cache():
     """Fixture providing a mock cache service."""
     return MockCacheService()
 
 
 @pytest.fixture
-def rate_limiter(mock_cache):
+    def rate_limiter(mock_cache):
     """Fixture providing a rate limiter with mock cache."""
     return RateLimiter(mock_cache)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_rate_limiter_initial_request(rate_limiter):
     """Test that the first request within limits is allowed."""
     # Test initial request (should be allowed)
@@ -102,11 +102,11 @@ async def test_rate_limiter_initial_request(rate_limiter):
     )
     
     assert allowed is True
-    assert count == 1
-    assert reset == 60  # Window size
+    assert count  ==  1
+    assert reset  ==  60  # Window size
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_rate_limiter_multiple_requests(rate_limiter):
     """Test multiple requests within limits."""
     # Make multiple requests
@@ -122,10 +122,10 @@ async def test_rate_limiter_multiple_requests(rate_limiter):
     # All should be allowed, counts should increment
     for i, (allowed, count, _) in enumerate(results):
         assert allowed is True
-        assert count == i + 1
+        assert count  ==  i + 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_rate_limiter_exceeding_limit(rate_limiter):
     """Test that requests exceeding the limit are denied."""
     # Set up rate limit of 5 requests
@@ -148,10 +148,10 @@ async def test_rate_limiter_exceeding_limit(rate_limiter):
     )
     
     assert allowed is False
-    assert count == max_requests + 1
+    assert count  ==  max_requests + 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_rate_limiter_different_keys(rate_limiter):
     """Test rate limiting for different clients."""
     # Make requests for different clients
@@ -169,14 +169,14 @@ async def test_rate_limiter_different_keys(rate_limiter):
     
     # Both should be allowed with count 1
     assert allowed1 is True and allowed2 is True
-    assert count1 == 1 and count2 == 1
+    assert count1  ==  1 and count2 == 1
     
     # Verify keys in cache are namespaced
     assert await rate_limiter.cache.exists(f"{CacheNamespace.RATE_LIMIT}:client1")
     assert await rate_limiter.cache.exists(f"{CacheNamespace.RATE_LIMIT}:client2")
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_get_client_id_with_authenticated_user():
     """Test getting client ID for authenticated user."""
     # Mock request and user
@@ -186,10 +186,10 @@ async def test_get_client_id_with_authenticated_user():
     client_id = get_client_id(request, user)
     
     # Should use user ID
-    assert client_id == "user:user123"
+    assert client_id  ==  "user:user123"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_get_client_id_with_ip():
     """Test getting client ID from IP address."""
     # Mock request with client IP
@@ -199,10 +199,10 @@ async def test_get_client_id_with_ip():
     client_id = get_client_id(request, None)
     
     # Should use IP address
-    assert client_id == "ip:192.168.1.1"
+    assert client_id  ==  "ip:192.168.1.1"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_get_client_id_with_forwarded_ip():
     """Test getting client ID from X-Forwarded-For header."""
     # Mock request with X-Forwarded-For
@@ -213,10 +213,10 @@ async def test_get_client_id_with_forwarded_ip():
     client_id = get_client_id(request, None)
     
     # Should use first IP in X-Forwarded-For
-    assert client_id == "ip:203.0.113.1"
+    assert client_id  ==  "ip:203.0.113.1"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_rate_limit_dependency():
     """Test the RateLimitDependency class."""
     # Create dependency
@@ -235,19 +235,19 @@ async def test_rate_limit_dependency():
     await dependency(request, client_id, rate_limiter)
     
     # Verify rate_limiter was called correctly
-    rate_limiter.check_rate_limit.assert_called_once_with(
+    rate_limiter.check_rate_limit.assert _called_once_with(
         key="default:test_client",
         max_requests=5,
         window_seconds=60
     )
     
     # Verify headers were set
-    assert request.state.rate_limit_remaining == 4
-    assert request.state.rate_limit_reset == 60
-    assert request.state.rate_limit_limit == 5
+    assert request.state.rate_limit_remaining  ==  4
+    assert request.state.rate_limit_reset  ==  60
+    assert request.state.rate_limit_limit  ==  5
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_rate_limit_dependency_exceeded():
     """Test the RateLimitDependency when limit is exceeded."""
     # Create dependency
@@ -267,7 +267,7 @@ async def test_rate_limit_dependency_exceeded():
         await dependency(request, client_id, rate_limiter)
     
     # Verify exception details
-    assert excinfo.value.status_code == 429
+    assert excinfo.value.status_code  ==  429
     assert "Rate limit exceeded" in excinfo.value.detail
     assert excinfo.value.headers["Retry-After"] == "30"
     assert excinfo.value.headers["X-RateLimit-Limit"] == "5"

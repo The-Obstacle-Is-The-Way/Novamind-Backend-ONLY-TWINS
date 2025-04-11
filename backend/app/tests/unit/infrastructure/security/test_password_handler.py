@@ -23,7 +23,7 @@ def password_handler():
     return PasswordHandler()
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPasswordHandler:
     """Test suite for password handler."""
     
@@ -37,7 +37,7 @@ class TestPasswordHandler:
         
         # Assert
         assert hashed is not None
-        assert hashed != test_password
+        assert hashed  !=  test_password
         assert len(hashed) > 20  # Bcrypt hashes are longer than this
         assert hashed.startswith("$2")  # Bcrypt hash signature
     
@@ -81,7 +81,7 @@ class TestPasswordHandler:
             
             # Assert
             assert result is True
-            mock_needs_update.assert_called_once_with(test_hash)
+            mock_needs_update.assert _called_once_with(test_hash)
     
     def test_generate_secure_password(self, password_handler):
         """Test secure password generation."""
@@ -225,7 +225,7 @@ class TestPasswordHandler:
         password_handler.hash_password(test_password)
         
         # Assert logger was called but didn't contain the password
-        mock_logger.debug.assert_called()
+        mock_logger.debug.assert _called()
         
         # Check all calls to logger to ensure password is not present
         for call in mock_logger.debug.call_args_list:

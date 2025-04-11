@@ -9,11 +9,11 @@ handle authentication and patient ID validation.
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
 
-import pytest
+, import pytest
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.testclient import TestClient
 
-from app.domain.exceptions import AuthenticationError, AuthorizationError # Corrected exception names
+, from app.domain.exceptions import AuthenticationError, AuthorizationError # Corrected exception names
 from app.presentation.api.v1.endpoints.biometric_endpoints import (
     get_current_user_id,  
     get_patient_id,  
@@ -41,7 +41,7 @@ def app(mock_jwt_service):
     
     # Test endpoints
     @app.get("/test/user-id")
-    @pytest.mark.db_required
+    @pytest.mark.db_required()
     async def test_get_current_user_id(user_id: UUID = Depends(get_current_user_id)):
         return {"user_id": str(user_id)}
     
@@ -92,9 +92,9 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == {"user_id": user_id}
-        mock_jwt_service.decode_token.assert_called_once_with("test_token")
+        mock_jwt_service.decode_token.assert _called_once_with("test_token")
     
     def test_get_current_user_id_missing_sub(self, client, mock_jwt_service):
         """Test that get_current_user_id raises an error if sub is missing."""
@@ -108,7 +108,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 401
+        assert response.status_code  ==  401
         assert "Invalid authentication credentials" in response.json()["detail"]
     
     def test_get_current_user_id_authentication_exception(self, client, mock_jwt_service):
@@ -123,7 +123,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 401
+        assert response.status_code  ==  401
         assert "Invalid token" in response.json()["detail"]
     
     def test_get_current_user_id_generic_exception(self, client, mock_jwt_service):
@@ -138,7 +138,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 401
+        assert response.status_code  ==  401
         assert "Authentication error" in response.json()["detail"]
     
     def test_get_patient_id(self, client, mock_jwt_service):
@@ -155,7 +155,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == {"patient_id": patient_id}
     
     def test_get_current_user_role_success(self, client, mock_jwt_service):
@@ -170,7 +170,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == {"role": "clinician"}
     
     def test_get_current_user_role_missing_role(self, client, mock_jwt_service):
@@ -185,7 +185,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 401
+        assert response.status_code  ==  401
         assert "Invalid authentication credentials" in response.json()["detail"]
     
     def test_require_clinician_role_success(self, client, mock_jwt_service):
@@ -201,7 +201,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == {"user_id": user_id}
     
     def test_require_clinician_role_admin(self, client, mock_jwt_service):
@@ -217,7 +217,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == {"user_id": user_id}
     
     def test_require_clinician_role_patient(self, client, mock_jwt_service):
@@ -233,7 +233,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 403
+        assert response.status_code  ==  403
         assert "requires clinician privileges" in response.json()["detail"]
     
     def test_require_admin_role_success(self, client, mock_jwt_service):
@@ -249,7 +249,7 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json() == {"user_id": user_id}
     
     def test_require_admin_role_clinician(self, client, mock_jwt_service):
@@ -265,5 +265,5 @@ class TestBiometricEndpointsDependencies:
         )
         
         # Verify
-        assert response.status_code == 403
+        assert response.status_code  ==  403
         assert "requires admin privileges" in response.json()["detail"]

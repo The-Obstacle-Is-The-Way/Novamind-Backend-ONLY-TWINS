@@ -15,7 +15,6 @@ from uuid import UUID, uuid4
 
 from app.infrastructure.ml.biometric_correlation.model_service import BiometricCorrelationService
 from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel
-from app.core.interfaces.ml.base_model import BaseMLModel
 
 
 class TestBiometricCorrelationService:
@@ -54,13 +53,23 @@ class TestBiometricCorrelationService:
         return model
 
     @pytest.fixture
-    def service(self, mock_lstm_model):
+    def service(self, mock_lstm_model, tmp_path):
         """Create a BiometricCorrelationService with mock dependencies."""
-        return BiometricCorrelationService(
-            lstm_model=mock_lstm_model,
-            correlation_threshold=0.3,
-            max_lag_hours=72
+        # Create a temporary model directory
+        model_dir = str(tmp_path / "models")
+        
+        # Create service with the correct parameters
+        service = BiometricCorrelationService(
+            model_dir=model_dir,
+            model_path=None,
+            biometric_features=["heart_rate_variability", "sleep_duration", "physical_activity"],
+            mental_health_indicators=["anxiety", "mood"]
         )
+        
+        # Replace the model with our mock
+        service.model = mock_lstm_model
+        
+        return service
 
     @pytest.fixture
     def sample_biometric_data(self):

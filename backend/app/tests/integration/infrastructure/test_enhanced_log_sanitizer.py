@@ -14,7 +14,7 @@ from app.infrastructure.security.log_sanitizer import (
 )
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestPHIPattern:
     """Test suite for PHIPattern class."""
     
@@ -161,8 +161,8 @@ class TestPatternRepository:
         # Verify pattern properties
         test_pattern = next((p for p in patterns if p.name == "Test Pattern"), None)
         assert test_pattern is not None
-        assert test_pattern.type == PatternType.REGEX
-        assert test_pattern.priority == 8
+        assert test_pattern.type  ==  PatternType.REGEX
+        assert test_pattern.priority  ==  8
         assert "test" in test_pattern.context_words
         assert "test123" in test_pattern.examples
 
@@ -211,7 +211,7 @@ class TestRedactionStrategies:
         # For non-formatted SSN, we'll accept the current implementation's behavior
         # which applies the SSN format to the output
         result = strategy.redact("123456789", ssn_pattern)
-        assert result == "xxx-xx-6789" or result == "xxxxx6789"
+        assert result  ==  "xxx-xx-6789" or result == "xxxxx6789"
 
     def test_partial_redaction_strategy_email(self):
         """Test PartialRedactionStrategy with email."""
@@ -246,11 +246,11 @@ class TestRedactionStrategies:
         
         # Test default redaction (no pattern)
         result = strategy.redact("abcdefghij")
-        assert result == "xxxxxxghij" or result == "xhort"
+        assert result  ==  "xxxxxxghij" or result == "xhort"
         
         # For short strings, accept either behavior
         result = strategy.redact("short")
-        assert result == "[REDACTED]" or result == "xhort"
+        assert result  ==  "[REDACTED]" or result == "xhort"
 
     def test_hash_redaction_strategy(self):
         """Test HashRedactionStrategy."""
@@ -264,7 +264,7 @@ class TestRedactionStrategies:
         assert strategy.redact("123-45-6789") == hash1
         
         # Different inputs should produce different hashes
-        assert hash1 != hash2
+        assert hash1  !=  hash2
         
         # Verify hash length
         assert len(hash1) == 10
@@ -289,9 +289,9 @@ class TestRedactionStrategies:
         assert isinstance(hash_strategy, HashRedactionStrategy)
         
         # Verify configuration was applied
-        assert full_strategy.marker == "[CUSTOM REDACTED]"
-        assert partial_strategy.visible_length == 3
-        assert hash_strategy.salt == "custom-salt"
+        assert full_strategy.marker  ==  "[CUSTOM REDACTED]"
+        assert partial_strategy.visible_length  ==  3
+        assert hash_strategy.salt  ==  "custom-salt"
 
 
 class TestSanitizerConfig:
@@ -303,8 +303,8 @@ class TestSanitizerConfig:
         
         # Check default values
         assert config.enabled is True
-        assert config.redaction_mode == RedactionMode.FULL
-        assert config.redaction_marker == "[REDACTED]"
+        assert config.redaction_mode  ==  RedactionMode.FULL
+        assert config.redaction_marker  ==  "[REDACTED]"
         assert config.sensitive_field_names is not None
         assert "ssn" in config.sensitive_field_names
         assert "patient_id" in config.sensitive_field_names
@@ -325,11 +325,11 @@ class TestSanitizerConfig:
         
         # Check custom values
         assert config.enabled is False
-        assert config.redaction_mode == RedactionMode.PARTIAL
-        assert config.redaction_marker == "[CUSTOM]"
-        assert config.partial_redaction_length == 2
+        assert config.redaction_mode  ==  RedactionMode.PARTIAL
+        assert config.redaction_marker  ==  "[CUSTOM]"
+        assert config.partial_redaction_length  ==  2
         assert config.scan_nested_objects is False
-        assert config.sensitive_field_names == ["custom_field"]
+        assert config.sensitive_field_names  ==  ["custom_field"]
         assert config.sensitive_keys_case_sensitive is True
         assert config.hash_identifiers is True
 
@@ -519,7 +519,7 @@ class TestLogSanitizer:
         sanitizer = LogSanitizer()
         
         # Add a custom hook
-        def custom_hook(value, context):
+    def custom_hook(value, context):
             if isinstance(value, str) and "CUSTOM_PHI" in value:
                 return value.replace("CUSTOM_PHI", "[CUSTOM_REDACTED]")
             return value
@@ -600,7 +600,7 @@ class TestLoggingIntegration:
         logger.info("Patient SSN: 123-45-6789")
         
         # Verify the mock was called
-        mock_emit.assert_called_once()
+        mock_emit.assert _called_once()
         
         # The original message contains PHI, but we're mocking the emit method
         # so we don't need to check the actual output
@@ -622,13 +622,13 @@ class TestLoggingIntegration:
         logger.info("Info message with email: john.doe@example.com")
         
         # Check sanitizer was called
-        mock_sanitizer.sanitize.assert_called()
+        mock_sanitizer.sanitize.assert _called()
 
     def test_get_sanitized_logger(self):
         """Test get_sanitized_logger function."""
         logger = get_sanitized_logger("test_getter")
         assert isinstance(logger, SanitizedLogger)
-        assert logger.logger.name == "test_getter"
+        assert logger.logger.name  ==  "test_getter"
 
     def test_sanitize_logs_decorator(self):
         """Test sanitize_logs decorator."""
@@ -642,7 +642,7 @@ class TestLoggingIntegration:
         # Patch the logging.getLogger to return our mock
         with patch('logging.getLogger', return_value=mock_logger):
             @sanitize_logs(sanitizer=mock_sanitizer)
-            def function_with_phi_logs():
+    def function_with_phi_logs():
                 logger = logging.getLogger("test_decorator")
                 logger.info("Function logs SSN: 123-45-6789")
                 return "Success"
@@ -650,7 +650,7 @@ class TestLoggingIntegration:
             result = function_with_phi_logs()
             
             # Check function return value
-            assert result == "Success"
+            assert result  ==  "Success"
             
             # Verify sanitizer was used - we're patching the logger so we don't need to check
             # the actual sanitization, just that the function completed successfully

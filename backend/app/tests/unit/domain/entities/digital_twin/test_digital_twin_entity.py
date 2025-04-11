@@ -16,7 +16,7 @@ from app.domain.entities.digital_twin.digital_twin import DigitalTwin # Removed 
 # Removed import of non-existent temporal module and classes
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 class TestDigitalTwin(unittest.TestCase):
     """Tests for the DigitalTwin entity."""
     
@@ -119,18 +119,18 @@ class TestDigitalTwin(unittest.TestCase):
             current_state=self.initial_state
         )
         
-        assert twin.patient_id == self.patient_id
-        assert twin.version == "1.0.0"
+        assert twin.patient_id  ==  self.patient_id
+        assert twin.version  ==  "1.0.0"
         assert isinstance(twin.created_at, datetime)
         assert isinstance(twin.updated_at, datetime)
         assert twin.last_calibration is None
-        assert twin.state_history == []
+        assert twin.state_history  ==  []
         assert isinstance(twin.demographic_factors, dict)
         assert isinstance(twin.genetic_factors, dict)
         assert isinstance(twin.medical_history, dict)
         assert isinstance(twin.environmental_factors, dict)
-        assert twin.confidence_level == 0.5 # Replaced enum with float
-        assert twin.calibration_score == 0.0
+        assert twin.confidence_level  ==  0.5 # Replaced enum with float
+        assert twin.calibration_score  ==  0.0
         assert isinstance(twin.validation_metrics, dict)
         assert twin.temporal_dynamics is None
     
@@ -152,15 +152,15 @@ class TestDigitalTwin(unittest.TestCase):
             calibration_score=0.85
         )
         
-        assert twin.patient_id == self.patient_id
-        assert twin.version == "1.1.0"
-        assert twin.created_at == created_at
-        assert twin.last_calibration == last_calibration
-        assert twin.demographic_factors == {"age": 35, "gender": "female"}
-        assert twin.genetic_factors == {"cyp2d6_metabolizer": "extensive"}
-        assert twin.medical_history == {"prior_treatments": ["SSRIs", "CBT"]}
-        assert twin.confidence_level == 0.85 # Replaced enum with float
-        assert twin.calibration_score == 0.85
+        assert twin.patient_id  ==  self.patient_id
+        assert twin.version  ==  "1.1.0"
+        assert twin.created_at  ==  created_at
+        assert twin.last_calibration  ==  last_calibration
+        assert twin.demographic_factors  ==  {"age": 35, "gender": "female"}
+        assert twin.genetic_factors  ==  {"cyp2d6_metabolizer": "extensive"}
+        assert twin.medical_history  ==  {"prior_treatments": ["SSRIs", "CBT"]}
+        assert twin.confidence_level  ==  0.85 # Replaced enum with float
+        assert twin.calibration_score  ==  0.85
     
     def test_update_state(self):
         """Test updating the digital twin state."""
@@ -195,14 +195,14 @@ class TestDigitalTwin(unittest.TestCase):
         assert self.digital_twin.state_history[0][1] == initial_state_copy
         
         # Verify current state updated
-        assert self.digital_twin.current_state.neurotransmitter.serotonin_level == 0.1
-        assert self.digital_twin.current_state.neurotransmitter.dopamine_level == 0.0
-        assert self.digital_twin.current_state.psychological.mood_valence == -0.2
-        assert self.digital_twin.current_state.psychological.anxiety_level == 0.4
-        assert self.digital_twin.current_state.behavioral.sleep_quality == 0.6
-        assert self.digital_twin.current_state.behavioral.activity_level == 0.0
-        assert self.digital_twin.current_state.cognitive.attention_level == 0.6
-        assert self.digital_twin.current_state.cognitive.working_memory == 0.6
+        assert self.digital_twin.current_state.neurotransmitter.serotonin_level  ==  0.1
+        assert self.digital_twin.current_state.neurotransmitter.dopamine_level  ==  0.0
+        assert self.digital_twin.current_state.psychological.mood_valence  ==  -0.2
+        assert self.digital_twin.current_state.psychological.anxiety_level  ==  0.4
+        assert self.digital_twin.current_state.behavioral.sleep_quality  ==  0.6
+        assert self.digital_twin.current_state.behavioral.activity_level  ==  0.0
+        assert self.digital_twin.current_state.cognitive.attention_level  ==  0.6
+        assert self.digital_twin.current_state.cognitive.working_memory  ==  0.6
         
         # Verify update timestamp
         assert self.digital_twin.updated_at > self.digital_twin.created_at
@@ -211,7 +211,7 @@ class TestDigitalTwin(unittest.TestCase):
         """Test prediction of treatment response."""
         # Add temporal dynamics for prediction
         from app.domain.entities.digital_twin.temporal import TemporalDynamics
-        self.digital_twin.temporal_dynamics = TemporalDynamics()
+        , self.digital_twin.temporal_dynamics = TemporalDynamics()
         
         # Predict response
         treatment_response = self.digital_twin.predict_treatment_response(
@@ -221,9 +221,9 @@ class TestDigitalTwin(unittest.TestCase):
         
         # Verify response properties
         assert isinstance(treatment_response, TreatmentResponse)
-        assert treatment_response.treatment_id == self.ssri_treatment.id
-        assert treatment_response.patient_id == self.patient_id
-        assert treatment_response.digital_twin_id == self.digital_twin.id
+        assert treatment_response.treatment_id  ==  self.ssri_treatment.id
+        assert treatment_response.patient_id  ==  self.patient_id
+        assert treatment_response.digital_twin_id  ==  self.digital_twin.id
         assert isinstance(treatment_response.efficacy, float)
         assert isinstance(treatment_response.side_effects, dict)
         assert isinstance(treatment_response.time_to_response, int)
@@ -237,7 +237,7 @@ class TestDigitalTwin(unittest.TestCase):
         """Test comparison of multiple treatments."""
         # Add temporal dynamics for prediction
         from app.domain.entities.digital_twin.temporal import TemporalDynamics
-        self.digital_twin.temporal_dynamics = TemporalDynamics()
+        , self.digital_twin.temporal_dynamics = TemporalDynamics()
         
         # Compare treatments
         treatment_analysis = self.digital_twin.compare_treatments(
@@ -246,8 +246,8 @@ class TestDigitalTwin(unittest.TestCase):
         )
         
         # Verify analysis properties
-        assert treatment_analysis.patient_id == self.patient_id
-        assert treatment_analysis.digital_twin_id == self.digital_twin.id
+        assert treatment_analysis.patient_id  ==  self.patient_id
+        assert treatment_analysis.digital_twin_id  ==  self.digital_twin.id
         assert len(treatment_analysis.treatment_responses) == 2
         assert len(treatment_analysis.rankings) == 2
         assert isinstance(treatment_analysis.recommendations, dict)
@@ -306,7 +306,7 @@ class TestDigitalTwin(unittest.TestCase):
         # Verify calibration
         assert isinstance(calibration_score, float)
         assert 0.0 <= calibration_score <= 1.0
-        assert self.digital_twin.calibration_score == calibration_score
+        assert self.digital_twin.calibration_score  ==  calibration_score
         assert self.digital_twin.last_calibration is not None
     
     def test_evaluate_accuracy(self):
@@ -338,7 +338,7 @@ class TestDigitalTwin(unittest.TestCase):
         assert "r_squared" in metrics
         assert "auc" in metrics
         assert all(0.0 <= value <= 1.0 for value in metrics.values())
-        assert self.digital_twin.validation_metrics == metrics
+        assert self.digital_twin.validation_metrics  ==  metrics
     
     def test_neurotransmitter_update(self):
         """Test updating neurotransmitter state."""
@@ -365,14 +365,14 @@ class TestDigitalTwin(unittest.TestCase):
         self.digital_twin._update_neurotransmitter_state(neurotransmitter_data)
         
         # Verify updates
-        assert self.digital_twin.current_state.neurotransmitter.serotonin_level == 0.3
-        assert self.digital_twin.current_state.neurotransmitter.serotonin_receptor_sensitivity == 0.4
-        assert self.digital_twin.current_state.neurotransmitter.dopamine_level == 0.2
-        assert self.digital_twin.current_state.neurotransmitter.norepinephrine_receptor_sensitivity == 0.1
+        assert self.digital_twin.current_state.neurotransmitter.serotonin_level  ==  0.3
+        assert self.digital_twin.current_state.neurotransmitter.serotonin_receptor_sensitivity  ==  0.4
+        assert self.digital_twin.current_state.neurotransmitter.dopamine_level  ==  0.2
+        assert self.digital_twin.current_state.neurotransmitter.norepinephrine_receptor_sensitivity  ==  0.1
         
         # Verify unchanged values remain the same
-        assert self.digital_twin.current_state.neurotransmitter.dopamine_receptor_sensitivity == self.initial_state.neurotransmitter.dopamine_receptor_sensitivity
-        assert self.digital_twin.current_state.neurotransmitter.norepinephrine_level == self.initial_state.neurotransmitter.norepinephrine_level
+        assert self.digital_twin.current_state.neurotransmitter.dopamine_receptor_sensitivity  ==  self.initial_state.neurotransmitter.dopamine_receptor_sensitivity
+        assert self.digital_twin.current_state.neurotransmitter.norepinephrine_level  ==  self.initial_state.neurotransmitter.norepinephrine_level
     
     def test_psychological_update(self):
         """Test updating psychological state."""
@@ -395,15 +395,15 @@ class TestDigitalTwin(unittest.TestCase):
         self.digital_twin._update_psychological_state(psychological_data)
         
         # Verify updates
-        assert self.digital_twin.current_state.psychological.mood_valence == 0.1
-        assert self.digital_twin.current_state.psychological.mood_arousal == 0.3
-        assert self.digital_twin.current_state.psychological.mood_stability == 0.5
-        assert self.digital_twin.current_state.psychological.anxiety_level == 0.3
-        assert self.digital_twin.current_state.psychological.rumination == 0.2
+        assert self.digital_twin.current_state.psychological.mood_valence  ==  0.1
+        assert self.digital_twin.current_state.psychological.mood_arousal  ==  0.3
+        assert self.digital_twin.current_state.psychological.mood_stability  ==  0.5
+        assert self.digital_twin.current_state.psychological.anxiety_level  ==  0.3
+        assert self.digital_twin.current_state.psychological.rumination  ==  0.2
         
         # Verify unchanged values remain the same
-        assert self.digital_twin.current_state.psychological.stress_reactivity == self.initial_state.psychological.stress_reactivity
-        assert self.digital_twin.current_state.psychological.anhedonia == self.initial_state.psychological.anhedonia
+        assert self.digital_twin.current_state.psychological.stress_reactivity  ==  self.initial_state.psychological.stress_reactivity
+        assert self.digital_twin.current_state.psychological.anhedonia  ==  self.initial_state.psychological.anhedonia
     
     def test_behavioral_update(self):
         """Test updating behavioral state."""
@@ -426,16 +426,16 @@ class TestDigitalTwin(unittest.TestCase):
         self.digital_twin._update_behavioral_state(behavioral_data)
         
         # Verify updates
-        assert self.digital_twin.current_state.behavioral.activity_level == 0.2
-        assert self.digital_twin.current_state.behavioral.psychomotor_changes == 0.1
-        assert self.digital_twin.current_state.behavioral.sleep_quality == 0.7
-        assert self.digital_twin.current_state.behavioral.sleep_duration == 7.5
-        assert self.digital_twin.current_state.behavioral.appetite_level == 0.1
+        assert self.digital_twin.current_state.behavioral.activity_level  ==  0.2
+        assert self.digital_twin.current_state.behavioral.psychomotor_changes  ==  0.1
+        assert self.digital_twin.current_state.behavioral.sleep_quality  ==  0.7
+        assert self.digital_twin.current_state.behavioral.sleep_duration  ==  7.5
+        assert self.digital_twin.current_state.behavioral.appetite_level  ==  0.1
         
         # Verify unchanged values remain the same
-        assert self.digital_twin.current_state.behavioral.circadian_rhythm == self.initial_state.behavioral.circadian_rhythm
-        assert self.digital_twin.current_state.behavioral.weight_changes == self.initial_state.behavioral.weight_changes
-        assert self.digital_twin.current_state.behavioral.social_engagement == self.initial_state.behavioral.social_engagement
+        assert self.digital_twin.current_state.behavioral.circadian_rhythm  ==  self.initial_state.behavioral.circadian_rhythm
+        assert self.digital_twin.current_state.behavioral.weight_changes  ==  self.initial_state.behavioral.weight_changes
+        assert self.digital_twin.current_state.behavioral.social_engagement  ==  self.initial_state.behavioral.social_engagement
     
     def test_cognitive_update(self):
         """Test updating cognitive state."""
@@ -459,17 +459,17 @@ class TestDigitalTwin(unittest.TestCase):
         self.digital_twin._update_cognitive_state(cognitive_data)
         
         # Verify updates
-        assert self.digital_twin.current_state.cognitive.attention_level == 0.7
-        assert self.digital_twin.current_state.cognitive.concentration == 0.6
-        assert self.digital_twin.current_state.cognitive.working_memory == 0.7
-        assert self.digital_twin.current_state.cognitive.long_term_memory == 0.8
-        assert self.digital_twin.current_state.cognitive.executive_function == 0.6
-        assert self.digital_twin.current_state.cognitive.decision_making == 0.5
+        assert self.digital_twin.current_state.cognitive.attention_level  ==  0.7
+        assert self.digital_twin.current_state.cognitive.concentration  ==  0.6
+        assert self.digital_twin.current_state.cognitive.working_memory  ==  0.7
+        assert self.digital_twin.current_state.cognitive.long_term_memory  ==  0.8
+        assert self.digital_twin.current_state.cognitive.executive_function  ==  0.6
+        assert self.digital_twin.current_state.cognitive.decision_making  ==  0.5
         
         # Verify unchanged values remain the same
-        assert self.digital_twin.current_state.cognitive.processing_speed == self.initial_state.cognitive.processing_speed
-        assert self.digital_twin.current_state.cognitive.cognitive_flexibility == self.initial_state.cognitive.cognitive_flexibility
-        assert self.digital_twin.current_state.cognitive.insight == self.initial_state.cognitive.insight
+        assert self.digital_twin.current_state.cognitive.processing_speed  ==  self.initial_state.cognitive.processing_speed
+        assert self.digital_twin.current_state.cognitive.cognitive_flexibility  ==  self.initial_state.cognitive.cognitive_flexibility
+        assert self.digital_twin.current_state.cognitive.insight  ==  self.initial_state.cognitive.insight
 
 
 # Missing imports

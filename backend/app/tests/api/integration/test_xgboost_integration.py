@@ -11,13 +11,13 @@ import pytest
 # Remove direct FastAPI/TestClient imports if no longer needed at module level
 # from fastapi import FastAPI
 # from fastapi.testclient import TestClient
-from unittest.mock import patch
+, from unittest.mock import patch
 # Import TestClient for type hinting the fixture
 from fastapi.testclient import TestClient
 
 # Router import remains the same
 from app.api.routes.xgboost import router
-from app.core.services.ml.xgboost import (
+, from app.core.services.ml.xgboost import (
     get_xgboost_service,  
     MockXGBoostService,  
     PredictionType,  
@@ -61,7 +61,7 @@ def mock_service():
         yield mock_service
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestXGBoostIntegration:
     """Integration tests for the XGBoost API."""
 
@@ -81,7 +81,7 @@ class TestXGBoostIntegration:
         }
         
         response = client.post("/api/v1/xgboost/predict/risk", json=risk_request)
-        assert response.status_code == 201
+        assert response.status_code  ==  201
         
         # Save prediction ID for later steps
         prediction_id = response.json()["prediction_id"]
@@ -89,7 +89,7 @@ class TestXGBoostIntegration:
         
         # Step 2: Retrieve the prediction by ID
         response = client.get(f"/api/v1/xgboost/predictions/{prediction_id}")
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["prediction_id"] == prediction_id
         assert response.json()["patient_id"] == "patient-123"
         assert response.json()["risk_level"] == "moderate"
@@ -104,7 +104,7 @@ class TestXGBoostIntegration:
             f"/api/v1/xgboost/predictions/{prediction_id}/validate",
             json=validation_request
         )
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["status"] == "validated"
         assert response.json()["success"] is True
         
@@ -112,7 +112,7 @@ class TestXGBoostIntegration:
         response = client.get(
             f"/api/v1/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed"
         )
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["prediction_id"] == prediction_id
         assert "important_features" in response.json()
         
@@ -123,7 +123,7 @@ class TestXGBoostIntegration:
         }
         
         response = client.post("/api/v1/xgboost/digital-twin/update", json=update_request)
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["digital_twin_updated"] is True
         assert response.json()["prediction_count"] == 1
 
@@ -156,7 +156,7 @@ class TestXGBoostIntegration:
         
         response = client.post("/api/v1/xgboost/compare/treatments", json=comparison_request)
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["patient_id"] == "patient-123"
         assert response.json()["treatments_compared"] == 3
         assert len(response.json()["results"]) == 3
@@ -168,7 +168,7 @@ class TestXGBoostIntegration:
         # Step 1: Get available models
         response = client.get("/api/v1/xgboost/models")
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["count"] > 0
         assert len(response.json()["models"]) > 0
         
@@ -178,13 +178,13 @@ class TestXGBoostIntegration:
         # Step 2: Get detailed model info
         response = client.get(f"/api/v1/xgboost/models/{model_id}")
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["model_id"] == model_id
         
         # Step 3: Get feature importance
         response = client.get(f"/api/v1/xgboost/models/{model_id}/features")
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["model_id"] == model_id
         assert "features" in response.json()
 
@@ -193,6 +193,6 @@ class TestXGBoostIntegration:
         """Test the healthcheck endpoint."""
         response = client.get("/api/v1/xgboost/healthcheck")
         
-        assert response.status_code == 200
+        assert response.status_code  ==  200
         assert response.json()["status"] in ["healthy", "degraded", "unhealthy"]
         assert "components" in response.json()

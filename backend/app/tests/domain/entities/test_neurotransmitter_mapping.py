@@ -14,7 +14,7 @@ from app.domain.entities.neurotransmitter_mapping import (
 )
 
 
-@pytest.mark.venv_only
+@pytest.mark.venv_only()
 def test_neurotransmitter_mapping_creation():
     """Test creating a new neurotransmitter mapping."""
     mapping = NeurotransmitterMapping()
@@ -224,7 +224,7 @@ def test_calculate_region_response():
     )
     
     # The net effect should be different from normal levels
-    assert effect_high != effect
+    assert effect_high  !=  effect
     
     # Calculate response for region with no receptors
     effect_none, confidence_none = mapping.calculate_region_response(
@@ -234,8 +234,8 @@ def test_calculate_region_response():
     )
     
     # Should have zero effect and low confidence
-    assert effect_none == 0
-    assert confidence_none == 0
+    assert effect_none  ==  0
+    assert confidence_none  ==  0
 
 
 def test_default_mapping_creation():
@@ -276,13 +276,13 @@ def test_receptor_profile_creation():
     )
     
     # Check attributes
-    assert profile.brain_region == BrainRegion.PREFRONTAL_CORTEX
-    assert profile.neurotransmitter == Neurotransmitter.SEROTONIN
-    assert profile.receptor_type == ReceptorType.EXCITATORY
-    assert profile.receptor_subtype == ReceptorSubtype.SEROTONIN_5HT2A
-    assert profile.density == 0.7
-    assert profile.sensitivity == 0.8
-    assert profile.clinical_relevance == ClinicalSignificance.MODERATE
+    assert profile.brain_region  ==  BrainRegion.PREFRONTAL_CORTEX
+    assert profile.neurotransmitter  ==  Neurotransmitter.SEROTONIN
+    assert profile.receptor_type  ==  ReceptorType.EXCITATORY
+    assert profile.receptor_subtype  ==  ReceptorSubtype.SEROTONIN_5HT2A
+    assert profile.density  ==  0.7
+    assert profile.sensitivity  ==  0.8
+    assert profile.clinical_relevance  ==  ClinicalSignificance.MODERATE
     
     # Test equality
     profile2 = ReceptorProfile(
@@ -305,8 +305,8 @@ def test_receptor_profile_creation():
         clinical_relevance=ClinicalSignificance.MODERATE
     )
     
-    assert profile == profile2  # Same attributes
-    assert profile != profile3  # Different brain region
+    assert profile  ==  profile2  # Same attributes
+    assert profile  !=  profile3  # Different brain region
     
     # Test string representation
     assert "PREFRONTAL_CORTEX" in str(profile)

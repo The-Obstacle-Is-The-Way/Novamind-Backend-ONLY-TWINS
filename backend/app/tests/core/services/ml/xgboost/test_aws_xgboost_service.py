@@ -11,7 +11,7 @@ import uuid
 import pytest
 from unittest.mock import patch, MagicMock, ANY
 from datetime import datetime
-from botocore.exceptions import ClientError
+, from botocore.exceptions import ClientError
 
 from app.core.services.ml.xgboost.aws import AWSXGBoostService
 # Import Enums from the correct schema location
@@ -87,7 +87,7 @@ def aws_xgboost_service(mock_aws_clients):
     return service
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestAWSXGBoostServiceInitialization:
     """Tests for AWSXGBoostService initialization."""
     
@@ -106,16 +106,16 @@ class TestAWSXGBoostServiceInitialization:
             log_level='INFO'
         )
         
-        assert service.region_name == 'us-east-1'
-        assert service.endpoint_prefix == 'xgboost-'
-        assert service.dynamodb_table == 'predictions'
-        assert service.s3_bucket == 'xgboost-models'
+        assert service.region_name  ==  'us-east-1'
+        assert service.endpoint_prefix  ==  'xgboost-'
+        assert service.dynamodb_table  ==  'predictions'
+        assert service.s3_bucket  ==  'xgboost-models'
         
         # Verify AWS clients initialization
-        mock_aws_clients['dynamodb'].Table.assert_called_once_with('predictions')
-        mock_aws_clients['predictions_table'].scan.assert_called_once()
-        mock_aws_clients['s3'].head_bucket.assert_called_once_with(Bucket='xgboost-models')
-        mock_aws_clients['sagemaker'].list_endpoints.assert_called_once()
+        mock_aws_clients['dynamodb'].Table.assert _called_once_with('predictions')
+        mock_aws_clients['predictions_table'].scan.assert _called_once()
+        mock_aws_clients['s3'].head_bucket.assert _called_once_with(Bucket='xgboost-models')
+        mock_aws_clients['sagemaker'].list_endpoints.assert _called_once()
     
     def test_initialization_failure_dynamodb(self, mock_aws_clients):
         """Test initialization failure due to DynamoDB error."""
@@ -210,26 +210,26 @@ class TestPredictRisk:
             )
         
         # Verify result
-        assert result.prediction_id == '123e4567-e89b-12d3-a456-426614174000'
-        assert result.patient_id == patient_id
-        assert result.prediction_type == risk_type
-        assert result.risk_level == RiskLevel.HIGH  # Based on risk_score 0.75
-        assert result.risk_score == 0.75
-        assert result.confidence == 0.85
-        assert result.time_frame_days == time_frame_days
+        assert result.prediction_id  ==  '123e4567-e89b-12d3-a456-426614174000'
+        assert result.patient_id  ==  patient_id
+        assert result.prediction_type  ==  risk_type
+        assert result.risk_level  ==  RiskLevel.HIGH  # Based on risk_score 0.75
+        assert result.risk_score  ==  0.75
+        assert result.confidence  ==  0.85
+        assert result.time_frame_days  ==  time_frame_days
         assert len(result.contributing_factors) == 1
         assert result.contributing_factors[0]['name'] == 'phq9_score'
         
         # Verify API calls
-        mock_aws_clients['sagemaker'].describe_endpoint.assert_called_with(
+        mock_aws_clients['sagemaker'].describe_endpoint.assert _called_with(
             EndpointName='xgboost-risk_relapse'
         )
-        mock_aws_clients['sagemaker_runtime'].invoke_endpoint.assert_called_with(
+        mock_aws_clients['sagemaker_runtime'].invoke_endpoint.assert _called_with(
             EndpointName='xgboost-risk_relapse',
             ContentType='application/json',
             Body=ANY  # Can't easily check the exact serialized body
         )
-        mock_aws_clients['predictions_table'].put_item.assert_called_once()
+        mock_aws_clients['predictions_table'].put_item.assert _called_once()
     
     def test_predict_risk_model_not_found(self, aws_xgboost_service, mock_aws_clients):
         """Test risk prediction with non-existent model."""
@@ -343,15 +343,15 @@ class TestGetPrediction:
         result = aws_xgboost_service.get_prediction('pred-123')
         
         # Verify result
-        assert result.prediction_id == 'pred-123'
-        assert result.patient_id == 'patient-456'
-        assert result.prediction_type == ModelType.RISK_RELAPSE # Use ModelType
-        assert result.risk_level == RiskLevel.HIGH
-        assert result.risk_score == 0.75
-        assert result.confidence == 0.85
+        assert result.prediction_id  ==  'pred-123'
+        assert result.patient_id  ==  'patient-456'
+        assert result.prediction_type  ==  ModelType.RISK_RELAPSE # Use ModelType
+        assert result.risk_level  ==  RiskLevel.HIGH
+        assert result.risk_score  ==  0.75
+        assert result.confidence  ==  0.85
         
         # Verify API calls
-        mock_aws_clients['predictions_table'].get_item.assert_called_with(
+        mock_aws_clients['predictions_table'].get_item.assert _called_with(
             Key={'prediction_id': 'pred-123'}
         )
     
@@ -402,7 +402,7 @@ class TestValidatePrediction:
             assert result is True
             
             # Verify update called with correct params
-            mock_update.assert_called_once_with(
+            mock_update.assert _called_once_with(
                 'pred-123',
                 {
                     'validation_status': 'validated',

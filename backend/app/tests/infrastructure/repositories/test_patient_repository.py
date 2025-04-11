@@ -7,14 +7,14 @@ to ensure proper database operations without requiring a real database.
 import pytest
 from uuid import uuid4, UUID
 from datetime import datetime
-from typing import List, Optional
+, from typing import List, Optional
 
 from app.domain.entities.patient import Patient
-from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
+, from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
 
-class TestPatientRepository:
+, class TestPatientRepository:
     """Tests for the PatientRepository."""
     
     def setup_method(self):
@@ -69,8 +69,8 @@ class TestPatientRepository:
             updated_at=datetime.now()
         )
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_create_patient(self): # Correct decorator and async def order
         """Test creating a new patient."""
         # Configure mock to track the add operation
@@ -81,10 +81,10 @@ class TestPatientRepository:
         
         # Verify patient was added and committed
         assert self.patient_1 in self.mock_db._committed_objects
-        assert result == self.patient_1
+        assert result  ==  self.patient_1
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_get_patient_by_id(self): # Correct decorator and async def order
         """Test retrieving a patient by ID."""
         # Configure mock to return our test patient
@@ -95,10 +95,10 @@ class TestPatientRepository:
         
         # Verify query was executed and correct result returned
         assert self.mock_db._last_executed_query is not None
-        assert result == self.patient_1
+        assert result  ==  self.patient_1
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_get_patient_by_id_not_found(self): # Correct decorator and async def order
         """Test retrieving a non-existent patient."""
         # Configure mock to return no results
@@ -112,8 +112,8 @@ class TestPatientRepository:
         assert self.mock_db._last_executed_query is not None
         assert result is None
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_update_patient(self): # Correct decorator and async def order
         """Test updating an existing patient."""
         # Configure mock to track update operation
@@ -129,12 +129,12 @@ class TestPatientRepository:
         
         # Verify patient was updated and committed
         assert updated_patient in self.mock_db._committed_objects
-        assert result == updated_patient
-        assert result.first_name == "Jonathan"
-        assert result.email == "jonathan.doe@example.com"
+        assert result  ==  updated_patient
+        assert result.first_name  ==  "Jonathan"
+        assert result.email  ==  "jonathan.doe@example.com"
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_delete_patient(self): # Correct decorator and async def order
         """Test deleting a patient."""
         # Configure mock to track delete operation
@@ -146,8 +146,8 @@ class TestPatientRepository:
         # Verify patient was deleted
         assert self.patient_1 in self.mock_db._deleted_objects
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_get_all_patients(self): # Correct decorator and async def order
         """Test retrieving all patients."""
         # Configure mock to return our test patients
@@ -162,8 +162,8 @@ class TestPatientRepository:
         assert len(result) == 3
         assert set(result) == set(patients)
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_get_patients_by_last_name(self): # Correct decorator and async def order
         """Test retrieving patients by last name."""
         # Configure mock to return filtered results
@@ -177,8 +177,8 @@ class TestPatientRepository:
         assert len(result) == 1
         assert result[0] == self.patient_1
     
-    @pytest.mark.asyncio
-    @pytest.mark.db_required
+    @pytest.mark.asyncio()
+    @pytest.mark.db_required()
     async def test_get_active_patients(self): # Correct decorator and async def order
         """Test retrieving only active patients."""
         # Configure mock to return active patients

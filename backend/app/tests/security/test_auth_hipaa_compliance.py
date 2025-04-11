@@ -16,11 +16,11 @@ import json
 # Import JWT service or mock it if not available
 try:
     from app.infrastructure.security.jwt_service import JWTService
-    from app.infrastructure.security.auth_middleware import AuthMiddleware
+    , from app.infrastructure.security.auth_middleware import AuthMiddleware
     from app.infrastructure.security.rbac.role_manager import RoleManager
-except ImportError:
+, except ImportError:
     # Mock classes for testing auth functionality
-    @pytest.mark.db_required
+    @pytest.mark.db_required()
     class JWTService:
         """Mock JWT service for testing."""
         
@@ -160,13 +160,13 @@ class TestHIPAAAuthCompliance:
         
         # Doctor should have PHI access permissions
         doctor_role = role_manager.get_role_from_token(doctor_payload)
-        assert doctor_role == "doctor"
+        assert doctor_role  ==  "doctor"
         assert role_manager.has_permission(doctor_role, "read:phi") is True
         assert role_manager.has_permission(doctor_role, "write:phi") is True
         
         # Patient should not have PHI access permissions beyond their own
         patient_role = role_manager.get_role_from_token(patient_payload)
-        assert patient_role == "patient"
+        assert patient_role  ==  "patient"
         assert role_manager.has_permission(patient_role, "read:phi") is False
         assert role_manager.has_permission(patient_role, "read:own_data") is True
     
@@ -200,8 +200,8 @@ class TestHIPAAAuthCompliance:
         role1 = role_manager.get_role_from_token(payload1)
         role2 = role_manager.get_role_from_token(payload2)
         
-        assert role1 == "patient"
-        assert role2 == "patient"
+        assert role1  ==  "patient"
+        assert role2  ==  "patient"
         
         # Verify patient 1 ID does not match patient 2 ID (data isolation)
         assert payload1["patient_id"] != payload2["patient_id"]
@@ -225,7 +225,7 @@ class TestHIPAAAuthCompliance:
         
         # Get role from token - should default to guest
         role = role_manager.get_role_from_token(payload)
-        assert role == "guest"
+        assert role  ==  "guest"
         
         # Guest should have no permissions
         assert role_manager.has_permission(role, "read:phi") is False
@@ -241,7 +241,7 @@ class TestHIPAAAuthCompliance:
         token = jwt_service.create_access_token(test_data)
         
         # Verify encode was called with correct data
-        mock_encode.assert_called()
+        mock_encode.assert _called()
         call_args = mock_encode.call_args[0]
         assert "sub" in call_args[0]
         assert "exp" in call_args[0]
@@ -251,7 +251,7 @@ class TestHIPAAAuthCompliance:
         payload = jwt_service.decode_token(token)
         
         # Verify decode was called with correct data
-        mock_decode.assert_called()
+        mock_decode.assert _called()
         assert mock_decode.call_args[0][0] == token
     
     def test_multi_factor_auth_support(self, jwt_service):

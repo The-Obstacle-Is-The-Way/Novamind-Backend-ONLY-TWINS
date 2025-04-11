@@ -17,7 +17,7 @@ from app.domain.services.biometric_alert_notification_service import (
 )
 
 
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class TestBiometricAlertNotificationService:
     """Tests for the BiometricAlertNotificationService."""
     
@@ -126,10 +126,10 @@ class TestBiometricAlertNotificationService:
         await notification_service.notify_alert(sample_urgent_alert)
         
         # Verify
-        assert mock_notification_service.send_sms.call_count == 1
-        assert mock_notification_service.send_email.call_count == 1
-        assert mock_notification_service.send_in_app_notification.call_count == 1
-        assert mock_notification_service.send_push_notification.call_count == 1
+        assert mock_notification_service.send_sms.call_count  ==  1
+        assert mock_notification_service.send_email.call_count  ==  1
+        assert mock_notification_service.send_in_app_notification.call_count  ==  1
+        assert mock_notification_service.send_push_notification.call_count  ==  1
         
         # Verify SMS content is HIPAA-compliant
         sms_message = mock_notification_service.send_sms.call_args[0][1]
@@ -146,10 +146,10 @@ class TestBiometricAlertNotificationService:
         await notification_service.notify_alert(sample_warning_alert)
         
         # Verify
-        assert mock_notification_service.send_sms.call_count == 0  # SMS not used for warnings
-        assert mock_notification_service.send_email.call_count == 1
-        assert mock_notification_service.send_in_app_notification.call_count == 1
-        assert mock_notification_service.send_push_notification.call_count == 1
+        assert mock_notification_service.send_sms.call_count  ==  0  # SMS not used for warnings
+        assert mock_notification_service.send_email.call_count  ==  1
+        assert mock_notification_service.send_in_app_notification.call_count  ==  1
+        assert mock_notification_service.send_push_notification.call_count  ==  1
     
     async def test_notify_alert_info_priority(
         self, notification_service, mock_notification_service, sample_info_alert
@@ -159,10 +159,10 @@ class TestBiometricAlertNotificationService:
         await notification_service.notify_alert(sample_info_alert)
         
         # Verify
-        assert mock_notification_service.send_sms.call_count == 0
-        assert mock_notification_service.send_email.call_count == 0
-        assert mock_notification_service.send_in_app_notification.call_count == 1
-        assert mock_notification_service.send_push_notification.call_count == 0
+        assert mock_notification_service.send_sms.call_count  ==  0
+        assert mock_notification_service.send_email.call_count  ==  0
+        assert mock_notification_service.send_in_app_notification.call_count  ==  1
+        assert mock_notification_service.send_push_notification.call_count  ==  0
     
     async def test_hipaa_compliant_message_creation(
         self, notification_service, sample_urgent_alert
@@ -269,7 +269,7 @@ class TestBiometricAlertNotificationService:
         )
         
         # Verify
-        assert mock_notification_service.send_sms.call_count == 1
+        assert mock_notification_service.send_sms.call_count  ==  1
         assert mock_notification_service.send_sms.call_args[0][0] == "+15555555551"
         
         # Reset mock
@@ -283,4 +283,4 @@ class TestBiometricAlertNotificationService:
         )
         
         # Verify
-        assert mock_notification_service.send_email.call_count == 2
+        assert mock_notification_service.send_email.call_count  ==  2

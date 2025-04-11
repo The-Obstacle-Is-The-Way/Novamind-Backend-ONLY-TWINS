@@ -65,7 +65,7 @@ RESOURCE_ACCESS = {
 
 
 # Mock FastAPI request for testing
-@pytest.mark.db_required
+@pytest.mark.db_required()
 class MockRequest:
     def __init__(self, headers=None, cookies=None):
         self.headers = headers or {}
@@ -92,14 +92,14 @@ class TestJWTAuthentication:
         try:
             # Import the actual authentication service
             from app.infrastructure.security.jwt_auth import JWTAuthService
-            return JWTAuthService()
+            , return JWTAuthService()
         except ImportError:
             pytest.skip("JWT authentication service not implemented yet")
     
     @pytest.fixture
     def token_factory(self, auth_service):
         """Create test tokens with different properties"""
-        def _create_token(user_type="admin", expired=False, invalid=False):
+    def _create_token(user_type="admin", expired=False, invalid=False):
             user = TEST_USERS[user_type]
             
             if invalid:
@@ -205,7 +205,7 @@ class TestJWTAuthentication:
         })
         
         extracted_token = auth_service.extract_token_from_request(request_with_header)
-        assert extracted_token == token, "Failed to extract token from Authorization header"
+        assert extracted_token  ==  token, "Failed to extract token from Authorization header"
         
         # Test token in cookie
         request_with_cookie = MockRequest(cookies={
@@ -213,7 +213,7 @@ class TestJWTAuthentication:
         })
         
         extracted_token = auth_service.extract_token_from_request(request_with_cookie)
-        assert extracted_token == token, "Failed to extract token from cookie"
+        assert extracted_token  ==  token, "Failed to extract token from cookie"
         
         # Test missing token
         request_without_token = MockRequest()
@@ -229,7 +229,7 @@ class TestJWTAuthentication:
             message="Token has expired"
         )
         
-        assert expired_response.status_code == 401, "Expired token should return 401 Unauthorized"
+        assert expired_response.status_code  ==  401, "Expired token should return 401 Unauthorized"
         assert "expired" in expired_response.json()["error"].lower(), "Error message should mention expiration"
         
         # Test invalid token response
@@ -238,7 +238,7 @@ class TestJWTAuthentication:
             message="Token is invalid"
         )
         
-        assert invalid_response.status_code == 401, "Invalid token should return 401 Unauthorized"
+        assert invalid_response.status_code  ==  401, "Invalid token should return 401 Unauthorized"
         assert "invalid" in invalid_response.json()["error"].lower(), "Error message should mention invalidity"
         
         # Test insufficient permissions response
@@ -247,7 +247,7 @@ class TestJWTAuthentication:
             message="Insufficient permissions to access resource"
         )
         
-        assert forbidden_response.status_code == 403, "Insufficient permissions should return 403 Forbidden"
+        assert forbidden_response.status_code  ==  403, "Insufficient permissions should return 403 Forbidden"
         assert "permission" in forbidden_response.json()["error"].lower(), "Error message should mention permissions"
     
     def test_refresh_token(self, auth_service, token_factory):
