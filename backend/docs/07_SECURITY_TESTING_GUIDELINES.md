@@ -177,7 +177,7 @@ def test_external_service_validates_authentication():
 
 ## Security Test Organization
 
-Security tests should be organized according to the dependency-based directory structure:
+Security tests should be organized according to the dependency-based directory structure as defined in [Test Infrastructure SSOT](02_TEST_INFRASTRUCTURE_SSOT.md):
 
 ### Standalone Security Tests
 
@@ -270,7 +270,17 @@ def test_phi_sanitization():
 
 ## Running Security Tests
 
-Security tests can be run specifically with:
+Security tests can be run specifically with the canonical test runner as described in [Test Scripts Implementation](06_TEST_SCRIPTS_IMPLEMENTATION.md):
+
+```bash
+# Run all security tests
+python backend/scripts/test/runners/run_tests.py --all --markers security
+
+# Run security tests with coverage
+python backend/scripts/test/runners/run_security.py --coverage
+```
+
+Or using pytest directly:
 
 ```bash
 # Run all security tests
@@ -322,6 +332,15 @@ def test_session_timeout():
 3. **Test with realistic data** - Use realistic synthetic PHI for testing
 4. **Test all security boundaries** - Verify all trust boundaries between components
 5. **Update tests when vulnerabilities are found** - Add regression tests for any discovered vulnerabilities
+
+## Integration with Test Suite Implementation
+
+Security testing should be fully integrated with the test suite implementation as described in [Test Suite Implementation Roadmap](05_TEST_SUITE_IMPLEMENTATION_ROADMAP.md). This includes:
+
+1. Using the canonical test runners for security tests
+2. Following the directory-based SSOT approach
+3. Including security tests in the CI/CD pipeline
+4. Measuring and enforcing security test coverage
 
 ## Conclusion
 
