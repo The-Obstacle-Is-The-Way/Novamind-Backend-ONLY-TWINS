@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
 """
-Comprehensive Test Runner for Novamind Backend
+Directory-Based Test Runner for Novamind Digital Twin
 
-This script runs tests in three phases based on directory structure:
-1. Standalone tests - No external dependencies
-2. VENV tests - Requires virtualenv but not a full database
-3. Integration tests - Requires a full database and possibly Docker
+This script implements the directory SSOT approach for test execution.
+Tests are organized by dependency level in directories:
+  - standalone/ - No external dependencies (fastest)
+  - venv/ - Python package dependencies (medium)
+  - integration/ - External services required (slowest)
 
 Usage:
-    python scripts/run_tests.py [--standalone] [--venv] [--integration] [--all] [--coverage]
+    python scripts/run_tests.py --all               # Run all tests
+    python scripts/run_tests.py --standalone        # Run standalone tests only
+    python scripts/run_tests.py --coverage          # Generate coverage reports
 """
 
-import argparse
 import os
-import subprocess
 import sys
 import time
+import argparse
+import subprocess
+from pathlib import Path
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple, Any
 
 
+# ANSI color codes for terminal output
 class Color:
-    """ANSI color codes for terminal output."""
     BLUE = '\033[94m'
     GREEN = '\033[92m'
     YELLOW = '\033[93m'
@@ -29,187 +34,186 @@ class Color:
     BOLD = '\033[1m'
 
 
-def print_header(message):
-    """Print a formatted header."""
-    print(f"\n{Color.BOLD}{Color.BLUE}{'=' * 60}{Color.ENDC}")
-    print(f"{Color.BOLD}{Color.BLUE}{message.center(60)}{Color.ENDC}")
-    print(f"{Color.BOLD}{Color.BLUE}{'=' * 60}{Color.ENDC}\n")
+def print_header(message: str) -> None:
+    """Print a formatted header message."""
+    print(f"\n{Color.BOLD}{Color.BLUE}{'=' * 80}{Color.ENDC}")
+    print(f"{Color.BOLD}{Color.BLUE}{message.center(80)}{Color.ENDC}")
+    print(f"{Color.BOLD}{Color.BLUE}{'=' * 80}{Color.ENDC}\n")
 
 
-def print_section(message):
+def print_section(message: str) -> None:
     """Print a formatted section header."""
     print(f"\n{Color.BOLD}{Color.YELLOW}{message}{Color.ENDC}")
     print(f"{Color.BOLD}{Color.YELLOW}{'-' * len(message)}{Color.ENDC}\n")
 
 
-def print_result(phase, success, time_taken=None):
-    """Print a test phase result."""
-    status = f"{Color.GREEN}PASSED{Color.ENDC}" if success else f"{Color.RED}FAILED{Color.ENDC}"
-    time_info = f" in {time_taken:.2f}s" if time_taken else ""
-    print(f"\n{Color.BOLD}{phase}: {status}{time_info}{Color.ENDC}\n")
-
-
-def run_command(command, env=None):
-    """Run a shell command and return the success status and output."""
-    print(f"Running: {' '.join(command)}")
+def run_command(cmd: List[str], env: Optional[Dict[str, str]] = None) -> Tuple[bool, str, float]:
+    """Run a command and return success status, output, and execution time."""
+    print(f"Running: {' '.join(cmd)}")
     start_time = time.time()
     
     try:
+        # Use provided environment or current environment
+        env_vars = env or os.environ.copy()
+        
+        # Run the command
         result = subprocess.run(
-            command, 
-            env=env or os.environ.copy(),
+            cmd,
+            env=env_vars,
             check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True
         )
+        
+        # Check if the command succeeded
         success = result.returncode == 0
         output = result.stdout
     except Exception as e:
         success = False
         output = str(e)
     
-    time_taken = time.time() - start_time
-    return success, output, time_taken
+    # Calculate execution time
+    execution_time = time.time() - start_time
+    return success, output, execution_time
 
 
-def run_standalone_tests(coverage=False):
-    """Run standalone tests that don't require database or external services."""
-    print_section("Running Standalone Tests")
+def ensure_test_directories():
+    """Ensure test directory structure exists."""
+    tests_dir = Path('app/tests')
+    for directory in ['standalone', 'venv', 'integration']:
+        dir_path = tests_dir / directory
+        dir_path.mkdir(exist_ok=True, parents=True)
+        
+        # Create __init__.py files for Python imports
+        init_file = dir_path / '__init__.py'
+        if not init_file.exists():
+            init_file.touch()
+
+
+def run_test_directory(directory: str, coverage: bool, 
+                       junit: bool, markers: Optional[str]) -> Tuple[bool, float]:
+    """Run tests in the specified directory."""
+    print_section(f"Running {directory.capitalize()} Tests")
     
-    cmd = ['python', '-m', 'pytest', 'app/tests/standalone/']
+    # Base pytest command
+    cmd = ["python", "-m", "pytest", f"app/tests/{directory}/", "-v"]
+    
+    # Add coverage options if requested
     if coverage:
-        cmd += ['--cov=app', '--cov-report=html:coverage_html/standalone_tests']
+        cmd.extend([
+            "--cov=app", 
+            f"--cov-report=html:coverage_html/{directory}_tests",
+            "--cov-report=term"
+        ])
     
-    success, output, time_taken = run_command(cmd)
-    print(output)
-    print_result("Standalone Tests", success, time_taken)
+    # Add JUnit XML output if requested
+    if junit:
+        cmd.append(f"--junitxml=test-results/{directory}-results.xml")
     
-    return success
-
-
-def run_venv_tests(coverage=False):
-    """Run tests that require virtualenv but not a full database."""
-    print_section("Running VENV Tests")
+    # Add markers if specified
+    if markers:
+        cmd.extend(["-m", markers])
     
-    cmd = ['python', '-m', 'pytest', 'app/tests/venv/']
-    if coverage:
-        cmd += ['--cov=app', '--cov-report=html:coverage_html/venv_tests']
-    
-    success, output, time_taken = run_command(cmd)
-    print(output)
-    print_result("VENV Tests", success, time_taken)
-    
-    return success
-
-
-def run_integration_tests(coverage=False):
-    """Run integration tests that require a full database and possibly Docker."""
-    print_section("Running Integration Tests")
-    
-    # Set up any necessary environment for integration tests
+    # Set up environment variables
     env = os.environ.copy()
-    env["TESTING"] = "True"
-    env["POSTGRES_USER"] = "test_user"
-    env["POSTGRES_PASSWORD"] = "test_password"
-    env["POSTGRES_DB"] = "test_db"
+    if directory == 'integration':
+        env.update({
+            "TESTING": "True",
+            "DATABASE_URL": os.environ.get("DATABASE_URL", 
+                            "postgresql://postgres:postgres@localhost:5432/novamind_test")
+        })
     
-    # Check if Docker is available
-    docker_available, docker_output, _ = run_command(['docker', '--version'])
+    # Run the tests
+    success, output, execution_time = run_command(cmd, env)
     
-    if docker_available:
-        # Start test containers if needed
-        print("Setting up Docker containers for testing...")
-        docker_setup_success, docker_setup_output, _ = run_command(
-            ['docker-compose', '-f', 'docker-compose.test.yml', 'up', '-d']
-        )
-        
-        if not docker_setup_success:
-            print(f"{Color.RED}Failed to set up Docker containers:{Color.ENDC}")
-            print(docker_setup_output)
-            return False
-        
-        print("Docker containers started successfully")
-    else:
-        print(f"{Color.YELLOW}Docker not available, skipping container setup{Color.ENDC}")
+    # Print output and result
+    print(output)
+    status = f"{Color.GREEN}PASSED{Color.ENDC}" if success else f"{Color.RED}FAILED{Color.ENDC}"
+    print(f"\n{directory.capitalize()} Tests: {status} in {execution_time:.2f}s\n")
     
-    cmd = ['python', '-m', 'pytest', 'app/tests/integration/']
-    if coverage:
-        cmd += ['--cov=app', '--cov-report=html:coverage_html/integration_tests']
-    
-    try:
-        success, output, time_taken = run_command(cmd, env)
-        print(output)
-        print_result("Integration Tests", success, time_taken)
-    finally:
-        # Clean up Docker containers if we started them
-        if docker_available:
-            print("Cleaning up Docker containers...")
-            run_command(['docker-compose', '-f', 'docker-compose.test.yml', 'down'])
-    
-    return success
+    return success, execution_time
 
 
-def generate_coverage_report():
-    """Generate a combined coverage report."""
+def generate_coverage_report() -> None:
+    """Generate combined coverage report from all test runs."""
     print_section("Generating Combined Coverage Report")
     
-    cmd = ['python', '-m', 'coverage', 'combine']
-    success, output, _ = run_command(cmd)
+    # Combine coverage data
+    run_command(["python", "-m", "coverage", "combine"])
     
-    if success:
-        cmd = ['python', '-m', 'coverage', 'html', '-d', 'coverage_html/combined']
-        success, output, _ = run_command(cmd)
-        
-        if success:
-            cmd = ['python', '-m', 'coverage', 'report']
-            success, output, _ = run_command(cmd)
-            print(output)
+    # Generate reports
+    run_command([
+        "python", "-m", "coverage", "html", 
+        "-d", "coverage_html/combined"
+    ])
     
-    return success
+    # Show report
+    success, output, _ = run_command(["python", "-m", "coverage", "report"])
+    print(output)
 
 
-def main():
+def main() -> int:
     """Main function to parse arguments and run tests."""
-    parser = argparse.ArgumentParser(description="Run Novamind Backend tests by test type")
-    parser.add_argument('--standalone', action='store_true', help='Run standalone tests only')
-    parser.add_argument('--venv', action='store_true', help='Run venv tests only')
-    parser.add_argument('--integration', action='store_true', help='Run integration tests only')
+    parser = argparse.ArgumentParser(
+        description="Novamind Test Runner (Directory SSOT)"
+    )
     parser.add_argument('--all', action='store_true', help='Run all tests')
+    parser.add_argument('--standalone', action='store_true', help='Run standalone tests')
+    parser.add_argument('--venv', action='store_true', help='Run VENV tests')
+    parser.add_argument('--integration', action='store_true', help='Run integration tests')
     parser.add_argument('--coverage', action='store_true', help='Generate coverage reports')
+    parser.add_argument('--junit', action='store_true', help='Generate JUnit XML reports')
+    parser.add_argument('--markers', type=str, help='Only run tests with specific markers')
+    parser.add_argument('--verbose', action='store_true', help='Verbose output')
     
     args = parser.parse_args()
     
-    # If no specific test type is specified, run all tests
+    # Default to running all tests if no specific test type specified
     if not (args.standalone or args.venv or args.integration or args.all):
         args.all = True
     
-    print_header("Novamind Backend Test Runner")
+    # Print banner
+    print_header("Novamind Digital Twin Test Runner (Directory SSOT)")
     print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
+    # Ensure directory structure exists
+    ensure_test_directories()
+    
+    # Create results directory for JUnit reports
+    if args.junit:
+        Path('test-results').mkdir(exist_ok=True)
+    
     results = {}
+    execution_times = {}
     
-    # Run tests based on arguments
+    # Run standalone tests
     if args.standalone or args.all:
-        results['standalone'] = run_standalone_tests(args.coverage)
+        results['standalone'], execution_times['standalone'] = run_test_directory(
+            'standalone', args.coverage, args.junit, args.markers
+        )
     
+    # Run VENV tests only if standalone tests pass (when running all)
     if args.venv or args.all:
-        # Standalone tests are a prerequisite for VENV tests
-        if args.all and not results.get('standalone', False):
-            print(f"{Color.YELLOW}Skipping VENV Tests due to failed Standalone Tests{Color.ENDC}")
+        if args.all and not results.get('standalone', True):
+            print(f"{Color.YELLOW}Skipping VENV tests due to standalone test failures{Color.ENDC}")
             results['venv'] = False
         else:
-            results['venv'] = run_venv_tests(args.coverage)
+            results['venv'], execution_times['venv'] = run_test_directory(
+                'venv', args.coverage, args.junit, args.markers
+            )
     
+    # Run integration tests only if VENV tests pass (when running all)
     if args.integration or args.all:
-        # Both standalone and VENV tests are prerequisites for integration tests
-        if args.all and not (results.get('standalone', False) and results.get('venv', False)):
-            print(f"{Color.YELLOW}Skipping Integration Tests due to failed prerequisite tests{Color.ENDC}")
+        if args.all and not results.get('venv', True):
+            print(f"{Color.YELLOW}Skipping integration tests due to VENV test failures{Color.ENDC}")
             results['integration'] = False
         else:
-            results['integration'] = run_integration_tests(args.coverage)
+            results['integration'], execution_times['integration'] = run_test_directory(
+                'integration', args.coverage, args.junit, args.markers
+            )
     
-    # Generate combined coverage report if needed
+    # Generate combined coverage report
     if args.coverage and any(results.values()):
         generate_coverage_report()
     
@@ -218,9 +222,10 @@ def main():
     
     for test_type, success in results.items():
         status = f"{Color.GREEN}PASSED{Color.ENDC}" if success else f"{Color.RED}FAILED{Color.ENDC}"
-        print(f"{test_type.capitalize()} Tests: {status}")
+        time_info = f" ({execution_times.get(test_type, 0):.2f}s)" if test_type in execution_times else ""
+        print(f"{test_type.capitalize()} Tests: {status}{time_info}")
     
-    # Return non-zero exit code if any test failed
+    # Return appropriate exit code
     return 0 if all(results.values()) else 1
 
 

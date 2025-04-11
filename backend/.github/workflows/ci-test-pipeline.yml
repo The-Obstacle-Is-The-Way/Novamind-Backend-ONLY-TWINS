@@ -1,0 +1,296 @@
+name: Novamind Test Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:  # Allow manual triggering
+
+# Environment variables used across jobs
+env:
+  PYTHON_VERSION: '3.12'
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: novamind_test
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+  REDIS_HOST: localhost
+  REDIS_PORT: 6379
+
+jobs:
+  # Code quality checks - run first as they're fastest
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      
+      - name: Check formatting
+        run: |
+          black --check app
+      
+      - name: Check imports
+        run: |
+          isort --check app
+      
+      - name: Lint with flake8
+        run: |
+          flake8 app --statistics
+      
+      - name: Type checking
+        run: |
+          mypy app
+  
+  # Standalone tests - no external dependencies
+  standalone-tests:
+    name: Standalone Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+      
+      - name: Run standalone tests
+        run: |
+          python -m pytest app/tests/standalone/ --cov=app --cov-report=xml:coverage-standalone.xml
+      
+      - name: Upload standalone coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-standalone
+          path: backend/coverage-standalone.xml
+  
+  # VENV tests - require Python packages but no external services
+  venv-tests:
+    name: VENV Tests
+    runs-on: ubuntu-latest
+    needs: standalone-tests
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -r requirements-test.txt
+      
+      - name: Run VENV tests
+        run: |
+          python -m pytest app/tests/venv/ --cov=app --cov-report=xml:coverage-venv.xml
+      
+      - name: Upload VENV coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-venv
+          path: backend/coverage-venv.xml
+  
+  # Integration tests - require database and external services
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: venv-tests
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -r requirements-test.txt
+      
+      - name: Run migrations
+        run: |
+          python -m alembic upgrade head
+      
+      - name: Run integration tests
+        run: |
+          python -m pytest app/tests/integration/ --cov=app --cov-report=xml:coverage-integration.xml
+      
+      - name: Upload integration coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-integration
+          path: backend/coverage-integration.xml
+  
+  # Security scans - run after all tests
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [standalone-tests, venv-tests]  # Don't wait for integration
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-security.txt
+      
+      - name: Run Bandit security scan
+        run: |
+          bandit -r app -f html -o bandit-report.html
+      
+      - name: Run Safety dependency scan
+        run: |
+          safety check -r requirements.txt -r requirements-dev.txt -o json > safety-report.json
+      
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            backend/bandit-report.html
+            backend/safety-report.json
+  
+  # Combine coverage reports
+  coverage-report:
+    name: Combined Coverage Report
+    runs-on: ubuntu-latest
+    needs: [standalone-tests, venv-tests, integration-tests]
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install coverage
+      
+      - name: Download standalone coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-standalone
+          path: backend
+      
+      - name: Download VENV coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-venv
+          path: backend
+      
+      - name: Download integration coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-integration
+          path: backend
+      
+      - name: Combine coverage reports
+        run: |
+          coverage combine coverage-standalone.xml coverage-venv.xml coverage-integration.xml
+          coverage html -d coverage_html
+          coverage xml -o coverage.xml
+          coverage report
+      
+      - name: Upload combined coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: |
+            backend/coverage_html
+            backend/coverage.xml
+      
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend/coverage.xml
+          fail_ci_if_error: false
