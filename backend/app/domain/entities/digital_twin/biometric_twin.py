@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Biometric Twin Entity for the Digital Twin Psychiatry Platform.
 
@@ -8,8 +7,7 @@ wearable devices, neuroimaging data, and other biometric sources to create a
 comprehensive digital model of the patient's biological state.
 """
 
-from datetime import datetime, UTC, UTC
-from typing import Dict, List, Optional, Set, Tuple, Union
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from app.domain.exceptions import ValidationError
@@ -26,10 +24,10 @@ class BiometricDataPoint:
     def __init__(
         self,
         data_type: str,
-        value: Union[float, int, str, Dict],
+        value: float | int | str | dict,
         timestamp: datetime,
         source: str,
-        metadata: Optional[Dict] = None,
+        metadata: dict | None = None,
         confidence: float = 1.0,
         data_id: UUID = None
     ) -> None:
@@ -63,7 +61,7 @@ class BiometricDataPoint:
         if self.confidence < 0.0 or self.confidence > 1.0:
             raise ValidationError("Confidence must be between 0.0 and 1.0")
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert the data point to a dictionary representation."""
         return {
             "data_id": str(self.data_id),
@@ -90,11 +88,11 @@ class BiometricTwin:
         self,
         patient_id: UUID,
         twin_id: UUID = None,
-        data_points: List[BiometricDataPoint] = None,
+        data_points: list[BiometricDataPoint] = None,
         created_at: datetime = None,
         updated_at: datetime = None,
         baseline_established: bool = False,
-        connected_devices: Set[str] = None
+        connected_devices: set[str] = None
     ) -> None:
         """
         Initialize a new BiometricTwin.
@@ -135,9 +133,9 @@ class BiometricTwin:
     def get_data_points_by_type(
         self, 
         data_type: str,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None
-    ) -> List[BiometricDataPoint]:
+        start_time: datetime | None = None,
+        end_time: datetime | None = None
+    ) -> list[BiometricDataPoint]:
         """
         Retrieve data points of a specific type within an optional time range.
         
@@ -195,7 +193,7 @@ class BiometricTwin:
         data_type: str,
         threshold: float = 2.0,
         window_size: int = 7
-    ) -> List[BiometricDataPoint]:
+    ) -> list[BiometricDataPoint]:
         """
         Detect anomalous measurements for a specific data type.
         
@@ -229,7 +227,7 @@ class BiometricTwin:
         
         # Identify anomalies
         anomalies = []
-        for dp, value in zip(recent_points, values):
+        for dp, value in zip(recent_points, values, strict=False):
             if abs(value - mean) > threshold * std_dev:
                 anomalies.append(dp)
         
@@ -237,9 +235,9 @@ class BiometricTwin:
     
     def correlate_with_symptoms(
         self, 
-        symptom_records: List[Dict],
-        data_types: List[str] = None
-    ) -> Dict[str, float]:
+        symptom_records: list[dict],
+        data_types: list[str] = None
+    ) -> dict[str, float]:
         """
         Correlate biometric data with reported symptoms.
         
@@ -290,7 +288,7 @@ class BiometricTwin:
             self.connected_devices.remove(device_id)
             self.updated_at = datetime.now(UTC)
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert the biometric twin to a dictionary representation."""
         return {
             "twin_id": str(self.twin_id),

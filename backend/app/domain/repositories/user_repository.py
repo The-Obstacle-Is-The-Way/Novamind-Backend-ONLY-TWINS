@@ -6,7 +6,6 @@ repository pattern, which abstracts data access operations from
 business logic.
 """
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from uuid import UUID
 
 from app.domain.entities.user import User
@@ -34,7 +33,7 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_id(self, user_id: UUID) -> Optional[User]:
+    async def get_by_id(self, user_id: UUID) -> User | None:
         """
         Get a user by ID.
         
@@ -47,7 +46,7 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_email(self, email: str) -> Optional[User]:
+    async def get_by_email(self, email: str) -> User | None:
         """
         Get a user by email.
         
@@ -86,7 +85,7 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
-    async def list_users(self, skip: int = 0, limit: int = 100) -> List[User]:
+    async def list_users(self, skip: int = 0, limit: int = 100) -> list[User]:
         """
         List users with pagination.
         
@@ -100,7 +99,7 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_role(self, role: str, skip: int = 0, limit: int = 100) -> List[User]:
+    async def get_by_role(self, role: str, skip: int = 0, limit: int = 100) -> list[User]:
         """
         Get users by role.
         

@@ -1,19 +1,21 @@
 
-# -*- coding: utf-8 -*-
 """
 Standalone Clinical Rule Engine for the Digital Twin Psychiatry Platform.
 Used for standalone tests without database dependencies.
 """
 
-from datetime import datetime, UTC
-from typing import Dict, List, Optional, Any, Tuple, Set, Callable
+from collections.abc import Callable
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_alert import AlertPriority
 from app.domain.entities.digital_twin.biometric_rule import (
-    BiometricRule, RuleCondition, RuleOperator, LogicalOperator
+    BiometricRule,
+    LogicalOperator,
+    RuleCondition,
+    RuleOperator,
 )
-from app.domain.exceptions import ValidationError
+
 
 class ClinicalRuleEngine:
     """
@@ -22,10 +24,10 @@ class ClinicalRuleEngine:
     
     def __init__(self) -> None:
         """Initialize without repository dependency for standalone tests."""
-        self.rule_templates: Dict[str, Any] = {}
-        self.custom_conditions: Dict[str, Callable] = {}
+        self.rule_templates: dict[str, Any] = {}
+        self.custom_conditions: dict[str, Callable] = {}
     
-    def register_rule_template(self, template: Dict[str, Any]) -> None:
+    def register_rule_template(self, template: dict[str, Any]) -> None:
         """Register a rule template."""
         if "id" not in template:
             raise ValueError("Template must have an ID")
@@ -40,7 +42,7 @@ class ClinicalRuleEngine:
         template_id: str,
         rule_id: str,
         created_by: UUID,
-        parameters: Dict[str, Any]
+        parameters: dict[str, Any]
     ) -> BiometricRule:
         """
         Create a rule from a registered template.

@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
 
+@pytest.mark.venv_only
 class TestJWTService:
     """
     Tests for the JWT Service implementation to ensure HIPAA compliance.

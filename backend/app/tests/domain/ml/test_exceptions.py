@@ -1,3 +1,4 @@
+import pytest
 """
 Tests for the ML exceptions module.
 
@@ -15,6 +16,7 @@ from app.domain.ml.exceptions import (
 )
 
 
+@pytest.mark.db_required
 class TestMentalLLaMAExceptions:
     """Tests for the MentalLLaMA exception classes."""
     

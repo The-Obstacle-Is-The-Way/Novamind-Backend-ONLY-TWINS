@@ -35,6 +35,7 @@ from app.domain.services.visualization_preprocessor import (
 )
 
 
+@pytest.mark.db_required
 class TestTemporalEvents:
     """Test suite for temporal event correlation tracking."""
     

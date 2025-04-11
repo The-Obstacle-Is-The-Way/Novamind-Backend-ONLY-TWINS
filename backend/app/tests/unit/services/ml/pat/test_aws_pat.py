@@ -87,6 +87,7 @@ def aws_pat_service(mock_boto3, aws_config):
     return service
 
 
+@pytest.mark.db_required
 class TestAWSPATService:
     """Test the AWS PAT service implementation."""
     

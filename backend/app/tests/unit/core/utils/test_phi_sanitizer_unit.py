@@ -14,6 +14,7 @@ from app.core.utils.phi_sanitizer import PHISanitizer, PHIDetector, PHIType # Re
 from app.infrastructure.security.log_sanitizer import get_sanitized_logger
 
 
+@pytest.mark.venv_only
 class TestPHIDetector:
     """Test suite for the PHI detector functionality."""
 

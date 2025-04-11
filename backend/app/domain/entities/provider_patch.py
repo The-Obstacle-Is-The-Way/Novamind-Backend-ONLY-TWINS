@@ -1,12 +1,10 @@
 
-# -*- coding: utf-8 -*-
 """
 Patch for Provider class to fix availability checks.
 """
 
-from datetime import datetime, time, date
-from typing import Dict, List, Optional, Any, Tuple
-from uuid import UUID
+from datetime import time
+
 
 def is_available_patch(self, day: str, start: time, end: time) -> bool:
     """

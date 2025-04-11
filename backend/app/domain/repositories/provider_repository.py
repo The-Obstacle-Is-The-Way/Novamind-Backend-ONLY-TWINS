@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Provider Repository Interface
 
@@ -7,7 +6,6 @@ This module defines the interface for provider repositories.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional, Union, Dict, Any
 from uuid import UUID
 
 from app.domain.entities.provider import Provider
@@ -23,7 +21,7 @@ class ProviderRepository(ABC):
     """
     
     @abstractmethod
-    def get_by_id(self, provider_id: Union[UUID, str]) -> Optional[Provider]:
+    def get_by_id(self, provider_id: UUID | str) -> Provider | None:
         """
         Get a provider by ID.
         
@@ -36,7 +34,7 @@ class ProviderRepository(ABC):
         pass
     
     @abstractmethod
-    def get_by_email(self, email: str) -> Optional[Provider]:
+    def get_by_email(self, email: str) -> Provider | None:
         """
         Get a provider by email.
         
@@ -49,7 +47,7 @@ class ProviderRepository(ABC):
         pass
     
     @abstractmethod
-    def get_by_license_number(self, license_number: str) -> Optional[Provider]:
+    def get_by_license_number(self, license_number: str) -> Provider | None:
         """
         Get a provider by license number.
         
@@ -75,7 +73,7 @@ class ProviderRepository(ABC):
         pass
     
     @abstractmethod
-    def delete(self, provider_id: Union[UUID, str]) -> bool:
+    def delete(self, provider_id: UUID | str) -> bool:
         """
         Delete a provider.
         
@@ -93,7 +91,7 @@ class ProviderRepository(ABC):
         query: str,
         limit: int = 10,
         offset: int = 0
-    ) -> List[Provider]:
+    ) -> list[Provider]:
         """
         Search for providers.
         
@@ -114,7 +112,7 @@ class ProviderRepository(ABC):
         offset: int = 0,
         sort_by: str = "last_name",
         sort_order: str = "asc"
-    ) -> List[Provider]:
+    ) -> list[Provider]:
         """
         Get all providers with pagination.
         
@@ -140,7 +138,7 @@ class ProviderRepository(ABC):
         pass
     
     @abstractmethod
-    def exists(self, provider_id: Union[UUID, str]) -> bool:
+    def exists(self, provider_id: UUID | str) -> bool:
         """
         Check if a provider exists.
         
@@ -183,8 +181,8 @@ class ProviderRepository(ABC):
         self,
         start_time: datetime,
         end_time: datetime,
-        specialties: Optional[List[str]] = None
-    ) -> List[Provider]:
+        specialties: list[str] | None = None
+    ) -> list[Provider]:
         """
         Get providers available during a time range.
         
@@ -204,7 +202,7 @@ class ProviderRepository(ABC):
         specialty: str,
         limit: int = 100,
         offset: int = 0
-    ) -> List[Provider]:
+    ) -> list[Provider]:
         """
         Get providers by specialty.
         
@@ -221,10 +219,10 @@ class ProviderRepository(ABC):
     @abstractmethod
     def get_provider_availability(
         self,
-        provider_id: Union[UUID, str],
+        provider_id: UUID | str,
         start_date: datetime,
         end_date: datetime
-    ) -> Dict[str, List[Dict[str, datetime]]]:
+    ) -> dict[str, list[dict[str, datetime]]]:
         """
         Get a provider's availability.
         

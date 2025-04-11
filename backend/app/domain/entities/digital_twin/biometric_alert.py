@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 BiometricAlert domain entity.
 
@@ -6,9 +5,9 @@ This module defines the BiometricAlert entity, which represents a clinical alert
 generated from biometric data analysis that may require clinical intervention.
 """
 
-from datetime import datetime, UTC, UTC
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any
+from typing import Any
 from uuid import UUID, uuid4
 
 
@@ -42,18 +41,18 @@ class BiometricAlert:
         alert_type: str,
         description: str,
         priority: AlertPriority,
-        data_points: List[Dict[str, Any]],
+        data_points: list[dict[str, Any]],
         rule_id: UUID,
-        alert_id: Optional[UUID] = None,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
-        status: Optional[AlertStatus] = None,
-        acknowledged_by: Optional[UUID] = None,
-        acknowledged_at: Optional[datetime] = None,
-        resolved_by: Optional[UUID] = None,
-        resolved_at: Optional[datetime] = None,
-        resolution_notes: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        alert_id: UUID | None = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
+        status: AlertStatus | None = None,
+        acknowledged_by: UUID | None = None,
+        acknowledged_at: datetime | None = None,
+        resolved_by: UUID | None = None,
+        resolved_at: datetime | None = None,
+        resolution_notes: str | None = None,
+        metadata: dict[str, Any] | None = None
     ):
         """
         Initialize a BiometricAlert.
@@ -129,7 +128,7 @@ class BiometricAlert:
             
             self.updated_at = datetime.now(UTC)
     
-    def resolve(self, provider_id: UUID, notes: Optional[str] = None) -> None:
+    def resolve(self, provider_id: UUID, notes: str | None = None) -> None:
         """
         Resolve the alert.
         
@@ -152,7 +151,7 @@ class BiometricAlert:
             
             self.updated_at = datetime.now(UTC)
     
-    def dismiss(self, provider_id: UUID, notes: Optional[str] = None) -> None:
+    def dismiss(self, provider_id: UUID, notes: str | None = None) -> None:
         """
         Dismiss the alert as not requiring action.
         

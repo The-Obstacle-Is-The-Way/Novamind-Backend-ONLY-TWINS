@@ -4,7 +4,6 @@ Exception classes for patient-related domain operations.
 These exceptions represent domain-specific error conditions and are independent
 of any infrastructure or application framework.
 """
-from typing import Optional
 
 
 class PatientError(Exception):
@@ -27,7 +26,7 @@ class PatientNotFoundError(PatientError):
 class PatientValidationError(PatientError):
     """Exception raised when patient data fails validation."""
     
-    def __init__(self, message: str = "Invalid patient data", field: Optional[str] = None):
+    def __init__(self, message: str = "Invalid patient data", field: str | None = None):
         self.field = field
         if field:
             message = f"Invalid patient data: field '{field}' {message}"

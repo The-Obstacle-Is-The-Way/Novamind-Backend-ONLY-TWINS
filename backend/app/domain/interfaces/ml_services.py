@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Domain interfaces for ML services in the NOVAMIND system.
 
@@ -9,7 +8,7 @@ layer has no dependencies on infrastructure implementations.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from uuid import UUID
 
 
@@ -26,10 +25,10 @@ class ISymptomForecastingService(ABC):
     async def forecast_symptoms(
         self,
         patient_id: UUID,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         horizon: int = 14,
         use_ensemble: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate symptom forecasts for a patient.
 
@@ -50,8 +49,8 @@ class ISymptomForecastingService(ABC):
 
     @abstractmethod
     async def analyze_symptom_patterns(
-        self, patient_id: UUID, data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Analyze patterns in symptom history.
 
@@ -70,8 +69,8 @@ class ISymptomForecastingService(ABC):
 
     @abstractmethod
     async def identify_risk_periods(
-        self, patient_id: UUID, forecast: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, forecast: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Identify periods of elevated risk based on symptom forecasts.
 
@@ -89,7 +88,7 @@ class ISymptomForecastingService(ABC):
         pass
 
     @abstractmethod
-    async def get_model_performance_metrics(self) -> Dict[str, Any]:
+    async def get_model_performance_metrics(self) -> dict[str, Any]:
         """
         Get performance metrics for the symptom forecasting models.
 
@@ -115,9 +114,9 @@ class IBiometricCorrelationService(ABC):
     async def analyze_correlations(
         self,
         patient_id: UUID,
-        biometric_data: List[Dict[str, Any]],
-        mental_health_indicators: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        biometric_data: list[dict[str, Any]],
+        mental_health_indicators: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """
         Analyze correlations between biometric data and mental health indicators.
 
@@ -139,9 +138,9 @@ class IBiometricCorrelationService(ABC):
     async def detect_anomalies(
         self,
         patient_id: UUID,
-        biometric_data: List[Dict[str, Any]],
+        biometric_data: list[dict[str, Any]],
         sensitivity: str = "medium",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Detect anomalies in biometric data.
 
@@ -161,8 +160,8 @@ class IBiometricCorrelationService(ABC):
 
     @abstractmethod
     async def generate_monitoring_plan(
-        self, patient_id: UUID, correlation_results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, correlation_results: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Generate a personalized monitoring plan based on correlation analysis.
 
@@ -183,10 +182,10 @@ class IBiometricCorrelationService(ABC):
     async def analyze_lag_relationships(
         self,
         patient_id: UUID,
-        biometric_data: List[Dict[str, Any]],
-        mental_health_indicators: List[Dict[str, Any]],
+        biometric_data: list[dict[str, Any]],
+        mental_health_indicators: list[dict[str, Any]],
         max_lag: int = 7,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze lagged relationships between biometric data and mental health.
 
@@ -219,9 +218,9 @@ class IPharmacogenomicsService(ABC):
     async def predict_medication_responses(
         self,
         patient_id: UUID,
-        patient_data: Dict[str, Any],
-        medications: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        patient_data: dict[str, Any],
+        medications: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Predict patient responses to psychiatric medications.
 
@@ -241,8 +240,8 @@ class IPharmacogenomicsService(ABC):
 
     @abstractmethod
     async def analyze_gene_medication_interactions(
-        self, patient_id: UUID, patient_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, patient_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Analyze interactions between patient's genetic markers and medications.
 
@@ -263,9 +262,9 @@ class IPharmacogenomicsService(ABC):
     async def generate_treatment_recommendations(
         self,
         patient_id: UUID,
-        prediction_results: Dict[str, Any],
-        patient_history: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        prediction_results: dict[str, Any],
+        patient_history: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Generate personalized treatment recommendations based on predictions.
 
@@ -285,8 +284,8 @@ class IPharmacogenomicsService(ABC):
 
     @abstractmethod
     async def predict_side_effect_risks(
-        self, patient_id: UUID, patient_data: Dict[str, Any], medications: List[str]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, patient_data: dict[str, Any], medications: list[str]
+    ) -> dict[str, Any]:
         """
         Predict risk of side effects for specific medications.
 
@@ -316,8 +315,8 @@ class IDigitalTwinIntegrationService(ABC):
 
     @abstractmethod
     async def generate_comprehensive_patient_insights(
-        self, patient_id: UUID, patient_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, patient_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Generate comprehensive patient insights by coordinating all microservices.
 
@@ -335,7 +334,7 @@ class IDigitalTwinIntegrationService(ABC):
         pass
 
     @abstractmethod
-    async def get_digital_twin_status(self, patient_id: UUID) -> Dict[str, Any]:
+    async def get_digital_twin_status(self, patient_id: UUID) -> dict[str, Any]:
         """
         Get the status of the Digital Twin for a specific patient.
 
@@ -353,8 +352,8 @@ class IDigitalTwinIntegrationService(ABC):
 
     @abstractmethod
     async def update_digital_twin(
-        self, patient_id: UUID, patient_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, patient_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Update the Digital Twin with new patient data.
 
@@ -374,7 +373,7 @@ class IDigitalTwinIntegrationService(ABC):
     @abstractmethod
     async def get_historical_insights(
         self, patient_id: UUID, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get historical insights for a specific time period.
 

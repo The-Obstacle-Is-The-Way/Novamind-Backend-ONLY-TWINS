@@ -76,6 +76,7 @@ def actigraphy_data():
     }
 
 
+@pytest.mark.db_required
 class TestActigraphyAPI:
     """Integration tests for the Actigraphy API."""
     

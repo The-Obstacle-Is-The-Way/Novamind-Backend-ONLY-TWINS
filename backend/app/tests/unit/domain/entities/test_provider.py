@@ -77,6 +77,7 @@ def valid_provider(valid_provider_data):
     return Provider(**valid_provider_data)
 
 
+@pytest.mark.venv_only
 class TestProvider:
     """Tests for the Provider class."""
     

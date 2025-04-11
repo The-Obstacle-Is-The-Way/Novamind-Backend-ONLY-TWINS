@@ -14,6 +14,7 @@ from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository i
 )
 
 
+@pytest.mark.db_required
 class TestPatientRepository:
     """
     Integration tests for the PatientRepository.

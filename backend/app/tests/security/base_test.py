@@ -1,5 +1,6 @@
 """
-Base test class for all security and HIPAA compliance tests.
+Base test @pytest.mark.venv_only
+class for all security and HIPAA compliance tests.
 
 This module provides test infrastructure for security-related tests,
 focusing on HIPAA compliance, PHI protection, authentication, authorization,

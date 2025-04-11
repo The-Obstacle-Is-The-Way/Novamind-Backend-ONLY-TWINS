@@ -13,7 +13,8 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
-from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomForecastingEnsemble # Corrected class name
+from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomForecastingEnsemble # Corrected @pytest.mark.db_required
+class name
 from app.infrastructure.ml.base.base_model import BaseModel # Corrected class name
 
 

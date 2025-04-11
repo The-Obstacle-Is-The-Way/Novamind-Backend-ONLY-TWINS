@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 Text utility functions for the Novamind platform.
 """
 
-from typing import Any, Dict, List, Optional, Union
 
 
 def sanitize_name(name: str) -> str:

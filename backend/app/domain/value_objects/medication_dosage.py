@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Medication dosage value object for the NOVAMIND backend.
 
@@ -8,7 +7,6 @@ a medication dosage with immutable properties and validation.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class DosageUnit(Enum):
@@ -39,7 +37,7 @@ class MedicationDosage:
     value: float
     unit: DosageUnit
     frequency_per_day: float
-    max_daily_value: Optional[float] = None
+    max_daily_value: float | None = None
 
     def __post_init__(self):
         """Validate the dosage values"""

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Diagnosis code value object for the NOVAMIND backend.
 
@@ -8,7 +7,6 @@ a standardized diagnosis code (ICD-10 or DSM-5) with validation.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class CodeSystem(Enum):
@@ -31,7 +29,7 @@ class DiagnosisCode:
     code: str
     system: CodeSystem
     description: str
-    category: Optional[str] = None
+    category: str | None = None
 
     def __post_init__(self):
         """Validate the diagnosis code format"""

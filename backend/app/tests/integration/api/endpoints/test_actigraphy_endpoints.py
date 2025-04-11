@@ -124,6 +124,7 @@ def sample_device_info() -> Dict[str, Any]:
     }
 
 
+@pytest.mark.db_required
 def test_unauthenticated_access(client: TestClient) -> None:
     """Test that unauthenticated requests are rejected.
     

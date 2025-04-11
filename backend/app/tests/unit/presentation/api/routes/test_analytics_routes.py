@@ -98,6 +98,7 @@ def client(app):
     return TestClient(app)
 
 
+@pytest.mark.db_required
 class TestAnalyticsEndpoints:
     """Tests for analytics endpoints."""
 

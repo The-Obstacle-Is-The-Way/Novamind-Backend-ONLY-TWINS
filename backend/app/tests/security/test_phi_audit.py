@@ -17,6 +17,7 @@ from unittest.mock import patch, MagicMock
 from scripts.run_hipaa_phi_audit import PHIAuditor
 
 
+@pytest.mark.db_required
 class TestPHIAudit:
     """Test the PHI audit functionality to ensure it correctly identifies PHI violations."""
 

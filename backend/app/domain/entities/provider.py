@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Provider Entity
 
@@ -6,9 +5,9 @@ This module defines the Provider entity for the domain layer,
 representing a healthcare provider in the system.
 """
 
-from datetime import datetime, date, time
+from datetime import datetime, time
 from enum import Enum
-from typing import Dict, List, Optional, Any, Union, Set
+from typing import Any
 from uuid import UUID, uuid4
 
 from app.domain.exceptions import ValidationException
@@ -45,27 +44,27 @@ class Provider:
     
     def __init__(
         self,
-        id: Optional[Union[UUID, str]] = None,
+        id: UUID | str | None = None,
         first_name: str = None,
         last_name: str = None,
-        provider_type: Union[ProviderType, str] = None,
-        specialties: Optional[List[str]] = None,
-        license_number: Optional[str] = None,
-        npi_number: Optional[str] = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        address: Optional[Dict[str, Any]] = None,
-        bio: Optional[str] = None,
-        education: Optional[List[Dict[str, Any]]] = None,
-        certifications: Optional[List[Dict[str, Any]]] = None,
-        languages: Optional[List[str]] = None,
-        status: Union[ProviderStatus, str] = ProviderStatus.ACTIVE,
-        availability: Optional[Dict[str, List[Dict[str, Any]]]] = None,
-        max_patients: Optional[int] = None,
+        provider_type: ProviderType | str = None,
+        specialties: list[str] | None = None,
+        license_number: str | None = None,
+        npi_number: str | None = None,
+        email: str | None = None,
+        phone: str | None = None,
+        address: dict[str, Any] | None = None,
+        bio: str | None = None,
+        education: list[dict[str, Any]] | None = None,
+        certifications: list[dict[str, Any]] | None = None,
+        languages: list[str] | None = None,
+        status: ProviderStatus | str = ProviderStatus.ACTIVE,
+        availability: dict[str, list[dict[str, Any]]] | None = None,
+        max_patients: int | None = None,
         current_patient_count: int = 0,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
+        metadata: dict[str, Any] | None = None
     ):
         """
         Initialize a provider.
@@ -194,12 +193,12 @@ class Provider:
     
     def update_personal_info(
         self,
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        address: Optional[Dict[str, Any]] = None,
-        bio: Optional[str] = None
+        first_name: str | None = None,
+        last_name: str | None = None,
+        email: str | None = None,
+        phone: str | None = None,
+        address: dict[str, Any] | None = None,
+        bio: str | None = None
     ) -> None:
         """
         Update personal information.
@@ -242,13 +241,13 @@ class Provider:
     
     def update_professional_info(
         self,
-        provider_type: Optional[Union[ProviderType, str]] = None,
-        specialties: Optional[List[str]] = None,
-        license_number: Optional[str] = None,
-        npi_number: Optional[str] = None,
-        education: Optional[List[Dict[str, Any]]] = None,
-        certifications: Optional[List[Dict[str, Any]]] = None,
-        languages: Optional[List[str]] = None
+        provider_type: ProviderType | str | None = None,
+        specialties: list[str] | None = None,
+        license_number: str | None = None,
+        npi_number: str | None = None,
+        education: list[dict[str, Any]] | None = None,
+        certifications: list[dict[str, Any]] | None = None,
+        languages: list[str] | None = None
     ) -> None:
         """
         Update professional information.
@@ -296,7 +295,7 @@ class Provider:
         # Validate the updated provider
         self._validate()
     
-    def update_status(self, status: Union[ProviderStatus, str]) -> None:
+    def update_status(self, status: ProviderStatus | str) -> None:
         """
         Update the provider's status.
         
@@ -363,7 +362,7 @@ class Provider:
             # Update timestamp
             self.updated_at = datetime.now()
     
-    def add_education(self, education: Dict[str, Any]) -> None:
+    def add_education(self, education: dict[str, Any]) -> None:
         """
         Add an education entry.
         
@@ -386,7 +385,7 @@ class Provider:
         # Update timestamp
         self.updated_at = datetime.now()
     
-    def add_certification(self, certification: Dict[str, Any]) -> None:
+    def add_certification(self, certification: dict[str, Any]) -> None:
         """
         Add a certification.
         
@@ -406,7 +405,7 @@ class Provider:
         # Update timestamp
         self.updated_at = datetime.now()
     
-    def set_availability(self, availability: Dict[str, List[Dict[str, Any]]]) -> None:
+    def set_availability(self, availability: dict[str, list[dict[str, Any]]]) -> None:
         """
         Set availability schedule.
         
@@ -430,8 +429,8 @@ class Provider:
     def add_availability_slot(
         self,
         day: str,
-        start: Union[time, str],
-        end: Union[time, str]
+        start: time | str,
+        end: time | str
     ) -> None:
         """
         Add an availability slot.
@@ -519,10 +518,11 @@ class Provider:
             slot_start = self._parse_time(slot["start"])
             slot_end = self._parse_time(slot["end"])
             
+            # Check for overlap
+            # If the requested time falls within the provider's available slot
             if (
-                (slot_start <= start < slot_end) or
-                (slot_start < end <= slot_end) or
-                (start <= slot_start and end >= slot_end)
+                start >= slot_start and start < slot_end and
+                end > slot_start and end <= slot_end
             ):
                 return True
         
@@ -592,7 +592,7 @@ class Provider:
         # Update timestamp
         self.updated_at = datetime.now()
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the provider to a dictionary.
         
@@ -624,7 +624,7 @@ class Provider:
         }
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Provider':
+    def from_dict(cls, data: dict[str, Any]) -> 'Provider':
         """
         Create a provider from a dictionary.
         

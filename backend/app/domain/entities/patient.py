@@ -4,9 +4,9 @@ Patient entity in the Novamind Digital Twin platform.
 Represents the core domain entity for a patient with all relevant attributes.
 This is a pure domain model with no external dependencies.
 """
-from datetime import datetime
-from typing import Optional, List, Dict, Any, Union
 from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -19,18 +19,18 @@ class Patient:
     """
     id: str
     name: str
-    date_of_birth: Union[datetime, str]
+    date_of_birth: datetime | str
     gender: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    insurance_number: Optional[str] = None
-    medical_history: List[str] = field(default_factory=list)
-    medications: List[str] = field(default_factory=list)
-    allergies: List[str] = field(default_factory=list)
-    treatment_notes: List[Dict[str, Any]] = field(default_factory=list)
-    created_at: Optional[Union[datetime, str]] = None
-    updated_at: Optional[Union[datetime, str]] = None
+    email: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    insurance_number: str | None = None
+    medical_history: list[str] = field(default_factory=list)
+    medications: list[str] = field(default_factory=list)
+    allergies: list[str] = field(default_factory=list)
+    treatment_notes: list[dict[str, Any]] = field(default_factory=list)
+    created_at: datetime | str | None = None
+    updated_at: datetime | str | None = None
     
     def __post_init__(self):
         """
@@ -98,7 +98,7 @@ class Patient:
             self.allergies.append(allergy)
             self.updated_at = datetime.now()
     
-    def add_treatment_note(self, note: Dict[str, Any]) -> None:
+    def add_treatment_note(self, note: dict[str, Any]) -> None:
         """
         Add a treatment note to the patient's record.
         
@@ -113,8 +113,8 @@ class Patient:
             self.treatment_notes.append(note)
             self.updated_at = datetime.now()
     
-    def update_contact_info(self, email: Optional[str] = None, phone: Optional[str] = None, 
-                           address: Optional[str] = None) -> None:
+    def update_contact_info(self, email: str | None = None, phone: str | None = None, 
+                           address: str | None = None) -> None:
         """
         Update the patient's contact information.
         

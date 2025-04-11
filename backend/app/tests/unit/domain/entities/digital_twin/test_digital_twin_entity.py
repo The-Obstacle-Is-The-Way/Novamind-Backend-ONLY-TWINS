@@ -16,6 +16,7 @@ from app.domain.entities.digital_twin.digital_twin import DigitalTwin # Removed 
 # Removed import of non-existent temporal module and classes
 
 
+@pytest.mark.venv_only
 class TestDigitalTwin(unittest.TestCase):
     """Tests for the DigitalTwin entity."""
     

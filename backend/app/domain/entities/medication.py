@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Medication entity module for the NOVAMIND backend.
 
@@ -7,9 +6,8 @@ representing medications prescribed to patients in the concierge psychiatry prac
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import Enum, auto
-from typing import Dict, List, Optional, Set
 from uuid import UUID, uuid4
 
 
@@ -38,8 +36,8 @@ class DosageSchedule:
 
     amount: str  # e.g., "10mg"
     frequency: str  # e.g., "twice daily"
-    timing: Optional[str] = None  # e.g., "with meals"
-    max_daily: Optional[str] = None  # e.g., "20mg"
+    timing: str | None = None  # e.g., "with meals"
+    max_daily: str | None = None  # e.g., "20mg"
 
     def __str__(self) -> str:
         """String representation of dosage schedule"""
@@ -58,8 +56,8 @@ class SideEffectReport:
     effect: str
     severity: int  # 1-10 scale
     reported_at: datetime
-    notes: Optional[str] = None
-    reported_by: Optional[UUID] = None  # patient or provider ID
+    notes: str | None = None
+    reported_by: UUID | None = None  # patient or provider ID
 
 
 @dataclass
@@ -77,18 +75,18 @@ class Medication:
     dosage_schedule: DosageSchedule
     start_date: datetime
     id: UUID = field(default_factory=uuid4)
-    end_date: Optional[datetime] = None
+    end_date: datetime | None = None
     status: MedicationStatus = MedicationStatus.ACTIVE
-    instructions: Optional[str] = None
-    reason_prescribed: Optional[str] = None
-    pharmacy_info: Optional[Dict[str, str]] = None
+    instructions: str | None = None
+    reason_prescribed: str | None = None
+    pharmacy_info: dict[str, str] | None = None
     refill_status: RefillStatus = RefillStatus.AVAILABLE
     refills_remaining: int = 0
-    refill_history: List[datetime] = field(default_factory=list)
-    side_effects: List[SideEffectReport] = field(default_factory=list)
+    refill_history: list[datetime] = field(default_factory=list)
+    side_effects: list[SideEffectReport] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
-    tags: Set[str] = field(default_factory=set)
+    tags: set[str] = field(default_factory=set)
 
     @property
     def is_active(self) -> bool:
@@ -96,14 +94,14 @@ class Medication:
         return self.status == MedicationStatus.ACTIVE
 
     @property
-    def duration(self) -> Optional[timedelta]:
+    def duration(self) -> timedelta | None:
         """Get the duration of the medication prescription"""
         if not self.end_date:
             return None
         return self.end_date - self.start_date
 
     @property
-    def days_remaining(self) -> Optional[int]:
+    def days_remaining(self) -> int | None:
         """Get the number of days remaining for this medication"""
         if not self.end_date:
             return None
@@ -120,7 +118,7 @@ class Medication:
             and self.refills_remaining <= 0
         )
 
-    def discontinue(self, reason: Optional[str] = None) -> None:
+    def discontinue(self, reason: str | None = None) -> None:
         """
         Discontinue the medication
 
@@ -133,7 +131,7 @@ class Medication:
             self.instructions = f"DISCONTINUED: {reason}"
         self.updated_at = datetime.now(UTC)
 
-    def put_on_hold(self, reason: Optional[str] = None) -> None:
+    def put_on_hold(self, reason: str | None = None) -> None:
         """
         Put the medication on hold
 
@@ -188,7 +186,7 @@ class Medication:
         self.refill_history.append(datetime.now(UTC))
         self.updated_at = datetime.now(UTC)
 
-    def deny_refill(self, reason: Optional[str] = None) -> None:
+    def deny_refill(self, reason: str | None = None) -> None:
         """
         Deny a refill request
 
@@ -227,8 +225,8 @@ class Medication:
         self,
         effect: str,
         severity: int,
-        notes: Optional[str] = None,
-        reported_by: Optional[UUID] = None,
+        notes: str | None = None,
+        reported_by: UUID | None = None,
     ) -> None:
         """
         Report a side effect for this medication

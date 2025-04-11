@@ -3,8 +3,7 @@ Enhanced domain service interface for PAT (Pretrained Actigraphy Transformer) wi
 Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Union
+from datetime import datetime
 from uuid import UUID
 
 from app.domain.entities.digital_twin import TemporalPattern
@@ -24,10 +23,10 @@ class EnhancedPATService(ABC):
     async def fuse_multi_device_data(
         self,
         patient_id: UUID,
-        device_data: Dict[str, Dict],  # device_type -> device_data
-        time_range: Tuple[datetime, datetime],
+        device_data: dict[str, dict],  # device_type -> device_data
+        time_range: tuple[datetime, datetime],
         interpolation_method: str = "linear"  # "linear", "cubic", "nearest"
-    ) -> Dict:
+    ) -> dict:
         """
         Harmonize and fuse data from multiple wearable devices.
         
@@ -46,9 +45,9 @@ class EnhancedPATService(ABC):
     async def process_oura_ring_data(
         self,
         patient_id: UUID,
-        oura_data: Dict,
-        analysis_types: List[str] = ["sleep", "hrv", "temperature", "activity"]
-    ) -> Dict:
+        oura_data: dict,
+        analysis_types: list[str] = ["sleep", "hrv", "temperature", "activity"]
+    ) -> dict:
         """
         Process Oura Ring data to extract sleep architecture and other patterns.
         
@@ -66,10 +65,10 @@ class EnhancedPATService(ABC):
     async def process_continuous_glucose_data(
         self,
         patient_id: UUID,
-        glucose_data: Dict,
-        activity_data: Optional[Dict] = None,
-        food_log: Optional[Dict] = None
-    ) -> Dict:
+        glucose_data: dict,
+        activity_data: dict | None = None,
+        food_log: dict | None = None
+    ) -> dict:
         """
         Process continuous glucose monitor data to extract metabolic patterns.
         
@@ -88,10 +87,10 @@ class EnhancedPATService(ABC):
     async def analyze_heart_rate_variability(
         self,
         patient_id: UUID,
-        ecg_data: Dict,
+        ecg_data: dict,
         analysis_window: int = 5,  # minutes
         frequency_domain: bool = True
-    ) -> Dict:
+    ) -> dict:
         """
         Analyze ECG/PPG data for HRV patterns and cardiac coherence.
         
@@ -110,9 +109,9 @@ class EnhancedPATService(ABC):
     async def process_electrodermal_activity(
         self,
         patient_id: UUID,
-        eda_data: Dict,
-        contextual_data: Optional[Dict] = None
-    ) -> Dict:
+        eda_data: dict,
+        contextual_data: dict | None = None
+    ) -> dict:
         """
         Process skin conductance data for sympathetic nervous system activation.
         
@@ -130,10 +129,10 @@ class EnhancedPATService(ABC):
     async def analyze_temperature_rhythms(
         self,
         patient_id: UUID,
-        temperature_data: Dict,
-        ambient_data: Optional[Dict] = None,
+        temperature_data: dict,
+        ambient_data: dict | None = None,
         days: int = 14
-    ) -> Dict:
+    ) -> dict:
         """
         Analyze body temperature data for circadian rhythm patterns.
         
@@ -152,10 +151,10 @@ class EnhancedPATService(ABC):
     async def detect_ultradian_rhythms(
         self,
         patient_id: UUID,
-        physiological_data: Dict,
+        physiological_data: dict,
         rhythm_period: int = 90,  # minutes
         detection_sensitivity: float = 0.7  # 0.0 to 1.0
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Detect ultradian rhythm disturbances (90-minute cycles).
         
@@ -174,10 +173,10 @@ class EnhancedPATService(ABC):
     async def analyze_circadian_phase(
         self,
         patient_id: UUID,
-        longitudinal_data: Dict,
+        longitudinal_data: dict,
         days: int = 14,
-        reference_markers: Optional[Dict] = None
-    ) -> Dict:
+        reference_markers: dict | None = None
+    ) -> dict:
         """
         Analyze circadian phase shifts and social jet lag.
         
@@ -196,10 +195,10 @@ class EnhancedPATService(ABC):
     async def detect_sleep_wake_imbalance(
         self,
         patient_id: UUID,
-        sleep_data: Dict,
-        activity_data: Dict,
-        time_range: Tuple[datetime, datetime]
-    ) -> Dict:
+        sleep_data: dict,
+        activity_data: dict,
+        time_range: tuple[datetime, datetime]
+    ) -> dict:
         """
         Detect sleep-wake homeostasis imbalances.
         
@@ -218,10 +217,10 @@ class EnhancedPATService(ABC):
     async def detect_seasonal_patterns(
         self,
         patient_id: UUID,
-        longitudinal_data: Dict,
-        metrics: List[str],
+        longitudinal_data: dict,
+        metrics: list[str],
         min_duration: int = 365  # days
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Detect seasonal affective patterns in longitudinal data.
         
@@ -240,10 +239,10 @@ class EnhancedPATService(ABC):
     async def analyze_menstrual_cycle_impacts(
         self,
         patient_id: UUID,
-        cycle_data: Dict,
-        mood_data: Dict,
-        physiological_data: Optional[Dict] = None
-    ) -> Dict:
+        cycle_data: dict,
+        mood_data: dict,
+        physiological_data: dict | None = None
+    ) -> dict:
         """
         Analyze menstrual cycle phase impacts on mood and cognition.
         
@@ -262,10 +261,10 @@ class EnhancedPATService(ABC):
     async def detect_psychomotor_patterns(
         self,
         patient_id: UUID,
-        movement_data: Dict,
-        clinical_context: Optional[Dict] = None,
+        movement_data: dict,
+        clinical_context: dict | None = None,
         sensitivity: float = 0.8  # 0.0 to 1.0
-    ) -> Dict:
+    ) -> dict:
         """
         Detect psychomotor retardation/agitation signatures in movement data.
         
@@ -284,10 +283,10 @@ class EnhancedPATService(ABC):
     async def analyze_behavioral_activation(
         self,
         patient_id: UUID,
-        activity_data: Dict,
-        location_data: Optional[Dict] = None,
+        activity_data: dict,
+        location_data: dict | None = None,
         timeframe: int = 30  # days
-    ) -> Dict:
+    ) -> dict:
         """
         Analyze behavioral activation/withdrawal patterns.
         
@@ -306,10 +305,10 @@ class EnhancedPATService(ABC):
     async def correlate_exercise_mood(
         self,
         patient_id: UUID,
-        exercise_data: Dict,
-        mood_data: Dict,
+        exercise_data: dict,
+        mood_data: dict,
         time_lag: int = 3  # days
-    ) -> Dict:
+    ) -> dict:
         """
         Analyze exercise intensity/consistency correlations with mood.
         
@@ -328,10 +327,10 @@ class EnhancedPATService(ABC):
     async def analyze_diurnal_variation(
         self,
         patient_id: UUID,
-        activity_data: Dict,
+        activity_data: dict,
         days: int = 14,
-        clinical_diagnosis: Optional[str] = None
-    ) -> Dict:
+        clinical_diagnosis: str | None = None
+    ) -> dict:
         """
         Analyze diurnal variation in activity as depression biomarker.
         
@@ -350,9 +349,9 @@ class EnhancedPATService(ABC):
     async def perform_movement_entropy_analysis(
         self,
         patient_id: UUID,
-        movement_data: Dict,
+        movement_data: dict,
         analysis_window: int = 60  # minutes
-    ) -> Dict:
+    ) -> dict:
         """
         Perform chaos/entropy analysis of movement patterns.
         
@@ -370,11 +369,11 @@ class EnhancedPATService(ABC):
     async def map_autonomic_balance(
         self,
         patient_id: UUID,
-        hrv_data: Dict,
-        time_range: Tuple[datetime, datetime],
-        eda_data: Optional[Dict] = None,
-        respiratory_data: Optional[Dict] = None
-    ) -> Dict:
+        hrv_data: dict,
+        time_range: tuple[datetime, datetime],
+        eda_data: dict | None = None,
+        respiratory_data: dict | None = None
+    ) -> dict:
         """
         Map sympathetic/parasympathetic balance throughout the day.
         
@@ -394,10 +393,10 @@ class EnhancedPATService(ABC):
     async def analyze_stress_recovery(
         self,
         patient_id: UUID,
-        hrv_data: Dict,
-        stressor_events: Optional[List[Dict]] = None,
+        hrv_data: dict,
+        stressor_events: list[dict] | None = None,
         recovery_threshold: float = 0.7  # 0.0 to 1.0
-    ) -> Dict:
+    ) -> dict:
         """
         Analyze stress recovery efficiency via HRV rebound metrics.
         
@@ -416,10 +415,10 @@ class EnhancedPATService(ABC):
     async def analyze_respiratory_sinus_arrhythmia(
         self,
         patient_id: UUID,
-        ecg_data: Dict,
-        respiratory_data: Optional[Dict] = None,
-        anxiety_context: Optional[Dict] = None
-    ) -> Dict:
+        ecg_data: dict,
+        respiratory_data: dict | None = None,
+        anxiety_context: dict | None = None
+    ) -> dict:
         """
         Analyze respiratory sinus arrhythmia as anxiety indicator.
         
@@ -438,10 +437,10 @@ class EnhancedPATService(ABC):
     async def analyze_orthostatic_response(
         self,
         patient_id: UUID,
-        heart_rate_data: Dict,
-        positional_data: Dict,
-        depression_context: Optional[Dict] = None
-    ) -> Dict:
+        heart_rate_data: dict,
+        positional_data: dict,
+        depression_context: dict | None = None
+    ) -> dict:
         """
         Analyze orthostatic heart rate response as depression biomarker.
         
@@ -460,9 +459,9 @@ class EnhancedPATService(ABC):
     async def analyze_nocturnal_autonomic_activity(
         self,
         patient_id: UUID,
-        sleep_physiology_data: Dict,
-        next_day_mood: Optional[Dict] = None
-    ) -> Dict:
+        sleep_physiology_data: dict,
+        next_day_mood: dict | None = None
+    ) -> dict:
         """
         Analyze nocturnal autonomic fluctuations predicting next-day mood.
         
@@ -480,10 +479,10 @@ class EnhancedPATService(ABC):
     async def detect_microarousals(
         self,
         patient_id: UUID,
-        sleep_data: Dict,
+        sleep_data: dict,
         detection_threshold: float = 0.6,  # 0.0 to 1.0
         clinical_significance: bool = True
-    ) -> Dict:
+    ) -> dict:
         """
         Detect microarousals during sleep and assess their significance.
         
@@ -502,10 +501,10 @@ class EnhancedPATService(ABC):
     async def analyze_rem_characteristics(
         self,
         patient_id: UUID,
-        sleep_data: Dict,
-        depression_context: Optional[Dict] = None,
+        sleep_data: dict,
+        depression_context: dict | None = None,
         longitudinal: bool = True
-    ) -> Dict:
+    ) -> dict:
         """
         Analyze REM density and latency as depression biomarkers.
         
@@ -524,9 +523,9 @@ class EnhancedPATService(ABC):
     async def analyze_slow_wave_sleep(
         self,
         patient_id: UUID,
-        sleep_data: Dict,
-        cognitive_data: Optional[Dict] = None
-    ) -> Dict:
+        sleep_data: dict,
+        cognitive_data: dict | None = None
+    ) -> dict:
         """
         Analyze slow-wave sleep quality and cognitive function correlation.
         
@@ -544,10 +543,10 @@ class EnhancedPATService(ABC):
     async def detect_rem_behavior_precursors(
         self,
         patient_id: UUID,
-        sleep_data: Dict,
-        movement_data: Dict,
+        sleep_data: dict,
+        movement_data: dict,
         detection_sensitivity: float = 0.7  # 0.0 to 1.0
-    ) -> Dict:
+    ) -> dict:
         """
         Detect REM behavior disorder precursor signatures.
         
@@ -566,9 +565,9 @@ class EnhancedPATService(ABC):
     async def analyze_sleep_spindles(
         self,
         patient_id: UUID,
-        sleep_eeg_data: Dict,
-        memory_context: Optional[Dict] = None
-    ) -> Dict:
+        sleep_eeg_data: dict,
+        memory_context: dict | None = None
+    ) -> dict:
         """
         Analyze sleep spindles for memory consolidation assessment.
         
@@ -586,10 +585,10 @@ class EnhancedPATService(ABC):
     async def integrate_with_knowledge_graph(
         self,
         patient_id: UUID,
-        biometric_data: Dict,
+        biometric_data: dict,
         knowledge_graph: TemporalKnowledgeGraph,
         integration_type: str = "temporal_patterns"
-    ) -> Tuple[List[TemporalPattern], TemporalKnowledgeGraph]:
+    ) -> tuple[list[TemporalPattern], TemporalKnowledgeGraph]:
         """
         Integrate biometric insights with temporal knowledge graph.
         

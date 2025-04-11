@@ -73,7 +73,8 @@ except ImportError as e:
         USE_TLS=True # Assuming this is needed based on later test
     )
     
-    class AuthenticationError(Exception): pass
+    @pytest.mark.db_required
+class AuthenticationError(Exception): pass
     class AuthorizationError(Exception): pass
     class PHIAccessError(Exception): pass
     class SecurityError(Exception): pass

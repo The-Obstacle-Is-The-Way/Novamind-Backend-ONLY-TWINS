@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Appointment Entity
 
@@ -6,16 +5,12 @@ This module defines the Appointment entity for the domain layer,
 representing a scheduled meeting between a patient and a provider.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any, Union
+from typing import Any
 from uuid import UUID, uuid4
 
-from app.domain.exceptions import (
-    AppointmentConflictError,
-    InvalidAppointmentStateError,
-    InvalidAppointmentTimeError
-)
+from app.domain.exceptions import InvalidAppointmentStateError, InvalidAppointmentTimeError
 
 
 class AppointmentStatus(Enum):
@@ -62,28 +57,28 @@ class Appointment:
     
     def __init__(
         self,
-        id: Optional[Union[UUID, str]] = None,
-        patient_id: Union[UUID, str] = None,
-        provider_id: Union[UUID, str] = None,
+        id: UUID | str | None = None,
+        patient_id: UUID | str = None,
+        provider_id: UUID | str = None,
         start_time: datetime = None,
         end_time: datetime = None,
-        appointment_type: Union[AppointmentType, str] = None,
-        status: Union[AppointmentStatus, str] = AppointmentStatus.SCHEDULED,
-        priority: Union[AppointmentPriority, str] = AppointmentPriority.NORMAL,
-        location: Optional[str] = None,
-        notes: Optional[str] = None,
-        reason: Optional[str] = None,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
-        cancelled_at: Optional[datetime] = None,
-        cancelled_by: Optional[Union[UUID, str]] = None,
-        cancellation_reason: Optional[str] = None,
+        appointment_type: AppointmentType | str = None,
+        status: AppointmentStatus | str = AppointmentStatus.SCHEDULED,
+        priority: AppointmentPriority | str = AppointmentPriority.NORMAL,
+        location: str | None = None,
+        notes: str | None = None,
+        reason: str | None = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
+        cancelled_at: datetime | None = None,
+        cancelled_by: UUID | str | None = None,
+        cancellation_reason: str | None = None,
         reminder_sent: bool = False,
-        reminder_sent_at: Optional[datetime] = None,
+        reminder_sent_at: datetime | None = None,
         follow_up_scheduled: bool = False,
-        follow_up_appointment_id: Optional[Union[UUID, str]] = None,
-        previous_appointment_id: Optional[Union[UUID, str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        follow_up_appointment_id: UUID | str | None = None,
+        previous_appointment_id: UUID | str | None = None,
+        metadata: dict[str, Any] | None = None
     ):
         """
         Initialize an appointment.
@@ -246,7 +241,7 @@ class Appointment:
         self.status = AppointmentStatus.COMPLETED
         self.updated_at = datetime.now()
     
-    def cancel(self, cancelled_by: Union[UUID, str], reason: Optional[str] = None) -> None:
+    def cancel(self, cancelled_by: UUID | str, reason: str | None = None) -> None:
         """
         Cancel the appointment.
         
@@ -291,7 +286,7 @@ class Appointment:
         self,
         new_start_time: datetime,
         new_end_time: datetime,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> None:
         """
         Reschedule the appointment.
@@ -330,7 +325,7 @@ class Appointment:
     
     def schedule_follow_up(
         self,
-        follow_up_appointment_id: Union[UUID, str]
+        follow_up_appointment_id: UUID | str
     ) -> None:
         """
         Schedule a follow-up appointment.
@@ -368,7 +363,7 @@ class Appointment:
         self.notes = notes
         self.updated_at = datetime.now()
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the appointment to a dictionary.
         
@@ -401,7 +396,7 @@ class Appointment:
         }
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Appointment':
+    def from_dict(cls, data: dict[str, Any]) -> 'Appointment':
         """
         Create an appointment from a dictionary.
         

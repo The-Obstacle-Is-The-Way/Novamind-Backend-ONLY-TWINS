@@ -1,3 +1,4 @@
+import pytest
 """
 Tests for PHI sanitization functionality.
 
@@ -10,6 +11,7 @@ from app.core.security.phi_sanitizer import PHISanitizer
 from app.tests.security.base_test import BaseSecurityTest
 
 
+@pytest.mark.venv_only
 class TestPHISanitization(BaseSecurityTest):
     """Tests for PHI detection and sanitization functionality."""
     

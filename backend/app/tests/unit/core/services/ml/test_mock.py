@@ -24,6 +24,7 @@ from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
 # Apply test markers for categorization
 pytestmark = [pytest.mark.unit, pytest.mark.ml]
 
+@pytest.mark.db_required
 class TestMockMentaLLaMA:
     """Test suite for MockMentaLLaMA class."""
 

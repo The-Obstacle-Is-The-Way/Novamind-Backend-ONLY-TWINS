@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Biometric Rule Repository Interface for the Digital Twin Psychiatry Platform.
 
@@ -8,10 +7,9 @@ and maintain separation between domain and infrastructure layers.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_rule import BiometricRule, AlertPriority
+from app.domain.entities.digital_twin.biometric_rule import AlertPriority, BiometricRule
 
 
 class BiometricRuleRepository(ABC):
@@ -40,7 +38,7 @@ class BiometricRuleRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_id(self, rule_id: UUID) -> Optional[BiometricRule]:
+    async def get_by_id(self, rule_id: UUID) -> BiometricRule | None:
         """
         Retrieve a biometric rule by its ID.
         
@@ -58,9 +56,9 @@ class BiometricRuleRepository(ABC):
     @abstractmethod
     async def get_all_active(
         self,
-        patient_id: Optional[UUID] = None,
-        priority: Optional[AlertPriority] = None
-    ) -> List[BiometricRule]:
+        patient_id: UUID | None = None,
+        priority: AlertPriority | None = None
+    ) -> list[BiometricRule]:
         """
         Retrieve all active biometric rules.
         
@@ -77,7 +75,7 @@ class BiometricRuleRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_patient_id(self, patient_id: UUID) -> List[BiometricRule]:
+    async def get_by_patient_id(self, patient_id: UUID) -> list[BiometricRule]:
         """
         Retrieve biometric rules specific to a patient.
         
@@ -93,7 +91,7 @@ class BiometricRuleRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_provider_id(self, provider_id: UUID) -> List[BiometricRule]:
+    async def get_by_provider_id(self, provider_id: UUID) -> list[BiometricRule]:
         """
         Retrieve biometric rules created by a specific provider.
         
@@ -149,7 +147,7 @@ class BiometricRuleRepository(ABC):
     @abstractmethod
     async def count_active_rules(
         self,
-        patient_id: Optional[UUID] = None
+        patient_id: UUID | None = None
     ) -> int:
         """
         Count active biometric rules.

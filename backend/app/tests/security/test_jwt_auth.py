@@ -65,6 +65,7 @@ RESOURCE_ACCESS = {
 
 
 # Mock FastAPI request for testing
+@pytest.mark.db_required
 class MockRequest:
     def __init__(self, headers=None, cookies=None):
         self.headers = headers or {}

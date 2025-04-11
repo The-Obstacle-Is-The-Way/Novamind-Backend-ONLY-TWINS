@@ -15,6 +15,7 @@ from app.core.utils.enhanced_phi_detector import (
 from app.core.utils.phi_sanitizer import PHIType
 
 
+@pytest.mark.db_required
 class TestEnhancedPHIDetector:
     """Tests for the EnhancedPHIDetector class."""
 

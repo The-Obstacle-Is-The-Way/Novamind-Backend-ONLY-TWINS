@@ -14,7 +14,8 @@ import tempfile
 from unittest.mock import patch, MagicMock
 
 # Path to the log sanitizer module
-from app.infrastructure.security.log_sanitizer import LogSanitizer # Corrected class name
+from app.infrastructure.security.log_sanitizer import LogSanitizer # Corrected @pytest.mark.db_required
+class name
 
 
 class TestLogSanitization:

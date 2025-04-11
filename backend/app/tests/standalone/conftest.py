@@ -78,17 +78,7 @@ def clinical_rule_engine():
         engine = StandaloneClinicalRuleEngine()
         yield engine
 
-# Fix for Provider is_available method
-@pytest.fixture(autouse=True)
-def patch_provider_is_available():
-    """Patch Provider.is_available to fix test case."""
-    def is_available_patch(self, day, start, end):
-        if day == "monday" and start.hour == 12 and start.minute == 30 and end.hour == 13 and end.minute == 30:
-            return False
-        return True
-        
-    with patch('app.domain.entities.provider.Provider.is_available', is_available_patch):
-        yield
+# REMOVED: Fix for Provider is_available method - using real implementation now
 
 # Fix for MFA service backup codes
 @pytest.fixture(autouse=True)

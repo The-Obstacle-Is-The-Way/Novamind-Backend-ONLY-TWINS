@@ -1,7 +1,8 @@
 """
 Unit tests for the PAT factory.
 
-This module contains tests for the PATFactory class which creates
+This module contains tests for the PATFactory @pytest.mark.db_required
+class which creates
 and manages PAT service instances based on configuration.
 """
 

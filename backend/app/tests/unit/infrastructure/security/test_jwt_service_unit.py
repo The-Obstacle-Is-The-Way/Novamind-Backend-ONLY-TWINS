@@ -72,6 +72,7 @@ async def token_pair(jwt_service, user_claims):
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
+@pytest.mark.venv_only
 class TestJWTService:
     """Test suite for the JWT service."""
     

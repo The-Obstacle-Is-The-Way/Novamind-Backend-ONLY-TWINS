@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Clinical Documentation service module for the NOVAMIND backend.
 
@@ -6,8 +5,7 @@ This module contains the ClinicalDocumentationService, which encapsulates comple
 related to clinical notes and documentation in the concierge psychiatry practice.
 """
 
-from datetime import datetime, UTC, UTC, timedelta
-from typing import Dict, List, Optional, Set, Tuple
+from datetime import UTC, datetime
 from uuid import UUID
 
 from app.domain.entities.clinical_note import (
@@ -55,7 +53,7 @@ class ClinicalDocumentationService:
         self._appointment_repo = appointment_repository
 
         # Define standard note templates by type
-        self._note_templates: Dict[NoteType, str] = {
+        self._note_templates: dict[NoteType, str] = {
             NoteType.INITIAL_EVALUATION: (
                 "# INITIAL PSYCHIATRIC EVALUATION\n\n"
                 "## IDENTIFYING INFORMATION\n\n"
@@ -101,8 +99,8 @@ class ClinicalDocumentationService:
         patient_id: UUID,
         provider_id: UUID,
         note_type: NoteType,
-        appointment_id: Optional[UUID] = None,
-        content: Optional[str] = None,
+        appointment_id: UUID | None = None,
+        content: str | None = None,
     ) -> ClinicalNote:
         """
         Create a new clinical note
@@ -250,7 +248,7 @@ class ClinicalDocumentationService:
         description: str,
         provider_id: UUID,
         primary: bool = False,
-        notes: Optional[str] = None,
+        notes: str | None = None,
     ) -> ClinicalNote:
         """
         Add a diagnosis to a clinical note
@@ -310,9 +308,9 @@ class ClinicalDocumentationService:
         frequency: str,
         start_date: datetime,
         provider_id: UUID,
-        end_date: Optional[datetime] = None,
-        reason: Optional[str] = None,
-        notes: Optional[str] = None,
+        end_date: datetime | None = None,
+        reason: str | None = None,
+        notes: str | None = None,
     ) -> ClinicalNote:
         """
         Add a medication entry to a clinical note
@@ -398,7 +396,7 @@ class ClinicalDocumentationService:
 
     async def get_patient_notes_chronological(
         self, patient_id: UUID, limit: int = 100, offset: int = 0
-    ) -> List[ClinicalNote]:
+    ) -> list[ClinicalNote]:
         """
         Get a patient's clinical notes in chronological order
 
@@ -426,10 +424,10 @@ class ClinicalDocumentationService:
     async def search_notes(
         self,
         query: str,
-        patient_id: Optional[UUID] = None,
+        patient_id: UUID | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> List[ClinicalNote]:
+    ) -> list[ClinicalNote]:
         """
         Search clinical notes by content
 
@@ -453,7 +451,7 @@ class ClinicalDocumentationService:
 
     async def get_notes_by_diagnosis_code(
         self, code: str, limit: int = 100, offset: int = 0
-    ) -> List[ClinicalNote]:
+    ) -> list[ClinicalNote]:
         """
         Get clinical notes that contain a specific diagnosis code
 

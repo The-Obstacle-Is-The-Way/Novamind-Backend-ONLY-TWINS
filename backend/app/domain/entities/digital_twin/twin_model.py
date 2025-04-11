@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 # app/domain/entities/digital_twin/twin_model.py
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 
@@ -11,7 +10,7 @@ from uuid import UUID, uuid4
 class ModelParameters:
     """Value object for model parameters"""
 
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -22,12 +21,12 @@ class DigitalTwinModel(ABC):
     name: str
     version: str
     created_at: datetime
-    last_trained: Optional[datetime]
+    last_trained: datetime | None
     accuracy: float
     parameters: ModelParameters
 
     @abstractmethod
-    def predict(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def predict(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Make prediction using the model
 

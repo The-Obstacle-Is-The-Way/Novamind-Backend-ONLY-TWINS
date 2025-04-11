@@ -4,11 +4,13 @@ Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 from app.domain.entities.digital_twin import ClinicalInsight
-from app.domain.entities.knowledge_graph import KnowledgeGraphNode, KnowledgeGraphEdge, NodeType, EdgeType
+from app.domain.entities.knowledge_graph import (
+    KnowledgeGraphEdge,
+    KnowledgeGraphNode,
+)
 
 
 class EnhancedMentalLLaMAService(ABC):
@@ -24,12 +26,12 @@ class EnhancedMentalLLaMAService(ABC):
     async def process_multimodal_data(
         self,
         patient_id: UUID,
-        text_data: Optional[str] = None,
-        image_data: Optional[Dict] = None,
-        numerical_data: Optional[Dict] = None,
-        temporal_data: Optional[Dict] = None,
-        context: Optional[Dict] = None
-    ) -> List[ClinicalInsight]:
+        text_data: str | None = None,
+        image_data: dict | None = None,
+        numerical_data: dict | None = None,
+        temporal_data: dict | None = None,
+        context: dict | None = None
+    ) -> list[ClinicalInsight]:
         """
         Process multimodal patient data using MentalLLaMA-33B to extract unified insights.
         
@@ -50,10 +52,10 @@ class EnhancedMentalLLaMAService(ABC):
     async def construct_knowledge_graph(
         self,
         patient_id: UUID,
-        clinical_data: Dict,
-        existing_graph_nodes: Optional[List[KnowledgeGraphNode]] = None,
-        existing_graph_edges: Optional[List[KnowledgeGraphEdge]] = None
-    ) -> Tuple[List[KnowledgeGraphNode], List[KnowledgeGraphEdge]]:
+        clinical_data: dict,
+        existing_graph_nodes: list[KnowledgeGraphNode] | None = None,
+        existing_graph_edges: list[KnowledgeGraphEdge] | None = None
+    ) -> tuple[list[KnowledgeGraphNode], list[KnowledgeGraphEdge]]:
         """
         Construct or update a semantic knowledge graph from clinical data.
         
@@ -72,10 +74,10 @@ class EnhancedMentalLLaMAService(ABC):
     async def discover_latent_variables(
         self,
         patient_id: UUID,
-        clinical_data: Dict,
+        clinical_data: dict,
         n_variables: int = 5,
         min_confidence: float = 0.7
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Discover latent variables in patient data that may not be explicitly documented.
         
@@ -95,10 +97,10 @@ class EnhancedMentalLLaMAService(ABC):
         self,
         patient_id: UUID,
         base_state_id: UUID,
-        intervention_params: Dict,
+        intervention_params: dict,
         n_scenarios: int = 3,
         time_horizon: str = "short_term"  # "short_term", "medium_term", "long_term"
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Generate counterfactual scenarios by simulating different treatment trajectories.
         
@@ -118,10 +120,10 @@ class EnhancedMentalLLaMAService(ABC):
     async def perform_temporal_reasoning(
         self,
         patient_id: UUID,
-        clinical_history: Dict,
+        clinical_history: dict,
         query: str,
-        time_points: Optional[List[datetime]] = None
-    ) -> Dict:
+        time_points: list[datetime] | None = None
+    ) -> dict:
         """
         Perform complex temporal reasoning about patient's condition over time.
         
@@ -142,7 +144,7 @@ class EnhancedMentalLLaMAService(ABC):
         patient_id: UUID,
         text_data: str,
         analysis_type: str = "comprehensive"  # "basic", "comprehensive", "longitudinal"
-    ) -> Dict:
+    ) -> dict:
         """
         Analyze text for suicidality signals with high sensitivity.
         
@@ -160,9 +162,9 @@ class EnhancedMentalLLaMAService(ABC):
     async def identify_medication_adherence_patterns(
         self,
         patient_id: UUID,
-        communication_data: Dict,
-        medication_history: Dict
-    ) -> Dict:
+        communication_data: dict,
+        medication_history: dict
+    ) -> dict:
         """
         Identify medication adherence patterns from linguistic markers and history.
         
@@ -181,9 +183,9 @@ class EnhancedMentalLLaMAService(ABC):
         self,
         patient_id: UUID,
         clinical_notes: str,
-        social_history: Optional[str] = None,
+        social_history: str | None = None,
         sensitivity: float = 0.8  # 0.0 to 1.0
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Extract psychosocial stressors even when patients minimize their significance.
         
@@ -203,10 +205,10 @@ class EnhancedMentalLLaMAService(ABC):
         self,
         patient_id: UUID,
         topic: str,
-        cognitive_style: Optional[str] = None,
-        reading_level: Optional[str] = None,
-        cultural_context: Optional[str] = None
-    ) -> Dict:
+        cognitive_style: str | None = None,
+        reading_level: str | None = None,
+        cultural_context: str | None = None
+    ) -> dict:
         """
         Generate personalized psychoeducational content calibrated to patient's cognitive style.
         
@@ -226,10 +228,10 @@ class EnhancedMentalLLaMAService(ABC):
     async def integrate_with_belief_network(
         self,
         patient_id: UUID,
-        clinical_evidence: Dict,
-        query_variables: List[str],
-        existing_beliefs: Optional[Dict] = None
-    ) -> Dict:
+        clinical_evidence: dict,
+        query_variables: list[str],
+        existing_beliefs: dict | None = None
+    ) -> dict:
         """
         Integrate clinical evidence with Bayesian belief network.
         

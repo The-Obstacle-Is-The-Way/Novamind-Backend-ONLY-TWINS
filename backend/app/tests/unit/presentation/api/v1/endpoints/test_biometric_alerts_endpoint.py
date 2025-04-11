@@ -213,6 +213,7 @@ def sample_alert(sample_rule, sample_data_point):
     )
 
 
+@pytest.mark.db_required
 class TestBiometricAlertsEndpoints:
     """Tests for the Biometric Alerts API endpoints."""
     

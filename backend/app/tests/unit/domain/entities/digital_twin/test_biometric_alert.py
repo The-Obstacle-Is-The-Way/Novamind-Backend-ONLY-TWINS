@@ -65,6 +65,7 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
     )
 
 
+@pytest.mark.venv_only
 class TestBiometricAlert:
     """Tests for the BiometricAlert domain entity."""
     

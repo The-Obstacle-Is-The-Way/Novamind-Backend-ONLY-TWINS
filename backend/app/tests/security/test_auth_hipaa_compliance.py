@@ -20,7 +20,8 @@ try:
     from app.infrastructure.security.rbac.role_manager import RoleManager
 except ImportError:
     # Mock classes for testing auth functionality
-    class JWTService:
+    @pytest.mark.db_required
+class JWTService:
         """Mock JWT service for testing."""
         
         def __init__(self, secret_key="test_secret", algorithm="HS256", expires_delta=30):

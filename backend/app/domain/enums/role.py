@@ -4,7 +4,7 @@ Role enumeration for the Novamind Digital Twin Backend.
 This module defines the role types used for authentication and 
 authorization throughout the application.
 """
-from enum import Enum, auto
+from enum import Enum
 
 
 class Role(str, Enum):

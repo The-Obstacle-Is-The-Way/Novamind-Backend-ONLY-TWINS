@@ -5,13 +5,13 @@ This module defines the exceptions that can be raised at the domain level,
 providing a clear separation between domain errors and infrastructure errors.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class DomainException(Exception):
     """Base exception for all domain-level exceptions."""
     
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         self.message = message
         self.details = details or {}
         super().__init__(message)
@@ -40,21 +40,21 @@ class AuthorizationError(DomainException):
 class TokenExpiredError(AuthenticationError):
     """Exception raised when an authentication token has expired."""
     
-    def __init__(self, message: str = "Token has expired", details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str = "Token has expired", details: dict[str, Any] | None = None):
         super().__init__(message, details)
 
 
 class InvalidTokenError(AuthenticationError):
     """Exception raised when an authentication token is invalid."""
     
-    def __init__(self, message: str = "Invalid token", details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str = "Invalid token", details: dict[str, Any] | None = None):
         super().__init__(message, details)
 
 
 class MissingTokenError(AuthenticationError):
     """Exception raised when no authentication token is provided."""
     
-    def __init__(self, message: str = "Authentication token is missing", details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str = "Authentication token is missing", details: dict[str, Any] | None = None):
         super().__init__(message, details)
 
 

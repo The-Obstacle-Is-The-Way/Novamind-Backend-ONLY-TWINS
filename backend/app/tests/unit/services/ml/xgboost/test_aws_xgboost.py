@@ -57,6 +57,7 @@ def mock_boto3_client():
         }
 
 
+@pytest.mark.db_required
 class TestAWSPhiDetector:
     """Tests for the AWSPhiDetector class."""
     

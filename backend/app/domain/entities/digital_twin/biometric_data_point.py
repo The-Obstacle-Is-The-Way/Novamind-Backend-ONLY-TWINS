@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
 """
 Module for representing biometric data points in the Digital Twin platform.
 Used by standalone tests for unit testing without database dependencies.
 """
 
 from datetime import datetime
-from typing import Dict, Optional, Any, Union, Literal
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
+
 
 class BiometricDataPoint(BaseModel):
     """
@@ -18,12 +18,12 @@ class BiometricDataPoint(BaseModel):
     including metadata about the reading's source and confidence level.
     """
     data_id: UUID
-    patient_id: UUID  # In production this is non-optional, but tests will monkey patch as needed
+    patient_id: UUID | None = None  # In production this is non-optional, but tests may need None
     data_type: str
     value: float
     timestamp: datetime
     source: str
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     confidence: float = 1.0
 
     class Config:

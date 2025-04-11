@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Appointment Repository Interface
 
@@ -7,7 +6,6 @@ This module defines the interface for appointment repositories.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional, Union
 from uuid import UUID
 
 from app.domain.entities.appointment import Appointment, AppointmentStatus
@@ -23,7 +21,7 @@ class AppointmentRepository(ABC):
     """
     
     @abstractmethod
-    def get_by_id(self, appointment_id: Union[UUID, str]) -> Optional[Appointment]:
+    def get_by_id(self, appointment_id: UUID | str) -> Appointment | None:
         """
         Get an appointment by ID.
         
@@ -38,11 +36,11 @@ class AppointmentRepository(ABC):
     @abstractmethod
     def get_by_patient_id(
         self,
-        patient_id: Union[UUID, str],
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        status: Optional[AppointmentStatus] = None
-    ) -> List[Appointment]:
+        patient_id: UUID | str,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        status: AppointmentStatus | None = None
+    ) -> list[Appointment]:
         """
         Get appointments for a patient.
         
@@ -60,11 +58,11 @@ class AppointmentRepository(ABC):
     @abstractmethod
     def get_by_provider_id(
         self,
-        provider_id: Union[UUID, str],
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        status: Optional[AppointmentStatus] = None
-    ) -> List[Appointment]:
+        provider_id: UUID | str,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        status: AppointmentStatus | None = None
+    ) -> list[Appointment]:
         """
         Get appointments for a provider.
         
@@ -93,7 +91,7 @@ class AppointmentRepository(ABC):
         pass
     
     @abstractmethod
-    def delete(self, appointment_id: Union[UUID, str]) -> bool:
+    def delete(self, appointment_id: UUID | str) -> bool:
         """
         Delete an appointment.
         
@@ -109,8 +107,8 @@ class AppointmentRepository(ABC):
     def get_upcoming_appointments(
         self,
         days: int = 7,
-        status: Optional[AppointmentStatus] = None
-    ) -> List[Appointment]:
+        status: AppointmentStatus | None = None
+    ) -> list[Appointment]:
         """
         Get upcoming appointments.
         
@@ -128,10 +126,10 @@ class AppointmentRepository(ABC):
         self,
         start_date: datetime,
         end_date: datetime,
-        provider_id: Optional[Union[UUID, str]] = None,
-        patient_id: Optional[Union[UUID, str]] = None,
-        status: Optional[AppointmentStatus] = None
-    ) -> List[Appointment]:
+        provider_id: UUID | str | None = None,
+        patient_id: UUID | str | None = None,
+        status: AppointmentStatus | None = None
+    ) -> list[Appointment]:
         """
         Get appointments within a date range.
         
@@ -148,7 +146,7 @@ class AppointmentRepository(ABC):
         pass
     
     @abstractmethod
-    def get_appointments_needing_reminder(self) -> List[Appointment]:
+    def get_appointments_needing_reminder(self) -> list[Appointment]:
         """
         Get appointments that need reminders.
         

@@ -26,6 +26,7 @@ def mock_audit_logger():
 
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_app(mock_audit_logger):
     """Fixture for a test FastAPI application with PHI middleware."""
     app = FastAPI()

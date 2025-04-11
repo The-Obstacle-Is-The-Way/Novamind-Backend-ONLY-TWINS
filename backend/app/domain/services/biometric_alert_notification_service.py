@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Biometric Alert Notification Service for the Digital Twin Psychiatry Platform.
 
@@ -8,12 +7,10 @@ notification channels (SMS, email, in-app) and ensures PHI is properly
 sanitized in all communications.
 """
 
-from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Any
-from uuid import UUID
+from typing import Any
 
-from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertPriority
+from app.domain.entities.digital_twin.biometric_alert import AlertPriority, BiometricAlert
 from app.domain.interfaces.alert_observer import AlertObserver
 from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 
@@ -77,7 +74,7 @@ class BiometricAlertNotificationService(AlertObserver):
         for channel in channels:
             await self._send_notification(alert, channel, recipients)
     
-    def _get_channels_for_priority(self, priority: AlertPriority) -> List[NotificationChannel]:
+    def _get_channels_for_priority(self, priority: AlertPriority) -> list[NotificationChannel]:
         """
         Determine appropriate notification channels based on alert priority.
         
@@ -106,7 +103,7 @@ class BiometricAlertNotificationService(AlertObserver):
             # Informational alerts use in-app only
             return [NotificationChannel.IN_APP]
     
-    async def _get_alert_recipients(self, alert: BiometricAlert) -> List[Dict[str, Any]]:
+    async def _get_alert_recipients(self, alert: BiometricAlert) -> list[dict[str, Any]]:
         """
         Determine recipients for an alert notification.
         
@@ -140,7 +137,7 @@ class BiometricAlertNotificationService(AlertObserver):
         self,
         alert: BiometricAlert,
         channel: NotificationChannel,
-        recipients: List[Dict[str, Any]]
+        recipients: list[dict[str, Any]]
     ) -> None:
         """
         Send a notification through a specific channel.
@@ -208,7 +205,7 @@ class BiometricAlertNotificationService(AlertObserver):
     async def _send_sms_notifications(
         self,
         message: str,
-        recipients: List[Dict[str, Any]]
+        recipients: list[dict[str, Any]]
     ) -> None:
         """
         Send SMS notifications to recipients.
@@ -227,7 +224,7 @@ class BiometricAlertNotificationService(AlertObserver):
     async def _send_email_notifications(
         self,
         message: str,
-        recipients: List[Dict[str, Any]],
+        recipients: list[dict[str, Any]],
         alert: BiometricAlert
     ) -> None:
         """
@@ -256,7 +253,7 @@ class BiometricAlertNotificationService(AlertObserver):
     async def _send_in_app_notifications(
         self,
         message: str,
-        recipients: List[Dict[str, Any]],
+        recipients: list[dict[str, Any]],
         alert: BiometricAlert
     ) -> None:
         """
@@ -283,7 +280,7 @@ class BiometricAlertNotificationService(AlertObserver):
     async def _send_push_notifications(
         self,
         message: str,
-        recipients: List[Dict[str, Any]]
+        recipients: list[dict[str, Any]]
     ) -> None:
         """
         Send push notifications to recipients.

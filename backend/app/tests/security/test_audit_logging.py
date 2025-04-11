@@ -25,6 +25,7 @@ TEST_PATIENT = {
 }
 
 
+@pytest.mark.venv_only
 class TestAuditLogging:
     """Test the audit logging system for HIPAA compliance"""
     

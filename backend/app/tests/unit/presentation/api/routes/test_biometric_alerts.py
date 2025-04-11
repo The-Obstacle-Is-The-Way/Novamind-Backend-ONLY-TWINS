@@ -128,6 +128,7 @@ def override_auth(app, mock_current_user, mock_current_provider):
     return mock_current_user, mock_current_provider
 
 
+@pytest.mark.db_required
 class TestCreateAlert:
     """Tests for the create_alert endpoint."""
     

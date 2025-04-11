@@ -17,6 +17,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 
 
+@pytest.mark.db_required
 class TestDigitalTwinIntegrationService:
     """Tests for the DigitalTwinIntegrationService."""
 

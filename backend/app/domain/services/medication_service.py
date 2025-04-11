@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Medication service module for the NOVAMIND backend.
 
@@ -6,8 +5,7 @@ This module contains the MedicationService, which encapsulates complex business 
 related to medication management in the concierge psychiatry practice.
 """
 
-from datetime import datetime, UTC, UTC, timedelta
-from typing import Dict, List, Optional, Set, Tuple
+from datetime import UTC, datetime
 from uuid import UUID
 
 from app.domain.entities.medication import (
@@ -15,7 +13,6 @@ from app.domain.entities.medication import (
     Medication,
     MedicationStatus,
     RefillStatus,
-    SideEffectReport,
 )
 from app.domain.repositories.medication_repository import MedicationRepository
 from app.domain.repositories.patient_repository import PatientRepository
@@ -52,7 +49,7 @@ class MedicationService:
 
         # Define known medication interactions (simplified for example)
         # In a real system, this would likely come from an external drug interaction API
-        self._known_interactions: Dict[str, Set[str]] = {
+        self._known_interactions: dict[str, set[str]] = {
             "fluoxetine": {"tramadol", "linezolid", "monoamine oxidase inhibitors"},
             "lithium": {"nsaids", "diuretics", "ace inhibitors"},
             "clozapine": {"carbamazepine", "fluvoxamine", "ciprofloxacin"},
@@ -69,11 +66,11 @@ class MedicationService:
         dosage: str,
         frequency: str,
         start_date: datetime,
-        end_date: Optional[datetime] = None,
-        timing: Optional[str] = None,
-        max_daily: Optional[str] = None,
-        instructions: Optional[str] = None,
-        reason_prescribed: Optional[str] = None,
+        end_date: datetime | None = None,
+        timing: str | None = None,
+        max_daily: str | None = None,
+        instructions: str | None = None,
+        reason_prescribed: str | None = None,
         refills: int = 0,
         check_interactions: bool = True,
     ) -> Medication:
@@ -139,13 +136,13 @@ class MedicationService:
     async def update_prescription(
         self,
         medication_id: UUID,
-        dosage: Optional[str] = None,
-        frequency: Optional[str] = None,
-        timing: Optional[str] = None,
-        max_daily: Optional[str] = None,
-        end_date: Optional[datetime] = None,
-        instructions: Optional[str] = None,
-        refills: Optional[int] = None,
+        dosage: str | None = None,
+        frequency: str | None = None,
+        timing: str | None = None,
+        max_daily: str | None = None,
+        end_date: datetime | None = None,
+        instructions: str | None = None,
+        refills: int | None = None,
         check_interactions: bool = True,
     ) -> Medication:
         """
@@ -217,7 +214,7 @@ class MedicationService:
         return await self._medication_repo.update(medication)
 
     async def discontinue_medication(
-        self, medication_id: UUID, reason: Optional[str] = None
+        self, medication_id: UUID, reason: str | None = None
     ) -> Medication:
         """
         Discontinue a medication
@@ -271,7 +268,7 @@ class MedicationService:
         return await self._medication_repo.update(medication)
 
     async def deny_refill(
-        self, medication_id: UUID, reason: Optional[str] = None
+        self, medication_id: UUID, reason: str | None = None
     ) -> Medication:
         """
         Deny a medication refill request
@@ -302,8 +299,8 @@ class MedicationService:
         medication_id: UUID,
         effect: str,
         severity: int,
-        notes: Optional[str] = None,
-        reported_by: Optional[UUID] = None,
+        notes: str | None = None,
+        reported_by: UUID | None = None,
     ) -> Medication:
         """
         Report a side effect for a medication
@@ -332,7 +329,7 @@ class MedicationService:
         # Save to repository
         return await self._medication_repo.update(medication)
 
-    async def get_active_medications(self, patient_id: UUID) -> List[Medication]:
+    async def get_active_medications(self, patient_id: UUID) -> list[Medication]:
         """
         Get all active medications for a patient
 
@@ -350,14 +347,14 @@ class MedicationService:
         # Get active medications
         return await self._medication_repo.list_active_by_patient(patient_id)
 
-    async def get_medications_needing_attention(self) -> List[Tuple[Medication, str]]:
+    async def get_medications_needing_attention(self) -> list[tuple[Medication, str]]:
         """
         Get all medications that need attention (refills, expiring soon, etc.)
 
         Returns:
             List of tuples containing medication entities and reason for attention
         """
-        result: List[Tuple[Medication, str]] = []
+        result: list[tuple[Medication, str]] = []
 
         # Get medications needing refill
         refill_medications = (

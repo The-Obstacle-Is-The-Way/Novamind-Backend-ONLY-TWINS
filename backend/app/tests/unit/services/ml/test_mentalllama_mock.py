@@ -21,6 +21,7 @@ def mock_service():
     return service
 
 
+@pytest.mark.db_required
 def test_initialization_success():
     """Test successful initialization of mock service."""
     # Arrange

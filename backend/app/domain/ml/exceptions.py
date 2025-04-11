@@ -4,7 +4,7 @@ Machine Learning exceptions for the Novamind Digital Twin Backend.
 This module defines domain-level exceptions related to ML operations,
 particularly for the MentalLLaMA model interactions.
 """
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class MentalLLaMABaseException(Exception):
@@ -17,7 +17,7 @@ class MentalLLaMABaseException(Exception):
     def __init__(
         self, 
         message: str,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ):
         self.message = message
         self.details = details or {}
@@ -38,8 +38,8 @@ class MentalLLaMAConnectionError(MentalLLaMABaseException):
     def __init__(
         self, 
         message: str,
-        endpoint: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None
+        endpoint: str | None = None,
+        details: dict[str, Any] | None = None
     ):
         self.endpoint = endpoint
         combined_details = details or {}
@@ -58,7 +58,7 @@ class MentalLLaMAAuthenticationError(MentalLLaMABaseException):
     def __init__(
         self, 
         message: str,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ):
         super().__init__(message, details)
 
@@ -73,9 +73,9 @@ class MentalLLaMAInferenceError(MentalLLaMABaseException):
     def __init__(
         self, 
         message: str,
-        model_name: Optional[str] = None,
-        inference_parameters: Optional[Dict[str, Any]] = None,
-        details: Optional[Dict[str, Any]] = None
+        model_name: str | None = None,
+        inference_parameters: dict[str, Any] | None = None,
+        details: dict[str, Any] | None = None
     ):
         self.model_name = model_name
         self.inference_parameters = inference_parameters or {}
@@ -99,8 +99,8 @@ class MentalLLaMAValidationError(MentalLLaMABaseException):
     def __init__(
         self, 
         message: str,
-        validation_errors: Optional[Dict[str, str]] = None,
-        details: Optional[Dict[str, Any]] = None
+        validation_errors: dict[str, str] | None = None,
+        details: dict[str, Any] | None = None
     ):
         self.validation_errors = validation_errors or {}
         
@@ -121,9 +121,9 @@ class MentalLLaMAQuotaExceededError(MentalLLaMABaseException):
     def __init__(
         self, 
         message: str,
-        quota_limit: Optional[int] = None,
-        quota_used: Optional[int] = None,
-        details: Optional[Dict[str, Any]] = None
+        quota_limit: int | None = None,
+        quota_used: int | None = None,
+        details: dict[str, Any] | None = None
     ):
         self.quota_limit = quota_limit
         self.quota_used = quota_used

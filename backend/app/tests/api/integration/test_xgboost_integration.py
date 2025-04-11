@@ -61,6 +61,7 @@ def mock_service():
         yield mock_service
 
 
+@pytest.mark.db_required
 class TestXGBoostIntegration:
     """Integration tests for the XGBoost API."""
 

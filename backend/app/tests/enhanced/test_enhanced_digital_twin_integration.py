@@ -52,7 +52,8 @@ def initial_data() -> Dict:
 
 
 @pytest.mark.asyncio
-async def test_factory_creates_services(enhanced_services):
+async @pytest.mark.db_required
+def test_factory_creates_services(enhanced_services):
     """Test that the factory correctly creates all enhanced services."""
     digital_twin_service, mental_llama_service, xgboost_service, pat_service = enhanced_services
     

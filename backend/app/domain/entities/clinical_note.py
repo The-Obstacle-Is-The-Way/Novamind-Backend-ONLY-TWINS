@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Clinical Note entity module for the NOVAMIND backend.
 
@@ -7,9 +6,8 @@ representing clinical documentation for patient care in the concierge psychiatry
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, UTC, UTC
+from datetime import UTC, datetime
 from enum import Enum, auto
-from typing import Dict, List, Optional, Set
 from uuid import UUID, uuid4
 
 
@@ -43,7 +41,7 @@ class DiagnosisEntry:
     code: str  # ICD-10 or DSM-5 code
     description: str
     primary: bool = False
-    notes: Optional[str] = None
+    notes: str | None = None
     date_diagnosed: datetime = field(default_factory=datetime.utcnow)
 
 
@@ -55,10 +53,10 @@ class MedicationEntry:
     dosage: str
     frequency: str
     start_date: datetime
-    end_date: Optional[datetime] = None
-    prescriber_id: Optional[UUID] = None
-    reason: Optional[str] = None
-    notes: Optional[str] = None
+    end_date: datetime | None = None
+    prescriber_id: UUID | None = None
+    reason: str | None = None
+    notes: str | None = None
 
 
 @dataclass
@@ -74,18 +72,18 @@ class ClinicalNote:
     provider_id: UUID
     note_type: NoteType
     content: str
-    appointment_id: Optional[UUID] = None
+    appointment_id: UUID | None = None
     id: UUID = field(default_factory=uuid4)
     status: NoteStatus = NoteStatus.DRAFT
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
-    signed_at: Optional[datetime] = None
-    diagnoses: List[DiagnosisEntry] = field(default_factory=list)
-    medications: List[MedicationEntry] = field(default_factory=list)
-    tags: Set[str] = field(default_factory=set)
-    metadata: Dict[str, str] = field(default_factory=dict)
+    signed_at: datetime | None = None
+    diagnoses: list[DiagnosisEntry] = field(default_factory=list)
+    medications: list[MedicationEntry] = field(default_factory=list)
+    tags: set[str] = field(default_factory=set)
+    metadata: dict[str, str] = field(default_factory=dict)
     version: int = 1
-    previous_versions: List[UUID] = field(default_factory=list)
+    previous_versions: list[UUID] = field(default_factory=list)
 
     @property
     def is_signed(self) -> bool:
@@ -255,7 +253,7 @@ class ClinicalNote:
         """
         return any(diagnosis.primary for diagnosis in self.diagnoses)
 
-    def get_primary_diagnosis(self) -> Optional[DiagnosisEntry]:
+    def get_primary_diagnosis(self) -> DiagnosisEntry | None:
         """
         Get the primary diagnosis from the note
 

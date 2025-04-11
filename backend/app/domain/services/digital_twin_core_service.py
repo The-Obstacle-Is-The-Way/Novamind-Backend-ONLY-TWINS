@@ -4,7 +4,6 @@ This is the central orchestrating service that coordinates all components.
 Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 from app.domain.entities.digital_twin import ClinicalInsight, DigitalTwinState
@@ -21,7 +20,7 @@ class DigitalTwinCoreService(ABC):
     async def initialize_digital_twin(
         self,
         patient_id: UUID,
-        initial_data: Optional[Dict] = None
+        initial_data: dict | None = None
     ) -> DigitalTwinState:
         """
         Initialize a new Digital Twin state for a patient.
@@ -39,7 +38,7 @@ class DigitalTwinCoreService(ABC):
     async def update_from_actigraphy(
         self,
         patient_id: UUID,
-        actigraphy_data: Dict,
+        actigraphy_data: dict,
         data_source: str
     ) -> DigitalTwinState:
         """
@@ -61,7 +60,7 @@ class DigitalTwinCoreService(ABC):
         patient_id: UUID,
         note_text: str,
         note_type: str,
-        clinician_id: Optional[UUID] = None
+        clinician_id: UUID | None = None
     ) -> DigitalTwinState:
         """
         Update Digital Twin with insights from clinical notes via MentalLLaMA.
@@ -81,9 +80,9 @@ class DigitalTwinCoreService(ABC):
     async def generate_treatment_recommendations(
         self,
         patient_id: UUID,
-        digital_twin_state_id: Optional[UUID] = None,
+        digital_twin_state_id: UUID | None = None,
         include_rationale: bool = True
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Generate treatment recommendations using XGBoost and MentalLLaMA.
         
@@ -101,9 +100,9 @@ class DigitalTwinCoreService(ABC):
     async def get_visualization_data(
         self,
         patient_id: UUID,
-        digital_twin_state_id: Optional[UUID] = None,
+        digital_twin_state_id: UUID | None = None,
         visualization_type: str = "brain_model"
-    ) -> Dict:
+    ) -> dict:
         """
         Get data for 3D visualization of the Digital Twin.
         
@@ -121,7 +120,7 @@ class DigitalTwinCoreService(ABC):
     async def merge_insights(
         self,
         patient_id: UUID,
-        insights: List[ClinicalInsight],
+        insights: list[ClinicalInsight],
         source: str
     ) -> DigitalTwinState:
         """
@@ -143,7 +142,7 @@ class DigitalTwinCoreService(ABC):
         patient_id: UUID,
         state_id_1: UUID,
         state_id_2: UUID
-    ) -> Dict:
+    ) -> dict:
         """
         Compare two Digital Twin states to identify changes.
         
@@ -161,10 +160,10 @@ class DigitalTwinCoreService(ABC):
     async def generate_clinical_summary(
         self,
         patient_id: UUID,
-        time_range: Optional[Tuple[str, str]] = None,
+        time_range: tuple[str, str] | None = None,
         include_treatment_history: bool = True,
         include_predictions: bool = True
-    ) -> Dict:
+    ) -> dict:
         """
         Generate comprehensive clinical summary from Digital Twin.
         

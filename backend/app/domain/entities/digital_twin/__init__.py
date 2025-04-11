@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Digital Twin package for the Novamind platform.
 
@@ -7,21 +6,32 @@ simulate and predict patient biometric data and mental health outcomes.
 """
 
 from .biometric_data_point import BiometricDataPoint
-from .biometric_twin_model import BiometricTwinModel
 from .biometric_rule import (
-    BiometricRule, 
-    RuleCondition, 
-    RuleOperator, 
-    LogicalOperator, 
-    AlertPriority
+    AlertPriority,
+    BiometricRule,
+    LogicalOperator,
+    RuleCondition,
+    RuleOperator,
 )
+from .biometric_twin_model import BiometricTwinModel
+from .brain_region import BrainRegion, BrainRegionActivity
+from .clinical_insight import ClinicalInsight, ClinicalSignificance
+from .digital_twin_state import DigitalTwinState
+from .neurotransmitter import Neurotransmitter, NeurotransmitterLevel
 
 __all__ = [
-    'BiometricDataPoint', 
+    'BiometricDataPoint',
     'BiometricTwinModel',
     'BiometricRule',
     'RuleCondition',
     'RuleOperator',
     'LogicalOperator',
-    'AlertPriority'
+    'AlertPriority',
+    'BrainRegion',
+    'BrainRegionActivity',
+    'Neurotransmitter',
+    'NeurotransmitterLevel',
+    'ClinicalInsight',
+    'ClinicalSignificance',
+    'DigitalTwinState'
 ]

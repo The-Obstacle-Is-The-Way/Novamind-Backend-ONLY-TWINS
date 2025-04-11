@@ -21,6 +21,7 @@ from app.presentation.api.dependencies.rate_limiter import (
 )
 
 
+@pytest.mark.db_required
 class MockCacheService:
     """Mock implementation of CacheService for testing."""
     

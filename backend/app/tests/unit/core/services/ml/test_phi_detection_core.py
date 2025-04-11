@@ -19,6 +19,7 @@ from app.core.exceptions import (
 from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
 
 
+@pytest.mark.db_required
 class TestAWSComprehendMedicalPHIDetection:
     """Test suite for AWS Comprehend Medical PHI detection service."""
 

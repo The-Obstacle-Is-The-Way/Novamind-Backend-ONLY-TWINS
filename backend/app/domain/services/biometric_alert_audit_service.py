@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Biometric Alert Audit Service for the Digital Twin Psychiatry Platform.
 
@@ -7,11 +6,11 @@ comprehensive records are maintained for regulatory compliance and
 clinical oversight.
 """
 
-from datetime import datetime, UTC, UTC
-from typing import Dict, List, Optional, Any
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertStatus
+from app.domain.entities.digital_twin.biometric_alert import AlertStatus, BiometricAlert
 from app.domain.interfaces.alert_observer import AlertObserver
 from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 
@@ -62,7 +61,7 @@ class BiometricAlertAuditService(AlertObserver):
         self,
         alert_id: UUID,
         provider_id: UUID,
-        notes: Optional[str] = None
+        notes: str | None = None
     ) -> None:
         """
         Record the acknowledgment of an alert in the audit trail.
@@ -175,9 +174,9 @@ class BiometricAlertAuditService(AlertObserver):
         alert: BiometricAlert,
         event_type: str,
         event_description: str,
-        actor_id: Optional[UUID] = None,
-        notes: Optional[str] = None,
-        additional_data: Optional[Dict[str, Any]] = None
+        actor_id: UUID | None = None,
+        notes: str | None = None,
+        additional_data: dict[str, Any] | None = None
     ) -> None:
         """
         Create an audit record for an alert event.
@@ -219,15 +218,15 @@ class BiometricAlertAuditService(AlertObserver):
     
     async def search_audit_trail(
         self,
-        patient_id: Optional[UUID] = None,
-        alert_id: Optional[UUID] = None,
-        provider_id: Optional[UUID] = None,
-        event_type: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        patient_id: UUID | None = None,
+        alert_id: UUID | None = None,
+        provider_id: UUID | None = None,
+        event_type: str | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
         offset: int = 0
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Search the audit trail for biometric alert events.
         

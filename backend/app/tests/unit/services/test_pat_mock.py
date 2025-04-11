@@ -62,6 +62,7 @@ def valid_analysis_types():
     return ["sleep", "activity"]
 
 
+@pytest.mark.venv_only
 class TestMockPATInitialization:
     """Tests for MockPAT initialization."""
 

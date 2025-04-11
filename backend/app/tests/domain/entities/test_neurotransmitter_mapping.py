@@ -14,6 +14,7 @@ from app.domain.entities.neurotransmitter_mapping import (
 )
 
 
+@pytest.mark.venv_only
 def test_neurotransmitter_mapping_creation():
     """Test creating a new neurotransmitter mapping."""
     mapping = NeurotransmitterMapping()

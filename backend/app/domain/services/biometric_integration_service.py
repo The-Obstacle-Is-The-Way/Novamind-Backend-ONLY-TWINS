@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Biometric Integration Service for the Digital Twin Psychiatry Platform.
 
@@ -7,13 +6,12 @@ into the patient's digital twin, enabling advanced analysis and personalized
 treatment recommendations based on physiological and neurological patterns.
 """
 
-from datetime import datetime, UTC, UTC, timedelta
-from typing import Dict, List, Optional, Set, Tuple, Union, Any
+from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID
 
 from app.domain.entities.digital_twin.biometric_twin import BiometricDataPoint, BiometricTwin
-from app.domain.entities.patient import Patient
-from app.domain.exceptions import BiometricIntegrationError, ValidationError
+from app.domain.exceptions import BiometricIntegrationError
 from app.domain.repositories.biometric_twin_repository import BiometricTwinRepository
 
 
@@ -59,16 +57,16 @@ class BiometricIntegrationService:
             self.biometric_twin_repository.save(new_twin)
             return new_twin
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to get or create biometric twin: {str(e)}")
+            raise BiometricIntegrationError(f"Failed to get or create biometric twin: {e!s}")
     
     def add_biometric_data(
         self,
         patient_id: UUID,
         data_type: str,
-        value: Union[float, int, str, Dict],
+        value: float | int | str | dict,
         source: str,
-        timestamp: Optional[datetime] = None,
-        metadata: Optional[Dict] = None,
+        timestamp: datetime | None = None,
+        metadata: dict | None = None,
         confidence: float = 1.0
     ) -> BiometricDataPoint:
         """
@@ -110,13 +108,13 @@ class BiometricIntegrationService:
             
             return data_point
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to add biometric data: {str(e)}")
+            raise BiometricIntegrationError(f"Failed to add biometric data: {e!s}")
     
     def batch_add_biometric_data(
         self,
         patient_id: UUID,
-        data_points: List[Dict]
-    ) -> List[BiometricDataPoint]:
+        data_points: list[dict]
+    ) -> list[BiometricDataPoint]:
         """
         Add multiple biometric data points in a single batch operation.
         
@@ -153,16 +151,16 @@ class BiometricIntegrationService:
             
             return created_points
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to batch add biometric data: {str(e)}")
+            raise BiometricIntegrationError(f"Failed to batch add biometric data: {e!s}")
     
     def get_biometric_data(
         self,
         patient_id: UUID,
-        data_type: Optional[str] = None,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None,
-        source: Optional[str] = None
-    ) -> List[BiometricDataPoint]:
+        data_type: str | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        source: str | None = None
+    ) -> list[BiometricDataPoint]:
         """
         Retrieve biometric data for a patient with optional filtering.
         
@@ -202,7 +200,7 @@ class BiometricIntegrationService:
             
             return sorted(filtered_points, key=lambda dp: dp.timestamp)
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to retrieve biometric data: {str(e)}")
+            raise BiometricIntegrationError(f"Failed to retrieve biometric data: {e!s}")
     
     def analyze_trends(
         self,
@@ -210,7 +208,7 @@ class BiometricIntegrationService:
         data_type: str,
         window_days: int = 30,
         interval: str = "day"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze trends in a specific type of biometric data over time.
         
@@ -288,15 +286,15 @@ class BiometricIntegrationService:
                 "last_updated": data_points[-1].timestamp.isoformat() if data_points else None
             }
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to analyze trends: {str(e)}")
+            raise BiometricIntegrationError(f"Failed to analyze trends: {e!s}")
     
     def detect_correlations(
         self,
         patient_id: UUID,
         primary_data_type: str,
-        secondary_data_types: List[str],
+        secondary_data_types: list[str],
         window_days: int = 30
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Detect correlations between different types of biometric data.
         
@@ -361,14 +359,14 @@ class BiometricIntegrationService:
             
             return correlations
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to detect correlations: {str(e)}")
+            raise BiometricIntegrationError(f"Failed to detect correlations: {e!s}")
     
     def connect_device(
         self,
         patient_id: UUID,
         device_id: str,
         device_type: str,
-        connection_metadata: Optional[Dict] = None
+        connection_metadata: dict | None = None
     ) -> bool:
         """
         Connect a biometric monitoring device to a patient's digital twin.
@@ -412,13 +410,13 @@ class BiometricIntegrationService:
             
             return True
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to connect device: {str(e)}")
+            raise BiometricIntegrationError(f"Failed to connect device: {e!s}")
     
     def disconnect_device(
         self,
         patient_id: UUID,
         device_id: str,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> bool:
         """
         Disconnect a biometric monitoring device from a patient's digital twin.
@@ -456,4 +454,4 @@ class BiometricIntegrationService:
             
             return True
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to disconnect device: {str(e)}")
+            raise BiometricIntegrationError(f"Failed to disconnect device: {e!s}")

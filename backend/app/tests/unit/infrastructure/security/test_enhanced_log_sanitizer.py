@@ -14,6 +14,7 @@ from app.infrastructure.security.log_sanitizer import (
 )
 
 
+@pytest.mark.db_required
 class TestPHIPattern:
     """Test suite for PHIPattern class."""
     

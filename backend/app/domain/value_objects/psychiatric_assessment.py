@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 """Psychiatric assessment value object."""
 
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Dict, List, Optional
 from uuid import UUID, uuid4
+
 
 @dataclass(frozen=True)
 class PsychiatricAssessment:
@@ -16,13 +15,13 @@ class PsychiatricAssessment:
     
     assessment_date: date
     psychiatrist_id: UUID
-    diagnoses: List[str]
+    diagnoses: list[str]
     assessment_notes: str
     treatment_plan: str
     id: UUID = field(default_factory=uuid4)
-    severity_score: Optional[int] = None
-    medications: List[Dict[str, str]] = field(default_factory=list)
-    follow_up_date: Optional[date] = None
+    severity_score: int | None = None
+    medications: list[dict[str, str]] = field(default_factory=list)
+    follow_up_date: date | None = None
     
     def __post_init__(self) -> None:
         """Validate assessment data."""
@@ -35,7 +34,7 @@ class PsychiatricAssessment:
             if "name" not in med or "dosage" not in med:
                 raise ValueError("Medications must include name and dosage")
     
-    def get_primary_diagnosis(self) -> Optional[str]:
+    def get_primary_diagnosis(self) -> str | None:
         """Get primary diagnosis if available."""
         return self.diagnoses[0] if self.diagnoses else None
     

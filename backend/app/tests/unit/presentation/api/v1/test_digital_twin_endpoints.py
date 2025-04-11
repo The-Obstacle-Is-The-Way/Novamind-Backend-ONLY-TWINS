@@ -20,6 +20,7 @@ from fastapi.testclient import TestClient
 #     PhiDetectionError,
 # )
 # Placeholder imports - tests using these will likely fail but allows collection
+@pytest.mark.db_required
 class MentalLLaMAInferenceError(Exception): pass
 class PhiDetectionError(Exception): pass
 from app.presentation.api.v1.endpoints.digital_twins import (

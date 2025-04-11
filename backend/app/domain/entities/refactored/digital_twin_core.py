@@ -13,7 +13,6 @@ All classes are designed to be immutable data structures with clean interfaces.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union
 from uuid import UUID, uuid4
 
 
@@ -58,7 +57,7 @@ class BrainRegionState:
     region: BrainRegion
     activation_level: float  # 0.0 to 1.0
     confidence: float  # 0.0 to 1.0
-    related_symptoms: List[str] = field(default_factory=list)
+    related_symptoms: list[str] = field(default_factory=list)
     clinical_significance: ClinicalSignificance = ClinicalSignificance.NONE
 
 
@@ -99,10 +98,10 @@ class ClinicalInsight:
     confidence: float  # 0.0 to 1.0
     timestamp: datetime
     clinical_significance: ClinicalSignificance
-    brain_regions: List[BrainRegion] = field(default_factory=list)
-    neurotransmitters: List[Neurotransmitter] = field(default_factory=list)
-    supporting_evidence: List[str] = field(default_factory=list)
-    recommended_actions: List[str] = field(default_factory=list)
+    brain_regions: list[BrainRegion] = field(default_factory=list)
+    neurotransmitters: list[Neurotransmitter] = field(default_factory=list)
+    supporting_evidence: list[str] = field(default_factory=list)
+    recommended_actions: list[str] = field(default_factory=list)
     
     @classmethod
     def create(cls, 
@@ -111,10 +110,10 @@ class ClinicalInsight:
                source: str,
                confidence: float, 
                clinical_significance: ClinicalSignificance,
-               brain_regions: Optional[List[BrainRegion]] = None,
-               neurotransmitters: Optional[List[Neurotransmitter]] = None,
-               supporting_evidence: Optional[List[str]] = None,
-               recommended_actions: Optional[List[str]] = None) -> "ClinicalInsight":
+               brain_regions: list[BrainRegion] | None = None,
+               neurotransmitters: list[Neurotransmitter] | None = None,
+               supporting_evidence: list[str] | None = None,
+               recommended_actions: list[str] | None = None) -> "ClinicalInsight":
         """Factory method to create a new ClinicalInsight with generated ID and timestamp."""
         return cls(
             id=uuid4(),
@@ -153,17 +152,17 @@ class DigitalTwinState:
     # Reference ID only - not tightly coupled to patient records
     reference_id: UUID  
     timestamp: datetime
-    brain_regions: Dict[BrainRegion, BrainRegionState] = field(default_factory=dict)
-    neurotransmitters: Dict[Neurotransmitter, NeurotransmitterState] = field(default_factory=dict)
-    neural_connections: List[NeuralConnection] = field(default_factory=list)
-    clinical_insights: List[ClinicalInsight] = field(default_factory=list)
-    temporal_patterns: List[TemporalPattern] = field(default_factory=list)
-    update_source: Optional[str] = None
+    brain_regions: dict[BrainRegion, BrainRegionState] = field(default_factory=dict)
+    neurotransmitters: dict[Neurotransmitter, NeurotransmitterState] = field(default_factory=dict)
+    neural_connections: list[NeuralConnection] = field(default_factory=list)
+    clinical_insights: list[ClinicalInsight] = field(default_factory=list)
+    temporal_patterns: list[TemporalPattern] = field(default_factory=list)
+    update_source: str | None = None
     version: int = 1
     state_id: UUID = field(default_factory=uuid4)
     
     @property
-    def significant_regions(self) -> List[BrainRegionState]:
+    def significant_regions(self) -> list[BrainRegionState]:
         """Return brain regions with clinical significance above NONE."""
         return [
             region for region in self.brain_regions.values()
@@ -171,7 +170,7 @@ class DigitalTwinState:
         ]
     
     @property
-    def critical_insights(self) -> List[ClinicalInsight]:
+    def critical_insights(self) -> list[ClinicalInsight]:
         """Return insights with HIGH or CRITICAL significance."""
         return [
             insight for insight in self.clinical_insights

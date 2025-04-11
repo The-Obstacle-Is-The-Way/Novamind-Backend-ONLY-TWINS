@@ -4,7 +4,7 @@ Domain interface for the prediction engine component of the Trinity Stack.
 """
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Any
 from uuid import UUID
 
 from backend.app.domain.entities.refactored.digital_twin_core import BrainRegion
@@ -22,9 +22,9 @@ class XGBoostService(ABC):
         self,
         reference_id: UUID,
         digital_twin_state_id: UUID,
-        treatment_options: List[Dict],
+        treatment_options: list[dict],
         prediction_horizon: int = 90  # days
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Predict outcomes for different treatment options.
         
@@ -44,10 +44,10 @@ class XGBoostService(ABC):
         self,
         reference_id: UUID,
         digital_twin_state_id: UUID,
-        symptoms: List[str],
+        symptoms: list[str],
         forecast_horizon: int = 90,  # days
-        intervention: Optional[Dict] = None
-    ) -> Dict[str, Any]:
+        intervention: dict | None = None
+    ) -> dict[str, Any]:
         """
         Forecast the progression of symptoms over time.
         
@@ -69,7 +69,7 @@ class XGBoostService(ABC):
         reference_id: UUID,
         digital_twin_state_id: UUID,
         target_outcome: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Identify risk factors for a specific outcome.
         
@@ -88,10 +88,10 @@ class XGBoostService(ABC):
         self,
         reference_id: UUID,
         digital_twin_state_id: UUID,
-        treatment_options: List[Dict],
-        optimization_criteria: List[str],
-        constraints: Optional[Dict] = None
-    ) -> Dict[str, Any]:
+        treatment_options: list[dict],
+        optimization_criteria: list[str],
+        constraints: dict | None = None
+    ) -> dict[str, Any]:
         """
         Optimize a treatment plan based on multiple criteria.
         
@@ -114,7 +114,7 @@ class XGBoostService(ABC):
         digital_twin_state_id: UUID,
         prediction_id: str,
         detail_level: str = "medium"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Provide an explanation for a specific prediction.
         
@@ -134,7 +134,7 @@ class XGBoostService(ABC):
         self,
         reference_id: UUID,
         digital_twin_state_id: UUID
-    ) -> Dict[BrainRegion, float]:
+    ) -> dict[BrainRegion, float]:
         """
         Predict brain activity across regions based on current state.
         
@@ -152,9 +152,9 @@ class XGBoostService(ABC):
         self,
         reference_id: UUID,
         digital_twin_state_id: UUID,
-        treatment_options: List[Dict],
-        effectiveness_metrics: List[str]
-    ) -> Dict[str, Any]:
+        treatment_options: list[dict],
+        effectiveness_metrics: list[str]
+    ) -> dict[str, Any]:
         """
         Compare effectiveness of different treatment options.
         
@@ -174,8 +174,8 @@ class XGBoostService(ABC):
         self,
         reference_id: UUID,
         treatment_type: str,
-        time_period: Optional[Tuple[datetime, datetime]] = None
-    ) -> Dict[str, Any]:
+        time_period: tuple[datetime, datetime] | None = None
+    ) -> dict[str, Any]:
         """
         Analyze historical response to treatments.
         

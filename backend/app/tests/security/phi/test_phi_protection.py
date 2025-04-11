@@ -13,6 +13,7 @@ from app.infrastructure.security.log_sanitizer import LogSanitizer # Corrected i
 from app.tests.security.base_security_test import BaseSecurityTest
 
 
+@pytest.mark.venv_only
 class TestPHIProtection(BaseSecurityTest):
     """Tests for PHI protection mechanisms."""
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Clinical Note repository interface for the NOVAMIND backend.
 
@@ -9,7 +8,6 @@ this abstraction rather than concrete implementations.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional
 from uuid import UUID
 
 from app.domain.entities.clinical_note import ClinicalNote, NoteStatus, NoteType
@@ -41,7 +39,7 @@ class ClinicalNoteRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_by_id(self, note_id: UUID) -> Optional[ClinicalNote]:
+    async def get_by_id(self, note_id: UUID) -> ClinicalNote | None:
         """
         Retrieve a clinical note by ID
 
@@ -92,7 +90,7 @@ class ClinicalNoteRepository(ABC):
     @abstractmethod
     async def list_by_patient(
         self, patient_id: UUID, limit: int = 100, offset: int = 0
-    ) -> List[ClinicalNote]:
+    ) -> list[ClinicalNote]:
         """
         List all clinical notes for a specific patient with pagination
 
@@ -112,7 +110,7 @@ class ClinicalNoteRepository(ABC):
     @abstractmethod
     async def list_by_provider(
         self, provider_id: UUID, limit: int = 100, offset: int = 0
-    ) -> List[ClinicalNote]:
+    ) -> list[ClinicalNote]:
         """
         List all clinical notes created by a specific provider with pagination
 
@@ -130,7 +128,7 @@ class ClinicalNoteRepository(ABC):
         pass
 
     @abstractmethod
-    async def list_by_appointment(self, appointment_id: UUID) -> List[ClinicalNote]:
+    async def list_by_appointment(self, appointment_id: UUID) -> list[ClinicalNote]:
         """
         List all clinical notes associated with a specific appointment
 
@@ -148,7 +146,7 @@ class ClinicalNoteRepository(ABC):
     @abstractmethod
     async def list_by_status(
         self, status: NoteStatus, limit: int = 100, offset: int = 0
-    ) -> List[ClinicalNote]:
+    ) -> list[ClinicalNote]:
         """
         List all clinical notes with a specific status
 
@@ -168,7 +166,7 @@ class ClinicalNoteRepository(ABC):
     @abstractmethod
     async def list_by_type(
         self, note_type: NoteType, limit: int = 100, offset: int = 0
-    ) -> List[ClinicalNote]:
+    ) -> list[ClinicalNote]:
         """
         List all clinical notes of a specific type
 
@@ -190,8 +188,8 @@ class ClinicalNoteRepository(ABC):
         self,
         start_date: datetime,
         end_date: datetime,
-        patient_id: Optional[UUID] = None,
-    ) -> List[ClinicalNote]:
+        patient_id: UUID | None = None,
+    ) -> list[ClinicalNote]:
         """
         List all clinical notes within a date range, optionally filtered by patient
 
@@ -212,10 +210,10 @@ class ClinicalNoteRepository(ABC):
     async def search_by_content(
         self,
         query: str,
-        patient_id: Optional[UUID] = None,
+        patient_id: UUID | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> List[ClinicalNote]:
+    ) -> list[ClinicalNote]:
         """
         Search clinical notes by content, optionally filtered by patient
 
@@ -234,7 +232,7 @@ class ClinicalNoteRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_latest_by_patient(self, patient_id: UUID) -> Optional[ClinicalNote]:
+    async def get_latest_by_patient(self, patient_id: UUID) -> ClinicalNote | None:
         """
         Get the most recent clinical note for a specific patient
 

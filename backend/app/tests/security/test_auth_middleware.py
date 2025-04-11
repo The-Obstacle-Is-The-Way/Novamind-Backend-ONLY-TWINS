@@ -16,6 +16,7 @@ from app.infrastructure.security.jwt_service import JWTService
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
 
+@pytest.mark.db_required
 class TestAuthMiddleware:
     """
     Tests for the Authentication Middleware to ensure HIPAA-compliant access control.

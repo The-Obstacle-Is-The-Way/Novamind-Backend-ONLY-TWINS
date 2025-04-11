@@ -37,6 +37,7 @@ def security_components():
     return jwt_handler, password_handler, role_manager
 
 
+@pytest.mark.db_required
 class TestSecurityBoundary:
     """Test suite for integrated security boundaries."""
     

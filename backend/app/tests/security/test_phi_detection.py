@@ -7,6 +7,7 @@ from pathlib import Path
 from scripts.run_hipaa_phi_audit import PHIAuditor, PHIDetector
 
 
+@pytest.mark.db_required
 class TestPHIDetection:
     """Test PHI detection capabilities in our HIPAA compliance system."""
 

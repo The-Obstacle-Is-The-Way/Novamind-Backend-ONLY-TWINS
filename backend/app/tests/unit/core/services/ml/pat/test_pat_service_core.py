@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from app.core.services.ml.pat.pat_service import PATService
 
 
+@pytest.mark.venv_only
 class TestPATService:
     """Tests for the PAT service."""
 

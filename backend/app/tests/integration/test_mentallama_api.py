@@ -29,6 +29,7 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
 
 
 # Mock services
+@pytest.mark.db_required
 class MockMentaLLaMAService(MentaLLaMAInterface):
     """Mock MentaLLaMA service for testing."""
     

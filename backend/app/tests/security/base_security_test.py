@@ -14,6 +14,7 @@ from app.infrastructure.security.rbac.role_manager import RoleBasedAccessControl
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
 
+@pytest.mark.db_required
 class MockEntityFactory:
     """Mock factory for generating test entities."""
     

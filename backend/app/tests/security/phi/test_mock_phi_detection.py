@@ -17,6 +17,7 @@ from app.core.exceptions import (
 from app.core.services.ml.mock import MockPHIDetection
 from app.tests.security.base_security_test import BaseSecurityTest
 
+@pytest.mark.venv_only
 class TestMockPHIDetection(BaseSecurityTest):
     """
     Test suite for MockPHIDetection class.

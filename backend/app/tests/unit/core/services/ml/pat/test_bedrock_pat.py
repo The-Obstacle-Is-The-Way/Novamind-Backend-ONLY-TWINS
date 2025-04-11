@@ -136,6 +136,7 @@ def mock_bedrock_response():
     return mock_response
 
 
+@pytest.mark.db_required
 class TestBedrockPAT:
     """Test suite for the BedrockPAT service."""
     

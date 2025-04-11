@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Repository interface for BiometricTwin entities.
 
@@ -7,7 +6,6 @@ entities, following the Repository pattern to abstract data access operations.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from uuid import UUID
 
 from app.domain.entities.digital_twin.biometric_twin import BiometricTwin
@@ -23,7 +21,7 @@ class BiometricTwinRepository(ABC):
     """
     
     @abstractmethod
-    def get_by_id(self, twin_id: UUID) -> Optional[BiometricTwin]:
+    def get_by_id(self, twin_id: UUID) -> BiometricTwin | None:
         """
         Retrieve a BiometricTwin by its ID.
         
@@ -36,7 +34,7 @@ class BiometricTwinRepository(ABC):
         pass
     
     @abstractmethod
-    def get_by_patient_id(self, patient_id: UUID) -> Optional[BiometricTwin]:
+    def get_by_patient_id(self, patient_id: UUID) -> BiometricTwin | None:
         """
         Retrieve a BiometricTwin by the associated patient ID.
         
@@ -77,7 +75,7 @@ class BiometricTwinRepository(ABC):
         pass
     
     @abstractmethod
-    def list_by_connected_device(self, device_id: str) -> List[BiometricTwin]:
+    def list_by_connected_device(self, device_id: str) -> list[BiometricTwin]:
         """
         List all BiometricTwin entities connected to a specific device.
         
@@ -90,7 +88,7 @@ class BiometricTwinRepository(ABC):
         pass
     
     @abstractmethod
-    def list_all(self, limit: int = 100, offset: int = 0) -> List[BiometricTwin]:
+    def list_all(self, limit: int = 100, offset: int = 0) -> list[BiometricTwin]:
         """
         List all BiometricTwin entities with pagination.
         

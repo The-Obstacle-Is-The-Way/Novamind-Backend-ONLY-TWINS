@@ -79,6 +79,7 @@ def mock_observer():
     return observer
 
 
+@pytest.mark.venv_only
 class TestBiometricEventProcessor:
     """Tests for the BiometricEventProcessor."""
     

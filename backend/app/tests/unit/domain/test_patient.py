@@ -43,6 +43,7 @@ def valid_patient_data(mock_encryption_service):
     }
 
 
+@pytest.mark.venv_only
 def test_create_patient(valid_patient_data, mock_encryption_service):
     """Test patient creation with valid data."""
     # Create patient

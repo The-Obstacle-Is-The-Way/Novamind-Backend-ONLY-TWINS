@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Alert Observer Interface for the Digital Twin Psychiatry Platform.
 
@@ -8,7 +7,6 @@ are generated, allowing for flexible handling of alerts by different components.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any
 
 from app.domain.entities.digital_twin.biometric_alert import BiometricAlert
 

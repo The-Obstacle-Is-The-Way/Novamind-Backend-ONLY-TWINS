@@ -18,6 +18,7 @@ from app.api.dependencies.auth import (
 )
 
 
+@pytest.mark.db_required
 class TestAuthDependencies:
     """Test suite for authentication dependencies."""
 

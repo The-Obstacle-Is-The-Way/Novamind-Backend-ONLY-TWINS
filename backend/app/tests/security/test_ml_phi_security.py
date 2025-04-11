@@ -58,7 +58,8 @@ def sample_patient_data():
 
 
 # TODO: Review and potentially reimplement these tests using current PHI handling components (e.g., PHISanitizer)
-# class TestPHIHandling:
+# @pytest.mark.venv_only
+class TestPHIHandling:
 #     """Test proper handling of PHI in ML components."""
 #
 #     def test_phi_data_is_never_logged(self, sample_patient_data, caplog):

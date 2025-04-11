@@ -25,6 +25,7 @@ from app.infrastructure.security.encryption import EncryptionService
 from app.core.utils.logging import get_logger
 
 
+@pytest.mark.db_required
 class TestPatientPHISecurity:
     """Test suite for HIPAA security compliance of Patient PHI."""
     

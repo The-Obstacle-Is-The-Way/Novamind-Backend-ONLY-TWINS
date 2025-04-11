@@ -7,6 +7,7 @@ from app.infrastructure.persistence.sqlalchemy.unit_of_work import SQLAlchemyUni
 from app.domain.exceptions import RepositoryError # Changed from TransactionError
 
 
+@pytest.mark.db_required
 class TestSQLAlchemyUnitOfWork:
     """
     Tests for the SQLAlchemy Unit of Work to ensure HIPAA-compliant data integrity.

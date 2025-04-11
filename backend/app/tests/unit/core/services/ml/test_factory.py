@@ -17,6 +17,7 @@ from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
 from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
 
 
+@pytest.mark.db_required
 class TestMLServiceFactory:
     """Test suite for ML Service Factory."""
     

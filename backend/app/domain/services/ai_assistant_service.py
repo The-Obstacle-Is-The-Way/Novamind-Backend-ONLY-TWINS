@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 AI Assistant service module for the NOVAMIND backend.
 
@@ -6,17 +5,12 @@ This module contains the AIAssistantService, which encapsulates complex business
 related to AI-assisted features in the concierge psychiatry practice.
 """
 
-from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID
 
-from app.domain.entities.clinical_note import ClinicalNote
-from app.domain.entities.medication import Medication
-from app.domain.entities.patient import Patient
 from app.domain.exceptions import (
     AuthorizationError,
-    BusinessRuleViolationError,
     ValidationError,
 )
 from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository
@@ -66,8 +60,8 @@ class AIAssistantService:
         provider_id: UUID,
         patient_id: UUID,
         appointment_id: UUID,
-        note_context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        note_context: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Generate a draft clinical note using AI assistance
 
@@ -126,8 +120,8 @@ class AIAssistantService:
         self,
         provider_id: UUID,
         patient_id: UUID,
-        proposed_medications: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        proposed_medications: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """
         Analyze potential medication interactions for a patient
 
@@ -198,9 +192,9 @@ class AIAssistantService:
         self,
         provider_id: UUID,
         patient_id: UUID,
-        diagnosis_codes: List[str],
-        treatment_context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        diagnosis_codes: list[str],
+        treatment_context: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Generate treatment recommendations based on patient data and diagnoses
 
@@ -296,8 +290,8 @@ class AIAssistantService:
         provider_id: UUID,
         patient_id: UUID,
         topic: str,
-        education_context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        education_context: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Generate personalized patient education material
 
@@ -371,8 +365,8 @@ class AIAssistantService:
         }
 
     async def summarize_research_literature(
-        self, provider_id: UUID, topic: str, search_parameters: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, provider_id: UUID, topic: str, search_parameters: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Summarize recent research literature on a clinical topic
 

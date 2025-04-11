@@ -338,6 +338,7 @@ def mock_get_pat_service(mock_pat_service: MagicMock) -> None:
         yield
 
 
+@pytest.mark.db_required
 class TestActigraphyRoutes:
     """Tests for the actigraphy API routes."""
     

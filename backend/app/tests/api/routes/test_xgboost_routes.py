@@ -122,6 +122,7 @@ def client():
         ),
     ]
 )
+@pytest.mark.db_required
 def test_xgboost_endpoints_return_200(client, endpoint, request_model, response_model):
     """Test that XGBoost endpoints return 200 status code."""
     # Setup mock return value

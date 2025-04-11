@@ -3,7 +3,6 @@ Repository interface for Patient operations.
 Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from uuid import UUID
 
 from app.domain.entities.patient import Patient
@@ -16,7 +15,7 @@ class PatientRepository(ABC):
     """
     
     @abstractmethod
-    async def get_by_id(self, patient_id: UUID) -> Optional[Patient]:
+    async def get_by_id(self, patient_id: UUID) -> Patient | None:
         """
         Retrieve a patient by ID.
         
@@ -29,7 +28,7 @@ class PatientRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_all(self, limit: int = 100, offset: int = 0) -> List[Patient]:
+    async def get_all(self, limit: int = 100, offset: int = 0) -> list[Patient]:
         """
         Retrieve all patients with pagination.
         
@@ -69,7 +68,7 @@ class PatientRepository(ABC):
         pass
     
     @abstractmethod
-    async def find_by_name(self, name: str) -> List[Patient]:
+    async def find_by_name(self, name: str) -> list[Patient]:
         """
         Find patients by name (partial match).
         
@@ -82,7 +81,7 @@ class PatientRepository(ABC):
         pass
     
     @abstractmethod
-    async def find_by_diagnosis(self, diagnosis_code: str) -> List[Patient]:
+    async def find_by_diagnosis(self, diagnosis_code: str) -> list[Patient]:
         """
         Find patients by diagnosis code.
         
@@ -95,7 +94,7 @@ class PatientRepository(ABC):
         pass
     
     @abstractmethod
-    async def find_by_medication(self, medication_name: str) -> List[Patient]:
+    async def find_by_medication(self, medication_name: str) -> list[Patient]:
         """
         Find patients by medication name.
         

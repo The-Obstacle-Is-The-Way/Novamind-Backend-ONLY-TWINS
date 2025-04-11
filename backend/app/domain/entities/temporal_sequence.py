@@ -4,18 +4,16 @@ Temporal sequence models for the Temporal Neurotransmitter System.
 This module defines the core classes for representing time series data
 for neurotransmitter levels and other temporal measurements.
 """
-from datetime import datetime, timedelta, UTC
-from typing import Dict, List, Tuple, Optional, Any, Union, Iterator, Generic, TypeVar
-import uuid
-from uuid import UUID
-import statistics
 import math
+import uuid
+from datetime import UTC, datetime, timedelta
+from enum import Enum
+from typing import Any, Generic, TypeVar
+from uuid import UUID
+
 import numpy as np
-from enum import Enum, auto
 
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, TemporalResolution
-from app.domain.entities.temporal_events import TemporalEvent
-
 
 T = TypeVar('T', float, int, bool, str)
 
@@ -41,17 +39,17 @@ class TemporalSequence(Generic[T]):
     def __init__(
         self,
         sequence_id: UUID,
-        feature_names: List[str],
-        timestamps: List[datetime],
-        values: List[List[float]],
+        feature_names: list[str],
+        timestamps: list[datetime],
+        values: list[list[float]],
         patient_id: UUID,
-        metadata: Optional[Dict[str, Any]] = None,
-        name: Optional[str] = None,
-        brain_region: Optional[BrainRegion] = None,
-        neurotransmitter: Optional[Neurotransmitter] = None,
-        created_at: Optional[datetime] = None,
-        updated_at: Optional[datetime] = None,
-        temporal_resolution: Optional[TemporalResolution] = None
+        metadata: dict[str, Any] | None = None,
+        name: str | None = None,
+        brain_region: BrainRegion | None = None,
+        neurotransmitter: Neurotransmitter | None = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
+        temporal_resolution: TemporalResolution | None = None
     ):
         """
         Initialize a new temporal sequence.
@@ -93,18 +91,18 @@ class TemporalSequence(Generic[T]):
         # Cache for sequence length
         self._sequence_length = len(timestamps)
     @property
-    def timestamps(self) -> List[datetime]:
+    def timestamps(self) -> list[datetime]:
         """Get all timestamps in the sequence, ordered chronologically."""
         return self._timestamps
     
     @property
-    def values(self) -> List[List[float]]:
+    def values(self) -> list[list[float]]:
         """
         Get all values in the sequence, ordered chronologically.
         """
         return self._values
     @values.setter
-    def values(self, new_values: List[List[float]]) -> None:
+    def values(self, new_values: list[list[float]]) -> None:
         """
         Set the values for this sequence.
         
@@ -122,7 +120,7 @@ class TemporalSequence(Generic[T]):
         self.metadata["explicit_values"] = True
     
     @property
-    def feature_names(self) -> List[str]:
+    def feature_names(self) -> list[str]:
         """Get the names of features in this sequence."""
         if self._feature_names:
             return self._feature_names
@@ -132,7 +130,7 @@ class TemporalSequence(Generic[T]):
             return ["value"]
     
     @feature_names.setter
-    def feature_names(self, new_feature_names: List[str]) -> None:
+    def feature_names(self, new_feature_names: list[str]) -> None:
         """
         Set the feature names for this sequence.
         
@@ -161,11 +159,11 @@ class TemporalSequence(Generic[T]):
     @classmethod
     def create(
         cls,
-        feature_names: List[str],
-        timestamps: List[datetime],
-        values: List[List[float]],
+        feature_names: list[str],
+        timestamps: list[datetime],
+        values: list[list[float]],
         patient_id: UUID,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> 'TemporalSequence':
         """
         Factory method to create a temporal sequence with an auto-generated ID.
@@ -189,7 +187,7 @@ class TemporalSequence(Generic[T]):
             metadata=metadata
         )
         
-    def to_numpy_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
+    def to_numpy_arrays(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Convert to input/output numpy arrays for machine learning.
         
@@ -208,7 +206,7 @@ class TemporalSequence(Generic[T]):
         
         return X, y
     
-    def to_padded_tensor(self, max_length: int) -> Dict[str, np.ndarray]:
+    def to_padded_tensor(self, max_length: int) -> dict[str, np.ndarray]:
         """
         Convert to a padded tensor representation.
         
@@ -259,7 +257,7 @@ class TemporalSequence(Generic[T]):
             metadata=self.metadata.copy()
         )
     
-    def get_value_at(self, timestamp: datetime, feature_index: int = 0, interpolation: InterpolationMethod = InterpolationMethod.LINEAR) -> Optional[float]:
+    def get_value_at(self, timestamp: datetime, feature_index: int = 0, interpolation: InterpolationMethod = InterpolationMethod.LINEAR) -> float | None:
         """
         Get a value at a specific timestamp, interpolating if necessary.
         
@@ -315,7 +313,7 @@ class TemporalSequence(Generic[T]):
         # For now, default to linear
         return before_value + (after_value - before_value) * position
     
-    def get_feature_statistics(self) -> Dict[str, Dict[str, float]]:
+    def get_feature_statistics(self) -> dict[str, dict[str, float]]:
         """
         Calculate statistics for each feature in the sequence.
         
@@ -340,7 +338,7 @@ class TemporalSequence(Generic[T]):
             
         return result
     
-    def get_trend(self, feature_index: int = 0, window_size: Optional[timedelta] = None) -> str:
+    def get_trend(self, feature_index: int = 0, window_size: timedelta | None = None) -> str:
         """
         Calculate trend direction over time for a specific feature.
         
@@ -361,7 +359,7 @@ class TemporalSequence(Generic[T]):
         # If window size is provided, only analyze the most recent window
         if window_size:
             cutoff = datetime.now(UTC) - window_size
-            windowed_data = [(ts, v) for ts, v in zip(timestamps, values) if ts >= cutoff]
+            windowed_data = [(ts, v) for ts, v in zip(timestamps, values, strict=False) if ts >= cutoff]
             if len(windowed_data) < 2:
                 return "insufficient_data"
             
@@ -402,7 +400,7 @@ class TemporalSequence(Generic[T]):
         else:
             return "stable"
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert sequence to dictionary for serialization.
         

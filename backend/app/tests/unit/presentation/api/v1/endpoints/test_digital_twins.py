@@ -206,6 +206,7 @@ def sample_forecast_response(sample_patient_id):
     }
 
 
+@pytest.mark.db_required
 class TestDigitalTwinEndpoints:
     """Tests for the Digital Twin API endpoints."""
     

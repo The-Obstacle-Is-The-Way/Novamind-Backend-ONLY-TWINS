@@ -16,6 +16,7 @@ from app.domain.exceptions import BiometricIntegrationError
 from app.domain.services.biometric_integration_service import BiometricIntegrationService
 
 
+@pytest.mark.db_required
 class TestBiometricIntegrationService:
     """Tests for the BiometricIntegrationService class."""
     

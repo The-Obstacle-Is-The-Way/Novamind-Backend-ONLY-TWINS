@@ -1,11 +1,10 @@
 
-# -*- coding: utf-8 -*-
 """
 Common utility functions used across the application.
 """
 
-from datetime import date, datetime, time, timedelta
-from typing import Any, Dict, List, Optional, Union
+from datetime import date
+
 
 def is_date_in_range(target_date: date, start_date: date, end_date: date) -> bool:
     """

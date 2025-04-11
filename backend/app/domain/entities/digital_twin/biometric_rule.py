@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
 """
 Module for biometric rule entities used in the Digital Twin platform.
 These rules define conditions for alerting on biometric data.
 """
 
 from datetime import datetime
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Union
+from enum import Enum
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class AlertPriority(str, Enum):
@@ -48,7 +47,7 @@ class RuleCondition(BaseModel):
     data_type: str
     operator: RuleOperator
     threshold_value: float
-    time_window_hours: Optional[int] = None
+    time_window_hours: int | None = None
 
 
 class BiometricRule(BaseModel):
@@ -71,16 +70,16 @@ class BiometricRule(BaseModel):
     id: str
     name: str
     description: str
-    conditions: List[RuleCondition]
+    conditions: list[RuleCondition]
     logical_operator: LogicalOperator
     alert_priority: AlertPriority
     provider_id: UUID
-    patient_id: Optional[UUID] = None
+    patient_id: UUID | None = None
     is_active: bool = True
     created_at: datetime
     updated_at: datetime
     
-    def evaluate(self, data_point: Dict[str, Any]) -> bool:
+    def evaluate(self, data_point: dict[str, Any]) -> bool:
         """
         Evaluate if the rule applies to a given data point.
         

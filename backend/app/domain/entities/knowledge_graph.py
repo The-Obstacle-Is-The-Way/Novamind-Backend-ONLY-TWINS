@@ -5,7 +5,6 @@ Pure domain models with no external dependencies.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union
 from uuid import UUID, uuid4
 
 
@@ -45,14 +44,14 @@ class KnowledgeGraphNode:
     id: UUID
     label: str
     node_type: NodeType
-    properties: Dict = field(default_factory=dict)
+    properties: dict = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
     confidence: float = 1.0  # 0.0 to 1.0
-    source: Optional[str] = None  # e.g., "PAT", "MentalLLaMA", "XGBoost", "clinician"
+    source: str | None = None  # e.g., "PAT", "MentalLLaMA", "XGBoost", "clinician"
     
     @classmethod
-    def create(cls, label: str, node_type: NodeType, properties: Dict = None, source: str = None, confidence: float = 1.0):
+    def create(cls, label: str, node_type: NodeType, properties: dict = None, source: str = None, confidence: float = 1.0):
         """Factory method to create a new node."""
         return cls(
             id=uuid4(),
@@ -71,16 +70,16 @@ class KnowledgeGraphEdge:
     source_id: UUID
     target_id: UUID
     edge_type: EdgeType
-    properties: Dict = field(default_factory=dict)
+    properties: dict = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
     confidence: float = 1.0  # 0.0 to 1.0
-    source: Optional[str] = None  # e.g., "PAT", "MentalLLaMA", "XGBoost", "clinician"
-    temporal_constraints: Optional[Dict] = None  # Temporal constraints on this edge
+    source: str | None = None  # e.g., "PAT", "MentalLLaMA", "XGBoost", "clinician"
+    temporal_constraints: dict | None = None  # Temporal constraints on this edge
     
     @classmethod
-    def create(cls, source_id: UUID, target_id: UUID, edge_type: EdgeType, properties: Dict = None, 
-               source: str = None, confidence: float = 1.0, temporal_constraints: Dict = None):
+    def create(cls, source_id: UUID, target_id: UUID, edge_type: EdgeType, properties: dict = None, 
+               source: str = None, confidence: float = 1.0, temporal_constraints: dict = None):
         """Factory method to create a new edge."""
         return cls(
             id=uuid4(),
@@ -98,8 +97,8 @@ class KnowledgeGraphEdge:
 class TemporalKnowledgeGraph:
     """A temporal knowledge graph representing the patient's state over time."""
     patient_id: UUID
-    nodes: Dict[UUID, KnowledgeGraphNode] = field(default_factory=dict)
-    edges: Dict[UUID, KnowledgeGraphEdge] = field(default_factory=dict)
+    nodes: dict[UUID, KnowledgeGraphNode] = field(default_factory=dict)
+    edges: dict[UUID, KnowledgeGraphEdge] = field(default_factory=dict)
     last_updated: datetime = field(default_factory=datetime.now)
     
     def add_node(self, node: KnowledgeGraphNode) -> UUID:
@@ -116,15 +115,15 @@ class TemporalKnowledgeGraph:
         self.last_updated = datetime.now()
         return edge.id
     
-    def get_nodes_by_type(self, node_type: NodeType) -> List[KnowledgeGraphNode]:
+    def get_nodes_by_type(self, node_type: NodeType) -> list[KnowledgeGraphNode]:
         """Get all nodes of a specific type."""
         return [node for node in self.nodes.values() if node.node_type == node_type]
     
-    def get_edges_by_type(self, edge_type: EdgeType) -> List[KnowledgeGraphEdge]:
+    def get_edges_by_type(self, edge_type: EdgeType) -> list[KnowledgeGraphEdge]:
         """Get all edges of a specific type."""
         return [edge for edge in self.edges.values() if edge.edge_type == edge_type]
     
-    def get_node_neighbors(self, node_id: UUID) -> Dict[EdgeType, List[KnowledgeGraphNode]]:
+    def get_node_neighbors(self, node_id: UUID) -> dict[EdgeType, list[KnowledgeGraphNode]]:
         """Get all neighboring nodes grouped by edge type."""
         if node_id not in self.nodes:
             raise ValueError(f"Node {node_id} not found in graph")
@@ -167,7 +166,7 @@ class TemporalKnowledgeGraph:
         
         return subgraph
     
-    def extract_patterns(self) -> List[Dict]:
+    def extract_patterns(self) -> list[dict]:
         """Extract temporal and causal patterns from the graph."""
         patterns = []
         
@@ -209,7 +208,7 @@ class TemporalKnowledgeGraph:
         
         return patterns
     
-    def _extract_chains(self, edges: List[KnowledgeGraphEdge]) -> List[List[KnowledgeGraphEdge]]:
+    def _extract_chains(self, edges: list[KnowledgeGraphEdge]) -> list[list[KnowledgeGraphEdge]]:
         """Helper method to extract chains of connected edges."""
         # Build an adjacency list representation
         adjacency = {}
@@ -226,8 +225,8 @@ class TemporalKnowledgeGraph:
         # Filter to keep only chains with at least 2 edges
         return [chain for chain in chains if len(chain) >= 2]
     
-    def _dfs_chain(self, current_edge: KnowledgeGraphEdge, current_chain: List[KnowledgeGraphEdge], 
-                   chains: List[List[KnowledgeGraphEdge]], adjacency: Dict[UUID, List[KnowledgeGraphEdge]]):
+    def _dfs_chain(self, current_edge: KnowledgeGraphEdge, current_chain: list[KnowledgeGraphEdge], 
+                   chains: list[list[KnowledgeGraphEdge]], adjacency: dict[UUID, list[KnowledgeGraphEdge]]):
         """Depth-first search to find chains of edges."""
         current_chain.append(current_edge)
         
@@ -249,12 +248,12 @@ class TemporalKnowledgeGraph:
 class BayesianBeliefNetwork:
     """A Bayesian belief network for probabilistic reasoning about patient state."""
     patient_id: UUID
-    variables: Dict[str, Dict] = field(default_factory=dict)  # Variable name -> properties
-    conditional_probabilities: Dict[str, Dict] = field(default_factory=dict)  # Variable -> parent configurations -> probabilities
-    evidence: Dict[str, float] = field(default_factory=dict)  # Current evidence (variable -> value)
+    variables: dict[str, dict] = field(default_factory=dict)  # Variable name -> properties
+    conditional_probabilities: dict[str, dict] = field(default_factory=dict)  # Variable -> parent configurations -> probabilities
+    evidence: dict[str, float] = field(default_factory=dict)  # Current evidence (variable -> value)
     last_updated: datetime = field(default_factory=datetime.now)
     
-    def add_variable(self, name: str, states: List[str], description: Optional[str] = None) -> None:
+    def add_variable(self, name: str, states: list[str], description: str | None = None) -> None:
         """Add a variable (node) to the network."""
         self.variables[name] = {
             "states": states,
@@ -269,7 +268,7 @@ class BayesianBeliefNetwork:
         
         self.variables[child]["parents"].append(parent)
     
-    def set_conditional_probability(self, variable: str, parent_values: Dict[str, str], probabilities: Dict[str, float]) -> None:
+    def set_conditional_probability(self, variable: str, parent_values: dict[str, str], probabilities: dict[str, float]) -> None:
         """Set the conditional probability for a variable given its parents' values."""
         if variable not in self.variables:
             raise ValueError(f"Variable {variable} not found in network")
@@ -296,7 +295,7 @@ class BayesianBeliefNetwork:
         
         self.conditional_probabilities[variable][config] = probabilities
     
-    def update_beliefs(self, evidence: Dict[str, str]) -> None:
+    def update_beliefs(self, evidence: dict[str, str]) -> None:
         """Update the network with new evidence."""
         for var, value in evidence.items():
             if var not in self.variables:
@@ -308,7 +307,7 @@ class BayesianBeliefNetwork:
         
         self.last_updated = datetime.now()
     
-    def get_belief_state(self) -> Dict[str, Dict[str, float]]:
+    def get_belief_state(self) -> dict[str, dict[str, float]]:
         """Get the current belief state (probability distribution for each variable)."""
         # This is a simplified approximation; a real implementation would use 
         # proper Bayesian inference algorithms like variable elimination
@@ -352,11 +351,11 @@ class BayesianBeliefNetwork:
         
         return beliefs
     
-    def _parent_config_to_string(self, parent_values: Dict[str, str]) -> str:
+    def _parent_config_to_string(self, parent_values: dict[str, str]) -> str:
         """Convert parent configuration to a string key."""
         return ",".join(f"{parent}={value}" for parent, value in sorted(parent_values.items()))
     
-    def _topological_sort(self) -> List[str]:
+    def _topological_sort(self) -> list[str]:
         """Sort variables so that parents come before children."""
         result = []
         visited = set()
@@ -382,7 +381,7 @@ class BayesianBeliefNetwork:
         
         return result
     
-    def _generate_parent_configs(self, var: str, beliefs: Dict[str, Dict[str, float]]) -> List[Dict[str, str]]:
+    def _generate_parent_configs(self, var: str, beliefs: dict[str, dict[str, float]]) -> list[dict[str, str]]:
         """Generate all possible parent configurations for a variable."""
         parents = self.variables[var]["parents"]
         
@@ -401,7 +400,7 @@ class BayesianBeliefNetwork:
         
         return configs
     
-    def _parent_config_probability(self, config: Dict[str, str], beliefs: Dict[str, Dict[str, float]]) -> float:
+    def _parent_config_probability(self, config: dict[str, str], beliefs: dict[str, dict[str, float]]) -> float:
         """Calculate the probability of a specific parent configuration."""
         prob = 1.0
         for parent, value in config.items():

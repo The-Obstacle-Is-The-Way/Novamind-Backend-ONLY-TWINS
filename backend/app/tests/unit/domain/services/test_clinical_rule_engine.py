@@ -19,6 +19,7 @@ from app.domain.exceptions import ValidationError
 from app.domain.services.clinical_rule_engine import ClinicalRuleEngine
 
 
+@pytest.mark.db_required
 class TestClinicalRuleEngine:
     """Tests for the ClinicalRuleEngine service."""
     

@@ -21,7 +21,8 @@ try:
     from app.infrastructure.security.encryption import encrypt_phi, decrypt_phi
 except ImportError:
     # Mock classes for testing database PHI protection
-    class Database:
+    @pytest.mark.db_required
+class Database:
         """Mock database for testing."""
         
         def __init__(self):

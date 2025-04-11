@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Digital Twin service module for the NOVAMIND backend.
 
@@ -7,16 +6,14 @@ related to patient digital twins in the concierge psychiatry practice.
 """
 
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID
 
 from app.domain.entities.digital_twin.digital_twin import DigitalTwin
 from app.domain.entities.digital_twin.time_series_model import TimeSeriesModel
 from app.domain.entities.digital_twin.twin_model import TwinModel
-from app.domain.entities.patient import Patient
 from app.domain.exceptions import (
-    BusinessRuleViolationError,
     ServiceError,
     ValidationError,
 )
@@ -67,7 +64,7 @@ class DigitalTwinService:
         self._pharmacogenomics_service = pharmacogenomics_service
 
     async def create_digital_twin(
-        self, patient_id: UUID, initial_data: Dict[str, Any] = None
+        self, patient_id: UUID, initial_data: dict[str, Any] = None
     ) -> DigitalTwin:
         """
         Create a new digital twin for a patient
@@ -125,7 +122,7 @@ class DigitalTwinService:
         return await self._digital_twin_repo.create(digital_twin)
 
     async def update_digital_twin(
-        self, patient_id: UUID, new_data_points: Dict[str, Any]
+        self, patient_id: UUID, new_data_points: dict[str, Any]
     ) -> DigitalTwin:
         """
         Update a digital twin with new data points
@@ -168,7 +165,7 @@ class DigitalTwinService:
         return await self._digital_twin_repo.update(digital_twin)
 
     async def generate_new_twin_model(
-        self, patient_id: UUID, model_type: str, model_parameters: Dict[str, Any]
+        self, patient_id: UUID, model_type: str, model_parameters: dict[str, Any]
     ) -> DigitalTwin:
         """
         Generate a new twin model for a patient's digital twin
@@ -212,7 +209,7 @@ class DigitalTwinService:
         # Save to repository
         return await self._digital_twin_repo.update(digital_twin)
 
-    async def get_digital_twin(self, patient_id: UUID) -> Optional[DigitalTwin]:
+    async def get_digital_twin(self, patient_id: UUID) -> DigitalTwin | None:
         """
         Get a patient's digital twin
 
@@ -233,7 +230,7 @@ class DigitalTwinService:
         # Get digital twin
         return await self._digital_twin_repo.get_by_patient_id(patient_id)
 
-    async def get_twin_model_history(self, patient_id: UUID) -> List[TwinModel]:
+    async def get_twin_model_history(self, patient_id: UUID) -> list[TwinModel]:
         """
         Get the history of twin models for a patient
 
@@ -259,8 +256,8 @@ class DigitalTwinService:
         patient_id: UUID,
         treatment_id: UUID,
         start_date: datetime,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Analyze a patient's response to treatment using their digital twin
 
@@ -313,8 +310,8 @@ class DigitalTwinService:
         }
 
     async def predict_treatment_outcomes(
-        self, patient_id: UUID, proposed_treatments: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        self, patient_id: UUID, proposed_treatments: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """
         Predict outcomes for proposed treatments using the patient's digital twin
 
@@ -363,8 +360,8 @@ class DigitalTwinService:
         return predictions
 
     async def generate_patient_insights(
-        self, patient_id: UUID, patient_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, patient_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Generate comprehensive insights for a patient.
 
@@ -392,15 +389,15 @@ class DigitalTwinService:
             return insights
 
         except Exception as e:
-            logging.error(f"Error generating patient insights: {str(e)}")
-            raise ServiceError(f"Failed to generate patient insights: {str(e)}")
+            logging.error(f"Error generating patient insights: {e!s}")
+            raise ServiceError(f"Failed to generate patient insights: {e!s}")
 
     async def forecast_patient_symptoms(
         self,
         patient_id: UUID,
-        symptom_history: List[Dict[str, Any]],
+        symptom_history: list[dict[str, Any]],
         forecast_days: int = 30,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Forecast patient symptoms based on historical data.
 
@@ -431,15 +428,15 @@ class DigitalTwinService:
             return forecast
 
         except Exception as e:
-            logging.error(f"Error forecasting patient symptoms: {str(e)}")
-            raise ServiceError(f"Failed to forecast patient symptoms: {str(e)}")
+            logging.error(f"Error forecasting patient symptoms: {e!s}")
+            raise ServiceError(f"Failed to forecast patient symptoms: {e!s}")
 
     async def analyze_biometric_correlations(
         self,
         patient_id: UUID,
-        biometric_data: List[Dict[str, Any]],
-        mental_health_indicators: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        biometric_data: list[dict[str, Any]],
+        mental_health_indicators: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """
         Analyze correlations between biometric data and mental health indicators.
 
@@ -475,15 +472,15 @@ class DigitalTwinService:
             return correlations
 
         except Exception as e:
-            logging.error(f"Error analyzing biometric correlations: {str(e)}")
-            raise ServiceError(f"Failed to analyze biometric correlations: {str(e)}")
+            logging.error(f"Error analyzing biometric correlations: {e!s}")
+            raise ServiceError(f"Failed to analyze biometric correlations: {e!s}")
 
     async def predict_medication_responses(
         self,
         patient_id: UUID,
-        patient_data: Dict[str, Any],
-        medications: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        patient_data: dict[str, Any],
+        medications: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Predict patient responses to psychiatric medications.
 
@@ -519,11 +516,11 @@ class DigitalTwinService:
             return predictions
 
         except Exception as e:
-            logging.error(f"Error predicting medication responses: {str(e)}")
-            raise ServiceError(f"Failed to predict medication responses: {str(e)}")
+            logging.error(f"Error predicting medication responses: {e!s}")
+            raise ServiceError(f"Failed to predict medication responses: {e!s}")
 
     async def generate_personalized_therapeutic_plan(
-        self, patient_id: UUID, patient_data: Dict[str, Any], diagnosis: str
+        self, patient_id: UUID, patient_data: dict[str, Any], diagnosis: str
     ) -> TherapeuticPlan:
         """
         Generate a personalized therapeutic plan for a patient.
@@ -675,14 +672,14 @@ class DigitalTwinService:
             return therapeutic_plan
 
         except Exception as e:
-            logging.error(f"Error generating personalized therapeutic plan: {str(e)}")
+            logging.error(f"Error generating personalized therapeutic plan: {e!s}")
             raise ServiceError(
-                f"Failed to generate personalized therapeutic plan: {str(e)}"
+                f"Failed to generate personalized therapeutic plan: {e!s}"
             )
 
     async def update_patient_digital_twin(
-        self, patient_id: UUID, patient_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, patient_id: UUID, patient_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Update a patient's Digital Twin with new data.
 
@@ -710,10 +707,10 @@ class DigitalTwinService:
             return update_result
 
         except Exception as e:
-            logging.error(f"Error updating patient Digital Twin: {str(e)}")
-            raise ServiceError(f"Failed to update patient Digital Twin: {str(e)}")
+            logging.error(f"Error updating patient Digital Twin: {e!s}")
+            raise ServiceError(f"Failed to update patient Digital Twin: {e!s}")
 
-    async def get_patient_digital_twin_status(self, patient_id: UUID) -> Dict[str, Any]:
+    async def get_patient_digital_twin_status(self, patient_id: UUID) -> dict[str, Any]:
         """
         Get the status of a patient's Digital Twin.
 
@@ -737,5 +734,5 @@ class DigitalTwinService:
             return status
 
         except Exception as e:
-            logging.error(f"Error getting patient Digital Twin status: {str(e)}")
-            raise ServiceError(f"Failed to get patient Digital Twin status: {str(e)}")
+            logging.error(f"Error getting patient Digital Twin status: {e!s}")
+            raise ServiceError(f"Failed to get patient Digital Twin status: {e!s}")

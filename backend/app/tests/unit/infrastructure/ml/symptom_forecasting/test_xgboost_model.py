@@ -16,6 +16,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel
 
 
+@pytest.mark.db_required
 class TestXGBoostSymptomModel:
     """Tests for the XGBoostSymptomModel."""
 

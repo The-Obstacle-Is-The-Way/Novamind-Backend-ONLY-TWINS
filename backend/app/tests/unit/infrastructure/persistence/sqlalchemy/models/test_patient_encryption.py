@@ -17,6 +17,7 @@ from app.domain.value_objects.emergency_contact import EmergencyContact
 from app.infrastructure.security.encryption import EncryptionService
 
 
+@pytest.mark.db_required
 class TestPatientModelEncryption:
     """Test suite for PatientModel encryption/decryption functionality."""
     

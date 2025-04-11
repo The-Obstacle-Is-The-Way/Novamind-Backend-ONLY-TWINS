@@ -4,7 +4,6 @@ Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional, Tuple
 from uuid import UUID
 
 from app.domain.entities.digital_twin import DigitalTwinState
@@ -17,7 +16,7 @@ class DigitalTwinRepository(ABC):
     """
     
     @abstractmethod
-    async def get_by_id(self, digital_twin_id: UUID) -> Optional[DigitalTwinState]:
+    async def get_by_id(self, digital_twin_id: UUID) -> DigitalTwinState | None:
         """
         Retrieve a Digital Twin state by its ID.
         
@@ -30,7 +29,7 @@ class DigitalTwinRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_latest_for_patient(self, patient_id: UUID) -> Optional[DigitalTwinState]:
+    async def get_latest_for_patient(self, patient_id: UUID) -> DigitalTwinState | None:
         """
         Retrieve the latest Digital Twin state for a patient.
         
@@ -46,10 +45,10 @@ class DigitalTwinRepository(ABC):
     async def get_history_for_patient(
         self, 
         patient_id: UUID, 
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100
-    ) -> List[DigitalTwinState]:
+    ) -> list[DigitalTwinState]:
         """
         Retrieve historical Digital Twin states for a patient.
         
@@ -81,10 +80,10 @@ class DigitalTwinRepository(ABC):
     async def find_by_clinical_significance(
         self,
         significance_level: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100
-    ) -> List[Tuple[UUID, DigitalTwinState]]:
+    ) -> list[tuple[UUID, DigitalTwinState]]:
         """
         Find Digital Twin states with specified clinical significance.
         

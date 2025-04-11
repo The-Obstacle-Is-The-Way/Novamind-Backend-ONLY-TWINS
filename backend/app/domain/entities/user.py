@@ -5,7 +5,7 @@ This module defines the User entity representing a user in the system
 with attributes and behaviors.
 """
 from uuid import UUID
-from typing import List, Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
 from app.domain.enums.role import Role
@@ -21,9 +21,9 @@ class User(BaseModel):
     id: UUID = Field(..., description="Unique identifier for the user")
     username: str = Field(..., min_length=3, max_length=50, description="Username for login")
     email: EmailStr = Field(..., description="Email address of the user")
-    roles: List[Role] = Field(default_factory=lambda: [Role.USER], description="User roles for authorization")
+    roles: list[Role] = Field(default_factory=lambda: [Role.USER], description="User roles for authorization")
     is_active: bool = Field(default=True, description="Whether the user account is active")
-    full_name: Optional[str] = Field(None, description="Full name of the user")
+    full_name: str | None = Field(None, description="Full name of the user")
     
     class Config:
         """Pydantic model configuration."""
@@ -41,7 +41,7 @@ class User(BaseModel):
         """
         return role in self.roles
     
-    def has_any_role(self, roles: List[Role]) -> bool:
+    def has_any_role(self, roles: list[Role]) -> bool:
         """
         Check if the user has any of the specified roles.
         
@@ -53,7 +53,7 @@ class User(BaseModel):
         """
         return any(role in self.roles for role in roles)
 
-    def has_all_roles(self, roles: List[Role]) -> bool:
+    def has_all_roles(self, roles: list[Role]) -> bool:
         """
         Check if the user has all of the specified roles.
         

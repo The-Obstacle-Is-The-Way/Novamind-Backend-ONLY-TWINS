@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Medication events module for the NOVAMIND backend.
 
@@ -7,8 +6,7 @@ concierge psychiatry practice, following the Domain-Driven Design pattern.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, UTC, UTC
-from typing import List, Optional
+from datetime import UTC, datetime
 from uuid import UUID
 
 
@@ -29,9 +27,9 @@ class MedicationPrescribed(MedicationEvent):
     medication_name: str
     dosage: str
     frequency: str
-    duration_days: Optional[int] = None
+    duration_days: int | None = None
     is_controlled_substance: bool = False
-    prescription_id: Optional[UUID] = None
+    prescription_id: UUID | None = None
 
 
 @dataclass
@@ -42,7 +40,7 @@ class MedicationRefilled(MedicationEvent):
     previous_prescription_id: UUID
     refill_number: int  # Which refill this is (1st, 2nd, etc.)
     authorized_refills_remaining: int
-    new_prescription_id: Optional[UUID] = None
+    new_prescription_id: UUID | None = None
 
 
 @dataclass
@@ -50,8 +48,8 @@ class MedicationDiscontinued(MedicationEvent):
     """Event raised when a medication is discontinued"""
 
     discontinuation_reason: str
-    taper_schedule: Optional[str] = None
-    alternative_medication_id: Optional[UUID] = None
+    taper_schedule: str | None = None
+    alternative_medication_id: UUID | None = None
 
 
 @dataclass
@@ -71,7 +69,7 @@ class MedicationInteractionDetected(MedicationEvent):
     interacting_medication_id: UUID
     interaction_severity: str  # e.g., "Mild", "Moderate", "Severe"
     interaction_description: str
-    override_reason: Optional[str] = None
+    override_reason: str | None = None
     was_overridden: bool = False
 
 
@@ -80,7 +78,7 @@ class MedicationAdherenceRecorded(MedicationEvent):
     """Event raised when medication adherence is recorded"""
 
     adherence_level: str  # e.g., "Full", "Partial", "None"
-    adherence_issues: Optional[List[str]] = None
+    adherence_issues: list[str] | None = None
     patient_reported: bool = True
     intervention_required: bool = False
 
@@ -91,8 +89,8 @@ class MedicationSideEffectReported(MedicationEvent):
 
     side_effect_description: str
     severity: str  # e.g., "Mild", "Moderate", "Severe"
-    onset_date: Optional[datetime] = None
-    action_taken: Optional[str] = (
+    onset_date: datetime | None = None
+    action_taken: str | None = (
         None  # e.g., "Discontinued", "Reduced Dosage", "Monitoring"
     )
     is_serious_adverse_event: bool = False

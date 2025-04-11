@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 """Emergency contact value object."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 from app.domain.value_objects.address import Address
+
 
 @dataclass(frozen=True)
 class EmergencyContact:
@@ -17,8 +16,8 @@ class EmergencyContact:
     name: str
     relationship: str
     phone: str
-    email: Optional[str] = None
-    address: Optional[Address] = None
+    email: str | None = None
+    address: Address | None = None
     
     def __post_init__(self) -> None:
         """Validate emergency contact data."""

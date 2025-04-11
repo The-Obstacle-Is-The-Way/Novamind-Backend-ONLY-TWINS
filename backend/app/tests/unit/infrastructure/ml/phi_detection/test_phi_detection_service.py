@@ -35,6 +35,7 @@ name:
             return service
 
 
+@pytest.mark.db_required
 class TestPHIDetectionService:
     """Test suite for PHI detection service."""
     

@@ -20,6 +20,7 @@ from app.domain.services.visualization_preprocessor import NeurotransmitterVisua
 # Fixtures for testing
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_patient_id():
     """Generate a test patient ID."""
     return uuid.uuid4()

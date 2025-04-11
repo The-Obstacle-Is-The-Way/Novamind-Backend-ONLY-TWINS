@@ -17,6 +17,7 @@ from app.domain.services.biometric_alert_notification_service import (
 )
 
 
+@pytest.mark.db_required
 class TestBiometricAlertNotificationService:
     """Tests for the BiometricAlertNotificationService."""
     

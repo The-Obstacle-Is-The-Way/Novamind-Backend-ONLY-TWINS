@@ -4,13 +4,16 @@ Domain service for preprocessing neurotransmitter data for visualization.
 This module contains preprocessing logic to optimize neurotransmitter data
 for efficient visualization in the frontend.
 """
-from typing import Dict, List, Tuple, Optional, Any, Set
 import math
-from datetime import datetime
+from typing import Any
 
-from app.domain.entities.temporal_sequence import TemporalSequence
-from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, ClinicalSignificance
+from app.domain.entities.digital_twin_enums import (
+    BrainRegion,
+    ClinicalSignificance,
+    Neurotransmitter,
+)
 from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
+from app.domain.entities.temporal_sequence import TemporalSequence
 
 
 class NeurotransmitterVisualizationPreprocessor:
@@ -71,8 +74,8 @@ class NeurotransmitterVisualizationPreprocessor:
     def precompute_temporal_sequence_visualization(
         self,
         sequence: TemporalSequence,
-        focus_features: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        focus_features: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Precompute visualization data for a temporal sequence.
         
@@ -161,8 +164,8 @@ class NeurotransmitterVisualizationPreprocessor:
     
     def precompute_cascade_geometry(
         self,
-        cascade_data: Dict[BrainRegion, List[float]]
-    ) -> Dict[str, Any]:
+        cascade_data: dict[BrainRegion, list[float]]
+    ) -> dict[str, Any]:
         """
         Generate geometry data for neurotransmitter cascade visualization.
         
@@ -262,7 +265,7 @@ class NeurotransmitterVisualizationPreprocessor:
             "active_regions": [region.value for region in active_regions]
         }
     
-    def _calculate_trend(self, values: List[float]) -> str:
+    def _calculate_trend(self, values: list[float]) -> str:
         """
         Calculate the trend direction of a series of values.
         
@@ -307,7 +310,7 @@ class NeurotransmitterVisualizationPreprocessor:
         else:
             return "stable"
     
-    def _rgb_to_hex(self, rgb_tuple: Tuple[float, float, float]) -> str:
+    def _rgb_to_hex(self, rgb_tuple: tuple[float, float, float]) -> str:
         """
         Convert RGB tuple (0-1 range) to hex color string.
         
@@ -320,7 +323,7 @@ class NeurotransmitterVisualizationPreprocessor:
         r, g, b = rgb_tuple
         return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
     
-    def _hsv_to_rgb(self, h: float, s: float, v: float) -> Tuple[float, float, float]:
+    def _hsv_to_rgb(self, h: float, s: float, v: float) -> tuple[float, float, float]:
         """
         Convert HSV colors to RGB.
         
@@ -382,7 +385,7 @@ class NeurotransmitterEffectVisualizer:
     def generate_effect_visualization(
         self,
         effect: NeurotransmitterEffect
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate visualization data for a neurotransmitter effect.
         
@@ -444,8 +447,8 @@ class NeurotransmitterEffectVisualizer:
         
     def generate_comparative_visualization(
         self,
-        effects: List[NeurotransmitterEffect]
-    ) -> Dict[str, Any]:
+        effects: list[NeurotransmitterEffect]
+    ) -> dict[str, Any]:
         """
         Generate visualization data for comparing multiple effects.
         

@@ -17,6 +17,7 @@ from unittest.mock import patch, mock_open
 from app.core.utils.validation import PHIDetector
 
 
+@pytest.mark.db_required
 class TestPHIInCodePatterns:
     """Test suite for PHI detection in common code patterns."""
 

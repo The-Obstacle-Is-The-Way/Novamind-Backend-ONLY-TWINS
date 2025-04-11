@@ -20,7 +20,8 @@ import sys
 # Add scripts directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../scripts')))
 
-# Import PHI auditor class
+# Import PHI auditor @pytest.mark.db_required
+class
 from scripts.run_hipaa_phi_audit import PHIAuditor, PHIDetector
 
 

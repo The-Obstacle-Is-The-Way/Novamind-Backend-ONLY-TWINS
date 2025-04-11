@@ -15,6 +15,7 @@ from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, Ale
 from app.domain.services.biometric_alert_audit_service import BiometricAlertAuditService
 
 
+@pytest.mark.db_required
 class TestBiometricAlertAuditService:
     """Tests for the BiometricAlertAuditService."""
     

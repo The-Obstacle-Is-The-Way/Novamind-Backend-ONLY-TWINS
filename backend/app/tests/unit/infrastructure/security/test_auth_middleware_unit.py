@@ -21,6 +21,7 @@ from app.infrastructure.security.auth_middleware import (
 )
 
 # Mock RolePermission for testing purposes
+@pytest.mark.db_required
 class RolePermission:
     """Mock RolePermission class for testing"""
     def __init__(self, name, roles=None):

@@ -1,3 +1,4 @@
+import pytest
 """
 PHI Sanitizer Tests
 
@@ -11,6 +12,7 @@ from typing import Dict, Any
 from app.core.utils.phi_sanitizer import PHISanitizer
 
 
+@pytest.mark.venv_only
 class TestPHISanitizer(unittest.TestCase):
     """Test suite for PHI sanitization functionality."""
     

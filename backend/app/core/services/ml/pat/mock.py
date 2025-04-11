@@ -40,6 +40,12 @@ class MockPATService(PATInterface):
         self._mock_delay_ms = config.get("mock_delay_ms", 0)  # Get mock delay from config
         self._initialized = True
         logger.info("Mock PAT service initialized")
+        
+    def _check_initialized(self) -> None:
+        """Check if the service is initialized and raise exception if not."""
+        if not self._initialized:
+            from app.core.exceptions import InitializationError
+            raise InitializationError("Mock PAT service not initialized")
     
     def is_healthy(self) -> bool:
         """Check if the service is healthy."""
@@ -625,3 +631,272 @@ class MockPATService(PATInterface):
             scores[f"{assessment['assessment_type']}_score"] = total
         
         return scores
+    
+    def analyze_actigraphy(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, float]],
+        start_time: str,
+        end_time: str,
+        sampling_rate_hz: float,
+        device_info: Dict[str, str],
+        analysis_types: List[str]
+    ) -> Dict[str, Any]:
+        """Analyze actigraphy readings."""
+        self._check_initialized()
+        
+        # Validate inputs
+        if not patient_id:
+            raise ValueError("Patient ID is required")
+        
+        if not readings or not isinstance(readings, list):
+            raise ValueError("Readings must be a non-empty list")
+        
+        if sampling_rate_hz <= 0:
+            from pydantic import ValidationError
+            raise ValidationError("Sampling rate must be positive", model="ActigraphyInput")
+        
+        # Basic shape validation
+        for reading in readings:
+            if not all(k in reading for k in ['x', 'y', 'z']):
+                raise ValueError("Each reading must contain x, y, z values")
+        
+        # Create analysis ID
+        analysis_id = str(uuid.uuid4())
+        
+        # Generate mock analysis result
+        result = {
+            "id": analysis_id,
+            "patient_id": patient_id,
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "analysis_types": analysis_types,
+            "device_info": device_info,
+            "reading_stats": {
+                "count": len(readings),
+                "start_time": start_time,
+                "end_time": end_time,
+                "sampling_rate_hz": sampling_rate_hz
+            },
+            "metrics": self._generate_mock_actigraphy_metrics(readings, analysis_types),
+            "interpretation": self._generate_mock_interpretation(analysis_types)
+        }
+        
+        # Store analysis under patient's analyses
+        if not hasattr(self, "_actigraphy_analyses"):
+            self._actigraphy_analyses = {}
+        
+        if patient_id not in self._actigraphy_analyses:
+            self._actigraphy_analyses[patient_id] = {}
+        
+        self._actigraphy_analyses[patient_id][analysis_id] = result
+        
+        return result
+    
+    def get_actigraphy_embeddings(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, float]],
+        start_time: str,
+        end_time: str,
+        sampling_rate_hz: float
+    ) -> Dict[str, Any]:
+        """Generate embeddings from actigraphy readings."""
+        self._check_initialized()
+        
+        # Validate inputs
+        if not patient_id:
+            raise ValueError("Patient ID is required")
+        
+        if not readings or not isinstance(readings, list):
+            raise ValueError("Readings must be a non-empty list")
+        
+        if sampling_rate_hz <= 0:
+            from pydantic import ValidationError
+            raise ValidationError("Sampling rate must be positive", model="ActigraphyInput")
+        
+        # Basic shape validation
+        for reading in readings:
+            if not all(k in reading for k in ['x', 'y', 'z']):
+                raise ValueError("Each reading must contain x, y, z values")
+        
+        # Generate mock embeddings
+        embedding_id = str(uuid.uuid4())
+        embeddings = [0.1, -0.2, 0.3, -0.4, 0.5, -0.6, 0.7, -0.8, 0.9, -1.0]
+        
+        return {
+            "id": embedding_id,
+            "patient_id": patient_id,
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "embedding": embeddings,
+            "embedding_version": "mock-v1.0",
+            "dimensions": len(embeddings),
+            "metadata": {
+                "reading_count": len(readings),
+                "start_time": start_time,
+                "end_time": end_time,
+                "sampling_rate_hz": sampling_rate_hz
+            }
+        }
+    
+    def get_analysis_by_id(self, analysis_id: str) -> Dict[str, Any]:
+        """Get an actigraphy analysis by ID."""
+        self._check_initialized()
+        
+        if not hasattr(self, "_actigraphy_analyses"):
+            self._actigraphy_analyses = {}
+        
+        # Search for analysis in all patients
+        for patient_id, analyses in self._actigraphy_analyses.items():
+            if analysis_id in analyses:
+                return analyses[analysis_id]
+        
+        # Analysis not found
+        from app.core.exceptions import ResourceNotFoundError
+        raise ResourceNotFoundError(f"Analysis not found: {analysis_id}")
+    
+    def get_patient_analyses(
+        self,
+        patient_id: str,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Get actigraphy analyses for a patient."""
+        self._check_initialized()
+        
+        if not hasattr(self, "_actigraphy_analyses"):
+            self._actigraphy_analyses = {}
+        
+        # Get analyses for patient
+        patient_analyses = self._actigraphy_analyses.get(patient_id, {})
+        analyses_list = list(patient_analyses.values())
+        
+        # Sort by timestamp in descending order
+        analyses_list.sort(key=lambda a: a["timestamp"], reverse=True)
+        
+        # Apply pagination
+        if offset is not None and offset > 0:
+            analyses_list = analyses_list[offset:]
+        
+        if limit is not None and limit > 0:
+            analyses_list = analyses_list[:limit]
+        
+        return {
+            "patient_id": patient_id,
+            "count": len(analyses_list),
+            "total": len(patient_analyses),
+            "analyses": analyses_list
+        }
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """Get information about the PAT model."""
+        self._check_initialized()
+        
+        return {
+            "name": "Mock PAT Model",
+            "version": "1.0.0",
+            "type": "actigraphy_analysis",
+            "created_at": "2025-01-01T00:00:00Z",
+            "description": "Mock model for Patient Assessment Tool",
+            "capabilities": [
+                "actigraphy_analysis",
+                "sleep_detection",
+                "activity_classification",
+                "digital_twin_integration"
+            ],
+            "metrics": {
+                "accuracy": 0.95,
+                "recall": 0.92,
+                "precision": 0.94,
+                "f1_score": 0.93
+            }
+        }
+    
+    def integrate_with_digital_twin(
+        self,
+        patient_id: str,
+        profile_id: str,
+        analysis_id: str
+    ) -> Dict[str, Any]:
+        """Integrate an actigraphy analysis with a digital twin."""
+        self._check_initialized()
+        
+        # Check if analysis exists
+        analysis = self.get_analysis_by_id(analysis_id)
+        
+        # Check if analysis belongs to the patient
+        if analysis["patient_id"] != patient_id:
+            raise ValueError(f"Analysis {analysis_id} does not belong to patient {patient_id}")
+        
+        # Generate mock integration result
+        integration_id = str(uuid.uuid4())
+        
+        return {
+            "integration_id": integration_id,
+            "patient_id": patient_id,
+            "profile_id": profile_id,
+            "analysis_id": analysis_id,
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "status": "completed",
+            "metrics_integrated": len(analysis["metrics"]),
+            "digital_twin_updated": True
+        }
+    
+    def _generate_mock_actigraphy_metrics(
+        self,
+        readings: List[Dict[str, float]],
+        analysis_types: List[str]
+    ) -> Dict[str, Any]:
+        """Generate mock metrics for actigraphy analysis."""
+        metrics = {}
+        
+        # Calculate some basic statistics from the readings
+        x_values = [r['x'] for r in readings]
+        y_values = [r['y'] for r in readings]
+        z_values = [r['z'] for r in readings]
+        
+        metrics["x_mean"] = sum(x_values) / len(x_values) if x_values else 0
+        metrics["y_mean"] = sum(y_values) / len(y_values) if y_values else 0
+        metrics["z_mean"] = sum(z_values) / len(z_values) if z_values else 0
+        
+        # Add analysis type-specific metrics
+        if "sleep" in analysis_types:
+            metrics["sleep"] = {
+                "total_sleep_hours": 6.5 + (uuid.uuid4().int % 30) / 10,  # Random between 6.5-9.5
+                "sleep_efficiency": 0.75 + (uuid.uuid4().int % 20) / 100,  # Random between 0.75-0.95
+                "deep_sleep_percentage": 0.2 + (uuid.uuid4().int % 15) / 100,  # Random between 0.2-0.35
+                "rem_sleep_percentage": 0.15 + (uuid.uuid4().int % 15) / 100,  # Random between 0.15-0.3
+                "awakenings": int(uuid.uuid4().int % 6)  # Random between 0-5
+            }
+        
+        if "activity" in analysis_types:
+            metrics["activity"] = {
+                "steps": 7500 + (uuid.uuid4().int % 5000),  # Random between 7500-12500
+                "active_minutes": 120 + (uuid.uuid4().int % 120),  # Random between 120-240
+                "calories_burned": 1500 + (uuid.uuid4().int % 1000),  # Random between 1500-2500
+                "distance_km": 5.0 + (uuid.uuid4().int % 50) / 10  # Random between 5.0-10.0
+            }
+        
+        return metrics
+    
+    def _generate_mock_interpretation(self, analysis_types: List[str]) -> Dict[str, Any]:
+        """Generate mock interpretation for actigraphy analysis."""
+        interpretation = {
+            "summary": "Mock interpretation of actigraphy data"
+        }
+        
+        # Add analysis type-specific interpretations
+        if "sleep" in analysis_types:
+            sleep_quality = ["poor", "fair", "good", "excellent"][uuid.uuid4().int % 4]
+            interpretation["sleep"] = {
+                "quality": sleep_quality,
+                "issues": ["difficulty falling asleep"] if sleep_quality in ["poor", "fair"] else []
+            }
+        
+        if "activity" in analysis_types:
+            activity_level = ["sedentary", "low", "moderate", "high"][uuid.uuid4().int % 4]
+            interpretation["activity"] = {
+                "level": activity_level,
+                "meets_guidelines": activity_level in ["moderate", "high"]
+            }
+        
+        return interpretation

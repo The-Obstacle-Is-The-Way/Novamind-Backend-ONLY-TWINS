@@ -41,7 +41,8 @@ def app(mock_jwt_service):
     
     # Test endpoints
     @app.get("/test/user-id")
-    async def test_get_current_user_id(user_id: UUID = Depends(get_current_user_id)):
+    async @pytest.mark.db_required
+def test_get_current_user_id(user_id: UUID = Depends(get_current_user_id)):
         return {"user_id": str(user_id)}
     
     @app.get("/test/patient/{patient_id}")

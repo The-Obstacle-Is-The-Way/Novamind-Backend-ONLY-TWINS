@@ -87,6 +87,7 @@ def valid_appointment(future_datetime):
     )
 
 
+@pytest.mark.venv_only
 class TestAppointmentService:
     """Tests for the AppointmentService class."""
     

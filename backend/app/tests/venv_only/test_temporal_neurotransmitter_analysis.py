@@ -17,6 +17,7 @@ from unittest.mock import MagicMock
 
 # ================= Model Classes =================
 
+@pytest.mark.db_required
 class NeurotransmitterType(str, Enum):
     """Types of neurotransmitters being analyzed."""
     SEROTONIN = "serotonin"

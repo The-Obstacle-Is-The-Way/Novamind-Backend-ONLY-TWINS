@@ -85,6 +85,7 @@ def secure_messaging_service(encryption_service):
     )
 
 
+@pytest.mark.venv_only
 class TestSecureMessagingService:
     """Tests for the SecureMessagingService class."""
     

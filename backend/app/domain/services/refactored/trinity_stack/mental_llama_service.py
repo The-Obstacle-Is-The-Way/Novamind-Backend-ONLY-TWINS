@@ -3,12 +3,13 @@ MentalLLaMA Service Interface.
 Domain interface for the large language model component of the Trinity Stack.
 """
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Any
 from uuid import UUID
 
 from backend.app.domain.entities.refactored.digital_twin_core import (
-    BrainRegion, ClinicalInsight, Neurotransmitter, ClinicalSignificance
+    BrainRegion,
+    ClinicalInsight,
+    Neurotransmitter,
 )
 
 
@@ -23,9 +24,9 @@ class MentalLLaMAService(ABC):
     async def analyze_clinical_text(
         self, 
         text: str,
-        context: Optional[Dict[str, Any]] = None,
-        reference_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+        reference_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Analyze clinical text to extract insights, entities, and relationships.
         
@@ -42,9 +43,9 @@ class MentalLLaMAService(ABC):
     @abstractmethod
     async def generate_clinical_insights(
         self,
-        clinical_data: Dict[str, Any],
-        digital_twin_state_id: Optional[UUID] = None
-    ) -> List[ClinicalInsight]:
+        clinical_data: dict[str, Any],
+        digital_twin_state_id: UUID | None = None
+    ) -> list[ClinicalInsight]:
         """
         Generate clinical insights from structured clinical data.
         
@@ -60,9 +61,9 @@ class MentalLLaMAService(ABC):
     @abstractmethod
     async def map_brain_regions(
         self,
-        symptoms: List[str],
-        intensity: Optional[Dict[str, float]] = None
-    ) -> Dict[BrainRegion, float]:
+        symptoms: list[str],
+        intensity: dict[str, float] | None = None
+    ) -> dict[BrainRegion, float]:
         """
         Map symptoms to brain regions with activation levels.
         
@@ -78,9 +79,9 @@ class MentalLLaMAService(ABC):
     @abstractmethod
     async def map_neurotransmitters(
         self,
-        symptoms: List[str],
-        medications: Optional[List[str]] = None
-    ) -> Dict[Neurotransmitter, float]:
+        symptoms: list[str],
+        medications: list[str] | None = None
+    ) -> dict[Neurotransmitter, float]:
         """
         Map symptoms and medications to neurotransmitter levels.
         
@@ -97,9 +98,9 @@ class MentalLLaMAService(ABC):
     async def explain_treatment_mechanism(
         self,
         treatment: str,
-        condition: Optional[str] = None,
+        condition: str | None = None,
         detail_level: str = "medium"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Explain the mechanism of action for a treatment.
         
@@ -116,10 +117,10 @@ class MentalLLaMAService(ABC):
     @abstractmethod
     async def generate_recommendations(
         self,
-        clinical_data: Dict[str, Any],
-        current_treatments: Optional[List[str]] = None,
-        constraints: Optional[Dict[str, Any]] = None
-    ) -> List[Dict[str, Any]]:
+        clinical_data: dict[str, Any],
+        current_treatments: list[str] | None = None,
+        constraints: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Generate treatment recommendations based on clinical data.
         
@@ -136,7 +137,7 @@ class MentalLLaMAService(ABC):
     @abstractmethod
     async def generate_clinical_summary(
         self,
-        clinical_data: Dict[str, Any],
+        clinical_data: dict[str, Any],
         length: str = "medium",
         include_recommendations: bool = True
     ) -> str:

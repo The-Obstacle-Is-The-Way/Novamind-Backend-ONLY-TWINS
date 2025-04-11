@@ -20,6 +20,7 @@ from app.infrastructure.persistence.sqlalchemy.models.patient import PatientMode
 from app.infrastructure.security.encryption import EncryptionService
 
 
+@pytest.mark.db_required
 class TestPatientEncryptionIntegration:
     """Integration test suite for Patient model encryption with database."""
     

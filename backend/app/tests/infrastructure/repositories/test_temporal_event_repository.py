@@ -32,6 +32,7 @@ def mock_session():
 
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_event():
     """Create a test correlated event for tests."""
     now = datetime.now()

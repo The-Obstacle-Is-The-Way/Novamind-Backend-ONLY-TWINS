@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Provider service module for the NOVAMIND backend.
 
@@ -6,8 +5,7 @@ This module contains the ProviderService, which encapsulates complex business lo
 related to provider management in the concierge psychiatry practice.
 """
 
-from datetime import datetime, UTC, UTC, timedelta
-from typing import Dict, List, Optional, Set, Tuple
+from datetime import UTC, datetime
 from uuid import UUID
 
 from app.domain.entities.provider import (
@@ -18,7 +16,6 @@ from app.domain.entities.provider import (
     ProviderSpecialty,
 )
 from app.domain.exceptions import (
-    CredentialExpiredError,
     PatientLimitExceededError,
     ValidationError,
 )
@@ -55,12 +52,12 @@ class ProviderService:
         last_name: str,
         role: ProviderRole,
         email: str,
-        specialties: Optional[Set[ProviderSpecialty]] = None,
-        npi_number: Optional[str] = None,
-        dea_number: Optional[str] = None,
-        phone: Optional[str] = None,
-        bio: Optional[str] = None,
-        max_patients: Optional[int] = None,
+        specialties: set[ProviderSpecialty] | None = None,
+        npi_number: str | None = None,
+        dea_number: str | None = None,
+        phone: str | None = None,
+        bio: str | None = None,
+        max_patients: int | None = None,
     ) -> Provider:
         """
         Register a new provider
@@ -119,9 +116,9 @@ class ProviderService:
         credential_type: str,
         issuer: str,
         issue_date: datetime,
-        expiration_date: Optional[datetime] = None,
-        identifier: Optional[str] = None,
-        verification_url: Optional[str] = None,
+        expiration_date: datetime | None = None,
+        identifier: str | None = None,
+        verification_url: str | None = None,
     ) -> Provider:
         """
         Add a credential to a provider
@@ -212,7 +209,7 @@ class ProviderService:
         # Save to repository
         return await self._provider_repo.update(provider)
 
-    async def verify_credentials(self, provider_id: UUID) -> Tuple[bool, List[str]]:
+    async def verify_credentials(self, provider_id: UUID) -> tuple[bool, list[str]]:
         """
         Verify that a provider's credentials are valid and not expired
 
@@ -260,9 +257,9 @@ class ProviderService:
     async def get_available_providers(
         self,
         day_of_week: int,
-        specialty: Optional[ProviderSpecialty] = None,
+        specialty: ProviderSpecialty | None = None,
         is_telehealth: bool = False,
-    ) -> List[Provider]:
+    ) -> list[Provider]:
         """
         Get providers available on a specific day, optionally filtered by specialty and appointment type
 
@@ -297,7 +294,7 @@ class ProviderService:
 
         return providers
 
-    async def get_prescribers(self) -> List[Provider]:
+    async def get_prescribers(self) -> list[Provider]:
         """
         Get all providers who can prescribe medications
 
@@ -314,7 +311,7 @@ class ProviderService:
 
     async def check_patient_capacity(
         self, provider_id: UUID
-    ) -> Tuple[bool, Optional[int]]:
+    ) -> tuple[bool, int | None]:
         """
         Check if a provider has capacity for new patients
 

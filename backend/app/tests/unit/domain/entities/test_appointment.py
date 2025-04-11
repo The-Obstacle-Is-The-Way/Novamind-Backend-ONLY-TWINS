@@ -51,6 +51,7 @@ def valid_appointment(valid_appointment_data):
     return Appointment(**valid_appointment_data)
 
 
+@pytest.mark.venv_only
 class TestAppointment:
     """Tests for the Appointment class."""
     

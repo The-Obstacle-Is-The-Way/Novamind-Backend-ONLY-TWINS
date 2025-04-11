@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Patient service module for the NOVAMIND backend.
 
@@ -6,15 +5,11 @@ This module contains the PatientService, which encapsulates complex business log
 related to patient management in the concierge psychiatry practice.
 """
 
-from datetime import date, datetime, UTC, timedelta
-from typing import Dict, List, Optional, Set, Tuple
+from datetime import UTC, date, datetime, timedelta
 from uuid import UUID
 
 from app.domain.entities.patient import Patient
-from app.domain.entities.provider import Provider
 from app.domain.exceptions import (
-    AuthorizationError,
-    BusinessRuleViolationError,
     ValidationError,
 )
 from app.domain.repositories.appointment_repository import AppointmentRepository
@@ -58,10 +53,10 @@ class PatientService:
         last_name: str,
         date_of_birth: date,
         contact_info: dict,
-        insurance_info: Optional[dict] = None,
-        emergency_contact: Optional[dict] = None,
-        medical_history: Optional[dict] = None,
-        preferred_provider_id: Optional[UUID] = None,
+        insurance_info: dict | None = None,
+        emergency_contact: dict | None = None,
+        medical_history: dict | None = None,
+        preferred_provider_id: UUID | None = None,
     ) -> Patient:
         """
         Register a new patient
@@ -291,7 +286,7 @@ class PatientService:
         # Save to repository
         return await self._patient_repo.update(patient)
 
-    async def get_patient_medication_history(self, patient_id: UUID) -> List[dict]:
+    async def get_patient_medication_history(self, patient_id: UUID) -> list[dict]:
         """
         Get medication history for a patient
 
@@ -336,7 +331,7 @@ class PatientService:
 
         return medication_history
 
-    async def get_patient_diagnosis_history(self, patient_id: UUID) -> List[dict]:
+    async def get_patient_diagnosis_history(self, patient_id: UUID) -> list[dict]:
         """
         Get diagnosis history for a patient
 
@@ -380,7 +375,7 @@ class PatientService:
 
     async def search_patients(
         self, query: str, limit: int = 20, offset: int = 0
-    ) -> List[Patient]:
+    ) -> list[Patient]:
         """
         Search for patients by name or other fields
 
@@ -396,7 +391,7 @@ class PatientService:
 
     async def get_patients_with_upcoming_appointments(
         self, days_ahead: int = 7
-    ) -> List[dict]:
+    ) -> list[dict]:
         """
         Get patients with upcoming appointments within a specified number of days
 

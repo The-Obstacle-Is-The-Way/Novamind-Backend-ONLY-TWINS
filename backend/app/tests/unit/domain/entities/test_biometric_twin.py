@@ -10,7 +10,8 @@ from datetime import datetime, UTC, UTC, timedelta
 from uuid import UUID, uuid4
 import pytest
 
-from app.domain.entities.biometric_twin import BiometricDataPoint, BiometricTwinState # Corrected class name
+from app.domain.entities.biometric_twin import BiometricDataPoint, BiometricTwinState # Corrected @pytest.mark.venv_only
+class name
 
 
 @pytest.fixture

@@ -42,6 +42,7 @@ def mfa_service():
         return service
 
 
+@pytest.mark.db_required
 class TestMFAService:
     """Tests for the MFAService class."""
     

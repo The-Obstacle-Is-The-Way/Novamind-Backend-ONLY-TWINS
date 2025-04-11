@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 # app/domain/value_objects/contact_info.py
 """Contact information value object."""
 
 import re
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -13,7 +11,7 @@ class ContactInfo:
     
     email: str
     phone: str
-    preferred_contact_method: Optional[str] = None
+    preferred_contact_method: str | None = None
     
     def __post_init__(self) -> None:
         """Validate contact information."""

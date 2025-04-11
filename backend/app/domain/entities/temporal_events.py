@@ -6,12 +6,11 @@ correlations in the digital twin system, providing the foundation for neural net
 modeling and temporal analysis.
 """
 
-from datetime import datetime, timedelta, UTC
-from enum import Enum, auto
-from typing import Any, Dict, Generic, List, Optional, Set, TypeVar, Union
-from uuid import UUID
 import uuid
-
+from datetime import UTC, datetime
+from enum import Enum, auto
+from typing import Any, Generic, TypeVar
+from uuid import UUID
 
 T = TypeVar('T')  # Type variable for event values
 
@@ -39,9 +38,9 @@ class TemporalEvent(Generic[T]):
         self,
         timestamp: datetime = None,
         value: T = None,
-        event_id: Optional[UUID] = None,
-        patient_id: Optional[UUID] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        event_id: UUID | None = None,
+        patient_id: UUID | None = None,
+        metadata: dict[str, Any] | None = None,
         event_type: str = None
     ):
         """
@@ -62,7 +61,7 @@ class TemporalEvent(Generic[T]):
         self.metadata = metadata or {}
         self.event_type = event_type or self.__class__.__name__
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert event to dictionary for serialization.
         
@@ -120,15 +119,15 @@ class CorrelatedEvent(TemporalEvent[T]):
         self,
         timestamp: datetime = None,
         value: T = None,
-        event_id: Optional[UUID] = None,
-        patient_id: Optional[UUID] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        correlation_type: Optional[CorrelationType] = None,
+        event_id: UUID | None = None,
+        patient_id: UUID | None = None,
+        metadata: dict[str, Any] | None = None,
+        correlation_type: CorrelationType | None = None,
         correlation_strength: float = 0.0,
-        correlated_events: Optional[Set[UUID]] = None,
+        correlated_events: set[UUID] | None = None,
         event_type: str = None,
-        correlation_id: Optional[UUID] = None,
-        parent_event_id: Optional[UUID] = None
+        correlation_id: UUID | None = None,
+        parent_event_id: UUID | None = None
     ):
         """
         Initialize a new correlated event.
@@ -190,7 +189,7 @@ class CorrelatedEvent(TemporalEvent[T]):
         if correlation_strength > self.correlation_strength:
             self.correlation_strength = min(1.0, correlation_strength)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert correlated event to dictionary for serialization.
         
@@ -255,12 +254,12 @@ class EventChain:
     def __init__(
         self,
         correlation_id: UUID,
-        name: Optional[str] = None,
-        chain_id: Optional[UUID] = None,
-        patient_id: Optional[UUID] = None,
-        events: Optional[List[CorrelatedEvent]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        created_at: Optional[datetime] = None
+        name: str | None = None,
+        chain_id: UUID | None = None,
+        patient_id: UUID | None = None,
+        events: list[CorrelatedEvent] | None = None,
+        metadata: dict[str, Any] | None = None,
+        created_at: datetime | None = None
     ):
         """
         Initialize a new event chain.
@@ -299,7 +298,7 @@ class EventChain:
             )
         self.events.append(event)
     
-    def get_root_event(self) -> Optional[CorrelatedEvent]:
+    def get_root_event(self) -> CorrelatedEvent | None:
         """
         Get the root event (event with no parent) in the chain.
         
@@ -316,7 +315,7 @@ class EventChain:
         # If no root event found, return the first event
         return self.events[0]
         
-    def get_child_events(self, parent_id: UUID) -> List[CorrelatedEvent]:
+    def get_child_events(self, parent_id: UUID) -> list[CorrelatedEvent]:
         """
         Get all events that have the specified event as their parent.
         
@@ -328,7 +327,7 @@ class EventChain:
         """
         return [event for event in self.events if event.parent_event_id == parent_id]
     
-    def get_event_by_id(self, event_id: UUID) -> Optional[CorrelatedEvent]:
+    def get_event_by_id(self, event_id: UUID) -> CorrelatedEvent | None:
         """
         Get an event by its ID.
         
@@ -344,7 +343,7 @@ class EventChain:
         
         return None
         
-    def get_events_by_type(self, event_type: str) -> List[CorrelatedEvent]:
+    def get_events_by_type(self, event_type: str) -> list[CorrelatedEvent]:
         """
         Get all events of a specific type in the chain.
         
@@ -356,7 +355,7 @@ class EventChain:
         """
         return [event for event in self.events if event.event_type == event_type]
         
-    def build_event_tree(self) -> Dict[UUID, List[UUID]]:
+    def build_event_tree(self) -> dict[UUID, list[UUID]]:
         """
         Build a mapping of event IDs to their child event IDs.
         
@@ -377,7 +376,7 @@ class EventChain:
                 
         return tree
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert chain to dictionary for serialization.
         
@@ -407,12 +406,12 @@ class EventGroup:
     def __init__(
         self,
         name: str,
-        description: Optional[str] = None,
-        group_id: Optional[UUID] = None,
-        patient_id: Optional[UUID] = None,
-        events: Optional[List[TemporalEvent]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        created_at: Optional[datetime] = None
+        description: str | None = None,
+        group_id: UUID | None = None,
+        patient_id: UUID | None = None,
+        events: list[TemporalEvent] | None = None,
+        metadata: dict[str, Any] | None = None,
+        created_at: datetime | None = None
     ):
         """
         Initialize a new event group.
@@ -443,7 +442,7 @@ class EventGroup:
         """
         self.events.append(event)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert group to dictionary for serialization.
         

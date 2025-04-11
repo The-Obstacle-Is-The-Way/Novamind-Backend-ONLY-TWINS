@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Biometric Event Processor for real-time biometric alerts.
 
@@ -6,10 +5,11 @@ This module implements the Observer pattern to process biometric data streams
 and trigger clinical interventions when concerning patterns emerge.
 """
 
-from datetime import datetime, UTC, UTC
+from collections.abc import Callable
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Dict, List, Any, Optional, Set, Callable
-from uuid import UUID # Corrected import
+from typing import Any
+from uuid import UUID  # Corrected import
 
 from app.domain.entities.biometric_twin import BiometricDataPoint
 from app.domain.exceptions import ValidationError
@@ -32,9 +32,9 @@ class AlertRule:
         name: str,
         description: str,
         priority: AlertPriority,
-        condition: Dict[str, Any],
+        condition: dict[str, Any],
         created_by: UUID,
-        patient_id: Optional[UUID] = None
+        patient_id: UUID | None = None
     ):
         """
         Initialize a new alert rule.
@@ -59,7 +59,7 @@ class AlertRule:
         self.updated_at = self.created_at
         self.is_active = True
     
-    def evaluate(self, data_point: BiometricDataPoint, context: Dict[str, Any]) -> bool:
+    def evaluate(self, data_point: BiometricDataPoint, context: dict[str, Any]) -> bool:
         """
         Evaluate the rule against a biometric data point.
         
@@ -110,7 +110,7 @@ class BiometricAlert:
         priority: AlertPriority,
         data_point: BiometricDataPoint,
         message: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ):
         """
         Initialize a new biometric alert.
@@ -166,7 +166,7 @@ class AlertObserver:
 class EmailAlertObserver(AlertObserver):
     """Observer that sends email notifications for alerts."""
     
-    def __init__(self, email_service: Any):
+    def __init__(self, email_service: object):
         """
         Initialize a new email alert observer.
         
@@ -193,7 +193,8 @@ class EmailAlertObserver(AlertObserver):
         # Send the email
         # self.email_service.send_email(recipient, subject, sanitized_message)
         
-        print(f"Email notification sent to {recipient}: {subject}")
+        # Log notification with sanitized message
+        print(f"Email notification sent to {recipient}: {subject} - {sanitized_message}")
     
     def _get_recipient_for_patient(self, patient_id: UUID) -> str:
         """
@@ -227,7 +228,7 @@ class EmailAlertObserver(AlertObserver):
 class SMSAlertObserver(AlertObserver):
     """Observer that sends SMS notifications for alerts."""
     
-    def __init__(self, sms_service: Any):
+    def __init__(self, sms_service: object):
         """
         Initialize a new SMS alert observer.
         
@@ -291,7 +292,7 @@ class SMSAlertObserver(AlertObserver):
 class InAppAlertObserver(AlertObserver):
     """Observer that sends in-app notifications for alerts."""
     
-    def __init__(self, notification_service: Any):
+    def __init__(self, notification_service: object):
         """
         Initialize a new in-app alert observer.
         
@@ -322,7 +323,7 @@ class InAppAlertObserver(AlertObserver):
         
         print(f"In-app notification sent to {len(recipients)} recipients")
     
-    def _get_recipients_for_patient(self, patient_id: UUID) -> List[UUID]:
+    def _get_recipients_for_patient(self, patient_id: UUID) -> list[UUID]:
         """
         Get the in-app notification recipients for a patient.
         
@@ -347,13 +348,13 @@ class BiometricEventProcessor:
     
     def __init__(self):
         """Initialize a new biometric event processor."""
-        self.rules: Dict[str, AlertRule] = {}
-        self.observers: Dict[AlertPriority, List[AlertObserver]] = {
+        self.rules: dict[str, AlertRule] = {}
+        self.observers: dict[AlertPriority, list[AlertObserver]] = {
             AlertPriority.URGENT: [],
             AlertPriority.WARNING: [],
             AlertPriority.INFORMATIONAL: []
         }
-        self.patient_context: Dict[UUID, Dict[str, Any]] = {}
+        self.patient_context: dict[UUID, dict[str, Any]] = {}
     
     def add_rule(self, rule: AlertRule) -> None:
         """
@@ -374,7 +375,7 @@ class BiometricEventProcessor:
         if rule_id in self.rules:
             del self.rules[rule_id]
     
-    def register_observer(self, observer: AlertObserver, priorities: List[AlertPriority]) -> None:
+    def register_observer(self, observer: AlertObserver, priorities: list[AlertPriority]) -> None:
         """
         Register an observer for alerts with specific priorities.
         
@@ -397,7 +398,7 @@ class BiometricEventProcessor:
             if observer in self.observers[priority]:
                 self.observers[priority].remove(observer)
     
-    def process_data_point(self, data_point: BiometricDataPoint) -> List[BiometricAlert]:
+    def process_data_point(self, data_point: BiometricDataPoint) -> list[BiometricAlert]:
         """
         Process a biometric data point and generate alerts if needed.
         
@@ -467,7 +468,8 @@ class BiometricEventProcessor:
             Alert message
         """
         # In a real implementation, this would generate a more detailed message
-        return f"{rule.name}: {data_point.data_type} value {data_point.value} at {data_point.timestamp.isoformat()}"
+        timestamp = data_point.timestamp.isoformat()
+        return f"{rule.name}: {data_point.data_type} value {data_point.value} at {timestamp}"
     
     def _notify_observers(self, alert: BiometricAlert) -> None:
         """
@@ -491,10 +493,10 @@ class ClinicalRuleEngine:
     
     def __init__(self):
         """Initialize a new clinical rule engine."""
-        self.rule_templates: Dict[str, Dict[str, Any]] = {}
-        self.custom_conditions: Dict[str, Callable] = {}
+        self.rule_templates: dict[str, dict[str, Any]] = {}
+        self.custom_conditions: dict[str, Callable] = {}
     
-    def register_rule_template(self, template_id: str, template: Dict[str, Any]) -> None:
+    def register_rule_template(self, template_id: str, template: dict[str, Any]) -> None:
         """
         Register a rule template.
         
@@ -521,9 +523,9 @@ class ClinicalRuleEngine:
         name: str,
         description: str,
         priority: AlertPriority,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         created_by: UUID,
-        patient_id: Optional[UUID] = None
+        patient_id: UUID | None = None
     ) -> AlertRule:
         """
         Create a rule from a template.
@@ -571,9 +573,9 @@ class ClinicalRuleEngine:
     
     def _create_condition_from_template(
         self,
-        template: Dict[str, Any],
-        parameters: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        template: dict[str, Any],
+        parameters: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Create a condition from a template and parameters.
         

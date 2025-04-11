@@ -1,37 +1,61 @@
 # -*- coding: utf-8 -*-
 """
-Core Exceptions Package.
+Core exceptions package.
 
-This package defines exceptions used throughout the application.
+This package contains all exceptions used throughout the application.
 """
 
-# Import specific exception modules
-from app.core.exceptions.auth_exceptions import *
-from app.core.exceptions.base_exceptions import *
-from app.core.exceptions.ml_exceptions import *
+from app.core.exceptions.base_exceptions import (
+    ApplicationError,
+    AuthenticationException,
+    AuthorizationException,
+    BaseException,
+    BusinessRuleException,
+    ConfigurationError,
+    DatabaseException,
+    ExternalServiceException,
+    InitializationError,
+    InvalidConfigurationError,
+    ResourceNotFoundException,
+    ResourceNotFoundError,
+    SecurityException,
+    ValidationException,
+)
 
-# Export all exception classes
+from app.core.exceptions.ml_exceptions import (
+    InvalidRequestError,
+    MLServiceError,
+    ModelNotFoundError,
+    ServiceUnavailableError,
+    PHIDetectionError,
+    MentalLLaMAServiceError,
+    MentalLLaMAInferenceError,
+    XGBoostServiceError,
+    DigitalTwinError,
+)
+
 __all__ = [
-    # Auth exceptions
-    "AuthenticationError",
-    "AuthorizationError",
-    "TokenExpiredError",
-    "InvalidTokenError",
-    
-    # Base exceptions
     "ApplicationError",
-    "ValidationError",
-    "ResourceNotFoundError",
-    "ResourceAlreadyExistsError",
+    "AuthenticationException",
+    "AuthorizationException",
+    "BaseException",
+    "BusinessRuleException",
     "ConfigurationError",
+    "DatabaseException",
+    "DigitalTwinError",
+    "ExternalServiceException",
+    "InitializationError",
     "InvalidConfigurationError",
-    
-    # ML exceptions
-    "MLServiceError",
-    "PHIDetectionError",
-    "MentaLLaMAServiceError",
-    "XGBoostServiceError",
     "InvalidRequestError",
+    "MLServiceError",
+    "MentalLLaMAInferenceError",
+    "MentalLLaMAServiceError",
     "ModelNotFoundError",
-    "ServiceUnavailableError"
+    "PHIDetectionError",
+    "ResourceNotFoundException",
+    "ResourceNotFoundError",
+    "SecurityException",
+    "ServiceUnavailableError",
+    "ValidationException",
+    "XGBoostServiceError",
 ]

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Therapeutic plan value object for the NOVAMIND backend.
 
@@ -7,9 +6,8 @@ a structured treatment plan with immutable properties and validation.
 """
 
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Set
 from uuid import UUID
 
 
@@ -37,10 +35,10 @@ class TreatmentGoal:
     """Value object representing a treatment goal within a therapeutic plan"""
 
     description: str
-    target_date: Optional[date] = None
+    target_date: date | None = None
     status: TreatmentGoalStatus = TreatmentGoalStatus.NOT_STARTED
     priority: TreatmentGoalPriority = TreatmentGoalPriority.MEDIUM
-    measures: List[str] = field(default_factory=list)
+    measures: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Validate the treatment goal"""
@@ -58,8 +56,8 @@ class TherapeuticIntervention:
     name: str
     description: str
     frequency: str  # e.g., "Weekly", "Daily", "Twice weekly"
-    duration_weeks: Optional[int] = None
-    modality: Optional[str] = None  # e.g., "CBT", "DBT", "Psychodynamic"
+    duration_weeks: int | None = None
+    modality: str | None = None  # e.g., "CBT", "DBT", "Psychodynamic"
 
     def __post_init__(self):
         """Validate the therapeutic intervention"""
@@ -88,10 +86,10 @@ class TherapeuticPlan:
     patient_id: UUID
     provider_id: UUID
     start_date: date
-    goals: List[TreatmentGoal]
-    interventions: List[TherapeuticIntervention]
-    diagnosis_codes: List[str]
-    end_date: Optional[date] = None
+    goals: list[TreatmentGoal]
+    interventions: list[TherapeuticIntervention]
+    diagnosis_codes: list[str]
+    end_date: date | None = None
     review_frequency_weeks: int = 4
 
     def __post_init__(self):

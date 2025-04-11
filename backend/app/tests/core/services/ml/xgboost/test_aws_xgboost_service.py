@@ -87,6 +87,7 @@ def aws_xgboost_service(mock_aws_clients):
     return service
 
 
+@pytest.mark.db_required
 class TestAWSXGBoostServiceInitialization:
     """Tests for AWSXGBoostService initialization."""
     

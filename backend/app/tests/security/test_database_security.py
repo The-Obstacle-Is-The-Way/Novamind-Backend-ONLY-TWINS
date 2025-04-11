@@ -22,6 +22,7 @@ from app.infrastructure.persistence.sqlalchemy.config.database import Database
 from app.infrastructure.security.encryption import EncryptionService
 
 
+@pytest.mark.db_required
 class TestDatabaseSecurity:
     """HIPAA-focused security tests for the database layer."""
     

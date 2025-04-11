@@ -71,6 +71,7 @@ def sample_device_info() -> Dict[str, Any]:
     }
 
 
+@pytest.mark.venv_only
 class TestMockPAT:
     """Tests for the MockPAT class."""
     

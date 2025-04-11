@@ -14,6 +14,7 @@ from app.domain.entities.patient import Patient
 from app.domain.exceptions.patient_exceptions import PatientNotFoundError
 
 
+@pytest.mark.db_required
 class TestPatientService:
     """Test suite for PatientService."""
     

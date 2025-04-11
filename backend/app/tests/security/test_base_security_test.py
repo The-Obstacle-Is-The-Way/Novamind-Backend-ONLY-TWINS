@@ -1,7 +1,9 @@
+import pytest
 """
 Base Security Test Class Tests
 
-This module contains tests for the BaseSecurityTest class to ensure
+This module contains tests for the BaseSecurityTest @pytest.mark.db_required
+class to ensure
 proper functionality of the security test infrastructure.
 """
 

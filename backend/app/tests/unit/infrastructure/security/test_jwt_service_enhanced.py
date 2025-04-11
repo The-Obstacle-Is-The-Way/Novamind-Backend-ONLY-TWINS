@@ -15,6 +15,7 @@ from app.infrastructure.security.jwt_service import JWTService
 from app.core.config import Settings
 
 
+@pytest.mark.db_required
 class TestJWTService:
     """Comprehensive tests for the JWTService class."""
     

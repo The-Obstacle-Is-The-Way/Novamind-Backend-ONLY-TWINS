@@ -20,7 +20,8 @@ try:
     from app.presentation.api.v1.middleware.logging_middleware import PHISanitizingMiddleware
 except ImportError:
     # Mock FastAPI components for testing
-    class HTTPException(Exception):
+    @pytest.mark.db_required
+class HTTPException(Exception):
         """Mock HTTPException."""
         def __init__(self, status_code, detail=None, headers=None):
             self.status_code = status_code

@@ -12,6 +12,7 @@ from unittest.mock import patch, MagicMock
 from app.core.utils.logging import get_logger, log_execution_time, log_method_calls # Corrected imports, removed HIPAACompliantLogger, PHIRedactor, log_function_call
 
 
+@pytest.mark.db_required
 class TestPHIRedactor:
     """Tests for the PHI redaction functionality."""
     

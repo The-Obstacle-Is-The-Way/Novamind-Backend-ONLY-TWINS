@@ -19,6 +19,7 @@ def default_ml_settings():
     return MLSettings()
 
 
+@pytest.mark.venv_only
 def test_default_values(default_ml_settings):
     """Test that default values are set correctly."""
     # Check default directories

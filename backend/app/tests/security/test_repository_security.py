@@ -51,6 +51,7 @@ def patient_repository(db_session, encryption_service):
     return PatientRepository(db_session, encryption_service)
 
 
+@pytest.mark.db_required
 def test_patient_creation_encrypts_phi(patient_repository, encryption_service):
     """Test that patient creation encrypts PHI fields."""
     # Spy on the encryption service

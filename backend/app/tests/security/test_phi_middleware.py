@@ -21,6 +21,7 @@ from app.core.utils.validation import PHIDetector
 from app.infrastructure.security.phi_middleware import PHIMiddleware, add_phi_middleware
 
 
+@pytest.mark.db_required
 class TestPHIMiddleware:
     """Test suite for PHI middleware functionality."""
 

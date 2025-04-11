@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
 """
 Module for biometric twin models in the Digital Twin platform.
 These models manage biometric data and alert rules for patients.
 """
 
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Set
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+
 
 class BiometricTwinModel(BaseModel):
     """
@@ -19,13 +19,13 @@ class BiometricTwinModel(BaseModel):
     """
     name: str
     patient_id: UUID
-    biometric_types: List[str]
-    alert_rules: List[Dict[str, Any]] = Field(default_factory=list)
-    baselines: Dict[str, Dict[str, float]] = Field(default_factory=dict)
+    biometric_types: list[str]
+    alert_rules: list[dict[str, Any]] = Field(default_factory=list)
+    baselines: dict[str, dict[str, float]] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=lambda: datetime.now())
     updated_at: datetime = Field(default_factory=lambda: datetime.now())
     
-    def add_alert_rule(self, rule: Dict[str, Any]) -> None:
+    def add_alert_rule(self, rule: dict[str, Any]) -> None:
         """Add an alert rule to the model."""
         self.alert_rules.append(rule)
         self.updated_at = datetime.now()
@@ -37,12 +37,12 @@ class BiometricTwinModel(BaseModel):
         self.updated_at = datetime.now()
         return len(self.alert_rules) < initial_count
     
-    def set_baseline(self, biometric_type: str, values: Dict[str, float]) -> None:
+    def set_baseline(self, biometric_type: str, values: dict[str, float]) -> None:
         """Set baseline values for a biometric type."""
         self.baselines[biometric_type] = values
         self.updated_at = datetime.now()
     
-    def process_biometric_data(self, data_point: Dict[str, Any]) -> Dict[str, Any]:
+    def process_biometric_data(self, data_point: dict[str, Any]) -> dict[str, Any]:
         """Process a biometric data point and check against rules."""
         result = {
             "processed": True,
@@ -52,7 +52,7 @@ class BiometricTwinModel(BaseModel):
         }
         return result
     
-    def generate_biometric_alert_rules(self) -> Dict[str, Any]:
+    def generate_biometric_alert_rules(self) -> dict[str, Any]:
         """
         Generate biometric alert rules based on patient data.
         
@@ -68,7 +68,7 @@ class BiometricTwinModel(BaseModel):
             }
         }
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the model to a dictionary."""
         return {
             "name": self.name,

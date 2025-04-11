@@ -5,7 +5,7 @@ Pure domain models for graph-based knowledge representation.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union, Any
+from typing import Any
 from uuid import UUID, uuid4
 
 
@@ -46,12 +46,12 @@ class KnowledgeGraphNode:
     id: UUID
     type: NodeType
     name: str
-    properties: Dict[str, Any] = field(default_factory=dict)
+    properties: dict[str, Any] = field(default_factory=dict)
     confidence: float = 1.0  # Default to high confidence
     created_at: datetime = field(default_factory=datetime.now)
     
     @classmethod
-    def create(cls, type: NodeType, name: str, properties: Optional[Dict[str, Any]] = None, 
+    def create(cls, type: NodeType, name: str, properties: dict[str, Any] | None = None, 
                confidence: float = 1.0) -> "KnowledgeGraphNode":
         """Factory method to create a new node with a generated UUID."""
         return cls(
@@ -70,15 +70,15 @@ class KnowledgeGraphEdge:
     source_id: UUID
     target_id: UUID
     type: EdgeType
-    properties: Dict[str, Any] = field(default_factory=dict)
+    properties: dict[str, Any] = field(default_factory=dict)
     confidence: float = 1.0
     created_at: datetime = field(default_factory=datetime.now)
-    temporal_context: Optional[Dict[str, Any]] = None
+    temporal_context: dict[str, Any] | None = None
     
     @classmethod
     def create(cls, source_id: UUID, target_id: UUID, type: EdgeType, 
-               properties: Optional[Dict[str, Any]] = None, confidence: float = 1.0,
-               temporal_context: Optional[Dict[str, Any]] = None) -> "KnowledgeGraphEdge":
+               properties: dict[str, Any] | None = None, confidence: float = 1.0,
+               temporal_context: dict[str, Any] | None = None) -> "KnowledgeGraphEdge":
         """Factory method to create a new edge with a generated UUID."""
         return cls(
             id=uuid4(),
@@ -98,9 +98,9 @@ class TemporalKnowledgeGraph:
     Represents clinical knowledge as nodes and edges with time dimensions.
     """
     reference_id: UUID  # Reference ID (e.g., for a specific digital twin)
-    nodes: Dict[UUID, KnowledgeGraphNode] = field(default_factory=dict)
-    edges: Dict[UUID, KnowledgeGraphEdge] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    nodes: dict[UUID, KnowledgeGraphNode] = field(default_factory=dict)
+    edges: dict[UUID, KnowledgeGraphEdge] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
     version: int = 1
@@ -137,23 +137,23 @@ class TemporalKnowledgeGraph:
         self.updated_at = datetime.now()
         return edge.id
     
-    def get_node(self, node_id: UUID) -> Optional[KnowledgeGraphNode]:
+    def get_node(self, node_id: UUID) -> KnowledgeGraphNode | None:
         """Get a node by ID."""
         return self.nodes.get(node_id)
     
-    def get_edge(self, edge_id: UUID) -> Optional[KnowledgeGraphEdge]:
+    def get_edge(self, edge_id: UUID) -> KnowledgeGraphEdge | None:
         """Get an edge by ID."""
         return self.edges.get(edge_id)
     
-    def get_nodes_by_type(self, node_type: NodeType) -> List[KnowledgeGraphNode]:
+    def get_nodes_by_type(self, node_type: NodeType) -> list[KnowledgeGraphNode]:
         """Get all nodes of a specific type."""
         return [node for node in self.nodes.values() if node.type == node_type]
     
-    def get_edges_by_type(self, edge_type: EdgeType) -> List[KnowledgeGraphEdge]:
+    def get_edges_by_type(self, edge_type: EdgeType) -> list[KnowledgeGraphEdge]:
         """Get all edges of a specific type."""
         return [edge for edge in self.edges.values() if edge.type == edge_type]
     
-    def get_node_neighbors(self, node_id: UUID) -> Dict[EdgeType, List[KnowledgeGraphNode]]:
+    def get_node_neighbors(self, node_id: UUID) -> dict[EdgeType, list[KnowledgeGraphNode]]:
         """
         Get all neighboring nodes connected by outgoing edges.
         
@@ -203,15 +203,15 @@ class BayesianNode:
     id: UUID
     type: BeliefNodeType
     name: str
-    states: List[str]  # Possible states of this node
-    probabilities: Dict[str, float]  # Current probability distribution
-    conditional_dependencies: List[UUID] = field(default_factory=list)  # Node IDs this node depends on
-    conditional_probability_table: Optional[Dict[str, float]] = None  # Full CPT if available
+    states: list[str]  # Possible states of this node
+    probabilities: dict[str, float]  # Current probability distribution
+    conditional_dependencies: list[UUID] = field(default_factory=list)  # Node IDs this node depends on
+    conditional_probability_table: dict[str, float] | None = None  # Full CPT if available
     
     @classmethod
-    def create(cls, type: BeliefNodeType, name: str, states: List[str], 
-               probabilities: Dict[str, float], 
-               conditional_dependencies: Optional[List[UUID]] = None) -> "BayesianNode":
+    def create(cls, type: BeliefNodeType, name: str, states: list[str], 
+               probabilities: dict[str, float], 
+               conditional_dependencies: list[UUID] | None = None) -> "BayesianNode":
         """Factory method to create a new Bayesian node."""
         return cls(
             id=uuid4(),
@@ -230,8 +230,8 @@ class BayesianBeliefNetwork:
     Models causal relationships and probabilities for clinical reasoning.
     """
     reference_id: UUID
-    nodes: Dict[UUID, BayesianNode] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    nodes: dict[UUID, BayesianNode] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
     version: int = 1
@@ -252,7 +252,7 @@ class BayesianBeliefNetwork:
         self.updated_at = datetime.now()
         return node.id
     
-    def update_node_probabilities(self, node_id: UUID, new_probabilities: Dict[str, float]) -> None:
+    def update_node_probabilities(self, node_id: UUID, new_probabilities: dict[str, float]) -> None:
         """Update the probabilities of a node."""
         if node_id not in self.nodes:
             raise ValueError(f"Node {node_id} not found in network")
@@ -271,11 +271,11 @@ class BayesianBeliefNetwork:
         node.probabilities = new_probabilities
         self.updated_at = datetime.now()
     
-    def get_node(self, node_id: UUID) -> Optional[BayesianNode]:
+    def get_node(self, node_id: UUID) -> BayesianNode | None:
         """Get a node by ID."""
         return self.nodes.get(node_id)
     
-    def get_nodes_by_type(self, node_type: BeliefNodeType) -> List[BayesianNode]:
+    def get_nodes_by_type(self, node_type: BeliefNodeType) -> list[BayesianNode]:
         """Get all nodes of a specific type."""
         return [node for node in self.nodes.values() if node.type == node_type]
         

@@ -70,6 +70,7 @@ def valid_patient(valid_patient_data):
     return Patient(**valid_patient_data)
 
 
+@pytest.mark.venv_only
 class TestPatient:
     """Tests for the Patient class."""
     

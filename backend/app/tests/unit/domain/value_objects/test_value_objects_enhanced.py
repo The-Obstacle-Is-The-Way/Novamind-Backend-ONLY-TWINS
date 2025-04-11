@@ -17,6 +17,7 @@ from app.domain.value_objects.address import Address
 from app.domain.value_objects.contact_info import ContactInfo
 
 
+@pytest.mark.venv_only
 class TestEmergencyContact:
     """Comprehensive tests for the EmergencyContact value object."""
     

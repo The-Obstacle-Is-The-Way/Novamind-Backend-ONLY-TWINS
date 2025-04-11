@@ -4,11 +4,12 @@ Domain interface for the physiological and behavioral data analysis component of
 """
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Any
 from uuid import UUID
 
 from backend.app.domain.entities.refactored.digital_twin_core import (
-    ClinicalInsight, TemporalPattern, ClinicalSignificance
+    ClinicalInsight,
+    TemporalPattern,
 )
 
 
@@ -22,10 +23,10 @@ class PATService(ABC):
     @abstractmethod
     async def analyze_actigraphy_data(
         self,
-        actigraphy_data: Dict[str, Any],
-        reference_id: Optional[UUID] = None,
-        analysis_parameters: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        actigraphy_data: dict[str, Any],
+        reference_id: UUID | None = None,
+        analysis_parameters: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Analyze raw actigraphy data to extract features and patterns.
         
@@ -42,10 +43,10 @@ class PATService(ABC):
     @abstractmethod
     async def analyze_sleep_patterns(
         self,
-        sleep_data: Dict[str, Any],
-        time_window: Optional[Tuple[datetime, datetime]] = None,
-        reference_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+        sleep_data: dict[str, Any],
+        time_window: tuple[datetime, datetime] | None = None,
+        reference_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Analyze sleep data to identify patterns and disturbances.
         
@@ -62,11 +63,11 @@ class PATService(ABC):
     @abstractmethod
     async def detect_circadian_rhythms(
         self,
-        physiological_data: Dict[str, Any],
-        data_types: Optional[List[str]] = None,
+        physiological_data: dict[str, Any],
+        data_types: list[str] | None = None,
         minimum_days: int = 7,
-        reference_id: Optional[UUID] = None
-    ) -> List[TemporalPattern]:
+        reference_id: UUID | None = None
+    ) -> list[TemporalPattern]:
         """
         Detect circadian rhythms from physiological data.
         
@@ -84,11 +85,11 @@ class PATService(ABC):
     @abstractmethod
     async def correlate_behavior_with_symptoms(
         self,
-        behavioral_data: Dict[str, Any],
-        symptom_data: Dict[str, Any],
-        lag_window: Optional[int] = None,  # hours
-        reference_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+        behavioral_data: dict[str, Any],
+        symptom_data: dict[str, Any],
+        lag_window: int | None = None,  # hours
+        reference_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Correlate behavioral patterns with symptom intensity.
         
@@ -106,11 +107,11 @@ class PATService(ABC):
     @abstractmethod
     async def generate_behavioral_insights(
         self,
-        behavioral_data: Dict[str, Any],
-        physiological_data: Optional[Dict[str, Any]] = None,
-        digital_twin_state_id: Optional[UUID] = None,
-        reference_id: Optional[UUID] = None
-    ) -> List[ClinicalInsight]:
+        behavioral_data: dict[str, Any],
+        physiological_data: dict[str, Any] | None = None,
+        digital_twin_state_id: UUID | None = None,
+        reference_id: UUID | None = None
+    ) -> list[ClinicalInsight]:
         """
         Generate clinical insights from behavioral and physiological data.
         
@@ -128,11 +129,11 @@ class PATService(ABC):
     @abstractmethod
     async def detect_activity_anomalies(
         self,
-        activity_data: Dict[str, Any],
-        baseline_period: Optional[Tuple[datetime, datetime]] = None,
+        activity_data: dict[str, Any],
+        baseline_period: tuple[datetime, datetime] | None = None,
         sensitivity: float = 0.8,
-        reference_id: Optional[UUID] = None
-    ) -> List[Dict[str, Any]]:
+        reference_id: UUID | None = None
+    ) -> list[dict[str, Any]]:
         """
         Detect anomalies in activity patterns compared to baseline.
         
@@ -150,9 +151,9 @@ class PATService(ABC):
     @abstractmethod
     async def analyze_social_rhythms(
         self,
-        social_data: Dict[str, Any],
-        reference_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+        social_data: dict[str, Any],
+        reference_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Analyze social interaction patterns and rhythms.
         
@@ -168,11 +169,11 @@ class PATService(ABC):
     @abstractmethod
     async def predict_behavioral_triggers(
         self,
-        behavioral_history: Dict[str, Any],
-        symptom_history: Dict[str, Any],
+        behavioral_history: dict[str, Any],
+        symptom_history: dict[str, Any],
         prediction_window: int = 48,  # hours
-        reference_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+        reference_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Predict behavioral triggers for symptom exacerbation.
         
@@ -190,10 +191,10 @@ class PATService(ABC):
     @abstractmethod
     async def integrate_with_digital_twin(
         self,
-        analysis_results: Dict[str, Any],
+        analysis_results: dict[str, Any],
         reference_id: UUID,
-        digital_twin_state_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+        digital_twin_state_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Integrate analysis results with the Digital Twin.
         

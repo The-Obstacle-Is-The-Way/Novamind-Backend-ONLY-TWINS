@@ -4,7 +4,6 @@ Refactored to remove EHR dependencies and focus on Digital Twin state storage.
 """
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 from backend.app.domain.entities.refactored.digital_twin_core import DigitalTwinState
@@ -17,7 +16,7 @@ class DigitalTwinRepository(ABC):
     """
     
     @abstractmethod
-    async def get_by_id(self, state_id: UUID) -> Optional[DigitalTwinState]:
+    async def get_by_id(self, state_id: UUID) -> DigitalTwinState | None:
         """
         Retrieve a Digital Twin state by its unique state ID.
         
@@ -30,7 +29,7 @@ class DigitalTwinRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_latest_for_reference(self, reference_id: UUID) -> Optional[DigitalTwinState]:
+    async def get_latest_for_reference(self, reference_id: UUID) -> DigitalTwinState | None:
         """
         Retrieve the latest Digital Twin state for a reference ID.
         
@@ -46,10 +45,10 @@ class DigitalTwinRepository(ABC):
     async def get_history_for_reference(
         self,
         reference_id: UUID,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100
-    ) -> List[DigitalTwinState]:
+    ) -> list[DigitalTwinState]:
         """
         Retrieve historical Digital Twin states for a reference ID.
         
@@ -93,7 +92,7 @@ class DigitalTwinRepository(ABC):
     @abstractmethod
     async def compare_states(
         self, state_id_1: UUID, state_id_2: UUID
-    ) -> Dict:
+    ) -> dict:
         """
         Compare two Digital Twin states and return differences.
         

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Clinical documentation events module for the NOVAMIND backend.
 
@@ -7,11 +6,10 @@ concierge psychiatry practice, following the Domain-Driven Design pattern.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, UTC, UTC
-from typing import List, Optional
+from datetime import UTC, datetime
 from uuid import UUID
 
-from app.domain.entities.clinical_note import NoteStatus, NoteType
+from app.domain.entities.clinical_note import NoteType
 
 
 @dataclass
@@ -29,15 +27,15 @@ class ClinicalNoteCreated(ClinicalDocumentationEvent):
     """Event raised when a clinical note is created"""
 
     note_type: NoteType
-    appointment_id: Optional[UUID] = None
+    appointment_id: UUID | None = None
 
 
 @dataclass
 class ClinicalNoteUpdated(ClinicalDocumentationEvent):
     """Event raised when a clinical note is updated"""
 
-    previous_version_id: Optional[UUID] = None
-    updated_sections: List[str] = None  # List of section names that were updated
+    previous_version_id: UUID | None = None
+    updated_sections: list[str] = None  # List of section names that were updated
 
 
 @dataclass
@@ -47,14 +45,14 @@ class ClinicalNoteSigned(ClinicalDocumentationEvent):
     signing_provider_id: UUID
     signing_timestamp: datetime
     signing_method: str = "Electronic"  # e.g., "Electronic", "Digital Certificate"
-    attestation_statement: Optional[str] = None
+    attestation_statement: str | None = None
 
 
 @dataclass
 class ClinicalNoteLocked(ClinicalDocumentationEvent):
     """Event raised when a clinical note is locked"""
 
-    locking_reason: Optional[str] = None
+    locking_reason: str | None = None
     auto_locked: bool = (
         False  # Whether the note was automatically locked (e.g., after 24 hours)
     )
@@ -74,15 +72,15 @@ class DiagnosisRemoved(ClinicalDocumentationEvent):
     """Event raised when a diagnosis is removed from a clinical note"""
 
     diagnosis_code: str
-    removal_reason: Optional[str] = None
+    removal_reason: str | None = None
 
 
 @dataclass
 class ClinicalNoteShared(ClinicalDocumentationEvent):
     """Event raised when a clinical note is shared with another provider or entity"""
 
-    shared_with_provider_id: Optional[UUID] = None
-    shared_with_external_entity: Optional[str] = None
+    shared_with_provider_id: UUID | None = None
+    shared_with_external_entity: str | None = None
     sharing_purpose: str
     patient_consent_obtained: bool = True
-    expiration_date: Optional[datetime] = None
+    expiration_date: datetime | None = None

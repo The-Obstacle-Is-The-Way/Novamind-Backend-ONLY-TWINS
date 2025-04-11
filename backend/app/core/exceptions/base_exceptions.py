@@ -1,115 +1,199 @@
 # -*- coding: utf-8 -*-
 """
-Base Exception Classes.
+Base exceptions for the application.
 
-This module defines base exceptions used throughout the application.
+This module defines the foundational exception classes that form the basis of the
+application's exception hierarchy.
 """
 
+from typing import Any, Dict, List, Optional, Union
 
-class ApplicationError(Exception):
-    """Base class for all application-specific exceptions."""
-    
-    def __init__(self, message: str = "An application error occurred", *args, **kwargs):
-        """
-        Initialize application error.
-        
-        Args:
-            message: Error message
-            args: Additional positional arguments
-            kwargs: Additional keyword arguments
-        """
+
+class BaseException(Exception):
+    """
+    Base exception for all application exceptions.
+
+    Attributes:
+        message: A human-readable error message
+        detail: Additional information about the error
+        code: An error code for machine processing
+    """
+
+    def __init__(
+        self,
+        message: str,
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: Optional[str] = None,
+    ):
         self.message = message
-        super().__init__(message, *args)
+        self.detail = detail
+        self.code = code
+        super().__init__(self.message)
+
+    def __str__(self) -> str:
+        if self.detail:
+            return f"{self.message} - {self.detail}"
+        return self.message
 
 
-class ValidationError(ApplicationError):
+class ValidationException(BaseException):
     """Exception raised for validation errors."""
+
+    def __init__(
+        self,
+        message: str = "Validation error",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "VALIDATION_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
+class ResourceNotFoundException(BaseException):
+    """Exception raised when a requested resource is not found."""
+
+    def __init__(
+        self,
+        message: str = "Resource not found",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "RESOURCE_NOT_FOUND",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
+class ResourceNotFoundError(BaseException):
+    """
+    Exception raised when a requested resource is not found.
     
-    def __init__(self, message: str = "Data validation error", errors: dict = None, *args, **kwargs):
-        """
-        Initialize validation error.
+    This is an alias for ResourceNotFoundException for backward compatibility.
+    """
+
+    def __init__(
+        self,
+        message: str = "Resource not found",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "RESOURCE_NOT_FOUND",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
         
-        Args:
-            message: Error message
-            errors: Dictionary of field errors
-            args: Additional positional arguments
-            kwargs: Additional keyword arguments
-        """
-        self.errors = errors or {}
-        super().__init__(message, *args, **kwargs)
+        if " not found" not in message:
+            self.message = f"{message} not found"
 
 
-class ResourceNotFoundError(ApplicationError):
-    """Exception raised when a resource cannot be found."""
-    
-    def __init__(self, resource_type: str = "Resource", resource_id: str = None, *args, **kwargs):
-        """
-        Initialize resource not found error.
-        
-        Args:
-            resource_type: Type of resource that was not found
-            resource_id: ID of resource that was not found
-            args: Additional positional arguments
-            kwargs: Additional keyword arguments
-        """
-        message = f"{resource_type} not found"
-        if resource_id:
-            message += f": {resource_id}"
-        self.resource_type = resource_type
-        self.resource_id = resource_id
-        super().__init__(message, *args, **kwargs)
+class AuthenticationException(BaseException):
+    """Exception raised for authentication errors."""
+
+    def __init__(
+        self,
+        message: str = "Authentication failed",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "AUTHENTICATION_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
 
 
-class ResourceAlreadyExistsError(ApplicationError):
-    """Exception raised when attempting to create a resource that already exists."""
-    
-    def __init__(self, resource_type: str = "Resource", resource_id: str = None, *args, **kwargs):
-        """
-        Initialize resource already exists error.
-        
-        Args:
-            resource_type: Type of resource that already exists
-            resource_id: ID of resource that already exists
-            args: Additional positional arguments
-            kwargs: Additional keyword arguments
-        """
-        message = f"{resource_type} already exists"
-        if resource_id:
-            message += f": {resource_id}"
-        self.resource_type = resource_type
-        self.resource_id = resource_id
-        super().__init__(message, *args, **kwargs)
+class AuthorizationException(BaseException):
+    """Exception raised for authorization errors."""
+
+    def __init__(
+        self,
+        message: str = "Not authorized",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "AUTHORIZATION_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
 
 
-class ConfigurationError(ApplicationError):
+class BusinessRuleException(BaseException):
+    """Exception raised when a business rule is violated."""
+
+    def __init__(
+        self,
+        message: str = "Business rule violation",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "BUSINESS_RULE_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
+class InitializationError(BaseException):
+    """Exception raised when a service or component fails to initialize."""
+
+    def __init__(
+        self,
+        message: str = "Failed to initialize",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "INITIALIZATION_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
+class ConfigurationError(BaseException):
     """Exception raised for configuration errors."""
-    
-    def __init__(self, message: str = "Configuration error", *args, **kwargs):
-        """
-        Initialize configuration error.
-        
-        Args:
-            message: Error message
-            args: Additional positional arguments
-            kwargs: Additional keyword arguments
-        """
-        super().__init__(message, *args, **kwargs)
+
+    def __init__(
+        self,
+        message: str = "Configuration error",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "CONFIGURATION_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
 
 
-class InvalidConfigurationError(ConfigurationError):
-    """Exception raised for invalid configuration settings."""
-    
-    def __init__(self, message: str = "Invalid configuration setting", setting: str = None, *args, **kwargs):
-        """
-        Initialize invalid configuration error.
-        
-        Args:
-            message: Error message
-            setting: The specific configuration setting that is invalid
-            args: Additional positional arguments
-            kwargs: Additional keyword arguments
-        """
-        if setting:
-            message = f"{message}: {setting}"
-        self.setting = setting
-        super().__init__(message, *args, **kwargs)
+class ExternalServiceException(BaseException):
+    """Exception raised when an external service call fails."""
+
+    def __init__(
+        self,
+        message: str = "External service error",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "EXTERNAL_SERVICE_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
+class DatabaseException(BaseException):
+    """Exception raised for database errors."""
+
+    def __init__(
+        self,
+        message: str = "Database error",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "DATABASE_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
+class SecurityException(BaseException):
+    """Exception raised for security-related errors."""
+
+    def __init__(
+        self,
+        message: str = "Security error",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "SECURITY_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
+class ApplicationError(BaseException):
+    """Base class for application-specific errors."""
+
+    def __init__(
+        self,
+        message: str = "Application error",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "APPLICATION_ERROR",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
+class InvalidConfigurationError(BaseException):
+    """Exception raised when configuration is invalid."""
+
+    def __init__(
+        self,
+        message: str = "Invalid configuration",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "INVALID_CONFIGURATION",
+    ):
+        super().__init__(message=message, detail=detail, code=code)

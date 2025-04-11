@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 # app/domain/value_objects/address.py
 """Address value object."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -18,7 +16,7 @@ class Address:
     city: str
     state: str
     zip_code: str
-    country: Optional[str] = "USA"
+    country: str | None = "USA"
     
     def __post_init__(self) -> None:
         """Validate address after initialization."""

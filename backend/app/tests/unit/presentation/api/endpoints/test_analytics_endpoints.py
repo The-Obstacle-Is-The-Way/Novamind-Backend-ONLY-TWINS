@@ -19,6 +19,7 @@ from app.presentation.api.endpoints.analytics_endpoints import router, Analytics
 
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_client():
     """Create a test client for the analytics endpoints."""
     from fastapi import FastAPI

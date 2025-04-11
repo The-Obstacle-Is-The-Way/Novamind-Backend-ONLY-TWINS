@@ -14,6 +14,7 @@ from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 
 
+@pytest.mark.venv_only
 class TestEnhancedXGBoostService:
     """Test suite for the EnhancedXGBoostService."""
     

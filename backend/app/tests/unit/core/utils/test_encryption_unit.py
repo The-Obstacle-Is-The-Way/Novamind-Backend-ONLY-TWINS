@@ -10,6 +10,7 @@ from unittest.mock import patch, MagicMock
 from app.core.utils.encryption import EncryptionService
 
 
+@pytest.mark.venv_only
 class TestEncryptionService:
     """Tests for the HIPAA-compliant encryption service."""
     

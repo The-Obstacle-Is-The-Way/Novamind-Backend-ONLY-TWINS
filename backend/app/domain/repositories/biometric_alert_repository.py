@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 BiometricAlertRepository interface.
 
@@ -8,10 +7,13 @@ following the Repository pattern to abstract data access operations.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertStatus, AlertPriority
+from app.domain.entities.digital_twin.biometric_alert import (
+    AlertPriority,
+    AlertStatus,
+    BiometricAlert,
+)
 
 
 class BiometricAlertRepository(ABC):
@@ -39,7 +41,7 @@ class BiometricAlertRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_id(self, alert_id: UUID) -> Optional[BiometricAlert]:
+    async def get_by_id(self, alert_id: UUID) -> BiometricAlert | None:
         """
         Retrieve a biometric alert by its ID.
         
@@ -58,12 +60,12 @@ class BiometricAlertRepository(ABC):
     async def get_by_patient_id(
         self,
         patient_id: UUID,
-        status: Optional[AlertStatus] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        status: AlertStatus | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
         offset: int = 0
-    ) -> List[BiometricAlert]:
+    ) -> list[BiometricAlert]:
         """
         Retrieve biometric alerts for a specific patient.
         
@@ -86,10 +88,10 @@ class BiometricAlertRepository(ABC):
     @abstractmethod
     async def get_active_alerts(
         self,
-        priority: Optional[AlertPriority] = None,
+        priority: AlertPriority | None = None,
         limit: int = 100,
         offset: int = 0
-    ) -> List[BiometricAlert]:
+    ) -> list[BiometricAlert]:
         """
         Retrieve active (non-resolved) biometric alerts.
         
@@ -112,7 +114,7 @@ class BiometricAlertRepository(ABC):
         alert_id: UUID,
         status: AlertStatus,
         provider_id: UUID,
-        notes: Optional[str] = None
+        notes: str | None = None
     ) -> BiometricAlert:
         """
         Update the status of a biometric alert.
@@ -152,9 +154,9 @@ class BiometricAlertRepository(ABC):
     async def count_by_patient(
         self,
         patient_id: UUID,
-        status: Optional[AlertStatus] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        status: AlertStatus | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None
     ) -> int:
         """
         Count biometric alerts for a specific patient.

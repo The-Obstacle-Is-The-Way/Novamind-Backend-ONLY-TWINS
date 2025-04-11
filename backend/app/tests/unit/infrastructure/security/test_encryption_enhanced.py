@@ -27,6 +27,7 @@ from app.infrastructure.security.encryption import (
 from app.core.config import Settings
 
 
+@pytest.mark.db_required
 class TestEncryptionUtils:
     """Tests for the encryption utility functions."""
     

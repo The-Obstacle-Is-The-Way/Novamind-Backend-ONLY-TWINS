@@ -21,6 +21,7 @@ from app.core.services.ml.mock import MockMentaLLaMA
 from app.tests.unit.base_test_unit import BaseUnitTest # Updated import path after rename
 
 
+@pytest.mark.db_required
 class TestMockMentaLLaMA(BaseUnitTest):
     """Test suite for MockMentaLLaMA class that provides psychiatric analysis."""
 

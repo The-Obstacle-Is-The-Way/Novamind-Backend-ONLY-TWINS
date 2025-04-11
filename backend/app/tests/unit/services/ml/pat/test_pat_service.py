@@ -22,7 +22,8 @@ from app.core.exceptions import (
     ServiceUnavailableError,
 )
 from app.core.services.ml.pat.bedrock import BedrockPAT
-from app.core.services.ml.pat.factory import PATServiceFactory # Corrected class name
+from app.core.services.ml.pat.factory import PATServiceFactory # Corrected @pytest.mark.db_required
+class name
 from app.core.services.ml.pat.interface import PATInterface
 from app.core.services.ml.pat.mock import MockPATService # Corrected class name
 

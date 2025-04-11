@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Analytics Domain Entities.
 
@@ -6,8 +5,8 @@ This module defines the core domain entities related to analytics
 within the Novamind Digital Twin platform.
 """
 
-from datetime import datetime, UTC, UTC
-from typing import Dict, Any, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 
 class AnalyticsEvent:
@@ -22,11 +21,11 @@ class AnalyticsEvent:
     def __init__(
         self,
         event_type: str,
-        event_data: Dict[str, Any],
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        timestamp: Optional[datetime] = None,
-        event_id: Optional[str] = None
+        event_data: dict[str, Any],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        timestamp: datetime | None = None,
+        event_id: str | None = None
     ) -> None:
         """
         Initialize an analytics event.
@@ -46,7 +45,7 @@ class AnalyticsEvent:
         self.timestamp = timestamp or datetime.now(UTC)
         self.event_id = event_id
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the event to a dictionary representation.
         
@@ -73,11 +72,11 @@ class AnalyticsBatch:
     
     def __init__(
         self,
-        events: List[AnalyticsEvent],
-        batch_id: Optional[str] = None,
+        events: list[AnalyticsEvent],
+        batch_id: str | None = None,
         processed_count: int = 0,
         failed_count: int = 0,
-        timestamp: Optional[datetime] = None
+        timestamp: datetime | None = None
     ) -> None:
         """
         Initialize an analytics batch.
@@ -105,7 +104,7 @@ class AnalyticsBatch:
         """
         return self.processed_count + self.failed_count
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the batch to a dictionary representation.
         
@@ -132,9 +131,9 @@ class AnalyticsAggregate:
     
     def __init__(
         self,
-        dimensions: Dict[str, Any],
-        metrics: Dict[str, Any],
-        time_period: Optional[Dict[str, datetime]] = None
+        dimensions: dict[str, Any],
+        metrics: dict[str, Any],
+        time_period: dict[str, datetime] | None = None
     ) -> None:
         """
         Initialize an analytics aggregate.
@@ -148,7 +147,7 @@ class AnalyticsAggregate:
         self.metrics = metrics
         self.time_period = time_period or {}
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the aggregate to a dictionary representation.
         

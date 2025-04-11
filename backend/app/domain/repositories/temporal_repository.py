@@ -2,10 +2,9 @@
 Repository interfaces for temporal data storage and retrieval.
 """
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from uuid import UUID
 
-from app.domain.entities.temporal_events import EventChain, CorrelatedEvent
+from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
 from app.domain.entities.temporal_sequence import TemporalSequence
 
 
@@ -30,7 +29,7 @@ class TemporalSequenceRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_id(self, sequence_id: UUID) -> Optional[TemporalSequence]:
+    async def get_by_id(self, sequence_id: UUID) -> TemporalSequence | None:
         """
         Retrieve a temporal sequence by ID.
         
@@ -43,7 +42,7 @@ class TemporalSequenceRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_patient_id(self, patient_id: UUID) -> List[TemporalSequence]:
+    async def get_by_patient_id(self, patient_id: UUID) -> list[TemporalSequence]:
         """
         Get all temporal sequences for a patient.
         
@@ -74,7 +73,7 @@ class TemporalSequenceRepository(ABC):
         patient_id: UUID, 
         feature_name: str,
         limit: int = 10
-    ) -> Optional[TemporalSequence]:
+    ) -> TemporalSequence | None:
         """
         Get the most recent temporal sequence containing a specific feature.
         
@@ -110,7 +109,7 @@ class EventRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_event_by_id(self, event_id: UUID) -> Optional[CorrelatedEvent]:
+    async def get_event_by_id(self, event_id: UUID) -> CorrelatedEvent | None:
         """
         Get an event by its ID.
         
@@ -123,7 +122,7 @@ class EventRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_events_by_correlation_id(self, correlation_id: UUID) -> List[CorrelatedEvent]:
+    async def get_events_by_correlation_id(self, correlation_id: UUID) -> list[CorrelatedEvent]:
         """
         Get all events with the specified correlation ID.
         
@@ -152,9 +151,9 @@ class EventRepository(ABC):
     async def get_patient_events(
         self, 
         patient_id: UUID, 
-        event_type: Optional[str] = None,
+        event_type: str | None = None,
         limit: int = 100
-    ) -> List[CorrelatedEvent]:
+    ) -> list[CorrelatedEvent]:
         """
         Get events associated with a patient.
         

@@ -21,7 +21,8 @@ from app.core.services.ml.pat.exceptions import (
     ResourceNotFoundError,
     ValidationError,
 )
-from app.core.services.ml.pat.mock import MockPATService # Corrected class name
+from app.core.services.ml.pat.mock import MockPATService # Corrected @pytest.mark.venv_only
+class name
 
 
 @pytest.fixture

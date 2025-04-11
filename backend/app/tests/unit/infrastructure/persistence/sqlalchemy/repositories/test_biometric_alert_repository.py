@@ -113,6 +113,7 @@ def mock_session():
     return session
 
 
+@pytest.mark.db_required
 class TestSQLAlchemyBiometricAlertRepository:
     """Tests for the SQLAlchemy implementation of the BiometricAlertRepository."""
     

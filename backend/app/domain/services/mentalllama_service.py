@@ -3,7 +3,6 @@ Domain service interface for MentalLLaMA-33B NLP analysis.
 Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional
 from uuid import UUID
 
 from app.domain.entities.digital_twin import ClinicalInsight
@@ -20,8 +19,8 @@ class MentalLLaMAService(ABC):
         self, 
         patient_id: UUID, 
         note_text: str,
-        context: Optional[Dict] = None
-    ) -> List[ClinicalInsight]:
+        context: dict | None = None
+    ) -> list[ClinicalInsight]:
         """
         Analyze clinical notes using MentalLLaMA-33B to extract insights.
         
@@ -39,11 +38,11 @@ class MentalLLaMAService(ABC):
     async def generate_treatment_recommendations(
         self,
         patient_id: UUID,
-        diagnosis_codes: List[str],
-        current_medications: List[str],
+        diagnosis_codes: list[str],
+        current_medications: list[str],
         clinical_history: str,
-        digital_twin_state_id: Optional[UUID] = None
-    ) -> List[Dict]:
+        digital_twin_state_id: UUID | None = None
+    ) -> list[dict]:
         """
         Generate treatment recommendations based on patient information.
         
@@ -63,9 +62,9 @@ class MentalLLaMAService(ABC):
     async def analyze_risk_factors(
         self,
         patient_id: UUID,
-        clinical_data: Dict,
-        digital_twin_state_id: Optional[UUID] = None
-    ) -> Dict:
+        clinical_data: dict,
+        digital_twin_state_id: UUID | None = None
+    ) -> dict:
         """
         Analyze risk factors from patient data using NLP techniques.
         
@@ -85,7 +84,7 @@ class MentalLLaMAService(ABC):
         patient_id: UUID,
         query: str,
         limit: int = 10
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Perform semantic search across patient records.
         
@@ -103,8 +102,8 @@ class MentalLLaMAService(ABC):
     async def summarize_patient_history(
         self,
         patient_id: UUID,
-        time_range: Optional[str] = "all",
-        focus_areas: Optional[List[str]] = None
+        time_range: str | None = "all",
+        focus_areas: list[str] | None = None
     ) -> str:
         """
         Generate a concise summary of patient history.

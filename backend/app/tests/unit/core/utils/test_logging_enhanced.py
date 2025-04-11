@@ -18,6 +18,7 @@ from unittest.mock import patch, MagicMock, mock_open, call
 from app.core.utils.logging import get_logger # Corrected import, removed HIPAACompliantLogger, audit_log
 
 
+@pytest.mark.db_required
 class TestHIPAACompliantLogger:
     """Comprehensive tests for the HIPAACompliantLogger class."""
     

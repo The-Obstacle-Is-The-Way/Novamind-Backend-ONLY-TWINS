@@ -5,14 +5,15 @@ Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union, Any, Set
+from typing import Any
 from uuid import UUID
 
 from backend.app.domain.entities.refactored.digital_twin_core import (
-    DigitalTwinState, ClinicalInsight, BrainRegion, Neurotransmitter
+    DigitalTwinState,
 )
 from backend.app.domain.entities.refactored.knowledge_graph import (
-    TemporalKnowledgeGraph, BayesianBeliefNetwork, KnowledgeGraphNode, KnowledgeGraphEdge
+    BayesianBeliefNetwork,
+    TemporalKnowledgeGraph,
 )
 
 
@@ -29,10 +30,10 @@ class DigitalTwinCoreService(ABC):
     async def initialize_digital_twin(
         self,
         reference_id: UUID,
-        initial_data: Optional[Dict] = None,
+        initial_data: dict | None = None,
         enable_knowledge_graph: bool = True,
         enable_belief_network: bool = True
-    ) -> Tuple[DigitalTwinState, Optional[TemporalKnowledgeGraph], Optional[BayesianBeliefNetwork]]:
+    ) -> tuple[DigitalTwinState, TemporalKnowledgeGraph | None, BayesianBeliefNetwork | None]:
         """
         Initialize a new Digital Twin with knowledge graph and belief network.
         
@@ -52,13 +53,13 @@ class DigitalTwinCoreService(ABC):
     async def process_multimodal_data(
         self,
         reference_id: UUID,
-        text_data: Optional[Dict] = None,
-        physiological_data: Optional[Dict] = None,
-        imaging_data: Optional[Dict] = None,
-        behavioral_data: Optional[Dict] = None,
-        genetic_data: Optional[Dict] = None,
-        context: Optional[Dict] = None
-    ) -> Tuple[DigitalTwinState, List[Dict]]:
+        text_data: dict | None = None,
+        physiological_data: dict | None = None,
+        imaging_data: dict | None = None,
+        behavioral_data: dict | None = None,
+        genetic_data: dict | None = None,
+        context: dict | None = None
+    ) -> tuple[DigitalTwinState, list[dict]]:
         """
         Process multimodal data using all three AI components (Trinity Stack).
         
@@ -80,9 +81,9 @@ class DigitalTwinCoreService(ABC):
     async def update_knowledge_graph(
         self,
         reference_id: UUID,
-        new_data: Dict,
+        new_data: dict,
         data_source: str,
-        digital_twin_state_id: Optional[UUID] = None
+        digital_twin_state_id: UUID | None = None
     ) -> TemporalKnowledgeGraph:
         """
         Update the temporal knowledge graph with new data.
@@ -102,7 +103,7 @@ class DigitalTwinCoreService(ABC):
     async def update_belief_network(
         self,
         reference_id: UUID,
-        evidence: Dict[str, Any],
+        evidence: dict[str, Any],
         data_source: str
     ) -> BayesianBeliefNetwork:
         """
@@ -122,10 +123,10 @@ class DigitalTwinCoreService(ABC):
     async def perform_counterfactual_simulation(
         self,
         reference_id: UUID,
-        intervention: Dict[str, Any],
-        target_states: List[str],
-        context: Optional[Dict] = None
-    ) -> Dict[str, Any]:
+        intervention: dict[str, Any],
+        target_states: list[str],
+        context: dict | None = None
+    ) -> dict[str, Any]:
         """
         Perform counterfactual simulation to predict outcomes of interventions.
         
@@ -144,9 +145,9 @@ class DigitalTwinCoreService(ABC):
     async def detect_temporal_cascade(
         self,
         reference_id: UUID,
-        event_types: List[str],
-        time_window: Optional[Tuple[datetime, datetime]] = None
-    ) -> Dict[str, Any]:
+        event_types: list[str],
+        time_window: tuple[datetime, datetime] | None = None
+    ) -> dict[str, Any]:
         """
         Detect temporal cascades (cause-effect chains) in data.
         
@@ -167,7 +168,7 @@ class DigitalTwinCoreService(ABC):
         include_insights: bool = True,
         include_predictions: bool = True,
         include_recommendations: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a comprehensive clinical summary from the Digital Twin.
         
@@ -187,9 +188,9 @@ class DigitalTwinCoreService(ABC):
         self,
         reference_id: UUID,
         visualization_type: str,
-        parameters: Dict[str, Any],
-        digital_twin_state_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+        parameters: dict[str, Any],
+        digital_twin_state_id: UUID | None = None
+    ) -> dict[str, Any]:
         """
         Generate data for visualizing the Digital Twin.
         
@@ -208,7 +209,7 @@ class DigitalTwinCoreService(ABC):
     async def get_latest_digital_twin_state(
         self,
         reference_id: UUID
-    ) -> Optional[DigitalTwinState]:
+    ) -> DigitalTwinState | None:
         """
         Get the latest Digital Twin state.
         
@@ -224,7 +225,7 @@ class DigitalTwinCoreService(ABC):
     async def get_digital_twin_state(
         self,
         state_id: UUID
-    ) -> Optional[DigitalTwinState]:
+    ) -> DigitalTwinState | None:
         """
         Get a specific Digital Twin state by ID.
         
@@ -241,7 +242,7 @@ class DigitalTwinCoreService(ABC):
         self,
         state_id_1: UUID,
         state_id_2: UUID
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare two Digital Twin states and return differences.
         
@@ -258,7 +259,7 @@ class DigitalTwinCoreService(ABC):
     async def subscribe_to_events(
         self,
         reference_id: UUID,
-        event_types: List[str],
+        event_types: list[str],
         callback: Any
     ) -> str:
         """
@@ -278,7 +279,7 @@ class DigitalTwinCoreService(ABC):
     async def publish_event(
         self,
         event_type: str,
-        event_data: Dict[str, Any],
+        event_data: dict[str, Any],
         source: str,
         reference_id: UUID
     ) -> None:

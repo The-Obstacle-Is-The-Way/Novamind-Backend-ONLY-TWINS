@@ -16,6 +16,7 @@ from app.core.services.ml.xgboost.exceptions import (
 )
 
 
+@pytest.mark.venv_only
 class TestMockXGBoostService:
     """Test case for the MockXGBoostService class."""
     

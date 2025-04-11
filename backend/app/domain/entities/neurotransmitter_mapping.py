@@ -4,13 +4,15 @@ Neurotransmitter mapping module for the Temporal Neurotransmitter System.
 This module defines the core class that maps the relationship between
 neurotransmitters across different brain regions and their effects.
 """
-from datetime import datetime
-from enum import Enum, auto
-from typing import Dict, List, Tuple, Set, Optional, Any
 import uuid
+from enum import Enum, auto
 from uuid import UUID
 
-from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, ClinicalSignificance
+from app.domain.entities.digital_twin_enums import (
+    BrainRegion,
+    ClinicalSignificance,
+    Neurotransmitter,
+)
 from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
 from app.domain.entities.temporal_sequence import TemporalSequence
 
@@ -203,9 +205,9 @@ class NeurotransmitterMapping:
     
     def get_receptor_profiles(
         self, 
-        brain_region: Optional[BrainRegion] = None,
-        neurotransmitter: Optional[Neurotransmitter] = None
-    ) -> List[ReceptorProfile]:
+        brain_region: BrainRegion | None = None,
+        neurotransmitter: Neurotransmitter | None = None
+    ) -> list[ReceptorProfile]:
         """
         Get receptor profiles, optionally filtered by brain region and/or neurotransmitter.
         
@@ -226,7 +228,7 @@ class NeurotransmitterMapping:
             
         return result
     
-    def get_receptor_regions(self, neurotransmitter: Neurotransmitter) -> List[Tuple[BrainRegion, float]]:
+    def get_receptor_regions(self, neurotransmitter: Neurotransmitter) -> list[tuple[BrainRegion, float]]:
         """
         Get all brain regions that have receptors for a specific neurotransmitter.
         
@@ -261,7 +263,7 @@ class NeurotransmitterMapping:
         neurotransmitter: Neurotransmitter,
         level: float = 0.5,
         neurotransmitter_level: float = None  # For compatibility with tests
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Calculate the response of a brain region to a neurotransmitter at a given level.
         
@@ -337,7 +339,7 @@ class NeurotransmitterMapping:
         if brain_region not in self.production_map[neurotransmitter]:
             self.production_map[neurotransmitter].append(brain_region)
     
-    def get_producing_regions(self, neurotransmitter: Neurotransmitter) -> List[BrainRegion]:
+    def get_producing_regions(self, neurotransmitter: Neurotransmitter) -> list[BrainRegion]:
         """
         Get all brain regions that produce a given neurotransmitter.
         
@@ -356,7 +358,7 @@ class NeurotransmitterMapping:
                 regions.append(region)
         return regions
     
-    def get_affected_regions(self, neurotransmitter: Neurotransmitter) -> List[BrainRegion]:
+    def get_affected_regions(self, neurotransmitter: Neurotransmitter) -> list[BrainRegion]:
         """
         Get all brain regions affected by a given neurotransmitter.
         
@@ -402,7 +404,7 @@ class NeurotransmitterMapping:
         self,
         neurotransmitter: Neurotransmitter,
         brain_region: BrainRegion,
-        patient_id: Optional[UUID] = None
+        patient_id: UUID | None = None
     ) -> NeurotransmitterEffect:
         """
         Analyze the baseline effect of a neurotransmitter on a brain region.
@@ -477,7 +479,7 @@ class NeurotransmitterMapping:
         self,
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter
-    ) -> Optional[TemporalSequence]:
+    ) -> TemporalSequence | None:
         """
         Get the temporal sequence for a brain region and neurotransmitter.
         

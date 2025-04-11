@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 # app/domain/entities/digital_twin/time_series_model.py
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from uuid import UUID
+from typing import Any
 
 from app.domain.entities.digital_twin.twin_model import (
     DigitalTwinModel,
@@ -20,7 +18,7 @@ class TimeSeriesModel(DigitalTwinModel):
 
     forecast_horizon_days: int
     data_frequency: str  # e.g., 'daily', 'weekly'
-    symptom_categories: List[str]
+    symptom_categories: list[str]
 
     @classmethod
     def create(
@@ -28,11 +26,11 @@ class TimeSeriesModel(DigitalTwinModel):
         name: str,
         version: str,
         accuracy: float,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         forecast_horizon_days: int,
         data_frequency: str,
-        symptom_categories: List[str],
-        last_trained: Optional[datetime] = None,
+        symptom_categories: list[str],
+        last_trained: datetime | None = None,
     ) -> "TimeSeriesModel":
         """Factory method to create a new TimeSeriesModel"""
         return cls(
@@ -48,7 +46,7 @@ class TimeSeriesModel(DigitalTwinModel):
             symptom_categories=symptom_categories,
         )
 
-    def predict(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def predict(self, input_data: dict[str, Any]) -> dict[str, Any]:
         """
         Forecast symptom trajectories based on historical data
 

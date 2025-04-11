@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock
 from app.infrastructure.security.log_sanitizer import LogSanitizer
 
 
+@pytest.mark.db_required
 class TestLogSanitizer:
     """
     Tests for the LogSanitizer to ensure PHI is properly redacted from logs.

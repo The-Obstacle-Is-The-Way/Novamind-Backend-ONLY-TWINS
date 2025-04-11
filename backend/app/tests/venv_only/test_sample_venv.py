@@ -1,3 +1,4 @@
+import pytest
 """
 Sample venv_only test that demonstrates using third-party packages without external services.
 
@@ -10,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 
+@pytest.mark.venv_only
 def test_pandas_processing():
     """Test that pandas can be used for data processing in venv_only tests."""
     # Create a sample DataFrame

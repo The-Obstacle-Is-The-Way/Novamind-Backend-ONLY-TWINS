@@ -1,5 +1,4 @@
 
-# -*- coding: utf-8 -*-
 """
 Patch for BiometricTwinModel to fix generate_biometric_alert_rules test.
 """

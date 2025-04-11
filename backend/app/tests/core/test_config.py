@@ -1,3 +1,4 @@
+import pytest
 """
 Tests for the configuration module.
 
@@ -9,6 +10,7 @@ import os
 from app.core.config import Settings
 
 
+@pytest.mark.db_required
 class TestSettings:
     """Test cases for the Settings class."""
     

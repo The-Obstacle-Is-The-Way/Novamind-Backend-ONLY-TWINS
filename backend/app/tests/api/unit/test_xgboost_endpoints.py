@@ -38,6 +38,7 @@ from app.api.schemas.xgboost import (
 
 
 # Mock user for authentication
+@pytest.mark.db_required
 class MockUser:
     def __init__(self, id="test-user-id", role="clinician"):
         self.id = id

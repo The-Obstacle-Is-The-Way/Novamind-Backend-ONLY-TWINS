@@ -38,6 +38,7 @@ def mock_session():
 
 
 @pytest.fixture
+@pytest.mark.db_required
 def test_sequence():
     """Create a test temporal sequence for tests."""
     now = datetime.now()

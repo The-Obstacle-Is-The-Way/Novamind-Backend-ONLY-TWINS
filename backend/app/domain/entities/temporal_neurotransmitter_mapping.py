@@ -4,19 +4,26 @@ Temporal neurotransmitter mapping module for the Temporal Neurotransmitter Syste
 This module defines the core classes that map neurotransmitter activity across brain regions
 over time, including mechanisms for modeling cascading effects and treatment responses.
 """
+import math
+import random
 from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import Dict, List, Tuple, Optional, Set, Any, Union
-import uuid
+from typing import Any
 from uuid import UUID
-import random
-import math
 
-from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, ClinicalSignificance
+from app.domain.entities.digital_twin_enums import (
+    BrainRegion,
+    ClinicalSignificance,
+    Neurotransmitter,
+)
 from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
-from app.domain.entities.neurotransmitter_mapping import NeurotransmitterMapping, ReceptorProfile, ReceptorType, ReceptorSubtype
+from app.domain.entities.neurotransmitter_mapping import (
+    NeurotransmitterMapping,
+)
+from app.domain.entities.temporal_events import (
+    TemporalEvent,
+)
 from app.domain.entities.temporal_sequence import TemporalSequence
-from app.domain.entities.temporal_events import TemporalEvent, CorrelatedEvent, EventChain, CorrelationType
 
 
 class EventType(Enum):
@@ -54,7 +61,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
     - Analyzing temporal patterns and correlations
     """
     
-    def __init__(self, patient_id: Optional[UUID] = None):
+    def __init__(self, patient_id: UUID | None = None):
         """
         Initialize a temporal neurotransmitter mapping.
         
@@ -67,19 +74,19 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         self.patient_id = patient_id
         
         # Track temporal sequences
-        self.temporal_sequences: Dict[Tuple[BrainRegion, Neurotransmitter], List[TemporalSequence]] = {}
+        self.temporal_sequences: dict[tuple[BrainRegion, Neurotransmitter], list[TemporalSequence]] = {}
         
         # Track events
-        self.events: Dict[UUID, TemporalEvent] = {}
+        self.events: dict[UUID, TemporalEvent] = {}
         
         # Track correlations between events
-        self.correlations: Dict[UUID, Dict[UUID, float]] = {}
+        self.correlations: dict[UUID, dict[UUID, float]] = {}
         
         # Track cascading patterns
-        self.cascade_patterns: Dict[Neurotransmitter, Dict[BrainRegion, TransmissionPattern]] = {}
+        self.cascade_patterns: dict[Neurotransmitter, dict[BrainRegion, TransmissionPattern]] = {}
         
         # Initialize temporal profiles
-        self.temporal_profiles: Dict[Tuple[BrainRegion, Neurotransmitter], Dict[str, Any]] = {}
+        self.temporal_profiles: dict[tuple[BrainRegion, Neurotransmitter], dict[str, Any]] = {}
         
         # Initialize with default patterns
         self._initialize_default_patterns()
@@ -234,7 +241,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter,
         time_range: timedelta = timedelta(days=30)
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze the temporal pattern of a neurotransmitter in a region.
         
@@ -366,7 +373,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         neurotransmitter: Neurotransmitter,
         time_range: timedelta = timedelta(days=30),
         correlation_threshold: float = 0.6
-    ) -> Dict[Tuple[BrainRegion, BrainRegion], float]:
+    ) -> dict[tuple[BrainRegion, BrainRegion], float]:
         """
         Analyze interactions between brain regions for a neurotransmitter.
         
@@ -457,7 +464,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
     def get_recent_sequences(
         self,
         days: int = 30
-    ) -> Dict[Tuple[BrainRegion, Neurotransmitter], TemporalSequence]:
+    ) -> dict[tuple[BrainRegion, Neurotransmitter], TemporalSequence]:
         """
         Get the most recent temporal sequences across all brain regions.
         
@@ -484,10 +491,10 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         self,
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter,
-        timestamps: List[datetime],
+        timestamps: list[datetime],
         baseline_level: float = 0.5,
-        random_seed: Optional[int] = None,
-        patient_id: Optional[UUID] = None
+        random_seed: int | None = None,
+        patient_id: UUID | None = None
     ) -> TemporalSequence:
         """
         Generate a temporal sequence for a neurotransmitter in a specific brain region.
@@ -605,8 +612,8 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         initial_level: float,
         time_steps: int = 5,
         step_duration: timedelta = timedelta(minutes=15),
-        patient_id: Optional[UUID] = None
-    ) -> Dict[BrainRegion, List[float]]:
+        patient_id: UUID | None = None
+    ) -> dict[BrainRegion, list[float]]:
         """
         Predict how a neurotransmitter change cascades across brain regions.
         
@@ -622,7 +629,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
             Dictionary mapping brain regions to lists of levels over time
         """
         # Initialize results dictionary
-        cascade_results: Dict[BrainRegion, List[float]] = {}
+        cascade_results: dict[BrainRegion, list[float]] = {}
         
         # Set initial level for starting region
         cascade_results[starting_region] = [initial_level]
@@ -746,9 +753,9 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         brain_region: BrainRegion,
         target_neurotransmitter: Neurotransmitter,
         treatment_effect: float,
-        timestamps: List[datetime],
-        patient_id: Optional[UUID] = None
-    ) -> Dict[Neurotransmitter, TemporalSequence]:
+        timestamps: list[datetime],
+        patient_id: UUID | None = None
+    ) -> dict[Neurotransmitter, TemporalSequence]:
         """
         Simulate the response to a treatment affecting a specific neurotransmitter.
         
@@ -806,8 +813,8 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         patient_id: UUID,
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter,
-        time_series_data: List[Tuple[datetime, float]],
-        baseline_period: Tuple[datetime, datetime]
+        time_series_data: list[tuple[datetime, float]],
+        baseline_period: tuple[datetime, datetime]
     ) -> NeurotransmitterEffect:
         """
         Analyze a temporal response to detect effects on neurotransmitter levels.
@@ -857,8 +864,8 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
     
     def _estimate_effect_magnitude(
         self,
-        baseline_data: List[float],
-        intervention_data: List[float]
+        baseline_data: list[float],
+        intervention_data: list[float]
     ) -> ClinicalSignificance:
         """Estimate clinical significance based on data differences."""
         baseline_mean = sum(baseline_data) / len(baseline_data)
@@ -882,7 +889,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
             
     def _get_treatment_affected_neurotransmitters(
         self, primary_nt: Neurotransmitter, effect_strength: float
-    ) -> Dict[Neurotransmitter, float]:
+    ) -> dict[Neurotransmitter, float]:
         """
         Determine which neurotransmitters are affected by a treatment.
         
@@ -955,7 +962,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
 def _apply_treatment_effect(
     sequence: TemporalSequence,
     effect: float,
-    timestamps: List[datetime]
+    timestamps: list[datetime]
 ) -> None:
     """
     Apply treatment effect to a temporal sequence.
@@ -1026,7 +1033,7 @@ def _apply_treatment_effect(
             event.metadata = event_metadata
 
 
-def extend_neurotransmitter_mapping(base_mapping: NeurotransmitterMapping, patient_id: Optional[UUID] = None) -> TemporalNeurotransmitterMapping:
+def extend_neurotransmitter_mapping(base_mapping: NeurotransmitterMapping, patient_id: UUID | None = None) -> TemporalNeurotransmitterMapping:
     """
     Extends a base NeurotransmitterMapping with temporal capabilities.
     

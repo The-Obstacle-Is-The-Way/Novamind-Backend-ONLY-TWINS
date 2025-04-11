@@ -32,6 +32,7 @@ def jwt_handler():
     )
 
 
+@pytest.mark.db_required
 class TestJWTHandler:
     """Test suite for JWT token handler."""
     

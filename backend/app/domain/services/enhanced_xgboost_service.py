@@ -5,22 +5,11 @@ This module provides advanced prediction capabilities using XGBoost models
 that have been enhanced with neuroscience domain knowledge for temporal
 neurotransmitter analysis.
 """
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Set, Optional, Any, Union
-import uuid
-from uuid import UUID
 import math
-import random
+from typing import Any
+from uuid import UUID
 
-from app.domain.entities.digital_twin_enums import (
-    BrainRegion, 
-    Neurotransmitter, 
-    ClinicalSignificance,
-    NeurotransmitterState,
-    TreatmentClass
-)
-from app.domain.entities.temporal_sequence import TemporalSequence
-from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
+from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, TreatmentClass
 
 
 class EnhancedXGBoostService:
@@ -48,7 +37,7 @@ class EnhancedXGBoostService:
         self._brain_region_encodings = self._initialize_brain_region_encodings()
         self._neurotransmitter_encodings = self._initialize_neurotransmitter_encodings()
     
-    def _initialize_interaction_matrices(self) -> Dict[Neurotransmitter, Dict[Neurotransmitter, float]]:
+    def _initialize_interaction_matrices(self) -> dict[Neurotransmitter, dict[Neurotransmitter, float]]:
         """Initialize interaction matrices between neurotransmitters."""
         interactions = {}
         
@@ -94,7 +83,7 @@ class EnhancedXGBoostService:
         
         return interactions
     
-    def _initialize_brain_region_encodings(self) -> Dict[BrainRegion, float]:
+    def _initialize_brain_region_encodings(self) -> dict[BrainRegion, float]:
         """Initialize encodings for brain regions."""
         regions = list(BrainRegion)
         return {
@@ -102,7 +91,7 @@ class EnhancedXGBoostService:
             for i, region in enumerate(sorted(regions, key=lambda r: r.value))
         }
         
-    def _initialize_neurotransmitter_encodings(self) -> Dict[Neurotransmitter, float]:
+    def _initialize_neurotransmitter_encodings(self) -> dict[Neurotransmitter, float]:
         """Initialize encodings for neurotransmitters."""
         neurotransmitters = list(Neurotransmitter)
         return {
@@ -115,8 +104,8 @@ class EnhancedXGBoostService:
         brain_region: BrainRegion,
         neurotransmitter: Neurotransmitter,
         treatment_effect: float,
-        baseline_data: Optional[Dict[str, float]] = None
-    ) -> Dict[str, Any]:
+        baseline_data: dict[str, float] | None = None
+    ) -> dict[str, Any]:
         """
         Predict response to a neurotransmitter-targeted treatment.
         
@@ -230,8 +219,8 @@ class EnhancedXGBoostService:
     def _calculate_baseline_importance(
         self,
         target_neurotransmitter: Neurotransmitter,
-        baseline_data: Dict[str, float]
-    ) -> Dict[str, float]:
+        baseline_data: dict[str, float]
+    ) -> dict[str, float]:
         """Calculate feature importance for baseline data."""
         baseline_importance = {}
         total_weight = 0.15  # Total weight to allocate to baseline features
@@ -309,7 +298,7 @@ class EnhancedXGBoostService:
         duration_days: float,
         dose_factor: float = 1.0,
         patient_metabolism: float = 1.0
-    ) -> Dict[str, List[Tuple[float, float]]]:
+    ) -> dict[str, list[tuple[float, float]]]:
         """
         Predict the time course of treatment effects.
         
@@ -406,8 +395,8 @@ class EnhancedXGBoostService:
         self,
         primary_neurotransmitter: Neurotransmitter,
         primary_effect: float,
-        secondary_neurotransmitters: Dict[Neurotransmitter, float]
-    ) -> Dict[str, Any]:
+        secondary_neurotransmitters: dict[Neurotransmitter, float]
+    ) -> dict[str, Any]:
         """
         Analyze interactions between multiple neurotransmitter treatments.
         
@@ -514,9 +503,9 @@ class EnhancedXGBoostService:
     def predict_side_effects(
         self,
         treatment_class: TreatmentClass,
-        patient_features: Dict[str, Any],
+        patient_features: dict[str, Any],
         dose_factor: float = 1.0
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Predict side effects for a specific treatment and patient.
         
@@ -589,11 +578,11 @@ class EnhancedXGBoostService:
         self,
         treatment_class: TreatmentClass,
         duration_days: float,
-        current_levels: Dict[Neurotransmitter, Dict[BrainRegion, float]],
-        patient_features: Dict[str, Any],
+        current_levels: dict[Neurotransmitter, dict[BrainRegion, float]],
+        patient_features: dict[str, Any],
         dose_factor: float = 1.0,
         time_resolution_days: float = 1.0
-    ) -> Dict[Neurotransmitter, Dict[BrainRegion, List[Tuple[float, float]]]]:
+    ) -> dict[Neurotransmitter, dict[BrainRegion, list[tuple[float, float]]]]:
         """
         Forecast neurotransmitter levels over time during treatment.
         
@@ -662,11 +651,11 @@ class EnhancedXGBoostService:
     
     def recommend_treatment(
         self,
-        patient_features: Dict[str, Any],
-        target_neurotransmitters: Dict[Neurotransmitter, Dict[BrainRegion, float]],
-        available_treatments: Optional[List[TreatmentClass]] = None,
-        side_effect_weights: Optional[Dict[str, float]] = None
-    ) -> List[Dict[str, Any]]:
+        patient_features: dict[str, Any],
+        target_neurotransmitters: dict[Neurotransmitter, dict[BrainRegion, float]],
+        available_treatments: list[TreatmentClass] | None = None,
+        side_effect_weights: dict[str, float] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Recommend optimal treatments based on patient features and targets.
         
@@ -740,8 +729,8 @@ class EnhancedXGBoostService:
     
     def _calculate_efficacy_score(
         self,
-        response: Dict[Neurotransmitter, Dict[BrainRegion, float]],
-        targets: Dict[Neurotransmitter, Dict[BrainRegion, float]]
+        response: dict[Neurotransmitter, dict[BrainRegion, float]],
+        targets: dict[Neurotransmitter, dict[BrainRegion, float]]
     ) -> float:
         """
         Calculate how well treatment response matches target neurotransmitter levels.
@@ -794,8 +783,8 @@ class EnhancedXGBoostService:
     
     def _calculate_side_effect_score(
         self,
-        side_effects: Dict[str, float],
-        weights: Dict[str, float]
+        side_effects: dict[str, float],
+        weights: dict[str, float]
     ) -> float:
         """
         Calculate weighted side effect score.
@@ -822,8 +811,8 @@ class EnhancedXGBoostService:
     
     def _summarize_response(
         self,
-        response: Dict[Neurotransmitter, Dict[BrainRegion, float]]
-    ) -> Dict[str, Any]:
+        response: dict[Neurotransmitter, dict[BrainRegion, float]]
+    ) -> dict[str, Any]:
         """
         Create a summary of the treatment response.
         

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Appointment Service
 
@@ -7,22 +6,22 @@ rescheduling, and cancellation, as well as checking for conflicts.
 """
 
 from datetime import datetime, timedelta
-from typing import List, Optional, Dict, Any, Union
 from uuid import UUID
 
 from app.domain.entities.appointment import (
     Appointment,
+    AppointmentPriority,
     AppointmentStatus,
     AppointmentType,
-    AppointmentPriority
 )
 from app.domain.exceptions import (
-    EntityNotFoundError, # Use generic not found error
     AppointmentConflictError,
+    EntityNotFoundError,  # Use generic not found error
     InvalidAppointmentStateError,
     InvalidAppointmentTimeError,
-    # Removed specific not found exceptions
 )
+
+# Removed specific not found exceptions
 from app.domain.repositories.appointment_repository import AppointmentRepository
 from app.domain.repositories.patient_repository import PatientRepository
 from app.domain.repositories.provider_repository import ProviderRepository
@@ -67,7 +66,7 @@ class AppointmentService:
         self.max_appointments_per_day = max_appointments_per_day
         self.buffer_between_appointments = buffer_between_appointments
     
-    def get_appointment(self, appointment_id: Union[UUID, str]) -> Appointment:
+    def get_appointment(self, appointment_id: UUID | str) -> Appointment:
         """
         Get an appointment by ID.
         
@@ -89,11 +88,11 @@ class AppointmentService:
     
     def get_appointments_for_patient(
         self,
-        patient_id: Union[UUID, str],
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        status: Optional[Union[AppointmentStatus, str]] = None
-    ) -> List[Appointment]:
+        patient_id: UUID | str,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        status: AppointmentStatus | str | None = None
+    ) -> list[Appointment]:
         """
         Get appointments for a patient.
         
@@ -129,11 +128,11 @@ class AppointmentService:
     
     def get_appointments_for_provider(
         self,
-        provider_id: Union[UUID, str],
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        status: Optional[Union[AppointmentStatus, str]] = None
-    ) -> List[Appointment]:
+        provider_id: UUID | str,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        status: AppointmentStatus | str | None = None
+    ) -> list[Appointment]:
         """
         Get appointments for a provider.
         
@@ -169,15 +168,15 @@ class AppointmentService:
     
     def create_appointment(
         self,
-        patient_id: Union[UUID, str],
-        provider_id: Union[UUID, str],
+        patient_id: UUID | str,
+        provider_id: UUID | str,
         start_time: datetime,
-        end_time: Optional[datetime] = None,
-        appointment_type: Union[AppointmentType, str] = AppointmentType.FOLLOW_UP,
-        priority: Union[AppointmentPriority, str] = AppointmentPriority.NORMAL,
-        location: Optional[str] = None,
-        notes: Optional[str] = None,
-        reason: Optional[str] = None
+        end_time: datetime | None = None,
+        appointment_type: AppointmentType | str = AppointmentType.FOLLOW_UP,
+        priority: AppointmentPriority | str = AppointmentPriority.NORMAL,
+        location: str | None = None,
+        notes: str | None = None,
+        reason: str | None = None
     ) -> Appointment:
         """
         Create a new appointment.
@@ -242,11 +241,11 @@ class AppointmentService:
     
     def reschedule_appointment(
         self,
-        appointment_id: Union[UUID, str],
+        appointment_id: UUID | str,
         new_start_time: datetime,
-        new_end_time: Optional[datetime] = None,
-        reason: Optional[str] = None,
-        user_id: Union[UUID, str] = None
+        new_end_time: datetime | None = None,
+        reason: str | None = None,
+        user_id: UUID | str = None
     ) -> Appointment:
         """
         Reschedule an appointment.
@@ -289,9 +288,9 @@ class AppointmentService:
     
     def cancel_appointment(
         self,
-        appointment_id: Union[UUID, str],
-        cancelled_by: Union[UUID, str],
-        reason: Optional[str] = None
+        appointment_id: UUID | str,
+        cancelled_by: UUID | str,
+        reason: str | None = None
     ) -> Appointment:
         """
         Cancel an appointment.
@@ -319,7 +318,7 @@ class AppointmentService:
     
     def confirm_appointment(
         self,
-        appointment_id: Union[UUID, str]
+        appointment_id: UUID | str
     ) -> Appointment:
         """
         Confirm an appointment.
@@ -345,7 +344,7 @@ class AppointmentService:
     
     def check_in_appointment(
         self,
-        appointment_id: Union[UUID, str]
+        appointment_id: UUID | str
     ) -> Appointment:
         """
         Check in an appointment.
@@ -371,7 +370,7 @@ class AppointmentService:
     
     def start_appointment(
         self,
-        appointment_id: Union[UUID, str]
+        appointment_id: UUID | str
     ) -> Appointment:
         """
         Start an appointment.
@@ -397,7 +396,7 @@ class AppointmentService:
     
     def complete_appointment(
         self,
-        appointment_id: Union[UUID, str]
+        appointment_id: UUID | str
     ) -> Appointment:
         """
         Complete an appointment.
@@ -423,7 +422,7 @@ class AppointmentService:
     
     def mark_no_show(
         self,
-        appointment_id: Union[UUID, str]
+        appointment_id: UUID | str
     ) -> Appointment:
         """
         Mark an appointment as a no-show.
@@ -449,14 +448,14 @@ class AppointmentService:
     
     def schedule_follow_up(
         self,
-        appointment_id: Union[UUID, str],
+        appointment_id: UUID | str,
         follow_up_start_time: datetime,
-        follow_up_end_time: Optional[datetime] = None,
-        appointment_type: Union[AppointmentType, str] = AppointmentType.FOLLOW_UP,
-        priority: Union[AppointmentPriority, str] = AppointmentPriority.NORMAL,
-        location: Optional[str] = None,
-        notes: Optional[str] = None,
-        reason: Optional[str] = None
+        follow_up_end_time: datetime | None = None,
+        appointment_type: AppointmentType | str = AppointmentType.FOLLOW_UP,
+        priority: AppointmentPriority | str = AppointmentPriority.NORMAL,
+        location: str | None = None,
+        notes: str | None = None,
+        reason: str | None = None
     ) -> Appointment:
         """
         Schedule a follow-up appointment.
@@ -521,7 +520,7 @@ class AppointmentService:
     
     def send_reminder(
         self,
-        appointment_id: Union[UUID, str]
+        appointment_id: UUID | str
     ) -> Appointment:
         """
         Send a reminder for an appointment.
@@ -546,7 +545,7 @@ class AppointmentService:
     
     def update_notes(
         self,
-        appointment_id: Union[UUID, str],
+        appointment_id: UUID | str,
         notes: str
     ) -> Appointment:
         """
@@ -573,10 +572,10 @@ class AppointmentService:
     
     def _check_for_conflicts(
         self,
-        provider_id: Union[UUID, str],
+        provider_id: UUID | str,
         start_time: datetime,
         end_time: datetime,
-        exclude_appointment_id: Optional[Union[UUID, str]] = None
+        exclude_appointment_id: UUID | str | None = None
     ) -> None:
         """
         Check for conflicts with other appointments.
@@ -629,7 +628,7 @@ class AppointmentService:
     
     def _check_daily_appointment_limit(
         self,
-        provider_id: Union[UUID, str],
+        provider_id: UUID | str,
         date: datetime
     ) -> None:
         """

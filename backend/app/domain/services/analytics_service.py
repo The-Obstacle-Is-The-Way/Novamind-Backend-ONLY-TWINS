@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Analytics service module for the NOVAMIND backend.
 
@@ -6,12 +5,11 @@ This module contains the AnalyticsService, which encapsulates complex business l
 related to patient analytics and insights in the concierge psychiatry practice.
 """
 
-from datetime import datetime, UTC, UTC, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID
 
-from app.domain.entities.patient import Patient
-from app.domain.exceptions import AuthorizationError, ValidationError
+from app.domain.exceptions import ValidationError
 from app.domain.repositories.appointment_repository import AppointmentRepository
 from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository
 from app.domain.repositories.medication_repository import MedicationRepository
@@ -51,8 +49,8 @@ class AnalyticsService:
         self,
         patient_id: UUID,
         start_date: datetime,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Analyze treatment outcomes for a specific patient
 
@@ -120,9 +118,9 @@ class AnalyticsService:
     async def get_practice_metrics(
         self,
         start_date: datetime,
-        end_date: Optional[datetime] = None,
-        provider_id: Optional[UUID] = None,
-    ) -> Dict[str, Any]:
+        end_date: datetime | None = None,
+        provider_id: UUID | None = None,
+    ) -> dict[str, Any]:
         """
         Generate practice-wide metrics and analytics
 
@@ -187,10 +185,10 @@ class AnalyticsService:
 
     async def get_diagnosis_distribution(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        provider_id: Optional[UUID] = None,
-    ) -> List[Dict[str, Any]]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        provider_id: UUID | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Analyze the distribution of diagnoses across patients
 
@@ -256,10 +254,10 @@ class AnalyticsService:
     async def get_medication_effectiveness(
         self,
         medication_name: str,
-        diagnosis_code: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        diagnosis_code: str | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Analyze the effectiveness of a specific medication, optionally filtered by diagnosis
 
@@ -316,10 +314,10 @@ class AnalyticsService:
     async def get_treatment_comparison(
         self,
         diagnosis_code: str,
-        treatments: List[str],
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        treatments: list[str],
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Compare the effectiveness of different treatments for a specific diagnosis
 
@@ -379,7 +377,7 @@ class AnalyticsService:
             )["treatment_name"],
         }
 
-    async def get_patient_risk_stratification(self) -> List[Dict[str, Any]]:
+    async def get_patient_risk_stratification(self) -> list[dict[str, Any]]:
         """
         Stratify patients by risk level based on clinical data
 

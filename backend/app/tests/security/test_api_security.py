@@ -52,6 +52,7 @@ def mock_admin_user():
     }
 
 
+@pytest.mark.db_required
 class TestAuthentication:
     """Test authentication mechanisms."""
 

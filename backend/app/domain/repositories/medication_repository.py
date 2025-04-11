@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Medication repository interface for the NOVAMIND backend.
 
@@ -8,8 +7,6 @@ this abstraction rather than concrete implementations.
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import List, Optional
 from uuid import UUID
 
 from app.domain.entities.medication import Medication, MedicationStatus, RefillStatus
@@ -41,7 +38,7 @@ class MedicationRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_by_id(self, medication_id: UUID) -> Optional[Medication]:
+    async def get_by_id(self, medication_id: UUID) -> Medication | None:
         """
         Retrieve a medication by ID
 
@@ -92,7 +89,7 @@ class MedicationRepository(ABC):
     @abstractmethod
     async def list_by_patient(
         self, patient_id: UUID, limit: int = 100, offset: int = 0
-    ) -> List[Medication]:
+    ) -> list[Medication]:
         """
         List all medications for a specific patient with pagination
 
@@ -112,7 +109,7 @@ class MedicationRepository(ABC):
     @abstractmethod
     async def list_by_provider(
         self, provider_id: UUID, limit: int = 100, offset: int = 0
-    ) -> List[Medication]:
+    ) -> list[Medication]:
         """
         List all medications prescribed by a specific provider with pagination
 
@@ -132,7 +129,7 @@ class MedicationRepository(ABC):
     @abstractmethod
     async def list_by_status(
         self, status: MedicationStatus, limit: int = 100, offset: int = 0
-    ) -> List[Medication]:
+    ) -> list[Medication]:
         """
         List all medications with a specific status
 
@@ -150,7 +147,7 @@ class MedicationRepository(ABC):
         pass
 
     @abstractmethod
-    async def list_active_by_patient(self, patient_id: UUID) -> List[Medication]:
+    async def list_active_by_patient(self, patient_id: UUID) -> list[Medication]:
         """
         List all active medications for a specific patient
 
@@ -168,7 +165,7 @@ class MedicationRepository(ABC):
     @abstractmethod
     async def list_by_refill_status(
         self, refill_status: RefillStatus, limit: int = 100, offset: int = 0
-    ) -> List[Medication]:
+    ) -> list[Medication]:
         """
         List all medications with a specific refill status
 
@@ -189,10 +186,10 @@ class MedicationRepository(ABC):
     async def search_by_name(
         self,
         name: str,
-        patient_id: Optional[UUID] = None,
+        patient_id: UUID | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> List[Medication]:
+    ) -> list[Medication]:
         """
         Search medications by name, optionally filtered by patient
 
@@ -211,7 +208,7 @@ class MedicationRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_medications_needing_refill(self) -> List[Medication]:
+    async def get_medications_needing_refill(self) -> list[Medication]:
         """
         Get all medications that need a refill
 
@@ -224,7 +221,7 @@ class MedicationRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_medications_expiring_soon(self, days: int = 7) -> List[Medication]:
+    async def get_medications_expiring_soon(self, days: int = 7) -> list[Medication]:
         """
         Get all medications that are expiring within the specified number of days
 

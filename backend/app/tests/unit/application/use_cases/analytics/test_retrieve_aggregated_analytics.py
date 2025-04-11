@@ -106,6 +106,7 @@ def use_case(mock_analytics_repository, mock_cache_service):
         return use_case
 
 
+@pytest.mark.db_required
 class TestRetrieveAggregatedAnalyticsUseCase:
     """Test suite for the RetrieveAggregatedAnalyticsUseCase."""
     

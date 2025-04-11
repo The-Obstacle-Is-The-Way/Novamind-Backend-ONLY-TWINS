@@ -24,6 +24,7 @@ def password_handler():
     return PasswordHandler()
 
 
+@pytest.mark.db_required
 class TestPasswordHandler:
     """Test suite for password handler."""
     

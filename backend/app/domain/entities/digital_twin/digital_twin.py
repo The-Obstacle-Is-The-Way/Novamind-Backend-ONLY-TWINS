@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
 # app/domain/entities/digital_twin/digital_twin.py
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
 from uuid import UUID, uuid4
 
-from app.domain.entities.digital_twin_enums import ClinicalInsight
 from app.domain.entities.digital_twin.twin_model import DigitalTwinModel
+from app.domain.entities.digital_twin_enums import ClinicalInsight
 
 
 @dataclass(frozen=True)
@@ -22,15 +20,15 @@ class DigitalTwin:
     updated_at: datetime
     version: int
     confidence_score: float
-    models: List[DigitalTwinModel]
-    clinical_insights: List[ClinicalInsight]
+    models: list[DigitalTwinModel]
+    clinical_insights: list[ClinicalInsight]
     last_calibration: datetime
 
     @classmethod
     def create(
         cls,
         patient_id: UUID,
-        models: List[DigitalTwinModel],
+        models: list[DigitalTwinModel],
         confidence_score: float = 0.0,
     ) -> "DigitalTwin":
         """Factory method to create a new DigitalTwin"""
@@ -70,7 +68,7 @@ class DigitalTwin:
         )
 
     def recalibrate(
-        self, models: List[DigitalTwinModel], confidence_score: float
+        self, models: list[DigitalTwinModel], confidence_score: float
     ) -> "DigitalTwin":
         """
         Recalibrates the digital twin with updated models.

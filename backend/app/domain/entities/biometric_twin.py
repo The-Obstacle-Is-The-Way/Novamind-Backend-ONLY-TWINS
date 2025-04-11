@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Biometric Twin domain entities.
 
@@ -6,8 +5,8 @@ This module defines the domain entities for the biometric twin feature,
 including biometric data points and related concepts.
 """
 
-from datetime import datetime, UTC, UTC
-from typing import Any, Dict, List, Optional, Union
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
@@ -24,12 +23,12 @@ class BiometricDataPoint(BaseModel):
     scores for reliability assessment.
     """
     
-    data_id: Union[UUID, str] = Field(
+    data_id: UUID | str = Field(
         ..., 
         description="Unique identifier for the data point"
     )
-    patient_id: UUID = Field(
-        ..., 
+    patient_id: UUID | None = Field(
+        ...,
         description="ID of the patient this data belongs to"
     )
     data_type: str = Field(
@@ -48,11 +47,11 @@ class BiometricDataPoint(BaseModel):
         ..., 
         description="Source of the data (e.g., apple_watch, fitbit, manual_entry)"
     )
-    metadata: Optional[Dict[str, Any]] = Field(
+    metadata: dict[str, Any] | None = Field(
         None, 
         description="Additional contextual information about the data point"
     )
-    confidence: Optional[float] = Field(
+    confidence: float | None = Field(
         None, 
         description="Confidence score for the data point (0.0 to 1.0)"
     )
@@ -79,7 +78,7 @@ class BiometricDataPoint(BaseModel):
             raise ValueError("Confidence score must be between 0.0 and 1.0")
         return v
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the data point to a dictionary, sanitizing PHI as needed."""
         result = self.dict(exclude={"metadata"})
         
@@ -107,19 +106,19 @@ class BiometricTwinState(BaseModel):
     
     patient_id: UUID = Field(..., description="ID of the patient")
     last_updated: datetime = Field(..., description="Timestamp of the last update")
-    data_points: Dict[str, List[BiometricDataPoint]] = Field(
+    data_points: dict[str, list[BiometricDataPoint]] = Field(
         default_factory=dict,
         description="Dictionary of data points by type"
     )
-    derived_metrics: Dict[str, Any] = Field(
+    derived_metrics: dict[str, Any] = Field(
         default_factory=dict,
         description="Metrics derived from the raw data points"
     )
-    clinical_insights: List[Dict[str, Any]] = Field(
+    clinical_insights: list[dict[str, Any]] = Field(
         default_factory=list,
         description="Clinical insights generated from the biometric data"
     )
-    risk_scores: Dict[str, float] = Field(
+    risk_scores: dict[str, float] = Field(
         default_factory=dict,
         description="Risk scores for various clinical concerns"
     )
@@ -133,7 +132,7 @@ class BiometricTwinState(BaseModel):
         self.data_points[data_type].append(data_point)
         self.last_updated = datetime.now(UTC)
     
-    def get_latest_value(self, data_type: str) -> Optional[float]:
+    def get_latest_value(self, data_type: str) -> float | None:
         """Get the latest value for a specific data type."""
         if data_type not in self.data_points or not self.data_points[data_type]:
             return None
@@ -147,7 +146,7 @@ class BiometricTwinState(BaseModel):
         
         return latest_point.value
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the twin state to a dictionary, sanitizing PHI as needed."""
         result = {
             "patient_id": str(self.patient_id),

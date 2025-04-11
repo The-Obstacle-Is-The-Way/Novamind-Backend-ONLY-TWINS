@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Patient events module for the NOVAMIND backend.
 
@@ -7,8 +6,7 @@ concierge psychiatry practice, following the Domain-Driven Design pattern.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, UTC, UTC
-from typing import Dict, Optional
+from datetime import UTC, datetime
 from uuid import UUID
 
 
@@ -26,14 +24,14 @@ class PatientRegistered(PatientEvent):
 
     first_name: str
     last_name: str
-    preferred_provider_id: Optional[UUID] = None
+    preferred_provider_id: UUID | None = None
 
 
 @dataclass
 class PatientInformationUpdated(PatientEvent):
     """Event raised when patient information is updated"""
 
-    updated_fields: Dict[str, str]
+    updated_fields: dict[str, str]
     updated_by: UUID  # User ID who made the update
 
 
@@ -43,7 +41,7 @@ class PatientProviderAssigned(PatientEvent):
 
     provider_id: UUID
     is_primary: bool = True
-    previous_provider_id: Optional[UUID] = None
+    previous_provider_id: UUID | None = None
 
 
 @dataclass
@@ -52,7 +50,7 @@ class PatientStatusChanged(PatientEvent):
 
     new_status: str  # e.g., "Active", "Inactive", "On Hold"
     previous_status: str
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 @dataclass
@@ -61,8 +59,8 @@ class PatientConsentUpdated(PatientEvent):
 
     consent_type: str  # e.g., "Treatment", "Information Sharing", "Research"
     consented: bool
-    consent_document_id: Optional[UUID] = None
-    expires_at: Optional[datetime] = None
+    consent_document_id: UUID | None = None
+    expires_at: datetime | None = None
 
 
 @dataclass

@@ -22,6 +22,7 @@ from app.core.exceptions import (
 from app.core.services.ml.mentalllama import MentaLLaMA
 
 
+@pytest.mark.db_required
 class TestMentaLLaMA:
     """Test suite for MentaLLaMA service."""
 

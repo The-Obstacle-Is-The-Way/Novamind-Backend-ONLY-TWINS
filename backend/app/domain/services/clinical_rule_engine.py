@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Clinical Rule Engine Service for the Digital Twin Psychiatry Platform.
 
@@ -7,13 +6,16 @@ clinical rules for biometric data. It enables psychiatrists to create custom
 alert thresholds for their patients.
 """
 
-from datetime import datetime, UTC, UTC
-from typing import Dict, List, Optional, Any, Tuple
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from app.domain.entities.digital_twin.biometric_alert import AlertPriority
 from app.domain.entities.digital_twin.biometric_rule import (
-    BiometricRule, RuleCondition, RuleOperator, LogicalOperator
+    BiometricRule,
+    LogicalOperator,
+    RuleCondition,
+    RuleOperator,
 )
 from app.domain.exceptions import ValidationError
 from app.domain.repositories.biometric_rule_repository import BiometricRuleRepository
@@ -41,12 +43,12 @@ class ClinicalRuleEngine:
         self,
         name: str,
         description: str,
-        conditions: List[Dict[str, Any]],
+        conditions: list[dict[str, Any]],
         logical_operator: str = "AND",
         alert_priority: str = "WARNING",
-        patient_id: Optional[UUID] = None,
+        patient_id: UUID | None = None,
         provider_id: UUID = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> BiometricRule:
         """
         Create a new clinical rule.
@@ -100,7 +102,7 @@ class ClinicalRuleEngine:
         # Save and return the rule
         return await self.rule_repository.save(rule)
     
-    def _parse_condition(self, condition_data: Dict[str, Any]) -> RuleCondition:
+    def _parse_condition(self, condition_data: dict[str, Any]) -> RuleCondition:
         """
         Parse a condition dictionary into a RuleCondition object.
         
@@ -136,13 +138,13 @@ class ClinicalRuleEngine:
     async def update_rule(
         self,
         rule_id: UUID,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        conditions: Optional[List[Dict[str, Any]]] = None,
-        logical_operator: Optional[str] = None,
-        alert_priority: Optional[str] = None,
-        is_active: Optional[bool] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        name: str | None = None,
+        description: str | None = None,
+        conditions: list[dict[str, Any]] | None = None,
+        logical_operator: str | None = None,
+        alert_priority: str | None = None,
+        is_active: bool | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> BiometricRule:
         """
         Update an existing clinical rule.
@@ -214,8 +216,8 @@ class ClinicalRuleEngine:
     async def create_standard_rules(
         self,
         provider_id: UUID,
-        patient_id: Optional[UUID] = None
-    ) -> List[BiometricRule]:
+        patient_id: UUID | None = None
+    ) -> list[BiometricRule]:
         """
         Create a set of standard clinical rules.
         
@@ -317,7 +319,7 @@ class ClinicalRuleEngine:
     async def get_active_rules_for_patient(
         self,
         patient_id: UUID
-    ) -> List[BiometricRule]:
+    ) -> list[BiometricRule]:
         """
         Get all active rules that apply to a specific patient.
         

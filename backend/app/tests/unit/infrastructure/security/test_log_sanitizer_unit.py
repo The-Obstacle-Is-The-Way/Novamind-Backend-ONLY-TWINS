@@ -98,6 +98,7 @@ def log_sanitizer(sanitizer_config, pattern_repository):
     return sanitizer
 
 
+@pytest.mark.venv_only
 class TestLogSanitizer:
     """Test suite for the log sanitizer."""
     

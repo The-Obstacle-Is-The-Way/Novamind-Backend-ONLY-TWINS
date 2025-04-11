@@ -5,11 +5,13 @@ This module defines the data structures for representing neurotransmitter effect
 and their clinical significance.
 """
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Any, Union
-import uuid
-from uuid import UUID
+from typing import Any
 
-from app.domain.entities.digital_twin_enums import Neurotransmitter, BrainRegion, ClinicalSignificance
+from app.domain.entities.digital_twin_enums import (
+    BrainRegion,
+    ClinicalSignificance,
+    Neurotransmitter,
+)
 
 
 class NeurotransmitterEffect:
@@ -24,14 +26,14 @@ class NeurotransmitterEffect:
         self,
         neurotransmitter: Neurotransmitter,
         effect_size: float,
-        confidence_interval: Tuple[float, float],
+        confidence_interval: tuple[float, float],
         p_value: float,
         sample_size: int,
         clinical_significance: ClinicalSignificance,
-        brain_region: Optional[BrainRegion] = None,
-        time_series_data: Optional[List[Tuple[datetime, float]]] = None,
-        baseline_period: Optional[Tuple[datetime, datetime]] = None,
-        comparison_period: Optional[Tuple[datetime, datetime]] = None,
+        brain_region: BrainRegion | None = None,
+        time_series_data: list[tuple[datetime, float]] | None = None,
+        baseline_period: tuple[datetime, datetime] | None = None,
+        comparison_period: tuple[datetime, datetime] | None = None,
     ):
         """
         Initialize a new neurotransmitter effect.
@@ -152,8 +154,8 @@ class NeurotransmitterEffect:
     def create(
         cls,
         neurotransmitter: Neurotransmitter,
-        raw_data: List[float],
-        baseline_data: List[float],
+        raw_data: list[float],
+        baseline_data: list[float],
         clinical_significance: ClinicalSignificance
     ) -> 'NeurotransmitterEffect':
         """
@@ -209,7 +211,7 @@ class NeurotransmitterEffect:
             clinical_significance=clinical_significance
         )
         
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert effect to dictionary for serialization.
         
@@ -254,7 +256,7 @@ class NeurotransmitterEffect:
             
         return result
         
-    def to_visualization_data(self) -> Dict[str, Any]:
+    def to_visualization_data(self) -> dict[str, Any]:
         """
         Convert to a format suitable for visualization.
         

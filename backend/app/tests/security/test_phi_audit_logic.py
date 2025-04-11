@@ -19,6 +19,7 @@ from pathlib import Path
 from scripts.run_hipaa_phi_audit import PHIAuditor, PHIAuditResult
 
 
+@pytest.mark.db_required
 class TestPHIAuditLogic:
     """Test suite for PHI audit decision-making logic."""
 

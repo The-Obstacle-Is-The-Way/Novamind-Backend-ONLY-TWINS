@@ -61,6 +61,7 @@ def mock_response():
     return mock
 
 
+@pytest.mark.db_required
 class TestRateLimitConfig:
     """Tests for RateLimitConfig class."""
 

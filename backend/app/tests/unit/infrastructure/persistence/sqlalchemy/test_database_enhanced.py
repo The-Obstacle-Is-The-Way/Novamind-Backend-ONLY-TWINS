@@ -24,6 +24,7 @@ from app.infrastructure.persistence.sqlalchemy.config.database import (
 )
 
 
+@pytest.mark.db_required
 class TestDatabase:
     """Comprehensive tests for the Database class and database utilities."""
     

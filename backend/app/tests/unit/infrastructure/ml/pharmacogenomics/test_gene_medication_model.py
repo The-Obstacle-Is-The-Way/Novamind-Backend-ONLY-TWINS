@@ -16,6 +16,7 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
 
 
+@pytest.mark.db_required
 class TestGeneMedicationModel:
     """Tests for the GeneMedicationModel."""
 

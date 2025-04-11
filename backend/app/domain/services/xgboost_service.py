@@ -3,10 +3,9 @@ Domain service interface for XGBoost prediction engine.
 Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple
 from uuid import UUID
 
-from app.domain.entities.digital_twin import BrainRegion, DigitalTwinState
+from app.domain.entities.digital_twin import BrainRegion
 
 
 class XGBoostService(ABC):
@@ -20,9 +19,9 @@ class XGBoostService(ABC):
         self,
         patient_id: UUID,
         digital_twin_state_id: UUID,
-        treatment_options: List[Dict],
+        treatment_options: list[dict],
         time_horizon: str = "short_term"  # "short_term", "medium_term", "long_term"
-    ) -> Dict:
+    ) -> dict:
         """
         Predict response to treatment options based on Digital Twin state.
         
@@ -42,10 +41,10 @@ class XGBoostService(ABC):
         self,
         patient_id: UUID,
         digital_twin_state_id: UUID,
-        symptoms: List[str],
-        time_points: List[int],  # days into the future
-        with_treatment: Optional[Dict] = None
-    ) -> Dict:
+        symptoms: list[str],
+        time_points: list[int],  # days into the future
+        with_treatment: dict | None = None
+    ) -> dict:
         """
         Forecast symptom progression over time with or without treatment.
         
@@ -67,7 +66,7 @@ class XGBoostService(ABC):
         patient_id: UUID,
         digital_twin_state_id: UUID,
         target_outcome: str
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Identify risk factors for a specific outcome based on the Digital Twin state.
         
@@ -87,7 +86,7 @@ class XGBoostService(ABC):
         patient_id: UUID,
         digital_twin_state_id: UUID,
         prediction_type: str
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Calculate feature importance for a specific prediction type.
         
@@ -106,7 +105,7 @@ class XGBoostService(ABC):
         self,
         patient_id: UUID,
         digital_twin_state_id: UUID
-    ) -> Dict[BrainRegion, float]:
+    ) -> dict[BrainRegion, float]:
         """
         Generate activation levels for brain regions based on the Digital Twin state.
         
@@ -124,9 +123,9 @@ class XGBoostService(ABC):
         self,
         patient_id: UUID,
         digital_twin_state_id: UUID,
-        treatment_options: List[Dict],
-        evaluation_metrics: List[str]
-    ) -> List[Tuple[Dict, Dict]]:
+        treatment_options: list[dict],
+        evaluation_metrics: list[str]
+    ) -> list[tuple[dict, dict]]:
         """
         Compare multiple treatment options based on predicted outcomes.
         

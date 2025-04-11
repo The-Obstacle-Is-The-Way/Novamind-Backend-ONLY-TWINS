@@ -1,3 +1,4 @@
+import pytest
 """
 Role-Based Access Control Tests
 
@@ -12,6 +13,7 @@ from app.domain.entities.user import User # Import User for testing check_permis
 from app.domain.enums.role import Role # Import Role for testing check_permission
 
 
+@pytest.mark.venv_only
 class TestRoleBasedAccessControl(unittest.TestCase):
     """Test suite for Role-Based Access Control functionality."""
     

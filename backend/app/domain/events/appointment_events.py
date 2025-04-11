@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Appointment events module for the NOVAMIND backend.
 
@@ -7,11 +6,10 @@ concierge psychiatry practice, following the Domain-Driven Design pattern.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, UTC, UTC
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import UUID
 
-from app.domain.entities.appointment import AppointmentStatus, AppointmentType
+from app.domain.entities.appointment import AppointmentType
 
 
 @dataclass
@@ -31,7 +29,7 @@ class AppointmentScheduled(AppointmentEvent):
     appointment_date: datetime
     appointment_type: AppointmentType
     is_telehealth: bool
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 @dataclass
@@ -40,14 +38,14 @@ class AppointmentRescheduled(AppointmentEvent):
 
     old_date: datetime
     new_date: datetime
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 @dataclass
 class AppointmentCancelled(AppointmentEvent):
     """Event raised when an appointment is cancelled"""
 
-    cancellation_reason: Optional[str] = None
+    cancellation_reason: str | None = None
     cancellation_fee_applied: bool = False
     cancelled_by_patient: bool = False
 
@@ -65,7 +63,7 @@ class AppointmentCompleted(AppointmentEvent):
     """Event raised when an appointment is completed"""
 
     duration_minutes: int
-    clinical_note_id: Optional[UUID] = None
+    clinical_note_id: UUID | None = None
 
 
 @dataclass

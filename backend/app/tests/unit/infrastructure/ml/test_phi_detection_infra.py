@@ -22,6 +22,7 @@ def phi_detection_service():
     return service
 
 
+@pytest.mark.db_required
 def test_initialize_loads_default_patterns():
     """Test that initialize loads default patterns when file loading fails."""
     service = PHIDetectionService("nonexistent_file.yaml")

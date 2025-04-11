@@ -9,6 +9,7 @@ from app.infrastructure.security.encryption import EncryptionService # Removed F
 # Removed import of non-existent exceptions
 
 
+@pytest.mark.db_required
 class TestEncryptionService:
     """
     Tests for the EncryptionService to ensure HIPAA-compliant data protection.

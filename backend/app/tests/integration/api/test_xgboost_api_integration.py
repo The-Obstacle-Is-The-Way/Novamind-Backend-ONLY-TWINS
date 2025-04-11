@@ -292,6 +292,7 @@ def valid_outcome_prediction_data() -> Dict[str, Any]:
     }
 
 
+@pytest.mark.db_required
 class TestXGBoostAPIIntegration:
     """Integration tests for XGBoost API endpoints."""
 
