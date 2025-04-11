@@ -7,7 +7,7 @@ from typing import Dict, List, Any, Union
 from app.core.security.phi_sanitizer import PHISanitizer
 
 
-, class TestPHISanitizer:
+class TestPHISanitizer:
     """Test cases for the PHI sanitization utilities."""
     
     def setup_method(self):
@@ -97,8 +97,7 @@ from app.core.security.phi_sanitizer import PHISanitizer
         assert sanitized["non_phi_data"]["appointment_type"] == "Follow-up"
         assert sanitized["non_phi_data"]["duration_minutes"] == 30
         assert sanitized["medical_info"]["diagnosis"] == "Depression"
-        assert sanitized["medical_info"]["severity"@pytest.mark.standalone()
-] == "Moderate"
+        assert sanitized["medical_info"]["severity"] == "Moderate"
     
     def test_sanitize_list(self):
         """Test that lists containing PHI are properly sanitized."""
