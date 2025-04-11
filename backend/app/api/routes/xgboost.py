@@ -7,7 +7,8 @@ error handling, and security.
 """
 
 import logging
-from typing import Annotated, Dict, Any, cast
+import importlib
+from typing import Annotated, Dict, Any, cast, TypeVar, Generic, Callable
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status, Security, Response
@@ -24,18 +25,47 @@ from app.api.schemas.xgboost import (
     ErrorResponse
 )
 
-from app.core.services.ml.xgboost import (
-    get_xgboost_service, XGBoostInterface,
-    ValidationError, DataPrivacyError, ModelNotFoundError,
-    PredictionError, ServiceConnectionError, ResourceNotFoundError,
-    XGBoostServiceError
-)
-
 # Setup logging
 logger = logging.getLogger(__name__)
 
 # Security scheme
 security = HTTPBearer()
+
+# Type for avoiding FastAPI schema generation of complex types
+T = TypeVar('T')
+
+# Prevent module-level imports from causing FastAPI to analyze our dependencies
+# By using a late binding approach, FastAPI cannot "see" complex dependencies during router setup
+class LazyDependency(Generic[T]):
+    """Lazy dependency loader that prevents FastAPI from analyzing complex dependency chains at import time."""
+    
+    def __init__(self, module_path: str, dependency_name: str):
+        self.module_path = module_path
+        self.dependency_name = dependency_name
+        self._dependency = None
+    
+    def __call__(self) -> T:
+        if self._dependency is None:
+            module = importlib.import_module(self.module_path)
+            self._dependency = getattr(module, self.dependency_name)
+        return self._dependency()
+
+# Create lazy bindings for imports that would trigger AsyncSession analysis
+_get_xgboost_service = LazyDependency(
+    'app.core.services.ml.xgboost', 
+    'get_xgboost_service'
+)
+
+# Import error classes statically as they don't contain AsyncSession references
+from app.core.services.ml.xgboost import (
+    ValidationError, DataPrivacyError, ModelNotFoundError,
+    PredictionError, ServiceConnectionError, ResourceNotFoundError,
+    XGBoostServiceError
+)
+
+# For type checking only - FastAPI won't analyze this
+if False:  # This code block is never executed, just for static type checking
+    from app.core.services.ml.xgboost import XGBoostInterface
 
 # Create router
 router = APIRouter(
@@ -88,34 +118,6 @@ def get_current_user(credentials: Annotated[HTTPAuthorizationCredentials, Securi
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token"
-        )
-
-
-def get_xgboost_service_instance() -> XGBoostInterface:
-    """
-    Get an initialized XGBoost service instance as a dependency.
-    
-    Returns:
-        An initialized XGBoost service
-        
-    Raises:
-        HTTPException: If service cannot be initialized
-    """
-    try:
-        # Get XGBoost service from environment configuration
-        service = get_xgboost_service()
-        return service
-    except ServiceConnectionError as e:
-        logger.error(f"XGBoost service connection error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"ML service unavailable: {str(e)}"
-        )
-    except Exception as e:
-        logger.error(f"Error initializing XGBoost service: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
         )
 
 
@@ -179,7 +181,7 @@ def handle_xgboost_error(error: Exception) -> HTTPException:
 
 @router.post(
     "/risk-prediction",
-    response_model=RiskPredictionResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Predict risk level",
     description="Predict risk level using clinical data",
@@ -191,16 +193,14 @@ def handle_xgboost_error(error: Exception) -> HTTPException:
 async def predict_risk(
     request: RiskPredictionRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance),
     _: Dict = Depends(prevent_session_exposure)
-) -> RiskPredictionResponse:
+):
     """
     Predict risk level for a patient using clinical data.
     
     Args:
         request: Risk prediction request
         user: Current authenticated user
-        service: XGBoost service instance
         
     Returns:
         Risk prediction response
@@ -211,6 +211,9 @@ async def predict_risk(
     try:
         # Log prediction request (without PHI)
         logger.info(f"Risk prediction request: risk_type={request.risk_type}, time_frame={request.time_frame_days}")
+        
+        # Get service using lazy dependency to avoid FastAPI analysis of AsyncSession
+        service = await _get_xgboost_service()()
         
         # Add current user context for audit trail
         service._current_user_id = user["user_id"]
@@ -262,7 +265,7 @@ async def predict_risk(
 
 @router.post(
     "/treatment-response",
-    response_model=TreatmentResponseResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Predict treatment response",
     description="Predict response to a psychiatric treatment",
@@ -274,16 +277,14 @@ async def predict_risk(
 async def predict_treatment_response(
     request: TreatmentResponseRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance),
     _: Dict = Depends(prevent_session_exposure)
-) -> TreatmentResponseResponse:
+):
     """
     Predict response to a psychiatric treatment.
     
     Args:
         request: Treatment response prediction request
         user: Current authenticated user
-        service: XGBoost service instance
         
     Returns:
         Treatment response prediction
@@ -294,6 +295,9 @@ async def predict_treatment_response(
     try:
         # Log prediction request (without PHI)
         logger.info(f"Treatment response prediction request: treatment_type={request.treatment_type}")
+        
+        # Get service using lazy dependency to avoid FastAPI analysis of AsyncSession
+        service = await _get_xgboost_service()()
         
         # Add current user context for audit trail
         service._current_user_id = user["user_id"]
@@ -346,7 +350,7 @@ async def predict_treatment_response(
 
 @router.post(
     "/outcome-prediction",
-    response_model=OutcomePredictionResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Predict clinical outcomes",
     description="Predict clinical outcomes based on treatment plan",
@@ -358,16 +362,14 @@ async def predict_treatment_response(
 async def predict_outcome(
     request: OutcomePredictionRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance),
     _: Dict = Depends(prevent_session_exposure)
-) -> OutcomePredictionResponse:
+):
     """
     Predict clinical outcomes based on treatment plan.
     
     Args:
         request: Outcome prediction request
         user: Current authenticated user
-        service: XGBoost service instance
         
     Returns:
         Outcome prediction
@@ -378,6 +380,9 @@ async def predict_outcome(
     try:
         # Log prediction request (without PHI)
         logger.info(f"Outcome prediction request: outcome_type={request.outcome_type}")
+        
+        # Get service using lazy dependency to avoid FastAPI analysis of AsyncSession
+        service = await _get_xgboost_service()()
         
         # Add current user context for audit trail
         service._current_user_id = user["user_id"]
@@ -448,7 +453,7 @@ async def predict_outcome(
 
 @router.post(
     "/feature-importance",
-    response_model=FeatureImportanceResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Get feature importance",
     description="Get feature importance for a prediction",
@@ -460,16 +465,14 @@ async def predict_outcome(
 async def get_feature_importance(
     request: FeatureImportanceRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance),
     _: Dict = Depends(prevent_session_exposure)
-) -> FeatureImportanceResponse:
+):
     """
     Get feature importance for a prediction.
     
     Args:
         request: Feature importance request
         user: Current authenticated user
-        service: XGBoost service instance
         
     Returns:
         Feature importance data
@@ -480,6 +483,9 @@ async def get_feature_importance(
     try:
         # Log request (without PHI)
         logger.info(f"Feature importance request: model_type={request.model_type}")
+        
+        # Get service using lazy dependency to avoid FastAPI analysis of AsyncSession
+        service = await _get_xgboost_service()()
         
         # Add current user context for audit trail
         service._current_user_id = user["user_id"]
@@ -499,47 +505,13 @@ async def get_feature_importance(
         if "model_type" not in result:
             result["model_type"] = request.model_type
             
-        if "prediction_id" not in result:
-            result["prediction_id"] = request.prediction_id
-            
         if "timestamp" not in result:
             result["timestamp"] = datetime.now().isoformat()
             
-        # Format feature importance for visualization
-        feature_importance = result.get("features", [])
-        if isinstance(feature_importance, list):
-            # Convert list of dicts to dict format
-            importance_dict = {}
-            for item in feature_importance:
-                if isinstance(item, dict) and "name" in item and "importance" in item:
-                    importance_dict[item["name"]] = item["importance"]
-            result["feature_importance"] = importance_dict
+        # Ensure expected structures for features
+        if "features" not in result:
+            result["features"] = []
             
-        # Create visualization data structure if missing
-        if "visualization" not in result:
-            # Create visualization from feature importance
-            if "feature_importance" in result and isinstance(result["feature_importance"], dict):
-                features = result["feature_importance"]
-                labels = list(features.keys())
-                values = list(features.values())
-                
-                result["visualization"] = {
-                    "type": "bar_chart",
-                    "data": {
-                        "labels": labels,
-                        "values": values
-                    }
-                }
-            else:
-                # Default empty visualization
-                result["visualization"] = {
-                    "type": "bar_chart",
-                    "data": {
-                        "labels": [],
-                        "values": []
-                    }
-                }
-        
         # Create response and ensure no AsyncSession objects are returned
         return ensure_serializable_response(FeatureImportanceResponse(**result))
         
@@ -548,29 +520,27 @@ async def get_feature_importance(
 
 
 @router.post(
-    "/digital-twin-integration",
-    response_model=DigitalTwinIntegrationResponse,
+    "/integrate-with-digital-twin",
+    response_model=None,
     status_code=status.HTTP_200_OK,
-    summary="Integrate with digital twin",
-    description="Integrate prediction with digital twin profile",
+    summary="Integrate XGBoost with Digital Twin",
+    description="Integrate XGBoost models with digital twin profiles",
     responses={
         status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse, "description": "Bad Request"},
-        status.HTTP_404_NOT_FOUND: {"model": ErrorResponse, "description": "Resource Not Found"}
+        status.HTTP_404_NOT_FOUND: {"model": ErrorResponse, "description": "Not Found"}
     }
 )
 async def integrate_with_digital_twin(
     request: DigitalTwinIntegrationRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance),
     _: Dict = Depends(prevent_session_exposure)
-) -> DigitalTwinIntegrationResponse:
+):
     """
-    Integrate prediction with digital twin profile.
+    Integrate XGBoost models with digital twin profiles.
     
     Args:
-        request: Digital twin integration request
+        request: Integration request
         user: Current authenticated user
-        service: XGBoost service instance
         
     Returns:
         Integration result
@@ -582,6 +552,9 @@ async def integrate_with_digital_twin(
         # Log request (without PHI)
         logger.info(f"Digital twin integration request: profile_id={request.profile_id}")
         
+        # Get service using lazy dependency to avoid FastAPI analysis of AsyncSession
+        service = await _get_xgboost_service()()
+        
         # Add current user context for audit trail
         service._current_user_id = user["user_id"]
         
@@ -589,7 +562,7 @@ async def integrate_with_digital_twin(
         result = service.integrate_with_digital_twin(
             patient_id=request.patient_id,
             profile_id=request.profile_id,
-            prediction_id=request.prediction_id
+            integration_settings=request.integration_settings
         )
         
         # Map domain result to API response
@@ -600,19 +573,9 @@ async def integrate_with_digital_twin(
         if "profile_id" not in result:
             result["profile_id"] = request.profile_id
             
-        if "prediction_id" not in result:
-            result["prediction_id"] = request.prediction_id
-            
         if "timestamp" not in result:
             result["timestamp"] = datetime.now().isoformat()
             
-        # Set default values for required fields if missing
-        if "recommendations_generated" not in result:
-            result["recommendations_generated"] = "details" in result and "recommendations" in result["details"]
-            
-        if "statistics_updated" not in result:
-            result["statistics_updated"] = result.get("status", "") == "success"
-        
         # Create response and ensure no AsyncSession objects are returned
         return ensure_serializable_response(DigitalTwinIntegrationResponse(**result))
         
@@ -622,10 +585,10 @@ async def integrate_with_digital_twin(
 
 @router.post(
     "/model-info",
-    response_model=ModelInfoResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Get model information",
-    description="Get information about a model",
+    description="Get detailed information about a specific XGBoost model",
     responses={
         status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse, "description": "Bad Request"},
         status.HTTP_404_NOT_FOUND: {"model": ErrorResponse, "description": "Model Not Found"}
@@ -634,41 +597,45 @@ async def integrate_with_digital_twin(
 async def get_model_info(
     request: ModelInfoRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    service: XGBoostInterface = Depends(get_xgboost_service_instance),
     _: Dict = Depends(prevent_session_exposure)
-) -> ModelInfoResponse:
+):
     """
-    Get information about a model.
+    Get detailed information about a specific XGBoost model.
     
     Args:
-        request: Model information request
+        request: Model info request
         user: Current authenticated user
-        service: XGBoost service instance
         
     Returns:
         Model information
         
     Raises:
-        HTTPException: For validation errors or service issues
+        HTTPException: For validation errors or if model not found
     """
     try:
         # Log request
         logger.info(f"Model info request: model_type={request.model_type}")
         
+        # Get service using lazy dependency to avoid FastAPI analysis of AsyncSession
+        service = await _get_xgboost_service()()
+        
+        # Add current user context for audit trail
+        service._current_user_id = user["user_id"]
+        
         # Call XGBoost service
-        result = service.get_model_info(request.model_type)
+        result = service.get_model_info(
+            model_type=request.model_type,
+            version=request.version
+        )
         
         # Map domain result to API response
-        # Set default values for required fields if missing
-        if "performance_metrics" not in result:
-            result["performance_metrics"] = {
-                "accuracy": 0.85,
-                "precision": 0.82,
-                "recall": 0.80,
-                "f1_score": 0.81,
-                "auc_roc": 0.88
-            }
-        
+        # Set missing fields if necessary
+        if "model_type" not in result:
+            result["model_type"] = request.model_type
+            
+        if "timestamp" not in result:
+            result["timestamp"] = datetime.now().isoformat()
+            
         # Create response and ensure no AsyncSession objects are returned
         return ensure_serializable_response(ModelInfoResponse(**result))
         

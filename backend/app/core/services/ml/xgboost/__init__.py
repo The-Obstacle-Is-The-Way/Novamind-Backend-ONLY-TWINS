@@ -22,6 +22,14 @@ from app.core.services.ml.xgboost.interface import (
     PrivacyLevel
 )
 
+# Import enums for type information
+from app.core.services.ml.xgboost.enums import (
+    PredictionType,
+    RiskLevel,
+    TreatmentCategory,
+    ResponseLevel
+)
+
 # Re-export exceptions
 from app.core.services.ml.xgboost.exceptions import (
     XGBoostServiceError,

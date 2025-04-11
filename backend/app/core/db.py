@@ -53,8 +53,10 @@ async def get_session() -> AsyncSession:
     """
     async with AsyncSessionLocal() as session:
         try:
+            # Make sure the session isn't exposed directly in response models
             yield session
         finally:
+            # Clean up session resources
             await session.close()
 
 

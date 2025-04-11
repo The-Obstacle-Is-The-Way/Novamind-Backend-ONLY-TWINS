@@ -21,7 +21,7 @@ from app.core.services.ml.xgboost import (
     ModelType,
     RiskLevel,
     ResponseLevel,
-    XGBoostBaseError,
+    XGBoostServiceError,
     ConfigurationError,
     ModelNotFoundError,
     PredictionError,

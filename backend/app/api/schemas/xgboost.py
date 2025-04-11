@@ -307,6 +307,8 @@ class FeatureImportanceRequest(BaseModel):
     patient_id: str = Field(..., description="Patient identifier")
     model_type: str = Field(..., description="Type of model")
     prediction_id: str = Field(..., description="Prediction identifier")
+    
+    model_config = {"protected_namespaces": ()}
 
 
 class VisualizationData(BaseModel):
@@ -332,6 +334,8 @@ class FeatureImportanceResponse(BaseResponse):
     feature_importance: Dict[str, float] = Field(..., description="Feature importance values")
     visualization: Visualization = Field(..., description="Visualization data")
     timestamp: datetime = Field(..., description="Timestamp of the feature importance calculation")
+    
+    model_config = {"protected_namespaces": ()}
 
 
 # -------------------- Digital Twin Integration --------------------
@@ -362,6 +366,8 @@ class ModelInfoRequest(BaseModel):
     """Schema for model information requests."""
     
     model_type: str = Field(..., description="Type of model")
+    
+    model_config = {"protected_namespaces": ()}
 
 
 class PerformanceMetrics(BaseModel):

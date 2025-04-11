@@ -4,20 +4,46 @@ API endpoints for the temporal neurotransmitter system.
 This module provides FastAPI routes for the temporal neurotransmitter system,
 enabling access to time-series neurotransmitter data, analysis, and visualization.
 """
-from typing import Dict, List, Optional, Union, cast, Any
+import importlib
+import inspect
+import functools
+from typing import Dict, List, Optional, Union, cast, Any, Callable, TypeVar, Generic
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from pydantic import BaseModel
 
 from app.api.dependencies.auth import get_current_user_dict
-from app.api.dependencies.services import get_temporal_neurotransmitter_service
 from app.api.dependencies.response import ensure_serializable_response, prevent_session_exposure
-from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 
+# Type for avoiding FastAPI schema generation of complex types
+T = TypeVar('T')
 
-# Create the router
+# Prevent module-level imports from causing FastAPI to analyze our dependencies
+# By using a late binding approach, FastAPI cannot "see" complex dependencies during router setup
+class LazyDependency(Generic[T]):
+    """Lazy dependency loader that prevents FastAPI from analyzing complex dependency chains at import time."""
+    
+    def __init__(self, module_path: str, dependency_name: str):
+        self.module_path = module_path
+        self.dependency_name = dependency_name
+        self._dependency = None
+    
+    def __call__(self) -> T:
+        if self._dependency is None:
+            module = importlib.import_module(self.module_path)
+            self._dependency = getattr(module, self.dependency_name)
+        return self._dependency()
+
+# Create a lazy binding for the service dependency
+# This completely isolates the dependency chain from FastAPI's route analysis
+_get_neurotransmitter_service = LazyDependency(
+    'app.api.dependencies.services', 
+    'get_temporal_neurotransmitter_service'
+)
+
+# Create the router with explicit response_model=None to prevent type inspection
 router = APIRouter(
     prefix="/api/v1/temporal-neurotransmitter",
     tags=["temporal-neurotransmitter"],
@@ -115,7 +141,7 @@ class CascadeVisualizationResponse(BaseModel):
 
 @router.post(
     "/time-series",
-    response_model=TimeSeriesResponse,
+    response_model=None,
     status_code=status.HTTP_201_CREATED,
     summary="Generate neurotransmitter time series",
     description="Generate time series data for a specific neurotransmitter in a brain region.",
@@ -123,15 +149,18 @@ class CascadeVisualizationResponse(BaseModel):
 async def generate_time_series(
     request: TimeSeriesGenerateRequest,
     current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
     _: Dict = Depends(prevent_session_exposure),
-) -> TimeSeriesResponse:
+):
     """
     Generate neurotransmitter time series data.
     
     This endpoint generates time series data for a specific neurotransmitter
     in a specific brain region for a given patient.
     """
+    # Use the lazy dependency to get the service at runtime
+    # This completely prevents FastAPI from analyzing the dependency chain
+    service = await _get_neurotransmitter_service()()
+    
     sequence_id = await service.generate_neurotransmitter_time_series(
         patient_id=request.patient_id,
         brain_region=request.brain_region,
@@ -154,7 +183,7 @@ async def generate_time_series(
 
 @router.post(
     "/analyze",
-    response_model=NeurotransmitterEffectResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Analyze neurotransmitter levels",
     description="Analyze neurotransmitter levels for a specific patient, brain region, and neurotransmitter.",
@@ -162,15 +191,17 @@ async def generate_time_series(
 async def analyze_neurotransmitter(
     request: AnalyzeNeurotransmitterRequest,
     current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
     _: Dict = Depends(prevent_session_exposure),
-) -> NeurotransmitterEffectResponse: # Corrected explicit return type annotation
+):
     """
     Analyze neurotransmitter levels.
     
     This endpoint analyzes the neurotransmitter levels for a specific
     brain region and neurotransmitter for a given patient.
     """
+    # Use the lazy dependency to get the service at runtime
+    service = await _get_neurotransmitter_service()()
+    
     effect = await service.analyze_patient_neurotransmitter_levels(
         patient_id=request.patient_id,
         brain_region=request.brain_region,
@@ -218,7 +249,7 @@ async def analyze_neurotransmitter(
 
 @router.post(
     "/simulate-treatment",
-    response_model=TreatmentSimulationResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Simulate treatment response",
     description="Simulate treatment response for a specific patient, brain region, and neurotransmitter.",
@@ -226,14 +257,17 @@ async def analyze_neurotransmitter(
 async def simulate_treatment(
     request: TreatmentSimulationRequest,
     current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
-) -> TreatmentSimulationResponse: # Corrected explicit return type annotation
+    _: Dict = Depends(prevent_session_exposure),
+):
     """
     Simulate treatment response.
     
     This endpoint simulates the response to a treatment that targets
     a specific neurotransmitter in a specific brain region for a given patient.
     """
+    # Use the lazy dependency to get the service at runtime
+    service = await _get_neurotransmitter_service()()
+    
     sequence_ids = await service.simulate_treatment_response(
         patient_id=request.patient_id,
         brain_region=request.brain_region,
@@ -242,7 +276,7 @@ async def simulate_treatment(
         simulation_days=request.simulation_days
     )
     
-    return {
+    response_data = {
         "sequence_ids": {key.value: sequence_id for key, sequence_id in sequence_ids.items()},
         "patient_id": request.patient_id,
         "brain_region": request.brain_region.value,
@@ -250,11 +284,12 @@ async def simulate_treatment(
         "treatment_effect": request.treatment_effect,
         "simulation_days": request.simulation_days
     }
+    return ensure_serializable_response(response_data)
 
 
 @router.post(
     "/visualization-data",
-    response_model=VisualizationDataResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Get visualization data",
     description="Get visualization data for a specific sequence.",
@@ -262,14 +297,16 @@ async def simulate_treatment(
 async def get_visualization_data(
     request: VisualizationDataRequest,
     current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
     _: Dict = Depends(prevent_session_exposure),
-) -> VisualizationDataResponse:
+):
     """
     Get visualization data.
     
     This endpoint gets visualization data for a specific sequence.
     """
+    # Use the lazy dependency to get the service at runtime
+    service = await _get_neurotransmitter_service()()
+    
     data = await service.get_visualization_data(
         sequence_id=request.sequence_id,
         focus_features=request.focus_features
@@ -286,7 +323,7 @@ async def get_visualization_data(
 
 @router.post(
     "/cascade-visualization",
-    response_model=CascadeVisualizationResponse,
+    response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Get cascade visualization",
     description="Get cascade visualization for a specific patient, starting region, and neurotransmitter.",
@@ -294,15 +331,17 @@ async def get_visualization_data(
 async def get_cascade_visualization(
     request: CascadeVisualizationRequest,
     current_user: Dict = Depends(get_current_user_dict),
-    service: TemporalNeurotransmitterService = Depends(get_temporal_neurotransmitter_service),
     _: Dict = Depends(prevent_session_exposure),
-) -> CascadeVisualizationResponse:
+):
     """
     Get cascade visualization.
     
     This endpoint gets cascade visualization data showing how effects
     propagate through connected brain regions over time.
     """
+    # Use the lazy dependency to get the service at runtime
+    service = await _get_neurotransmitter_service()()
+    
     data = await service.get_cascade_visualization(
         patient_id=request.patient_id,
         starting_region=request.starting_region,
@@ -316,4 +355,3 @@ async def get_cascade_visualization(
             detail=f"No cascade data found for patient {request.patient_id} with {request.neurotransmitter.value} in {request.starting_region.value}"
         )
     return ensure_serializable_response(data)
-    return data

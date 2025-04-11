@@ -15,10 +15,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-# Removed incorrect import
-from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance # Import correct function
-# Removed import of non-existent repository_factory
-from app.api.routes import api_router # Corrected import path
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance
+from app.api.routes import api_router, setup_routers  # Import the setup_routers function
 from app.presentation.api.routes.analytics_endpoints import router as analytics_router
 from app.presentation.middleware.rate_limiting_middleware import setup_rate_limiting
 
@@ -46,11 +44,8 @@ async def lifespan(app: FastAPI):
     logger.info("Starting NOVAMIND application")
     
     # Initialize database
-    # Call create_all on the database instance
     db_instance = get_db_instance()
     await db_instance.create_all()
-    
-    # Repository initialization likely handled by dependency injection, removing explicit call
     
     logger.info("Application startup complete")
     
@@ -71,8 +66,6 @@ def create_application() -> FastAPI:
     Returns:
         FastAPI: Configured FastAPI application
     """
-    # settings object is imported directly
-    
     app = FastAPI(
         title=settings.PROJECT_NAME,
         description=settings.APP_DESCRIPTION,
@@ -93,11 +86,14 @@ def create_application() -> FastAPI:
     # Set up rate limiting middleware
     setup_rate_limiting(app)
     
-    # Include API router
+    # Setup routers lazily to prevent FastAPI from analyzing AsyncSession dependencies
+    # during router setup, which causes issues with test collection and OpenAPI generation
+    setup_routers()
+    
+    # Include API router after lazy setup
     app.include_router(api_router, prefix=settings.API_PREFIX)
     
     # Include analytics router if analytics are enabled
-    # This condition depends on configuration, if not present in settings, default to False
     if getattr(settings, "ENABLE_ANALYTICS", False):
         app.include_router(analytics_router, prefix=settings.API_PREFIX)
     

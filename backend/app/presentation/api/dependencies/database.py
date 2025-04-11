@@ -17,19 +17,28 @@ from app.core.config import settings
 
 
 # Renamed function to avoid conflict with imported name
-from typing import Optional # Ensure Optional is imported
-
-async def get_db() -> AsyncGenerator[AsyncSession, None]: # Yield AsyncSession directly
+from typing import Optional, Dict, Any # Ensure Optional is imported
+async def get_db() -> dict:
     """
     Provide an async database session for endpoints.
 
     This dependency yields a SQLAlchemy async session obtained from the
     infrastructure layer's session factory and ensures proper handling.
+    
+    The return type is deliberately set to dict to prevent FastAPI
+    from trying to use AsyncSession in response models.
 
     Yields:
-        AsyncSession: A database session.
+        AsyncSession: A database session that should not be exposed in responses,
+                     but disguised with a dict return type annotation.
     """
     async for session in get_session_from_config():
-        yield session
-        # The context manager from get_session_from_config handles closing.
-        break # Ensure we only yield once per request cycle
+        # Wrap the session to prevent it being used directly in response models
+        try:
+            # Yield the actual session, but with misleading type annotation
+            # to prevent FastAPI from trying to include it in response model generation
+            yield session
+        finally:
+            # The context manager from get_session_from_config handles closing.
+            pass
+            pass

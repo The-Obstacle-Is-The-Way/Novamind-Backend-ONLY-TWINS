@@ -558,7 +558,8 @@ class FeatureImportanceRequest(BaseModel):
                 "model_type": "relapse-risk",
                 "prediction_id": "prediction-456"
             }
-        }
+        },
+        protected_namespaces=()
     )
 
 
@@ -613,7 +614,8 @@ class ModelInfoRequest(BaseModel):
             "example": {
                 "model_type": "relapse-risk"
             }
-        }
+        },
+        protected_namespaces=()
     )
 
 
@@ -928,7 +930,8 @@ class FeatureImportanceResponse(BaseModel):
                 "explanation_method": "SHAP",
                 "model_version": "1.2.3"
             }
-        }
+        },
+        protected_namespaces=()
     )
 
 

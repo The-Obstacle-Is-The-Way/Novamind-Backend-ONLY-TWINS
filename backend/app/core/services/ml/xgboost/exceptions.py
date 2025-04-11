@@ -1,11 +1,11 @@
 """
-Domain-specific exceptions for the XGBoost service.
+Exception classes for the XGBoost service module.
 
-This module defines custom exceptions for the XGBoost service
-that provide richer error information and better error handling.
+This module defines custom exceptions that are raised by the XGBoost service
+to provide clean error handling and meaningful error messages.
 """
 
-from typing import List, Optional, Any
+from typing import Optional, Any, Dict
 
 
 class XGBoostServiceError(Exception):
@@ -13,31 +13,36 @@ class XGBoostServiceError(Exception):
     
     def __init__(self, message: str, **kwargs):
         """
-        Initialize a new XGBoost service exception.
+        Initialize a new XGBoost exception.
         
         Args:
             message: Error message
             **kwargs: Additional error context
         """
-        super().__init__(message)
         self.message = message
+        self.details = kwargs
+        super().__init__(message)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert exception to a dictionary for serialization.
         
-        # Store additional context
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+        Returns:
+            Dictionary representation of the exception
+        """
+        return {
+            "error_type": self.__class__.__name__,
+            "message": self.message,
+            **self.details
+        }
 
 
 class ValidationError(XGBoostServiceError):
-    """
-    Raised when validation of parameters fails.
-    
-    This exception is raised when a method parameter fails validation,
-    such as an invalid risk type or missing required field.
-    """
+    """Exception raised when request validation fails."""
     
     def __init__(self, message: str, field: Optional[str] = None, value: Any = None, **kwargs):
         """
-        Initialize a new validation error.
+        Initialize a validation error.
         
         Args:
             message: Error message
@@ -45,51 +50,46 @@ class ValidationError(XGBoostServiceError):
             value: Value that failed validation
             **kwargs: Additional error context
         """
-        super().__init__(message, field=field, value=value, **kwargs)
+        super().__init__(
+            message,
+            field=field,
+            value=value,
+            **kwargs
+        )
 
 
 class DataPrivacyError(XGBoostServiceError):
-    """
-    Raised when PHI is detected in input data.
+    """Exception raised when PHI is detected in data."""
     
-    This exception is raised when protected health information (PHI)
-    is detected in input data, to prevent accidental PHI leakage.
-    """
-    
-    def __init__(self, message: str, pattern_types: Optional[List[str]] = None, **kwargs):
+    def __init__(self, message: str, field: Optional[str] = None, phi_type: Optional[str] = None, **kwargs):
         """
-        Initialize a new data privacy error.
+        Initialize a data privacy error.
         
         Args:
             message: Error message
-            pattern_types: Types of PHI patterns detected
+            field: Name of the field containing PHI
+            phi_type: Type of PHI detected
             **kwargs: Additional error context
         """
-        super().__init__(message, pattern_types=pattern_types or [], **kwargs)
+        super().__init__(
+            message,
+            field=field,
+            phi_type=phi_type,
+            **kwargs
+        )
 
 
 class ResourceNotFoundError(XGBoostServiceError):
-    """
-    Raised when a requested resource is not found.
+    """Exception raised when a requested resource is not found."""
     
-    This exception is raised when a resource such as a prediction
-    or profile is not found in the system.
-    """
-    
-    def __init__(
-        self,
-        message: str,
-        resource_type: Optional[str] = None,
-        resource_id: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, message: str, resource_type: Optional[str] = None, resource_id: Optional[str] = None, **kwargs):
         """
-        Initialize a new resource not found error.
+        Initialize a resource not found error.
         
         Args:
             message: Error message
-            resource_type: Type of resource not found
-            resource_id: ID of resource not found
+            resource_type: Type of resource that was not found
+            resource_id: ID of the resource that was not found
             **kwargs: Additional error context
         """
         super().__init__(
@@ -101,146 +101,149 @@ class ResourceNotFoundError(XGBoostServiceError):
 
 
 class ModelNotFoundError(ResourceNotFoundError):
-    """
-    Raised when a requested model is not found.
+    """Exception raised when a requested ML model is not found."""
     
-    This exception is raised when a model type is not supported
-    or not found in the system.
-    """
-    
-    def __init__(self, message: str, model_type: Optional[str] = None, **kwargs):
+    def __init__(self, message: str, model_type: Optional[str] = None, model_version: Optional[str] = None, **kwargs):
         """
-        Initialize a new model not found error.
+        Initialize a model not found error.
         
         Args:
             message: Error message
-            model_type: Type of model not found
+            model_type: Type of model that was not found
+            model_version: Version of the model that was not found
             **kwargs: Additional error context
         """
         super().__init__(
             message,
             resource_type="model",
-            resource_id=model_type,
+            resource_id=f"{model_type}:{model_version}" if model_type and model_version else model_type,
             model_type=model_type,
+            model_version=model_version,
             **kwargs
         )
 
 
 class PredictionError(XGBoostServiceError):
-    """
-    Raised when prediction fails.
+    """Exception raised when a prediction fails."""
     
-    This exception is raised when a prediction fails due to model error,
-    input data error, or other prediction-related issues.
-    """
-    
-    def __init__(self, message: str, model_type: Optional[str] = None, **kwargs):
+    def __init__(self, message: str, model_type: Optional[str] = None, cause: Optional[str] = None, **kwargs):
         """
-        Initialize a new prediction error.
+        Initialize a prediction error.
         
         Args:
             message: Error message
             model_type: Type of model that failed
-            **kwargs: Additional error context
-        """
-        super().__init__(message, model_type=model_type, **kwargs)
-
-
-class ServiceConnectionError(XGBoostServiceError):
-    """
-    Raised when connection to a service fails.
-    
-    This exception is raised when a connection to a required service
-    such as SageMaker, DynamoDB, or Lambda fails.
-    """
-    
-    def __init__(
-        self,
-        message: str,
-        service: Optional[str] = None,
-        error_type: Optional[str] = None,
-        **kwargs
-    ):
-        """
-        Initialize a new service connection error.
-        
-        Args:
-            message: Error message
-            service: Name of the service that failed
-            error_type: Type of connection error
+            cause: Cause of the failure
             **kwargs: Additional error context
         """
         super().__init__(
             message,
-            service=service,
-            error_type=error_type,
+            model_type=model_type,
+            cause=cause,
+            **kwargs
+        )
+
+
+class ServiceConnectionError(XGBoostServiceError):
+    """Exception raised when a connection to an external service fails."""
+    
+    def __init__(self, message: str, service_name: Optional[str] = None, cause: Optional[str] = None, **kwargs):
+        """
+        Initialize a service connection error.
+        
+        Args:
+            message: Error message
+            service_name: Name of the service that failed
+            cause: Cause of the failure
+            **kwargs: Additional error context
+        """
+        super().__init__(
+            message,
+            service_name=service_name,
+            cause=cause,
             **kwargs
         )
 
 
 class ConfigurationError(XGBoostServiceError):
-    """
-    Raised when configuration is invalid.
+    """Exception raised when there is a configuration error."""
     
-    This exception is raised when configuration of the service
-    is missing required fields or contains invalid values.
-    """
-    
-    def __init__(
-        self,
-        message: str,
-        field: Optional[str] = None,
-        value: Any = None,
-        details: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, message: str, field: Optional[str] = None, value: Any = None, **kwargs):
         """
-        Initialize a new configuration error.
+        Initialize a configuration error.
         
         Args:
             message: Error message
-            field: Name of the field with invalid configuration
-            value: Invalid value
-            details: Additional error details
+            field: Name of the field with an error
+            value: Value that caused the error
             **kwargs: Additional error context
         """
         super().__init__(
             message,
             field=field,
             value=value,
-            details=details,
             **kwargs
         )
 
 
-class ThrottlingError(ServiceConnectionError):
-    """
-    Raised when a service request is throttled.
+class ServiceConfigurationError(XGBoostServiceError):
+    """Exception raised when there is a configuration error with an external service."""
     
-    This exception indicates that the service limit has been exceeded
-    and the request should be retried later.
-    """
-    
-    def __init__(
-        self,
-        message: str = "Request throttled by service",
-        service: Optional[str] = None,
-        retry_after: Optional[int] = None,
-        **kwargs
-    ):
+    def __init__(self, message: str, service_name: Optional[str] = None, config_key: Optional[str] = None, **kwargs):
         """
-        Initialize a new throttling error.
+        Initialize a service configuration error.
         
         Args:
             message: Error message
-            service: Name of the service that throttled the request
-            retry_after: Suggested delay in seconds before retrying
+            service_name: Name of the service with configuration issues
+            config_key: The configuration key that has issues
             **kwargs: Additional error context
         """
         super().__init__(
             message,
-            service=service,
-            error_type="Throttling",
+            service_name=service_name,
+            config_key=config_key,
+            **kwargs
+        )
+
+
+class ServiceUnavailableError(XGBoostServiceError):
+    """Exception raised when an external service is unavailable."""
+    
+    def __init__(self, message: str, service_name: Optional[str] = None, retry_after: Optional[int] = None, **kwargs):
+        """
+        Initialize a service unavailable error.
+        
+        Args:
+            message: Error message
+            service_name: Name of the unavailable service
+            retry_after: Suggested time (in seconds) to wait before retrying
+            **kwargs: Additional error context
+        """
+        super().__init__(
+            message,
+            service_name=service_name,
+            retry_after=retry_after,
+            **kwargs
+        )
+
+
+class ThrottlingError(XGBoostServiceError):
+    """Exception raised when requests are being throttled by an external service."""
+    
+    def __init__(self, message: str, service_name: Optional[str] = None, retry_after: Optional[int] = None, **kwargs):
+        """
+        Initialize a throttling error.
+        
+        Args:
+            message: Error message
+            service_name: Name of the service that is throttling requests
+            retry_after: Suggested time (in seconds) to wait before retrying
+            **kwargs: Additional error context
+        """
+        super().__init__(
+            message,
+            service_name=service_name,
             retry_after=retry_after,
             **kwargs
         )
