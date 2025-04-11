@@ -36,8 +36,8 @@ def redis_cache(mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_nonexistent_key(redis_cache, mock_redis_client):
+@pytest.mark.db_required
+async def test_get_nonexistent_key(redis_cache, mock_redis_client):
     """Test getting a nonexistent key returns None."""
     mock_redis_client.get.return_value = None
     result = await redis_cache.get("nonexistent-key")

@@ -32,8 +32,8 @@ def mock_service():
 
 
 @pytest.fixture
-async @pytest.mark.venv_only
-def test_patient_id(mock_service) -> UUID:
+@pytest.mark.venv_only
+async def test_patient_id(mock_service) -> UUID:
     """Create a test patient with an initialized digital twin."""
     patient_id = uuid.uuid4()
     

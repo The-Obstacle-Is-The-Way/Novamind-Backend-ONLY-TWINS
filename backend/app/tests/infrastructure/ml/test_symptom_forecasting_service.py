@@ -120,8 +120,8 @@ def patient_data():
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_preprocess_patient_data(forecasting_service, patient_data):
+@pytest.mark.db_required
+async def test_preprocess_patient_data(forecasting_service, patient_data):
     """Test preprocessing of patient data."""
     patient_id = uuid4()
     

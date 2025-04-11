@@ -13,9 +13,8 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
-from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel # Corrected @pytest.mark.db_required
-class name:
-
+from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel
+from app.core.interfaces.ml.base_model import BaseMLModel
 
 class TestTransformerTimeSeriesModel:
     """Tests for the TransformerTimeSeriesModel."""
@@ -25,7 +24,7 @@ class TestTransformerTimeSeriesModel:
         """Create a TransformerTimeSeriesModel with mocked internals."""
         with patch('app.infrastructure.ml.symptom_forecasting.transformer_model.torch', autospec=True), \
              patch('app.infrastructure.ml.symptom_forecasting.transformer_model.TransformerModel', autospec=True):
-            model = TransformerTimeSeriesModel(
+            model = SymptomTransformerModel(
                 model_path="test_model_path",
                 device="cpu",
                 embedding_dim=64,
@@ -62,7 +61,7 @@ class TestTransformerTimeSeriesModel:
              patch('app.infrastructure.ml.symptom_forecasting.transformer_model.os.path.exists', return_value=True):
             
             # Create model instance
-            model = TransformerTimeSeriesModel(model_path="test_model_path")
+            model = SymptomTransformerModel(model_path="test_model_path")
             
             # Mock torch.load to return a mock model
             mock_model = MagicMock()
@@ -84,7 +83,7 @@ class TestTransformerTimeSeriesModel:
              patch('app.infrastructure.ml.symptom_forecasting.transformer_model.os.path.exists', return_value=False):
             
             # Create model instance
-            model = TransformerTimeSeriesModel(model_path="nonexistent_path")
+            model = SymptomTransformerModel(model_path="nonexistent_path")
             
             # Execute
             await model.initialize()

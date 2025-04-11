@@ -14,8 +14,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.biometric_correlation.model_service import BiometricCorrelationService
-from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel # Corrected @pytest.mark.db_required
-class name:
+from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel
+from app.core.interfaces.ml.base_model import BaseMLModel
 
 
 class TestBiometricCorrelationService:
@@ -24,7 +24,7 @@ class TestBiometricCorrelationService:
     @pytest.fixture
     def mock_lstm_model(self):
         """Create a mock BiometricLSTMModel."""
-        model = AsyncMock(spec=BiometricLSTMModel)
+        model = AsyncMock(spec=BiometricCorrelationModel)
         model.is_initialized = True
         model.analyze_correlations = AsyncMock(return_value={
             "correlations": [

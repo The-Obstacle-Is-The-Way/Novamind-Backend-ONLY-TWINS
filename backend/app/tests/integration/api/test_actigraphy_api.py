@@ -76,8 +76,7 @@ def mock_pat_service():
         "mock_delay_ms": 0  # No delay in tests for faster execution
     })
     
-    # Add the get_model_info method since it doesn't exist in the mock @pytest.mark.db_required
-class
+    # Add the get_model_info method since it doesn't exist in the mock
     def get_model_info():
         # Return test model info
         return {

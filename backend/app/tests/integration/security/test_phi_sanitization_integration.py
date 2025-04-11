@@ -29,8 +29,7 @@ from app.infrastructure.security.log_sanitizer import get_sanitized_logger
 
 @pytest.fixture
 @pytest.mark.db_required
-async
-def test_patient() -> Patient:
+async def test_patient() -> Patient:
     """Create a test patient with PHI for testing."""
     patient_id = uuid.uuid4()
     return Patient(

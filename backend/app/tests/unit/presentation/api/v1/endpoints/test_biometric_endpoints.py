@@ -41,8 +41,8 @@ def app(mock_jwt_service):
     
     # Test endpoints
     @app.get("/test/user-id")
-    async @pytest.mark.db_required
-def test_get_current_user_id(user_id: UUID = Depends(get_current_user_id)):
+    @pytest.mark.db_required
+    async def test_get_current_user_id(user_id: UUID = Depends(get_current_user_id)):
         return {"user_id": str(user_id)}
     
     @app.get("/test/patient/{patient_id}")
@@ -114,7 +114,7 @@ class TestBiometricEndpointsDependencies:
     def test_get_current_user_id_authentication_exception(self, client, mock_jwt_service):
         """Test that get_current_user_id handles AuthenticationException."""
         # Setup
-        mock_jwt_service.decode_token.side_effect = AuthenticationException("Invalid token")
+        mock_jwt_service.decode_token.side_effect = AuthenticationError("Invalid token")
         
         # Execute
         response = client.get(

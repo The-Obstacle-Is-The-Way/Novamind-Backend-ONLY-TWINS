@@ -12,11 +12,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
-
-from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomForecastingEnsemble # Corrected @pytest.mark.db_required
-class name:
-from app.infrastructure.ml.base.base_model import BaseModel # Corrected class name
-
+from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomForecastingEnsemble
+from app.core.interfaces.ml.base_model import BaseMLModel
 
 class TestSymptomForecastEnsembleModel:
     """Tests for the SymptomForecastEnsembleModel."""
@@ -54,7 +51,7 @@ class TestSymptomForecastEnsembleModel:
     @pytest.fixture
     def ensemble_model(self, mock_model_1, mock_model_2):
         """Create an ensemble model with mock component models."""
-        return SymptomForecastEnsembleModel(
+        return SymptomForecastingEnsemble(
             models=[mock_model_1, mock_model_2],
             weights={"Model1": 0.7, "Model2": 0.3}
         )
@@ -102,7 +99,7 @@ class TestSymptomForecastEnsembleModel:
     async def test_predict_with_custom_weights(self, mock_model_1, mock_model_2, sample_input_data):
         """Test that predict respects custom weights provided at prediction time."""
         # Setup
-        ensemble = SymptomForecastEnsembleModel(
+        ensemble = SymptomForecastingEnsemble(
             models=[mock_model_1, mock_model_2],
             weights={"Model1": 0.7, "Model2": 0.3}
         )
@@ -126,7 +123,7 @@ class TestSymptomForecastEnsembleModel:
         """Test that predict handles errors in component models gracefully."""
         # Setup
         mock_model_1.predict.side_effect = Exception("Model error")
-        ensemble = SymptomForecastEnsembleModel(
+        ensemble = SymptomForecastingEnsemble(
             models=[mock_model_1, mock_model_2],
             weights={"Model1": 0.5, "Model2": 0.5}
         )
@@ -150,7 +147,7 @@ class TestSymptomForecastEnsembleModel:
         # Setup
         mock_model_1.predict.side_effect = Exception("Model 1 error")
         mock_model_2.predict.side_effect = Exception("Model 2 error")
-        ensemble = SymptomForecastEnsembleModel(
+        ensemble = SymptomForecastingEnsemble(
             models=[mock_model_1, mock_model_2],
             weights={"Model1": 0.5, "Model2": 0.5}
         )

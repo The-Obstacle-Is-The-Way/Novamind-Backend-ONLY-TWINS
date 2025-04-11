@@ -53,8 +53,8 @@ def redis_cache_service(mock_redis_client):
 
 
 @pytest.mark.asyncio
-async @pytest.mark.db_required
-def test_get_cache_hit(redis_cache_service, mock_redis_client):
+@pytest.mark.db_required
+async def test_get_cache_hit(redis_cache_service, mock_redis_client):
     """Test retrieving a value from cache when the key exists."""
     # Arrange
     key = "test-key"

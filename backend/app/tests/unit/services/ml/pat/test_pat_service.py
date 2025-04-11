@@ -22,10 +22,9 @@ from app.core.exceptions import (
     ServiceUnavailableError,
 )
 from app.core.services.ml.pat.bedrock import BedrockPAT
-from app.core.services.ml.pat.factory import PATServiceFactory # Corrected @pytest.mark.db_required
-class name:
+from app.core.services.ml.pat.factory import PATServiceFactory
 from app.core.services.ml.pat.interface import PATInterface
-from app.core.services.ml.pat.mock import MockPATService # Corrected class name
+from app.core.services.ml.pat.mock import MockPAT
 
 
 # Helper function to create sample readings
@@ -49,7 +48,7 @@ def create_sample_readings(num_readings: int = 10) -> List[Dict[str, Any]]:
 
 # Test fixture for a configured MockPAT instance
 @pytest.fixture
-def mock_pat_service() -> MockPATService: # Corrected type hint
+def mock_pat_service() -> MockPAT:
     """Fixture providing a configured MockPAT instance."""
     service = MockPAT()
     service.initialize({})
@@ -92,7 +91,7 @@ class TestMockPAT:
         service.initialize({})
         assert service.initialized
     
-    def test_analyze_actigraphy(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
+    def test_analyze_actigraphy(self, mock_pat_service: MockPAT) -> None:
         """Test analyzing actigraphy data with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -131,7 +130,7 @@ class TestMockPAT:
         assert "moderate" in activity_levels
         assert "vigorous" in activity_levels
     
-    def test_get_embeddings(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
+    def test_get_embeddings(self, mock_pat_service: MockPAT) -> None:
         """Test generating embeddings with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"
@@ -158,7 +157,7 @@ class TestMockPAT:
         assert isinstance(result["embeddings"], list)
         assert len(result["embeddings"]) == result["embedding_size"]
     
-    def test_get_analysis_by_id(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
+    def test_get_analysis_by_id(self, mock_pat_service: MockPAT) -> None:
         """Test retrieving an analysis by ID with the mock service."""
         # First create an analysis
         patient_id = "test-patient-1"
@@ -187,7 +186,7 @@ class TestMockPAT:
         assert result["patient_id"] == patient_id
         assert "sleep_metrics" in result
     
-    def test_get_patient_analyses(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
+    def test_get_patient_analyses(self, mock_pat_service: MockPAT) -> None:
         """Test retrieving analyses for a patient with the mock service."""
         # First create multiple analyses for the same patient
         patient_id = "test-patient-2"
@@ -237,7 +236,7 @@ class TestMockPAT:
         )
         assert len(offset_result["analyses"]) == 2
     
-    def test_get_model_info(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
+    def test_get_model_info(self, mock_pat_service: MockPAT) -> None:
         """Test retrieving model information with the mock service."""
         result = mock_pat_service.get_model_info()
         
@@ -249,7 +248,7 @@ class TestMockPAT:
         assert "supported_analysis_types" in result
         assert isinstance(result["supported_analysis_types"], list)
     
-    def test_integrate_with_digital_twin(self, mock_pat_service: MockPATService) -> None: # Corrected type hint
+    def test_integrate_with_digital_twin(self, mock_pat_service: MockPAT) -> None:
         """Test integrating actigraphy analysis with a digital twin with the mock service."""
         # Prepare test data
         patient_id = "test-patient-1"

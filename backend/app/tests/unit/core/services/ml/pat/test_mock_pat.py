@@ -23,7 +23,6 @@ from app.core.services.ml.pat.exceptions import (
 )
 from app.core.services.ml.pat.mock import MockPAT
 
-
 @pytest.fixture
 def mock_pat():
     """Create a MockPAT instance for testing."""

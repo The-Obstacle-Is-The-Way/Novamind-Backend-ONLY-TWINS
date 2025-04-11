@@ -14,10 +14,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.symptom_forecasting.model_service import SymptomForecastingService
-from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel # Corrected @pytest.mark.db_required
-class name:
-from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel # Corrected class name
-
+from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel
+from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel
+from app.core.interfaces.ml.base_model import BaseMLModel
 
 class TestSymptomForecastingService:
     """Tests for the SymptomForecastingService."""
@@ -25,7 +24,7 @@ class TestSymptomForecastingService:
     @pytest.fixture
     def mock_transformer_model(self):
         """Create a mock TransformerTimeSeriesModel."""
-        model = AsyncMock(spec=TransformerTimeSeriesModel)
+        model = AsyncMock(spec=SymptomTransformerModel)
         model.is_initialized = True
         model.predict = AsyncMock(return_value={
             "predictions": np.array([4.2, 4.0, 3.8, 3.5]),
@@ -40,7 +39,7 @@ class TestSymptomForecastingService:
     @pytest.fixture
     def mock_xgboost_model(self):
         """Create a mock XGBoostTimeSeriesModel."""
-        model = AsyncMock(spec=XGBoostTimeSeriesModel)
+        model = AsyncMock(spec=XGBoostSymptomModel)
         model.is_initialized = True
         model.predict = AsyncMock(return_value={
             "predictions": np.array([4.3, 4.1, 3.9, 3.6]),
@@ -241,11 +240,11 @@ class TestSymptomForecastingService:
     async def test_model_initialization(self):
         """Test that models are initialized if not already initialized."""
         # Setup
-        mock_transformer = AsyncMock(spec=TransformerTimeSeriesModel)
+        mock_transformer = AsyncMock(spec=SymptomTransformerModel)
         mock_transformer.is_initialized = False
         mock_transformer.initialize = AsyncMock()
 
-        mock_xgboost = AsyncMock(spec=XGBoostTimeSeriesModel)
+        mock_xgboost = AsyncMock(spec=XGBoostSymptomModel)
         mock_xgboost.is_initialized = False
         mock_xgboost.initialize = AsyncMock()
 

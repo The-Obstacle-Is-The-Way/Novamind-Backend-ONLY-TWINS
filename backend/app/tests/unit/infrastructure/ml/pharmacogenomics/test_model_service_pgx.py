@@ -17,7 +17,6 @@ from app.infrastructure.ml.pharmacogenomics.model_service import Pharmacogenomic
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
 from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel
 
-
 class TestPharmacogenomicsService:
     """Tests for the PharmacogenomicsService."""
 
