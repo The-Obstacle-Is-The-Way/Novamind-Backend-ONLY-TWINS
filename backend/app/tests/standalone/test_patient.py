@@ -4,36 +4,9 @@ Tests for the Patient entity.
 
 import uuid
 from datetime import date, datetime, timedelta
-from enum import Enum
 import pytest
 
-from app.domain.entities.patient import Patient  # Removed Gender, InsuranceStatus, PatientStatus
-from app.domain.exceptions import ValidationException
-
-
-# Mock enums for testing purposes
-class Gender(str, Enum):
-    """Gender enum for patient data."""
-    MALE = "male"
-    FEMALE = "female"
-    NON_BINARY = "non_binary"
-    OTHER = "other"
-    PREFER_NOT_TO_SAY = "prefer_not_to_say"
-
-
-class InsuranceStatus(str, Enum):
-    """Insurance verification status enum."""
-    VERIFIED = "verified"
-    PENDING = "pending"
-    UNVERIFIED = "unverified"
-    EXPIRED = "expired"
-
-
-class PatientStatus(str, Enum):
-    """Patient status enum."""
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    ARCHIVED = "archived"
+from app.tests.mocks.patient_mock import Patient, Gender, InsuranceStatus, PatientStatus, ValidationException
 
 
 @pytest.fixture

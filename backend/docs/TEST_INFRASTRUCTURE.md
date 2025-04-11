@@ -1,211 +1,216 @@
-# Novamind Digital Twin Test Infrastructure
+# Novamind Digital Twin Backend: Test Infrastructure (SSOT)
 
-This document outlines the test infrastructure for the Novamind Digital Twin backend, focusing on test organization, dependency management, and execution strategies.
+This document serves as the Single Source of Truth (SSOT) for the testing infrastructure of the Novamind Digital Twin Backend. It defines the test organization, execution, and tooling following Clean Architecture principles with a focus on efficiency and HIPAA compliance.
 
-## Test Dependency Levels
+## 1. Dependency-Based Test Organization
 
-The Novamind testing infrastructure organizes tests into distinct dependency levels:
+The Novamind testing infrastructure organizes tests into three distinct dependency levels:
 
-1. **Standalone Tests** 
-   - No dependencies beyond Python itself
-   - Located in `app/tests/standalone/`
-   - Marked with `@pytest.mark.standalone`
-   - Fastest to run, ideal for core domain logic and utilities
-   - Great for CI/CD early feedback
+### Dependency Levels
 
-2. **VENV-Only Tests**
-   - Require Python packages but no external services
-   - Located in `app/tests/venv_only/`
-   - Marked with `@pytest.mark.venv_only`
-   - Medium execution speed
-   - Good for testing code with package dependencies
+| Level | Description | Directory | Characteristics |
+|-------|-------------|-----------|-----------------|
+| **Standalone** | No dependencies beyond Python itself | `/app/tests/standalone/` | Fastest to run, ideal for CI/CD early feedback |
+| **VENV-Only** | Require Python packages but no external services | `/app/tests/venv_only/` | Medium execution speed |
+| **DB-Required** | Require database connections or external services | Various directories | Most comprehensive but slowest to run |
 
-3. **DB-Required Tests**
-   - Require database connections or other external services
-   - Marked with `@pytest.mark.db_required`
-   - Slowest to run, require a fully configured environment
-   - Necessary for testing persistence and integration
+This approach allows for optimized test execution where faster tests run first, providing early feedback on failures before launching more complex tests.
 
-## Test Scripts and Tools
+### Directory Structure
 
-### 1. Dependency-Based Test Runner
-
-```bash
-# Run standalone tests
-python scripts/run_dependency_tests.py --level standalone
-
-# Run VENV-only tests  
-python scripts/run_dependency_tests.py --level venv
-
-# Run DB-required tests
-python scripts/run_dependency_tests.py --level db
-
-# Generate a test dependency report
-python scripts/run_dependency_tests.py --report
+```
+/backend/app/tests/              # Unified root for all tests
+  __init__.py
+  conftest.py                    # Global/shared fixtures
+  /standalone/                   # Dependency-free tests
+  /venv_only/                    # Tests needing only Python packages
+  /unit/                         # Unit tests (isolated components)
+    /domain/                     # Mirrors /app/domain
+    /application/                # Mirrors /app/application
+    /core/                       # Mirrors /app/core
+    /infrastructure/             # Mirrors /app/infrastructure
+  /integration/                  # Integration tests (components working together)
+    /api/                        # API endpoint tests
+    /application/                # Service/Use Case integration tests
+    /infrastructure/             # Infrastructure integration tests
+  /security/                     # Dedicated Security & HIPAA Compliance Tests
+  /e2e/                          # End-to-end tests
+  /fixtures/                     # Shared Pytest fixtures
 ```
 
-### 2. Shell Wrapper
+## 2. Test Execution and CI/CD
 
-```bash
-# Run standalone tests
-./scripts/run_tests.sh standalone
+### Test Execution Flow
 
-# Run VENV-only tests
-./scripts/run_tests.sh venv  
+For maximum efficiency, tests should be run in the following order:
 
-# Run DB-required tests 
-./scripts/run_tests.sh db
+1. **Standalone Tests**: No dependencies, fastest to run
+2. **VENV-Only Tests**: Require Python packages but no external services
+3. **DB-Required Tests**: Require full environment setup
 
-# Run all tests in dependency order
-./scripts/run_tests.sh all
+### CI/CD Pipeline Integration
 
-# Generate a dependency report
-./scripts/run_tests.sh report
-
-# Find standalone test candidates
-./scripts/run_tests.sh candidates
+```mermaid
+graph TD
+    A[Code Push] --> B[Linting]
+    B --> C[Standalone Tests]
+    C --> D[VENV-Only Tests]
+    D --> E[DB Tests]
+    E --> F[Coverage Report]
+    F --> G[Security Scan]
+    G --> H[Deploy if all pass]
 ```
 
-### 3. Test Candidate Identifier
+This staged approach ensures:
+- Quick feedback for simple issues (within minutes)
+- Detailed tests only run if basic tests pass
+- Maximum efficiency in the CI/CD pipeline
 
-```bash
-# Find potential standalone test candidates
-python scripts/identify_standalone_candidates.py
+## 3. Key Testing Tools
 
-# Save results to a file
-python scripts/identify_standalone_candidates.py --output candidates.txt
+### Test Runners
 
-# Show detailed information
-python scripts/identify_standalone_candidates.py --verbose
-```
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `run_tests.sh` | Main test runner | `./scripts/run_tests.sh [all|standalone|venv|db]` |
+| `run_dependency_tests.py` | Python implementation for dependency-based testing | `python scripts/run_dependency_tests.py [category]` |
 
-### 4. Test Failure Debugger
+### Test Maintenance Tools
 
-```bash
-# Debug standalone test failures
-python scripts/debug_test_failures.py --category standalone
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `classify_tests.py` | Classify tests by dependency | `python scripts/classify_tests.py --update` |
+| `identify_standalone_candidates.py` | Find standalone candidates | `python scripts/identify_standalone_candidates.py` |
+| `debug_test_failures.py` | Debug test failures | `python scripts/debug_test_failures.py [category]` |
 
-# Debug failures in a specific module
-python scripts/debug_test_failures.py --module patient
+## 4. Test Implementation Guidelines
 
-# Search for specific error type
-python scripts/debug_test_failures.py --search "sanitize_text"
+### 4.1 Naming Conventions
 
-# Save analysis to a file
-python scripts/debug_test_failures.py --output debug_report.txt
-```
+- **Files**: `test_[module_or_feature].py`
+- **Functions/Methods**: `test_[behavior]_[conditions]_[expected_outcome]`
+- **Classes**: `Test[Feature]` or `[Feature]Test`
 
-## Adding New Tests
+### 4.2 Test Structure
 
-### Creating Standalone Tests
-
-Standalone tests have no external dependencies and run in complete isolation:
+Follow the Arrange-Act-Assert pattern:
 
 ```python
-import pytest
+def test_user_service_creates_user_with_valid_data_returns_user(self):
+    # Arrange
+    user_data = {"name": "Test User", "email": "test@example.com"}
+    user_service = UserService(user_repository=MockUserRepository())
+    
+    # Act
+    result = user_service.create_user(user_data)
+    
+    # Assert
+    assert result.name == "Test User"
+    assert result.email == "test@example.com"
+    assert result.id is not None
+```
 
+### 4.3 Dependency Markers
+
+Use pytest markers to indicate dependency level:
+
+```python
 @pytest.mark.standalone
-def test_my_standalone_function():
-    # Test implementation
-    assert True
-```
-
-Characteristics of good standalone tests:
-- Test pure domain logic
-- Use mocks for all external dependencies
-- No database or network operations
-- No file I/O dependencies
-- No complex third-party package requirements
-
-### Creating VENV-Only Tests
-
-VENV-only tests may depend on installed packages but not external services:
-
-```python
-import pytest
-import pandas as pd  # External package dependency
+def test_something_simple():
+    # Test with no dependencies
 
 @pytest.mark.venv_only
-def test_my_venv_only_function():
-    # Test with package dependencies
-    df = pd.DataFrame({"a": [1, 2, 3]})
-    assert len(df) == 3
-```
-
-### Creating DB-Required Tests
-
-DB-required tests interact with databases or external services:
-
-```python
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
+def test_something_with_packages():
+    # Test requiring only Python packages
 
 @pytest.mark.db_required
-async def test_my_db_function(async_session: AsyncSession):
-    # Test with database operations
-    result = await async_session.execute("SELECT 1")
-    assert result is not None
+def test_something_with_database():
+    # Test requiring database access
 ```
 
-## CI/CD Pipeline Integration
+### 4.4 HIPAA Compliance Testing
 
-The test infrastructure is designed to integrate with CI/CD pipelines, running tests in dependency order:
+- Use synthetic data that mimics PHI structure without containing actual PHI
+- Test sanitization/redaction functionality thoroughly
+- Test access controls and authorization at all layers
+- Validate that PHI is never logged or exposed in error messages
 
-1. **Stage 1: Linting & Standalone Tests** (Fast feedback)
-   - Code linting
-   - Standalone tests
+## 5. Coverage Requirements
 
-2. **Stage 2: VENV Tests** (Medium complexity)
-   - Tests requiring package dependencies
+| Component Type | Minimum Coverage |
+|----------------|------------------|
+| Domain Layer | 95% |
+| Application Services | 90% |
+| Infrastructure | 85% |
+| Security Components | 95% |
+| PHI Handling | 100% |
+| Overall | 85% |
 
-3. **Stage 3: DB Tests** (Full environment)
-   - Database-dependent tests
-   - Integration tests
+## 6. Test Creation Process
 
-This strategy allows for early feedback on simple issues while preserving resources for more complex tests.
+### 6.1 Adding New Standalone Tests
 
-## Test Analytics
+1. Identify pure logical components that require no external dependencies
+2. Create test file in `/app/tests/standalone/`
+3. Add `@pytest.mark.standalone` marker to test functions
+4. Run test to verify it passes with no dependencies
 
-Use the reporting tools to understand your test distribution:
+### 6.2 Converting Unit Tests to Standalone
+
+1. Run `python scripts/identify_standalone_candidates.py`
+2. Review candidates and select suitable options
+3. Create copies in standalone directory with necessary mocks
+4. Verify tests work in standalone environment
+
+### 6.3 Database Test Setup
+
+1. Use fixtures from `/app/tests/fixtures/` for database access
+2. Ensure proper isolation with transactions
+3. Mark with `@pytest.mark.db_required`
+4. Consider using SQLite for faster tests where possible
+
+## 7. Test Execution Examples
+
+### 7.1 Run All Tests in Optimal Order
 
 ```bash
-python scripts/run_dependency_tests.py --report
+./scripts/run_tests.sh all
 ```
 
-Example report metrics:
-- Total test count and distribution
-- Percentage of tests by dependency level
-- Unmarked tests that need categorization
-- Recommendations for improving test organization
+### 7.2 Run Only Standalone Tests
 
-## Converting Unit Tests to Standalone
+```bash
+./scripts/run_tests.sh standalone
+```
 
-The `identify_standalone_candidates.py` script helps identify unit tests that could be converted to standalone tests:
+### 7.3 Run Only VENV Tests
 
-1. Run the script to identify candidates
-2. Create a copy of the test file in the standalone directory
-3. Add `@pytest.mark.standalone` to test functions
-4. Verify the tests pass in standalone mode
+```bash
+./scripts/run_tests.sh venv
+```
 
-Converting unit tests to standalone improves CI/CD performance and provides faster feedback on core logic.
+### 7.4 Run DB Tests
 
-## Debugging Test Failures
+```bash
+./scripts/run_tests.sh db
+```
 
-The test failure debugger categorizes failing tests:
+### 7.5 Generate Classification Report
 
-- **Interface Mismatches**: Changes to class interfaces, parameters, etc.
-- **Behavior Mismatches**: Changes to expected behavior or logic
-- **Validation Errors**: Issues with validation or constraints
-- **Missing Dependencies**: Missing imports or dependencies
+```bash
+python scripts/classify_tests.py --verbose
+```
 
-Use the debug tool to categorize and address test failures systematically.
+## 8. Common Issues and Solutions
 
-## Best Practices
+| Issue | Solution |
+|-------|----------|
+| Import Errors | Check correct Python path is set (`export PYTHONPATH=$(pwd)`) |
+| DB Connection Failures | Verify the test database is running (`docker-compose -f docker-compose.test.yml up -d`) |
+| Permission Issues | Ensure scripts are executable (`chmod +x scripts/*.sh`) |
+| Test Discovery Issues | Check that `__init__.py` exists in all test directories |
+| Test Collection Errors | Run with `pytest --collect-only` to debug import issues |
 
-1. **Mark all tests with the appropriate dependency level**
-2. **Aim for a higher percentage of standalone tests** (target: 30%+)
-3. **Run tests in dependency order** for efficiency
-4. **Mock external dependencies** in standalone and venv-only tests
-5. **Use test fixtures** to reduce duplication
-6. **Add new standalone tests** for all core domain logic
-7. **Keep test markers and directories in sync**
+## 9. Conclusion
+
+This test infrastructure provides a robust, efficient approach to testing the Novamind Digital Twin Backend. By following this SSOT guide, teams can maintain consistency, improve test quality, and ensure continuous compliance with HIPAA requirements.

@@ -1,58 +1,83 @@
-# Novamind Backend Scripts
+# Novamind Digital Twin Backend Scripts
 
-This directory contains utility scripts for the Novamind Digital Twin backend project.
+This directory contains utility scripts for the Novamind Digital Twin Backend project. The scripts have been organized into clear categories to facilitate development, testing, and maintenance.
 
-## Testing
+## Core Test Infrastructure
 
-### Unified Test Runner
-The preferred way to run tests is through the unified test runner:
+| Script | Description |
+|--------|-------------|
+| `run_tests.sh` | **Main entry point** for running tests. Supports different dependency levels (standalone, venv, db) |
+| `run_dependency_tests.py` | Python implementation of dependency-based test runner |
+| `classify_tests.py` | Tool to classify tests by dependency level and update markers |
+| `debug_test_failures.py` | Tool for diagnosing and debugging test failures |
+| `identify_standalone_candidates.py` | Identifies tests that could be converted to standalone tests |
+| `run_simple_test.py` | Creates and runs a minimal test to verify test infrastructure |
+
+## Test Environment Setup
+
+| Script | Description |
+|--------|-------------|
+| `run_test_environment.sh` | Sets up Docker-based test environment with databases |
+| `install-test-dependencies.sh` | Installs all test dependencies |
+
+## Reporting Tools
+
+| Script | Description |
+|--------|-------------|
+| `generate_coverage_report.py` | Generates test coverage reports |
+| `generate_compliance_summary.py` | Creates compliance documentation for HIPAA |
+| `run_hipaa_phi_audit.py` | Scans codebase for potential PHI exposure risks |
+
+## Maintenance Utilities
+
+| Script | Description |
+|--------|-------------|
+| `fix_datetime_tests.py` | Fixes datetime-related test issues |
+| `fix_db_driver.py` | Configures database drivers correctly |
+| `fix_utcnow_deprecation.py` | Updates deprecated utcnow calls |
+| `lint_tests.py` | Lints test files for code quality |
+| `secure_logger.py` | Security-enhanced logging functionality |
+
+## Usage Examples
+
+### Running Tests
 
 ```bash
-# Run all tests
-python -m backend.scripts.run_tests
+# Run all tests in dependency order
+./run_tests.sh all
 
-# Run only unit tests
-python -m backend.scripts.run_tests --unit
+# Run only standalone tests
+./run_tests.sh standalone
 
-# Run only ML mock tests (high coverage area)
-python -m backend.scripts.run_tests --ml-mock
+# Run venv-dependent tests with coverage
+./run_tests.sh venv --coverage
 
-# Generate coverage report
-python -m backend.scripts.run_tests --coverage
-
-# Quick smoke test
-python -m backend.scripts.run_tests --quick
-
-# Verbose output
-python -m backend.scripts.run_tests --verbose
+# Run database tests with verbose output
+./run_tests.sh db --verbose
 ```
 
-The test runner follows clean architecture principles and provides consistent reporting across all test types.
+### Test Classification
 
-## Coverage Requirements
+```bash
+# Classify tests by dependency
+python classify_tests.py --update
 
-- Target coverage: 80% across all code
-- ML Mock Services: Maintain >80% coverage for mock implementations
-- Domain layer: Maintain >85% coverage
-- Security components: Maintain >90% coverage
-
-## Other Utilities
-
-- `generate_compliance_summary.py`: Generates HIPAA compliance report
-- `run_hipaa_phi_audit.py`: Audits code for PHI protection 
-- `secure_logger.py`: Secure logging utility
-
-## Test Structure
-
-Tests are organized following clean architecture principles:
-
-```
-backend/
-├── tests/
-│   ├── unit/            # Unit tests for isolated components
-│   ├── integration/     # Integration tests for component interactions
-│   ├── security/        # Security and HIPAA compliance tests
-│   └── e2e/             # End-to-end tests
+# Identify standalone test candidates
+python identify_standalone_candidates.py
 ```
 
-All test file names should follow the pattern `test_*.py` to be automatically discovered.
+### Generating Reports
+
+```bash
+# Generate test coverage report
+python generate_coverage_report.py
+
+# Run HIPAA PHI audit
+python run_hipaa_phi_audit.py
+```
+
+## Note on Legacy Scripts
+
+Older scripts have been archived in the `legacy_backup` directory. These are maintained for reference but should not be used for new development.
+
+For detailed documentation on the test infrastructure, see `/backend/docs/TEST_INFRASTRUCTURE.md`.
