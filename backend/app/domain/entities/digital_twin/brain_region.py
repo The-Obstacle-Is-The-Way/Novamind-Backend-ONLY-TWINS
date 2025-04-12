@@ -7,7 +7,7 @@ and is used in neurotransmitter mapping and other brain-related analyses.
 
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class BrainRegion(str, Enum):
@@ -31,6 +31,7 @@ class BrainRegion(str, Enum):
     TEMPORAL_LOBE = "temporal_lobe"
     OCCIPITAL_LOBE = "occipital_lobe"
     BRAIN_STEM = "brain_stem"
+    BRAINSTEM = "brainstem"  # Alias for compatibility
     SUBSTANTIA_NIGRA = "substantia_nigra"
     LOCUS_COERULEUS = "locus_coeruleus"
     RAPHE_NUCLEI = "raphe_nuclei"
@@ -38,6 +39,12 @@ class BrainRegion(str, Enum):
     # Additional brain regions for enhanced compatibility
     ORBITOFRONTAL_CORTEX = "orbitofrontal_cortex"
     DORSOLATERAL_PREFRONTAL = "dorsolateral_prefrontal"
+    
+    # Missing brain regions needed for neurotransmitter mapping
+    CEREBRAL_CORTEX = "cerebral_cortex"
+    BASAL_FOREBRAIN = "basal_forebrain"
+    STRIATUM = "striatum"
+    MIDBRAIN = "midbrain"
     
     @classmethod
     def get_all(cls) -> list[str]:
@@ -78,7 +85,7 @@ class BrainRegionActivity(BaseModel):
         description="Confidence level in this activity assessment (0.0-1.0)"
     )
     
-    class Config:
-        """Pydantic configuration."""
-        use_enum_values = True
-        validate_assignment = True
+    model_config = ConfigDict(
+        use_enum_values=True,
+        validate_assignment=True
+    )

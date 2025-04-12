@@ -9,7 +9,8 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, validator
+from datetime import UTC
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 from .brain_region import BrainRegion
 from .neurotransmitter import Neurotransmitter
@@ -20,7 +21,7 @@ class DigitalTwinState(BaseModel):
     
     id: UUID = Field(default_factory=uuid4)
     patient_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     
     # Neurotransmitter levels
     neurotransmitter_levels: dict[str, float] = Field(
@@ -79,20 +80,20 @@ class DigitalTwinState(BaseModel):
     
     meta: dict[str, Any] = Field(default_factory=dict)
     
-    class Config:
-        """Pydantic configuration."""
-        validate_assignment = True
+    model_config = ConfigDict(
+        validate_assignment=True
+    )
     
-    @validator('neurotransmitter_levels')
-    def validate_neurotransmitter_levels(cls, v):
+    @field_validator('neurotransmitter_levels')
+    def validate_neurotransmitter_levels(cls, v, info):
         """Validate neurotransmitter levels are within range."""
         for nt, level in v.items():
             if level < -1.0 or level > 1.0:
                 raise ValueError(f"Neurotransmitter level for {nt} must be between -1.0 and 1.0")
         return v
     
-    @validator('brain_region_activity')
-    def validate_brain_activity(cls, v):
+    @field_validator('brain_region_activity')
+    def validate_brain_activity(cls, v, info):
         """Validate brain activity levels are within range."""
         for region, level in v.items():
             if level < -1.0 or level > 1.0:

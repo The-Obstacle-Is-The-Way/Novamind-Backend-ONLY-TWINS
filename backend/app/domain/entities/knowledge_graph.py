@@ -38,6 +38,21 @@ class NodeType(Enum):
     PHYSIOLOGICAL_STATE = "physiological_state"
 
 
+def ensure_enum_value(value, enum_class):
+    """Convert string to enum value if necessary, or keep as enum value."""
+    if isinstance(value, str):
+        try:
+            return enum_class(value)
+        except ValueError:
+            # If the string doesn't match any enum value, try matching by name
+            try:
+                return enum_class[value]
+            except KeyError:
+                # Return the original string if all conversions fail
+                return value
+    return value
+
+
 @dataclass
 class KnowledgeGraphNode:
     """A node in the knowledge graph."""
@@ -49,6 +64,10 @@ class KnowledgeGraphNode:
     last_updated: datetime = field(default_factory=datetime.now)
     confidence: float = 1.0  # 0.0 to 1.0
     source: str | None = None  # e.g., "PAT", "MentalLLaMA", "XGBoost", "clinician"
+    
+    def __post_init__(self):
+        """Ensure proper enum conversion after initialization."""
+        self.node_type = ensure_enum_value(self.node_type, NodeType)
     
     @classmethod
     def create(cls, label: str, node_type: NodeType, properties: dict = None, source: str = None, confidence: float = 1.0):
@@ -76,6 +95,10 @@ class KnowledgeGraphEdge:
     confidence: float = 1.0  # 0.0 to 1.0
     source: str | None = None  # e.g., "PAT", "MentalLLaMA", "XGBoost", "clinician"
     temporal_constraints: dict | None = None  # Temporal constraints on this edge
+    
+    def __post_init__(self):
+        """Ensure proper enum conversion after initialization."""
+        self.edge_type = ensure_enum_value(self.edge_type, EdgeType)
     
     @classmethod
     def create(cls, source_id: UUID, target_id: UUID, edge_type: EdgeType, properties: dict = None, 

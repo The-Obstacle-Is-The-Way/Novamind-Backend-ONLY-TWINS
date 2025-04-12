@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class BiometricDataPoint(BaseModel):
@@ -26,7 +26,7 @@ class BiometricDataPoint(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
     confidence: float = 1.0
 
-    class Config:
-        """Configuration for Pydantic model."""
+    model_config = ConfigDict(
         # Allow arbitrary types for testing - will be monkey patched
-        arbitrary_types_allowed = True
+        arbitrary_types_allowed=True
+    )

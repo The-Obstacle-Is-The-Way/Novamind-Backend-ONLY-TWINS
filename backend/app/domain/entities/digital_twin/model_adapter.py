@@ -56,6 +56,54 @@ class NeurotransmitterStateAdapter:
     level: float  # 0.0 to 1.0
     confidence: float  # 0.0 to 1.0
     clinical_significance: ClinicalSignificance = ClinicalSignificance.NONE
+    
+    def __add__(self, other):
+        """Support addition with a float value."""
+        if isinstance(other, (int, float)):
+            return self.level + other
+        raise TypeError(f"unsupported operand type(s) for +: '{type(self).__name__}' and '{type(other).__name__}'")
+    
+    def __radd__(self, other):
+        """Support right addition with a float value."""
+        return self.__add__(other)
+    
+    def __sub__(self, other):
+        """Support subtraction with a float value."""
+        if isinstance(other, (int, float)):
+            return self.level - other
+        raise TypeError(f"unsupported operand type(s) for -: '{type(self).__name__}' and '{type(other).__name__}'")
+    
+    def __rsub__(self, other):
+        """Support right subtraction with a float value."""
+        if isinstance(other, (int, float)):
+            return other - self.level
+        raise TypeError(f"unsupported operand type(s) for -: '{type(other).__name__}' and '{type(self).__name__}'")
+    
+    def __mul__(self, other):
+        """Support multiplication with a float value."""
+        if isinstance(other, (int, float)):
+            return self.level * other
+        raise TypeError(f"unsupported operand type(s) for *: '{type(self).__name__}' and '{type(other).__name__}'")
+    
+    def __rmul__(self, other):
+        """Support right multiplication with a float value."""
+        return self.__mul__(other)
+    
+    def __truediv__(self, other):
+        """Support division with a float value."""
+        if isinstance(other, (int, float)):
+            return self.level / other
+        raise TypeError(f"unsupported operand type(s) for /: '{type(self).__name__}' and '{type(other).__name__}'")
+    
+    def __rtruediv__(self, other):
+        """Support right division with a float value."""
+        if isinstance(other, (int, float)):
+            return other / self.level
+        raise TypeError(f"unsupported operand type(s) for /: '{type(other).__name__}' and '{type(self).__name__}'")
+    
+    def __float__(self):
+        """Allow conversion to float."""
+        return float(self.level)
 
 
 @dataclass

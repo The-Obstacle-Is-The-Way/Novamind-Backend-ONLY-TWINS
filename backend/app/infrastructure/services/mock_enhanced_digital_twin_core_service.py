@@ -16,14 +16,9 @@ from uuid import UUID
 from app.domain.entities.digital_twin import (
     BrainRegion, ClinicalInsight, ClinicalSignificance, Neurotransmitter, ConnectionType
 )
-# Import both original classes and adapter classes to avoid confusion
-from app.domain.entities.digital_twin.digital_twin_state import (
-    BrainRegionState as OriginalBrainRegionState,
-    NeurotransmitterState as OriginalNeurotransmitterState,
-    NeuralConnection as OriginalNeuralConnection,
-    TemporalPattern as OriginalTemporalPattern,
-    DigitalTwinState as OriginalDigitalTwinState
-)
+from app.domain.entities.digital_twin.receptor_subtype import ReceptorSubtype
+# Import the original DigitalTwinState and all adapter classes
+from app.domain.entities.digital_twin.digital_twin_state import DigitalTwinState
 
 from app.domain.entities.digital_twin.model_adapter import (
     BrainRegionStateAdapter,
@@ -42,7 +37,7 @@ from app.domain.entities.knowledge_graph import (
     NodeType, EdgeType
 )
 from app.domain.entities.neurotransmitter_mapping import (
-    NeurotransmitterMapping, ReceptorProfile, ReceptorType, ReceptorSubtype,
+    NeurotransmitterMapping, ReceptorProfile, ReceptorType,
     create_default_neurotransmitter_mapping
 )
 
@@ -79,7 +74,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         self.pat_service = pat_service
         
         # In-memory storage of Digital Twin states, knowledge graphs, and belief networks
-        self._digital_twin_states: Dict[UUID, Dict[UUID, DigitalTwinState]] = {}  # patient_id -> state_id -> state
+        self._digital_twin_states: Dict[UUID, Dict[UUID, Union[DigitalTwinState, DigitalTwinStateAdapter]]] = {}  # patient_id -> state_id -> state
         self._knowledge_graphs: Dict[UUID, TemporalKnowledgeGraph] = {}  # patient_id -> knowledge_graph
         self._belief_networks: Dict[UUID, BayesianBeliefNetwork] = {}  # patient_id -> belief_network
         self._neurotransmitter_mappings: Dict[UUID, NeurotransmitterMapping] = {}  # patient_id -> neurotransmitter_mapping
@@ -312,10 +307,14 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
             insights = new_data["insights"]
             for insight in insights:
                 # Create a node for the insight
+                # Handle both enum and string values for clinical_significance
+                significance = insight.clinical_significance
+                significance_value = significance.value if hasattr(significance, 'value') else str(significance)
+                
                 insight_node = KnowledgeGraphNode.create(
                     label=insight.title,
                     node_type=NodeType.COGNITIVE_PATTERN if "cognitive" in insight.title.lower() else NodeType.PHYSIOLOGICAL_STATE,
-                    properties={"description": insight.description, "significance": insight.clinical_significance.value},
+                    properties={"description": insight.description, "significance": significance_value},
                     source=insight.source,
                     confidence=insight.confidence
                 )
@@ -323,8 +322,10 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
                 
                 # Create nodes for associated brain regions and neurotransmitters
                 for region in insight.brain_regions:
+                    # Handle both enum values and strings
+                    region_label = region.value if hasattr(region, 'value') else str(region)
                     region_node = KnowledgeGraphNode.create(
-                        label=region.value,
+                        label=region_label,
                         node_type=NodeType.BRAIN_REGION,
                         source=insight.source,
                         confidence=insight.confidence * 0.9
@@ -338,6 +339,28 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
                         edge_type=EdgeType.AFFECTS,
                         source=insight.source,
                         confidence=insight.confidence * 0.9
+                    )
+                    knowledge_graph.add_edge(edge)
+                    
+                # Create nodes for neurotransmitters
+                for nt in insight.neurotransmitters:
+                    # Handle both enum values and strings
+                    nt_label = nt.value if hasattr(nt, 'value') else str(nt)
+                    nt_node = KnowledgeGraphNode.create(
+                        label=nt_label,
+                        node_type=NodeType.NEUROTRANSMITTER,
+                        source=insight.source,
+                        confidence=insight.confidence * 0.85
+                    )
+                    knowledge_graph.add_node(nt_node)
+                    
+                    # Create edge from insight to neurotransmitter
+                    edge = KnowledgeGraphEdge.create(
+                        source_id=insight_node.id,
+                        target_id=nt_node.id,
+                        edge_type=EdgeType.AFFECTS,
+                        source=insight.source,
+                        confidence=insight.confidence * 0.85
                     )
                     knowledge_graph.add_edge(edge)
         
@@ -1225,7 +1248,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         
         return new_state
     
-    def _create_initial_digital_twin_state(self, patient_id: UUID, initial_data: Dict) -> Union[OriginalDigitalTwinState, DigitalTwinStateAdapter]:
+    def _create_initial_digital_twin_state(self, patient_id: UUID, initial_data: Dict) -> Union[DigitalTwinState, DigitalTwinStateAdapter]:
         """Create an initial Digital Twin state for a patient."""
         # Initialize brain regions with default values
         brain_regions = {}
@@ -1358,9 +1381,9 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         if custom_mapping:
             mapping = custom_mapping
         elif use_default_mapping:
-            mapping = create_default_neurotransmitter_mapping()
+            mapping = create_default_neurotransmitter_mapping(patient_id=patient_id)
         else:
-            mapping = NeurotransmitterMapping()
+            mapping = NeurotransmitterMapping(patient_id=patient_id)
         
         # Store the mapping
         self._neurotransmitter_mappings[patient_id] = mapping
@@ -1373,7 +1396,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
                 "use_default_mapping": use_default_mapping,
                 "custom_mapping_provided": custom_mapping is not None,
                 "receptor_profile_count": len(mapping.receptor_profiles),
-                "production_site_count": sum(len(regions) for regions in mapping.production_map.values())
+                "production_site_count": sum(len(regions) for regions in mapping.production_sites.values())
             },
             source="digital_twin_core",
             patient_id=patient_id

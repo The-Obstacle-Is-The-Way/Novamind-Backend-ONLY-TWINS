@@ -14,11 +14,12 @@ from typing import Dict, List, Tuple, Optional
 from uuid import UUID
 
 from app.domain.entities.digital_twin import (
-    BrainRegion,   ClinicalInsight,   ClinicalSignificance,   Neurotransmitter,  
+    BrainRegion, ClinicalInsight, ClinicalSignificance, Neurotransmitter,
     DigitalTwinState
 )
+from app.domain.entities.digital_twin.receptor_subtype import ReceptorSubtype
 from app.domain.entities.neurotransmitter_mapping import (
-    NeurotransmitterMapping,   ReceptorProfile,   ReceptorType,   ReceptorSubtype,  
+    NeurotransmitterMapping, ReceptorProfile, ReceptorType,
     create_default_neurotransmitter_mapping
 )
 from app.domain.services.enhanced_digital_twin_core_service import EnhancedDigitalTwinCoreService

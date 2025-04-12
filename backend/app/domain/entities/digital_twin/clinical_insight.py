@@ -11,7 +11,8 @@ from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, validator
+from datetime import UTC
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class ClinicalSignificance(str, Enum):
@@ -43,7 +44,7 @@ class ClinicalInsight(BaseModel):
     
     id: UUID = Field(default_factory=uuid4)
     patient_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     title: str
     description: str
     significance: ClinicalSignificance = Field(default=ClinicalSignificance.NONE)
@@ -67,13 +68,13 @@ class ClinicalInsight(BaseModel):
     acknowledged_by: str | None = None
     acknowledged_at: datetime | None = None
     
-    class Config:
-        """Pydantic configuration."""
-        use_enum_values = True
-        validate_assignment = True
+    model_config = ConfigDict(
+        use_enum_values=True,
+        validate_assignment=True
+    )
         
-    @validator('related_data')
-    def validate_related_data(cls, v):
+    @field_validator('related_data')
+    def validate_related_data(cls, v, info):
         """Validate that related_data can be serialized to JSON."""
         try:
             import json

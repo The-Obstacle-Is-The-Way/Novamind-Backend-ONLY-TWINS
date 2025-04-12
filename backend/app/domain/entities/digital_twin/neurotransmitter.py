@@ -7,7 +7,7 @@ and is used in neurotransmitter mapping and brain-related analyses.
 
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class Neurotransmitter(str, Enum):
@@ -72,7 +72,7 @@ class NeurotransmitterLevel(BaseModel):
         description="Rate of change in level, from -1.0 (rapidly decreasing) to 1.0 (rapidly increasing)"
     )
     
-    class Config:
-        """Pydantic configuration."""
-        use_enum_values = True
-        validate_assignment = True
+    model_config = ConfigDict(
+        use_enum_values=True,
+        validate_assignment=True
+    )
