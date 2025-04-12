@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field, validator
 class ClinicalSignificance(str, Enum):
     """Enum representing the clinical significance level of an insight."""
     
+    NONE = "none"  # No clinical significance
     CRITICAL = "critical"
     HIGH = "high"
     MODERATE = "moderate"
@@ -31,7 +32,8 @@ class ClinicalSignificance(str, Enum):
             cls.HIGH: 4,
             cls.MODERATE: 3,
             cls.LOW: 2,
-            cls.INFORMATIONAL: 1
+            cls.INFORMATIONAL: 1,
+            cls.NONE: 0
         }
         return scores.get(significance, 0)
 
@@ -40,13 +42,14 @@ class ClinicalInsight(BaseModel):
     """Model representing a clinical insight derived from patient data analysis."""
     
     id: UUID = Field(default_factory=uuid4)
-    patient_id: str
+    patient_id: str = Field(default="")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     title: str
     description: str
-    significance: ClinicalSignificance
+    significance: ClinicalSignificance = Field(default=ClinicalSignificance.NONE)
+    clinical_significance: ClinicalSignificance = Field(default=ClinicalSignificance.NONE)
     source: str = Field(..., description="Source of the insight (e.g., 'biometric_analysis', 'ml_model')")
-    category: str = Field(..., description="Category of the insight (e.g., 'medication', 'symptom', 'behavior')")
+    category: str = Field(default="general", description="Category of the insight (e.g., 'medication', 'symptom', 'behavior')")
     confidence: float = Field(
         default=0.5, 
         ge=0.0, 
@@ -57,6 +60,9 @@ class ClinicalInsight(BaseModel):
     action_description: str | None = None
     related_data: dict[str, Any] = Field(default_factory=dict)
     supporting_evidence: list[str] = Field(default_factory=list)
+    recommended_actions: list[str] = Field(default_factory=list)
+    brain_regions: list[Any] = Field(default_factory=list, description="Brain regions associated with this insight")
+    neurotransmitters: list[Any] = Field(default_factory=list, description="Neurotransmitters associated with this insight")
     acknowledged: bool = Field(default=False)
     acknowledged_by: str | None = None
     acknowledged_at: datetime | None = None

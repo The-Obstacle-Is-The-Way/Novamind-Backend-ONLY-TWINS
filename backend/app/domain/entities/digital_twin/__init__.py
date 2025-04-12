@@ -15,9 +15,12 @@ from .biometric_rule import (
 )
 from .biometric_twin_model import BiometricTwinModel
 from .brain_region import BrainRegion, BrainRegionActivity
+from .brain_region_state import BrainRegionState, ConnectionType
 from .clinical_insight import ClinicalInsight, ClinicalSignificance
 from .digital_twin_state import DigitalTwinState
+from ..digital_twin_entity import NeuralConnection, TemporalPattern
 from .neurotransmitter import Neurotransmitter, NeurotransmitterLevel
+from .neurotransmitter_state import NeurotransmitterState
 
 __all__ = [
     'BiometricDataPoint',
@@ -29,9 +32,14 @@ __all__ = [
     'AlertPriority',
     'BrainRegion',
     'BrainRegionActivity',
+    'BrainRegionState',
+    'ConnectionType',
+    'NeuralConnection',
     'Neurotransmitter',
     'NeurotransmitterLevel',
+    'NeurotransmitterState',
     'ClinicalInsight',
     'ClinicalSignificance',
-    'DigitalTwinState'
+    'DigitalTwinState',
+    'TemporalPattern'
 ]

@@ -14,9 +14,24 @@ from typing import Dict, List, Optional, Tuple, Union, Set
 from uuid import UUID
 
 from app.domain.entities.digital_twin import (
-    BrainRegion, BrainRegionState, ClinicalInsight, DigitalTwinState,
-    NeuralConnection, NeurotransmitterState, Neurotransmitter, ClinicalSignificance,
-    TemporalPattern, ConnectionType
+    BrainRegion, ClinicalInsight, ClinicalSignificance, Neurotransmitter, ConnectionType
+)
+# Import both original classes and adapter classes to avoid confusion
+from app.domain.entities.digital_twin.digital_twin_state import (
+    BrainRegionState as OriginalBrainRegionState,
+    NeurotransmitterState as OriginalNeurotransmitterState,
+    NeuralConnection as OriginalNeuralConnection,
+    TemporalPattern as OriginalTemporalPattern,
+    DigitalTwinState as OriginalDigitalTwinState
+)
+
+from app.domain.entities.digital_twin.model_adapter import (
+    BrainRegionStateAdapter,
+    NeurotransmitterStateAdapter,
+    NeuralConnectionAdapter,
+    TemporalPatternAdapter,
+    DigitalTwinStateAdapter,
+    ensure_enum_value
 )
 from app.domain.services.enhanced_digital_twin_core_service import EnhancedDigitalTwinCoreService
 from app.domain.services.enhanced_mentalllama_service import EnhancedMentalLLaMAService
@@ -1165,26 +1180,44 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         current_state = self._digital_twin_states[patient_id][latest_state_id]
         
         now = datetime.now()
-        # Create a new state based on the current one, but adapted for DigitalTwinState from enums.py
-        new_state = DigitalTwinState(
-            id=uuid.uuid4(),
-            patient_id=patient_id,
-            version=current_state.version + 1,
-            created_at=current_state.created_at,
-            updated_at=now,
-            brain_regions=current_state.brain_regions,
-            neurotransmitters=current_state.neurotransmitters,
-            clinical_insights=current_state.clinical_insights + insights if insights else current_state.clinical_insights,
-            biomarkers=current_state.biomarkers.copy() if hasattr(current_state, 'biomarkers') else {},
-            predicted_states=current_state.predicted_states.copy() if hasattr(current_state, 'predicted_states') else {},
-            treatment_responses=current_state.treatment_responses.copy() if hasattr(current_state, 'treatment_responses') else {},
-            confidence_scores=current_state.confidence_scores.copy() if hasattr(current_state, 'confidence_scores') else {},
-            active_treatments=current_state.active_treatments.copy() if hasattr(current_state, 'active_treatments') else set(),
-            metadata={**current_state.metadata, "update_source": source} if hasattr(current_state, 'metadata') else {"update_source": source}
-        )
+        # Create a new state based on the current one, using the appropriate adapter class
+        if isinstance(current_state, DigitalTwinStateAdapter):
+            # Create a copy of the adapter state
+            new_state = current_state.create_copy()
+            new_state.version = current_state.version + 1
+            new_state.updated_at = now
+            # Process insights to ensure proper enum handling
+            if insights:
+                for insight in insights:
+                    new_state.add_clinical_insight(insight)
+            # Update metadata
+            if hasattr(new_state, 'metadata'):
+                new_state.metadata = {**new_state.metadata, "update_source": source}
+            else:
+                new_state.metadata = {"update_source": source}
+        else:
+            # Standard class instantiation for non-adapter types
+            new_state = DigitalTwinState(
+                id=uuid.uuid4(),
+                patient_id=patient_id,
+                version=current_state.version + 1,
+                created_at=current_state.created_at,
+                updated_at=now,
+                brain_regions=current_state.brain_regions,
+                neurotransmitters=current_state.neurotransmitters,
+                clinical_insights=current_state.clinical_insights + insights if insights else current_state.clinical_insights,
+                biomarkers=current_state.biomarkers.copy() if hasattr(current_state, 'biomarkers') else {},
+                predicted_states=current_state.predicted_states.copy() if hasattr(current_state, 'predicted_states') else {},
+                treatment_responses=current_state.treatment_responses.copy() if hasattr(current_state, 'treatment_responses') else {},
+                confidence_scores=current_state.confidence_scores.copy() if hasattr(current_state, 'confidence_scores') else {},
+                active_treatments=current_state.active_treatments.copy() if hasattr(current_state, 'active_treatments') else set(),
+                metadata={**current_state.metadata, "update_source": source} if hasattr(current_state, 'metadata') else {"update_source": source}
+            )
         
-        # Add new insights
-        new_state.clinical_insights.extend(insights)
+        # Add new insights only if we're using the standard state class
+        # For adapter class, we already added them in the creation process
+        if not isinstance(current_state, DigitalTwinStateAdapter) and insights:
+            new_state.clinical_insights.extend(insights)
         
         # Store the new state
         new_state_id = uuid.uuid4()
@@ -1192,31 +1225,31 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         
         return new_state
     
-    def _create_initial_digital_twin_state(self, patient_id: UUID, initial_data: Dict) -> DigitalTwinState:
+    def _create_initial_digital_twin_state(self, patient_id: UUID, initial_data: Dict) -> Union[OriginalDigitalTwinState, DigitalTwinStateAdapter]:
         """Create an initial Digital Twin state for a patient."""
         # Initialize brain regions with default values
         brain_regions = {}
         for region in BrainRegion:
             activation_level = random.uniform(0.3, 0.7)
-            # Create BrainRegionState with POSITIONAL arguments to avoid Enum handling issues
-            brain_regions[region] = BrainRegionState(
-                region,  # FIRST positional argument instead of named parameter
-                activation_level,
-                0.5,  # confidence
-                [],  # related_symptoms
-                ClinicalSignificance.NONE
+            # Create adapter version of brain region state
+            brain_regions[region] = BrainRegionStateAdapter(
+                region=region,
+                activation_level=activation_level,
+                confidence=0.5,
+                related_symptoms=[],
+                clinical_significance=ClinicalSignificance.NONE
             )
         
         # Initialize neurotransmitters with default values
         neurotransmitters = {}
         for nt in Neurotransmitter:
             level = random.uniform(0.3, 0.7)
-            # Use positional arguments instead of keyword args to avoid Enum issues
-            neurotransmitters[nt] = NeurotransmitterState(
-                nt,  # First positional arg instead of neurotransmitter=nt
-                level,
-                0.5,  # confidence
-                ClinicalSignificance.NONE
+            # Use adapter version of neurotransmitter state
+            neurotransmitters[nt] = NeurotransmitterStateAdapter(
+                neurotransmitter=nt,
+                level=level,
+                confidence=0.5,
+                clinical_significance=ClinicalSignificance.NONE
             )
         
         # Initialize some default neural connections
@@ -1229,24 +1262,52 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         
         for source, target in connection_pairs:
             strength = random.uniform(0.3, 0.7)
-            neural_connections.append(NeuralConnection(
+            neural_connections.append(NeuralConnectionAdapter(
                 source_region=source,
                 target_region=target,
                 strength=strength,
                 confidence=0.5
             ))
         
+        # Create a clinical insight with proper handling of brain regions and neurotransmitters
+        insights = []
+        diagnoses = initial_data.get('diagnoses', [])
+        symptoms = initial_data.get('symptoms', [])
+        
+        if diagnoses:
+            insights.append(ClinicalInsight(
+                id=uuid.uuid4(),
+                patient_id=str(patient_id),
+                title=f"Initial Diagnosis: {diagnoses[0]}",
+                description=f"Patient has been diagnosed with {', '.join(diagnoses)}.",
+                source="initial_assessment",
+                significance=ClinicalSignificance.MODERATE,
+                clinical_significance=ClinicalSignificance.MODERATE,  # Set both significance fields
+                confidence=0.9,
+                related_data={
+                    "diagnoses": diagnoses,
+                    "symptoms": symptoms
+                },
+                brain_regions=[BrainRegion.PREFRONTAL_CORTEX, BrainRegion.ANTERIOR_CINGULATE],
+                neurotransmitters=[Neurotransmitter.SEROTONIN, Neurotransmitter.DOPAMINE]
+            ))
+        
         now = datetime.now()
-        return DigitalTwinState(
+        # Create with adapter class for full compatibility
+        return DigitalTwinStateAdapter(
             patient_id=patient_id,
             timestamp=now,
             brain_regions=brain_regions,
             neurotransmitters=neurotransmitters,
             neural_connections=neural_connections,
-            clinical_insights=[],
+            clinical_insights=insights,
             temporal_patterns=[],
             update_source="initialization",
-            version=1
+            version=1,
+            id=uuid.uuid4(),
+            created_at=now,
+            updated_at=now,
+            metadata={"source": "initialization"}
         )
     
     def _initialize_belief_network(self, patient_id: UUID, initial_data: Dict) -> BayesianBeliefNetwork:

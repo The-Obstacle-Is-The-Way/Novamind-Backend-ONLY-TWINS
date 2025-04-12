@@ -13,16 +13,19 @@ from pydantic import BaseModel, Field
 class BrainRegion(str, Enum):
     """Enum representing different brain regions relevant for psychological assessment."""
     
+    # Core brain regions used in the digital twin models
     PREFRONTAL_CORTEX = "prefrontal_cortex"
     AMYGDALA = "amygdala"
     HIPPOCAMPUS = "hippocampus"
     HYPOTHALAMUS = "hypothalamus"
     THALAMUS = "thalamus"
     CINGULATE_CORTEX = "cingulate_cortex"
+    ANTERIOR_CINGULATE = "anterior_cingulate"  # Alias for compatibility
     BASAL_GANGLIA = "basal_ganglia"
     INSULA = "insula"
     NUCLEUS_ACCUMBENS = "nucleus_accumbens"
     VENTRAL_TEGMENTAL_AREA = "ventral_tegmental_area"
+    VENTRAL_TEGMENTAL = "ventral_tegmental"  # Alias for compatibility
     CEREBELLUM = "cerebellum"
     PARIETAL_LOBE = "parietal_lobe"
     TEMPORAL_LOBE = "temporal_lobe"
@@ -31,6 +34,10 @@ class BrainRegion(str, Enum):
     SUBSTANTIA_NIGRA = "substantia_nigra"
     LOCUS_COERULEUS = "locus_coeruleus"
     RAPHE_NUCLEI = "raphe_nuclei"
+    
+    # Additional brain regions for enhanced compatibility
+    ORBITOFRONTAL_CORTEX = "orbitofrontal_cortex"
+    DORSOLATERAL_PREFRONTAL = "dorsolateral_prefrontal"
     
     @classmethod
     def get_all(cls) -> list[str]:
