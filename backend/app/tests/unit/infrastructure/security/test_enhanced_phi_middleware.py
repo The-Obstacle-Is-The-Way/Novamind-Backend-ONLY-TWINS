@@ -1,186 +1,283 @@
-# -*- coding: utf-8 -*-
-"""
-Tests for the enhanced PHI middleware.
-"""
-
-import json
+"""Unit tests for the Enhanced PHI Middleware."""
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from starlette.testclient import TestClient
+from unittest.mock import patch, MagicMock, AsyncMock
+import json
+from fastapi import FastAPI, Request, Response
+from fastapi.testclient import TestClient
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.infrastructure.security.enhanced_phi_middleware import (
-    EnhancedPHIMiddleware,  
-    setup_enhanced_phi_middleware
+    EnhancedPhiMiddleware,
+    PhiDetectionResult,
+    PhiSanitizerConfig
 )
+from app.core.services.ml.phi_detection_service import PhiDetectionService
+
 
 @pytest.fixture
-def mock_audit_logger():
-    """Fixture for a mock audit logger."""
-    logger = MagicMock()
-    logger.log_security_event = MagicMock()
-    return logger
+def mock_phi_detection_service():
+    """Create a mock PHI detection service."""
+    service = MagicMock(spec=PhiDetectionService)
+    
+    # Configure mock detection method to return clean by default
+    service.detect_phi.return_value = PhiDetectionResult(
+        contains_phi=False,
+        sensitivity_score=0.1,
+        detected_entities=[],
+        sanitized_text=None
+    )
+    
+    return service
+
 
 @pytest.fixture
-@pytest.mark.db_required()
-def test_app(mock_audit_logger):
-    """Fixture for a test FastAPI application with PHI middleware."""
+def middleware(mock_phi_detection_service):
+    """Create the middleware with a mock PHI detection service."""
+    config = PhiSanitizerConfig(
+        enabled=True,
+        sensitivity_threshold=0.7,
+        log_detections=True,
+        sanitize_responses=True,
+        block_high_risk=True,
+        high_risk_threshold=0.9,
+        excluded_paths=["/docs", "/redoc", "/openapi.json"]
+    )
+    
+    return EnhancedPhiMiddleware(
+        app=MagicMock(),
+        phi_service=mock_phi_detection_service,
+        config=config
+    )
+
+
+@pytest.fixture
+def app_with_middleware(mock_phi_detection_service):
+    """Create a FastAPI app with the PHI middleware."""
     app = FastAPI()
     
+    # Add some test routes
     @app.get("/test")
-    async def test_endpoint():
-        return {"message": "Test endpoint"}
+    def test_route():
+        return {"message": "This is a test response"}
     
-    @app.get("/test-with-phi")
-    async def test_with_phi():
-        return {"patient": "John Doe", "ssn": "123-45-6789"}
+    @app.post("/api/data")
+    async def post_data(request: Request):
+        data = await request.json()
+        return {"received": data}
     
-    @app.post("/test-post")
-    async def test_post(data: dict):
-        return data
-    
-    setup_enhanced_phi_middleware(
-        app,
-        audit_logger=mock_audit_logger,
+    # Add middleware
+    config = PhiSanitizerConfig(
+        enabled=True,
+        sensitivity_threshold=0.7,
+        log_detections=True,
         sanitize_responses=True,
-        block_phi_in_requests=True
+        block_high_risk=True,
+        high_risk_threshold=0.9,
+        excluded_paths=["/docs", "/redoc", "/openapi.json"]
+    )
+    
+    app.add_middleware(
+        EnhancedPhiMiddleware,
+        phi_service=mock_phi_detection_service,
+        config=config
     )
     
     return app
 
+
 @pytest.fixture
-def test_client(test_app):
-    """Fixture for a test client."""    
-    return TestClient(test_app)
+def client(app_with_middleware):
+    """Create a test client."""
+    return TestClient(app_with_middleware)
 
-class TestEnhancedPHIMiddleware:
-    """Tests for the EnhancedPHIMiddleware class."""
+
+class TestEnhancedPhiMiddleware:
+    """Test suite for the Enhanced PHI Middleware."""
     
-    def test_excluded_paths_are_skipped(self, test_client):
-        """Test that excluded paths are skipped."""
-        # The /docs path should be excluded by default
-        response = test_client.get("/docs")
-        assert response.status_code == 404  # 404 because the path doesn't exist, but middleware didn't block it
+    def test_init(self, middleware):
+        """Test initialization of the middleware."""
+        assert middleware.config.enabled is True
+        assert middleware.config.sensitivity_threshold == 0.7
+        assert middleware.config.log_detections is True
+        assert middleware.config.sanitize_responses is True
+        assert middleware.config.block_high_risk is True
+        assert "/docs" in middleware.config.excluded_paths
     
-    def test_sanitize_response_with_phi(self, test_client):
-        """Test that responses with PHI are sanitized."""
-        response = test_client.get("/test-with-phi")
-        assert response.status_code == 200
+    def test_should_process_path(self, middleware):
+        """Test path exclusion logic."""
+        # Excluded paths
+        assert middleware._should_process_path("/docs") is False
+        assert middleware._should_process_path("/redoc") is False
+        assert middleware._should_process_path("/openapi.json") is False
         
-        data = response.json()
-        # PHI should be sanitized
-        assert data["patient"] != "John Doe"
-        assert "ANONYMIZED_NAME" in data["patient"]
-        assert data["ssn"] != "123-45-6789"
-        assert data["ssn"] == "000-00-0000"
+        # Included paths
+        assert middleware._should_process_path("/api/patients") is True
+        assert middleware._should_process_path("/test") is True
     
-    def test_block_request_with_phi_in_query(self, test_client):
-        """Test that requests with PHI in query parameters are blocked."""
-        response = test_client.get("/test?patient=John%20Doe")
-        assert response.status_code == 400
-        assert "PHI detected in request" in response.json()["error"]
-    
-    def test_block_request_with_phi_in_body(self, test_client):
-        """Test that requests with PHI in body are blocked."""
-        response = test_client.post(
-            "/test-post",
-            json={"patient": "John Doe", "ssn": "123-45-6789"}
+    def test_safe_request_no_phi(self, client, mock_phi_detection_service):
+        """Test processing a safe request with no PHI."""
+        # Configure mock to detect no PHI
+        mock_phi_detection_service.detect_phi.return_value = PhiDetectionResult(
+            contains_phi=False,
+            sensitivity_score=0.1,
+            detected_entities=[],
+            sanitized_text=None
         )
-        assert response.status_code == 400
-        assert "PHI detected in request" in response.json()["error"]
-    
-    def test_allow_request_without_phi(self, test_client):
-        """Test that requests without PHI are allowed."""
-        response = test_client.get("/test")
-        assert response.status_code == 200
-        assert response.json() == {"message": "Test endpoint"}
-    
-    def test_allow_post_without_phi(self, test_client):
-        """Test that POST requests without PHI are allowed."""
-        response = test_client.post(
-            "/test-post",
-            json={"data": "test data", "value": 123}
+        
+        # Make a request with no PHI
+        response = client.post(
+            "/api/data",
+            json={"message": "This is a safe message"}
         )
+        
+        # Should pass through successfully
         assert response.status_code == 200
-        assert response.json() == {"data": "test data", "value": 123}
+        assert response.json() == {"received": {"message": "This is a safe message"}}
+        
+        # Verify PHI detection was called
+        mock_phi_detection_service.detect_phi.assert_called_once()
     
-    @patch("app.infrastructure.security.enhanced_phi_middleware.EnhancedPHIDetector")
-    def test_phi_detection_in_request(self, mock_detector, test_client, mock_audit_logger):
-        """Test PHI detection in requests."""
-        # Mock the PHI detector to always detect PHI
-        mock_detector.contains_phi.return_value = True
+    def test_request_with_phi_below_threshold(self, client, mock_phi_detection_service):
+        """Test processing a request with PHI below blocking threshold."""
+        # Configure mock to detect PHI but below blocking threshold
+        mock_phi_detection_service.detect_phi.return_value = PhiDetectionResult(
+            contains_phi=True,
+            sensitivity_score=0.75,  # Below high_risk_threshold of 0.9
+            detected_entities=["PATIENT_NAME"],
+            sanitized_text=json.dumps({"message": "[REDACTED]"})
+        )
         
-        response = test_client.get("/test")
-        assert response.status_code == 400
-        assert "PHI detected in request" in response.json()["error"]
+        # Make a request with PHI
+        response = client.post(
+            "/api/data",
+            json={"message": "Patient John Doe has arrived"}
+        )
         
-        # Verify audit logging
-        mock_audit_logger.log_security_event.assert_called_once()
-    
-    @patch("app.infrastructure.security.enhanced_phi_middleware.EnhancedPHISanitizer")
-    def test_phi_sanitization_in_response(self, mock_sanitizer, test_client):
-        """Test PHI sanitization in responses."""
-        # Mock the sanitizer to return a specific sanitized value
-        mock_sanitizer.sanitize_structured_data.return_value = {"sanitized": True}
-        
-        response = test_client.get("/test-with-phi")
+        # Should process but sanitize
         assert response.status_code == 200
-        assert response.json() == {"sanitized": True}
+        # Response should be sanitized
+        assert response.json() == {"received": {"message": "[REDACTED]"}}
     
-    def test_non_json_response_not_sanitized(self, test_app, test_client):
-        """Test that non-JSON responses are not sanitized."""
-        @test_app.get("/test-text")
-        async def test_text():
-            return "This is a text response with John Doe's information"
+    def test_request_with_high_risk_phi(self, client, mock_phi_detection_service):
+        """Test processing a request with high-risk PHI."""
+        # Configure mock to detect high-risk PHI
+        mock_phi_detection_service.detect_phi.return_value = PhiDetectionResult(
+            contains_phi=True,
+            sensitivity_score=0.95,  # Above high_risk_threshold of 0.9
+            detected_entities=["SSN", "PATIENT_NAME"],
+            sanitized_text=None  # No need to sanitize as it will be blocked
+        )
         
-        response = test_client.get("/test-text")
-        assert response.status_code == 200
-        assert "John Doe" in response.text
+        # Make a request with high-risk PHI
+        response = client.post(
+            "/api/data",
+            json={"message": "SSN: 123-45-6789 for John Doe"}
+        )
+        
+        # Should be blocked
+        assert response.status_code == 403
+        assert "contains prohibited sensitive information" in response.json()["detail"].lower()
     
-    @patch("app.infrastructure.security.enhanced_phi_middleware.logger")
-    def test_error_handling_in_response_processing(self, mock_logger, test_app, test_client):
-        """Test error handling in response processing."""
-        # Create a response that will cause an error during processing
-        @test_app.get("/test-error")
-        async def test_error():
-            # Return a response that will cause a JSON decode error
-            return JSONResponse(content=b"invalid json")
+    def test_disabled_middleware(self, mock_phi_detection_service):
+        """Test middleware when disabled."""
+        # Create app with disabled middleware
+        app = FastAPI()
         
-        response = test_client.get("/test-error")
+        @app.post("/api/data")
+        async def post_data(request: Request):
+            data = await request.json()
+            return {"received": data}
+        
+        # Disabled middleware
+        config = PhiSanitizerConfig(
+            enabled=False,
+            sensitivity_threshold=0.7,
+            log_detections=True,
+            sanitize_responses=True,
+            block_high_risk=True,
+            high_risk_threshold=0.9,
+            excluded_paths=["/docs", "/redoc", "/openapi.json"]
+        )
+        
+        app.add_middleware(
+            EnhancedPhiMiddleware,
+            phi_service=mock_phi_detection_service,
+            config=config
+        )
+        
+        client = TestClient(app)
+        
+        # Make a request with PHI
+        response = client.post(
+            "/api/data",
+            json={"message": "Patient John Doe has SSN 123-45-6789"}
+        )
+        
+        # Middleware is disabled, should not block or sanitize
         assert response.status_code == 200
+        assert response.json() == {"received": {"message": "Patient John Doe has SSN 123-45-6789"}}
         
-        # Verify error was logged
-        mock_logger.warning.assert_called_once()
-        assert "Error sanitizing response" in mock_logger.warning.call_args[0][0]
-
-def test_setup_enhanced_phi_middleware():
-    """Test the setup function for the middleware."""
-    app = FastAPI()
-    mock_logger = MagicMock()
-
-    # Setup middleware with custom options
-    setup_enhanced_phi_middleware(
-        app,
-        audit_logger=mock_logger,
-        exclude_paths=["/custom-exclude"],
-        sanitize_responses=False,
-        block_phi_in_requests=True
-    )
-
-    # Verify middleware was added
-    assert any(
-        isinstance(middleware, EnhancedPHIMiddleware)
-        for middleware in app.user_middleware
-    )
-
-    # Get the middleware instance
-    phi_middleware = next(
-        middleware.cls
-        for middleware in app.user_middleware
-        if middleware.cls == EnhancedPHIMiddleware
-    )
-
-    # Verify middleware was configured correctly
-    assert phi_middleware
+        # Verify PHI detection was not called
+        mock_phi_detection_service.detect_phi.assert_not_called()
+    
+    def test_excluded_path_skips_processing(self, client, mock_phi_detection_service):
+        """Test that excluded paths skip PHI processing."""
+        # Make request to excluded path
+        response = client.get("/docs")
+        
+        # Should not process PHI detection
+        mock_phi_detection_service.detect_phi.assert_not_called()
+    
+    @pytest.mark.asyncio
+    async def test_process_response_with_phi(self, middleware, mock_phi_detection_service):
+        """Test processing a response with PHI."""
+        # Set up a mock response with PHI
+        mock_response = MagicMock()
+        mock_response.headers = {"content-type": "application/json"}
+        mock_response.body = json.dumps({"data": "Patient John Doe has arrived"}).encode()
+        
+        # Configure PHI detection to find PHI
+        mock_phi_detection_service.detect_phi.return_value = PhiDetectionResult(
+            contains_phi=True,
+            sensitivity_score=0.8,
+            detected_entities=["PATIENT_NAME"],
+            sanitized_text=json.dumps({"data": "Patient [REDACTED] has arrived"})
+        )
+        
+        # Process the response
+        processed_response = await middleware._process_response(mock_response)
+        
+        # Should have sanitized content
+        processed_body = json.loads(processed_response.body.decode())
+        assert processed_body["data"] == "Patient [REDACTED] has arrived"
+    
+    @pytest.mark.asyncio
+    async def test_process_invalid_json_response(self, middleware):
+        """Test processing a response with invalid JSON."""
+        # Set up a mock response with invalid JSON
+        mock_response = MagicMock()
+        mock_response.headers = {"content-type": "application/json"}
+        mock_response.body = "This is not valid JSON".encode()
+        
+        # Process the response - should not crash
+        processed_response = await middleware._process_response(mock_response)
+        
+        # Should return original response
+        assert processed_response.body.decode() == "This is not valid JSON"
+    
+    @pytest.mark.asyncio
+    async def test_process_non_json_response(self, middleware, mock_phi_detection_service):
+        """Test processing a non-JSON response."""
+        # Set up a mock response with non-JSON content
+        mock_response = MagicMock()
+        mock_response.headers = {"content-type": "text/plain"}
+        mock_response.body = "This is plain text".encode()
+        
+        # Process the response
+        processed_response = await middleware._process_response(mock_response)
+        
+        # Should pass through unchanged
+        assert processed_response.body.decode() == "This is plain text"
+        
+        # Should still check for PHI
+        mock_phi_detection_service.detect_phi.assert_called_once_with("This is plain text")

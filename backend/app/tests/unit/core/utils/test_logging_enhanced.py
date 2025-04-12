@@ -1,233 +1,440 @@
-# -*- coding: utf-8 -*-
-"""
-Enhanced unit tests for the HIPAA-compliant logging utilities.
-
-This test suite provides comprehensive coverage for the enhanced PHI detection
-and sanitization modules, focusing on HIPAA compliance and PHI protection.
-"""
-
-import logging
+"""Unit tests for enhanced logging functionality."""
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
+import logging
+import json
+import os
+import time
+from datetime import datetime
+import tempfile
 
-from app.core.utils.enhanced_phi_detector import (
-    EnhancedPHIDetector, 
-    EnhancedPHISanitizer, 
-    EnhancedPHISecureLogger,
-    get_enhanced_phi_secure_logger
+from app.core.utils.logging_enhanced import (
+    setup_logging,
+    PHISanitizingFilter,
+    StructuredJsonFormatter,
+    get_logger,
+    audit_log,
+    log_phi_detection,
+    get_correlation_id,
+    set_correlation_id,
+    clear_correlation_id
 )
-from app.core.utils.phi_sanitizer import PHIType
 
 
-class TestEnhancedPHIDetector:
-    """Comprehensive tests for the EnhancedPHIDetector class."""
-    
-    def test_contains_phi_with_standard_patterns(self):
-        """Test PHI detection with standard patterns."""
-        # Test email detection
-        text_with_email = "Contact user@example.com for support"
-        assert EnhancedPHIDetector.contains_phi(text_with_email)
-        
-        # Test SSN detection
-    text_with_ssn = "SSN: 123-45-6789"
-    assert EnhancedPHIDetector.contains_phi(text_with_ssn)
-        
-        # Test phone detection
-    text_with_phone = "Call (555) 123-4567"
-    assert EnhancedPHIDetector.contains_phi(text_with_phone)
-    
-    def test_contains_phi_with_enhanced_patterns(self):
-        """Test PHI detection with enhanced patterns."""
-        # Test name detection with enhanced pattern
-        text_with_name = "Dr. John Smith is your new physician"
-        assert EnhancedPHIDetector.contains_phi(text_with_name)
-        
-        # Test address detection with enhanced pattern
-    text_with_address = "Appointment at 123 Medical Boulevard"
-    assert EnhancedPHIDetector.contains_phi(text_with_address)
-        
-        # Test MRN detection with enhanced pattern
-    text_with_mrn = "Patient ID: ABC1234567"
-    assert EnhancedPHIDetector.contains_phi(text_with_mrn)
-    
-    def test_contains_phi_with_medical_context(self):
-        """Test PHI detection with medical context combined with potential identifiers."""
-        text_with_context = "Patient Johnson reported symptoms of dizziness"
-        assert EnhancedPHIDetector.contains_phi(text_with_context)
-        
-        # Test with numbers in medical context
-    text_with_id = "Patient diagnosis 12345 confirmed"
-    assert EnhancedPHIDetector.contains_phi(text_with_id)
-    
-    def test_detect_phi_types(self):
-        """Test detection of specific PHI types with the enhanced detector."""
-        # Create test text with multiple PHI types
-        test_text = "Patient John Doe (SSN: 123-45-6789) can be reached at john.doe@example.com or (555) 123-4567"
-        
-        # Detect PHI types
-    detected = EnhancedPHIDetector.detect_phi_types(test_text)
-        
-        # Check that all types were detected
-    phi_types = [phi_type for phi_type, _ in detected]
-    assert PHIType.SSN in phi_types
-    assert PHIType.EMAIL in phi_types
-    assert PHIType.PHONE in phi_types
-    assert PHIType.NAME in phi_types
-        
-        # Check that PHI values were correctly matched
-    phi_values = [value for _, value in detected]
-    assert "123-45-6789" in phi_values
-    assert "john.doe@example.com" in phi_values
-    assert "(555) 123-4567" in phi_values
-    
-    def test_no_phi_in_regular_text(self):
-        """Test that regular non-PHI text is not flagged."""
-        regular_text = "This is a standard message without any PHI"
-        assert not EnhancedPHIDetector.contains_phi(regular_text)
-        
-        # Technical text
-    tech_text = "Error code 404 occurred at module LoadBalance.function()"
-    assert not EnhancedPHIDetector.contains_phi(tech_text)
+@pytest.fixture
+def mock_logger():
+    """Create a mock logger."""
+    logger = MagicMock(spec=logging.Logger)
+    return logger
 
 
-class TestEnhancedPHISanitizer:
-    """Tests for the EnhancedPHISanitizer class."""
-    
-    def test_sanitize_text(self):
-        """Test sanitization of text containing PHI."""
-        # Create test text with PHI
-        text_with_phi = "Patient John Doe (SSN: 123-45-6789) can be reached at john.doe@example.com"
-        
-        # Sanitize
-    sanitized = EnhancedPHISanitizer.sanitize_text(text_with_phi)
-        
-        # Check PHI has been removed
-    assert "John Doe" not in sanitized
-    assert "123-45-6789" not in sanitized
-    assert "john.doe@example.com" not in sanitized
-        
-        # Check anonymized values were added
-    assert "ANONYMIZED_NAME" in sanitized or "ANONYMIZED" in sanitized
-    assert "000-00-0000" in sanitized or "ANONYMIZED" in sanitized
-    
-    def test_create_safe_log_message(self):
-        """Test creation of safe log messages."""
-        # Create log message with PHI
-        log_message = "User {} accessed records for patient {}"
-        user = "admin"
-        patient = "John Smith (MRN: 12345678)"
-        
-        # Create safe log message
-    safe_message = EnhancedPHISanitizer.create_safe_log_message(
-    log_message, user, patient
-    )
-        
-        # Check PHI has been sanitized
-    assert "John Smith" not in safe_message
-    assert "12345678" not in safe_message
-    
-    def test_sanitize_structured_data(self):
-        """Test sanitization of structured data."""
-        # Create structured data with PHI
-        data = {
-            "patient": {
-                "name": "John Doe",
-                "ssn": "123-45-6789",
-                "contact": {
-                    "email": "john.doe@example.com",
-                    "phone": "(555) 123-4567"
-                },
-                "appointment_date": "2025-06-15"  # Future date should be preserved
-            },
-            "doctor": "Dr. Jane Smith",
-            "notes": "Patient reported symptoms"
-        }
-        
-        # Sanitize data
-    sanitized = EnhancedPHISanitizer.sanitize_structured_data(data)
-        
-        # Check PHI was sanitized
-    assert sanitized["patient"]["name"] != "John Doe"
-    assert sanitized["patient"]["ssn"] != "123-45-6789"
-    assert sanitized["patient"]["contact"]["email"] != "john.doe@example.com"
-    assert sanitized["doctor"] != "Dr. Jane Smith"
-        
-        # Check appointment date was preserved
-    assert sanitized["patient"]["appointment_date"] == "2025-06-15"
+@pytest.fixture
+def temp_log_file():
+    """Create a temporary log file for testing."""
+    fd, path = tempfile.mkstemp(suffix=".log")
+    os.close(fd)
+    yield path
+    # Cleanup
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
-class TestEnhancedPHISecureLogger:
-    """Tests for the EnhancedPHISecureLogger class."""
+class TestLoggingSetup:
+    """Test suite for logging setup."""
     
-    @pytest.fixture
-    def mock_logger(self):
-        """Create a mock underlying logger."""
-        return MagicMock()
-    
-    def test_secure_logger_initialization(self):
-        """Test initialization of secure logger."""
-        logger = EnhancedPHISecureLogger("test_logger")
-        assert isinstance(logger.logger, logging.Logger)
-        assert logger.logger.name == "test_logger"
-    
-    def test_debug_log_sanitization(self, mock_logger):
-        """Test sanitization of debug logs."""
+    @patch("app.core.utils.logging_enhanced.logging")
+    def test_setup_logging_basic(self, mock_logging):
+        """Test basic logging setup."""
         # Setup
-        secure_logger = EnhancedPHISecureLogger("test")
-        secure_logger.logger = mock_logger
+        mock_dict_config = mock_logging.config.dictConfig
         
-        # Log with PHI
-    secure_logger.debug("Debug log with SSN: 123-45-6789")
+        # Call function
+        setup_logging(level="INFO")
         
-        # Check sanitization
-    call_args = mock_logger.debug.call_args[0][0]
-    assert "123-45-6789" not in call_args
+        # Verify logging was configured
+        mock_dict_config.assert_called_once()
+        
+        # Get the config passed to dictConfig
+        config = mock_dict_config.call_args[0][0]
+        
+        # Check basic configs
+        assert config["version"] == 1
+        assert config["disable_existing_loggers"] is False
+        assert "handlers" in config
+        assert "loggers" in config
+        assert "root" in config
+        assert config["root"]["level"] == "INFO"
     
-    def test_info_log_sanitization(self, mock_logger):
-        """Test sanitization of info logs."""
+    @patch("app.core.utils.logging_enhanced.logging")
+    def test_setup_logging_with_file(self, mock_logging, temp_log_file):
+        """Test logging setup with file output."""
         # Setup
-        secure_logger = EnhancedPHISecureLogger("test")
-        secure_logger.logger = mock_logger
+        mock_dict_config = mock_logging.config.dictConfig
         
-        # Log with PHI
-    secure_logger.info("Info log with email: user@example.com")
+        # Call function with file
+        setup_logging(level="DEBUG", log_file=temp_log_file)
         
-        # Check sanitization
-    call_args = mock_logger.info.call_args[0][0]
-    assert "user@example.com" not in call_args
+        # Verify logging was configured
+        mock_dict_config.assert_called_once()
+        
+        # Get the config passed to dictConfig
+        config = mock_dict_config.call_args[0][0]
+        
+        # Check file handler configuration
+        assert "file" in config["handlers"]
+        assert config["handlers"]["file"]["filename"] == temp_log_file
     
-    def test_error_log_sanitization(self, mock_logger):
-        """Test sanitization of error logs."""
+    @patch("app.core.utils.logging_enhanced.logging")
+    def test_setup_logging_with_phi_filter(self, mock_logging):
+        """Test logging setup with PHI filtering enabled."""
         # Setup
-        secure_logger = EnhancedPHISecureLogger("test")
-        secure_logger.logger = mock_logger
+        mock_dict_config = mock_logging.config.dictConfig
         
-        # Log with PHI
-    secure_logger.error("Error log with phone: (555) 123-4567")
+        # Call function with PHI filtering
+        setup_logging(level="INFO", use_phi_filter=True)
         
-        # Check sanitization
-    call_args = mock_logger.error.call_args[0][0]
-    assert "(555) 123-4567" not in call_args
-    
-    def test_exception_log_sanitization(self, mock_logger):
-        """Test sanitization of exception logs."""
-        # Setup
-        secure_logger = EnhancedPHISecureLogger("test")
-        secure_logger.logger = mock_logger
+        # Verify logging was configured
+        mock_dict_config.assert_called_once()
         
-        # Log with PHI
-    secure_logger.exception("Exception with patient name: John Smith")
+        # Get the config passed to dictConfig
+        config = mock_dict_config.call_args[0][0]
         
-        # Check sanitization
-    call_args = mock_logger.exception.call_args[0][0]
-    assert "John Smith" not in call_args
-    assert mock_logger.exception.call_args[1].get('exc_info') is True
+        # Check PHI filter configuration
+        assert "filters" in config
+        assert "phi_filter" in config["filters"]
+        assert "()" in config["filters"]["phi_filter"]
+        assert config["filters"]["phi_filter"]["()"] == "app.core.utils.logging_enhanced.PHISanitizingFilter"
+        
+        # Check filter is applied to handlers
+        for handler_name, handler_config in config["handlers"].items():
+            if "filters" in handler_config:
+                assert "phi_filter" in handler_config["filters"]
 
 
-def test_get_enhanced_phi_secure_logger():
-    """Test getting an enhanced PHI secure logger."""
-    logger = get_enhanced_phi_secure_logger("test_logger")
+class TestPHISanitizingFilter:
+    """Test suite for PHI sanitizing filter."""
     
-    # Verify it's the right type
-    assert isinstance(logger, EnhancedPHISecureLogger)
-    assert logger.logger.name == "test_logger"
+    def test_filter_with_phi(self):
+        """Test that the filter sanitizes PHI in log records."""
+        # Create a filter
+        phi_filter = PHISanitizingFilter()
+        
+        # Create a log record with potential PHI
+        record = logging.LogRecord(
+            name="test", 
+            level=logging.INFO, 
+            pathname="", 
+            lineno=0, 
+            msg="Patient John Doe (DOB: 01/15/1980) with SSN 123-45-6789", 
+            args=(), 
+            exc_info=None
+        )
+        
+        # Apply filter
+        result = phi_filter.filter(record)
+        
+        # Check filter passed the record
+        assert result is True
+        
+        # Check message was sanitized
+        assert "Patient" in record.msg
+        assert "John Doe" not in record.msg
+        assert "[REDACTED]" in record.msg
+        assert "123-45-6789" not in record.msg
+    
+    def test_filter_without_phi(self):
+        """Test that the filter doesn't modify messages without PHI."""
+        # Create a filter
+        phi_filter = PHISanitizingFilter()
+        
+        # Create a log record without PHI
+        original_msg = "Application started successfully"
+        record = logging.LogRecord(
+            name="test", 
+            level=logging.INFO, 
+            pathname="", 
+            lineno=0, 
+            msg=original_msg, 
+            args=(), 
+            exc_info=None
+        )
+        
+        # Apply filter
+        result = phi_filter.filter(record)
+        
+        # Check filter passed the record
+        assert result is True
+        
+        # Check message was not modified
+        assert record.msg == original_msg
+    
+    def test_filter_with_phi_patterns(self):
+        """Test that the filter detects specific PHI patterns."""
+        # Create a filter
+        phi_filter = PHISanitizingFilter()
+        
+        # Test with various PHI patterns
+        test_cases = [
+            ("Email: john.doe@example.com", "john.doe@example.com"),  # Email
+            ("Phone: 555-123-4567", "555-123-4567"),  # Phone number
+            ("DOB: 01/15/1980", "01/15/1980"),  # Date of birth
+            ("SSN: 123-45-6789", "123-45-6789"),  # SSN
+            ("Address: 123 Main St, Anytown, US 12345", "123 Main St"),  # Address
+            ("MRN: MRN12345678", "MRN12345678"),  # Medical record number
+            ("ID: ABC-12345-XYZ", "ABC-12345-XYZ"),  # ID number
+        ]
+        
+        for message, phi in test_cases:
+            record = logging.LogRecord(
+                name="test", 
+                level=logging.INFO, 
+                pathname="", 
+                lineno=0, 
+                msg=message, 
+                args=(), 
+                exc_info=None
+            )
+            
+            # Apply filter
+            phi_filter.filter(record)
+            
+            # Check PHI was redacted
+            assert phi not in record.msg
+            assert "[REDACTED]" in record.msg
+
+
+class TestStructuredJsonFormatter:
+    """Test suite for structured JSON formatter."""
+    
+    def test_format_basic_record(self):
+        """Test formatting a basic log record."""
+        # Create formatter
+        formatter = StructuredJsonFormatter()
+        
+        # Create a simple log record
+        record = logging.LogRecord(
+            name="test_logger", 
+            level=logging.INFO, 
+            pathname="/app/main.py", 
+            lineno=42, 
+            msg="Test message", 
+            args=(), 
+            exc_info=None
+        )
+        
+        # Format the record
+        formatted = formatter.format(record)
+        
+        # Parse the JSON
+        log_entry = json.loads(formatted)
+        
+        # Check required fields
+        assert log_entry["level"] == "INFO"
+        assert log_entry["logger"] == "test_logger"
+        assert log_entry["message"] == "Test message"
+        assert "timestamp" in log_entry
+        assert "location" in log_entry
+        assert log_entry["location"]["file"] == "main.py"
+        assert log_entry["location"]["line"] == 42
+    
+    def test_format_with_exception(self):
+        """Test formatting a record with exception information."""
+        # Create formatter
+        formatter = StructuredJsonFormatter()
+        
+        # Create exception info
+        try:
+            raise ValueError("Test exception")
+        except ValueError:
+            exc_info = pytest.importorskip("sys").exc_info()
+        
+        # Create log record with exception
+        record = logging.LogRecord(
+            name="test_logger", 
+            level=logging.ERROR, 
+            pathname="/app/main.py", 
+            lineno=42, 
+            msg="Exception occurred", 
+            args=(), 
+            exc_info=exc_info
+        )
+        
+        # Format the record
+        formatted = formatter.format(record)
+        
+        # Parse the JSON
+        log_entry = json.loads(formatted)
+        
+        # Check exception info
+        assert "exception" in log_entry
+        assert log_entry["exception"]["type"] == "ValueError"
+        assert log_entry["exception"]["message"] == "Test exception"
+        assert "traceback" in log_entry["exception"]
+    
+    def test_format_with_extra_fields(self):
+        """Test formatting a record with extra context fields."""
+        # Create formatter
+        formatter = StructuredJsonFormatter()
+        
+        # Create a log record with extra
+        record = logging.LogRecord(
+            name="test_logger", 
+            level=logging.INFO, 
+            pathname="/app/main.py", 
+            lineno=42, 
+            msg="Test message", 
+            args=(), 
+            exc_info=None
+        )
+        
+        # Add extra fields
+        record.correlation_id = "abc-123"
+        record.user_id = "user-456"
+        record.request_path = "/api/resource"
+        
+        # Format the record
+        formatted = formatter.format(record)
+        
+        # Parse the JSON
+        log_entry = json.loads(formatted)
+        
+        # Check extra fields
+        assert log_entry["correlation_id"] == "abc-123"
+        assert log_entry["user_id"] == "user-456"
+        assert log_entry["request_path"] == "/api/resource"
+
+
+class TestCorrelationId:
+    """Test suite for correlation ID functionality."""
+    
+    def test_get_correlation_id_default(self):
+        """Test getting correlation ID when none set."""
+        # Clear any existing correlation ID
+        clear_correlation_id()
+        
+        # Get correlation ID
+        correlation_id = get_correlation_id()
+        
+        # Should generate a new one
+        assert correlation_id is not None
+        assert isinstance(correlation_id, str)
+        assert len(correlation_id) > 0
+    
+    def test_set_and_get_correlation_id(self):
+        """Test setting and getting a correlation ID."""
+        # Set a specific correlation ID
+        test_id = "test-correlation-123"
+        set_correlation_id(test_id)
+        
+        # Get it back
+        correlation_id = get_correlation_id()
+        
+        # Should match what we set
+        assert correlation_id == test_id
+    
+    def test_clear_correlation_id(self):
+        """Test clearing correlation ID."""
+        # Set a correlation ID
+        set_correlation_id("test-correlation-123")
+        
+        # Clear it
+        clear_correlation_id()
+        
+        # Get a new one - should be different
+        new_id = get_correlation_id()
+        assert new_id != "test-correlation-123"
+
+
+class TestAuditLogging:
+    """Test suite for audit logging functionality."""
+    
+    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    def test_audit_log(self, mock_get_logger):
+        """Test audit logging function."""
+        # Setup mock logger
+        mock_audit_logger = MagicMock()
+        mock_get_logger.return_value = mock_audit_logger
+        
+        # Call audit log
+        audit_log(
+            action="viewed_patient_record",
+            resource_id="patient-123",
+            user_id="doctor-456",
+            details={"access_reason": "scheduled_appointment"}
+        )
+        
+        # Verify logger was called
+        mock_get_logger.assert_called_once_with("audit")
+        mock_audit_logger.info.assert_called_once()
+        
+        # Check log message
+        log_call = mock_audit_logger.info.call_args[0][0]
+        assert "viewed_patient_record" in log_call
+        assert "patient-123" in log_call
+        assert "doctor-456" in log_call
+    
+    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    def test_log_phi_detection(self, mock_get_logger):
+        """Test PHI detection logging function."""
+        # Setup mock logger
+        mock_phi_logger = MagicMock()
+        mock_get_logger.return_value = mock_phi_logger
+        
+        # Call PHI detection log
+        log_phi_detection(
+            source="api_request",
+            sensitivity_score=0.85,
+            detected_entities=["NAME", "SSN"],
+            sanitized=True,
+            request_path="/api/patients",
+            user_id="doctor-456"
+        )
+        
+        # Verify logger was called
+        mock_get_logger.assert_called_once_with("phi")
+        mock_phi_logger.warning.assert_called_once()
+        
+        # Check log message
+        log_call = mock_phi_logger.warning.call_args[0][0]
+        assert "PHI detected" in log_call
+        assert "api_request" in log_call
+        assert "0.85" in log_call
+
+
+class TestGetLogger:
+    """Test suite for the get_logger function."""
+    
+    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    def test_get_logger_basic(self, mock_get_logger):
+        """Test getting a basic logger."""
+        # Setup mock
+        mock_logger = MagicMock()
+        mock_get_logger.return_value = mock_logger
+        
+        # Get logger
+        logger = get_logger("test_module")
+        
+        # Verify correct logger was requested
+        mock_get_logger.assert_called_once_with("app.test_module")
+        
+        # Should return the logger from getLogger
+        assert logger == mock_logger
+    
+    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    def test_get_logger_with_correlation(self, mock_get_logger):
+        """Test that logger adds correlation ID filter."""
+        # Setup mocks
+        mock_logger = MagicMock()
+        mock_get_logger.return_value = mock_logger
+        
+        # Set a correlation ID
+        test_id = "test-correlation-456"
+        set_correlation_id(test_id)
+        
+        # Get logger
+        logger = get_logger("test_module")
+        
+        # Verify logger was configured with the context filter
+        assert mock_logger.addFilter.called

@@ -1,174 +1,270 @@
-# -*- coding: utf-8 -*-
-"""
-Tests for ML Settings Configuration.
-
-This module contains unit tests for ML (Machine Learning) settings configuration,
-ensuring proper loading and validation of settings.
-"""
-
-import os
+"""Unit tests for ML configuration settings."""
 import pytest
-from unittest.mock import patch
-from pydantic import ValidationError # Import ValidationError for testing
+from unittest.mock import patch, MagicMock
+import os
+from typing import Dict, Any
 
-from app.core.config.ml_settings import MLSettings
+from app.core.config.ml_settings import (
+    MLSettings,
+    MLModelType,
+    MLFramework,
+    get_ml_settings,
+    load_model_config
+)
+
 
 @pytest.fixture
-def default_ml_settings():
-    """Fixture providing default ML settings."""
+def sample_ml_config():
+    """Create a sample ML configuration dictionary."""
+    return {
+        "model_path": "/models/symptom_prediction/",
+        "model_type": "ensemble",
+        "framework": "pytorch",
+        "batch_size": 32,
+        "use_gpu": True,
+        "precision": "float16",
+        "quantized": False,
+        "inference_timeout": 5.0,
+        "confidence_threshold": 0.75,
+        "cache_results": True,
+        "cache_ttl": 3600,
+        "version": "1.2.3",
+        "components": {
+            "transformer": {
+                "model_path": "/models/symptom_prediction/transformer/",
+                "num_heads": 8,
+                "embedding_dim": 512
+            },
+            "lstm": {
+                "model_path": "/models/symptom_prediction/lstm/",
+                "hidden_size": 256,
+                "num_layers": 2
+            }
+        }
+    }
+
+
+@pytest.fixture
+def ml_settings(sample_ml_config):
+    """Create an MLSettings instance."""
+    return MLSettings(
+        model_path=sample_ml_config["model_path"],
+        model_type=MLModelType(sample_ml_config["model_type"]),
+        framework=MLFramework(sample_ml_config["framework"]),
+        batch_size=sample_ml_config["batch_size"],
+        use_gpu=sample_ml_config["use_gpu"],
+        precision=sample_ml_config["precision"],
+        quantized=sample_ml_config["quantized"],
+        inference_timeout=sample_ml_config["inference_timeout"],
+        confidence_threshold=sample_ml_config["confidence_threshold"],
+        cache_results=sample_ml_config["cache_results"],
+        cache_ttl=sample_ml_config["cache_ttl"],
+        version=sample_ml_config["version"],
+        components=sample_ml_config["components"]
+    )
+
+
+class TestMLSettings:
+    """Test suite for MLSettings model."""
     
-    return MLSettings()
+    def test_init(self, sample_ml_config):
+        """Test initialization with valid settings."""
+        settings = MLSettings(
+            model_path=sample_ml_config["model_path"],
+            model_type=MLModelType(sample_ml_config["model_type"]),
+            framework=MLFramework(sample_ml_config["framework"]),
+            batch_size=sample_ml_config["batch_size"],
+            use_gpu=sample_ml_config["use_gpu"],
+            precision=sample_ml_config["precision"],
+            quantized=sample_ml_config["quantized"],
+            inference_timeout=sample_ml_config["inference_timeout"],
+            confidence_threshold=sample_ml_config["confidence_threshold"],
+            cache_results=sample_ml_config["cache_results"],
+            cache_ttl=sample_ml_config["cache_ttl"],
+            version=sample_ml_config["version"],
+            components=sample_ml_config["components"]
+        )
+        
+        # Verify properties match input values
+        assert settings.model_path == sample_ml_config["model_path"]
+        assert settings.model_type == MLModelType(sample_ml_config["model_type"])
+        assert settings.framework == MLFramework(sample_ml_config["framework"])
+        assert settings.batch_size == sample_ml_config["batch_size"]
+        assert settings.use_gpu == sample_ml_config["use_gpu"]
+        assert settings.precision == sample_ml_config["precision"]
+        assert settings.quantized == sample_ml_config["quantized"]
+        assert settings.inference_timeout == sample_ml_config["inference_timeout"]
+        assert settings.confidence_threshold == sample_ml_config["confidence_threshold"]
+        assert settings.cache_results == sample_ml_config["cache_results"]
+        assert settings.cache_ttl == sample_ml_config["cache_ttl"]
+        assert settings.version == sample_ml_config["version"]
+        assert settings.components == sample_ml_config["components"]
+    
+    def test_default_values(self):
+        """Test that default values are set correctly."""
+        # Create with minimal required fields
+        settings = MLSettings(
+            model_path="/models/minimal/",
+            model_type=MLModelType.TRANSFORMER,
+            framework=MLFramework.PYTORCH
+        )
+        
+        # Check default values
+        assert settings.batch_size == 1  # Default batch size
+        assert settings.use_gpu is False  # Default GPU setting
+        assert settings.precision == "float32"  # Default precision
+        assert settings.quantized is False  # Default quantization
+        assert settings.inference_timeout == 10.0  # Default timeout
+        assert settings.confidence_threshold == 0.5  # Default confidence
+        assert settings.cache_results is False  # Default caching
+        assert settings.cache_ttl == 300  # Default TTL
+        assert settings.version == "1.0.0"  # Default version
+        assert settings.components == {}  # Default components
+    
+    def test_model_type_enum(self):
+        """Test the MLModelType enum."""
+        # Check enum values
+        assert MLModelType.TRANSFORMER.value == "transformer"
+        assert MLModelType.ENSEMBLE.value == "ensemble"
+        assert MLModelType.LSTM.value == "lstm"
+        assert MLModelType.CNN.value == "cnn"
+        assert MLModelType.MLP.value == "mlp"
+        
+        # Check creating enum from string
+        assert MLModelType("transformer") == MLModelType.TRANSFORMER
+        assert MLModelType("ensemble") == MLModelType.ENSEMBLE
+    
+    def test_framework_enum(self):
+        """Test the MLFramework enum."""
+        # Check enum values
+        assert MLFramework.PYTORCH.value == "pytorch"
+        assert MLFramework.TENSORFLOW.value == "tensorflow"
+        assert MLFramework.ONNX.value == "onnx"
+        assert MLFramework.SCIKIT.value == "scikit-learn"
+        
+        # Check creating enum from string
+        assert MLFramework("pytorch") == MLFramework.PYTORCH
+        assert MLFramework("tensorflow") == MLFramework.TENSORFLOW
+    
+    def test_to_dict(self, ml_settings, sample_ml_config):
+        """Test conversion to dictionary."""
+        # Convert to dict
+        settings_dict = ml_settings.to_dict()
+        
+        # Verify dict matches original config (with enum string values)
+        assert settings_dict["model_path"] == sample_ml_config["model_path"]
+        assert settings_dict["model_type"] == sample_ml_config["model_type"]
+        assert settings_dict["framework"] == sample_ml_config["framework"]
+        assert settings_dict["batch_size"] == sample_ml_config["batch_size"]
+        assert settings_dict["use_gpu"] == sample_ml_config["use_gpu"]
+        assert settings_dict["components"] == sample_ml_config["components"]
+    
+    def test_from_dict(self, sample_ml_config):
+        """Test creation from dictionary."""
+        # Create from dict
+        settings = MLSettings.from_dict(sample_ml_config)
+        
+        # Verify properties match input config
+        assert settings.model_path == sample_ml_config["model_path"]
+        assert settings.model_type == MLModelType(sample_ml_config["model_type"])
+        assert settings.framework == MLFramework(sample_ml_config["framework"])
+        assert settings.batch_size == sample_ml_config["batch_size"]
+        assert settings.components == sample_ml_config["components"]
+    
+    def test_validation(self):
+        """Test validation of MLSettings."""
+        # Test invalid batch size
+        with pytest.raises(ValueError):
+            MLSettings(
+                model_path="/models/test/",
+                model_type=MLModelType.TRANSFORMER,
+                framework=MLFramework.PYTORCH,
+                batch_size=0  # Invalid - should be positive
+            )
+        
+        # Test invalid confidence threshold
+        with pytest.raises(ValueError):
+            MLSettings(
+                model_path="/models/test/",
+                model_type=MLModelType.TRANSFORMER,
+                framework=MLFramework.PYTORCH,
+                confidence_threshold=1.5  # Invalid - should be between 0 and 1
+            )
+        
+        # Test invalid cache TTL
+        with pytest.raises(ValueError):
+            MLSettings(
+                model_path="/models/test/",
+                model_type=MLModelType.TRANSFORMER,
+                framework=MLFramework.PYTORCH,
+                cache_results=True,
+                cache_ttl=-10  # Invalid - should be positive
+            )
 
 
-@pytest.mark.venv_only() # Assuming venv_only is a valid marker
-def test_default_values(default_ml_settings):
-    """Test that default values are set correctly."""
-    # Check default directories
-    assert default_ml_settings.MODEL_BASE_DIR == "./resources/models"
-    assert default_ml_settings.XGBOOST_MODEL_DIR == "./resources/models/xgboost"
-    assert default_ml_settings.MENTALLAMA_MODEL_DIR == "./resources/models/mentallama"
-
-    # Check feature flags
-    assert default_ml_settings.FEATURE_DIGITAL_TWIN is True
-    assert default_ml_settings.FEATURE_ML_RISK_ASSESSMENT is True
-    assert default_ml_settings.FEATURE_PHI_DETECTION is True
-
-    # Check processing settings
-    assert default_ml_settings.BATCH_SIZE == 64
-    assert default_ml_settings.MAX_TEXT_LENGTH == 4096
-
-
-def test_environment_variable_override():
-    """Test that environment variables override default values."""
-    env_vars = {
-        "MODEL_BASE_DIR": "/custom/models",
-        "XGBOOST_MODEL_DIR": "/custom/models/xgboost",
-        "MENTALLAMA_MODEL_DIR": "/custom/models/mentallama",
-        "FEATURE_DIGITAL_TWIN": "false",
-        "FEATURE_ML_RISK_ASSESSMENT": "false",
-        "FEATURE_PHI_DETECTION": "false",
-        "BATCH_SIZE": "128",
-        "MAX_TEXT_LENGTH": "8192"
-    }
-    with patch.dict(os.environ, env_vars):
-        settings = MLSettings()
-
-        # Check overridden directories
-        assert settings.MODEL_BASE_DIR == "/custom/models"
-        assert settings.XGBOOST_MODEL_DIR == "/custom/models/xgboost"
-        assert settings.MENTALLAMA_MODEL_DIR == "/custom/models/mentallama"
-
-        # Check overridden feature flags
-        assert settings.FEATURE_DIGITAL_TWIN is False
-        assert settings.FEATURE_ML_RISK_ASSESSMENT is False
-        assert settings.FEATURE_PHI_DETECTION is False
-
-        # Check overridden processing settings
-        assert settings.BATCH_SIZE == 128
-        assert settings.MAX_TEXT_LENGTH == 8192
-
-def test_directory_creation(tmp_path):
-    """Test that model directories are created if they don't exist."""
-    # Create temporary directories for testing
-    base_dir = tmp_path / "models"
-    xgboost_dir = base_dir / "xgboost"
-    mentallama_dir = base_dir / "mentallama"
-
-    # Set environment variables to use these directories
-    env_vars = {
-        "MODEL_BASE_DIR": str(base_dir),
-        "XGBOOST_MODEL_DIR": str(xgboost_dir),
-        "MENTALLAMA_MODEL_DIR": str(mentallama_dir)
-    }
-    with patch.dict(os.environ, env_vars):
-        # Initialize settings
-        settings = MLSettings()
-
-        # Manually trigger directory creation (normally done on service startup)
-        settings.create_directories()
-
-        # Check that directories were created
-        assert base_dir.exists()
-        assert xgboost_dir.exists()
-        assert mentallama_dir.exists()
-
-def test_model_path_creation():
-    """Test creating model paths with version and variant."""
-    settings = MLSettings()
-
-    # Test with default base path
-    path = settings.get_model_path("xgboost", "classifier", "v1", "standard")
-    expected = "./resources/models/xgboost/classifier/v1/standard"
-    assert path == expected
-
-    # Test with custom base path
-    with patch.dict(os.environ, {"XGBOOST_MODEL_DIR": "/custom/models/xgboost"}):
-        settings = MLSettings()
-        path = settings.get_model_path("xgboost", "classifier", "v1", "standard")
-        expected = "/custom/models/xgboost/classifier/v1/standard"
-        assert path == expected
-
-def test_digital_twin_settings(default_ml_settings):
-    """Test Digital Twin specific settings."""
-    # Check default Digital Twin settings
-    assert default_ml_settings.DIGITAL_TWIN_RESOLUTION == "high"
-    assert default_ml_settings.DIGITAL_TWIN_REGIONS == 84  # Default brain atlas regions
-
-    # Test with custom settings
-    env_vars = {
-        "DIGITAL_TWIN_RESOLUTION": "medium",
-        "DIGITAL_TWIN_REGIONS": "42"
-    }
-    with patch.dict(os.environ, env_vars):
-        settings = MLSettings()
-        assert settings.DIGITAL_TWIN_RESOLUTION == "medium"
-        assert settings.DIGITAL_TWIN_REGIONS == 42
-
-def test_xgboost_settings(default_ml_settings):
-    """Test XGBoost specific settings."""
-    # Check default XGBoost settings
-    assert default_ml_settings.XGBOOST_THREADS == 4
-    assert default_ml_settings.XGBOOST_GPU_ENABLED is False
-
-    # Test with custom settings
-    env_vars = {
-        "XGBOOST_THREADS": "8",
-        "XGBOOST_GPU_ENABLED": "true"
-    }
-    with patch.dict(os.environ, env_vars):
-        settings = MLSettings()
-        assert settings.XGBOOST_THREADS == 8
-        assert settings.XGBOOST_GPU_ENABLED is True
-
-def test_phi_detection_settings(default_ml_settings):
-    """Test PHI detection specific settings."""
-    # Check default PHI detection settings
-    assert default_ml_settings.PHI_PATTERN_FILE == "phi_patterns.yaml"
-    assert default_ml_settings.PHI_REDACTION_ENABLED is True
-
-    # Test with custom settings
-    env_vars = {
-        "PHI_PATTERN_FILE": "custom_patterns.yaml",
-        "PHI_REDACTION_ENABLED": "false"
-    }
-    with patch.dict(os.environ, env_vars):
-        settings = MLSettings()
-        assert settings.PHI_PATTERN_FILE == "custom_patterns.yaml"
-        assert settings.PHI_REDACTION_ENABLED is False
-
-def test_validation():
-    """Test validation of settings."""
-    # Test with invalid value for batch size
-    with patch.dict(os.environ, {"BATCH_SIZE": "-1"}):
-        with pytest.raises(ValidationError, match="Input should be a positive integer"):
-             MLSettings()
-
-    # Test with invalid value for max text length
-    with patch.dict(os.environ, {"MAX_TEXT_LENGTH": "0"}):
-        with pytest.raises(ValidationError, match="Input should be a positive integer"):
-             MLSettings()
-
-    # Test with invalid value for Digital Twin resolution
-    with patch.dict(os.environ, {"DIGITAL_TWIN_RESOLUTION": "invalid"}):
-        with pytest.raises(ValidationError, match="Input should be 'low', 'medium' or 'high'"):
-             MLSettings()
+class TestMLSettingsConfig:
+    """Test suite for ML settings configuration functions."""
+    
+    @patch("app.core.config.ml_settings.get_settings")
+    def test_get_ml_settings(self, mock_get_settings):
+        """Test getting ML settings from general settings."""
+        # Mock settings to return ML path
+        mock_settings = MagicMock()
+        mock_settings.ML_CONFIG_PATH = "/config/ml/"
+        mock_get_settings.return_value = mock_settings
+        
+        # Mock load function to return test settings
+        with patch("app.core.config.ml_settings.load_model_config") as mock_load:
+            mock_load.return_value = {
+                "model_path": "/models/test/",
+                "model_type": "transformer",
+                "framework": "pytorch"
+            }
+            
+            # Get settings for a model type
+            settings = get_ml_settings("symptom_prediction")
+            
+            # Verify correct settings were loaded
+            mock_load.assert_called_once_with(os.path.join("/config/ml/", "symptom_prediction.json"))
+            assert settings.model_path == "/models/test/"
+            assert settings.model_type == MLModelType.TRANSFORMER
+    
+    @patch("app.core.config.ml_settings.open")
+    @patch("app.core.config.ml_settings.json.load")
+    def test_load_model_config(self, mock_json_load, mock_open):
+        """Test loading model configuration from file."""
+        # Mock JSON loading
+        test_config = {
+            "model_path": "/models/test/",
+            "model_type": "transformer",
+            "framework": "pytorch"
+        }
+        mock_json_load.return_value = test_config
+        
+        # Load config
+        config = load_model_config("/config/ml/symptom_prediction.json")
+        
+        # Verify file was opened and config loaded
+        mock_open.assert_called_once_with("/config/ml/symptom_prediction.json", "r")
+        assert config == test_config
+    
+    @patch("app.core.config.ml_settings.open")
+    def test_load_model_config_file_not_found(self, mock_open):
+        """Test handling of missing configuration file."""
+        # Mock file not found
+        mock_open.side_effect = FileNotFoundError("File not found")
+        
+        # Should raise FileNotFoundError
+        with pytest.raises(FileNotFoundError):
+            load_model_config("/config/ml/nonexistent.json")
+    
+    @patch("app.core.config.ml_settings.open")
+    @patch("app.core.config.ml_settings.json.load")
+    def test_load_model_config_invalid_json(self, mock_json_load, mock_open):
+        """Test handling of invalid JSON configuration file."""
+        # Mock JSON parsing error
+        mock_json_load.side_effect = ValueError("Invalid JSON")
+        
+        # Should raise ValueError
+        with pytest.raises(ValueError):
+            load_model_config("/config/ml/invalid.json")

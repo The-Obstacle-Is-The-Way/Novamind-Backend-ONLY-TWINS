@@ -1,257 +1,289 @@
-"""Unit tests for the rate limiter functionality."""
-import asyncio
+"""Unit tests for rate limiter implementation."""
 import pytest
-from datetime import timedelta
-from unittest.mock import patch, MagicMock, AsyncMock
-from redis.asyncio.client import Redis
-from fastapi import Request, Response, HTTPException
+import time
+from unittest.mock import Mock, patch, MagicMock
+from datetime import datetime, timedelta
+import redis
 
 from app.infrastructure.security.rate_limiter import (
+    RateLimitConfig,
     RateLimiter,
-    RateLimitType,
-    RateLimitExceededError,
-    rate_limit_ip
+    InMemoryRateLimiter,
+    RedisRateLimiter,
+    RateLimiterFactory
 )
 
 
-class TestRateLimiter:
-    """Test suite for RateLimiter class."""
+class TestRateLimitConfig:
+    """Test suite for RateLimitConfig."""
+
+    def test_init(self):
+        """Test the initialization of RateLimitConfig."""
+        config = RateLimitConfig(requests=10, window_seconds=60, block_seconds=120)
+        assert config.requests == 10
+        assert config.window_seconds == 60
+        assert config.block_seconds == 120
+
+    def test_init_without_block(self):
+        """Test initialization without block_seconds."""
+        config = RateLimitConfig(requests=10, window_seconds=60)
+        assert config.requests == 10
+        assert config.window_seconds == 60
+        assert config.block_seconds is None
+
+
+class TestInMemoryRateLimiter:
+    """Test suite for in-memory rate limiter implementation."""
+
+    @pytest.fixture
+    def limiter(self):
+        """Create a fresh rate limiter for each test."""
+        return InMemoryRateLimiter()
+
+    @pytest.fixture
+    def basic_config(self):
+        """Create a basic rate limit config."""
+        return RateLimitConfig(requests=3, window_seconds=60)
+
+    @pytest.fixture
+    def blocking_config(self):
+        """Create a config with blocking enabled."""
+        return RateLimitConfig(requests=3, window_seconds=60, block_seconds=120)
+
+    def test_basic_rate_limiting(self, limiter, basic_config):
+        """Test that basic rate limiting works."""
+        key = "test_ip"
+        
+        # First 3 requests should be allowed
+        assert limiter.check_rate_limit(key, basic_config) is True
+        assert limiter.check_rate_limit(key, basic_config) is True
+        assert limiter.check_rate_limit(key, basic_config) is True
+        
+        # Fourth request should be blocked
+        assert limiter.check_rate_limit(key, basic_config) is False
+    
+    def test_different_keys_counted_separately(self, limiter, basic_config):
+        """Test that different keys are rate limited separately."""
+        key1 = "ip1"
+        key2 = "ip2"
+        
+        # Use up all requests for key1
+        for _ in range(3):
+            assert limiter.check_rate_limit(key1, basic_config) is True
+        
+        # Should be blocked now
+        assert limiter.check_rate_limit(key1, basic_config) is False
+        
+        # But key2 should still be allowed
+        assert limiter.check_rate_limit(key2, basic_config) is True
+    
+    def test_sliding_window(self, limiter):
+        """Test that the sliding window works correctly."""
+        key = "test_ip"
+        
+        # Short window config for testing
+        config = RateLimitConfig(requests=2, window_seconds=1)
+        
+        # First 2 requests allowed
+        assert limiter.check_rate_limit(key, config) is True
+        assert limiter.check_rate_limit(key, config) is True
+        
+        # Third request blocked
+        assert limiter.check_rate_limit(key, config) is False
+        
+        # Wait for window to expire
+        time.sleep(1.1)
+        
+        # Should be allowed again
+        assert limiter.check_rate_limit(key, config) is True
+    
+    def test_blocking(self, limiter, blocking_config):
+        """Test that blocking works correctly."""
+        key = "test_ip"
+        
+        # Use up all requests
+        for _ in range(3):
+            assert limiter.check_rate_limit(key, blocking_config) is True
+        
+        # Trigger blocking
+        assert limiter.check_rate_limit(key, blocking_config) is False
+        
+        # Even after a clean window, should still be blocked
+        limiter._request_history[key] = []
+        assert limiter.check_rate_limit(key, blocking_config) is False
+        
+        # Simulate block time expiring
+        limiter._blocked_until[key] = datetime.now() - timedelta(seconds=1)
+        
+        # Now should work again
+        assert limiter.check_rate_limit(key, blocking_config) is True
+    
+    def test_reset_limits(self, limiter, basic_config):
+        """Test that reset_limits works properly."""
+        key = "test_ip"
+        
+        # Use up all requests
+        for _ in range(3):
+            assert limiter.check_rate_limit(key, basic_config) is True
+        
+        # Fourth request blocked
+        assert limiter.check_rate_limit(key, basic_config) is False
+        
+        # Reset the limits
+        limiter.reset_limits(key)
+        
+        # Should work again
+        assert limiter.check_rate_limit(key, basic_config) is True
+
+
+class TestRedisRateLimiter:
+    """Test suite for Redis-based rate limiter."""
     
     @pytest.fixture
     def mock_redis(self):
-        """Create a mock Redis client."""
-        mock = AsyncMock(spec=Redis)
-        
-        # Setup mock pipeline
-        mock_pipeline = AsyncMock()
-        mock.pipeline.return_value = mock_pipeline
-        mock_pipeline.execute.return_value = [0, 1]  # Default values for first call
-        
-        # We can further customize the pipeline in individual tests
-        mock_pipeline.__aenter__.return_value = mock_pipeline
-        mock_pipeline.__aexit__.return_value = None
-        
+        """Create a mocked Redis client."""
+        mock = MagicMock(spec=redis.Redis)
+        # Default behavior for exists
+        mock.exists.return_value = False
+        # Default behavior for zcard (count)
+        mock.zcard.return_value = 0
         return mock
     
     @pytest.fixture
-    def rate_limiter(self, mock_redis):
-        """Create a RateLimiter instance with a mock Redis client."""
-        return RateLimiter(
-            redis=mock_redis,
-            default_limit=100,
-            default_window=timedelta(seconds=60)
-        )
+    def limiter(self, mock_redis):
+        """Create a Redis rate limiter with mocked Redis client."""
+        return RedisRateLimiter(redis_client=mock_redis)
     
     @pytest.fixture
-    def mock_request(self):
-        """Create a mock FastAPI Request."""
-        mock = MagicMock(spec=Request)
-        mock.client.host = "127.0.0.1"
-        mock.headers = {}
-        return mock
+    def basic_config(self):
+        """Create a basic rate limit config."""
+        return RateLimitConfig(requests=3, window_seconds=60)
     
-    @pytest.mark.asyncio
-    async def test_init(self, mock_redis):
-        """Test RateLimiter initialization."""
-        limiter = RateLimiter(
-            redis=mock_redis,
-            default_limit=100,
-            default_window=timedelta(seconds=60)
+    @pytest.fixture
+    def blocking_config(self):
+        """Create a config with blocking enabled."""
+        return RateLimitConfig(requests=3, window_seconds=60, block_seconds=120)
+    
+    def test_check_when_not_blocked_and_under_limit(self, limiter, mock_redis, basic_config):
+        """Test normal flow when request is under the limit."""
+        key = "test_ip"
+        mock_redis.exists.return_value = False  # Not blocked
+        mock_redis.zcard.return_value = 2  # Under limit
+        
+        result = limiter.check_rate_limit(key, basic_config)
+        
+        assert result is True
+        # Check Redis operations
+        mock_redis.zremrangebyscore.assert_called_once()
+        mock_redis.zadd.assert_called_once()
+        mock_redis.expire.assert_called_once()
+    
+    def test_check_when_over_limit(self, limiter, mock_redis, basic_config):
+        """Test when request exceeds the limit."""
+        key = "test_ip"
+        mock_redis.exists.return_value = False  # Not blocked
+        mock_redis.zcard.return_value = 3  # At limit
+        
+        result = limiter.check_rate_limit(key, basic_config)
+        
+        assert result is False
+        # Should not add request to window
+        mock_redis.zadd.assert_not_called()
+    
+    def test_check_when_blocked(self, limiter, mock_redis, basic_config):
+        """Test when key is blocked."""
+        key = "test_ip"
+        mock_redis.exists.return_value = True  # Blocked
+        
+        result = limiter.check_rate_limit(key, basic_config)
+        
+        assert result is False
+        # Should not check window or add request
+        mock_redis.zcard.assert_not_called()
+        mock_redis.zadd.assert_not_called()
+    
+    def test_blocking_when_limit_exceeded(self, limiter, mock_redis, blocking_config):
+        """Test blocking behavior when limit is exceeded."""
+        key = "test_ip"
+        mock_redis.exists.return_value = False  # Not blocked
+        mock_redis.zcard.return_value = 3  # At limit
+        
+        result = limiter.check_rate_limit(key, blocking_config)
+        
+        assert result is False
+        # Should block the key
+        mock_redis.setex.assert_called_once_with(
+            f"{limiter.blocked_prefix}{key}", 
+            blocking_config.block_seconds, 
+            "blocked"
         )
-        
-        assert limiter.redis is mock_redis
-        assert limiter.default_limit == 100
-        assert limiter.default_window == timedelta(seconds=60)
     
-    @pytest.mark.asyncio
-    async def test_is_rate_limited_not_limited(self, rate_limiter, mock_redis):
-        """Test is_rate_limited returns False when limit is not exceeded."""
-        # Configure mock pipeline to return values indicating no rate limit exceeded
-        mock_pipeline = AsyncMock()
-        mock_redis.pipeline.return_value = mock_pipeline
-        mock_pipeline.__aenter__.return_value = mock_pipeline
-        mock_pipeline.__aexit__.return_value = None
+    def test_reset_limits(self, limiter, mock_redis):
+        """Test that reset_limits deletes the correct Redis keys."""
+        key = "test_ip"
+        limiter.reset_limits(key)
         
-        # First value is incr result, second is ttl
-        mock_pipeline.execute.return_value = [10, 50]
-        
-        is_limited, info = await rate_limiter.is_rate_limited(
-            "test_key",
-            limit=100,
-            window=timedelta(seconds=60)
+        # Should delete both window and blocked keys
+        mock_redis.delete.assert_called_once_with(
+            f"{limiter.prefix}{key}",
+            f"{limiter.blocked_prefix}{key}"
         )
-        
-        assert is_limited is False
-        assert info["remaining"] == 90  # 100 - 10
-        assert info["reset"] == 50  # TTL from Redis
-        
-        # Verify the correct Redis commands were called
-        mock_pipeline.incr.assert_called_once_with("ratelimit:test_key")
-        mock_pipeline.expire.assert_called_once_with("ratelimit:test_key", 60)
     
-    @pytest.mark.asyncio
-    async def test_is_rate_limited_exceeded(self, rate_limiter, mock_redis):
-        """Test is_rate_limited returns True when limit is exceeded."""
-        # Configure mock pipeline to return values indicating rate limit exceeded
-        mock_pipeline = AsyncMock()
-        mock_redis.pipeline.return_value = mock_pipeline
-        mock_pipeline.__aenter__.return_value = mock_pipeline
-        mock_pipeline.__aexit__.return_value = None
+    def test_redis_error_handling(self, limiter, mock_redis, basic_config):
+        """Test that Redis errors are caught and fail open."""
+        key = "test_ip"
+        mock_redis.zremrangebyscore.side_effect = redis.RedisError("Connection error")
         
-        # First value (101) exceeds limit (100), second is TTL
-        mock_pipeline.execute.return_value = [101, 45]
+        # Should fail open (allow request) when Redis errors
+        result = limiter.check_rate_limit(key, basic_config)
         
-        is_limited, info = await rate_limiter.is_rate_limited(
-            "test_key",
-            limit=100,
-            window=timedelta(seconds=60)
-        )
-        
-        assert is_limited is True
-        assert info["remaining"] == 0  # Since limit is exceeded
-        assert info["reset"] == 45  # TTL from Redis
+        assert result is True
+
+
+@patch("app.infrastructure.security.rate_limiter.get_settings")
+class TestRateLimiterFactory:
+    """Test suite for RateLimiterFactory."""
     
-    @pytest.mark.asyncio
-    async def test_is_rate_limited_default_values(self, rate_limiter, mock_redis):
-        """Test is_rate_limited uses default values when not provided."""
-        mock_pipeline = AsyncMock()
-        mock_redis.pipeline.return_value = mock_pipeline
-        mock_pipeline.__aenter__.return_value = mock_pipeline
-        mock_pipeline.__aexit__.return_value = None
-        mock_pipeline.execute.return_value = [50, 30]
+    def test_create_in_memory_rate_limiter(self, mock_get_settings):
+        """Test creating an in-memory rate limiter."""
+        # Configure to use in-memory
+        mock_settings = MagicMock()
+        mock_settings.USE_REDIS_RATE_LIMITER = False
+        mock_get_settings.return_value = mock_settings
         
-        is_limited, info = await rate_limiter.is_rate_limited("test_key")
+        limiter = RateLimiterFactory.create_rate_limiter()
         
-        assert is_limited is False
-        assert info["remaining"] == 50  # 100 - 50
-        assert info["reset"] == 30  # TTL from Redis
-        
-        # Verify the expire used the default window (60 seconds)
-        mock_pipeline.expire.assert_called_once_with("ratelimit:test_key", 60)
+        assert isinstance(limiter, InMemoryRateLimiter)
     
-    @pytest.mark.asyncio
-    async def test_is_rate_limited_redis_error(self, rate_limiter, mock_redis):
-        """Test is_rate_limited handles Redis errors properly."""
-        # Make Redis pipeline operations raise an exception
-        mock_pipeline = AsyncMock()
-        mock_redis.pipeline.return_value = mock_pipeline
-        mock_pipeline.__aenter__.return_value = mock_pipeline
-        mock_pipeline.__aexit__.return_value = None
-        mock_pipeline.execute.side_effect = Exception("Redis connection error")
+    @patch("app.infrastructure.security.rate_limiter.RedisRateLimiter")
+    def test_create_redis_rate_limiter(self, mock_redis_limiter, mock_get_settings):
+        """Test creating a Redis rate limiter."""
+        # Configure to use Redis
+        mock_settings = MagicMock()
+        mock_settings.USE_REDIS_RATE_LIMITER = True
+        mock_get_settings.return_value = mock_settings
         
-        # When Redis fails, should return not limited with appropriate message
-        is_limited, info = await rate_limiter.is_rate_limited("test_key")
+        # Set up mock return value
+        mock_instance = MagicMock(spec=RedisRateLimiter)
+        mock_redis_limiter.return_value = mock_instance
         
-        assert is_limited is False
-        assert "error" in info
-        assert "Redis connection error" in info["error"]
+        limiter = RateLimiterFactory.create_rate_limiter()
+        
+        assert limiter == mock_instance
+        mock_redis_limiter.assert_called_once()
     
-    @pytest.mark.asyncio
-    async def test_process_request(self, rate_limiter, mock_request):
-        """Test processing a basic request."""
-        with patch.object(
-            rate_limiter,
-            "is_rate_limited",
-            AsyncMock(return_value=(False, {"remaining": 99}))
-        ):
-            is_limited, info = await rate_limiter.process_request(mock_request)
-            
-            assert is_limited is False
-            assert info["remaining"] == 99
-            
-            # Verify is_rate_limited was called with the correct identifier
-            rate_limiter.is_rate_limited.assert_called_once()
-            call_args = rate_limiter.is_rate_limited.call_args
-            assert call_args[0][0] == "ip:127.0.0.1"
-            assert call_args[1]["limit_type"] == RateLimitType.DEFAULT
-    
-    @pytest.mark.asyncio
-    async def test_process_request_with_token(self, rate_limiter, mock_request):
-        """Test processing a request with an API token."""
-        # Setup request with Authorization header
-        mock_request.headers = {"Authorization": "Bearer test_token"}
+    @patch("app.infrastructure.security.rate_limiter.RedisRateLimiter")
+    def test_fallback_when_redis_fails(self, mock_redis_limiter, mock_get_settings):
+        """Test fallback to in-memory when Redis creation fails."""
+        # Configure to use Redis
+        mock_settings = MagicMock()
+        mock_settings.USE_REDIS_RATE_LIMITER = True
+        mock_get_settings.return_value = mock_settings
         
-        with patch.object(
-            rate_limiter,
-            "is_rate_limited",
-            AsyncMock(return_value=(False, {"remaining": 99}))
-        ):
-            is_limited, info = await rate_limiter.process_request(
-                mock_request,
-                limit_type=RateLimitType.TOKEN
-            )
-            
-            # Verify is_rate_limited was called with token-based identifier
-            rate_limiter.is_rate_limited.assert_called_once()
-            call_args = rate_limiter.is_rate_limited.call_args
-            assert call_args[0][0] == "token:test_token"
-            assert call_args[1]["limit_type"] == RateLimitType.TOKEN
-    
-    @pytest.mark.asyncio
-    async def test_process_request_exceeded(self, rate_limiter, mock_request):
-        """Test processing a request that exceeds rate limit."""
-        with patch.object(
-            rate_limiter,
-            "is_rate_limited",
-            AsyncMock(return_value=(True, {"remaining": 0, "reset": 30}))
-        ):
-            is_limited, info = await rate_limiter.process_request(mock_request)
-            
-            assert is_limited is True
-            assert info["remaining"] == 0
-            assert info["reset"] == 30
-    
-    @pytest.mark.asyncio
-    async def test_rate_limit_ip_decorator(self, mock_redis):
-        """Test the rate_limit_ip decorator."""
-        # Create a limiter for testing the decorator
-        limiter = RateLimiter(redis=mock_redis)
+        # Make Redis creation fail
+        mock_redis_limiter.side_effect = Exception("Redis connection error")
         
-        # Setup mock response for the decorator
-        mock_response = MagicMock(spec=Response)
+        limiter = RateLimiterFactory.create_rate_limiter()
         
-        # Create a decorated async function
-        @rate_limit_ip(limiter=limiter, limit=10)
-        async def test_endpoint(request: Request):
-            return {"message": "success"}
-        
-        # Mock request object
-        mock_request = MagicMock(spec=Request)
-        mock_request.client.host = "127.0.0.1"
-        
-        # Configure rate limiter mock
-        with patch.object(
-            limiter,
-            "is_rate_limited",
-            AsyncMock(return_value=(False, {"remaining": 9, "reset": 60}))
-        ):
-            # Call decorated function
-            result = await test_endpoint(mock_request)
-            
-            # Verify result
-            assert result == {"message": "success"}
-    
-    @pytest.mark.asyncio
-    async def test_rate_limit_ip_decorator_exceeded(self, mock_redis):
-        """Test the rate_limit_ip decorator when limit is exceeded."""
-        # Create a limiter for testing the decorator
-        limiter = RateLimiter(redis=mock_redis)
-        
-        # Create a decorated async function
-        @rate_limit_ip(limiter=limiter, limit=10)
-        async def test_endpoint(request: Request):
-            return {"message": "success"}
-        
-        # Mock request object
-        mock_request = MagicMock(spec=Request)
-        mock_request.client.host = "127.0.0.1"
-        
-        # Configure rate limiter mock to indicate limit exceeded
-        with patch.object(
-            limiter,
-            "is_rate_limited",
-            AsyncMock(return_value=(True, {"remaining": 0, "reset": 30}))
-        ):
-            # Call should raise RateLimitExceededError
-            with pytest.raises(RateLimitExceededError):
-                await test_endpoint(mock_request)
+        # Should fall back to in-memory
+        assert isinstance(limiter, InMemoryRateLimiter)

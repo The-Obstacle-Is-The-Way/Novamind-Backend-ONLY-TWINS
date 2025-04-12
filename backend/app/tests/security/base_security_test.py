@@ -6,35 +6,18 @@ proper authentication setup and user role management.
 """
 
 import uuid
+from typing import Any, Dict, List, Optional, Union
 from unittest import TestCase
 
 import pytest
+import os
+from unittest.mock import MagicMock, patch
 
-from app.infrastructure.security.rbac.role_manager import RoleBasedAccessControl # Corrected import path
-from app.tests.fixtures.mock_db_fixture import MockAsyncSession
+# Import mocks for testing
+from app.tests.security.test_mocks import MockAsyncSession, RoleBasedAccessControl, MockEntityFactory
 
 
-@pytest.mark.db_required
-class MockEntityFactory:
-    """Mock factory for generating test entities."""
-    
-    def __init__(self):
-        self.entities = {}
-
-    def create(self, entity_type, **kwargs):
-        """Create a mock entity."""
-        entity_id = kwargs.get('id', str(uuid.uuid4()))
-        self.entities[entity_id] = {
-            'id': entity_id,
-            'type': entity_type,
-            **kwargs
-        }
-        return self.entities[entity_id]
-    
-    def get(self, entity_id):
-        """Retrieve a mock entity by ID."""
-        
-    return self.entities.get(entity_id)
+# We're now using the MockEntityFactory from test_mocks.py
 
 
 class BaseSecurityTest(TestCase):
@@ -77,7 +60,7 @@ class BaseSecurityTest(TestCase):
         self.rbac.add_role_permission('admin', 'update:all_data')
         self.rbac.add_role_permission('admin', 'delete:all_data')
     
-    def has_permission(self, permission: str, roles: list[str] | None = None) -> bool:
+    def has_permission(self, permission: str, roles: List[str] | None = None) -> bool:
         """
         Check if the specified roles have the given permission.
         
@@ -86,15 +69,21 @@ class BaseSecurityTest(TestCase):
             roles: The roles to check. If None, uses the test_roles
             
         Returns:
-            bool: True if the roles have the permission, False otherwise
+            bool: True if any of the roles have the permission, False otherwise
         """
         check_roles = roles if roles is not None else self.test_roles
-        return self.rbac.has_permission(check_roles, permission)
+        
+        # Check if any role has the permission
+        for role in check_roles:
+            if self.rbac.has_permission(role, permission):
+                return True
+                
+        return False
     
-    def get_auth_token(self, 
-                       user_id: str | None = None, 
-                       roles: list[str] | None = None,
-                       custom_claims: dict[str, any] | None = None) -> str:
+    def get_auth_token(self,
+                       user_id: Optional[str] = None,
+                       roles: Optional[List[str]] = None,
+                       custom_claims: Optional[Dict[str, Any]] = None) -> str:
         """
         Generate a mock authentication token for testing.
         
@@ -114,7 +103,7 @@ class BaseSecurityTest(TestCase):
         # Mock token is just the string representation of the claims for testing
         return f"mock_token.{claims!s}"
     
-    def get_auth_headers(self, token: str | None = None) -> dict[str, str]:
+    def get_auth_headers(self, token: Optional[str] = None) -> Dict[str, str]:
         """
         Generate mock authentication headers for testing.
         
