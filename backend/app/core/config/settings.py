@@ -7,6 +7,7 @@ and configuration files, using Pydantic for validation.
 
 import os
 import secrets
+import tempfile
 from typing import List, Union, Optional, Dict, Any
 
 from pydantic import Field, field_validator
@@ -65,6 +66,22 @@ class Settings(BaseSettings):
     # HIPAA compliance
     PHI_AUDIT_ENABLED: bool = True
     PHI_ENCRYPTION_KEY: str = Field(default_factory=lambda: secrets.token_hex(32))
+    
+    # Encryption settings
+    ENCRYPTION_KEY: str = Field(default_factory=lambda: secrets.token_hex(32))
+    PREVIOUS_ENCRYPTION_KEY: Optional[str] = None
+    ENCRYPTION_SALT: str = Field(default_factory=lambda: secrets.token_hex(16))
+    
+    # Audit logging
+    AUDIT_LOG_DIR: str = Field(default_factory=lambda: os.path.join(tempfile.gettempdir(), "novamind_audit"))
+    AUDIT_LOG_RETENTION_DAYS: int = 365  # HIPAA requires 6 years, but we set 1 year as default
+    AUDIT_LOG_FORMAT: str = "%(asctime)s [AUDIT] [%(levelname)s] %(message)s"
+    
+    # Enhanced security settings
+    ENABLE_FIELD_LEVEL_ENCRYPTION: bool = True
+    ENABLE_FILE_ENCRYPTION: bool = True
+    ENABLE_KEY_ROTATION: bool = True
+    KEY_ROTATION_INTERVAL_DAYS: int = 90  # HIPAA best practice
     
     @field_validator("BACKEND_CORS_ORIGINS")
     @classmethod

@@ -1,0 +1,387 @@
+{
+  "timestamp": "2025-04-12T18:55:49.654097",
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 22
+  },
+  "categories": {
+    "Core Encryption": {
+      "files_found": 1,
+      "files": [
+        {
+          "file": "test_ml_encryption.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_ml_encryption.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 1
+      }
+    },
+    "PHI Handling": {
+      "files_found": 1,
+      "files": [
+        {
+          "file": "test_address_helper.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_address_helper.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 1
+      }
+    },
+    "Enhanced Security": {
+      "files_found": 1,
+      "files": [
+        {
+          "file": "test_encryption_enhanced.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/../unit/infrastructure/security/test_encryption_enhanced.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 1
+      }
+    },
+    "JWT Authentication": {
+      "files_found": 2,
+      "files": [
+        {
+          "file": "test_jwt_service.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_jwt_service.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_jwt_auth.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_jwt_auth.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 2
+      }
+    },
+    "HIPAA Compliance": {
+      "files_found": 1,
+      "files": [
+        {
+          "file": "test_hipaa_compliance.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_hipaa_compliance.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 1
+      }
+    },
+    "PHI Protection": {
+      "files_found": 7,
+      "files": [
+        {
+          "file": "test_phi_middleware.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_phi_middleware.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_phi_audit.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_phi_audit.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_phi_audit_logic.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_phi_audit_logic.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_phi_detection.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_phi_detection.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_phi_code_patterns.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_phi_code_patterns.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_phi_sanitizer.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_phi_sanitizer.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_phi_audit_fixed.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_phi_audit_fixed.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 7
+      }
+    },
+    "Security Patterns": {
+      "files_found": 6,
+      "files": [
+        {
+          "file": "test_base_security_test.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_base_security_test.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_ml_phi_security.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_ml_phi_security.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_api_security.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_api_security.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_repository_security.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_repository_security.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_database_security.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_database_security.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_patient_phi_security.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_patient_phi_security.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 6
+      }
+    },
+    "Audit Logging": {
+      "files_found": 1,
+      "files": [
+        {
+          "file": "test_audit_logging.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_audit_logging.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 1
+      }
+    },
+    "API Security": {
+      "files_found": 2,
+      "files": [
+        {
+          "file": "test_api_hipaa_compliance.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_api_hipaa_compliance.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        },
+        {
+          "file": "test_api_security.py",
+          "path": "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_api_security.py",
+          "summary": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 1
+          },
+          "tests": []
+        }
+      ],
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 2
+      }
+    }
+  },
+  "start_time": "2025-04-12T18:55:49.654104",
+  "end_time": "2025-04-12T18:55:56.726686",
+  "duration_seconds": 7.072582
+}
