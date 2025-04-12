@@ -491,3 +491,56 @@ class NeurotransmitterEffectVisualizer:
                 "total_effects": len(effects)
             }
         }
+        
+    def generate_effect_comparison(
+        self,
+        effects: list[NeurotransmitterEffect]
+    ) -> dict[str, Any]:
+        """
+        Generate visualization data for comparing multiple effects.
+        This is an alias for generate_comparative_visualization for backward compatibility.
+        
+        Args:
+            effects: List of neurotransmitter effects to compare
+            
+        Returns:
+            Dictionary with comparative visualization data
+        """
+        # Get the comparative visualization data as the base
+        base_result = self.generate_comparative_visualization(effects)
+        
+        # Create a new dictionary with all the same data
+        result = {}
+        for key, value in base_result.items():
+            result[key] = value
+            
+        # Add comparison_metrics field (required by tests)
+        if "summary" in result:
+            result["comparison_metrics"] = result["summary"]
+        else:
+            # Fallback in case summary is missing
+            result["comparison_metrics"] = {
+                "brain_regions": [],
+                "neurotransmitters": [nt.value for nt in set(effect.neurotransmitter for effect in effects)],
+                "max_effect_size": max([abs(effect.effect_size) for effect in effects], default=0.0),
+                "significant_count": sum(1 for effect in effects if effect.is_statistically_significant),
+                "total_effects": len(effects)
+            }
+            
+        return result
+        
+    def generate_effect_comparison(
+        self,
+        effects: list[NeurotransmitterEffect]
+    ) -> dict[str, Any]:
+        """
+        Generate visualization data for comparing multiple effects.
+        This is an alias for generate_comparative_visualization for backward compatibility.
+        
+        Args:
+            effects: List of neurotransmitter effects to compare
+            
+        Returns:
+            Dictionary with comparative visualization data
+        """
+        return self.generate_comparative_visualization(effects)

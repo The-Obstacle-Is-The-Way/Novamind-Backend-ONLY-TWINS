@@ -519,7 +519,7 @@ class TestLogSanitizer:
         sanitizer = LogSanitizer()
         
         # Add a custom hook
-    def custom_hook(value, context):
+        def custom_hook(value, context):
             if isinstance(value, str) and "CUSTOM_PHI" in value:
                 return value.replace("CUSTOM_PHI", "[CUSTOM_REDACTED]")
             return value
@@ -642,7 +642,7 @@ class TestLoggingIntegration:
         # Patch the logging.getLogger to return our mock
         with patch('logging.getLogger', return_value=mock_logger):
             @sanitize_logs(sanitizer=mock_sanitizer)
-    def function_with_phi_logs():
+            def function_with_phi_logs():
                 logger = logging.getLogger("test_decorator")
                 logger.info("Function logs SSN: 123-45-6789")
                 return "Success"

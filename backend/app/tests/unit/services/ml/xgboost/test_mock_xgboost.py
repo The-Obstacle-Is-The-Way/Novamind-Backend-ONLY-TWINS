@@ -33,14 +33,12 @@ class TestMockXGBoostService:
     @pytest.fixture
     def sample_patient_id(self):
         """Fixture that provides a sample patient ID."""
-        
-    return "patient-123"
+        return "patient-123"
     
     @pytest.fixture
     def sample_clinical_data(self):
         """Fixture that provides sample clinical data."""
-        
-    return {
+        return {
             "severity": "moderate",
             "assessment_scores": {
                 "phq9": 15,

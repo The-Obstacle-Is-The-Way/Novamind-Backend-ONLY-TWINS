@@ -599,7 +599,8 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
                 "baseline_level": baseline_level,
                 "receptor_density": self.analyze_receptor_affinity(neurotransmitter, brain_region),
                 "is_producing_region": brain_region in self.get_producing_regions(neurotransmitter),
-                "brain_region": brain_region.value
+                "brain_region": brain_region.value,
+                "primary_neurotransmitter": neurotransmitter.value
             }
         )
         
@@ -634,10 +635,60 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         # Set initial level for starting region
         cascade_results[starting_region] = [initial_level]
         
-        # Set all other regions to default initial level
+        # Get brain region connectivity for cascade
+        # This simplifies the complex connectivity in the brain
+        # In a real implementation, this would be based on actual neural pathways
+        connectivity = {
+            BrainRegion.PREFRONTAL_CORTEX: [
+                (BrainRegion.ANTERIOR_CINGULATE_CORTEX, 0.8),
+                (BrainRegion.STRIATUM, 0.7),
+                (BrainRegion.AMYGDALA, 0.5),
+                (BrainRegion.HIPPOCAMPUS, 0.4)
+            ],
+            BrainRegion.AMYGDALA: [
+                (BrainRegion.HIPPOCAMPUS, 0.7),
+                (BrainRegion.HYPOTHALAMUS, 0.6),
+                (BrainRegion.PREFRONTAL_CORTEX, 0.5)
+            ],
+            BrainRegion.HIPPOCAMPUS: [
+                (BrainRegion.PREFRONTAL_CORTEX, 0.6),
+                (BrainRegion.AMYGDALA, 0.5)
+            ],
+            BrainRegion.NUCLEUS_ACCUMBENS: [
+                (BrainRegion.VENTRAL_TEGMENTAL_AREA, 0.8),
+                (BrainRegion.PREFRONTAL_CORTEX, 0.6)
+            ],
+            BrainRegion.VENTRAL_TEGMENTAL_AREA: [
+                (BrainRegion.NUCLEUS_ACCUMBENS, 0.9),
+                (BrainRegion.PREFRONTAL_CORTEX, 0.5)
+            ],
+            BrainRegion.RAPHE_NUCLEI: [
+                (BrainRegion.PREFRONTAL_CORTEX, 0.7),
+                (BrainRegion.HIPPOCAMPUS, 0.6),
+                (BrainRegion.AMYGDALA, 0.5)
+            ],
+            BrainRegion.LOCUS_COERULEUS: [
+                (BrainRegion.PREFRONTAL_CORTEX, 0.8),
+                (BrainRegion.AMYGDALA, 0.7),
+                (BrainRegion.HIPPOCAMPUS, 0.5)
+            ],
+            BrainRegion.STRIATUM: [
+                (BrainRegion.PREFRONTAL_CORTEX, 0.7),
+                (BrainRegion.NUCLEUS_ACCUMBENS, 0.6)
+            ]
+        }
+        
+        # Set all other regions to a small initial level (not zero)
+        # This ensures there's always some baseline activity to start with
         for region in BrainRegion:
             if region != starting_region:
-                cascade_results[region] = [0.0]
+                # Small initial level that varies by proximity to starting region
+                if region in [r for r, _ in connectivity.get(starting_region, [])]:
+                    # Direct connection gets higher initial value
+                    cascade_results[region] = [0.1]
+                else:
+                    # Indirect connections get smaller initial value
+                    cascade_results[region] = [0.05]
         
         # Get brain region connectivity for cascade
         # This simplifies the complex connectivity in the brain

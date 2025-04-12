@@ -170,7 +170,7 @@ class TestTransformerTimeSeriesModel:
             mock_preprocess.assert_called_once_with(sample_input_data)
             
             # Get the processed data
-            processed_data = mock_preprocess.return_value=# Verify the processed data has the expected structure
+            processed_data = mock_preprocess.return_value  # Verify the processed data has the expected structure
             assert isinstance(processed_data, np.ndarray)
             assert processed_data.ndim  ==  2  # 2D array: [time_steps, features]
             assert processed_data.shape[0] == len(sample_input_data)  # Same number of time steps
