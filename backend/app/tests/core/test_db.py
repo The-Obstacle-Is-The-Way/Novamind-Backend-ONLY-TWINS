@@ -5,9 +5,9 @@ This module tests the database connection utilities for SQLAlchemy.
 """
 import pytest
 import os
+from sqlalchemy import Column, String, Integer
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import engine, init_db, get_session, Base
-
 
 
 @pytest.mark.asyncio()
@@ -65,7 +65,7 @@ async def test_get_session():
         # Just ping the database with a simple SQL expression
         result = await session.execute("SELECT 1")
         row = result.scalar()
-        assert row  ==  1
+        assert row == 1
     finally:
         # Clean up
         try:
@@ -80,31 +80,30 @@ async def test_get_session():
             pass
 
 
+# Define TestModel at module level
+class TestModel(Base):
+    __tablename__ = "test_models_temp"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+
+
 class TestDatabaseBase:
     """Test base class for database-related tests."""
     
     @pytest.mark.asyncio()
     @pytest.mark.db_required()
     async def test_base_class_table_creation(self):
-    """Test that Base can create tables."""
-        # Model definition moved outside the test method
+        """Test that Base can create tables."""
         # Create just this table
-    async with engine.begin() as conn:
-    await conn.run_sync(lambda schema: TestModel.__table__.create(schema, checkfirst=True))
+        async with engine.begin() as conn:
+            await conn.run_sync(lambda schema: TestModel.__table__.create(schema, checkfirst=True))
         
         # Verify the table exists by querying it
-    async with AsyncSession(engine) as session:
-    result = await session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='test_models_temp'")
-    table_exists = result.scalar() is not None
-    assert table_exists
+        async with AsyncSession(engine) as session:
+            result = await session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='test_models_temp'")
+            table_exists = result.scalar() is not None
+            assert table_exists
         
         # Clean up - drop the table
-    async with engine.begin() as conn:
-    await conn.run_sync(lambda schema: TestModel.__table__.drop(schema, checkfirst=True))
-
-# Define TestModel at module level
-from sqlalchemy import Column, String, Integer # Move import here too
-class TestModel(Base):
-    __tablename__ = "test_models_temp"
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+        async with engine.begin() as conn:
+            await conn.run_sync(lambda schema: TestModel.__table__.drop(schema, checkfirst=True))

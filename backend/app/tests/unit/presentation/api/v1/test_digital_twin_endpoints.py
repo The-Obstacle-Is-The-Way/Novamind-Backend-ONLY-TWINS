@@ -1,447 +1,258 @@
 """Unit tests for digital twin API endpoints."""
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
-from fastapi import status, HTTPException
 from fastapi.testclient import TestClient
-import uuid
+from fastapi import status
+from unittest.mock import patch, MagicMock, AsyncMock
 import json
 from datetime import datetime, timedelta
+import uuid
 
-from app.presentation.api.v1.endpoints.digital_twin import (
-    router, 
-    get_digital_twin, 
-    get_all_digital_twins,
-    create_digital_twin,
-    update_digital_twin,
-    get_biometric_data,
-    add_biometric_data
-)
-from app.presentation.api.v1.endpoints.dependencies import get_current_user, get_current_active_user
-from app.application.services.digital_twin_service import DigitalTwinService
-from app.domain.entities.biometric_twin import (
-    BiometricTwin, 
-    BiometricTimeseriesData,
-    BiometricDataPoint,
-    BiometricType,
-    BiometricSource
-)
-from app.domain.entities.patient import Patient
-from app.domain.entities.user import User
+from app.main import app
+from app.domain.entities.biometric_twin_enhanced import BiometricTwin, BiometricDataPoint, BiometricType, BiometricSource
 from app.domain.value_objects.physiological_ranges import PhysiologicalRange
+
+
+@pytest.fixture
+def test_client():
+    """Create a test client for the FastAPI app."""
+    return TestClient(app)
 
 
 @pytest.fixture
 def mock_digital_twin_service():
     """Create a mock digital twin service."""
-    service = MagicMock(spec=DigitalTwinService)
+    mock_service = MagicMock()
     
-    # Configure some default behaviors
-    service.get_digital_twin.return_value = BiometricTwin(
-        id=str(uuid.uuid4()),
-        patient_id="p12345",
-        timeseries_data={},
-        created_at=datetime.now(),
-        updated_at=datetime.now()
-    )
+    # Setup async method mocks
+    mock_service.get_digital_twin = AsyncMock()
+    mock_service.update_digital_twin = AsyncMock()
+    mock_service.add_biometric_data = AsyncMock()
+    mock_service.get_biometric_history = AsyncMock()
     
-    service.get_all_digital_twins.return_value = [
-        BiometricTwin(
-            id=str(uuid.uuid4()),
-            patient_id="p12345",
-            timeseries_data={},
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+    return mock_service
+
+
+@pytest.fixture
+def sample_digital_twin():
+    """Create a sample digital twin for testing."""
+    patient_id = "patient-123"
+    timestamp = datetime.now()
+    twin_id = str(uuid.uuid4())
+    
+    # Create HR data
+    hr_data_points = [
+        BiometricDataPoint(
+            timestamp=timestamp - timedelta(days=2),
+            value=72.5,
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit"}
         ),
-        BiometricTwin(
-            id=str(uuid.uuid4()),
-            patient_id="p67890",
-            timeseries_data={},
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+        BiometricDataPoint(
+            timestamp=timestamp - timedelta(days=1),
+            value=75.0,
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit"}
+        ),
+        BiometricDataPoint(
+            timestamp=timestamp,
+            value=70.5,
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit"}
         )
     ]
     
-    return service
-
-
-@pytest.fixture
-def mock_current_user():
-    """Create a mock current user."""
-    return User(
-        id=str(uuid.uuid4()),
-        username="testdoctor",
-        email="doctor@example.com",
-        full_name="Dr. Test",
-        disabled=False,
-        role="doctor",
-        permissions=["read:patients", "write:patients"]
-    )
-
-
-@pytest.fixture
-def app_with_dependencies(mock_digital_twin_service, mock_current_user):
-    """Create a FastAPI app with the router and mocked dependencies."""
-    from fastapi import FastAPI
-    
-    app = FastAPI()
-    
-    # Override dependencies
-    async def mock_get_current_user():
-        return mock_current_user
-    
-    async def mock_get_digital_twin_service():
-        return mock_digital_twin_service
-    
-    # Apply overrides to the router
-    app.include_router(
-        router,
-        prefix="/api/v1/digital-twins",
-        dependencies=[],
-    )
-    
-    app.dependency_overrides[get_current_active_user] = mock_get_current_user
-    app.dependency_overrides[get_current_user] = mock_get_current_user
-    
-    # Add override for the digital twin service
-    for route in router.routes:
-        if hasattr(route, "dependencies"):
-            for dep_index, dep in enumerate(route.dependencies):
-                if dep.dependency.__name__ == "get_digital_twin_service":
-                    route.dependencies[dep_index].dependency = mock_get_digital_twin_service
-    
-    return app
-
-
-@pytest.fixture
-def client(app_with_dependencies):
-    """Create a test client."""
-    return TestClient(app_with_dependencies)
-
-
-@pytest.fixture
-def sample_biometric_data():
-    """Create sample biometric data for testing."""
-    now = datetime.now()
-    
-    heart_rate_data = BiometricTimeseriesData(
-        biometric_type=BiometricType.HEART_RATE,
-        unit="bpm",
-        data_points=[
-            BiometricDataPoint(
-                timestamp=now - timedelta(days=1),
-                value=72.5,
-                source=BiometricSource.WEARABLE,
-                metadata={"device": "fitbit"}
-            ),
-            BiometricDataPoint(
-                timestamp=now,
-                value=75.2,
-                source=BiometricSource.WEARABLE,
-                metadata={"device": "fitbit"}
-            )
-        ],
-        physiological_range=PhysiologicalRange(min=60, max=100)
-    )
-    
-    return heart_rate_data
+    # This is a simplified version for testing
+    return {
+        "id": twin_id,
+        "patient_id": patient_id,
+        "timeseries_data": {
+            "heart_rate": {
+                "biometric_type": "heart_rate",
+                "unit": "bpm",
+                "data_points": [point.to_dict() for point in hr_data_points],
+                "physiological_range": {
+                    "min": 60,
+                    "max": 100,
+                    "critical_min": 40,
+                    "critical_max": 160
+                }
+            }
+        },
+        "created_at": (timestamp - timedelta(days=30)).isoformat(),
+        "updated_at": timestamp.isoformat()
+    }
 
 
 class TestDigitalTwinEndpoints:
-    """Test suite for digital twin API endpoints."""
-    
-    def test_get_digital_twin(self, client, mock_digital_twin_service):
-        """Test getting a digital twin by ID."""
-        twin_id = str(uuid.uuid4())
-        
-        # Configure mock to return a specific digital twin
-        mock_twin = BiometricTwin(
-            id=twin_id,
-            patient_id="p12345",
-            timeseries_data={},
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        mock_digital_twin_service.get_digital_twin.return_value = mock_twin
+    """Test suite for Digital Twin API endpoints."""
+
+    @patch("app.presentation.api.dependencies.get_digital_twin_service")
+    async def test_get_digital_twin(
+        self, mock_get_service, test_client, mock_digital_twin_service, sample_digital_twin
+    ):
+        """Test getting a digital twin."""
+        # Setup mocks
+        mock_get_service.return_value = mock_digital_twin_service
+        mock_digital_twin_service.get_digital_twin.return_value = sample_digital_twin
         
         # Make request
-        response = client.get(f"/api/v1/digital-twins/{twin_id}")
+        response = test_client.get(f"/api/v1/patients/{sample_digital_twin['patient_id']}/digital-twin")
         
         # Check response
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["id"] == twin_id
-        assert data["patient_id"] == "p12345"
-        
-        # Verify service was called
-        mock_digital_twin_service.get_digital_twin.assert_called_once_with(twin_id)
+        assert data["id"] == sample_digital_twin["id"]
+        assert data["patient_id"] == sample_digital_twin["patient_id"]
+        assert "timeseries_data" in data
+        assert "heart_rate" in data["timeseries_data"]
     
-    def test_get_digital_twin_not_found(self, client, mock_digital_twin_service):
+    @patch("app.presentation.api.dependencies.get_digital_twin_service")
+    async def test_get_digital_twin_not_found(
+        self, mock_get_service, test_client, mock_digital_twin_service
+    ):
         """Test getting a non-existent digital twin."""
-        twin_id = str(uuid.uuid4())
-        
-        # Configure mock to return None
+        # Setup mocks
+        mock_get_service.return_value = mock_digital_twin_service
         mock_digital_twin_service.get_digital_twin.return_value = None
         
         # Make request
-        response = client.get(f"/api/v1/digital-twins/{twin_id}")
+        patient_id = "nonexistent-patient"
+        response = test_client.get(f"/api/v1/patients/{patient_id}/digital-twin")
         
         # Check response
         assert response.status_code == status.HTTP_404_NOT_FOUND
-        data = response.json()
-        assert "detail" in data
-        assert "not found" in data["detail"].lower()
     
-    def test_get_all_digital_twins(self, client, mock_digital_twin_service):
-        """Test getting all digital twins."""
+    @patch("app.presentation.api.dependencies.get_digital_twin_service")
+    async def test_add_biometric_data(
+        self, mock_get_service, test_client, mock_digital_twin_service, sample_digital_twin
+    ):
+        """Test adding biometric data to a digital twin."""
+        # Setup mocks
+        mock_get_service.return_value = mock_digital_twin_service
+        mock_digital_twin_service.add_biometric_data.return_value = True
+        
+        # Prepare request data
+        patient_id = sample_digital_twin["patient_id"]
+        data = {
+            "biometric_type": "heart_rate",
+            "value": 78.5,
+            "source": "wearable",
+            "timestamp": datetime.now().isoformat(),
+            "metadata": {"device": "fitbit", "activity": "resting"}
+        }
+        
         # Make request
-        response = client.get("/api/v1/digital-twins/")
+        response = test_client.post(
+            f"/api/v1/patients/{patient_id}/digital-twin/biometrics",
+            json=data
+        )
+        
+        # Check response
+        assert response.status_code == status.HTTP_201_CREATED
+        assert mock_digital_twin_service.add_biometric_data.called
+        call_args = mock_digital_twin_service.add_biometric_data.call_args[0]
+        assert call_args[0] == patient_id
+        assert call_args[1] == data["biometric_type"]
+    
+    @patch("app.presentation.api.dependencies.get_digital_twin_service")
+    async def test_get_biometric_history(
+        self, mock_get_service, test_client, mock_digital_twin_service, sample_digital_twin
+    ):
+        """Test getting biometric history for a patient."""
+        # Setup mocks
+        mock_get_service.return_value = mock_digital_twin_service
+        
+        # Extract heart rate data points for mock return
+        hr_data = sample_digital_twin["timeseries_data"]["heart_rate"]["data_points"]
+        mock_digital_twin_service.get_biometric_history.return_value = hr_data
+        
+        # Make request
+        patient_id = sample_digital_twin["patient_id"]
+        biometric_type = "heart_rate"
+        response = test_client.get(
+            f"/api/v1/patients/{patient_id}/digital-twin/biometrics/{biometric_type}"
+        )
         
         # Check response
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert isinstance(data, list)
-        assert len(data) == 2  # Two mock twins from fixture
+        assert len(data) == len(hr_data)
         
-        # Verify service was called
-        mock_digital_twin_service.get_all_digital_twins.assert_called_once()
-    
-    def test_create_digital_twin(self, client, mock_digital_twin_service):
-        """Test creating a new digital twin."""
-        # Set up request data
-        patient_id = "p12345"
-        new_twin_id = str(uuid.uuid4())
-        
-        # Configure mock to return the created twin
-        mock_digital_twin_service.create_digital_twin.return_value = BiometricTwin(
-            id=new_twin_id,
-            patient_id=patient_id,
-            timeseries_data={},
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+        # Check call arguments
+        mock_digital_twin_service.get_biometric_history.assert_called_once_with(
+            patient_id, biometric_type, None, None
         )
+    
+    @patch("app.presentation.api.dependencies.get_digital_twin_service")
+    async def test_get_biometric_history_with_timerange(
+        self, mock_get_service, test_client, mock_digital_twin_service, sample_digital_twin
+    ):
+        """Test getting biometric history with time range filters."""
+        # Setup mocks
+        mock_get_service.return_value = mock_digital_twin_service
         
-        # Make request
-        response = client.post(
-            "/api/v1/digital-twins/",
-            json={"patient_id": patient_id}
+        # Extract heart rate data points for mock return
+        hr_data = sample_digital_twin["timeseries_data"]["heart_rate"]["data_points"]
+        mock_digital_twin_service.get_biometric_history.return_value = hr_data[:1]  # Return just one point
+        
+        # Make request with time range
+        patient_id = sample_digital_twin["patient_id"]
+        biometric_type = "heart_rate"
+        start_time = (datetime.now() - timedelta(days=1)).isoformat()
+        end_time = datetime.now().isoformat()
+        
+        response = test_client.get(
+            f"/api/v1/patients/{patient_id}/digital-twin/biometrics/{biometric_type}",
+            params={"start_time": start_time, "end_time": end_time}
         )
         
         # Check response
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["id"] == new_twin_id
-        assert data["patient_id"] == patient_id
+        assert isinstance(data, list)
+        assert len(data) == 1
         
-        # Verify service was called
-        mock_digital_twin_service.create_digital_twin.assert_called_once_with(patient_id)
-    
-    def test_update_digital_twin(self, client, mock_digital_twin_service, sample_biometric_data):
-        """Test updating a digital twin."""
-        twin_id = str(uuid.uuid4())
-        
-        # Configure mock to return the updated twin
-        updated_twin = BiometricTwin(
-            id=twin_id,
-            patient_id="p12345",
-            timeseries_data={
-                BiometricType.HEART_RATE: sample_biometric_data
-            },
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+        # Check call arguments
+        mock_digital_twin_service.get_biometric_history.assert_called_once_with(
+            patient_id, biometric_type, start_time, end_time
         )
-        mock_digital_twin_service.update_digital_twin.return_value = updated_twin
+    
+    @patch("app.presentation.api.dependencies.get_digital_twin_service")
+    async def test_get_latest_biometrics(
+        self, mock_get_service, test_client, mock_digital_twin_service, sample_digital_twin
+    ):
+        """Test getting latest biometric values."""
+        # Setup mocks
+        mock_get_service.return_value = mock_digital_twin_service
         
-        # Make request with serialized biometric data
-        update_data = {
-            "timeseries_data": {
-                "heart_rate": sample_biometric_data.to_dict()
+        # Create latest values mock
+        latest_values = {
+            "heart_rate": {
+                "timestamp": datetime.now().isoformat(),
+                "value": 72.5,
+                "source": "wearable",
+                "metadata": {"device": "fitbit"}
+            },
+            "blood_pressure": {
+                "timestamp": datetime.now().isoformat(),
+                "value": {"systolic": 120, "diastolic": 80},
+                "source": "clinical",
+                "metadata": {"position": "sitting"}
             }
         }
+        mock_digital_twin_service.get_latest_biometrics.return_value = latest_values
         
-        response = client.put(
-            f"/api/v1/digital-twins/{twin_id}",
-            json=update_data
+        # Make request
+        patient_id = sample_digital_twin["patient_id"]
+        response = test_client.get(
+            f"/api/v1/patients/{patient_id}/digital-twin/biometrics/latest"
         )
         
         # Check response
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["id"] == twin_id
-        assert "heart_rate" in data["timeseries_data"]
-        
-        # Verify service was called
-        mock_digital_twin_service.update_digital_twin.assert_called_once()
-    
-    def test_get_biometric_data(self, client, mock_digital_twin_service, sample_biometric_data):
-        """Test getting biometric data for a specific type."""
-        twin_id = str(uuid.uuid4())
-        biometric_type = BiometricType.HEART_RATE
-        
-        # Configure mock to return biometric data
-        mock_digital_twin_service.get_biometric_data.return_value = sample_biometric_data
-        
-        # Make request
-        response = client.get(f"/api/v1/digital-twins/{twin_id}/biometric/{biometric_type.value}")
-        
-        # Check response
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert data["biometric_type"] == biometric_type.value
-        assert data["unit"] == "bpm"
-        assert len(data["data_points"]) == 2
-        
-        # Verify service was called
-        mock_digital_twin_service.get_biometric_data.assert_called_once_with(
-            twin_id, biometric_type
-        )
-    
-    def test_add_biometric_data(self, client, mock_digital_twin_service, sample_biometric_data):
-        """Test adding biometric data to a digital twin."""
-        twin_id = str(uuid.uuid4())
-        
-        # Configure mock
-        mock_digital_twin_service.add_biometric_data.return_value = BiometricTwin(
-            id=twin_id,
-            patient_id="p12345",
-            timeseries_data={
-                BiometricType.HEART_RATE: sample_biometric_data
-            },
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        # Make request
-        response = client.post(
-            f"/api/v1/digital-twins/{twin_id}/biometric",
-            json=sample_biometric_data.to_dict()
-        )
-        
-        # Check response
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert data["id"] == twin_id
-        assert "heart_rate" in data["timeseries_data"]
-        
-        # Verify service was called
-        mock_digital_twin_service.add_biometric_data.assert_called_once()
-    
-    def test_add_biometric_data_invalid(self, client, mock_digital_twin_service):
-        """Test adding invalid biometric data."""
-        twin_id = str(uuid.uuid4())
-        
-        # Invalid data (missing required fields)
-        invalid_data = {
-            "biometric_type": "heart_rate",
-            # Missing unit and data_points
-        }
-        
-        # Make request
-        response = client.post(
-            f"/api/v1/digital-twins/{twin_id}/biometric",
-            json=invalid_data
-        )
-        
-        # Check response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        
-        # Service should not be called with invalid data
-        mock_digital_twin_service.add_biometric_data.assert_not_called()
-
-
-@patch("app.presentation.api.v1.endpoints.digital_twin.DigitalTwinService")
-class TestDigitalTwinEndpointsDirect:
-    """Test suite for direct calling of the endpoint functions."""
-    
-    @pytest.mark.asyncio
-    async def test_get_digital_twin_direct(self, mock_service_class):
-        """Test get_digital_twin directly without the router."""
-        # Setup
-        twin_id = str(uuid.uuid4())
-        mock_service = MagicMock()
-        mock_service_class.return_value = mock_service
-        
-        # Test the successful case
-        mock_service.get_digital_twin.return_value = BiometricTwin(
-            id=twin_id,
-            patient_id="p12345",
-            timeseries_data={},
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        result = await get_digital_twin(twin_id, mock_service)
-        assert result.id == twin_id
-        
-        # Test the not found case
-        mock_service.get_digital_twin.return_value = None
-        
-        with pytest.raises(HTTPException) as exc_info:
-            await get_digital_twin(twin_id, mock_service)
-        
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-    
-    @pytest.mark.asyncio
-    async def test_get_all_digital_twins_direct(self, mock_service_class):
-        """Test get_all_digital_twins directly."""
-        # Setup
-        mock_service = MagicMock()
-        mock_service_class.return_value = mock_service
-        
-        # Configure mock to return some digital twins
-        mock_twins = [
-            BiometricTwin(
-                id=str(uuid.uuid4()),
-                patient_id="p12345",
-                timeseries_data={},
-                created_at=datetime.now(),
-                updated_at=datetime.now()
-            ),
-            BiometricTwin(
-                id=str(uuid.uuid4()),
-                patient_id="p67890",
-                timeseries_data={},
-                created_at=datetime.now(),
-                updated_at=datetime.now()
-            )
-        ]
-        mock_service.get_all_digital_twins.return_value = mock_twins
-        
-        # Call function
-        result = await get_all_digital_twins(mock_service)
-        
-        # Check result
-        assert len(result) == 2
-        assert result[0].id == mock_twins[0].id
-        assert result[1].id == mock_twins[1].id
-    
-    @pytest.mark.asyncio
-    async def test_create_digital_twin_direct(self, mock_service_class):
-        """Test create_digital_twin directly."""
-        # Setup
-        mock_service = MagicMock()
-        mock_service_class.return_value = mock_service
-        patient_id = "p12345"
-        
-        # Configure mock
-        new_twin = BiometricTwin(
-            id=str(uuid.uuid4()),
-            patient_id=patient_id,
-            timeseries_data={},
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        mock_service.create_digital_twin.return_value = new_twin
-        
-        # Call function
-        from app.presentation.api.v1.schemas.digital_twin import DigitalTwinCreate
-        result = await create_digital_twin(
-            DigitalTwinCreate(patient_id=patient_id),
-            mock_service
-        )
-        
-        # Check result
-        assert result.id == new_twin.id
-        assert result.patient_id == patient_id
-        
-        # Verify service called
-        mock_service.create_digital_twin.assert_called_once_with(patient_id)
+        assert "heart_rate" in data
+        assert "blood_pressure" in data
+        assert data["heart_rate"]["value"] == 72.5
+        assert data["blood_pressure"]["value"] == {"systolic": 120, "diastolic": 80}

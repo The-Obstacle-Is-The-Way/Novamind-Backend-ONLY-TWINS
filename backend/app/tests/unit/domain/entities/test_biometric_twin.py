@@ -1,445 +1,410 @@
-"""Unit tests for the BiometricTwin domain entity."""
+"""Unit tests for BiometricTwin domain entity."""
 import pytest
 from datetime import datetime, timedelta
 import uuid
-import json
-from typing import List, Dict, Any, Optional
 
-from app.domain.entities.biometric_twin import (
+from app.domain.entities.biometric_twin_enhanced import (
     BiometricTwin,
-    BiometricDataPoint,
     BiometricTimeseriesData,
-    BiometricSource,
-    BiometricType
+    BiometricDataPoint,
+    BiometricType,
+    BiometricSource
 )
-from app.domain.entities.patient import Patient
 from app.domain.value_objects.physiological_ranges import PhysiologicalRange
 
 
 @pytest.fixture
-def mock_patient():
-    """Create a mock patient."""
-    return Patient(
-        id="p12345",
-        first_name="John",
-        last_name="Doe",
-        dob=datetime(1980, 1, 1).date(),
-        medical_record_number="MRN123456"
-    )
-
-
-@pytest.fixture
-def sample_biometric_data():
-    """Create sample biometric data points."""
+def sample_data_points():
+    """Create sample biometric data points for testing."""
     now = datetime.now()
     return [
         BiometricDataPoint(
             timestamp=now - timedelta(days=2),
-            value=120.5,
+            value=72.5,
             source=BiometricSource.WEARABLE,
-            metadata={"device": "fitbit", "measurement_condition": "resting"}
+            metadata={"device": "fitbit"}
         ),
         BiometricDataPoint(
             timestamp=now - timedelta(days=1),
-            value=118.2,
+            value=75.0,
             source=BiometricSource.WEARABLE,
-            metadata={"device": "fitbit", "measurement_condition": "resting"}
+            metadata={"device": "fitbit"}
         ),
         BiometricDataPoint(
             timestamp=now,
-            value=122.1,
+            value=70.5,
             source=BiometricSource.WEARABLE,
-            metadata={"device": "fitbit", "measurement_condition": "resting"}
+            metadata={"device": "fitbit"}
         )
     ]
 
 
 @pytest.fixture
-def biometric_twin(mock_patient, sample_biometric_data):
-    """Create a biometric twin for testing."""
-    # Create timeseriesdata objects
-    heart_rate_data = BiometricTimeseriesData(
+def sample_timeseries(sample_data_points):
+    """Create a sample biometric timeseries for testing."""
+    return BiometricTimeseriesData(
         biometric_type=BiometricType.HEART_RATE,
         unit="bpm",
-        data_points=sample_biometric_data,
-        physiological_range=PhysiologicalRange(min=60, max=100, critical_min=40, critical_max=160)
+        data_points=sample_data_points,
+        physiological_range=PhysiologicalRange.get_default_range(BiometricType.HEART_RATE.value)
     )
-    
-    # Create a blood pressure timeseries with systolic/diastolic pairs
+
+
+@pytest.fixture
+def sample_biometric_twin(sample_timeseries):
+    """Create a sample biometric twin for testing."""
+    twin_id = str(uuid.uuid4())
+    patient_id = "patient-123"
     now = datetime.now()
-    bp_data_points = [
-        BiometricDataPoint(
-            timestamp=now - timedelta(days=2),
-            value={"systolic": 120, "diastolic": 80},  # Using dict for BP
-            source=BiometricSource.CLINICAL,
-            metadata={"position": "sitting"}
-        ),
-        BiometricDataPoint(
-            timestamp=now,
-            value={"systolic": 118, "diastolic": 78},
-            source=BiometricSource.CLINICAL,
-            metadata={"position": "sitting"}
-        )
-    ]
-    
-    blood_pressure_data = BiometricTimeseriesData(
-        biometric_type=BiometricType.BLOOD_PRESSURE,
-        unit="mmHg",
-        data_points=bp_data_points,
-        physiological_range=PhysiologicalRange(
-            min={"systolic": 90, "diastolic": 60},
-            max={"systolic": 120, "diastolic": 80},
-            critical_min={"systolic": 70, "diastolic": 40},
-            critical_max={"systolic": 180, "diastolic": 120}
-        )
-    )
     
     return BiometricTwin(
-        id=str(uuid.uuid4()),
-        patient_id=mock_patient.id,
-        timeseries_data={
-            BiometricType.HEART_RATE: heart_rate_data,
-            BiometricType.BLOOD_PRESSURE: blood_pressure_data
-        },
-        created_at=datetime.now(),
-        updated_at=datetime.now()
+        id=twin_id,
+        patient_id=patient_id,
+        timeseries_data={BiometricType.HEART_RATE: sample_timeseries},
+        created_at=now - timedelta(days=30),
+        updated_at=now
     )
 
 
 class TestBiometricDataPoint:
-    """Test suite for the BiometricDataPoint class."""
+    """Tests for the BiometricDataPoint class."""
     
-    def test_init_with_scalar_value(self):
-        """Test initialization with a scalar value."""
-        point = BiometricDataPoint(
-            timestamp=datetime.now(),
-            value=98.6,
-            source=BiometricSource.MANUAL
+    def test_init(self):
+        """Test initialization of BiometricDataPoint."""
+        timestamp = datetime.now()
+        value = 72.5
+        source = BiometricSource.WEARABLE
+        metadata = {"device": "fitbit"}
+        
+        data_point = BiometricDataPoint(
+            timestamp=timestamp,
+            value=value,
+            source=source,
+            metadata=metadata
         )
-        assert point.value == 98.6
-        assert point.source == BiometricSource.MANUAL
-    
-    def test_init_with_dict_value(self):
-        """Test initialization with a dictionary value."""
-        bp_value = {"systolic": 120, "diastolic": 80}
-        point = BiometricDataPoint(
-            timestamp=datetime.now(),
-            value=bp_value,
-            source=BiometricSource.CLINICAL
-        )
-        assert point.value == bp_value
-        assert point.source == BiometricSource.CLINICAL
-    
-    def test_metadata_optional(self):
-        """Test that metadata is optional."""
-        point = BiometricDataPoint(
-            timestamp=datetime.now(),
-            value=98.6,
-            source=BiometricSource.MANUAL
-        )
-        assert point.metadata == {}
+        
+        assert data_point.timestamp == timestamp
+        assert data_point.value == value
+        assert data_point.source == source
+        assert data_point.metadata == metadata
     
     def test_add_metadata(self):
         """Test adding metadata to a data point."""
-        point = BiometricDataPoint(
+        data_point = BiometricDataPoint(
             timestamp=datetime.now(),
-            value=98.6,
-            source=BiometricSource.MANUAL
+            value=72.5,
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit"}
         )
-        point.add_metadata({"location": "home", "device": "thermometer"})
-        assert point.metadata == {"location": "home", "device": "thermometer"}
         
-        # Test adding more metadata
-        point.add_metadata({"mood": "good"})
-        assert "mood" in point.metadata
-        assert point.metadata["mood"] == "good"
+        data_point.add_metadata({"activity": "resting"})
         
-        # Ensure original metadata is preserved
-        assert point.metadata["location"] == "home"
+        assert data_point.metadata == {"device": "fitbit", "activity": "resting"}
+    
+    def test_get_normalized_value(self):
+        """Test getting normalized value from various data types."""
+        # Simple numeric value
+        dp1 = BiometricDataPoint(
+            timestamp=datetime.now(),
+            value=72.5,
+            source=BiometricSource.WEARABLE
+        )
+        assert dp1.get_normalized_value() == 72.5
+        
+        # Dictionary with systolic value
+        dp2 = BiometricDataPoint(
+            timestamp=datetime.now(),
+            value={"systolic": 120, "diastolic": 80},
+            source=BiometricSource.CLINICAL
+        )
+        assert dp2.get_normalized_value() == 120.0
+        
+        # Dictionary with generic value
+        dp3 = BiometricDataPoint(
+            timestamp=datetime.now(),
+            value={"value": 98.6},
+            source=BiometricSource.CLINICAL
+        )
+        assert dp3.get_normalized_value() == 98.6
+        
+        # Non-numeric value that can't be normalized
+        dp4 = BiometricDataPoint(
+            timestamp=datetime.now(),
+            value="normal",
+            source=BiometricSource.PATIENT_REPORTED
+        )
+        assert dp4.get_normalized_value() == 0.0
     
     def test_to_dict(self):
-        """Test conversion to dictionary."""
+        """Test converting a data point to dictionary."""
         timestamp = datetime.now()
-        point = BiometricDataPoint(
+        data_point = BiometricDataPoint(
             timestamp=timestamp,
-            value=98.6,
-            source=BiometricSource.MANUAL,
-            metadata={"device": "thermometer"}
+            value=72.5,
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit"}
         )
-        result = point.to_dict()
+        
+        result = data_point.to_dict()
         
         assert result["timestamp"] == timestamp.isoformat()
-        assert result["value"] == 98.6
-        assert result["source"] == BiometricSource.MANUAL.value
-        assert result["metadata"] == {"device": "thermometer"}
+        assert result["value"] == 72.5
+        assert result["source"] == "wearable"
+        assert result["metadata"] == {"device": "fitbit"}
     
     def test_from_dict(self):
-        """Test creation from dictionary."""
-        now = datetime.now()
+        """Test creating a data point from dictionary."""
+        timestamp = datetime.now()
         data = {
-            "timestamp": now.isoformat(),
-            "value": 98.6,
-            "source": "manual",
-            "metadata": {"device": "thermometer"}
+            "timestamp": timestamp.isoformat(),
+            "value": 72.5,
+            "source": "wearable",
+            "metadata": {"device": "fitbit"}
         }
         
-        point = BiometricDataPoint.from_dict(data)
+        data_point = BiometricDataPoint.from_dict(data)
         
-        assert point.timestamp.isoformat() == now.isoformat()
-        assert point.value == 98.6
-        assert point.source == BiometricSource.MANUAL
-        assert point.metadata == {"device": "thermometer"}
+        assert data_point.timestamp == timestamp
+        assert data_point.value == 72.5
+        assert data_point.source == BiometricSource.WEARABLE
+        assert data_point.metadata == {"device": "fitbit"}
     
     def test_comparison(self):
         """Test comparing data points by timestamp."""
         now = datetime.now()
-        earlier = BiometricDataPoint(
+        
+        dp1 = BiometricDataPoint(
             timestamp=now - timedelta(hours=1),
-            value=98.6,
-            source=BiometricSource.MANUAL
-        )
-        later = BiometricDataPoint(
-            timestamp=now,
-            value=98.6,
-            source=BiometricSource.MANUAL
+            value=72.5,
+            source=BiometricSource.WEARABLE
         )
         
-        assert earlier < later
-        assert later > earlier
-        assert earlier != later
+        dp2 = BiometricDataPoint(
+            timestamp=now,
+            value=75.0,
+            source=BiometricSource.WEARABLE
+        )
+        
+        assert dp1 < dp2
+        assert not (dp2 < dp1)
 
 
 class TestBiometricTimeseriesData:
-    """Test suite for the BiometricTimeseriesData class."""
+    """Tests for the BiometricTimeseriesData class."""
     
-    def test_init(self, sample_biometric_data):
-        """Test initialization."""
+    def test_init(self, sample_data_points):
+        """Test initialization of BiometricTimeseriesData."""
         timeseries = BiometricTimeseriesData(
             biometric_type=BiometricType.HEART_RATE,
             unit="bpm",
-            data_points=sample_biometric_data,
-            physiological_range=PhysiologicalRange(min=60, max=100)
+            data_points=sample_data_points
         )
         
         assert timeseries.biometric_type == BiometricType.HEART_RATE
         assert timeseries.unit == "bpm"
         assert len(timeseries.data_points) == 3
-        assert timeseries.physiological_range.min == 60
-        assert timeseries.physiological_range.max == 100
+        assert timeseries.physiological_range is not None
+        assert timeseries.physiological_range.min == 60.0
+        assert timeseries.physiological_range.max == 100.0
     
-    def test_add_data_point(self, sample_biometric_data):
-        """Test adding a data point."""
-        timeseries = BiometricTimeseriesData(
-            biometric_type=BiometricType.HEART_RATE,
-            unit="bpm",
-            data_points=sample_biometric_data,
-            physiological_range=PhysiologicalRange(min=60, max=100)
-        )
-        
-        # Initial count
-        initial_count = len(timeseries.data_points)
-        
-        # Add new point
+    def test_add_data_point(self, sample_timeseries):
+        """Test adding a data point to a timeseries."""
         new_point = BiometricDataPoint(
             timestamp=datetime.now() + timedelta(days=1),
-            value=125.3,
-            source=BiometricSource.WEARABLE
+            value=68.0,
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit"}
         )
-        timeseries.add_data_point(new_point)
         
-        # Check point was added
-        assert len(timeseries.data_points) == initial_count + 1
-        assert new_point in timeseries.data_points
+        initial_count = len(sample_timeseries.data_points)
+        sample_timeseries.add_data_point(new_point)
+        
+        assert len(sample_timeseries.data_points) == initial_count + 1
+        assert sample_timeseries.data_points[-1] == new_point
     
-    def test_get_latest_value(self, sample_biometric_data):
-        """Test getting the latest value."""
-        timeseries = BiometricTimeseriesData(
-            biometric_type=BiometricType.HEART_RATE,
-            unit="bpm",
-            data_points=sample_biometric_data,
-            physiological_range=PhysiologicalRange(min=60, max=100)
-        )
+    def test_get_latest_value(self, sample_timeseries):
+        """Test getting the latest value from a timeseries."""
+        latest = sample_timeseries.get_latest_value()
         
-        latest = timeseries.get_latest_value()
-        
-        # Should be the point with the most recent timestamp
-        assert latest == max(sample_biometric_data, key=lambda point: point.timestamp)
-        assert latest.value == 122.1  # The value of the latest point
+        assert latest is not None
+        assert latest.value == 70.5
     
-    def test_get_values_in_range(self, sample_biometric_data):
-        """Test retrieving values within a time range."""
-        timeseries = BiometricTimeseriesData(
-            biometric_type=BiometricType.HEART_RATE,
-            unit="bpm",
-            data_points=sample_biometric_data,
-            physiological_range=PhysiologicalRange(min=60, max=100)
-        )
-        
+    def test_get_values_in_range(self, sample_timeseries):
+        """Test getting values within a time range."""
         now = datetime.now()
         start_time = now - timedelta(days=1, hours=12)
-        end_time = now + timedelta(hours=1)
+        end_time = now + timedelta(hours=12)
         
-        # Get values in range
-        filtered_points = timeseries.get_values_in_range(start_time, end_time)
+        values = sample_timeseries.get_values_in_range(start_time, end_time)
         
-        # Should contain the points within the time range
-        assert len(filtered_points) == 2
-        for point in filtered_points:
-            assert start_time <= point.timestamp <= end_time
+        assert len(values) == 2
+        assert values[0].value == 75.0
+        assert values[1].value == 70.5
     
-    def test_to_dict(self, sample_biometric_data):
-        """Test conversion to dictionary."""
-        timeseries = BiometricTimeseriesData(
-            biometric_type=BiometricType.HEART_RATE,
-            unit="bpm",
-            data_points=sample_biometric_data,
-            physiological_range=PhysiologicalRange(min=60, max=100)
+    def test_get_abnormal_values(self, sample_timeseries):
+        """Test getting abnormal values from a timeseries."""
+        # Add an abnormal value
+        abnormal_point = BiometricDataPoint(
+            timestamp=datetime.now() + timedelta(hours=1),
+            value=110.0,  # Above normal range
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit"}
         )
+        sample_timeseries.add_data_point(abnormal_point)
         
-        result = timeseries.to_dict()
+        abnormal_values = sample_timeseries.get_abnormal_values()
         
-        assert result["biometric_type"] == BiometricType.HEART_RATE.value
-        assert result["unit"] == "bpm"
-        assert len(result["data_points"]) == 3
-        assert "physiological_range" in result
-        assert result["physiological_range"]["min"] == 60
-        assert result["physiological_range"]["max"] == 100
+        assert len(abnormal_values) == 1
+        assert abnormal_values[0].value == 110.0
     
-    def test_from_dict(self):
-        """Test creation from dictionary."""
-        now = datetime.now()
-        data = {
-            "biometric_type": "heart_rate",
-            "unit": "bpm",
-            "data_points": [
-                {
-                    "timestamp": now.isoformat(),
-                    "value": 72.5,
-                    "source": "wearable",
-                    "metadata": {"device": "fitbit"}
-                }
-            ],
-            "physiological_range": {
-                "min": 60,
-                "max": 100,
-                "critical_min": 40,
-                "critical_max": 160
-            }
-        }
+    def test_get_critical_values(self, sample_timeseries):
+        """Test getting critical values from a timeseries."""
+        # Add a critical value
+        critical_point = BiometricDataPoint(
+            timestamp=datetime.now() + timedelta(hours=2),
+            value=170.0,  # Above critical range
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit", "activity": "exercise"}
+        )
+        sample_timeseries.add_data_point(critical_point)
         
-        timeseries = BiometricTimeseriesData.from_dict(data)
+        critical_values = sample_timeseries.get_critical_values()
         
-        assert timeseries.biometric_type == BiometricType.HEART_RATE
-        assert timeseries.unit == "bpm"
-        assert len(timeseries.data_points) == 1
-        assert timeseries.data_points[0].value == 72.5
-        assert timeseries.physiological_range.min == 60
-        assert timeseries.physiological_range.max == 100
+        assert len(critical_values) == 1
+        assert critical_values[0].value == 170.0
 
 
 class TestBiometricTwin:
-    """Test suite for the BiometricTwin class."""
+    """Tests for the BiometricTwin class."""
     
-    def test_init(self, biometric_twin, mock_patient):
-        """Test initialization."""
-        assert biometric_twin.patient_id == mock_patient.id
-        assert BiometricType.HEART_RATE in biometric_twin.timeseries_data
-        assert BiometricType.BLOOD_PRESSURE in biometric_twin.timeseries_data
-        assert isinstance(biometric_twin.created_at, datetime)
-        assert isinstance(biometric_twin.updated_at, datetime)
+    def test_init(self, sample_biometric_twin, sample_timeseries):
+        """Test initialization of BiometricTwin."""
+        assert sample_biometric_twin.patient_id == "patient-123"
+        assert sample_biometric_twin.timeseries_data[BiometricType.HEART_RATE] == sample_timeseries
     
-    def test_add_biometric_data(self, biometric_twin):
-        """Test adding new biometric data."""
-        # Create new timeseries data
-        now = datetime.now()
-        temperature_data = BiometricTimeseriesData(
-            biometric_type=BiometricType.TEMPERATURE,
-            unit="°F",
-            data_points=[
-                BiometricDataPoint(
-                    timestamp=now,
-                    value=98.6,
-                    source=BiometricSource.MANUAL
-                )
-            ],
-            physiological_range=PhysiologicalRange(min=97, max=99, critical_min=95, critical_max=104)
+    def test_add_biometric_data(self, sample_biometric_twin):
+        """Test adding a new biometric timeseries."""
+        # Create a new timeseries
+        bp_data_point = BiometricDataPoint(
+            timestamp=datetime.now(),
+            value={"systolic": 120, "diastolic": 80},
+            source=BiometricSource.CLINICAL,
+            metadata={"position": "sitting"}
+        )
+        bp_timeseries = BiometricTimeseriesData(
+            biometric_type=BiometricType.BLOOD_PRESSURE,
+            unit="mmHg",
+            data_points=[bp_data_point]
         )
         
-        # Add to biometric twin
-        biometric_twin.add_biometric_data(temperature_data)
+        # Add to twin
+        sample_biometric_twin.add_biometric_data(bp_timeseries)
         
-        # Verify it was added
-        assert BiometricType.TEMPERATURE in biometric_twin.timeseries_data
-        assert biometric_twin.timeseries_data[BiometricType.TEMPERATURE].unit == "°F"
-        assert len(biometric_twin.timeseries_data[BiometricType.TEMPERATURE].data_points) == 1
+        assert BiometricType.BLOOD_PRESSURE in sample_biometric_twin.timeseries_data
+        assert sample_biometric_twin.timeseries_data[BiometricType.BLOOD_PRESSURE] == bp_timeseries
     
-    def test_get_latest_values(self, biometric_twin):
-        """Test getting the latest values for all biometric types."""
-        latest_values = biometric_twin.get_latest_values()
+    def test_add_data_point(self, sample_biometric_twin):
+        """Test adding a data point to an existing timeseries."""
+        new_point = BiometricDataPoint(
+            timestamp=datetime.now() + timedelta(hours=1),
+            value=68.0,
+            source=BiometricSource.WEARABLE,
+            metadata={"device": "fitbit"}
+        )
         
+        initial_count = len(sample_biometric_twin.timeseries_data[BiometricType.HEART_RATE].data_points)
+        sample_biometric_twin.add_data_point(BiometricType.HEART_RATE, new_point)
+        
+        assert len(sample_biometric_twin.timeseries_data[BiometricType.HEART_RATE].data_points) == initial_count + 1
+    
+    def test_add_data_point_new_type(self, sample_biometric_twin):
+        """Test adding a data point for a new biometric type."""
+        new_point = BiometricDataPoint(
+            timestamp=datetime.now(),
+            value=98.6,
+            source=BiometricSource.CLINICAL,
+            metadata={"method": "oral"}
+        )
+        
+        sample_biometric_twin.add_data_point(BiometricType.TEMPERATURE, new_point, "°C")
+        
+        assert BiometricType.TEMPERATURE in sample_biometric_twin.timeseries_data
+        assert len(sample_biometric_twin.timeseries_data[BiometricType.TEMPERATURE].data_points) == 1
+        assert sample_biometric_twin.timeseries_data[BiometricType.TEMPERATURE].unit == "°C"
+    
+    def test_get_biometric_data(self, sample_biometric_twin, sample_timeseries):
+        """Test getting biometric data for a specific type."""
+        result = sample_biometric_twin.get_biometric_data(BiometricType.HEART_RATE)
+        
+        assert result == sample_timeseries
+        assert result.get_latest_value().value == 70.5
+    
+    def test_get_latest_values(self, sample_biometric_twin):
+        """Test getting latest values for all biometric types."""
+        # Add another biometric type
+        bp_data_point = BiometricDataPoint(
+            timestamp=datetime.now(),
+            value={"systolic": 120, "diastolic": 80},
+            source=BiometricSource.CLINICAL,
+            metadata={"position": "sitting"}
+        )
+        sample_biometric_twin.add_data_point(BiometricType.BLOOD_PRESSURE, bp_data_point, "mmHg")
+        
+        latest_values = sample_biometric_twin.get_latest_values()
+        
+        assert len(latest_values) == 2
         assert BiometricType.HEART_RATE in latest_values
         assert BiometricType.BLOOD_PRESSURE in latest_values
-        
-        # Check values
-        assert latest_values[BiometricType.HEART_RATE].value == 122.1
-        assert latest_values[BiometricType.BLOOD_PRESSURE].value == {"systolic": 118, "diastolic": 78}
+        assert latest_values[BiometricType.HEART_RATE].value == 70.5
+        assert latest_values[BiometricType.BLOOD_PRESSURE].value == {"systolic": 120, "diastolic": 80}
     
-    def test_to_dict(self, biometric_twin):
-        """Test conversion to dictionary."""
-        result = biometric_twin.to_dict()
+    def test_to_dict(self, sample_biometric_twin):
+        """Test converting a biometric twin to dictionary."""
+        result = sample_biometric_twin.to_dict()
         
-        assert result["id"] == biometric_twin.id
-        assert result["patient_id"] == biometric_twin.patient_id
-        assert "timeseries_data" in result
+        assert result["id"] == sample_biometric_twin.id
+        assert result["patient_id"] == "patient-123"
         assert "heart_rate" in result["timeseries_data"]
-        assert "blood_pressure" in result["timeseries_data"]
-        assert "created_at" in result
-        assert "updated_at" in result
+        assert result["timeseries_data"]["heart_rate"]["unit"] == "bpm"
+        assert len(result["timeseries_data"]["heart_rate"]["data_points"]) == 3
     
-    def test_from_dict(self, biometric_twin):
-        """Test creation from dictionary."""
-        # Convert existing twin to dict and back
-        twin_dict = biometric_twin.to_dict()
-        new_twin = BiometricTwin.from_dict(twin_dict)
+    def test_from_dict(self):
+        """Test creating a biometric twin from dictionary."""
+        now = datetime.now()
+        twin_id = str(uuid.uuid4())
         
-        # Check that everything matches
-        assert new_twin.id == biometric_twin.id
-        assert new_twin.patient_id == biometric_twin.patient_id
-        assert len(new_twin.timeseries_data) == len(biometric_twin.timeseries_data)
-        assert BiometricType.HEART_RATE in new_twin.timeseries_data
-        assert BiometricType.BLOOD_PRESSURE in new_twin.timeseries_data
-    
-    def test_detect_abnormal_values(self, biometric_twin):
-        """Test detection of abnormal values based on physiological ranges."""
-        # Add an abnormal heart rate data point
-        heart_rate_data = biometric_twin.timeseries_data[BiometricType.HEART_RATE]
-        abnormal_point = BiometricDataPoint(
-            timestamp=datetime.now() + timedelta(hours=1),
-            value=180.0,  # Above normal range
-            source=BiometricSource.WEARABLE
-        )
-        heart_rate_data.add_data_point(abnormal_point)
+        data = {
+            "id": twin_id,
+            "patient_id": "patient-456",
+            "timeseries_data": {
+                "heart_rate": {
+                    "biometric_type": "heart_rate",
+                    "unit": "bpm",
+                    "data_points": [
+                        {
+                            "timestamp": now.isoformat(),
+                            "value": 72.5,
+                            "source": "wearable",
+                            "metadata": {"device": "fitbit"}
+                        }
+                    ],
+                    "physiological_range": {
+                        "min": 60.0,
+                        "max": 100.0,
+                        "critical_min": 40.0,
+                        "critical_max": 140.0
+                    }
+                }
+            },
+            "created_at": (now - timedelta(days=30)).isoformat(),
+            "updated_at": now.isoformat()
+        }
         
-        # Get abnormal values
-        abnormal_values = biometric_twin.detect_abnormal_values()
+        twin = BiometricTwin.from_dict(data)
         
-        # Should contain heart rate
-        assert BiometricType.HEART_RATE in abnormal_values
-        
-        # Check the abnormal value
-        assert abnormal_point in abnormal_values[BiometricType.HEART_RATE]
-        
-        # Blood pressure should be normal (within range)
-        assert BiometricType.BLOOD_PRESSURE not in abnormal_values
-    
-    def test_get_biometric_data(self, biometric_twin):
-        """Test retrieving biometric data for a specific type."""
-        heart_rate_data = biometric_twin.get_biometric_data(BiometricType.HEART_RATE)
-        
-        assert heart_rate_data is not None
-        assert heart_rate_data.biometric_type == BiometricType.HEART_RATE
-        assert heart_rate_data.unit == "bpm"
-        assert len(heart_rate_data.data_points) == 3
-        
-        # Test for non-existent type
-        assert biometric_twin.get_biometric_data(BiometricType.GLUCOSE) is None
+        assert twin.id == twin_id
+        assert twin.patient_id == "patient-456"
+        assert BiometricType.HEART_RATE in twin.timeseries_data
+        assert twin.timeseries_data[BiometricType.HEART_RATE].unit == "bpm"
+        assert len(twin.timeseries_data[BiometricType.HEART_RATE].data_points) == 1
+        assert twin.timeseries_data[BiometricType.HEART_RATE].data_points[0].value == 72.5
