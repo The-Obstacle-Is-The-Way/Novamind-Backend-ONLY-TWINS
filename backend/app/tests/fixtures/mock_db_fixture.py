@@ -159,7 +159,7 @@ def mock_db_fixture():
     def configure_mock(query: str, results: Any):
         """Configure the mock session to return specific results for a query."""
         session.configure_mock_results(query, results)
-    return session, configure_mock
+        return session, configure_mock
 class MockRepository:
     """Base repository mock for testing repository pattern implementations."""
     def __init__(self, session=None):
@@ -176,12 +176,12 @@ class MockRepository:
     async def get(self, entity_id):
         """Mock retrieving an entity by ID."""
         
-    return self.entities.get(entity_id)
+        return self.entities.get(entity_id)
     
     async def get_all(self):
         """Mock retrieving all entities."""
         
-    return list(self.entities.values())
+        return list(self.entities.values())
     
     async def update(self, entity):
         """Mock updating an entity."""
@@ -193,7 +193,7 @@ class MockRepository:
         """Mock deleting an entity."""
         if entity_id in self.entities:
             del self.entities[entity_id]
-            return True
+        return True
         return False
     def configure_mock_get(self, entity_id, entity):
         """Configure the mock to return a specific entity for get()."""
