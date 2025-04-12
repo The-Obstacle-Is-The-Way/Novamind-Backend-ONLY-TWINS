@@ -47,31 +47,31 @@ class MockAsyncSession(MagicMock):
         self.scalars = AsyncMock(side_effect=self._scalars)
 
         async def _commit(self, *args, **kwargs):
-        """Mock implementation of commit."""
-        self.committed = True
-        self._transaction_active = False
-        return None
+            """Mock implementation of commit."""
+            self.committed = True
+            self._transaction_active = False
+            return None
 
         async def _rollback(self, *args, **kwargs):
-        """Mock implementation of rollback."""
-        self.rolled_back = True
-        self._transaction_active = False
-        return None
+            """Mock implementation of rollback."""
+            self.rolled_back = True
+            self._transaction_active = False
+            return None
 
         async def _close(self, *args, **kwargs):
-        """Mock implementation of close."""
-        self.closed = True
-        return None
+            """Mock implementation of close."""
+            self.closed = True
+            return None
 
         async def _flush(self, *args, **kwargs):
-        """Mock implementation of flush."""
-        self.flushed = True
-        return None
+            """Mock implementation of flush."""
+            self.flushed = True
+            return None
 
         async def _refresh(self, obj, *args, **kwargs):
-        """Mock implementation of refresh."""
-        self.refreshed_objects.append(obj)
-        return None
+            """Mock implementation of refresh."""
+            self.refreshed_objects.append(obj)
+            return None
 
         async def _execute(self, query, *args, **kwargs):
         """Mock implementation of execute."""
