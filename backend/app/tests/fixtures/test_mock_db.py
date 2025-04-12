@@ -89,18 +89,18 @@ class TestMockAsyncSession:
         assert test_entity not in mock_db._committed_objects
         assert not mock_db._deleted_objects
     
-    @pytest.mark.asyncio()
-    @pytest.mark.db_required()
-    async def test_mock_session_close(self, mock_db): # Correct decorator and async def order
-    """Test the close operation."""
-    test_entity = object() # Use standard object
-    mock_db.add(test_entity)
+    @pytest.mark.asyncio
+    @pytest.mark.db_required
+    async def test_mock_session_close(self, mock_db):
+        """Test the close operation."""
+        test_entity = object()  # Use standard object
+        mock_db.add(test_entity)
         
         # Close session
-    await mock_db.close()
+        await mock_db.close()
         
         # Session should be cleared
-    assert not mock_db._pending_objects
-    assert not mock_db._committed_objects
-    assert not mock_db._deleted_objects
-    assert mock_db._closed
+        assert not mock_db._pending_objects
+        assert not mock_db._committed_objects
+        assert not mock_db._deleted_objects
+        assert mock_db._closed

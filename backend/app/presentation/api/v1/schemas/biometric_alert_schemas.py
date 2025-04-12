@@ -7,10 +7,10 @@ API endpoints, ensuring proper validation and documentation of the API contract.
 """
 
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Union
+from typing import Any, Dict, List, Optional, Union, ClassVar
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class AlertRuleCreate(BaseModel):
@@ -25,21 +25,21 @@ class AlertRuleCreate(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, description="Parameters for the template")
     patient_id: Optional[UUID] = Field(None, description="Optional ID of the patient this rule applies to")
     
-    @validator("priority")
-    def validate_priority(cls, v):
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, v: str) -> str:
         """Validate that the priority is one of the allowed values."""
         allowed_values = ["urgent", "warning", "informational"]
         if v.lower() not in allowed_values:
             raise ValueError(f"Priority must be one of {allowed_values}")
         return v
     
-    @validator("condition", "template_id")
-    def validate_condition_or_template(cls, v, values):
+    @model_validator(mode='after')
+    def validate_condition_or_template(self) -> 'AlertRuleCreate':
         """Validate that either condition or template_id is provided."""
-        if "condition" in values and "template_id" in values:
-            if values["condition"] is None and values["template_id"] is None:
-                raise ValueError("Either condition or template_id must be provided")
-        return v
+        if self.condition is None and self.template_id is None:
+            raise ValueError("Either condition or template_id must be provided")
+        return self
 
 
 class AlertRuleUpdate(BaseModel):
@@ -51,8 +51,9 @@ class AlertRuleUpdate(BaseModel):
     condition: Optional[Dict[str, Any]] = Field(None, description="Condition that triggers the alert")
     is_active: Optional[bool] = Field(None, description="Whether the rule is active")
     
-    @validator("priority")
-    def validate_priority(cls, v):
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, v: Optional[str]) -> Optional[str]:
         """Validate that the priority is one of the allowed values."""
         if v is not None:
             allowed_values = ["urgent", "warning", "informational"]

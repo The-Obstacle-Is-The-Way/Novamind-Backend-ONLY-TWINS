@@ -6,10 +6,11 @@ including biometric data points and related concepts.
 """
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing_extensions import Annotated
 
 
 class BiometricDataPoint(BaseModel):
@@ -56,8 +57,9 @@ class BiometricDataPoint(BaseModel):
         description="Confidence score for the data point (0.0 to 1.0)"
     )
     
-    @validator('data_type')
-    def validate_data_type(cls, v):
+    @field_validator('data_type')
+    @classmethod
+    def validate_data_type(cls, v: str) -> str:
         """Validate that the data type is one of the allowed values."""
         allowed_types = [
             "heart_rate", "blood_pressure", "respiratory_rate", 
@@ -71,8 +73,9 @@ class BiometricDataPoint(BaseModel):
             raise ValueError(f"Data type must be one of {allowed_types}")
         return v
     
-    @validator('confidence')
-    def validate_confidence(cls, v):
+    @field_validator('confidence')
+    @classmethod
+    def validate_confidence(cls, v: float | None) -> float | None:
         """Validate that the confidence score is between 0 and 1."""
         if v is not None and (v < 0.0 or v > 1.0):
             raise ValueError("Confidence score must be between 0.0 and 1.0")
