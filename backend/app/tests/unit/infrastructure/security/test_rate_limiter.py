@@ -140,14 +140,13 @@ class TestRedisRateLimiter:
         config = RateLimitConfig(requests=5, window_seconds=60)
         
         # Mock zcard to return increasing counts
-        mock_redis.zcard.side_effect = [0, 1, 2, 3, 4]
+        mock_redis.zcard.side_effect = [0, 1, 2, 3, 4, 5]
         
         # Should allow 5 requests
         for i in range(5):
             assert redis_rate_limiter.check_rate_limit("test-key", config) is True
             
         # 6th request should be limited
-        mock_redis.zcard.return_value = 5
         assert redis_rate_limiter.check_rate_limit("test-key", config) is False
 
     def test_check_rate_limit_with_blocking(self, redis_rate_limiter, mock_redis):
@@ -198,7 +197,7 @@ class TestRedisRateLimiter:
 class TestRateLimiterFactory:
     """Tests for the RateLimiterFactory."""
 
-    @patch('app.infrastructure.security.rate_limiter_enhanced.get_settings')
+    @patch('app.core.config.get_settings')
     def test_create_in_memory_limiter(self, mock_get_settings):
         """Test creating an in-memory rate limiter."""
         mock_settings = MagicMock()
@@ -209,10 +208,11 @@ class TestRateLimiterFactory:
         
         assert isinstance(limiter, InMemoryRateLimiter)
 
-    @patch('app.infrastructure.security.rate_limiter_enhanced.get_settings')
+    @patch('app.core.config.get_settings')
     @patch('app.infrastructure.security.rate_limiter_enhanced.redis.Redis')
     def test_create_redis_limiter(self, mock_redis, mock_get_settings):
         """Test creating a Redis rate limiter."""
+        # Setup mock settings
         mock_settings = MagicMock()
         mock_settings.USE_REDIS_RATE_LIMITER = True
         mock_settings.REDIS_HOST = "localhost"
@@ -221,11 +221,18 @@ class TestRateLimiterFactory:
         mock_settings.REDIS_DB = 0
         mock_get_settings.return_value = mock_settings
         
+        # Setup mock Redis client to succeed ping
+        mock_redis_instance = MagicMock()
+        mock_redis_instance.ping.return_value = True
+        mock_redis.return_value = mock_redis_instance
+        
+        # Create limiter
         limiter = RateLimiterFactory.create_rate_limiter()
         
+        # Verify
         assert isinstance(limiter, RedisRateLimiter)
 
-    @patch('app.infrastructure.security.rate_limiter_enhanced.get_settings')
+    @patch('app.core.config.get_settings')
     @patch('app.infrastructure.security.rate_limiter_enhanced.redis.Redis')
     def test_fallback_on_redis_error(self, mock_redis, mock_get_settings):
         """Test fallback to in-memory limiter on Redis error."""

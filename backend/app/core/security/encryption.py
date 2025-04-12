@@ -14,7 +14,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from app.core.config.settings import get_settings
+from app.core.config import get_settings
 
 # Configure logger
 logger = logging.getLogger(__name__)

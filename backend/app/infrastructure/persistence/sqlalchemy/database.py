@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.engine import Engine, Connection
 from sqlalchemy.pool import QueuePool
 
-from app.core.config.settings import get_settings
+from app.core.config import get_settings
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -144,7 +144,8 @@ class Database:
         try:
             with self.engine.connect() as connection:
                 result = connection.execute(text(sql), params)
-                return [dict(row) for row in result]
+                # Handle modern SQLAlchemy result rows (compatible with SQLAlchemy 1.4+ and 2.0)
+                return [dict(zip(result.keys(), row)) for row in result]
         except SQLAlchemyError as e:
             logger.error(f"Query execution error: {e}")
             raise
@@ -227,25 +228,8 @@ class EnhancedDatabase(Database):
         def engine_checkin(dbapi_connection, connection_record):
             logger.debug(f"Database connection checked in: {id(dbapi_connection)}")
         
-        @event.listens_for(self.SessionLocal, "after_begin")
-        def session_after_begin(session, transaction, connection):
-            logger.info(f"Starting transaction: {id(session)}")
-        
-        @event.listens_for(self.SessionLocal, "after_commit")
-        def session_after_commit(session):
-            logger.info(f"Committing transaction: {id(session)}")
-        
-        @event.listens_for(self.SessionLocal, "after_rollback")
-        def session_after_rollback(session):
-            logger.warning(f"Rolling back transaction: {id(session)}")
-        
-        @event.listens_for(self.SessionLocal, "after_soft_rollback")
-        def session_after_soft_rollback(session, previous_transaction):
-            logger.warning(f"Soft rolling back transaction: {id(session)}")
-        
-        @event.listens_for(self.SessionLocal, "after_close")
-        def session_after_close(session):
-            logger.info(f"Closed transaction: {id(session)}")
+        # For session-level events, we'll use our own context manager instead of event listeners
+        # This is more reliable as the event system can vary between SQLAlchemy versions
     
     @contextlib.contextmanager
     def session_scope(self) -> Generator[Session, None, None]:

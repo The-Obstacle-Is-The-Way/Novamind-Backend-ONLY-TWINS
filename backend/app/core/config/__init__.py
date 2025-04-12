@@ -1,9 +1,19 @@
 """
-Configuration package for the Novamind Digital Twin Backend.
+Configuration package initialization.
 
-This package contains configuration management functionality, including
-environment variable parsing, application settings, and secrets management.
+This module provides functions to access application configuration.
 """
-from app.core.config.settings import settings, Settings
 
-__all__ = ["settings"]
+from app.core.config.settings import settings
+
+
+def get_settings():
+    """
+    Get application settings.
+    
+    This function provides dependency injection access to the application settings.
+    
+    Returns:
+        Settings instance
+    """
+    return settings

@@ -1,92 +1,55 @@
 """
-Biometric Twin entity for the digital psychiatric twin platform.
+Enhanced Biometric Twin domain entity module.
 
-This module defines the core domain entities for biometric data within the
-digital twin system, providing rich domain behavior and data validation.
+This module defines the core domain entities for the biometric digital twin system,
+which is responsible for tracking and analyzing patient biometric data.
 """
 
-import json
 from datetime import datetime
 from enum import Enum, auto
-from typing import Dict, List, Optional, Set, Any, Union, ClassVar
+from typing import Dict, List, Any, Optional, Union, Set, Tuple
+from uuid import uuid4
 
 from app.domain.value_objects.physiological_ranges import PhysiologicalRange
 
 
 class BiometricSource(str, Enum):
-    """Source of biometric data."""
+    """Sources of biometric data."""
     
     WEARABLE = "wearable"
-    """Data from wearable devices (smartwatches, fitness trackers, etc.)."""
-    
     CLINICAL = "clinical"
-    """Data collected in clinical settings."""
-    
     PATIENT_REPORTED = "patient_reported"
-    """Data self-reported by patients."""
-    
-    HOME_DEVICE = "home_device"
-    """Data from home monitoring devices."""
-    
-    IMPLANT = "implant"
-    """Data from implanted medical devices."""
-    
+    MOBILE_APP = "mobile_app"
     ENVIRONMENTAL = "environmental"
-    """Environmental sensor data."""
+    RESEARCH_DEVICE = "research_device"
 
 
 class BiometricType(str, Enum):
     """Types of biometric measurements."""
     
     HEART_RATE = "heart_rate"
-    """Heart rate in beats per minute."""
-    
     BLOOD_PRESSURE = "blood_pressure"
-    """Blood pressure with systolic and diastolic values."""
-    
     TEMPERATURE = "temperature"
-    """Body temperature in degrees Celsius."""
-    
     RESPIRATORY_RATE = "respiratory_rate"
-    """Breathing rate in breaths per minute."""
-    
     BLOOD_GLUCOSE = "blood_glucose"
-    """Blood glucose level in mg/dL."""
-    
     OXYGEN_SATURATION = "oxygen_saturation"
-    """Blood oxygen saturation level as percentage."""
-    
     SLEEP = "sleep"
-    """Sleep metrics including duration, quality, stages."""
-    
     ACTIVITY = "activity"
-    """Physical activity measurements including steps, calories."""
-    
-    WEIGHT = "weight"
-    """Body weight in kilograms."""
-    
     STRESS = "stress"
-    """Stress level indicators."""
-    
-    HRV = "hrv"
-    """Heart rate variability metrics."""
-    
-    EEG = "eeg"
-    """Electroencephalogram data."""
-    
-    EMG = "emg"
-    """Electromyogram data."""
-    
-    CORTISOL = "cortisol"
-    """Cortisol levels."""
+    MOOD = "mood"
+    WEIGHT = "weight"
+    HRV = "hrv"  # Heart Rate Variability
 
 
 class BiometricDataPoint:
     """
-    Single biometric measurement at a point in time.
+    A single biometric measurement data point.
     
-    This represents an individual measurement from any biometric source,
-    with associated metadata and timestamp.
+    Attributes:
+        timestamp: When the measurement was taken
+        value: Measurement value (can be numeric or structured data)
+        source: Source of the measurement
+        metadata: Additional contextual information
     """
     
     def __init__(
@@ -97,90 +60,94 @@ class BiometricDataPoint:
         metadata: Optional[Dict[str, Any]] = None
     ):
         """
-        Initialize a biometric data point.
+        Initialize a BiometricDataPoint.
         
         Args:
-            timestamp: When the data was recorded
-            value: The measurement value
-            source: Source of the biometric data
-            metadata: Optional additional information
+            timestamp: When the measurement was taken
+            value: Measurement value (can be numeric or structured data)
+            source: Source of the measurement
+            metadata: Additional contextual information
         """
         self.timestamp = timestamp
         self.value = value
         self.source = source
         self.metadata = metadata or {}
     
-    def add_metadata(self, additional_metadata: Dict[str, Any]) -> None:
+    def add_metadata(self, data: Dict[str, Any]) -> None:
         """
-        Add additional metadata to this data point.
+        Add additional metadata to the data point.
         
         Args:
-            additional_metadata: Metadata to add
+            data: Metadata to add
         """
-        self.metadata.update(additional_metadata)
+        self.metadata.update(data)
     
     def get_normalized_value(self) -> float:
         """
         Get a normalized numeric value for comparison.
         
-        For complex values like blood pressure, this extracts a key metric.
+        For complex values like blood pressure, returns the primary value
+        (e.g., systolic pressure).
         
         Returns:
-            Normalized value as a float
+            Normalized numeric value or 0.0 if not convertible
         """
-        if isinstance(self.value, (int, float)):
+        try:
+            if isinstance(self.value, (int, float)):
+                return float(self.value)
+            
+            if isinstance(self.value, dict):
+                # For blood pressure, return systolic
+                if "systolic" in self.value:
+                    return float(self.value["systolic"])
+                
+                # For other structured data, return primary value
+                if "value" in self.value:
+                    return float(self.value["value"])
+            
+            # Try to convert to float if possible
             return float(self.value)
         
-        # Extract main value from complex types
-        if isinstance(self.value, dict):
-            if "systolic" in self.value:
-                return float(self.value["systolic"])
-            if "value" in self.value:
-                return float(self.value["value"])
-        
-        # Default to 0 if can't normalize
-        return 0.0
+        except (ValueError, TypeError):
+            # Return default value for non-numeric data
+            return 0.0
     
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert to dictionary representation.
         
         Returns:
-            Dictionary with data point fields
+            Dictionary with data point values
         """
         return {
             "timestamp": self.timestamp.isoformat(),
             "value": self.value,
-            "source": str(self.source.value if isinstance(self.source, Enum) else self.source),
+            "source": self.source.value,
             "metadata": self.metadata
         }
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "BiometricDataPoint":
         """
-        Create a BiometricDataPoint from dictionary data.
+        Create a BiometricDataPoint from a dictionary.
         
         Args:
-            data: Dictionary with data point fields
+            data: Dictionary with data point values
             
         Returns:
             New BiometricDataPoint instance
         """
-        # Parse the timestamp
-        if isinstance(data["timestamp"], str):
-            timestamp = datetime.fromisoformat(data["timestamp"])
-        else:
-            timestamp = data["timestamp"]
+        timestamp = (
+            datetime.fromisoformat(data["timestamp"])
+            if isinstance(data["timestamp"], str)
+            else data["timestamp"]
+        )
         
-        # Parse the source
-        if isinstance(data["source"], str):
-            try:
-                source = BiometricSource(data["source"])
-            except ValueError:
-                # Fallback for unknown source values
-                source = data["source"]
-        else:
-            source = data["source"]
+        source = (
+            BiometricSource(data["source"])
+            if isinstance(data["source"], str)
+            else data["source"]
+        )
         
         return cls(
             timestamp=timestamp,
@@ -194,41 +161,23 @@ class BiometricDataPoint:
         Compare data points by timestamp.
         
         Args:
-            other: Data point to compare with
+            other: Another data point to compare with
             
         Returns:
             True if this data point is earlier
         """
-        if not isinstance(other, BiometricDataPoint):
-            return NotImplemented
         return self.timestamp < other.timestamp
-    
-    def __eq__(self, other: object) -> bool:
-        """
-        Check if data points are equal.
-        
-        Args:
-            other: Object to compare with
-            
-        Returns:
-            True if data points are equal
-        """
-        if not isinstance(other, BiometricDataPoint):
-            return NotImplemented
-        return (
-            self.timestamp == other.timestamp and
-            self.value == other.value and
-            self.source == other.source and
-            self.metadata == other.metadata
-        )
 
 
 class BiometricTimeseriesData:
     """
-    Time series of biometric measurements of a specific type.
+    A time series of biometric measurements.
     
-    This represents a collection of measurements for a single biometric type,
-    with associated metadata and physiological range information.
+    Attributes:
+        biometric_type: Type of biometric data
+        unit: Unit of measurement
+        data_points: Collection of data points in chronological order
+        physiological_range: Normal and critical ranges for this biometric
     """
     
     def __init__(
@@ -239,23 +188,33 @@ class BiometricTimeseriesData:
         physiological_range: Optional[PhysiologicalRange] = None
     ):
         """
-        Initialize a biometric timeseries.
+        Initialize a BiometricTimeseriesData.
         
         Args:
             biometric_type: Type of biometric data
             unit: Unit of measurement
-            data_points: List of data points
+            data_points: Collection of data points
             physiological_range: Normal and critical ranges
         """
         self.biometric_type = biometric_type
         self.unit = unit
-        self.data_points = sorted(data_points, key=lambda x: x.timestamp)
+        self.data_points = sorted(data_points)  # Sort by timestamp
         
-        # If no range provided, try to get default
-        if physiological_range is None and isinstance(biometric_type, BiometricType):
-            self.physiological_range = PhysiologicalRange.get_default_range(biometric_type.value)
-        else:
-            self.physiological_range = physiological_range
+        # Use provided range or get default for this type
+        self.physiological_range = physiological_range or PhysiologicalRange.get_default_range(biometric_type.value)
+        
+        # If no range exists, create a default one based on data
+        if not self.physiological_range and data_points:
+            values = [dp.get_normalized_value() for dp in data_points]
+            if values:
+                mean = sum(values) / len(values)
+                std_dev = (sum((x - mean) ** 2 for x in values) / len(values)) ** 0.5
+                self.physiological_range = PhysiologicalRange(
+                    min=mean - std_dev,
+                    max=mean + std_dev,
+                    critical_min=mean - 3 * std_dev,
+                    critical_max=mean + 3 * std_dev
+                )
     
     def add_data_point(self, data_point: BiometricDataPoint) -> None:
         """
@@ -265,7 +224,7 @@ class BiometricTimeseriesData:
             data_point: Data point to add
         """
         self.data_points.append(data_point)
-        self.data_points.sort(key=lambda x: x.timestamp)
+        self.data_points.sort()  # Re-sort to maintain chronological order
     
     def get_latest_value(self) -> Optional[BiometricDataPoint]:
         """
@@ -274,22 +233,22 @@ class BiometricTimeseriesData:
         Returns:
             Latest data point or None if empty
         """
-        if not self.data_points:
-            return None
-        return max(self.data_points, key=lambda x: x.timestamp)
+        return self.data_points[-1] if self.data_points else None
     
     def get_values_in_range(
-        self, start_time: datetime, end_time: datetime
+        self,
+        start_time: datetime,
+        end_time: datetime
     ) -> List[BiometricDataPoint]:
         """
         Get data points within a time range.
         
         Args:
-            start_time: Start of time range
-            end_time: End of time range
+            start_time: Range start time
+            end_time: Range end time
             
         Returns:
-            List of data points within range
+            List of data points in the specified range
         """
         return [
             dp for dp in self.data_points
@@ -298,29 +257,29 @@ class BiometricTimeseriesData:
     
     def get_abnormal_values(self) -> List[BiometricDataPoint]:
         """
-        Get data points outside normal physiological range.
+        Get data points with values outside normal range but not critical.
         
         Returns:
-            List of abnormal data points
+            List of data points with abnormal values
         """
         if not self.physiological_range:
             return []
-        
+            
         return [
             dp for dp in self.data_points
-            if not self.physiological_range.is_normal(dp.get_normalized_value())
+            if self.physiological_range.is_abnormal(dp.get_normalized_value())
         ]
     
     def get_critical_values(self) -> List[BiometricDataPoint]:
         """
-        Get data points in critical physiological range.
+        Get data points with values in critical range.
         
         Returns:
-            List of critical data points
+            List of data points with critical values
         """
         if not self.physiological_range:
             return []
-        
+            
         return [
             dp for dp in self.data_points
             if self.physiological_range.is_critical(dp.get_normalized_value())
@@ -331,10 +290,10 @@ class BiometricTimeseriesData:
         Convert to dictionary representation.
         
         Returns:
-            Dictionary with timeseries fields
+            Dictionary with timeseries data
         """
         return {
-            "biometric_type": str(self.biometric_type.value if isinstance(self.biometric_type, Enum) else self.biometric_type),
+            "biometric_type": self.biometric_type.value,
             "unit": self.unit,
             "data_points": [dp.to_dict() for dp in self.data_points],
             "physiological_range": self.physiological_range.to_dict() if self.physiological_range else None
@@ -343,36 +302,30 @@ class BiometricTimeseriesData:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "BiometricTimeseriesData":
         """
-        Create a BiometricTimeseriesData from dictionary data.
+        Create a BiometricTimeseriesData from a dictionary.
         
         Args:
-            data: Dictionary with timeseries fields
+            data: Dictionary with timeseries data
             
         Returns:
             New BiometricTimeseriesData instance
         """
-        # Parse the biometric type
-        if isinstance(data["biometric_type"], str):
-            try:
-                biometric_type = BiometricType(data["biometric_type"])
-            except ValueError:
-                # Fallback for unknown type values
-                biometric_type = data["biometric_type"]
-        else:
-            biometric_type = data["biometric_type"]
+        biometric_type = (
+            BiometricType(data["biometric_type"])
+            if isinstance(data["biometric_type"], str)
+            else data["biometric_type"]
+        )
         
-        # Parse the data points
         data_points = [
-            BiometricDataPoint.from_dict(dp)
-            for dp in data["data_points"]
+            BiometricDataPoint.from_dict(dp_data)
+            for dp_data in data["data_points"]
         ]
         
-        # Parse the physiological range
-        physiological_range = None
-        if data.get("physiological_range"):
-            physiological_range = PhysiologicalRange.from_dict(
-                data["physiological_range"]
-            )
+        physiological_range = (
+            PhysiologicalRange.from_dict(data["physiological_range"])
+            if data.get("physiological_range")
+            else None
+        )
         
         return cls(
             biometric_type=biometric_type,
@@ -384,10 +337,17 @@ class BiometricTimeseriesData:
 
 class BiometricTwin:
     """
-    Digital twin of a patient's biometric data.
+    Biometric digital twin for a patient.
     
-    This is the aggregate root entity that contains all biometric timeseries
-    for a patient, providing a complete picture of their physiological state.
+    Represents all the biometric data collected for a patient,
+    organized by measurement type.
+    
+    Attributes:
+        id: Unique identifier for the twin
+        patient_id: ID of the associated patient
+        timeseries_data: Collection of biometric timeseries
+        created_at: Creation timestamp
+        updated_at: Last update timestamp
     """
     
     def __init__(
@@ -399,12 +359,12 @@ class BiometricTwin:
         updated_at: datetime
     ):
         """
-        Initialize a biometric twin.
+        Initialize a BiometricTwin.
         
         Args:
-            id: Unique identifier
-            patient_id: Associated patient ID
-            timeseries_data: Dictionary of biometric timeseries
+            id: Unique identifier for the twin
+            patient_id: ID of the associated patient
+            timeseries_data: Collection of biometric timeseries
             created_at: Creation timestamp
             updated_at: Last update timestamp
         """
@@ -413,6 +373,26 @@ class BiometricTwin:
         self.timeseries_data = timeseries_data
         self.created_at = created_at
         self.updated_at = updated_at
+    
+    @classmethod
+    def create(cls, patient_id: str) -> "BiometricTwin":
+        """
+        Create a new BiometricTwin for a patient.
+        
+        Args:
+            patient_id: ID of the patient
+            
+        Returns:
+            New BiometricTwin instance
+        """
+        now = datetime.now()
+        return cls(
+            id=str(uuid4()),
+            patient_id=patient_id,
+            timeseries_data={},
+            created_at=now,
+            updated_at=now
+        )
     
     def add_biometric_data(self, timeseries: BiometricTimeseriesData) -> None:
         """
@@ -431,20 +411,34 @@ class BiometricTwin:
         unit: Optional[str] = None
     ) -> None:
         """
-        Add a data point to an existing timeseries.
+        Add a data point to a specific biometric timeseries.
+        
+        If the biometric type doesn't exist yet, it will be created.
         
         Args:
             biometric_type: Type of biometric data
             data_point: Data point to add
-            unit: Unit of measurement (for new timeseries)
+            unit: Unit of measurement (required for new timeseries)
         """
-        # Update existing timeseries
+        # If this biometric type already exists, just add the data point
         if biometric_type in self.timeseries_data:
             self.timeseries_data[biometric_type].add_data_point(data_point)
-        # Create new timeseries
+        
+        # Otherwise, create a new timeseries
         else:
-            if unit is None:
-                unit = self._get_default_unit(biometric_type)
+            if not unit:
+                # Get default unit for this type if not provided
+                unit_map = {
+                    BiometricType.HEART_RATE: "bpm",
+                    BiometricType.BLOOD_PRESSURE: "mmHg",
+                    BiometricType.TEMPERATURE: "°C",
+                    BiometricType.RESPIRATORY_RATE: "breaths/min",
+                    BiometricType.BLOOD_GLUCOSE: "mg/dL",
+                    BiometricType.OXYGEN_SATURATION: "%",
+                    BiometricType.WEIGHT: "kg",
+                    BiometricType.HRV: "ms"
+                }
+                unit = unit_map.get(biometric_type, "")
             
             self.timeseries_data[biometric_type] = BiometricTimeseriesData(
                 biometric_type=biometric_type,
@@ -454,11 +448,9 @@ class BiometricTwin:
         
         self.updated_at = datetime.now()
     
-    def get_biometric_data(
-        self, biometric_type: BiometricType
-    ) -> Optional[BiometricTimeseriesData]:
+    def get_biometric_data(self, biometric_type: BiometricType) -> Optional[BiometricTimeseriesData]:
         """
-        Get timeseries for a specific biometric type.
+        Get timeseries data for a specific biometric type.
         
         Args:
             biometric_type: Type of biometric data
@@ -470,63 +462,57 @@ class BiometricTwin:
     
     def get_latest_values(self) -> Dict[BiometricType, BiometricDataPoint]:
         """
-        Get the latest value for each biometric type.
+        Get latest values for all biometric types.
         
         Returns:
-            Dictionary of biometric types to latest data points
+            Dictionary mapping biometric types to their latest data points
         """
-        result = {}
-        for biometric_type, timeseries in self.timeseries_data.items():
-            latest = timeseries.get_latest_value()
-            if latest:
-                result[biometric_type] = latest
-        return result
+        return {
+            biometric_type: timeseries.get_latest_value()
+            for biometric_type, timeseries in self.timeseries_data.items()
+            if timeseries.get_latest_value() is not None
+        }
     
-    def detect_abnormal_values(self) -> Dict[BiometricType, List[BiometricDataPoint]]:
+    def get_abnormal_values(self) -> Dict[BiometricType, List[BiometricDataPoint]]:
         """
-        Detect abnormal values across all biometric types.
+        Get abnormal values for all biometric types.
         
         Returns:
-            Dictionary of biometric types to abnormal data points
+            Dictionary mapping biometric types to lists of abnormal data points
         """
-        result = {}
-        for biometric_type, timeseries in self.timeseries_data.items():
-            abnormal = timeseries.get_abnormal_values()
-            if abnormal:
-                result[biometric_type] = abnormal
-        return result
+        return {
+            biometric_type: timeseries.get_abnormal_values()
+            for biometric_type, timeseries in self.timeseries_data.items()
+            if timeseries.get_abnormal_values()
+        }
     
-    def detect_critical_values(self) -> Dict[BiometricType, List[BiometricDataPoint]]:
+    def get_critical_values(self) -> Dict[BiometricType, List[BiometricDataPoint]]:
         """
-        Detect critical values across all biometric types.
+        Get critical values for all biometric types.
         
         Returns:
-            Dictionary of biometric types to critical data points
+            Dictionary mapping biometric types to lists of critical data points
         """
-        result = {}
-        for biometric_type, timeseries in self.timeseries_data.items():
-            critical = timeseries.get_critical_values()
-            if critical:
-                result[biometric_type] = critical
-        return result
+        return {
+            biometric_type: timeseries.get_critical_values()
+            for biometric_type, timeseries in self.timeseries_data.items()
+            if timeseries.get_critical_values()
+        }
     
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert to dictionary representation.
         
         Returns:
-            Dictionary with biometric twin fields
+            Dictionary with BiometricTwin data
         """
-        # Convert the timeseries dictionary keys to strings
-        timeseries_dict = {}
-        for biometric_type, timeseries in self.timeseries_data.items():
-            key = biometric_type.value if isinstance(biometric_type, Enum) else str(biometric_type)
-            timeseries_dict[key] = timeseries.to_dict()
-        
         return {
             "id": self.id,
             "patient_id": self.patient_id,
-            "timeseries_data": timeseries_dict,
+            "timeseries_data": {
+                biometric_type.value: timeseries.to_dict()
+                for biometric_type, timeseries in self.timeseries_data.items()
+            },
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
         }
@@ -534,27 +520,31 @@ class BiometricTwin:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "BiometricTwin":
         """
-        Create a BiometricTwin from dictionary data.
+        Create a BiometricTwin from a dictionary.
         
         Args:
-            data: Dictionary with biometric twin fields
+            data: Dictionary with BiometricTwin data
             
         Returns:
             New BiometricTwin instance
         """
-        # Parse timestamps
-        created_at = datetime.fromisoformat(data["created_at"]) if isinstance(data["created_at"], str) else data["created_at"]
-        updated_at = datetime.fromisoformat(data["updated_at"]) if isinstance(data["updated_at"], str) else data["updated_at"]
+        # Convert string timestamps to datetime objects
+        created_at = (
+            datetime.fromisoformat(data["created_at"])
+            if isinstance(data["created_at"], str)
+            else data["created_at"]
+        )
         
-        # Parse timeseries data
+        updated_at = (
+            datetime.fromisoformat(data["updated_at"])
+            if isinstance(data["updated_at"], str)
+            else data["updated_at"]
+        )
+        
+        # Convert timeseries data
         timeseries_data = {}
         for type_str, ts_data in data["timeseries_data"].items():
-            try:
-                biometric_type = BiometricType(type_str)
-            except ValueError:
-                # Fallback for unknown type values
-                biometric_type = type_str
-            
+            biometric_type = BiometricType(type_str)
             timeseries_data[biometric_type] = BiometricTimeseriesData.from_dict(ts_data)
         
         return cls(
@@ -564,37 +554,3 @@ class BiometricTwin:
             created_at=created_at,
             updated_at=updated_at
         )
-    
-    def _get_default_unit(self, biometric_type: BiometricType) -> str:
-        """
-        Get the default unit for a biometric type.
-        
-        Args:
-            biometric_type: Type of biometric data
-            
-        Returns:
-            Default unit of measurement
-        """
-        if isinstance(biometric_type, str):
-            biometric_type_str = biometric_type
-        else:
-            biometric_type_str = biometric_type.value
-        
-        units = {
-            "heart_rate": "bpm",
-            "blood_pressure": "mmHg",
-            "temperature": "°C",
-            "respiratory_rate": "breaths/min",
-            "blood_glucose": "mg/dL",
-            "oxygen_saturation": "%",
-            "sleep": "hours",
-            "activity": "steps",
-            "weight": "kg",
-            "stress": "score",
-            "hrv": "ms",
-            "eeg": "μV",
-            "emg": "μV",
-            "cortisol": "μg/dL"
-        }
-        
-        return units.get(biometric_type_str, "units")
