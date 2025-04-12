@@ -30,14 +30,15 @@ class DirectSecurityTestRunner:
         Args:
             output_path: Path to save test reports
             """
-            self.base_dir = os.path.dirname(os.path.abspath(__file__))
-            self.output_path = output_path or os.path.join(self.base_dir, "test_results")
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.output_path = output_path or os.path.join(
+            self.base_dir, "test_results")
 
-            # Ensure output directory exists
-            os.makedirs(self.output_path, exist_ok=True)
+        # Ensure output directory exists
+        os.makedirs(self.output_path, exist_ok=True)
 
-            # Define all test modules to run in priority order
-            self.tests = [
+        # Define all test modules to run in priority order
+        self.tests = [
             # Core encryption tests
             {
                 "name": "Core Encryption",
@@ -53,10 +54,10 @@ class DirectSecurityTestRunner:
                 "name": "Enhanced Encryption",
                 "path": "app/tests/unit/infrastructure/security/test_encryption_enhanced.py",
             },
-            ]
+        ]
 
-            # Results storage
-            self.results = {
+        # Results storage
+        self.results = {
             "timestamp": datetime.now().isoformat(),
             "tests": {},
             "summary": {"total": 0, "passed": 0, "failed": 0, "errors": 0},
@@ -71,37 +72,37 @@ class DirectSecurityTestRunner:
             Returns:
             Test results dictionary
             """
-            name = test_info["name"]
-            path = test_info["path"]
+        name = test_info["name"]
+        path = test_info["path"]
 
-            print(f"\n{'=' * 60}")
-            print(f"RUNNING: {name}")
-            print(f"{'=' * 60}")
+        print(f"\n{'=' * 60}")
+        print(f"RUNNING: {name}")
+        print(f"{'=' * 60}")
 
-            # Build the pytest command
-            cmd = [sys.executable, "-m", "pytest", path, "-v"]
+        # Build the pytest command
+        cmd = [sys.executable, "-m", "pytest", path, "-v"]
 
-            # Run the test and capture output
-            process = subprocess.run(cmd, capture_output=True, text=True)
-            output = process.stdout
+        # Run the test and capture output
+        process = subprocess.run(cmd, capture_output=True, text=True)
+        output = process.stdout
 
-            # Parse test results from output
-            test_results = self._parse_pytest_output(output)
+        # Parse test results from output
+        test_results = self._parse_pytest_output(output)
 
-            # Print summary
-            print(f"Tests found: {test_results['total']}")
-            print(f"Tests passed: {test_results['passed']}")
-            print(f"Tests failed: {test_results['failed']}")
-            print(f"Tests with errors: {test_results['errors']}")
+        # Print summary
+        print(f"Tests found: {test_results['total']}")
+        print(f"Tests passed: {test_results['passed']}")
+        print(f"Tests failed: {test_results['failed']}")
+        print(f"Tests with errors: {test_results['errors']}")
 
-            # Update overall counts
-            self.results["summary"]["total"] += test_results["total"]
-            self.results["summary"]["passed"] += test_results["passed"]
-            self.results["summary"]["failed"] += test_results["failed"]
-            self.results["summary"]["errors"] += test_results["errors"]
+        # Update overall counts
+        self.results["summary"]["total"] += test_results["total"]
+        self.results["summary"]["passed"] += test_results["passed"]
+        self.results["summary"]["failed"] += test_results["failed"]
+        self.results["summary"]["errors"] += test_results["errors"]
 
-            # Store detailed results
-            self.results["tests"][name] = {
+        # Store detailed results
+        self.results["tests"][name] = {
             "path": path,
             "results": test_results,
             "output": output,
@@ -118,21 +119,26 @@ class DirectSecurityTestRunner:
             Returns:
             Dictionary with test counts and details
             """
-            results = {"total": 0, "passed": 0, "failed": 0, "errors": 0, "details": []}
+        results = {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "errors": 0,
+            "details": []}
 
-            # Parse each line looking for test results
-            for line in output.split("\n"):
+        # Parse each line looking for test results
+        for line in output.split("\n"):
             # Skip empty lines
             if not line.strip():
                 continue
 
                 # Look for test result lines but handle safely
                 if (
-                " PASSED " in line
-                or " FAILED " in line
-                or " ERROR " in line
-                or " SKIPPED " in line
-            ):
+                    " PASSED " in line
+                    or " FAILED " in line
+                    or " ERROR " in line
+                    or " SKIPPED " in line
+                ):
                 try:
                     # Extract test name safely
                     parts = line.split("::")
@@ -142,7 +148,7 @@ class DirectSecurityTestRunner:
                             0
                         ]  # Get the last part and remove status
                         else:
-                        # Simplified naming
+                            # Simplified naming
                         test_name = line.split()[0]
 
                         # Determine status
@@ -163,8 +169,8 @@ class DirectSecurityTestRunner:
 
                         # Add to details
                         results["details"].append(
-                        {"name": test_name, "status": status, "full_line": line.strip()}
-                    )
+                            {"name": test_name, "status": status, "full_line": line.strip()}
+                        )
                 except Exception as e:
                     # If parsing fails, just continue to the next line
                     print(f"Error parsing line: {line} - {str(e)}")
@@ -172,7 +178,8 @@ class DirectSecurityTestRunner:
 
                     # If we couldn't parse any tests, try the summary line
                     if results["total"] == 0:
-            # Look for the summary line (e.g., "5 passed, 2 failed in 0.23s")
+                        # Look for the summary line (e.g., "5 passed, 2 failed
+                        # in 0.23s")
             summary_pattern = (
                 r"(\d+) passed(, (\d+) failed)?(, (\d+) error)?(, (\d+) skipped)? in"
             )
@@ -183,8 +190,9 @@ class DirectSecurityTestRunner:
                     results["failed"] = int(match.group(3) or 0)
                     results["errors"] = int(match.group(5) or 0)
                     results["total"] = (
-                        results["passed"] + results["failed"] + results["errors"]
-                    )
+                        results["passed"] +
+                        results["failed"] +
+                        results["errors"])
                 except (ValueError, IndexError):
                     # If summary parsing fails, keep zeros
                     pass
@@ -197,16 +205,17 @@ class DirectSecurityTestRunner:
         Returns:
             Complete test results
             """
-            start_time = datetime.now()
-            self.results["start_time"] = start_time.isoformat()
+        start_time = datetime.now()
+        self.results["start_time"] = start_time.isoformat()
 
-            # Run each test module
-            for test_info in self.tests:
+        # Run each test module
+        for test_info in self.tests:
             self.run_test(test_info)
 
             end_time = datetime.now()
             self.results["end_time"] = end_time.isoformat()
-            self.results["duration_seconds"] = (end_time - start_time).total_seconds()
+            self.results["duration_seconds"] = (
+                end_time - start_time).total_seconds()
 
             # Calculate success percentage
             total = self.results["summary"]["total"]
@@ -230,8 +239,8 @@ class DirectSecurityTestRunner:
 
             # Save results to file
             report_filename = (
-            f"security_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        )
+                f"security_report_{
+                    datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
         report_path = os.path.join(self.output_path, report_filename)
         with open(report_path, "w") as f:
             json.dump(self.results, f, indent=2)
@@ -249,11 +258,12 @@ class DirectSecurityTestRunner:
         Args:
             output_path: Path to save the HTML report
             """
-            # Calculate success rate for each test category
-            for name, test_data in self.results["tests"].items():
+        # Calculate success rate for each test category
+        for name, test_data in self.results["tests"].items():
             results = test_data["results"]
             if results["total"] > 0:
-                results["success_rate"] = 100 * results["passed"] / results["total"]
+                results["success_rate"] = 100 * \
+                    results["passed"] / results["total"]
                 else:
                 results["success_rate"] = 0
 
@@ -303,7 +313,7 @@ class DirectSecurityTestRunner:
             <div class="status-badge {status_class}">{status_text}</div>
             </div>
             </div>
-    
+
             <div class="container">
             <div class="summary">
             <h2>Summary</h2>
@@ -324,7 +334,7 @@ class DirectSecurityTestRunner:
                 </tr>
             </table>
             </div>
-        
+
             <h2>Test Categories</h2>
             """
 
@@ -416,12 +426,10 @@ class DirectSecurityTestRunner:
 
             print(f"HTML report generated at: {output_path}")
 
-
             def run_security_tests():
     """Run security tests with direct output."""
     runner = DirectSecurityTestRunner()
     return runner.run_all_tests()
-
 
     if __name__ == "__main__":
     run_security_tests()

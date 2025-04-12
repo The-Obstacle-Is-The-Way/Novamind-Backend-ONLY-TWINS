@@ -155,7 +155,6 @@ class TestRedactionStrategies:
         assert strategy.redact("") == ""
         assert strategy.redact(None) == ""
 
-
         class TestRedactionStrategyFactory:
     """Test suite for redaction strategy factory."""
 
@@ -174,7 +173,6 @@ class TestRedactionStrategies:
         # Test with invalid mode should default to FULL
         default = factory.get_strategy("INVALID")
         assert isinstance(default, FullRedactionStrategy)
-
 
         class TestSanitizerConfig:
     """Test suite for SanitizerConfig class."""
@@ -446,7 +444,8 @@ class TestPHIRedactionHandler:
 
         phi_handler.emit(record)
 
-        # Assert that the mock handler's emit was called with a sanitized record
+        # Assert that the mock handler's emit was called with a sanitized
+        # record
         assert mock_handler.emit.called
         sanitized_record = mock_handler.emit.call_args[0][0]
         assert "PHI" not in sanitized_record.msg
@@ -488,8 +487,7 @@ class TestSanitizedLogger:
                 if "SSN" in record.message:
                     assert "123-45-6789" not in record.message
                     assert (
-                        "[REDACTED]" in record.message or "SANITIZED" in record.message
-                    )
+                        "[REDACTED]" in record.message or "SANITIZED" in record.message)
                 if "John Doe" in str(record.args):
                     # Cannot easily verify args were sanitized with caplog
                     pass
@@ -505,12 +503,14 @@ class TestSanitizedLogger:
         # Define a function with the decorator
         @sanitize_logs(sanitizer=mock_sanitizer)
         def function_with_phi_logs(data):
-            logger = get_sanitized_logger("test_decorator")  # Use the sanitized logger
+            logger = get_sanitized_logger(
+                "test_decorator")  # Use the sanitized logger
             logger.info(f"Processing data: {data}")
             return "Success"
 
             # Call the function
-            result = function_with_phi_logs({"ssn": "123-45-6789", "other": "data"})
+            result = function_with_phi_logs(
+                {"ssn": "123-45-6789", "other": "data"})
 
             # Check the result
             assert result == "Success"
@@ -521,9 +521,9 @@ class TestSanitizedLogger:
             # A more direct test would involve patching 'get_sanitized_logger' or checking logs.
             # For now, we assume the decorator correctly sets up the context for the logger.
             # We can't easily assert mock_sanitizer.sanitize was called without more complex patching.
-            # This test primarily ensures the decorator doesn't break function execution.
+            # This test primarily ensures the decorator doesn't break function
+            # execution.
             pass  # Placeholder assertion - real test would check logs or patch more deeply
-
 
             # Example of running tests if the file is executed directly
             if __name__ == "__main__":

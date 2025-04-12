@@ -80,7 +80,7 @@ def get_test_patient_record() -> Dict[str, Any]:
     Returns:
         Complete patient record with PHI fields
         """
-        return {
+    return {
         "medical_record_number": "MRN12345",
         "demographics": {
             "name": {
@@ -175,7 +175,6 @@ def test_fixture_generation():
         # Verify nested PHI fields
         assert record1["demographics"]["address"]["street"] == "123 Main St"
         assert record1["demographics"]["name"]["first"] == "John"
-
 
         if __name__ == "__main__":
     test_fixture_generation()

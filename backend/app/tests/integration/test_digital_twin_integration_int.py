@@ -8,7 +8,8 @@ from datetime import datetime, UTC, timedelta
 
 import pytest
 
-from app.domain.entities.patient import Patient  # Removed Gender, Diagnosis, Medication
+# Removed Gender, Diagnosis, Medication
+from app.domain.entities.patient import Patient
 from app.infrastructure.factories.mock_digital_twin_factory import (
     MockDigitalTwinFactory,
 )
@@ -37,7 +38,9 @@ async def test_digital_twin_complete_workflow():
         last_name="Doe",
         date_of_birth=datetime.now() - timedelta(days=365 * 35),  # 35 years old
         gender="female",  # Use string literal
-        contact_info={"email": "jane.doe@example.com", "phone": "+1-555-123-4567"},
+        contact_info={
+            "email": "jane.doe@example.com",
+            "phone": "+1-555-123-4567"},
         # Use strings for diagnoses as per patient.py entity
         diagnoses=[
             "F32.1: Major depressive disorder, single episode, moderate",
@@ -152,8 +155,8 @@ async def test_digital_twin_complete_workflow():
 
             # 6. Get visualization data for the 3D brain model
             visualization_data = await digital_twin_core.get_visualization_data(
-            patient_id=patient_id, visualization_type="brain_model"
-    )
+                patient_id=patient_id, visualization_type="brain_model"
+            )
 
     # Verify visualization data was generated
     assert visualization_data["visualization_type"] == "brain_model_3d"

@@ -20,9 +20,9 @@ class RedactionStrategy(Enum):
     """Redaction strategy for PHI."""
 
     FULL = "full"  # Completely replace with [REDACTED]
-    PARTIAL = "partial"  # Replace part of the data (e.g., last 4 digits visible)
+    # Replace part of the data (e.g., last 4 digits visible)
+    PARTIAL = "partial"
     HASH = "hash"  # Replace with a hash of the data
-
 
     class PHIPattern:
     """Represents a pattern for detecting PHI."""
@@ -76,7 +76,6 @@ class RedactionStrategy(Enum):
 
             return False
 
-
             class PatternRepository:
     """Repository of PHI patterns."""
 
@@ -101,10 +100,12 @@ class RedactionStrategy(Enum):
             PHIPattern(
                 name="Phone",
                 regex=r"\b\(?[2-9][0-9]{2}\)?[-\s]?[2-9][0-9]{2}[-\s]?[0-9]{4}\b",
-                context_patterns=[r"\bphone\b", r"\btelephone\b", r"\bmobile\b"],
+                context_patterns=[
+                    r"\bphone\b",
+                    r"\btelephone\b",
+                    r"\bmobile\b"],
                 strategy=RedactionStrategy.PARTIAL,
-            )
-        )
+            ))
 
         # Email pattern
         self.add_pattern(
@@ -124,7 +125,6 @@ class RedactionStrategy(Enum):
         """Get all patterns in the repository."""
         return self._patterns
 
-
         class Redactor:
     """Base class for redaction strategies."""
 
@@ -132,14 +132,12 @@ class RedactionStrategy(Enum):
         """Redact the given text."""
         raise NotImplementedError("Subclasses must implement redact()")
 
-
         class FullRedactor(Redactor):
     """Fully redact text."""
 
     def redact(self, text: str) -> str:
         """Replace text entirely with [REDACTED]."""
         return "[REDACTED]"
-
 
         class PartialRedactor(Redactor):
     """Partially redact text, preserving some information."""
@@ -156,7 +154,6 @@ class RedactionStrategy(Enum):
             # Keep first and last character, replace the rest with asterisks
             return text[0] + "*" * (len(text) - 2) + text[-1]
 
-
             class HashRedactor(Redactor):
     """Redact by replacing with a hash."""
 
@@ -169,7 +166,6 @@ class RedactionStrategy(Enum):
 
             hash_value = hashlib.md5(text.encode()).hexdigest()[:8]
             return f"[HASH:{hash_value}]"
-
 
             class RedactorFactory:
     """Factory for creating redactors."""
@@ -184,9 +180,8 @@ class RedactionStrategy(Enum):
             elif strategy == RedactionStrategy.HASH:
             return HashRedactor()
             else:
-            # Default to full redaction
+                # Default to full redaction
             return FullRedactor()
-
 
             class PHISanitizer:
     """Sanitizer for PHI in text."""
@@ -226,7 +221,8 @@ class RedactionStrategy(Enum):
 
             for pattern in patterns:
             if pattern.matches(result):
-                redactor = self._redactor_factory.create_redactor(pattern.strategy)
+                redactor = self._redactor_factory.create_redactor(
+                    pattern.strategy)
                 result = (
                     pattern._regex_pattern.sub(
                         lambda m: redactor.redact(m.group(0)), result
@@ -287,7 +283,9 @@ class TestPHISanitizer(unittest.TestCase):
             "patient": {
                 "name": "John Doe",
                 "ssn": "123-45-6789",
-                "contact": {"phone": "(555) 123-4567", "email": "john.doe@example.com"},
+                "contact": {
+                    "phone": "(555) 123-4567",
+                    "email": "john.doe@example.com"},
             },
             "notes": [
                 "Patient provided SSN 123-45-6789",
@@ -341,9 +339,9 @@ class TestPHISanitizer(unittest.TestCase):
         pattern_repo = PatternRepository()
         pattern_repo.add_pattern(
             PHIPattern(
-                name="test_full", regex=r"FULL\d+", strategy=RedactionStrategy.FULL
-            )
-        )
+                name="test_full",
+                regex=r"FULL\d+",
+                strategy=RedactionStrategy.FULL))
 
         # Partial redaction
         pattern_repo.add_pattern(
@@ -357,9 +355,9 @@ class TestPHISanitizer(unittest.TestCase):
         # Hash redaction
         pattern_repo.add_pattern(
             PHIPattern(
-                name="test_hash", regex=r"HASH\d+", strategy=RedactionStrategy.HASH
-            )
-        )
+                name="test_hash",
+                regex=r"HASH\d+",
+                strategy=RedactionStrategy.HASH))
 
         sanitizer = PHISanitizer(pattern_repository=pattern_repo)
 

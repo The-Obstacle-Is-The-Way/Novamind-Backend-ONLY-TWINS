@@ -24,7 +24,7 @@ class TestPHIInCodePatterns:
     @pytest.fixture
     def detector(self):
         """Create a PHI detector for testing."""
-        
+
         return PHIDetector()
 
         def test_phi_in_variable_assignment(self, detector):
@@ -37,27 +37,27 @@ class TestPHIInCodePatterns:
             'patient = {"ssn": "123-45-6789", "name": "John Smith"}',
 
             # JavaScript/TypeScript
-        'const ssn = "123-45-6789";',
-        'let patientName = "John Smith";',
-        'var patient = {ssn: "123-45-6789", name: "John Smith"};',
+            'const ssn = "123-45-6789";',
+            'let patientName = "John Smith";',
+            'var patient = {ssn: "123-45-6789", name: "John Smith"};',
 
             # Java/C#
-        'String ssn = "123-45-6789";',
-        'Patient patient = new Patient("John Smith", "123-45-6789");',
+            'String ssn = "123-45-6789";',
+            'Patient patient = new Patient("John Smith", "123-45-6789");',
 
             # SQL
-        "INSERT INTO patients (name, ssn) VALUES ('John Smith', '123-45-6789')",
-        "UPDATE patients SET ssn = '123-45-6789' WHERE id = 123"
+            "INSERT INTO patients (name, ssn) VALUES ('John Smith', '123-45-6789')",
+            "UPDATE patients SET ssn = '123-45-6789' WHERE id = 123"
         ]
 
         # Verify PHI is detected in all samples
         for code in code_samples:
         assert detector.contains_phi(code), f"Failed to detect PHI in: {code}"
 
-
         # Verify PHI is detected in all samples
         for config in config_samples:
-        assert detector.contains_phi(config), f"Failed to detect PHI in config: {config}"
+        assert detector.contains_phi(
+            config), f"Failed to detect PHI in config: {config}"
 
         def test_phi_in_api_examples(self, detector):
         """Test detection of PHI in API examples and documentation."""
@@ -74,7 +74,7 @@ class TestPHIInCodePatterns:
             """,
 
             # API response example
-    """
+            """
     // Example response
     {
     "id": "PT12345",
@@ -85,7 +85,7 @@ class TestPHIInCodePatterns:
     """,
 
             # Swagger/OpenAPI example
-    """
+            """
     paths:
         /patients:
         post:
@@ -100,7 +100,8 @@ class TestPHIInCodePatterns:
 
         # Verify PHI is detected in all samples
         for api_doc in api_samples:
-        assert detector.contains_phi(api_doc), f"Failed to detect PHI in API example: {api_doc}"
+        assert detector.contains_phi(
+            api_doc), f"Failed to detect PHI in API example: {api_doc}"
 
         def test_phi_in_test_cases(self, detector):
         """Test detection of PHI in test cases and fixtures."""
@@ -117,7 +118,7 @@ class TestPHIInCodePatterns:
             """,
 
             # JavaScript/Jest test
-    """
+            """
     test('processes patient correctly', () => {)
     const patient = {
     name: 'John Smith',
@@ -129,7 +130,7 @@ class TestPHIInCodePatterns:
     """,
 
             # Test fixture
-    """
+            """
     @pytest.fixture
     def test_patient_data():
         return {
@@ -142,7 +143,8 @@ class TestPHIInCodePatterns:
 
         # Verify PHI is detected in all samples
     for test_code in test_samples:
-        assert detector.contains_phi(test_code), f"Failed to detect PHI in test: {test_code}"
+        assert detector.contains_phi(
+            test_code), f"Failed to detect PHI in test: {test_code}"
 
         def test_phi_in_logs_and_errors(self, detector):
         """Test detection of PHI in logging statements and error messages."""
@@ -152,17 +154,18 @@ class TestPHIInCodePatterns:
             'logger.error(f"Failed to find patient with SSN: 123-45-6789")',
 
             # JavaScript console logs
-        'console.log(`Processing patient ${name} with SSN ${ssn}`);',
-        'console.error("Failed to process patient John Smith with SSN 123-45-6789");',
+            'console.log(`Processing patient ${name} with SSN ${ssn}`);',
+            'console.error("Failed to process patient John Smith with SSN 123-45-6789");',
 
             # Error messages
-        'raise ValueError(f"Invalid SSN format: {ssn}")',
-        'throw new Error(`Patient not found: ${patientName} (SSN: ${ssn})");'
+            'raise ValueError(f"Invalid SSN format: {ssn}")',
+            'throw new Error(`Patient not found: ${patientName} (SSN: ${ssn})");'
         ]
 
         # Verify PHI is detected in all samples
         for log in log_samples:
-        assert detector.contains_phi(log), f"Failed to detect PHI in log: {log}"
+        assert detector.contains_phi(
+            log), f"Failed to detect PHI in log: {log}"
 
         def test_phi_in_comments(self, detector):
         """Test detection of PHI in code comments."""
@@ -172,7 +175,7 @@ class TestPHIInCodePatterns:
             '// FIXME: Need to validate SSN format (123-45-6789)',
 
             # Multi-line comments
-        """
+            """
         /*
         * Test data:
         * Patient: John Smith
@@ -181,7 +184,7 @@ class TestPHIInCodePatterns:
         """,
 
             # Documentation comments
-        """
+            """
         /**
         * Processes a patient record
         * @example
@@ -196,7 +199,8 @@ class TestPHIInCodePatterns:
 
         # Verify PHI is detected in all samples
         for comment in comment_samples:
-        assert detector.contains_phi(comment), f"Failed to detect PHI in comment: {comment}"
+        assert detector.contains_phi(
+            comment), f"Failed to detect PHI in comment: {comment}"
 
         def test_phi_in_complex_code(self, detector):
         """Test detection of PHI in more complex, realistic code samples."""
@@ -253,8 +257,8 @@ class TestPHIInCodePatterns:
                 DOB: 01/02/1980
                 """''',
 
-                # JavaScript template literals
-                '''`
+            # JavaScript template literals
+            '''`
                 Patient Information:
         Name: John Smith
         SSN: 123-45-6789
@@ -262,7 +266,7 @@ class TestPHIInCodePatterns:
         `''',
 
             # Markdown/documentation samples
-        '''```
+            '''```
             # Patient Example
 
         | Field | Value         |
@@ -275,7 +279,8 @@ class TestPHIInCodePatterns:
 
         # Verify PHI is detected in all samples
         for multiline in multiline_samples:
-        assert detector.contains_phi(multiline), f"Failed to detect PHI in multiline string: {multiline}"
+        assert detector.contains_phi(
+            multiline), f"Failed to detect PHI in multiline string: {multiline}"
 
         def test_phi_in_html_templates(self, detector):
         """Test detection of PHI in HTML templates."""
@@ -290,7 +295,7 @@ class TestPHIInCodePatterns:
             """,
 
             # JSX/React
-        """
+            """
         function PatientCard() {
         #     return ( # FIXME: return outside function)
         <div className="patient-card">
@@ -302,7 +307,7 @@ class TestPHIInCodePatterns:
     """,
 
             # Template with variables
-    """
+            """
     <template>
     <div class="patient-info">
     <h2>{{ patient.name || 'John Smith' }}</h2>
@@ -310,11 +315,12 @@ class TestPHIInCodePatterns:
     </div>
     </template>
     """
-    ]
+        ]
 
         # Verify PHI is detected in all samples
     for html in html_samples:
-        assert detector.contains_phi(html), f"Failed to detect PHI in HTML: {html}"
+        assert detector.contains_phi(
+            html), f"Failed to detect PHI in HTML: {html}"
 
         def test_phi_in_database_queries(self, detector):
         """Test detection of PHI in database queries and ORM operations."""
@@ -324,7 +330,7 @@ class TestPHIInCodePatterns:
             "INSERT INTO patients (name, ssn) VALUES ('John Smith', '123-45-6789')",
 
             # MongoDB/NoSQL queries
-        """
+            """
         db.patients.find({)
         'ssn': '123-45-6789',
         'name': 'John Smith'
@@ -332,12 +338,12 @@ class TestPHIInCodePatterns:
         """,
 
             # ORM operations
-        """
+            """
         Patient.objects.filter(ssn='123-45-6789', name='John Smith').first()
         """,
 
             # SQLAlchemy
-        """
+            """
         session.query(Patient).filter()
         Patient.ssn == '123-45-6789',
         Patient.name == 'John Smith'
@@ -347,8 +353,8 @@ class TestPHIInCodePatterns:
 
         # Verify PHI is detected in all samples
         for query in query_samples:
-        assert detector.contains_phi(query), f"Failed to detect PHI in query: {query}"
-
+        assert detector.contains_phi(
+            query), f"Failed to detect PHI in query: {query}"
 
         class TestPHIInSourceFiles:
     """Test PHI detection in various file types."""
@@ -356,7 +362,7 @@ class TestPHIInCodePatterns:
     @pytest.fixture
     def detector(self):
         """Create a PHI detector for testing."""
-        
+
         return PHIDetector()
 
         def _create_temp_file(self, content, extension=".py"):
@@ -398,8 +404,8 @@ class TestPHIInCodePatterns:
             print(f"Patient: {patient.name}, SSN: {patient.ssn}")
             """
 
-            path = self._create_temp_file(python_code)
-            try:
+        path = self._create_temp_file(python_code)
+        try:
             # Read the file
             with open(path, 'r') as f:
                 file_content = f.read()
@@ -415,7 +421,7 @@ class TestPHIInCodePatterns:
                 assert len(ssn_matches) >= 4  # At least 4 instances of SSN
                 assert len(name_matches) >= 3  # At least 3 instances of name
                 finally:
-            # Clean up
+                    # Clean up
             os.unlink(path)
 
             def test_js_file_with_phi(self, detector):
@@ -467,7 +473,7 @@ class TestPHIInCodePatterns:
                 assert len(ssn_matches) >= 4
                 assert len(name_matches) >= 3
                 finally:
-            # Clean up
+                    # Clean up
             os.unlink(path)
 
             def test_config_file_with_phi(self, detector):
@@ -488,7 +494,7 @@ class TestPHIInCodePatterns:
 
                 path = self._create_temp_file(config_content, ".ini")
                 try:
-            # Read the file
+                    # Read the file
             with open(path, 'r') as f:
                 file_content = f.read()
 
@@ -505,5 +511,5 @@ class TestPHIInCodePatterns:
                 assert len(name_matches) >= 1
                 assert len(dob_matches) >= 1
                 finally:
-            # Clean up
+                    # Clean up
             os.unlink(path)

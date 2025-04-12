@@ -34,7 +34,7 @@ class BaseSecurityTest(TestCase):
         - Authorization and role-based access control testing
         """
 
-        def setUp(self) -> None:
+    def setUp(self) -> None:
         """Set up the test environment with authentication details and mocks."""
         super().setUp()
 
@@ -64,7 +64,10 @@ class BaseSecurityTest(TestCase):
         self.rbac.add_role_permission("admin", "update:all_data")
         self.rbac.add_role_permission("admin", "delete:all_data")
 
-        def has_permission(self, permission: str, roles: List[str] | None = None) -> bool:
+        def has_permission(
+                self,
+                permission: str,
+                roles: List[str] | None = None) -> bool:
         """
         Check if the specified roles have the given permission.
 
@@ -75,21 +78,21 @@ class BaseSecurityTest(TestCase):
             Returns:
             bool: True if any of the roles have the permission, False otherwise
             """
-            check_roles = roles if roles is not None else self.test_roles
+        check_roles = roles if roles is not None else self.test_roles
 
-            # Check if any role has the permission
-            for role in check_roles:
+        # Check if any role has the permission
+        for role in check_roles:
             if self.rbac.has_permission(role, permission):
                 return True
 
                 return False
 
                 def get_auth_token(
-                self,
-                user_id: Optional[str] = None,
-                roles: Optional[List[str]] = None,
-                custom_claims: Optional[Dict[str, Any]] = None,
-    ) -> str:
+                    self,
+                    user_id: Optional[str] = None,
+                    roles: Optional[List[str]] = None,
+                    custom_claims: Optional[Dict[str, Any]] = None,
+                ) -> str:
         """
         Generate a mock authentication token for testing.
 
@@ -101,12 +104,13 @@ class BaseSecurityTest(TestCase):
             Returns:
             str: A mock authentication token
             """
-            claims = {
+        claims = {
             "sub": user_id or self.test_user_id,
             "roles": roles or self.test_roles,
             **(custom_claims or {}),
         }
-        # Mock token is just the string representation of the claims for testing
+        # Mock token is just the string representation of the claims for
+        # testing
         return f"mock_token.{claims!s}"
 
     def get_auth_headers(self, token: Optional[str] = None) -> Dict[str, str]:
@@ -120,10 +124,10 @@ class BaseSecurityTest(TestCase):
                        Returns:
             Dict[str, str]: Mock authorization headers
             """
-            auth_token = token or self.get_auth_token()
-            return {"Authorization": f"Bearer {auth_token}"}
+        auth_token = token or self.get_auth_token()
+        return {"Authorization": f"Bearer {auth_token}"}
 
-            def tearDown(self) -> None:
+        def tearDown(self) -> None:
         """Clean up resources after each test."""
         super().tearDown()
 
@@ -132,8 +136,8 @@ class BaseSecurityTest(TestCase):
         self.entity_factory = None
         self.rbac = None
 
-
         # Define a pytest fixture for easy reuse in pytest-based tests
+
         @pytest.fixture
         def security_test_base():
     """Pytest fixture that provides a configured security test base."""
@@ -142,13 +146,11 @@ class BaseSecurityTest(TestCase):
     yield test_base
     test_base.tearDown()
 
-
     @pytest.fixture
     def mock_auth_headers(security_test_base):
     """Pytest fixture that provides mock authentication headers."""
 
     return security_test_base.get_auth_headers()
-
 
     @pytest.fixture
     def mock_db_session():

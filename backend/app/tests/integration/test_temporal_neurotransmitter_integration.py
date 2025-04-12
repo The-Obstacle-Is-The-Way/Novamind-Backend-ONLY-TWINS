@@ -36,7 +36,7 @@ from app.infrastructure.repositories.temporal_sequence_repository import SqlAlch
 TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(TEST_SQLALCHEMY_DATABASE_URL, echo=True)
 TestingSessionLocal = sessionmaker()
-    autocommit=False, autoflush=False, bind=engine, class_=AsyncSession
+    autocommit = False, autoflush = False, bind = engine, class_ = AsyncSession
 ()
 
 # Mock user for authentication
@@ -48,6 +48,8 @@ test_user = {
     "roles": ["CLINICIAN"],
     "is_active": True
 }
+
+
 @pytest.fixture
 async def db_session():
         """Create an async SQLAlchemy session for testing with in-memory database."""

@@ -13,11 +13,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from datetime import datetime, timezone
 
-from app.api.routes.xgboost import router , as xgboost_router
+from app.api.routes.xgboost import router, as xgboost_router
 from app.core.services.ml.xgboost.interface import XGBoostInterface
 from app.core.services.ml.xgboost.exceptions import
-    ValidationError,   DataPrivacyError,   ResourceNotFoundError,  
-    ModelNotFoundError,   ServiceUnavailableError
+    ValidationError, DataPrivacyError, ResourceNotFoundError,
+    ModelNotFoundError, ServiceUnavailableError
 ()
 
 
@@ -28,27 +28,27 @@ from app.core.services.ml.xgboost.exceptions import
 def mock_xgboost_service() -> Generator[MagicMock, None, None]:
     """
     Create a mock XGBoost service.
-    
+
     This patch replaces the get_xgboost_service dependency in the routes
     with a mock implementation that can be controlled in tests.:
         """
-        mock_service = MagicMock(spec=XGBoostInterface)
-    
+       mock_service = MagicMock(spec=XGBoostInterface)
+
         # Setup default successful responses
         mock_service.predict_risk.return_value = {
-        "prediction_id": "risk-123",
-        "patient_id": "test-patient-123",
-        "risk_type": "relapse",
-        "risk_level": "moderate",
-        "risk_score": 0.45,
-        "confidence": 0.8,
-        "factors": [
+            "prediction_id": "risk-123",
+            "patient_id": "test-patient-123",
+            "risk_type": "relapse",
+            "risk_level": "moderate",
+            "risk_score": 0.45,
+            "confidence": 0.8,
+            "factors": [
             {"name": "phq9_score", "importance": 0.7, "value": 12},
             {"name": "medication_adherence", "importance": 0.5, "value": 0.8}
         ],
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-    
+            "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+
     mock_service.predict_treatment_response.return_value = {
         "prediction_id": "treatment-123",
         "patient_id": "test-patient-123",
@@ -75,7 +75,7 @@ def mock_xgboost_service() -> Generator[MagicMock, None, None]:
         ],
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
-    
+
     mock_service.predict_outcome.return_value = {
         "prediction_id": "outcome-123",
         "patient_id": "test-patient-123",
@@ -113,7 +113,7 @@ def mock_xgboost_service() -> Generator[MagicMock, None, None]:
         "confidence": 0.7,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
-    
+
     mock_service.get_feature_importance.return_value = {
         "prediction_id": "risk-123",
         "patient_id": "test-patient-123",
@@ -133,7 +133,7 @@ def mock_xgboost_service() -> Generator[MagicMock, None, None]:
         "interactions": [],
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
-    
+
     mock_service.integrate_with_digital_twin.return_value = {
         "integration_id": "integration-123",
         "patient_id": "test-patient-123",
@@ -147,7 +147,7 @@ def mock_xgboost_service() -> Generator[MagicMock, None, None]:
         },
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
-    
+
     mock_service.get_model_info.return_value = {
         "model_type": "relapse_risk",
         "version": "1.0.0",
@@ -165,10 +165,9 @@ def mock_xgboost_service() -> Generator[MagicMock, None, None]:
         ],
         "description": "Relapse risk prediction model based on XGBoost"
     }
-    
+
     with patch("app.api.routes.xgboost.get_xgboost_service", return_value=mock_service):
         yield mock_service
-
 
         @pytest.fixture
         def psychiatrist_auth_headers() -> Dict[str, str]:
@@ -212,7 +211,7 @@ def patient_auth_headers() -> Dict[str, str]:
 @pytest.fixture
 def valid_risk_prediction_data() -> Dict[str, Any]:
     """Valid data for risk prediction request."""
-    
+
     return {
         "patient_id": "test-patient-123",
         "risk_type": "relapse",
@@ -235,7 +234,7 @@ def valid_risk_prediction_data() -> Dict[str, Any]:
 @pytest.fixture
 def valid_treatment_response_data() -> Dict[str, Any]:
     """Valid data for treatment response prediction request."""
-    
+
     return {
         "patient_id": "test-patient-123",
         "treatment_type": "medication",
@@ -267,7 +266,7 @@ def valid_treatment_response_data() -> Dict[str, Any]:
 @pytest.fixture
 def valid_outcome_prediction_data() -> Dict[str, Any]:
     """Valid data for outcome prediction request."""
-    
+
     return {
         "patient_id": "test-patient-123",
         "outcome_timeframe": {
@@ -305,7 +304,7 @@ class TestXGBoostAPIIntegration:
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str],
         valid_risk_prediction_data: Dict[str, Any]
-        (    ):
+        ():
         """Test successful risk prediction."""
         # Set up mock service return value
         mock_response = {
@@ -322,16 +321,18 @@ class TestXGBoostAPIIntegration:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
         mock_xgboost_service.predict_risk.return_value = mock_response
-        
+
         # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/risk",
-    json=valid_risk_prediction_data,
-    headers=psychiatrist_auth_headers
-(    )
-        
-        # Verify response
-    assert response.status_code  ==  200
+    json = valid_risk_prediction_data,
+    headers = psychiatrist_auth_headers
+
+
+()
+
+       # Verify response
+   assert response.status_code == 200
     result = response.json()
     assert result["prediction_id"] == "risk-123"
     assert result["patient_id"] == "test-patient-123"
@@ -340,42 +341,42 @@ class TestXGBoostAPIIntegration:
     assert result["risk_score"] == 0.45
     assert result["confidence"] == 0.8
     assert len(result["factors"]) == 2
-        
-        # Verify service was called with correct data
-    mock_xgboost_service.predict_risk.assert_called_once_with()
-    patient_id="test-patient-123",
-    risk_type="relapse",
-    clinical_data=valid_risk_prediction_data["clinical_data"],
-    demographic_data=valid_risk_prediction_data["demographic_data"],
-    temporal_data=None,
-    confidence_threshold=0.7
-(    )
 
-    def test_predict_risk_validation_error():
+       # Verify service was called with correct data
+    mock_xgboost_service.predict_risk.assert_called_once_with()
+    patient_id = "test-patient-123",
+    risk_type = "relapse",
+    clinical_data = valid_risk_prediction_data["clinical_data"],
+    demographic_data = valid_risk_prediction_data["demographic_data"],
+    temporal_data = None,
+    confidence_threshold = 0.7
+()
+
+   def test_predict_risk_validation_error():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
-        (    ):
+        ():
         """Test risk prediction with validation error."""
         # Set up mock service to raise ValidationError
         mock_xgboost_service.predict_risk.side_effect = ValidationError()
-            "Invalid risk type"
-    (        )
-        
-        # Make API request with invalid data
+           "Invalid risk type"
+    ()
+
+       # Make API request with invalid data
     response = client.post()
     "/api/v1/ml/xgboost/risk",
-    json={
-    "patient_id": "test-patient-123",
-    "risk_type": "invalid_risk_type",  # Invalid risk type
-    "clinical_data": {"phq9_score": 12}
+    json ={
+        "patient_id": "test-patient-123",
+        "risk_type": "invalid_risk_type",  # Invalid risk type
+        "clinical_data": {"phq9_score": 12}
     },
-    headers=psychiatrist_auth_headers
-    (    )
-        
-        # Verify response
-    assert response.status_code  ==  400
+    headers = psychiatrist_auth_headers
+    ()
+
+       # Verify response
+    assert response.status_code ==  400
     result = response.json()
     assert "detail" in result
     assert "Invalid risk type" in result["detail"]
@@ -385,31 +386,31 @@ class TestXGBoostAPIIntegration:
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
-        (    ):
+        ():
         """Test risk prediction with PHI detection."""
         # Set up mock service to raise DataPrivacyError
         mock_xgboost_service.predict_risk.side_effect = DataPrivacyError()
-            "Potential PHI detected in field value",
+           "Potential PHI detected in field value",
             {"field": "demographic_data.address", "pattern": "address"}
-    (        )
-        
-        # Make API request with PHI data
+    ()
+
+       # Make API request with PHI data
     response = client.post()
     "/api/v1/ml/xgboost/risk",
-    json={
-    "patient_id": "test-patient-123",
-    "risk_type": "relapse",
-    "clinical_data": {"phq9_score": 12},
-    "demographic_data": {
-    "age": 35,
-    "address": "123 Main St"  # Contains PHI
+    json ={
+        "patient_id": "test-patient-123",
+        "risk_type": "relapse",
+        "clinical_data": {"phq9_score": 12},
+        "demographic_data": {
+        "age": 35,
+        "address": "123 Main St"  # Contains PHI
     }
     },
-    headers=psychiatrist_auth_headers
-(    )
-        
-        # Verify response
-    assert response.status_code  ==  400
+    headers = psychiatrist_auth_headers
+()
+
+       # Verify response
+   assert response.status_code  ==  400
     result = response.json()
     assert "detail" in result
     assert "sensitive information" in result["detail"]
@@ -420,19 +421,19 @@ class TestXGBoostAPIIntegration:
         mock_xgboost_service: MagicMock,
         patient_auth_headers: Dict[str, str],
         valid_risk_prediction_data: Dict[str, Any]
-        (    ):
+        ():
         """Test risk prediction with unauthorized role."""
         # Mock the validate_permissions function to raise an exception
         with patch("app.api.routes.xgboost.validate_permissions") as mock_validate:
             mock_validate.side_effect = Exception("Permission denied")
-            
+
             # Make API request with patient role
             response = client.post()
             "/api/v1/ml/xgboost/risk",
-            json=valid_risk_prediction_data,
-            headers=patient_auth_headers
-            (    )
-            
+            json = valid_risk_prediction_data,
+            headers = patient_auth_headers
+            ()
+
             # Verify response
             assert response.status_code in [401, 403]
 
@@ -442,7 +443,7 @@ class TestXGBoostAPIIntegration:
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str],
         valid_treatment_response_data: Dict[str, Any]
-        (    ):
+        ():
         """Test successful treatment response prediction."""
         # Set up mock service return value
         mock_response = {
@@ -472,16 +473,16 @@ class TestXGBoostAPIIntegration:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
         mock_xgboost_service.predict_treatment_response.return_value = mock_response
-        
+
         # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/treatment-response",
-    json=valid_treatment_response_data,
-    headers=psychiatrist_auth_headers
-(    )
-        
-        # Verify response
-    assert response.status_code  ==  200
+    json = valid_treatment_response_data,
+    headers = psychiatrist_auth_headers
+()
+
+       # Verify response
+   assert response.status_code  ==  200
     result = response.json()
     assert result["prediction_id"] == "treatment-123"
     assert result["patient_id"] == "test-patient-123"
@@ -491,24 +492,24 @@ class TestXGBoostAPIIntegration:
     assert "time_to_response" in result
     assert "alternative_treatments" in result
     assert len(result["factors"]) == 2
-        
-        # Verify service was called with correct data
-    mock_xgboost_service.predict_treatment_response.assert_called_once_with()
-    patient_id="test-patient-123",
-    treatment_type="medication",
-    treatment_details=valid_treatment_response_data["treatment_details"],
-    clinical_data=valid_treatment_response_data["clinical_data"],
-    genetic_data=valid_treatment_response_data["genetic_data"],
-    treatment_history=valid_treatment_response_data["treatment_history"]
-(    )
 
-    def test_predict_outcome_success():
+       # Verify service was called with correct data
+    mock_xgboost_service.predict_treatment_response.assert_called_once_with()
+    patient_id = "test-patient-123",
+    treatment_type = "medication",
+    treatment_details = valid_treatment_response_data["treatment_details"],
+    clinical_data = valid_treatment_response_data["clinical_data"],
+    genetic_data = valid_treatment_response_data["genetic_data"],
+    treatment_history = valid_treatment_response_data["treatment_history"]
+()
+
+   def test_predict_outcome_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         provider_auth_headers: Dict[str, str],
         valid_outcome_prediction_data: Dict[str, Any]
-        (    ):
+        ():
         """Test successful outcome prediction."""
         # Set up mock service return value
         mock_response = {
@@ -549,16 +550,16 @@ class TestXGBoostAPIIntegration:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
         mock_xgboost_service.predict_outcome.return_value = mock_response
-        
+
         # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/outcome",
-    json=valid_outcome_prediction_data,
-    headers=provider_auth_headers
-(    )
-        
-        # Verify response
-    assert response.status_code  ==  200
+    json = valid_outcome_prediction_data,
+    headers = provider_auth_headers
+()
+
+       # Verify response
+   assert response.status_code  ==  200
     result = response.json()
     assert result["prediction_id"] == "outcome-123"
     assert result["patient_id"] == "test-patient-123"
@@ -567,23 +568,23 @@ class TestXGBoostAPIIntegration:
     assert "predicted_outcomes" in result
     assert len(result["key_factors"]) == 2
     assert len(result["recommendations"]) == 2
-        
-        # Verify service was called with correct data
-    mock_xgboost_service.predict_outcome.assert_called_once_with()
-    patient_id="test-patient-123",
-    outcome_timeframe=valid_outcome_prediction_data["outcome_timeframe"],
-    clinical_data=valid_outcome_prediction_data["clinical_data"],
-    treatment_plan=valid_outcome_prediction_data["treatment_plan"],
-    social_determinants=valid_outcome_prediction_data["social_determinants"],
-    comorbidities=valid_outcome_prediction_data["comorbidities"]
-(    )
 
-    def test_get_feature_importance_success():
+       # Verify service was called with correct data
+    mock_xgboost_service.predict_outcome.assert_called_once_with()
+    patient_id = "test-patient-123",
+    outcome_timeframe = valid_outcome_prediction_data["outcome_timeframe"],
+    clinical_data = valid_outcome_prediction_data["clinical_data"],
+    treatment_plan = valid_outcome_prediction_data["treatment_plan"],
+    social_determinants = valid_outcome_prediction_data["social_determinants"],
+    comorbidities = valid_outcome_prediction_data["comorbidities"]
+()
+
+   def test_get_feature_importance_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
-        (    ):
+        ():
         """Test successful feature importance retrieval."""
         # Set up mock service return value
         mock_response = {
@@ -606,20 +607,20 @@ class TestXGBoostAPIIntegration:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
         mock_xgboost_service.get_feature_importance.return_value = mock_response
-        
+
         # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/feature-importance",
-    json={
-    "patient_id": "test-patient-123",
-    "model_type": "risk",
-    "prediction_id": "risk-123"
+    json ={
+        "patient_id": "test-patient-123",
+        "model_type": "risk",
+        "prediction_id": "risk-123"
     },
-    headers=psychiatrist_auth_headers
-(    )
-        
-        # Verify response
-    assert response.status_code  ==  200
+    headers = psychiatrist_auth_headers
+()
+
+       # Verify response
+   assert response.status_code  ==  200
     result = response.json()
     assert result["prediction_id"] == "risk-123"
     assert result["patient_id"] == "test-patient-123"
@@ -627,39 +628,39 @@ class TestXGBoostAPIIntegration:
     assert len(result["features"]) == 2
     assert "global_importance" in result
     assert "local_importance" in result
-        
-        # Verify service was called with correct data
-    mock_xgboost_service.get_feature_importance.assert_called_once_with()
-    patient_id="test-patient-123",
-    model_type="risk",
-    prediction_id="risk-123"
-(    )
 
-    def test_get_feature_importance_not_found():
+       # Verify service was called with correct data
+    mock_xgboost_service.get_feature_importance.assert_called_once_with()
+    patient_id = "test-patient-123",
+    model_type = "risk",
+    prediction_id = "risk-123"
+()
+
+   def test_get_feature_importance_not_found():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
-        (    ):
+        ():
         """Test feature importance retrieval with not found error."""
         # Set up mock service to raise ResourceNotFoundError
         mock_xgboost_service.get_feature_importance.side_effect = ResourceNotFoundError()
-            "Feature importance not found for prediction nonexistent-id"
-    (        )
-        
-        # Make API request
+           "Feature importance not found for prediction nonexistent-id"
+    ()
+
+       # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/feature-importance",
-    json={
-    "patient_id": "test-patient-123",
-    "model_type": "risk",
-    "prediction_id": "nonexistent-id"
+    json ={
+        "patient_id": "test-patient-123",
+        "model_type": "risk",
+        "prediction_id": "nonexistent-id"
     },
-    headers=psychiatrist_auth_headers
-    (    )
-        
-        # Verify response
-    assert response.status_code  ==  404
+    headers = psychiatrist_auth_headers
+    ()
+
+       # Verify response
+    assert response.status_code ==  404
     result = response.json()
     assert "detail" in result
     assert "not found" in result["detail"]
@@ -669,37 +670,39 @@ class TestXGBoostAPIIntegration:
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
-        (    ):
+        ():
         """Test successful digital twin integration."""
         # Set up mock service return value
         mock_response = {
-            "integration_id": "integration-123",
-            "patient_id": "test-patient-123",
-            "profile_id": "profile-123",
-            "prediction_id": "risk-123",
-            "status": "completed",
-            "details": {
-                "integration_type": "digital_twin",
-                "synchronized_attributes": ["risk_level", "treatment_response"],
-                "synchronization_date": datetime.now(timezone.utc).isoformat()
-            },
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+    "integration_id": "integration-123",
+    "patient_id": "test-patient-123",
+    "profile_id": "profile-123",
+    "prediction_id": "risk-123",
+    "status": "completed",
+    "details": {
+        "integration_type": "digital_twin",
+        "synchronized_attributes": [
+            "risk_level",
+            "treatment_response"],
+            "synchronization_date": datetime.now(
+                timezone.utc).isoformat() },
+                "timestamp": datetime.now(
+                    timezone.utc).isoformat() }
         mock_xgboost_service.integrate_with_digital_twin.return_value = mock_response
-        
+
         # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/digital-twin-integration",
-    json={
-    "patient_id": "test-patient-123",
-    "profile_id": "profile-123",
-    "prediction_id": "risk-123"
+    json ={
+        "patient_id": "test-patient-123",
+        "profile_id": "profile-123",
+        "prediction_id": "risk-123"
     },
-    headers=psychiatrist_auth_headers
-(    )
-        
-        # Verify response
-    assert response.status_code  ==  200
+    headers = psychiatrist_auth_headers
+()
+
+       # Verify response
+   assert response.status_code  ==  200
     result = response.json()
     assert result["integration_id"] == "integration-123"
     assert result["patient_id"] == "test-patient-123"
@@ -707,20 +710,21 @@ class TestXGBoostAPIIntegration:
     assert result["prediction_id"] == "risk-123"
     assert result["status"] == "completed"
     assert "details" in result
-        
-        # Verify service was called with correct data
-    mock_xgboost_service.integrate_with_digital_twin.assert_called_once_with()
-    patient_id="test-patient-123",
-    profile_id="profile-123",
-    prediction_id="risk-123"
-(    )
 
-    def test_get_model_info_success():
+       # Verify service was called with correct data
+    mock_xgboost_service.integrate_with_digital_twin.assert_called_once_with()
+    patient_id = "test-patient-123",
+    profile_id = "profile-123",
+    prediction_id = "risk-123"
+()
+
+   def test_get_model_info_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
-        patient_auth_headers: Dict[str, str]  # Even patients can access model info
-        (    ):
+        # Even patients can access model info
+        patient_auth_headers: Dict[str, str]
+        ():
         """Test successful model info retrieval."""
         # Set up mock service return value
         mock_response = {
@@ -741,49 +745,49 @@ class TestXGBoostAPIIntegration:
             "description": "Relapse risk prediction model based on XGBoost"
         }
         mock_xgboost_service.get_model_info.return_value = mock_response
-        
+
         # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/model-info",
-    json={"model_type": "relapse_risk"},
-    headers=patient_auth_headers
-(    )
-        
-        # Verify response
-    assert response.status_code  ==  200
+    json = {"model_type": "relapse_risk"},
+    headers = patient_auth_headers
+()
+
+       # Verify response
+   assert response.status_code  ==  200
     result = response.json()
     assert result["model_type"] == "relapse_risk"
     assert result["version"] == "1.0.0"
     assert "performance_metrics" in result
     assert len(result["features"]) == 2
     assert "description" in result
-        
-        # Verify service was called with correct data
-    mock_xgboost_service.get_model_info.assert_called_once_with()
-    model_type="relapse_risk"
-(    )
 
-    def test_get_model_info_not_found():
+       # Verify service was called with correct data
+    mock_xgboost_service.get_model_info.assert_called_once_with()
+    model_type = "relapse_risk"
+()
+
+   def test_get_model_info_not_found():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
-        (    ):
+        ():
         """Test model info retrieval with not found error."""
         # Set up mock service to raise ModelNotFoundError
         mock_xgboost_service.get_model_info.side_effect = ModelNotFoundError()
-            "Model type nonexistent_model not found"
-    (        )
-        
-        # Make API request
+           "Model type nonexistent_model not found"
+    ()
+
+       # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/model-info",
-    json={"model_type": "nonexistent_model"},
-    headers=psychiatrist_auth_headers
-    (    )
-        
-        # Verify response
-    assert response.status_code  ==  404
+    json = {"model_type": "nonexistent_model"},
+    headers = psychiatrist_auth_headers
+    ()
+
+       # Verify response
+    assert response.status_code ==  404
     result = response.json()
     assert "detail" in result
     assert "not found" in result["detail"]
@@ -794,22 +798,22 @@ class TestXGBoostAPIIntegration:
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str],
         valid_risk_prediction_data: Dict[str, Any]
-        (    ):
+        ():
         """Test handling of service unavailable error."""
         # Set up mock service to raise ServiceUnavailableError
         mock_xgboost_service.predict_risk.side_effect = ServiceUnavailableError()
-            "Prediction service is currently unavailable"
-    (        )
-        
-        # Make API request
+           "Prediction service is currently unavailable"
+    ()
+
+       # Make API request
     response = client.post()
     "/api/v1/ml/xgboost/risk",
-    json=valid_risk_prediction_data,
-    headers=psychiatrist_auth_headers
-    (    )
-        
-        # Verify response
-    assert response.status_code  ==  503
+    json = valid_risk_prediction_data,
+    headers = psychiatrist_auth_headers
+    ()
+
+       # Verify response
+    assert response.status_code ==  503
     result = response.json()
     assert "detail" in result
     assert "unavailable" in result["detail"]

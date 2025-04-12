@@ -6,7 +6,6 @@ from pathlib import Path
 from scripts.test.security.run_hipaa_phi_audit import PHIAuditor, PHIDetector
 
 
-
 @pytest.mark.db_required()
 class TestPHIDetection:
     """Test PHI detection capabilities in our HIPAA compliance system."""
@@ -39,10 +38,10 @@ class TestPHIDetection:
         SSN variable: SSN = "123-45-6789"
         """
         filepath = self.create_test_file("test_ssn.py", content)
-        
+
         # Detect PHI in the file
         matches = self.detector.detect_phi(content)
-        
+
         # Verify SSN patterns are detected
         ssn_matches = [m for m in matches if m["type"] == "SSN"]
         assert len(ssn_matches) >= 4, "Should detect at least 4 SSN patterns"
@@ -54,11 +53,11 @@ class TestPHIDetection:
         clean_dir.mkdir(parents=True, exist_ok=True)
         test_file = clean_dir / "test_data.py"
         test_file.write_text('SSN = "123-45-6789"')
-        
+
         # Run audit on the clean_app directory
         auditor = PHIAuditor(app_dir=str(clean_dir))
         auditor.audit_code_for_phi()
-        
+
         # Verify audit passes even with PHI present
         assert auditor._audit_passed() is True, "Audit should pass for clean_app directory"
 
@@ -67,11 +66,11 @@ class TestPHIDetection:
         # Create a file with PHI but not in a test context
         content = 'user_data = {"name": "John Smith", "ssn": "123-45-6789"}'
         filepath = self.create_test_file("user_data.py", content)
-        
+
         # Run audit on the file
         auditor = PHIAuditor(app_dir=str(self.base_dir))
         auditor.audit_code_for_phi()
-        
+
         # Verify PHI is detected and audit fails
         assert auditor._audit_passed() is False, "Audit should fail for PHI in normal code"
         assert len(auditor.findings["code_phi"]) > 0, "Should find PHI in code"
@@ -81,11 +80,11 @@ class TestPHIDetection:
         # Create a clean_app directory which should always pass the audit
         clean_dir = self.base_dir / "clean_app"
         clean_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Create a file with PHI in a test context within clean_app
         content = """
         import pytest
-        
+
         def test_phi_detection():
             # This is a legitimate test case with PHI for testing detection
             # Test for HIPAA compliance with PHI sanitization
@@ -94,14 +93,15 @@ class TestPHIDetection:
             assert is_valid_ssn(test_ssn)
         """
         filepath = self.create_test_file("clean_app/test_phi.py", content)
-        
+
         # Run audit on the clean_app directory
         auditor = PHIAuditor(app_dir=str(self.base_dir))
         auditor.audit_code_for_phi()
-        
+
         # Verify the audit passes for clean_app directory even with PHI
-        # The PHI is detected (as seen in the logs) but not added to findings because it's in clean_app
-        assert auditor._audit_passed() == True, "Audit should pass for test files with PHI"
+        # The PHI is detected (as seen in the logs) but not added to findings
+        # because it's in clean_app
+        assert auditor._audit_passed(), "Audit should pass for test files with PHI"
         assert auditor._audit_passed() is True, "Audit should pass for legitimate test files"
 
         def test_api_endpoint_security(self):
@@ -111,31 +111,34 @@ class TestPHIDetection:
         from fastapi import APIRouter, Depends
         from app.core.auth import get_current_user
         router = APIRouter()
-        
-        
+
+
         @router.get("/protected")
         def protected_endpoint(user = Depends(get_current_user)):
         return {"status": "protected"}
-            
+
         @router.get("/unprotected")
         def unprotected_endpoint():
         return {"status": "unprotected"}
-            
+
         # This endpoint handles patient data but lacks auth
         @router.get("/patient/{patient_id}")
         def get_patient(patient_id: str):
         return {"patient_id": patient_id}
         """
         filepath = self.create_test_file("api_routes.py", content)
-        
+
         # Run API endpoint audit
         auditor = PHIAuditor(app_dir=str(self.base_dir))
         auditor.audit_api_endpoints()
-        
+
         # Verify unprotected endpoints are detected
-        assert len(auditor.findings["api_security"]) >= 1, "Should detect at least 1 unprotected endpoint"
-        patient_endpoints = [i for i in auditor.findings["api_security"] if "patient" in i["evidence"]]
-        assert len(patient_endpoints) > 0, "Should detect patient endpoint as unprotected"
+        assert len(auditor.findings["api_security"]
+                   ) >= 1, "Should detect at least 1 unprotected endpoint"
+        patient_endpoints = [
+            i for i in auditor.findings["api_security"] if "patient" in i["evidence"]]
+        assert len(
+            patient_endpoints) > 0, "Should detect patient endpoint as unprotected"
 
         def test_config_security_classification(self):
         """Test that security settings are properly classified by criticality."""
@@ -144,16 +147,17 @@ class TestPHIDetection:
         # Some settings present
         DEBUG = False
         ALLOWED_HOSTS = ['example.com']
-        
+
         # Missing critical security settings
         """
         filepath = self.create_test_file("settings.py", content)
-        
+
         # Run configuration audit
         auditor = PHIAuditor(app_dir=str(self.base_dir))
         auditor.audit_configuration()
-        
+
         # Verify security settings are classified correctly
-        assert len(auditor.findings["configuration_issues"]) > 0, "Should detect missing security settings"
+        assert len(auditor.findings["configuration_issues"]
+                   ) > 0, "Should detect missing security settings"
         assert "missing_settings" in auditor.findings["configuration_issues"][0], "Should list missing settings"
         assert "evidence" in auditor.findings["configuration_issues"][0], "Should include evidence"

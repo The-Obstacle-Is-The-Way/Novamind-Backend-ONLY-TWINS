@@ -13,15 +13,15 @@ It verifies:
     4. Security of the encryption implementation
     """
 
-    import os
-    import unittest
-    import pytest
-    import uuid
-    from typing import Dict, Any, List, Optional
-    import json
+import os
+import unittest
+import pytest
+import uuid
+from typing import Dict, Any, List, Optional
+import json
 
-    # Import the encryption modules from infrastructure layer
-    from app.infrastructure.security.encryption import (
+# Import the encryption modules from infrastructure layer
+from app.infrastructure.security.encryption import (
     PHIFieldEncryption,
     EncryptionKeyManager,
     EncryptionError,
@@ -49,7 +49,6 @@ class TestEncryptionKeyManager(unittest.TestCase):
 
         self.assertIsNotNone(new_key)
         self.assertNotEqual(original_key, new_key)
-
 
         class TestPHIFieldEncryption(unittest.TestCase):
     """Test suite for PHI field encryption."""
@@ -116,22 +115,30 @@ class TestEncryptionKeyManager(unittest.TestCase):
         original_data = json.loads(json.dumps(self.test_data))
 
         # Encrypt the PHI fields
-        encrypted_data = self.encryption.encrypt_dict(self.test_data, self.phi_fields)
+        encrypted_data = self.encryption.encrypt_dict(
+            self.test_data, self.phi_fields)
 
         # PHI fields should be encrypted
-        self.assertNotEqual(original_data["patient_id"], encrypted_data["patient_id"])
-        self.assertNotEqual(original_data["name"], encrypted_data["name"])
-        self.assertNotEqual(original_data["address"], encrypted_data["address"])
         self.assertNotEqual(
-            original_data["demographics"]["ssn"], encrypted_data["demographics"]["ssn"]
-        )
+            original_data["patient_id"],
+            encrypted_data["patient_id"])
+        self.assertNotEqual(original_data["name"], encrypted_data["name"])
+        self.assertNotEqual(
+            original_data["address"],
+            encrypted_data["address"])
+        self.assertNotEqual(
+            original_data["demographics"]["ssn"],
+            encrypted_data["demographics"]["ssn"])
 
         # Non-PHI fields should remain unchanged
         self.assertEqual(original_data["gender"], encrypted_data["gender"])
-        self.assertEqual(original_data["diagnosis"], encrypted_data["diagnosis"])
+        self.assertEqual(
+            original_data["diagnosis"],
+            encrypted_data["diagnosis"])
 
         # Decrypt the data
-        decrypted_data = self.encryption.decrypt_dict(encrypted_data, self.phi_fields)
+        decrypted_data = self.encryption.decrypt_dict(
+            encrypted_data, self.phi_fields)
 
         # Decrypted data should match original
         self.assertEqual(original_data, decrypted_data)
@@ -142,7 +149,8 @@ class TestEncryptionKeyManager(unittest.TestCase):
         original_data = json.loads(json.dumps(self.test_data))
 
         # Encrypt the PHI fields
-        encrypted_data = self.encryption.encrypt_dict(self.test_data, self.phi_fields)
+        encrypted_data = self.encryption.encrypt_dict(
+            self.test_data, self.phi_fields)
 
         # Nested PHI fields should be encrypted
         self.assertNotEqual(
@@ -151,7 +159,8 @@ class TestEncryptionKeyManager(unittest.TestCase):
         )
 
         # Decrypt the data
-        decrypted_data = self.encryption.decrypt_dict(encrypted_data, self.phi_fields)
+        decrypted_data = self.encryption.decrypt_dict(
+            encrypted_data, self.phi_fields)
 
         # Original and decrypted data should match
         self.assertEqual(
@@ -179,10 +188,11 @@ class TestEncryptionKeyManager(unittest.TestCase):
 
         try:
             result = self.encryption.decrypt(invalid_encrypted)
-            # If no exception is raised, the function should return the original value
+            # If no exception is raised, the function should return the
+            # original value
             self.assertEqual(invalid_encrypted, result)
             except EncryptionError:
-            # If an exception is raised, that's also acceptable
+                # If an exception is raised, that's also acceptable
             pass
 
             def test_hipaa_compliance(self):
@@ -201,14 +211,16 @@ class TestEncryptionKeyManager(unittest.TestCase):
 
         # HIPAA requires that PHI is not visible in storage
         self.assertNotEqual(
-            test_data["medical_record_number"], encrypted_data["medical_record_number"]
-        )
+            test_data["medical_record_number"],
+            encrypted_data["medical_record_number"])
         self.assertNotEqual(
             test_data["treatment_notes"], encrypted_data["treatment_notes"]
         )
 
         # Diagnosis code (not considered direct PHI) should remain unchanged
-        self.assertEqual(test_data["diagnosis_code"], encrypted_data["diagnosis_code"])
+        self.assertEqual(
+            test_data["diagnosis_code"],
+            encrypted_data["diagnosis_code"])
 
         # Verify data can be correctly decrypted
         decrypted_data = self.encryption.decrypt_dict(
