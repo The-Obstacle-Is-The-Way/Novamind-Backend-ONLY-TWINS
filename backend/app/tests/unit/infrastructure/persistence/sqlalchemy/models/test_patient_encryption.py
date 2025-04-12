@@ -190,3 +190,19 @@ class TestPatientEncryption:
         # Set a field to None after initialization
         patient.first_name = None
         assert patient.first_name is None
+
+    @patch("app.core.security.encryption.get_encryption_key")
+    def test_encryption_key_handling(self, mock_get_key, mock_encryption_key):
+        """Test that encryption key is properly handled when encrypting/decrypting."""
+        # Set up mock encryption key
+        mock_get_key.return_value = mock_encryption_key
+        
+        # Create patient
+        patient = Patient(first_name="Test", last_name="Patient")
+        
+        # Verify the encryption key was used
+        mock_get_key.assert_called()
+        
+        # Check that values are properly decrypted
+        assert patient.first_name == "Test"
+        assert patient.last_name == "Patient"

@@ -246,3 +246,51 @@ class TestRateLimiterFactory:
         
         # Should fall back to in-memory implementation
         assert isinstance(limiter, InMemoryRateLimiter)
+
+
+class TestCustomRateLimiter:
+    """Tests for custom rate limiter functionality."""
+    
+    def test_custom_rate_limit_configuration(self):
+        """Test custom rate limit configuration for different endpoints."""
+        # This is an example of what might have been intended in the missing section
+        config_api = RateLimitConfig(requests=100, window_seconds=60)
+        config_auth = RateLimitConfig(requests=5, window_seconds=60, block_seconds=300)
+        
+        assert config_api.requests == 100
+        assert config_auth.requests == 5
+        assert config_auth.block_seconds == 300
+    
+    @patch('app.infrastructure.security.rate_limiter_enhanced.logging')
+    def test_logging_on_rate_limit(self, mock_logging):
+        """Test that rate limiting events are properly logged."""
+        rate_limiter = InMemoryRateLimiter()
+        config = RateLimitConfig(requests=1, window_seconds=60)
+        
+        # First request is allowed
+        assert rate_limiter.check_rate_limit("test-key", config) is True
+        
+        # Second request is blocked and should trigger logging
+        assert rate_limiter.check_rate_limit("test-key", config) is False
+        
+        # Verify that warning log was called
+        mock_logging.warning.assert_called_once()
+    
+    def test_rate_limit_per_endpoint(self):
+        """Test different rate limits for different endpoints."""
+        rate_limiter = InMemoryRateLimiter()
+        
+        # API endpoint with higher limits
+        api_config = RateLimitConfig(requests=100, window_seconds=60)
+        # Auth endpoint with stricter limits
+        auth_config = RateLimitConfig(requests=5, window_seconds=60)
+        
+        # Test API endpoint (use a different key)
+        for _ in range(10):
+            assert rate_limiter.check_rate_limit("api-endpoint", api_config) is True
+            
+        # Test Auth endpoint (should hit limit after 5 requests)
+        for _ in range(5):
+            assert rate_limiter.check_rate_limit("auth-endpoint", auth_config) is True
+        
+        assert rate_limiter.check_rate_limit("auth-endpoint", auth_config) is False

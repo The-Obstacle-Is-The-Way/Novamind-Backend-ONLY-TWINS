@@ -28,6 +28,7 @@ def mock_digital_twin_service():
     mock_service.update_digital_twin = AsyncMock()
     mock_service.add_biometric_data = AsyncMock()
     mock_service.get_biometric_history = AsyncMock()
+    mock_service.get_latest_biometrics = AsyncMock()
     
     return mock_service
 
