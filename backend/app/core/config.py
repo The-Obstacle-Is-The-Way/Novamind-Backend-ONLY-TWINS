@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
+    # Encryption (HIPAA Compliance)
+    ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "")
+    PREVIOUS_ENCRYPTION_KEY: Optional[str] = os.getenv("PREVIOUS_ENCRYPTION_KEY", None)
+    ENCRYPTION_SALT: str = os.getenv("ENCRYPTION_SALT", "novamind-digital-twin-salt")
+    
     # Backend URLs
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     
