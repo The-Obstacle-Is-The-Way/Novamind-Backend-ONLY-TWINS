@@ -48,6 +48,11 @@ class NeurotransmitterMapping:
             return []
         return self.production_sites[neurotransmitter]
     
+    def get_receptor_profiles(self, brain_region: BrainRegion, neurotransmitter: Neurotransmitter) -> List[ReceptorProfile]:
+        """Get receptor profiles for a specific brain region and neurotransmitter combination."""
+        return [profile for profile in self.receptor_profiles 
+                if profile.brain_region == brain_region and profile.neurotransmitter == neurotransmitter]
+    
     def add_receptor_profile(self, profile: ReceptorProfile) -> None:
         """Add a new receptor profile to the mapping."""
         # Check if a profile for this region/neurotransmitter already exists
