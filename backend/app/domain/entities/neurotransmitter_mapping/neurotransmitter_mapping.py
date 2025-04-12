@@ -11,6 +11,7 @@ from typing import Dict, List, Set, Optional, Tuple
 from uuid import UUID
 
 from app.domain.entities.digital_twin.brain_region import BrainRegion
+from app.domain.entities.digital_twin.clinical_insight import ClinicalSignificance
 from app.domain.entities.digital_twin.neurotransmitter import Neurotransmitter
 from app.domain.entities.digital_twin.receptor_subtype import ReceptorSubtype
 from .receptor_profile import ReceptorProfile, ReceptorType
@@ -287,84 +288,114 @@ def create_default_neurotransmitter_mapping(patient_id: UUID) -> Neurotransmitte
     # Set up basic receptor profiles
     # Each profile includes relevant receptor subtypes and their relative densities
     
-    # Prefrontal Cortex
+    # Prefrontal Cortex - Serotonin 5HT2A receptor profile
     pfc_serotonin = ReceptorProfile(
         brain_region=BrainRegion.PREFRONTAL_CORTEX,
         neurotransmitter=Neurotransmitter.SEROTONIN,
-        receptor_subtypes={
-            ReceptorSubtype.SEROTONIN_5HT1A: 0.4,
-            ReceptorSubtype.SEROTONIN_5HT2A: 0.6
-        },
-        receptor_types={
-            ReceptorSubtype.SEROTONIN_5HT1A: ReceptorType.INHIBITORY,
-            ReceptorSubtype.SEROTONIN_5HT2A: ReceptorType.EXCITATORY
-        },
-        sensitivity=1.2
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
+        density=0.6,
+        sensitivity=0.8,
+        clinical_relevance=ClinicalSignificance.MODERATE
     )
     mapping.add_receptor_profile(pfc_serotonin)
     
-    pfc_dopamine = ReceptorProfile(
+    # Prefrontal Cortex - Dopamine D1 receptor profile
+    pfc_dopamine_d1 = ReceptorProfile(
         brain_region=BrainRegion.PREFRONTAL_CORTEX,
         neurotransmitter=Neurotransmitter.DOPAMINE,
-        receptor_subtypes={
-            ReceptorSubtype.DOPAMINE_D1: 0.5,
-            ReceptorSubtype.DOPAMINE_D2: 0.5
-        },
-        receptor_types={
-            ReceptorSubtype.DOPAMINE_D1: ReceptorType.EXCITATORY,
-            ReceptorSubtype.DOPAMINE_D2: ReceptorType.INHIBITORY
-        },
-        sensitivity=1.1
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.DOPAMINE_D1,
+        density=0.5,
+        sensitivity=1.1,
+        clinical_relevance=ClinicalSignificance.MODERATE
     )
-    mapping.add_receptor_profile(pfc_dopamine)
+    mapping.add_receptor_profile(pfc_dopamine_d1)
     
-    # Hippocampus
-    hippocampus_serotonin = ReceptorProfile(
+    # Prefrontal Cortex - Dopamine D2 receptor profile
+    pfc_dopamine_d2 = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.DOPAMINE,
+        receptor_type=ReceptorType.INHIBITORY,
+        receptor_subtype=ReceptorSubtype.DOPAMINE_D2,
+        density=0.5,
+        sensitivity=1.1,
+        clinical_relevance=ClinicalSignificance.MODERATE
+    )
+    mapping.add_receptor_profile(pfc_dopamine_d2)
+    
+    # Hippocampus - Serotonin 5HT1A receptor profile
+    hippocampus_serotonin_5ht1a = ReceptorProfile(
         brain_region=BrainRegion.HIPPOCAMPUS,
         neurotransmitter=Neurotransmitter.SEROTONIN,
-        receptor_subtypes={
-            ReceptorSubtype.SEROTONIN_5HT1A: 0.7,
-            ReceptorSubtype.SEROTONIN_5HT2C: 0.3
-        },
-        receptor_types={
-            ReceptorSubtype.SEROTONIN_5HT1A: ReceptorType.INHIBITORY,
-            ReceptorSubtype.SEROTONIN_5HT2C: ReceptorType.EXCITATORY
-        },
-        sensitivity=1.0
+        receptor_type=ReceptorType.INHIBITORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT1A,
+        density=0.7,
+        sensitivity=1.0,
+        clinical_relevance=ClinicalSignificance.MODERATE
     )
-    mapping.add_receptor_profile(hippocampus_serotonin)
+    mapping.add_receptor_profile(hippocampus_serotonin_5ht1a)
+    
+    # Hippocampus - Serotonin 5HT2C receptor profile
+    hippocampus_serotonin_5ht2c = ReceptorProfile(
+        brain_region=BrainRegion.HIPPOCAMPUS,
+        neurotransmitter=Neurotransmitter.SEROTONIN,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2C,
+        density=0.3,
+        sensitivity=1.0,
+        clinical_relevance=ClinicalSignificance.MILD
+    )
+    mapping.add_receptor_profile(hippocampus_serotonin_5ht2c)
     
     # Amygdala
-    amygdala_gaba = ReceptorProfile(
+    # Amygdala - GABA_A receptor profile
+    amygdala_gaba_a = ReceptorProfile(
         brain_region=BrainRegion.AMYGDALA,
         neurotransmitter=Neurotransmitter.GABA,
-        receptor_subtypes={
-            ReceptorSubtype.GABA_A: 0.8,
-            ReceptorSubtype.GABA_B: 0.2
-        },
-        receptor_types={
-            ReceptorSubtype.GABA_A: ReceptorType.INHIBITORY,
-            ReceptorSubtype.GABA_B: ReceptorType.INHIBITORY
-        },
-        sensitivity=1.3
+        receptor_type=ReceptorType.INHIBITORY,
+        receptor_subtype=ReceptorSubtype.GABA_A,
+        density=0.8,
+        sensitivity=1.3,
+        clinical_relevance=ClinicalSignificance.HIGH
     )
-    mapping.add_receptor_profile(amygdala_gaba)
+    mapping.add_receptor_profile(amygdala_gaba_a)
     
-    # Nucleus Accumbens (Reward Center)
-    nucleus_accumbens_dopamine = ReceptorProfile(
+    # Amygdala - GABA_B receptor profile
+    amygdala_gaba_b = ReceptorProfile(
+        brain_region=BrainRegion.AMYGDALA,
+        neurotransmitter=Neurotransmitter.GABA,
+        receptor_type=ReceptorType.INHIBITORY,
+        receptor_subtype=ReceptorSubtype.GABA_B,
+        density=0.2,
+        sensitivity=1.3,
+        clinical_relevance=ClinicalSignificance.MODERATE
+    )
+    mapping.add_receptor_profile(amygdala_gaba_b)
+    
+    # Nucleus Accumbens - Dopamine D1 receptor profile
+    nucleus_accumbens_dopamine_d1 = ReceptorProfile(
         brain_region=BrainRegion.NUCLEUS_ACCUMBENS,
         neurotransmitter=Neurotransmitter.DOPAMINE,
-        receptor_subtypes={
-            ReceptorSubtype.DOPAMINE_D1: 0.6,
-            ReceptorSubtype.DOPAMINE_D2: 0.4
-        },
-        receptor_types={
-            ReceptorSubtype.DOPAMINE_D1: ReceptorType.EXCITATORY,
-            ReceptorSubtype.DOPAMINE_D2: ReceptorType.INHIBITORY
-        },
-        sensitivity=1.5
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.DOPAMINE_D1,
+        density=0.6,
+        sensitivity=1.5,
+        clinical_relevance=ClinicalSignificance.HIGH
     )
-    mapping.add_receptor_profile(nucleus_accumbens_dopamine)
+    mapping.add_receptor_profile(nucleus_accumbens_dopamine_d1)
+    
+    # Nucleus Accumbens - Dopamine D2 receptor profile
+    nucleus_accumbens_dopamine_d2 = ReceptorProfile(
+        brain_region=BrainRegion.NUCLEUS_ACCUMBENS,
+        neurotransmitter=Neurotransmitter.DOPAMINE,
+        receptor_type=ReceptorType.INHIBITORY,
+        receptor_subtype=ReceptorSubtype.DOPAMINE_D2,
+        density=0.4,
+        sensitivity=1.5,
+        clinical_relevance=ClinicalSignificance.HIGH
+    )
+    mapping.add_receptor_profile(nucleus_accumbens_dopamine_d2)
     
     # Set up brain region connectivity (simplified)
     # Format: {source_region: {target_region: connection_strength}}

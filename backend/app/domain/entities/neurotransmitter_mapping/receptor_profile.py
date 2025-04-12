@@ -10,6 +10,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from app.domain.entities.digital_twin.brain_region import BrainRegion
+from app.domain.entities.digital_twin.clinical_insight import ClinicalSignificance
 from app.domain.entities.digital_twin.neurotransmitter import Neurotransmitter
 from app.domain.entities.digital_twin.receptor_subtype import ReceptorSubtype
 
@@ -36,9 +37,11 @@ class ReceptorProfile:
     """
     brain_region: BrainRegion
     neurotransmitter: Neurotransmitter
-    receptor_subtypes: Dict[ReceptorSubtype, float] = field(default_factory=dict)  # Subtype to density mapping
-    receptor_types: Dict[ReceptorSubtype, ReceptorType] = field(default_factory=dict)  # Subtype to type mapping
+    receptor_type: ReceptorType
+    receptor_subtype: ReceptorSubtype
+    density: float = 0.5  # Receptor density in this region (0.0-1.0)
     sensitivity: float = 1.0  # Overall sensitivity factor for this neurotransmitter in this region
+    clinical_relevance: Optional['ClinicalSignificance'] = None  # Clinical significance of this receptor profile
     upregulation_potential: float = 0.2  # Maximum potential for upregulation (0.0-1.0)
     downregulation_potential: float = 0.2  # Maximum potential for downregulation (0.0-1.0)
     
@@ -49,29 +52,17 @@ class ReceptorProfile:
         Returns:
             float: Response strength from -1.0 (strongly inhibitory) to 1.0 (strongly excitatory)
         """
-        if not self.receptor_subtypes:
+        if self.density == 0:
             return 0.0
             
-        response = 0.0
-        total_density = sum(self.receptor_subtypes.values())
-        
-        if total_density == 0:
-            return 0.0
-            
-        for subtype, density in self.receptor_subtypes.items():
-            receptor_type = self.receptor_types.get(subtype, ReceptorType.MODULATORY)
-            normalized_density = density / total_density
-            
-            # Apply different transfer functions based on receptor type
-            if receptor_type == ReceptorType.EXCITATORY:
-                subtype_response = normalized_density * neurotransmitter_level
-            elif receptor_type == ReceptorType.INHIBITORY:
-                subtype_response = -normalized_density * neurotransmitter_level
-            else:  # MODULATORY
-                subtype_response = normalized_density * (neurotransmitter_level - 0.5) * 2
+        # Apply different transfer functions based on receptor type
+        if self.receptor_type == ReceptorType.EXCITATORY:
+            response = self.density * neurotransmitter_level
+        elif self.receptor_type == ReceptorType.INHIBITORY:
+            response = -self.density * neurotransmitter_level
+        else:  # MODULATORY or other types
+            response = self.density * (neurotransmitter_level - 0.5) * 2
                 
-            response += subtype_response
-            
         # Scale by sensitivity and clamp to -1.0 to 1.0
         response *= self.sensitivity
         return max(-1.0, min(1.0, response))
