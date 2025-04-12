@@ -43,6 +43,7 @@ class BrainRegion(Enum):
     # Additional regions needed for tests
     VENTRAL_STRIATUM = "ventral_striatum"
     DORSAL_STRIATUM = "dorsal_striatum"
+    PITUITARY = "pituitary"
 
 
 class Neurotransmitter(Enum):

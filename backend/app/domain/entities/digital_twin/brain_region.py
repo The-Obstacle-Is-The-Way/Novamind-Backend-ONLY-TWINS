@@ -47,6 +47,7 @@ class BrainRegion(str, Enum):
     VENTRAL_STRIATUM = "ventral_striatum"
     DORSAL_STRIATUM = "dorsal_striatum"
     MIDBRAIN = "midbrain"
+    PITUITARY = "pituitary"
     
     @classmethod
     def get_all(cls) -> list[str]:
