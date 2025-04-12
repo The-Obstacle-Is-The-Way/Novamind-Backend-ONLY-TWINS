@@ -120,7 +120,7 @@ class MockAsyncSession(MagicMock):
     def get(self, model_class, object_id):
         """Mock implementation of get."""
         
-    return self._entity_registry.get(object_id)
+        return self._entity_registry.get(object_id)
     def configure_mock_results(self, query: str, results: Any):
         """
         Configure the mock to return specific results for a query.
