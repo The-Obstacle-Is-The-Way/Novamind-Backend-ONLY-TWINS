@@ -38,7 +38,8 @@ try:
         
         def decode_token(self, token):
             """Decode a test JWT token."""
-            return jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            
+    return jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             
         def verify_token(self, token):
             """Verify token is valid."""
@@ -92,22 +93,26 @@ class TestHIPAAAuthCompliance:
     @pytest.fixture
     def jwt_service(self):
         """Create a JWT service for testing."""
-        return JWTService()
+        
+    return JWTService()
         
     @pytest.fixture
     def auth_middleware(self, jwt_service):
         """Create auth middleware for testing."""
-        return AuthMiddleware(jwt_service)
+        
+    return AuthMiddleware(jwt_service)
         
     @pytest.fixture
     def role_manager(self):
         """Create role manager for testing."""
-        return RoleManager()
+        
+    return RoleManager()
     
     @pytest.fixture
     def doctor_token(self, jwt_service):
         """Create a valid doctor token."""
-        return jwt_service.create_access_token({
+        
+    return jwt_service.create_access_token({
             "sub": "doctor123",
             "role": "doctor",
             "name": "Dr. Jane Smith",
@@ -117,7 +122,8 @@ class TestHIPAAAuthCompliance:
     @pytest.fixture
     def patient_token(self, jwt_service):
         """Create a valid patient token."""
-        return jwt_service.create_access_token({
+        
+    return jwt_service.create_access_token({
             "sub": "patient456",
             "role": "patient",
             "name": "John Doe",
@@ -128,7 +134,8 @@ class TestHIPAAAuthCompliance:
     @pytest.fixture
     def expired_token(self, jwt_service):
         """Create an expired token."""
-        return jwt_service.create_access_token({
+        
+    return jwt_service.create_access_token({
             "sub": "doctor789",
             "role": "doctor",
             "permissions": ["read:patient", "write:patient", "read:phi", "write:phi"]

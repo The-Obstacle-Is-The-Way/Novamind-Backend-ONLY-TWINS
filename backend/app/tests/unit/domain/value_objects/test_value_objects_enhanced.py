@@ -24,7 +24,8 @@ class TestEmergencyContact:
     @pytest.fixture
     def valid_contact_data(self) -> Dict[str, Any]:
         """Create valid emergency contact data."""
-        return {
+        
+    return {
             "name": "Jane Doe",
             "relationship": "Spouse",
             "phone": "555-123-4567",
@@ -146,7 +147,8 @@ class TestPsychiatricAssessment:
     @pytest.fixture
     def valid_assessment_data(self) -> Dict[str, Any]:
         """Create valid psychiatric assessment data."""
-        return {
+        
+    return {
             "assessment_date": date(2025, 3, 15),
             "diagnosis": "Major Depressive Disorder",
             "severity": "Moderate",
@@ -256,7 +258,8 @@ class TestAddressValueObject:
     @pytest.fixture
     def valid_address_data(self) -> Dict[str, Any]:
         """Create valid address data."""
-        return {
+        
+    return {
             "street": "123 Main St",
             "city": "Boston",
             "state": "MA",
@@ -311,7 +314,8 @@ class TestContactInfoValueObject:
     @pytest.fixture
     def valid_contact_info_data(self) -> Dict[str, Any]:
         """Create valid contact info data."""
-        return {
+        
+    return {
             "email": "patient@example.com",
             "phone": "555-123-4567",
             "preferred_contact_method": "email"

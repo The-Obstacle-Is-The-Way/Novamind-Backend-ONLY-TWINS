@@ -17,6 +17,7 @@ from backend.app.infrastructure.database.session import get_session
 @pytest.fixture
 def api_client():
     """Provide a FastAPI test client."""
+    
     return TestClient(app)
 
 

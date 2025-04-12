@@ -34,7 +34,8 @@ class TestPATService:
     @pytest.fixture
     def mock_assessment_data(self) -> Dict[str, Any]:
         """Create mock assessment data for testing."""
-        return {
+        
+    return {
             "phq9_1": 2,
             "phq9_2": 1,
             "phq9_3": 2,

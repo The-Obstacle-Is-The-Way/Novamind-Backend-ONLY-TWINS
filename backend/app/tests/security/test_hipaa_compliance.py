@@ -20,8 +20,7 @@ import secrets
 import uuid
 from datetime import datetime, UTC, UTC, timedelta
 from unittest import mock
-
-, import pytest
+import pytest
 from fastapi import HTTPException, status
 from jose import jwt
 
@@ -101,6 +100,7 @@ except ImportError as e:
 @pytest.fixture
         def test_user():
     """Create a test user for authentication tests."""
+    
     return {
         "id": str(uuid.uuid4()),
         "username": f"test_user_{secrets.token_hex(4)}",
@@ -113,6 +113,7 @@ except ImportError as e:
 @pytest.fixture
         def test_phi_data():
     """Create test PHI data for encryption tests."""
+    
     return {
         "patient_id": str(uuid.uuid4()),
         "first_name": "Test",

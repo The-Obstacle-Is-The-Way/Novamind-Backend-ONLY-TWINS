@@ -25,7 +25,8 @@ class TestPatientRepository:
     @pytest.fixture
     async def repository(self, db_session):
         """Create a patient repository with a real DB session."""
-        return PatientRepository(db_session)
+        
+    return PatientRepository(db_session)
     
     @pytest.fixture
     async def sample_patient_data(self):

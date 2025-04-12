@@ -66,7 +66,8 @@ class EmergencyContact:
         
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        return {
+        
+    return {
             "name": self.name,
             "relationship": self.relationship,
             "phone": self.phone,
@@ -76,7 +77,8 @@ class EmergencyContact:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'EmergencyContact':
         """Create from dictionary."""
-        return cls(
+        
+    return cls(
             name=data.get("name", ""),
             relationship=data.get("relationship", ""),
             phone=data.get("phone", ""),
@@ -382,7 +384,8 @@ class Patient:
         
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        return {
+        
+    return {
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
@@ -446,11 +449,13 @@ class Patient:
         
     def __ne__(self, other):
         """Inequality comparison."""
-        return not self.__eq__(other)
+        
+    return not self.__eq__(other)
         
     def __str__(self):
         """String representation."""
-        return f"Patient({self.id}: {self.first_name} {self.last_name})"
+        
+    return f"Patient({self.id}: {self.first_name} {self.last_name})"
 
 
 # ============= Patient Entity Tests =============

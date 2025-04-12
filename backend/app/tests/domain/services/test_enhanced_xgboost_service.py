@@ -21,17 +21,20 @@ class TestEnhancedXGBoostService:
     @pytest.fixture
     def xgboost_service(self):
         """Create an EnhancedXGBoostService instance for testing."""
-        return EnhancedXGBoostService()
+        
+    return EnhancedXGBoostService()
     
     @pytest.fixture
     def test_patient_id(self):
         """Generate a test patient ID."""
-        return uuid.uuid4()
+        
+    return uuid.uuid4()
     
     @pytest.fixture
     def test_baseline_data(self):
         """Create test baseline data."""
-        return {
+        
+    return {
             "baseline_serotonin": 0.4,
             "baseline_dopamine": 0.6,
             "baseline_gaba": 0.5,

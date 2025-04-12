@@ -23,6 +23,7 @@ from app.domain.services.visualization_preprocessor import NeurotransmitterVisua
 @pytest.mark.db_required()
 def test_patient_id():
     """Generate a test patient ID."""
+    
     return uuid.uuid4()
 
 @pytest.fixture
@@ -101,6 +102,7 @@ def mock_sequence():
 @pytest.fixture
 def temporal_service(mock_sequence_repository, mock_event_repository, mock_xgboost_service):
     """Create a temporal neurotransmitter service with mock dependencies."""
+    
     return TemporalNeurotransmitterService(
         sequence_repository=mock_sequence_repository,
         event_repository=mock_event_repository,

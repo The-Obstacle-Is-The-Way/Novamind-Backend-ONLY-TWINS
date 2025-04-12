@@ -12,12 +12,14 @@ from typing import Any, Dict, List, Optional
 @pytest.fixture
 def standalone_fixture():
     """Basic fixture for standalone tests."""
+    
     return "standalone_fixture"
 
 
 @pytest.fixture
 def mock_patient_data() -> Dict[str, Any]:
     """Provides mock patient data for tests."""
+    
     return {
         "id": "p-12345",
         "name": "Test Patient",
@@ -33,6 +35,7 @@ def mock_patient_data() -> Dict[str, Any]:
 @pytest.fixture
 def mock_provider_data() -> Dict[str, Any]:
     """Provides mock provider data for tests."""
+    
     return {
         "id": "prov-54321",
         "name": "Dr. Test Provider",
@@ -44,6 +47,7 @@ def mock_provider_data() -> Dict[str, Any]:
 @pytest.fixture
 def mock_appointment_data() -> Dict[str, Any]:
     """Provides mock appointment data for tests."""
+    
     return {
         "id": "apt-67890",
         "patient_id": "p-12345",
@@ -57,6 +61,7 @@ def mock_appointment_data() -> Dict[str, Any]:
 @pytest.fixture
 def mock_digital_twin_data() -> Dict[str, Any]:
     """Provides mock digital twin data for tests."""
+    
     return {
         "patient_id": "p-12345",
         "model_version": "v2.1.0",

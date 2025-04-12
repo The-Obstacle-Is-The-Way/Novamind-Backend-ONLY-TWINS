@@ -43,7 +43,8 @@ except ImportError:
         
         def get_encryption_key(self) -> bytes:
             """Return the encryption key"""
-            return self._encryption_key
+            
+    return self._encryption_key
         
         def rotate_encryption_key(self) -> bytes:
             """Rotate the encryption key"""

@@ -12,9 +12,7 @@ from typing import List, Optional
 from app.domain.entities.patient import Patient
 from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
-
-
-, class TestPatientRepository:
+class TestPatientRepository:
     """Tests for the PatientRepository."""
     
     def setup_method(self):
@@ -53,7 +51,8 @@ from app.tests.fixtures.mock_db_fixture import MockAsyncSession
         patient_id: Optional[UUID] = None
     ) -> Patient:
         """Create a test patient entity for testing."""
-        return Patient(
+        
+    return Patient(
             id=patient_id or uuid4(),
             first_name=first_name,
             last_name=last_name,

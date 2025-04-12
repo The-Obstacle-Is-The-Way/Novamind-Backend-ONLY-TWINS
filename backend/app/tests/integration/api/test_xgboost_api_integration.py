@@ -212,6 +212,7 @@ def patient_auth_headers() -> Dict[str, str]:
 @pytest.fixture
 def valid_risk_prediction_data() -> Dict[str, Any]:
     """Valid data for risk prediction request."""
+    
     return {
         "patient_id": "test-patient-123",
         "risk_type": "relapse",
@@ -234,6 +235,7 @@ def valid_risk_prediction_data() -> Dict[str, Any]:
 @pytest.fixture
 def valid_treatment_response_data() -> Dict[str, Any]:
     """Valid data for treatment response prediction request."""
+    
     return {
         "patient_id": "test-patient-123",
         "treatment_type": "medication",
@@ -265,6 +267,7 @@ def valid_treatment_response_data() -> Dict[str, Any]:
 @pytest.fixture
 def valid_outcome_prediction_data() -> Dict[str, Any]:
     """Valid data for outcome prediction request."""
+    
     return {
         "patient_id": "test-patient-123",
         "outcome_timeframe": {

@@ -5,9 +5,7 @@ import pytest
 from typing import Dict, List, Any, Union
 
 from app.core.security.phi_sanitizer import PHISanitizer
-
-
-, class TestPHISanitizer:
+class TestPHISanitizer:
     """Test cases for the PHI sanitization utilities."""
     
     def setup_method(self):

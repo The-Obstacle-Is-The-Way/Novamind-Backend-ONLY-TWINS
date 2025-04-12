@@ -67,7 +67,8 @@ class TestTreatmentResponseModel:
     @pytest.fixture
     def sample_patient_data(self):
         """Create sample patient data for testing."""
-        return {
+        
+    return {
             "id": str(uuid4()),
             "demographics": {
                 "age": 42,

@@ -40,6 +40,7 @@ def app():
 @pytest.fixture
 def client(app):
     """Create a test client for the FastAPI app."""
+    
     return TestClient(app)
 
 
@@ -79,6 +80,7 @@ def mock_current_provider():
 @pytest.fixture
 def sample_alert_data():
     """Create sample data for creating a biometric alert."""
+    
     return {
         "patient_id": str(uuid4()),
         "alert_type": "elevated_heart_rate",

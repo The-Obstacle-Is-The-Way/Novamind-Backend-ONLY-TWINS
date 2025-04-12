@@ -45,6 +45,7 @@ def app():
 @pytest.fixture
 def client(app):
     """Create a test client for the FastAPI app."""
+    
     return TestClient(app)
 
 

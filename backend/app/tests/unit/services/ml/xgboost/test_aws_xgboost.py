@@ -170,7 +170,8 @@ class TestAWSXGBoostService:
     @pytest.fixture
     def aws_config(self):
         """Create a configuration dictionary for AWS XGBoost service."""
-        return {
+        
+    return {
             "aws_region": "us-east-1",
             "endpoint_prefix": "xgboost-psychiatric",
             "model_bucket": "novamind-models",

@@ -16,18 +16,21 @@ from app.core.utils.phi_sanitizer import PHIType, PHIDetector, PHISanitizer
 @pytest.fixture
 def sample_phi_text():
     """Sample text containing PHI for testing."""
+    
     return "Patient John Smith with SSN 123-45-6789 can be reached at john.smith@example.com or (555) 123-4567"
 
 
 @pytest.fixture
 def sample_non_phi_text():
     """Sample text without PHI for testing."""
+    
     return "System error occurred at 14:30. Error code: E12345. Contact support for assistance."
 
 
 @pytest.fixture
 def sample_patient_data():
     """Sample patient data dictionary for testing."""
+    
     return {
         "patient_id": "P12345",
         "name": "Jane Doe",

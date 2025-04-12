@@ -29,7 +29,8 @@ class BaseSecurityTest:
                           user_id: Optional[UUID] = None, 
                           roles: Optional[List[Role]] = None) -> User:
         """Create a test user for authentication testing."""
-        return User(
+        
+    return User(
             id=user_id or self.test_user_id,
             username="test_user",
             email="test@example.com",

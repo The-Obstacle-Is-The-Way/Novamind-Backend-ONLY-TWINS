@@ -27,6 +27,7 @@ from app.domain.services.appointment_service import AppointmentService
 @pytest.fixture
 def future_datetime():
     """Fixture for a future datetime."""
+    
     return datetime.now() + timedelta(days=1)
 
 
@@ -58,6 +59,7 @@ def provider_repository():
 @pytest.fixture
 def appointment_service(appointment_repository, patient_repository, provider_repository):
     """Fixture for appointment service."""
+    
     return AppointmentService(
         appointment_repository=appointment_repository,
         patient_repository=patient_repository,
@@ -72,6 +74,7 @@ def appointment_service(appointment_repository, patient_repository, provider_rep
 @pytest.fixture
 def valid_appointment(future_datetime):
     """Fixture for a valid appointment."""
+    
     return Appointment(
         id=str(uuid.uuid4()),
         patient_id="patient123",

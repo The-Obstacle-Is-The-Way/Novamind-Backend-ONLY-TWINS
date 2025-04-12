@@ -35,7 +35,8 @@ class TestPatientModelEncryption:
     @pytest.fixture
     def sample_patient(self):
         """Create a sample patient domain entity for testing."""
-        return Patient(
+        
+    return Patient(
             id=None,  # Will be assigned by DB
             first_name="John",
             last_name="Doe",

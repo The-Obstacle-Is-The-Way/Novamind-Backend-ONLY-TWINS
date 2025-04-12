@@ -131,7 +131,8 @@ class TestAuthMiddleware:
     @pytest.fixture
     def test_client(self, app):
         """Create a test client for the FastAPI app."""
-        return TestClient(app)
+        
+    return TestClient(app)
     
     def test_public_route_access(self, test_client):
         """Test that public routes are accessible without authentication."""

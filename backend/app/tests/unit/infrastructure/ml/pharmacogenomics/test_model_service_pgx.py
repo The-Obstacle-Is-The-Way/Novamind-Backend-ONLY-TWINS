@@ -115,7 +115,8 @@ class TestPharmacogenomicsService:
     @pytest.fixture
     def service(self, mock_gene_medication_model, mock_treatment_model):
         """Create a PharmacogenomicsService with mock dependencies."""
-        return PharmacogenomicsService(
+        
+    return PharmacogenomicsService(
             gene_medication_model=mock_gene_medication_model,
             treatment_model=mock_treatment_model
         )
@@ -123,7 +124,8 @@ class TestPharmacogenomicsService:
     @pytest.fixture
     def sample_genetic_data(self):
         """Create sample genetic data for testing."""
-        return {
+        
+    return {
             "genes": [
                 {
                     "gene": "CYP2D6",
@@ -146,7 +148,8 @@ class TestPharmacogenomicsService:
     @pytest.fixture
     def sample_patient_data(self):
         """Create sample patient data for testing."""
-        return {
+        
+    return {
             "id": str(uuid4()),
             "demographics": {
                 "age": 42,
@@ -170,7 +173,8 @@ class TestPharmacogenomicsService:
     @pytest.fixture
     def sample_patient_id(self):
         """Create a sample patient ID."""
-        return str(uuid4())
+        
+    return str(uuid4())
 
     async def test_predict_medication_response_success(self, service, mock_gene_medication_model, 
                                                         mock_treatment_model, sample_genetic_data, 

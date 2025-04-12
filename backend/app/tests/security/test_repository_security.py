@@ -48,6 +48,7 @@ def db_session():
 @pytest.fixture
 def patient_repository(db_session, encryption_service):
     """Create a patient repository with mocked dependencies."""
+    
     return PatientRepository(db_session, encryption_service)
 
 

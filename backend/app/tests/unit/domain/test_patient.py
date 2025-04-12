@@ -24,6 +24,7 @@ def mock_encryption_service():
 @pytest.fixture
 def valid_patient_data(mock_encryption_service):
     """Create valid patient test data."""
+    
     return {
         "id": UUID("12345678-1234-5678-1234-567812345678"),
         "first_name": "John",

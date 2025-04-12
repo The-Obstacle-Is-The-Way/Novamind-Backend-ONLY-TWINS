@@ -118,19 +118,23 @@ try:
             
         def get(self, url, headers=None, params=None):
             """Simulate a GET request."""
-            return self._make_request("GET", url, headers, params=params)
+            
+    return self._make_request("GET", url, headers, params=params)
             
         def post(self, url, headers=None, json=None, data=None):
             """Simulate a POST request."""
-            return self._make_request("POST", url, headers, json=json, data=data)
+            
+    return self._make_request("POST", url, headers, json=json, data=data)
             
         def put(self, url, headers=None, json=None, data=None):
             """Simulate a PUT request."""
-            return self._make_request("PUT", url, headers, json=json, data=data)
+            
+    return self._make_request("PUT", url, headers, json=json, data=data)
             
         def delete(self, url, headers=None):
             """Simulate a DELETE request."""
-            return self._make_request("DELETE", url, headers)
+            
+    return self._make_request("DELETE", url, headers)
             
         def _make_request(self, method, url, headers=None, **kwargs):
             """Make a request and return a mock response."""
@@ -192,7 +196,8 @@ try:
     @patients_router.get("/{patient_id}")
     async def get_patient(patient_id: str, token: str = Depends(OAuth2PasswordBearer(tokenUrl="token"))):
         """Get a patient by ID."""
-        return {
+        
+    return {
             "id": patient_id,
             "first_name": "John",
             "last_name": "Doe",
@@ -231,22 +236,26 @@ class TestAPIHIPAACompliance:
     @pytest.fixture
     def client(self, app):
         """Create test client."""
-        return TestClient(app)
+        
+    return TestClient(app)
         
     @pytest.fixture
     def admin_token(self):
         """Create admin token."""
-        return "Bearer admin-token-12345"
+        
+    return "Bearer admin-token-12345"
         
     @pytest.fixture
     def doctor_token(self):
         """Create doctor token."""
-        return "Bearer doctor-token-67890"
+        
+    return "Bearer doctor-token-67890"
         
     @pytest.fixture
     def patient_token(self):
         """Create patient token."""
-        return "Bearer patient-token-P12345"
+        
+    return "Bearer patient-token-P12345"
         
     def test_unauthenticated_request_rejected(self, client):
         """Test that unauthenticated requests to PHI endpoints are rejected."""

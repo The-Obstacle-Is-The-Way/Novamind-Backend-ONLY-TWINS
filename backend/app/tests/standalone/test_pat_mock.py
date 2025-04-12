@@ -25,6 +25,7 @@ from app.core.services.ml.pat.mock import MockPATService
 @pytest.fixture
 def mock_pat():
     """Create a MockPATService instance for testing."""
+    
     return MockPATService()
 
 
@@ -39,6 +40,7 @@ def initialized_mock_pat():
 @pytest.fixture
 def valid_readings():
     """Create a list of valid accelerometer readings for testing."""
+    
     return [
         {"x": 0.1, "y": 0.2, "z": 0.9},
         {"x": 0.2, "y": 0.3, "z": 0.8},
@@ -49,6 +51,7 @@ def valid_readings():
 @pytest.fixture
 def valid_device_info():
     """Create valid device information for testing."""
+    
     return {
         "device_type": "Actigraph wGT3X-BT",
         "manufacturer": "Actigraph",
@@ -59,6 +62,7 @@ def valid_device_info():
 @pytest.fixture
 def valid_analysis_types():
     """Create a list of valid analysis types for testing."""
+    
     return ["sleep", "activity"]
 
 

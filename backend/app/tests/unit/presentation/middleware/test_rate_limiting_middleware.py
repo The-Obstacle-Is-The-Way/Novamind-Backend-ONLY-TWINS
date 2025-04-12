@@ -33,7 +33,8 @@ class MockCacheService:
 
     async def get(self, key: str) -> Any:
         """Get a value from the mock cache."""
-        return self.store.get(key)
+        
+    return self.store.get(key)
 
     async def set(self, key: str, value: Any, expiration: int = None) -> bool:
         """Set a value in the mock cache."""
@@ -53,7 +54,8 @@ class MockCacheService:
 
     async def exists(self, key: str) -> bool:
         """Check if a key exists in the mock cache."""
-        return key in self.store
+        
+    return key in self.store
 
     async def increment(self, key: str) -> int:
         """Increment a value in the mock cache."""
@@ -71,7 +73,8 @@ class MockCacheService:
 
     async def ttl(self, key: str) -> int:
         """Get TTL for a key in the mock cache."""
-        return self.ttls.get(key, 0)
+        
+    return self.ttls.get(key, 0)
 
     async def close(self) -> None:
         """Close the mock cache."""
@@ -82,6 +85,7 @@ class MockCacheService:
 @pytest.fixture
 def mock_cache():
     """Fixture providing a mock cache service."""
+    
     return MockCacheService()
 
 

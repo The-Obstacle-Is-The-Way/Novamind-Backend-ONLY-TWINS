@@ -129,6 +129,7 @@ def mock_rule_repository():
 @pytest.fixture
 def mock_current_user_id():
     """Fixture for a mock user ID."""
+    
     return UUID("00000000-0000-0000-0000-000000000001")
 
 
@@ -169,12 +170,14 @@ def app(
 @pytest.fixture
 def client(app):
     """Create a test client for the FastAPI app."""
+    
     return TestClient(app)
 
 
 @pytest.fixture
 def sample_patient_id():
     """Create a sample patient ID."""
+    
     return UUID("12345678-1234-5678-1234-567812345678")
 
 
@@ -201,6 +204,7 @@ def sample_rule(sample_patient_id):
 @pytest.fixture
 def sample_data_point(sample_patient_id):
     """Create a sample biometric data point."""
+    
     return BiometricDataPoint(
         data_id=UUID("00000000-0000-0000-0000-000000000002"),
         patient_id=sample_patient_id,
@@ -216,6 +220,7 @@ def sample_data_point(sample_patient_id):
 @pytest.fixture
 def sample_alert(sample_rule, sample_data_point):
     """Create a sample biometric alert."""
+    
     return BiometricAlert(
         alert_id=uuid4(), # Generate a UUID for the alert
         patient_id=sample_data_point.patient_id,

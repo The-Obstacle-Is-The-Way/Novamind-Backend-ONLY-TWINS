@@ -1,12 +1,10 @@
 from unittest.mock import patch
-
-, import pytest
+import pytest
 from fastapi import HTTPException
 
 from app.core.security.encryption import EncryptionService
 from app.tests.security.base_test import BaseSecurityTest
-
-, class TestDatabaseSecurity(BaseSecurityTest):
+class TestDatabaseSecurity(BaseSecurityTest):
     def setup_method(self):
         super().setup_method()
         self.encryption_service = EncryptionService()

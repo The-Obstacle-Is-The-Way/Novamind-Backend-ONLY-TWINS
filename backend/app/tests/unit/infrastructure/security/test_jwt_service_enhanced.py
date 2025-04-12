@@ -36,7 +36,8 @@ class TestJWTService:
     @pytest.fixture
     def jwt_service(self, test_settings):
         """Create a JWTService instance with test settings."""
-        return JWTService(settings_instance=test_settings)
+        
+    return JWTService(settings_instance=test_settings)
     
     def test_initialization(self, jwt_service, test_settings):
         """Test JWT service initialization with settings."""

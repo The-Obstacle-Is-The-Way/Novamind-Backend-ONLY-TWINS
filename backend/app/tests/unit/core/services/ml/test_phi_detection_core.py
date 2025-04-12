@@ -26,7 +26,8 @@ class TestAWSComprehendMedicalPHIDetection:
     @pytest.fixture
     def mock_comprehend_response_with_phi(self):
         """Create a mock AWS Comprehend Medical response with PHI."""
-        return {
+        
+    return {
             "Entities": [
                 {
                     "BeginOffset": 11,
@@ -52,7 +53,8 @@ class TestAWSComprehendMedicalPHIDetection:
     @pytest.fixture
     def mock_comprehend_response_without_phi(self):
         """Create a mock AWS Comprehend Medical response without PHI."""
-        return {
+        
+    return {
             "Entities": [],
             "UnmappedAttributes": [],
             "ModelVersion": "0.1.0"

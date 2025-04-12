@@ -119,7 +119,8 @@ class MockAsyncSession(MagicMock):
             del self._entity_registry[obj.id]
     def get(self, model_class, object_id):
         """Mock implementation of get."""
-        return self._entity_registry.get(object_id)
+        
+    return self._entity_registry.get(object_id)
     def configure_mock_results(self, query: str, results: Any):
         """
         Configure the mock to return specific results for a query.
@@ -174,11 +175,13 @@ class MockRepository:
     
     async def get(self, entity_id):
         """Mock retrieving an entity by ID."""
-        return self.entities.get(entity_id)
+        
+    return self.entities.get(entity_id)
     
     async def get_all(self):
         """Mock retrieving all entities."""
-        return list(self.entities.values())
+        
+    return list(self.entities.values())
     
     async def update(self, entity):
         """Mock updating an entity."""
@@ -209,4 +212,5 @@ def mock_repository():
     Returns:
         MockRepository: A configured mock repository
     """
+    
     return MockRepository()

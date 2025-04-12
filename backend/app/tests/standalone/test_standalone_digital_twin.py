@@ -95,7 +95,8 @@ class TwinModel:
         
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        return {
+        
+    return {
             "id": self.id,
             "name": self.name,
             "model_type": self.model_type.value,
@@ -460,7 +461,8 @@ class DigitalTwin:
         Returns:
             List of models
         """
-        return [model for model in self.models.values() if model.model_type == model_type]
+        
+    return [model for model in self.models.values() if model.model_type == model_type]
         
     def generate_biometric_alert_rules(self) -> dict[str, Any]:
         """
@@ -605,7 +607,8 @@ class DigitalTwin:
         
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        return {
+        
+    return {
             "id": self.id,
             "patient_id": self.patient_id,
             "name": self.name,

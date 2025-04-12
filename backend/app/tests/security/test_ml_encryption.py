@@ -31,7 +31,8 @@ class TestEncryptionService:
     @pytest.fixture
     def sensitive_data(self):
         """Sample PHI data for testing encryption."""
-        return {
+        
+    return {
             "patient_id": "12345",
             "name": "John Smith",
             "ssn": "123-45-6789",
@@ -212,7 +213,8 @@ class TestFieldEncryptor:
     @pytest.fixture
     def mixed_data(self):
         """Sample data with mix of PHI and non-PHI for testing field encryption."""
-        return {
+        
+    return {
             "record_id": "REC12345",          # Not PHI - should remain unencrypted
             "created_at": "2023-01-01",       # Not PHI - should remain unencrypted
             "patient": {                      # PHI section - should be encrypted

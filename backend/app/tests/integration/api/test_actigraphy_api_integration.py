@@ -36,6 +36,7 @@ def mock_pat_service():
 @pytest.fixture
 def auth_headers():
     """Authentication headers for API requests."""
+    
     return {
         "Authorization": "Bearer test-token",
         "Content-Type": "application/json"

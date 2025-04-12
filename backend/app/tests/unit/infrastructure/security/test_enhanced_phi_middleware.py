@@ -44,7 +44,8 @@ async def test_post(data: dict):    return data
     )    return app
 @pytest.fixture
 def test_client(test_app):
-                """Fixture for a test client."""    return TestClient(test_app)
+                """Fixture for a test client."""    
+    return TestClient(test_app)
 class TestEnhancedPHIMiddleware:
             """Tests for the EnhancedPHIMiddleware class."""
     def test_excluded_paths_are_skipped(self, test_client):

@@ -20,6 +20,7 @@ def password_handler():
     Returns:
         PasswordHandler instance
     """
+    
     return PasswordHandler()
 
 

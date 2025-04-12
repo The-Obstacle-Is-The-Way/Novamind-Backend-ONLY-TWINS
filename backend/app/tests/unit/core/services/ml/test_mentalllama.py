@@ -27,6 +27,7 @@ def mentalllama_service():
 @pytest.fixture
 def mock_bedrock_response():
     """Create a mock response from AWS Bedrock."""
+    
     return {
         "body": {
             "read": MagicMock(return_value=json.dumps({

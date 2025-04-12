@@ -39,7 +39,8 @@ class TestMockDigitalTwinService:
     @pytest.fixture
     def sample_patient_id(self) -> str:
         """Create a sample patient ID for testing."""
-        return f"test-patient-{uuid.uuid4()}"
+        
+    return f"test-patient-{uuid.uuid4()}"
 
     def test_initialization(self):
         """Test initialization with valid and invalid configurations."""

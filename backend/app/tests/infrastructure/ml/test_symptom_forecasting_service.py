@@ -73,6 +73,7 @@ def forecasting_service(mock_transformer_model, mock_xgboost_model):
 @pytest.fixture
 def patient_data():
     """Create sample patient data for testing."""
+    
     return {
         "time_series": [
             {

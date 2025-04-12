@@ -24,7 +24,8 @@ class TestPHIInCodePatterns:
     @pytest.fixture
     def detector(self):
         """Create a PHI detector for testing."""
-        return PHIDetector()
+        
+    return PHIDetector()
 
     def test_phi_in_variable_assignment(self, detector):
         """Test detection of PHI in variable assignments."""
@@ -355,7 +356,8 @@ class TestPHIInSourceFiles:
     @pytest.fixture
     def detector(self):
         """Create a PHI detector for testing."""
-        return PHIDetector()
+        
+    return PHIDetector()
 
     def _create_temp_file(self, content, extension=".py"):
         """Helper to create a temporary file with given content."""

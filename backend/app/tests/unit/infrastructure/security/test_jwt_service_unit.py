@@ -52,6 +52,7 @@ def jwt_service(mock_token_store):
 @pytest.fixture
 def user_claims():
     """Create test user claims."""
+    
     return {
         "sub": "user123",
         "name": "Dr. Jane Smith",

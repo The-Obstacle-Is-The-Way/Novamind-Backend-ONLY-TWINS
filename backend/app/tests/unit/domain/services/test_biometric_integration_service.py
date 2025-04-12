@@ -32,7 +32,8 @@ class TestBiometricIntegrationService:
     @pytest.fixture
     def service(self, mock_repository):
         """Create a BiometricIntegrationService instance for testing."""
-        return BiometricIntegrationService(biometric_twin_repository=mock_repository)
+        
+    return BiometricIntegrationService(biometric_twin_repository=mock_repository)
 
     @pytest.mark.asyncio
     async def test_get_or_create_biometric_twin_existing(self, service, mock_repository):

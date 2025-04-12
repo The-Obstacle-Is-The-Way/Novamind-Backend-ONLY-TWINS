@@ -24,10 +24,12 @@ from app.api.dependencies.auth import get_current_user # Corrected path, removed
 # Removed local test_client fixture; tests will use client from conftest.py
 @pytest.fixture
 def mock_token():
-                """Generate a mock JWT token."""    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJyb2xlIjoicGF0aWVudCIsImV4cCI6OTk5OTk5OTk5OX0.signature"
+                """Generate a mock JWT token."""    
+    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJyb2xlIjoicGF0aWVudCIsImV4cCI6OTk5OTk5OTk5OX0.signature"
 @pytest.fixture
 def mock_user():
-                """Sample user data for testing."""    return {
+                """Sample user data for testing."""    
+    return {
         "id": str(uuid.uuid4()),
         "username": "test_user",
         "role": "patient",
@@ -35,7 +37,8 @@ def mock_user():
     }
 @pytest.fixture
 def mock_admin_user():
-                """Sample admin user data for testing."""    return {
+                """Sample admin user data for testing."""    
+    return {
         "id": str(uuid.uuid4()),
         "username": "admin_user",
         "role": "psychiatrist",

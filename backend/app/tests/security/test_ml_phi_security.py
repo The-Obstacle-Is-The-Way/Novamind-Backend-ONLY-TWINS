@@ -38,6 +38,7 @@ def mock_phi_redaction_service():
 @pytest.fixture
 def sample_patient_data():
     """Sample patient data containing PHI."""
+    
     return {
         "patient_id": str(uuid.uuid4()),
         "name": "John Doe",

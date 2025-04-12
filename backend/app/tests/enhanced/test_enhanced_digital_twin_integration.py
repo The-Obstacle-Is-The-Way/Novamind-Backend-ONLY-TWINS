@@ -26,13 +26,16 @@ def enhanced_services() -> Tuple[:
     EnhancedXGBoostService,
     EnhancedPATService
 ]:
-        """Fixture to create enhanced mock services for testing."""    return EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()
+        """Fixture to create enhanced mock services for testing."""    
+    return EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()
 @pytest.fixture
 def patient_id() -> UUID:
-            """Fixture to create a consistent patient ID for tests."""    return uuid.UUID('12345678-1234-5678-1234-567812345678')
+            """Fixture to create a consistent patient ID for tests."""    
+    return uuid.UUID('12345678-1234-5678-1234-567812345678')
 @pytest.fixture
 def initial_data() -> Dict:
-                """Fixture to provide initial patient data for testing."""    return {
+                """Fixture to provide initial patient data for testing."""    
+    return {
         "diagnoses": ["Major Depressive Disorder", "Generalized Anxiety Disorder"],
         "symptoms": ["fatigue", "insomnia", "worry", "anhedonia"],
         "medications": [

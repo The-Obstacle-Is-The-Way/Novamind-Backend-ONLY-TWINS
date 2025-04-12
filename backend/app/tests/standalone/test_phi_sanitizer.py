@@ -13,12 +13,14 @@ class TestPHISanitizer:
     @pytest.fixture
     def sanitizer(self):
         """Create a PHI sanitizer instance for testing."""
-        return LogSanitizer()
+        
+    return LogSanitizer()
 
     @pytest.fixture
     def sample_phi_data(self):
         """Sample PHI data for testing sanitization."""
-        return {
+        
+    return {
             "ssn": "123-45-6789",
             "name": "John Smith",
             "dob": "01/15/1980",

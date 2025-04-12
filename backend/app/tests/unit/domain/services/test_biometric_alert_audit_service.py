@@ -38,7 +38,8 @@ class TestBiometricAlertAuditService:
     @pytest.fixture
     def audit_service(self, mock_alert_repository, mock_audit_logger):
         """Create a BiometricAlertAuditService with mock dependencies."""
-        return BiometricAlertAuditService(
+        
+    return BiometricAlertAuditService(
             mock_alert_repository,
             mock_audit_logger
         )
@@ -46,27 +47,32 @@ class TestBiometricAlertAuditService:
     @pytest.fixture
     def sample_patient_id(self):
         """Create a sample patient ID."""
-        return UUID('12345678-1234-5678-1234-567812345678')
+        
+    return UUID('12345678-1234-5678-1234-567812345678')
     
     @pytest.fixture
     def sample_provider_id(self):
         """Create a sample provider ID."""
-        return UUID('87654321-8765-4321-8765-432187654321')
+        
+    return UUID('87654321-8765-4321-8765-432187654321')
     
     @pytest.fixture
     def sample_rule_id(self):
         """Create a sample rule ID."""
-        return UUID('11111111-2222-3333-4444-555555555555')
+        
+    return UUID('11111111-2222-3333-4444-555555555555')
     
     @pytest.fixture
     def sample_alert_id(self):
         """Create a sample alert ID."""
-        return UUID('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
+        
+    return UUID('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
     
     @pytest.fixture
     def sample_alert(self, sample_patient_id, sample_rule_id, sample_alert_id):
         """Create a sample BiometricAlert."""
-        return BiometricAlert(
+        
+    return BiometricAlert(
             alert_id=sample_alert_id,
             patient_id=sample_patient_id,
             alert_type="elevated_heart_rate",

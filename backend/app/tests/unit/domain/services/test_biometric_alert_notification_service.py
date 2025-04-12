@@ -41,7 +41,8 @@ class TestBiometricAlertNotificationService:
     @pytest.fixture
     def notification_service(self, mock_alert_repository, mock_notification_service):
         """Create a BiometricAlertNotificationService with mock dependencies."""
-        return BiometricAlertNotificationService(
+        
+    return BiometricAlertNotificationService(
             mock_alert_repository,
             mock_notification_service
         )
@@ -49,22 +50,26 @@ class TestBiometricAlertNotificationService:
     @pytest.fixture
     def sample_patient_id(self):
         """Create a sample patient ID."""
-        return UUID('12345678-1234-5678-1234-567812345678')
+        
+    return UUID('12345678-1234-5678-1234-567812345678')
     
     @pytest.fixture
     def sample_provider_id(self):
         """Create a sample provider ID."""
-        return UUID('87654321-8765-4321-8765-432187654321')
+        
+    return UUID('87654321-8765-4321-8765-432187654321')
     
     @pytest.fixture
     def sample_rule_id(self):
         """Create a sample rule ID."""
-        return UUID('11111111-2222-3333-4444-555555555555')
+        
+    return UUID('11111111-2222-3333-4444-555555555555')
     
     @pytest.fixture
     def sample_urgent_alert(self, sample_patient_id, sample_rule_id):
         """Create a sample urgent BiometricAlert."""
-        return BiometricAlert(
+        
+    return BiometricAlert(
             patient_id=sample_patient_id,
             alert_type="elevated_heart_rate",
             description="Heart rate is significantly elevated",
@@ -83,7 +88,8 @@ class TestBiometricAlertNotificationService:
     @pytest.fixture
     def sample_warning_alert(self, sample_patient_id, sample_rule_id):
         """Create a sample warning BiometricAlert."""
-        return BiometricAlert(
+        
+    return BiometricAlert(
             patient_id=sample_patient_id,
             alert_type="sleep_disruption",
             description="Sleep quality is poor",
@@ -102,7 +108,8 @@ class TestBiometricAlertNotificationService:
     @pytest.fixture
     def sample_info_alert(self, sample_patient_id, sample_rule_id):
         """Create a sample informational BiometricAlert."""
-        return BiometricAlert(
+        
+    return BiometricAlert(
             patient_id=sample_patient_id,
             alert_type="low_activity",
             description="Physical activity is below target",

@@ -29,18 +29,21 @@ from app.domain.services.biometric_event_processor import (
 @pytest.fixture
 def sample_patient_id():
     """Create a sample patient ID."""
+    
     return UUID("12345678-1234-5678-1234-567812345678")
 
 
 @pytest.fixture
 def sample_clinician_id():
     """Create a sample clinician ID."""
+    
     return UUID("00000000-0000-0000-0000-000000000001")
 
 
 @pytest.fixture
 def sample_data_point(sample_patient_id):
     """Create a sample biometric data point."""
+    
     return BiometricDataPoint(
         data_id=UUID("00000000-0000-0000-0000-000000000002"),
         patient_id=sample_patient_id,
@@ -56,6 +59,7 @@ def sample_data_point(sample_patient_id):
 @pytest.fixture
 def sample_rule(sample_clinician_id):
     """Create a sample alert rule."""
+    
     return AlertRule(
         rule_id="test-rule-1",
         name="High Heart Rate",

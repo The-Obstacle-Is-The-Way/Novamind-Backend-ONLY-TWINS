@@ -81,7 +81,8 @@ class BaseSecurityTest(TestCase):
         Returns:
             Dict[str, Any]: A dictionary representing the test user
         """
-        return {
+        
+    return {
             "id": self.test_user_id,
             "username": "test_user",
             "email": "test_user@example.com",

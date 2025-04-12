@@ -162,7 +162,8 @@ class TestEnhancedPHISecureLogger:
     @pytest.fixture
     def mock_logger(self):
         """Create a mock underlying logger."""
-        return MagicMock()
+        
+    return MagicMock()
     
     def test_secure_logger_initialization(self):
         """Test initialization of secure logger."""

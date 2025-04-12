@@ -80,6 +80,7 @@ def auth_config():
 @pytest.fixture
 def app():
     """Create a FastAPI app for testing."""
+    
     return FastAPI()
 
 
@@ -148,15 +149,18 @@ class MockHeaders:
 
     def items(self):
         """Return all headers as items."""
-        return self._headers.items()
+        
+    return self._headers.items()
 
     def keys(self):
         """Return all header keys."""
-        return self._headers.keys()
+        
+    return self._headers.keys()
 
     def values(self):
         """Return all header values."""
-        return self._headers.values()
+        
+    return self._headers.values()
 
 # Replace starlette Headers for tests using this fixture
 @pytest.fixture(autouse=True)

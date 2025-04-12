@@ -25,6 +25,7 @@ def jwt_handler():
     Returns:
         JWTHandler instance with test configuration
     """
+    
     return JWTHandler(
         secret_key="testkey12345678901234567890123456789",
         algorithm="HS256",

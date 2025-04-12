@@ -102,6 +102,7 @@ def sample_readings() -> List[Dict[str, float]]:
     Returns:
         Sample accelerometer readings
     """
+    
     return [
         {"x": 0.1, "y": 0.2, "z": 0.9},
         {"x": 0.2, "y": 0.3, "z": 0.8},
@@ -116,6 +117,7 @@ def sample_device_info() -> Dict[str, Any]:
     Returns:
         Sample device information
     """
+    
     return {
         "device_id": "test-device-123",
         "model": "Test Actigraph 1.0",

@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from unittest.mock import patch
-, import pytest
+import pytest
 from fastapi import status, FastAPI
 from fastapi.testclient import TestClient
 
@@ -57,11 +57,13 @@ def create_sample_readings(num_readings: int = 10) -> List[Dict[str, Any]]:
 # Mock JWT token authentication
 def mock_validate_token(token: str) -> Dict[str, Any]:
     """Mock JWT token validation."""
+    
     return {"sub": "test-user-id", "role": "clinician"}
 
 
 def mock_get_current_user_id(payload: Dict[str, Any]) -> str:
     """Mock get current user ID."""
+    
     return payload["sub"]
 
 
@@ -140,6 +142,7 @@ def test_app(mock_pat_service) -> FastAPI:
 @pytest.fixture
 def client(test_app: FastAPI) -> TestClient:
     """Create a TestClient instance using the fixture-created app."""
+    
     return TestClient(test_app)
 
 

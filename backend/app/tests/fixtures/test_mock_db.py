@@ -16,7 +16,8 @@ class TestMockAsyncSession:
     @pytest.mark.db_required # Keep custom marker if needed
     def mock_db(): # Fixture itself is not async
         """Provides a mock async database session."""
-        return MockAsyncSession() # Assuming MockAsyncSession is the intended mock object
+        
+    return MockAsyncSession() # Assuming MockAsyncSession is the intended mock object
 
     @pytest.mark.asyncio # Mark test as async
     async def test_mock_session_basic_operations(self, mock_db): # Add async

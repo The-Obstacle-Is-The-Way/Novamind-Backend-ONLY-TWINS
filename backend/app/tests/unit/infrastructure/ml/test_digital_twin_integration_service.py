@@ -188,7 +188,8 @@ class TestDigitalTwinIntegrationService:
     def integration_service(self, mock_symptom_forecasting_service, mock_biometric_correlation_service, 
                            mock_medication_response_service, mock_patient_repository):
         """Create a DigitalTwinIntegrationService with mock dependencies."""
-        return DigitalTwinIntegrationService(
+        
+    return DigitalTwinIntegrationService(
             symptom_forecasting_service=mock_symptom_forecasting_service,
             biometric_correlation_service=mock_biometric_correlation_service,
             medication_response_service=mock_medication_response_service,
@@ -198,7 +199,8 @@ class TestDigitalTwinIntegrationService:
     @pytest.fixture
     def sample_patient_id(self):
         """Create a sample patient ID."""
-        return str(uuid4())
+        
+    return str(uuid4())
 
     async def test_generate_comprehensive_insights_all_services(self, integration_service, sample_patient_id):
         """Test that generate_comprehensive_insights calls all services and combines results."""

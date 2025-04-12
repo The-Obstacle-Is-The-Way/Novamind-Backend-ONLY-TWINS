@@ -23,12 +23,14 @@ class TestMentaLLaMAService:
     @pytest.fixture
     def service(self):
         """Create a MentaLLaMA service instance for testing."""
-        return MentaLLaMAService()
+        
+    return MentaLLaMAService()
 
     @pytest.fixture
     def mock_config(self):
         """Create a mock configuration for testing."""
-        return {
+        
+    return {
             "provider": "internal",
             "endpoint": "http://localhost:8080",
             "api_key": "test-api-key",

@@ -224,7 +224,8 @@ class PatternRepository:
         Returns:
             List of PHIPattern objects
         """
-        return self._patterns
+        
+    return self._patterns
 
 
 class SanitizerConfig:
@@ -792,6 +793,7 @@ def get_sanitized_logger(name):
     Returns:
         A SanitizedLogger instance
     """
+    
     return SanitizedLogger(name)
 
 

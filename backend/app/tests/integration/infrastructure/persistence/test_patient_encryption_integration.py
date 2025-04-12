@@ -27,7 +27,8 @@ class TestPatientEncryptionIntegration:
     @pytest.fixture
     async def sample_patient(self):
         """Create a sample patient with PHI data for testing."""
-        return Patient(
+        
+    return Patient(
             id=uuid.uuid4(),
             first_name="Jane",
             last_name="Smith",

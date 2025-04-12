@@ -22,12 +22,14 @@ from app.domain.exceptions import (
 @pytest.fixture
 def future_datetime():
     """Fixture for a future datetime."""
+    
     return datetime.now() + timedelta(days=1)
 
 
 @pytest.fixture
 def valid_appointment_data(future_datetime):
     """Fixture for valid appointment data."""
+    
     return {
         "id": str(uuid.uuid4()),
         "patient_id": str(uuid.uuid4()),
@@ -48,6 +50,7 @@ def valid_appointment_data(future_datetime):
 @pytest.fixture
 def valid_appointment(valid_appointment_data):
     """Fixture for a valid appointment."""
+    
     return Appointment(**valid_appointment_data)
 
 

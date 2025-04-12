@@ -12,6 +12,7 @@ from app.tests.mocks.patient_mock import Patient, Gender, InsuranceStatus, Patie
 @pytest.fixture
 def valid_patient_data():
     """Fixture for valid patient data."""
+    
     return {
         "id": str(uuid.uuid4()),
         "first_name": "John",
@@ -65,6 +66,7 @@ def valid_patient_data():
 @pytest.fixture
 def valid_patient(valid_patient_data):
     """Fixture for a valid patient."""
+    
     return Patient(**valid_patient_data)
 
 

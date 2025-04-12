@@ -6,7 +6,7 @@ FastAPI from analyzing AsyncSession dependencies at module import time.
 """
 import pytest
 from uuid import UUID
-, import asyncio
+import asyncio
 from unittest.mock import patch, AsyncMock
 
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter

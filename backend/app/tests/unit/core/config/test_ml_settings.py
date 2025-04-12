@@ -16,6 +16,7 @@ from app.core.config.ml_settings import MLSettings
 @pytest.fixture
 def default_ml_settings():
     """Fixture providing default ML settings."""
+    
     return MLSettings()
 
 

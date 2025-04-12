@@ -30,6 +30,7 @@ from app.core.services.ml.pat.exceptions import (
 @pytest.fixture
 def aws_config():
     """Fixture for AWS configuration."""
+    
     return {
         "aws_region": "us-east-1",
         "endpoint_name": "test-pat-endpoint",

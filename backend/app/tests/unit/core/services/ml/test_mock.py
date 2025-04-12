@@ -38,7 +38,8 @@ class TestMockMentaLLaMA:
     @pytest.fixture
     def sample_text(self) -> str:
         """Create sample text for testing."""
-        return (
+        
+    return (
             "I've been feeling down for several weeks. I'm constantly tired, "
             "have trouble sleeping, and don't enjoy things anymore. Sometimes "
             "I wonder if life is worth living, but I wouldn't actually hurt myself."
@@ -216,7 +217,8 @@ class TestMockPHIDetection:
     @pytest.fixture
     def sample_phi_text(self) -> str:
         """Create sample text with mock PHI for testing."""
-        return (
+        
+    return (
             "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
             "His email is john.smith@example.com and phone number is (555) 123-4567. "
             "He resides at 123 Main Street, Springfield, IL 62701."

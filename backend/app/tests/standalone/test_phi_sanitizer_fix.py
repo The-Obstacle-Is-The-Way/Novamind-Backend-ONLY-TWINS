@@ -6,6 +6,7 @@ import json
 @pytest.fixture
 def sanitizer():
     """Create a sanitizer with default configuration."""
+    
     return LogSanitizer()
 
 

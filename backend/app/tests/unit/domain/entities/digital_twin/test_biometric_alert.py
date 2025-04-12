@@ -28,12 +28,14 @@ def sample_patient_id():
 @pytest.fixture
 def sample_provider_id():
     """Create a sample provider ID."""
+    
     return UUID("00000000-0000-0000-0000-000000000001")
 
 
 @pytest.fixture
 def sample_rule_id():
     """Create a sample rule ID."""
+    
     return UUID("00000000-0000-0000-0000-000000000002")
 
 
@@ -55,6 +57,7 @@ def sample_data_points():
 @pytest.fixture
 def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
     """Create a sample biometric alert."""
+    
     return BiometricAlert(
         patient_id=sample_patient_id,
         alert_type="elevated_heart_rate",

@@ -17,7 +17,8 @@ class TestLogSanitizer:
     """
 @pytest.fixture
     def log_sanitizer(self):
-        """Create a LogSanitizer instance for testing."""    return LogSanitizer()
+        """Create a LogSanitizer instance for testing."""    
+    return LogSanitizer()
     def test_sanitize_patient_names(self, log_sanitizer):
             """Test that patient names are properly redacted."""
         # Arrange

@@ -43,7 +43,8 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     
     def is_healthy(self) -> bool:
         """Mock health check."""
-        return self.initialized
+        
+    return self.initialized
     
     def shutdown(self) -> None:
         """Mock shutdown."""

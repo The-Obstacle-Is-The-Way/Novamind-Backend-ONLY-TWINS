@@ -32,7 +32,8 @@ class TestPatientPHISecurity:
     @pytest.fixture
     def sample_patient_with_phi(self):
         """Create a sample patient with highly sensitive PHI for testing."""
-        return Patient(
+        
+    return Patient(
             id=uuid.uuid4(),
             first_name="Alexandra",
             last_name="Johnson",

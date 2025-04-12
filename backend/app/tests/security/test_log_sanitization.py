@@ -14,8 +14,7 @@ from unittest.mock import patch, MagicMock
 
 # Path to the log sanitizer module
 from app.infrastructure.security.log_sanitizer import PHISanitizer
-
-, class TestLogSanitization:
+class TestLogSanitization:
     """Test PHI sanitization in logs to ensure HIPAA compliance."""
 
     @pytest.fixture

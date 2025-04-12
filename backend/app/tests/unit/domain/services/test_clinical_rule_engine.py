@@ -36,22 +36,26 @@ class TestClinicalRuleEngine:
     @pytest.fixture
     def rule_engine(self, mock_rule_repository):
         """Create a ClinicalRuleEngine with mock dependencies."""
-        return ClinicalRuleEngine(mock_rule_repository)
+        
+    return ClinicalRuleEngine(mock_rule_repository)
 
     @pytest.fixture
     def sample_patient_id(self):
         """Create a sample patient ID."""
-        return UUID('12345678-1234-5678-1234-567812345678')
+        
+    return UUID('12345678-1234-5678-1234-567812345678')
 
     @pytest.fixture
     def sample_provider_id(self):
         """Create a sample provider ID."""
-        return UUID('87654321-8765-4321-8765-432187654321')
+        
+    return UUID('87654321-8765-4321-8765-432187654321')
 
     @pytest.fixture
     def sample_rule_data(self):
         """Create sample rule data for testing."""
-        return {
+        
+    return {
             "name": "Elevated Heart Rate",
             "description": "Alert when heart rate is above 100",
             "conditions": [

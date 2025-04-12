@@ -63,16 +63,20 @@ async def db_session():
             await conn.run_sync(Base.metadata.drop_all)
 @pytest.fixture
 async def sequence_repository(db_session):
-            """Create sequence repository with test session."""    return SqlAlchemyTemporalSequenceRepository(session=db_session)
+            """Create sequence repository with test session."""    
+    return SqlAlchemyTemporalSequenceRepository(session=db_session)
 @pytest.fixture
 async def event_repository(db_session):
-        """Create event repository with test session."""    return SqlAlchemyEventRepository(session=db_session)
+        """Create event repository with test session."""    
+    return SqlAlchemyEventRepository(session=db_session)
 @pytest.fixture
 def xgboost_service():
-                """Create XGBoost service for testing."""    return EnhancedXGBoostService()
+                """Create XGBoost service for testing."""    
+    return EnhancedXGBoostService()
 @pytest.fixture
 async def temporal_service(sequence_repository, event_repository, xgboost_service):
-        """Create temporal neurotransmitter service with repositories and XGBoost."""    return TemporalNeurotransmitterService(
+        """Create temporal neurotransmitter service with repositories and XGBoost."""    
+    return TemporalNeurotransmitterService(
         sequence_repository=sequence_repository,
         event_repository=event_repository,
         xgboost_service=xgboost_service
@@ -82,13 +86,15 @@ async def temporal_service(sequence_repository, event_repository, xgboost_servic
 # Local test_app and test_client fixtures removed; tests will use the client fixture from conftest.py
 @pytest.fixture
 def mock_current_user():
-                """Mock current user dependency."""    return patch(
+                """Mock current user dependency."""    
+    return patch(
         "app.api.dependencies.auth.get_current_user_dict",
         return_value=AsyncMock(return_value=test_user))
 )
 @pytest.fixture
 def patient_id():
-                """Generate a patient ID for testing."""    return uuid4()
+                """Generate a patient ID for testing."""    
+    return uuid4()
 
 
 @pytest.mark.asyncio()

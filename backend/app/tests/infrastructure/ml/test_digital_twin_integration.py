@@ -115,6 +115,7 @@ def integration_service(mock_symptom_forecasting_service, mock_biometric_correla
 @pytest.fixture
 def patient_data():
     """Create sample patient data for testing."""
+    
     return {
         "symptom_history": [
             {"date": "2023-01-01", "anxiety": 5, "depression": 3},

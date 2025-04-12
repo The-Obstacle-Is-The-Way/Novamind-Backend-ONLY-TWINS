@@ -27,12 +27,14 @@ class TestJWTService:
     @pytest.fixture
     def jwt_service(self):
         """Create a JWTService instance for testing."""
-        return JWTService()
+        
+    return JWTService()
     
     @pytest.fixture
     def user_data(self):
         """Mock user data for token creation."""
-        return {
+        
+    return {
             "user_id": "1234567890",
             "role": "patient",
             # Intentionally excluding PHI like name, email, phone
@@ -41,7 +43,8 @@ class TestJWTService:
     @pytest.fixture
     def provider_data(self):
         """Mock provider data for token creation."""
-        return {
+        
+    return {
             "user_id": "0987654321",
             "role": "provider",
             # No PHI included

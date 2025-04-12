@@ -33,7 +33,8 @@ class MockEntityFactory:
     
     def get(self, entity_id):
         """Retrieve a mock entity by ID."""
-        return self.entities.get(entity_id)
+        
+    return self.entities.get(entity_id)
 
 
 class BaseSecurityTest(TestCase):
@@ -150,6 +151,7 @@ def security_test_base():
 @pytest.fixture
 def mock_auth_headers(security_test_base):
     """Pytest fixture that provides mock authentication headers."""
+    
     return security_test_base.get_auth_headers()
 
 

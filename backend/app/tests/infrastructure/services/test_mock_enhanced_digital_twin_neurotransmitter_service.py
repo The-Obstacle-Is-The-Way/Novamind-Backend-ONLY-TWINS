@@ -28,6 +28,7 @@ from app.infrastructure.services.mock_enhanced_digital_twin_core_service import 
 @pytest.fixture
 def mock_service():
     """Create an instance of the mock service for testing."""
+    
     return MockEnhancedDigitalTwinCoreService()
 
 

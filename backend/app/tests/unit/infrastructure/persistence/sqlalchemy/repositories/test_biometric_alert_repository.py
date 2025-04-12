@@ -25,24 +25,28 @@ from app.infrastructure.persistence.sqlalchemy.repositories.biometric_alert_repo
 @pytest.fixture
 def sample_patient_id():
     """Create a sample patient ID."""
+    
     return UUID("12345678-1234-5678-1234-567812345678")
 
 
 @pytest.fixture
 def sample_provider_id():
     """Create a sample provider ID."""
+    
     return UUID("00000000-0000-0000-0000-000000000001")
 
 
 @pytest.fixture
 def sample_alert_id():
     """Create a sample alert ID."""
+    
     return UUID("00000000-0000-0000-0000-000000000003")
 
 
 @pytest.fixture
 def sample_rule_id():
     """Create a sample rule ID."""
+    
     return UUID("00000000-0000-0000-0000-000000000002")
 
 

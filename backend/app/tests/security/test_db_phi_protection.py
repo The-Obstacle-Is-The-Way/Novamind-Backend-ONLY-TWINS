@@ -31,7 +31,8 @@ except ImportError:
             
         def get_session(self):
             """Get a database session."""
-            return self.session
+            
+    return self.session
             
     class UnitOfWork:
         """Mock unit of work for testing."""
@@ -274,37 +275,44 @@ class TestDBPHIProtection:
     @pytest.fixture
     def db(self):
         """Create test database."""
-        return Database()
+        
+    return Database()
         
     @pytest.fixture
     def unit_of_work(self, db):
         """Create test unit of work."""
-        return UnitOfWork(db)
+        
+    return UnitOfWork(db)
         
     @pytest.fixture
     def admin_context(self):
         """Create admin user context."""
-        return {"role": "admin", "user_id": "A12345"}
+        
+    return {"role": "admin", "user_id": "A12345"}
         
     @pytest.fixture
     def doctor_context(self):
         """Create doctor user context."""
-        return {"role": "doctor", "user_id": "D12345"}
+        
+    return {"role": "doctor", "user_id": "D12345"}
         
     @pytest.fixture
     def nurse_context(self):
         """Create nurse user context."""
-        return {"role": "nurse", "user_id": "N12345"}
+        
+    return {"role": "nurse", "user_id": "N12345"}
         
     @pytest.fixture
     def patient_context(self):
         """Create patient user context."""
-        return {"role": "patient", "user_id": "P12345"}
+        
+    return {"role": "patient", "user_id": "P12345"}
         
     @pytest.fixture
     def guest_context(self):
         """Create guest user context."""
-        return {"role": "guest", "user_id": None}
+        
+    return {"role": "guest", "user_id": None}
         
     def test_data_encryption_at_rest(self, db, admin_context):
         """Test that PHI is encrypted when stored in the database."""

@@ -54,7 +54,8 @@ class TestSymptomForecastingService:
     @pytest.fixture
     def service(self, mock_transformer_model, mock_xgboost_model):
         """Create a SymptomForecastingService with mock dependencies."""
-        return SymptomForecastingService(
+        
+    return SymptomForecastingService(
             transformer_model=mock_transformer_model,
             xgboost_model=mock_xgboost_model,
             forecast_days=4,
@@ -64,7 +65,8 @@ class TestSymptomForecastingService:
     @pytest.fixture
     def sample_patient_data(self):
         """Create sample patient data for testing."""
-        return {
+        
+    return {
             "patient_id": str(uuid4()),
             "symptom_history": [
                 {

@@ -74,6 +74,7 @@ def mock_digital_twin_service():
 @pytest.fixture
 def mock_current_user_id():
     """Fixture for a mock user ID."""
+    
     return UUID("00000000-0000-0000-0000-000000000001")
 
 @pytest.fixture
@@ -105,18 +106,21 @@ def app(mock_digital_twin_service, mock_current_user_id):
 @pytest.fixture
 def client(app):
     """Create a test client for the FastAPI app."""
+    
     return TestClient(app)
 
 
 @pytest.fixture
 def sample_patient_id():
     """Create a sample patient ID."""
+    
     return UUID("12345678-1234-5678-1234-567812345678")
 
 
 @pytest.fixture
 def sample_status_response(sample_patient_id):
     """Create a sample digital twin status response."""
+    
     return {
         "patient_id": str(sample_patient_id),
         "status": "partial",
@@ -238,6 +242,7 @@ def sample_forecast_response(sample_patient_id):
 @pytest.fixture
 def sample_correlation_response(sample_patient_id):
     """Create a sample biometric correlation response."""
+    
     return {
             "patient_id": str(sample_patient_id),
             "window_days": 30,
@@ -269,7 +274,8 @@ def sample_correlation_response(sample_patient_id):
 @pytest.fixture
 def sample_medication_response(sample_patient_id):
      """Create a sample medication response prediction."""
-     return {
+     
+    return {
             "patient_id": str(sample_patient_id),
             "generated_at": datetime.now(UTC).isoformat(),
             "predictions": [
@@ -298,6 +304,7 @@ def sample_medication_response(sample_patient_id):
 @pytest.fixture
 def sample_treatment_plan(sample_patient_id):
     """Create a sample treatment plan response."""
+    
     return {
             "patient_id": str(sample_patient_id),
             "diagnosis": "Major Depressive Disorder",

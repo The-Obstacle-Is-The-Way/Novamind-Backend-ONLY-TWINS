@@ -149,7 +149,8 @@ class TestEncryptionService:
     @pytest.fixture
     def encryption_service(self, mock_settings):
         """Create an EncryptionService instance with mocked settings."""
-        return EncryptionService()
+        
+    return EncryptionService()
     
     def test_initialization(self, encryption_service, mock_settings):
         """Test encryption service initialization with settings."""

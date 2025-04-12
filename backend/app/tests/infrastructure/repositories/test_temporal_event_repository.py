@@ -258,7 +258,8 @@ class TestSqlAlchemyEventRepository:
             
             Returns:
             The corresponding CorrelatedEvent entity
-            """    return CorrelatedEvent(
+            """    
+    return CorrelatedEvent(
             event_id=model.id,
             correlation_id=model.correlation_id,
             parent_event_id=model.parent_event_id,

@@ -23,6 +23,7 @@ from app.infrastructure.security.log_sanitizer import (
 @pytest.fixture
 def sanitizer_config():
     """Create a log sanitizer configuration for testing."""
+    
     return SanitizerConfig(
         enabled=True,
         redaction_mode=RedactionMode.PARTIAL,

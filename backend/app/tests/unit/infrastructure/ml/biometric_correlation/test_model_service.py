@@ -119,7 +119,8 @@ class TestBiometricCorrelationService:
     @pytest.fixture
     def sample_patient_id(self):
         """Create a sample patient ID."""
-        return str(uuid4())
+        
+    return str(uuid4())
 
     async def test_analyze_correlations_success(self, service, mock_lstm_model, sample_biometric_data, sample_patient_id):
         """Test that analyze_correlations correctly processes biometric data and returns correlations."""

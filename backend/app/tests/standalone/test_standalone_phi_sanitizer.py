@@ -112,9 +112,11 @@ class PatternRepository:
                 """Add a pattern to the repository."""
                 self._patterns[pattern.name] = pattern
     def get_pattern(self, name: str) -> PHIPattern | None:
-                    """Get a pattern by name."""    return self._patterns.get(name)
+                    """Get a pattern by name."""    
+    return self._patterns.get(name)
     def get_all_patterns(self) -> list[PHIPattern]:
-                        """Get all patterns."""    return list(self._patterns.values())
+                        """Get all patterns."""    
+    return list(self._patterns.values())
 class RedactionStrategyFactory:
                         """Factory for creating redaction strategies."""
     
@@ -186,9 +188,11 @@ class PHISanitizer:
             """Add a custom sanitization hook."""
             self.hooks.append(hook)
     def is_sensitive_key(self, key: str) -> bool:
-                """Check if a dictionary key is sensitive."""    return key.lower() in self.config.sensitive_keys
+                """Check if a dictionary key is sensitive."""    
+    return key.lower() in self.config.sensitive_keys
     def is_safe_system_message(self, message: str) -> bool:
-                    """Check if a message is a safe system message."""    return any(marker in message for marker in self.config.safe_system_messages)
+                    """Check if a message is a safe system message."""    
+    return any(marker in message for marker in self.config.safe_system_messages)
     def sanitize(self, data: Any) -> Any:
                         """
                         Sanitize PHI from text or data structures.
@@ -273,7 +277,8 @@ class PHISanitizer:
             
                                     Returns:
                                     Sanitized list
-                                    """    return [self.sanitize(item) for item in data]
+                                    """    
+    return [self.sanitize(item) for item in data]
 class PHIFormatter(logging.Formatter):
             """Logging formatter that sanitizes PHI from log messages."""
     def __init__(self, sanitizer: PHISanitizer, *args, **kwargs):

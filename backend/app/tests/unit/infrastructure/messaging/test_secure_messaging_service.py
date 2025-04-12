@@ -86,6 +86,7 @@ def key_pair():
 @pytest.fixture
 def secure_messaging_service(encryption_service):
     """Fixture for secure messaging service."""
+    
     return SecureMessagingService(
         encryption_service=encryption_service,
         key_size=2048,

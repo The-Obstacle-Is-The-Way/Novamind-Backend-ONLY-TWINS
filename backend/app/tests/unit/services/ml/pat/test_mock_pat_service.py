@@ -23,7 +23,8 @@ from app.core.services.ml.pat.interface import PATInterface
 from app.core.services.ml.pat.mock import MockPATService # Corrected import
 @pytest.fixture
 def mock_pat() -> MockPATService:
-    """Create a MockPAT instance."""    return MockPATService()
+    """Create a MockPAT instance."""    
+    return MockPATService()
 @pytest.fixture
 def initialized_mock_pat() -> MockPATService:
         """Create and initialize a MockPAT instance."""
@@ -49,7 +50,8 @@ reading = {
 readings.append(reading)    return readings
 @pytest.fixture
 def sample_device_info() -> Dict[str, Any]:
-    """Create sample device info."""    return {
+    """Create sample device info."""    
+    return {
         "device_type": "smartwatch",
         "model": "Apple Watch Series 9",
         "manufacturer": "Apple",

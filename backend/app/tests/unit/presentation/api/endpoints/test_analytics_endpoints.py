@@ -113,6 +113,7 @@ def app(mock_analytics_service, mock_cache_service):
 @pytest.fixture
 def client(app):
     """Create a TestClient for the app."""
+    
     return TestClient(app)
 
 

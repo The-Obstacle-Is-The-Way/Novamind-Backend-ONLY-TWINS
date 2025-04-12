@@ -98,7 +98,8 @@ class TestGeneMedicationModel:
     @pytest.fixture
     def sample_genetic_data(self):
         """Create sample genetic data for testing."""
-        return {
+        
+    return {
             "genes": [
                 {
                     "gene": "CYP2D6",

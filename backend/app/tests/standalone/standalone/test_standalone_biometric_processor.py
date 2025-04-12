@@ -91,7 +91,8 @@ class BiometricDataPoint:
         
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        return {
+        
+    return {
             "id": self.id,
             "patient_id": self.patient_id,
             "data_type": str(self.data_type.value) if self.data_type else None,
@@ -226,7 +227,8 @@ class AlertRule:
         
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        return {
+        
+    return {
             "id": self.id,
             "name": self.name,
             "data_type": self.data_type.value,
@@ -290,7 +292,8 @@ class BiometricAlert:
         
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        return {
+        
+    return {
             "id": self.id,
             "rule_id": self.rule_id,
             "rule_name": self.rule_name,

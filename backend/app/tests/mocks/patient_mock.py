@@ -272,7 +272,8 @@ class Patient:
     @classmethod
     def from_dict(cls, data):
         """Create instance from dictionary."""
-        return cls(**data)
+        
+    return cls(**data)
         
     def __eq__(self, other):
         """Check equality."""
@@ -282,8 +283,10 @@ class Patient:
     
     def __hash__(self):
         """Make the object hashable."""
-        return hash(str(self.id))
+        
+    return hash(str(self.id))
         
     def __str__(self):
         """String representation."""
-        return f"Patient(id={self.id}, name={self.first_name} {self.last_name})"
+        
+    return f"Patient(id={self.id}, name={self.first_name} {self.last_name})"

@@ -48,6 +48,7 @@ def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
     Returns:
         Dictionary of mock collections/tables with test data.
     """
+    
     return {
         "patients": [
             {
@@ -126,6 +127,7 @@ def auth_headers() -> Dict[str, str]:
     Returns:
         Dictionary with Authorization header.
     """
+    
     return {
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXIiLCJpYXQiOjE2MTcxOTMxNDIsImV4cCI6MTYxNzI3OTU0Mn0.mock-token-signature"
     }
@@ -207,4 +209,5 @@ def mock_aws_service() -> Any:
 @pytest.fixture
 def integration_fixture():
     """Basic fixture for integration tests."""
+    
     return "integration_fixture"

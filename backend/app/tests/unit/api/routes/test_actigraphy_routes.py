@@ -42,6 +42,7 @@ def mock_token() -> str:
 @pytest.fixture
 def patient_id() -> str:
     """Create a mock patient ID."""
+    
     return "patient123"
 
 
@@ -69,6 +70,7 @@ def sample_readings() -> List[Dict[str, Any]]:
 @pytest.fixture
 def device_info() -> Dict[str, Any]:
     """Create sample device info."""
+    
     return {
         "device_type": "smartwatch",
         "model": "Apple Watch Series 9",
@@ -82,6 +84,7 @@ def device_info() -> Dict[str, Any]:
 @pytest.fixture
 def analysis_request(patient_id: str, sample_readings: List[Dict[str, Any]], device_info: Dict[str, Any]) -> Dict[str, Any]:
     """Create an analysis request."""
+    
     return {
         "patient_id": patient_id,
         "readings": sample_readings,
@@ -96,6 +99,7 @@ def analysis_request(patient_id: str, sample_readings: List[Dict[str, Any]], dev
 @pytest.fixture
 def embedding_request(patient_id: str, sample_readings: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Create an embedding request."""
+    
     return {
         "patient_id": patient_id,
         "readings": sample_readings,
@@ -108,6 +112,7 @@ def embedding_request(patient_id: str, sample_readings: List[Dict[str, Any]]) ->
 @pytest.fixture
 def integration_request(patient_id: str) -> Dict[str, Any]:
     """Create an integration request."""
+    
     return {
         "patient_id": patient_id,
         "profile_id": "profile123",
@@ -227,6 +232,7 @@ def integration_result(patient_id: str) -> Dict[str, Any]:
 @pytest.fixture
 def model_info() -> Dict[str, Any]:
     """Create model info."""
+    
     return {
         "name": "MockPAT",
         "version": "1.0.0",
@@ -347,6 +353,7 @@ def app(mock_pat_service):
 @pytest.fixture
 def client(app):
     """Create TestClient."""
+    
     return TestClient(app)
 
 

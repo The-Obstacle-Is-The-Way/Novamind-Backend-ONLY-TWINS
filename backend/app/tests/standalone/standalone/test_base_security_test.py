@@ -48,7 +48,8 @@ class BaseSecurityTest(unittest.TestCase):
     
     def create_test_user(self) -> dict[str, Any]:
         """Create a test user with the configured ID and roles."""
-        return {
+        
+    return {
             "id": self.test_user_id,
             "username": "test_user",
             "email": "test_user@example.com",

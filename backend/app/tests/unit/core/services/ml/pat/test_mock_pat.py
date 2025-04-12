@@ -51,6 +51,7 @@ def sample_readings():
 @pytest.fixture
 def sample_device_info():
     """Create sample device info for testing."""
+    
     return {
         "device_type": "smartwatch",
         "model": "Model X",

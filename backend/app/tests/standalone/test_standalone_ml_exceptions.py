@@ -51,7 +51,8 @@ class MLBaseError(Exception):
         Returns:
             The detail value or default
         """
-        return self.details.get(key, default)
+        
+    return self.details.get(key, default)
     
     def to_dict(self) -> dict[str, Any]:
         """
@@ -60,7 +61,8 @@ class MLBaseError(Exception):
         Returns:
             Dictionary representation of the exception
         """
-        return {
+        
+    return {
             "error_type": self.__class__.__name__,
             "message": self.message,
             "details": self.details

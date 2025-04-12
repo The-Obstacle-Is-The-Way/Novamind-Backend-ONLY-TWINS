@@ -18,6 +18,7 @@ from app.domain.exceptions import ValidationException
 @pytest.fixture
 def valid_provider_data():
     """Fixture for valid provider data."""
+    
     return {
         "id": str(uuid.uuid4()),
         "first_name": "Dr. Jane",
@@ -74,6 +75,7 @@ def valid_provider_data():
 @pytest.fixture
 def valid_provider(valid_provider_data):
     """Fixture for a valid provider."""
+    
     return Provider(**valid_provider_data)
 
 
