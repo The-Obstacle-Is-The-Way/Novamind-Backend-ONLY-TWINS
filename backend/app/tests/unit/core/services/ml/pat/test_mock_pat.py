@@ -22,7 +22,7 @@ from app.core.services.ml.pat.exceptions import ()
     ValidationError,  
 ()
 from app.core.services.ml.pat.mock import MockPATService as MockPAT # Corrected import alias syntax
-
+:
 @pytest.fixture
 def mock_pat():
     """Create a MockPAT instance for testing."""

@@ -50,7 +50,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
         """Mock shutdown."""
         self.initialized = False
     
-    def process()
+    def process():
         self,
         prompt: str,
         model: str = None,
@@ -80,7 +80,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     "metadata": {"task": task or "general_analysis"}
     }
     
-    def depression_detection()
+    def depression_detection():
         self, 
         text: str, 
         model: str = None,
@@ -119,7 +119,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     "created_at": datetime.now().isoformat()
     }
     
-    def risk_assessment()
+    def risk_assessment():
         self, 
         text: str, 
         model: str = None,
@@ -161,7 +161,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     "created_at": datetime.now().isoformat()
     }
     
-    def sentiment_analysis()
+    def sentiment_analysis():
         self, 
         text: str, 
         model: str = None,
@@ -207,7 +207,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     "created_at": datetime.now().isoformat()
     }
     
-    def wellness_dimensions()
+    def wellness_dimensions():
         self, 
         text: str, 
         model: str = None,

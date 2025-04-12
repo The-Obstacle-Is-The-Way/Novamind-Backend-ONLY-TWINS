@@ -188,7 +188,7 @@ def test_input_validation(client: TestClient, patient_token: str) -> None:
     assert "value_error" in response.text
 
 
-def test_phi_data_sanitization()
+def test_phi_data_sanitization():
     client: TestClient, 
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
@@ -244,7 +244,7 @@ def test_phi_data_sanitization()
     assert "555-123-4567" not in str(data)
 
 
-def test_role_based_access_control()
+def test_role_based_access_control():
     client: TestClient,
     patient_token: str,
     provider_token: str,
@@ -308,7 +308,7 @@ def test_role_based_access_control()
     assert patient_admin_response.status_code in [403, 404]
 
 
-def test_hipaa_audit_logging()
+def test_hipaa_audit_logging():
     client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
@@ -378,7 +378,7 @@ def test_hipaa_audit_logging()
             os.unlink(temp_log_path)
 
 
-def test_secure_data_transmission()
+def test_secure_data_transmission():
     client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
@@ -473,7 +473,7 @@ def test_secure_data_transmission()
     assert not any("test-patient" in str(v) for v in query_params.values())
 
 
-        def test_api_response_structure()
+        def test_api_response_structure():
     client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],

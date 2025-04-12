@@ -438,7 +438,7 @@ class TestPHIInSourceFiles:
         // TODO: Remove hardcoded SSN before production
         const DEFAULT_SSN = "123-45-6789";
 
-        class Patient {
+        class Patient {:
             constructor(name = "John Smith", ssn = "123-45-6789") {
             this.name = name;
             this.ssn = ssn;

@@ -185,7 +185,7 @@ class TestDigitalTwinIntegrationService:
         return repo
 
     @pytest.fixture
-    def integration_service(self, mock_symptom_forecasting_service, mock_biometric_correlation_service, )
+    def integration_service(self, mock_symptom_forecasting_service, mock_biometric_correlation_service, ):
 (                           mock_medication_response_service, mock_patient_repository):
         """Create a DigitalTwinIntegrationService with mock dependencies."""
         

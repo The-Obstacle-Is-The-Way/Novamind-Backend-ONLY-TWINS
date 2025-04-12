@@ -72,7 +72,7 @@ class MLBaseError(Exception):
 class MLInferenceError(MLBaseError):
     """Exception raised during ML model inference."""
     
-    def __init__()
+    def __init__():
         self,
         message: str,
         model_name: str,
@@ -111,7 +111,7 @@ class MLInferenceError(MLBaseError):
 class MLValidationError(MLBaseError):
     """Exception raised during validation of ML inputs or parameters."""
     
-    def __init__()
+    def __init__():
         self,
         message: str,
         validation_errors: list[dict[str, Any]] | None = None,
@@ -131,7 +131,7 @@ class MLValidationError(MLBaseError):
         # Add validation errors to details
     self.add_detail("validation_errors", self.validation_errors)
     
-    def add_validation_error()
+    def add_validation_error():
         self,
         field: str,
         error: str,
@@ -168,7 +168,7 @@ class MLValidationError(MLBaseError):
 class MLModelNotFoundError(MLBaseError):
     """Exception raised when a requested ML model is not found."""
     
-    def __init__()
+    def __init__():
         self,
         model_name: str,
         available_models: list[str] | None = None,
@@ -196,7 +196,7 @@ class MLModelNotFoundError(MLBaseError):
 class MLServiceUnavailableError(MLBaseError):
     """Exception raised when an ML service is unavailable."""
     
-    def __init__()
+    def __init__():
         self,
         service_name: str,
         reason: str | None = None,
@@ -232,7 +232,7 @@ class MLServiceUnavailableError(MLBaseError):
 class MLServiceRateLimitError(MLServiceUnavailableError):
     """Exception raised when an ML service rate limit is exceeded."""
     
-    def __init__()
+    def __init__():
         self,
         service_name: str,
         limit: int,

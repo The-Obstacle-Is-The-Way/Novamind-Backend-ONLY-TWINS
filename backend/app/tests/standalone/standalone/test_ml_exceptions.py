@@ -23,7 +23,7 @@ class MentalLLaMABaseError(Exception):
 class MentalLLaMAInferenceError(MentalLLaMABaseError):
     """Exception raised when inference with MentalLLaMA model fails."""
     
-    def __init__()
+    def __init__():
         self, 
         message: str, 
         model_id: str | None = None,
@@ -51,7 +51,7 @@ class MentalLLaMAInferenceError(MentalLLaMABaseError):
 class MentalLLaMAValidationError(MentalLLaMABaseError):
     """Exception raised when input validation for MentalLLaMA model fails."""
     
-    def __init__()
+    def __init__():
         self, 
         message: str, 
         validation_errors: dict[str, Any] | None = None,

@@ -105,6 +105,7 @@ class TestTreatmentResponseModel:
         
     try:
             # Create model instance
+            # Create model instance
     model = TreatmentResponseModel()
     model_path="test_model_path",
     medication_data_path="test_medication_path"
@@ -136,6 +137,7 @@ class TestTreatmentResponseModel:
     assert model._medication_data is not None
     finally:
             # Clean up all patches
+            # Clean up all patches
     patch.stopall()
 
     async def test_initialize_handles_missing_files(self):
@@ -144,6 +146,7 @@ class TestTreatmentResponseModel:
     patch('app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists', return_value=False).start()
         
     try:
+            # Create model instance
             # Create model instance
     model = TreatmentResponseModel()
     model_path="nonexistent_path",
@@ -157,6 +160,7 @@ class TestTreatmentResponseModel:
             # Verify the model is not initialized
     assert not model.is_initialized
     finally:
+            # Clean up all patches
             # Clean up all patches
     patch.stopall()
 

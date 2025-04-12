@@ -626,6 +626,7 @@ class TestPATFactory:
         """Test creating a mock PAT service."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
             # Set up mock settings
+            # Set up mock settings
             mock_settings.ml_config = {
                 "pat": {
                     "provider": "mock"
@@ -643,6 +644,7 @@ class TestPATFactory:
         """Test creating a Bedrock PAT service."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings, \
              patch("boto3.client") as mock_boto:
+            # Set up mock settings
             # Set up mock settings
             mock_settings.ml_config = {
                 "pat": {
@@ -664,6 +666,7 @@ class TestPATFactory:
         """Test creating a PAT service with an invalid provider."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
             # Set up mock settings
+            # Set up mock settings
             mock_settings.ml_config = {
                 "pat": {
                     "provider": "invalid-provider"
@@ -677,6 +680,7 @@ class TestPATFactory:
     def test_create_pat_service_missing_provider(self) -> None:
         """Test creating a PAT service with a missing provider."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
+            # Set up mock settings
             # Set up mock settings
             mock_settings.ml_config = {
                 "pat": {}

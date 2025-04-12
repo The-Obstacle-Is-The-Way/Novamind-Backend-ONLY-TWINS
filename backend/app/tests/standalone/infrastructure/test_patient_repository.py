@@ -42,7 +42,7 @@ class TestPatientRepository:
     email="robert.johnson@example.com"
 (    )
     
-    def _create_test_patient()
+    def _create_test_patient():
         self,
         first_name: str,
         last_name: str,

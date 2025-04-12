@@ -44,7 +44,7 @@ class PatientStatus(str, Enum):
 class EmergencyContact:
     """Emergency contact information."""
     
-    def __init__()
+    def __init__():
         self,
         name: str,
         relationship: str,
@@ -89,7 +89,7 @@ class EmergencyContact:
 class Patient:
     """Patient entity."""
     
-    def __init__()
+    def __init__():
         self,
         id: str = None,
         first_name: str = None,
@@ -204,7 +204,7 @@ class Patient:
     if self.phone and not any(c.isdigit() for c in self.phone):
     raise ValueError("Phone number must contain digits")
             
-    def update_personal_info()
+    def update_personal_info():
         self,
         first_name: str | None = None,
         last_name: str | None = None,
@@ -252,7 +252,7 @@ class Patient:
             
     self.validate()
         
-    def update_insurance_info()
+    def update_insurance_info():
         self,
         insurance_id: str | None = None,
         insurance_provider: str | None = None,
@@ -276,7 +276,7 @@ class Patient:
     else:
     self.insurance_status = insurance_status
                 
-    def add_emergency_contact()
+    def add_emergency_contact():
         self,
         name: str,
         relationship: str,
@@ -305,7 +305,7 @@ class Patient:
         raise ValueError("Medical history item cannot be empty")
         self.medical_history.append(item)
         
-    def add_medication()
+    def add_medication():
         self,
         name: str,
         dosage: str,
@@ -367,7 +367,7 @@ class Patient:
         """Update patient notes."""
         self.notes = notes
         
-    def update_appointment_times()
+    def update_appointment_times():
         self,
         last_appointment: str | None = None,
         next_appointment: str | None = None

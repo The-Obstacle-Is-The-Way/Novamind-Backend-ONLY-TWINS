@@ -307,7 +307,7 @@ class TestPHIMiddleware:
     assert kwargs["whitelist_patterns"] == {"/api/": ["id"]}
     assert kwargs["audit_mode"] is True
 
-    def _create_mock_request()
+    def _create_mock_request():
         self, 
         path: str,
         method: str = "GET",

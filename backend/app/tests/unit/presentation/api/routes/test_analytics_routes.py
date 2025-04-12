@@ -132,7 +132,7 @@ def override_dependencies_auto(app, mock_analytics_service, mock_cache_service):
 class TestAnalyticsEndpoints:
     """Tests for analytics endpoints."""
 
-    def test_get_patient_treatment_outcomes_async()
+    def test_get_patient_treatment_outcomes_async():
         self, client, mock_analytics_service, mock_cache_service
 (    ):
         """Test patient treatment outcomes endpoint with cache miss."""
@@ -158,7 +158,7 @@ class TestAnalyticsEndpoints:
     mock_cache_service.get.assert_called_once()
         # BackgroundTasks would be called, but we can't easily verify that in the test
 
-    def test_get_patient_treatment_outcomes_cached()
+    def test_get_patient_treatment_outcomes_cached():
         self, client, mock_analytics_service, mock_cache_service
 (    ):
         """Test patient treatment outcomes endpoint with cache hit."""
@@ -188,7 +188,7 @@ class TestAnalyticsEndpoints:
     mock_cache_service.get.assert_called_once()
     mock_analytics_service.get_patient_treatment_outcomes.assert_not_called()
 
-    def test_get_analytics_job_status_completed()
+    def test_get_analytics_job_status_completed():
         self, client, mock_cache_service
 (    ):
         """Test checking status of a completed analytics job."""
@@ -212,7 +212,7 @@ class TestAnalyticsEndpoints:
         # Verify cache was checked for status
     mock_cache_service.get.assert_called_once_with(f"status:{job_id}")
 
-    def test_get_analytics_job_status_not_found()
+    def test_get_analytics_job_status_not_found():
         self, client, mock_cache_service
 (    ):
         """Test checking status of a non-existent analytics job."""
@@ -232,7 +232,7 @@ class TestAnalyticsEndpoints:
         # Verify cache was checked for status
     mock_cache_service.get.assert_called_once_with(f"status:{job_id}")
 
-    def test_get_practice_metrics()
+    def test_get_practice_metrics():
         self, client, mock_analytics_service, mock_cache_service
 (    ):
         """Test practice metrics endpoint."""
@@ -251,7 +251,7 @@ class TestAnalyticsEndpoints:
         # Verify cache was checked
     mock_cache_service.get.assert_called_once()
 
-    def test_get_diagnosis_distribution()
+    def test_get_diagnosis_distribution():
         self, client, mock_analytics_service, mock_cache_service
 (    ):
         """Test diagnosis distribution endpoint."""
@@ -275,7 +275,7 @@ class TestAnalyticsEndpoints:
     mock_cache_service.get.assert_called_once()
     mock_analytics_service.get_diagnosis_distribution.assert_called_once()
 
-    def test_get_medication_effectiveness()
+    def test_get_medication_effectiveness():
         self, client, mock_analytics_service, mock_cache_service
 (    ):
         """Test medication effectiveness endpoint."""
@@ -297,7 +297,7 @@ class TestAnalyticsEndpoints:
         # Verify cache was checked
     mock_cache_service.get.assert_called_once()
 
-    def test_get_treatment_comparison()
+    def test_get_treatment_comparison():
         self, client, mock_analytics_service, mock_cache_service
 (    ):
         """Test treatment comparison endpoint."""
@@ -323,7 +323,7 @@ class TestAnalyticsEndpoints:
         # Verify cache was checked
     mock_cache_service.get.assert_called_once()
 
-    def test_get_patient_risk_stratification()
+    def test_get_patient_risk_stratification():
         self, client, mock_analytics_service, mock_cache_service
 (    ):
         """Test patient risk stratification endpoint."""

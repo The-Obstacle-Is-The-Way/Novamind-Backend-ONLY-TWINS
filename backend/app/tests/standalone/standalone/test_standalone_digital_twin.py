@@ -54,7 +54,7 @@ class PredictionInterval(str, Enum):
 class TwinModel:
     """Base class for all digital twin models."""
     
-    def __init__()
+    def __init__():
         self,
         name: str,
         model_type: TwinModelType,
@@ -112,7 +112,7 @@ class TwinModel:
 class TimeSeriesModel(TwinModel):
     """Time series model for forecasting symptoms and biometrics."""
     
-    def __init__()
+    def __init__():
         self,
         name: str,
         patient_id: str,
@@ -246,7 +246,7 @@ class TimeSeriesModel(TwinModel):
 class BiometricTwinModel(TwinModel):
     """Model for biometric data analysis and alerting."""
     
-    def __init__()
+    def __init__():
         self,
         name: str,
         patient_id: str,
@@ -396,7 +396,7 @@ class BiometricTwinModel(TwinModel):
 class DigitalTwin:
     """Complete digital twin for a patient."""
     
-    def __init__()
+    def __init__():
         self,
         patient_id: str,
         name: str | None = None,

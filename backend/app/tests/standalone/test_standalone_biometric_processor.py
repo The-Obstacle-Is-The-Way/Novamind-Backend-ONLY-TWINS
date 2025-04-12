@@ -52,7 +52,7 @@ class ComparisonOperator(str, Enum):
 class BiometricDataPoint:
     """Represents a single biometric data point."""
     
-    def __init__()
+    def __init__():
         self,
         patient_id: str,
         data_type: BiometricType | str,
@@ -126,7 +126,7 @@ class BiometricDataPoint:
 class AlertRule:
     """Rule for generating alerts based on biometric data."""
     
-    def __init__()
+    def __init__():
         self,
         name: str,
         data_type: BiometricType,
@@ -245,7 +245,7 @@ class AlertRule:
 class BiometricAlert:
     """Alert generated when a biometric data point triggers a rule."""
     
-    def __init__()
+    def __init__():
         self,
         rule_id: str,
         rule_name: str,
@@ -434,7 +434,7 @@ class ClinicalRuleEngine:
         self.rule_templates: dict[str, dict[str, Any]] = {}
         self.custom_conditions: dict[str, Callable[[BiometricDataPoint], bool]] = {}
         
-    def register_rule_template()
+    def register_rule_template():
         self,
         template_id: str,
         name: str,
@@ -468,7 +468,7 @@ class ClinicalRuleEngine:
     "parameters": parameters or []
     }
         
-    def register_custom_condition()
+    def register_custom_condition():
         self,
         condition_id: str,
         condition_func: Callable[[BiometricDataPoint], bool]
@@ -482,7 +482,7 @@ class ClinicalRuleEngine:
     """
     self.custom_conditions[condition_id] = condition_func
         
-    def create_rule_from_template()
+    def create_rule_from_template():
         self,
         template_id: str,
         parameters: dict[str, Any] | None = None,

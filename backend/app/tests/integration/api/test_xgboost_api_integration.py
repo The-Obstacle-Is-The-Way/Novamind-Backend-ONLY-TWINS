@@ -299,7 +299,7 @@ def valid_outcome_prediction_data() -> Dict[str, Any]:
 class TestXGBoostAPIIntegration:
     """Integration tests for XGBoost API endpoints."""
 
-    def test_predict_risk_success()
+    def test_predict_risk_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -351,7 +351,7 @@ class TestXGBoostAPIIntegration:
     confidence_threshold=0.7
 (    )
 
-    def test_predict_risk_validation_error()
+    def test_predict_risk_validation_error():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -380,7 +380,7 @@ class TestXGBoostAPIIntegration:
     assert "detail" in result
     assert "Invalid risk type" in result["detail"]
 
-    def test_predict_risk_phi_detection()
+    def test_predict_risk_phi_detection():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -414,7 +414,7 @@ class TestXGBoostAPIIntegration:
     assert "detail" in result
     assert "sensitive information" in result["detail"]
 
-    def test_predict_risk_unauthorized()
+    def test_predict_risk_unauthorized():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -436,7 +436,7 @@ class TestXGBoostAPIIntegration:
             # Verify response
     assert response.status_code in [401, 403]
 
-    def test_predict_treatment_response_success()
+    def test_predict_treatment_response_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -502,7 +502,7 @@ class TestXGBoostAPIIntegration:
     treatment_history=valid_treatment_response_data["treatment_history"]
 (    )
 
-    def test_predict_outcome_success()
+    def test_predict_outcome_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -578,7 +578,7 @@ class TestXGBoostAPIIntegration:
     comorbidities=valid_outcome_prediction_data["comorbidities"]
 (    )
 
-    def test_get_feature_importance_success()
+    def test_get_feature_importance_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -635,7 +635,7 @@ class TestXGBoostAPIIntegration:
     prediction_id="risk-123"
 (    )
 
-    def test_get_feature_importance_not_found()
+    def test_get_feature_importance_not_found():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -664,7 +664,7 @@ class TestXGBoostAPIIntegration:
     assert "detail" in result
     assert "not found" in result["detail"]
 
-    def test_integrate_with_digital_twin_success()
+    def test_integrate_with_digital_twin_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -715,7 +715,7 @@ class TestXGBoostAPIIntegration:
     prediction_id="risk-123"
 (    )
 
-    def test_get_model_info_success()
+    def test_get_model_info_success():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -763,7 +763,7 @@ class TestXGBoostAPIIntegration:
     model_type="relapse_risk"
 (    )
 
-    def test_get_model_info_not_found()
+    def test_get_model_info_not_found():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
@@ -788,7 +788,7 @@ class TestXGBoostAPIIntegration:
     assert "detail" in result
     assert "not found" in result["detail"]
 
-    def test_service_unavailable()
+    def test_service_unavailable():
         self,
         client: TestClient,
         mock_xgboost_service: MagicMock,

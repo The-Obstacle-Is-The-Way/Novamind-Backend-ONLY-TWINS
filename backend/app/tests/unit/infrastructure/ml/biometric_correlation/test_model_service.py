@@ -237,6 +237,8 @@ class TestBiometricCorrelationService:
     with patch.object(service, '_preprocess_biometric_data', wraps=service._preprocess_biometric_data) as mock_preprocess:
             
             # Execute
+            
+            # Execute
     await service.analyze_correlations()
     patient_id=str(uuid4()),
     biometric_data=sample_biometric_data,

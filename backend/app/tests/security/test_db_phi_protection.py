@@ -60,7 +60,7 @@ except ImportError:
     class Patient:
         """Mock patient entity for testing."""
         
-        def __init__(self, id=None, first_name=None, last_name=None, date_of_birth=None, ssn=None, )
+        def __init__(self, id=None, first_name=None, last_name=None, date_of_birth=None, ssn=None, ):
 (                     email=None, phone=None, address=None, medical_record_number=None):
             self.id = id
             self.first_name = first_name

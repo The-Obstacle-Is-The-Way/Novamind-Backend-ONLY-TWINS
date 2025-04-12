@@ -112,6 +112,7 @@ class TestLogSanitization:
         # Patch the sanitizer in the logging system
     with patch('app.infrastructure.security.log_sanitizer.PHISanitizer', return_value=mock_sanitizer):
             # Create a log message with PHI
+            # Create a log message with PHI
     logger.info("Patient John Doe with SSN 123-45-6789 has updated their contact info to john.doe@example.com")
             
             # Check that the sanitizer was called
@@ -183,5 +184,6 @@ class TestLogSanitization:
 
 
 if __name__ == "__main__":
+    # Run the tests directly if the file is executed
     # Run the tests directly if the file is executed
     pytest.main(["-v", __file__])
