@@ -9,8 +9,9 @@ import pytest
 import os
 from typing import Dict, Any, List
 
-from app.infrastructure.security.log_sanitizer import LogSanitizer # Corrected import
-from app.tests.security.base_security_test import BaseSecurityTest
+from app.infrastructure.security.log_sanitizer import LogSanitizer, SanitizerConfig # Import SanitizerConfig
+from app.tests.security.base_test import BaseSecurityTest
+from app.core.security.roles import Role
 
 
 @pytest.mark.venv_only()
@@ -19,7 +20,7 @@ class TestPHIProtection(BaseSecurityTest):
 
     # Add required auth attributes that BaseSecurityTest expects
     test_user_id = "test-security-user-456"
-    test_roles = ["user", "admin", "data_analyst"]
+    test_roles = [Role.USER, Role.ADMIN, Role.DATA_ANALYST]
     
     def setUp(self) -> None:
         """Set up test fixtures."""
