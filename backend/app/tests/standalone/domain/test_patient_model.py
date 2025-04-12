@@ -24,11 +24,12 @@ class TestPatientModel:
         dob = date(1980, 1, 15)
         
         # Act
-    patient = Patient()
-    id=patient_id,
-    medical_record_number=mrn,
-    name=name,
-    date_of_birth=dob
+        patient = Patient(
+            id=patient_id,
+            medical_record_number=mrn,
+            name=name,
+            date_of_birth=dob
+        )
         
         # Assert
         assert patient.id == patient_id
