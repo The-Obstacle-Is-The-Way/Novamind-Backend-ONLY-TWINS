@@ -112,34 +112,34 @@ class TestHIPAAAuthCompliance:
     def doctor_token(self, jwt_service):
         """Create a valid doctor token."""
         
-    return jwt_service.create_access_token({
+    return jwt_service.create_access_token({)
     "sub": "doctor123",
     "role": "doctor",
     "name": "Dr. Jane Smith",
     "permissions": ["read:patient", "write:patient", "read:phi", "write:phi"]
-    })
+(    })
         
     @pytest.fixture
     def patient_token(self, jwt_service):
         """Create a valid patient token."""
         
-    return jwt_service.create_access_token({
+    return jwt_service.create_access_token({)
     "sub": "patient456",
     "role": "patient",
     "name": "John Doe",
     "patient_id": "P12345",
     "permissions": ["read:own_data"]
-    })
+(    })
         
     @pytest.fixture
     def expired_token(self, jwt_service):
         """Create an expired token."""
         
-    return jwt_service.create_access_token({
+    return jwt_service.create_access_token({)
     "sub": "doctor789",
     "role": "doctor",
     "permissions": ["read:patient", "write:patient", "read:phi", "write:phi"]
-    }, expires_delta=-1)  # Token expired 1 minute ago
+(    }, expires_delta=-1)  # Token expired 1 minute ago
     
     def test_valid_token_authentication(self, auth_middleware, doctor_token):
         """Test that valid tokens authenticate successfully."""
@@ -185,19 +185,19 @@ class TestHIPAAAuthCompliance:
     def test_patient_data_isolation(self, jwt_service, role_manager):
         """Test that patients can only access their own data."""
         # Create two different patient tokens
-        patient1_token = jwt_service.create_access_token({
+        patient1_token = jwt_service.create_access_token({)
             "sub": "patient111",
             "role": "patient",
             "patient_id": "P111",
             "permissions": ["read:own_data"]
-        })
+(        })
         
-    patient2_token = jwt_service.create_access_token({
+    patient2_token = jwt_service.create_access_token({)
     "sub": "patient222",
     "role": "patient",
     "patient_id": "P222",
     "permissions": ["read:own_data"]
-    })
+(    })
         
         # Decode tokens to get payloads
     payload1 = jwt_service.decode_token(patient1_token)
@@ -222,10 +222,10 @@ class TestHIPAAAuthCompliance:
     def test_token_without_role(self, jwt_service, role_manager):
         """Test that tokens without role get default guest permissions."""
         # Create token without role
-        no_role_token = jwt_service.create_access_token({
+        no_role_token = jwt_service.create_access_token({)
             "sub": "user999",
             "name": "No Role User"
-        })
+(        })
         
         # Decode token
     payload = jwt_service.decode_token(no_role_token)
@@ -264,12 +264,12 @@ class TestHIPAAAuthCompliance:
     def test_multi_factor_auth_support(self, jwt_service):
         """Test support for multi-factor authentication in tokens."""
         # Create a token with MFA flag
-        mfa_token = jwt_service.create_access_token({
+        mfa_token = jwt_service.create_access_token({)
             "sub": "mfa_user",
             "role": "doctor",
             "mfa_complete": True,
             "auth_level": "2"  # 2 = MFA completed
-        })
+(        })
         
         # Verify MFA information is in token
     payload = jwt_service.decode_token(mfa_token)
@@ -279,12 +279,12 @@ class TestHIPAAAuthCompliance:
     def test_minimal_phi_in_token(self, jwt_service):
         """Test that tokens contain minimal PHI, even for authorized users."""
         # Create an admin token
-        admin_token = jwt_service.create_access_token({
+        admin_token = jwt_service.create_access_token({)
             "sub": "admin123",
             "role": "admin",
             "name": "Admin User",  # Only minimal identifying info
             "permissions": ["read:patient", "write:patient", "read:phi", "write:phi"]
-        })
+(        })
         
         # Decode token
     payload = jwt_service.decode_token(admin_token)

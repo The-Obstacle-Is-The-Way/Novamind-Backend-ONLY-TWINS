@@ -21,14 +21,14 @@ def mock_analytics_repository():
     
     # Set up the save_event method to return a modified event with an ID
     async def save_event_mock(event):
-        return AnalyticsEvent(
+        return AnalyticsEvent()
             event_type=event.event_type,
             event_data=event.event_data,
             user_id=event.user_id,
             session_id=event.session_id,
             timestamp=event.timestamp,
             event_id="test-event-id-123"
-        )
+(        )
     
     repo.save_event = save_event_mock
     return repo
@@ -54,10 +54,10 @@ def use_case(mock_analytics_repository, mock_cache_service):
         mock_logger_instance = MagicMock()
         mock_logger.return_value = mock_logger_instance
         
-        use_case = ProcessAnalyticsEventUseCase(
+        use_case = ProcessAnalyticsEventUseCase()
             analytics_repository=mock_analytics_repository,
             cache_service=mock_cache_service
-        )
+(        )
         
         # Attach the mock logger for assert ions
         use_case._logger = mock_logger_instance
@@ -81,13 +81,13 @@ class TestProcessAnalyticsEventUseCase:
     timestamp = datetime(2025, 3, 30, 0, 0, 0)
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     event_type=event_type,
     event_data=event_data,
     user_id=user_id,
     session_id=session_id,
     timestamp=timestamp
-    )
+(    )
         
         # Assert
     assert result.event_type  ==  event_type
@@ -101,10 +101,10 @@ class TestProcessAnalyticsEventUseCase:
     mock_analytics_repository.save_event.assert_called_once()
         
         # Verify appropriate logging (without PHI)
-    use_case._logger.info.assert_called_with(
+    use_case._logger.info.assert_called_with()
     f"Processing analytics event of type: {event_type}",
     {"session_id": session_id}
-    )
+(    )
     
     @pytest.mark.asyncio()
     async def test_execute_with_minimal_parameters(self, use_case):
@@ -116,10 +116,10 @@ class TestProcessAnalyticsEventUseCase:
     event_data = {"feature": "digital_twin", "action": "zoom"}
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     event_type=event_type,
     event_data=event_data
-    )
+(    )
         
         # Assert
     assert result.event_type  ==  event_type
@@ -130,10 +130,10 @@ class TestProcessAnalyticsEventUseCase:
     assert result.event_id  ==  "test-event-id-123"
         
         # Verify appropriate logging (without PHI)
-    use_case._logger.info.assert_called_with(
+    use_case._logger.info.assert_called_with()
     f"Processing analytics event of type: {event_type}",
     {"session_id": None}
-    )
+(    )
     
     @pytest.mark.asyncio()
     async def test_real_time_counter_updates(self, use_case, mock_cache_service):
@@ -146,11 +146,11 @@ class TestProcessAnalyticsEventUseCase:
     user_id = "provider-789"
         
         # Act
-    await use_case.execute(
+    await use_case.execute()
     event_type=event_type,
     event_data=event_data,
     user_id=user_id
-    )
+(    )
         
         # Assert - verify cache service was called to update counters
     mock_cache_service.increment.assert _any_call(f"analytics:counter:{event_type}")
@@ -168,18 +168,18 @@ class TestProcessAnalyticsEventUseCase:
     session_id = "session-xyz"
         
         # Act
-    await use_case.execute(
+    await use_case.execute()
     event_type=event_type,
     event_data=event_data,
     user_id=user_id,
     session_id=session_id
-    )
+(    )
         
         # Assert - only non-PHI should be logged
-    use_case._logger.info.assert_called_with(
+    use_case._logger.info.assert_called_with()
     f"Processing analytics event of type: {event_type}",
     {"session_id": session_id}
-    )
+(    )
         
         # The event_data containing PHI should not be in any log parameters
     log_calls = use_case._logger.info.call_args_list
@@ -200,9 +200,9 @@ class TestProcessAnalyticsEventUseCase:
         
         # Act & Assert
     with pytest.raises(Exception) as excinfo:
-    await use_case.execute(
+    await use_case.execute()
     event_type="error_test",
     event_data={"test": True}
-    )
+(    )
         
     assert "Database connection error" in str(excinfo.value)

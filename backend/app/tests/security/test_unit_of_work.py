@@ -236,10 +236,10 @@ class TestSQLAlchemyUnitOfWork:
     mock_session.connection.return_value = mock_connection
         
         # Act
-    unit_of_work = SQLAlchemyUnitOfWork(
+    unit_of_work = SQLAlchemyUnitOfWork()
     session_factory=factory,
     isolation_level="SERIALIZABLE"  # Highest isolation for PHI
-    )
+(    )
         
     with unit_of_work:
             # Access connection to trigger isolation setting
@@ -292,11 +292,11 @@ class TestSQLAlchemyUnitOfWork:
     with patch('app.infrastructure.logging.audit_logger.AuditLogger.log_transaction') as mock_audit:
     with unit_of_work:
                 # Set transaction metadata
-    unit_of_work.set_metadata({
+    unit_of_work.set_metadata({)
     "user_id": "provider123",
     "action": "update_patient_record",
     "patient_id": "patient456"
-    })
+(    })
     unit_of_work.commit()
         
         # Assert

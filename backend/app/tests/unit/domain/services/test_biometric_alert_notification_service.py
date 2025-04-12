@@ -12,9 +12,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertPriority, AlertStatus
-from app.domain.services.biometric_alert_notification_service import (
+from app.domain.services.biometric_alert_notification_service import ()
     BiometricAlertNotificationService,   NotificationChannel
-)
+()
 
 
 @pytest.mark.db_required()
@@ -42,10 +42,10 @@ class TestBiometricAlertNotificationService:
     def notification_service(self, mock_alert_repository, mock_notification_service):
         """Create a BiometricAlertNotificationService with mock dependencies."""
         
-    return BiometricAlertNotificationService(
+    return BiometricAlertNotificationService()
     mock_alert_repository,
     mock_notification_service
-    )
+(    )
     
     @pytest.fixture
     def sample_patient_id(self):
@@ -69,7 +69,7 @@ class TestBiometricAlertNotificationService:
     def sample_urgent_alert(self, sample_patient_id, sample_rule_id):
         """Create a sample urgent BiometricAlert."""
         
-    return BiometricAlert(
+    return BiometricAlert()
     patient_id=sample_patient_id,
     alert_type="elevated_heart_rate",
     description="Heart rate is significantly elevated",
@@ -83,13 +83,13 @@ class TestBiometricAlertNotificationService:
     }
     ],
     rule_id=sample_rule_id
-    )
+(    )
     
     @pytest.fixture
     def sample_warning_alert(self, sample_patient_id, sample_rule_id):
         """Create a sample warning BiometricAlert."""
         
-    return BiometricAlert(
+    return BiometricAlert()
     patient_id=sample_patient_id,
     alert_type="sleep_disruption",
     description="Sleep quality is poor",
@@ -103,13 +103,13 @@ class TestBiometricAlertNotificationService:
     }
     ],
     rule_id=sample_rule_id
-    )
+(    )
     
     @pytest.fixture
     def sample_info_alert(self, sample_patient_id, sample_rule_id):
         """Create a sample informational BiometricAlert."""
         
-    return BiometricAlert(
+    return BiometricAlert()
     patient_id=sample_patient_id,
     alert_type="low_activity",
     description="Physical activity is below target",
@@ -123,11 +123,11 @@ class TestBiometricAlertNotificationService:
     }
     ],
     rule_id=sample_rule_id
-    )
+(    )
     
-    async def test_notify_alert_urgent_priority(
+    async def test_notify_alert_urgent_priority()
     self, notification_service, mock_notification_service, sample_urgent_alert
-    ):
+(    ):
     """Test that notify_alert sends notifications through all channels for urgent alerts."""
         # Execute
     await notification_service.notify_alert(sample_urgent_alert)
@@ -145,9 +145,9 @@ class TestBiometricAlertNotificationService:
         # Ensure no PHI is included
     assert sample_urgent_alert.patient_id.hex not in sms_message
     
-    async def test_notify_alert_warning_priority(
+    async def test_notify_alert_warning_priority()
     self, notification_service, mock_notification_service, sample_warning_alert
-    ):
+(    ):
     """Test that notify_alert sends notifications through appropriate channels for warning alerts."""
         # Execute
     await notification_service.notify_alert(sample_warning_alert)
@@ -158,9 +158,9 @@ class TestBiometricAlertNotificationService:
     assert mock_notification_service.send_in_app_notification.call_count  ==  1
     assert mock_notification_service.send_push_notification.call_count  ==  1
     
-    async def test_notify_alert_info_priority(
+    async def test_notify_alert_info_priority()
     self, notification_service, mock_notification_service, sample_info_alert
-    ):
+(    ):
     """Test that notify_alert sends notifications through in-app only for informational alerts."""
         # Execute
     await notification_service.notify_alert(sample_info_alert)
@@ -171,17 +171,17 @@ class TestBiometricAlertNotificationService:
     assert mock_notification_service.send_in_app_notification.call_count  ==  1
     assert mock_notification_service.send_push_notification.call_count  ==  0
     
-    async def test_hipaa_compliant_message_creation(
+    async def test_hipaa_compliant_message_creation()
     self, notification_service, sample_urgent_alert
-    ):
+(    ):
     """Test that HIPAA-compliant messages are created correctly."""
         # Execute
-    sms_message = notification_service._create_hipaa_compliant_message(
+    sms_message = notification_service._create_hipaa_compliant_message()
     sample_urgent_alert, NotificationChannel.SMS
-    )
-    email_message = notification_service._create_hipaa_compliant_message(
+(    )
+    email_message = notification_service._create_hipaa_compliant_message()
     sample_urgent_alert, NotificationChannel.EMAIL
-    )
+(    )
         
         # Verify SMS message
     assert "SECURE" in sms_message
@@ -236,9 +236,9 @@ class TestBiometricAlertNotificationService:
     assert "phone" in recipients[0]
     assert "notification_preferences" in recipients[0]
     
-    async def test_send_notification_filters_recipients(
+    async def test_send_notification_filters_recipients()
     self, notification_service, mock_notification_service, sample_urgent_alert
-    ):
+(    ):
     """Test that send_notification filters recipients based on their preferences."""
         # Setup
     recipients = [
@@ -269,11 +269,11 @@ class TestBiometricAlertNotificationService:
     ]
         
         # Execute - SMS channel should only notify Provider 1
-    await notification_service._send_notification(
+    await notification_service._send_notification()
     sample_urgent_alert,
     NotificationChannel.SMS,
     recipients
-    )
+(    )
         
         # Verify
     assert mock_notification_service.send_sms.call_count  ==  1
@@ -283,11 +283,11 @@ class TestBiometricAlertNotificationService:
     mock_notification_service.send_sms.reset_mock()
         
         # Execute - Email channel should notify both providers
-    await notification_service._send_notification(
+    await notification_service._send_notification()
     sample_urgent_alert,
     NotificationChannel.EMAIL,
     recipients
-    )
+(    )
         
         # Verify
     assert mock_notification_service.send_email.call_count  ==  2

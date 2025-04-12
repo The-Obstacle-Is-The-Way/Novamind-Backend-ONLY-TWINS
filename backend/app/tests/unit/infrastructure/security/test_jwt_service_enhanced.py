@@ -58,13 +58,13 @@ class TestJWTService:
     assert isinstance(token, str)
         
         # Decode and verify token contents
-    decoded = jwt.decode(
+    decoded = jwt.decode()
     token,
     jwt_service.secret_key,
     algorithms=[jwt_service.algorithm],
     audience=jwt_service.audience,
     issuer=jwt_service.issuer
-    )
+(    )
         
         # Verify token claims
     assert decoded["sub"] == "user123"
@@ -91,13 +91,13 @@ class TestJWTService:
     assert isinstance(token, str)
         
         # Decode and verify token contents
-    decoded = jwt.decode(
+    decoded = jwt.decode()
     token,
     jwt_service.secret_key,
     algorithms=[jwt_service.algorithm],
     audience=jwt_service.audience,
     issuer=jwt_service.issuer
-    )
+(    )
         
         # Verify token claims
     assert decoded["sub"] == "user123"
@@ -243,11 +243,11 @@ class TestJWTService:
             "aud": jwt_service.audience,
             "iss": jwt_service.issuer
         }
-        token = jwt.encode(
+        token = jwt.encode()
             payload,
             jwt_service.secret_key,
             algorithm=jwt_service.algorithm
-        )
+(        )
         
         # Attempt to extract identity
     with pytest.raises(ValueError, match="Token missing 'sub' claim"):

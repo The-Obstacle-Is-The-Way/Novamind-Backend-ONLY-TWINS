@@ -7,16 +7,16 @@ from datetime import datetime, timedelta
 import uuid
 import pytest
 
-from app.domain.entities.appointment import (
+from app.domain.entities.appointment import ()
     Appointment,  
     AppointmentStatus,  
     AppointmentType,  
     AppointmentPriority
-)
-from app.domain.exceptions import (
+()
+from app.domain.exceptions import ()
     InvalidAppointmentStateError,  
     InvalidAppointmentTimeError
-)
+()
 
 
 @pytest.fixture
@@ -102,70 +102,70 @@ class TestAppointment:
         """Test validation of required fields."""
         # Missing patient_id
         with pytest.raises(InvalidAppointmentStateError):
-        Appointment(
+        Appointment()
                 provider_id=str(uuid.uuid4()),
                 start_time=datetime.now() + timedelta(days=1),
-                end_time=datetime.now() + timedelta(days=1, hours=1),
+                end_time=datetime.now() + timedelta(days=1) + timedelta(hours=1),
                 appointment_type=AppointmentType.INITIAL_CONSULTATION
-            )
+(            )
         
         # Missing provider_id
     with pytest.raises(InvalidAppointmentStateError):
-    Appointment(
+    Appointment()
     patient_id=str(uuid.uuid4()),
     start_time=datetime.now() + timedelta(days=1),
-    end_time=datetime.now() + timedelta(days=1, hours=1),
+    end_time=datetime.now() + timedelta(days=1) + timedelta(hours=1),
     appointment_type=AppointmentType.INITIAL_CONSULTATION
-    )
+(    )
         
         # Missing start_time
     with pytest.raises(InvalidAppointmentStateError):
-    Appointment(
+    Appointment()
     patient_id=str(uuid.uuid4()),
     provider_id=str(uuid.uuid4()),
-    end_time=datetime.now() + timedelta(days=1, hours=1),
+    end_time=datetime.now() + timedelta(days=1) + timedelta(hours=1),
     appointment_type=AppointmentType.INITIAL_CONSULTATION
-    )
+(    )
         
         # Missing end_time
     with pytest.raises(InvalidAppointmentStateError):
-    Appointment(
+    Appointment()
     patient_id=str(uuid.uuid4()),
     provider_id=str(uuid.uuid4()),
     start_time=datetime.now() + timedelta(days=1),
     appointment_type=AppointmentType.INITIAL_CONSULTATION
-    )
+(    )
         
         # Missing appointment_type
     with pytest.raises(InvalidAppointmentStateError):
-    Appointment(
+    Appointment()
     patient_id=str(uuid.uuid4()),
     provider_id=str(uuid.uuid4()),
     start_time=datetime.now() + timedelta(days=1),
-    end_time=datetime.now() + timedelta(days=1, hours=1)
-    )
+    end_time=datetime.now() + timedelta(days=1) + timedelta(hours=1)
+(    )
     
     def test_validate_appointment_times(self, future_datetime):
         """Test validation of appointment times."""
         # End time before start time
         with pytest.raises(InvalidAppointmentTimeError):
-        Appointment(
+        Appointment()
                 patient_id=str(uuid.uuid4()),
                 provider_id=str(uuid.uuid4()),
                 start_time=future_datetime + timedelta(hours=1),
                 end_time=future_datetime,
                 appointment_type=AppointmentType.INITIAL_CONSULTATION
-            )
+(            )
         
         # Start time in the past
     with pytest.raises(InvalidAppointmentTimeError):
-    Appointment(
+    Appointment()
     patient_id=str(uuid.uuid4()),
     provider_id=str(uuid.uuid4()),
     start_time=datetime.now() - timedelta(days=1),
     end_time=datetime.now() + timedelta(hours=1),
     appointment_type=AppointmentType.INITIAL_CONSULTATION
-    )
+(    )
     
     def test_confirm_appointment(self, valid_appointment):
         """Test confirming an appointment."""
@@ -288,26 +288,26 @@ class TestAppointment:
         valid_appointment.status = AppointmentStatus.COMPLETED
         
     with pytest.raises(InvalidAppointmentStateError):
-    valid_appointment.reschedule(
+    valid_appointment.reschedule()
     future_datetime + timedelta(days=1),
-    future_datetime + timedelta(days=1, hours=1)
-    )
+    future_datetime + timedelta(days=1) + timedelta(hours=1)
+(    )
     
     def test_reschedule_invalid_times(self, valid_appointment, future_datetime):
         """Test rescheduling with invalid times."""
         # End time before start time
         with pytest.raises(InvalidAppointmentTimeError):
-        valid_appointment.reschedule(
+        valid_appointment.reschedule()
                 future_datetime + timedelta(hours=2),
                 future_datetime + timedelta(hours=1)
-            )
+(            )
         
         # Start time in the past
     with pytest.raises(InvalidAppointmentTimeError):
-    valid_appointment.reschedule(
+    valid_appointment.reschedule()
     datetime.now() - timedelta(hours=1),
     datetime.now() + timedelta(hours=1)
-    )
+(    )
     
     def test_schedule_follow_up(self, valid_appointment):
         """Test scheduling a follow-up appointment."""

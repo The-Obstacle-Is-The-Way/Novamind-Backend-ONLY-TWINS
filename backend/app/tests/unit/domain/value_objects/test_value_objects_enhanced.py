@@ -56,38 +56,38 @@ class TestEmergencyContact:
         """Test validation of emergency contact data."""
         # Test with missing required fields
         with pytest.raises(ValueError):
-        EmergencyContact(
+        EmergencyContact()
                 name="",  # Empty name
                 relationship="Spouse",
                 phone="555-123-4567",
                 email="jane.doe@example.com"
-            )
+(            )
         
     with pytest.raises(ValueError):
-    EmergencyContact(
+    EmergencyContact()
     name="Jane Doe",
     relationship="",  # Empty relationship
     phone="555-123-4567",
     email="jane.doe@example.com"
-    )
+(    )
         
         # Test with invalid phone number
     with pytest.raises(ValueError):
-    EmergencyContact(
+    EmergencyContact()
     name="Jane Doe",
     relationship="Spouse",
     phone="invalid-phone",  # Invalid phone
     email="jane.doe@example.com"
-    )
+(    )
         
         # Test with invalid email
     with pytest.raises(ValueError):
-    EmergencyContact(
+    EmergencyContact()
     name="Jane Doe",
     relationship="Spouse",
     phone="555-123-4567",
     email="invalid-email"  # Invalid email
-    )
+(    )
     
     def test_emergency_contact_optional_fields(self, valid_contact_data):
         """Test emergency contact with optional fields."""
@@ -171,28 +171,28 @@ class TestPsychiatricAssessment:
         """Test validation of psychiatric assessment data."""
         # Test with missing required fields
         with pytest.raises(ValueError):
-        PsychiatricAssessment(
+        PsychiatricAssessment()
                 assessment_date=date(2025, 3, 15),
                 diagnosis="",  # Empty diagnosis
                 severity="Moderate",
                 treatment_plan="Weekly therapy, medication management"
-            )
+(            )
         
     with pytest.raises(ValueError):
-    PsychiatricAssessment(
+    PsychiatricAssessment()
     assessment_date=date(2025, 3, 15),
     diagnosis="Major Depressive Disorder",
     severity="",  # Empty severity
     treatment_plan="Weekly therapy, medication management"
-    )
+(    )
         
     with pytest.raises(ValueError):
-    PsychiatricAssessment(
+    PsychiatricAssessment()
     assessment_date=date(2025, 3, 15),
     diagnosis="Major Depressive Disorder",
     severity="Moderate",
     treatment_plan=""  # Empty treatment plan
-    )
+(    )
     
     def test_psychiatric_assessment_optional_fields(self, valid_assessment_data):
         """Test psychiatric assessment with optional fields."""
@@ -282,22 +282,22 @@ class TestAddressValueObject:
         """Test validation of address data."""
         # Test with missing required fields
         with pytest.raises(ValueError):
-        Address(
+        Address()
                 street="",  # Empty street
                 city="Boston",
                 state="MA",
                 zip_code="02115",
                 country="USA"
-            )
+(            )
         
     with pytest.raises(ValueError):
-    Address(
+    Address()
     street="123 Main St",
     city="",  # Empty city
     state="MA",
     zip_code="02115",
     country="USA"
-    )
+(    )
     
     def test_address_to_dict(self, valid_address_data):
         """Test conversion of address to dictionary."""
@@ -334,27 +334,27 @@ class TestContactInfoValueObject:
         """Test validation of contact info data."""
         # Test with invalid email
         with pytest.raises(ValueError):
-        ContactInfo(
+        ContactInfo()
                 email="invalid-email",  # Invalid email
                 phone="555-123-4567",
                 preferred_contact_method="email"
-            )
+(            )
         
         # Test with invalid phone
     with pytest.raises(ValueError):
-    ContactInfo(
+    ContactInfo()
     email="patient@example.com",
     phone="invalid-phone",  # Invalid phone
     preferred_contact_method="phone"
-    )
+(    )
         
         # Test with invalid preferred contact method
     with pytest.raises(ValueError):
-    ContactInfo(
+    ContactInfo()
     email="patient@example.com",
     phone="555-123-4567",
     preferred_contact_method="invalid-method"  # Invalid method
-    )
+(    )
     
     def test_contact_info_optional_fields(self, valid_contact_info_data):
         """Test contact info with optional fields."""

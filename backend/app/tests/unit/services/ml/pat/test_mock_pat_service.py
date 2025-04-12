@@ -10,7 +10,7 @@ import json
 import pytest
 from typing import Any, Dict, List
 
-from app.core.services.ml.pat.exceptions import (
+from app.core.services.ml.pat.exceptions import ()
     AnalysisError,  
     AuthorizationError,  
     EmbeddingError,  
@@ -18,7 +18,7 @@ from app.core.services.ml.pat.exceptions import (
     IntegrationError,  
     ResourceNotFoundError,  
     ValidationError  
-)
+()
 from app.core.services.ml.pat.interface import PATInterface
 from app.core.services.ml.pat.mock import MockPATService # Corrected import
 @pytest.fixture
@@ -93,12 +93,12 @@ class TestMockPAT:
         """Test calling methods before initialization."""
                 with pytest.raises(InitializationError):
         mock_pat.get_model_info()
-    def test_analyze_actigraphy(:
+    def test_analyze_actigraphy(:)
         self,
                     initialized_mock_pat: MockPATService,
                     sample_readings: List[Dict[str, Any]],
                     sample_device_info: Dict[str, Any]
-                    ) -> None:
+(                    ) -> None:
         """Test successful actigraphy analysis."""
         # Define parameters
                     patient_id = "patient123"
@@ -108,7 +108,7 @@ class TestMockPAT:
                     analysis_types = ["activity_level_analysis", "sleep_analysis"]
         
         # Call analyze_actigraphy
-    result = initialized_mock_pat.analyze_actigraphy(
+    result = initialized_mock_pat.analyze_actigraphy()
     patient_id=patient_id,
     readings=sample_readings,
     start_time=start_time,
@@ -116,7 +116,7 @@ class TestMockPAT:
     sampling_rate_hz=sampling_rate_hz,
     device_info=sample_device_info,
     analysis_types=analysis_types
-    )
+(    )
         
         # Verify result
     assert "analysis_id" in result
@@ -137,16 +137,16 @@ class TestMockPAT:
         # Verify the analysis is stored
     analysis_id = result["analysis_id"]
     assert analysis_id in initialized_mock_pat._analyses
-    def test_analyze_actigraphy_validation_error(:
+    def test_analyze_actigraphy_validation_error(:)
         self,
                         initialized_mock_pat: MockPATService,
                         sample_readings: List[Dict[str, Any]],
                         sample_device_info: Dict[str, Any]
-                        ) -> None:
+(                        ) -> None:
         """Test actigraphy analysis with invalid parameters."""
         # Test empty patient_id
                         with pytest.raises(ValidationError):
-        initialized_mock_pat.analyze_actigraphy(
+        initialized_mock_pat.analyze_actigraphy()
                         patient_id="",
                         readings=sample_readings,
                         start_time="2025-03-28T14:00:00Z",
@@ -154,11 +154,11 @@ class TestMockPAT:
                         sampling_rate_hz=10.0,
                         device_info=sample_device_info,
                         analysis_types=["activity_level_analysis"]
-                        )
+(                        )
         
         # Test empty readings
     with pytest.raises(ValidationError):
-    initialized_mock_pat.analyze_actigraphy(
+    initialized_mock_pat.analyze_actigraphy()
     patient_id="patient123",
     readings=[],
     start_time="2025-03-28T14:00:00Z",
@@ -166,11 +166,11 @@ class TestMockPAT:
     sampling_rate_hz=10.0,
     device_info=sample_device_info,
     analysis_types=["activity_level_analysis"]
-    )
+(    )
         
         # Test invalid sampling rate
     with pytest.raises(ValidationError):
-    initialized_mock_pat.analyze_actigraphy(
+    initialized_mock_pat.analyze_actigraphy()
     patient_id="patient123",
     readings=sample_readings,
     start_time="2025-03-28T14:00:00Z",
@@ -178,11 +178,11 @@ class TestMockPAT:
     sampling_rate_hz=0.0,
     device_info=sample_device_info,
     analysis_types=["activity_level_analysis"]
-    )
+(    )
         
         # Test invalid analysis type
     with pytest.raises(ValidationError):
-    initialized_mock_pat.analyze_actigraphy(
+    initialized_mock_pat.analyze_actigraphy()
     patient_id="patient123",
     readings=sample_readings,
     start_time="2025-03-28T14:00:00Z",
@@ -190,12 +190,12 @@ class TestMockPAT:
     sampling_rate_hz=10.0,
     device_info=sample_device_info,
     analysis_types=["invalid_analysis_type"]
-    )
-    def test_get_actigraphy_embeddings(:
+(    )
+    def test_get_actigraphy_embeddings(:)
         self,
                             initialized_mock_pat: MockPATService,
                             sample_readings: List[Dict[str, Any]]
-                            ) -> None:
+(                            ) -> None:
         """Test successful embedding generation."""
         # Define parameters
                             patient_id = "patient123"
@@ -204,13 +204,13 @@ class TestMockPAT:
                             sampling_rate_hz = 10.0
         
         # Call get_actigraphy_embeddings
-    result = initialized_mock_pat.get_actigraphy_embeddings(
+    result = initialized_mock_pat.get_actigraphy_embeddings()
     patient_id=patient_id,
     readings=sample_readings,
     start_time=start_time,
     end_time=end_time,
     sampling_rate_hz=sampling_rate_hz
-    )
+(    )
         
         # Verify result
     assert "embedding_id" in result
@@ -233,50 +233,50 @@ class TestMockPAT:
         # Verify the embedding is stored
     embedding_id = result["embedding_id"]
     assert embedding_id in initialized_mock_pat._embeddings
-    def test_get_actigraphy_embeddings_validation_error(:
+    def test_get_actigraphy_embeddings_validation_error(:)
         self,
                                 initialized_mock_pat: MockPATService,
                                 sample_readings: List[Dict[str, Any]]
-                                ) -> None:
+(                                ) -> None:
         """Test embedding generation with invalid parameters."""
         # Test empty patient_id
                                 with pytest.raises(ValidationError):
-        initialized_mock_pat.get_actigraphy_embeddings(
+        initialized_mock_pat.get_actigraphy_embeddings()
                                 patient_id="",
                                 readings=sample_readings,
                                 start_time="2025-03-28T14:00:00Z",
                                 end_time="2025-03-28T14:30:00Z",
                                 sampling_rate_hz=10.0
-                                )
+(                                )
         
         # Test empty readings
     with pytest.raises(ValidationError):
-    initialized_mock_pat.get_actigraphy_embeddings(
+    initialized_mock_pat.get_actigraphy_embeddings()
     patient_id="patient123",
     readings=[],
     start_time="2025-03-28T14:00:00Z",
     end_time="2025-03-28T14:30:00Z",
     sampling_rate_hz=10.0
-    )
+(    )
         
         # Test invalid sampling rate
     with pytest.raises(ValidationError):
-    initialized_mock_pat.get_actigraphy_embeddings(
+    initialized_mock_pat.get_actigraphy_embeddings()
     patient_id="patient123",
     readings=sample_readings,
     start_time="2025-03-28T14:00:00Z",
     end_time="2025-03-28T14:30:00Z",
     sampling_rate_hz=0.0
-    )
-    def test_get_analysis_by_id(:
+(    )
+    def test_get_analysis_by_id(:)
         self,
                                     initialized_mock_pat: MockPATService,
                                     sample_readings: List[Dict[str, Any]],
                                     sample_device_info: Dict[str, Any]
-                                    ) -> None:
+(                                    ) -> None:
         """Test retrieving an analysis by ID."""
         # Create an analysis first
-                                    analysis = initialized_mock_pat.analyze_actigraphy(
+                                    analysis = initialized_mock_pat.analyze_actigraphy()
                                     patient_id="patient123",
                                     readings=sample_readings,
                                     start_time="2025-03-28T14:00:00Z",
@@ -284,7 +284,7 @@ class TestMockPAT:
                                     sampling_rate_hz=10.0,
                                     device_info=sample_device_info,
                                     analysis_types=["activity_level_analysis"]
-                                    )
+(                                    )
                                     analysis_id = analysis["analysis_id"]
         
         # Retrieve the analysis
@@ -298,17 +298,17 @@ class TestMockPAT:
         """Test retrieving a non-existent analysis."""
                                         with pytest.raises(ResourceNotFoundError):
         initialized_mock_pat.get_analysis_by_id("nonexistent_id")
-    def test_get_patient_analyses(:
+    def test_get_patient_analyses(:)
         self,
                                             initialized_mock_pat: MockPATService,
                                             sample_readings: List[Dict[str, Any]],
                                             sample_device_info: Dict[str, Any]
-                                            ) -> None:
+(                                            ) -> None:
         """Test retrieving analyses for a patient."""
         # Create analyses for patient123
                                             patient_id = "patient123"
                                             for _ in range(3):
-        initialized_mock_pat.analyze_actigraphy(
+        initialized_mock_pat.analyze_actigraphy()
                                             patient_id=patient_id,
                                             readings=sample_readings,
                                             start_time="2025-03-28T14:00:00Z",
@@ -316,11 +316,11 @@ class TestMockPAT:
                                             sampling_rate_hz=10.0,
                                             device_info=sample_device_info,
                                             analysis_types=["activity_level_analysis"]
-                                            )
+(                                            )
         
         # Create analyses for patient456
     for _ in range(2):
-    initialized_mock_pat.analyze_actigraphy(
+    initialized_mock_pat.analyze_actigraphy()
     patient_id="patient456",
     readings=sample_readings,
     start_time="2025-03-28T14:00:00Z",
@@ -328,14 +328,14 @@ class TestMockPAT:
     sampling_rate_hz=10.0,
     device_info=sample_device_info,
     analysis_types=["activity_level_analysis"]
-    )
+(    )
         
         # Retrieve analyses for patient123
-    result = initialized_mock_pat.get_patient_analyses(
+    result = initialized_mock_pat.get_patient_analyses()
     patient_id=patient_id,
     limit=10,
     offset=0
-    )
+(    )
         
         # Verify result
     assert "analyses" in result
@@ -347,20 +347,20 @@ class TestMockPAT:
     assert result["pagination"]["has_more"] is False
         
         # Test pagination
-    result = initialized_mock_pat.get_patient_analyses(
+    result = initialized_mock_pat.get_patient_analyses()
     patient_id=patient_id,
     limit=2,
     offset=0
-    )
+(    )
     assert len(result["analyses"]) == 2
     assert result["pagination"]["total"] == 3
     assert result["pagination"]["has_more"] is True
         
-    result = initialized_mock_pat.get_patient_analyses(
+    result = initialized_mock_pat.get_patient_analyses()
     patient_id=patient_id,
     limit=2,
     offset=2
-    )
+(    )
     assert len(result["analyses"]) == 1
     assert result["pagination"]["total"] == 3
     assert result["pagination"]["has_more"] is False
@@ -379,18 +379,18 @@ class TestMockPAT:
     assert "active" in result
     assert isinstance(result["capabilities"], list)
     assert "activity_level_analysis" in result["capabilities"]
-    def test_integrate_with_digital_twin(:
+    def test_integrate_with_digital_twin(:)
         self,
                                                     initialized_mock_pat: MockPATService,
                                                     sample_readings: List[Dict[str, Any]],
                                                     sample_device_info: Dict[str, Any]
-                                                    ) -> None:
+(                                                    ) -> None:
         """Test integration with a digital twin profile."""
         # Create an analysis first
                                                     patient_id = "patient123"
                                                     profile_id = "profile123"
         
-    analysis = initialized_mock_pat.analyze_actigraphy(
+    analysis = initialized_mock_pat.analyze_actigraphy()
     patient_id=patient_id,
     readings=sample_readings,
     start_time="2025-03-28T14:00:00Z",
@@ -398,15 +398,15 @@ class TestMockPAT:
     sampling_rate_hz=10.0,
     device_info=sample_device_info,
     analysis_types=["activity_level_analysis", "sleep_analysis"]
-    )
+(    )
     analysis_id = analysis["analysis_id"]
         
         # Integrate with digital twin
-    result = initialized_mock_pat.integrate_with_digital_twin(
+    result = initialized_mock_pat.integrate_with_digital_twin()
     patient_id=patient_id,
     profile_id=profile_id,
     analysis_id=analysis_id
-    )
+(    )
         
         # Verify result
     assert "integration_id" in result
@@ -417,30 +417,30 @@ class TestMockPAT:
     assert "insights" in result
     assert "profile_update" in result
     assert len(result["insights"]) > 0
-    assert all(
+    assert all()
     key in result["profile_update"]
     for key in ["updated_aspects", "confidence_score", "updated_at"]:
-    )
-    def test_integrate_with_digital_twin_resource_not_found(:
+    (    )
+    def test_integrate_with_digital_twin_resource_not_found(:)
         self,
                                                         initialized_mock_pat: MockPATService
-                                                        ) -> None:
+(                                                        ) -> None:
         """Test integration with a non-existent analysis."""
                                                         with pytest.raises(ResourceNotFoundError):
-        initialized_mock_pat.integrate_with_digital_twin(
+        initialized_mock_pat.integrate_with_digital_twin()
                                                         patient_id="patient123",
                                                         profile_id="profile123",
                                                         analysis_id="nonexistent_id"
-                                                        )
-    def test_integrate_with_digital_twin_authorization_error(:
+(                                                        )
+    def test_integrate_with_digital_twin_authorization_error(:)
         self,
                                                             initialized_mock_pat: MockPATService,
                                                             sample_readings: List[Dict[str, Any]],
                                                             sample_device_info: Dict[str, Any]
-                                                            ) -> None:
+(                                                            ) -> None:
         """Test integration with an analysis from a different patient."""
         # Create an analysis for patient123
-                                                            analysis = initialized_mock_pat.analyze_actigraphy(
+                                                            analysis = initialized_mock_pat.analyze_actigraphy()
                                                             patient_id="patient123",
                                                             readings=sample_readings,
                                                             start_time="2025-03-28T14:00:00Z",
@@ -448,38 +448,38 @@ class TestMockPAT:
                                                             sampling_rate_hz=10.0,
                                                             device_info=sample_device_info,
                                                             analysis_types=["activity_level_analysis"]
-                                                            )
+(                                                            )
                                                             analysis_id = analysis["analysis_id"]
         
         # Try to integrate with a different patient
     with pytest.raises(AuthorizationError):
-    initialized_mock_pat.integrate_with_digital_twin(
+    initialized_mock_pat.integrate_with_digital_twin()
     patient_id="different_patient",
     profile_id="profile123",
     analysis_id=analysis_id
-    )
+(    )
     def test_integration_validation_error(self, initialized_mock_pat: MockPATService) -> None:
         """Test integration with invalid parameters."""
         # Test empty patient_id
                                                                 with pytest.raises(ValidationError):
-        initialized_mock_pat.integrate_with_digital_twin(
+        initialized_mock_pat.integrate_with_digital_twin()
                                                                 patient_id="",
                                                                 profile_id="profile123",
                                                                 analysis_id="analysis123"
-                                                                )
+(                                                                )
         
         # Test empty profile_id
     with pytest.raises(ValidationError):
-    initialized_mock_pat.integrate_with_digital_twin(
+    initialized_mock_pat.integrate_with_digital_twin()
     patient_id="patient123",
     profile_id="",
     analysis_id="analysis123"
-    )
+(    )
         
         # Test empty analysis_id
     with pytest.raises(ValidationError):
-    initialized_mock_pat.integrate_with_digital_twin(
+    initialized_mock_pat.integrate_with_digital_twin()
     patient_id="patient123",
     profile_id="profile123",
     analysis_id=""
-    )
+(    )

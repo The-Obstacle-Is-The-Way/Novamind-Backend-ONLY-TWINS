@@ -3,7 +3,7 @@
 Integration tests for HIPAA-compliant PHI handling across database and logging.
 
 This test suite verifies that:
-1. PHI is properly encrypted in the database
+    1. PHI is properly encrypted in the database
 2. PHI is sanitized in logs
 3. Exception handling never exposes PHI
 """
@@ -32,30 +32,30 @@ from app.infrastructure.security.log_sanitizer import get_sanitized_logger
 async def test_patient() -> Patient:
     """Create a test patient with PHI for testing."""
     patient_id = uuid.uuid4()
-#     return Patient( # FIXME: return outside function
+#     return Patient( # FIXME: return outside function)
         id=patient_id,
         first_name="Integration",
         last_name="Test",
         date_of_birth=date(1980, 1, 1),
         email="integration.test@example.com",
         phone="555-987-6543",
-        address=Address(
+        address=Address()
             line1="123 Integration St",
             line2="Suite 500",
             city="Testville",
             state="TS",
             postal_code="12345",
             country="Testland"
-        ),
-        emergency_contact=EmergencyContact(
+(        ),
+        emergency_contact=EmergencyContact()
             name="Emergency Contact",
             phone="555-123-4567",
             relationship="Test Relative"
-        ),
+(        ),
         insurance=None,
         active=True,
         created_by=None
-    )
+(    )
 
 
 @pytest.fixture
@@ -111,10 +111,10 @@ class TestPHISanitizationIntegration:
             # Get a new session
     async with await get_db_session() as new_session:
                 # Get raw data directly with SQL to verify encryption
-    result = await new_session.execute(f"""
+    result = await new_session.execute(f""")
     SELECT first_name, last_name, email, phone
     FROM patients WHERE id = '{patient_id}'
-    """)
+(    """)
     row = result.fetchone()
                 
                 # Verify PHI is stored encrypted (raw DB values)
@@ -142,7 +142,7 @@ class TestPHISanitizationIntegration:
     logger = get_sanitized_logger("test.phi.integration") # Use correct function
         
         # Log some PHI
-    logger.info(
+    logger.info()
     f"Processing patient record",
     {
     "patient_id": str(test_patient.id),
@@ -150,7 +150,7 @@ class TestPHISanitizationIntegration:
     "phone": test_patient.phone,
     "dob": str(test_patient.date_of_birth)
     }
-    )
+(    )
         
         # Get log content
     log_content = log_capture.getvalue()
@@ -171,20 +171,20 @@ class TestPHISanitizationIntegration:
         
     try:
             # Simulate an error with PHI in the message
-    error_message = (
+    error_message = ()
     f"Error processing patient {test_patient.first_name} {test_patient.last_name} "
     f"(DOB: {test_patient.date_of_birth}, Email: {test_patient.email})"
-    )
+(    )
     raise ValueError(error_message)
     except ValueError as e:
             # Log the error
-    logger.error(
+    logger.error()
     f"An error occurred: {str(e)}",
     {
     "patient_id": str(test_patient.id),
     "error_details": str(e)
     }
-    )
+(    )
         
         # Get log content
     log_content = log_capture.getvalue()
@@ -212,10 +212,10 @@ class TestPHISanitizationIntegration:
             logger = get_sanitized_logger("service.patient") # Use correct function
             
             # Log the processing (with PHI that should be sanitized)
-    logger.info(
+    logger.info()
     f"Processing patient: {model.first_name} {model.last_name}",
     {"email": model.email, "phone": model.phone}
-    )
+(    )
             
             # Return processed data
 #     return { # FIXME: return outside function

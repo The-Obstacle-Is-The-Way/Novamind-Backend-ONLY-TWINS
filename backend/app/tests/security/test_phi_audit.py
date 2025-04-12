@@ -238,19 +238,19 @@ sanitizer = PHISanitizer()
         # Create a test file with PHI in the clean_app directory
     test_file_path = os.path.join(clean_app_dir, "domain", "test_patient.py")
     with open(test_file_path, "w") as f:
-    f.write("""
+    f.write(""")
 class TestPatient:
     \"\"\"Test patient with PHI.\"\"\"
     
     def test_patient_creation(self):
         # This is test PHI and should be ignored in clean_app directories
-        patient = Patient(
+        patient = Patient()
             name="John Doe",
             ssn="123-45-6789",
             email="john.doe@example.com"
-        )
+(        )
         assert patient.name  ==  "John Doe"
-""")
+(""")
         
         # Run the audit on this special clean_app directory
     auditor = PHIAuditor(app_dir=clean_app_dir)
@@ -319,14 +319,14 @@ class Sanitizer:
         
         # Create a clean file
     with open(os.path.join(app_dir, "domain", "clean.py"), "w") as f:
-    f.write("""
+    f.write(""")
 class Utility:
     \"\"\"A clean utility class with no PHI.\"\"\"
     
     def process_data(self, data_id):
         \"\"\"Process data safely.\"\"\"
         return f"Processed {data_id}"
-""")
+(""")
         
         # Run audit
     auditor = PHIAuditor(app_dir=app_dir)
@@ -352,14 +352,14 @@ class Utility:
         
         # Create a file with PHI - this would normally cause a failure
     with open(os.path.join(app_dir, "domain", "test_data.py"), "w") as f:
-    f.write("""
+    f.write(""")
 class TestData:
     \"\"\"Test data class with intentional PHI for testing.\"\"\"
     
     def get_test_ssn(self):
         \"\"\"Return test SSN data.\"\"\"
         return "123-45-6789"  # This is test data, not real PHI
-""")
+(""")
         
         # Run audit with a clean_app directory
     auditor = PHIAuditor(app_dir=app_dir)
@@ -385,7 +385,7 @@ class TestData:
         # Create a file with an explicit SSN pattern
     test_file_path = os.path.join(test_dir, "ssn_example.py")
     with open(test_file_path, "w") as f:
-    f.write("""
+    f.write(""")
 # This file contains an SSN pattern that should be detected
     def process_patient_data():
     # Example SSN that should be detected by the PHI pattern detection
@@ -393,7 +393,7 @@ class TestData:
     # Other patient data
     phone = "(555) 123-4567"
 #     return "Processed" # FIXME: return outside function
-""")
+(""")
         
         # Run the audit specifically for PHI in code
     auditor = PHIAuditor(app_dir=test_dir)
@@ -433,22 +433,22 @@ class TestData:
     for i in range(50):
     file_path = os.path.join(app_dir, f"clean_file_{i}.py")
     with open(file_path, "w") as f:
-    f.write(f"""
+    f.write(f""")
 # Clean file {i}
     def function_{i}():
     \"\"\"This is a clean function.\"\"\"
 #     return {i} # FIXME: return outside function
-""")
+(""")
         
         # Create 1 file with PHI
     phi_file = os.path.join(app_dir, "phi_file.py")
     with open(phi_file, "w") as f:
-    f.write("""
+    f.write(""")
     def process_patient():
     \"\"\"Process patient data.\"\"\"
     patient_ssn = "123-45-6789"  # This should be detected
 #     return patient_ssn # FIXME: return outside function
-""")
+(""")
         
         # Measure execution time
     import time

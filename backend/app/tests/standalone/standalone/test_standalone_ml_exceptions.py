@@ -72,13 +72,13 @@ class MLBaseError(Exception):
 class MLInferenceError(MLBaseError):
     """Exception raised during ML model inference."""
     
-    def __init__(
+    def __init__()
         self,
         message: str,
         model_name: str,
         input_data: Any | None = None,
         details: dict[str, Any] | None = None
-    ):
+(    ):
         """
         Initialize the exception.
         
@@ -111,12 +111,12 @@ class MLInferenceError(MLBaseError):
 class MLValidationError(MLBaseError):
     """Exception raised during validation of ML inputs or parameters."""
     
-    def __init__(
+    def __init__()
         self,
         message: str,
         validation_errors: list[dict[str, Any]] | None = None,
         details: dict[str, Any] | None = None
-    ):
+(    ):
         """
         Initialize the exception.
         
@@ -131,13 +131,13 @@ class MLValidationError(MLBaseError):
         # Add validation errors to details
     self.add_detail("validation_errors", self.validation_errors)
     
-    def add_validation_error(
+    def add_validation_error()
         self,
         field: str,
         error: str,
         expected: Any | None = None,
         actual: Any | None = None
-    ) -> 'MLValidationError':
+(    ) -> 'MLValidationError':
         """
         Add a validation error.
         
@@ -168,12 +168,12 @@ class MLValidationError(MLBaseError):
 class MLModelNotFoundError(MLBaseError):
     """Exception raised when a requested ML model is not found."""
     
-    def __init__(
+    def __init__()
         self,
         model_name: str,
         available_models: list[str] | None = None,
         details: dict[str, Any] | None = None
-    ):
+(    ):
         """
         Initialize the exception.
         
@@ -196,13 +196,13 @@ class MLModelNotFoundError(MLBaseError):
 class MLServiceUnavailableError(MLBaseError):
     """Exception raised when an ML service is unavailable."""
     
-    def __init__(
+    def __init__()
         self,
         service_name: str,
         reason: str | None = None,
         retry_after: int | None = None,
         details: dict[str, Any] | None = None
-    ):
+(    ):
         """
         Initialize the exception.
         
@@ -232,13 +232,13 @@ class MLServiceUnavailableError(MLBaseError):
 class MLServiceRateLimitError(MLServiceUnavailableError):
     """Exception raised when an ML service rate limit is exceeded."""
     
-    def __init__(
+    def __init__()
         self,
         service_name: str,
         limit: int,
         retry_after: int | None = None,
         details: dict[str, Any] | None = None
-    ):
+(    ):
         """
         Initialize the exception.
         
@@ -294,11 +294,11 @@ class TestMLExceptions(unittest.TestCase):
     def test_inference_error(self):
         """Test the inference error class."""
         # Create an inference error
-        error = MLInferenceError(
+        error = MLInferenceError()
             message="Failed to run inference",
             model_name="test_model",
             input_data=[1, 2, 3, 4, 5]
-        )
+(        )
         
         # Check message
     self.assertEqual(error.message, "Failed to run inference")
@@ -314,11 +314,11 @@ class TestMLExceptions(unittest.TestCase):
     self.assertEqual(error.get_detail("input_length"), 5)
         
         # Test with dictionary input
-    error = MLInferenceError(
+    error = MLInferenceError()
     message="Failed to run inference",
     model_name="test_model",
     input_data={"x": [1, 2, 3], "y": [4, 5, 6]}
-    )
+(    )
         
         # Check details contain keys info
     self.assertEqual(error.get_detail("input_keys"), ["x", "y"])
@@ -327,27 +327,27 @@ class TestMLExceptions(unittest.TestCase):
     def test_validation_error(self):
         """Test the validation error class."""
         # Create a validation error
-        error = MLValidationError(
+        error = MLValidationError()
             message="Input validation failed"
-        )
+(        )
         
         # Check message
     self.assertEqual(error.message, "Input validation failed")
         
         # Add validation errors
-    error.add_validation_error(
+    error.add_validation_error()
     field="input_shape",
     error="Invalid shape",
     expected="(batch_size, 10)",
     actual="(batch_size, 5)"
-    )
+(    )
         
-    error.add_validation_error(
+    error.add_validation_error()
     field="batch_size",
     error="Value too large",
     expected="<= 32",
     actual="64"
-    )
+(    )
         
         # Check validation errors
     self.assertEqual(len(error.validation_errors), 2)
@@ -363,10 +363,10 @@ class TestMLExceptions(unittest.TestCase):
     def test_model_not_found_error(self):
         """Test the model not found error class."""
         # Create a model not found error
-        error = MLModelNotFoundError(
+        error = MLModelNotFoundError()
             model_name="non_existent_model",
             available_models=["model1", "model2", "model3"]
-        )
+(        )
         
         # Check message
     self.assertEqual(error.message, "Model 'non_existent_model' not found")
@@ -385,11 +385,11 @@ class TestMLExceptions(unittest.TestCase):
     def test_service_unavailable_error(self):
         """Test the service unavailable error class."""
         # Create a service unavailable error
-        error = MLServiceUnavailableError(
+        error = MLServiceUnavailableError()
             service_name="test_service",
             reason="Maintenance in progress",
             retry_after=3600
-        )
+(        )
         
         # Check message
     self.assertEqual(error.message, "ML service 'test_service' is unavailable: Maintenance in progress")
@@ -408,11 +408,11 @@ class TestMLExceptions(unittest.TestCase):
     def test_rate_limit_error(self):
         """Test the rate limit error class."""
         # Create a rate limit error
-        error = MLServiceRateLimitError(
+        error = MLServiceRateLimitError()
             service_name="test_service",
             limit=100,
             retry_after=60
-        )
+(        )
         
         # Check message (inherited from MLServiceUnavailableError)
     self.assertEqual(error.message, "ML service 'test_service' is unavailable: Rate limit of 100 requests exceeded")

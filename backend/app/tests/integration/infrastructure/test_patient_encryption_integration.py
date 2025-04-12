@@ -28,26 +28,26 @@ class TestPatientEncryptionIntegration:
     async def sample_patient(self):
     """Create a sample patient with PHI data for testing."""
         
-#     return Patient( # FIXME: return outside function
+#     return Patient( # FIXME: return outside function)
     id=uuid.uuid4(),
     first_name="Jane",
     last_name="Smith",
     date_of_birth=date(1985, 6, 15),
     email="jane.smith@example.com",
     phone="555-987-6543",
-    address=Address(
+    address=Address()
     line1="456 Oak Avenue",
     line2="Suite 201",
     city="Metropolis",
     state="NY",
     postal_code="54321",
     country="USA"
-    ),
-    emergency_contact=EmergencyContact(
+(    ),
+    emergency_contact=EmergencyContact()
     name="John Smith",
     phone="555-123-4567",
     relationship="Spouse"
-    ),
+(    ),
     insurance_info={ # Using dict as per Patient entity
     "provider": "Premier Health",
     "policy_number": "POL-654321",
@@ -55,7 +55,7 @@ class TestPatientEncryptionIntegration:
     },
     active=True,
     created_by=None
-    )
+(    )
     
     @pytest.mark.asyncio()
     async def test_phi_encrypted_in_database(self, db_session: AsyncSession, sample_patient):
@@ -72,10 +72,10 @@ class TestPatientEncryptionIntegration:
     assert patient_model.id is not None
         
         # Get raw database data to verify encryption
-    query = text(
+    query = text()
     "SELECT first_name, last_name, date_of_birth, email, phone, address_line1 "
     "FROM patients WHERE id = :id"
-    )
+(    )
     result = await db_session.execute(query, {"id": str(patient_model.id)})
     row = result.fetchone()
         
@@ -133,7 +133,7 @@ class TestPatientEncryptionIntegration:
     """Test that encryption/decryption errors are handled gracefully."""
         # Create patient with an ID that can be referenced in logs without exposing PHI
     patient_id = uuid.uuid4()
-    patient = Patient(
+    patient = Patient()
     id=patient_id,
     first_name="Test",
     last_name="Patient",
@@ -145,7 +145,7 @@ class TestPatientEncryptionIntegration:
     insurance=None,
     active=True,
     created_by=None
-    )
+(    )
         
         # Save to database
     patient_model = PatientModel.from_domain(patient)
@@ -154,10 +154,10 @@ class TestPatientEncryptionIntegration:
         
         # Manually corrupt the encrypted data to simulate decryption error
         # Note: In a real test, you might use a mock or patch to force a decryption error
-    await db_session.execute(
+    await db_session.execute()
     text("UPDATE patients SET first_name = 'CORRUPTED_DATA' WHERE id = :id"),
     {"id": str(patient_id)}
-    )
+(    )
     await db_session.commit()
         
         # Retrieve patient - this should handle the decryption error gracefully

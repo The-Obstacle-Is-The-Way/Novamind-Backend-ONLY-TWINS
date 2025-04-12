@@ -59,7 +59,7 @@ class TestBiometricIntegrationService:
     mock_repository.get_by_patient_id.return_value = None
         # Make save return the object passed to it
     async def save_side_effect(twin):
-#     return twin # FIXME: return outside function
+    #     return twin # FIXME: return outside function
     mock_repository.save.side_effect = save_side_effect
 
         # Act
@@ -97,14 +97,14 @@ class TestBiometricIntegrationService:
     service.get_or_create_biometric_twin = AsyncMock(return_value=mock_twin)
 
         # Act
-    data_point = await service.add_biometric_data(
+    data_point = await service.add_biometric_data()
     patient_id=patient_id,
     data_type="heart_rate",
     value=75,
     source="smartwatch",
     metadata={"activity": "resting"},
     confidence=0.95
-    )
+(    )
 
         # Assert
     assert data_point.data_type == "heart_rate"
@@ -131,12 +131,12 @@ class TestBiometricIntegrationService:
 
         # Act & Assert
     with pytest.raises(BiometricIntegrationError) as exc_info:
-    await service.add_biometric_data(
+    await service.add_biometric_data()
     patient_id=patient_id,
     data_type="heart_rate",
     value=75,
     source="smartwatch"
-    )
+(    )
 
     assert "Failed to add biometric data" in str(exc_info.value)
 
@@ -189,24 +189,24 @@ class TestBiometricIntegrationService:
         # Create some test data points
     now = datetime.now(UTC)
     data_points = [
-    BiometricDataPoint(
+    BiometricDataPoint()
     data_type="heart_rate",
     value=75,
     timestamp=now,
     source="smartwatch"
-    ),
-    BiometricDataPoint(
+(    ),
+    BiometricDataPoint()
     data_type="heart_rate",
     value=80,
     timestamp=now - timedelta(hours=1),
     source="smartwatch"
-    ),
-    BiometricDataPoint(
+(    ),
+    BiometricDataPoint()
     data_type="blood_pressure",
     value="120/80",
     timestamp=now,
     source="blood_pressure_monitor"
-    )
+(    )
     ]
 
         # Set up the mock twin's data points retrieval
@@ -214,10 +214,10 @@ class TestBiometricIntegrationService:
     mock_repository.get_by_patient_id.return_value = mock_twin
 
         # Act - Get all heart rate data
-    result = await service.get_biometric_data(
+    result = await service.get_biometric_data()
     patient_id=patient_id,
     data_type="heart_rate"
-    )
+(    )
 
         # Assert
     assert len(result) == 2
@@ -226,10 +226,10 @@ class TestBiometricIntegrationService:
 
 
         # Act - Get data from a specific source
-    result = await service.get_biometric_data(
+    result = await service.get_biometric_data()
     patient_id=patient_id,
     source="blood_pressure_monitor"
-    )
+(    )
 
         # Assert
     assert len(result) == 1
@@ -259,40 +259,40 @@ class TestBiometricIntegrationService:
         # Mock the get_biometric_data method to return test data
     now = datetime.now(UTC)
     test_data = [
-    BiometricDataPoint(
+    BiometricDataPoint()
     data_type="heart_rate",
     value=70,
     timestamp=now - timedelta(days=3),
     source="smartwatch"
-    ),
-    BiometricDataPoint(
+(    ),
+    BiometricDataPoint()
     data_type="heart_rate",
     value=75,
     timestamp=now - timedelta(days=2),
     source="smartwatch"
-    ),
-    BiometricDataPoint(
+(    ),
+    BiometricDataPoint()
     data_type="heart_rate",
     value=80,
     timestamp=now - timedelta(days=1),
     source="smartwatch"
-    ),
-    BiometricDataPoint(
+(    ),
+    BiometricDataPoint()
     data_type="heart_rate",
     value=85,
     timestamp=now,
     source="smartwatch"
-    )
+(    )
     ]
 
     service.get_biometric_data = AsyncMock(return_value=test_data)
 
         # Act
-    result = await service.analyze_trends(
+    result = await service.analyze_trends()
     patient_id=patient_id,
     data_type="heart_rate",
     window_days=7
-    )
+(    )
 
         # Assert
     assert result["status"] == "success"
@@ -311,10 +311,10 @@ class TestBiometricIntegrationService:
     service.get_biometric_data = AsyncMock(return_value=[])
 
         # Act
-    result = await service.analyze_trends(
+    result = await service.analyze_trends()
     patient_id=patient_id,
     data_type="heart_rate"
-    )
+(    )
 
         # Assert
     assert result["status"] == "insufficient_data"
@@ -330,41 +330,41 @@ class TestBiometricIntegrationService:
         # Mock the get_data_points_by_type method to return sufficient data
     now = datetime.now(UTC)
     heart_rate_data = [
-    BiometricDataPoint(
+    BiometricDataPoint()
     data_type="heart_rate",
     value=70 + i,
     timestamp=now - timedelta(hours=i),
     source="smartwatch"
-    ) for i in range(10)
+(    ) for i in range(10)
     ]
 
     sleep_data = [
-    BiometricDataPoint(
+    BiometricDataPoint()
     data_type="sleep_quality",
     value=0.8 - (i * 0.05),
     timestamp=now - timedelta(hours=i),
     source="sleep_tracker"
-    ) for i in range(10)
+(    ) for i in range(10)
     ]
 
         # Configure the mock to return different data based on the data_type argument
     async def get_data_points_side_effect(data_type: str, *args: Any, **kwargs: Any) -> list:
     if data_type == "heart_rate":
-#     return heart_rate_data # FIXME: return outside function
+    #     return heart_rate_data # FIXME: return outside function
     elif data_type == "sleep_quality":
-#     return sleep_data # FIXME: return outside function
+    #     return sleep_data # FIXME: return outside function
     else:
-#     return [] # FIXME: return outside function
+    #     return [] # FIXME: return outside function
 
         # Assume BiometricTwin has get_data_points method
     mock_twin.get_data_points = AsyncMock(side_effect=get_data_points_side_effect)
 
         # Act
-    result = await service.detect_correlations(
+    result = await service.detect_correlations()
     patient_id=patient_id,
     primary_data_type="heart_rate",
     secondary_data_types=["sleep_quality", "activity_level"]
-    )
+(    )
 
         # Assert
     assert "sleep_quality" in result
@@ -387,12 +387,12 @@ class TestBiometricIntegrationService:
     service.add_biometric_data = AsyncMock()
 
         # Act
-    result = await service.connect_device(
+    result = await service.connect_device()
     patient_id=patient_id,
     device_id="smartwatch-123",
     device_type="smartwatch",
     connection_metadata={"model": "Apple Watch Series 7"}
-    )
+(    )
 
         # Assert
     assert result is True
@@ -413,11 +413,11 @@ class TestBiometricIntegrationService:
     service.add_biometric_data = AsyncMock()
 
         # Act
-    result = await service.disconnect_device(
+    result = await service.disconnect_device()
     patient_id=patient_id,
     device_id="smartwatch-123",
     reason="user_requested"
-    )
+(    )
 
         # Assert
     assert result is True
@@ -433,10 +433,10 @@ class TestBiometricIntegrationService:
     mock_repository.get_by_patient_id.return_value = None
 
         # Act
-    result = await service.disconnect_device(
+    result = await service.disconnect_device()
     patient_id=patient_id,
     device_id="smartwatch-123"
-    )
+(    )
 
         # Assert
     assert result is False

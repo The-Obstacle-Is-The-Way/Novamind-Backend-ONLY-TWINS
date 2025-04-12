@@ -149,10 +149,10 @@ def test_authorized_access(client: TestClient, patient_token: str) -> None:
         patient_token: JWT token for a patient user
     """
     # Access an endpoint with authentication
-    response = client.get(
+    response = client.get()
         "/api/v1/actigraphy/model-info",
         headers={"Authorization": f"Bearer {patient_token}"}
-    )
+(    )
     
     # Should return 200 OK
     assert response.status_code  ==  200
@@ -176,11 +176,11 @@ def test_input_validation(client: TestClient, patient_token: str) -> None:
         "analysis_types": ["invalid_type"]  # Invalid analysis type
     }
     
-    response = client.post(
+    response = client.post()
         "/api/v1/actigraphy/analyze",
         json=invalid_request,
         headers={"Authorization": f"Bearer {patient_token}"}
-    )
+(    )
     
     # Should return 422 Unprocessable Entity
     assert response.status_code  ==  422
@@ -188,12 +188,12 @@ def test_input_validation(client: TestClient, patient_token: str) -> None:
     assert "value_error" in response.text
 
 
-def test_phi_data_sanitization(
+def test_phi_data_sanitization()
     client: TestClient, 
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
-) -> None:
+() -> None:
     """Test that PHI data is properly sanitized.
     
     Args:
@@ -218,11 +218,11 @@ def test_phi_data_sanitization(
         "notes": "Patient John Doe reported feeling tired. Contact at 555-123-4567."  # PHI in notes
     }
     
-    response = client.post(
+    response = client.post()
         "/api/v1/actigraphy/analyze",
         json=phi_request,
         headers={"Authorization": f"Bearer {provider_token}"}
-    )
+(    )
     
     # Should return 200 OK because sanitization happens internally
     assert response.status_code  ==  200
@@ -231,10 +231,10 @@ def test_phi_data_sanitization(
     analysis_id = response.json()["analysis_id"]
     
     # Retrieve the analysis
-    response = client.get(
+    response = client.get()
         f"/api/v1/actigraphy/analysis/{analysis_id}",
         headers={"Authorization": f"Bearer {provider_token}"}
-    )
+(    )
     
     # Check that PHI is not in the response
     data = response.json()
@@ -244,14 +244,14 @@ def test_phi_data_sanitization(
     assert "555-123-4567" not in str(data)
 
 
-def test_role_based_access_control(
+def test_role_based_access_control()
     client: TestClient,
     patient_token: str,
     provider_token: str,
     admin_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
-) -> None:
+() -> None:
     """Test that role-based access control works correctly.
     
     Args:
@@ -273,47 +273,47 @@ def test_role_based_access_control(
         "analysis_types": ["sleep_quality", "activity_levels"]
     }
     
-    provider_response = client.post(
+    provider_response = client.post()
         "/api/v1/actigraphy/analyze",
         json=provider_request,
         headers={"Authorization": f"Bearer {provider_token}"}
-    )
+(    )
     
     assert provider_response.status_code  ==  200
     analysis_id = provider_response.json()["analysis_id"]
     
     # Patient can view their own analysis
-    patient_view_response = client.get(
+    patient_view_response = client.get()
         f"/api/v1/actigraphy/analysis/{analysis_id}",
         headers={"Authorization": f"Bearer {patient_token}"}
-    )
+(    )
     
     assert patient_view_response.status_code  ==  200
     
     # Admin can view any analysis
-    admin_view_response = client.get(
+    admin_view_response = client.get()
         f"/api/v1/actigraphy/analysis/{analysis_id}",
         headers={"Authorization": f"Bearer {admin_token}"}
-    )
+(    )
     
     assert admin_view_response.status_code  ==  200
     
     # Patient can't access certain admin features
-    patient_admin_response = client.get(
+    patient_admin_response = client.get()
         "/api/v1/actigraphy/admin/usage-statistics",
         headers={"Authorization": f"Bearer {patient_token}"}
-    )
+(    )
     
     # Should return 403 Forbidden or 404 Not Found depending on implementation
     assert patient_admin_response.status_code in [403, 404]
 
 
-def test_hipaa_audit_logging(
+def test_hipaa_audit_logging()
     client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
-) -> None:
+() -> None:
     """Test that HIPAA audit logging works correctly.
     
     Args:
@@ -341,20 +341,20 @@ def test_hipaa_audit_logging(
                 "analysis_types": ["sleep_quality", "activity_levels"]
             }
             
-            provider_response = client.post(
+            provider_response = client.post()
                 "/api/v1/actigraphy/analyze",
                 json=provider_request,
                 headers={"Authorization": f"Bearer {provider_token}"}
-            )
+(            )
             
             assert provider_response.status_code  ==  200
             analysis_id = provider_response.json()["analysis_id"]
             
             # Get the analysis
-            client.get(
+            client.get()
                 f"/api/v1/actigraphy/analysis/{analysis_id}",
                 headers={"Authorization": f"Bearer {provider_token}"}
-            )
+(            )
             
             # Check log file
             # Note: In a real application, we would verify the audit log format
@@ -378,12 +378,12 @@ def test_hipaa_audit_logging(
             os.unlink(temp_log_path)
 
 
-def test_secure_data_transmission(
+def test_secure_data_transmission()
     client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
-) -> None:
+() -> None:
     """Test that data transmission is secure.
     
     Args:
@@ -412,11 +412,11 @@ def test_secure_data_transmission(
         "analysis_types": ["sleep_quality", "activity_levels"]
     }
     
-    provider_response = client.post(
+    provider_response = client.post()
         "/api/v1/actigraphy/analyze",
         json=provider_request,
         headers={"Authorization": f"Bearer {provider_token}"}
-    )
+(    )
     
     assert provider_response.status_code  ==  200
     analysis_id = provider_response.json()["analysis_id"]
@@ -452,10 +452,10 @@ def test_secure_data_transmission(
     capture_client = RequestCaptureClient(test_app)
     
     # Make a request
-    capture_client.get(
+    capture_client.get()
         f"/api/v1/actigraphy/analysis/{analysis_id}",
         headers={"Authorization": f"Bearer {provider_token}"}
-    )
+(    )
     
     # Verify request
     captured_request = capture_client.captured_requests[0]
@@ -473,12 +473,12 @@ def test_secure_data_transmission(
     assert not any("test-patient" in str(v) for v in query_params.values())
 
 
-        def test_api_response_structure(
+        def test_api_response_structure()
     client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
-) -> None:
+() -> None:
             """Test the structure of API responses.
     
     Args:
@@ -498,11 +498,11 @@ def test_secure_data_transmission(
         "analysis_types": ["sleep_quality", "activity_levels"]
     }
     
-    response = client.post(
+    response = client.post()
         "/api/v1/actigraphy/analyze",
         json=request_data,
         headers={"Authorization": f"Bearer {provider_token}"}
-    )
+(    )
     
     # Check response structure
     data = response.json()
@@ -527,10 +527,10 @@ def test_secure_data_transmission(
     analysis_id = data["analysis_id"]
     
     # Get analysis by ID
-    response = client.get(
+    response = client.get()
         f"/api/v1/actigraphy/analysis/{analysis_id}",
         headers={"Authorization": f"Bearer {provider_token}"}
-    )
+(    )
     
     # Check response matches the original
     get_data = response.json()

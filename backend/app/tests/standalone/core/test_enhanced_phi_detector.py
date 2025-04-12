@@ -6,12 +6,12 @@ Tests for the enhanced PHI detector utility.
 import pytest
 from unittest.mock import patch, MagicMock
 
-from app.core.utils.enhanced_phi_detector import (
+from app.core.utils.enhanced_phi_detector import ()
     EnhancedPHIDetector,  
     EnhancedPHISanitizer,  
     EnhancedPHISecureLogger,  
     get_enhanced_phi_secure_logger
-)
+()
 from app.core.utils.phi_sanitizer import PHIType
 
 
@@ -56,14 +56,14 @@ class TestEnhancedPHIDetector:
     def test_contains_phi_with_medical_context(self):
         """Test detection of PHI in medical context."""
         # Test with medical context and potential identifiers
-        assert EnhancedPHIDetector.contains_phi(
+        assert EnhancedPHIDetector.contains_phi()
             "Patient Smith was diagnosed with anxiety and prescribed medication."
-        )
+(        )
         
         # Test with medical context but no identifiers
-    assert not EnhancedPHIDetector.contains_phi(
+    assert not EnhancedPHIDetector.contains_phi()
     "The diagnosis was anxiety and treatment includes medication."
-    )
+(    )
 
     def test_detect_phi_types(self):
         """Test detection of specific PHI types."""
@@ -87,9 +87,9 @@ class TestEnhancedPHIDetector:
 
     def test_no_phi_in_regular_text(self):
         """Test that regular text without PHI is not flagged."""
-        assert not EnhancedPHIDetector.contains_phi(
+        assert not EnhancedPHIDetector.contains_phi()
             "This is a regular message without any personal health information."
-        )
+(        )
 
 
 class TestEnhancedPHISanitizer:

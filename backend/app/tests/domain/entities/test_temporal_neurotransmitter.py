@@ -10,29 +10,29 @@ import pytest
 import numpy as np
 from typing import Dict, List, Set, Tuple
 
-from app.domain.entities.digital_twin_enums import (
+from app.domain.entities.digital_twin_enums import ()
     BrainRegion,   
     Neurotransmitter,   
     ClinicalSignificance,  
     ConnectionType
-)
+()
 from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
 from app.domain.entities.temporal_sequence import TemporalSequence
 from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
-from app.domain.entities.neurotransmitter_mapping import (
+from app.domain.entities.neurotransmitter_mapping import ()
     NeurotransmitterMapping,   
     ReceptorProfile,  
     ReceptorType,  
     ReceptorSubtype,  
     create_default_neurotransmitter_mapping
-)
-from app.domain.entities.temporal_neurotransmitter_mapping import (
+()
+from app.domain.entities.temporal_neurotransmitter_mapping import ()
     extend_neurotransmitter_mapping
-)
-from app.domain.services.visualization_preprocessor import (
+()
+from app.domain.services.visualization_preprocessor import ()
     NeurotransmitterVisualizationPreprocessor,  
     NeurotransmitterEffectVisualizer
-)
+()
 
 
 @pytest.mark.db_required()
@@ -42,10 +42,10 @@ class TestTemporalEvents:
     def test_correlated_event_creation(self):
         """Test creation of correlated events."""
         # Create a root event
-        root_event = CorrelatedEvent(
+        root_event = CorrelatedEvent()
             event_type="test_event",
             metadata={"test_key": "test_value"}
-        )
+(        )
         
         # Verify root event properties
     assert root_event.event_type  ==  "test_event"
@@ -55,11 +55,11 @@ class TestTemporalEvents:
     assert root_event.correlation_id is not None
         
         # Create a child event
-    child_event = CorrelatedEvent.create_child_event(
+    child_event = CorrelatedEvent.create_child_event()
     parent_event=root_event,
     event_type="child_event",
     additional_data="child_data"
-    )
+(    )
         
         # Verify child event properties
     assert child_event.event_type  ==  "child_event"
@@ -74,28 +74,28 @@ class TestTemporalEvents:
         correlation_id = uuid.uuid4()
         chain = EventChain(correlation_id=correlation_id)
         
-    root_event = CorrelatedEvent(
+    root_event = CorrelatedEvent()
     event_type="root",
     correlation_id=correlation_id
-    )
+(    )
         
-    child1 = CorrelatedEvent(
+    child1 = CorrelatedEvent()
     event_type="child1",
     correlation_id=correlation_id,
     parent_event_id=root_event.id
-    )
+(    )
         
-    child2 = CorrelatedEvent(
+    child2 = CorrelatedEvent()
     event_type="child2",
     correlation_id=correlation_id,
     parent_event_id=root_event.id
-    )
+(    )
         
-    grandchild = CorrelatedEvent(
+    grandchild = CorrelatedEvent()
     event_type="grandchild",
     correlation_id=correlation_id,
     parent_event_id=child1.id
-    )
+(    )
         
         # Add events to chain
     chain.add_event(root_event)
@@ -118,10 +118,10 @@ class TestTemporalEvents:
     assert child2.id not in tree  # No children
         
         # Test error case - event with wrong correlation ID
-    wrong_event = CorrelatedEvent(
+    wrong_event = CorrelatedEvent()
     event_type="wrong",
     correlation_id=uuid.uuid4()  # Different correlation ID
-    )
+(    )
         
     with pytest.raises(ValueError):
     chain.add_event(wrong_event)
@@ -146,14 +146,14 @@ class TestTemporalSequence:
         patient_id = uuid.uuid4()
         
         # Create sequence
-    sequence = TemporalSequence(
+    sequence = TemporalSequence()
     sequence_id=uuid.uuid4(),
     feature_names=feature_names,
     timestamps=timestamps,
     values=values,
     patient_id=patient_id,
     metadata={"source": "test"}
-    )
+(    )
         
         # Verify properties
     assert sequence.sequence_length  ==  5
@@ -161,12 +161,12 @@ class TestTemporalSequence:
     assert sequence.metadata["source"] == "test"
         
         # Test factory method
-    sequence2 = TemporalSequence.create(
+    sequence2 = TemporalSequence.create()
     feature_names=feature_names,
     timestamps=timestamps,
     values=values,
     patient_id=patient_id
-    )
+(    )
         
     assert sequence2.sequence_length  ==  5
     assert sequence2.feature_dimension  ==  2
@@ -174,23 +174,23 @@ class TestTemporalSequence:
         # Test validation
     with pytest.raises(ValueError):
             # Mismatched timestamps and values
-    TemporalSequence(
+    TemporalSequence()
     sequence_id=uuid.uuid4(),
     feature_names=feature_names,
     timestamps=timestamps[:-1],  # One less timestamp
     values=values,
     patient_id=patient_id
-    )
+(    )
         
     with pytest.raises(ValueError):
             # Mismatched feature names and values
-    TemporalSequence(
+    TemporalSequence()
     sequence_id=uuid.uuid4(),
     feature_names=feature_names + ["extra"],  # One more feature
     timestamps=timestamps,
     values=values,
     patient_id=patient_id
-    )
+(    )
     
     def test_temporal_sequence_operations(self):
         """Test operations on temporal sequences."""
@@ -204,12 +204,12 @@ class TestTemporalSequence:
     for i in range(10):
     values.append([i/10.0, 1.0 - i/10.0])
         
-    sequence = TemporalSequence.create(
+    sequence = TemporalSequence.create()
     feature_names=feature_names,
     timestamps=timestamps,
     values=values,
     patient_id=uuid.uuid4()
-    )
+(    )
         
         # Test numpy conversion
     X, y = sequence.to_numpy_arrays()
@@ -254,14 +254,14 @@ class TestNeurotransmitterEffect:
     def test_neurotransmitter_effect_creation(self):
         """Test creation of neurotransmitter effects."""
         # Create a basic effect
-        effect = NeurotransmitterEffect(
+        effect = NeurotransmitterEffect()
             neurotransmitter=Neurotransmitter.DOPAMINE,
             effect_size=0.75,
             confidence_interval=(0.5, 1.0),
             p_value=0.03,
             sample_size=30,
             clinical_significance=ClinicalSignificance.MODERATE
-        )
+(        )
         
         # Verify properties
     assert effect.neurotransmitter  ==  Neurotransmitter.DOPAMINE
@@ -274,25 +274,25 @@ class TestNeurotransmitterEffect:
         # Test validation
     with pytest.raises(ValueError):
             # Invalid p-value
-    NeurotransmitterEffect(
+    NeurotransmitterEffect()
     neurotransmitter=Neurotransmitter.DOPAMINE,
     effect_size=0.75,
     confidence_interval=(0.5, 1.0),
     p_value=1.5,  # Invalid (>1.0)
     sample_size=30,
     clinical_significance=ClinicalSignificance.MODERATE
-    )
+(    )
         
     with pytest.raises(ValueError):
             # Invalid confidence interval
-    NeurotransmitterEffect(
+    NeurotransmitterEffect()
     neurotransmitter=Neurotransmitter.DOPAMINE,
     effect_size=0.75,
     confidence_interval=(1.0, 0.5),  # Reversed
     p_value=0.03,
     sample_size=30,
     clinical_significance=ClinicalSignificance.MODERATE
-    )
+(    )
     
     def test_neurotransmitter_effect_factory(self):
         """Test factory method for neurotransmitter effects."""
@@ -301,12 +301,12 @@ class TestNeurotransmitterEffect:
         intervention_data = [0.8, 0.7, 0.9, 0.8, 0.7]
         
         # Create effect using factory
-    effect = NeurotransmitterEffect.create(
+    effect = NeurotransmitterEffect.create()
     neurotransmitter=Neurotransmitter.SEROTONIN,
     raw_data=intervention_data,
     baseline_data=baseline_data,
     clinical_significance=ClinicalSignificance.MODERATE
-    )
+(    )
         
         # Verify calculated properties
     assert effect.neurotransmitter  ==  Neurotransmitter.SEROTONIN
@@ -350,11 +350,11 @@ class TestTemporalNeurotransmitterMapping:
         timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
         
         # Generate a sequence for serotonin in prefrontal cortex
-    sequence = extended_mapping.generate_temporal_sequence(
+    sequence = extended_mapping.generate_temporal_sequence()
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=Neurotransmitter.SEROTONIN,
     timestamps=timestamps
-    )
+(    )
         
         # Verify the sequence
     assert sequence.sequence_length  ==  10
@@ -365,12 +365,12 @@ class TestTemporalNeurotransmitterMapping:
     def test_predict_cascade_effect(self, extended_mapping):
         """Test prediction of cascade effects across brain regions."""
         # Simulate cascade from amygdala
-        cascade_results = extended_mapping.predict_cascade_effect(
+        cascade_results = extended_mapping.predict_cascade_effect()
             starting_region=BrainRegion.AMYGDALA,
             neurotransmitter=Neurotransmitter.SEROTONIN,
             initial_level=0.8,
             time_steps=5
-        )
+(        )
         
         # Verify the cascade results
     assert BrainRegion.AMYGDALA in cascade_results
@@ -398,13 +398,13 @@ class TestTemporalNeurotransmitterMapping:
     time_series_data = list(zip(timestamps, levels))
         
         # Analyze the temporal response
-    effect = extended_mapping.analyze_temporal_response(
+    effect = extended_mapping.analyze_temporal_response()
     patient_id=uuid.uuid4(),
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=Neurotransmitter.SEROTONIN,
     time_series_data=time_series_data,
     baseline_period=(timestamps[0], timestamps[4])
-    )
+(    )
         
         # Verify the analysis
     assert effect.neurotransmitter  ==  Neurotransmitter.SEROTONIN
@@ -420,12 +420,12 @@ class TestTemporalNeurotransmitterMapping:
         timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
         
         # Simulate treatment increasing serotonin
-    responses = extended_mapping.simulate_treatment_response(
+    responses = extended_mapping.simulate_treatment_response()
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     target_neurotransmitter=Neurotransmitter.SEROTONIN,
     treatment_effect=0.5,  # Positive effect (increase)
     timestamps=timestamps
-    )
+(    )
         
         # Verify responses
     assert Neurotransmitter.SEROTONIN in responses
@@ -493,30 +493,30 @@ class TestVisualizationPreprocessor:
         
         # Create some test effects
     effects = [
-    NeurotransmitterEffect(
+    NeurotransmitterEffect()
     neurotransmitter=Neurotransmitter.DOPAMINE,
     effect_size=0.8,
     confidence_interval=(0.6, 1.0),
     p_value=0.01,
     sample_size=40,
     clinical_significance=ClinicalSignificance.MODERATE
-    ),
-    NeurotransmitterEffect(
+(    ),
+    NeurotransmitterEffect()
     neurotransmitter=Neurotransmitter.SEROTONIN,
     effect_size=0.5,
     confidence_interval=(0.3, 0.7),
     p_value=0.04,
     sample_size=40,
     clinical_significance=ClinicalSignificance.MILD
-    ),
-    NeurotransmitterEffect(
+(    ),
+    NeurotransmitterEffect()
     neurotransmitter=Neurotransmitter.GABA,
     effect_size=-0.3,
     confidence_interval=(-0.5, -0.1),
     p_value=0.06,  # Not significant
     sample_size=40,
     clinical_significance=ClinicalSignificance.MINIMAL
-    )
+(    )
     ]
         
         # Generate comparison visualization

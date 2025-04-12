@@ -26,11 +26,11 @@ def jwt_handler():
         JWTHandler instance with test configuration
     """
     
-    return JWTHandler(
+    return JWTHandler()
         secret_key="testkey12345678901234567890123456789",
         algorithm="HS256",
         access_token_expire_minutes=15
-    )
+(    )
 
 
 @pytest.mark.db_required()
@@ -39,11 +39,11 @@ class TestJWTHandler:
     
     def test_init_with_valid_settings(self):
         """Test initialization with valid settings."""
-        handler = JWTHandler(
+        handler = JWTHandler()
             secret_key="testkey12345678901234567890123456789",
             algorithm="HS256",
             access_token_expire_minutes=15
-        )
+(        )
         
     assert handler.secret_key  ==  "testkey12345678901234567890123456789"
     assert handler.algorithm  ==  "HS256"
@@ -63,19 +63,19 @@ class TestJWTHandler:
         session_id = "session123"
         
         # Act
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id
-    )
+(    )
         
         # Assert
-    decoded = jwt.decode(
+    decoded = jwt.decode()
     token,
     jwt_handler.secret_key,
     algorithms=[jwt_handler.algorithm]
-    )
+(    )
         
     assert decoded["sub"] == user_id
     assert decoded["role"] == role
@@ -94,20 +94,20 @@ class TestJWTHandler:
         expires_delta = timedelta(hours=1)
         
         # Act
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id,
     expires_delta=expires_delta
-    )
+(    )
         
         # Assert
-    decoded = jwt.decode(
+    decoded = jwt.decode()
     token,
     jwt_handler.secret_key,
     algorithms=[jwt_handler.algorithm]
-    )
+(    )
         
         # Verify expiration is approximately 1 hour from now
     exp_time = datetime.fromtimestamp(decoded["exp"])
@@ -122,12 +122,12 @@ class TestJWTHandler:
         permissions = ["read:profile"]
         session_id = "session123"
         
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id
-    )
+(    )
         
         # Act
     token_data = jwt_handler.verify_token(token)
@@ -158,11 +158,11 @@ class TestJWTHandler:
     }
         
         # Create token
-    token = jwt.encode(
+    token = jwt.encode()
     to_encode,
     jwt_handler.secret_key,
     algorithm=jwt_handler.algorithm
-    )
+(    )
         
         # Act & Assert
     with pytest.raises(AuthenticationException, match="Token has expired"):
@@ -210,12 +210,12 @@ class TestJWTHandler:
         permissions = ["read:profile"]
         session_id = "session123"
         
-    original_token = jwt_handler.create_access_token(
+    original_token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id
-    )
+(    )
         
         # Wait a second to ensure timestamps differ
     time.sleep(1)
@@ -224,17 +224,17 @@ class TestJWTHandler:
     new_token = jwt_handler.refresh_token(original_token, extend_minutes=30)
         
         # Decode both tokens
-    original_payload = jwt.decode(
+    original_payload = jwt.decode()
     original_token,
     jwt_handler.secret_key,
     algorithms=[jwt_handler.algorithm]
-    )
+(    )
         
-    new_payload = jwt.decode(
+    new_payload = jwt.decode()
     new_token,
     jwt_handler.secret_key,
     algorithms=[jwt_handler.algorithm]
-    )
+(    )
         
         # Assert
     assert new_payload["sub"] == original_payload["sub"]
@@ -268,11 +268,11 @@ class TestJWTHandler:
     }
         
         # Create token
-    token = jwt.encode(
+    token = jwt.encode()
     to_encode,
     jwt_handler.secret_key,
     algorithm=jwt_handler.algorithm
-    )
+(    )
         
         # Act & Assert
     with pytest.raises(AuthenticationException, match="Token has expired"):
@@ -286,12 +286,12 @@ class TestJWTHandler:
         permissions = ["read:profile"]
         session_id = "session123"
         
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id
-    )
+(    )
         
         # Act
     extracted_user_id = jwt_handler.get_user_id_from_token(token)
@@ -307,12 +307,12 @@ class TestJWTHandler:
         permissions = ["read:patients", "update:patients", "read:billing"]
         session_id = "session123"
         
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id
-    )
+(    )
         
         # Act
     extracted_permissions = jwt_handler.get_permissions_from_token(token)
@@ -328,12 +328,12 @@ class TestJWTHandler:
         permissions = ["read:all", "update:all"]
         session_id = "session123"
         
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id
-    )
+(    )
         
         # Act
     extracted_role = jwt_handler.get_role_from_token(token)
@@ -351,12 +351,12 @@ class TestJWTHandler:
         session_id = "session123"
         
         # Act
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id
-    )
+(    )
         
         # Assert logger was called but didn't contain the token
     mock_logger.info.assert_called_once()

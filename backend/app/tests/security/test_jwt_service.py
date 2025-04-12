@@ -56,10 +56,10 @@ class TestJWTService:
         token = jwt_service.create_access_token(user_data)
         
         # Decode without verification to check contents
-    decoded = jwt.decode(
+    decoded = jwt.decode()
     token,
     options={"verify_signature": False}
-    )
+(    )
         
         # Assert
     assert decoded["sub"] == user_data["user_id"]
@@ -77,10 +77,10 @@ class TestJWTService:
         token = jwt_service.create_access_token(user_data)
         
         # Decode without verification to check contents
-    decoded = jwt.decode(
+    decoded = jwt.decode()
     token,
     options={"verify_signature": False}
-    )
+(    )
         
         # Assert expiration is properly set (15 minutes from now, +/- 10 seconds for test timing)
     expected_exp = datetime.now(UTC) + timedelta(minutes=15)

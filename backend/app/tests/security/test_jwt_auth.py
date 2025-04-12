@@ -8,7 +8,7 @@ that protect the API endpoints according to HIPAA requirements for access contro
 (§164.308(a)(4)(ii)(B) - Access authorization).
 
 The tests validate:
-1. JWT token validation
+    1. JWT token validation
 2. Role-based access control
 3. Token expiration and refresh
 4. Authentication failure handling
@@ -126,11 +126,11 @@ class TestJWTAuthentication:
         """Test that tokens are created with correct claims"""
         user = TEST_USERS["doctor"]
         
-    token = auth_service.create_token({
+    token = auth_service.create_token({)
     "sub": user["user_id"],
     "role": user["role"],
     "permissions": user["permissions"]
-    })
+(    })
         
         # Token should be a string
     assert isinstance(token, str), "Created token is not a string"
@@ -176,16 +176,16 @@ class TestJWTAuthentication:
     owner_id = TEST_USERS[role]["user_id"] if "own" in access_level else None
                 
                 # Prepare request context with token
-    request = MockRequest(headers={
+    request = MockRequest(headers={)
     "Authorization": f"Bearer {token}"
-    })
+(    })
                 
                 # Check authorization
-    is_authorized = auth_service.check_resource_access(
+    is_authorized = auth_service.check_resource_access()
     request,
     resource_path=request_path,
     resource_owner_id=owner_id
-    )
+(    )
                 
     if access_level == "allow":
     assert is_authorized, f"Role {role} was denied access to {resource} with access level {access_level}"
@@ -200,17 +200,17 @@ class TestJWTAuthentication:
         token = token_factory(user_type="doctor")
         
         # Test token in Authorization header
-    request_with_header = MockRequest(headers={
+    request_with_header = MockRequest(headers={)
     "Authorization": f"Bearer {token}"
-    })
+(    })
         
     extracted_token = auth_service.extract_token_from_request(request_with_header)
     assert extracted_token  ==  token, "Failed to extract token from Authorization header"
         
         # Test token in cookie
-    request_with_cookie = MockRequest(cookies={
+    request_with_cookie = MockRequest(cookies={)
     "access_token": token
-    })
+(    })
         
     extracted_token = auth_service.extract_token_from_request(request_with_cookie)
     assert extracted_token  ==  token, "Failed to extract token from cookie"
@@ -224,28 +224,28 @@ class TestJWTAuthentication:
     def test_unauthorized_response(self, auth_service):
         """Test that unauthorized requests get proper responses"""
         # Test expired token response
-        expired_response = auth_service.create_unauthorized_response(
+        expired_response = auth_service.create_unauthorized_response()
             error_type="token_expired",
             message="Token has expired"
-        )
+(        )
         
     assert expired_response.status_code  ==  401, "Expired token should return 401 Unauthorized"
     assert "expired" in expired_response.json()["error"].lower(), "Error message should mention expiration"
         
         # Test invalid token response
-    invalid_response = auth_service.create_unauthorized_response(
+    invalid_response = auth_service.create_unauthorized_response()
     error_type="invalid_token",
     message="Token is invalid"
-    )
+(    )
         
     assert invalid_response.status_code  ==  401, "Invalid token should return 401 Unauthorized"
     assert "invalid" in invalid_response.json()["error"].lower(), "Error message should mention invalidity"
         
         # Test insufficient permissions response
-    forbidden_response = auth_service.create_unauthorized_response(
+    forbidden_response = auth_service.create_unauthorized_response()
     error_type="insufficient_permissions",
     message="Insufficient permissions to access resource"
-    )
+(    )
         
     assert forbidden_response.status_code  ==  403, "Insufficient permissions should return 403 Forbidden"
     assert "permission" in forbidden_response.json()["error"].lower(), "Error message should mention permissions"
@@ -277,10 +277,10 @@ class TestJWTAuthentication:
         invalid_token = token_factory(invalid=True)
         
         # Get error response
-    error_response = auth_service.create_unauthorized_response(
+    error_response = auth_service.create_unauthorized_response()
     error_type="invalid_token",
     message="Token validation failed"
-    )
+(    )
         
         # Error response should not contain PHI
     response_json = error_response.json()
@@ -296,11 +296,11 @@ class TestJWTAuthentication:
         user = TEST_USERS["admin"]
         
         # Generate token with short expiration
-    short_token = auth_service.create_token({
+    short_token = auth_service.create_token({)
     "sub": user["user_id"],
     "role": user["role"],
     "exp": int(time.time()) + 300  # 5 minutes
-    })
+(    })
         
         # Token should use secure algorithm
     token_parts = short_token.split('.')
@@ -308,20 +308,20 @@ class TestJWTAuthentication:
         
         # Check token expiration enforcement
     time.sleep(1)  # Wait briefly
-    token_with_leeway = auth_service.create_token({
+    token_with_leeway = auth_service.create_token({)
     "sub": user["user_id"],
     "role": user["role"],
     "exp": int(time.time())  # Expires now
-    })
+(    })
         
     validation_result = auth_service.validate_token(token_with_leeway, leeway=2)
     assert validation_result["is_valid"], "Token validation should allow reasonable leeway"
         
         # Check reasonable expiration time (should be > 5 min and < 12 hours)
-    default_token = auth_service.create_token({
+    default_token = auth_service.create_token({)
     "sub": user["user_id"],
     "role": user["role"]
-    })
+(    })
         
     decoded = auth_service.decode_token(default_token, verify=False)
     now = int(time.time())

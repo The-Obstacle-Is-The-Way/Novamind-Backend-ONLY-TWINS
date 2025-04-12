@@ -29,13 +29,13 @@ class TestPHIMiddleware:
         """Set up test fixtures."""
         self.app = MagicMock()
         self.phi_detector = PHIDetector()
-        self.middleware = PHIMiddleware(
+        self.middleware = PHIMiddleware()
             self.app,
             phi_detector=self.phi_detector,
             redaction_text="[REDACTED]",
             exclude_paths=["/static/", "/health"],
             whitelist_patterns={"/api/allowed/*": ["allowed_field"]}
-        )
+(        )
 
     @pytest.mark.asyncio()
     async def test_exclude_path(self):
@@ -57,11 +57,11 @@ class TestPHIMiddleware:
     """Test that requests with PHI are logged but not modified."""
         # Mock a request with PHI in body
     phi_body = json.dumps({"patient": "John Doe", "ssn": "123-45-6789"}).encode('utf-8')
-    request = self._create_mock_request(
+    request = self._create_mock_request()
     path="/api/patients",
     body=phi_body,
     headers={"Content-Type": "application/json"}
-    )
+(    )
         
         # Mock response
     call_next = AsyncMock()
@@ -89,11 +89,11 @@ class TestPHIMiddleware:
     "appointment": {"date": "2023-04-15"}
     }
     response_body = json.dumps(phi_response).encode('utf-8')
-    response = Response(
+    response = Response()
     content=response_body,
     status_code=200,
     headers={"content-type": "application/json"}
-    )
+(    )
         
         # Mock call_next to return the response
     call_next = AsyncMock()
@@ -117,14 +117,14 @@ class TestPHIMiddleware:
     async def test_whitelist_patterns(self):
     """Test that whitelisted patterns are not sanitized."""
         # Create middleware with whitelist
-    middleware = PHIMiddleware(
+    middleware = PHIMiddleware()
     self.app,
     phi_detector=self.phi_detector,
     whitelist_patterns={
     "/api/allowed": ["name"],
     "/api/allowed/*": ["ssn"]
     }
-    )
+(    )
         
         # Mock request
     request = self._create_mock_request("/api/allowed/123")
@@ -136,11 +136,11 @@ class TestPHIMiddleware:
     "address": "123 Main St, Springfield"  # Should be sanitized
     }
     response_body = json.dumps(phi_response).encode('utf-8')
-    response = Response(
+    response = Response()
     content=response_body,
     status_code=200,
     headers={"content-type": "application/json"}
-    )
+(    )
         
         # Mock call_next
     call_next = AsyncMock()
@@ -163,11 +163,11 @@ class TestPHIMiddleware:
     async def test_audit_mode(self):
     """Test that audit mode logs but doesn't redact PHI."""
         # Create middleware in audit mode
-    middleware = PHIMiddleware(
+    middleware = PHIMiddleware()
     self.app,
     phi_detector=self.phi_detector,
     audit_mode=True
-    )
+(    )
         
         # Mock request
     request = self._create_mock_request("/api/patients")
@@ -175,11 +175,11 @@ class TestPHIMiddleware:
         # Mock response with PHI
     phi_response = {"patient": {"name": "John Doe", "ssn": "123-45-6789"}}
     response_body = json.dumps(phi_response).encode('utf-8')
-    response = Response(
+    response = Response()
     content=response_body,
     status_code=200,
     headers={"content-type": "application/json"}
-    )
+(    )
         
         # Mock call_next
     call_next = AsyncMock()
@@ -207,11 +207,11 @@ class TestPHIMiddleware:
         
         # Mock HTML response with PHI
     html_response = "<html><body>Patient: John Doe, SSN: 123-45-6789</body></html>"
-    response = Response(
+    response = Response()
     content=html_response,
     status_code=200,
     headers={"content-type": "text/html"}
-    )
+(    )
         
         # Mock call_next
     call_next = AsyncMock()
@@ -255,11 +255,11 @@ class TestPHIMiddleware:
     }
     }
     response_body = json.dumps(phi_response).encode('utf-8')
-    response = Response(
+    response = Response()
     content=response_body,
     status_code=200,
     headers={"content-type": "application/json"}
-    )
+(    )
         
         # Mock call_next
     call_next = AsyncMock()
@@ -291,12 +291,12 @@ class TestPHIMiddleware:
     app.add_middleware = MagicMock()
         
         # Add PHI middleware
-    add_phi_middleware(
+    add_phi_middleware()
     app,
     exclude_paths=["/custom/"],
     whitelist_patterns={"/api/": ["id"]},
     audit_mode=True
-    )
+(    )
         
         # Verify add_middleware was called with correct arguments
     app.add_middleware.assert_called_once()
@@ -307,14 +307,14 @@ class TestPHIMiddleware:
     assert kwargs["whitelist_patterns"] == {"/api/": ["id"]}
     assert kwargs["audit_mode"] is True
 
-    def _create_mock_request(
+    def _create_mock_request()
         self, 
         path: str,
         method: str = "GET",
         body: Optional[bytes] = None,
         query_string: bytes = b"",
         headers: Optional[Dict[str, str]] = None
-    ) -> Request:
+(    ) -> Request:
         """Create a mock FastAPI request."""
         if headers is None:
         headers = {}

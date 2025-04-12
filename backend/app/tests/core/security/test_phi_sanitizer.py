@@ -157,12 +157,12 @@ class TestPHISanitizer:
     def test_sanitize_with_custom_patterns(self):
         """Test sanitization with custom PHI patterns."""
         # Create sanitizer with custom patterns
-        custom_sanitizer = PHISanitizer(
+        custom_sanitizer = PHISanitizer()
             additional_patterns=[
                 r"Depression",  # Now treat "Depression" as PHI
                 r"Moderate"     # Now treat "Moderate" as PHI
             ]
-        )
+(        )
         
     sanitized = custom_sanitizer.sanitize(self.dict_with_phi)
         

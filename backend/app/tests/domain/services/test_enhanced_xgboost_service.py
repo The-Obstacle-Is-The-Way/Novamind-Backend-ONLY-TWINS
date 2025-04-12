@@ -46,12 +46,12 @@ class TestEnhancedXGBoostService:
     def test_predict_treatment_response_basic(self, xgboost_service, test_patient_id):
         """Test basic treatment response prediction."""
         # Test prediction for increasing serotonin
-        prediction = xgboost_service.predict_treatment_response(
+        prediction = xgboost_service.predict_treatment_response()
             patient_id=test_patient_id,
             brain_region=BrainRegion.PREFRONTAL_CORTEX,
             neurotransmitter=Neurotransmitter.SEROTONIN,
             treatment_effect=0.5
-        )
+(        )
         
         # Verify prediction structure
     assert "predicted_response" in prediction
@@ -68,13 +68,13 @@ class TestEnhancedXGBoostService:
     def test_predict_treatment_response_with_baseline(self, xgboost_service, test_patient_id, test_baseline_data):
         """Test treatment response prediction with baseline data."""
         # Predict with baseline data
-        prediction = xgboost_service.predict_treatment_response(
+        prediction = xgboost_service.predict_treatment_response()
             patient_id=test_patient_id,
             brain_region=BrainRegion.AMYGDALA,
             neurotransmitter=Neurotransmitter.DOPAMINE,
             treatment_effect=0.7,
             baseline_data=test_baseline_data
-        )
+(        )
         
         # Verify prediction
     assert "predicted_response" in prediction
@@ -98,12 +98,12 @@ class TestEnhancedXGBoostService:
         # Get predictions for each region
     predictions = []
     for region in regions:
-    prediction = xgboost_service.predict_treatment_response(
+    prediction = xgboost_service.predict_treatment_response()
     patient_id=test_patient_id,
     brain_region=region,
     neurotransmitter=Neurotransmitter.SEROTONIN,
     treatment_effect=0.5
-    )
+(    )
     predictions.append(prediction["predicted_response"])
         
         # Verify that predictions differ by region
@@ -123,12 +123,12 @@ class TestEnhancedXGBoostService:
         # Get predictions for each neurotransmitter
     predictions = []
     for nt in neurotransmitters:
-    prediction = xgboost_service.predict_treatment_response(
+    prediction = xgboost_service.predict_treatment_response()
     patient_id=test_patient_id,
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=nt,
     treatment_effect=0.5
-    )
+(    )
     predictions.append(prediction["predicted_response"])
         
         # Verify that predictions differ by neurotransmitter
@@ -137,22 +137,22 @@ class TestEnhancedXGBoostService:
     def test_positive_vs_negative_treatment_effects(self, xgboost_service, test_patient_id, test_baseline_data):
         """Test that positive and negative treatment effects yield different predictions."""
         # Predict with positive effect
-        positive_prediction = xgboost_service.predict_treatment_response(
+        positive_prediction = xgboost_service.predict_treatment_response()
             patient_id=test_patient_id,
             brain_region=BrainRegion.PREFRONTAL_CORTEX,
             neurotransmitter=Neurotransmitter.SEROTONIN,
             treatment_effect=0.5,
             baseline_data=test_baseline_data
-        )
+(        )
         
         # Predict with negative effect
-    negative_prediction = xgboost_service.predict_treatment_response(
+    negative_prediction = xgboost_service.predict_treatment_response()
     patient_id=test_patient_id,
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=Neurotransmitter.SEROTONIN,
     treatment_effect=-0.5,
     baseline_data=test_baseline_data
-    )
+(    )
         
         # Predictions should differ for opposite treatment effects
     assert positive_prediction["predicted_response"] != negative_prediction["predicted_response"], \
@@ -161,14 +161,14 @@ class TestEnhancedXGBoostService:
     def test_analyze_treatment_interactions(self, xgboost_service):
         """Test analysis of interactions between neurotransmitter treatments."""
         # Test interaction analysis
-        interactions = xgboost_service.analyze_treatment_interactions(
+        interactions = xgboost_service.analyze_treatment_interactions()
             primary_neurotransmitter=Neurotransmitter.SEROTONIN,
             primary_effect=0.5,
             secondary_neurotransmitters={
                 Neurotransmitter.DOPAMINE: 0.3,
                 Neurotransmitter.GABA: -0.2
             }
-        )
+(        )
         
         # Verify structure of interaction analysis
     assert "primary_neurotransmitter" in interactions
@@ -209,19 +209,19 @@ class TestEnhancedXGBoostService:
     def test_consistency_of_predictions(self, xgboost_service, test_patient_id):
         """Test that predictions are consistent for the same inputs."""
         # Make prediction twice with same inputs
-        prediction1 = xgboost_service.predict_treatment_response(
+        prediction1 = xgboost_service.predict_treatment_response()
             patient_id=test_patient_id,
             brain_region=BrainRegion.PREFRONTAL_CORTEX,
             neurotransmitter=Neurotransmitter.SEROTONIN,
             treatment_effect=0.5
-        )
+(        )
         
-    prediction2 = xgboost_service.predict_treatment_response(
+    prediction2 = xgboost_service.predict_treatment_response()
     patient_id=test_patient_id,
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=Neurotransmitter.SEROTONIN,
     treatment_effect=0.5
-    )
+(    )
         
         # Predictions should be identical for identical inputs
     assert prediction1["predicted_response"] == prediction2["predicted_response"]

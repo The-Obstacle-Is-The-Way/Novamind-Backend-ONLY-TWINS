@@ -9,11 +9,11 @@ These tests are security-critical as they validate HIPAA compliance mechanisms.
 import pytest
 from typing import Dict, Any, List
 
-from app.core.exceptions import (
+from app.core.exceptions import ()
     InvalidConfigurationError,  
     InvalidRequestError,  
     ServiceUnavailableError,  
-)
+()
 from app.core.services.ml.mock import MockPHIDetection
 from app.tests.security.base_security_test import BaseSecurityTest
 
@@ -36,11 +36,11 @@ class TestMockPHIDetection(BaseSecurityTest):
         self.service = MockPHIDetection()
         self.service.initialize({})
         
-    self.sample_phi_text = (
+    self.sample_phi_text = ()
     "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
     "His email is john.smith@example.com and phone number is (555) 123-4567. "
     "He resides at 123 Main Street, Springfield, IL 62701."
-    )
+(    )
 
     def tearDown(self) -> None:
         """Clean up resources after tests."""
@@ -120,8 +120,8 @@ class TestMockPHIDetection(BaseSecurityTest):
         
         # Verify the common PHI types exist in the result
     detected_types = set(instance["type"].lower() for instance in phi_instances)
-    self.assertTrue(any(t in detected_types for t in ["ssn", "email", "address", "name"]),
-    f"No expected PHI types found in {detected_types}")
+    self.assertTrue(any(t in detected_types for t in ["ssn", "email", "address", "name"]),)
+(    f"No expected PHI types found in {detected_types}")
 
     def test_detect_phi_no_phi(self) -> None:
         """Test PHI detection with text that contains no PHI."""
@@ -164,10 +164,10 @@ class TestMockPHIDetection(BaseSecurityTest):
     def test_redact_phi_custom_replacement(self) -> None:
         """Test PHI redaction with custom replacement marker."""
         marker = "[PHI]"
-        result = self.service.redact_phi(
+        result = self.service.redact_phi()
             self.sample_phi_text, 
             redaction_marker=marker
-        )
+(        )
         
         # Verify custom marker is used
     self.assertIn(marker, result["redacted_text"])
@@ -178,16 +178,16 @@ class TestMockPHIDetection(BaseSecurityTest):
     def test_redact_phi_levels(self) -> None:
         """Test PHI redaction with different sensitivity levels."""
         # First with minimal level
-        minimal_result = self.service.redact_phi(
+        minimal_result = self.service.redact_phi()
             self.sample_phi_text, 
             detection_level="minimal"
-        )
+(        )
         
         # Then with aggressive level
-    aggressive_result = self.service.redact_phi(
+    aggressive_result = self.service.redact_phi()
     self.sample_phi_text,
     detection_level="aggressive"
-    )
+(    )
         
         # Count redactions by counting marker occurrences
     minimal_redactions = minimal_result["redacted_text"].count("[REDACTED]")
@@ -223,5 +223,5 @@ class TestMockPHIDetection(BaseSecurityTest):
     result = self.service.detect_phi(test_text)
             
             # Should find at least one PHI in the text
-    self.assertGreater(len(result["phi_instances"]), 0,
-    f"Failed to detect PHI in '{test_text}'")
+    self.assertGreater(len(result["phi_instances"]), 0,)
+(    f"Failed to detect PHI in '{test_text}'")

@@ -9,11 +9,11 @@ import pytest
 from datetime import datetime
 from unittest.mock import MagicMock
 
-from app.core.services.ml.pat.exceptions import (
+from app.core.services.ml.pat.exceptions import ()
     ValidationError,  
     InitializationError,  
     ResourceNotFoundError
-)
+()
 from app.core.services.ml.pat.mock import MockPATService
 
 
@@ -92,10 +92,10 @@ class TestStandaloneMockPAT:
     mock_pat._validate_device_info({"device_type": "Actigraph"})
             
         # Valid device info should not raise
-    mock_pat._validate_device_info({
+    mock_pat._validate_device_info({)
     "device_type": "Actigraph",
     "manufacturer": "Actigraph"
-    })
+(    })
         
     def test_analysis_types_validation(self, mock_pat):
         """Test validation of analysis types."""
@@ -112,7 +112,7 @@ class TestStandaloneMockPAT:
         
     def test_analyze_actigraphy(self, initialized_mock_pat, valid_readings, valid_device_info, valid_analysis_types):
         """Test actigraphy analysis with valid data."""
-        result = initialized_mock_pat.analyze_actigraphy(
+        result = initialized_mock_pat.analyze_actigraphy()
             patient_id="patient-123",
             readings=valid_readings,
             start_time="2025-03-27T12:00:00Z",
@@ -120,7 +120,7 @@ class TestStandaloneMockPAT:
             sampling_rate_hz=30.0,
             device_info=valid_device_info,
             analysis_types=valid_analysis_types,
-        )
+(        )
         
         # Check required fields exist
     assert "analysis_id" in result
@@ -131,7 +131,7 @@ class TestStandaloneMockPAT:
         
         # Test with invalid inputs
     with pytest.raises(ValidationError):
-    initialized_mock_pat.analyze_actigraphy(
+    initialized_mock_pat.analyze_actigraphy()
     patient_id="patient-123",
     readings=valid_readings,
     start_time="2025-03-27T12:00:00Z",
@@ -139,10 +139,10 @@ class TestStandaloneMockPAT:
     sampling_rate_hz=30.0,
     device_info={},  # Empty device info
     analysis_types=valid_analysis_types,
-    )
+(    )
 
     with pytest.raises(ValidationError):
-    initialized_mock_pat.analyze_actigraphy(
+    initialized_mock_pat.analyze_actigraphy()
     patient_id="patient-123",
     readings=valid_readings,
     start_time="2025-03-27T12:00:00Z",
@@ -150,12 +150,12 @@ class TestStandaloneMockPAT:
     sampling_rate_hz=30.0,
     device_info=valid_device_info,
     analysis_types=[],  # Empty analysis types
-    )
+(    )
             
     def test_get_analysis_by_id(self, initialized_mock_pat, valid_readings, valid_device_info, valid_analysis_types):
         """Test getting analysis by ID."""
         # Create an analysis
-        analysis = initialized_mock_pat.analyze_actigraphy(
+        analysis = initialized_mock_pat.analyze_actigraphy()
             patient_id="patient-123",
             readings=valid_readings,
             start_time="2025-03-27T12:00:00Z",
@@ -163,7 +163,7 @@ class TestStandaloneMockPAT:
             sampling_rate_hz=30.0,
             device_info=valid_device_info,
             analysis_types=valid_analysis_types,
-        )
+(        )
         
     analysis_id = analysis["analysis_id"]
         

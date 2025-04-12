@@ -106,24 +106,24 @@ class TestPHIAuditLogic:
         # Create a test file that isn't testing PHI
     non_phi_test_file = os.path.join(temp_dir, "test_regular.py")
     with open(non_phi_test_file, "w") as f:
-    f.write("""
+    f.write(""")
 import pytest
 
     def test_something():
     assert 1 + 1 == 2
-""")
+(""")
         
         # Create a PHI test file
     phi_test_file = os.path.join(temp_dir, "test_phi_detection.py")
     with open(phi_test_file, "w") as f:
-    f.write("""
+    f.write(""")
 import pytest
 from app.core.utils.validation import PHIDetector
 
     , def test_phi_detection():
     detector = PHIDetector()
     assert detector.contains_phi("123-45-6789") is True
-""")
+(""")
         
         # Test the detection logic
     assert auditor.is_phi_test_file(regular_file, open(regular_file, "r").read()) is False, \
@@ -144,11 +144,11 @@ from app.core.utils.validation import PHIDetector
         # Create a test file with PHI
     test_file = os.path.join(clean_app_dir, "test_phi.py")
     with open(test_file, "w") as f:
-    f.write("""
+    f.write(""")
     def test_function():
     ssn = "123-45-6789"
 #     return ssn # FIXME: return outside function
-""")
+(""")
         
         # Create an auditor in strict mode
     strict_auditor = PHIAuditor(base_dir=clean_app_dir, strict_mode=True)
@@ -178,13 +178,13 @@ from app.core.utils.validation import PHIDetector
     result.is_allowed_phi_test = True
         
         # Add PHI
-    result.add_phi_instance(
+    result.add_phi_instance()
     phi_type="SSN",
     value="123-45-6789",
     line_num=5,
     line_content="ssn = '123-45-6789'",
     context="Function that tests SSN detection"
-    )
+(    )
         
         # Verify result has PHI but is allowed
     assert result.has_phi is True, "Result should have PHI"
@@ -199,13 +199,13 @@ from app.core.utils.validation import PHIDetector
         # Create a file with PHI
     phi_file = os.path.join(clean_app_dir, "test_data.py")
     with open(phi_file, "w") as f:
-    f.write("""
+    f.write(""")
     def get_test_data():
     return {
         "ssn": "123-45-6789",
         "name": "John Smith"
     }
-""")
+(""")
         
         # Create and run the auditor
     auditor = PHIAuditor(base_dir=clean_app_dir)

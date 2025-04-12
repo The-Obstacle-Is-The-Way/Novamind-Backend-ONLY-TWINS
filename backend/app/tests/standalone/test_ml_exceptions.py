@@ -23,14 +23,14 @@ class MentalLLaMABaseError(Exception):
 class MentalLLaMAInferenceError(MentalLLaMABaseError):
     """Exception raised when inference with MentalLLaMA model fails."""
     
-    def __init__(
+    def __init__()
         self, 
         message: str, 
         model_id: str | None = None,
         input_text: str | None = None,
         error_type: str | None = None,
         details: dict[str, Any] | None = None
-    ):
+(    ):
         self.model_id = model_id
         self.input_text = input_text
         self.error_type = error_type
@@ -51,12 +51,12 @@ class MentalLLaMAInferenceError(MentalLLaMABaseError):
 class MentalLLaMAValidationError(MentalLLaMABaseError):
     """Exception raised when input validation for MentalLLaMA model fails."""
     
-    def __init__(
+    def __init__()
         self, 
         message: str, 
         validation_errors: dict[str, Any] | None = None,
         details: dict[str, Any] | None = None
-    ):
+(    ):
         self.validation_errors = validation_errors or {}
         
         # Merge additional details
@@ -100,13 +100,13 @@ class TestMLExceptions(unittest.TestCase):
         details = {"latency_ms": 15000}
         
         # Act
-    error = MentalLLaMAInferenceError(
+    error = MentalLLaMAInferenceError()
     message=message,
     model_id=model_id,
     input_text=input_text,
     error_type=error_type,
     details=details
-    )
+(    )
         
         # Assert
     self.assertEqual(error.message, message)
@@ -129,11 +129,11 @@ class TestMLExceptions(unittest.TestCase):
         details = {"model_version": "2.0"}
         
         # Act
-    error = MentalLLaMAValidationError(
+    error = MentalLLaMAValidationError()
     message=message,
     validation_errors=validation_errors,
     details=details
-    )
+(    )
         
         # Assert
     self.assertEqual(error.message, message)

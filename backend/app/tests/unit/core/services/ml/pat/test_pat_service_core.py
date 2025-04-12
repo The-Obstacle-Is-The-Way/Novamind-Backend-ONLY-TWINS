@@ -63,11 +63,11 @@ class TestPATService:
     def test_create_assessment(self, pat_service: PATService) -> None:
         """Test creating a new assessment."""
         # Create assessment with minimal data
-        result = pat_service.create_assessment(
+        result = pat_service.create_assessment()
             patient_id="test-patient-1",
             assessment_type="depression",
             clinician_id="test-clinician-1"
-        )
+(        )
 
     assert result["assessment_id"] is not None
     assert result["patient_id"] == "test-patient-1"
@@ -75,43 +75,43 @@ class TestPATService:
     assert result["status"] == "created"
 
         # Create with initial data
-    result_with_data = pat_service.create_assessment(
+    result_with_data = pat_service.create_assessment()
     patient_id="test-patient-2",
     assessment_type="anxiety",
     clinician_id="test-clinician-1",
     initial_data={"gad7_1": 2}
-    )
+(    )
 
     assert result_with_data["assessment_id"] is not None
     assert result_with_data["assessment_type"] == "anxiety"
 
         # Verify error handling
     with pytest.raises(InvalidRequestError):
-    pat_service.create_assessment(
+    pat_service.create_assessment()
     patient_id="",  # Invalid: empty patient_id
     assessment_type="depression"
-    )
+(    )
 
     with pytest.raises(InvalidRequestError):
-    pat_service.create_assessment(
+    pat_service.create_assessment()
     patient_id="test-patient-3",
     assessment_type=""  # Invalid: empty assessment_type
-    )
+(    )
 
     with pytest.raises(InvalidRequestError):
-    pat_service.create_assessment(
+    pat_service.create_assessment()
     patient_id="test-patient-3",
     assessment_type="invalid-type"  # Invalid: unsupported assessment type
-    )
+(    )
 
     def test_get_assessment(self, pat_service: PATService) -> None:
         """Test retrieving an assessment."""
         # Create an assessment to retrieve
-        create_result = pat_service.create_assessment(
+        create_result = pat_service.create_assessment()
             patient_id="test-patient-4",
             assessment_type="depression",
             clinician_id="test-clinician-2"
-        )
+(        )
         assessment_id = create_result["assessment_id"]
 
         # Retrieve the assessment
@@ -135,11 +135,11 @@ class TestPATService:
     def test_update_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test updating an assessment."""
         # Create an assessment to update
-        create_result = pat_service.create_assessment(
+        create_result = pat_service.create_assessment()
             patient_id="test-patient-5",
             assessment_type="depression",
             clinician_id="test-clinician-3"
-        )
+(        )
         assessment_id = create_result["assessment_id"]
 
         # Update the assessment with partial data
@@ -181,11 +181,11 @@ class TestPATService:
     def test_complete_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test completing an assessment."""
         # Create an assessment to complete
-        create_result = pat_service.create_assessment(
+        create_result = pat_service.create_assessment()
             patient_id="test-patient-6",
             assessment_type="depression",
             clinician_id="test-clinician-4"
-        )
+(        )
         assessment_id = create_result["assessment_id"]
 
         # Update assessment with data first
@@ -216,11 +216,11 @@ class TestPATService:
     def test_analyze_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test analyzing an assessment."""
         # Create an assessment to analyze
-        create_result = pat_service.create_assessment(
+        create_result = pat_service.create_assessment()
             patient_id="test-patient-7",
             assessment_type="depression",
             clinician_id="test-clinician-5"
-        )
+(        )
         assessment_id = create_result["assessment_id"]
 
         # Update assessment with data
@@ -251,11 +251,11 @@ class TestPATService:
     def test_calculate_scores(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test score calculation functionality."""
         # Create assessment
-        create_result = pat_service.create_assessment(
+        create_result = pat_service.create_assessment()
             patient_id="test-patient-8",
             assessment_type="depression",
             clinician_id="test-clinician-6"
-        )
+(        )
         assessment_id = create_result["assessment_id"]
 
         # Add assessment data
@@ -292,18 +292,18 @@ class TestPATService:
         
         # Create multiple assessments for the patient
     for i in range(3):
-    pat_service.create_assessment(
+    pat_service.create_assessment()
     patient_id=patient_id,
     assessment_type="depression",
     clinician_id="test-clinician-7"
-    )
+(    )
         
         # Create a different assessment type
-    pat_service.create_assessment(
+    pat_service.create_assessment()
     patient_id=patient_id,
     assessment_type="anxiety",
     clinician_id="test-clinician-7"
-    )
+(    )
         
         # Get all assessment history
     history_result = pat_service.get_assessment_history(patient_id)
@@ -350,12 +350,12 @@ class TestPATService:
             }
         ]
         
-    template_result = pat_service.create_form_template(
+    template_result = pat_service.create_form_template()
     name="Custom Assessment",
     form_type="custom",
     fields=form_fields,
     metadata={"description": "Custom assessment for testing"}
-    )
+(    )
         
     template_id = template_result["template_id"]
     assert template_result["name"] == "Custom Assessment"
@@ -397,11 +397,11 @@ class TestPATService:
     def test_generate_report(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test report generation functionality."""
         # Create assessment
-        create_result = pat_service.create_assessment(
+        create_result = pat_service.create_assessment()
             patient_id="test-patient-10",
             assessment_type="depression",
             clinician_id="test-clinician-8"
-        )
+(        )
         assessment_id = create_result["assessment_id"]
 
         # Update and complete assessment
@@ -425,10 +425,10 @@ class TestPATService:
         
         # Test error conditions
         # Create but don't complete a new assessment
-    incomplete_assessment = pat_service.create_assessment(
+    incomplete_assessment = pat_service.create_assessment()
     patient_id="test-patient-11",
     assessment_type="depression"
-    )
+(    )
     incomplete_id = incomplete_assessment["assessment_id"]
         
         # Summary report should work for incomplete assessment
@@ -491,10 +491,10 @@ class TestPATService:
     def test_high_risk_flagging(self, pat_service: PATService) -> None:
         """Test that high-risk responses are properly flagged."""
         # Create an assessment
-        create_result = pat_service.create_assessment(
+        create_result = pat_service.create_assessment()
             patient_id="test-patient-12",
             assessment_type="depression"
-        )
+(        )
         assessment_id = create_result["assessment_id"]
         
         # Update with high suicide risk response
@@ -510,10 +510,10 @@ class TestPATService:
     def test_completion_percentage(self, pat_service: PATService) -> None:
         """Test completion percentage calculation."""
         # Create assessment
-        create_result = pat_service.create_assessment(
+        create_result = pat_service.create_assessment()
             patient_id="test-patient-13",
             assessment_type="depression"
-        )
+(        )
         assessment_id = create_result["assessment_id"]
         
         # Get initial completion percentage

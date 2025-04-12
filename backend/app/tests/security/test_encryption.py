@@ -8,7 +8,7 @@ This module tests the field-level encryption functionality for PHI (Protected He
 to ensure compliance with HIPAA requirements for data at rest encryption.
 
 It verifies:
-1. Field-level encryption for PHI attributes
+    1. Field-level encryption for PHI attributes
 2. Encryption key management
 3. Data integrity during encryption/decryption
 4. Security of the encryption implementation
@@ -22,11 +22,11 @@ import json
 
 # Import the encryption modules
 try:
-    from app.infrastructure.security.encryption import (
+    from app.infrastructure.security.encryption import ()
         PHIFieldEncryption,  
         EncryptionKeyManager,  
         EncryptionError
-    )
+(    )
 except ImportError:
     # Mock implementations for testing purposes if real modules aren't available
     class EncryptionError(Exception):
@@ -158,42 +158,42 @@ class TestEncryption(unittest.TestCase):
     def test_dict_encryption(self):
         """Test encryption of multiple fields in a dictionary"""
         # Encrypt PHI fields in the patient data
-        encrypted_data = self.encryption.encrypt_dict(
+        encrypted_data = self.encryption.encrypt_dict()
             self.patient_data, self.phi_fields
-        )
+(        )
         
         # Verify PHI fields are encrypted
     for field in self.phi_fields:
     if field in self.patient_data and isinstance(self.patient_data[field], str):
-    self.assert NotEqual(
+    self.assert NotEqual()
     self.patient_data[field],
     encrypted_data[field],
     f"Field {field} was not encrypted"
-    )
+(    )
         
         # Verify non-PHI fields are unchanged
     non_phi_fields = [f for f in self.patient_data.keys() if f not in self.phi_fields]
     for field in non_phi_fields:
     if isinstance(self.patient_data[field], (str, int, float, bool)):
-    self.assertEqual(
+    self.assertEqual()
     self.patient_data[field],
     encrypted_data[field],
     f"Field {field} was incorrectly encrypted"
-    )
+(    )
         
         # Decrypt the data
-    decrypted_data = self.encryption.decrypt_dict(
+    decrypted_data = self.encryption.decrypt_dict()
     encrypted_data, self.phi_fields
-    )
+(    )
         
         # Verify decryption restores original values
     for field in self.phi_fields:
     if field in self.patient_data and isinstance(self.patient_data[field], str):
-    self.assertEqual(
+    self.assertEqual()
     self.patient_data[field],
     decrypted_data[field],
     f"Field {field} was not correctly decrypted"
-    )
+(    )
 
     def test_empty_values(self):
         """Test handling of empty or null values"""
@@ -287,30 +287,30 @@ class TestEncryption(unittest.TestCase):
         }
         
         # Encrypt the data
-    encrypted_data = self.encryption.encrypt_dict(
+    encrypted_data = self.encryption.encrypt_dict()
     test_data, ["medical_record_number", "treatment_notes"]
-    )
+(    )
         
         # HIPAA requires that PHI is not visible in storage
-    self.assert NotEqual(
+    self.assert NotEqual()
     test_data["medical_record_number"],
     encrypted_data["medical_record_number"]
-    )
-    self.assert NotEqual(
+(    )
+    self.assert NotEqual()
     test_data["treatment_notes"],
     encrypted_data["treatment_notes"]
-    )
+(    )
         
         # Diagnosis code (not considered direct PHI) should remain unchanged
-    self.assertEqual(
+    self.assertEqual()
     test_data["diagnosis_code"],
     encrypted_data["diagnosis_code"]
-    )
+(    )
         
         # Verify data can be correctly decrypted
-    decrypted_data = self.encryption.decrypt_dict(
+    decrypted_data = self.encryption.decrypt_dict()
     encrypted_data, ["medical_record_number", "treatment_notes"]
-    )
+(    )
     self.assertEqual(test_data, decrypted_data)
 
 

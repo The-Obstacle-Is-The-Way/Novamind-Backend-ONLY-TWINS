@@ -25,7 +25,7 @@ class TestDigitalTwinIntegrationService:
     def mock_symptom_forecasting_service(self):
         """Create a mock SymptomForecastingService."""
         service = AsyncMock()
-        service.generate_forecast = AsyncMock(return_value={
+        service.generate_forecast = AsyncMock(return_value={)
             "patient_id": str(uuid4()),
             "forecast_type": "ensemble",
             "reliability": "high",
@@ -45,14 +45,14 @@ class TestDigitalTwinIntegrationService:
                 "transformer": {"weight": 0.7, "metrics": {"mae": 0.42, "rmse": 0.68}},
                 "xgboost": {"weight": 0.3, "metrics": {"mae": 0.47, "rmse": 0.72}}
             }
-        })
+(        })
         return service
 
     @pytest.fixture
     def mock_biometric_correlation_service(self):
         """Create a mock BiometricCorrelationService."""
         service = AsyncMock()
-        service.analyze_correlations = AsyncMock(return_value={
+        service.analyze_correlations = AsyncMock(return_value={)
             "patient_id": str(uuid4()),
             "reliability": "medium",
             "correlations": [
@@ -85,14 +85,14 @@ class TestDigitalTwinIntegrationService:
                     "action": "Prioritize sleep hygiene interventions."
                 }
             ]
-        })
+(        })
         return service
 
     @pytest.fixture
     def mock_medication_response_service(self):
         """Create a mock MedicationResponseService."""
         service = AsyncMock()
-        service.predict_medication_response = AsyncMock(return_value={
+        service.predict_medication_response = AsyncMock(return_value={)
             "medication_predictions": {
                 "fluoxetine": {
                     "efficacy": {
@@ -166,14 +166,14 @@ class TestDigitalTwinIntegrationService:
                     "side_effect_risk": 0.35
                 }
             }
-        })
+(        })
         return service
 
     @pytest.fixture
     def mock_patient_repository(self):
         """Create a mock PatientRepository."""
         repo = AsyncMock()
-        repo.get_by_id = AsyncMock(return_value={
+        repo.get_by_id = AsyncMock(return_value={)
             "id": str(uuid4()),
             "first_name": "John",
             "last_name": "Doe",
@@ -181,20 +181,20 @@ class TestDigitalTwinIntegrationService:
             "gender": "male",
             "conditions": ["anxiety", "depression"],
             "medications": ["fluoxetine"]
-        })
+(        })
         return repo
 
     @pytest.fixture
-    def integration_service(self, mock_symptom_forecasting_service, mock_biometric_correlation_service, 
-                           mock_medication_response_service, mock_patient_repository):
+    def integration_service(self, mock_symptom_forecasting_service, mock_biometric_correlation_service, )
+(                           mock_medication_response_service, mock_patient_repository):
         """Create a DigitalTwinIntegrationService with mock dependencies."""
         
-    return DigitalTwinIntegrationService(
+    return DigitalTwinIntegrationService()
     symptom_forecasting_service=mock_symptom_forecasting_service,
     biometric_correlation_service=mock_biometric_correlation_service,
     medication_response_service=mock_medication_response_service,
     patient_repository=mock_patient_repository
-    )
+(    )
 
     @pytest.fixture
     def sample_patient_id(self):

@@ -15,14 +15,14 @@ import pytest
 from botocore.exceptions import ClientError
 
 from app.core.services.ml.pat.bedrock import BedrockPAT
-from app.core.services.ml.pat.exceptions import (
+from app.core.services.ml.pat.exceptions import ()
     AnalysisError,
     AuthorizationError,
     EmbeddingError,
     InitializationError,
     ResourceNotFoundError,
     ValidationError
-)
+()
 
 @pytest.fixture
 def mock_aws_session():
@@ -83,7 +83,7 @@ def mock_bedrock_response():
     mock_response = {
         'body': Mock()
     }
-    mock_response['body'].read.return_value = json.dumps({
+    mock_response['body'].read.return_value = json.dumps({)
         'results': {
             'sleep': {
                 'total_sleep_minutes': 420,
@@ -105,7 +105,7 @@ def mock_bedrock_response():
         'profile_update_summary': {
             'updated_segments': ['sleep_habits']
         }
-    }).encode('utf-8') # Encode to bytes as Bedrock client expects
+(    }).encode('utf-8') # Encode to bytes as Bedrock client expects
     return mock_response
 
 
@@ -152,10 +152,10 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
 
         # Act & Assert
     with self.assertRaises(InitializationError) as cm:
-    service.initialize({
+    service.initialize({)
     'pat_dynamodb_table': 'test-table',
     'pat_bedrock_model_id': 'test-model-id'
-    })
+(    })
     self.assertIn("S3 bucket name is required", str(cm.exception))
 
     def test_initialization_missing_table(self):
@@ -165,10 +165,10 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
 
         # Act & Assert
     with self.assertRaises(InitializationError) as cm:
-    service.initialize({
+    service.initialize({)
     'pat_s3_bucket': 'test-bucket',
     'pat_bedrock_model_id': 'test-model-id'
-    })
+(    })
     self.assertIn("DynamoDB table name is required", str(cm.exception))
 
     def test_initialization_missing_model_id(self):
@@ -178,10 +178,10 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
 
         # Act & Assert
     with self.assertRaises(InitializationError) as cm:
-    service.initialize({
+    service.initialize({)
     'pat_s3_bucket': 'test-bucket',
     'pat_dynamodb_table': 'test-table'
-    })
+(    })
     self.assertIn("Bedrock model ID is required", str(cm.exception))
 
     def test_initialization_s3_bucket_not_found(self):
@@ -195,11 +195,11 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
 
         # Act & Assert
     with self.assertRaises(InitializationError) as cm:
-    service.initialize({
+    service.initialize({)
     'pat_s3_bucket': 'test-bucket',
     'pat_dynamodb_table': 'test-table',
     'pat_bedrock_model_id': 'test-model-id'
-    })
+(    })
     self.assertIn("S3 bucket test-bucket not found", str(cm.exception))
 
     def test_initialization_dynamodb_table_not_found(self):
@@ -216,11 +216,11 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
 
         # Act & Assert
     with self.assertRaises(InitializationError) as cm:
-    service.initialize({
+    service.initialize({)
     'pat_s3_bucket': 'test-bucket',
     'pat_dynamodb_table': 'test-table',
     'pat_bedrock_model_id': 'test-model-id'
-    })
+(    })
     self.assertIn("DynamoDB table test-table not found", str(cm.exception))
 
     def test_analyze_actigraphy_success(self):
@@ -249,7 +249,7 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
     analysis_types = ["sleep"]
 
         # Act
-    result = self.bedrock_pat_service.analyze_actigraphy(
+    result = self.bedrock_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time,
@@ -257,7 +257,7 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
     sampling_rate_hz=sampling_rate_hz,
     device_info=device_info,
     analysis_types=analysis_types
-    )
+(    )
 
         # Assert
     self.assertEqual(result["patient_id"], patient_id)
@@ -290,7 +290,7 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
         """Test actigraphy analysis with invalid input."""
         # Act & Assert - Missing patient_id
         with self.assertRaises(ValidationError) as cm:
-        self.bedrock_pat_service.analyze_actigraphy(
+        self.bedrock_pat_service.analyze_actigraphy()
                 patient_id="",
                 readings=[{"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}],
                 start_time="2025-01-01T00:00:00Z",
@@ -298,12 +298,12 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
                 sampling_rate_hz=50.0,
                 device_info={"device_type": "smartwatch"},
                 analysis_types=["sleep"]
-            )
+(            )
         self.assertIn("patient_id is required", str(cm.exception))
 
         # Act & Assert - Too few readings
     with self.assertRaises(ValidationError) as cm:
-    self.bedrock_pat_service.analyze_actigraphy(
+    self.bedrock_pat_service.analyze_actigraphy()
     patient_id="test-patient",
     readings=[{"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}],
     start_time="2025-01-01T00:00:00Z",
@@ -311,12 +311,12 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
     sampling_rate_hz=50.0,
     device_info={"device_type": "smartwatch"},
     analysis_types=["sleep"]
-    )
+(    )
     self.assertIn("At least 10 readings are required", str(cm.exception))
 
         # Act & Assert - Missing analysis_types
     with self.assertRaises(ValidationError) as cm:
-    self.bedrock_pat_service.analyze_actigraphy(
+    self.bedrock_pat_service.analyze_actigraphy()
     patient_id="test-patient",
     readings=[{"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3} for _ in range(20)],
     start_time="2025-01-01T00:00:00Z",
@@ -324,17 +324,17 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
     sampling_rate_hz=50.0,
     device_info={"device_type": "smartwatch"},
     analysis_types=[]
-    )
+(    )
     self.assertIn("At least one analysis_type is required", str(cm.exception))
 
     def test_analyze_actigraphy_bedrock_error(self):
         """Test actigraphy analysis when Bedrock returns an error."""
         # Arrange
         self.mock_aws_session['s3'].put_object.return_value = {}
-        self.mock_aws_session['bedrock'].invoke_model.side_effect = ClientError(
+        self.mock_aws_session['bedrock'].invoke_model.side_effect = ClientError()
             {'Error': {'Code': 'ModelError', 'Message': 'Model inference failed'}},
             'InvokeModel'
-        )
+(        )
 
         # Test data
     patient_id = "test-patient"
@@ -345,7 +345,7 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
 
         # Act & Assert
     with self.assertRaises(AnalysisError) as cm:
-    self.bedrock_pat_service.analyze_actigraphy(
+    self.bedrock_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=readings,
     start_time="2025-01-01T00:00:00Z",
@@ -353,7 +353,7 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
     sampling_rate_hz=50.0,
     device_info={"device_type": "smartwatch"},
     analysis_types=["sleep"]
-    )
+(    )
     self.assertIn("Model inference error", str(cm.exception))
 
     def test_get_actigraphy_embeddings_success(self):
@@ -376,13 +376,13 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
     sampling_rate_hz = 50.0
 
         # Act
-    result = self.bedrock_pat_service.get_actigraphy_embeddings(
+    result = self.bedrock_pat_service.get_actigraphy_embeddings()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time,
     end_time=end_time,
     sampling_rate_hz=sampling_rate_hz
-    )
+(    )
 
         # Assert
     self.assertEqual(result["patient_id"], patient_id)
@@ -511,11 +511,11 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
     self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
             # Act
-    result = self.bedrock_pat_service.integrate_with_digital_twin(
+    result = self.bedrock_pat_service.integrate_with_digital_twin()
     patient_id=patient_id,
     profile_id=profile_id,
     analysis_id=analysis_id
-    )
+(    )
 
             # Assert
     self.assertEqual(result["patient_id"], patient_id)
@@ -546,13 +546,13 @@ class TestBedrockPAT(unittest.TestCase): # Inherit from unittest.TestCase for as
     with patch.object(self.bedrock_pat_service, 'get_analysis_by_id', return_value=mock_analysis):
             # Act & Assert
     with self.assertRaises(AuthorizationError) as cm:
-    self.bedrock_pat_service.integrate_with_digital_twin(
+    self.bedrock_pat_service.integrate_with_digital_twin()
     patient_id=patient_id,
     profile_id=profile_id,
     analysis_id=analysis_id
-    )
+(    )
     self.assertIn("Analysis does not belong to patient", str(cm.exception))
 
 # Example of how to run these tests with pytest
 # if __name__ == "__main__":
-#     pytest.main(["-v", __file__]) # Corrected pytest invocation
+    #     pytest.main(["-v", __file__]) # Corrected pytest invocation

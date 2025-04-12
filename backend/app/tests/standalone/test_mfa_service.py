@@ -6,7 +6,7 @@ import time
 import pytest
 from unittest.mock import MagicMock, patch
 
-from app.infrastructure.security.mfa_service import (
+from app.infrastructure.security.mfa_service import ()
     MFAService,  
     MFAType,  
     MFAException,  
@@ -16,7 +16,7 @@ from app.infrastructure.security.mfa_service import (
     TOTPStrategy,  
     SMSStrategy,  
     EmailStrategy
-)
+()
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ def mfa_service():
         mock_settings.security.MFA_ISSUER_NAME = "Novamind Psychiatry"
         
         # Create the service
-        service = MFAService(
+        service = MFAService()
             secret_key="test_secret_key",
             issuer_name="Novamind Psychiatry",
             totp_digits=6,
@@ -36,7 +36,7 @@ def mfa_service():
             sms_code_length=6,
             email_code_length=8,
             verification_timeout_seconds=300
-        )
+(        )
         
         return service
 
@@ -370,11 +370,11 @@ class TestSMSStrategy:
         # Mock the verify_code method
     with patch.object(mfa_service, 'verify_code', return_value=True):
             # Verify SMS code
-    result = strategy.verify(
+    result = strategy.verify()
     code="123456",
     expected_code="123456",
     expires_at=1300
-    )
+(    )
             
             # Check the result
     assert result is True
@@ -428,11 +428,11 @@ class TestEmailStrategy:
         # Mock the verify_code method
     with patch.object(mfa_service, 'verify_code', return_value=True):
             # Verify email code
-    result = strategy.verify(
+    result = strategy.verify()
     code="12345678",
     expected_code="12345678",
     expires_at=1300
-    )
+(    )
             
             # Check the result
     assert result is True

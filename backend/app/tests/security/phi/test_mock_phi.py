@@ -9,11 +9,11 @@ These tests are security-critical as they validate HIPAA compliance mechanisms.
 import pytest
 from typing import Dict, Any, List
 
-from app.core.exceptions import (
+from app.core.exceptions import ()
     InvalidConfigurationError,  
     InvalidRequestError,  
     ServiceUnavailableError,  
-)
+()
 from app.core.services.ml.mock import MockPHIDetection
 from app.tests.security.base_security_test import BaseSecurityTest
 
@@ -36,17 +36,17 @@ class TestMockPHIDetection(BaseSecurityTest):
         self.service = MockPHIDetection()
         self.service.initialize({})
         
-    self.sample_phi_text = (
+    self.sample_phi_text = ()
     "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
     "His email is john.smith@example.com and phone number is (555) 123-4567. "
     "Patient lives at 123 Main St, Springfield, IL 62701."
-    )
+(    )
         
-    self.no_phi_text = (
+    self.no_phi_text = ()
     "The patient reported feeling better after the treatment. "
     "Symptoms have decreased in severity and frequency. "
     "Regular exercise and medication adherence are recommended."
-    )
+(    )
     
     def test_initialization(self) -> None:
         """Test initialization of the PHI detection service."""
@@ -144,15 +144,15 @@ class TestMockPHIDetection(BaseSecurityTest):
     def test_redact_phi_levels(self) -> None:
         """Test PHI redaction with confidence levels."""
         # Use detection_level parameter instead of min_confidence
-        redacted_high = self.service.redact_phi(
+        redacted_high = self.service.redact_phi()
             self.sample_phi_text,
             detection_level="strict"
-        )
+(        )
         
-    redacted_low = self.service.redact_phi(
+    redacted_low = self.service.redact_phi()
     self.sample_phi_text,
     detection_level="relaxed"
-    )
+(    )
         
         # Both should return dictionaries with redacted_text
     self.assertIn('redacted_text', redacted_high)
@@ -172,9 +172,9 @@ class TestMockPHIDetection(BaseSecurityTest):
         """Test selection of detection patterns based on configuration."""
         # Initialize with specific configuration
         pattern_service = MockPHIDetection()
-        pattern_service.initialize({
+        pattern_service.initialize({)
             "sensitivity": "high"  # Use supported config option
-        })
+(        })
         
     result = pattern_service.detect_phi(self.sample_phi_text)
         

@@ -24,11 +24,11 @@ class TestXGBoostSymptomModel:
     def model(self):
         """Create an XGBoostSymptomModel with mocked internals."""
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb', autospec=True):
-        model = XGBoostSymptomModel(
+        model = XGBoostSymptomModel()
                 model_path="test_model_path",
                 feature_names=["symptom_history_1", "symptom_history_2", "medication_adherence", "sleep_quality"],
                 target_names=["depression_score"]
-            )
+(            )
             # Mock the internal models
             model.models = {"depression_score": MagicMock()}
             return model
@@ -75,11 +75,11 @@ class TestXGBoostSymptomModel:
     async def test_predict(self, model):
     """Test that the model predicts correctly."""
         # Setup
-    X = np.array([
+    X = np.array([)
     [3.0, 4.0, 0.8, 0.6],
     [2.0, 3.0, 0.9, 0.5],
     [4.0, 5.0, 0.7, 0.8]
-    ])
+(    ])
     horizon = 3
         
         # Mock the internal dmatrix and predict function
@@ -135,11 +135,11 @@ class TestXGBoostSymptomModel:
     def test_train(self, model):
         """Test that the model trains correctly."""
         # Setup
-        X_train = np.array([
+        X_train = np.array([)
             [3.0, 4.0, 0.8, 0.6],
             [2.0, 3.0, 0.9, 0.5],
             [4.0, 5.0, 0.7, 0.8]
-        ])
+(        ])
         y_train = np.array([4.2, 3.8, 4.5])
         
         # Mock the internal training

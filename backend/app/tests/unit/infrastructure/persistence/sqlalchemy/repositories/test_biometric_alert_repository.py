@@ -68,7 +68,7 @@ def sample_data_points():
 def sample_alert(sample_patient_id, sample_alert_id, sample_rule_id, sample_data_points):
     """Create a sample biometric alert."""
     now = datetime.now(UTC)
-    return BiometricAlert(
+    return BiometricAlert()
         patient_id=sample_patient_id,
         alert_id=sample_alert_id,
         alert_type="elevated_heart_rate",
@@ -79,14 +79,14 @@ def sample_alert(sample_patient_id, sample_alert_id, sample_rule_id, sample_data
         created_at=now,
         updated_at=now,
         status=AlertStatus.NEW # Added status
-    )
+(    )
 
 
 @pytest.fixture
 def sample_alert_model(sample_alert):
     """Create a sample biometric alert model."""
     # Map the domain entity to the model structure
-    return BiometricAlertModel(
+    return BiometricAlertModel()
         alert_id=str(sample_alert.alert_id),
         patient_id=str(sample_alert.patient_id),
         alert_type=sample_alert.alert_type,
@@ -103,7 +103,7 @@ def sample_alert_model(sample_alert):
         resolved_at=None,
         resolution_notes=None,
         metadata={} # Assuming metadata exists
-    )
+(    )
 
 
 @pytest.fixture
@@ -293,14 +293,14 @@ class TestSQLAlchemyBiometricAlertRepository:
         # Mock the _map_to_entity method
     with patch.object(repository, '_map_to_entity', return_value=sample_alert) as mock_map_to_entity:
             # Act
-    result = await repository.get_by_patient_id(
+    result = await repository.get_by_patient_id()
     patient_id=sample_patient_id,
     status=status,
     start_date=start_date,
     end_date=end_date,
     limit=limit,
     offset=offset
-    )
+(    )
 
             # Assert
     mock_session.execute.assert_called_once() # Check execute was called
@@ -385,12 +385,12 @@ class TestSQLAlchemyBiometricAlertRepository:
     repository.save = AsyncMock(return_value=sample_alert) # Mock save
 
         # Act
-    result = await repository.update_status(
+    result = await repository.update_status()
     alert_id=sample_alert_id,
     status=AlertStatus.ACKNOWLEDGED,
     user_id=sample_provider_id, # Pass user_id
     notes="Acknowledged"
-    )
+(    )
 
         # Assert
     repository._get_model_by_id.assert_called_once_with(sample_alert_id)
@@ -412,11 +412,11 @@ class TestSQLAlchemyBiometricAlertRepository:
 
         # Act & Assert
     with pytest.raises(EntityNotFoundError) as exc_info:
-    await repository.update_status(
+    await repository.update_status()
     alert_id=sample_alert_id,
     status=AlertStatus.ACKNOWLEDGED,
     user_id=sample_provider_id
-    )
+(    )
 
     assert f"Biometric alert with ID {sample_alert_id} not found" in str(exc_info.value)
 
@@ -429,11 +429,11 @@ class TestSQLAlchemyBiometricAlertRepository:
 
         # Act & Assert
     with pytest.raises(RepositoryError) as exc_info:
-    await repository.update_status(
+    await repository.update_status()
     alert_id=sample_alert_id,
     status=AlertStatus.ACKNOWLEDGED,
     user_id=sample_provider_id
-    )
+(    )
 
     assert "Error updating alert status" in str(exc_info.value)
 
@@ -517,12 +517,12 @@ class TestSQLAlchemyBiometricAlertRepository:
         # Mock the _apply_filters method (assuming it modifies the query object)
     with patch.object(repository, '_apply_filters', return_value=mock_session) as mock_apply_filters:
             # Act
-    result = await repository.count_by_patient(
+    result = await repository.count_by_patient()
     patient_id=sample_patient_id,
     status=status,
     start_date=start_date,
     end_date=end_date
-    )
+(    )
 
             # Assert
             # _apply_filters should be called within the count method logic

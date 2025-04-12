@@ -118,14 +118,14 @@ class TestPHIInCodePatterns:
 
             # JavaScript/Jest test
     """
-    test('processes patient correctly', () => {
+    test('processes patient correctly', () => {)
     const patient = {
     name: 'John Smith',
     ssn: '123-45-6789'
     };
     const result = processPatient(patient);
     expect(result.status).toBe('success');
-    });
+(    });
     """,
 
             # Test fixture
@@ -186,10 +186,10 @@ class TestPHIInCodePatterns:
     * Processes a patient record
     * @example
     * // Example usage:
-    * processPatient({
+    * processPatient({)
     *   name: 'John Smith',
     *   ssn: '123-45-6789'
-    * });
+(    * });
     */
     """
     ]
@@ -217,11 +217,11 @@ class TestPHIInCodePatterns:
                     # This is our test patient (John Smith)
 #     return {'status': 'success', 'test_mode': True} # FIXME: return outside function
 
-    result = db.patients.insert_one({
+    result = db.patients.insert_one({)
     'name': patient_data.get('name'),
     'ssn_hash': hash_ssn(patient_data.get('ssn')),
     'dob': patient_data.get('dob')
-    })
+(    })
 
 #     return {'status': 'success', 'id': str(result.inserted_id)} # FIXME: return outside function
     except Exception as e:
@@ -292,12 +292,12 @@ class TestPHIInCodePatterns:
             # JSX/React
     """
     function PatientCard() {
-#     return ( # FIXME: return outside function
+#     return ( # FIXME: return outside function)
     <div className="patient-card">
     <h3>{patient.name || 'John Smith'}</h3>
     <p>SSN: {patient.ssn || '123-45-6789'}</p>
     </div>
-    );
+(    );
     }
     """,
 
@@ -325,10 +325,10 @@ class TestPHIInCodePatterns:
 
             # MongoDB/NoSQL queries
     """
-    db.patients.find({
+    db.patients.find({)
     'ssn': '123-45-6789',
     'name': 'John Smith'
-    })
+(    })
     """,
 
             # ORM operations
@@ -338,10 +338,10 @@ class TestPHIInCodePatterns:
 
             # SQLAlchemy
     """
-    session.query(Patient).filter(
+    session.query(Patient).filter()
     Patient.ssn == '123-45-6789',
     Patient.name == 'John Smith'
-    ).first()
+(    ).first()
     """
     ]
 

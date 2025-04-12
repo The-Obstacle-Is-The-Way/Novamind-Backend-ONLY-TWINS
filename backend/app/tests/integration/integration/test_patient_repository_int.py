@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import (
+from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import ()
     PatientRepository,  
-)
+()
 
 
 @pytest.mark.db_required()

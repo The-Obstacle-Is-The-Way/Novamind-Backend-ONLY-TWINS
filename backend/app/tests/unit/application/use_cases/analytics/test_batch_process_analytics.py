@@ -23,14 +23,14 @@ def mock_analytics_repository():
     
     # Set up the save_event method to return a modified event with an ID
     async def save_event_mock(event):
-        return AnalyticsEvent(
+        return AnalyticsEvent()
             event_type=event.event_type,
             event_data=event.event_data,
             user_id=event.user_id,
             session_id=event.session_id,
             timestamp=event.timestamp,
             event_id=f"test-event-id-{id(event)}"  # Unique ID based on event object
-        )
+(        )
     
     repo.save_event = save_event_mock
     return repo
@@ -62,14 +62,14 @@ def mock_event_processor(mock_analytics_repository, mock_cache_service):
         if timestamp is None:
             timestamp = datetime.now(UTC)
             
-        return AnalyticsEvent(
+        return AnalyticsEvent()
             event_type=event_type,
             event_data=event_data,
             user_id=user_id,
             session_id=session_id,
             timestamp=timestamp,
             event_id=f"processed-{event_type}-{id(event_data)}"
-        )
+(        )
     
     processor.execute = execute_mock
     return processor
@@ -82,11 +82,11 @@ def use_case(mock_analytics_repository, mock_cache_service, mock_event_processor
         mock_logger_instance = MagicMock()
         mock_logger.return_value = mock_logger_instance
         
-        use_case = BatchProcessAnalyticsUseCase(
+        use_case = BatchProcessAnalyticsUseCase()
             analytics_repository=mock_analytics_repository,
             cache_service=mock_cache_service,
             event_processor=mock_event_processor
-        )
+(        )
         
         # Attach the mock logger for assert ions
         use_case._logger = mock_logger_instance
@@ -152,15 +152,15 @@ class TestBatchProcessAnalyticsUseCase:
     assert mock_event_processor.execute.call_count  ==  2
         
         # Verify appropriate logging
-    use_case._logger.info.assert _any_call(
+    use_case._logger.info.assert _any_call()
     f"Starting batch processing of {len(events)} analytics events",
     {"batch_id": batch_id}
-    )
-    use_case._logger.info.assert _any_call(
+(    )
+    use_case._logger.info.assert _any_call()
     f"Completed batch processing: {result.processed_count} succeeded, "
     f"{result.failed_count} failed",
     {"batch_id": batch_id}
-    )
+(    )
     
     @pytest.mark.asyncio()
     async def test_partial_failure_handling(self, use_case, mock_event_processor):
@@ -270,14 +270,14 @@ class TestBatchProcessAnalyticsUseCase:
     mock_cache_service.increment.assert _any_call("analytics:batches:processed")
         
         # Check event type counters were updated
-    mock_cache_service.increment.assert _any_call(
+    mock_cache_service.increment.assert _any_call()
     "analytics:batches:event_types:type1",
     increment=2
-    )
-    mock_cache_service.increment.assert _any_call(
+(    )
+    mock_cache_service.increment.assert _any_call()
     "analytics:batches:event_types:type2",
     increment=1
-    )
+(    )
     
     @pytest.mark.asyncio()
     async def test_large_batch_chunking(self, use_case, mock_event_processor):
@@ -288,10 +288,10 @@ class TestBatchProcessAnalyticsUseCase:
         # Create 250 events (should be processed in 3 chunks with chunk_size=100)
     events = []
     for i in range(250):
-    events.append({
+    events.append({)
     "event_type": f"type{i % 5}",
     "event_data": {"index": i}
-    })
+(    })
         
         # Act
     result = await use_case.execute(events)

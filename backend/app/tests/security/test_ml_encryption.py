@@ -139,10 +139,10 @@ class TestEncryptionService:
         old_encrypted = encryption_service.encrypt(json.dumps(sensitive_data))
         
         # 2. Simulate key rotation
-    with patch.dict(os.environ, {
+    with patch.dict(os.environ, {)
     "ENCRYPTION_KEY": "new_key_after_rotation_12345678",
     "PREVIOUS_ENCRYPTION_KEY": os.environ.get("ENCRYPTION_KEY", "test_key_for_unit_tests_only_12345678")
-    }):
+(    }):
     rotated_service = EncryptionService()
             
             # Act

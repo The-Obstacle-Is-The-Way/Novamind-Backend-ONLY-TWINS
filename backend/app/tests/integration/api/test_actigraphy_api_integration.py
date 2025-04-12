@@ -52,12 +52,12 @@ def actigraphy_data():
     
     for i in range(180):  # 3 minutes of data (simplified for testing)
         timestamp = start_time + timedelta(seconds=i)
-        readings.append({
+        readings.append({)
             "x": 0.1 + (i % 10) * 0.01,
             "y": 0.2 + (i % 5) * 0.01,
             "z": 0.3 + (i % 7) * 0.01,
             "timestamp": timestamp.isoformat() + "Z"
-        })
+(        })
     
     end_time = (start_time + timedelta(seconds=179)).isoformat() + "Z"
     start_time = start_time.isoformat() + "Z"
@@ -83,11 +83,11 @@ class TestActigraphyAPI:
     
     def test_analyze_actigraphy(self, client: TestClient, auth_headers, actigraphy_data): # Use client fixture
         """Test analyzing actigraphy data."""
-        response = client.post(
+        response = client.post()
             "/api/v1/actigraphy/analyze",
             headers=auth_headers,
             json=actigraphy_data
-        )
+(        )
         
     assert response.status_code  ==  200
     data = response.json()
@@ -110,11 +110,11 @@ class TestActigraphyAPI:
             "sampling_rate_hz": actigraphy_data["sampling_rate_hz"]
         }
         
-    response = client.post(
+    response = client.post()
     "/api/v1/actigraphy/embeddings",
     headers=auth_headers,
     json=embedding_data
-    )
+(    )
         
     assert response.status_code  ==  200
     data = response.json()
@@ -129,7 +129,7 @@ class TestActigraphyAPI:
     def test_get_analysis_by_id(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test retrieving an analysis by ID."""
         # First create an analysis
-        analysis_data = mock_pat_service.analyze_actigraphy(
+        analysis_data = mock_pat_service.analyze_actigraphy()
             patient_id="test-patient-123",
             readings=[{"x": 0.1, "y": 0.2, "z": 0.3, "timestamp": "2025-03-28T12:00:00Z"}],
             start_time="2025-03-28T12:00:00Z",
@@ -137,14 +137,14 @@ class TestActigraphyAPI:
             sampling_rate_hz=1.0,
             device_info={"name": "Test Device"},
             analysis_types=["activity_levels"]
-        )
+(        )
         
     analysis_id = analysis_data["analysis_id"]
         
-    response = client.get(
+    response = client.get()
     f"/api/v1/actigraphy/analyses/{analysis_id}",
     headers=auth_headers
-    )
+(    )
         
     assert response.status_code  ==  200
     data = response.json()
@@ -159,7 +159,7 @@ class TestActigraphyAPI:
         
         # Create a few analyses for the patient
     for i in range(3):
-    mock_pat_service.analyze_actigraphy(
+    mock_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=[{"x": 0.1, "y": 0.2, "z": 0.3, "timestamp": f"2025-03-28T12:0{i}:00Z"}],
     start_time=f"2025-03-28T12:0{i}:00Z",
@@ -167,12 +167,12 @@ class TestActigraphyAPI:
     sampling_rate_hz=1.0,
     device_info={"name": "Test Device"},
     analysis_types=["activity_levels"]
-    )
+(    )
         
-    response = client.get(
+    response = client.get()
     f"/api/v1/actigraphy/patient/{patient_id}/analyses",
     headers=auth_headers
-    )
+(    )
         
     assert response.status_code  ==  200
     data = response.json()
@@ -183,10 +183,10 @@ class TestActigraphyAPI:
     
     def test_get_model_info(self, client: TestClient, auth_headers): # Use client fixture
         """Test getting model information."""
-        response = client.get(
+        response = client.get()
             "/api/v1/actigraphy/model-info",
             headers=auth_headers
-        )
+(        )
         
     assert response.status_code  ==  200
     data = response.json()
@@ -198,7 +198,7 @@ class TestActigraphyAPI:
     def test_integrate_with_digital_twin(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test integrating analysis with digital twin."""
         # Create an analysis
-        analysis_data = mock_pat_service.analyze_actigraphy(
+        analysis_data = mock_pat_service.analyze_actigraphy()
             patient_id="test-patient-123",
             readings=[{"x": 0.1, "y": 0.2, "z": 0.3, "timestamp": "2025-03-28T12:00:00Z"}],
             start_time="2025-03-28T12:00:00Z",
@@ -206,7 +206,7 @@ class TestActigraphyAPI:
             sampling_rate_hz=1.0,
             device_info={"name": "Test Device"},
             analysis_types=["activity_levels"]
-        )
+(        )
         
     integration_data = {
     "patient_id": "test-patient-123",
@@ -214,11 +214,11 @@ class TestActigraphyAPI:
     "analysis_id": analysis_data["analysis_id"]
     }
         
-    response = client.post(
+    response = client.post()
     "/api/v1/actigraphy/integrate-with-digital-twin",
     headers=auth_headers,
     json=integration_data
-    )
+(    )
         
     assert response.status_code  ==  200
     data = response.json()
@@ -234,10 +234,10 @@ class TestActigraphyAPI:
     
     def test_unauthorized_access(self, client: TestClient, actigraphy_data): # Use client fixture
         """Test unauthorized access to API."""
-        response = client.post(
+        response = client.post()
             "/api/v1/actigraphy/analyze",
             json=actigraphy_data
-        )
+(        )
         
         # Should fail with 401 Unauthorized
     assert response.status_code  ==  401

@@ -16,7 +16,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from app.core.services.ml.pat.aws import AWSPATService
-from app.core.services.ml.pat.exceptions import (
+from app.core.services.ml.pat.exceptions import ()
     AnalysisError,  
     AuthorizationError,  
     EmbeddingError,  
@@ -24,7 +24,7 @@ from app.core.services.ml.pat.exceptions import (
     IntegrationError,  
     ResourceNotFoundError,  
     ValidationError,  
-)
+()
 
 
 @pytest.fixture
@@ -107,10 +107,10 @@ class TestAWSPATService:
     def test_initialization_failure(self, mock_boto3, aws_config):
         """Test initialization failure."""
         # Set up boto3 client to raise an exception
-        mock_boto3["sagemaker_runtime"].side_effect = ClientError(
+        mock_boto3["sagemaker_runtime"].side_effect = ClientError()
             {"Error": {"Code": "InvalidParameterValue", "Message": "Test error"}},
             "CreateEndpoint"
-        )
+(        )
         
     service = AWSPATService()
     with pytest.raises(InitializationError):
@@ -141,10 +141,10 @@ class TestAWSPATService:
     def test_sanitize_phi_error(self, aws_pat_service, mock_boto3):
         """Test PHI sanitization with error."""
         # Configure mock to raise an exception
-        mock_boto3["comprehend_medical"].detect_phi.side_effect = ClientError(
+        mock_boto3["comprehend_medical"].detect_phi.side_effect = ClientError()
             {"Error": {"Code": "InternalServerError", "Message": "Test error"}},
             "DetectPHI"
-        )
+(        )
         
     text = "Patient is John Smith, a 45-year-old male."
     sanitized = aws_pat_service._sanitize_phi(text)
@@ -164,7 +164,7 @@ class TestAWSPATService:
         analysis_types = ["activity_levels", "sleep_analysis"]
         
         # Call method (implementation is stubbed)
-    result = aws_pat_service.analyze_actigraphy(
+    result = aws_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time,
@@ -172,7 +172,7 @@ class TestAWSPATService:
     sampling_rate_hz=sampling_rate_hz,
     device_info=device_info,
     analysis_types=analysis_types
-    )
+(    )
         
         # Basic validation of stub implementation
     assert "analysis_id" in result
@@ -192,13 +192,13 @@ class TestAWSPATService:
         sampling_rate_hz = 50.0
         
         # Call method (implementation is stubbed)
-    result = aws_pat_service.get_actigraphy_embeddings(
+    result = aws_pat_service.get_actigraphy_embeddings()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time,
     end_time=end_time,
     sampling_rate_hz=sampling_rate_hz
-    )
+(    )
         
         # Basic validation of stub implementation
     assert "embedding_id" in result
@@ -232,11 +232,11 @@ class TestAWSPATService:
         analysis_id = "analysis789"
         
         # Call method (implementation is stubbed)
-    result = aws_pat_service.integrate_with_digital_twin(
+    result = aws_pat_service.integrate_with_digital_twin()
     patient_id=patient_id,
     profile_id=profile_id,
     analysis_id=analysis_id
-    )
+(    )
         
         # Basic validation of stub implementation
     assert "integration_id" in result

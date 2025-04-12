@@ -7,7 +7,7 @@ NOVAMIND platform. It tests all security controls required for compliance
 with the HIPAA Security Rule.:
 
 Key areas tested:
-- PHI encryption (at rest and in transit)
+    - PHI encryption (at rest and in transit)
 - Authentication and authorization
 - Audit logging
 - Security boundaries and access controls
@@ -27,33 +27,33 @@ from jose import jwt
 # Import application code
 try:
     from app.core.config import settings
-    from app.domain.exceptions import (
+    from app.domain.exceptions import ()
         AuthenticationError,   
         AuthorizationError,  
         PHIAccessError,  
         SecurityError,  
-    )
-    from app.infrastructure.security.encryption import (
+(    )
+    from app.infrastructure.security.encryption import ()
         encrypt_phi,   
         decrypt_phi,  
         generate_phi_key,  
         encrypt_field,  
         decrypt_field
-    )
-    from app.infrastructure.security.auth.jwt_handler import (
+(    )
+    from app.infrastructure.security.auth.jwt_handler import ()
         create_access_token,  
         decode_token,  
         get_current_user
-    )
-    from app.infrastructure.security.rbac.role_manager import (
+(    )
+    from app.infrastructure.security.rbac.role_manager import ()
         RoleBasedAccessControl,  
         check_permission
-    )
-    from app.infrastructure.logging.audit_logger import (
+(    )
+    from app.infrastructure.logging.audit_logger import ()
         AuditLogger,  
         log_phi_access,  
         sanitize_phi,  
-    )
+(    )
 except ImportError as e:
     # Create placeholder for these modules if they don't exist yet
     # This allows the tests to be defined even before implementation
@@ -63,14 +63,14 @@ except ImportError as e:
     from unittest.mock import MagicMock
     
     # Mock the settings object directly if imports fail
-    settings = MagicMock(
+    settings = MagicMock()
         PHI_ENCRYPTION_KEY="test_key_for_phi_encryption_testing_only",
         JWT_SECRET_KEY="test_jwt_secret_key_for_testing_only",
         JWT_ALGORITHM="HS256",
         JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30,
         # Add other necessary attributes if needed by tests
         USE_TLS=True # Assuming this is needed based on later test
-    )
+(    )
     
     @pytest.mark.db_required()
     class AuthenticationError(Exception): pass
@@ -205,9 +205,9 @@ class TestAuthentication:
     
     def test_create_access_token(self, test_user):
         """Test that access tokens can be created correctly."""
-        token = create_access_token(
+        token = create_access_token()
             data={"sub": test_user["username"], "id": test_user["id"]}
-        )
+(        )
         
         # Verify the token is created successfully
     assert isinstance(token, str)
@@ -228,9 +228,9 @@ class TestAuthentication:
             "sub": "test_user",
             "exp": datetime.now(UTC) - timedelta(minutes=30)
         }
-        expired_token = jwt.encode(
+        expired_token = jwt.encode()
             expired_data, settings.JWT_SECRET_KEY, algorithm="HS256"
-        )
+(        )
         
         # Verify the expired token is rejected
     with pytest.raises((jwt.JWTError, AuthenticationError)):
@@ -253,11 +253,11 @@ class TestAuthorization:
     def test_rbac_permission_check(self, test_user, mock_rbac):
         """Test that RBAC permission checks work correctly."""
         # Check permission
-        result = check_permission(
+        result = check_permission()
             user_id=test_user["id"],
             permission="read:own_data",
             resource_id=test_user["id"]
-        )
+(        )
         
         # Verify permission check succeeds
     assert result is True
@@ -269,11 +269,11 @@ class TestAuthorization:
         mock_rbac.return_value = False
         
         # Check permission for a resource the user shouldn't access
-    result = check_permission(
+    result = check_permission()
     user_id=test_user["id"],
     permission="read:phi_data",
     resource_id="different_user_id"
-    )
+(    )
         
         # Verify permission check fails
     assert result is False
@@ -283,11 +283,11 @@ class TestAuthorization:
         # Mock a situation where a patient tries to access another patient's data
         with pytest.raises((AuthorizationError, HTTPException)):
             # This should raise an exception in a real implementation
-            check_permission(
+            check_permission()
                 user_id=test_user["id"],
                 permission="read:phi_data",
                 resource_id="another_patient_id"
-            )
+(            )
             raise AuthorizationError("Access denied")
 
 
@@ -298,12 +298,12 @@ class TestAuditLogging:
     def test_phi_access_logging(self, test_user, test_phi_data, mock_audit_logger):
         """Test that PHI access is properly logged."""
         # Simulate PHI access
-        log_phi_access(
+        log_phi_access()
             user_id=test_user["id"],
             action="view",
             resource_type="patient_record",
             resource_id=test_phi_data["patient_id"]
-        )
+(        )
         
         # Verify the logger was called with the correct parameters
     mock_audit_logger.assert_called_once()

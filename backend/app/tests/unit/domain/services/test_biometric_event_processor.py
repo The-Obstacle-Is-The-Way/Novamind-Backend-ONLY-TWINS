@@ -15,7 +15,7 @@ import pytest
 
 from app.domain.entities.biometric_twin import BiometricDataPoint
 from app.domain.exceptions import ValidationError
-from app.domain.services.biometric_event_processor import (
+from app.domain.services.biometric_event_processor import ()
     AlertPriority,
     AlertRule, # Assuming AlertRule exists or is defined elsewhere
     BiometricAlert,
@@ -25,7 +25,7 @@ from app.domain.services.biometric_event_processor import (
     SMSAlertObserver,
     InAppAlertObserver,
     ClinicalRuleEngine # Assuming ClinicalRuleEngine exists or is defined elsewhere
-)
+()
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ def sample_clinician_id():
 def sample_data_point(sample_patient_id):
     """Create a sample biometric data point."""
     
-    return BiometricDataPoint(
+    return BiometricDataPoint()
         data_id=UUID("00000000-0000-0000-0000-000000000002"),
         patient_id=sample_patient_id,
         data_type="heart_rate",
@@ -55,14 +55,14 @@ def sample_data_point(sample_patient_id):
         source="apple_watch",
         metadata={"activity": "resting"},
         confidence=0.95
-    )
+(    )
 
 
 @pytest.fixture
 def sample_rule(sample_clinician_id):
     """Create a sample alert rule."""
     # Assuming AlertRule takes condition as a dict for simplicity in test setup
-    return AlertRule(
+    return AlertRule()
         rule_id="test-rule-1",
         name="High Heart Rate",
         description="Alert when heart rate exceeds 100 bpm",
@@ -74,7 +74,7 @@ def sample_rule(sample_clinician_id):
         },
         created_by=sample_clinician_id,
         is_active=True # Assuming is_active attribute exists
-    )
+(    )
 
 
 @pytest.fixture
@@ -127,7 +127,7 @@ class TestBiometricEventProcessor:
     def test_process_data_point_no_patient_id(self):
         """Test that process_data_point raises an error if the data point has no patient ID."""
         processor = BiometricEventProcessor()
-        data_point = BiometricDataPoint(
+        data_point = BiometricDataPoint()
             data_id=UUID("00000000-0000-0000-0000-000000000002"),
             patient_id=None, # No patient ID
             data_type="heart_rate",
@@ -136,7 +136,7 @@ class TestBiometricEventProcessor:
             source="apple_watch",
             metadata={"activity": "resting"},
             confidence=0.95
-        )
+(        )
 
     with pytest.raises(ValidationError):
     processor.process_data_point(data_point)
@@ -144,7 +144,7 @@ class TestBiometricEventProcessor:
     def test_process_data_point_no_matching_rules(self, sample_data_point):
         """Test that process_data_point returns no alerts if no rules match."""
         processor = BiometricEventProcessor()
-        rule = AlertRule(
+        rule = AlertRule()
             rule_id="test-rule-1",
             name="Low Heart Rate",
             description="Alert when heart rate is below 50 bpm",
@@ -156,7 +156,7 @@ class TestBiometricEventProcessor:
             },
             created_by=UUID("00000000-0000-0000-0000-000000000001"),
             is_active=True
-        )
+(        )
         processor.add_rule(rule)
 
     alerts = processor.process_data_point(sample_data_point)
@@ -191,7 +191,7 @@ class TestBiometricEventProcessor:
 
         # Add a patient-specific rule for a different patient
     other_patient_id = UUID("99999999-9999-9999-9999-999999999999")
-    patient_specific_rule = AlertRule(
+    patient_specific_rule = AlertRule()
     rule_id="test-rule-2",
     name="Patient-Specific High Heart Rate",
     description="Alert when heart rate exceeds 90 bpm for a specific patient",
@@ -204,11 +204,11 @@ class TestBiometricEventProcessor:
     created_by=sample_clinician_id,
     patient_id=other_patient_id, # Specific patient
     is_active=True
-    )
+(    )
     processor.add_rule(patient_specific_rule)
 
         # Add a general rule (no patient_id)
-    general_rule = AlertRule(
+    general_rule = AlertRule()
     rule_id="test-rule-general",
     name="General High Heart Rate",
     description="Alert when heart rate exceeds 100 bpm",
@@ -221,7 +221,7 @@ class TestBiometricEventProcessor:
     created_by=sample_clinician_id,
     patient_id=None, # General rule
     is_active=True
-    )
+(    )
     processor.add_rule(general_rule)
 
         # Process a data point for the sample patient (heart rate 120)
@@ -384,7 +384,7 @@ class TestBiometricAlert:
     def test_acknowledge(self, sample_data_point, sample_rule, sample_clinician_id):
         """Test that acknowledge correctly marks an alert as acknowledged."""
         # Create an alert
-        alert = BiometricAlert(
+        alert = BiometricAlert()
             alert_id="test-alert-1",
             patient_id=sample_data_point.patient_id,
             rule_id=sample_rule.rule_id,
@@ -393,7 +393,7 @@ class TestBiometricAlert:
             data_point=sample_data_point,
             message="Test alert message",
             context={}
-        )
+(        )
 
         # Initially not acknowledged
     assert alert.acknowledged is False
@@ -421,7 +421,7 @@ class TestAlertObservers:
     observer = EmailAlertObserver(email_service)
 
         # Create an alert
-    alert = BiometricAlert(
+    alert = BiometricAlert()
     alert_id="test-alert-1",
     patient_id=sample_data_point.patient_id,
     rule_id=sample_rule.rule_id,
@@ -430,7 +430,7 @@ class TestAlertObservers:
     data_point=sample_data_point,
     message="Test alert message",
     context={}
-    )
+(    )
 
         # Patch the _get_recipient_for_patient method
     with patch.object(observer, '_get_recipient_for_patient', return_value="clinician@example.com"):
@@ -449,7 +449,7 @@ class TestAlertObservers:
     observer = SMSAlertObserver(sms_service)
 
         # Create an urgent alert
-    alert = BiometricAlert(
+    alert = BiometricAlert()
     alert_id="test-alert-1",
     patient_id=sample_data_point.patient_id,
     rule_id=sample_rule.rule_id,
@@ -458,7 +458,7 @@ class TestAlertObservers:
     data_point=sample_data_point,
     message="Test alert message",
     context={}
-    )
+(    )
 
         # Patch the _get_recipient_for_patient method
     with patch.object(observer, '_get_recipient_for_patient', return_value="+1234567890"):
@@ -477,7 +477,7 @@ class TestAlertObservers:
     observer = SMSAlertObserver(sms_service)
 
         # Create a warning alert
-    alert = BiometricAlert(
+    alert = BiometricAlert()
     alert_id="test-alert-1",
     patient_id=sample_data_point.patient_id,
     rule_id=sample_rule.rule_id,
@@ -486,7 +486,7 @@ class TestAlertObservers:
     data_point=sample_data_point,
     message="Test alert message",
     context={}
-    )
+(    )
 
         # Notify the observer
     observer.notify(alert)
@@ -503,7 +503,7 @@ class TestAlertObservers:
     observer = InAppAlertObserver(notification_service)
 
         # Create an alert
-    alert = BiometricAlert(
+    alert = BiometricAlert()
     alert_id="test-alert-1",
     patient_id=sample_data_point.patient_id,
     rule_id=sample_rule.rule_id,
@@ -512,7 +512,7 @@ class TestAlertObservers:
     data_point=sample_data_point,
     message="Test alert message",
     context={}
-    )
+(    )
 
         # Patch the _get_recipients_for_patient method
     with patch.object(observer, '_get_recipients_for_patient', return_value=[UUID("00000000-0000-0000-0000-000000000001")]):
@@ -526,18 +526,18 @@ class TestAlertObservers:
 # Assuming ClinicalRuleEngine is defined elsewhere and imported correctly
 # If not, these tests need adjustment or removal.
 # class TestClinicalRuleEngine:
-#     """Tests for the ClinicalRuleEngine class."""
+    #     """Tests for the ClinicalRuleEngine class."""
 
 #     @pytest.fixture
 #     def mock_rule_repo(self):
-#         return AsyncMock()
+    #         return AsyncMock()
 
 #     @pytest.fixture
 #     def engine(self, mock_rule_repo):
-#         return ClinicalRuleEngine(rule_repository=mock_rule_repo)
+    #         return ClinicalRuleEngine(rule_repository=mock_rule_repo)
 
 #     def test_register_rule_template(self, engine):
-#         """Test that register_rule_template correctly registers a template."""
+    #         """Test that register_rule_template correctly registers a template."""
 #         template = {
 #             "name": "High Heart Rate Template",
 #             "description": "Alert when heart rate exceeds {threshold}",
@@ -554,7 +554,7 @@ class TestAlertObservers:
 #         assert "high_hr" in engine.rule_templates
 
 #     def test_create_rule_from_template(self, engine, sample_clinician_id):
-#         """Test that create_rule_from_template correctly creates a rule from a template."""
+    #         """Test that create_rule_from_template correctly creates a rule from a template."""
 #         template = {
 #             "name": "High Heart Rate Template",
 #             "description": "Alert when heart rate exceeds {threshold}",
@@ -569,18 +569,18 @@ class TestAlertObservers:
 #         }
 #         engine.register_rule_template("high_hr", template)
 
-#         rule = engine.create_rule_from_template(
+#         rule = engine.create_rule_from_template()
 #             template_name="high_hr",
 #             provider_id=sample_clinician_id,
 #             parameters={"threshold": 110}
-#         )
+(#         )
 #         assert isinstance(rule, AlertRule)
 #         assert rule.name == "High Heart Rate Template"
 #         assert rule.conditions[0].threshold_value == 110
 #         assert rule.provider_id == sample_clinician_id
 
 #     def test_create_rule_from_template_missing_parameter(self, engine, sample_clinician_id):
-#         """Test that create_rule_from_template raises an error if a required parameter is missing."""
+    #         """Test that create_rule_from_template raises an error if a required parameter is missing."""
 #         template = {
 #             "name": "High Heart Rate Template",
 #             "description": "Alert when heart rate exceeds {threshold}",
@@ -591,17 +591,17 @@ class TestAlertObservers:
 #         engine.register_rule_template("high_hr", template)
 
 #         with pytest.raises(ValueError, match="Missing required parameter"):
-#             engine.create_rule_from_template(
+    #             engine.create_rule_from_template()
 #                 template_name="high_hr",
 #                 provider_id=sample_clinician_id,
 #                 parameters={} # Missing threshold
-#             )
+(#             )
 
 #     def test_create_rule_from_template_unknown_template(self, engine, sample_clinician_id):
-#         """Test that create_rule_from_template raises an error for an unknown template."""
+    #         """Test that create_rule_from_template raises an error for an unknown template."""
 #         with pytest.raises(ValueError, match="Unknown rule template"):
-#             engine.create_rule_from_template(
+    #             engine.create_rule_from_template()
 #                 template_name="unknown_template",
 #                 provider_id=sample_clinician_id,
 #                 parameters={"threshold": 100}
-#             )
+(#             )

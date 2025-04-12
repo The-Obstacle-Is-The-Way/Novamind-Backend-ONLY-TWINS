@@ -37,14 +37,14 @@ def db_session():
 @pytest.fixture
 def test_patient(db_session):
     """Create a test patient in the database."""
-    patient = PatientModel(
+    patient = PatientModel()
         id="P12345",
         medical_record_number="MRN-678901",
         name="Test Patient",
         date_of_birth="1980-01-15",
         gender="male",
         email="test@example.com"
-    )
+(    )
     db_session.add(patient)
     db_session.commit()
     db_session.refresh(patient)
@@ -101,10 +101,10 @@ class TestPatientAPI:
         }
         
         # Act
-    response = api_client.post(
+    response = api_client.post()
     "/api/v1/patients/",
     json=patient_data
-    )
+(    )
         
         # Assert
     assert response.status_code  ==  201
@@ -130,10 +130,10 @@ class TestPatientAPI:
         }
         
         # Act
-    response = api_client.patch(
+    response = api_client.patch()
     f"/api/v1/patients/{test_patient.id}",
     json=update_data
-    )
+(    )
         
         # Assert
     assert response.status_code  ==  200
@@ -149,14 +149,14 @@ class TestPatientAPI:
     def test_delete_patient_success(self, api_client, db_session):
         """Test deleting a patient successfully."""
         # Arrange - Create a patient specifically for deletion
-        patient_to_delete = PatientModel(
+        patient_to_delete = PatientModel()
             id="P-DELETE",
             medical_record_number="MRN-DELETE",
             name="Patient to Delete",
             date_of_birth="1985-06-15",
             gender="female",
             email="delete@example.com"
-        )
+(        )
         db_session.add(patient_to_delete)
         db_session.commit()
         

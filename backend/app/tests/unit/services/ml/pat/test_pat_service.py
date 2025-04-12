@@ -15,12 +15,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 from botocore.exceptions import ClientError
 
-from app.core.exceptions import (
+from app.core.exceptions import ()
     InvalidConfigurationError,  
     InvalidRequestError,  
     ResourceNotFoundError,  
     ServiceUnavailableError,  
-)
+()
 from app.core.services.ml.pat.bedrock import BedrockPAT
 from app.core.services.ml.pat.factory import PATServiceFactory
 from app.core.services.ml.pat.interface import PATInterface
@@ -100,7 +100,7 @@ class TestMockPAT:
         end_time = datetime.now()
         
         # Call the service
-    result = mock_pat_service.analyze_actigraphy(
+    result = mock_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time.isoformat(),
@@ -108,7 +108,7 @@ class TestMockPAT:
     sampling_rate_hz=10.0,
     device_info={"device_type": "fitbit", "model": "versa-3"},
     analysis_types=["sleep_quality", "activity_levels"]
-    )
+(    )
         
         # Verify results
     assert isinstance(result, dict)
@@ -139,13 +139,13 @@ class TestMockPAT:
         end_time = datetime.now()
         
         # Call the service
-    result = mock_pat_service.get_embeddings(
+    result = mock_pat_service.get_embeddings()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time.isoformat(),
     end_time=end_time.isoformat(),
     sampling_rate_hz=10.0
-    )
+(    )
         
         # Verify results
     assert isinstance(result, dict)
@@ -165,7 +165,7 @@ class TestMockPAT:
         start_time = datetime.now() - timedelta(hours=1)
         end_time = datetime.now()
         
-    analysis = mock_pat_service.analyze_actigraphy(
+    analysis = mock_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time.isoformat(),
@@ -173,7 +173,7 @@ class TestMockPAT:
     sampling_rate_hz=10.0,
     device_info={"device_type": "fitbit", "model": "versa-3"},
     analysis_types=["sleep_quality"]
-    )
+(    )
         
     analysis_id = analysis["analysis_id"]
         
@@ -196,7 +196,7 @@ class TestMockPAT:
     start_time = datetime.now() - timedelta(hours=i+1)
     end_time = datetime.now() - timedelta(hours=i)
             
-    mock_pat_service.analyze_actigraphy(
+    mock_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time.isoformat(),
@@ -204,14 +204,14 @@ class TestMockPAT:
     sampling_rate_hz=10.0,
     device_info={"device_type": "fitbit", "model": "versa-3"},
     analysis_types=["sleep_quality", "activity_levels"]
-    )
+(    )
         
         # Now retrieve all analyses for the patient
-    result = mock_pat_service.get_patient_analyses(
+    result = mock_pat_service.get_patient_analyses()
     patient_id=patient_id,
     limit=10,
     offset=0
-    )
+(    )
         
         # Verify results
     assert isinstance(result, dict)
@@ -222,18 +222,18 @@ class TestMockPAT:
     assert result["total"] == 3
         
         # Verify pagination
-    limited_result = mock_pat_service.get_patient_analyses(
+    limited_result = mock_pat_service.get_patient_analyses()
     patient_id=patient_id,
     limit=2,
     offset=0
-    )
+(    )
     assert len(limited_result["analyses"]) == 2
         
-    offset_result = mock_pat_service.get_patient_analyses(
+    offset_result = mock_pat_service.get_patient_analyses()
     patient_id=patient_id,
     limit=2,
     offset=1
-    )
+(    )
     assert len(offset_result["analyses"]) == 2
     
     def test_get_model_info(self, mock_pat_service: MockPAT) -> None:
@@ -259,7 +259,7 @@ class TestMockPAT:
     start_time = datetime.now() - timedelta(hours=1)
     end_time = datetime.now()
         
-    analysis = mock_pat_service.analyze_actigraphy(
+    analysis = mock_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time.isoformat(),
@@ -267,14 +267,14 @@ class TestMockPAT:
     sampling_rate_hz=10.0,
     device_info={"device_type": "fitbit", "model": "versa-3"},
     analysis_types=["sleep_quality", "activity_levels"]
-    )
+(    )
         
         # Call the service
-    result = mock_pat_service.integrate_with_digital_twin(
+    result = mock_pat_service.integrate_with_digital_twin()
     patient_id=patient_id,
     profile_id=profile_id,
     actigraphy_analysis=analysis
-    )
+(    )
         
         # Verify results
     assert isinstance(result, dict)
@@ -303,18 +303,18 @@ class TestBedrockPAT:
         
         # Test with missing KMS key
     with pytest.raises(InvalidConfigurationError):
-    service.initialize({
+    service.initialize({)
     "bucket_name": "test-bucket",
     "table_name": "test-table"
-    })
+(    })
         
         # Test with complete configuration
     with patch("boto3.client") as mock_boto:
-    service.initialize({
+    service.initialize({)
     "bucket_name": "test-bucket",
     "table_name": "test-table",
     "kms_key_id": "test-key-id"
-    })
+(    })
     assert service.initialized
     assert service.bucket_name  ==  "test-bucket"
     assert service.table_name  ==  "test-table"
@@ -329,14 +329,14 @@ class TestBedrockPAT:
         end_time = datetime.now()
         
         # Mock Bedrock response
-    mock_response_body = json.dumps({
+    mock_response_body = json.dumps({)
     "sleep_metrics": {
     "sleep_efficiency": 0.85,
     "sleep_duration_hours": 7.5,
     "wake_after_sleep_onset_minutes": 12.3,
     "sleep_latency_minutes": 8.2
     }
-    })
+(    })
     mock_response = {
     "body": MagicMock()
     }
@@ -348,7 +348,7 @@ class TestBedrockPAT:
     bedrock_pat_service.dynamodb_client.put_item.return_value = {}
         
         # Call the service
-    result = bedrock_pat_service.analyze_actigraphy(
+    result = bedrock_pat_service.analyze_actigraphy()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time.isoformat(),
@@ -356,7 +356,7 @@ class TestBedrockPAT:
     sampling_rate_hz=10.0,
     device_info={"device_type": "fitbit", "model": "versa-3"},
     analysis_types=["sleep_quality"]
-    )
+(    )
         
         # Verify results
     assert isinstance(result, dict)
@@ -388,10 +388,10 @@ class TestBedrockPAT:
         
         # Mock Bedrock response
     mock_embeddings = [0.1, 0.2, 0.3, 0.4, 0.5]
-    mock_response_body = json.dumps({
+    mock_response_body = json.dumps({)
     "embeddings": mock_embeddings,
     "model_version": "PAT-1.0"
-    })
+(    })
     mock_response = {
     "body": MagicMock()
     }
@@ -400,13 +400,13 @@ class TestBedrockPAT:
     bedrock_pat_service.bedrock_runtime.invoke_model.return_value = mock_response
         
         # Call the service
-    result = bedrock_pat_service.get_embeddings(
+    result = bedrock_pat_service.get_embeddings()
     patient_id=patient_id,
     readings=readings,
     start_time=start_time.isoformat(),
     end_time=end_time.isoformat(),
     sampling_rate_hz=10.0
-    )
+(    )
         
         # Verify results
     assert isinstance(result, dict)
@@ -520,11 +520,11 @@ class TestBedrockPAT:
     bedrock_pat_service.dynamodb_client.query.return_value = mock_dynamodb_response
         
         # Call the service
-    result = bedrock_pat_service.get_patient_analyses(
+    result = bedrock_pat_service.get_patient_analyses()
     patient_id=patient_id,
     limit=10,
     offset=0
-    )
+(    )
         
         # Verify results
     assert isinstance(result, dict)
@@ -553,11 +553,11 @@ class TestBedrockPAT:
         
         # Call the service
     with pytest.raises(ResourceNotFoundError):
-    bedrock_pat_service.get_patient_analyses(
+    bedrock_pat_service.get_patient_analyses()
     patient_id=patient_id,
     limit=10,
     offset=0
-    )
+(    )
     
     def test_integrate_with_digital_twin(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test integrating actigraphy analysis with a digital twin with the Bedrock service."""
@@ -575,7 +575,7 @@ class TestBedrockPAT:
     }
         
         # Mock Bedrock response
-    mock_response_body = json.dumps({
+    mock_response_body = json.dumps({)
     "profile_id": profile_id,
     "patient_id": patient_id,
     "timestamp": datetime.now().isoformat(),
@@ -589,7 +589,7 @@ class TestBedrockPAT:
     "anxiety_level": 0.3
     }
     }
-    })
+(    })
     mock_response = {
     "body": MagicMock()
     }
@@ -598,11 +598,11 @@ class TestBedrockPAT:
     bedrock_pat_service.bedrock_runtime.invoke_model.return_value = mock_response
         
         # Call the service
-    result = bedrock_pat_service.integrate_with_digital_twin(
+    result = bedrock_pat_service.integrate_with_digital_twin()
     patient_id=patient_id,
     profile_id=profile_id,
     actigraphy_analysis=actigraphy_analysis
-    )
+(    )
         
         # Verify results
     assert isinstance(result, dict)

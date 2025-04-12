@@ -48,7 +48,7 @@ def mock_event_repository():
 def mock_xgboost_service():
     """Create a mock XGBoost service."""
     service = MagicMock()
-    service.predict_treatment_response = MagicMock(return_value={
+    service.predict_treatment_response = MagicMock(return_value={)
         "predicted_response": 0.75,
         "confidence": 0.85,
         "timeframe_days": 14,
@@ -57,7 +57,7 @@ def mock_xgboost_service():
             "age": 0.25,
             "previous_treatment_response": 0.3
         }
-    })
+(    })
     
     return service
 
@@ -82,7 +82,7 @@ def mock_sequence():
         values[i][serotonin_idx] = 0.3 + (i * 0.1)
     
     # Create sequence with compatible parameters
-    sequence = TemporalSequence(
+    sequence = TemporalSequence()
         name="test_sequence",
         sequence_id=uuid.uuid4(),
         patient_id=uuid.uuid4(),
@@ -90,7 +90,7 @@ def mock_sequence():
         timestamps=timestamps,
         values=values,
         metadata={"test": "data"}
-    )
+(    )
     
     # No need to add events, they're already in the values list
     
@@ -103,11 +103,11 @@ def mock_sequence():
 def temporal_service(mock_sequence_repository, mock_event_repository, mock_xgboost_service):
     """Create a temporal neurotransmitter service with mock dependencies."""
     
-    return TemporalNeurotransmitterService(
+    return TemporalNeurotransmitterService()
         sequence_repository=mock_sequence_repository,
         event_repository=mock_event_repository,
         xgboost_service=mock_xgboost_service
-    )
+(    )
 
 
 class TestTemporalNeurotransmitterService:
@@ -117,13 +117,13 @@ class TestTemporalNeurotransmitterService:
     async def test_generate_neurotransmitter_time_series(self, temporal_service, test_patient_id):
     """Test generation of neurotransmitter time series."""
         # Execute
-    sequence_id = await temporal_service.generate_neurotransmitter_time_series(
+    sequence_id = await temporal_service.generate_neurotransmitter_time_series()
     patient_id=test_patient_id,
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=Neurotransmitter.SEROTONIN,
     time_range_days=14,
     time_step_hours=6
-    )
+(    )
         
         # Verify
     assert sequence_id is not None
@@ -134,19 +134,19 @@ class TestTemporalNeurotransmitterService:
     assert temporal_service.event_repository.save.called
     
     @pytest.mark.asyncio()
-    async def test_analyze_patient_neurotransmitter_levels(
+    async def test_analyze_patient_neurotransmitter_levels()
     self, temporal_service, mock_sequence_repository, mock_sequence, test_patient_id
-    ):
+(    ):
     """Test analysis of neurotransmitter levels."""
         # Setup - configure mock to return a sequence
     mock_sequence_repository.get_latest_by_feature.return_value = mock_sequence
         
         # Execute
-    effect = await temporal_service.analyze_patient_neurotransmitter_levels(
+    effect = await temporal_service.analyze_patient_neurotransmitter_levels()
     patient_id=test_patient_id,
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=Neurotransmitter.SEROTONIN
-    )
+(    )
         
         # Verify
     assert effect is not None
@@ -158,39 +158,39 @@ class TestTemporalNeurotransmitterService:
     assert effect.comparison_period is not None
     
     @pytest.mark.asyncio()
-    async def test_analyze_patient_neurotransmitter_levels_no_data(
+    async def test_analyze_patient_neurotransmitter_levels_no_data()
     self, temporal_service, mock_sequence_repository, test_patient_id
-    ):
+(    ):
     """Test analysis when no data is available."""
         # Setup - configure mock to return None (no sequence found)
     mock_sequence_repository.get_latest_by_feature.return_value = None
         
         # Execute
-    effect = await temporal_service.analyze_patient_neurotransmitter_levels(
+    effect = await temporal_service.analyze_patient_neurotransmitter_levels()
     patient_id=test_patient_id,
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=Neurotransmitter.SEROTONIN
-    )
+(    )
         
         # Verify
     assert effect is None
     
     @pytest.mark.asyncio()
-    async def test_simulate_treatment_response(
+    async def test_simulate_treatment_response()
     self, temporal_service, mock_sequence_repository, test_patient_id
-    ):
+(    ):
     """Test simulation of treatment response."""
         # Setup for empty sequence check
     mock_sequence_repository.get_latest_by_feature.return_value = MagicMock(sequence_length=0)
         
         # Execute
-    response_sequences = await temporal_service.simulate_treatment_response(
+    response_sequences = await temporal_service.simulate_treatment_response()
     patient_id=test_patient_id,
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     target_neurotransmitter=Neurotransmitter.SEROTONIN,
     treatment_effect=0.5,
     simulation_days=7
-    )
+(    )
         
         # Verify
     assert isinstance(response_sequences, dict)
@@ -201,28 +201,28 @@ class TestTemporalNeurotransmitterService:
     assert temporal_service._xgboost_service.predict_treatment_response.called
     
     @pytest.mark.asyncio()
-    async def test_simulate_treatment_response_without_xgboost(
+    async def test_simulate_treatment_response_without_xgboost()
     self, mock_sequence_repository, mock_event_repository
-    ):
+(    ):
     """Test simulation of treatment response without XGBoost service."""
         # Create service without XGBoost
-    service = TemporalNeurotransmitterService(
+    service = TemporalNeurotransmitterService()
     sequence_repository=mock_sequence_repository,
     event_repository=mock_event_repository,
     xgboost_service=None
-    )
+(    )
         
         # Configure mock to return no sequence
     mock_sequence_repository.get_latest_by_feature.return_value = None
         
         # Execute
-    response_sequences = await service.simulate_treatment_response(
+    response_sequences = await service.simulate_treatment_response()
     patient_id=uuid.uuid4(),
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     target_neurotransmitter=Neurotransmitter.SEROTONIN,
     treatment_effect=0.5,
     simulation_days=7
-    )
+(    )
         
         # Verify
     assert isinstance(response_sequences, dict)
@@ -230,9 +230,9 @@ class TestTemporalNeurotransmitterService:
     assert mock_sequence_repository.save.called
     
     @pytest.mark.asyncio()
-    async def test_get_visualization_data(
+    async def test_get_visualization_data()
     self, temporal_service, mock_sequence_repository, mock_sequence
-    ):
+(    ):
     """Test retrieval of visualization data."""
         # Setup
     sequence_id = uuid.uuid4()
@@ -250,9 +250,9 @@ class TestTemporalNeurotransmitterService:
     assert mock_sequence_repository.get_by_id.called
     
     @pytest.mark.asyncio()
-    async def test_get_visualization_data_invalid_id(
+    async def test_get_visualization_data_invalid_id()
     self, temporal_service, mock_sequence_repository
-    ):
+(    ):
     """Test visualization data retrieval with invalid ID."""
         # Setup
     sequence_id = uuid.uuid4()
@@ -263,17 +263,17 @@ class TestTemporalNeurotransmitterService:
     await temporal_service.get_visualization_data(sequence_id)
     
     @pytest.mark.asyncio()
-    async def test_get_cascade_visualization(
+    async def test_get_cascade_visualization()
     self, temporal_service, test_patient_id
-    ):
+(    ):
     """Test cascade visualization."""
         # Execute
-    cascade_data = await temporal_service.get_cascade_visualization(
+    cascade_data = await temporal_service.get_cascade_visualization()
     patient_id=test_patient_id,
     starting_region=BrainRegion.PREFRONTAL_CORTEX,
     neurotransmitter=Neurotransmitter.SEROTONIN,
     time_steps=5
-    )
+(    )
         
         # Verify
     assert cascade_data is not None
@@ -286,9 +286,9 @@ class TestTemporalNeurotransmitterService:
     assert cascade_data["neurotransmitter"] == Neurotransmitter.SEROTONIN.value
     
     @pytest.mark.asyncio()
-    async def test_xgboost_integration_treatment_adjustment(
+    async def test_xgboost_integration_treatment_adjustment()
     self, temporal_service, mock_sequence_repository, mock_sequence, test_patient_id
-    ):
+(    ):
     """Test XGBoost integration for treatment effect adjustment."""
         # Setup - ensure baseline data is available
     mock_sequence_repository.get_latest_by_feature.return_value = mock_sequence
@@ -302,13 +302,13 @@ class TestTemporalNeurotransmitterService:
         
         # Execute
     input_effect = 0.5
-    response_sequences = await temporal_service.simulate_treatment_response(
+    response_sequences = await temporal_service.simulate_treatment_response()
     patient_id=test_patient_id,
     brain_region=BrainRegion.PREFRONTAL_CORTEX,
     target_neurotransmitter=Neurotransmitter.SEROTONIN,
     treatment_effect=input_effect,
     simulation_days=14
-    )
+(    )
         
         # Verify sequences were created
     assert isinstance(response_sequences, dict)

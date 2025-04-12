@@ -5,13 +5,13 @@ import logging
 from typing import Dict, Any, List
 from unittest.mock import patch, MagicMock, Mock
 
-from app.infrastructure.security.log_sanitizer import (
+from app.infrastructure.security.log_sanitizer import ()
     LogSanitizer,   SanitizerConfig,   PatternType,   RedactionMode,  
     PHIPattern,   PatternRepository,   RedactionStrategy,  
     FullRedactionStrategy,   PartialRedactionStrategy,   HashRedactionStrategy,  
     RedactionStrategyFactory,   PHIFormatter,   PHIRedactionHandler,   
     SanitizedLogger,   sanitize_logs,   get_sanitized_logger
-)
+()
 
 
 class TestPHIPattern:
@@ -19,12 +19,12 @@ class TestPHIPattern:
     
     def test_phi_pattern_matches_regex(self):
         """Test regex pattern matching."""
-        pattern = PHIPattern(
+        pattern = PHIPattern()
             name="SSN", 
             pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
             type=PatternType.REGEX,
             priority=10
-        )
+(        )
         
         # Should match
     assert pattern.matches("SSN: 123-45-6789")
@@ -40,12 +40,12 @@ class TestPHIPattern:
     @pytest.mark.standalone()
     def test_phi_pattern_matches_exact(self):
         """Test exact pattern matching."""
-        pattern = PHIPattern(
+        pattern = PHIPattern()
             name="Sensitive Key", 
             pattern="patient_id",
             type=PatternType.EXACT,
             priority=10
-        )
+(        )
         
         # Should match
     assert pattern.matches("patient_id")
@@ -59,12 +59,12 @@ class TestPHIPattern:
 
     def test_phi_pattern_matches_fuzzy(self):
         """Test fuzzy pattern matching."""
-        pattern = PHIPattern(
+        pattern = PHIPattern()
             name="Medical Term", 
             pattern="diagnosis",
             type=PatternType.FUZZY,
             priority=5
-        )
+(        )
         
         # Should match
     assert pattern.matches("The diagnosis is...")
@@ -78,13 +78,13 @@ class TestPHIPattern:
 
     def test_phi_pattern_matches_context(self):
         """Test context-based pattern matching."""
-        pattern = PHIPattern(
+        pattern = PHIPattern()
             name="SSN Context", 
             pattern="",
             type=PatternType.CONTEXT,
             priority=10,
             context_words=["social", "security", "ssn"]
-        )
+(        )
         
         # Should match with context
     assert pattern.matches("", context="social security number")
@@ -173,12 +173,12 @@ class TestPatternRepository:
         initial_count = len(repo.get_patterns())
         
         # Add a new pattern
-    new_pattern = PHIPattern(
+    new_pattern = PHIPattern()
     name="Custom Pattern",
     pattern=r"custom\d+",
     type=PatternType.REGEX,
     priority=7
-    )
+(    )
     repo.add_pattern(new_pattern)
         
         # Check if pattern was added
@@ -273,11 +273,11 @@ class TestRedactionStrategies:
 
     def test_redaction_strategy_factory(self):
         """Test RedactionStrategyFactory."""
-        config = SanitizerConfig(
+        config = SanitizerConfig()
             redaction_marker="[CUSTOM REDACTED]",
             partial_redaction_length=3,
             identifier_hash_salt="custom-salt"
-        )
+(        )
         
         # Test creating different strategies
     full_strategy = RedactionStrategyFactory.create_strategy(RedactionMode.FULL, config)
@@ -313,7 +313,7 @@ class TestSanitizerConfig:
 
     def test_custom_config(self):
         """Test custom configuration values."""
-        config = SanitizerConfig(
+        config = SanitizerConfig()
             enabled=False,
             redaction_mode=RedactionMode.PARTIAL,
             redaction_marker="[CUSTOM]",
@@ -322,7 +322,7 @@ class TestSanitizerConfig:
             sensitive_field_names=["custom_field"],
             sensitive_keys_case_sensitive=True,
             hash_identifiers=True
-        )
+(        )
         
         # Check custom values
     assert config.enabled is False
@@ -382,13 +382,13 @@ class TestLogSanitizer:
         
     sanitizer = LogSanitizer()
         
-    complex_string = (
+    complex_string = ()
     "Patient record - Name: John Doe, "
     "DOB: 01/01/1980, SSN: 123-45-6789, "
     "Email: john.doe@example.com, "
     "Phone: (555) 123-4567, "
     "ID: PT123456"
-    )
+(    )
         
     result = sanitizer.sanitize(complex_string)
         
@@ -564,11 +564,11 @@ class TestLoggingIntegration:
         formatter = PHIFormatter(fmt="%(message)s", sanitizer=sanitizer)
         
         # Create a log record with PHI
-    record = logging.LogRecord(
+    record = logging.LogRecord()
     name="test", level=logging.INFO, pathname="", lineno=0,
     msg="Patient John Doe (SSN: 123-45-6789) accessed record.", args=(),
     exc_info=None, func=""
-    )
+(    )
         # Format the record
     formatted = formatter.format(record)
         
@@ -591,11 +591,11 @@ class TestLoggingIntegration:
     redaction_handler = PHIRedactionHandler(handler=handler, sanitizer=sanitizer)
         
         # Create a test record
-    record = logging.LogRecord(
+    record = logging.LogRecord()
     name="test", level=logging.INFO, pathname="", lineno=0,
     msg="Patient John Doe (SSN: 123-45-6789) accessed record.", args=(),
     exc_info=None, func=""
-    )
+(    )
         
         # Use the sanitize method directly to verify PHI is redacted
         # This avoids complex handler interaction testing

@@ -23,11 +23,11 @@ class TestBiometricLSTMModel:
     @pytest.fixture
     def model(self):
         """Create a BiometricLSTMModel with mocked internals."""
-        model = BiometricCorrelationModel(
+        model = BiometricCorrelationModel()
             model_path="test_model_path",
             input_dim=10,
             output_dim=5
-        )
+(        )
         # Mock the internal model
         model._initialize_model = MagicMock()
         model.is_initialized = True
@@ -37,20 +37,20 @@ class TestBiometricLSTMModel:
     def sample_biometric_data(self):
         """Create sample biometric data for testing."""
         # Create DataFrames for different biometric types
-        hrv_data = pd.DataFrame({
+        hrv_data = pd.DataFrame({)
             'timestamp': pd.date_range(start=datetime.now() - timedelta(days=30), periods=30, freq='D'),
             'value': [45 + np.random.normal(0, 5) for _ in range(30)]
-        })
+(        })
         
-    sleep_data = pd.DataFrame({
+    sleep_data = pd.DataFrame({)
     'timestamp': pd.date_range(start=datetime.now() - timedelta(days=30), periods=30, freq='D'),
     'value': [7 + np.random.normal(0, 1) for _ in range(30)]
-    })
+(    })
         
-    activity_data = pd.DataFrame({
+    activity_data = pd.DataFrame({)
     'timestamp': pd.date_range(start=datetime.now() - timedelta(days=30), periods=30, freq='D'),
     'value': [30 + np.random.normal(0, 10) for _ in range(30)]
-    })
+(    })
         
         # Combine into a dictionary
 #     return { # FIXME: return outside function
@@ -63,15 +63,15 @@ class TestBiometricLSTMModel:
     def sample_symptom_data(self):
         """Create sample symptom data for testing."""
         # Create DataFrames for different symptom types
-        anxiety_data = pd.DataFrame({
+        anxiety_data = pd.DataFrame({)
             'date': pd.date_range(start=datetime.now() - timedelta(days=30), periods=30, freq='D'),
             'severity': [5 + np.random.normal(0, 1) for _ in range(30)]
-        })
+(        })
         
-    mood_data = pd.DataFrame({
+    mood_data = pd.DataFrame({)
     'date': pd.date_range(start=datetime.now() - timedelta(days=30), periods=30, freq='D'),
     'severity': [6 + np.random.normal(0, 1.5) for _ in range(30)]
-    })
+(    })
         
         # Combine into a dictionary
 #     return { # FIXME: return outside function

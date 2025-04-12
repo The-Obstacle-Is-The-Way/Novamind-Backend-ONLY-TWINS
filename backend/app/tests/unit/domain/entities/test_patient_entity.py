@@ -135,48 +135,48 @@ class TestPatient:
         """Test validation of required fields."""
         # Missing first_name
         with pytest.raises(ValidationException):
-        Patient(
+        Patient()
                 last_name="Doe",
                 date_of_birth=date(1980, 1, 1),
                 gender=Gender.MALE,
                 email="john.doe@example.com"
-            )
+(            )
         
         # Missing last_name
     with pytest.raises(ValidationException):
-    Patient(
+    Patient()
     first_name="John",
     date_of_birth=date(1980, 1, 1),
     gender=Gender.MALE,
     email="john.doe@example.com"
-    )
+(    )
         
         # Missing date_of_birth
     with pytest.raises(ValidationException):
-    Patient(
+    Patient()
     first_name="John",
     last_name="Doe",
     gender=Gender.MALE,
     email="john.doe@example.com"
-    )
+(    )
         
         # Missing gender
     with pytest.raises(ValidationException):
-    Patient(
+    Patient()
     first_name="John",
     last_name="Doe",
     date_of_birth=date(1980, 1, 1),
     email="john.doe@example.com"
-    )
+(    )
         
         # Missing both email and phone
     with pytest.raises(ValidationException):
-    Patient(
+    Patient()
     first_name="John",
     last_name="Doe",
     date_of_birth=date(1980, 1, 1),
     gender=Gender.MALE
-    )
+(    )
     
     def test_validate_email_format(self, valid_patient_data):
         """Test validation of email format."""
@@ -197,7 +197,7 @@ class TestPatient:
     
     def test_update_personal_info(self, valid_patient):
         """Test updating personal information."""
-        valid_patient.update_personal_info(
+        valid_patient.update_personal_info()
             first_name="Jane",
             last_name="Smith",
             date_of_birth=date(1981, 2, 2),
@@ -210,7 +210,7 @@ class TestPatient:
                 "state": "NY",
                 "zip": "67890"
             }
-        )
+(        )
         
     assert valid_patient.first_name  ==  "Jane"
     assert valid_patient.last_name  ==  "Smith"
@@ -228,17 +228,17 @@ class TestPatient:
     
     def test_update_personal_info_with_string_date(self, valid_patient):
         """Test updating personal information with string date."""
-        valid_patient.update_personal_info(
+        valid_patient.update_personal_info()
             date_of_birth="1981-02-02"
-        )
+(        )
         
     assert valid_patient.date_of_birth  ==  date(1981, 2, 2)
     
     def test_update_personal_info_with_string_gender(self, valid_patient):
         """Test updating personal information with string gender."""
-        valid_patient.update_personal_info(
+        valid_patient.update_personal_info()
             gender="female"
-        )
+(        )
         
     assert valid_patient.gender  ==  Gender.FEMALE
     
@@ -250,10 +250,10 @@ class TestPatient:
             "group_number": "UVW345"
         }
         
-    valid_patient.update_insurance_info(
+    valid_patient.update_insurance_info()
     insurance_info=new_insurance_info,
     insurance_status=InsuranceStatus.PENDING
-    )
+(    )
         
     assert valid_patient.insurance_info  ==  new_insurance_info
     assert valid_patient.insurance_status  ==  InsuranceStatus.PENDING
@@ -261,10 +261,10 @@ class TestPatient:
     
     def test_update_insurance_info_with_string_status(self, valid_patient):
         """Test updating insurance information with string status."""
-        valid_patient.update_insurance_info(
+        valid_patient.update_insurance_info()
             insurance_info=valid_patient.insurance_info,
             insurance_status="pending"
-        )
+(        )
         
     assert valid_patient.insurance_status  ==  InsuranceStatus.PENDING
     
@@ -286,17 +286,17 @@ class TestPatient:
         """Test validation when adding an emergency contact."""
         # Missing name
         with pytest.raises(ValidationException):
-        valid_patient.add_emergency_contact({
+        valid_patient.add_emergency_contact({)
                 "relationship": "Father",
                 "phone": "555-555-5555"
-            })
+(            })
         
         # Missing both phone and email
     with pytest.raises(ValidationException):
-    valid_patient.add_emergency_contact({
+    valid_patient.add_emergency_contact({)
     "name": "Robert Doe",
     "relationship": "Father"
-    })
+(    })
     
     def test_remove_emergency_contact(self, valid_patient):
         """Test removing an emergency contact."""
@@ -328,10 +328,10 @@ class TestPatient:
         """Test validation when adding a medical history item."""
         # Missing condition
         with pytest.raises(ValidationException):
-        valid_patient.add_medical_history_item({
+        valid_patient.add_medical_history_item({)
                 "diagnosed_date": "2019-05-10",
                 "notes": "Moderate"
-            })
+(            })
     
     def test_add_medication(self, valid_patient):
         """Test adding a medication."""
@@ -352,19 +352,19 @@ class TestPatient:
         """Test validation when adding a medication."""
         # Missing name
         with pytest.raises(ValidationException):
-        valid_patient.add_medication({
+        valid_patient.add_medication({)
                 "dosage": "10mg",
                 "frequency": "Daily",
                 "start_date": "2021-03-15"
-            })
+(            })
         
         # Missing dosage
     with pytest.raises(ValidationException):
-    valid_patient.add_medication({
+    valid_patient.add_medication({)
     "name": "Escitalopram",
     "frequency": "Daily",
     "start_date": "2021-03-15"
-    })
+(    })
     
     def test_remove_medication(self, valid_patient):
         """Test removing a medication."""
@@ -446,10 +446,10 @@ class TestPatient:
         last_appointment = datetime.now() - timedelta(days=7)
         next_appointment = datetime.now() + timedelta(days=7)
         
-    valid_patient.update_appointment_times(
+    valid_patient.update_appointment_times()
     last_appointment=last_appointment,
     next_appointment=next_appointment
-    )
+(    )
         
     assert valid_patient.last_appointment  ==  last_appointment
     assert valid_patient.next_appointment  ==  next_appointment

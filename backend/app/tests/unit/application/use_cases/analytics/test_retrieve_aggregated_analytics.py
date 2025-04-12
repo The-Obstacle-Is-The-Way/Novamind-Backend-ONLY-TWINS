@@ -27,38 +27,38 @@ def mock_analytics_repository():
             
         if not dimensions or "event_type" in dimensions:
             return [
-                AnalyticsAggregate(
+                AnalyticsAggregate()
                     dimensions={"event_type": "page_view"},
                     metrics={"count": 125, "avg_duration": 45.3},
                     time_period={"start": start_time, "end": end_time}
-                ),
-                AnalyticsAggregate(
+(                ),
+                AnalyticsAggregate()
                     dimensions={"event_type": "feature_usage"},
                     metrics={"count": 83, "avg_duration": 120.7},
                     time_period={"start": start_time, "end": end_time}
-                )
+(                )
             ]
         elif "user_role" in dimensions:
             return [
-                AnalyticsAggregate(
+                AnalyticsAggregate()
                     dimensions={"user_role": "provider"},
                     metrics={"count": 210, "avg_actions": 15.2},
                     time_period={"start": start_time, "end": end_time}
-                ),
-                AnalyticsAggregate(
+(                ),
+                AnalyticsAggregate()
                     dimensions={"user_role": "admin"},
                     metrics={"count": 45, "avg_actions": 22.5},
                     time_period={"start": start_time, "end": end_time}
-                )
+(                )
             ]
         else:
             # Default case
             return [
-                AnalyticsAggregate(
+                AnalyticsAggregate()
                     dimensions={"dimension": "default"},
                     metrics={"count": 100},
                     time_period={"start": start_time, "end": end_time}
-                )
+(                )
             ]
     
     repo.get_aggregates = get_aggregates_mock
@@ -96,10 +96,10 @@ def use_case(mock_analytics_repository, mock_cache_service):
         mock_logger_instance = MagicMock()
         mock_logger.return_value = mock_logger_instance
         
-        use_case = RetrieveAggregatedAnalyticsUseCase(
+        use_case = RetrieveAggregatedAnalyticsUseCase()
             analytics_repository=mock_analytics_repository,
             cache_service=mock_cache_service
-        )
+(        )
         
         # Attach the mock logger for assert ions
         use_case._logger = mock_logger_instance
@@ -120,10 +120,10 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     dimensions = ["event_type"]
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     aggregate_type=aggregate_type,
     dimensions=dimensions
-    )
+(    )
         
         # Assert
     assert len(result) == 2
@@ -138,13 +138,13 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     assert call_args["dimensions"] == dimensions
         
         # Verify appropriate logging
-    use_case._logger.info.assert _any_call(
+    use_case._logger.info.assert _any_call()
     f"Retrieving {aggregate_type} analytics",
     {
     "dimensions": dimensions,
     "time_range": f"{call_args['start_time']} to {call_args['end_time']}"
     }
-    )
+(    )
     
     @pytest.mark.asyncio()
     async def test_execute_with_filters_and_time_range(self, use_case, mock_analytics_repository):
@@ -160,12 +160,12 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     time_range = {"start": week_ago, "end": now}
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     aggregate_type=aggregate_type,
     dimensions=dimensions,
     filters=filters,
     time_range=time_range
-    )
+(    )
         
         # Assert
     assert len(result) == 2
@@ -192,11 +192,11 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     }
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     aggregate_type="count",
     dimensions=["event_type"],
     time_range=time_range
-    )
+(    )
         
         # Assert
     call_args = mock_analytics_repository.get_aggregates.call_args[1]
@@ -219,11 +219,11 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     }
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     aggregate_type="count",
     dimensions=["event_type"],
     time_range=time_range
-    )
+(    )
         
         # Assert - should use default end time and swap dates
     call_args = mock_analytics_repository.get_aggregates.call_args[1]
@@ -242,10 +242,10 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     dimensions = ["event_type", "invalid_dimension", "user_role"]
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     aggregate_type="count",
     dimensions=dimensions
-    )
+(    )
         
         # Assert - should filter out invalid dimensions
     call_args = mock_analytics_repository.get_aggregates.call_args[1]
@@ -267,11 +267,11 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     }
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     aggregate_type="count",
     dimensions=["event_type"],
     filters=filters
-    )
+(    )
         
         # Assert - should sanitize filters
     call_args = mock_analytics_repository.get_aggregates.call_args[1]
@@ -291,11 +291,11 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     dimensions = ["event_type"]
         
         # Act - first call should hit the repository
-    result1 = await use_case.execute(
+    result1 = await use_case.execute()
     aggregate_type=aggregate_type,
     dimensions=dimensions,
     use_cache=True
-    )
+(    )
         
         # Repository should have been called
     assert mock_analytics_repository.get_aggregates.call_count  ==  1
@@ -306,20 +306,20 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     cache_key = cache_keys[0]
         
         # Act - second call with same parameters should use cache
-    result2 = await use_case.execute(
+    result2 = await use_case.execute()
     aggregate_type=aggregate_type,
     dimensions=dimensions,
     use_cache=True
-    )
+(    )
         
         # Repository should not have been called again
     assert mock_analytics_repository.get_aggregates.call_count  ==  1
         
         # Cache retrieval should have been logged
-    use_case._logger.info.assert _any_call(
+    use_case._logger.info.assert _any_call()
     f"Retrieved cached analytics for {aggregate_type}",
     {"dimensions": dimensions}
-    )
+(    )
     
     @pytest.mark.asyncio()
     async def test_cache_ttl_determination(self, use_case):
@@ -331,31 +331,31 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     historical_start = now - timedelta(days=10)
     historical_end = now - timedelta(days=2)
         
-    historical_ttl = use_case._get_cache_ttl(
+    historical_ttl = use_case._get_cache_ttl()
     aggregate_type="count",
     start_time=historical_start,
     end_time=historical_end
-    )
+(    )
         
         # Recent data (within last hour)
     recent_start = now - timedelta(hours=1)
     recent_end = now
         
-    recent_ttl = use_case._get_cache_ttl(
+    recent_ttl = use_case._get_cache_ttl()
     aggregate_type="count",
     start_time=recent_start,
     end_time=recent_end
-    )
+(    )
         
         # Regular data (between recent and historical)
     regular_start = now - timedelta(hours=12)
     regular_end = now - timedelta(hours=2)
         
-    regular_ttl = use_case._get_cache_ttl(
+    regular_ttl = use_case._get_cache_ttl()
     aggregate_type="count",
     start_time=regular_start,
     end_time=regular_end
-    )
+(    )
         
         # Assert appropriate TTLs
     assert historical_ttl  ==  3600 * 24  # 24 hours for historical data
@@ -375,13 +375,13 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     week_ago = now - timedelta(days=7)
         
         # Act
-    key = use_case._generate_cache_key(
+    key = use_case._generate_cache_key()
     aggregate_type=aggregate_type,
     dimensions=dimensions,
     filters=filters,
     start_time=week_ago,
     end_time=now
-    )
+(    )
         
         # Assert
     assert "analytics" in key
@@ -392,13 +392,13 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     assert "to:" in key
         
         # Different parameters should generate different keys
-    key2 = use_case._generate_cache_key(
+    key2 = use_case._generate_cache_key()
     aggregate_type="sum",
     dimensions=dimensions,
     filters=filters,
     start_time=week_ago,
     end_time=now
-    )
+(    )
         
     assert key  !=  key2
     
@@ -411,10 +411,10 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     dimensions = []
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     aggregate_type="count",
     dimensions=dimensions
-    )
+(    )
         
         # Assert - should default to ["event_type"]
     call_args = mock_analytics_repository.get_aggregates.call_args[1]
@@ -431,11 +431,11 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     time_range = {"start": start, "end": now}
         
         # Act
-    result = await use_case.execute(
+    result = await use_case.execute()
     aggregate_type="count",
     dimensions=["event_type"],
     time_range=time_range
-    )
+(    )
         
         # Assert - should be limited to 1 year
     call_args = mock_analytics_repository.get_aggregates.call_args[1]

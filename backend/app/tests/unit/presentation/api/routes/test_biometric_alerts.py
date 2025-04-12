@@ -19,12 +19,12 @@ from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, Ale
 from app.domain.exceptions import EntityNotFoundError, RepositoryError
 # Assuming the router and dependency are correctly defined in this path
 from app.presentation.api.routes.biometric_alerts import router, get_alert_repository
-from app.presentation.api.schemas.biometric_alert import (
+from app.presentation.api.schemas.biometric_alert import ()
     AlertStatusUpdateSchema,
     BiometricAlertCreateSchema,
     AlertPriorityEnum,
     AlertStatusEnum
-)
+()
 # Assuming BaseRepository exists for type hinting
 from app.domain.repositories.base_repository import BaseRepository
 
@@ -104,7 +104,7 @@ def sample_alert(sample_alert_data): # Use sample_alert_data to build sample_ale
     """Create a sample biometric alert."""
     patient_uuid = UUID(sample_alert_data["patient_id"])
     rule_uuid = UUID(sample_alert_data["rule_id"])
-    return BiometricAlert(
+    return BiometricAlert()
         patient_id=patient_uuid,
         alert_type=sample_alert_data["alert_type"],
         description=sample_alert_data["description"],
@@ -115,7 +115,7 @@ def sample_alert(sample_alert_data): # Use sample_alert_data to build sample_ale
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
         status=AlertStatus.NEW # Use Enum member
-    )
+(    )
 
 
 @pytest.fixture(autouse=True) # Apply overrides automatically for all tests in module
@@ -245,9 +245,9 @@ class TestGetPatientAlerts:
     mock_repository.count_by_patient.return_value = 1
 
         # Execute - with status filter and pagination
-    response = client.get(
+    response = client.get()
     f"/biometric-alerts/patient/{patient_id}?status=new&page=2&page_size=10"
-    )
+(    )
 
         # Verify
     assert response.status_code == status.HTTP_200_OK
@@ -310,9 +310,9 @@ class TestGetActiveAlerts:
     mock_repository.get_active_alerts.return_value = ([sample_alert], 1)
 
         # Execute - with priority filter and pagination
-    response = client.get(
+    response = client.get()
     "/biometric-alerts/active?priority=urgent&page=2&page_size=10"
-    )
+(    )
 
         # Verify
     assert response.status_code == status.HTTP_200_OK

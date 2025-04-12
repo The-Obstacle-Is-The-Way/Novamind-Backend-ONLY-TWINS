@@ -13,7 +13,7 @@ import pytest
 
 from app.domain.entities.biometric_twin import BiometricDataPoint
 from app.domain.exceptions import ValidationError
-from app.domain.services.biometric_event_processor import (
+from app.domain.services.biometric_event_processor import ()
     AlertObserver,  
     AlertPriority,  
     AlertRule,  
@@ -23,7 +23,7 @@ from app.domain.services.biometric_event_processor import (
     EmailAlertObserver,  
     InAppAlertObserver,  
     SMSAlertObserver,  
-)
+()
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ def sample_clinician_id():
 def sample_data_point(sample_patient_id):
     """Create a sample biometric data point."""
     
-    return BiometricDataPoint(
+    return BiometricDataPoint()
         data_id=UUID("00000000-0000-0000-0000-000000000002"),
         patient_id=sample_patient_id,
         data_type="heart_rate",
@@ -53,14 +53,14 @@ def sample_data_point(sample_patient_id):
         source="apple_watch",
         metadata={"activity": "resting"},
         confidence=0.95
-    )
+(    )
 
 
 @pytest.fixture
 def sample_rule(sample_clinician_id):
     """Create a sample alert rule."""
     
-    return AlertRule(
+    return AlertRule()
         rule_id="test-rule-1",
         name="High Heart Rate",
         description="Alert when heart rate exceeds 100 bpm",
@@ -71,7 +71,7 @@ def sample_rule(sample_clinician_id):
             "threshold": 100.0
         },
         created_by=sample_clinician_id
-    )
+(    )
 
 
 @pytest.fixture
@@ -128,7 +128,7 @@ class TestBiometricEventProcessor:
     def test_process_data_point_no_patient_id(self):
         """Test that process_data_point raises an error if the data point has no patient ID."""
         processor = BiometricEventProcessor()
-        data_point = BiometricDataPoint(
+        data_point = BiometricDataPoint()
             data_id=UUID("00000000-0000-0000-0000-000000000002"),
             patient_id=None,
             data_type="heart_rate",
@@ -137,7 +137,7 @@ class TestBiometricEventProcessor:
             source="apple_watch",
             metadata={"activity": "resting"},
             confidence=0.95
-        )
+(        )
         
     with pytest.raises(ValidationError):
     processor.process_data_point(data_point)
@@ -146,7 +146,7 @@ class TestBiometricEventProcessor:
     def test_process_data_point_no_matching_rules(self, sample_data_point):
         """Test that process_data_point returns no alerts if no rules match."""
         processor = BiometricEventProcessor()
-        rule = AlertRule(
+        rule = AlertRule()
             rule_id="test-rule-1",
             name="Low Heart Rate",
             description="Alert when heart rate is below 50 bpm",
@@ -157,7 +157,7 @@ class TestBiometricEventProcessor:
                 "threshold": 50.0
             },
             created_by=UUID("00000000-0000-0000-0000-000000000001")
-        )
+(        )
         processor.add_rule(rule)
         
     alerts = processor.process_data_point(sample_data_point)
@@ -189,7 +189,7 @@ class TestBiometricEventProcessor:
         
         # Add a patient-specific rule for a different patient
     other_patient_id = UUID("99999999-9999-9999-9999-999999999999")
-    patient_specific_rule = AlertRule(
+    patient_specific_rule = AlertRule()
     rule_id="test-rule-2",
     name="Patient-Specific High Heart Rate",
     description="Alert when heart rate exceeds 90 bpm for a specific patient",
@@ -201,7 +201,7 @@ class TestBiometricEventProcessor:
     },
     created_by=sample_clinician_id,
     patient_id=other_patient_id
-    )
+(    )
     processor.add_rule(patient_specific_rule)
         
         # Add a general rule
@@ -376,7 +376,7 @@ class TestBiometricAlert:
     def test_acknowledge(self, sample_data_point, sample_rule, sample_clinician_id):
         """Test that acknowledge correctly marks an alert as acknowledged."""
         # Create an alert
-        alert = BiometricAlert(
+        alert = BiometricAlert()
             alert_id="test-alert-1",
             patient_id=sample_data_point.patient_id,
             rule_id=sample_rule.rule_id,
@@ -385,7 +385,7 @@ class TestBiometricAlert:
             data_point=sample_data_point,
             message="Test alert message",
             context={}
-        )
+(        )
         
         # Initially not acknowledged
     assert alert.acknowledged is False
@@ -414,7 +414,7 @@ class TestAlertObservers:
     observer = EmailAlertObserver(email_service)
         
         # Create an alert
-    alert = BiometricAlert(
+    alert = BiometricAlert()
     alert_id="test-alert-1",
     patient_id=sample_data_point.patient_id,
     rule_id=sample_rule.rule_id,
@@ -423,7 +423,7 @@ class TestAlertObservers:
     data_point=sample_data_point,
     message="Test alert message",
     context={}
-    )
+(    )
         
         # Patch the _get_recipient_for_patient method
     with patch.object(observer, '_get_recipient_for_patient', return_value="clinician@example.com"):
@@ -443,7 +443,7 @@ class TestAlertObservers:
     observer = SMSAlertObserver(sms_service)
         
         # Create an urgent alert
-    alert = BiometricAlert(
+    alert = BiometricAlert()
     alert_id="test-alert-1",
     patient_id=sample_data_point.patient_id,
     rule_id=sample_rule.rule_id,
@@ -452,7 +452,7 @@ class TestAlertObservers:
     data_point=sample_data_point,
     message="Test alert message",
     context={}
-    )
+(    )
         
         # Patch the _get_recipient_for_patient method
     with patch.object(observer, '_get_recipient_for_patient', return_value="+1234567890"):
@@ -472,7 +472,7 @@ class TestAlertObservers:
     observer = SMSAlertObserver(sms_service)
         
         # Create a warning alert
-    alert = BiometricAlert(
+    alert = BiometricAlert()
     alert_id="test-alert-1",
     patient_id=sample_data_point.patient_id,
     rule_id=sample_rule.rule_id,
@@ -481,7 +481,7 @@ class TestAlertObservers:
     data_point=sample_data_point,
     message="Test alert message",
     context={}
-    )
+(    )
         
         # Notify the observer
     observer.notify(alert)
@@ -499,7 +499,7 @@ class TestAlertObservers:
     observer = InAppAlertObserver(notification_service)
         
         # Create an alert
-    alert = BiometricAlert(
+    alert = BiometricAlert()
     alert_id="test-alert-1",
     patient_id=sample_data_point.patient_id,
     rule_id=sample_rule.rule_id,
@@ -508,7 +508,7 @@ class TestAlertObservers:
     data_point=sample_data_point,
     message="Test alert message",
     context={}
-    )
+(    )
         
         # Notify the observer
     observer.notify(alert)

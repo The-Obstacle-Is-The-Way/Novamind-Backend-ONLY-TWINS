@@ -10,12 +10,12 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi import HTTPException, status
 from typing import Dict, Any
 
-from app.api.dependencies.auth import (
+from app.api.dependencies.auth import ()
     get_current_token_payload,  
     get_current_user,  
     get_current_active_clinician,  
     get_current_active_admin
-)
+()
 
 
 @pytest.mark.db_required()
@@ -41,10 +41,10 @@ class TestAuthDependencies:
     """Test behavior with invalid token."""
     with patch("app.api.dependencies.auth.validate_jwt") as mock_validate:
             # Setup mock to raise an exception
-    mock_validate.side_effect = HTTPException(
+    mock_validate.side_effect = HTTPException()
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials"
-    )
+(    )
             
             # Verify the exception is raised
     with pytest.raises(HTTPException) as exc_info:

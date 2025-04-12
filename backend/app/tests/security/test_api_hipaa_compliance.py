@@ -265,25 +265,25 @@ class TestAPIHIPAACompliance:
     def test_patient_data_isolation(self, client, patient_token):
         """Test that patients can only access their own data."""
         # Own data - should succeed
-        own_response = client.get(
+        own_response = client.get()
             "/api/v1/patients/P12345", 
             headers={"Authorization": patient_token}
-        )
+(        )
         assert own_response.status_code  ==  200
         
         # Someone else's data - should be forbidden
-    other_response = client.get(
+    other_response = client.get()
     "/api/v1/patients/P67890",
     headers={"Authorization": patient_token}
-    )
+(    )
     assert other_response.status_code  ==  403
         
     def test_phi_sanitization_in_response(self, client, admin_token):
         """Test that PHI is properly sanitized in API responses."""
-        response = client.get(
+        response = client.get()
             "/api/v1/patients/P12345", 
             headers={"Authorization": admin_token}
-        )
+(        )
         assert response.status_code  ==  200
         
         # Check PHI is sanitized
@@ -311,11 +311,11 @@ class TestAPIHIPAACompliance:
     client.get = mock_get
         
         # Make a request with query parameters
-    client.get(
+    client.get()
     "/api/v1/patients",
     headers={"Authorization": admin_token},
     params={"name": "John", "status": "active"}
-    )
+(    )
         
     def test_phi_not_in_request_bodies(self, client, admin_token):
         """Test that PHI is properly handled in request bodies."""
@@ -331,7 +331,7 @@ class TestAPIHIPAACompliance:
     client.post = mock_post
         
         # Create a patient with PHI
-    response = client.post(
+    response = client.post()
     "/api/v1/patients",
     headers={"Authorization": admin_token},
     json={
@@ -342,7 +342,7 @@ class TestAPIHIPAACompliance:
     "email": "jane.smith@example.com",
     "phone": "(555) 987-6543"
     }
-    )
+(    )
         
     assert response.status_code  ==  201
         
@@ -359,24 +359,24 @@ class TestAPIHIPAACompliance:
     def test_proper_authentication_and_authorization(self, client, admin_token, doctor_token, patient_token):
         """Test that proper authentication and authorization are enforced."""
         # Admin can access any patient
-        admin_response = client.get(
+        admin_response = client.get()
             "/api/v1/patients/P67890", 
             headers={"Authorization": admin_token}
-        )
+(        )
         assert admin_response.status_code  ==  200
         
         # Doctor can access any patient
-    doctor_response = client.get(
+    doctor_response = client.get()
     "/api/v1/patients/P67890",
     headers={"Authorization": doctor_token}
-    )
+(    )
     assert doctor_response.status_code  ==  200
         
         # Patient can only access their own data
-    patient_response = client.get(
+    patient_response = client.get()
     "/api/v1/patients/P67890",
     headers={"Authorization": patient_token}
-    )
+(    )
     assert patient_response.status_code  ==  403
         
     def test_phi_security_headers(self, client, admin_token):
@@ -388,10 +388,10 @@ class TestAPIHIPAACompliance:
         # - X-Frame-Options
         # - Referrer-Policy
         # For this mock test, we'll simply check that the API returns a success code
-        response = client.get(
+        response = client.get()
             "/api/v1/patients/P12345", 
             headers={"Authorization": admin_token}
-        )
+(        )
         assert response.status_code  ==  200
         
     def test_api_rate_limiting(self, client, admin_token):
@@ -412,11 +412,11 @@ class TestAPIHIPAACompliance:
         
         # For this mock test, we'll perform an operation and assume auditing
         # is implemented through appropriate middleware
-    client.post(
+    client.post()
     "/api/v1/patients",
     headers={"Authorization": admin_token},
     json={"first_name": "Test", "last_name": "Patient"}
-    )
+(    )
         
         # In a real test, we would assert audit log contains the operation details
     assert any(middleware[0] == PHISanitizingMiddleware for middleware in getattr(client.app, "middleware", []))

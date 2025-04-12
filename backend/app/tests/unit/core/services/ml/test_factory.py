@@ -24,7 +24,7 @@ class TestMLServiceFactory:
     def factory(self):
         """Create a factory instance with test configuration."""
         factory = MLServiceFactory()
-        factory.initialize({
+        factory.initialize({)
         "mentalllama": {
         "model_ids": {
         "depression_detection": "anthropic.claude-v2:1"
@@ -34,18 +34,18 @@ class TestMLServiceFactory:
         "phi_detection": {
         "aws_region": "us-east-1"
         }
-        })
+(        })
         return factory
     def test_initialization(self):
         """Test factory initialization with valid configuration."""
             factory = MLServiceFactory()
-            factory.initialize({
+            factory.initialize({)
             "mentalllama": {
             "model_ids": {
             "depression_detection": "anthropic.claude-v2:1"
             }
             }
-            })
+(            })
         
     assert factory._config is not None
     assert "mentalllama" in factory._config
@@ -60,16 +60,16 @@ class TestMLServiceFactory:
     factory.initialize(None)
     def test_create_phi_detection_service_aws(self, factory):
         """Test creating AWS PHI detection service."""
-                    with patch("app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize":
-        ) as mock_initialize:
+                    with patch("app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize":)
+(        ) as mock_initialize:
         service = factory.create_phi_detection_service("aws")
             
     assert isinstance(service, AWSComprehendMedicalPHIDetection)
     mock_initialize.assert_called_once()
     def test_create_phi_detection_service_mock(self, factory):
         """Test creating mock PHI detection service."""
-                        with patch("app.core.services.ml.mock.MockPHIDetection.initialize":
-        ) as mock_initialize:
+                        with patch("app.core.services.ml.mock.MockPHIDetection.initialize":)
+(        ) as mock_initialize:
         service = factory.create_phi_detection_service("mock")
             
     assert isinstance(service, MockPHIDetection)
@@ -80,11 +80,11 @@ class TestMLServiceFactory:
         factory.create_phi_detection_service("invalid")
     def test_create_mentalllama_service_aws(self, factory):
         """Test creating AWS MentaLLaMA service."""
-                                with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize"
+                                with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
                                 ) as mock_initialize, patch(
                                 "app.core.services.ml.factory.MLServiceFactory.create_phi_detection_service",
-                                return_value=MagicMock())
-                                ) as mock_create_phi:
+(                                return_value=MagicMock())
+(                                ) as mock_create_phi:
         service = factory.create_mentalllama_service("aws", True)
             
     assert isinstance(service, MentaLLaMA)
@@ -92,11 +92,11 @@ class TestMLServiceFactory:
     mock_create_phi.assert_called_once_with("aws")
     def test_create_mentalllama_service_mock(self, factory):
         """Test creating mock MentaLLaMA service."""
-                                    with patch("app.core.services.ml.mock.MockMentaLLaMA.initialize"
+                                    with patch("app.core.services.ml.mock.MockMentaLLaMA.initialize")
                                     ) as mock_initialize, patch(
                                     "app.core.services.ml.factory.MLServiceFactory.create_phi_detection_service",
-                                    return_value=MagicMock())
-                                    ) as mock_create_phi:
+(                                    return_value=MagicMock())
+(                                    ) as mock_create_phi:
         service = factory.create_mentalllama_service("mock", True)
             
     assert isinstance(service, MockMentaLLaMA)
@@ -104,10 +104,10 @@ class TestMLServiceFactory:
     mock_create_phi.assert_called_once_with("mock")
     def test_create_mentalllama_service_without_phi(self, factory):
         """Test creating MentaLLaMA service without PHI detection."""
-                                        with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize"
+                                        with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
                                         ) as mock_initialize, patch(
                                         "app.core.services.ml.factory.MLServiceFactory.create_phi_detection_service":
-        ) as mock_create_phi:
+    (        ) as mock_create_phi:
         service = factory.create_mentalllama_service("aws", False)
             
     assert isinstance(service, MentaLLaMA)
@@ -119,10 +119,10 @@ class TestMLServiceFactory:
         factory.create_mentalllama_service("invalid")
     def test_service_caching(self, factory):
         """Test that services are cached and reused."""
-                                                with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize"
+                                                with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
                                                 ) as mock_initialize, patch(
                                                 "app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize":
-        )
+    (        )
             # Create services
                                                 service1 = factory.get_mentalllama_service("aws")
                                                 service2 = factory.get_mentalllama_service("aws")
@@ -133,14 +133,14 @@ class TestMLServiceFactory:
     mock_initialize.assert_called_once()
     def test_shutdown(self, factory):
         """Test factory shutdown."""
-                                                    with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize"
+                                                    with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
                                                     ), patch(
                                                     "app.core.services.ml.mentalllama.MentaLLaMA.shutdown"
                                                     ) as mock_mentalllama_shutdown, patch(
                                                     "app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize"
                                                     ), patch(
                                                     "app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.shutdown":
-        ) as mock_phi_shutdown:
+    (        ) as mock_phi_shutdown:
             # Create services
                                                     factory.get_mentalllama_service("aws")
                                                     factory.get_phi_detection_service("aws")

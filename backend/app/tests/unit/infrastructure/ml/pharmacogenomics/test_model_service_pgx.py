@@ -26,7 +26,7 @@ class TestPharmacogenomicsService:
         """Create a mock GeneMedicationModel."""
         model = AsyncMock(spec=GeneMedicationModel)
         model.is_initialized = True
-        model.predict_medication_interactions = AsyncMock(return_value={
+        model.predict_medication_interactions = AsyncMock(return_value={)
             "gene_medication_interactions": [
                 {
                     "gene": "CYP2D6",
@@ -52,7 +52,7 @@ class TestPharmacogenomicsService:
                 "CYP2C19": "intermediate",
                 "CYP1A2": "rapid"
             }
-        })
+(        })
         return model
 
     @pytest.fixture
@@ -60,7 +60,7 @@ class TestPharmacogenomicsService:
         """Create a mock TreatmentResponseModel."""
         model = AsyncMock(spec=PharmacogenomicsModel)
         model.is_initialized = True
-        model.predict_treatment_response = AsyncMock(return_value={
+        model.predict_treatment_response = AsyncMock(return_value={)
             "medication_predictions": {
                 "fluoxetine": {
                     "efficacy": {
@@ -109,17 +109,17 @@ class TestPharmacogenomicsService:
                     "highest_risk": 0.25
                 }
             }
-        })
+(        })
         return model
 
     @pytest.fixture
     def service(self, mock_gene_medication_model, mock_treatment_model):
         """Create a PharmacogenomicsService with mock dependencies."""
         
-    return PharmacogenomicsService(
+    return PharmacogenomicsService()
     gene_medication_model=mock_gene_medication_model,
     treatment_model=mock_treatment_model
-    )
+(    )
 
     @pytest.fixture
     def sample_genetic_data(self):
@@ -176,20 +176,20 @@ class TestPharmacogenomicsService:
         
     return str(uuid4())
 
-    async def test_predict_medication_response_success(self, service, mock_gene_medication_model, 
+    async def test_predict_medication_response_success(self, service, mock_gene_medication_model, )
     mock_treatment_model, sample_genetic_data,
-    sample_patient_data, sample_patient_id):
+(    sample_patient_data, sample_patient_id):
     """Test that predict_medication_response correctly processes data and returns predictions."""
         # Setup
     medications = ["fluoxetine", "sertraline", "bupropion"]
         
         # Execute
-    result = await service.predict_medication_response(
+    result = await service.predict_medication_response()
     patient_id=sample_patient_id,
     genetic_data=sample_genetic_data,
     patient_data=sample_patient_data,
     medications=medications
-    )
+(    )
         
         # Verify
     assert "patient_id" in result
@@ -220,12 +220,12 @@ class TestPharmacogenomicsService:
         
         # Execute/Assert
     with pytest.raises(ValueError) as excinfo:
-    await service.predict_medication_response(
+    await service.predict_medication_response()
     patient_id=sample_patient_id,
     genetic_data=None,
     patient_data=sample_patient_data,
     medications=medications
-    )
+(    )
         
     assert "genetic data is required" in str(excinfo.value).lower()
 
@@ -236,32 +236,32 @@ class TestPharmacogenomicsService:
         
         # Execute/Assert
     with pytest.raises(ValueError) as excinfo:
-    await service.predict_medication_response(
+    await service.predict_medication_response()
     patient_id=sample_patient_id,
     genetic_data=sample_genetic_data,
     patient_data=None,
     medications=medications
-    )
+(    )
         
     assert "patient data is required" in str(excinfo.value).lower()
 
-    async def test_predict_medication_response_no_medications(self, service, sample_genetic_data, 
-    sample_patient_data, sample_patient_id):
+    async def test_predict_medication_response_no_medications(self, service, sample_genetic_data, )
+(    sample_patient_data, sample_patient_id):
     """Test that predict_medication_response handles empty medications list."""
         # Execute/Assert
     with pytest.raises(ValueError) as excinfo:
-    await service.predict_medication_response(
+    await service.predict_medication_response()
     patient_id=sample_patient_id,
     genetic_data=sample_genetic_data,
     patient_data=sample_patient_data,
     medications=[]
-    )
+(    )
         
     assert "medications list cannot be empty" in str(excinfo.value).lower()
 
-    async def test_predict_medication_response_model_error(self, service, mock_gene_medication_model,
+    async def test_predict_medication_response_model_error(self, service, mock_gene_medication_model,)
     sample_genetic_data, sample_patient_data,
-    sample_patient_id):
+(    sample_patient_id):
     """Test that predict_medication_response handles model errors correctly."""
         # Setup
     medications = ["fluoxetine", "sertraline"]
@@ -269,29 +269,29 @@ class TestPharmacogenomicsService:
         
         # Execute/Assert
     with pytest.raises(RuntimeError) as excinfo:
-    await service.predict_medication_response(
+    await service.predict_medication_response()
     patient_id=sample_patient_id,
     genetic_data=sample_genetic_data,
     patient_data=sample_patient_data,
     medications=medications
-    )
+(    )
         
     assert "prediction failed" in str(excinfo.value).lower()
 
     @patch('app.infrastructure.ml.pharmacogenomics.model_service.log_phi_access')
-    async def test_phi_access_logging(self, mock_log_phi_access, service, sample_genetic_data,
-    sample_patient_data, sample_patient_id):
+    async def test_phi_access_logging(self, mock_log_phi_access, service, sample_genetic_data,)
+(    sample_patient_data, sample_patient_id):
     """Test that PHI access is properly logged."""
         # Setup
     medications = ["fluoxetine", "sertraline"]
         
         # Execute
-    await service.predict_medication_response(
+    await service.predict_medication_response()
     patient_id=sample_patient_id,
     genetic_data=sample_genetic_data,
     patient_data=sample_patient_data,
     medications=medications
-    )
+(    )
         
         # Verify PHI access logging
     mock_log_phi_access.assert_called_once()
@@ -299,17 +299,17 @@ class TestPharmacogenomicsService:
     assert log_args[0] == "PharmacogenomicsService.predict_medication_response"
     assert log_args[1] == sample_patient_id
 
-    async def test_analyze_medication_interactions(self, service, mock_gene_medication_model,
-    sample_genetic_data):
+    async def test_analyze_medication_interactions(self, service, mock_gene_medication_model,)
+(    sample_genetic_data):
     """Test the analyze_medication_interactions method."""
         # Setup
     medications = ["fluoxetine", "sertraline"]
         
         # Execute
-    result = await service.analyze_medication_interactions(
+    result = await service.analyze_medication_interactions()
     genetic_data=sample_genetic_data,
     medications=medications
-    )
+(    )
         
         # Verify
     assert "gene_medication_interactions" in result
@@ -323,10 +323,10 @@ class TestPharmacogenomicsService:
         
         # Execute/Assert
     with pytest.raises(ValueError) as excinfo:
-    await service.analyze_medication_interactions(
+    await service.analyze_medication_interactions()
     genetic_data=None,
     medications=medications
-    )
+(    )
         
     assert "genetic data is required" in str(excinfo.value).lower()
 
@@ -351,17 +351,17 @@ class TestPharmacogenomicsService:
     async def test_get_model_info(self, service, mock_gene_medication_model, mock_treatment_model):
     """Test the get_model_info method."""
         # Setup mock responses
-    mock_gene_medication_model.get_model_info = AsyncMock(return_value={
+    mock_gene_medication_model.get_model_info = AsyncMock(return_value={)
     "name": "GeneMedicationModel",
     "version": "1.0.0",
     "description": "Predicts medication interactions based on genetic variants"
-    })
+(    })
         
-    mock_treatment_model.get_model_info = AsyncMock(return_value={
+    mock_treatment_model.get_model_info = AsyncMock(return_value={)
     "name": "PharmacogenomicsModel",
     "version": "1.0.0",
     "description": "Predicts treatment response based on genetic and patient data"
-    })
+(    })
         
         # Execute
     result = await service.get_model_info()

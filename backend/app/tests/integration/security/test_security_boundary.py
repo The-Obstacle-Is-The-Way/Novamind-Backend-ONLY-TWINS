@@ -24,11 +24,11 @@ def security_components():
     Returns:
         Tuple of (jwt_handler, password_handler, role_manager)
     """
-    jwt_handler = JWTHandler(
+    jwt_handler = JWTHandler()
         secret_key="testkey12345678901234567890123456789",
         algorithm="HS256",
         access_token_expire_minutes=15
-    )
+(    )
     
     password_handler = PasswordHandler()
     
@@ -60,12 +60,12 @@ class TestSecurityBoundary:
     permissions = list(role_manager.get_role_permissions(role))
     session_id = "session_abc123"
         
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id=user_id,
     role=role,
     permissions=permissions,
     session_id=session_id
-    )
+(    )
         
         # 4. Verify and decode token (as would happen on API requests)
     token_data = jwt_handler.verify_token(token)
@@ -87,19 +87,19 @@ class TestSecurityBoundary:
         jwt_handler, password_handler, role_manager = security_components
         
         # Create tokens for different roles
-    provider_token = jwt_handler.create_access_token(
+    provider_token = jwt_handler.create_access_token()
     user_id="provider789",
     role=Role.PROVIDER,
     permissions=list(role_manager.get_role_permissions(Role.PROVIDER)),
     session_id="session_provider123"
-    )
+(    )
         
-    patient_token = jwt_handler.create_access_token(
+    patient_token = jwt_handler.create_access_token()
     user_id="patient456",
     role=Role.PATIENT,
     permissions=list(role_manager.get_role_permissions(Role.PATIENT)),
     session_id="session_patient123"
-    )
+(    )
         
         # Decode tokens
     provider_data = jwt_handler.verify_token(provider_token)
@@ -115,18 +115,18 @@ class TestSecurityBoundary:
     patient_record_id = "medical_record_789"
         
         # Provider should have access to patient records
-    assert role_manager.check_user_permission(
+    assert role_manager.check_user_permission()
     provider_data.role,
     Permission.VIEW_PATIENT_MEDICAL_RECORDS,
     patient_record_id
-    )
+(    )
         
         # Patient should not have access to this specific permission
-    assert not role_manager.check_user_permission(
+    assert not role_manager.check_user_permission()
     patient_data.role,
     Permission.VIEW_PATIENT_MEDICAL_RECORDS,
     patient_record_id
-    )
+(    )
     
     def test_token_expiration_security(self, security_components):
         """Test token expiration enforces security boundary."""
@@ -134,13 +134,13 @@ class TestSecurityBoundary:
         jwt_handler, _, _ = security_components
         
         # Create a token that expires very quickly
-    token = jwt_handler.create_access_token(
+    token = jwt_handler.create_access_token()
     user_id="user123",
     role=Role.PATIENT,
     permissions=["view:own_profile"],
     session_id="session123",
     expires_delta=timedelta(seconds=1)  # Very short expiration
-    )
+(    )
         
         # Token should be valid initially
     token_data = jwt_handler.verify_token(token)
@@ -184,19 +184,19 @@ class TestSecurityBoundary:
         jwt_handler, _, role_manager = security_components
         
         # Create tokens for different roles
-    admin_token = jwt_handler.create_access_token(
+    admin_token = jwt_handler.create_access_token()
     user_id="admin123",
     role=Role.ADMIN,
     permissions=list(role_manager.get_role_permissions(Role.ADMIN)),
     session_id="session_admin123"
-    )
+(    )
         
-    nurse_token = jwt_handler.create_access_token(
+    nurse_token = jwt_handler.create_access_token()
     user_id="nurse456",
     role=Role.NURSE,
     permissions=list(role_manager.get_role_permissions(Role.NURSE)),
     session_id="session_nurse123"
-    )
+(    )
         
         # Decode tokens
     admin_data = jwt_handler.verify_token(admin_token)

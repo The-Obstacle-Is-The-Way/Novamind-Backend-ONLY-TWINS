@@ -24,12 +24,12 @@ class TestPatientModel:
         dob = date(1980, 1, 15)
         
         # Act
-    patient = Patient(
+    patient = Patient()
     id=patient_id,
     medical_record_number=mrn,
     name=name,
     date_of_birth=dob
-    )
+(    )
         
         # Assert
     assert patient.id  ==  patient_id
@@ -38,11 +38,11 @@ class TestPatientModel:
     assert patient.date_of_birth  ==  dob
     assert patient.age > 0
     
-    @pytest.mark.parametrize("invalid_name", [
+    @pytest.mark.parametrize("invalid_name", [)
     "",
     None,
     "   ",
-    ])
+(    ])
     def test_patient_creation_invalid_name(self, invalid_name):
         """Test that a patient cannot be created with an invalid name."""
         # Arrange
@@ -52,12 +52,12 @@ class TestPatientModel:
         
         # Act & Assert
     with pytest.raises(ValueError) as exc_info:
-    Patient(
+    Patient()
     id=patient_id,
     medical_record_number=mrn,
     name=invalid_name,
     date_of_birth=dob
-    )
+(    )
         
     assert "name" in str(exc_info.value).lower()
     
@@ -72,12 +72,12 @@ class TestPatientModel:
     thirty_years_ago = date.today().replace(year=date.today().year - 30)
         
         # Act
-    patient = Patient(
+    patient = Patient()
     id=patient_id,
     medical_record_number=mrn,
     name=name,
     date_of_birth=thirty_years_ago
-    )
+(    )
         
         # Assert
     assert patient.age  ==  30

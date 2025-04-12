@@ -17,7 +17,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from app.infrastructure.messaging.secure_messaging_service import (
+from app.infrastructure.messaging.secure_messaging_service import ()
     SecureMessagingService,
     MessageStatus,
     MessagePriority,
@@ -27,7 +27,7 @@ from app.infrastructure.messaging.secure_messaging_service import (
     MessageDecryptionException,
     MessageSendException,
     MessageNotFoundException
-)
+()
 # Assuming EncryptionService exists for type hinting/mocking
 from app.infrastructure.security.encryption_service import EncryptionService
 # Assuming BaseRepository exists for type hinting/mocking
@@ -59,26 +59,26 @@ def message_repository():
 def key_pair():
     """Fixture for RSA key pair."""
     # Generate a private key
-    private_key = rsa.generate_private_key(
+    private_key = rsa.generate_private_key()
         public_exponent=65537,
         key_size=2048,
         backend=default_backend()
-    )
+(    )
 
     # Get the public key
     public_key = private_key.public_key()
 
     # Serialize the keys
-    private_key_bytes = private_key.private_bytes(
+    private_key_bytes = private_key.private_bytes()
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
-    )
+(    )
 
-    public_key_bytes = public_key.public_bytes(
+    public_key_bytes = public_key.public_bytes()
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
-    )
+(    )
 
     return private_key_bytes, public_key_bytes
 
@@ -87,11 +87,11 @@ def key_pair():
 def secure_messaging_service(encryption_service):
     """Fixture for secure messaging service."""
     
-    return SecureMessagingService(
+    return SecureMessagingService()
         encryption_service=encryption_service,
         key_size=2048,
         symmetric_key_ttl_seconds=86400
-    )
+(    )
 
 
 @pytest.mark.venv_only() # Assuming venv_only is a valid marker
@@ -120,16 +120,16 @@ class TestSecureMessagingService:
     symmetric_key = Fernet.generate_key()
 
         # Encrypt the symmetric key
-    encrypted_key = secure_messaging_service._encrypt_symmetric_key(
+    encrypted_key = secure_messaging_service._encrypt_symmetric_key()
     symmetric_key=symmetric_key,
     recipient_public_key=public_key_bytes
-    )
+(    )
 
         # Decrypt the symmetric key
-    decrypted_key = secure_messaging_service._decrypt_symmetric_key(
+    decrypted_key = secure_messaging_service._decrypt_symmetric_key()
     encrypted_key=encrypted_key,
     private_key=private_key_bytes
-    )
+(    )
 
         # Check that the decrypted key matches the original
     assert decrypted_key == symmetric_key
@@ -143,16 +143,16 @@ class TestSecureMessagingService:
     original_message = "This is a test message with PHI: Patient John Doe has anxiety."
 
         # Encrypt the message
-    encrypted_message = secure_messaging_service._encrypt_message(
+    encrypted_message = secure_messaging_service._encrypt_message()
     message=original_message,
     symmetric_key=symmetric_key
-    )
+(    )
 
         # Decrypt the message
-    decrypted_message = secure_messaging_service._decrypt_message(
+    decrypted_message = secure_messaging_service._decrypt_message()
     encrypted_message=encrypted_message,
     symmetric_key=symmetric_key
-    )
+(    )
 
         # Check that the decrypted message matches the original
     assert decrypted_message == original_message
@@ -165,10 +165,10 @@ class TestSecureMessagingService:
     original_message = "This is a test message with PHI: Patient John Doe has anxiety."
 
         # Encrypt the message for the recipient
-    message_package = secure_messaging_service.encrypt_message_for_recipient(
+    message_package = secure_messaging_service.encrypt_message_for_recipient()
     message=original_message,
     recipient_public_key=public_key_bytes
-    )
+(    )
 
         # Check the message package structure
     assert "encrypted_message" in message_package
@@ -190,16 +190,16 @@ class TestSecureMessagingService:
     original_message = "This is a test message with PHI: Patient John Doe has anxiety."
 
         # Encrypt the message for the recipient
-    message_package = secure_messaging_service.encrypt_message_for_recipient(
+    message_package = secure_messaging_service.encrypt_message_for_recipient()
     message=original_message,
     recipient_public_key=public_key_bytes
-    )
+(    )
 
         # Decrypt the message
-    decrypted_message = secure_messaging_service.decrypt_message(
+    decrypted_message = secure_messaging_service.decrypt_message()
     message_package=message_package,
     private_key=private_key_bytes
-    )
+(    )
 
         # Check that the decrypted message matches the original
     assert decrypted_message == original_message
@@ -212,27 +212,27 @@ class TestSecureMessagingService:
     original_message = "This is a test message with PHI: Patient John Doe has anxiety."
 
         # Encrypt the message for the recipient
-    message_package = secure_messaging_service.encrypt_message_for_recipient(
+    message_package = secure_messaging_service.encrypt_message_for_recipient()
     message=original_message,
     recipient_public_key=public_key_bytes
-    )
+(    )
 
         # Set the expiration to the past
     message_package["expires_at"] = int(time.time()) - 3600
 
         # Try to decrypt the expired message
     with pytest.raises(MessageDecryptionException):
-    secure_messaging_service.decrypt_message(
+    secure_messaging_service.decrypt_message()
     message_package=message_package,
     private_key=private_key_bytes
-    )
+(    )
 
     def test_create_message(self, secure_messaging_service, key_pair, encryption_service):
         """Test creating a message."""
         _, public_key_bytes = key_pair
 
         # Create a message
-    message = secure_messaging_service.create_message(
+    message = secure_messaging_service.create_message()
     sender_id="sender123",
     recipient_id="recipient456",
     subject="Test Subject",
@@ -240,7 +240,7 @@ class TestSecureMessagingService:
     recipient_public_key=public_key_bytes,
     message_type=MessageType.TEXT,
     priority=MessagePriority.NORMAL
-    )
+(    )
 
         # Check the message structure
     assert "id" in message
@@ -284,7 +284,7 @@ class TestSecureMessagingService:
     ]
 
         # Create a message with attachments
-    message = secure_messaging_service.create_message(
+    message = secure_messaging_service.create_message()
     sender_id="sender123",
     recipient_id="recipient456",
     subject="Test Subject",
@@ -293,7 +293,7 @@ class TestSecureMessagingService:
     message_type=MessageType.DOCUMENT,
     priority=MessagePriority.HIGH,
     attachments=attachments
-    )
+(    )
 
         # Check that the message has attachments
     assert message["has_attachments"] is True
@@ -308,19 +308,19 @@ class TestSecureMessagingService:
     _, public_key_bytes = key_pair
 
         # Create a message
-    message = secure_messaging_service.create_message(
+    message = secure_messaging_service.create_message()
     sender_id="sender123",
     recipient_id="recipient456",
     subject="Test Subject",
     content="This is a test message.",
     recipient_public_key=public_key_bytes
-    )
+(    )
 
         # Send the message
-    sent_message = await secure_messaging_service.send_message(
+    sent_message = await secure_messaging_service.send_message()
     message=message,
     message_repository=message_repository
-    )
+(    )
 
         # Check that the message status was updated
     assert sent_message["status"] == MessageStatus.SENT.value
@@ -345,10 +345,10 @@ class TestSecureMessagingService:
     message_repository.get_by_id.return_value = message
 
         # Mark the message as delivered
-    delivered_message = await secure_messaging_service.mark_as_delivered(
+    delivered_message = await secure_messaging_service.mark_as_delivered()
     message_id=message_id,
     message_repository=message_repository
-    )
+(    )
 
         # Check that the message status was updated
     assert delivered_message["status"] == MessageStatus.DELIVERED.value
@@ -367,10 +367,10 @@ class TestSecureMessagingService:
 
         # Try to mark a non-existent message as delivered
     with pytest.raises(MessageNotFoundException):
-    await secure_messaging_service.mark_as_delivered(
+    await secure_messaging_service.mark_as_delivered()
     message_id="nonexistent",
     message_repository=message_repository
-    )
+(    )
 
     @pytest.mark.asyncio
     async def test_mark_as_read(self, secure_messaging_service, message_repository):
@@ -387,10 +387,10 @@ class TestSecureMessagingService:
     message_repository.get_by_id.return_value = message
 
         # Mark the message as read
-    read_message = await secure_messaging_service.mark_as_read(
+    read_message = await secure_messaging_service.mark_as_read()
     message_id=message_id,
     message_repository=message_repository
-    )
+(    )
 
         # Check that the message status was updated
     assert read_message["status"] == MessageStatus.READ.value
@@ -409,10 +409,10 @@ class TestSecureMessagingService:
 
         # Try to mark a non-existent message as read
     with pytest.raises(MessageNotFoundException):
-    await secure_messaging_service.mark_as_read(
+    await secure_messaging_service.mark_as_read()
     message_id="nonexistent",
     message_repository=message_repository
-    )
+(    )
 
     @pytest.mark.asyncio
     async def test_delete_message(self, secure_messaging_service, message_repository):
@@ -432,11 +432,11 @@ class TestSecureMessagingService:
     message_repository.get_by_id.return_value = message
 
         # Delete the message
-    deleted_message = await secure_messaging_service.delete_message(
+    deleted_message = await secure_messaging_service.delete_message()
     message_id=message_id,
     user_id=sender_id,
     message_repository=message_repository
-    )
+(    )
 
         # Check that the message status was updated
     assert deleted_message["status"] == MessageStatus.DELETED.value
@@ -457,11 +457,11 @@ class TestSecureMessagingService:
 
         # Try to delete a non-existent message
     with pytest.raises(MessageNotFoundException):
-    await secure_messaging_service.delete_message(
+    await secure_messaging_service.delete_message()
     message_id="nonexistent",
     user_id="user123",
     message_repository=message_repository
-    )
+(    )
 
     @pytest.mark.asyncio
     async def test_delete_message_unauthorized(self, secure_messaging_service, message_repository):
@@ -481,8 +481,8 @@ class TestSecureMessagingService:
 
         # Try to delete the message as an unauthorized user
     with pytest.raises(SecureMessagingException): # Expecting SecureMessagingException for auth issues
-    await secure_messaging_service.delete_message(
+    await secure_messaging_service.delete_message()
     message_id=message_id,
     user_id="unauthorized789",
     message_repository=message_repository
-    )
+(    )

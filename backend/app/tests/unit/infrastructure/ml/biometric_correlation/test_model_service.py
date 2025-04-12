@@ -25,7 +25,7 @@ class TestBiometricCorrelationService:
         """Create a mock BiometricLSTMModel."""
         model = AsyncMock(spec=BiometricCorrelationModel)
         model.is_initialized = True
-        model.analyze_correlations = AsyncMock(return_value={
+        model.analyze_correlations = AsyncMock(return_value={)
             "correlations": [
                 {
                     "biometric_type": "heart_rate_variability",
@@ -49,7 +49,7 @@ class TestBiometricCorrelationService:
                 "false_positive_rate": 0.08,
                 "lag_prediction_mae": 2.3
             }
-        })
+(        })
         return model
 
     @pytest.fixture
@@ -59,12 +59,12 @@ class TestBiometricCorrelationService:
         model_dir = str(tmp_path / "models")
         
         # Create service with the correct parameters
-    service = BiometricCorrelationService(
+    service = BiometricCorrelationService()
     model_dir=model_dir,
     model_path=None,
     biometric_features=["heart_rate_variability", "sleep_duration", "physical_activity"],
     mental_health_indicators=["anxiety", "mood"]
-    )
+(    )
         
         # Replace the model with our mock
     service.model = mock_lstm_model
@@ -129,12 +129,12 @@ class TestBiometricCorrelationService:
     correlation_threshold = 0.3
         
         # Execute
-    result = await service.analyze_correlations(
+    result = await service.analyze_correlations()
     patient_id=sample_patient_id,
     biometric_data=sample_biometric_data,
     lookback_days=lookback_days,
     correlation_threshold=correlation_threshold
-    )
+(    )
         
         # Verify
     assert "patient_id" in result
@@ -170,11 +170,11 @@ class TestBiometricCorrelationService:
         
         # Execute and verify exception is raised
     with pytest.raises(ValueError) as excinfo:
-    await service.analyze_correlations(
+    await service.analyze_correlations()
     patient_id=sample_patient_id,
     biometric_data=empty_data,
     lookback_days=30
-    )
+(    )
         
     assert "Empty biometric data" in str(excinfo.value)
 
@@ -191,11 +191,11 @@ class TestBiometricCorrelationService:
     }
         
         # Execute
-    result = await service.analyze_correlations(
+    result = await service.analyze_correlations()
     patient_id=sample_patient_id,
     biometric_data=insufficient_data,
     lookback_days=30
-    )
+(    )
         
         # Verify
     assert "patient_id" in result
@@ -215,11 +215,11 @@ class TestBiometricCorrelationService:
     mock_lstm_model.analyze_correlations.side_effect = Exception("Model error")
         
         # Execute
-    result = await service.analyze_correlations(
+    result = await service.analyze_correlations()
     patient_id=sample_patient_id,
     biometric_data=sample_biometric_data,
     lookback_days=30
-    )
+(    )
         
         # Verify
     assert "patient_id" in result
@@ -237,11 +237,11 @@ class TestBiometricCorrelationService:
     with patch.object(service, '_preprocess_biometric_data', wraps=service._preprocess_biometric_data) as mock_preprocess:
             
             # Execute
-    await service.analyze_correlations(
+    await service.analyze_correlations()
     patient_id=str(uuid4()),
     biometric_data=sample_biometric_data,
     lookback_days=30
-    )
+(    )
             
             # Verify
     mock_preprocess.assert_called_once_with(sample_biometric_data, 30)

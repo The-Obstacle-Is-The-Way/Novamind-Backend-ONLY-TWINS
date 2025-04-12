@@ -24,21 +24,21 @@ class PhiDetectionError(Exception): pass
 class ModelInferenceError(Exception): pass # Added placeholder
 class ValidationError(Exception): pass # Added placeholder
 
-from app.presentation.api.v1.endpoints.digital_twins import (
+from app.presentation.api.v1.endpoints.digital_twins import ()
     router as digital_twins_router,
     get_digital_twin_service,
     # Assuming get_current_user_id is imported/defined correctly for dependency injection
     # If not, it needs to be imported or mocked appropriately
     # get_current_user_id
-)
-from app.presentation.api.v1.schemas.digital_twin_schemas import (
+()
+from app.presentation.api.v1.schemas.digital_twin_schemas import ()
     PersonalizedInsightResponse,
     BiometricCorrelationResponse,
     MedicationResponsePredictionResponse,
     TreatmentPlanResponse,
     ClinicalTextAnalysisRequest, # Added missing import
     ClinicalTextAnalysisResponse # Added missing import
-)
+()
 # Assuming DigitalTwinIntegrationService exists for mocking
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 
@@ -417,10 +417,10 @@ class TestDigitalTwinEndpoints:
     }
 
         # Execute
-    response = client.post(
+    response = client.post()
     f"/digital-twins/patients/{sample_patient_id}/update",
     json=update_data
-    )
+(    )
 
         # Verify
     assert response.status_code == 200
@@ -465,10 +465,10 @@ class TestDigitalTwinEndpoints:
     }
 
         # Execute
-    response = client.post(
+    response = client.post()
     f"/digital-twins/patients/{sample_patient_id}/medication-response",
     json=request_data
-    )
+(    )
 
         # Verify
     assert response.status_code == 200
@@ -487,10 +487,10 @@ class TestDigitalTwinEndpoints:
     }
 
         # Execute
-    response = client.post(
+    response = client.post()
     f"/digital-twins/patients/{sample_patient_id}/treatment-plan",
     json=request_data
-    )
+(    )
 
         # Verify
     assert response.status_code == 200

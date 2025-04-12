@@ -4,14 +4,14 @@ from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
-from app.infrastructure.security.auth_middleware import (
+from app.infrastructure.security.auth_middleware import ()
     JWTAuthMiddleware,   
     verify_token,   
     verify_patient_access,  
     verify_provider_access,  
     verify_admin_access,  
     get_current_user
-)
+()
 from app.infrastructure.security.jwt_service import JWTService
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
@@ -120,10 +120,10 @@ class TestAuthMiddleware:
     def patient_specific_route(patient_id: str, user = Depends(verify_patient_access)):
                 # Simulate access to patient-specific resources
                 if user["role"] == "patient" and user["user_id"] != patient_id:
-        raise HTTPException(
+        raise HTTPException()
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail="Access denied: Not authorized to access this patient's data"
-                    )
+(                    )
                 return {"message": "access to specific patient data", "patient_id": patient_id}
         
     return app
@@ -154,10 +154,10 @@ class TestAuthMiddleware:
     def test_patient_route_with_patient_token(self, test_client, mock_jwt_service):
         """Test that patient routes are accessible with patient token."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/patient-only",
             headers={"Authorization": "Bearer patient_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  200
@@ -166,10 +166,10 @@ class TestAuthMiddleware:
     def test_patient_route_with_provider_token(self, test_client, mock_jwt_service):
         """Test that patient routes are accessible with provider token."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/patient-only",
             headers={"Authorization": "Bearer provider_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  200
@@ -178,10 +178,10 @@ class TestAuthMiddleware:
     def test_provider_route_with_patient_token(self, test_client, mock_jwt_service):
         """Test that provider routes are not accessible with patient token."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/provider-only",
             headers={"Authorization": "Bearer patient_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  403  # Forbidden
@@ -189,10 +189,10 @@ class TestAuthMiddleware:
     def test_provider_route_with_provider_token(self, test_client, mock_jwt_service):
         """Test that provider routes are accessible with provider token."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/provider-only",
             headers={"Authorization": "Bearer provider_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  200
@@ -201,10 +201,10 @@ class TestAuthMiddleware:
     def test_admin_route_with_provider_token(self, test_client, mock_jwt_service):
         """Test that admin routes are not accessible with provider token."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/admin-only",
             headers={"Authorization": "Bearer provider_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  403  # Forbidden
@@ -212,10 +212,10 @@ class TestAuthMiddleware:
     def test_admin_route_with_admin_token(self, test_client, mock_jwt_service):
         """Test that admin routes are accessible with admin token."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/admin-only",
             headers={"Authorization": "Bearer admin_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  200
@@ -224,10 +224,10 @@ class TestAuthMiddleware:
     def test_expired_token(self, test_client, mock_jwt_service):
         """Test that expired tokens are rejected."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/patient-only",
             headers={"Authorization": "Bearer expired_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  401
@@ -236,10 +236,10 @@ class TestAuthMiddleware:
     def test_invalid_token(self, test_client, mock_jwt_service):
         """Test that invalid tokens are rejected."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/patient-only",
             headers={"Authorization": "Bearer invalid_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  401
@@ -248,10 +248,10 @@ class TestAuthMiddleware:
     def test_patient_accessing_own_data(self, test_client, mock_jwt_service):
         """Test that a patient can access their own data."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/patient-specific/patient123",
             headers={"Authorization": "Bearer patient_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  200
@@ -260,10 +260,10 @@ class TestAuthMiddleware:
     def test_patient_accessing_other_patient_data(self, test_client, mock_jwt_service):
         """Test that a patient cannot access another patient's data."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/patient-specific/patient456",
             headers={"Authorization": "Bearer patient_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  403
@@ -272,10 +272,10 @@ class TestAuthMiddleware:
     def test_provider_accessing_patient_data(self, test_client, mock_jwt_service):
         """Test that a provider can access any patient's data."""
         # Act
-        response = test_client.get(
+        response = test_client.get()
             "/patient-specific/patient123",
             headers={"Authorization": "Bearer provider_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  200
@@ -284,19 +284,19 @@ class TestAuthMiddleware:
     def test_malformed_authorization_header(self, test_client):
         """Test that malformed authorization headers are rejected."""
         # Act - Missing "Bearer" prefix
-        response = test_client.get(
+        response = test_client.get()
             "/patient-only",
             headers={"Authorization": "patient_token"}
-        )
+(        )
         
         # Assert
     assert response.status_code  ==  401
         
         # Act - Empty token
-    response = test_client.get(
+    response = test_client.get()
     "/patient-only",
     headers={"Authorization": "Bearer "}
-    )
+(    )
         
         # Assert
     assert response.status_code  ==  401
@@ -310,10 +310,10 @@ class TestAuthMiddleware:
             # Act - Simulate multiple rapid requests with invalid tokens
     responses = []
     for _ in range(10):  # Will exceed our patched limit of 5
-    responses.append(test_client.get(
+    responses.append(test_client.get())
     "/patient-only",
     headers={"Authorization": "Bearer invalid_token"}
-    ))
+((    ))
             
             # Assert - One of the later responses should be rate limited
     assert any(r.status_code == 429 for r in responses[-5:]), "Rate limiting not applied"
@@ -322,13 +322,13 @@ class TestAuthMiddleware:
         """Test CSRF protection mechanisms."""
         # Act - Simulate a request without proper CSRF token
         # This test is conceptual - actual implementation depends on your CSRF approach
-        response = test_client.post(
+        response = test_client.post()
             "/patient-only",
             headers={
                 "Authorization": "Bearer patient_token",
                 "X-Requested-With": "XMLHttpRequest"  # This is a common CSRF check
             }
-        )
+(        )
         
         # Assert - Your implementation might vary
         # For APIs using JWT, often the presence of a valid token is considered
@@ -342,16 +342,16 @@ class TestAuthMiddleware:
         
     with patch("app.infrastructure.security.auth_middleware.audit_logger", mock_logger):
             # Act - Successful access
-    test_client.get(
+    test_client.get()
     "/patient-only",
     headers={"Authorization": "Bearer patient_token"}
-    )
+(    )
             
             # Act - Failed access
-    test_client.get(
+    test_client.get()
     "/admin-only",
     headers={"Authorization": "Bearer patient_token"}
-    )
+(    )
             
             # Assert
             # Verify successful access was logged

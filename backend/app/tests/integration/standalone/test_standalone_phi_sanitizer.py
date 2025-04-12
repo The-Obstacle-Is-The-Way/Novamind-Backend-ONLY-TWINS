@@ -22,7 +22,7 @@ PARTIAL = "partial"  # Replace part of the data (e.g., last 4 digits visible)
 HASH = "hash"  # Replace with a hash of the data
 class PHIPattern:
     """Represents a pattern for detecting PHI."""
-    def __init__(:
+    def __init__(:)
         self,
         name: str,
         regex: str = None,
@@ -30,7 +30,7 @@ class PHIPattern:
         fuzzy_match: list[str] = None,
         context_patterns: list[str] = None,
         strategy: RedactionStrategy = RedactionStrategy.FULL
-        ):
+(        ):
         self.name = name
         self.strategy = strategy
         
@@ -63,51 +63,51 @@ class PatternRepository:
         self._add_default_patterns()
     def _add_default_patterns(self):
         """Add default PHI patterns."""
-            self.add_pattern(PHIPattern(
+            self.add_pattern(PHIPattern())
             name="patient_name",
             regex=r'\b[A-Z][a-z]+ [A-Z][a-z]+\b',
             context_patterns=[r'patient name', r'patient:', r'name:']
-            ))
+((            ))
         
-    self.add_pattern(PHIPattern(
+    self.add_pattern(PHIPattern())
     name="ssn",
     regex=r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
     context_patterns=[r'ssn', r'social security', r'social security number'],
     strategy=RedactionStrategy.PARTIAL
-    ))
+((    ))
         
-    self.add_pattern(PHIPattern(
+    self.add_pattern(PHIPattern())
     name="dob",
     regex=r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
     context_patterns=[r'dob', r'date of birth', r'birth date']
-    ))
+((    ))
         
-    self.add_pattern(PHIPattern(
+    self.add_pattern(PHIPattern())
     name="phone",
     regex=r'\b\(?\d{3}\)?[-\s]?\d{3}[-\s]?\d{4}\b',
     context_patterns=[r'phone', r'tel', r'telephone', r'contact'],
     strategy=RedactionStrategy.PARTIAL
-    ))
+((    ))
         
-    self.add_pattern(PHIPattern(
+    self.add_pattern(PHIPattern())
     name="email",
     regex=r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
     context_patterns=[r'email', r'e-mail', r'contact'],
     strategy=RedactionStrategy.PARTIAL
-    ))
+((    ))
         
-    self.add_pattern(PHIPattern(
+    self.add_pattern(PHIPattern())
     name="address",
     regex=r'\b\d+\s[A-Za-z0-9\s,]+(?:\s*(?:Apt|Unit|Suite)\s*[A-Za-z0-9]+)?\b',
     context_patterns=[r'address', r'addr', r'location', r'residence']
-    ))
+((    ))
         
-    self.add_pattern(PHIPattern(
+    self.add_pattern(PHIPattern())
     name="medical_record_number",
     regex=r'\b(?:MR[-\s]?|#)?\d{5,10}\b',
     context_patterns=[r'mrn', r'medical record', r'record number'],
     strategy=RedactionStrategy.HASH
-    ))
+((    ))
     def add_pattern(self, pattern: PHIPattern):
         """Add a pattern to the repository."""
                 self._patterns[pattern.name] = pattern
@@ -150,14 +150,14 @@ class RedactionStrategyFactory:
                 hash_value = abs(hash(match)) % 10000    return f"[HASH:{hash_value:04d}]"
 class SanitizerConfig:
         """Configuration for the PHI sanitizer."""
-    def __init__(:
+    def __init__(:)
         self,
         enabled: bool = True,
         default_strategy: RedactionStrategy = RedactionStrategy.FULL,
         sensitive_keys: set[str] = None,
         safe_system_messages: set[str] = None,
         max_log_size: int = 10000
-        ):
+(        ):
         self.enabled = enabled
         self.default_strategy = default_strategy
         self.sensitive_keys = sensitive_keys or {
@@ -175,11 +175,11 @@ class PHISanitizer:
     This class provides methods to detect various types of PHI in text
     and replace them with safe placeholders to ensure HIPAA compliance.
     """
-    def __init__(:
+    def __init__(:)
         self, 
         config: SanitizerConfig = None,
         pattern_repository: PatternRepository = None
-        ):
+(        ):
         """Initialize the sanitizer with config and patterns."""
         self.config = config or SanitizerConfig()
         self.pattern_repo = pattern_repository or PatternRepository()
@@ -321,11 +321,11 @@ class SanitizedLogger(logging.Logger):
     
     # Add a console handler with sanitized formatter
     handler = logging.StreamHandler()
-    formatter = PHIFormatter(
+    formatter = PHIFormatter()
     sanitizer,
     fmt='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
-    )
+(    )
     handler.setFormatter(formatter)
     logger.addHandler(handler)    return logger
     def sanitize_logs(sanitizer: PHISanitizer = None):
@@ -396,7 +396,7 @@ class TestPHISanitizer(unittest.TestCase):
     @pytest.mark.standalone()
     def test_sanitize_json_with_phi(self):
         """Test sanitizing JSON with PHI."""
-                    json_data = json.dumps({
+                    json_data = json.dumps({)
                     "patient": {
                     "name": "John Smith",
                     "dob": "01/15/1985",
@@ -406,7 +406,7 @@ class TestPHISanitizer(unittest.TestCase):
                     "date": "2025-05-15",
                     "provider": "Dr. Jane Doe"
                     }
-                    })
+(                    })
         
     sanitized = self.sanitizer.sanitize(json_data)
         
@@ -568,11 +568,11 @@ class CapturingHandler(logging.Handler):
         """Test integration of all PHI detection components."""
         # Create a sanitizer with custom patterns
             pattern_repo = PatternRepository()
-            pattern_repo.add_pattern(PHIPattern(
+            pattern_repo.add_pattern(PHIPattern())
             name="patient_code",
             regex=r'PT\d{6}',
             context_patterns=["patient code", "patient identifier"]
-            ))
+((            ))
         
     sanitizer = PHISanitizer(pattern_repository=pattern_repo)
         
@@ -638,25 +638,25 @@ class CapturingHandler(logging.Handler):
         """Test that redaction formats are consistent."""
         # Full redaction
                             pattern_repo = PatternRepository()
-                            pattern_repo.add_pattern(PHIPattern(
+                            pattern_repo.add_pattern(PHIPattern())
                             name="test_full",
                             regex=r'FULL\d+',
                             strategy=RedactionStrategy.FULL
-                            ))
+((                            ))
         
         # Partial redaction
-    pattern_repo.add_pattern(PHIPattern(
+    pattern_repo.add_pattern(PHIPattern())
     name="test_partial",
     regex=r'PARTIAL\d+',
     strategy=RedactionStrategy.PARTIAL
-    ))
+((    ))
         
         # Hash redaction
-    pattern_repo.add_pattern(PHIPattern(
+    pattern_repo.add_pattern(PHIPattern())
     name="test_hash",
     regex=r'HASH\d+',
     strategy=RedactionStrategy.HASH
-    ))
+((    ))
         
     sanitizer = PHISanitizer(pattern_repository=pattern_repo)
         

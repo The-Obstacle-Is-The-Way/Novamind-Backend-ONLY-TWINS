@@ -17,11 +17,11 @@ from fastapi.testclient import TestClient
 
 from app.api.routes.ml import router , as ml_router
 from app.core.config.ml_settings import ml_settings
-from app.core.exceptions import (
+from app.core.exceptions import ()
     InvalidRequestError,  
     ModelNotFoundError,  
     ServiceUnavailableError,  
-)
+()
 from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-existent MLService
 
 
@@ -50,7 +50,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
         """Mock shutdown."""
         self.initialized = False
     
-    def process(
+    def process()
         self,
         prompt: str,
         model: str = None,
@@ -59,7 +59,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+(    ) -> Dict[str, Any]:
         """Mock process method."""
         if not prompt:
         raise InvalidRequestError("Prompt cannot be empty")
@@ -80,7 +80,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     "metadata": {"task": task or "general_analysis"}
     }
     
-    def depression_detection(
+    def depression_detection()
         self, 
         text: str, 
         model: str = None,
@@ -90,7 +90,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+(    ) -> Dict[str, Any]:
         """Mock depression detection."""
         if not text:
         raise InvalidRequestError("Text cannot be empty")
@@ -119,7 +119,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     "created_at": datetime.now().isoformat()
     }
     
-    def risk_assessment(
+    def risk_assessment()
         self, 
         text: str, 
         model: str = None,
@@ -129,7 +129,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+(    ) -> Dict[str, Any]:
         """Mock risk assessment."""
         if not text:
         raise InvalidRequestError("Text cannot be empty")
@@ -161,7 +161,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     "created_at": datetime.now().isoformat()
     }
     
-    def sentiment_analysis(
+    def sentiment_analysis()
         self, 
         text: str, 
         model: str = None,
@@ -170,7 +170,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+(    ) -> Dict[str, Any]:
         """Mock sentiment analysis."""
         if not text:
         raise InvalidRequestError("Text cannot be empty")
@@ -207,7 +207,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     "created_at": datetime.now().isoformat()
     }
     
-    def wellness_dimensions(
+    def wellness_dimensions()
         self, 
         text: str, 
         model: str = None,
@@ -217,7 +217,7 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+(    ) -> Dict[str, Any]:
         """Mock wellness dimensions."""
         if not text:
         raise InvalidRequestError("Text cannot be empty")

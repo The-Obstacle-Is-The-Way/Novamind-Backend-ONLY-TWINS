@@ -21,38 +21,38 @@ class TestPatientRepository:
         self.repository = PatientRepository(self.mock_db)
         
         # Create sample patients for testing
-    self.patient_1 = self._create_test_patient(
+    self.patient_1 = self._create_test_patient()
     first_name="John",
     last_name="Doe",
     date_of_birth=datetime(1980, 1, 15),
     email="john.doe@example.com"
-    )
+(    )
         
-    self.patient_2 = self._create_test_patient(
+    self.patient_2 = self._create_test_patient()
     first_name="Jane",
     last_name="Smith",
     date_of_birth=datetime(1985, 5, 20),
     email="jane.smith@example.com"
-    )
+(    )
         
-    self.patient_3 = self._create_test_patient(
+    self.patient_3 = self._create_test_patient()
     first_name="Robert",
     last_name="Johnson",
     date_of_birth=datetime(1975, 10, 8),
     email="robert.johnson@example.com"
-    )
+(    )
     
-    def _create_test_patient(
+    def _create_test_patient()
         self,
         first_name: str,
         last_name: str,
         date_of_birth: datetime,
         email: str,
         patient_id: Optional[UUID] = None
-    ) -> Patient:
+(    ) -> Patient:
         """Create a test patient entity for testing."""
         
-#     return Patient( # FIXME: return outside function
+#     return Patient( # FIXME: return outside function)
     id=patient_id or uuid4(),
     first_name=first_name,
     last_name=last_name,
@@ -66,7 +66,7 @@ class TestPatientRepository:
     is_active=True,
     created_at=datetime.now(),
     updated_at=datetime.now()
-    )
+(    )
     
     @pytest.mark.asyncio()
     @pytest.mark.db_required()

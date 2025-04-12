@@ -64,12 +64,12 @@ async def test_initialize_digital_twin(enhanced_services, patient_id, initial_da
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
-    digital_twin_state, knowledge_graph, belief_network = await digital_twin_service.initialize_digital_twin(
+    digital_twin_state, knowledge_graph, belief_network = await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data=initial_data,
         enable_knowledge_graph=True,
         enable_belief_network=True
-    )
+(    )
     
     # Check that all components were created
     assert digital_twin_state is not None
@@ -96,10 +96,10 @@ async def test_process_multimodal_data(enhanced_services, patient_id, initial_da
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin first
-    await digital_twin_service.initialize_digital_twin(
+    await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data=initial_data
-    )
+(    )
     
     # Prepare test data
     text_data = {
@@ -123,12 +123,12 @@ async def test_process_multimodal_data(enhanced_services, patient_id, initial_da
 }
     
     # Process the data
-    updated_state, results = await digital_twin_service.process_multimodal_data(
+    updated_state, results = await digital_twin_service.process_multimodal_data()
         patient_id=patient_id,
         text_data=text_data,
         physiological_data=physiological_data,
         behavioral_data=behavioral_data
-    )
+(    )
     
     # Check results
     assert updated_state is not None
@@ -143,12 +143,12 @@ async def test_knowledge_graph_operations(enhanced_services, patient_id, initial
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin with knowledge graph
-    _, knowledge_graph, _ = await digital_twin_service.initialize_digital_twin(
+    _, knowledge_graph, _ = await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data=initial_data,
         enable_knowledge_graph=True,
         enable_belief_network=False
-    )
+(    )
     
     # Prepare new data to update the graph
     new_data = {
@@ -157,7 +157,7 @@ async def test_knowledge_graph_operations(enhanced_services, patient_id, initial
             "medications": ["Aripiprazole"]
 },
         "insights": [
-            ClinicalInsight(
+            ClinicalInsight()
                 id=uuid.uuid4(),
                 title="Decreased REM Sleep",
                 description="Patient exhibits reduced REM sleep duration and quality.",
@@ -169,16 +169,16 @@ async def test_knowledge_graph_operations(enhanced_services, patient_id, initial
                 neurotransmitters=[Neurotransmitter.SEROTONIN, Neurotransmitter.GABA],
                 supporting_evidence=["Polysomnography", "Sleep diary"],
                 recommended_actions=["Sleep hygiene protocol", "Medication timing adjustment"]
-)
+()
 ]
 }
     
     # Update the knowledge graph
-    updated_graph = await digital_twin_service.update_knowledge_graph(
+    updated_graph = await digital_twin_service.update_knowledge_graph()
         patient_id=patient_id,
         new_data=new_data,
         data_source="clinical_update"
-    )
+(    )
     # Check that the graph was updated - don't compare with original graph
     assert updated_graph is not None
     
@@ -203,12 +203,12 @@ async def test_belief_network_operations(enhanced_services, patient_id, initial_
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin with belief network
-    _, _, belief_network = await digital_twin_service.initialize_digital_twin(
+    _, _, belief_network = await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data=initial_data,
         enable_knowledge_graph=False,
         enable_belief_network=True
-    )
+(    )
     
     # Prepare evidence to update the network
     evidence = {
@@ -217,11 +217,11 @@ async def test_belief_network_operations(enhanced_services, patient_id, initial_
     }
     
     # Update the belief network
-    updated_network = await digital_twin_service.update_belief_network(
+    updated_network = await digital_twin_service.update_belief_network()
         patient_id=patient_id,
         evidence=evidence,
         source="clinical_assessment"
-    )
+(    )
     
     # Check that the network was updated
     assert updated_network is not None
@@ -241,24 +241,24 @@ async def test_event_system(enhanced_services, patient_id):
     callback_url = "https://example.com/webhook"
     
     # Subscribe to events
-    subscription_id = await digital_twin_service.subscribe_to_events(
+    subscription_id = await digital_twin_service.subscribe_to_events()
         event_types=["digital_twin.initialized", "knowledge_graph.updated"],
         callback_url=callback_url
-    )
+(    )
     
     # Verify subscription was created
     assert subscription_id is not None
     
     # Initialize Digital Twin to trigger an event
-    await digital_twin_service.initialize_digital_twin(
+    await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data={}
-)
+()
     
     # Unsubscribe
-    unsubscribed = await digital_twin_service.unsubscribe_from_events(
+    unsubscribed = await digital_twin_service.unsubscribe_from_events()
         subscription_id=subscription_id
-    )
+(    )
     
     # Check unsubscription succeeded
     assert unsubscribed is True
@@ -270,10 +270,10 @@ async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
-    await digital_twin_service.initialize_digital_twin(
+    await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data=initial_data
-    )
+(    )
     
     # Test cross-validation
     data_points = {
@@ -282,24 +282,24 @@ async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
         "sleep_quality": 0.4
     }
     
-    validation_results = await digital_twin_service.perform_cross_validation(
+    validation_results = await digital_twin_service.perform_cross_validation()
         patient_id=patient_id,
         data_points=data_points,
         validation_strategy="majority_vote"
-    )
+(    )
     
     assert validation_results is not None
     assert "validated_data" in validation_results
     assert "confidence_scores" in validation_results
     
     # Test temporal cascade analysis
-    cascade_results = await digital_twin_service.analyze_temporal_cascade(
+    cascade_results = await digital_twin_service.analyze_temporal_cascade()
         patient_id=patient_id,
         start_event="Medication Change",
         end_event="Mood Improvement",
         max_path_length=3,
         min_confidence=0.6
-    )
+(    )
     
     assert cascade_results is not None
     assert len(cascade_results) > 0
@@ -307,11 +307,11 @@ async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
 assert "confidence" in cascade_results[0]
     
     # Test digital phenotype detection
-    phenotype_results = await digital_twin_service.detect_digital_phenotype(
+    phenotype_results = await digital_twin_service.detect_digital_phenotype()
         patient_id=patient_id,
         data_sources=["actigraphy", "sleep", "mood"],
         min_data_points=100
-    )
+(    )
     
     assert phenotype_results is not None
     assert "primary_phenotype" in phenotype_results
@@ -324,10 +324,10 @@ async def test_counterfactual_simulation(enhanced_services, patient_id, initial_
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
-    await digital_twin_service.initialize_digital_twin(
+    await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data=initial_data
-    )
+(    )
     
     # Create a mock baseline state ID
     baseline_state_id = uuid.uuid4()
@@ -368,13 +368,13 @@ async def test_counterfactual_simulation(enhanced_services, patient_id, initial_
 ]
     
     # Run the simulations
-    simulation_results = await digital_twin_service.perform_counterfactual_simulation(
+    simulation_results = await digital_twin_service.perform_counterfactual_simulation()
         patient_id=patient_id,
         baseline_state_id=baseline_state_id,
         intervention_scenarios=intervention_scenarios,
         output_variables=["mood", "anxiety", "sleep_quality", "energy"],
         simulation_horizon=90
-    )
+(    )
     
     # Check simulation results
     assert simulation_results is not None
@@ -393,18 +393,18 @@ async def test_clinical_summary_generation(enhanced_services, patient_id, initia
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
-    await digital_twin_service.initialize_digital_twin(
+    await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data=initial_data
-    )
+(    )
     
     # Generate the summary
-    summary = await digital_twin_service.generate_multimodal_clinical_summary(
+    summary = await digital_twin_service.generate_multimodal_clinical_summary()
         patient_id=patient_id,
         summary_types=["status", "trajectory"],
         time_range=(datetime.datetime.now() - datetime.timedelta(days=30), datetime.datetime.now()),
         detail_level="standard"
-    )
+(    )
     
     # Check summary structure
     assert summary is not None
@@ -423,17 +423,17 @@ async def test_visualization_data_generation(enhanced_services, patient_id, init
     digital_twin_service, _, _, _ = enhanced_services
     
     # Initialize the Digital Twin
-    await digital_twin_service.initialize_digital_twin(
+    await digital_twin_service.initialize_digital_twin()
         patient_id=patient_id,
         initial_data=initial_data
-    )
+(    )
     
     # Generate brain model visualization data
-    brain_viz = await digital_twin_service.generate_visualization_data(
+    brain_viz = await digital_twin_service.generate_visualization_data()
         patient_id=patient_id,
         visualization_type="brain_model",
         parameters={"highlight_significant": True, "show_connections": True}
-)
+()
     
     # Check visualization data
     assert brain_viz is not None

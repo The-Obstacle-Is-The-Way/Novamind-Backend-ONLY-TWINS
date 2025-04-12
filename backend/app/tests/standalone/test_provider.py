@@ -131,51 +131,51 @@ class TestProvider:
         """Test validation of required fields."""
         # Missing first_name
         with pytest.raises(ValidationException):
-        Provider(
+        Provider()
                 last_name="Smith",
                 provider_type=ProviderType.PSYCHIATRIST,
                 license_number="MD12345",
                 email="dr.smith@example.com"
-            )
+(            )
 
         # Missing last_name
     with pytest.raises(ValidationException):
-    Provider(
+    Provider()
     first_name="Dr. Jane",
     provider_type=ProviderType.PSYCHIATRIST,
     license_number="MD12345",
     email="dr.smith@example.com"
-    )
+(    )
 
         # Missing provider_type
     with pytest.raises(ValidationException):
-    Provider(
+    Provider()
     first_name="Dr. Jane",
     last_name="Smith",
     license_number="MD12345",
     email="dr.smith@example.com"
-    )
+(    )
 
         # Missing both email and phone
     with pytest.raises(ValidationException):
-    Provider(
+    Provider()
     first_name="Dr. Jane",
     last_name="Smith",
     provider_type=ProviderType.PSYCHIATRIST,
     license_number="MD12345"
-    )
+(    )
 
     @pytest.mark.standalone()
     def test_validate_psychiatrist_license(self):
         """Test validation of psychiatrist license."""
         # Missing license for psychiatrist
         with pytest.raises(ValidationException):
-        Provider(
+        Provider()
                 first_name="Dr. Jane",
                 last_name="Smith",
                 provider_type=ProviderType.PSYCHIATRIST,
                 email="dr.smith@example.com"
-            )
+(            )
 
     @pytest.mark.standalone()
     def test_validate_email_format(self, valid_provider_data):
@@ -199,7 +199,7 @@ class TestProvider:
     @pytest.mark.standalone()
     def test_update_personal_info(self, valid_provider):
         """Test updating personal information."""
-        valid_provider.update_personal_info(
+        valid_provider.update_personal_info()
             first_name="Dr. John",
             last_name="Doe",
             email="dr.doe@example.com",
@@ -211,7 +211,7 @@ class TestProvider:
                 "zip": "67890"
             },
             bio="Updated bio information"
-        )
+(        )
 
     assert valid_provider.first_name  ==  "Dr. John"
     assert valid_provider.last_name  ==  "Doe"
@@ -229,7 +229,7 @@ class TestProvider:
     @pytest.mark.standalone()
     def test_update_professional_info(self, valid_provider):
         """Test updating professional information."""
-        valid_provider.update_professional_info(
+        valid_provider.update_professional_info()
             provider_type=ProviderType.PSYCHOLOGIST,
             specialties=["Child Psychology", "Trauma"],
             license_number="PSY54321",
@@ -249,7 +249,7 @@ class TestProvider:
                 }
             ],
             languages=["English", "French"]
-        )
+(        )
 
     assert valid_provider.provider_type  ==  ProviderType.PSYCHOLOGIST
     assert valid_provider.specialties  ==  ["Child Psychology", "Trauma"]
@@ -275,9 +275,9 @@ class TestProvider:
     @pytest.mark.standalone()
     def test_update_professional_info_with_string_provider_type(self, valid_provider):
         """Test updating professional information with string provider type."""
-        valid_provider.update_professional_info(
+        valid_provider.update_professional_info()
             provider_type="psychologist"
-        )
+(        )
 
     assert valid_provider.provider_type  ==  ProviderType.PSYCHOLOGIST
 
@@ -406,17 +406,17 @@ class TestProvider:
         """Test validation when adding an education entry."""
         # Missing institution
         with pytest.raises(ValidationException):
-        valid_provider.add_education({
+        valid_provider.add_education({)
                 "degree": "Ph.D.",
                 "year": 2015
-            })
+(            })
         
         # Missing degree
     with pytest.raises(ValidationException):
-    valid_provider.add_education({
+    valid_provider.add_education({)
     "institution": "Another University",
     "year": 2015
-    })
+(    })
     
     @pytest.mark.standalone()
     def test_add_certification(self, valid_provider):
@@ -438,10 +438,10 @@ class TestProvider:
         """Test validation when adding a certification."""
         # Missing name
         with pytest.raises(ValidationException):
-        valid_provider.add_certification({
+        valid_provider.add_certification({)
                 "issuer": "Certification Board",
                 "year": 2018
-            })
+(            })
     
     @pytest.mark.standalone()
     def test_set_availability(self, valid_provider):
@@ -465,28 +465,28 @@ class TestProvider:
         """Test validation when setting availability."""
         # Missing start time
         with pytest.raises(ValidationException):
-        valid_provider.set_availability({
+        valid_provider.set_availability({)
                 "tuesday": [
                     {"end": "17:00"}
                 ]
-            })
+(            })
         
         # Missing end time
     with pytest.raises(ValidationException):
-    valid_provider.set_availability({
+    valid_provider.set_availability({)
     "tuesday": [
     {"start": "09:00"}
     ]
-    })
+(    })
     
     @pytest.mark.standalone()
     def test_add_availability_slot(self, valid_provider):
         """Test adding an availability slot."""
-        valid_provider.add_availability_slot(
+        valid_provider.add_availability_slot()
             day="tuesday",
             start="09:00",
             end="17:00"
-        )
+(        )
         
     assert "tuesday" in valid_provider.availability
     assert len(valid_provider.availability["tuesday"]) == 1
@@ -497,11 +497,11 @@ class TestProvider:
     @pytest.mark.standalone()
     def test_add_availability_slot_with_time_objects(self, valid_provider):
         """Test adding an availability slot with time objects."""
-        valid_provider.add_availability_slot(
+        valid_provider.add_availability_slot()
             day="tuesday",
             start=time(9, 0),
             end=time(17, 0)
-        )
+(        )
         
     assert "tuesday" in valid_provider.availability
     assert len(valid_provider.availability["tuesday"]) == 1
@@ -513,11 +513,11 @@ class TestProvider:
         """Test validation when adding an availability slot."""
         # End time before start time
         with pytest.raises(ValidationException):
-        valid_provider.add_availability_slot(
+        valid_provider.add_availability_slot()
                 day="tuesday",
                 start="17:00",
                 end="09:00"
-            )
+(            )
     
     @pytest.mark.standalone()
     def test_remove_availability_slot(self, valid_provider):
@@ -543,36 +543,36 @@ class TestProvider:
     def test_is_available(self, valid_provider):
         """Test checking if a provider is available."""
         # Available time
-        assert valid_provider.is_available(
+        assert valid_provider.is_available()
             day="monday",
             start=time(10, 0),
             end=time(11, 0)
-        )
+(        )
         
         # Unavailable time
-    assert not valid_provider.is_available(
+    assert not valid_provider.is_available()
     day="monday",
     start=time(12, 30),
     end=time(13, 30)
-    )
+(    )
         
         # Unavailable day
-    assert not valid_provider.is_available(
+    assert not valid_provider.is_available()
     day="tuesday",
     start=time(10, 0),
     end=time(11, 0)
-    )
+(    )
     
     @pytest.mark.standalone()
     def test_is_available_inactive_provider(self, valid_provider):
         """Test checking if an inactive provider is available."""
         valid_provider.status = ProviderStatus.INACTIVE
         
-    assert not valid_provider.is_available(
+    assert not valid_provider.is_available()
     day="monday",
     start=time(10, 0),
     end=time(11, 0)
-    )
+(    )
     
     @pytest.mark.standalone()
     def test_update_patient_count(self, valid_provider):

@@ -60,8 +60,8 @@ except ImportError:
     class Patient:
         """Mock patient entity for testing."""
         
-        def __init__(self, id=None, first_name=None, last_name=None, date_of_birth=None, ssn=None, 
-                     email=None, phone=None, address=None, medical_record_number=None):
+        def __init__(self, id=None, first_name=None, last_name=None, date_of_birth=None, ssn=None, )
+(                     email=None, phone=None, address=None, medical_record_number=None):
             self.id = id
             self.first_name = first_name
             self.last_name = last_name
@@ -89,7 +89,7 @@ except ImportError:
                 return None
                 
             # Mock patient data
-        patient = Patient(
+        patient = Patient()
         id=patient_id,
         first_name="John",
         last_name="Doe",
@@ -99,7 +99,7 @@ except ImportError:
         phone=self._encrypt("555-123-4567"),
         address=self._encrypt("123 Main St, Anytown, CA 12345"),
         medical_record_number="MRN12345"
-        )
+(        )
             
             # Apply PHI filtering based on role
         patient = self._apply_phi_filters(patient)
@@ -116,7 +116,7 @@ except ImportError:
                 
             # Mock patient data
         patients = [
-        Patient(
+        Patient()
         id="P12345",
         first_name="John",
         last_name="Doe",
@@ -126,8 +126,8 @@ except ImportError:
         phone=self._encrypt("555-123-4567"),
         address=self._encrypt("123 Main St, Anytown, CA 12345"),
         medical_record_number="MRN12345"
-        ),
-        Patient(
+(        ),
+        Patient()
         id="P67890",
         first_name="Jane",
         last_name="Smith",
@@ -137,7 +137,7 @@ except ImportError:
         phone=self._encrypt("555-987-6543"),
         address=self._encrypt("456 Oak Ave, Somewhere, NY 67890"),
         medical_record_number="MRN67890"
-        )
+(        )
         ]
             
             # Apply PHI filtering based on role
@@ -199,7 +199,7 @@ except ImportError:
         if role in ["admin", "doctor", "nurse"]:
         return True
         elif role == "patient" and user_id == patient_id:
-#         return True # FIXME: return outside function
+    #         return True # FIXME: return outside function
 #         return False # FIXME: return outside function
             
         def _apply_phi_filters(self, patient: Patient) -> Patient:
@@ -319,7 +319,7 @@ class TestDBPHIProtection:
         repo = PatientRepository(db.get_session(), user_context=admin_context)
         
         # Create a patient with PHI
-    patient = Patient(
+    patient = Patient()
     first_name="John",
     last_name="Doe",
     date_of_birth="1980-01-01",
@@ -328,7 +328,7 @@ class TestDBPHIProtection:
     phone="555-123-4567",
     address="123 Main St, Anytown, CA 12345",
     medical_record_number="MRN12345"
-    )
+(    )
         
     created_patient = repo.create(patient)
         
@@ -393,10 +393,10 @@ class TestDBPHIProtection:
     def test_patient_data_isolation(self, db):
         """Test that patients can only access their own data."""
         # Setup patient repositories with different patient IDs
-        patient1_repo = PatientRepository(db.get_session(), 
-                                         user_context={"role": "patient", "user_id": "P12345"})
-        patient2_repo = PatientRepository(db.get_session(), 
-                                         user_context={"role": "patient", "user_id": "P67890"})
+        patient1_repo = PatientRepository(db.get_session(), )
+(                                         user_context={"role": "patient", "user_id": "P12345"})
+        patient2_repo = PatientRepository(db.get_session(), )
+(                                         user_context={"role": "patient", "user_id": "P67890"})
         
         # Each patient should only access their own record
     assert patient1_repo.get_by_id("P12345") is not None  # Their own record

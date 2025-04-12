@@ -25,10 +25,10 @@ class TestPatientService:
         self.mock_logger = MagicMock()
         
         # Create service with mock dependencies
-    self.service = PatientService(
+    self.service = PatientService()
     repository=self.mock_repository,
     logger=self.mock_logger
-    )
+(    )
         
         # Setup sample patient data
     self.patient_id = "test-patient-id"

@@ -10,13 +10,13 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.temporal_sequence import TemporalSequence
-from app.infrastructure.models.temporal_sequence_model import (
+from app.infrastructure.models.temporal_sequence_model import ()
     TemporalSequenceModel,  
     TemporalDataPointModel
-)
-from app.infrastructure.repositories.temporal_sequence_repository import (
+()
+from app.infrastructure.repositories.temporal_sequence_repository import ()
     SqlAlchemyTemporalSequenceRepository
-)
+()
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ def test_sequence():
     patient_id = uuid4()
     
     # Create sequence with three time points
-    sequence = TemporalSequence(
+    sequence = TemporalSequence()
         sequence_id=sequence_id,
         patient_id=patient_id,
         feature_names=["dopamine", "serotonin", "gaba"],
@@ -61,7 +61,7 @@ def test_sequence():
             [0.7, 0.5, 0.5]
         ],
         sequence_metadata={"source": "test", "type": "neurotransmitter_levels"} # Renamed
-    )
+(    )
     
     return sequence
 
@@ -292,11 +292,11 @@ class TestSqlAlchemyTemporalSequenceRepository:
     ]
         
         # Execute
-    result = await repo.get_latest_by_feature(
+    result = await repo.get_latest_by_feature()
     patient_id=mock_sequence_model.patient_id,
     feature_name="dopamine",
     limit=5
-    )
+(    )
         
         # Verify
     assert result is not None
@@ -324,10 +324,10 @@ class TestSqlAlchemyTemporalSequenceRepository:
     mock_session.execute.return_value = mock_result
         
         # Execute
-    result = await repo.get_latest_by_feature(
+    result = await repo.get_latest_by_feature()
     patient_id=uuid4(),
     feature_name="nonexistent_feature"
-    )
+(    )
         
         # Verify
     assert result is None

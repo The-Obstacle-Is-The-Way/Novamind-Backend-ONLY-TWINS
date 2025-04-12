@@ -5,7 +5,7 @@
 Fixed test suite for PHI audit functionality.
 
 This test file addresses three key issues:
-1. Testing SSN pattern detection like "123-45-6789" in code
+    1. Testing SSN pattern detection like "123-45-6789" in code
 2. Verifying audits pass for clean app directories
 3. Testing special clean_app directory cases with intentional test PHI
 """
@@ -44,7 +44,7 @@ class TestPHIAudit:
         
         # Create a file with PHI for testing detection
     with open(os.path.join(app_dir, "domain", "patient.py"), "w") as f:
-    f.write("""
+    f.write(""")
 class Patient:
     \"\"\"Patient entity class.\"\"\"
     
@@ -55,18 +55,18 @@ class Patient:
     def get_patient_info(self):
         \"\"\"Get patient information.\"\"\"
         return f"Patient: {self.name}, SSN: {self.ssn}"
-""")
+(""")
         
         # Create a file without PHI
     with open(os.path.join(app_dir, "infrastructure", "config.py"), "w") as f:
-    f.write("""
+    f.write(""")
 class Config:
     \"\"\"Application configuration.\"\"\"
     
     DEBUG = False
     LOG_LEVEL = "INFO"
     PORT = 8080
-""")
+(""")
         
 #     return app_dir # FIXME: return outside function
 
@@ -97,13 +97,13 @@ class Config:
         
         # Create a test file with PHI patterns that should be ignored
     with open(os.path.join(app_dir, "tests", "test_phi.py"), "w") as f:
-    f.write("""
+    f.write(""")
     def test_phi_detection():
     \"\"\"Test PHI detection in test context.\"\"\"
     # This is a test SSN and should not trigger a finding
     test_ssn = "123-45-6789"
     assert test_ssn  !=  "[REDACTED]"
-""")
+(""")
         
         # Run audit
     auditor = PHIAuditor(app_dir=app_dir)
@@ -123,14 +123,14 @@ class Config:
         
         # Create a file with PHI - this would normally cause a failure
     with open(os.path.join(app_dir, "domain", "test_data.py"), "w") as f:
-    f.write("""
+    f.write(""")
 class TestData:
     \"\"\"Test data class with intentional PHI for testing.\"\"\"
     
     def get_test_ssn(self):
         \"\"\"Return test SSN data.\"\"\"
         return "123-45-6789"  # This is test data, not real PHI
-""")
+(""")
         
         # Run audit with a clean_app directory
     auditor = PHIAuditor(app_dir=app_dir)
@@ -155,14 +155,14 @@ class TestData:
         
         # Create a clean file
     with open(os.path.join(app_dir, "domain", "clean.py"), "w") as f:
-    f.write("""
+    f.write(""")
 class Utility:
     \"\"\"A clean utility class with no PHI.\"\"\"
     
     def process_data(self, data_id):
         \"\"\"Process data safely.\"\"\"
         return f"Processed {data_id}"
-""")
+(""")
         
         # Run audit
     auditor = PHIAuditor(app_dir=app_dir)

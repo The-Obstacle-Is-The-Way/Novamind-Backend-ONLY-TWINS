@@ -72,7 +72,7 @@ class TestPHISanitizer:
         # Verify redaction markers
     assert "[REDACTED SSN]" == sanitized_data["ssn"]
     assert "[REDACTED NAME]" == sanitized_data["name"]
-    assert "([REDACTED PHONE]" == sanitized_data["phone"]  # Phone number has parentheses preserved
+    assert "([REDACTED PHONE]" == sanitized_data["phone"]  # Phone number has parentheses preserved)
 
     def test_sanitize_dict_with_phi(self, sanitizer, sample_phi_data):
         """Test sanitization of dictionary data containing PHI."""

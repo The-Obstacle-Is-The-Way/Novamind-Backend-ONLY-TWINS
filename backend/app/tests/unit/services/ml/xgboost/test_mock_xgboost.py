@@ -10,10 +10,10 @@ import pytest
 from unittest.mock import MagicMock
 
 from app.core.services.ml.xgboost.mock import MockXGBoostService
-from app.core.services.ml.xgboost.exceptions import (
+from app.core.services.ml.xgboost.exceptions import ()
     ValidationError,   DataPrivacyError,   ResourceNotFoundError,  
     ModelNotFoundError
-)
+()
 
 
 @pytest.mark.venv_only()
@@ -24,10 +24,10 @@ class TestMockXGBoostService:
     def service(self):
         """Fixture that provides an initialized MockXGBoostService."""
         service = MockXGBoostService()
-        service.initialize({
+        service.initialize({)
             "data_privacy_level": 2,
             "confidence_threshold": 0.7
-        })
+(        })
         return service
     
     @pytest.fixture
@@ -69,11 +69,11 @@ class TestMockXGBoostService:
     
     def test_predict_risk_with_valid_data(self, service, sample_patient_id, sample_clinical_data):
         """Test risk prediction with valid data."""
-        result = service.predict_risk(
+        result = service.predict_risk()
             patient_id=sample_patient_id,
             risk_type="relapse",
             clinical_data=sample_clinical_data
-        )
+(        )
         
     assert result is not None
     assert "prediction_id" in result
@@ -96,34 +96,34 @@ class TestMockXGBoostService:
         }
         
     with pytest.raises(DataPrivacyError):
-    service.predict_risk(
+    service.predict_risk()
     patient_id=sample_patient_id,
     risk_type="relapse",
     clinical_data=clinical_data
-    )
+(    )
     
     def test_predict_risk_with_invalid_data(self, service):
         """Test risk prediction with invalid data."""
         with pytest.raises(ValidationError):
-        service.predict_risk(
+        service.predict_risk()
                 patient_id="",  # Empty patient ID
                 risk_type="relapse",
                 clinical_data={}
-            )
+(            )
         
     with pytest.raises(ValidationError):
-    service.predict_risk(
+    service.predict_risk()
     patient_id="patient-123",
     risk_type="",  # Empty risk type
     clinical_data={}
-    )
+(    )
             
     with pytest.raises(ValidationError):
-    service.predict_risk(
+    service.predict_risk()
     patient_id="patient-123",
     risk_type="relapse",
     clinical_data=None  # Missing clinical data
-    )
+(    )
     
     def test_predict_treatment_response(self, service, sample_patient_id, sample_clinical_data):
         """Test treatment response prediction."""
@@ -132,7 +132,7 @@ class TestMockXGBoostService:
             "dosage": "20mg"
         }
         
-    result = service.predict_treatment_response(
+    result = service.predict_treatment_response()
     patient_id=sample_patient_id,
     treatment_type="ssri",
     treatment_details=treatment_details,
@@ -145,7 +145,7 @@ class TestMockXGBoostService:
     "response": "partial"
     }
     ]
-    )
+(    )
         
     assert result is not None
     assert "prediction_id" in result
@@ -164,14 +164,14 @@ class TestMockXGBoostService:
             "frequency": "weekly"
         }
         
-    result = service.predict_outcome(
+    result = service.predict_outcome()
     patient_id=sample_patient_id,
     outcome_timeframe=outcome_timeframe,
     clinical_data=sample_clinical_data,
     treatment_plan=treatment_plan,
     social_determinants={"support_level": "medium"},
     comorbidities=["anxiety"]
-    )
+(    )
         
     assert result is not None
     assert "prediction_id" in result
@@ -185,19 +185,19 @@ class TestMockXGBoostService:
     def test_get_feature_importance(self, service, sample_patient_id):
         """Test feature importance retrieval."""
         # First make a prediction to get a prediction ID
-        prediction = service.predict_risk(
+        prediction = service.predict_risk()
             patient_id=sample_patient_id,
             risk_type="relapse",
             clinical_data={"severity": "moderate"}
-        )
+(        )
         
     prediction_id = prediction["prediction_id"]
         
-    result = service.get_feature_importance(
+    result = service.get_feature_importance()
     patient_id=sample_patient_id,
     model_type="risk",
     prediction_id=prediction_id
-    )
+(    )
         
     assert result is not None
     assert "prediction_id" in result
@@ -210,28 +210,28 @@ class TestMockXGBoostService:
     def test_get_feature_importance_not_found(self, service, sample_patient_id):
         """Test feature importance with non-existent prediction ID."""
         with pytest.raises(ResourceNotFoundError):
-        service.get_feature_importance(
+        service.get_feature_importance()
                 patient_id=sample_patient_id,
                 model_type="risk",
                 prediction_id="non-existent-id"
-            )
+(            )
     
     def test_integrate_with_digital_twin(self, service, sample_patient_id):
         """Test digital twin integration."""
         # First make a prediction to get a prediction ID
-        prediction = service.predict_risk(
+        prediction = service.predict_risk()
             patient_id=sample_patient_id,
             risk_type="relapse",
             clinical_data={"severity": "moderate"}
-        )
+(        )
         
     prediction_id = prediction["prediction_id"]
         
-    result = service.integrate_with_digital_twin(
+    result = service.integrate_with_digital_twin()
     patient_id=sample_patient_id,
     profile_id="profile-456",
     prediction_id=prediction_id
-    )
+(    )
         
     assert result is not None
     assert "integration_id" in result
@@ -265,11 +265,11 @@ class TestMockXGBoostService:
     assert observer_id in service.observers
         
         # Make a prediction to trigger notification
-    service.predict_risk(
+    service.predict_risk()
     patient_id=sample_patient_id,
     risk_type="relapse",
     clinical_data={"severity": "moderate"}
-    )
+(    )
         
         # Verify notification was sent
     observer.notify_prediction.assert_called_once()

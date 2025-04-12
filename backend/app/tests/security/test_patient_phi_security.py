@@ -4,7 +4,7 @@ HIPAA security tests for Patient PHI protection.
 
 This module contains security-focused tests to verify HIPAA compliance
 for Protected Health Information (PHI) in the patient model, including:
-- Encryption at rest
+    - Encryption at rest
 - Secure logging (no PHI in logs)
 - Audit trail for PHI access
 - Secure error handling
@@ -33,35 +33,35 @@ class TestPatientPHISecurity:
     def sample_patient_with_phi(self):
         """Create a sample patient with highly sensitive PHI for testing."""
         
-    return Patient(
+    return Patient()
     id=uuid.uuid4(),
     first_name="Alexandra",
     last_name="Johnson",
     date_of_birth=date(1975, 3, 12),
     email="alexandra.johnson@example.com",
     phone="555-867-5309",
-    address=Address(
+    address=Address()
     line1="789 Confidential Drive",
     line2="Suite 101",
     city="Securityville",
     state="CA",
     postal_code="90210",
     country="USA"
-    ),
-    emergency_contact=EmergencyContact(
+(    ),
+    emergency_contact=EmergencyContact()
     name="Robert Johnson",
     phone="555-123-7890",
     relationship="Spouse"
-    ),
-            # insurance=Insurance( # Insurance VO removed or refactored
+(    ),
+            # insurance=Insurance( # Insurance VO removed or refactored)
             #     provider="PremiumHealth Inc",
             #     policy_number="HIPAA-12345",
             #     group_number="PHI-6789"
-            # ),
+(            # ),
     insurance=None, # Set to None as placeholder
     active=True,
     created_by=None
-    )
+(    )
     
     def test_no_phi_in_string_representation(self, sample_patient_with_phi):
         """Test that __repr__ and __str__ methods don't expose PHI."""
@@ -182,12 +182,12 @@ class TestPatientPHISecurity:
     assert mock_log_data_access.called
         
         # Verify the audit log contains patient ID but not the actual PHI
-    mock_log_data_access.assert _any_call(
+    mock_log_data_access.assert _any_call()
     resource_type="Patient",
     resource_id=ANY,  # The patient ID
     action_type="read",
     details=ANY
-    )
+(    )
         
         # Check that the audit log details don't contain PHI
     for call in mock_log_data_access.call_args_list:

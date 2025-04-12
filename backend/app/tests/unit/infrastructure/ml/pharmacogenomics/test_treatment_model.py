@@ -23,21 +23,21 @@ class TestTreatmentResponseModel:
     def model(self):
         """Create a TreatmentResponseModel with mocked internals."""
         with patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True):
-        model = TreatmentResponseModel(
+        model = TreatmentResponseModel()
                 model_path="test_model_path",
                 medication_data_path="test_medication_path"
-            )
+(            )
             # Mock the internal models
             model._efficacy_model = MagicMock()
             model._efficacy_model.predict = MagicMock(return_value=np.array([0.72, 0.65, 0.58]))
             model._efficacy_model.predict_proba = MagicMock(return_value=np.array([[0.28, 0.72], [0.35, 0.65], [0.42, 0.58]]))
             
     model._side_effect_model = MagicMock()
-    model._side_effect_model.predict = MagicMock(return_value=np.array([
+    model._side_effect_model.predict = MagicMock(return_value=np.array([))
     [0.35, 0.28, 0.15],  # Medication 1 side effects (nausea, insomnia, headache)
     [0.42, 0.20, 0.18],  # Medication 2 side effects
     [0.25, 0.22, 0.12]   # Medication 3 side effects
-    ]))
+((    ]))
             
             # Mock the medication data
     model._medication_data = {
@@ -105,10 +105,10 @@ class TestTreatmentResponseModel:
         
     try:
             # Create model instance
-    model = TreatmentResponseModel(
+    model = TreatmentResponseModel()
     model_path="test_model_path",
     medication_data_path="test_medication_path"
-    )
+(    )
             
             # Mock joblib.load to return mock models
     mock_efficacy_model = MagicMock()
@@ -145,10 +145,10 @@ class TestTreatmentResponseModel:
         
     try:
             # Create model instance
-    model = TreatmentResponseModel(
+    model = TreatmentResponseModel()
     model_path="nonexistent_path",
     medication_data_path="nonexistent_path"
-    )
+(    )
             
             # Execute and assert
     with pytest.raises(FileNotFoundError):
@@ -170,11 +170,11 @@ class TestTreatmentResponseModel:
     }
         
         # Execute
-    result = await model.predict_treatment_response(
+    result = await model.predict_treatment_response()
     patient_data=sample_patient_data,
     medications=medications,
     metabolizer_status=metabolizer_status
-    )
+(    )
         
         # Verify
     assert "medication_predictions" in result
@@ -196,11 +196,11 @@ class TestTreatmentResponseModel:
     """Test prediction with empty medications list."""
         # Execute and assert
     with pytest.raises(ValueError):
-    await model.predict_treatment_response(
+    await model.predict_treatment_response()
     patient_data=sample_patient_data,
     medications=[],
     metabolizer_status={"CYP2D6": "normal"}
-    )
+(    )
 
     async def test_predict_treatment_response_invalid_medication(self, model, sample_patient_data):
     """Test prediction with invalid medication."""
@@ -208,11 +208,11 @@ class TestTreatmentResponseModel:
     medications = ["invalid_medication"]
         
         # Execute
-    result = await model.predict_treatment_response(
+    result = await model.predict_treatment_response()
     patient_data=sample_patient_data,
     medications=medications,
     metabolizer_status={"CYP2D6": "normal"}
-    )
+(    )
         
         # Verify that the result still contains valid structure but with default/warning values
     assert "medication_predictions" in result

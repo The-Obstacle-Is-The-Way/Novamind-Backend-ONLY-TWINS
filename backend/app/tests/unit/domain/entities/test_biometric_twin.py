@@ -232,7 +232,8 @@ class TestBiometricTimeseriesData:
     def test_get_values_in_range(self, sample_timeseries):
         """Test getting values within a time range."""
         now = datetime.now()
-        start_time = now - timedelta(days=1, hours=12)
+        # Fix syntax by separating the timedelta parameters
+        start_time = now - timedelta(days=1) - timedelta(hours=12)
         end_time = now + timedelta(hours=12)
         
         values = sample_timeseries.get_values_in_range(start_time, end_time)

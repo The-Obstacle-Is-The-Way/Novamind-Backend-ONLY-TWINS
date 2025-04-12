@@ -141,14 +141,14 @@ class TestMentaLLaMAService:
     }
             
             # Call the process method
-    result = service.process(
+    result = service.process()
     prompt="Test prompt",
     model="mentallama-33b-lora",
     task="depression_detection",
     context={"patient_history": "Brief history"},
     max_tokens=100,
     temperature=0.7
-    )
+(    )
             
             # Check result structure
     assert result["response_id"] == "12345678-1234-5678-1234-567812345678"
@@ -166,23 +166,23 @@ class TestMentaLLaMAService:
     mock_sanitize.assert_called_once_with("Test prompt")
             
             # Check that process_with_provider was called with correct args
-    service._process_with_provider.assert_called_once_with(
+    service._process_with_provider.assert_called_once_with()
     "Sanitized prompt",
     "mentallama-33b-lora",
     "depression_detection",
     {"patient_history": "Brief history"},
     100,
     0.7
-    )
+(    )
 
     def test_process_service_not_initialized(self, service):
         """Test process method when service is not initialized."""
         with pytest.raises(ServiceUnavailableError) as exc_info:
-        service.process(
+        service.process()
                 prompt="Test prompt",
                 model="mentallama-33b-lora",
                 task="depression_detection"
-            )
+(            )
         
     assert "not initialized" in str(exc_info.value)
 
@@ -198,11 +198,11 @@ class TestMentaLLaMAService:
         }
         
     with pytest.raises(ModelNotFoundError) as exc_info:
-    service.process(
+    service.process()
     prompt="Test prompt",
     model="non-existent-model",
     task="depression_detection"
-    )
+(    )
         
     assert "not found" in str(exc_info.value)
 
@@ -218,11 +218,11 @@ class TestMentaLLaMAService:
         }
         
     with pytest.raises(InvalidRequestError) as exc_info:
-    service.process(
+    service.process()
     prompt="Test prompt",
     model="mentallama-33b-lora",
     task="unsupported_task"
-    )
+(    )
         
     assert "not support task" in str(exc_info.value)
 
@@ -288,26 +288,26 @@ class TestMentaLLaMAService:
         context = {"patient_history": "Patient history text"}
         
         # Test depression detection prompt
-    depression_prompt = service._create_task_prompt(
+    depression_prompt = service._create_task_prompt()
     user_prompt, "depression_detection", context
-    )
+(    )
     assert "MentaLLaMA" in depression_prompt
     assert "depression" in depression_prompt.lower()
     assert user_prompt in depression_prompt
     assert "Patient history text" in depression_prompt
         
         # Test risk assessment prompt
-    risk_prompt = service._create_task_prompt(
+    risk_prompt = service._create_task_prompt()
     user_prompt, "risk_assessment", context
-    )
+(    )
     assert "MentaLLaMA" in risk_prompt
     assert "risk assessment" in risk_prompt.lower()
     assert user_prompt in risk_prompt
         
         # Test with no context
-    no_context_prompt = service._create_task_prompt(
+    no_context_prompt = service._create_task_prompt()
     user_prompt, "depression_detection"
-    )
+(    )
     assert "MentaLLaMA" in no_context_prompt
     assert user_prompt in no_context_prompt
 
@@ -322,67 +322,67 @@ class TestMentaLLaMAService:
     mock_process.return_value = {"result": "success"}
             
             # Test depression_detection method
-    result = service.depression_detection(
+    result = service.depression_detection()
     text="Test text",
     model="mentallama-33b-lora",
     include_rationale=True,
     severity_assessment=True
-    )
-    mock_process.assert_called_with(
+(    )
+    mock_process.assert_called_with()
     prompt="Test text",
     model="mentallama-33b-lora",
     task="depression_detection",
     context={"include_rationale": True, "severity_assessment": True},
     **{}
-    )
+(    )
     assert result  ==  {"result": "success"}
             
             # Test risk_assessment method
-    result = service.risk_assessment(
+    result = service.risk_assessment()
     text="Test text",
     model="mentallama-33b-lora",
     include_key_phrases=True,
     include_suggested_actions=True
-    )
-    mock_process.assert_called_with(
+(    )
+    mock_process.assert_called_with()
     prompt="Test text",
     model="mentallama-33b-lora",
     task="risk_assessment",
     context={"include_key_phrases": True, "include_suggested_actions": True},
     **{}
-    )
+(    )
     assert result  ==  {"result": "success"}
             
             # Test sentiment_analysis method
-    result = service.sentiment_analysis(
+    result = service.sentiment_analysis()
     text="Test text",
     model="mentallama-33b-lora",
     include_emotion_distribution=True
-    )
-    mock_process.assert_called_with(
+(    )
+    mock_process.assert_called_with()
     prompt="Test text",
     model="mentallama-33b-lora",
     task="sentiment_analysis",
     context={"include_emotion_distribution": True},
     **{}
-    )
+(    )
     assert result  ==  {"result": "success"}
             
             # Test wellness_dimensions method with dimensions
     dimensions = ["emotional", "social", "physical"]
-    result = service.wellness_dimensions(
+    result = service.wellness_dimensions()
     text="Test text",
     model="mentallama-33b-lora",
     dimensions=dimensions,
     include_recommendations=True
-    )
-    mock_process.assert_called_with(
+(    )
+    mock_process.assert_called_with()
     prompt="Test text",
     model="mentallama-33b-lora",
     task="wellness_dimensions",
     context={"dimensions": dimensions, "include_recommendations": True},
     **{}
-    )
+(    )
     assert result  ==  {"result": "success"}
 
     @patch('app.core.services.ml.mentalllama.boto3')
@@ -462,11 +462,11 @@ class TestMentaLLaMAService:
     service._setup_openai_client()
         
         # Verify client creation
-    mock_openai.assert_called_once_with(
+    mock_openai.assert_called_once_with()
     api_key="test-api-key",
     timeout=60,
     organization="test-org"
-    )
+(    )
     assert service._client["type"] == "openai"
     assert service._client["client"] == mock_openai_client
 
@@ -504,9 +504,9 @@ class TestMentaLLaMAService:
     patch.object(service, '_process_with_openai') as mock_openai:
             
             # Test internal provider
-    result = service._process_with_provider(
+    result = service._process_with_provider()
     "Test prompt", "test-model", "test-task", {}, 100, 0.7
-    )
+(    )
     assert result  ==  "Internal result"
     mock_internal.assert_called_once()
     mock_aws.assert_not_called()
@@ -516,9 +516,9 @@ class TestMentaLLaMAService:
     service._provider = "aws-bedrock"
     mock_aws.return_value = "AWS result"
             
-    result = service._process_with_provider(
+    result = service._process_with_provider()
     "Test prompt", "test-model", "test-task", {}, 100, 0.7
-    )
+(    )
     assert result  ==  "AWS result"
     mock_aws.assert_called_once()
             
@@ -526,9 +526,9 @@ class TestMentaLLaMAService:
     service._provider = "openai"
     mock_openai.return_value = "OpenAI result"
             
-    result = service._process_with_provider(
+    result = service._process_with_provider()
     "Test prompt", "test-model", "test-task", {}, 100, 0.7
-    )
+(    )
     assert result  ==  "OpenAI result"
     mock_openai.assert_called_once()
             
@@ -536,9 +536,9 @@ class TestMentaLLaMAService:
     service._provider = "unknown"
             
     with pytest.raises(ServiceUnavailableError) as exc_info:
-    service._process_with_provider(
+    service._process_with_provider()
     "Test prompt", "test-model", "test-task", {}, 100, 0.7
-    )
+(    )
             
     assert "unknown provider" in str(exc_info.value).lower()
 

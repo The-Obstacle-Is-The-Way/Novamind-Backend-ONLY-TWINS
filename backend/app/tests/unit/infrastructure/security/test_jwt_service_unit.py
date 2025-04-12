@@ -41,10 +41,10 @@ def mock_token_store():
 def jwt_service(mock_token_store):
     """Create a JWT service for testing."""
     # Instantiate JWTService directly with test config values
-    service = JWTService(
+    service = JWTService()
         secret_key=TEST_SECRET_KEY,
         algorithm=TEST_ALGORITHM
-    )
+(    )
     # service.token_store = mock_token_store # Token store concept removed/not used in current JWTService
     return service
 
@@ -85,12 +85,12 @@ class TestJWTService:
     assert access_token is not None
     assert isinstance(access_token, str)
         
-    decoded = jwt.decode(
+    decoded = jwt.decode()
     access_token,
     jwt_service.secret_key,
     algorithms=[jwt_service.algorithm],
             # Removed audience/issuer checks as they are not added by current create_token
-    )
+(    )
         
     assert decoded["sub"] == user_claims["sub"]
     assert decoded["name"] == user_claims["name"]
@@ -108,12 +108,12 @@ class TestJWTService:
     assert refresh_token is not None
     assert isinstance(refresh_token, str)
         
-    decoded = jwt.decode(
+    decoded = jwt.decode()
     refresh_token,
     jwt_service.secret_key,
     algorithms=[jwt_service.algorithm],
              # Removed audience/issuer checks
-    )
+(    )
         
     assert decoded["sub"] == user_claims["sub"]
     assert "exp" in decoded

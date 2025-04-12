@@ -30,16 +30,16 @@ def mock_bedrock_response():
     
     return {
         "body": {
-            "read": MagicMock(return_value=json.dumps({
-                "completion": json.dumps({
+            "read": MagicMock(return_value=json.dumps({))
+                "completion": json.dumps({)
                     "model_type": "depression_detection",
                     "score": 0.85,
                     "confidence": 0.92,
                     "analysis": "The text indicates signs of depression.",
                     "recommendations": ["Consider consulting with a mental health professional."],
                     "timestamp": datetime.now(UTC).isoformat()
-                })
-            }).encode())
+(                })
+((            }).encode())
         }
     }
 
@@ -106,11 +106,11 @@ class TestBedrockMentalLamaService:
 
     def test_detect_depression(self, mentalllama_service, mock_bedrock_response):
         """Test depression detection with valid input."""
-        with patch.object(
+        with patch.object()
             mentalllama_service._bedrock_client,
             "invoke_model",
             return_value=mock_bedrock_response
-        ):
+(        ):
         result = mentalllama_service.detect_depression("I'm feeling sad today")
             
     assert result["model_type"] == "depression_detection"
@@ -122,11 +122,11 @@ class TestBedrockMentalLamaService:
     def test_detect_depression_with_phi(self, mentalllama_service, mock_bedrock_response):
         """Test depression detection with PHI data."""
         
-    with patch.object(
+    with patch.object()
     mentalllama_service._bedrock_client,
     "invoke_model",
     return_value=mock_bedrock_response
-    ):
+(    ):
     result = mentalllama_service.detect_depression("My name is John Doe and I'm feeling sad")
             
     assert result["model_type"] == "depression_detection"
@@ -136,20 +136,20 @@ class TestBedrockMentalLamaService:
     def test_detect_depression_error(self, mentalllama_service, mock_error_response):
         """Test handling of errors during depression detection."""
         
-    with patch.object(
+    with patch.object()
     mentalllama_service._bedrock_client,
     "invoke_model"
-    ), pytest.raises(ServiceUnavailableError):
+(    ), pytest.raises(ServiceUnavailableError):
     mentalllama_service.detect_depression("I'm feeling sad today")
     
     def test_health_check(self, mentalllama_service):
         """Test health check functionality."""
         
-    with patch.object(
+    with patch.object()
     mentalllama_service._bedrock_client,
     "describe_model",
     return_value={"modelDetails": {"status": "InService"}}
-    ):
+(    ):
     status = mentalllama_service.health_check()
     assert status["status"] == "healthy"
     assert "latency_ms" in status
@@ -157,11 +157,11 @@ class TestBedrockMentalLamaService:
     def test_health_check_error(self, mentalllama_service):
         """Test health check with errors."""
         
-    with patch.object(
+    with patch.object()
     mentalllama_service._bedrock_client,
     "describe_model",
     side_effect=BotoCoreError()
-    ):
+(    ):
     status = mentalllama_service.health_check()
     assert status["status"] == "unhealthy"
     assert "error" in status
@@ -170,11 +170,11 @@ class TestBedrockMentalLamaService:
         """Test handling of model not found errors."""
         
         # Test when model doesn't exist
-    with patch.object(
+    with patch.object()
     mentalllama_service._bedrock_client,
     "describe_model",
     side_effect=ModelNotFoundError("Model not found")
-    ):
+(    ):
     status = mentalllama_service.health_check()
     assert status["status"] == "unhealthy"
     assert "Model not found" in status["error"]

@@ -11,12 +11,12 @@ import pytest
 from datetime import datetime, UTC, timedelta
 from typing import Dict, Any, List
 
-from app.core.exceptions import (
+from app.core.exceptions import ()
     InvalidConfigurationError,  
     InvalidRequestError,  
     ModelNotFoundError,  
     ServiceUnavailableError,  
-)
+()
 from app.core.services.ml.mock import MockMentaLLaMA
 from app.tests.unit.base_test_unit import BaseUnitTest # Updated import path after rename
 
@@ -31,11 +31,11 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.service = MockMentaLLaMA()
         self.service.initialize({})
         
-    self.sample_text = (
+    self.sample_text = ()
     "I've been feeling down for several weeks. I'm constantly tired, "
     "have trouble sleeping, and don't enjoy things anymore. Sometimes "
     "I wonder if life is worth living, but I wouldn't actually hurt myself."
-    )
+(    )
 
     def tearDown(self) -> None:
         """Clean up after each test."""
@@ -159,9 +159,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.assert IsInstance(result["wellness_dimensions"], list)
         
         # Test with specific dimensions
-    result = self.service.analyze_wellness_dimensions(
+    result = self.service.analyze_wellness_dimensions()
     self.sample_text, dimensions=["emotional", "social"]
-    )
+(    )
     self.assertIn("wellness_dimensions", result)
     dimensions = [dim["dimension"] for dim in result["wellness_dimensions"]]
     self.assertIn("emotional", dimensions)
@@ -173,19 +173,19 @@ class TestMockMentaLLaMA(BaseUnitTest):
     def test_digital_twin_session_workflow(self) -> None:
         """Test the complete digital twin session workflow from creation to insights."""
         # Create a digital twin
-        twin_result = self.service.generate_digital_twin(
+        twin_result = self.service.generate_digital_twin()
             text_data=[self.sample_text],
             demographic_data={"age": 35, "gender": "female"},
             medical_history={"conditions": ["anxiety", "insomnia"]},
             treatment_history={"medications": ["escitalopram"]}
-        )
+(        )
         self.assertIn("digital_twin_id", twin_result)
         twin_id = twin_result["digital_twin_id"]
         
         # Create a session with the digital twin
-    session_result = self.service.create_digital_twin_session(
+    session_result = self.service.create_digital_twin_session()
     twin_id, session_type="therapy"
-    )
+(    )
     self.assertIn("session_id", session_result)
     session_id = session_result["session_id"]
         
@@ -195,9 +195,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
     self.assertEqual(session_details["status"], "active")
         
         # Send message to session
-    message_result = self.service.send_message_to_session(
+    message_result = self.service.send_message_to_session()
     session_id, "How can I manage my anxiety better?"
-    )
+(    )
     self.assertIn("response", message_result)
     self.assertIn("messages", message_result)
     self.assertGreater(len(message_result["messages"]), 0)

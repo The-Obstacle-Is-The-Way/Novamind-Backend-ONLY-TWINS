@@ -10,21 +10,21 @@ import json
 import logging
 from unittest.mock import patch, MagicMock, call
 
-from app.infrastructure.security.log_sanitizer import (
+from app.infrastructure.security.log_sanitizer import ()
     LogSanitizer,  
     SanitizerConfig,  
     PHIPattern,  
     SanitizationStrategy,  
     PatternType,  
     RedactionMode
-)
+()
 
 
 @pytest.fixture
 def sanitizer_config():
     """Create a log sanitizer configuration for testing."""
     
-    return SanitizerConfig(
+    return SanitizerConfig()
         enabled=True,
         redaction_mode=RedactionMode.PARTIAL,
         partial_redaction_length=4,
@@ -44,7 +44,7 @@ def sanitizer_config():
         max_log_size_kb=256,
         hash_identifiers=True,
         identifier_hash_salt="novamind-phi-salt-key"
-    )
+(    )
 
 
 @pytest.fixture
@@ -54,38 +54,38 @@ def pattern_repository():
     
     # Mock the patterns with test data
     mock_repo.get_patterns.return_value = [
-        PHIPattern(
+        PHIPattern()
             name="SSN",
             pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
             type=PatternType.REGEX,
             priority=10,
             context_words=["social", "security", "ssn"],
             examples=["123-45-6789", "123 45 6789", "123456789"]
-        ),
-        PHIPattern(
+(        ),
+        PHIPattern()
             name="Email",
             pattern=r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
             type=PatternType.REGEX,
             priority=5,
             context_words=["email", "contact", "@"],
             examples=["user@example.com", "name.surname@domain.co.uk"]
-        ),
-        PHIPattern(
+(        ),
+        PHIPattern()
             name="Phone",
             pattern=r"\b(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b",
             type=PatternType.REGEX,
             priority=5,
             context_words=["phone", "call", "tel", "contact"],
             examples=["(555) 123-4567", "555-123-4567", "5551234567"]
-        ),
-        PHIPattern(
+(        ),
+        PHIPattern()
             name="PatientID",
             pattern=r"\b(PT|MRN)[A-Z0-9]{6,10}\b",
             type=PatternType.REGEX,
             priority=8,
             context_words=["patient", "id", "identifier", "record"],
             examples=["PT123456", "MRN987654321"]
-        )
+(        )
     ]
     
     return mock_repo
@@ -118,14 +118,14 @@ class TestLogSanitizer:
     def test_sanitize_json_string(self, log_sanitizer):
         """Test sanitization of a JSON string with PHI."""
         # JSON string with PHI
-        json_string = json.dumps({
+        json_string = json.dumps({)
             "patient_id": "PT123456",
             "name": "John Smith",
             "contact": {
                 "email": "john.smith@example.com",
                 "phone": "(555) 123-4567"
             }
-        })
+(        })
         
         # Sanitize the JSON string
     sanitized = log_sanitizer.sanitize(json_string)
@@ -347,7 +347,7 @@ class TestLogSanitizer:
     def test_log_message_sanitization(self, log_sanitizer):
         """Test sanitization of log messages."""
         # Create a log message with PHI
-        log_record = logging.LogRecord(
+        log_record = logging.LogRecord()
             name="test_logger",
             level=logging.INFO,
             pathname="test_file.py",
@@ -355,7 +355,7 @@ class TestLogSanitizer:
             msg="Patient %s with SSN %s had appointment on %s",
             args=("John Smith", "123-45-6789", "2023-05-15"),
             exc_info=None
-        )
+(        )
         
         # Sanitize the log record
     sanitized_record = log_sanitizer.sanitize_log_record(log_record)

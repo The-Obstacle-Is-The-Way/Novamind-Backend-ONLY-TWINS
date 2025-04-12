@@ -24,10 +24,10 @@ class TestGeneMedicationModel:
     def model(self):
         """Create a GeneMedicationModel with mocked internals."""
         with patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.joblib', autospec=True):
-        model = GeneMedicationModel(
+        model = GeneMedicationModel()
                 model_path="test_model_path",
                 knowledge_base_path="test_kb_path"
-            )
+(            )
             # Mock the internal model
             model._model = MagicMock()
             model._model.predict = MagicMock(return_value=np.array([1, 0, 1]))  # Interaction, No interaction, Interaction
@@ -128,10 +128,10 @@ class TestGeneMedicationModel:
     patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.os.path.exists', return_value=True):
             
             # Create model instance
-    model = GeneMedicationModel(
+    model = GeneMedicationModel()
     model_path="test_model_path",
     knowledge_base_path="test_kb_path"
-    )
+(    )
             
             # Mock joblib.load to return a mock model
     mock_model = MagicMock()
@@ -165,10 +165,10 @@ class TestGeneMedicationModel:
     patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.logging', autospec=True) as mock_logging:
             
             # Create model instance
-    model = GeneMedicationModel(
+    model = GeneMedicationModel()
     model_path="nonexistent_path",
     knowledge_base_path="nonexistent_kb_path"
-    )
+(    )
             
             # Execute
     await model.initialize()

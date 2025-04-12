@@ -18,19 +18,19 @@ from pydantic import ValidationError
 from app.api.routes.xgboost import router
 from app.core.services.ml.xgboost.interface import ModelType
 from app.core.services.ml.xgboost.enums import RiskLevel, ResponseLevel
-from app.core.services.ml.xgboost.exceptions import (
+from app.core.services.ml.xgboost.exceptions import ()
     XGBoostServiceError,
     ConfigurationError,
     ModelNotFoundError,
     PredictionError,
     ServiceConnectionError
-)
+()
 from app.api.routes.xgboost import get_current_user, router
-from app.api.schemas.xgboost import (
+from app.api.schemas.xgboost import ()
     RiskPredictionRequest,  
     TreatmentResponseRequest,  
     OutcomePredictionRequest
-)
+()
 
 
 # Module-level app/client creation removed; tests will use the client fixture
@@ -59,7 +59,7 @@ class MockXGBoostService:
     def setup_success_responses(self):
         """Set up mock responses for successful API calls."""
         # Risk prediction response
-        self.predict_risk.return_value = MagicMock(
+        self.predict_risk.return_value = MagicMock()
             prediction_id=str(uuid.uuid4()),
             patient_id="patient-123",
             model_type=ModelType.RISK_SUICIDE,
@@ -72,10 +72,10 @@ class MockXGBoostService:
                 {"feature": "phq9_score", "importance": 0.4, "description": "PHQ-9 score indicates moderate depression"}
             ],
             explanation="Moderate suicide risk based on clinical assessment"
-        )
+(        )
         
         # Treatment response prediction
-    self.predict_treatment_response.return_value = MagicMock(
+    self.predict_treatment_response.return_value = MagicMock()
     prediction_id=str(uuid.uuid4()),
     patient_id="patient-123",
     model_type=ModelType.TREATMENT_MEDICATION_SSRI,
@@ -88,10 +88,10 @@ class MockXGBoostService:
     treatment_details={"medication": "Escitalopram", "dosage": "10mg"},
     suggested_adjustments=[{"type": "dosage", "action": "increase", "value": "15mg"}],
     explanation="Good response expected based on medication history"
-    )
+(    )
         
         # Outcome prediction
-    self.predict_outcome.return_value = MagicMock(
+    self.predict_outcome.return_value = MagicMock()
     prediction_id=str(uuid.uuid4()),
     patient_id="patient-123",
     model_type=ModelType.OUTCOME_SYMPTOM,
@@ -106,22 +106,22 @@ class MockXGBoostService:
     },
     timeframe_weeks=12,
     explanation="Positive outcome expected within 12 weeks"
-    )
+(    )
         
         # Feature importance
     self.get_feature_importance.return_value = [
-    MagicMock(
+    MagicMock()
     feature_name="phq9_score",
     importance_value=0.35,
     category="clinical",
     description="Patient Health Questionnaire score"
-    ),
-    MagicMock(
+(    ),
+    MagicMock()
     feature_name="medication_adherence",
     importance_value=0.25,
     category="treatment",
     description="Adherence to prescribed medication"
-    )
+(    )
     ]
         
         # Digital twin simulation
@@ -157,20 +157,20 @@ class MockXGBoostService:
     
     def setup_error_responses(self):
         """Set up mock responses for error cases."""
-        self.predict_risk.side_effect = ModelNotFoundError(
+        self.predict_risk.side_effect = ModelNotFoundError()
             "Model not found: risk_nonexistent",
             model_type="risk_nonexistent"
-        )
-        self.predict_treatment_response.side_effect = PredictionError(
+(        )
+        self.predict_treatment_response.side_effect = PredictionError()
             "Prediction failed: insufficient data",
             model_type=ModelType.TREATMENT_MEDICATION_SSRI,
             cause="Missing required features"
-        )
-        self.predict_outcome.side_effect = ServiceConnectionError(
+(        )
+        self.predict_outcome.side_effect = ServiceConnectionError()
             "Failed to connect to prediction service",
             service_name="SageMaker",
             cause="Timeout"
-        )
+(        )
 
 
 # Client fixture

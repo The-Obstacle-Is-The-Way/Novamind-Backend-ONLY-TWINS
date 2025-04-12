@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient
 
 from app.domain.services.analytics_service import AnalyticsService
 from app.infrastructure.cache.redis_cache import RedisCache # Assuming RedisCache is used
-from app.presentation.api.endpoints.analytics_endpoints import (
+from app.presentation.api.endpoints.analytics_endpoints import ()
     router,
     get_analytics_service,
     _process_treatment_outcomes,
@@ -30,7 +30,7 @@ from app.presentation.api.endpoints.analytics_endpoints import (
     # Assuming get_cache_service exists or is defined elsewhere
     # If not, the dependency override needs adjustment
     # get_cache_service
-)
+()
 # Assuming BaseRepository exists for type hinting
 from app.domain.repositories.base_repository import BaseRepository
 

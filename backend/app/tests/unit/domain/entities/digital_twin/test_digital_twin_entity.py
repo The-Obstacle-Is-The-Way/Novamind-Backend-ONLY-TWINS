@@ -26,15 +26,15 @@ class TestDigitalTwin(unittest.TestCase):
         self.patient_id = uuid4()
         
         # Create a basic state
-    self.initial_state = DigitalTwinState(
-    neurotransmitter=NeurotransmitterState(
+    self.initial_state = DigitalTwinState()
+    neurotransmitter=NeurotransmitterState()
     serotonin_level=-0.3,
     dopamine_level=-0.2,
     norepinephrine_level=0.1,
     gaba_level=-0.1,
     glutamate_level=0.2
-    ),
-    psychological=PsychologicalState(
+(    ),
+    psychological=PsychologicalState()
     mood_valence=-0.4,
     mood_arousal=0.2,
     mood_stability=0.3,
@@ -42,8 +42,8 @@ class TestDigitalTwin(unittest.TestCase):
     stress_reactivity=0.5,
     rumination=0.4,
     anhedonia=0.5
-    ),
-    behavioral=BehavioralState(
+(    ),
+    behavioral=BehavioralState()
     activity_level=-0.3,
     psychomotor_changes=0.1,
     sleep_quality=0.4,
@@ -51,25 +51,25 @@ class TestDigitalTwin(unittest.TestCase):
     circadian_rhythm=0.3,
     appetite_level=-0.2,
     social_engagement=0.3
-    ),
-    cognitive=CognitiveState(
+(    ),
+    cognitive=CognitiveState()
     attention_level=0.5,
     concentration=0.4,
     working_memory=0.5,
     executive_function=0.4,
     decision_making=0.3
-    )
-    )
+(    )
+(    )
     self.initial_state.update_derived_values()
         
         # Create test treatments
-    self.ssri_treatment = Treatment(
+    self.ssri_treatment = Treatment()
     id=uuid4(),
     name="Fluoxetine",
     category=TreatmentCategory.MEDICATION,
     frequency=TreatmentFrequency.DAILY,
     start_date=datetime.now(UTC),
-    medication_details=MedicationDetails(
+    medication_details=MedicationDetails()
     type=MedicationType.SSRI,
     dosage=20.0,
     dosage_unit="mg",
@@ -78,10 +78,10 @@ class TestDigitalTwin(unittest.TestCase):
     norepinephrine_effect=0.1,
     gaba_effect=0.0,
     glutamate_effect=0.0
-    )
-    )
+(    )
+(    )
         
-    self.therapy_treatment = Treatment(
+    self.therapy_treatment = Treatment()
     id=uuid4(),
     name="Cognitive Behavioral Therapy",
     category=TreatmentCategory.THERAPY,
@@ -93,31 +93,31 @@ class TestDigitalTwin(unittest.TestCase):
     "rumination": -0.3,
     "cognitive_distortions": -0.4
     } # Keep predicted_effects if needed
-    )
+(    )
         
         # Create treatment plan
-    self.treatment_plan = TreatmentPlan(
+    self.treatment_plan = TreatmentPlan()
     id=uuid4(),
     patient_id=self.patient_id,
     name="Depression Treatment Plan",
     treatments=[self.ssri_treatment, self.therapy_treatment],
     start_date=datetime.now(UTC),
     status="active"
-    )
+(    )
         
         # Create a basic digital twin
-    self.digital_twin = DigitalTwin(
+    self.digital_twin = DigitalTwin()
     patient_id=self.patient_id,
     current_state=self.initial_state,
     confidence_level=0.5 # Replaced enum with float
-    )
+(    )
     
     def test_init_default_values(self):
         """Test that default values are correctly initialized."""
-        twin = DigitalTwin(
+        twin = DigitalTwin()
             patient_id=self.patient_id,
             current_state=self.initial_state
-        )
+(        )
         
     assert twin.patient_id  ==  self.patient_id
     assert twin.version  ==  "1.0.0"
@@ -139,7 +139,7 @@ class TestDigitalTwin(unittest.TestCase):
         created_at = datetime.now(UTC) - timedelta(days=10)
         last_calibration = datetime.now(UTC) - timedelta(days=5)
         
-    twin = DigitalTwin(
+    twin = DigitalTwin()
     patient_id=self.patient_id,
     current_state=self.initial_state,
     version="1.1.0",
@@ -150,7 +150,7 @@ class TestDigitalTwin(unittest.TestCase):
     medical_history={"prior_treatments": ["SSRIs", "CBT"]},
     confidence_level=0.85, # Replaced enum with float
     calibration_score=0.85
-    )
+(    )
         
     assert twin.patient_id  ==  self.patient_id
     assert twin.version  ==  "1.1.0"
@@ -214,10 +214,10 @@ class TestDigitalTwin(unittest.TestCase):
         , self.digital_twin.temporal_dynamics = TemporalDynamics()
         
         # Predict response
-    treatment_response = self.digital_twin.predict_treatment_response(
+    treatment_response = self.digital_twin.predict_treatment_response()
     treatment=self.ssri_treatment,
     time_horizon_days=30
-    )
+(    )
         
         # Verify response properties
     assert isinstance(treatment_response, TreatmentResponse)
@@ -240,10 +240,10 @@ class TestDigitalTwin(unittest.TestCase):
         , self.digital_twin.temporal_dynamics = TemporalDynamics()
         
         # Compare treatments
-    treatment_analysis = self.digital_twin.compare_treatments(
+    treatment_analysis = self.digital_twin.compare_treatments()
     treatments=[self.ssri_treatment, self.therapy_treatment],
     time_horizon_days=30
-    )
+(    )
         
         # Verify analysis properties
     assert treatment_analysis.patient_id  ==  self.patient_id
@@ -258,18 +258,18 @@ class TestDigitalTwin(unittest.TestCase):
     def test_detect_patterns(self):
         """Test detection of temporal patterns."""
         # Create temporal dynamics with pattern detectors
-        from app.domain.entities.digital_twin.temporal import (
+        from app.domain.entities.digital_twin.temporal import ()
             TemporalDynamics,  
             SeasonalPatternDetector,  
             EpisodicPatternDetector
-        )
+(        )
         
-    self.digital_twin.temporal_dynamics = TemporalDynamics(
+    self.digital_twin.temporal_dynamics = TemporalDynamics()
     pattern_detectors={
     "seasonal": SeasonalPatternDetector(),
     "episodic": EpisodicPatternDetector()
     }
-    )
+(    )
         
         # Add some state history
     for i in range(5):

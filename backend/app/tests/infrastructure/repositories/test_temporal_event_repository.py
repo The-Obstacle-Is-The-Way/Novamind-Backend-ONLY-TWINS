@@ -34,7 +34,7 @@ event_id = uuid4()
 correlation_id = uuid4()
 patient_id = uuid4()
     
-    event = CorrelatedEvent(
+    event = CorrelatedEvent()
         event_id=event_id,
         correlation_id=correlation_id,
         parent_event_id=None,  # Root event
@@ -42,13 +42,13 @@ patient_id = uuid4()
         event_type="neurotransmitter_change",
         timestamp=now,
         event_metadata={"region": "prefrontal_cortex", "neurotransmitter": "serotonin", "value_change": 0.2} # Renamed
-    )    return event
+(    )    return event
 @pytest.fixture
 def test_child_event(test_event):
                 """Create a test child event."""
     child_id = uuid4()
     
-    child_event = CorrelatedEvent(
+    child_event = CorrelatedEvent()
         event_id=child_id,
         correlation_id=test_event.correlation_id,
         parent_event_id=test_event.event_id,
@@ -56,7 +56,7 @@ def test_child_event(test_event):
         event_type="brain_region_activation",
         timestamp=test_event.timestamp + timedelta(seconds=30),
         event_metadata={"region": "amygdala", "activation_level": 0.3} # Renamed
-    )    return child_event
+(    )    return child_event
 @pytest.fixture
 def mock_event_model():
                 """Create a mock event model for tests."""
@@ -125,13 +125,13 @@ class TestSqlAlchemyEventRepository:
         
         # Mock the query results
     mock_result = MagicMock()
-    mock_result.scalars = MagicMock(return_value=mock_result))
-    mock_result.first = MagicMock(return_value=mock_event_model))
+(    mock_result.scalars = MagicMock(return_value=mock_result))
+(    mock_result.first = MagicMock(return_value=mock_event_model))
         
     mock_session.execute.return_value = mock_result
         
         # Execute
-    result = await repo.get_event_by_id(mock_event_model.id))
+(    result = await repo.get_event_by_id(mock_event_model.id))
         
         # Verify
     assert result is not None
@@ -153,13 +153,13 @@ class TestSqlAlchemyEventRepository:
         
         # Mock the query results for event not found
     mock_result = MagicMock()
-    mock_result.scalars = MagicMock(return_value=mock_result))
-    mock_result.first = MagicMock(return_value=None))
+(    mock_result.scalars = MagicMock(return_value=mock_result))
+(    mock_result.first = MagicMock(return_value=None))
         
     mock_session.execute.return_value = mock_result
         
         # Execute
-    result = await repo.get_event_by_id(uuid4()))
+(    result = await repo.get_event_by_id(uuid4()))
         
         # Verify
     assert result is None
@@ -173,13 +173,13 @@ class TestSqlAlchemyEventRepository:
         
         # Mock the query results
     mock_result = MagicMock()
-    mock_result.scalars = MagicMock(return_value=mock_result))
+(    mock_result.scalars = MagicMock(return_value=mock_result))
     mock_result.all = MagicMock(return_value=[mock_event_model, mock_child_event_model])
         
     mock_session.execute.return_value = mock_result
         
         # Execute
-    results = await repo.get_events_by_correlation_id(mock_event_model.correlation_id))
+(    results = await repo.get_events_by_correlation_id(mock_event_model.correlation_id))
         
         # Verify
     assert len(results) == 2
@@ -195,13 +195,13 @@ class TestSqlAlchemyEventRepository:
     repo = SqlAlchemyEventRepository(session=mock_session)
         
         # Mock the get_events_by_correlation_id method
-    with patch.object(:
+    with patch.object(:)
     repo, 'get_events_by_correlation_id',
-    return_value=[))
+((    return_value=[))
     self._model_to_entity(mock_event_model),
     self._model_to_entity(mock_child_event_model)
     ]
-    ) as mock_get_events:
+(    ) as mock_get_events:
             
             # Execute
     chain = await repo.get_event_chain(mock_event_model.correlation_id)
@@ -226,17 +226,17 @@ class TestSqlAlchemyEventRepository:
         
         # Mock the query results
     mock_result = MagicMock()
-    mock_result.scalars = MagicMock(return_value=mock_result))
+(    mock_result.scalars = MagicMock(return_value=mock_result))
     mock_result.all = MagicMock(return_value=[mock_event_model, mock_child_event_model])
         
     mock_session.execute.return_value = mock_result
         
         # Execute
-    results = await repo.get_patient_events(
+    results = await repo.get_patient_events()
     patient_id=mock_event_model.patient_id,
     event_type="neurotransmitter_change",
     limit=10
-    )
+(    )
         
         # Verify
     assert len(results) == 2
@@ -259,7 +259,7 @@ class TestSqlAlchemyEventRepository:
     Returns:
     The corresponding CorrelatedEvent entity
     """
-#     return CorrelatedEvent( # FIXME: return outside function
+#     return CorrelatedEvent( # FIXME: return outside function)
     event_id=model.id,
     correlation_id=model.correlation_id,
     parent_event_id=model.parent_event_id,
@@ -267,4 +267,4 @@ class TestSqlAlchemyEventRepository:
     event_type=model.event_type,
     timestamp=model.timestamp,
     event_metadata=model.event_metadata # Renamed
-    )
+(    )

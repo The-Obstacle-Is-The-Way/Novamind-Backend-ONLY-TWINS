@@ -11,11 +11,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 from botocore.exceptions import ClientError
 
-from app.core.exceptions import (
+from app.core.exceptions import ()
     InvalidConfigurationError,
     InvalidRequestError,
     ServiceUnavailableError
-)
+()
 from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
 
 
@@ -67,9 +67,9 @@ class TestAWSComprehendMedicalPHIDetection:
         with patch("boto3.client") as mock_boto3:
         mock_client = MagicMock()
             mock_boto3.return_value = mock_client
-            service.initialize({
+            service.initialize({)
                 "aws_region": "us-east-1"
-            }) # Corrected closing parenthesis placement
+(            }) # Corrected closing parenthesis placement
         return service
 
     def test_initialization(self):
@@ -80,11 +80,11 @@ class TestAWSComprehendMedicalPHIDetection:
     mock_client = MagicMock()
     mock_boto3.return_value = mock_client
 
-    service.initialize({
+    service.initialize({)
     "aws_region": "us-east-1",
     "aws_access_key_id": "test_key",
     "aws_secret_access_key": "test_secret"
-    })
+(    })
 
     assert service.is_healthy()
     mock_boto3.assert_called_once() # Corrected method name
@@ -94,25 +94,25 @@ class TestAWSComprehendMedicalPHIDetection:
         service = AWSComprehendMedicalPHIDetection()
 
     with patch("boto3.client") as mock_boto3:
-    mock_boto3.side_effect = ClientError(
+    mock_boto3.side_effect = ClientError()
     {"Error": {"Code": "InvalidClientTokenId", "Message": "Invalid token"}},
     "CreateClient"
-    )
+(    )
 
     with pytest.raises(InvalidConfigurationError):
-    service.initialize({
+    service.initialize({)
     "aws_region": "us-east-1"
-    })
+(    })
 
     assert not service.is_healthy()
 
     def test_detect_phi_with_phi(self, phi_detection_service, mock_comprehend_response_with_phi):
         """Test PHI detection with text containing PHI."""
-        with patch.object(
+        with patch.object()
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             return_value=mock_comprehend_response_with_phi
-        ): # Corrected patch syntax
+(        ): # Corrected patch syntax
             result = phi_detection_service.detect_phi("Patient is John Doe with phone 555-123-4567")
 
     assert result["has_phi"] is True
@@ -122,11 +122,11 @@ class TestAWSComprehendMedicalPHIDetection:
 
     def test_detect_phi_without_phi(self, phi_detection_service, mock_comprehend_response_without_phi):
         """Test PHI detection with text not containing PHI."""
-        with patch.object(
+        with patch.object()
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             return_value=mock_comprehend_response_without_phi
-        ): # Corrected patch syntax
+(        ): # Corrected patch syntax
             result = phi_detection_service.detect_phi("The patient is feeling better today")
 
     assert result["has_phi"] is False
@@ -147,24 +147,24 @@ class TestAWSComprehendMedicalPHIDetection:
 
     def test_detect_phi_aws_error(self, phi_detection_service):
         """Test PHI detection with AWS Comprehend Medical error."""
-        with patch.object(
+        with patch.object()
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
-            side_effect=ClientError(
+            side_effect=ClientError()
                 {"Error": {"Code": "InternalServerError", "Message": "Internal error"}},
                 "DetectPHI"
-            )
-        ): # Corrected patch syntax
+(            )
+(        ): # Corrected patch syntax
             with pytest.raises(ServiceUnavailableError): # Corrected pytest.raises usage
                 phi_detection_service.detect_phi("Patient is John Doe")
 
     def test_redact_phi_with_phi(self, phi_detection_service, mock_comprehend_response_with_phi):
         """Test PHI redaction with text containing PHI."""
-        with patch.object(
+        with patch.object()
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             return_value=mock_comprehend_response_with_phi
-        ): # Corrected patch syntax
+(        ): # Corrected patch syntax
             test_text = "Patient is John Doe with phone 555-123-4567"
             result = phi_detection_service.redact_phi(test_text)
 
@@ -179,11 +179,11 @@ class TestAWSComprehendMedicalPHIDetection:
 
     def test_redact_phi_without_phi(self, phi_detection_service, mock_comprehend_response_without_phi):
         """Test PHI redaction with text not containing PHI."""
-        with patch.object(
+        with patch.object()
             phi_detection_service._comprehend_medical_client,
             "detect_phi",
             return_value=mock_comprehend_response_without_phi
-        ): # Corrected patch syntax
+(        ): # Corrected patch syntax
             test_text = "The patient is feeling better today"
             result = phi_detection_service.redact_phi(test_text)
 
