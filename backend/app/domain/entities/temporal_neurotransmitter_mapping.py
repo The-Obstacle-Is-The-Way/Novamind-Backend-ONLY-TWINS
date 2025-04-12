@@ -6,6 +6,7 @@ over time, including mechanisms for modeling cascading effects and treatment res
 """
 import math
 import random
+import uuid
 from datetime import datetime, timedelta
 from enum import Enum, auto
 from typing import Any
@@ -519,18 +520,6 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         
         # Create a sequence
         sequence_name = f"{neurotransmitter.value}_{brain_region.value}_temporal"
-        sequence = TemporalSequence[float](
-            name=sequence_name,
-            patient_id=used_patient_id,
-            brain_region=brain_region,
-            neurotransmitter=neurotransmitter,
-            metadata={
-                "generated": True,
-                "baseline_level": baseline_level,
-                "receptor_density": self.analyze_receptor_affinity(neurotransmitter, brain_region),
-                "is_producing_region": brain_region in self.get_producing_regions(neurotransmitter)
-            }
-        )
         
         # Get receptor affinity to determine stability
         affinity = self.analyze_receptor_affinity(neurotransmitter, brain_region)
@@ -592,16 +581,26 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
             
             # Add to values
             all_values.append(values)
-            
-            # Add event to sequence
-            sequence.add_value(
-                timestamp=timestamp,
-                value=new_level,
-                metadata={
-                    "all_neurotransmitters": values,
-                    "variation": variation
-                }
-            )
+        
+        # Create the sequence with all the generated data
+        feature_names = [nt.value for nt in Neurotransmitter]
+        
+        sequence = TemporalSequence[float](
+            sequence_id=uuid.uuid4(),
+            name=sequence_name,
+            patient_id=used_patient_id,
+            brain_region=brain_region,
+            neurotransmitter=neurotransmitter,
+            feature_names=feature_names,
+            timestamps=timestamps,
+            values=all_values,
+            metadata={
+                "generated": True,
+                "baseline_level": baseline_level,
+                "receptor_density": self.analyze_receptor_affinity(neurotransmitter, brain_region),
+                "is_producing_region": brain_region in self.get_producing_regions(neurotransmitter)
+            }
+        )
         
         return sequence
     
@@ -995,14 +994,21 @@ def _apply_treatment_effect(
     # Larger effects may take longer to manifest
     onset_days = 1.0 + (abs(effect) * 2.0)
     onset_days = min(onset_days, total_days / 2)  # Can't be more than half the duration
+    # Get the index of the target neurotransmitter
+    if sequence.neurotransmitter:
+        nt_idx = list(Neurotransmitter).index(sequence.neurotransmitter)
+    else:
+        # If no specific neurotransmitter is set, assume we're modifying all values
+        nt_idx = None
     
-    for event in sequence.events:
-        # Skip events outside treatment timeframe
-        if event.timestamp < treatment_start or event.timestamp > timestamps[-1]:
+    # Iterate through timestamps and values
+    for i, (timestamp, values) in enumerate(zip(sequence.timestamps, sequence.values)):
+        # Skip timestamps outside treatment timeframe
+        if timestamp < treatment_start or timestamp > timestamps[-1]:
             continue
         
         # Calculate days since treatment start
-        days_since_start = (event.timestamp - treatment_start).total_seconds() / (24 * 3600)
+        days_since_start = (timestamp - treatment_start).total_seconds() / (24 * 3600)
         
         # Calculate effect factor based on time (sigmoid curve)
         if days_since_start < onset_days:
@@ -1013,11 +1019,16 @@ def _apply_treatment_effect(
             # Full effect phase with slight random variation
             effect_factor = 1.0 + (random.uniform(-0.1, 0.1) * (1.0 - (days_since_start / total_days)))
         
-        # Apply effect to value
-        if isinstance(event.value, (int, float)):
-            # Calculate new value
-            current_value = event.value
-            effect_amount = max_effect * effect_factor
+        # Apply effect to values
+        effect_amount = max_effect * effect_factor
+        
+        if nt_idx is not None:
+            # Modify only the target neurotransmitter
+            sequence.values[i][nt_idx] += effect_amount
+        else:
+            # Modify all values
+            for j in range(len(values)):
+                sequence.values[i][j] += effect_amount
             new_value = current_value + effect_amount
             
             # Ensure value stays within valid range

@@ -6,8 +6,8 @@ This module tests the database connection utilities for SQLAlchemy.
 import pytest
 import os
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.db import engine, init_db, get_session, Base
 
-, from app.core.db import engine, init_db, get_session, Base
 
 
 @pytest.mark.asyncio()
@@ -58,7 +58,8 @@ async def test_get_session():
     try:
         # Verify session properties
         assert isinstance(session, AsyncSession)
-        assert not session.expired_transaction
+        # Check if session is active
+        assert session.is_active
         
         # Simple query to check session works
         # Just ping the database with a simple SQL expression

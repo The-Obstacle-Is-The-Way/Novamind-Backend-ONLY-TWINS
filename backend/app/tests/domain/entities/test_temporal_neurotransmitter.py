@@ -6,7 +6,7 @@ import datetime
 import math
 import uuid
 from unittest import mock
-, import pytest
+import pytest
 import numpy as np
 from typing import Dict, List, Set, Tuple
 
@@ -18,7 +18,7 @@ from app.domain.entities.digital_twin_enums import (
 )
 from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
 from app.domain.entities.temporal_sequence import TemporalSequence
-, from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
+from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
 from app.domain.entities.neurotransmitter_mapping import (
     NeurotransmitterMapping,   
     ReceptorProfile,  

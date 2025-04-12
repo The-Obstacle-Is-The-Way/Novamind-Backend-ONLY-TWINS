@@ -341,7 +341,7 @@ class Utility:
             assert finding.get("is_allowed", False) is True
         
         # Verify logger was called with success message
-        mock_logger.info.assert _any_call("PHI audit complete. No issues found in 1 files.")
+        mock_logger.info.assert_any_call("PHI audit complete. No issues found in 1 files.")
         
     @patch('scripts.run_hipaa_phi_audit.logger')
     def test_clean_app_directory_special_case(self, mock_logger, temp_dir):

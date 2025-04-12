@@ -166,8 +166,11 @@ class TemporalNeurotransmitterService:
             effect_size=0.5,  # Default value
             p_value=0.05,  # Default value
             confidence_interval=(0.3, 0.7),  # Default range
-            is_statistically_significant=pattern_analysis.get("confidence", 0) > 0.7,
-            clinical_significance=ClinicalSignificance.MODERATE
+            sample_size=len(time_series_data),  # Use the length of time series data
+            clinical_significance=ClinicalSignificance.MODERATE,
+            brain_region=brain_region,
+            time_series_data=time_series_data,
+            baseline_period=baseline_period
         )
         
         # Add brain region to the effect for downstream use

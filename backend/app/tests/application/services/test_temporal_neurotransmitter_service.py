@@ -11,11 +11,11 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
-, from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, ClinicalSignificance
+from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, ClinicalSignificance
 from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
-, from app.domain.entities.temporal_events import CorrelatedEvent, EventChain, TemporalEvent
+from app.domain.entities.temporal_events import CorrelatedEvent, EventChain, TemporalEvent
 from app.domain.entities.temporal_sequence import TemporalSequence
-, from app.domain.services.visualization_preprocessor import NeurotransmitterVisualizationPreprocessor
+from app.domain.services.visualization_preprocessor import NeurotransmitterVisualizationPreprocessor
 
 # Fixtures for testing
 
@@ -85,21 +85,16 @@ def mock_sequence():
         name="test_sequence",
         sequence_id=uuid.uuid4(),
         patient_id=uuid.uuid4(),
-        metadata={"test": "data", "feature_names": feature_names}
+        feature_names=feature_names,
+        timestamps=timestamps,
+        values=values,
+        metadata={"test": "data"}
     )
     
-    # Add events for each timestamp with their values
-    for i, timestamp in enumerate(timestamps):
-        sequence.add_event(TemporalEvent(
-            timestamp=timestamp,
-            value=values[i][serotonin_idx],  # Use serotonin value as the main value
-            metadata={"all_values": values[i], "feature_idx": serotonin_idx}
-        ))
+    # No need to add events, they're already in the values list
     
-    # Add properties expected by the tests
-    sequence.feature_names = feature_names
-    sequence.values = values
-    sequence.sequence_length = len(timestamps)
+    # The sequence already has these properties from initialization
+    # No need to set them again
     
     return sequence
 
