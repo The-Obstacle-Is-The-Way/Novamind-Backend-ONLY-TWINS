@@ -18,6 +18,9 @@ from app.domain.services.enhanced_digital_twin_core_service import EnhancedDigit
 from app.domain.services.enhanced_mentalllama_service import EnhancedMentalLLaMAService
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 from app.domain.services.enhanced_pat_service import EnhancedPATService
+from app.domain.entities.digital_twin.temporal_neurotransmitter_sequence import TemporalNeurotransmitterSequence
+from app.domain.entities.ml_model import MLModel, ModelType
+from app.presentation.api.schemas.ml_schemas import DigitalTwinCreateRequest, DigitalTwinResponse
 from app.infrastructure.factories.enhanced_mock_digital_twin_factory import EnhancedMockDigitalTwinFactory
 @pytest.fixture
 def enhanced_services() -> Tuple[:
