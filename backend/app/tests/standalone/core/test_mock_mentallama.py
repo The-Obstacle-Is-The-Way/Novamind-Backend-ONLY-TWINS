@@ -31,11 +31,11 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.service = MockMentaLLaMA()
         self.service.initialize({})
         
-    self.sample_text = ()
-    "I've been feeling down for several weeks. I'm constantly tired, "
-    "have trouble sleeping, and don't enjoy things anymore. Sometimes "
-    "I wonder if life is worth living, but I wouldn't actually hurt myself."
-(    )
+    self.sample_text = (
+        "I've been feeling down for several weeks. I'm constantly tired, "
+        "have trouble sleeping, and don't enjoy things anymore. Sometimes "
+        "I wonder if life is worth living, but I wouldn't actually hurt myself."
+    )
 
     def tearDown(self) -> None:
         """Clean up after each test."""

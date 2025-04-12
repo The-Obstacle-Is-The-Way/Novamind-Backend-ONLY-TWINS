@@ -56,14 +56,14 @@ class TestEnhancedPHIDetector:
     def test_contains_phi_with_medical_context(self):
         """Test detection of PHI in medical context."""
         # Test with medical context and potential identifiers
-        assert EnhancedPHIDetector.contains_phi()
+        assert EnhancedPHIDetector.contains_phi(
             "Patient Smith was diagnosed with anxiety and prescribed medication."
-(        )
+        )
         
         # Test with medical context but no identifiers
-    assert not EnhancedPHIDetector.contains_phi()
-    "The diagnosis was anxiety and treatment includes medication."
-(    )
+        assert not EnhancedPHIDetector.contains_phi(
+            "The diagnosis was anxiety and treatment includes medication."
+        )
 
     def test_detect_phi_types(self):
         """Test detection of specific PHI types."""
@@ -87,9 +87,9 @@ class TestEnhancedPHIDetector:
 
     def test_no_phi_in_regular_text(self):
         """Test that regular text without PHI is not flagged."""
-        assert not EnhancedPHIDetector.contains_phi()
+        assert not EnhancedPHIDetector.contains_phi(
             "This is a regular message without any personal health information."
-(        )
+        )
 
 
 class TestEnhancedPHISanitizer:
@@ -209,15 +209,15 @@ class TestEnhancedPHISecureLogger:
         """Test that exception logs are sanitized."""
         logger = EnhancedPHISecureLogger("test_logger")
         try:
-        raise ValueError("Error processing patient John Doe")
+            raise ValueError("Error processing patient John Doe")
         except ValueError:
-        logger.exception("Exception occurred")
+            logger.exception("Exception occurred")
         
         # Verify the sanitized message was logged
-    mock_exception.assert_called_once()
+        mock_exception.assert_called_once()
         # Exception message is handled separately by the logging module
         # We're just checking that our message was sanitized
-    assert "Exception occurred" in mock_exception.call_args[0][0]
+        assert "Exception occurred" in mock_exception.call_args[0][0]
 
 
 @pytest.mark.standalone()

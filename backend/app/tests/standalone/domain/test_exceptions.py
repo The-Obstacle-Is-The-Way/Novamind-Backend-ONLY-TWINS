@@ -90,25 +90,25 @@ class TestMentalLLaMAExceptions:
             "error_type": "InputValidationError"
         }
         
-    exception = MentalLLaMAInferenceError()
-    message,
-    model_name,
-    inference_parameters,
-    details
-(    )
+        exception = MentalLLaMAInferenceError(
+            message,
+            model_name,
+            inference_parameters,
+            details
+        )
         
         # Verify properties
-    assert exception.message  ==  message
-    assert exception.model_name  ==  model_name
-    assert exception.inference_parameters  ==  inference_parameters
+        assert exception.message == message
+        assert exception.model_name == model_name
+        assert exception.inference_parameters == inference_parameters
         
         # Verify details are merged with parameters
-    assert "model_name" in exception.details
-    assert exception.details["model_name"] == model_name
-    assert "inference_parameters" in exception.details
-    assert exception.details["inference_parameters"] == inference_parameters
-    assert "status_code" in exception.details
-    assert exception.details["status_code"] == 400
+        assert "model_name" in exception.details
+        assert exception.details["model_name"] == model_name
+        assert "inference_parameters" in exception.details
+        assert exception.details["inference_parameters"] == inference_parameters
+        assert "status_code" in exception.details
+        assert exception.details["status_code"] == 400
     
     def test_validation_error(self):
         """Test MentalLLaMAValidationError creation and properties."""
@@ -170,20 +170,20 @@ class TestMentalLLaMAExceptions:
         quota_exc = MentalLLaMAQuotaExceededError("Quota error", 100, 101)
         
         # Verify that all exceptions are instances of MentalLLaMABaseException
-    assert isinstance(base_exc, MentalLLaMABaseException)
-    assert isinstance(conn_exc, MentalLLaMABaseException)
-    assert isinstance(auth_exc, MentalLLaMABaseException)
-    assert isinstance(infer_exc, MentalLLaMABaseException)
-    assert isinstance(valid_exc, MentalLLaMABaseException)
-    assert isinstance(quota_exc, MentalLLaMABaseException)
+        assert isinstance(base_exc, MentalLLaMABaseException)
+        assert isinstance(conn_exc, MentalLLaMABaseException)
+        assert isinstance(auth_exc, MentalLLaMABaseException)
+        assert isinstance(infer_exc, MentalLLaMABaseException)
+        assert isinstance(valid_exc, MentalLLaMABaseException)
+        assert isinstance(quota_exc, MentalLLaMABaseException)
         
         # Verify that all exceptions can be caught as MentalLLaMABaseException
-    exceptions = [
-    base_exc, conn_exc, auth_exc, infer_exc, valid_exc, quota_exc
-    ]
+        exceptions = [
+            base_exc, conn_exc, auth_exc, infer_exc, valid_exc, quota_exc
+        ]
         
-    for exc in exceptions:
-    try:
-    raise exc
-    except MentalLLaMABaseException as caught_exc:
-    assert caught_exc is exc
+        for exc in exceptions:
+            try:
+                raise exc
+            except MentalLLaMABaseException as caught_exc:
+                assert caught_exc is exc

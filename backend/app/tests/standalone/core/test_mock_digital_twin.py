@@ -67,7 +67,7 @@ class TestMockDigitalTwinService(BaseUnitTest):
     def tearDown(self) -> None:
         """Clean up after each test."""
         if hasattr(self, 'service') and self.service.is_healthy():
-        self.service.shutdown()
+            self.service.shutdown()
         super().tearDown()
 
     def test_initialization(self) -> None:
@@ -99,21 +99,21 @@ class TestMockDigitalTwinService(BaseUnitTest):
         """Test creating a digital twin therapy session."""
         # Test with different session types
         for session_type in ["therapy", "assessment", "medication_review"]:
-        result = self.service.create_session()
+            result = self.service.create_session(
                 twin_id=self.twin_id,
                 session_type=session_type
-(            )
+            )
             
             # Verify result structure
-    self.assertIn("session_id", result)
-    self.assertIn("twin_id", result)
-    self.assertIn("session_type", result)
-    self.assertIn("start_time", result)
-    self.assertIn("status", result)
+            self.assertIn("session_id", result)
+            self.assertIn("twin_id", result)
+            self.assertIn("session_type", result)
+            self.assertIn("start_time", result)
+            self.assertIn("status", result)
             
             # Verify values
-    self.assertEqual(result["twin_id"], self.twin_id)
-    self.assertEqual(result["session_type"], session_type)
+            self.assertEqual(result["twin_id"], self.twin_id)
+            self.assertEqual(result["session_type"], session_type)
     self.assertEqual(result["status"], "active")
             
             # Check that start_time is a recent timestamp
