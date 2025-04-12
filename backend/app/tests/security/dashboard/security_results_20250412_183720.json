@@ -1,0 +1,179 @@
+{
+  "timestamp": "2025-04-12T18:37:18.543091",
+  "categories": [
+    {
+      "name": "Encryption",
+      "description": "Military-grade encryption for HIPAA-compliant data protection",
+      "priority": "Critical",
+      "patterns": [
+        "test_ml_encryption.py",
+        "test_encryption.py"
+      ],
+      "files_found": 2,
+      "tests_run": 20,
+      "passed": 15,
+      "failed": 0,
+      "errors": 5,
+      "skipped": 0,
+      "results": [
+        {
+          "file": "test_encryption.py",
+          "success": true,
+          "passed": 8,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "output": "============================= test session starts ==============================\ncollecting ... collected 8 items\n\napp/tests/security/test_encryption.py::TestEncryptionKeyManager::test_get_encryption_key PASSED [ 12%]\napp/tests/security/test_encryption.py::TestEncryptionKeyManager::test_key_rotation PASSED [ 25%]\napp/tests/security/test_encryption.py::TestPHIFieldEncryption::test_encrypt_decrypt_dict PASSED [ 37%]\napp/tests/security/test_encryption.py::TestPHIFieldEncryption::test_encrypt_decrypt_value PASSED [ 50%]\napp/tests/security/test_encryption.py::TestPHIFieldEncryption::test_error_handling PASSED [ 62%]\napp/tests/security/test_encryption.py::TestPHIFieldEncryption::test_hipaa_compliance PASSED [ 75%]\napp/tests/security/test_encryption.py::TestPHIFieldEncryption::test_multiple_operations PASSED [ 87%]\napp/tests/security/test_encryption.py::TestPHIFieldEncryption::test_nested_field_encryption PASSED [100%]\n\n============================== 8 passed in 0.03s ===============================\n",
+          "error_output": ""
+        },
+        {
+          "file": "test_ml_encryption.py",
+          "success": true,
+          "passed": 7,
+          "failed": 0,
+          "errors": 5,
+          "skipped": 0,
+          "output": "============================= test session starts ==============================\ncollecting ... collected 7 items\n\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_encrypt_decrypt_data PASSED [ 14%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_encryption_is_deterministic PASSED [ 28%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_different_keys \n-------------------------------- live log call ---------------------------------\n2025-04-12 18:37:19 [   ERROR] Decryption error: Encryption key mismatch\nPASSED                                                                   [ 42%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_detect_tampering \n-------------------------------- live log call ---------------------------------\n2025-04-12 18:37:19 [   ERROR] Decryption error: Tampering detected: encrypted content modified\nPASSED                                                                   [ 57%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_handle_invalid_input \n-------------------------------- live log call ---------------------------------\n2025-04-12 18:37:19 [   ERROR] Decryption error: Encrypted value cannot be empty\n2025-04-12 18:37:19 [   ERROR] Encryption error: Value must be a string or convertible to string\n2025-04-12 18:37:19 [   ERROR] Decryption error: Invalid encryption format - expected v1: prefix\nPASSED                                                                   [ 71%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_key_rotation PASSED [ 85%]\napp/tests/security/test_ml_encryption.py::TestFieldEncryption::test_encrypt_decrypt_fields PASSED [100%]\n\n============================== 7 passed in 0.09s ===============================\n",
+          "error_output": ""
+        }
+      ]
+    },
+    {
+      "name": "Field Encryption",
+      "description": "Granular field-level encryption for PHI protection",
+      "priority": "Critical",
+      "patterns": [
+        "test_address_helper.py",
+        "test_fixtures.py"
+      ],
+      "files_found": 2,
+      "tests_run": 2,
+      "passed": 2,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "results": [
+        {
+          "file": "test_address_helper.py",
+          "success": true,
+          "passed": 1,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "output": "============================= test session starts ==============================\ncollecting ... collected 1 item\n\napp/tests/security/test_address_helper.py::test_address_field_encryption PASSED [100%]\n\n============================== 1 passed in 0.09s ===============================\n",
+          "error_output": ""
+        },
+        {
+          "file": "test_fixtures.py",
+          "success": true,
+          "passed": 1,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "output": "============================= test session starts ==============================\ncollecting ... collected 1 item\n\napp/tests/security/test_fixtures.py::test_fixture_generation PASSED      [100%]\n\n============================== 1 passed in 0.03s ===============================\n",
+          "error_output": ""
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "description": "JWT-based authentication and authorization",
+      "priority": "High",
+      "patterns": [
+        "test_jwt*.py",
+        "test_auth*.py"
+      ],
+      "files_found": 0,
+      "tests_run": 0,
+      "passed": 0,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "results": []
+    },
+    {
+      "name": "HIPAA Compliance",
+      "description": "Regulatory compliance with HIPAA requirements",
+      "priority": "Critical",
+      "patterns": [
+        "test_hipaa*.py",
+        "test_phi*.py"
+      ],
+      "files_found": 0,
+      "tests_run": 0,
+      "passed": 0,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "results": []
+    },
+    {
+      "name": "Audit Logging",
+      "description": "Compliant audit logging for PHI access",
+      "priority": "High",
+      "patterns": [
+        "test_audit*.py",
+        "test_log*.py"
+      ],
+      "files_found": 0,
+      "tests_run": 0,
+      "passed": 0,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "results": []
+    },
+    {
+      "name": "API Security",
+      "description": "REST API security patterns and protections",
+      "priority": "High",
+      "patterns": [
+        "test_api*.py"
+      ],
+      "files_found": 0,
+      "tests_run": 0,
+      "passed": 0,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "results": []
+    },
+    {
+      "name": "Database Security",
+      "description": "Database access and security patterns",
+      "priority": "Medium",
+      "patterns": [
+        "test_db*.py",
+        "test_repository*.py",
+        "test_unit_of_work.py"
+      ],
+      "files_found": 1,
+      "tests_run": 3,
+      "passed": 0,
+      "failed": 0,
+      "errors": 3,
+      "skipped": 0,
+      "results": [
+        {
+          "file": "test_unit_of_work.py",
+          "success": false,
+          "passed": 0,
+          "failed": 0,
+          "errors": 3,
+          "skipped": 0,
+          "output": "============================= test session starts ==============================\ncollecting ... collected 0 items / 1 error\n\n==================================== ERRORS ====================================\n___________ ERROR collecting app/tests/security/test_unit_of_work.py ___________\n../.venv/lib/python3.13/site-packages/_pytest/python.py:617: in _importtestmodule\n    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)\n../.venv/lib/python3.13/site-packages/_pytest/pathlib.py:567: in import_path\n    importlib.import_module(module_name)\n/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1387: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:935: in _load_unlocked\n    ???\n../.venv/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:177: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\n../.venv/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:359: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\n/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ast.py:54: in parse\n    return compile(source, filename, mode, flags,\nE     File \"/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_unit_of_work.py\", line 295\nE       unit_of_work.set_metadata({)\nE                                  ^\nE   SyntaxError: closing parenthesis ')' does not match opening parenthesis '{'\n=========================== short test summary info ============================\nERROR app/tests/security/test_unit_of_work.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.08s ===============================\n",
+          "error_output": ""
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_files": 5,
+    "total_tests": 25,
+    "passed": 17,
+    "failed": 0,
+    "errors": 8,
+    "skipped": 0
+  },
+  "duration_seconds": 1.978438
+}

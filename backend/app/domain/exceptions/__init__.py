@@ -1,178 +1,50 @@
 """
-Domain-specific exceptions package for the Novamind concierge psychiatry platform.
+Domain exceptions for the Novamind Digital Twin Platform.
 
-This package provides direct access to the exception classes needed by other modules.
+This module defines domain-specific exceptions that represent business rule violations
+and other domain-related errors, following clean architecture principles.
 """
 
-
-# Define exception classes directly in the __init__.py file to avoid circular imports
-class DomainException(Exception):
-    """Base exception class for all domain-specific exceptions."""
-
-    def __init__(self, message: str = "Domain error occurred"):
-        self.message = message
-        super().__init__(self.message)
+class DomainError(Exception):
+    """Base exception for all domain-related errors."""
+    pass
 
 
-class AuthenticationError(DomainException):
+class RepositoryError(DomainError):
     """
-    Raised when authentication fails due to invalid credentials or tokens.
-
-    This exception is typically thrown during JWT validation or login attempts
-    with incorrect credentials.
-    """
-
-    def __init__(self, message: str = "Invalid authentication credentials"):
-        super().__init__(message)
-
-
-class TokenExpiredError(AuthenticationError):
-    """
-    Raised when an authentication token has expired.
-
-    This is a specific type of authentication error indicating that
-    the user needs to refresh their token or log in again.
-    """
-
-    def __init__(self, message: str = "Token has expired"):
-        super().__init__(message)
-
-
-class ValidationError(DomainException):
-    """
-    Raised when input data fails validation rules.
-
-    This exception is used for domain-level validation errors, such as
-    invalid biometric rule conditions, invalid parameter values, or
-    other constraint violations in the domain model.
-    """
-
-    def __init__(self, message: str = "Validation error occurred"):
-        super().__init__(message)
-
-
-class ValidationException(ValidationError):
-    """
-    Alternative name for ValidationError that is used for backward compatibility.
+    Exception raised for errors in repository operations.
     
-    This exception serves the same purpose as ValidationError and is provided to
-    maintain compatibility with existing code that expects a ValidationException class.
+    This exception is used for data access errors, transaction failures,
+    and other persistence-related issues.
     """
+    pass
+
+
+class ValidationError(DomainError):
+    """
+    Exception raised for validation errors in domain entities.
     
-    def __init__(self, message: str = "Validation error occurred"):
-        super().__init__(message)
-
-
-class BiometricIntegrationError(DomainException):
+    This exception is used when domain entity validation fails,
+    indicating that business rules have been violated.
     """
-    Raised when there's an error processing biometric data.
+    pass
 
-    This exception is used for errors related to biometric data processing,
-    such as invalid data formats, integration issues with biometric devices,
-    or errors in the biometric data pipeline.
+
+class AuthorizationError(DomainError):
     """
-
-    def __init__(self, message: str = "Error processing biometric data"):
-        super().__init__(message)
-
-
-class ModelInferenceError(DomainException):
-    """
-    Raised when there's an error during model inference or prediction.
+    Exception raised for authorization errors.
     
-    This exception is used for errors related to ML model inference,
-    such as incompatible input data, model loading failures, or
-    unexpected errors during prediction.
+    This exception is used when an operation is attempted without
+    the required permissions or authentication.
     """
-    
-    def __init__(self, message: str = "Error during model inference"):
-        super().__init__(message)
+    pass
 
 
-# Appointment-related exceptions
-class AppointmentConflictError(DomainException):
+class PHISecurityError(DomainError):
     """
-    Raised when there's a conflict with another appointment.
+    Exception raised for PHI security violations.
     
-    This exception is used when trying to schedule an appointment that conflicts
-    with an existing appointment, either for the patient or the provider.
+    This exception is used when Protected Health Information (PHI)
+    is accessed or modified in a way that violates HIPAA security rules.
     """
-    
-    def __init__(self, message: str = "Appointment conflicts with another appointment"):
-        super().__init__(message)
-
-
-class InvalidAppointmentStateError(DomainException):
-    """
-    Raised when an appointment is in an invalid state for the requested operation.
-    
-    This exception is used when trying to perform an operation on an appointment
-    that is not allowed given its current state (e.g., trying to complete an
-    appointment that is not in progress).
-    """
-    
-    def __init__(self, message: str = "Invalid appointment state for this operation"):
-        super().__init__(message)
-
-
-class InvalidAppointmentTimeError(DomainException):
-    """
-    Raised when appointment times are invalid.
-    
-    This exception is used when appointment times are invalid, such as when
-    the end time is before the start time, or when trying to schedule an
-    appointment in the past.
-    """
-    
-    def __init__(self, message: str = "Invalid appointment time"):
-        super().__init__(message)
-
-
-# --- Added Missing Exceptions ---
-
-class AuthorizationError(DomainException):
-    """Raised when an action is not authorized for the user."""
-    def __init__(self, message: str = "Action not authorized"):
-        super().__init__(message)
-
-
-class EntityNotFoundError(DomainException):
-    """Raised when a requested domain entity cannot be found."""
-    def __init__(self, entity_type: str, entity_id: str):
-        message = f"{entity_type} with ID '{entity_id}' not found."
-        super().__init__(message)
-
-class RepositoryError(DomainException):
-    """Raised for general repository or database interaction errors."""
-    def __init__(self, message: str = "Repository error occurred"):
-        super().__init__(message)
-
-
-class MissingTokenError(AuthenticationError):
-    """Raised when an authentication token is missing."""
-    def __init__(self, message: str = "Authentication token is missing"):
-        super().__init__(message)
-
-
-class InvalidTokenError(AuthenticationError):
-    """Raised when an authentication token is invalid."""
-    def __init__(self, message: str = "Invalid authentication token"):
-        super().__init__(message)
-
-
-class ResourceNotFoundException(DomainException):
-    """Raised when a requested resource is not found."""
-    def __init__(self, message: str = "Resource not found"):
-        super().__init__(message)
-
-
-class BusinessRuleViolationException(DomainException):
-    """Raised when a business rule is violated."""
-    def __init__(self, message: str = "Business rule violation"):
-        super().__init__(message)
-
-
-class IntegrationException(DomainException):
-    """Raised when integration with external systems fails."""
-    def __init__(self, message: str = "Integration error"):
-        super().__init__(message)
+    pass

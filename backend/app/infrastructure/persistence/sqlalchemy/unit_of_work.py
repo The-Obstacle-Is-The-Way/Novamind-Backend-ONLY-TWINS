@@ -1,210 +1,231 @@
-# -*- coding: utf-8 -*-
 """
-HIPAA-Compliant Unit of Work Pattern
+HIPAA-compliant SQLAlchemy Unit of Work implementation.
 
-This module implements the Unit of Work pattern for database transactions,
-ensuring HIPAA-compliant atomicity and integrity for all PHI-related operations.
+This module provides a robust implementation of the Unit of Work pattern using SQLAlchemy,
+ensuring transactional integrity for PHI data operations according to HIPAA requirements.
 """
 
 import logging
-from contextlib import contextmanager
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Generic, Optional, Type, TypeVar
-
-from sqlalchemy import create_engine
+import contextlib
+from typing import Any, Dict, Optional, Callable, ContextManager
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session, sessionmaker
 
-from app.core.config import settings
+from app.domain.interfaces.unit_of_work import UnitOfWork
+from app.domain.exceptions import RepositoryError
 
-T = TypeVar("T")
+# Configure logger
+logger = logging.getLogger(__name__)
 
 
-class SQLAlchemyUnitOfWork:
+class SQLAlchemyUnitOfWork(UnitOfWork):
     """
-    Unit of Work implementation for SQLAlchemy to ensure HIPAA-compliant
-    transaction safety for PHI data.
-
-    This class provides a context manager for database transactions, ensuring
-    that all operations within a transaction succeed or fail together, preventing
-    partial updates that could compromise data integrity.
+    HIPAA-compliant implementation of the Unit of Work pattern using SQLAlchemy.
+    
+    This class provides transactional boundaries for all operations on PHI data,
+    ensuring data integrity, atomicity, and proper audit logging for all changes.
     """
-
-    def __init__(self, session_factory: Optional[Callable[[], Session]] = None):
+    
+    def __init__(self, session_factory: Callable[[], Session]):
         """
         Initialize the Unit of Work with a session factory.
-
+        
         Args:
-            session_factory: Factory function for creating SQLAlchemy sessions
+            session_factory: A callable that returns a new SQLAlchemy session
         """
-        self.settings = settings
-        self.session_factory = session_factory or self._create_session_factory()
-        self.session: Optional[Session] = None
-        self.logger = logging.getLogger(__name__)
-
-    def _create_session_factory(self) -> Callable[[], Session]:
+        self.session_factory = session_factory
+        self._session: Optional[Session] = None
+        self._is_read_only = False
+        self._metadata: Dict[str, Any] = {}
+    
+    @property
+    def session(self) -> Session:
         """
-        Create a SQLAlchemy session factory from settings.
-
+        Get the current session.
+        
         Returns:
-            Callable: A function that creates a new SQLAlchemy session
+            The current SQLAlchemy session
+            
+        Raises:
+            RepositoryError: If no session is active
         """
-        engine = create_engine(
-            self.settings.SQLALCHEMY_DATABASE_URI,
-            echo=False,  # Never echo SQL in production to avoid PHI leakage
-            pool_pre_ping=True,  # Check connection validity before using
-            pool_recycle=3600,  # Recycle connections after 1 hour to prevent stale connections
-        )
-        return sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-    def __enter__(self):
+        if self._session is None:
+            raise RepositoryError("No active database session. This operation must be performed within a unit of work context.")
+        return self._session
+    
+    def __enter__(self) -> "SQLAlchemyUnitOfWork":
         """
-        Enter the context manager, creating a new session.
-
+        Enter the unit of work context, creating a new session and beginning a transaction.
+        
         Returns:
-            SQLAlchemyUnitOfWork: Self reference for context manager
+            The Unit of Work instance
         """
-        self.session = self.session_factory()
+        # Create a new session
+        self._session = self.session_factory()
+        
+        # Begin a transaction
+        self._session.begin()
+        
+        logger.debug("Started new database transaction")
         return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """
-        Exit the context manager, committing or rolling back the transaction.
-
+        Exit the unit of work context, committing or rolling back the transaction.
+        
         Args:
-            exc_type: Exception type if an exception was raised
-            exc_val: Exception value if an exception was raised
-            exc_tb: Exception traceback if an exception was raised
+            exc_type: Exception type if an exception was raised, None otherwise
+            exc_val: Exception value if an exception was raised, None otherwise
+            exc_tb: Exception traceback if an exception was raised, None otherwise
         """
-        if self.session is None:
-            return
-
         try:
-            if exc_type is not None:
-                # An exception occurred, roll back the transaction
-                self.rollback()
+            if self._session is None:
+                return
+                
+            if exc_type:
+                # An exception occurred - roll back
+                logger.warning(f"Rolling back transaction due to exception: {exc_val}")
+                self._session.rollback()
+            elif self._is_read_only:
+                # Read-only transactions always roll back to ensure no changes
+                logger.debug("Rolling back read-only transaction")
+                self._session.rollback()
             else:
-                # No exception, commit the transaction
-                self.commit()
+                # Transaction completed successfully but no explicit commit
+                # We don't auto-commit to ensure explicit control
+                logger.debug("Transaction ended without explicit commit - rolling back")
+                self._session.rollback()
+        except Exception as e:
+            logger.error(f"Error during transaction cleanup: {e}")
+            # Always try to roll back in case of errors
+            try:
+                self._session.rollback()
+            except Exception:
+                pass  # Ignore errors during emergency rollback
+            raise
         finally:
-            # Always close the session
-            self.session.close()
-            self.session = None
-
-    def commit(self):
+            # Always close the session to prevent connection leaks
+            if self._session:
+                self._session.close()
+                self._session = None
+                
+            # Reset the read-only flag
+            self._is_read_only = False
+            
+            # Reset metadata
+            self._metadata = {}
+    
+    def commit(self) -> None:
         """
         Commit the current transaction.
-
+        
         Raises:
-            ValueError: If no active session exists
+            RepositoryError: If the transaction is read-only or no session is active
         """
-        if self.session is None:
-            raise ValueError("Cannot commit - no active session")
-
+        if self._is_read_only:
+            self._session.rollback()
+            raise RepositoryError("Cannot commit changes in a read-only transaction")
+            
+        if self._session is None:
+            raise RepositoryError("No active transaction to commit")
+            
         try:
-            self.session.commit()
-            self.logger.debug("Transaction committed successfully")
+            # Log the transaction for audit purposes if metadata is available
+            if self._metadata and hasattr(self, "_audit_transaction"):
+                self._audit_transaction()
+                
+            # Commit the transaction
+            self._session.commit()
+            logger.debug("Transaction committed successfully")
         except SQLAlchemyError as e:
-            self.logger.error(f"Error committing transaction: {type(e).__name__}")
-            self.rollback()
-            raise
-
-    def rollback(self):
+            # Roll back on any database errors
+            self._session.rollback()
+            logger.error(f"Transaction failed: {e}")
+            raise RepositoryError(f"Transaction failed: {str(e)}")
+    
+    def rollback(self) -> None:
         """
         Roll back the current transaction.
-
+        
         Raises:
-            ValueError: If no active session exists
+            RepositoryError: If no session is active
         """
-        if self.session is None:
-            raise ValueError("Cannot rollback - no active session")
-
+        if self._session is None:
+            raise RepositoryError("No active transaction to roll back")
+            
+        self._session.rollback()
+        logger.debug("Transaction rolled back")
+    
+    @contextlib.contextmanager
+    def nested(self) -> ContextManager["SQLAlchemyUnitOfWork"]:
+        """
+        Create a nested transaction.
+        
+        This allows for partial commits/rollbacks within a larger transaction.
+        
+        Yields:
+            The Unit of Work instance
+        
+        Raises:
+            RepositoryError: If no session is active
+        """
+        if self._session is None:
+            raise RepositoryError("No active transaction for nesting")
+            
+        # Start a nested transaction (savepoint)
+        with self._session.begin_nested():
+            logger.debug("Started nested transaction")
+            yield self
+            logger.debug("Exited nested transaction")
+    
+    @contextlib.contextmanager
+    def read_only(self) -> ContextManager["SQLAlchemyUnitOfWork"]:
+        """
+        Create a read-only transaction.
+        
+        This ensures that no changes can be committed, protecting PHI data from
+        accidental modifications during read operations.
+        
+        Yields:
+            The Unit of Work instance
+        """
+        self._is_read_only = True
+        
         try:
-            self.session.rollback()
-            self.logger.debug("Transaction rolled back")
-        except SQLAlchemyError as e:
-            self.logger.error(f"Error rolling back transaction: {type(e).__name__}")
-            raise
-
-
-@dataclass
-class RepositoryFactory(Generic[T]):
-    """
-    Factory for creating repositories with a session.
-
-    This class enables dependency injection of repositories, ensuring
-    all repositories share the same transaction context when used within
-    a Unit of Work.
-    """
-
-    unit_of_work: SQLAlchemyUnitOfWork
-    repository_class: Type[T]
-
-    def __call__(self) -> T:
+            with self:
+                logger.debug("Started read-only transaction")
+                yield self
+                logger.debug("Exited read-only transaction")
+        finally:
+            # Ensure the read-only flag is reset even if an exception occurs
+            self._is_read_only = False
+    
+    def set_metadata(self, metadata: Dict[str, Any]) -> None:
         """
-        Create a repository instance with the current session.
-
-        Returns:
-            T: A repository instance
-
-        Raises:
-            ValueError: If the Unit of Work has no active session
+        Set metadata for the current transaction.
+        
+        This metadata is used for audit logging of PHI access and modifications,
+        ensuring HIPAA compliance for all data operations.
+        
+        Args:
+            metadata: Dictionary of metadata for the transaction
         """
-        if self.unit_of_work.session is None:
-            raise ValueError(
-                "Cannot create repository - Unit of Work has no active session. "
-                "Make sure you're using the Unit of Work as a context manager."
-            )
-
-        return self.repository_class(self.unit_of_work.session)
-
-
-@contextmanager
-def unit_of_work(session_factory: Optional[Callable[[], Session]] = None):
-    """
-    Context manager for a database unit of work with PHI safeguards.
-
-    Args:
-        session_factory: Optional factory function for creating SQLAlchemy sessions
-
-    Yields:
-        SQLAlchemyUnitOfWork: The unit of work instance
-    """
-    uow = SQLAlchemyUnitOfWork(session_factory)
-    try:
-        with uow:
-            yield uow
-    except Exception as e:
-        # Log the exception type but not details to avoid PHI exposure
-        logging.getLogger(__name__).error(f"Transaction failed: {type(e).__name__}")
-        raise
-
-
-def get_unit_of_work() -> SQLAlchemyUnitOfWork:
-    """
-    Factory function to get a Unit of Work instance.
-
-    Returns:
-        SQLAlchemyUnitOfWork: A new Unit of Work instance
-    """
-    return SQLAlchemyUnitOfWork()
-
-
-def get_repository_factory(repository_class: Type[T]) -> Callable[[], T]:
-    """
-    Factory function for creating repository factories.
-
-    This function is used with FastAPI dependency injection to provide
-    repositories with the current Unit of Work.
-
-    Args:
-        repository_class: The repository class to create
-
-    Returns:
-        Callable: A factory function for creating repository instances
-    """
-
-    def _create_repository(uow: SQLAlchemyUnitOfWork = get_unit_of_work()):
-        return RepositoryFactory(uow, repository_class)()
-
-    return _create_repository
+        self._metadata.update(metadata)
+    
+    def _audit_transaction(self) -> None:
+        """
+        Log the transaction for HIPAA audit purposes.
+        
+        This creates an audit trail of all PHI access and modifications.
+        """
+        try:
+            from app.infrastructure.logging.audit_logger import AuditLogger
+            
+            # Log the transaction with all metadata
+            AuditLogger.log_transaction(self._metadata)
+        except ImportError:
+            # Audit logging not available - log a warning
+            logger.warning("Audit logging not available - PHI operation not audited")
+        except Exception as e:
+            # Don't fail the transaction if audit logging fails
+            logger.error(f"Failed to audit transaction: {e}")
