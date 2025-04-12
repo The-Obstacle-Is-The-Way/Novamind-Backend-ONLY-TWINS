@@ -193,3 +193,79 @@ def main():
     
     # Parse command-line arguments
     import argparse
+    parser = argparse.ArgumentParser(description='Fix specific syntax errors in Python test files')
+    parser.add_argument('--file', help='Path to specific file to fix (relative to backend dir)')
+    args = parser.parse_args()
+    
+    if args.file:
+        # Fix a specific file
+        file_path = os.path.join(backend_dir, args.file)
+        logger.info(f"Fixing specific file: {file_path}")
+        
+        if not os.path.exists(file_path):
+            logger.error(f"File not found: {file_path}")
+            return
+        
+        before_error = check_syntax(file_path)
+        fixed = fix_file(file_path)
+        after_error = check_syntax(file_path)
+        
+        if not after_error:
+            logger.info(f"Successfully fixed {args.file}")
+        else:
+            logger.warning(f"Failed to completely fix {args.file}")
+            logger.warning(f"Before: {before_error}")
+            logger.warning(f"After: {after_error}")
+        
+        return
+    
+    # Find all test files
+    logger.info(f"Searching for test files in {backend_dir}")
+    test_files = find_test_files(backend_dir)
+    logger.info(f"Found {len(test_files)} test files")
+    
+    # Check each file for syntax errors and fix if possible
+    files_with_errors = []
+    fixed_files = []
+    files_still_with_errors = []
+    
+    for file_path in test_files:
+        rel_path = os.path.relpath(file_path, backend_dir)
+        
+        # Check for syntax errors
+        error = check_syntax(file_path)
+        if error:
+            logger.info(f"Attempting to fix {rel_path}")
+            files_with_errors.append(rel_path)
+            
+            # Try to fix
+            fixed = fix_file(file_path)
+            
+            # Check if fixed
+            new_error = check_syntax(file_path)
+            if not new_error:
+                logger.info(f"Successfully fixed {rel_path}")
+                fixed_files.append(rel_path)
+            else:
+                logger.warning(f"Could not fix {rel_path}: {new_error}")
+                files_still_with_errors.append((rel_path, new_error))
+    
+    # Report summary
+    logger.info("\nRepair Summary:")
+    logger.info(f"  Total test files: {len(test_files)}")
+    logger.info(f"  Files with errors: {len(files_with_errors)}")
+    logger.info(f"  Successfully fixed: {len(fixed_files)}")
+    logger.info(f"  Failed to fix: {len(files_still_with_errors)}")
+    
+    if files_still_with_errors:
+        logger.warning("Some files still need manual fixes. See above for details.")
+        
+        # Export list of files with errors to a text file for easy reference
+        with open(os.path.join(backend_dir, "unfixed_syntax_errors.txt"), "w") as f:
+            for rel_path, error in files_still_with_errors:
+                f.write(f"{rel_path}: {error}\n")
+    else:
+        logger.info("All syntax errors have been fixed!")
+
+if __name__ == "__main__":
+    main()
