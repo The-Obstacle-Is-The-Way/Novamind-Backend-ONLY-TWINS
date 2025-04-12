@@ -6,14 +6,14 @@ This module tests the custom exception classes for machine learning operations,
 particularly the MentalLLaMA inference system exceptions.
 """
 
-from app.domain.ml.exceptions import ()
+from app.domain.ml.exceptions import (
     MentalLLaMAAuthenticationError,  
     MentalLLaMABaseException,  
     MentalLLaMAConnectionError,  
     MentalLLaMAInferenceError,  
     MentalLLaMAQuotaExceededError,  
-    MentalLLaMAValidationError,  
-()
+    MentalLLaMAValidationError
+)
 
 
 @pytest.mark.db_required()

@@ -103,11 +103,11 @@ class TestPHISanitizer:
         sanitized = self.sanitizer.sanitize(self.list_with_phi)
         
         # Check that PHI entries are sanitized
-    for item in sanitized:
-    assert self.patient_name not in item
-    assert self.patient_email not in item
-    assert self.patient_dob not in item
-    assert self.patient_mrn not in item
+        for item in sanitized:
+            assert self.patient_name not in item
+            assert self.patient_email not in item
+            assert self.patient_dob not in item
+            assert self.patient_mrn not in item
         
         # Non-PHI entries should be preserved
     assert "Notes: Patient reports improved mood" in sanitized

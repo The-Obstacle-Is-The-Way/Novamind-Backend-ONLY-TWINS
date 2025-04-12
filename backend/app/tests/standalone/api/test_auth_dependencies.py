@@ -10,12 +10,12 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi import HTTPException, status
 from typing import Dict, Any
 
-from app.api.dependencies.auth import ()
+from app.api.dependencies.auth import (
     get_current_token_payload,  
     get_current_user,  
     get_current_active_clinician,  
     get_current_active_admin
-()
+)
 
 
 @pytest.mark.db_required()
