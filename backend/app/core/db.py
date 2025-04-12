@@ -17,7 +17,7 @@ Base = declarative_base()
 is_test = os.environ.get("TESTING", "0").lower() in ("1", "true", "yes")
 
 # Create the SQLAlchemy engine with appropriate driver based on environment
-database_url = settings.SQLALCHEMY_DATABASE_URI
+database_url = settings.DATABASE_URL
 
 # Ensure async driver is used
 if database_url.startswith('postgresql://'):

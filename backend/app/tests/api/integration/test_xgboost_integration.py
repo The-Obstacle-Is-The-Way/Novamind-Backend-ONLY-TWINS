@@ -248,128 +248,106 @@ def mock_service():
 @pytest.mark.db_required()
 class TestXGBoostIntegration:
     """Integration tests for the XGBoost API."""
-
-    # Inject the client fixture
-    def test_risk_prediction_flow(self, client: TestClient, mock_service):
+    
+    @pytest.mark.asyncio()
+    async def test_risk_prediction_flow(self, client: TestClient, mock_service):
         """Test the complete risk prediction workflow."""
-        # Step 1: Generate a risk prediction
+        # 1. Request risk prediction
         risk_request = {
             "patient_id": "patient-123",
-            "risk_type": "relapse",  # Must match RiskType enum values
-            "clinical_data": {  # Changed from features to clinical_data
-                "age": 45,
-                "phq9_score": 15,
-                "previous_hospitalizations": 1
-            },
-            "time_frame_days": 90
+            "profile_id": "profile-456", # Assume a profile exists
+            "features": {"age": 55, "bmi": 28.5, "genetic_marker_x": 0.8}
         }
-        
-    response = client.post("/api/v1/ml/xgboost/risk-prediction", json=risk_request)
-    assert response.status_code  ==  200  # Changed from 201 to 200
-        
-        # Save prediction ID for later steps
-    prediction_id = response.json()["prediction_id"]
-    assert prediction_id is not None
-        
-        # Step 2: Retrieve the prediction by ID
-    response = client.get(f"/api/v1/ml/xgboost/predictions/{prediction_id}")
-    assert response.status_code  ==  200
-    assert response.json()["prediction_id"] == prediction_id
-    assert response.json()["patient_id"] == "patient-123"
-    assert response.json()["risk_level"] == "moderate"
-        
-        # Step 3: Validate the prediction
-    validation_request = {
-    "status": "validated",
-    "validator_notes": "Clinically confirmed after review"
-    }
-        
-    response = client.post(
-    f"/api/v1/ml/xgboost/predictions/{prediction_id}/validate",
-    json=validation_request
-    )
-    assert response.status_code  ==  200
-    assert response.json()["status"] == "validated"
-    assert response.json()["success"] is True
-        
-        # Step 4: Generate explanation for the prediction
-    response = client.get(
-    f"/api/v1/ml/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed"
-    )
-    assert response.status_code  ==  200
-    assert response.json()["prediction_id"] == prediction_id
-    assert "important_features" in response.json()
-        
-        # Step 5: Update digital twin with the prediction
-    update_request = {
-    "patient_id": "patient-123",
-    "profile_id": "profile-123",  # Added required profile_id
-    "prediction_id": prediction_id  # Changed from prediction_ids array to single prediction_id
-    }
-        
-    response = client.post("/api/v1/ml/xgboost/digital-twin/integrate", json=update_request)  # Changed endpoint path
-    assert response.status_code  ==  200
-    assert response.json()["status"] == "success"  # Changed from digital_twin_updated to status
-    assert response.json()["profile_id"] == "profile-123"  # Changed from prediction_count to profile_id
+        response = client.post("/api/v1/ml/xgboost/risk-prediction", json=risk_request)
+        assert response.status_code == 200
+        assert "prediction_id" in response.json()
+        prediction_id = response.json()["prediction_id"]
 
-    # Inject the client fixture
-    def test_treatment_comparison_flow(self, client: TestClient, mock_service):
+        # 2. Retrieve the prediction
+        response = client.get(f"/api/v1/ml/xgboost/predictions/{prediction_id}")
+        assert response.status_code == 200
+        prediction_data = response.json()
+        assert prediction_data["prediction_id"] == prediction_id
+        assert prediction_data["status"] == "pending_validation"
+        assert prediction_data["risk_level"] in list(RiskLevel)
+
+        # 3. Validate the prediction
+        validation_request = {
+            "status": "validated",
+            "validator_notes": "Clinically confirmed after review"
+        }
+        response = client.post(
+            f"/api/v1/ml/xgboost/predictions/{prediction_id}/validate",
+            json=validation_request
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "validated"
+
+        # 4. Get explanation for the prediction
+        response = client.get(
+            f"/api/v1/ml/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed"
+        )
+        assert response.status_code == 200
+        explanation_data = response.json()
+        assert "feature_importance" in explanation_data
+        assert explanation_data["prediction_id"] == prediction_id
+
+        # 5. Integrate with Digital Twin (using the same prediction ID)
+        update_request = {
+            "patient_id": "patient-123", 
+            "profile_id": "profile-456", # Ensure profile ID matches
+            "prediction_id": prediction_id # Use the ID from the prediction made
+        }
+        response = client.post("/api/v1/ml/xgboost/digital-twin/integrate", json=update_request)
+        assert response.status_code == 200 
+        assert response.json()["message"] == "Prediction integrated successfully."
+        assert response.json()["prediction_id"] == prediction_id
+        
+    @pytest.mark.asyncio()
+    async def test_treatment_comparison_flow(self, client: TestClient, mock_service):
         """Test the treatment comparison workflow."""
-        # Step 1: Compare multiple treatment options
+        # 1. Request treatment comparison
         comparison_request = {
-            "patient_id": "patient-123",
-            "treatment_type": "medication_ssri",  # Must match TreatmentType enum
-            "treatment_details": {
-                "medication": "escitalopram",
-                "dose_mg": 10  # Changed from dosage to dose_mg
-            },
-            "clinical_data": {  # Changed from features to clinical_data
-                "age": 45,
-                "phq9_score": 15,
-                "diagnosis": "major_depressive_disorder"
-            },
-            "prediction_horizon": "8_weeks"
+            "patient_id": "patient-789",
+            "profile_id": "profile-abc",
+            "features": {"age": 40, "prior_treatment_failures": 2, "severity_score": 7}, 
+            "treatment_options": [
+                {"treatment_id": "ssri_a", "category": TreatmentCategory.SSRI},
+                {"treatment_id": "snri_b", "category": TreatmentCategory.SNRI}
+            ]
         }
+        response = client.post("/api/v1/ml/xgboost/treatment-response", json=comparison_request)
+        assert response.status_code == 200
+        comparison_data = response.json()
+        assert "comparison_id" in comparison_data
+        assert len(comparison_data["results"]) == 2
+        assert comparison_data["results"][0]["treatment_id"] == "ssri_a"
         
-    response = client.post("/api/v1/ml/xgboost/treatment-response", json=comparison_request)
-        
-    assert response.status_code  ==  200
-    assert response.json()["patient_id"] == "patient-123"
-    assert response.json()["treatments_compared"] == 3
-    assert len(response.json()["results"]) == 3
-    assert "recommendation" in response.json()
-
-    # Inject the client fixture
-    def test_model_info_flow(self, client: TestClient, mock_service):
+    @pytest.mark.asyncio()
+    async def test_model_info_flow(self, client: TestClient, mock_service):
         """Test the model information workflow."""
-        # Step 1: Get available models
-        response = client.get("/api/v1/ml/xgboost/models")
+        # This test assumes a model has been loaded or is mockable
+        # We'll use a placeholder model ID, assuming the mock service handles it
+        model_id = "mock-model-123"
         
-    assert response.status_code  ==  200
-    assert response.json()["count"] > 0
-    assert len(response.json()["models"]) > 0
+        # 1. Get model details
+        response = client.get(f"/api/v1/ml/xgboost/models/{model_id}")
+        assert response.status_code == 200
+        model_data = response.json()
+        assert model_data["model_id"] == model_id
+        assert "model_type" in model_data
+        assert "trained_date" in model_data
         
-        # Save model ID for next step
-    model_id = response.json()["models"][0]["model_id"]
+        # 2. Get model features
+        response = client.get(f"/api/v1/ml/xgboost/models/{model_id}/features")
+        assert response.status_code == 200
+        features_data = response.json()
+        assert isinstance(features_data["features"], list)
+        assert len(features_data["features"]) > 0 # Assuming mock provides some features
         
-        # Step 2: Get detailed model info
-    response = client.get(f"/api/v1/ml/xgboost/models/{model_id}")
-        
-    assert response.status_code  ==  200
-    assert response.json()["model_id"] == model_id
-        
-        # Step 3: Get feature importance
-    response = client.get(f"/api/v1/ml/xgboost/models/{model_id}/features")
-        
-    assert response.status_code  ==  200
-    assert response.json()["model_id"] == model_id
-    assert "features" in response.json()
-
-    # Inject the client fixture
-    def test_healthcheck(self, client: TestClient, mock_service):
+    @pytest.mark.asyncio()
+    async def test_healthcheck(self, client: TestClient, mock_service):
         """Test the healthcheck endpoint."""
-        response = client.get("/api/v1/ml/xgboost/healthcheck")
-        
-    assert response.status_code  ==  200
-    assert response.json()["status"] in ["healthy", "degraded", "unhealthy"]
-    assert "components" in response.json()
+        response = client.get("/api/v1/ml/xgboost/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}

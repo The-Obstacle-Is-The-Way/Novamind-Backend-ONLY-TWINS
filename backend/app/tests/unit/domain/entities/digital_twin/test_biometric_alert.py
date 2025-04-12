@@ -6,7 +6,7 @@ These tests verify that the BiometricAlert entity correctly implements
 its business logic and state transitions.
 """
 
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, UTC, timedelta
 from uuid import UUID, uuid4
 
 import pytest
