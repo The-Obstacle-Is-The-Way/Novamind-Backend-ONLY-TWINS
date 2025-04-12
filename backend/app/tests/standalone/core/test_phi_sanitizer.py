@@ -143,8 +143,8 @@ class TestPHISanitizer:
     assert patient_details["contact"]["email"] != self.patient_email
         
     for note in patient_notes:
-    assert self.patient_name not in note
-    assert self.patient_email not in note
+        assert self.patient_name not in note
+        assert self.patient_email not in note
         
     assert self.patient_name not in patient_summary
     assert self.patient_ssn not in patient_summary
@@ -156,21 +156,21 @@ class TestPHISanitizer:
     def test_sanitize_with_custom_patterns(self):
         """Test sanitization with custom PHI patterns."""
         # Create sanitizer with custom patterns
-        custom_sanitizer = PHISanitizer()
+        custom_sanitizer = PHISanitizer(
             additional_patterns=[
                 r"Depression",  # Now treat "Depression" as PHI
                 r"Moderate"     # Now treat "Moderate" as PHI
             ]
-(        )
+        )
         
-    sanitized = custom_sanitizer.sanitize(self.dict_with_phi)
+        sanitized = custom_sanitizer.sanitize(self.dict_with_phi)
         
         # Standard PHI should be sanitized
-    assert sanitized["name"] != self.patient_name
+        assert sanitized["name"] != self.patient_name
         
         # Custom patterns should also be sanitized
-    assert sanitized["medical_info"]["diagnosis"] != "Depression" # Corrected key and removed marker
-    assert sanitized["medical_info"]["severity"] != "Moderate"
+        assert sanitized["medical_info"]["diagnosis"] != "Depression" # Corrected key and removed marker
+        assert sanitized["medical_info"]["severity"] != "Moderate"
     
     def test_sanitization_preserves_structure(self):
         """Test that sanitization preserves the structure of the input data."""
@@ -180,10 +180,10 @@ class TestPHISanitizer:
         assert set(dict_sanitized.keys()) == set(self.dict_with_phi.keys())
         
         # Test with list
-    list_sanitized = self.sanitizer.sanitize(self.list_with_phi)
-    assert isinstance(list_sanitized, list)
-    assert len(list_sanitized) == len(self.list_with_phi)
+        list_sanitized = self.sanitizer.sanitize(self.list_with_phi)
+        assert isinstance(list_sanitized, list)
+        assert len(list_sanitized) == len(self.list_with_phi)
         
         # Test with string
-    string_sanitized = self.sanitizer.sanitize(self.text_with_phi)
-    assert isinstance(string_sanitized, str) # Ensure no hidden characters
+        string_sanitized = self.sanitizer.sanitize(self.text_with_phi)
+        assert isinstance(string_sanitized, str) # Ensure no hidden characters
