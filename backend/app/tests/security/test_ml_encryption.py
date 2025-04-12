@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
+"""
+Tests for HIPAA-compliant encryption services in the NovaMind Digital Twin system.
+
+These tests ensure our data protection mechanisms meet or exceed HIPAA requirements
+for protecting patient health information throughout the Digital Twin processing pipeline.
+"""
+
 import os
 import pytest
 import json
 from typing import Dict, Any
 from unittest.mock import patch, MagicMock
 
-from app.infrastructure.security.encryption import EncryptionService # Removed FieldEncryptor
-# Removed import of non-existent exceptions
+from app.core.security.encryption import EncryptionService
 
 
 @pytest.mark.db_required()
@@ -26,39 +32,39 @@ class TestEncryptionService:
         """Create an EncryptionService instance for testing."""
         # Use test keys rather than production keys
         with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_key_for_unit_tests_only_12345678"}):
-        return EncryptionService()
+            return EncryptionService()
     
     @pytest.fixture
     def sensitive_data(self):
         """Sample PHI data for testing encryption."""
-        
-    return {
-    "patient_id": "12345",
-    "name": "John Smith",
-    "ssn": "123-45-6789",
-    "address": "123 Main St, Anytown, USA",
-    "date_of_birth": "1980-01-01",
-    "diagnosis": "F41.1",
-    "medication": "Sertraline 50mg",
-    "notes": "Patient reports improved mood following therapy sessions."
-    }
+        return {
+            "patient_id": "12345",
+            "name": "John Smith",
+            "ssn": "123-45-6789",
+            "address": "123 Main St, Anytown, USA",
+            "date_of_birth": "1980-01-01",
+            "diagnosis": "F41.1",
+            "medication": "Sertraline 50mg",
+            "notes": "Patient reports improved mood following therapy sessions."
+        }
     
     def test_encrypt_decrypt_data(self, encryption_service, sensitive_data):
         """Test basic encryption and decryption functionality."""
         # Arrange - We have sensitive data to encrypt
+        data_json = json.dumps(sensitive_data)
         
         # Act
-    encrypted = encryption_service.encrypt(json.dumps(sensitive_data))
-    decrypted = encryption_service.decrypt(encrypted)
-    decrypted_data = json.loads(decrypted)
+        encrypted = encryption_service.encrypt(data_json)
+        decrypted = encryption_service.decrypt(encrypted)
+        decrypted_data = json.loads(decrypted)
         
         # Assert
         # The encrypted data should be different from the original
-    assert encrypted  !=  json.dumps(sensitive_data)
+        assert encrypted != data_json
         # The decrypted data should match the original
-    assert decrypted_data  ==  sensitive_data
+        assert decrypted_data == sensitive_data
         # Encrypted data should contain the version header
-    assert encrypted.startswith("v1:")
+        assert encrypted.startswith("v1:")
     
     def test_encryption_is_deterministic(self, encryption_service, sensitive_data):
         """Test that encryption is deterministic with same key."""
@@ -88,12 +94,12 @@ class TestEncryptionService:
     assert encrypted1  !=  encrypted2
         
         # Verify each service can only decrypt its own data
-    decrypted1 = service1.decrypt(encrypted1)
-    assert json.loads(decrypted1) == sensitive_data
+        decrypted1 = service1.decrypt(encrypted1)
+        assert json.loads(decrypted1) == sensitive_data
         
         # Attempting to decrypt with wrong key should fail
-    with pytest.raises(ValueError): # Expect ValueError for decryption issues
-    service2.decrypt(encrypted1)
+        with pytest.raises(ValueError): # Expect ValueError for decryption issues
+            service2.decrypt(encrypted1)
     
     def test_detect_tampering(self, encryption_service, sensitive_data):
         """Test that tampering with encrypted data is detected."""
@@ -101,36 +107,36 @@ class TestEncryptionService:
         encrypted = encryption_service.encrypt(json.dumps(sensitive_data))
         
         # Act - Tamper with the encrypted data
-    tampered = encrypted[0:10] + "X" + encrypted[11:]
+        tampered = encrypted[0:10] + "X" + encrypted[11:]
         
         # Assert
-    with pytest.raises(ValueError): # Expect ValueError for decryption issues
-    encryption_service.decrypt(tampered)
+        with pytest.raises(ValueError): # Expect ValueError for decryption issues
+            encryption_service.decrypt(tampered)
     
     def test_handle_invalid_input(self, encryption_service):
         """Test handling of invalid input for encryption/decryption."""
         # Test with None
         # EncryptionService.encrypt might raise TypeError for non-string, or other errors
         with pytest.raises(Exception):
-        encryption_service.encrypt(None)
+            encryption_service.encrypt(None)
         
-    with pytest.raises(ValueError): # Expect ValueError for decryption issues (e.g., None input)
-    encryption_service.decrypt(None)
+        with pytest.raises(ValueError): # Expect ValueError for decryption issues (e.g., None input)
+            encryption_service.decrypt(None)
         
         # Test with empty string
         # Test for encrypting empty string removed as it's covered elsewhere
         # and caused indentation issues.
         
-    with pytest.raises(ValueError): # Expect ValueError for decryption issues (e.g., empty input)
-    encryption_service.decrypt("")
+        with pytest.raises(ValueError): # Expect ValueError for decryption issues (e.g., empty input)
+            encryption_service.decrypt("")
         
         # Test with non-string for encryption
-    with pytest.raises(Exception): # Expect TypeError or similar for non-string input
-    encryption_service.encrypt(123)
+        with pytest.raises(Exception): # Expect TypeError or similar for non-string input
+            encryption_service.encrypt(123)
         
         # Test with invalid format for decryption
-    with pytest.raises(ValueError): # Expect ValueError for invalid decryption format
-    encryption_service.decrypt("not_encrypted_data")
+        with pytest.raises(ValueError): # Expect ValueError for invalid decryption format
+            encryption_service.decrypt("not_encrypted_data")
     
     def test_key_rotation(self, encryption_service, sensitive_data):
         """Test encryption key rotation capabilities."""
@@ -139,15 +145,15 @@ class TestEncryptionService:
         old_encrypted = encryption_service.encrypt(json.dumps(sensitive_data))
         
         # 2. Simulate key rotation
-    with patch.dict(os.environ, {)
-    "ENCRYPTION_KEY": "new_key_after_rotation_12345678",
-    "PREVIOUS_ENCRYPTION_KEY": os.environ.get("ENCRYPTION_KEY", "test_key_for_unit_tests_only_12345678")
-(    }):
-    rotated_service = EncryptionService()
+        with patch.dict(os.environ, {
+            "ENCRYPTION_KEY": "new_key_after_rotation_12345678",
+            "PREVIOUS_ENCRYPTION_KEY": os.environ.get("ENCRYPTION_KEY", "test_key_for_unit_tests_only_12345678")
+        }):
+            rotated_service = EncryptionService()
             
             # Act
             # 3. Decrypt data that was encrypted with old key
-    decrypted_old = rotated_service.decrypt(old_encrypted)
+            decrypted_old = rotated_service.decrypt(old_encrypted)
             
             # 4. Re-encrypt with new key
     new_encrypted = rotated_service.encrypt(decrypted_old)

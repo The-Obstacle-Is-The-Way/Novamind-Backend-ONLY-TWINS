@@ -23,6 +23,70 @@ logger = logging.getLogger(__name__)
 _encryption_key = None
 
 
+class EncryptionService:
+    """Service for encrypted handling of sensitive data following HIPAA compliance requirements.
+    
+    This service encapsulates cryptographic operations to ensure consistent encryption and
+    decryption of PHI throughout the system, following clean architecture principles of
+    separation of concerns and dependency inversion.
+    """
+    
+    def __init__(self):
+        """Initialize the encryption service with the appropriate encryption key."""
+        self._key = None
+        
+    @property
+    def key(self) -> bytes:
+        """Lazy-loaded encryption key property."""
+        if self._key is None:
+            self._key = get_encryption_key()
+        return self._key
+        
+    def encrypt(self, value: str) -> Optional[str]:
+        """Encrypt a string value using symmetric encryption.
+        
+        Args:
+            value: String value to encrypt
+            
+        Returns:
+            Base64-encoded encrypted value, or None if input is None
+        """
+        return encrypt_value(value)
+    
+    def decrypt(self, encrypted_value: str) -> Optional[str]:
+        """Decrypt an encrypted string value.
+        
+        Args:
+            encrypted_value: Base64-encoded encrypted value
+            
+        Returns:
+            Decrypted string value, or None if input is None
+        """
+        return decrypt_value(encrypted_value)
+    
+    def encrypt_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Encrypt all string values in a dictionary.
+        
+        Args:
+            data: Dictionary with values to encrypt
+            
+        Returns:
+            Dictionary with encrypted values
+        """
+        return encrypt_dict(data)
+    
+    def decrypt_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Decrypt all encrypted values in a dictionary.
+        
+        Args:
+            data: Dictionary with encrypted values
+            
+        Returns:
+            Dictionary with decrypted values
+        """
+        return decrypt_dict(data)
+
+
 def get_encryption_key() -> bytes:
     """
     Get the encryption key for sensitive data.
