@@ -74,7 +74,7 @@ class NeurotransmitterEffect:
     @property
     def is_statistically_significant(self) -> bool:
         """Whether the effect is statistically significant (p < 0.05)."""
-        return self.p_value < 0.05
+        return bool(self.p_value < 0.05)
         
     @property
     def precision(self) -> float:

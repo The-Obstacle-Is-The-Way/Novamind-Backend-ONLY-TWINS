@@ -598,7 +598,8 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
                 "generated": True,
                 "baseline_level": baseline_level,
                 "receptor_density": self.analyze_receptor_affinity(neurotransmitter, brain_region),
-                "is_producing_region": brain_region in self.get_producing_regions(neurotransmitter)
+                "is_producing_region": brain_region in self.get_producing_regions(neurotransmitter),
+                "brain_region": brain_region.value
             }
         )
         
