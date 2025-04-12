@@ -12,7 +12,7 @@ logger.info("This is a test log message")
 formatted_message = format_log_message(
     message="Test message",
     source="test_logger",
-    additional_data={"test_key": "test_value"}
+    additional_data={"test_key": "test_value"},
 )
 print("Formatted log message:")
 print(formatted_message)

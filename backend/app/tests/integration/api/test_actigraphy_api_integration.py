@@ -28,13 +28,13 @@ def mock_pat_service():
     return service
 
 
-# Removed local client fixture; tests will use client from conftest.py
-# Dependency override logic needs to be handled globally in conftest.py if required for all tests,
-# or via specific test setup if only needed here.
+    # Removed local client fixture; tests will use client from conftest.py
+    # Dependency override logic needs to be handled globally in conftest.py if required for all tests,
+    # or via specific test setup if only needed here.
 
 
-@pytest.fixture
-def auth_headers():
+    @pytest.fixture
+    def auth_headers():
     """Authentication headers for API requests."""
     
     return {
@@ -57,7 +57,7 @@ def actigraphy_data():
             "y": 0.2 + (i % 5) * 0.01,
             "z": 0.3 + (i % 7) * 0.01,
             "timestamp": timestamp.isoformat() + "Z"
-(        })
+    (        })
     
     end_time = (start_time + timedelta(seconds=179)).isoformat() + "Z"
     start_time = start_time.isoformat() + "Z"
@@ -87,7 +87,7 @@ class TestActigraphyAPI:
             "/api/v1/actigraphy/analyze",
             headers=auth_headers,
             json=actigraphy_data
-(        )
+    (        )
         
     assert response.status_code  ==  200
     data = response.json()
@@ -159,43 +159,43 @@ class TestActigraphyAPI:
         
         # Create a few analyses for the patient
     for i in range(3):
-    mock_pat_service.analyze_actigraphy()
-    patient_id=patient_id,
-    readings=[{"x": 0.1, "y": 0.2, "z": 0.3, "timestamp": f"2025-03-28T12:0{i}:00Z"}],
-    start_time=f"2025-03-28T12:0{i}:00Z",
-    end_time=f"2025-03-28T12:0{i+1}:00Z",
-    sampling_rate_hz=1.0,
-    device_info={"name": "Test Device"},
-    analysis_types=["activity_levels"]
-(    )
+        mock_pat_service.analyze_actigraphy()
+        patient_id=patient_id,
+        readings=[{"x": 0.1, "y": 0.2, "z": 0.3, "timestamp": f"2025-03-28T12:0{i}:00Z"}],
+        start_time=f"2025-03-28T12:0{i}:00Z",
+        end_time=f"2025-03-28T12:0{i+1}:00Z",
+        sampling_rate_hz=1.0,
+        device_info={"name": "Test Device"},
+        analysis_types=["activity_levels"]
+        (    )
         
-    response = client.get()
-    f"/api/v1/actigraphy/patient/{patient_id}/analyses",
-    headers=auth_headers
-(    )
+        response = client.get()
+        f"/api/v1/actigraphy/patient/{patient_id}/analyses",
+        headers=auth_headers
+        (    )
         
-    assert response.status_code  ==  200
-    data = response.json()
-    assert "analyses" in data
-    assert isinstance(data["analyses"], list)
-    assert len(data["analyses"]) > 0
-    assert "pagination" in data
+        assert response.status_code  ==  200
+        data = response.json()
+        assert "analyses" in data
+        assert isinstance(data["analyses"], list)
+        assert len(data["analyses"]) > 0
+        assert "pagination" in data
     
-    def test_get_model_info(self, client: TestClient, auth_headers): # Use client fixture
+        def test_get_model_info(self, client: TestClient, auth_headers): # Use client fixture
         """Test getting model information."""
         response = client.get()
             "/api/v1/actigraphy/model-info",
             headers=auth_headers
-(        )
+        (        )
         
-    assert response.status_code  ==  200
-    data = response.json()
-    assert "name" in data
-    assert "version" in data
-    assert "capabilities" in data
-    assert "description" in data
+        assert response.status_code  ==  200
+        data = response.json()
+        assert "name" in data
+        assert "version" in data
+        assert "capabilities" in data
+        assert "description" in data
     
-    def test_integrate_with_digital_twin(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
+        def test_integrate_with_digital_twin(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test integrating analysis with digital twin."""
         # Create an analysis
         analysis_data = mock_pat_service.analyze_actigraphy()
@@ -206,12 +206,12 @@ class TestActigraphyAPI:
             sampling_rate_hz=1.0,
             device_info={"name": "Test Device"},
             analysis_types=["activity_levels"]
-(        )
+        (        )
         
-    integration_data = {
-    "patient_id": "test-patient-123",
-    "profile_id": "test-profile-456",
-    "analysis_id": analysis_data["analysis_id"]
+        integration_data = {
+        "patient_id": "test-patient-123",
+        "profile_id": "test-profile-456",
+        "analysis_id": analysis_data["analysis_id"]
     }
         
     response = client.post()

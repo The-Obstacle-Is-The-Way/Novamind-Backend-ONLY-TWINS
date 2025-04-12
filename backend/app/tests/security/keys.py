@@ -23,5 +23,5 @@ TEST_SENSITIVE_DATA = {
     "provider": "Dr. Smith",
     "treatment_plan": "Weekly therapy",
     "ssn": "123-45-6789",
-    "name": "John Smith"
+    "name": "John Smith",
 }

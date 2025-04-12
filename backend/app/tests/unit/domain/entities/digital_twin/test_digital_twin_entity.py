@@ -26,164 +26,164 @@ class TestDigitalTwin(unittest.TestCase):
         self.patient_id = uuid4()
         
         # Create a basic state
-    self.initial_state = DigitalTwinState()
-    neurotransmitter=NeurotransmitterState()
-    serotonin_level=-0.3,
-    dopamine_level=-0.2,
-    norepinephrine_level=0.1,
-    gaba_level=-0.1,
-    glutamate_level=0.2
-(    ),
-    psychological=PsychologicalState()
-    mood_valence=-0.4,
-    mood_arousal=0.2,
-    mood_stability=0.3,
-    anxiety_level=0.6,
-    stress_reactivity=0.5,
-    rumination=0.4,
-    anhedonia=0.5
-(    ),
-    behavioral=BehavioralState()
-    activity_level=-0.3,
-    psychomotor_changes=0.1,
-    sleep_quality=0.4,
-    sleep_duration=6.5,
-    circadian_rhythm=0.3,
-    appetite_level=-0.2,
-    social_engagement=0.3
-(    ),
-    cognitive=CognitiveState()
-    attention_level=0.5,
-    concentration=0.4,
-    working_memory=0.5,
-    executive_function=0.4,
-    decision_making=0.3
-(    )
-(    )
-    self.initial_state.update_derived_values()
+        self.initial_state = DigitalTwinState()
+        neurotransmitter=NeurotransmitterState()
+        serotonin_level=-0.3,
+        dopamine_level=-0.2,
+        norepinephrine_level=0.1,
+        gaba_level=-0.1,
+        glutamate_level=0.2
+        (    ),
+        psychological=PsychologicalState()
+        mood_valence=-0.4,
+        mood_arousal=0.2,
+        mood_stability=0.3,
+        anxiety_level=0.6,
+        stress_reactivity=0.5,
+        rumination=0.4,
+        anhedonia=0.5
+        (    ),
+        behavioral=BehavioralState()
+        activity_level=-0.3,
+        psychomotor_changes=0.1,
+        sleep_quality=0.4,
+        sleep_duration=6.5,
+        circadian_rhythm=0.3,
+        appetite_level=-0.2,
+        social_engagement=0.3
+        (    ),
+        cognitive=CognitiveState()
+        attention_level=0.5,
+        concentration=0.4,
+        working_memory=0.5,
+        executive_function=0.4,
+        decision_making=0.3
+        (    )
+        (    )
+        self.initial_state.update_derived_values()
         
         # Create test treatments
-    self.ssri_treatment = Treatment()
-    id=uuid4(),
-    name="Fluoxetine",
-    category=TreatmentCategory.MEDICATION,
-    frequency=TreatmentFrequency.DAILY,
-    start_date=datetime.now(UTC),
-    medication_details=MedicationDetails()
-    type=MedicationType.SSRI,
-    dosage=20.0,
-    dosage_unit="mg",
-    serotonin_effect=0.5,
-    dopamine_effect=0.1,
-    norepinephrine_effect=0.1,
-    gaba_effect=0.0,
-    glutamate_effect=0.0
-(    )
-(    )
+        self.ssri_treatment = Treatment()
+        id=uuid4(),
+        name="Fluoxetine",
+        category=TreatmentCategory.MEDICATION,
+        frequency=TreatmentFrequency.DAILY,
+        start_date=datetime.now(UTC),
+        medication_details=MedicationDetails()
+        type=MedicationType.SSRI,
+        dosage=20.0,
+        dosage_unit="mg",
+        serotonin_effect=0.5,
+        dopamine_effect=0.1,
+        norepinephrine_effect=0.1,
+        gaba_effect=0.0,
+        glutamate_effect=0.0
+        (    )
+        (    )
         
-    self.therapy_treatment = Treatment()
-    id=uuid4(),
-    name="Cognitive Behavioral Therapy",
-    category=TreatmentCategory.THERAPY,
-    frequency=TreatmentFrequency.WEEKLY,
-    start_date=datetime.now(UTC),
+        self.therapy_treatment = Treatment()
+        id=uuid4(),
+        name="Cognitive Behavioral Therapy",
+        category=TreatmentCategory.THERAPY,
+        frequency=TreatmentFrequency.WEEKLY,
+        start_date=datetime.now(UTC),
             # Removed therapy_details due to missing TherapyDetails/TherapyType
-    predicted_effects={
-    "serotonin": 0.2,
-    "rumination": -0.3,
-    "cognitive_distortions": -0.4
+        predicted_effects={
+        "serotonin": 0.2,
+        "rumination": -0.3,
+        "cognitive_distortions": -0.4
     } # Keep predicted_effects if needed
-(    )
+        (    )
         
         # Create treatment plan
-    self.treatment_plan = TreatmentPlan()
-    id=uuid4(),
-    patient_id=self.patient_id,
-    name="Depression Treatment Plan",
-    treatments=[self.ssri_treatment, self.therapy_treatment],
-    start_date=datetime.now(UTC),
-    status="active"
-(    )
+        self.treatment_plan = TreatmentPlan()
+        id=uuid4(),
+        patient_id=self.patient_id,
+        name="Depression Treatment Plan",
+        treatments=[self.ssri_treatment, self.therapy_treatment],
+        start_date=datetime.now(UTC),
+        status="active"
+        (    )
         
         # Create a basic digital twin
-    self.digital_twin = DigitalTwin()
-    patient_id=self.patient_id,
-    current_state=self.initial_state,
-    confidence_level=0.5 # Replaced enum with float
-(    )
+        self.digital_twin = DigitalTwin()
+        patient_id=self.patient_id,
+        current_state=self.initial_state,
+        confidence_level=0.5 # Replaced enum with float
+        (    )
     
-    def test_init_default_values(self):
+        def test_init_default_values(self):
         """Test that default values are correctly initialized."""
         twin = DigitalTwin()
             patient_id=self.patient_id,
             current_state=self.initial_state
-(        )
+        (        )
         
-    assert twin.patient_id  ==  self.patient_id
-    assert twin.version  ==  "1.0.0"
-    assert isinstance(twin.created_at, datetime)
-    assert isinstance(twin.updated_at, datetime)
-    assert twin.last_calibration is None
-    assert twin.state_history  ==  []
-    assert isinstance(twin.demographic_factors, dict)
-    assert isinstance(twin.genetic_factors, dict)
-    assert isinstance(twin.medical_history, dict)
-    assert isinstance(twin.environmental_factors, dict)
-    assert twin.confidence_level  ==  0.5 # Replaced enum with float
-    assert twin.calibration_score  ==  0.0
-    assert isinstance(twin.validation_metrics, dict)
-    assert twin.temporal_dynamics is None
+        assert twin.patient_id  ==  self.patient_id
+        assert twin.version  ==  "1.0.0"
+        assert isinstance(twin.created_at, datetime)
+        assert isinstance(twin.updated_at, datetime)
+        assert twin.last_calibration is None
+        assert twin.state_history  ==  []
+        assert isinstance(twin.demographic_factors, dict)
+        assert isinstance(twin.genetic_factors, dict)
+        assert isinstance(twin.medical_history, dict)
+        assert isinstance(twin.environmental_factors, dict)
+        assert twin.confidence_level  ==  0.5 # Replaced enum with float
+        assert twin.calibration_score  ==  0.0
+        assert isinstance(twin.validation_metrics, dict)
+        assert twin.temporal_dynamics is None
     
-    def test_init_custom_values(self):
+        def test_init_custom_values(self):
         """Test initialization with custom values."""
         created_at = datetime.now(UTC) - timedelta(days=10)
         last_calibration = datetime.now(UTC) - timedelta(days=5)
         
-    twin = DigitalTwin()
-    patient_id=self.patient_id,
-    current_state=self.initial_state,
-    version="1.1.0",
-    created_at=created_at,
-    last_calibration=last_calibration,
-    demographic_factors={"age": 35, "gender": "female"},
-    genetic_factors={"cyp2d6_metabolizer": "extensive"},
-    medical_history={"prior_treatments": ["SSRIs", "CBT"]},
-    confidence_level=0.85, # Replaced enum with float
-    calibration_score=0.85
-(    )
+        twin = DigitalTwin()
+        patient_id=self.patient_id,
+        current_state=self.initial_state,
+        version="1.1.0",
+        created_at=created_at,
+        last_calibration=last_calibration,
+        demographic_factors={"age": 35, "gender": "female"},
+        genetic_factors={"cyp2d6_metabolizer": "extensive"},
+        medical_history={"prior_treatments": ["SSRIs", "CBT"]},
+        confidence_level=0.85, # Replaced enum with float
+        calibration_score=0.85
+        (    )
         
-    assert twin.patient_id  ==  self.patient_id
-    assert twin.version  ==  "1.1.0"
-    assert twin.created_at  ==  created_at
-    assert twin.last_calibration  ==  last_calibration
-    assert twin.demographic_factors  ==  {"age": 35, "gender": "female"}
-    assert twin.genetic_factors  ==  {"cyp2d6_metabolizer": "extensive"}
-    assert twin.medical_history  ==  {"prior_treatments": ["SSRIs", "CBT"]}
-    assert twin.confidence_level  ==  0.85 # Replaced enum with float
-    assert twin.calibration_score  ==  0.85
+        assert twin.patient_id  ==  self.patient_id
+        assert twin.version  ==  "1.1.0"
+        assert twin.created_at  ==  created_at
+        assert twin.last_calibration  ==  last_calibration
+        assert twin.demographic_factors  ==  {"age": 35, "gender": "female"}
+        assert twin.genetic_factors  ==  {"cyp2d6_metabolizer": "extensive"}
+        assert twin.medical_history  ==  {"prior_treatments": ["SSRIs", "CBT"]}
+        assert twin.confidence_level  ==  0.85 # Replaced enum with float
+        assert twin.calibration_score  ==  0.85
     
-    def test_update_state(self):
+        def test_update_state(self):
         """Test updating the digital twin state."""
         # Create initial state snapshot
         initial_state_copy = self.digital_twin.current_state.copy(deep=True)
         
         # Update with new data
-    new_data = {
-    "neurotransmitter_data": {
-    "serotonin": {"level": 0.1},
-    "dopamine": {"level": 0.0}
+        new_data = {
+        "neurotransmitter_data": {
+        "serotonin": {"level": 0.1},
+        "dopamine": {"level": 0.0}
     },
-    "psychological_data": {
-    "mood": {"valence": -0.2},
-    "anxiety": {"level": 0.4}
+        "psychological_data": {
+        "mood": {"valence": -0.2},
+        "anxiety": {"level": 0.4}
     },
-    "behavioral_data": {
-    "sleep": {"quality": 0.6},
-    "activity": {"level": 0.0}
+        "behavioral_data": {
+        "sleep": {"quality": 0.6},
+        "activity": {"level": 0.0}
     },
-    "cognitive_data": {
-    "attention": {"level": 0.6},
-    "memory": {"working_memory": 0.6}
+        "cognitive_data": {
+        "attention": {"level": 0.6},
+        "memory": {"working_memory": 0.6}
     }
     }
         
@@ -214,79 +214,79 @@ class TestDigitalTwin(unittest.TestCase):
         , self.digital_twin.temporal_dynamics = TemporalDynamics()
         
         # Predict response
-    treatment_response = self.digital_twin.predict_treatment_response()
-    treatment=self.ssri_treatment,
-    time_horizon_days=30
-(    )
+        treatment_response = self.digital_twin.predict_treatment_response()
+        treatment=self.ssri_treatment,
+        time_horizon_days=30
+        (    )
         
         # Verify response properties
-    assert isinstance(treatment_response, TreatmentResponse)
-    assert treatment_response.treatment_id  ==  self.ssri_treatment.id
-    assert treatment_response.patient_id  ==  self.patient_id
-    assert treatment_response.digital_twin_id  ==  self.digital_twin.id
-    assert isinstance(treatment_response.efficacy, float)
-    assert isinstance(treatment_response.side_effects, dict)
-    assert isinstance(treatment_response.time_to_response, int)
-    assert isinstance(treatment_response.remission_probability, float)
-    assert isinstance(treatment_response.trajectory, TrajectoryPrediction)
+        assert isinstance(treatment_response, TreatmentResponse)
+        assert treatment_response.treatment_id  ==  self.ssri_treatment.id
+        assert treatment_response.patient_id  ==  self.patient_id
+        assert treatment_response.digital_twin_id  ==  self.digital_twin.id
+        assert isinstance(treatment_response.efficacy, float)
+        assert isinstance(treatment_response.side_effects, dict)
+        assert isinstance(treatment_response.time_to_response, int)
+        assert isinstance(treatment_response.remission_probability, float)
+        assert isinstance(treatment_response.trajectory, TrajectoryPrediction)
         # Assuming confidence_level is now a float on TreatmentResponse too, or removing check
         # Let's assume it mirrors DigitalTwin and is a float
-    assert isinstance(treatment_response.confidence_level, float)
+        assert isinstance(treatment_response.confidence_level, float)
     
-    def test_compare_treatments(self):
+        def test_compare_treatments(self):
         """Test comparison of multiple treatments."""
         # Add temporal dynamics for prediction
         from app.domain.entities.digital_twin.temporal import TemporalDynamics
         , self.digital_twin.temporal_dynamics = TemporalDynamics()
         
         # Compare treatments
-    treatment_analysis = self.digital_twin.compare_treatments()
-    treatments=[self.ssri_treatment, self.therapy_treatment],
-    time_horizon_days=30
-(    )
+        treatment_analysis = self.digital_twin.compare_treatments()
+        treatments=[self.ssri_treatment, self.therapy_treatment],
+        time_horizon_days=30
+        (    )
         
         # Verify analysis properties
-    assert treatment_analysis.patient_id  ==  self.patient_id
-    assert treatment_analysis.digital_twin_id  ==  self.digital_twin.id
-    assert len(treatment_analysis.treatment_responses) == 2
-    assert len(treatment_analysis.rankings) == 2
-    assert isinstance(treatment_analysis.recommendations, dict)
-    assert "recommended_treatment_id" in treatment_analysis.recommendations
+        assert treatment_analysis.patient_id  ==  self.patient_id
+        assert treatment_analysis.digital_twin_id  ==  self.digital_twin.id
+        assert len(treatment_analysis.treatment_responses) == 2
+        assert len(treatment_analysis.rankings) == 2
+        assert isinstance(treatment_analysis.recommendations, dict)
+        assert "recommended_treatment_id" in treatment_analysis.recommendations
         # Assuming confidence_level is now a float on TreatmentAnalysis too, or removing check
-    assert isinstance(treatment_analysis.confidence_level, float)
+        assert isinstance(treatment_analysis.confidence_level, float)
     
-    def test_detect_patterns(self):
+        def test_detect_patterns(self):
         """Test detection of temporal patterns."""
         # Create temporal dynamics with pattern detectors
-        from app.domain.entities.digital_twin.temporal import ()
+        from app.domain.entities.digital_twin.temporal import
             TemporalDynamics,  
             SeasonalPatternDetector,  
             EpisodicPatternDetector
-(        )
+        (        )
         
-    self.digital_twin.temporal_dynamics = TemporalDynamics()
-    pattern_detectors={
-    "seasonal": SeasonalPatternDetector(),
-    "episodic": EpisodicPatternDetector()
+        self.digital_twin.temporal_dynamics = TemporalDynamics()
+        pattern_detectors={
+        "seasonal": SeasonalPatternDetector(),
+        "episodic": EpisodicPatternDetector()
     }
 (    )
         
         # Add some state history
     for i in range(5):
-    state = self.initial_state.copy(deep=True)
-    state.psychological.mood_valence = -0.4 + (i * 0.1)
-    self.digital_twin.temporal_dynamics.record_state_point(state)
+        state = self.initial_state.copy(deep=True)
+        state.psychological.mood_valence = -0.4 + (i * 0.1)
+        self.digital_twin.temporal_dynamics.record_state_point(state)
         
         # Detect patterns
-    patterns = self.digital_twin.detect_patterns()
+        patterns = self.digital_twin.detect_patterns()
         
         # Verify patterns
-    assert "seasonal" in patterns
-    assert "episodic" in patterns
-    assert isinstance(patterns["seasonal"], PatternStrength)
-    assert isinstance(patterns["episodic"], PatternStrength)
+        assert "seasonal" in patterns
+        assert "episodic" in patterns
+        assert isinstance(patterns["seasonal"], PatternStrength)
+        assert isinstance(patterns["episodic"], PatternStrength)
     
-    def test_calibrate(self):
+        def test_calibrate(self):
         """Test calibration of the model."""
         # Create observed data
         observed_data = {

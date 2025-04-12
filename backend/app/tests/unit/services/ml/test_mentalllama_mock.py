@@ -21,39 +21,39 @@ def mock_service():
     return service
 
 
-@pytest.mark.db_required()
-def test_initialization_success():
+    @pytest.mark.db_required()
+    def test_initialization_success():
     """Test successful initialization of mock service."""
     # Arrange
     service = MockMentaLLaMA()
-    
+
     # Act
     service.initialize({"provider": "mock"})
-    
+
     # Assert
     assert service.is_healthy() is True
     assert service._initialized is True
     assert len(service._available_models) > 0
 
 
-def test_initialization_missing_provider():
+    def test_initialization_missing_provider():
     """Test initialization with missing provider."""
     # Arrange
     service = MockMentaLLaMA()
-    
+
     # Act & Assert
     with pytest.raises(InvalidConfigurationError):
         service.initialize({})
 
 
-def test_process(mock_service):
+        def test_process(mock_service):
     """Test general processing functionality."""
     # Arrange
     prompt = "How are you feeling today?"
-    
+
     # Act
     result = mock_service.process(prompt=prompt)
-    
+
     # Assert
     assert result is not None
     assert isinstance(result, dict)
@@ -69,14 +69,14 @@ def test_process(mock_service):
     assert result["provider"] == "mock"
 
 
-def test_depression_detection_positive(mock_service):
+    def test_depression_detection_positive(mock_service):
     """Test depression detection with positive indicators."""
     # Arrange
     text = "I feel very depressed and hopeless. I don't enjoy anything anymore."
-    
+
     # Act
     result = mock_service.depression_detection(text=text)
-    
+
     # Assert
     assert result is not None
     assert isinstance(result, dict)
@@ -88,14 +88,14 @@ def test_depression_detection_positive(mock_service):
     assert "rationale" in result
 
 
-def test_depression_detection_negative(mock_service):
+    def test_depression_detection_negative(mock_service):
     """Test depression detection with negative indicators."""
     # Arrange
     text = "I'm feeling good today. Everything is going well."
-    
+
     # Act
     result = mock_service.depression_detection(text=text)
-    
+
     # Assert
     assert result is not None
     assert isinstance(result, dict)
@@ -104,14 +104,14 @@ def test_depression_detection_negative(mock_service):
     assert "key_indicators" in result
 
 
-def test_risk_assessment_high(mock_service):
+    def test_risk_assessment_high(mock_service):
     """Test risk assessment with high risk indicators."""
     # Arrange
     text = "I have a plan to end my life. I've decided I can't go on like this."
-    
+
     # Act
     result = mock_service.risk_assessment(text=text)
-    
+
     # Assert
     assert result is not None
     assert isinstance(result, dict)
@@ -124,14 +124,14 @@ def test_risk_assessment_high(mock_service):
     assert "rationale" in result
 
 
-def test_risk_assessment_low(mock_service):
+    def test_risk_assessment_low(mock_service):
     """Test risk assessment with low risk indicators."""
     # Arrange
     text = "I'm a bit stressed but overall doing fine. No thoughts of harming myself."
-    
+
     # Act
     result = mock_service.risk_assessment(text=text)
-    
+
     # Assert
     assert result is not None
     assert isinstance(result, dict)
@@ -142,14 +142,14 @@ def test_risk_assessment_low(mock_service):
     assert "rationale" in result
 
 
-def test_sentiment_analysis_positive(mock_service):
+    def test_sentiment_analysis_positive(mock_service):
     """Test sentiment analysis with positive sentiment."""
     # Arrange
     text = "I feel happy and excited about the progress I'm making. I'm grateful for all the support."
-    
+
     # Act
     result = mock_service.sentiment_analysis(text=text)
-    
+
     # Assert
     assert result is not None
     assert isinstance(result, dict)
@@ -163,14 +163,14 @@ def test_sentiment_analysis_positive(mock_service):
     assert isinstance(result["emotion_distribution"], dict)
 
 
-def test_sentiment_analysis_negative(mock_service):
+    def test_sentiment_analysis_negative(mock_service):
     """Test sentiment analysis with negative sentiment."""
     # Arrange
     text = "I'm feeling unhappy and frustrated with everything. Nothing is working out."
-    
+
     # Act
     result = mock_service.sentiment_analysis(text=text)
-    
+
     # Assert
     assert result is not None
     assert isinstance(result, dict)
@@ -182,14 +182,14 @@ def test_sentiment_analysis_negative(mock_service):
     assert "emotion_distribution" in result
 
 
-def test_wellness_dimensions(mock_service):
+    def test_wellness_dimensions(mock_service):
     """Test wellness dimensions analysis."""
     # Arrange
     text = "I'm doing well at work but struggling with my personal relationships. I exercise regularly but feel spiritually disconnected."
-    
+
     # Act
     result = mock_service.wellness_dimensions(text=text)
-    
+
     # Assert
     assert result is not None
     assert isinstance(result, dict)
@@ -203,35 +203,37 @@ def test_wellness_dimensions(mock_service):
     assert isinstance(result["recommendations"], list)
 
 
-def test_service_shutdown(mock_service):
+    def test_service_shutdown(mock_service):
     """Test service shutdown functionality."""
     # Act
     mock_service.shutdown()
-    
+
     # Assert
     assert mock_service._initialized is False
     assert mock_service._config is None
-    assert mock_service._available_models  ==  {}
+    assert mock_service._available_models == {}
 
 
-def test_mock_response_parsing():
+    def test_mock_response_parsing():
     """Test parsing of mock service responses."""
     # Arrange
     service = MockMentaLLaMA()
     service.initialize({"provider": "mock"})
-    
+
     # Sample response from the mock service
-    mock_response = json.dumps({
-        "depression_indicated": True,
-        "key_indicators": ["persistent sadness", "loss of interest"],
-        "severity": "moderate",
-        "rationale": "Test rationale",
-        "confidence": 0.85
-    })
-    
+    mock_response = json.dumps(
+        {
+            "depression_indicated": True,
+            "key_indicators": ["persistent sadness", "loss of interest"],
+            "severity": "moderate",
+            "rationale": "Test rationale",
+            "confidence": 0.85,
+        }
+    )
+
     # Act
     parsed = service._parse_depression_detection_result(mock_response)
-    
+
     # Assert
     assert parsed is not None
     assert isinstance(parsed, dict)
@@ -250,7 +252,7 @@ def test_generate_with_invalid_input(mock_service):
         prompt="",  # Empty prompt
         model="invalid-model",  # Invalid model
     )
-    
+
     # Assert
     assert result is not None
     assert "text" in result

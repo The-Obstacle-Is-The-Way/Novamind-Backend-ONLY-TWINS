@@ -181,12 +181,12 @@ class TestDigitalTwinIntegrationService:
             "gender": "male",
             "conditions": ["anxiety", "depression"],
             "medications": ["fluoxetine"]
-(        })
+        (        })
         return repo
 
-    @pytest.fixture
-    def integration_service(self, mock_symptom_forecasting_service, mock_biometric_correlation_service, ):
-(                           mock_medication_response_service, mock_patient_repository):
+        @pytest.fixture
+        def integration_service(self, mock_symptom_forecasting_service, mock_biometric_correlation_service, ):
+        (                           mock_medication_response_service, mock_patient_repository):
         """Create a DigitalTwinIntegrationService with mock dependencies."""
         
     return DigitalTwinIntegrationService()
@@ -194,23 +194,23 @@ class TestDigitalTwinIntegrationService:
     biometric_correlation_service=mock_biometric_correlation_service,
     medication_response_service=mock_medication_response_service,
     patient_repository=mock_patient_repository
-(    )
+    (    )
 
     @pytest.fixture
     def sample_patient_id(self):
         """Create a sample patient ID."""
         
-    return str(uuid4())
+        return str(uuid4())
 
-    async def test_generate_comprehensive_insights_all_services(self, integration_service, sample_patient_id):
-    """Test that generate_comprehensive_insights calls all services and combines results."""
+        async def test_generate_comprehensive_insights_all_services(self, integration_service, sample_patient_id):
+        """Test that generate_comprehensive_insights calls all services and combines results."""
         # Setup
-    options = {
-    "include_symptom_forecast": True,
-    "include_biometric_correlations": True,
-    "include_medication_predictions": True,
-    "forecast_days": 14,
-    "biometric_lookback_days": 30
+        options = {
+        "include_symptom_forecast": True,
+        "include_biometric_correlations": True,
+        "include_medication_predictions": True,
+        "forecast_days": 14,
+        "biometric_lookback_days": 30
     }
 
         # Execute
@@ -230,14 +230,14 @@ class TestDigitalTwinIntegrationService:
     integration_service.medication_response_service.predict_medication_response.assert_called_once()
 
     async def test_generate_comprehensive_insights_partial_services(self, integration_service, sample_patient_id):
-    """Test that generate_comprehensive_insights only calls requested services."""
+        """Test that generate_comprehensive_insights only calls requested services."""
         # Setup
-    options = {
-    "include_symptom_forecast": True,
-    "include_biometric_correlations": False,
-    "include_medication_predictions": True,
-    "forecast_days": 14,
-    "biometric_lookback_days": 30
+        options = {
+        "include_symptom_forecast": True,
+        "include_biometric_correlations": False,
+        "include_medication_predictions": True,
+        "forecast_days": 14,
+        "biometric_lookback_days": 30
     }
 
         # Execute
@@ -257,14 +257,14 @@ class TestDigitalTwinIntegrationService:
     integration_service.biometric_correlation_service.analyze_correlations.assert _not_called()
 
     async def test_generate_comprehensive_insights_handles_service_errors(self, integration_service, sample_patient_id):
-    """Test that generate_comprehensive_insights handles service errors gracefully."""
+        """Test that generate_comprehensive_insights handles service errors gracefully."""
         # Setup
-    integration_service.symptom_forecasting_service.generate_forecast.side_effect = Exception("Service error")
+        integration_service.symptom_forecasting_service.generate_forecast.side_effect = Exception("Service error")
         
-    options = {
-    "include_symptom_forecast": True,
-    "include_biometric_correlations": True,
-    "include_medication_predictions": True
+        options = {
+        "include_symptom_forecast": True,
+        "include_biometric_correlations": True,
+        "include_medication_predictions": True
     }
 
         # Execute
@@ -281,18 +281,18 @@ class TestDigitalTwinIntegrationService:
     assert "symptom_forecast" in result["errors"]
 
     async def test_generate_integrated_recommendations(self, integration_service, sample_patient_id):
-    """Test that _generate_integrated_recommendations creates meaningful recommendations."""
+        """Test that _generate_integrated_recommendations creates meaningful recommendations."""
         # Setup
-    insights = {
-    "patient_id": sample_patient_id,
-    "symptom_forecast": {
-    "reliability": "high",
-    "forecasts": {"anxiety": [4.2, 4.0, 3.8, 3.5]},
-    "confidence_intervals": {
-    "95%": {
-    "anxiety": {
-    "lower": [3.8, 3.6, 3.4, 3.1],
-    "upper": [4.6, 4.4, 4.2, 3.9]
+        insights = {
+        "patient_id": sample_patient_id,
+        "symptom_forecast": {
+        "reliability": "high",
+        "forecasts": {"anxiety": [4.2, 4.0, 3.8, 3.5]},
+        "confidence_intervals": {
+        "95%": {
+        "anxiety": {
+        "lower": [3.8, 3.6, 3.4, 3.1],
+        "upper": [4.6, 4.4, 4.2, 3.9]
     }
     }
     }
@@ -344,33 +344,33 @@ class TestDigitalTwinIntegrationService:
         
         # Check recommendation structure
     for rec in recommendations:
-    assert "type" in rec
-    assert "recommendation" in rec
-    assert "confidence" in rec
-    assert "supporting_evidence" in rec
-    assert isinstance(rec["supporting_evidence"], list)
+        assert "type" in rec
+        assert "recommendation" in rec
+        assert "confidence" in rec
+        assert "supporting_evidence" in rec
+        assert isinstance(rec["supporting_evidence"], list)
 
         # Verify different types of recommendations are included
-    rec_types = [rec["type"] for rec in recommendations]
-    assert "medication" in rec_types
-    assert "biometric_monitoring" in rec_types or "behavioral" in rec_types
+        rec_types = [rec["type"] for rec in recommendations]
+        assert "medication" in rec_types
+        assert "biometric_monitoring" in rec_types or "behavioral" in rec_types
 
-    async def test_get_patient_data(self, integration_service, sample_patient_id, mock_patient_repository):
-    """Test that _get_patient_data retrieves patient data correctly."""
+        async def test_get_patient_data(self, integration_service, sample_patient_id, mock_patient_repository):
+        """Test that _get_patient_data retrieves patient data correctly."""
         # Execute
-    patient_data = await integration_service._get_patient_data(sample_patient_id)
+        patient_data = await integration_service._get_patient_data(sample_patient_id)
 
         # Verify
-    assert patient_data is not None
-    mock_patient_repository.get_by_id.assert_called_once_with(sample_patient_id)
+        assert patient_data is not None
+        mock_patient_repository.get_by_id.assert_called_once_with(sample_patient_id)
 
-    async def test_get_patient_data_handles_missing_patient(self, integration_service, sample_patient_id, mock_patient_repository):
-    """Test that _get_patient_data handles missing patient data gracefully."""
+        async def test_get_patient_data_handles_missing_patient(self, integration_service, sample_patient_id, mock_patient_repository):
+        """Test that _get_patient_data handles missing patient data gracefully."""
         # Setup
-    mock_patient_repository.get_by_id.return_value = None
+        mock_patient_repository.get_by_id.return_value = None
 
         # Execute and verify exception is raised
-    with pytest.raises(ValueError) as excinfo:
-    await integration_service._get_patient_data(sample_patient_id)
+        with pytest.raises(ValueError) as excinfo:
+        await integration_service._get_patient_data(sample_patient_id)
         
-    assert "Patient not found" in str(excinfo.value)
+        assert "Patient not found" in str(excinfo.value)

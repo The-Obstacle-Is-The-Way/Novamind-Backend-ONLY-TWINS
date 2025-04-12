@@ -11,45 +11,46 @@ import json
 import asyncio
 from typing import Any, Dict, List, Optional, AsyncGenerator, Callable, Generator
 
+
 # Database fixtures
 @pytest.fixture
 async def test_db_connection() -> AsyncGenerator[Any, None]:
     """
     Creates a test database connection.
-    
+
     Yields:
         A database connection for testing.
-    """
-    # This would typically use SQLAlchemy, Motor, or another database client
-    # Mock implementation for structure
-    db_config = {
+        """
+        # This would typically use SQLAlchemy, Motor, or another database client
+        # Mock implementation for structure
+        db_config = {
         "host": os.environ.get("TEST_DB_HOST", "localhost"),
         "port": int(os.environ.get("TEST_DB_PORT", "5432")),
         "user": os.environ.get("TEST_DB_USER", "test_user"),
         "password": os.environ.get("TEST_DB_PASSWORD", "test_password"),
-        "database": os.environ.get("TEST_DB_NAME", "test_db")
+        "database": os.environ.get("TEST_DB_NAME", "test_db"),
     }
-    
+
     # Simulate DB connection
     connection = {"connected": True, "config": db_config}
-    
+
     try:
         yield connection
-    finally:
+        finally:
         # Cleanup would happen here
         pass
 
 
-@pytest.fixture
-def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
+        @pytest.fixture
+        def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
     """
     Provides mock database data for tests.
-    
+
     Returns:
         Dictionary of mock collections/tables with test data.
-    """
-    
-    return {
+        """
+
+        return {
         "patients": [
             {
                 "id": "p-12345",
@@ -57,7 +58,7 @@ def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
                 "age": 30,
                 "gender": "F",
                 "medical_history": ["Anxiety", "Depression"],
-                "created_at": "2025-01-15T10:30:00Z"
+                "created_at": "2025-01-15T10:30:00Z",
             },
             {
                 "id": "p-67890",
@@ -65,15 +66,15 @@ def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
                 "age": 45,
                 "gender": "M",
                 "medical_history": ["Bipolar Disorder"],
-                "created_at": "2025-02-20T14:15:00Z"
-            }
+                "created_at": "2025-02-20T14:15:00Z",
+            },
         ],
         "providers": [
             {
                 "id": "prov-54321",
                 "name": "Dr. Test Provider",
                 "specialization": "Psychiatry",
-                "license_number": "LP12345"
+                "license_number": "LP12345",
             }
         ],
         "appointments": [
@@ -82,7 +83,7 @@ def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
                 "patient_id": "p-12345",
                 "provider_id": "prov-54321",
                 "datetime": "2025-04-15T10:00:00Z",
-                "status": "scheduled"
+                "status": "scheduled",
             }
         ],
         "digital_twins": [
@@ -92,11 +93,11 @@ def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
                 "neurotransmitter_levels": {
                     "serotonin": 0.75,
                     "dopamine": 0.65,
-                    "norepinephrine": 0.70
+                    "norepinephrine": 0.70,
                 },
-                "last_updated": "2025-04-10T08:45:00Z"
+                "last_updated": "2025-04-10T08:45:00Z",
             }
-        ]
+        ],
     }
 
 
@@ -105,30 +106,30 @@ def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
 def test_client() -> Generator[Any, None, None]:
     """
     Creates a test client for API testing.
-    
+
     Yields:
         A FastAPI TestClient instance.
-    """
-    # This would typically use FastAPI's TestClient
-    # Mock implementation for structure
-    from unittest.mock import MagicMock
-    
-    client = MagicMock()
-    client.base_url = "http://test-server"
-    
-    yield client
+        """
+        # This would typically use FastAPI's TestClient
+        # Mock implementation for structure
+        from unittest.mock import MagicMock
+
+        client = MagicMock()
+        client.base_url = "http://test-server"
+
+        yield client
 
 
-@pytest.fixture
-def auth_headers() -> Dict[str, str]:
+        @pytest.fixture
+        def auth_headers() -> Dict[str, str]:
     """
     Provides authentication headers for authenticated API requests.
-    
+
     Returns:
         Dictionary with Authorization header.
-    """
-    
-    return {
+        """
+
+        return {
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXIiLCJpYXQiOjE2MTcxOTMxNDIsImV4cCI6MTYxNzI3OTU0Mn0.mock-token-signature"
     }
 
@@ -138,12 +139,15 @@ def auth_headers() -> Dict[str, str]:
 def mock_mentallama_api() -> Any:
     """
     Provides a mock for the MentaLLama API service.
-    
+
     Returns:
         A mock MentaLLama API client.
-    """
-    class MockMentaLLamaAPI:
-        async def predict(self, patient_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+
+        class MockMentaLLamaAPI:
+        async def predict(
+            self, patient_id: str, data: Dict[str, Any]
+        ) -> Dict[str, Any]:
             return {
                 "patient_id": patient_id,
                 "prediction": {
@@ -152,12 +156,12 @@ def mock_mentallama_api() -> Any:
                     "confidence": 0.80,
                     "recommended_interventions": [
                         "CBT therapy",
-                        "Mindfulness practice"
-                    ]
+                        "Mindfulness practice",
+                    ],
                 },
-                "model_version": "mentallama-v1.2.0"
+                "model_version": "mentallama-v1.2.0",
             }
-            
+
         async def get_model_info(self) -> Dict[str, Any]:
             return {
                 "name": "MentaLLama",
@@ -167,10 +171,10 @@ def mock_mentallama_api() -> Any:
                 "supported_features": [
                     "anxiety_prediction",
                     "depression_prediction",
-                    "intervention_recommendation"
-                ]
+                    "intervention_recommendation",
+                ],
             }
-    
+
     return MockMentaLLamaAPI()
 
 
@@ -178,36 +182,39 @@ def mock_mentallama_api() -> Any:
 def mock_aws_service() -> Any:
     """
     Provides a mock for AWS services like S3, SageMaker, etc.
-    
+
     Returns:
         A mock AWS service client.
-    """
-    class MockAWSService:
-        def invoke_endpoint(self, endpoint_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+
+        class MockAWSService:
+        def invoke_endpoint(
+            self, endpoint_name: str, data: Dict[str, Any]
+        ) -> Dict[str, Any]:
             return {
                 "result": {
                     "prediction": [0.65, 0.35, 0.80],
                     "processing_time_ms": 120,
-                    "model_version": "xgboost-v2.1"
+                    "model_version": "xgboost-v2.1",
                 },
                 "success": True,
-                "request_id": "aws-req-12345"
+                "request_id": "aws-req-12345",
             }
-            
+
         def upload_file(self, file_path: str, bucket: str, key: str) -> bool:
             return True
-            
-        def download_file(self, bucket: str, key: str, local_path: str) -> bool:
+
+            def download_file(self, bucket: str, key: str, local_path: str) -> bool:
             # Simulate creating a file
-            with open(local_path, 'w') as f:
+            with open(local_path, "w") as f:
                 f.write('{"mock": "data"}')
-            return True
-    
-    return MockAWSService()
+                return True
+
+                return MockAWSService()
 
 
-@pytest.fixture
-def integration_fixture():
+                @pytest.fixture
+                def integration_fixture():
     """Basic fixture for integration tests."""
-    
+
     return "integration_fixture"

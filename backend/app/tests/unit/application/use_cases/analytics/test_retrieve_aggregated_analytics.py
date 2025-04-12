@@ -25,48 +25,48 @@ def mock_analytics_repository():
         if aggregate_type == "error_type":
             raise ValueError("Simulated error in aggregation")
             
-        if not dimensions or "event_type" in dimensions:
+            if not dimensions or "event_type" in dimensions:
             return [
                 AnalyticsAggregate()
                     dimensions={"event_type": "page_view"},
                     metrics={"count": 125, "avg_duration": 45.3},
                     time_period={"start": start_time, "end": end_time}
-(                ),
+            (                ),
                 AnalyticsAggregate()
                     dimensions={"event_type": "feature_usage"},
                     metrics={"count": 83, "avg_duration": 120.7},
                     time_period={"start": start_time, "end": end_time}
-(                )
+            (                )
             ]
-        elif "user_role" in dimensions:
+            elif "user_role" in dimensions:
             return [
                 AnalyticsAggregate()
                     dimensions={"user_role": "provider"},
                     metrics={"count": 210, "avg_actions": 15.2},
                     time_period={"start": start_time, "end": end_time}
-(                ),
+            (                ),
                 AnalyticsAggregate()
                     dimensions={"user_role": "admin"},
                     metrics={"count": 45, "avg_actions": 22.5},
                     time_period={"start": start_time, "end": end_time}
-(                )
+            (                )
             ]
-        else:
+            else:
             # Default case
             return [
                 AnalyticsAggregate()
                     dimensions={"dimension": "default"},
                     metrics={"count": 100},
                     time_period={"start": start_time, "end": end_time}
-(                )
+            (                )
             ]
     
-    repo.get_aggregates = get_aggregates_mock
-    return repo
+            repo.get_aggregates = get_aggregates_mock
+            return repo
 
 
-@pytest.fixture
-def mock_cache_service():
+            @pytest.fixture
+            def mock_cache_service():
     """Create a mock cache service for testing."""
     cache = AsyncMock()
     
@@ -76,21 +76,21 @@ def mock_cache_service():
     async def get_mock(key):
         return cache_data.get(key)
     
-    async def set_mock(key, value, ttl=None):
+        async def set_mock(key, value, ttl=None):
         cache_data[key] = value
         return True
     
-    cache.get = get_mock
-    cache.set = set_mock
+        cache.get = get_mock
+        cache.set = set_mock
     
-    # Attach the cache data for test inspection
-    cache._cache_data = cache_data
+        # Attach the cache data for test inspection
+        cache._cache_data = cache_data
     
-    return cache
+        return cache
 
 
-@pytest.fixture
-def use_case(mock_analytics_repository, mock_cache_service):
+        @pytest.fixture
+        def use_case(mock_analytics_repository, mock_cache_service):
     """Create the use case with mocked dependencies."""
     with patch('app.core.utils.logging.get_logger') as mock_logger:
         mock_logger_instance = MagicMock()
@@ -99,96 +99,96 @@ def use_case(mock_analytics_repository, mock_cache_service):
         use_case = RetrieveAggregatedAnalyticsUseCase()
             analytics_repository=mock_analytics_repository,
             cache_service=mock_cache_service
-(        )
+        (        )
         
         # Attach the mock logger for assert ions
         use_case._logger = mock_logger_instance
         return use_case
 
 
-@pytest.mark.db_required()
-class TestRetrieveAggregatedAnalyticsUseCase:
+        @pytest.mark.db_required()
+        class TestRetrieveAggregatedAnalyticsUseCase:
     """Test suite for the RetrieveAggregatedAnalyticsUseCase."""
     
     @pytest.mark.asyncio()
     async def test_execute_with_basic_parameters(self, use_case, mock_analytics_repository):
-    """
-    Test retrieving aggregated data with basic parameters.
-    """
+        """
+        Test retrieving aggregated data with basic parameters.
+        """
         # Arrange
-    aggregate_type = "count"
-    dimensions = ["event_type"]
+        aggregate_type = "count"
+        dimensions = ["event_type"]
         
         # Act
-    result = await use_case.execute()
-    aggregate_type=aggregate_type,
-    dimensions=dimensions
-(    )
+        result = await use_case.execute()
+        aggregate_type=aggregate_type,
+        dimensions=dimensions
+        (    )
         
         # Assert
-    assert len(result) == 2
-    assert result[0].dimensions["event_type"] == "page_view"
-    assert result[0].metrics["count"] == 125
-    assert result[1].dimensions["event_type"] == "feature_usage"
+        assert len(result) == 2
+        assert result[0].dimensions["event_type"] == "page_view"
+        assert result[0].metrics["count"] == 125
+        assert result[1].dimensions["event_type"] == "feature_usage"
         
         # Verify repository was called with correct parameters
-    mock_analytics_repository.get_aggregates.assert_called_once()
-    call_args = mock_analytics_repository.get_aggregates.call_args[1]
-    assert call_args["aggregate_type"] == aggregate_type
-    assert call_args["dimensions"] == dimensions
+        mock_analytics_repository.get_aggregates.assert_called_once()
+        call_args = mock_analytics_repository.get_aggregates.call_args[1]
+        assert call_args["aggregate_type"] == aggregate_type
+        assert call_args["dimensions"] == dimensions
         
         # Verify appropriate logging
-    use_case._logger.info.assert _any_call()
-    f"Retrieving {aggregate_type} analytics",
-    {
-    "dimensions": dimensions,
-    "time_range": f"{call_args['start_time']} to {call_args['end_time']}"
+        use_case._logger.info.assert _any_call()
+        f"Retrieving {aggregate_type} analytics",
+        {
+        "dimensions": dimensions,
+        "time_range": f"{call_args['start_time']} to {call_args['end_time']}"
     }
 (    )
     
     @pytest.mark.asyncio()
     async def test_execute_with_filters_and_time_range(self, use_case, mock_analytics_repository):
-    """
-    Test retrieving data with filters and custom time range.
-    """
+        """
+        Test retrieving data with filters and custom time range.
+        """
         # Arrange
-    aggregate_type = "avg"
-    dimensions = ["user_role"]
-    filters = {"platform": "web", "browser": "chrome"}
-    now = datetime.now(UTC)
-    week_ago = now - timedelta(days=7)
-    time_range = {"start": week_ago, "end": now}
+        aggregate_type = "avg"
+        dimensions = ["user_role"]
+        filters = {"platform": "web", "browser": "chrome"}
+        now = datetime.now(UTC)
+        week_ago = now - timedelta(days=7)
+        time_range = {"start": week_ago, "end": now}
         
         # Act
-    result = await use_case.execute()
-    aggregate_type=aggregate_type,
-    dimensions=dimensions,
-    filters=filters,
-    time_range=time_range
-(    )
+        result = await use_case.execute()
+        aggregate_type=aggregate_type,
+        dimensions=dimensions,
+        filters=filters,
+        time_range=time_range
+        (    )
         
         # Assert
-    assert len(result) == 2
-    assert "user_role" in result[0].dimensions
+        assert len(result) == 2
+        assert "user_role" in result[0].dimensions
         
         # Verify repository was called with correct parameters
-    call_args = mock_analytics_repository.get_aggregates.call_args[1]
-    assert call_args["aggregate_type"] == aggregate_type
-    assert call_args["dimensions"] == dimensions
-    assert "platform" in call_args["filters"]
-    assert "browser" in call_args["filters"]
-    assert call_args["start_time"] == week_ago
-    assert call_args["end_time"] == now
+        call_args = mock_analytics_repository.get_aggregates.call_args[1]
+        assert call_args["aggregate_type"] == aggregate_type
+        assert call_args["dimensions"] == dimensions
+        assert "platform" in call_args["filters"]
+        assert "browser" in call_args["filters"]
+        assert call_args["start_time"] == week_ago
+        assert call_args["end_time"] == now
     
-    @pytest.mark.asyncio()
-    async def test_time_range_string_handling(self, use_case, mock_analytics_repository):
-    """
-    Test handling of string format time ranges.
-    """
+        @pytest.mark.asyncio()
+        async def test_time_range_string_handling(self, use_case, mock_analytics_repository):
+        """
+        Test handling of string format time ranges.
+        """
         # Arrange
-    time_range = {
-    "start": "2025-03-15T00:00:00",
-    "end": "2025-03-30T00:00:00"
+        time_range = {
+        "start": "2025-03-15T00:00:00",
+        "end": "2025-03-30T00:00:00"
     }
         
         # Act
@@ -209,13 +209,13 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     
     @pytest.mark.asyncio()
     async def test_invalid_time_range_handling(self, use_case, mock_analytics_repository):
-    """
-    Test handling of invalid time ranges.
-    """
+        """
+        Test handling of invalid time ranges.
+        """
         # Arrange - invalid time strings and reversed dates
-    time_range = {
-    "start": "2025-03-30T00:00:00",  # Later than end (will be swapped)
-    "end": "not-a-date"  # Invalid date string
+        time_range = {
+        "start": "2025-03-30T00:00:00",  # Later than end (will be swapped)
+        "end": "not-a-date"  # Invalid date string
     }
         
         # Act
@@ -235,35 +235,35 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     
     @pytest.mark.asyncio()
     async def test_dimension_sanitization(self, use_case, mock_analytics_repository):
-    """
-    Test sanitization of dimension parameters.
-    """
+        """
+        Test sanitization of dimension parameters.
+        """
         # Arrange - include valid and invalid dimensions
-    dimensions = ["event_type", "invalid_dimension", "user_role"]
+        dimensions = ["event_type", "invalid_dimension", "user_role"]
         
         # Act
-    result = await use_case.execute()
-    aggregate_type="count",
-    dimensions=dimensions
-(    )
+        result = await use_case.execute()
+        aggregate_type="count",
+        dimensions=dimensions
+        (    )
         
         # Assert - should filter out invalid dimensions
-    call_args = mock_analytics_repository.get_aggregates.call_args[1]
-    assert "event_type" in call_args["dimensions"]
-    assert "user_role" in call_args["dimensions"]
-    assert "invalid_dimension" not in call_args["dimensions"]
+        call_args = mock_analytics_repository.get_aggregates.call_args[1]
+        assert "event_type" in call_args["dimensions"]
+        assert "user_role" in call_args["dimensions"]
+        assert "invalid_dimension" not in call_args["dimensions"]
     
-    @pytest.mark.asyncio()
-    async def test_filter_sanitization(self, use_case, mock_analytics_repository):
-    """
-    Test sanitization of filter parameters.
-    """
+        @pytest.mark.asyncio()
+        async def test_filter_sanitization(self, use_case, mock_analytics_repository):
+        """
+        Test sanitization of filter parameters.
+        """
         # Arrange - include valid and invalid filters, and different types
-    filters = {
-    "event_type": "page_view",  # Valid
-    "user_role": "admin",  # Valid
-    "patient_name": "John Doe",  # PHI - should be filtered out
-    "platform": 123  # Wrong type, should be converted to string
+        filters = {
+        "event_type": "page_view",  # Valid
+        "user_role": "admin",  # Valid
+        "patient_name": "John Doe",  # PHI - should be filtered out
+        "platform": 123  # Wrong type, should be converted to string
     }
         
         # Act
@@ -283,161 +283,161 @@ class TestRetrieveAggregatedAnalyticsUseCase:
     
     @pytest.mark.asyncio()
     async def test_caching_behavior(self, use_case, mock_analytics_repository, mock_cache_service):
-    """
-    Test caching of aggregation results.
-    """
+        """
+        Test caching of aggregation results.
+        """
         # Arrange
-    aggregate_type = "count"
-    dimensions = ["event_type"]
+        aggregate_type = "count"
+        dimensions = ["event_type"]
         
         # Act - first call should hit the repository
-    result1 = await use_case.execute()
-    aggregate_type=aggregate_type,
-    dimensions=dimensions,
-    use_cache=True
-(    )
+        result1 = await use_case.execute()
+        aggregate_type=aggregate_type,
+        dimensions=dimensions,
+        use_cache=True
+        (    )
         
         # Repository should have been called
-    assert mock_analytics_repository.get_aggregates.call_count  ==  1
+        assert mock_analytics_repository.get_aggregates.call_count  ==  1
         
         # Get the cache key that was used
-    cache_keys = list(mock_cache_service._cache_data.keys())
-    assert len(cache_keys) == 1
-    cache_key = cache_keys[0]
+        cache_keys = list(mock_cache_service._cache_data.keys())
+        assert len(cache_keys) == 1
+        cache_key = cache_keys[0]
         
         # Act - second call with same parameters should use cache
-    result2 = await use_case.execute()
-    aggregate_type=aggregate_type,
-    dimensions=dimensions,
-    use_cache=True
-(    )
+        result2 = await use_case.execute()
+        aggregate_type=aggregate_type,
+        dimensions=dimensions,
+        use_cache=True
+        (    )
         
         # Repository should not have been called again
-    assert mock_analytics_repository.get_aggregates.call_count  ==  1
+        assert mock_analytics_repository.get_aggregates.call_count  ==  1
         
         # Cache retrieval should have been logged
-    use_case._logger.info.assert _any_call()
-    f"Retrieved cached analytics for {aggregate_type}",
-    {"dimensions": dimensions}
-(    )
+        use_case._logger.info.assert _any_call()
+        f"Retrieved cached analytics for {aggregate_type}",
+        {"dimensions": dimensions}
+        (    )
     
-    @pytest.mark.asyncio()
-    async def test_cache_ttl_determination(self, use_case):
-    """
-    Test different TTL values based on query parameters.
-    """
+        @pytest.mark.asyncio()
+        async def test_cache_ttl_determination(self, use_case):
+        """
+        Test different TTL values based on query parameters.
+        """
         # Historical data (older than 1 day)
-    now = datetime.now(UTC)
-    historical_start = now - timedelta(days=10)
-    historical_end = now - timedelta(days=2)
+        now = datetime.now(UTC)
+        historical_start = now - timedelta(days=10)
+        historical_end = now - timedelta(days=2)
         
-    historical_ttl = use_case._get_cache_ttl()
-    aggregate_type="count",
-    start_time=historical_start,
-    end_time=historical_end
-(    )
+        historical_ttl = use_case._get_cache_ttl()
+        aggregate_type="count",
+        start_time=historical_start,
+        end_time=historical_end
+        (    )
         
         # Recent data (within last hour)
-    recent_start = now - timedelta(hours=1)
-    recent_end = now
+        recent_start = now - timedelta(hours=1)
+        recent_end = now
         
-    recent_ttl = use_case._get_cache_ttl()
-    aggregate_type="count",
-    start_time=recent_start,
-    end_time=recent_end
-(    )
+        recent_ttl = use_case._get_cache_ttl()
+        aggregate_type="count",
+        start_time=recent_start,
+        end_time=recent_end
+        (    )
         
         # Regular data (between recent and historical)
-    regular_start = now - timedelta(hours=12)
-    regular_end = now - timedelta(hours=2)
+        regular_start = now - timedelta(hours=12)
+        regular_end = now - timedelta(hours=2)
         
-    regular_ttl = use_case._get_cache_ttl()
-    aggregate_type="count",
-    start_time=regular_start,
-    end_time=regular_end
-(    )
+        regular_ttl = use_case._get_cache_ttl()
+        aggregate_type="count",
+        start_time=regular_start,
+        end_time=regular_end
+        (    )
         
         # Assert appropriate TTLs
-    assert historical_ttl  ==  3600 * 24  # 24 hours for historical data
-    assert recent_ttl  ==  300  # 5 minutes for recent data
-    assert regular_ttl  ==  3600  # 1 hour for regular data
+        assert historical_ttl  ==  3600 * 24  # 24 hours for historical data
+        assert recent_ttl  ==  300  # 5 minutes for recent data
+        assert regular_ttl  ==  3600  # 1 hour for regular data
     
-    @pytest.mark.asyncio()
-    async def test_cache_key_generation(self, use_case):
-    """
-    Test generation of cache keys from parameters.
-    """
+        @pytest.mark.asyncio()
+        async def test_cache_key_generation(self, use_case):
+        """
+        Test generation of cache keys from parameters.
+        """
         # Arrange
-    aggregate_type = "count"
-    dimensions = ["event_type", "user_role"]
-    filters = {"platform": "web", "browser": "chrome"}
-    now = datetime.now(UTC)
-    week_ago = now - timedelta(days=7)
+        aggregate_type = "count"
+        dimensions = ["event_type", "user_role"]
+        filters = {"platform": "web", "browser": "chrome"}
+        now = datetime.now(UTC)
+        week_ago = now - timedelta(days=7)
         
         # Act
-    key = use_case._generate_cache_key()
-    aggregate_type=aggregate_type,
-    dimensions=dimensions,
-    filters=filters,
-    start_time=week_ago,
-    end_time=now
-(    )
+        key = use_case._generate_cache_key()
+        aggregate_type=aggregate_type,
+        dimensions=dimensions,
+        filters=filters,
+        start_time=week_ago,
+        end_time=now
+        (    )
         
         # Assert
-    assert "analytics" in key
-    assert aggregate_type in key
-    assert "event_type-user_role" in key or "user_role-event_type" in key
-    assert "browser:chrome" in key or "platform:web" in key
-    assert "from:" in key
-    assert "to:" in key
+        assert "analytics" in key
+        assert aggregate_type in key
+        assert "event_type-user_role" in key or "user_role-event_type" in key
+        assert "browser:chrome" in key or "platform:web" in key
+        assert "from:" in key
+        assert "to:" in key
         
         # Different parameters should generate different keys
-    key2 = use_case._generate_cache_key()
-    aggregate_type="sum",
-    dimensions=dimensions,
-    filters=filters,
-    start_time=week_ago,
-    end_time=now
-(    )
+        key2 = use_case._generate_cache_key()
+        aggregate_type="sum",
+        dimensions=dimensions,
+        filters=filters,
+        start_time=week_ago,
+        end_time=now
+        (    )
         
-    assert key  !=  key2
+        assert key  !=  key2
     
-    @pytest.mark.asyncio()
-    async def test_empty_dimensions_default(self, use_case, mock_analytics_repository):
-    """
-    Test default dimension when empty list provided.
-    """
+        @pytest.mark.asyncio()
+        async def test_empty_dimensions_default(self, use_case, mock_analytics_repository):
+        """
+        Test default dimension when empty list provided.
+        """
         # Arrange
-    dimensions = []
+        dimensions = []
         
         # Act
-    result = await use_case.execute()
-    aggregate_type="count",
-    dimensions=dimensions
-(    )
+        result = await use_case.execute()
+        aggregate_type="count",
+        dimensions=dimensions
+        (    )
         
         # Assert - should default to ["event_type"]
-    call_args = mock_analytics_repository.get_aggregates.call_args[1]
-    assert call_args["dimensions"] == ["event_type"]
+        call_args = mock_analytics_repository.get_aggregates.call_args[1]
+        assert call_args["dimensions"] == ["event_type"]
     
-    @pytest.mark.asyncio()
-    async def test_very_large_time_range_limit(self, use_case, mock_analytics_repository):
-    """
-    Test limiting of very large time ranges.
-    """
+        @pytest.mark.asyncio()
+        async def test_very_large_time_range_limit(self, use_case, mock_analytics_repository):
+        """
+        Test limiting of very large time ranges.
+        """
         # Arrange - huge time range (2 years)
-    now = datetime.now(UTC)
-    start = now - timedelta(days=730)
-    time_range = {"start": start, "end": now}
+        now = datetime.now(UTC)
+        start = now - timedelta(days=730)
+        time_range = {"start": start, "end": now}
         
         # Act
-    result = await use_case.execute()
-    aggregate_type="count",
-    dimensions=["event_type"],
-    time_range=time_range
-(    )
+        result = await use_case.execute()
+        aggregate_type="count",
+        dimensions=["event_type"],
+        time_range=time_range
+        (    )
         
         # Assert - should be limited to 1 year
-    call_args = mock_analytics_repository.get_aggregates.call_args[1]
-    actual_range = call_args["end_time"] - call_args["start_time"]
-    assert actual_range.days <= 366  # Account for leap years
+        call_args = mock_analytics_repository.get_aggregates.call_args[1]
+        actual_range = call_args["end_time"] - call_args["start_time"]
+        assert actual_range.days <= 366  # Account for leap years

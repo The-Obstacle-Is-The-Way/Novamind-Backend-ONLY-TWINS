@@ -22,38 +22,38 @@ class TestPATServiceFactory(unittest.TestCase):
     def setUp(self) -> None:
         """Set up test fixtures.
 
-    This method runs before each test.
-    """
+        This method runs before each test.
+        """
         # Clear the instance cache before each test
-    PATServiceFactory._instance_cache = {}
+        PATServiceFactory._instance_cache = {}
         # Create patches for PAT implementations
-    self.mock_pat_patcher = patch("app.core.services.ml.pat.factory.MockPATService")
-    self.bedrock_pat_patcher = patch("app.core.services.ml.pat.factory.BedrockPAT")
+        self.mock_pat_patcher = patch("app.core.services.ml.pat.factory.MockPATService")
+        self.bedrock_pat_patcher = patch("app.core.services.ml.pat.factory.BedrockPAT")
 
         # Start the patches
-    self.mock_mock_pat = self.mock_pat_patcher.start()
-    self.mock_bedrock_pat = self.bedrock_pat_patcher.start()
+        self.mock_mock_pat = self.mock_pat_patcher.start()
+        self.mock_bedrock_pat = self.bedrock_pat_patcher.start()
 
         # Configure the mocks
-    self.mock_mock_pat_instance = MagicMock(spec=MockPATService)
-    self.mock_mock_pat.return_value = self.mock_mock_pat_instance
+        self.mock_mock_pat_instance = MagicMock(spec=MockPATService)
+        self.mock_mock_pat.return_value = self.mock_mock_pat_instance
 
-    self.mock_bedrock_pat_instance = MagicMock(spec=BedrockPAT)
-    self.mock_bedrock_pat.return_value = self.mock_bedrock_pat_instance
+        self.mock_bedrock_pat_instance = MagicMock(spec=BedrockPAT)
+        self.mock_bedrock_pat.return_value = self.mock_bedrock_pat_instance
 
-    def tearDown(self) -> None:
+        def tearDown(self) -> None:
         """Clean up after tests.
 
-    This method runs after each test.
-    """
+        This method runs after each test.
+        """
         # Stop all patches
-    self.mock_pat_patcher.stop()
-    self.bedrock_pat_patcher.stop()
+        self.mock_pat_patcher.stop()
+        self.bedrock_pat_patcher.stop()
 
         # Clear the instance cache
-    PATServiceFactory._instance_cache = {}
+        PATServiceFactory._instance_cache = {}
 
-    def test_get_mock_pat(self) -> None:
+        def test_get_mock_pat(self) -> None:
         """Test getting a MockPAT instance."""
         # Arrange
         config = {
@@ -111,12 +111,12 @@ class TestPATServiceFactory(unittest.TestCase):
 
         # Act & Assert
     with self.assertRaises(ValueError) as context:
-    PATServiceFactory.get_pat_service(config)
-    self.assertIn("Unknown PAT provider", str(context.exception))
-    self.mock_mock_pat.assert_not_called()
-    self.mock_bedrock_pat.assert_not_called()
+        PATServiceFactory.get_pat_service(config)
+        self.assertIn("Unknown PAT provider", str(context.exception))
+        self.mock_mock_pat.assert_not_called()
+        self.mock_bedrock_pat.assert_not_called()
 
-    def test_instance_caching(self) -> None:
+        def test_instance_caching(self) -> None:
         """Test that instances are cached."""
         # Arrange
         config = {
@@ -166,11 +166,11 @@ class TestPATServiceFactory(unittest.TestCase):
         mock_cache.__getitem__.side_effect = KeyError
         mock_cache.__setitem__ = MagicMock()
 
-    config = {
-    "provider": "mock",
-    "storage_path": "/tmp/path1",
-    "option1": "value1",
-    "option2": "value2"
+        config = {
+        "provider": "mock",
+        "storage_path": "/tmp/path1",
+        "option1": "value1",
+        "option2": "value2"
     }
 
         # Act

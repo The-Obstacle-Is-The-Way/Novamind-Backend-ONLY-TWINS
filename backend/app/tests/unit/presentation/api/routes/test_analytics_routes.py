@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 
 from app.domain.services.analytics_service import AnalyticsService
 from app.infrastructure.cache.redis_cache import RedisCache # Assuming RedisCache is used
-from app.presentation.api.routes.analytics_endpoints import ()
+from app.presentation.api.routes.analytics_endpoints import
     router,
     get_analytics_service,
     _process_treatment_outcomes,
@@ -83,8 +83,8 @@ def mock_cache_service():
     return mock
 
 
-@pytest.fixture
-def app(mock_analytics_service, mock_cache_service):
+    @pytest.fixture
+    def app(mock_analytics_service, mock_cache_service):
     """Create a FastAPI app with the analytics router for testing."""
     app_instance = FastAPI()
 
@@ -94,47 +94,47 @@ def app(mock_analytics_service, mock_cache_service):
     try:
         from app.infrastructure.cache.redis_cache import get_cache_service
         app_instance.dependency_overrides[get_cache_service] = lambda: mock_cache_service
-    except ImportError:
+        except ImportError:
          print("Warning: get_cache_service dependency not found for override.")
          # If get_cache_service is not the correct dependency name, adjust this override
          pass
 
 
-    # Include the router
-    app_instance.include_router(router)
+        # Include the router
+        app_instance.include_router(router)
 
-    return app_instance
+        return app_instance
 
 
-@pytest.fixture
-def client(app):
+        @pytest.fixture
+        def client(app):
     """Create a TestClient for the app."""
     
     return TestClient(app)
 
 
-@pytest.fixture(autouse=True) # Apply overrides automatically for all tests in module
-def override_dependencies_auto(app, mock_analytics_service, mock_cache_service):
+    @pytest.fixture(autouse=True) # Apply overrides automatically for all tests in module
+    def override_dependencies_auto(app, mock_analytics_service, mock_cache_service):
      """Override dependencies for the FastAPI app."""
      app.dependency_overrides[get_analytics_service] = lambda: mock_analytics_service
      try:
          from app.infrastructure.cache.redis_cache import get_cache_service
          app.dependency_overrides[get_cache_service] = lambda: mock_cache_service
-     except ImportError:
+         except ImportError:
          pass # Ignore if not found
 
-     yield
+         yield
 
-     app.dependency_overrides = {}
+         app.dependency_overrides = {}
 
 
-@pytest.mark.db_required() # Assuming db_required is a valid marker
-class TestAnalyticsEndpoints:
+         @pytest.mark.db_required() # Assuming db_required is a valid marker
+         class TestAnalyticsEndpoints:
     """Tests for analytics endpoints."""
 
     def test_get_patient_treatment_outcomes_async():
         self, client, mock_analytics_service, mock_cache_service
-(    ):
+        (    ):
         """Test patient treatment outcomes endpoint with cache miss."""
         patient_id = str(uuid4())
         start_date = (datetime.now(UTC) - timedelta(days=90)).isoformat()
@@ -144,7 +144,7 @@ class TestAnalyticsEndpoints:
 
     response = client.get()
     f"/api/v1/analytics/patient/{patient_id}/treatment-outcomes?start_date={start_date}"
-(    )
+    (    )
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -160,7 +160,7 @@ class TestAnalyticsEndpoints:
 
     def test_get_patient_treatment_outcomes_cached():
         self, client, mock_analytics_service, mock_cache_service
-(    ):
+        (    ):
         """Test patient treatment outcomes endpoint with cache hit."""
         patient_id = str(uuid4())
         start_date = (datetime.now(UTC) - timedelta(days=90)).isoformat()
@@ -190,7 +190,7 @@ class TestAnalyticsEndpoints:
 
     def test_get_analytics_job_status_completed():
         self, client, mock_cache_service
-(    ):
+        (    ):
         """Test checking status of a completed analytics job."""
         job_id = "test-job-id"
         status_data = {
@@ -214,7 +214,7 @@ class TestAnalyticsEndpoints:
 
     def test_get_analytics_job_status_not_found():
         self, client, mock_cache_service
-(    ):
+        (    ):
         """Test checking status of a non-existent analytics job."""
         job_id = "nonexistent-job-id"
 
@@ -234,7 +234,7 @@ class TestAnalyticsEndpoints:
 
     def test_get_practice_metrics():
         self, client, mock_analytics_service, mock_cache_service
-(    ):
+        (    ):
         """Test practice metrics endpoint."""
         # Set cache miss
         mock_cache_service.get.return_value = None
@@ -253,7 +253,7 @@ class TestAnalyticsEndpoints:
 
     def test_get_diagnosis_distribution():
         self, client, mock_analytics_service, mock_cache_service
-(    ):
+        (    ):
         """Test diagnosis distribution endpoint."""
         # This endpoint returns direct results even on cache miss
         expected_data = [
@@ -277,7 +277,7 @@ class TestAnalyticsEndpoints:
 
     def test_get_medication_effectiveness():
         self, client, mock_analytics_service, mock_cache_service
-(    ):
+        (    ):
         """Test medication effectiveness endpoint."""
         medication_name = "TestMed"
 
@@ -299,7 +299,7 @@ class TestAnalyticsEndpoints:
 
     def test_get_treatment_comparison():
         self, client, mock_analytics_service, mock_cache_service
-(    ):
+        (    ):
         """Test treatment comparison endpoint."""
         diagnosis_code = "F32.1"
         treatments = ["CBT", "Medication"]
@@ -309,7 +309,7 @@ class TestAnalyticsEndpoints:
 
     response = client.get()
     f"/api/v1/analytics/treatment-comparison/{diagnosis_code}?treatments={treatments[0]}&treatments={treatments[1]}"
-(    )
+    (    )
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -325,7 +325,7 @@ class TestAnalyticsEndpoints:
 
     def test_get_patient_risk_stratification():
         self, client, mock_analytics_service, mock_cache_service
-(    ):
+        (    ):
         """Test patient risk stratification endpoint."""
         # This endpoint returns direct results even on cache miss
         expected_data = [
@@ -349,13 +349,13 @@ class TestAnalyticsEndpoints:
     mock_analytics_service.get_patient_risk_stratification.assert_called_once()
 
 
-class TestBackgroundProcessingFunctions:
+    class TestBackgroundProcessingFunctions:
     """Tests for background processing functions."""
 
     @pytest.mark.asyncio
     async def test_process_treatment_outcomes_success()
     self, mock_analytics_service, mock_cache_service
-(    ):
+    (    ):
     """Test background processing of treatment outcomes."""
     patient_id = uuid4()
     start_date = datetime.now(UTC) - timedelta(days=90)
@@ -423,7 +423,7 @@ class TestBackgroundProcessingFunctions:
     start_date,
     end_date,
     cache_key,
-(    )
+    (    )
 
         # Verify analytics service was called
     mock_analytics_service.get_patient_treatment_outcomes.assert_called_once()
@@ -439,7 +439,7 @@ class TestBackgroundProcessingFunctions:
     @pytest.mark.asyncio
     async def test_process_practice_metrics()
     self, mock_analytics_service, mock_cache_service
-(    ):
+    (    ):
     """Test background processing of practice metrics."""
     start_date = datetime.now(UTC) - timedelta(days=30)
     end_date = datetime.now(UTC)
@@ -454,14 +454,14 @@ class TestBackgroundProcessingFunctions:
     end_date,
     provider_id,
     cache_key,
-(    )
+    (    )
 
         # Verify analytics service was called with correct parameters
     mock_analytics_service.get_practice_metrics.assert_called_once_with()
     start_date=start_date,
     end_date=end_date,
     provider_id=provider_id,
-(    )
+    (    )
 
         # Verify results were cached
     assert mock_cache_service.set.call_count == 2  # Main result and status

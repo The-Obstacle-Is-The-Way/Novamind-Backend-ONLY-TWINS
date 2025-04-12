@@ -27,63 +27,63 @@ class TestBiometricAlertAuditService:
         repo.update_status = AsyncMock()
         return repo
     
-    @pytest.fixture
-    def mock_audit_logger(self):
+        @pytest.fixture
+        def mock_audit_logger(self):
         """Create a mock audit logger."""
         logger = AsyncMock()
         logger.log_event = AsyncMock()
         logger.search_events = AsyncMock()
         return logger
     
-    @pytest.fixture
-    def audit_service(self, mock_alert_repository, mock_audit_logger):
+        @pytest.fixture
+        def audit_service(self, mock_alert_repository, mock_audit_logger):
         """Create a BiometricAlertAuditService with mock dependencies."""
         
-    return BiometricAlertAuditService()
-    mock_alert_repository,
-    mock_audit_logger
-(    )
+        return BiometricAlertAuditService()
+        mock_alert_repository,
+        mock_audit_logger
+        (    )
     
-    @pytest.fixture
-    def sample_patient_id(self):
+        @pytest.fixture
+        def sample_patient_id(self):
         """Create a sample patient ID."""
         
-    return UUID('12345678-1234-5678-1234-567812345678')
+        return UUID('12345678-1234-5678-1234-567812345678')
     
-    @pytest.fixture
-    def sample_provider_id(self):
+        @pytest.fixture
+        def sample_provider_id(self):
         """Create a sample provider ID."""
         
-    return UUID('87654321-8765-4321-8765-432187654321')
+        return UUID('87654321-8765-4321-8765-432187654321')
     
-    @pytest.fixture
-    def sample_rule_id(self):
+        @pytest.fixture
+        def sample_rule_id(self):
         """Create a sample rule ID."""
         
-    return UUID('11111111-2222-3333-4444-555555555555')
+        return UUID('11111111-2222-3333-4444-555555555555')
     
-    @pytest.fixture
-    def sample_alert_id(self):
+        @pytest.fixture
+        def sample_alert_id(self):
         """Create a sample alert ID."""
         
-    return UUID('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
+        return UUID('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
     
-    @pytest.fixture
-    def sample_alert(self, sample_patient_id, sample_rule_id, sample_alert_id):
+        @pytest.fixture
+        def sample_alert(self, sample_patient_id, sample_rule_id, sample_alert_id):
         """Create a sample BiometricAlert."""
         
-    return BiometricAlert()
-    alert_id=sample_alert_id,
-    patient_id=sample_patient_id,
-    alert_type="elevated_heart_rate",
-    description="Heart rate is significantly elevated",
-    priority=AlertPriority.URGENT,
-    data_points=[
-    {
-    "data_type": "heart_rate",
-    "value": 130,
-    "timestamp": datetime.now(UTC).isoformat(),
-    "source": "smartwatch"
+        return BiometricAlert()
+        alert_id=sample_alert_id,
+        patient_id=sample_patient_id,
+        alert_type="elevated_heart_rate",
+        description="Heart rate is significantly elevated",
+        priority=AlertPriority.URGENT,
+        data_points=[
+        {
+        "data_type": "heart_rate",
+        "value": 130,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "source": "smartwatch"
     }
     ],
     rule_id=sample_rule_id
@@ -120,7 +120,7 @@ class TestBiometricAlertAuditService:
     async def test_record_alert_acknowledgment()
     self, audit_service, mock_alert_repository, mock_audit_logger,
     sample_alert, sample_alert_id, sample_provider_id
-(    ):
+    (    ):
     """Test that record_alert_acknowledgment updates the alert status and creates an audit record."""
         # Setup
     mock_alert_repository.get_by_id.return_value = sample_alert
@@ -131,7 +131,7 @@ class TestBiometricAlertAuditService:
     sample_alert_id,
     sample_provider_id,
     "Acknowledged by Dr. Smith"
-(    )
+    (    )
         
         # Verify
     mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
@@ -140,7 +140,7 @@ class TestBiometricAlertAuditService:
     AlertStatus.ACKNOWLEDGED,
     sample_provider_id,
     "Acknowledged by Dr. Smith"
-(    )
+    (    )
         
     assert mock_audit_logger.log_event.call_count  ==  1
     log_args = mock_audit_logger.log_event.call_args[1]
@@ -155,7 +155,7 @@ class TestBiometricAlertAuditService:
     async def test_record_alert_resolution()
     self, audit_service, mock_alert_repository, mock_audit_logger,
     sample_alert, sample_alert_id, sample_provider_id
-(    ):
+    (    ):
     """Test that record_alert_resolution updates the alert status and creates an audit record."""
         # Setup
     mock_alert_repository.get_by_id.return_value = sample_alert
@@ -167,7 +167,7 @@ class TestBiometricAlertAuditService:
     sample_provider_id,
     "Patient contacted and advised to rest",
     "patient_contacted"
-(    )
+    (    )
         
         # Verify
     mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
@@ -176,7 +176,7 @@ class TestBiometricAlertAuditService:
     AlertStatus.RESOLVED,
     sample_provider_id,
     "Patient contacted and advised to rest"
-(    )
+    (    )
         
     assert mock_audit_logger.log_event.call_count  ==  1
     log_args = mock_audit_logger.log_event.call_args[1]
@@ -192,7 +192,7 @@ class TestBiometricAlertAuditService:
     async def test_record_alert_dismissal()
     self, audit_service, mock_alert_repository, mock_audit_logger,
     sample_alert, sample_alert_id, sample_provider_id
-(    ):
+    (    ):
     """Test that record_alert_dismissal updates the alert status and creates an audit record."""
         # Setup
     mock_alert_repository.get_by_id.return_value = sample_alert
@@ -203,7 +203,7 @@ class TestBiometricAlertAuditService:
     sample_alert_id,
     sample_provider_id,
     "False positive due to device error"
-(    )
+    (    )
         
         # Verify
     mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
@@ -212,7 +212,7 @@ class TestBiometricAlertAuditService:
     AlertStatus.DISMISSED,
     sample_provider_id,
     "Dismissed: False positive due to device error"
-(    )
+    (    )
         
     assert mock_audit_logger.log_event.call_count  ==  1
     log_args = mock_audit_logger.log_event.call_args[1]
@@ -227,7 +227,7 @@ class TestBiometricAlertAuditService:
     
     async def test_create_alert_audit_record_sanitizes_phi()
     self, audit_service, mock_audit_logger, sample_alert, sample_provider_id
-(    ):
+    (    ):
     """Test that _create_alert_audit_record properly sanitizes PHI."""
         # Execute
     await audit_service._create_alert_audit_record()
@@ -237,7 +237,7 @@ class TestBiometricAlertAuditService:
     sample_provider_id,
     "Test notes",
     {"additional": "data"}
-(    )
+    (    )
         
         # Verify
     assert mock_audit_logger.log_event.call_count  ==  1
@@ -267,7 +267,7 @@ class TestBiometricAlertAuditService:
     async def test_search_audit_trail()
     self, audit_service, mock_audit_logger, sample_patient_id,
     sample_alert_id, sample_provider_id
-(    ):
+    (    ):
     """Test that search_audit_trail correctly builds search criteria."""
         # Setup
     mock_audit_logger.search_events.return_value = []
@@ -284,7 +284,7 @@ class TestBiometricAlertAuditService:
     end_date=end_date,
     limit=50,
     offset=10
-(    )
+    (    )
         
         # Verify
     assert mock_audit_logger.search_events.call_count  ==  1
@@ -305,7 +305,7 @@ class TestBiometricAlertAuditService:
     async def test_no_audit_record_for_nonexistent_alert()
     self, audit_service, mock_alert_repository, mock_audit_logger,
     sample_alert_id, sample_provider_id
-(    ):
+    (    ):
     """Test that no audit record is created for a nonexistent alert."""
         # Setup
     mock_alert_repository.get_by_id.return_value = None
@@ -315,7 +315,7 @@ class TestBiometricAlertAuditService:
     sample_alert_id,
     sample_provider_id,
     "Acknowledged by Dr. Smith"
-(    )
+    (    )
         
         # Verify
     mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)

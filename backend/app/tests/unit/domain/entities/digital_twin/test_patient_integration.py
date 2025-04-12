@@ -3,4 +3,4 @@
 # current domain models and services.
 # Commenting out for now to allow test collection.
 
-pass # Add a pass statement to make it a valid, empty Python file
+pass  # Add a pass statement to make it a valid, empty Python file

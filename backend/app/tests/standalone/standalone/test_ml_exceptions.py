@@ -20,7 +20,7 @@ class MentalLLaMABaseError(Exception):
         super().__init__(message)
 
 
-class MentalLLaMAInferenceError(MentalLLaMABaseError):
+        class MentalLLaMAInferenceError(MentalLLaMABaseError):
     """Exception raised when inference with MentalLLaMA model fails."""
     
     def __init__():
@@ -30,7 +30,7 @@ class MentalLLaMAInferenceError(MentalLLaMABaseError):
         input_text: str | None = None,
         error_type: str | None = None,
         details: dict[str, Any] | None = None
-(    ):
+        (    ):
         self.model_id = model_id
         self.input_text = input_text
         self.error_type = error_type
@@ -43,12 +43,12 @@ class MentalLLaMAInferenceError(MentalLLaMABaseError):
         
         # Don't include input text in details to avoid PHI leakage in logs
     if details:
-    combined_details.update(details)
+        combined_details.update(details)
             
-    super().__init__(message, combined_details)
+        super().__init__(message, combined_details)
 
 
-class MentalLLaMAValidationError(MentalLLaMABaseError):
+        class MentalLLaMAValidationError(MentalLLaMABaseError):
     """Exception raised when input validation for MentalLLaMA model fails."""
     
     def __init__():
@@ -56,7 +56,7 @@ class MentalLLaMAValidationError(MentalLLaMABaseError):
         message: str, 
         validation_errors: dict[str, Any] | None = None,
         details: dict[str, Any] | None = None
-(    ):
+        (    ):
         self.validation_errors = validation_errors or {}
         
         # Merge additional details
@@ -65,13 +65,13 @@ class MentalLLaMAValidationError(MentalLLaMABaseError):
     }
         
     if details:
-    combined_details.update(details)
+        combined_details.update(details)
             
-    super().__init__(message, combined_details)
+        super().__init__(message, combined_details)
 
 
-# Test class for the exceptions
-class TestMLExceptions(unittest.TestCase):
+        # Test class for the exceptions
+        class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     
     @pytest.mark.standalone()
@@ -82,15 +82,15 @@ class TestMLExceptions(unittest.TestCase):
         details = {"source": "test"}
         
         # Act
-    error = MentalLLaMABaseError(message, details)
+        error = MentalLLaMABaseError(message, details)
         
         # Assert
-    self.assertEqual(error.message, message)
-    self.assertEqual(error.details, details)
-    self.assertEqual(str(error), message)
+        self.assertEqual(error.message, message)
+        self.assertEqual(error.details, details)
+        self.assertEqual(str(error), message)
     
-    @pytest.mark.standalone()
-    def test_inference_error(self):
+        @pytest.mark.standalone()
+        def test_inference_error(self):
         """Test the inference error class."""
         # Arrange
         message = "Inference error message"
@@ -100,28 +100,28 @@ class TestMLExceptions(unittest.TestCase):
         details = {"latency_ms": 15000}
         
         # Act
-    error = MentalLLaMAInferenceError()
-    message=message,
-    model_id=model_id,
-    input_text=input_text,
-    error_type=error_type,
-    details=details
-(    )
+        error = MentalLLaMAInferenceError()
+        message=message,
+        model_id=model_id,
+        input_text=input_text,
+        error_type=error_type,
+        details=details
+        (    )
         
         # Assert
-    self.assertEqual(error.message, message)
-    self.assertEqual(error.model_id, model_id)
-    self.assertEqual(error.input_text, input_text)
-    self.assertEqual(error.error_type, error_type)
-    self.assertEqual(error.details["model_id"], model_id)
-    self.assertEqual(error.details["error_type"], error_type)
-    self.assertEqual(error.details["latency_ms"], 15000)
+        self.assertEqual(error.message, message)
+        self.assertEqual(error.model_id, model_id)
+        self.assertEqual(error.input_text, input_text)
+        self.assertEqual(error.error_type, error_type)
+        self.assertEqual(error.details["model_id"], model_id)
+        self.assertEqual(error.details["error_type"], error_type)
+        self.assertEqual(error.details["latency_ms"], 15000)
         
         # Ensure input_text is NOT included in details to prevent PHI leakage
-    self.assertNotIn("input_text", error.details)
+        self.assertNotIn("input_text", error.details)
         
-    @pytest.mark.standalone()
-    def test_validation_error(self):
+        @pytest.mark.standalone()
+        def test_validation_error(self):
         """Test the validation error class."""
         # Arrange
         message = "Validation error message"
@@ -129,18 +129,18 @@ class TestMLExceptions(unittest.TestCase):
         details = {"model_version": "2.0"}
         
         # Act
-    error = MentalLLaMAValidationError()
-    message=message,
-    validation_errors=validation_errors,
-    details=details
-(    )
+        error = MentalLLaMAValidationError()
+        message=message,
+        validation_errors=validation_errors,
+        details=details
+        (    )
         
         # Assert
-    self.assertEqual(error.message, message)
-    self.assertEqual(error.validation_errors, validation_errors)
-    self.assertEqual(error.details["validation_errors"], validation_errors)
-    self.assertEqual(error.details["model_version"], "2.0")
+        self.assertEqual(error.message, message)
+        self.assertEqual(error.validation_errors, validation_errors)
+        self.assertEqual(error.details["validation_errors"], validation_errors)
+        self.assertEqual(error.details["model_version"], "2.0")
 
 
-if __name__ == "__main__":
+        if __name__ == "__main__":
     unittest.main()

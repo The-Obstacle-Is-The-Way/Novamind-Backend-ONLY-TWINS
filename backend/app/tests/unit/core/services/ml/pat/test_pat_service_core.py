@@ -31,20 +31,20 @@ class TestPATService:
         service.initialize({"test_config": True})
         return service
 
-    @pytest.fixture
-    def mock_assessment_data(self) -> Dict[str, Any]:
+        @pytest.fixture
+        def mock_assessment_data(self) -> Dict[str, Any]:
         """Create mock assessment data for testing."""
         
-    return {
-    "phq9_1": 2,
-    "phq9_2": 1,
-    "phq9_3": 2,
-    "phq9_4": 1,
-    "phq9_5": 0,
-    "phq9_6": 3,
-    "phq9_7": 2,
-    "phq9_8": 1,
-    "phq9_9": 0
+        return {
+        "phq9_1": 2,
+        "phq9_2": 1,
+        "phq9_3": 2,
+        "phq9_4": 1,
+        "phq9_5": 0,
+        "phq9_6": 3,
+        "phq9_7": 2,
+        "phq9_8": 1,
+        "phq9_9": 0
     }
 
     def test_initialization(self) -> None:
@@ -53,280 +53,280 @@ class TestPATService:
         assert not service.is_healthy()
 
         # Initialize the service
-    service.initialize({"test_config": True})
-    assert service.is_healthy()
+        service.initialize({"test_config": True})
+        assert service.is_healthy()
 
         # Shutdown should release resources
-    service.shutdown()
-    assert not service.is_healthy()
+        service.shutdown()
+        assert not service.is_healthy()
 
-    def test_create_assessment(self, pat_service: PATService) -> None:
+        def test_create_assessment(self, pat_service: PATService) -> None:
         """Test creating a new assessment."""
         # Create assessment with minimal data
         result = pat_service.create_assessment()
             patient_id="test-patient-1",
             assessment_type="depression",
             clinician_id="test-clinician-1"
-(        )
+        (        )
 
-    assert result["assessment_id"] is not None
-    assert result["patient_id"] == "test-patient-1"
-    assert result["assessment_type"] == "depression"
-    assert result["status"] == "created"
+        assert result["assessment_id"] is not None
+        assert result["patient_id"] == "test-patient-1"
+        assert result["assessment_type"] == "depression"
+        assert result["status"] == "created"
 
         # Create with initial data
-    result_with_data = pat_service.create_assessment()
-    patient_id="test-patient-2",
-    assessment_type="anxiety",
-    clinician_id="test-clinician-1",
-    initial_data={"gad7_1": 2}
-(    )
+        result_with_data = pat_service.create_assessment()
+        patient_id="test-patient-2",
+        assessment_type="anxiety",
+        clinician_id="test-clinician-1",
+        initial_data={"gad7_1": 2}
+        (    )
 
-    assert result_with_data["assessment_id"] is not None
-    assert result_with_data["assessment_type"] == "anxiety"
+        assert result_with_data["assessment_id"] is not None
+        assert result_with_data["assessment_type"] == "anxiety"
 
         # Verify error handling
-    with pytest.raises(InvalidRequestError):
-    pat_service.create_assessment()
-    patient_id="",  # Invalid: empty patient_id
-    assessment_type="depression"
-(    )
+        with pytest.raises(InvalidRequestError):
+        pat_service.create_assessment()
+        patient_id="",  # Invalid: empty patient_id
+        assessment_type="depression"
+        (    )
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.create_assessment()
-    patient_id="test-patient-3",
-    assessment_type=""  # Invalid: empty assessment_type
-(    )
+        with pytest.raises(InvalidRequestError):
+        pat_service.create_assessment()
+        patient_id="test-patient-3",
+        assessment_type=""  # Invalid: empty assessment_type
+        (    )
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.create_assessment()
-    patient_id="test-patient-3",
-    assessment_type="invalid-type"  # Invalid: unsupported assessment type
-(    )
+        with pytest.raises(InvalidRequestError):
+        pat_service.create_assessment()
+        patient_id="test-patient-3",
+        assessment_type="invalid-type"  # Invalid: unsupported assessment type
+        (    )
 
-    def test_get_assessment(self, pat_service: PATService) -> None:
+        def test_get_assessment(self, pat_service: PATService) -> None:
         """Test retrieving an assessment."""
         # Create an assessment to retrieve
         create_result = pat_service.create_assessment()
             patient_id="test-patient-4",
             assessment_type="depression",
             clinician_id="test-clinician-2"
-(        )
+        (        )
         assessment_id = create_result["assessment_id"]
 
         # Retrieve the assessment
-    get_result = pat_service.get_assessment(assessment_id)
+        get_result = pat_service.get_assessment(assessment_id)
 
-    assert get_result["assessment_id"] == assessment_id
-    assert get_result["patient_id"] == "test-patient-4"
-    assert get_result["clinician_id"] == "test-clinician-2"
-    assert get_result["assessment_type"] == "depression"
-    assert get_result["status"] == "created"
-    assert get_result["template"] is not None
-    assert isinstance(get_result["completion_percentage"], float)
+        assert get_result["assessment_id"] == assessment_id
+        assert get_result["patient_id"] == "test-patient-4"
+        assert get_result["clinician_id"] == "test-clinician-2"
+        assert get_result["assessment_type"] == "depression"
+        assert get_result["status"] == "created"
+        assert get_result["template"] is not None
+        assert isinstance(get_result["completion_percentage"], float)
 
         # Verify error handling
-    with pytest.raises(InvalidRequestError):
-    pat_service.get_assessment("")  # Invalid: empty assessment_id
+        with pytest.raises(InvalidRequestError):
+        pat_service.get_assessment("")  # Invalid: empty assessment_id
 
-    with pytest.raises(ModelNotFoundError):
-    pat_service.get_assessment("non-existent-id")  # Invalid: assessment not found
+        with pytest.raises(ModelNotFoundError):
+        pat_service.get_assessment("non-existent-id")  # Invalid: assessment not found
 
-    def test_update_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+        def test_update_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test updating an assessment."""
         # Create an assessment to update
         create_result = pat_service.create_assessment()
             patient_id="test-patient-5",
             assessment_type="depression",
             clinician_id="test-clinician-3"
-(        )
+        (        )
         assessment_id = create_result["assessment_id"]
 
         # Update the assessment with partial data
-    partial_data = {"phq9_1": 2, "phq9_2": 1}
-    update_result = pat_service.update_assessment(assessment_id, partial_data)
+        partial_data = {"phq9_1": 2, "phq9_2": 1}
+        update_result = pat_service.update_assessment(assessment_id, partial_data)
 
-    assert update_result["assessment_id"] == assessment_id
-    assert update_result["status"] == "created"
+        assert update_result["assessment_id"] == assessment_id
+        assert update_result["status"] == "created"
 
         # Get the assessment to verify update
-    get_result = pat_service.get_assessment(assessment_id)
-    assert get_result["data"]["phq9_1"] == 2
-    assert get_result["data"]["phq9_2"] == 1
+        get_result = pat_service.get_assessment(assessment_id)
+        assert get_result["data"]["phq9_1"] == 2
+        assert get_result["data"]["phq9_2"] == 1
 
         # Update with remaining data
-    remaining_data = {k: v for k, v in mock_assessment_data.items() if k not in partial_data}
-    update_result_2 = pat_service.update_assessment(assessment_id, remaining_data)
+        remaining_data = {k: v for k, v in mock_assessment_data.items() if k not in partial_data}
+        update_result_2 = pat_service.update_assessment(assessment_id, remaining_data)
 
         # Verify status changed to in_progress
-    assert update_result_2["status"] == "in_progress"
+        assert update_result_2["status"] == "in_progress"
         
         # Complete the assessment
-    pat_service.complete_assessment(assessment_id)
+        pat_service.complete_assessment(assessment_id)
         
         # Verify error when updating completed assessment
-    with pytest.raises(InvalidRequestError):
-    pat_service.update_assessment(assessment_id, {"phq9_1": 3})  # Invalid: completed assessment
+        with pytest.raises(InvalidRequestError):
+        pat_service.update_assessment(assessment_id, {"phq9_1": 3})  # Invalid: completed assessment
 
         # Verify other error handling
-    with pytest.raises(InvalidRequestError):
-    pat_service.update_assessment("", partial_data)  # Invalid: empty assessment_id
+        with pytest.raises(InvalidRequestError):
+        pat_service.update_assessment("", partial_data)  # Invalid: empty assessment_id
 
-    with pytest.raises(ModelNotFoundError):
-    pat_service.update_assessment("non-existent-id", partial_data)  # Invalid: assessment not found
+        with pytest.raises(ModelNotFoundError):
+        pat_service.update_assessment("non-existent-id", partial_data)  # Invalid: assessment not found
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.update_assessment(assessment_id, {})  # Invalid: empty data
+        with pytest.raises(InvalidRequestError):
+        pat_service.update_assessment(assessment_id, {})  # Invalid: empty data
 
-    def test_complete_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+        def test_complete_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test completing an assessment."""
         # Create an assessment to complete
         create_result = pat_service.create_assessment()
             patient_id="test-patient-6",
             assessment_type="depression",
             clinician_id="test-clinician-4"
-(        )
+        (        )
         assessment_id = create_result["assessment_id"]
 
         # Update assessment with data first
-    pat_service.update_assessment(assessment_id, mock_assessment_data)
+        pat_service.update_assessment(assessment_id, mock_assessment_data)
 
         # Complete the assessment
-    complete_result = pat_service.complete_assessment(assessment_id)
+        complete_result = pat_service.complete_assessment(assessment_id)
 
-    assert complete_result["assessment_id"] == assessment_id
-    assert complete_result["status"] == "completed"
-    assert complete_result["completed_at"] is not None
-    assert "scores" in complete_result
-    assert "flags" in complete_result
-    assert "summary" in complete_result
-    assert "recommendations" in complete_result
+        assert complete_result["assessment_id"] == assessment_id
+        assert complete_result["status"] == "completed"
+        assert complete_result["completed_at"] is not None
+        assert "scores" in complete_result
+        assert "flags" in complete_result
+        assert "summary" in complete_result
+        assert "recommendations" in complete_result
 
         # Verify error when completing already completed assessment
-    with pytest.raises(InvalidRequestError):
-    pat_service.complete_assessment(assessment_id)  # Invalid: already completed
+        with pytest.raises(InvalidRequestError):
+        pat_service.complete_assessment(assessment_id)  # Invalid: already completed
 
         # Verify other error handling
-    with pytest.raises(InvalidRequestError):
-    pat_service.complete_assessment("")  # Invalid: empty assessment_id
+        with pytest.raises(InvalidRequestError):
+        pat_service.complete_assessment("")  # Invalid: empty assessment_id
 
-    with pytest.raises(ModelNotFoundError):
-    pat_service.complete_assessment("non-existent-id")  # Invalid: assessment not found
+        with pytest.raises(ModelNotFoundError):
+        pat_service.complete_assessment("non-existent-id")  # Invalid: assessment not found
 
-    def test_analyze_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+        def test_analyze_assessment(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test analyzing an assessment."""
         # Create an assessment to analyze
         create_result = pat_service.create_assessment()
             patient_id="test-patient-7",
             assessment_type="depression",
             clinician_id="test-clinician-5"
-(        )
+        (        )
         assessment_id = create_result["assessment_id"]
 
         # Update assessment with data
-    pat_service.update_assessment(assessment_id, mock_assessment_data)
+        pat_service.update_assessment(assessment_id, mock_assessment_data)
 
         # Analyze assessment
-    analyze_result = pat_service.analyze_assessment(assessment_id)
+        analyze_result = pat_service.analyze_assessment(assessment_id)
 
-    assert analyze_result["assessment_id"] == assessment_id
-    assert analyze_result["patient_id"] == "test-patient-7"
-    assert analyze_result["analysis_type"] == "general"
-    assert "result" in analyze_result
+        assert analyze_result["assessment_id"] == assessment_id
+        assert analyze_result["patient_id"] == "test-patient-7"
+        assert analyze_result["analysis_type"] == "general"
+        assert "result" in analyze_result
 
         # Try different analysis types
-    clinical_result = pat_service.analyze_assessment(assessment_id, "clinical")
-    assert clinical_result["analysis_type"] == "clinical"
+        clinical_result = pat_service.analyze_assessment(assessment_id, "clinical")
+        assert clinical_result["analysis_type"] == "clinical"
         
         # Verify error handling
-    with pytest.raises(InvalidRequestError):
-    pat_service.analyze_assessment("")  # Invalid: empty assessment_id
+        with pytest.raises(InvalidRequestError):
+        pat_service.analyze_assessment("")  # Invalid: empty assessment_id
 
-    with pytest.raises(ModelNotFoundError):
-    pat_service.analyze_assessment("non-existent-id")  # Invalid: assessment not found
+        with pytest.raises(ModelNotFoundError):
+        pat_service.analyze_assessment("non-existent-id")  # Invalid: assessment not found
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.analyze_assessment(assessment_id, "invalid-type")  # Invalid: unsupported analysis type
+        with pytest.raises(InvalidRequestError):
+        pat_service.analyze_assessment(assessment_id, "invalid-type")  # Invalid: unsupported analysis type
 
-    def test_calculate_scores(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+        def test_calculate_scores(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test score calculation functionality."""
         # Create assessment
         create_result = pat_service.create_assessment()
             patient_id="test-patient-8",
             assessment_type="depression",
             clinician_id="test-clinician-6"
-(        )
+        (        )
         assessment_id = create_result["assessment_id"]
 
         # Add assessment data
-    pat_service.update_assessment(assessment_id, mock_assessment_data)
+        pat_service.update_assessment(assessment_id, mock_assessment_data)
 
         # Calculate scores
-    scores_result = pat_service.calculate_score(assessment_id)
+        scores_result = pat_service.calculate_score(assessment_id)
 
-    assert scores_result["assessment_id"] == assessment_id
-    assert scores_result["patient_id"] == "test-patient-8"
-    assert scores_result["scoring_method"] == "standard"
-    assert "scores" in scores_result
-    assert "phq9_total" in scores_result["scores"]
-    assert "phq9_severity" in scores_result["scores"]
+        assert scores_result["assessment_id"] == assessment_id
+        assert scores_result["patient_id"] == "test-patient-8"
+        assert scores_result["scoring_method"] == "standard"
+        assert "scores" in scores_result
+        assert "phq9_total" in scores_result["scores"]
+        assert "phq9_severity" in scores_result["scores"]
 
         # Try different scoring methods
-    clinical_scores = pat_service.calculate_score(assessment_id, "clinical")
-    assert clinical_scores["scoring_method"] == "clinical"
-    assert "clinical_risk" in clinical_scores["scores"]
+        clinical_scores = pat_service.calculate_score(assessment_id, "clinical")
+        assert clinical_scores["scoring_method"] == "clinical"
+        assert "clinical_risk" in clinical_scores["scores"]
 
         # Verify error handling
-    with pytest.raises(InvalidRequestError):
-    pat_service.calculate_score("")  # Invalid: empty assessment_id
+        with pytest.raises(InvalidRequestError):
+        pat_service.calculate_score("")  # Invalid: empty assessment_id
 
-    with pytest.raises(ModelNotFoundError):
-    pat_service.calculate_score("non-existent-id")  # Invalid: assessment not found
+        with pytest.raises(ModelNotFoundError):
+        pat_service.calculate_score("non-existent-id")  # Invalid: assessment not found
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.calculate_score(assessment_id, "invalid-method")  # Invalid: unsupported scoring method
+        with pytest.raises(InvalidRequestError):
+        pat_service.calculate_score(assessment_id, "invalid-method")  # Invalid: unsupported scoring method
 
-    def test_get_assessment_history(self, pat_service: PATService) -> None:
+        def test_get_assessment_history(self, pat_service: PATService) -> None:
         """Test retrieving assessment history for a patient."""
         patient_id = "test-patient-9"
         
         # Create multiple assessments for the patient
-    for i in range(3):
-    pat_service.create_assessment()
-    patient_id=patient_id,
-    assessment_type="depression",
-    clinician_id="test-clinician-7"
-(    )
+        for i in range(3):
+        pat_service.create_assessment()
+        patient_id=patient_id,
+        assessment_type="depression",
+        clinician_id="test-clinician-7"
+        (    )
         
         # Create a different assessment type
-    pat_service.create_assessment()
-    patient_id=patient_id,
-    assessment_type="anxiety",
-    clinician_id="test-clinician-7"
-(    )
+        pat_service.create_assessment()
+        patient_id=patient_id,
+        assessment_type="anxiety",
+        clinician_id="test-clinician-7"
+        (    )
         
         # Get all assessment history
-    history_result = pat_service.get_assessment_history(patient_id)
+        history_result = pat_service.get_assessment_history(patient_id)
         
-    assert history_result["patient_id"] == patient_id
-    assert history_result["count"] == 4
-    assert len(history_result["history"]) == 4
+        assert history_result["patient_id"] == patient_id
+        assert history_result["count"] == 4
+        assert len(history_result["history"]) == 4
         
         # Filter by assessment type
-    depression_history = pat_service.get_assessment_history(patient_id, "depression")
-    assert depression_history["count"] == 3
-    assert all(a["assessment_type"] == "depression" for a in depression_history["history"])
+        depression_history = pat_service.get_assessment_history(patient_id, "depression")
+        assert depression_history["count"] == 3
+        assert all(a["assessment_type"] == "depression" for a in depression_history["history"])
         
         # Test limit parameter
-    limited_history = pat_service.get_assessment_history(patient_id, limit=2)
-    assert limited_history["count"] == 2
-    assert len(limited_history["history"]) == 2
+        limited_history = pat_service.get_assessment_history(patient_id, limit=2)
+        assert limited_history["count"] == 2
+        assert len(limited_history["history"]) == 2
         
         # Verify error handling
-    with pytest.raises(InvalidRequestError):
-    pat_service.get_assessment_history("")  # Invalid: empty patient_id
+        with pytest.raises(InvalidRequestError):
+        pat_service.get_assessment_history("")  # Invalid: empty patient_id
 
-    def test_form_template_operations(self, pat_service: PATService) -> None:
+        def test_form_template_operations(self, pat_service: PATService) -> None:
         """Test form template creation and retrieval."""
         # Create a custom template
         form_fields = [
@@ -380,158 +380,158 @@ class TestPATService:
         
         # Verify error handling
     with pytest.raises(InvalidRequestError):
-    pat_service.create_form_template("", "custom", form_fields)  # Invalid: empty name
+        pat_service.create_form_template("", "custom", form_fields)  # Invalid: empty name
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.create_form_template("Test", "", form_fields)  # Invalid: empty form type
+        with pytest.raises(InvalidRequestError):
+        pat_service.create_form_template("Test", "", form_fields)  # Invalid: empty form type
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.create_form_template("Test", "custom", [])  # Invalid: empty fields
+        with pytest.raises(InvalidRequestError):
+        pat_service.create_form_template("Test", "custom", [])  # Invalid: empty fields
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.get_form_template("")  # Invalid: empty template_id
+        with pytest.raises(InvalidRequestError):
+        pat_service.get_form_template("")  # Invalid: empty template_id
 
-    with pytest.raises(ModelNotFoundError):
-    pat_service.get_form_template("non-existent-id")  # Invalid: template not found
+        with pytest.raises(ModelNotFoundError):
+        pat_service.get_form_template("non-existent-id")  # Invalid: template not found
 
-    def test_generate_report(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
+        def test_generate_report(self, pat_service: PATService, mock_assessment_data: Dict[str, Any]) -> None:
         """Test report generation functionality."""
         # Create assessment
         create_result = pat_service.create_assessment()
             patient_id="test-patient-10",
             assessment_type="depression",
             clinician_id="test-clinician-8"
-(        )
+        (        )
         assessment_id = create_result["assessment_id"]
 
         # Update and complete assessment
-    pat_service.update_assessment(assessment_id, mock_assessment_data)
-    pat_service.complete_assessment(assessment_id)
+        pat_service.update_assessment(assessment_id, mock_assessment_data)
+        pat_service.complete_assessment(assessment_id)
 
         # Generate summary report
-    summary_report = pat_service.generate_report(assessment_id)
-    assert summary_report["assessment_id"] == assessment_id
-    assert summary_report["report_type"] == "summary"
-    assert "report" in summary_report
-    assert summary_report["report"]["title"].endswith("Summary Report")
+        summary_report = pat_service.generate_report(assessment_id)
+        assert summary_report["assessment_id"] == assessment_id
+        assert summary_report["report_type"] == "summary"
+        assert "report" in summary_report
+        assert summary_report["report"]["title"].endswith("Summary Report")
 
         # Generate detailed report
-    detailed_report = pat_service.generate_report(assessment_id, "detailed")
-    assert detailed_report["report_type"] == "detailed"
+        detailed_report = pat_service.generate_report(assessment_id, "detailed")
+        assert detailed_report["report_type"] == "detailed"
         
         # Generate clinical report
-    clinical_report = pat_service.generate_report(assessment_id, "clinical")
-    assert clinical_report["report_type"] == "clinical"
+        clinical_report = pat_service.generate_report(assessment_id, "clinical")
+        assert clinical_report["report_type"] == "clinical"
         
         # Test error conditions
         # Create but don't complete a new assessment
-    incomplete_assessment = pat_service.create_assessment()
-    patient_id="test-patient-11",
-    assessment_type="depression"
-(    )
-    incomplete_id = incomplete_assessment["assessment_id"]
+        incomplete_assessment = pat_service.create_assessment()
+        patient_id="test-patient-11",
+        assessment_type="depression"
+        (    )
+        incomplete_id = incomplete_assessment["assessment_id"]
         
         # Summary report should work for incomplete assessment
-    pat_service.generate_report(incomplete_id, "summary")
+        pat_service.generate_report(incomplete_id, "summary")
         
         # But detailed and clinical reports should require completion
-    with pytest.raises(InvalidRequestError):
-    pat_service.generate_report(incomplete_id, "detailed")  # Invalid: assessment not completed
+        with pytest.raises(InvalidRequestError):
+        pat_service.generate_report(incomplete_id, "detailed")  # Invalid: assessment not completed
             
-    with pytest.raises(InvalidRequestError):
-    pat_service.generate_report(incomplete_id, "clinical")  # Invalid: assessment not completed
+        with pytest.raises(InvalidRequestError):
+        pat_service.generate_report(incomplete_id, "clinical")  # Invalid: assessment not completed
             
         # Other error conditions
-    with pytest.raises(InvalidRequestError):
-    pat_service.generate_report("")  # Invalid: empty assessment_id
+        with pytest.raises(InvalidRequestError):
+        pat_service.generate_report("")  # Invalid: empty assessment_id
 
-    with pytest.raises(ModelNotFoundError):
-    pat_service.generate_report("non-existent-id")  # Invalid: assessment not found
+        with pytest.raises(ModelNotFoundError):
+        pat_service.generate_report("non-existent-id")  # Invalid: assessment not found
 
-    with pytest.raises(InvalidRequestError):
-    pat_service.generate_report(assessment_id, "invalid-type")  # Invalid: unsupported report type
+        with pytest.raises(InvalidRequestError):
+        pat_service.generate_report(assessment_id, "invalid-type")  # Invalid: unsupported report type
 
-    def test_service_unavailable_errors(self) -> None:
+        def test_service_unavailable_errors(self) -> None:
         """Test service unavailable errors when not initialized."""
         service = PATService()  # Uninitialized service
         
-    with pytest.raises(ServiceUnavailableError):
-    service.create_assessment("patient-id", "depression")
+        with pytest.raises(ServiceUnavailableError):
+        service.create_assessment("patient-id", "depression")
             
-    with pytest.raises(ServiceUnavailableError):
-    service.get_assessment("assessment-id")
+        with pytest.raises(ServiceUnavailableError):
+        service.get_assessment("assessment-id")
             
-    with pytest.raises(ServiceUnavailableError):
-    service.update_assessment("assessment-id", {"data": "value"})
+        with pytest.raises(ServiceUnavailableError):
+        service.update_assessment("assessment-id", {"data": "value"})
             
-    with pytest.raises(ServiceUnavailableError):
-    service.complete_assessment("assessment-id")
+        with pytest.raises(ServiceUnavailableError):
+        service.complete_assessment("assessment-id")
             
-    with pytest.raises(ServiceUnavailableError):
-    service.analyze_assessment("assessment-id")
+        with pytest.raises(ServiceUnavailableError):
+        service.analyze_assessment("assessment-id")
             
-    with pytest.raises(ServiceUnavailableError):
-    service.get_assessment_history("patient-id")
+        with pytest.raises(ServiceUnavailableError):
+        service.get_assessment_history("patient-id")
             
-    with pytest.raises(ServiceUnavailableError):
-    service.create_form_template("name", "type", [{"id": "field"}])
+        with pytest.raises(ServiceUnavailableError):
+        service.create_form_template("name", "type", [{"id": "field"}])
             
-    with pytest.raises(ServiceUnavailableError):
-    service.get_form_template("template-id")
+        with pytest.raises(ServiceUnavailableError):
+        service.get_form_template("template-id")
             
-    with pytest.raises(ServiceUnavailableError):
-    service.list_form_templates()
+        with pytest.raises(ServiceUnavailableError):
+        service.list_form_templates()
             
-    with pytest.raises(ServiceUnavailableError):
-    service.calculate_score("assessment-id")
+        with pytest.raises(ServiceUnavailableError):
+        service.calculate_score("assessment-id")
             
-    with pytest.raises(ServiceUnavailableError):
-    service.generate_report("assessment-id")
+        with pytest.raises(ServiceUnavailableError):
+        service.generate_report("assessment-id")
 
-    def test_high_risk_flagging(self, pat_service: PATService) -> None:
+        def test_high_risk_flagging(self, pat_service: PATService) -> None:
         """Test that high-risk responses are properly flagged."""
         # Create an assessment
         create_result = pat_service.create_assessment()
             patient_id="test-patient-12",
             assessment_type="depression"
-(        )
+        (        )
         assessment_id = create_result["assessment_id"]
         
         # Update with high suicide risk response
-    pat_service.update_assessment(assessment_id, {"phq9_9": 3})  # "Nearly every day" for suicide item
+        pat_service.update_assessment(assessment_id, {"phq9_9": 3})  # "Nearly every day" for suicide item
         
         # Get assessment and check for flags
-    assessment = pat_service.get_assessment(assessment_id)
+        assessment = pat_service.get_assessment(assessment_id)
         
-    assert len(assessment["flags"]) > 0
-    assert any(flag["type"] == "suicide_risk" for flag in assessment["flags"])
-    assert any(flag["severity"] == "high" for flag in assessment["flags"])
+        assert len(assessment["flags"]) > 0
+        assert any(flag["type"] == "suicide_risk" for flag in assessment["flags"])
+        assert any(flag["severity"] == "high" for flag in assessment["flags"])
 
-    def test_completion_percentage(self, pat_service: PATService) -> None:
+        def test_completion_percentage(self, pat_service: PATService) -> None:
         """Test completion percentage calculation."""
         # Create assessment
         create_result = pat_service.create_assessment()
             patient_id="test-patient-13",
             assessment_type="depression"
-(        )
+        (        )
         assessment_id = create_result["assessment_id"]
         
         # Get initial completion percentage
-    initial = pat_service.get_assessment(assessment_id)
-    assert initial["completion_percentage"] == 0
+        initial = pat_service.get_assessment(assessment_id)
+        assert initial["completion_percentage"] == 0
         
         # Update with partial data
-    pat_service.update_assessment(assessment_id, {"phq9_1": 2})
+        pat_service.update_assessment(assessment_id, {"phq9_1": 2})
         
         # Check updated percentage
-    partial = pat_service.get_assessment(assessment_id)
-    assert partial["completion_percentage"] > 0
-    assert partial["completion_percentage"] < 100
+        partial = pat_service.get_assessment(assessment_id)
+        assert partial["completion_percentage"] > 0
+        assert partial["completion_percentage"] < 100
         
         # Complete all required fields
-    all_fields = {f"phq9_{i}": i % 4 for i in range(1, 10)}
-    pat_service.update_assessment(assessment_id, all_fields)
+        all_fields = {f"phq9_{i}": i % 4 for i in range(1, 10)}
+        pat_service.update_assessment(assessment_id, all_fields)
         
         # Check complete percentage
-    complete = pat_service.get_assessment(assessment_id)
-    assert complete["completion_percentage"] == 100
+        complete = pat_service.get_assessment(assessment_id)
+        assert complete["completion_percentage"] == 100

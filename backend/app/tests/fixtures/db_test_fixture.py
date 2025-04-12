@@ -60,8 +60,8 @@ def event_loop():
     loop.close()
 
 
-@pytest_asyncio.fixture(scope="session")
-async def setup_database() -> AsyncGenerator[None, None]:
+    @pytest_asyncio.fixture(scope="session")
+    async def setup_database() -> AsyncGenerator[None, None]:
     """
     Set up the test database once per test session.
 
@@ -73,18 +73,18 @@ async def setup_database() -> AsyncGenerator[None, None]:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     
-    yield
+        yield
     
-    # Clean up after all tests
-    async with test_engine.begin() as conn:
+        # Clean up after all tests
+        async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     
-    # Close the engine
-    await test_engine.dispose()
+        # Close the engine
+        await test_engine.dispose()
 
 
-@pytest_asyncio.fixture
-async def db_session(setup_database) -> AsyncGenerator[AsyncSession, None]:
+        @pytest_asyncio.fixture
+        async def db_session(setup_database) -> AsyncGenerator[AsyncSession, None]:
     """
     Create a fresh database session for a test.
 
@@ -100,7 +100,7 @@ async def db_session(setup_database) -> AsyncGenerator[AsyncSession, None]:
     
     try:
         yield session
-    finally:
+        finally:
         # Roll back any changes and close the session when the test is done
         await session.rollback()
         await session.close()
@@ -108,8 +108,8 @@ async def db_session(setup_database) -> AsyncGenerator[AsyncSession, None]:
         await connection.close()
 
 
-@pytest_asyncio.fixture
-async def db_transaction(db_session: AsyncSession) -> AsyncGenerator[AsyncSession, None]:
+        @pytest_asyncio.fixture
+        async def db_transaction(db_session: AsyncSession) -> AsyncGenerator[AsyncSession, None]:
     """
     Create a test database session with nested transaction rollback.
     
@@ -125,8 +125,8 @@ async def db_transaction(db_session: AsyncSession) -> AsyncGenerator[AsyncSessio
     await transaction.rollback()
 
 
-@pytest_asyncio.fixture
-async def override_get_session(db_session: AsyncSession) -> AsyncGenerator[Callable, None]:
+    @pytest_asyncio.fixture
+    async def override_get_session(db_session: AsyncSession) -> AsyncGenerator[Callable, None]:
     """
     Override the get_session dependency for testing.
     
@@ -136,15 +136,15 @@ async def override_get_session(db_session: AsyncSession) -> AsyncGenerator[Calla
     async def get_test_session():
         try:
             yield db_session
-        finally:
+            finally:
             pass
     
-    # Return the factory function
-    yield get_test_session
+            # Return the factory function
+            yield get_test_session
 
 
-@pytest.fixture
-def override_db_dependencies(app, db_session: AsyncSession) -> None:
+            @pytest.fixture
+            def override_db_dependencies(app, db_session: AsyncSession) -> None:
     """
     Override all database-related dependencies in the FastAPI app.
     
@@ -160,22 +160,22 @@ def override_db_dependencies(app, db_session: AsyncSession) -> None:
     async def get_test_session():
         try:
             yield db_session
-        finally:
+            finally:
             pass
     
-    # Override dependencies in the app
-    app.dependency_overrides[get_session] = get_test_session
+            # Override dependencies in the app
+            app.dependency_overrides[get_session] = get_test_session
     
-    yield
+            yield
     
-    # Remove overrides and restore original dependencies
-    for dep in original_deps:
+            # Remove overrides and restore original dependencies
+            for dep in original_deps:
         if dep in app.dependency_overrides:
             del app.dependency_overrides[dep]
 
 
-@pytest_asyncio.fixture
-async def clear_tables(db_session: AsyncSession) -> AsyncGenerator[None, None]:
+            @pytest_asyncio.fixture
+            async def clear_tables(db_session: AsyncSession) -> AsyncGenerator[None, None]:
     """
     Clear all data from tables between tests.
     
@@ -190,35 +190,35 @@ async def clear_tables(db_session: AsyncSession) -> AsyncGenerator[None, None]:
     for table_name in table_names:
         await db_session.execute(text(f"TRUNCATE TABLE {table_name} CASCADE"))
     
-    await db_session.commit()
+        await db_session.commit()
 
 
-async def seed_test_data(session: AsyncSession, fixture_data: Dict[str, List[Dict[str, Any]]]) -> None:
+        async def seed_test_data(session: AsyncSession, fixture_data: Dict[str, List[Dict[str, Any]]]) -> None:
     """
     Seed test database with fixture data.
     
     Args:
         session: Database session
         fixture_data: Dictionary of table names to lists of row data
-    """
-    for table_name, rows in fixture_data.items():
+        """
+        for table_name, rows in fixture_data.items():
         if not rows:
             continue
             
-        # Create INSERT statement
-        columns = ", ".join(rows[0].keys())
-        placeholders = ", ".join(f":{col}" for col in rows[0].keys())
+            # Create INSERT statement
+            columns = ", ".join(rows[0].keys())
+            placeholders = ", ".join(f":{col}" for col in rows[0].keys())
         
-        # Insert each row
-        for row in rows:
+            # Insert each row
+            for row in rows:
             query = text(f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})")
             await session.execute(query, row)
     
-    # Commit changes
-    await session.commit()
+            # Commit changes
+            await session.commit()
 
 
-class TestDataFactory:
+            class TestDataFactory:
     """Factory for generating test data for different domain entities."""
     
     @staticmethod
@@ -239,10 +239,10 @@ class TestDataFactory:
                 "created_at": "2024-01-01T00:00:00",
                 "updated_at": "2024-01-01T00:00:00"
             })
-        return patients
+            return patients
     
-    @staticmethod
-    def create_clinician_data(count: int = 1) -> List[Dict[str, Any]]:
+            @staticmethod
+            def create_clinician_data(count: int = 1) -> List[Dict[str, Any]]:
         """Create test clinician data."""
         clinicians = []
         for i in range(1, count + 1):
@@ -259,10 +259,10 @@ class TestDataFactory:
                 "created_at": "2024-01-01T00:00:00",
                 "updated_at": "2024-01-01T00:00:00"
             })
-        return clinicians
+            return clinicians
     
-    @staticmethod
-    def create_user_data(count: int = 1) -> List[Dict[str, Any]]:
+            @staticmethod
+            def create_user_data(count: int = 1) -> List[Dict[str, Any]]:
         """Create test user data."""
         users = []
         for i in range(1, count + 1):
@@ -276,38 +276,38 @@ class TestDataFactory:
                 "created_at": "2024-01-01T00:00:00",
                 "updated_at": "2024-01-01T00:00:00"
             })
-        return users
+            return users
 
 
-# Context manager for transaction-based testing
-class TransactionalTestContext:
+            # Context manager for transaction-based testing
+            class TransactionalTestContext:
     """Context manager for transaction-based testing."""
     
     def __init__(self, session: AsyncSession):
         self.session = session
     
-    async def __aenter__(self):
+        async def __aenter__(self):
         # Start a nested transaction
         self.transaction = await self.session.begin_nested()
         return self
     
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
         # Roll back the nested transaction
         if exc_type is not None:
             await self.transaction.rollback()
-        else:
+            else:
             await self.transaction.commit()
 
 
-@pytest.fixture
-    def transactional_test(db_session: AsyncSession) -> Callable:
-    """
-    Create a function to run tests in a nested transaction.
+            @pytest.fixture
+            def transactional_test(db_session: AsyncSession) -> Callable:
+        """
+        Create a function to run tests in a nested transaction.
     
-    This can be used within a test to create a savepoint and rollback 
-    after a portion of the test is complete.
-    """
-    def _transactional_test():
+        This can be used within a test to create a savepoint and rollback
+        after a portion of the test is complete.
+        """
+        def _transactional_test():
         return TransactionalTestContext(db_session)
     
-    return _transactional_test
+        return _transactional_test
