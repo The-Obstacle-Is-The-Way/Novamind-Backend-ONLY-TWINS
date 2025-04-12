@@ -27,10 +27,11 @@ def mock_pat() -> MockPATService:
     return MockPATService()
 @pytest.fixture
 def initialized_mock_pat() -> MockPATService:
-        """Create and initialize a MockPAT instance."""
+    """Create and initialize a MockPAT instance."""
     pat = MockPATService()
     pat.initialize({"mock_delay_ms": 0})
 return pat
+    return pat
 @pytest.fixture
 def sample_readings() -> List[Dict[str, Any]]:
     """Create sample accelerometer readings."""

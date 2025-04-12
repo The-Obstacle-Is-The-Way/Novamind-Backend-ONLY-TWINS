@@ -22,11 +22,11 @@ from app.infrastructure.security.rate_limiter import (
 )
 @pytest.fixture
 def mock_cache_service():
-                """Create a mock Redis cache service for testing."""
+    """Create a mock Redis cache service for testing."""
     mock_cache = AsyncMock()
-mock_cache.exists = AsyncMock(return_value=False))
-mock_cache.get = AsyncMock(return_value=None))
-mock_cache.set = AsyncMock(return_value=True))
+mock_cache.exists = AsyncMock(return_value=False)
+mock_cache.get = AsyncMock(return_value=None)
+mock_cache.set = AsyncMock(return_value=True)
     # Ensure the Redis client exists for the rate limiter
     mock_cache.redis_client = AsyncMock()
 return mock_cache

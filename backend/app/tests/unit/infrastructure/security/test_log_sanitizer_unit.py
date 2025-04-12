@@ -463,7 +463,7 @@ class TestLogSanitizer:
     def test_sanitization_hook(self, log_sanitizer):
         """Test custom sanitization hooks."""
         # Define a custom sanitization hook
-    def custom_hook(value, context):
+        def custom_hook(value, context):
             if isinstance(value, str) and "CUSTOM_PHI" in value:
                 return value.replace("CUSTOM_PHI", "[CUSTOM_REDACTED]")
             return value
