@@ -36,36 +36,36 @@ class TestMockPHIDetection(BaseSecurityTest):
         self.service = MockPHIDetection()
         self.service.initialize({})
         
-        self.sample_phi_text = (
-            "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
-            "His email is john.smith@example.com and phone number is (555) 123-4567. "
-            "Patient lives at 123 Main St, Springfield, IL 62701."
-        )
+    self.sample_phi_text = (
+    "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
+    "His email is john.smith@example.com and phone number is (555) 123-4567. "
+    "Patient lives at 123 Main St, Springfield, IL 62701."
+    )
         
-        self.no_phi_text = (
-            "The patient reported feeling better after the treatment. "
-            "Symptoms have decreased in severity and frequency. "
-            "Regular exercise and medication adherence are recommended."
-        )
+    self.no_phi_text = (
+    "The patient reported feeling better after the treatment. "
+    "Symptoms have decreased in severity and frequency. "
+    "Regular exercise and medication adherence are recommended."
+    )
     
     def test_initialization(self) -> None:
         """Test initialization of the PHI detection service."""
-        self.assert IsNotNone(self.service)
+        self.assertIsNotNone(self.service)
         # _initialized is a private attribute, use is_healthy() instead
-        self.assert True(self.service.is_healthy())
+        self.assertTrue(self.service.is_healthy())
     
     def test_detect_phi_basic(self) -> None:
         """Test basic PHI detection in text."""
         result = self.service.detect_phi(self.sample_phi_text)
         # The result is a dictionary with 'phi_instances' key that contains detected PHI
-        self.assert In('phi_instances', result)
-        self.assert Greater(len(result['phi_instances']), 0)
+        self.assertIn('phi_instances', result)
+        self.assertGreater(len(result['phi_instances']), 0)
     
         # Extract entity types from the result
-        detected_types = [entity['type'] for entity in result['phi_instances']]
+    detected_types = [entity['type'] for entity in result['phi_instances']]
         
         # Check for common PHI types
-        self.assert In("NAME", detected_types)
+    self.assertIn("NAME", detected_types)
         # Other types may vary based on the implementation
     
     def test_detect_phi_with_levels(self) -> None:
@@ -73,12 +73,12 @@ class TestMockPHIDetection(BaseSecurityTest):
         # MockPHIDetection doesn't support min_confidence, use detection_level instead
         result = self.service.detect_phi(self.sample_phi_text, detection_level="strict")
         
-        self.assert In('phi_instances', result)
-        self.assert Greater(len(result['phi_instances']), 0)
+    self.assertIn('phi_instances', result)
+    self.assertGreater(len(result['phi_instances']), 0)
         
         # Check that all entities have confidence scores
-        for entity in result['phi_instances']:
-            self.assert In('confidence', entity)
+    for entity in result['phi_instances']:
+    self.assertIn('confidence', entity)
     
     def test_detect_phi_with_specific_types(self) -> None:
         """Test PHI detection with specific entity types."""
@@ -86,14 +86,14 @@ class TestMockPHIDetection(BaseSecurityTest):
         # Just verify that it detects different types of PHI
         result = self.service.detect_phi(self.sample_phi_text)
         
-        self.assert In('phi_instances', result)
-        self.assert Greater(len(result['phi_instances']), 0)
+    self.assertIn('phi_instances', result)
+    self.assertGreater(len(result['phi_instances']), 0)
         
         # Extract entity types
-        detected_types = [entity['type'] for entity in result['phi_instances']]
+    detected_types = [entity['type'] for entity in result['phi_instances']]
         
         # Verify at least one type of PHI is detected
-        self.assert Greater(len(set(detected_types)), 0)
+    self.assertGreater(len(set(detected_types)), 0)
     
     def test_detect_phi_no_phi(self) -> None:
         """Test PHI detection with text that doesn't contain PHI."""
@@ -101,30 +101,30 @@ class TestMockPHIDetection(BaseSecurityTest):
         # This test just verifies it doesn't crash
         result = self.service.detect_phi(self.no_phi_text)
         
-        self.assert In('phi_instances', result)
+    self.assertIn('phi_instances', result)
         # We can't assert exactly what it returns as the mock may have various behaviors
     
     def test_detect_phi_edge_cases(self) -> None:
         """Test PHI detection with edge cases."""
         # Empty text should raise InvalidRequestError
-        with self.assert Raises(InvalidRequestError):
-            self.service.detect_phi("")
+        with self.assertRaises(InvalidRequestError):
+        self.service.detect_phi("")
         
         # None input should raise InvalidRequestError
-        with self.assert Raises(InvalidRequestError):
-            self.service.detect_phi(None)
+    with self.assertRaises(InvalidRequestError):
+    self.service.detect_phi(None)
     
     def test_redact_phi_basic(self) -> None:
         """Test basic PHI redaction in text."""
         redacted = self.service.redact_phi(self.sample_phi_text)
         
         # The result should be a dict with 'redacted_text' key
-        self.assert In('redacted_text', redacted)
-        redacted_text = redacted['redacted_text']
+    self.assertIn('redacted_text', redacted)
+    redacted_text = redacted['redacted_text']
         
         # Check that PHI has been redacted
         # The actual redaction format depends on the implementation
-        self.assert NotEqual(redacted_text, self.sample_phi_text)
+    self.assert NotEqual(redacted_text, self.sample_phi_text)
     
     def test_redact_phi_custom_replacement(self) -> None:
         """Test PHI redaction with custom replacement text."""
@@ -132,14 +132,14 @@ class TestMockPHIDetection(BaseSecurityTest):
         redacted = self.service.redact_phi(self.sample_phi_text, replacement=replacement)
         
         # Verify the result is a dictionary with redacted_text
-        self.assert In('redacted_text', redacted)
-        redacted_text = redacted['redacted_text']
+    self.assertIn('redacted_text', redacted)
+    redacted_text = redacted['redacted_text']
         
         # The redacted text should be different from the original
-        self.assert NotEqual(redacted_text, self.sample_phi_text)
+    self.assert NotEqual(redacted_text, self.sample_phi_text)
         
         # Verify the replacement was used (based on replacement_used in result)
-        self.assert Equal(redacted['replacement_used'], replacement)
+    self.assertEqual(redacted['replacement_used'], replacement)
     
     def test_redact_phi_levels(self) -> None:
         """Test PHI redaction with confidence levels."""
@@ -149,24 +149,24 @@ class TestMockPHIDetection(BaseSecurityTest):
             detection_level="strict"
         )
         
-        redacted_low = self.service.redact_phi(
-            self.sample_phi_text,
-            detection_level="relaxed"
-        )
+    redacted_low = self.service.redact_phi(
+    self.sample_phi_text,
+    detection_level="relaxed"
+    )
         
         # Both should return dictionaries with redacted_text
-        self.assert In('redacted_text', redacted_high)
-        self.assert In('redacted_text', redacted_low)
+    self.assertIn('redacted_text', redacted_high)
+    self.assertIn('redacted_text', redacted_low)
     
     def test_redact_phi_edge_cases(self) -> None:
         """Test PHI redaction with edge cases."""
         # Empty text should raise InvalidRequestError
-        with self.assert Raises(InvalidRequestError):
-            self.service.redact_phi("")
+        with self.assertRaises(InvalidRequestError):
+        self.service.redact_phi("")
         
         # None input should raise InvalidRequestError
-        with self.assert Raises(InvalidRequestError):
-            self.service.redact_phi(None)
+    with self.assertRaises(InvalidRequestError):
+    self.service.redact_phi(None)
     
     def test_pattern_selection(self) -> None:
         """Test selection of detection patterns based on configuration."""
@@ -176,7 +176,7 @@ class TestMockPHIDetection(BaseSecurityTest):
             "sensitivity": "high"  # Use supported config option
         })
         
-        result = pattern_service.detect_phi(self.sample_phi_text)
+    result = pattern_service.detect_phi(self.sample_phi_text)
         
         # Verify the result structure
-        self.assert In('phi_instances', result)
+    self.assertIn('phi_instances', result)

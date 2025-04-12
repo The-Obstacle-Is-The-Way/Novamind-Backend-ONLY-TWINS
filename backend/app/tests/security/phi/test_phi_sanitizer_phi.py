@@ -27,10 +27,10 @@ class TestPHISanitization(BaseSecurityTest):
         sanitized = self.sanitizer.sanitize(text)
         
         # Verify name is replaced with [REDACTED]
-        self.assertNotIn("John Smith", sanitized)
-        self.assertIn("[REDACTED NAME]", sanitized)
+    self.assertNotIn("John Smith", sanitized)
+    self.assertIn("[REDACTED NAME]", sanitized)
         # The PHISanitizer is replacing the entire phrase including "Patient"
-        self.assertIn("reported symptoms", sanitized)
+    self.assertIn("reported symptoms", sanitized)
         
     def test_sanitize_text_with_phone_numbers(self):
         """Test that phone numbers are properly sanitized."""
@@ -41,12 +41,12 @@ class TestPHISanitization(BaseSecurityTest):
             "5551234567 is the contact number"
         ]
         
-        for text in formats:
-            sanitized = self.sanitizer.sanitize(text)
-            self.assertNotIn("555", sanitized)
-            self.assertNotIn("123", sanitized)
-            self.assertNotIn("4567", sanitized)
-            self.assertIn("[REDACTED PHONE]", sanitized)
+    for text in formats:
+    sanitized = self.sanitizer.sanitize(text)
+    self.assertNotIn("555", sanitized)
+    self.assertNotIn("123", sanitized)
+    self.assertNotIn("4567", sanitized)
+    self.assertIn("[REDACTED PHONE]", sanitized)
             
     def test_sanitize_text_with_dates(self):
         """Test that dates are properly sanitized."""
@@ -55,8 +55,8 @@ class TestPHISanitization(BaseSecurityTest):
         sanitized = self.sanitizer.sanitize(text)
         
         # Verify date is replaced with [REDACTED DOB]
-        self.assertNotIn("01/15/1980", sanitized)
-        self.assertIn("[REDACTED DOB]", sanitized)
+    self.assertNotIn("01/15/1980", sanitized)
+    self.assertIn("[REDACTED DOB]", sanitized)
         
         # Note: The current PHISanitizer implementation doesn't detect all date formats
         # For example, it doesn't detect "1980-01-15" or "January 15, 1980"
@@ -70,11 +70,11 @@ class TestPHISanitization(BaseSecurityTest):
             "SSN 123-45-6789 is on file"
         ]
         
-        for text in formats:
-            sanitized = self.sanitizer.sanitize(text)
-            self.assertNotIn("123-45-6789", sanitized)
-            self.assertNotIn("123456789", sanitized)
-            self.assertIn("[REDACTED SSN]", sanitized)
+    for text in formats:
+    sanitized = self.sanitizer.sanitize(text)
+    self.assertNotIn("123-45-6789", sanitized)
+    self.assertNotIn("123456789", sanitized)
+    self.assertIn("[REDACTED SSN]", sanitized)
             
     def test_sanitize_text_with_addresses(self):
         """Test that addresses are properly sanitized."""
@@ -84,9 +84,9 @@ class TestPHISanitization(BaseSecurityTest):
         
         # The current PHISanitizer implementation only detects the street address
         # and city name, but not apartment numbers or zip codes
-        self.assertNotIn("123 Main St", sanitized)
-        self.assertNotIn("New York", sanitized)
-        self.assertIn("[REDACTED NAME]", sanitized)  # The city name is detected as a name
+    self.assertNotIn("123 Main St", sanitized)
+    self.assertNotIn("New York", sanitized)
+    self.assertIn("[REDACTED NAME]", sanitized)  # The city name is detected as a name
         
     def test_sanitize_medical_record_numbers(self):
         """Test that medical record numbers are properly sanitized."""
@@ -95,8 +95,8 @@ class TestPHISanitization(BaseSecurityTest):
         sanitized = self.sanitizer.sanitize(text)
         
         # Verify MRN is replaced with [REDACTED MRN]
-        self.assertNotIn("MR12345", sanitized)
-        self.assertIn("[REDACTED MRN]", sanitized)
+    self.assertNotIn("MR12345", sanitized)
+    self.assertIn("[REDACTED MRN]", sanitized)
             
     def test_sanitize_nested_dictionary(self):
         """Test that PHI in nested dictionary structures is properly sanitized."""
@@ -117,16 +117,16 @@ class TestPHISanitization(BaseSecurityTest):
             }
         }
         
-        sanitized = self.sanitizer.sanitize(data)
+    sanitized = self.sanitizer.sanitize(data)
         
         # Check that PHI is sanitized but other data is preserved
-        self.assertNotIn("John Smith", str(sanitized))
-        self.assertNotIn("555-123-4567", str(sanitized))
-        self.assertNotIn("john.smith@example.com", str(sanitized))
-        self.assertIn("[REDACTED NAME]", str(sanitized))
-        self.assertIn("[REDACTED PHONE]", str(sanitized))
-        self.assertIn("[REDACTED EMAIL]", str(sanitized))
-        self.assertIn("Patient reports symptoms", str(sanitized))
+    self.assertNotIn("John Smith", str(sanitized))
+    self.assertNotIn("555-123-4567", str(sanitized))
+    self.assertNotIn("john.smith@example.com", str(sanitized))
+    self.assertIn("[REDACTED NAME]", str(sanitized))
+    self.assertIn("[REDACTED PHONE]", str(sanitized))
+    self.assertIn("[REDACTED EMAIL]", str(sanitized))
+    self.assertIn("Patient reports symptoms", str(sanitized))
         
     def test_sanitize_list_data(self):
         """Test that PHI in list structures is properly sanitized."""
@@ -137,14 +137,14 @@ class TestPHISanitization(BaseSecurityTest):
             "Notes: Patient reports symptoms"
         ]
         
-        sanitized = self.sanitizer.sanitize(data)
+    sanitized = self.sanitizer.sanitize(data)
         
         # Check that PHI is sanitized but other data is preserved
-        self.assertNotIn("John Smith", str(sanitized))
-        self.assertNotIn("555-123-4567", str(sanitized))
-        self.assertIn("[REDACTED NAME]", str(sanitized))
-        self.assertIn("[REDACTED PHONE]", str(sanitized))
-        self.assertIn("Notes: Patient reports symptoms", str(sanitized))
+    self.assertNotIn("John Smith", str(sanitized))
+    self.assertNotIn("555-123-4567", str(sanitized))
+    self.assertIn("[REDACTED NAME]", str(sanitized))
+    self.assertIn("[REDACTED PHONE]", str(sanitized))
+    self.assertIn("Notes: Patient reports symptoms", str(sanitized))
         
     def test_audit_logging_on_phi_detection(self):
         """Test that PHI detection is properly audit logged."""
@@ -161,4 +161,4 @@ class TestPHISanitization(BaseSecurityTest):
         sanitized = self.sanitizer.sanitize(text)
         
         # The text should remain unchanged
-        self.assertEqual(text, sanitized)
+    self.assertEqual(text, sanitized)

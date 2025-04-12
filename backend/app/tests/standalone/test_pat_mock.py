@@ -74,21 +74,21 @@ class TestMockPATInitialization:
         config = {"mock_delay_ms": 100}
         mock_pat.initialize(config)
         
-        assert mock_pat._initialized is True
-        assert mock_pat._mock_delay_ms  ==  100
+    assert mock_pat._initialized is True
+    assert mock_pat._mock_delay_ms  ==  100
         
     @pytest.mark.standalone()
     def test_initialize_with_empty_config(self, mock_pat):
         """Test initialization with empty config."""
         mock_pat.initialize({})
         
-        assert mock_pat._initialized is True
-        assert mock_pat._mock_delay_ms  ==  0
+    assert mock_pat._initialized is True
+    assert mock_pat._mock_delay_ms  ==  0
         
     def test_not_initialized_check(self, mock_pat):
         """Test _check_initialized raises exception when not initialized."""
         with pytest.raises(InitializationError):
-            mock_pat._check_initialized()
+        mock_pat._check_initialized()
 
 
 class TestMockPATAnalyzeActigraphy:
@@ -107,29 +107,29 @@ class TestMockPATAnalyzeActigraphy:
         )
         
         # Verify the result structure
-        assert "analysis_id" in result
-        assert result["patient_id"] == "patient-123"
-        assert "created_at" in result
-        assert result["start_time"] == "2025-03-27T12:00:00Z"
-        assert result["end_time"] == "2025-03-28T12:00:00Z"
-        assert result["status"] == "completed"
+    assert "analysis_id" in result
+    assert result["patient_id"] == "patient-123"
+    assert "created_at" in result
+    assert result["start_time"] == "2025-03-27T12:00:00Z"
+    assert result["end_time"] == "2025-03-28T12:00:00Z"
+    assert result["status"] == "completed"
         
         # Verify results for each requested analysis type
-        for analysis_type in valid_analysis_types:
-            assert analysis_type in result["results"]
+    for analysis_type in valid_analysis_types:
+    assert analysis_type in result["results"]
         
         # Verify analysis is stored in service
-        analysis_id = result["analysis_id"]
-        assert analysis_id in initialized_mock_pat._analyses
+    analysis_id = result["analysis_id"]
+    assert analysis_id in initialized_mock_pat._analyses
         
         # Verify analysis is associated with patient
-        assert "patient-123" in initialized_mock_pat._patient_analyses
-        assert analysis_id in initialized_mock_pat._patient_analyses["patient-123"]
+    assert "patient-123" in initialized_mock_pat._patient_analyses
+    assert analysis_id in initialized_mock_pat._patient_analyses["patient-123"]
     
     def test_analyze_actigraphy_not_initialized(self, mock_pat, valid_readings, valid_device_info, valid_analysis_types):
         """Test actigraphy analysis fails when service is not initialized."""
         with pytest.raises(InitializationError):
-            mock_pat.analyze_actigraphy(
+        mock_pat.analyze_actigraphy(
                 patient_id="patient-123",
                 readings=valid_readings,
                 start_time="2025-03-27T12:00:00Z",
@@ -142,7 +142,7 @@ class TestMockPATAnalyzeActigraphy:
     def test_analyze_actigraphy_empty_readings(self, initialized_mock_pat, valid_device_info, valid_analysis_types):
         """Test actigraphy analysis fails with empty readings."""
         with pytest.raises(ValidationError):
-            initialized_mock_pat.analyze_actigraphy(
+        initialized_mock_pat.analyze_actigraphy(
                 patient_id="patient-123",
                 readings=[],
                 start_time="2025-03-27T12:00:00Z",
@@ -159,21 +159,21 @@ class TestMockPATAnalyzeActigraphy:
             {"x": 0.2, "y": 0.3, "z": 0.8},
         ]
         
-        with pytest.raises(ValidationError):
-            initialized_mock_pat.analyze_actigraphy(
-                patient_id="patient-123",
-                readings=invalid_readings,
-                start_time="2025-03-27T12:00:00Z",
-                end_time="2025-03-28T12:00:00Z",
-                sampling_rate_hz=30.0,
-                device_info=valid_device_info,
-                analysis_types=valid_analysis_types,
-            )
+    with pytest.raises(ValidationError):
+    initialized_mock_pat.analyze_actigraphy(
+    patient_id="patient-123",
+    readings=invalid_readings,
+    start_time="2025-03-27T12:00:00Z",
+    end_time="2025-03-28T12:00:00Z",
+    sampling_rate_hz=30.0,
+    device_info=valid_device_info,
+    analysis_types=valid_analysis_types,
+    )
     
     def test_analyze_actigraphy_negative_sampling_rate(self, initialized_mock_pat, valid_readings, valid_device_info, valid_analysis_types):
         """Test actigraphy analysis fails with negative sampling rate."""
         with pytest.raises(ValidationError):
-            initialized_mock_pat.analyze_actigraphy(
+        initialized_mock_pat.analyze_actigraphy(
                 patient_id="patient-123",
                 readings=valid_readings,
                 start_time="2025-03-27T12:00:00Z",
@@ -186,7 +186,7 @@ class TestMockPATAnalyzeActigraphy:
     def test_analyze_actigraphy_empty_device_info(self, initialized_mock_pat, valid_readings, valid_analysis_types):
         """Test actigraphy analysis fails with empty device info."""
         with pytest.raises(ValidationError):
-            initialized_mock_pat.analyze_actigraphy(
+        initialized_mock_pat.analyze_actigraphy(
                 patient_id="patient-123",
                 readings=valid_readings,
                 start_time="2025-03-27T12:00:00Z",
@@ -203,21 +203,21 @@ class TestMockPATAnalyzeActigraphy:
             # Missing manufacturer
         }
         
-        with pytest.raises(ValidationError):
-            initialized_mock_pat.analyze_actigraphy(
-                patient_id="patient-123",
-                readings=valid_readings,
-                start_time="2025-03-27T12:00:00Z",
-                end_time="2025-03-28T12:00:00Z",
-                sampling_rate_hz=30.0,
-                device_info=invalid_device_info,
-                analysis_types=valid_analysis_types,
-            )
+    with pytest.raises(ValidationError):
+    initialized_mock_pat.analyze_actigraphy(
+    patient_id="patient-123",
+    readings=valid_readings,
+    start_time="2025-03-27T12:00:00Z",
+    end_time="2025-03-28T12:00:00Z",
+    sampling_rate_hz=30.0,
+    device_info=invalid_device_info,
+    analysis_types=valid_analysis_types,
+    )
     
     def test_analyze_actigraphy_empty_analysis_types(self, initialized_mock_pat, valid_readings, valid_device_info):
         """Test actigraphy analysis fails with empty analysis types."""
         with pytest.raises(ValidationError):
-            initialized_mock_pat.analyze_actigraphy(
+        initialized_mock_pat.analyze_actigraphy(
                 patient_id="patient-123",
                 readings=valid_readings,
                 start_time="2025-03-27T12:00:00Z",
@@ -231,16 +231,16 @@ class TestMockPATAnalyzeActigraphy:
         """Test actigraphy analysis fails with invalid analysis types."""
         invalid_analysis_types = ["sleep", "invalid_type"]
         
-        with pytest.raises(ValidationError):
-            initialized_mock_pat.analyze_actigraphy(
-                patient_id="patient-123",
-                readings=valid_readings,
-                start_time="2025-03-27T12:00:00Z",
-                end_time="2025-03-28T12:00:00Z",
-                sampling_rate_hz=30.0,
-                device_info=valid_device_info,
-                analysis_types=invalid_analysis_types,
-            )
+    with pytest.raises(ValidationError):
+    initialized_mock_pat.analyze_actigraphy(
+    patient_id="patient-123",
+    readings=valid_readings,
+    start_time="2025-03-27T12:00:00Z",
+    end_time="2025-03-28T12:00:00Z",
+    sampling_rate_hz=30.0,
+    device_info=valid_device_info,
+    analysis_types=invalid_analysis_types,
+    )
 
 
 class TestMockPATGetActigraphyEmbeddings:
@@ -257,23 +257,23 @@ class TestMockPATGetActigraphyEmbeddings:
         )
         
         # Verify the result structure
-        assert "embedding_id" in result
-        assert result["patient_id"] == "patient-123"
-        assert "created_at" in result
-        assert result["embedding_type"] == "actigraphy"
-        assert result["embedding_dim"] == 384  # Default dimension
-        assert isinstance(result["embedding"], list)
-        assert len(result["embedding"]) == 384  # Should match embedding_dim
-        assert "metadata" in result
+    assert "embedding_id" in result
+    assert result["patient_id"] == "patient-123"
+    assert "created_at" in result
+    assert result["embedding_type"] == "actigraphy"
+    assert result["embedding_dim"] == 384  # Default dimension
+    assert isinstance(result["embedding"], list)
+    assert len(result["embedding"]) == 384  # Should match embedding_dim
+    assert "metadata" in result
         
         # Verify embedding is stored in service
-        embedding_id = result["embedding_id"]
-        assert embedding_id in initialized_mock_pat._embeddings
+    embedding_id = result["embedding_id"]
+    assert embedding_id in initialized_mock_pat._embeddings
     
     def test_get_actigraphy_embeddings_not_initialized(self, mock_pat, valid_readings):
         """Test embedding generation fails when service is not initialized."""
         with pytest.raises(InitializationError):
-            mock_pat.get_actigraphy_embeddings(
+        mock_pat.get_actigraphy_embeddings(
                 patient_id="patient-123",
                 readings=valid_readings,
                 start_time="2025-03-27T12:00:00Z",
@@ -284,7 +284,7 @@ class TestMockPATGetActigraphyEmbeddings:
     def test_get_actigraphy_embeddings_empty_readings(self, initialized_mock_pat):
         """Test embedding generation fails with empty readings."""
         with pytest.raises(ValidationError):
-            initialized_mock_pat.get_actigraphy_embeddings(
+        initialized_mock_pat.get_actigraphy_embeddings(
                 patient_id="patient-123",
                 readings=[],
                 start_time="2025-03-27T12:00:00Z",
@@ -295,7 +295,7 @@ class TestMockPATGetActigraphyEmbeddings:
     def test_get_actigraphy_embeddings_negative_sampling_rate(self, initialized_mock_pat, valid_readings):
         """Test embedding generation fails with negative sampling rate."""
         with pytest.raises(ValidationError):
-            initialized_mock_pat.get_actigraphy_embeddings(
+        initialized_mock_pat.get_actigraphy_embeddings(
                 patient_id="patient-123",
                 readings=valid_readings,
                 start_time="2025-03-27T12:00:00Z",
@@ -321,24 +321,24 @@ class TestMockPATGetAnalysisById:
         )
         
         # Now retrieve it
-        analysis_id = analysis["analysis_id"]
-        result = initialized_mock_pat.get_analysis_by_id(analysis_id)
+    analysis_id = analysis["analysis_id"]
+    result = initialized_mock_pat.get_analysis_by_id(analysis_id)
         
         # Verify it's the same analysis
-        assert result["analysis_id"] == analysis_id
-        assert result["patient_id"] == "patient-123"
-        assert result["start_time"] == "2025-03-27T12:00:00Z"
-        assert result["end_time"] == "2025-03-28T12:00:00Z"
+    assert result["analysis_id"] == analysis_id
+    assert result["patient_id"] == "patient-123"
+    assert result["start_time"] == "2025-03-27T12:00:00Z"
+    assert result["end_time"] == "2025-03-28T12:00:00Z"
     
     def test_get_analysis_by_id_not_initialized(self, mock_pat):
         """Test get_analysis_by_id fails when service is not initialized."""
         with pytest.raises(InitializationError):
-            mock_pat.get_analysis_by_id("non-existent-id")
+        mock_pat.get_analysis_by_id("non-existent-id")
     
     def test_get_analysis_by_id_not_found(self, initialized_mock_pat):
         """Test get_analysis_by_id fails when analysis does not exist."""
         with pytest.raises(ResourceNotFoundError):
-            initialized_mock_pat.get_analysis_by_id("non-existent-id")
+        initialized_mock_pat.get_analysis_by_id("non-existent-id")
 
 
 class TestMockPATGetPatientAnalyses:
@@ -349,7 +349,7 @@ class TestMockPATGetPatientAnalyses:
         # Create multiple analyses for the same patient
         patient_id = "patient-123"
         for _ in range(3):
-            initialized_mock_pat.analyze_actigraphy(
+        initialized_mock_pat.analyze_actigraphy(
                 patient_id=patient_id,
                 readings=valid_readings,
                 start_time="2025-03-27T12:00:00Z",
@@ -360,23 +360,23 @@ class TestMockPATGetPatientAnalyses:
             )
         
         # Retrieve the analyses
-        result = initialized_mock_pat.get_patient_analyses(patient_id)
+    result = initialized_mock_pat.get_patient_analyses(patient_id)
         
         # Verify the result structure
-        assert "analyses" in result
-        assert len(result["analyses"]) == 3
-        assert "pagination" in result
-        assert result["pagination"]["total"] == 3
-        assert result["pagination"]["limit"] == 10
-        assert result["pagination"]["offset"] == 0
-        assert result["pagination"]["has_more"] is False
+    assert "analyses" in result
+    assert len(result["analyses"]) == 3
+    assert "pagination" in result
+    assert result["pagination"]["total"] == 3
+    assert result["pagination"]["limit"] == 10
+    assert result["pagination"]["offset"] == 0
+    assert result["pagination"]["has_more"] is False
     
     def test_get_patient_analyses_with_pagination(self, initialized_mock_pat, valid_readings, valid_device_info, valid_analysis_types):
         """Test retrieval of patient analyses with pagination."""
         # Create multiple analyses for the same patient
         patient_id = "patient-456"
         for _ in range(5):
-            initialized_mock_pat.analyze_actigraphy(
+        initialized_mock_pat.analyze_actigraphy(
                 patient_id=patient_id,
                 readings=valid_readings,
                 start_time="2025-03-27T12:00:00Z",
@@ -387,32 +387,32 @@ class TestMockPATGetPatientAnalyses:
             )
         
         # Retrieve the analyses with pagination
-        result = initialized_mock_pat.get_patient_analyses(
-            patient_id=patient_id,
-            limit=2,
-            offset=1,
-        )
+    result = initialized_mock_pat.get_patient_analyses(
+    patient_id=patient_id,
+    limit=2,
+    offset=1,
+    )
         
         # Verify pagination
-        assert len(result["analyses"]) == 2
-        assert result["pagination"]["total"] == 5
-        assert result["pagination"]["limit"] == 2
-        assert result["pagination"]["offset"] == 1
-        assert result["pagination"]["has_more"] is True
+    assert len(result["analyses"]) == 2
+    assert result["pagination"]["total"] == 5
+    assert result["pagination"]["limit"] == 2
+    assert result["pagination"]["offset"] == 1
+    assert result["pagination"]["has_more"] is True
     
     def test_get_patient_analyses_not_initialized(self, mock_pat):
         """Test get_patient_analyses fails when service is not initialized."""
         with pytest.raises(InitializationError):
-            mock_pat.get_patient_analyses("patient-123")
+        mock_pat.get_patient_analyses("patient-123")
     
     # @pytest.mark.db_required # Assuming db not required for mock
     def test_get_patient_analyses_empty(self, initialized_mock_pat):
         """Test get_patient_analyses returns empty list for patient with no analyses."""
         result = initialized_mock_pat.get_patient_analyses("non-existent-patient")
         
-        assert len(result["analyses"]) == 0
-        assert result["pagination"]["total"] == 0
-        assert result["pagination"]["has_more"] is False
+    assert len(result["analyses"]) == 0
+    assert result["pagination"]["total"] == 0
+    assert result["pagination"]["has_more"] is False
 
 
 class TestMockPATGetModelInfo:
@@ -423,20 +423,20 @@ class TestMockPATGetModelInfo:
         result = initialized_mock_pat.get_model_info()
         
         # Verify the result structure
-        assert "name" in result
-        assert "version" in result
-        assert "description" in result
-        assert "supported_analysis_types" in result
-        assert "supported_devices" in result
-        assert "created_at" in result
+    assert "name" in result
+    assert "version" in result
+    assert "description" in result
+    assert "supported_analysis_types" in result
+    assert "supported_devices" in result
+    assert "created_at" in result
         
         # Verify analysis types
-        assert set(result["supported_analysis_types"]) == {"sleep", "activity", "stress", "circadian", "anomaly"}
+    assert set(result["supported_analysis_types"]) == {"sleep", "activity", "stress", "circadian", "anomaly"}
     
     def test_get_model_info_not_initialized(self, mock_pat):
         """Test get_model_info fails when service is not initialized."""
         with pytest.raises(InitializationError):
-            mock_pat.get_model_info()
+        mock_pat.get_model_info()
 
 
 class TestMockPATIntegrateWithDigitalTwin:
@@ -457,35 +457,35 @@ class TestMockPATIntegrateWithDigitalTwin:
         )
         
         # Now integrate with Digital Twin
-        analysis_id = analysis["analysis_id"]
-        profile_id = "profile-xyz"
+    analysis_id = analysis["analysis_id"]
+    profile_id = "profile-xyz"
         
-        result = initialized_mock_pat.integrate_with_digital_twin(
-            patient_id=patient_id,
-            profile_id=profile_id,
-            analysis_id=analysis_id,
-        )
+    result = initialized_mock_pat.integrate_with_digital_twin(
+    patient_id=patient_id,
+    profile_id=profile_id,
+    analysis_id=analysis_id,
+    )
         
         # Verify the result structure
-        assert "integration_id" in result
-        assert result["patient_id"] == patient_id
-        assert result["profile_id"] == profile_id
-        assert result["analysis_id"] == analysis_id
-        assert "created_at" in result
-        assert result["status"] == "completed"
-        assert "updated_profile" in result
+    assert "integration_id" in result
+    assert result["patient_id"] == patient_id
+    assert result["profile_id"] == profile_id
+    assert result["analysis_id"] == analysis_id
+    assert "created_at" in result
+    assert result["status"] == "completed"
+    assert "updated_profile" in result
         
         # Verify updated profile
-        assert result["updated_profile"]["profile_id"] == profile_id
-        assert result["updated_profile"]["patient_id"] == patient_id
-        assert "last_updated" in result["updated_profile"]
-        assert "insights" in result["updated_profile"]
-        assert len(result["updated_profile"]["insights"]) > 0
+    assert result["updated_profile"]["profile_id"] == profile_id
+    assert result["updated_profile"]["patient_id"] == patient_id
+    assert "last_updated" in result["updated_profile"]
+    assert "insights" in result["updated_profile"]
+    assert len(result["updated_profile"]["insights"]) > 0
     
     def test_integrate_with_digital_twin_not_initialized(self, mock_pat):
         """Test integration fails when service is not initialized."""
         with pytest.raises(InitializationError):
-            mock_pat.integrate_with_digital_twin(
+        mock_pat.integrate_with_digital_twin(
                 patient_id="patient-123",
                 profile_id="profile-xyz",
                 analysis_id="analysis-abc",
@@ -494,7 +494,7 @@ class TestMockPATIntegrateWithDigitalTwin:
     def test_integrate_with_digital_twin_analysis_not_found(self, initialized_mock_pat):
         """Test integration fails when analysis ID does not exist."""
         with pytest.raises(ResourceNotFoundError):
-            initialized_mock_pat.integrate_with_digital_twin(
+        initialized_mock_pat.integrate_with_digital_twin(
                 patient_id="patient-123",
                 profile_id="profile-xyz",
                 analysis_id="non-existent-analysis",
@@ -515,9 +515,9 @@ class TestMockPATIntegrateWithDigitalTwin:
         analysis_id = analysis["analysis_id"]
         
         # Attempt integration with a different patient ID
-        with pytest.raises(AuthorizationError):
-            initialized_mock_pat.integrate_with_digital_twin(
-                patient_id="patient-456",  # Different patient
-                profile_id="profile-xyz",
-                analysis_id=analysis_id,
-            )
+    with pytest.raises(AuthorizationError):
+    initialized_mock_pat.integrate_with_digital_twin(
+    patient_id="patient-456",  # Different patient
+    profile_id="profile-xyz",
+    analysis_id=analysis_id,
+    )

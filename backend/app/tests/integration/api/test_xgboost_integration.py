@@ -80,52 +80,52 @@ class TestXGBoostIntegration:
             "time_frame_days": 90
         }
         
-        response = client.post("/api/v1/xgboost/predict/risk", json=risk_request)
-        assert response.status_code  ==  201
+    response = client.post("/api/v1/xgboost/predict/risk", json=risk_request)
+    assert response.status_code  ==  201
         
         # Save prediction ID for later steps
-        prediction_id = response.json()["prediction_id"]
-        assert prediction_id is not None
+    prediction_id = response.json()["prediction_id"]
+    assert prediction_id is not None
         
         # Step 2: Retrieve the prediction by ID
-        response = client.get(f"/api/v1/xgboost/predictions/{prediction_id}")
-        assert response.status_code  ==  200
-        assert response.json()["prediction_id"] == prediction_id
-        assert response.json()["patient_id"] == "patient-123"
-        assert response.json()["risk_level"] == "moderate"
+    response = client.get(f"/api/v1/xgboost/predictions/{prediction_id}")
+    assert response.status_code  ==  200
+    assert response.json()["prediction_id"] == prediction_id
+    assert response.json()["patient_id"] == "patient-123"
+    assert response.json()["risk_level"] == "moderate"
         
         # Step 3: Validate the prediction
-        validation_request = {
-            "status": "validated",
-            "validator_notes": "Clinically confirmed after review"
-        }
+    validation_request = {
+    "status": "validated",
+    "validator_notes": "Clinically confirmed after review"
+    }
         
-        response = client.post(
-            f"/api/v1/xgboost/predictions/{prediction_id}/validate",
-            json=validation_request
-        )
-        assert response.status_code  ==  200
-        assert response.json()["status"] == "validated"
-        assert response.json()["success"] is True
+    response = client.post(
+    f"/api/v1/xgboost/predictions/{prediction_id}/validate",
+    json=validation_request
+    )
+    assert response.status_code  ==  200
+    assert response.json()["status"] == "validated"
+    assert response.json()["success"] is True
         
         # Step 4: Generate explanation for the prediction
-        response = client.get(
-            f"/api/v1/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed"
-        )
-        assert response.status_code  ==  200
-        assert response.json()["prediction_id"] == prediction_id
-        assert "important_features" in response.json()
+    response = client.get(
+    f"/api/v1/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed"
+    )
+    assert response.status_code  ==  200
+    assert response.json()["prediction_id"] == prediction_id
+    assert "important_features" in response.json()
         
         # Step 5: Update digital twin with the prediction
-        update_request = {
-            "patient_id": "patient-123",
-            "prediction_ids": [prediction_id]
-        }
+    update_request = {
+    "patient_id": "patient-123",
+    "prediction_ids": [prediction_id]
+    }
         
-        response = client.post("/api/v1/xgboost/digital-twin/update", json=update_request)
-        assert response.status_code  ==  200
-        assert response.json()["digital_twin_updated"] is True
-        assert response.json()["prediction_count"] == 1
+    response = client.post("/api/v1/xgboost/digital-twin/update", json=update_request)
+    assert response.status_code  ==  200
+    assert response.json()["digital_twin_updated"] is True
+    assert response.json()["prediction_count"] == 1
 
     # Inject the client fixture
     def test_treatment_comparison_flow(self, client: TestClient, mock_service):
@@ -154,13 +154,13 @@ class TestXGBoostIntegration:
             }
         }
         
-        response = client.post("/api/v1/xgboost/compare/treatments", json=comparison_request)
+    response = client.post("/api/v1/xgboost/compare/treatments", json=comparison_request)
         
-        assert response.status_code  ==  200
-        assert response.json()["patient_id"] == "patient-123"
-        assert response.json()["treatments_compared"] == 3
-        assert len(response.json()["results"]) == 3
-        assert "recommendation" in response.json()
+    assert response.status_code  ==  200
+    assert response.json()["patient_id"] == "patient-123"
+    assert response.json()["treatments_compared"] == 3
+    assert len(response.json()["results"]) == 3
+    assert "recommendation" in response.json()
 
     # Inject the client fixture
     def test_model_info_flow(self, client: TestClient, mock_service):
@@ -168,31 +168,31 @@ class TestXGBoostIntegration:
         # Step 1: Get available models
         response = client.get("/api/v1/xgboost/models")
         
-        assert response.status_code  ==  200
-        assert response.json()["count"] > 0
-        assert len(response.json()["models"]) > 0
+    assert response.status_code  ==  200
+    assert response.json()["count"] > 0
+    assert len(response.json()["models"]) > 0
         
         # Save model ID for next step
-        model_id = response.json()["models"][0]["model_id"]
+    model_id = response.json()["models"][0]["model_id"]
         
         # Step 2: Get detailed model info
-        response = client.get(f"/api/v1/xgboost/models/{model_id}")
+    response = client.get(f"/api/v1/xgboost/models/{model_id}")
         
-        assert response.status_code  ==  200
-        assert response.json()["model_id"] == model_id
+    assert response.status_code  ==  200
+    assert response.json()["model_id"] == model_id
         
         # Step 3: Get feature importance
-        response = client.get(f"/api/v1/xgboost/models/{model_id}/features")
+    response = client.get(f"/api/v1/xgboost/models/{model_id}/features")
         
-        assert response.status_code  ==  200
-        assert response.json()["model_id"] == model_id
-        assert "features" in response.json()
+    assert response.status_code  ==  200
+    assert response.json()["model_id"] == model_id
+    assert "features" in response.json()
 
     # Inject the client fixture
     def test_healthcheck(self, client: TestClient, mock_service):
         """Test the healthcheck endpoint."""
         response = client.get("/api/v1/xgboost/healthcheck")
         
-        assert response.status_code  ==  200
-        assert response.json()["status"] in ["healthy", "degraded", "unhealthy"]
-        assert "components" in response.json()
+    assert response.status_code  ==  200
+    assert response.json()["status"] in ["healthy", "degraded", "unhealthy"]
+    assert "components" in response.json()

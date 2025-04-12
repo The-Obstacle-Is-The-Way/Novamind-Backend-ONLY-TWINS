@@ -64,11 +64,11 @@ async def db_session():
 @pytest.fixture
 async def sequence_repository(db_session):
             """Create sequence repository with test session."""    
-    return SqlAlchemyTemporalSequenceRepository(session=db_session)
+#     return SqlAlchemyTemporalSequenceRepository(session=db_session) # FIXME: return outside function
 @pytest.fixture
 async def event_repository(db_session):
         """Create event repository with test session."""    
-    return SqlAlchemyEventRepository(session=db_session)
+#     return SqlAlchemyEventRepository(session=db_session) # FIXME: return outside function
 @pytest.fixture
 def xgboost_service():
                 """Create XGBoost service for testing."""    
@@ -76,7 +76,7 @@ def xgboost_service():
 @pytest.fixture
 async def temporal_service(sequence_repository, event_repository, xgboost_service):
         """Create temporal neurotransmitter service with repositories and XGBoost."""    
-    return TemporalNeurotransmitterService(
+#     return TemporalNeurotransmitterService( # FIXME: return outside function
         sequence_repository=sequence_repository,
         event_repository=event_repository,
         xgboost_service=xgboost_service

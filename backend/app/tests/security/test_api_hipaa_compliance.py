@@ -45,12 +45,12 @@ try:
             self.tokenUrl = tokenUrl
             
         async def __call__(self, request=None):
-            if not request or "Authorization" not in request.headers:
-                raise HTTPException(status_code=401, detail="Not authenticated")
-            auth = request.headers["Authorization"]
-            if not auth.startswith("Bearer "):
-                raise HTTPException(status_code=401, detail="Invalid token type")
-            return auth.replace("Bearer ", "")
+        if not request or "Authorization" not in request.headers:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        auth = request.headers["Authorization"]
+        if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token type")
+#         return auth.replace("Bearer ", "") # FIXME: return outside function
             
     class Depends:
         """Mock Depends."""
@@ -84,28 +84,28 @@ try:
         def get(self, path, **kwargs):
             """Register a GET endpoint."""
         def decorator(func):
-                self.routes.append(("GET", path, func, kwargs))
+            self.routes.append(("GET", path, func, kwargs))
                 return func
             return decorator
             
         def post(self, path, **kwargs):
             """Register a POST endpoint."""
         def decorator(func):
-                self.routes.append(("POST", path, func, kwargs))
+            self.routes.append(("POST", path, func, kwargs))
                 return func
             return decorator
             
         def put(self, path, **kwargs):
             """Register a PUT endpoint."""
         def decorator(func):
-                self.routes.append(("PUT", path, func, kwargs))
+            self.routes.append(("PUT", path, func, kwargs))
                 return func
             return decorator
             
         def delete(self, path, **kwargs):
             """Register a DELETE endpoint."""
         def decorator(func):
-                self.routes.append(("DELETE", path, func, kwargs))
+            self.routes.append(("DELETE", path, func, kwargs))
                 return func
             return decorator
             
@@ -142,53 +142,53 @@ try:
             response.status_code = 200
             
             # Simulate authentication check
-            auth_header = headers.get("Authorization") if headers else None
-            if "/patients/" in url and not auth_header:
-                response.status_code = 401
-                response.json.return_value = {"detail": "Not authenticated"}
-                return response
+        auth_header = headers.get("Authorization") if headers else None
+        if "/patients/" in url and not auth_header:
+        response.status_code = 401
+        response.json.return_value = {"detail": "Not authenticated"}
+#         return response # FIXME: return outside function
                 
             # Simulate role-based access control
-            if auth_header and "patient-token" in auth_header and "/patients/" in url:
+        if auth_header and "patient-token" in auth_header and "/patients/" in url:
                 # Extract patient ID from URL
-                try:
-                    url_parts = url.split("/")
-                    patient_id = url_parts[url_parts.index("patients") + 1]
-                    token_patient_id = "P12345"  # Simulated patient ID from token
+        try:
+        url_parts = url.split("/")
+        patient_id = url_parts[url_parts.index("patients") + 1]
+        token_patient_id = "P12345"  # Simulated patient ID from token
                     
                     # Patient can only access their own data
-                    if patient_id != token_patient_id:
-                        response.status_code = 403
-                        response.json.return_value = {"detail": "Not authorized to access this resource"}
-                        return response
-                except (ValueError, IndexError):
-                    pass
+        if patient_id != token_patient_id:
+        response.status_code = 403
+        response.json.return_value = {"detail": "Not authorized to access this resource"}
+#         return response # FIXME: return outside function
+        except (ValueError, IndexError):
+        pass
                     
             # Simulate successful responses with appropriate data
-            if method == "GET" and "/patients/" in url:
-                patient_data = {
-                    "id": "P12345",
-                    "first_name": "John",
-                    "last_name": "Doe",
-                    "date_of_birth": "1980-01-01",
+        if method == "GET" and "/patients/" in url:
+        patient_data = {
+        "id": "P12345",
+        "first_name": "John",
+        "last_name": "Doe",
+        "date_of_birth": "1980-01-01",
                     # PHI fields should be protected
-                    "ssn": "[REDACTED]",
-                    "email": "j***@example.com",
-                    "phone": "(555) ***-**67",
-                    "address": "123 *** St, ***town, ** 12345",
-                }
-                response.json.return_value = patient_data
-            elif method == "POST" and "/patients" in url:
+        "ssn": "[REDACTED]",
+        "email": "j***@example.com",
+        "phone": "(555) ***-**67",
+        "address": "123 *** St, ***town, ** 12345",
+        }
+        response.json.return_value = patient_data
+        elif method == "POST" and "/patients" in url:
                 # Simulate patient creation
-                response.status_code = 201
-                created_data = kwargs.get("json", {}).copy()
-                created_data["id"] = "P98765"
+        response.status_code = 201
+        created_data = kwargs.get("json", {}).copy()
+        created_data["id"] = "P98765"
                 # Sensitive fields should be sanitized in the response
-                if "ssn" in created_data:
-                    created_data["ssn"] = "[REDACTED]"
-                response.json.return_value = created_data
+        if "ssn" in created_data:
+        created_data["ssn"] = "[REDACTED]"
+        response.json.return_value = created_data
                 
-            return response
+#         return response # FIXME: return outside function
             
     # Create a mock patients router
     patients_router = APIRouter(prefix="/patients", tags=["patients"])
@@ -197,11 +197,11 @@ try:
     async def get_patient(patient_id: str, token: str = Depends(OAuth2PasswordBearer(tokenUrl="token"))):
         """Get a patient by ID."""
         
-    return {
-            "id": patient_id,
-            "first_name": "John",
-            "last_name": "Doe",
-            "email": "j***@example.com",  # Redacted
+#     return { # FIXME: return outside function
+        "id": patient_id,
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "j***@example.com",  # Redacted
         }
     
     @patients_router.post("/")
@@ -209,7 +209,7 @@ try:
         """Create a new patient."""
         new_patient = patient.copy()
         new_patient["id"] = "P" + str(hash(patient.get("first_name", "") + patient.get("last_name", "")))[:5]
-        return new_patient
+#         return new_patient # FIXME: return outside function
         
     class PHISanitizingMiddleware:
         """Mock PHI sanitizing middleware."""
@@ -217,9 +217,9 @@ try:
             self.app = app
             
         async def __call__(self, scope, receive, send):
-            """Process the request."""
+        """Process the request."""
             # In a real middleware, this would sanitize PHI in responses
-            await self.app(scope, receive, send)
+        await self.app(scope, receive, send)
 
 
 class TestAPIHIPAACompliance:
@@ -272,11 +272,11 @@ class TestAPIHIPAACompliance:
         assert own_response.status_code  ==  200
         
         # Someone else's data - should be forbidden
-        other_response = client.get(
-            "/api/v1/patients/P67890", 
-            headers={"Authorization": patient_token}
-        )
-        assert other_response.status_code  ==  403
+    other_response = client.get(
+    "/api/v1/patients/P67890",
+    headers={"Authorization": patient_token}
+    )
+    assert other_response.status_code  ==  403
         
     def test_phi_sanitization_in_response(self, client, admin_token):
         """Test that PHI is properly sanitized in API responses."""
@@ -287,11 +287,11 @@ class TestAPIHIPAACompliance:
         assert response.status_code  ==  200
         
         # Check PHI is sanitized
-        data = response.json()
-        assert "ssn" not in data or data["ssn"] == "[REDACTED]"
-        assert "email" in data and "*" in data["email"]  # Email should be redacted
-        assert "phone" not in data or "*" in data["phone"]  # Phone should be redacted
-        assert "address" not in data or "*" in data["address"]  # Address should be redacted
+    data = response.json()
+    assert "ssn" not in data or data["ssn"] == "[REDACTED]"
+    assert "email" in data and "*" in data["email"]  # Email should be redacted
+    assert "phone" not in data or "*" in data["phone"]  # Phone should be redacted
+    assert "address" not in data or "*" in data["address"]  # Address should be redacted
         
     def test_phi_not_in_query_params(self, client, admin_token):
         """Test that PHI is not exposed in query parameters."""
@@ -299,23 +299,23 @@ class TestAPIHIPAACompliance:
         original_get = client.get
         
     def mock_get(url, headers=None, params=None):
-            """Mock GET to inspect query parameters."""
+        """Mock GET to inspect query parameters."""
             # Check params don't contain PHI
             if params:
-                param_str = json.dumps(params)
+        param_str = json.dumps(params)
                 phi_patterns = ["123-45-6789", "john.doe@example.com", "(555) 123-4567"]
                 for pattern in phi_patterns:
-                    assert pattern not in param_str, f"PHI {pattern} found in query params"
+        assert pattern not in param_str, f"PHI {pattern} found in query params"
             return original_get(url, headers, params)
             
-        client.get = mock_get
+    client.get = mock_get
         
         # Make a request with query parameters
-        client.get(
-            "/api/v1/patients", 
-            headers={"Authorization": admin_token},
-            params={"name": "John", "status": "active"}
-        )
+    client.get(
+    "/api/v1/patients",
+    headers={"Authorization": admin_token},
+    params={"name": "John", "status": "active"}
+    )
         
     def test_phi_not_in_request_bodies(self, client, admin_token):
         """Test that PHI is properly handled in request bodies."""
@@ -323,32 +323,32 @@ class TestAPIHIPAACompliance:
         original_post = client.post
         
     def mock_post(url, headers=None, json=None, data=None):
-            """Mock POST to inspect request body."""
+        """Mock POST to inspect request body."""
             # For a real test, we would verify the request is sent over HTTPS
             # and that the body is properly encrypted or sanitized
             return original_post(url, headers, json, data)
             
-        client.post = mock_post
+    client.post = mock_post
         
         # Create a patient with PHI
-        response = client.post(
-            "/api/v1/patients", 
-            headers={"Authorization": admin_token},
-            json={
-                "first_name": "Jane",
-                "last_name": "Smith",
-                "date_of_birth": "1985-05-15",
-                "ssn": "987-65-4321",
-                "email": "jane.smith@example.com",
-                "phone": "(555) 987-6543"
-            }
-        )
+    response = client.post(
+    "/api/v1/patients",
+    headers={"Authorization": admin_token},
+    json={
+    "first_name": "Jane",
+    "last_name": "Smith",
+    "date_of_birth": "1985-05-15",
+    "ssn": "987-65-4321",
+    "email": "jane.smith@example.com",
+    "phone": "(555) 987-6543"
+    }
+    )
         
-        assert response.status_code  ==  201
+    assert response.status_code  ==  201
         
         # Verify PHI is sanitized in response
-        data = response.json()
-        assert "ssn" not in data or data["ssn"] == "[REDACTED]"
+    data = response.json()
+    assert "ssn" not in data or data["ssn"] == "[REDACTED]"
         
     def test_https_requirement(self, client, admin_token):
         """Test that the API enforces HTTPS for all PHI endpoints."""
@@ -366,18 +366,18 @@ class TestAPIHIPAACompliance:
         assert admin_response.status_code  ==  200
         
         # Doctor can access any patient
-        doctor_response = client.get(
-            "/api/v1/patients/P67890", 
-            headers={"Authorization": doctor_token}
-        )
-        assert doctor_response.status_code  ==  200
+    doctor_response = client.get(
+    "/api/v1/patients/P67890",
+    headers={"Authorization": doctor_token}
+    )
+    assert doctor_response.status_code  ==  200
         
         # Patient can only access their own data
-        patient_response = client.get(
-            "/api/v1/patients/P67890", 
-            headers={"Authorization": patient_token}
-        )
-        assert patient_response.status_code  ==  403
+    patient_response = client.get(
+    "/api/v1/patients/P67890",
+    headers={"Authorization": patient_token}
+    )
+    assert patient_response.status_code  ==  403
         
     def test_phi_security_headers(self, client, admin_token):
         """Test that appropriate security headers are applied to responses."""
@@ -412,14 +412,14 @@ class TestAPIHIPAACompliance:
         
         # For this mock test, we'll perform an operation and assume auditing
         # is implemented through appropriate middleware
-        client.post(
-            "/api/v1/patients", 
-            headers={"Authorization": admin_token},
-            json={"first_name": "Test", "last_name": "Patient"}
-        )
+    client.post(
+    "/api/v1/patients",
+    headers={"Authorization": admin_token},
+    json={"first_name": "Test", "last_name": "Patient"}
+    )
         
         # In a real test, we would assert audit log contains the operation details
-        assert any(middleware[0] == PHISanitizingMiddleware for middleware in getattr(client.app, "middleware", []))
+    assert any(middleware[0] == PHISanitizingMiddleware for middleware in getattr(client.app, "middleware", []))
 
 
 if __name__ == "__main__":

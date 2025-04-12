@@ -24,14 +24,14 @@ class TestGetLogger:
     def test_get_logger_sets_level(self):
         """Test that get_logger sets the log level."""
         with patch.dict(os.environ, {"LOG_LEVEL": "DEBUG"}):
-            logger = get_logger("test_logger_debug")
+        logger = get_logger("test_logger_debug")
             assert logger.level == logging.DEBUG
     
     def test_get_logger_default_level(self):
         """Test that get_logger uses INFO as default level."""
         # Remove LOG_LEVEL from env if it exists
         with patch.dict(os.environ, clear=True):
-            logger = get_logger("test_logger_default")
+        logger = get_logger("test_logger_default")
             assert logger.level == logging.INFO
     
     def test_get_logger_adds_handler(self):
@@ -48,29 +48,29 @@ class TestLogExecutionTime:
         """Test log_execution_time decorator on successful function execution."""
         mock_logger = MagicMock()
         
-        @log_execution_time(logger=mock_logger, level=LogLevel.INFO)
+    @log_execution_time(logger=mock_logger, level=LogLevel.INFO)
         def test_function(a, b):
             return a + b
         
-        result = test_function(1, 2)
+    result = test_function(1, 2)
         
-        assert result == 3
-        mock_logger.log.assert_called_once()
-        assert "executed in" in mock_logger.log.call_args[0][1]
+    assert result == 3
+    mock_logger.log.assert_called_once()
+    assert "executed in" in mock_logger.log.call_args[0][1]
     
     def test_log_execution_time_error(self):
         """Test log_execution_time decorator on function that raises an exception."""
         mock_logger = MagicMock()
         
-        @log_execution_time(logger=mock_logger)
+    @log_execution_time(logger=mock_logger)
         def failing_function():
             raise ValueError("Test error")
         
-        with pytest.raises(ValueError):
-            failing_function()
+    with pytest.raises(ValueError):
+    failing_function()
         
-        mock_logger.exception.assert_called_once()
-        assert "Exception in 'failing_function'" in mock_logger.exception.call_args[0][0]
+    mock_logger.exception.assert_called_once()
+    assert "Exception in 'failing_function'" in mock_logger.exception.call_args[0][0]
     
     def test_log_execution_time_creates_logger(self):
         """Test that log_execution_time creates a logger if none is provided."""
@@ -79,8 +79,8 @@ class TestLogExecutionTime:
             return a + b
         
         # Should not raise an exception
-        result = test_function(1, 2)
-        assert result == 3
+    result = test_function(1, 2)
+    assert result == 3
 
 
 class TestLogMethodCalls:
@@ -90,7 +90,7 @@ class TestLogMethodCalls:
         """Test log_method_calls decorator on a class."""
         mock_logger = MagicMock()
         
-        @log_method_calls(logger=mock_logger, level=LogLevel.INFO)
+    @log_method_calls(logger=mock_logger, level=LogLevel.INFO)
         class TestClass:
             def test_method(self, a, b):
                 return a + b

@@ -9,9 +9,9 @@ import pytest
 import json
 from fastapi.testclient import TestClient
 
-from backend.app.main import app
-from backend.app.infrastructure.database.models import PatientModel
-from backend.app.infrastructure.database.session import get_session
+from app.main import app
+from app.infrastructure.database.models import PatientModel
+from app.infrastructure.database.session import get_session
 
 
 @pytest.fixture
@@ -65,14 +65,14 @@ class TestPatientAPI:
         # Arrange - patient is created by fixture
         
         # Act
-        response = api_client.get(f"/api/v1/patients/{test_patient.id}")
+    response = api_client.get(f"/api/v1/patients/{test_patient.id}")
         
         # Assert
-        assert response.status_code  ==  200
-        data = response.json()
-        assert data["id"] == test_patient.id
-        assert data["name"] == test_patient.name
-        assert data["medical_record_number"] == test_patient.medical_record_number
+    assert response.status_code  ==  200
+    data = response.json()
+    assert data["id"] == test_patient.id
+    assert data["name"] == test_patient.name
+    assert data["medical_record_number"] == test_patient.medical_record_number
     
     def test_get_patient_by_id_not_found(self, api_client):
         """Test retrieving a non-existent patient by ID."""
@@ -80,13 +80,13 @@ class TestPatientAPI:
         non_existent_id = "NONEXISTENT"
         
         # Act
-        response = api_client.get(f"/api/v1/patients/{non_existent_id}")
+    response = api_client.get(f"/api/v1/patients/{non_existent_id}")
         
         # Assert
-        assert response.status_code  ==  404
-        data = response.json()
-        assert "detail" in data
-        assert "not found" in data["detail"].lower()
+    assert response.status_code  ==  404
+    data = response.json()
+    assert "detail" in data
+    assert "not found" in data["detail"].lower()
     
     def test_create_patient_success(self, api_client, db_session):
         """Test creating a new patient successfully."""
@@ -101,25 +101,25 @@ class TestPatientAPI:
         }
         
         # Act
-        response = api_client.post(
-            "/api/v1/patients/",
-            json=patient_data
-        )
+    response = api_client.post(
+    "/api/v1/patients/",
+    json=patient_data
+    )
         
         # Assert
-        assert response.status_code  ==  201
-        data = response.json()
-        assert data["id"] == patient_data["id"]
-        assert data["name"] == patient_data["name"]
+    assert response.status_code  ==  201
+    data = response.json()
+    assert data["id"] == patient_data["id"]
+    assert data["name"] == patient_data["name"]
         
         # Verify the patient was actually saved to the database
-        saved_patient = db_session.query(PatientModel).filter_by(id=patient_data["id"]).first()
-        assert saved_patient is not None
-        assert saved_patient.name  ==  patient_data["name"]
+    saved_patient = db_session.query(PatientModel).filter_by(id=patient_data["id"]).first()
+    assert saved_patient is not None
+    assert saved_patient.name  ==  patient_data["name"]
         
         # Clean up
-        db_session.delete(saved_patient)
-        db_session.commit()
+    db_session.delete(saved_patient)
+    db_session.commit()
     
     def test_update_patient_success(self, api_client, test_patient, db_session):
         """Test updating an existing patient successfully."""
@@ -130,21 +130,21 @@ class TestPatientAPI:
         }
         
         # Act
-        response = api_client.patch(
-            f"/api/v1/patients/{test_patient.id}",
-            json=update_data
-        )
+    response = api_client.patch(
+    f"/api/v1/patients/{test_patient.id}",
+    json=update_data
+    )
         
         # Assert
-        assert response.status_code  ==  200
-        data = response.json()
-        assert data["name"] == update_data["name"]
-        assert data["email"] == update_data["email"]
+    assert response.status_code  ==  200
+    data = response.json()
+    assert data["name"] == update_data["name"]
+    assert data["email"] == update_data["email"]
         
         # Verify the changes were saved to the database
-        db_session.refresh(test_patient)
-        assert test_patient.name  ==  update_data["name"]
-        assert test_patient.email  ==  update_data["email"]
+    db_session.refresh(test_patient)
+    assert test_patient.name  ==  update_data["name"]
+    assert test_patient.email  ==  update_data["email"]
     
     def test_delete_patient_success(self, api_client, db_session):
         """Test deleting a patient successfully."""
@@ -161,11 +161,11 @@ class TestPatientAPI:
         db_session.commit()
         
         # Act
-        response = api_client.delete(f"/api/v1/patients/{patient_to_delete.id}")
+    response = api_client.delete(f"/api/v1/patients/{patient_to_delete.id}")
         
         # Assert
-        assert response.status_code  ==  204
+    assert response.status_code  ==  204
         
         # Verify the patient was actually deleted from the database
-        deleted_patient = db_session.query(PatientModel).filter_by(id=patient_to_delete.id).first()
-        assert deleted_patient is None
+    deleted_patient = db_session.query(PatientModel).filter_by(id=patient_to_delete.id).first()
+    assert deleted_patient is None

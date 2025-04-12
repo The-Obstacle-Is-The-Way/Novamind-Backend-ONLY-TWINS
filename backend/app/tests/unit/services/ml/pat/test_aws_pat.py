@@ -97,12 +97,12 @@ class TestAWSPATService:
         service = AWSPATService()
         service.initialize(aws_config)
         
-        assert service._initialized is True
-        assert service._endpoint_name  ==  aws_config["endpoint_name"]
-        assert service._bucket_name  ==  aws_config["bucket_name"]
-        assert service._analyses_table  ==  aws_config["analyses_table"]
-        assert service._embeddings_table  ==  aws_config["embeddings_table"]
-        assert service._integrations_table  ==  aws_config["integrations_table"]
+    assert service._initialized is True
+    assert service._endpoint_name  ==  aws_config["endpoint_name"]
+    assert service._bucket_name  ==  aws_config["bucket_name"]
+    assert service._analyses_table  ==  aws_config["analyses_table"]
+    assert service._embeddings_table  ==  aws_config["embeddings_table"]
+    assert service._integrations_table  ==  aws_config["integrations_table"]
     
     def test_initialization_failure(self, mock_boto3, aws_config):
         """Test initialization failure."""
@@ -112,9 +112,9 @@ class TestAWSPATService:
             "CreateEndpoint"
         )
         
-        service = AWSPATService()
-        with pytest.raises(InitializationError):
-            service.initialize(aws_config)
+    service = AWSPATService()
+    with pytest.raises(InitializationError):
+    service.initialize(aws_config)
     
     def test_sanitize_phi(self, aws_pat_service, mock_boto3):
         """Test PHI sanitization."""
@@ -130,13 +130,13 @@ class TestAWSPATService:
             ]
         }
         
-        text = "Patient is John Smith, a 45-year-old male."
-        sanitized = aws_pat_service._sanitize_phi(text)
+    text = "Patient is John Smith, a 45-year-old male."
+    sanitized = aws_pat_service._sanitize_phi(text)
         
         # Verify that PHI is replaced with redacted marker
-        assert "John Smith" not in sanitized
-        assert "[REDACTED-NAME]" in sanitized
-        assert mock_boto3["comprehend_medical"].detect_phi.called
+    assert "John Smith" not in sanitized
+    assert "[REDACTED-NAME]" in sanitized
+    assert mock_boto3["comprehend_medical"].detect_phi.called
     
     def test_sanitize_phi_error(self, aws_pat_service, mock_boto3):
         """Test PHI sanitization with error."""
@@ -146,11 +146,11 @@ class TestAWSPATService:
             "DetectPHI"
         )
         
-        text = "Patient is John Smith, a 45-year-old male."
-        sanitized = aws_pat_service._sanitize_phi(text)
+    text = "Patient is John Smith, a 45-year-old male."
+    sanitized = aws_pat_service._sanitize_phi(text)
         
         # Verify that a placeholder is returned to avoid leaking PHI
-        assert sanitized  ==  "[PHI SANITIZATION ERROR]"
+    assert sanitized  ==  "[PHI SANITIZATION ERROR]"
     
     def test_analyze_actigraphy(self, aws_pat_service):
         """Test actigraphy analysis."""
@@ -164,23 +164,23 @@ class TestAWSPATService:
         analysis_types = ["activity_levels", "sleep_analysis"]
         
         # Call method (implementation is stubbed)
-        result = aws_pat_service.analyze_actigraphy(
-            patient_id=patient_id,
-            readings=readings,
-            start_time=start_time,
-            end_time=end_time,
-            sampling_rate_hz=sampling_rate_hz,
-            device_info=device_info,
-            analysis_types=analysis_types
-        )
+    result = aws_pat_service.analyze_actigraphy(
+    patient_id=patient_id,
+    readings=readings,
+    start_time=start_time,
+    end_time=end_time,
+    sampling_rate_hz=sampling_rate_hz,
+    device_info=device_info,
+    analysis_types=analysis_types
+    )
         
         # Basic validation of stub implementation
-        assert "analysis_id" in result
-        assert "patient_id" in result
-        assert "timestamp" in result
-        assert "analysis_types" in result
-        assert result["patient_id"] == patient_id
-        assert result["analysis_types"] == analysis_types
+    assert "analysis_id" in result
+    assert "patient_id" in result
+    assert "timestamp" in result
+    assert "analysis_types" in result
+    assert result["patient_id"] == patient_id
+    assert result["analysis_types"] == analysis_types
     
     def test_get_actigraphy_embeddings(self, aws_pat_service):
         """Test actigraphy embeddings generation."""
@@ -192,37 +192,37 @@ class TestAWSPATService:
         sampling_rate_hz = 50.0
         
         # Call method (implementation is stubbed)
-        result = aws_pat_service.get_actigraphy_embeddings(
-            patient_id=patient_id,
-            readings=readings,
-            start_time=start_time,
-            end_time=end_time,
-            sampling_rate_hz=sampling_rate_hz
-        )
+    result = aws_pat_service.get_actigraphy_embeddings(
+    patient_id=patient_id,
+    readings=readings,
+    start_time=start_time,
+    end_time=end_time,
+    sampling_rate_hz=sampling_rate_hz
+    )
         
         # Basic validation of stub implementation
-        assert "embedding_id" in result
-        assert "patient_id" in result
-        assert "timestamp" in result
-        assert "embedding" in result
-        assert result["patient_id"] == patient_id
+    assert "embedding_id" in result
+    assert "patient_id" in result
+    assert "timestamp" in result
+    assert "embedding" in result
+    assert result["patient_id"] == patient_id
     
     def test_get_analysis_by_id(self, aws_pat_service):
         """Test retrieving analysis by ID."""
         # This will raise ResourceNotFoundError as the stub implementation
         # doesn't actually store or retrieve real data
         with pytest.raises(ResourceNotFoundError):
-            aws_pat_service.get_analysis_by_id("test-analysis-id")
+        aws_pat_service.get_analysis_by_id("test-analysis-id")
     
     def test_get_model_info(self, aws_pat_service, aws_config):
         """Test getting model information."""
         model_info = aws_pat_service.get_model_info()
         
-        assert model_info["name"] == "AWS-PAT"
-        assert "version" in model_info
-        assert "capabilities" in model_info
-        assert aws_config["endpoint_name"] == model_info["endpoint_name"]
-        assert model_info["active"] is True
+    assert model_info["name"] == "AWS-PAT"
+    assert "version" in model_info
+    assert "capabilities" in model_info
+    assert aws_config["endpoint_name"] == model_info["endpoint_name"]
+    assert model_info["active"] is True
     
     def test_integrate_with_digital_twin(self, aws_pat_service):
         """Test integrating analysis with digital twin."""
@@ -232,18 +232,18 @@ class TestAWSPATService:
         analysis_id = "analysis789"
         
         # Call method (implementation is stubbed)
-        result = aws_pat_service.integrate_with_digital_twin(
-            patient_id=patient_id,
-            profile_id=profile_id,
-            analysis_id=analysis_id
-        )
+    result = aws_pat_service.integrate_with_digital_twin(
+    patient_id=patient_id,
+    profile_id=profile_id,
+    analysis_id=analysis_id
+    )
         
         # Basic validation of stub implementation
-        assert "integration_id" in result
-        assert "patient_id" in result
-        assert "profile_id" in result
-        assert "analysis_id" in result
-        assert result["patient_id"] == patient_id
-        assert result["profile_id"] == profile_id
-        assert result["analysis_id"] == analysis_id
-        assert result["status"] == "success"
+    assert "integration_id" in result
+    assert "patient_id" in result
+    assert "profile_id" in result
+    assert "analysis_id" in result
+    assert result["patient_id"] == patient_id
+    assert result["profile_id"] == profile_id
+    assert result["analysis_id"] == analysis_id
+    assert result["status"] == "success"

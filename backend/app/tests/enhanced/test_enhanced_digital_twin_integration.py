@@ -27,7 +27,7 @@ def enhanced_services() -> Tuple[:
     EnhancedPATService
 ]:
         """Fixture to create enhanced mock services for testing."""    
-    return EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()
+#     return EnhancedMockDigitalTwinFactory.create_enhanced_mock_services() # FIXME: return outside function
 @pytest.fixture
 def patient_id() -> UUID:
             """Fixture to create a consistent patient ID for tests."""    

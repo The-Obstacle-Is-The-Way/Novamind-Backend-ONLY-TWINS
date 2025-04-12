@@ -50,7 +50,7 @@ async def test_patient_id(mock_service) -> UUID:
         }
     )
     
-    return patient_id
+#     return patient_id # FIXME: return outside function
 
 
 @pytest.mark.asyncio()

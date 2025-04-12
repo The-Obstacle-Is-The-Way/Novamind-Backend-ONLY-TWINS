@@ -87,14 +87,14 @@ def app(mock_digital_twin_service, mock_current_user_id):
     # Assuming get_current_user_id is the correct dependency name
     try:
         # Attempt to import the actual dependency function if it exists
-        from app.presentation.api.dependencies.auth import get_current_user_id as auth_get_user_id
-        app_instance.dependency_overrides[auth_get_user_id] = lambda: mock_current_user_id
+    from app.presentation.api.dependencies.auth import get_current_user_id as auth_get_user_id
+    app_instance.dependency_overrides[auth_get_user_id] = lambda: mock_current_user_id
     except ImportError:
         # Fallback if the exact path is different or doesn't exist
-        print("Warning: Auth dependency get_current_user_id not found at expected path.")
+    print("Warning: Auth dependency get_current_user_id not found at expected path.")
         # You might need to adjust the path based on your project structure
         # For now, we assume the endpoint directly uses a variable or another mechanism
-        pass
+    pass
 
 
     # Include router
@@ -122,26 +122,26 @@ def sample_status_response(sample_patient_id):
     """Create a sample digital twin status response."""
     
     return {
-        "patient_id": str(sample_patient_id),
-        "status": "partial",
-        "completeness": 60,
-        "components": {
-            "symptom_forecasting": {
-                "has_model": True,
-                "last_updated": datetime.now(UTC).isoformat()
-            },
-            "biometric_correlation": {
-                "has_model": True,
-                "last_updated": datetime.now(UTC).isoformat()
-            },
-            "pharmacogenomics": {
-                "service_available": True,
-                "service_info": {
-                    "version": "1.0.0"
-                }
-            }
-        },
-        "last_checked": datetime.now(UTC).isoformat()
+    "patient_id": str(sample_patient_id),
+    "status": "partial",
+    "completeness": 60,
+    "components": {
+    "symptom_forecasting": {
+    "has_model": True,
+    "last_updated": datetime.now(UTC).isoformat()
+    },
+    "biometric_correlation": {
+    "has_model": True,
+    "last_updated": datetime.now(UTC).isoformat()
+    },
+    "pharmacogenomics": {
+    "service_available": True,
+    "service_info": {
+    "version": "1.0.0"
+    }
+    }
+    },
+    "last_checked": datetime.now(UTC).isoformat()
     }
 
 
@@ -244,128 +244,128 @@ def sample_correlation_response(sample_patient_id):
     """Create a sample biometric correlation response."""
     
     return {
-            "patient_id": str(sample_patient_id),
-            "window_days": 30,
-            "generated_at": datetime.now(UTC).isoformat(),
-            "strong_correlations": [
-                {
-                    "biometric_type": "heart_rate",
-                    "mental_health_indicator": "anxiety",
-                    "correlation_strength": 0.82,
-                    "direction": "positive",
-                    "insight_text": "Elevated heart rate strongly correlates with reported anxiety",
-                    "p_value": 0.01
-                }
-            ],
-            "anomalies": [
-                {
-                    "data_type": "sleep_quality",
-                    "description": "Unusual sleep pattern detected",
-                    "severity": 0.65,
-                    "detected_at": datetime.now(UTC).isoformat()
-                }
-            ],
-            "data_quality": {
-                "completeness": 0.85,
-                "consistency": 0.92
-            }
-        }
+    "patient_id": str(sample_patient_id),
+    "window_days": 30,
+    "generated_at": datetime.now(UTC).isoformat(),
+    "strong_correlations": [
+    {
+    "biometric_type": "heart_rate",
+    "mental_health_indicator": "anxiety",
+    "correlation_strength": 0.82,
+    "direction": "positive",
+    "insight_text": "Elevated heart rate strongly correlates with reported anxiety",
+    "p_value": 0.01
+    }
+    ],
+    "anomalies": [
+    {
+    "data_type": "sleep_quality",
+    "description": "Unusual sleep pattern detected",
+    "severity": 0.65,
+    "detected_at": datetime.now(UTC).isoformat()
+    }
+    ],
+    "data_quality": {
+    "completeness": 0.85,
+    "consistency": 0.92
+    }
+    }
 
 @pytest.fixture
 def sample_medication_response(sample_patient_id):
-     """Create a sample medication response prediction."""
+    """Create a sample medication response prediction."""
      
     return {
-            "patient_id": str(sample_patient_id),
-            "generated_at": datetime.now(UTC).isoformat(),
-            "predictions": [
-                {
-                    "medication": "sertraline",
-                    "predicted_response": "positive",
-                    "confidence": 0.78,
-                    "potential_side_effects": ["nausea", "insomnia"],
-                    "genetic_factors": [
-                        {
-                            "gene": "CYP2D6",
-                            "variant": "*4/*4",
-                            "impact": "reduced metabolism"
-                        }
-                    ]
-                }
-            ],
-            "insights": [
-                {
-                    "insight_text": "Based on genetic profile, patient may respond well to SSRIs",
-                    "importance": 0.85
-                }
-            ]
-        }
+    "patient_id": str(sample_patient_id),
+    "generated_at": datetime.now(UTC).isoformat(),
+    "predictions": [
+    {
+    "medication": "sertraline",
+    "predicted_response": "positive",
+    "confidence": 0.78,
+    "potential_side_effects": ["nausea", "insomnia"],
+    "genetic_factors": [
+    {
+    "gene": "CYP2D6",
+    "variant": "*4/*4",
+    "impact": "reduced metabolism"
+    }
+    ]
+    }
+    ],
+    "insights": [
+    {
+    "insight_text": "Based on genetic profile, patient may respond well to SSRIs",
+    "importance": 0.85
+    }
+    ]
+    }
 
 @pytest.fixture
 def sample_treatment_plan(sample_patient_id):
     """Create a sample treatment plan response."""
     
     return {
-            "patient_id": str(sample_patient_id),
-            "diagnosis": "Major Depressive Disorder",
-            "generated_at": datetime.now(UTC).isoformat(),
-            "recommendations": {
-                "medications": [
-                    {
-                        "type": "medication",
-                        "recommendation_text": "Consider starting sertraline 50mg daily",
-                        "importance": 0.9,
-                        "evidence_level": "A",
-                        "genetic_basis": [
-                            {
-                                "gene": "CYP2D6",
-                                "variant": "*4/*4",
-                                "impact": "reduced metabolism"
-                            }
-                        ]
-                    }
-                ],
-                "therapy": [
-                    {
-                        "type": "therapy",
-                        "recommendation_text": "Cognitive Behavioral Therapy, 1 session per week",
-                        "importance": 0.85,
-                        "evidence_level": "A",
-                        "genetic_basis": None
-                    }
-                ],
-                "lifestyle": [
-                    {
-                        "type": "lifestyle",
-                        "recommendation_text": "Daily 30-minute moderate exercise",
-                        "importance": 0.7,
-                        "evidence_level": "B",
-                        "genetic_basis": None
-                    }
-                ],
-                 "summary": [ # Added summary based on schema
-                    {
-                        "type": "summary",
-                        "recommendation_text": "Combined medication and therapy approach recommended",
-                        "importance": 0.95,
-                        "evidence_level": "A",
-                        "genetic_basis": None
-                    }
-                ]
-            },
-            "personalization_factors": [
-                {
-                    "factor": "genetic_profile",
-                    "impact": "high",
-                    "description": "Genetic variants suggest good response to SSRIs"
-                },
-                {
-                    "factor": "biometric_data",
-                    "impact": "medium",
-                    "description": "Sleep patterns suggest need for sleep hygiene intervention"
-                }
-            ]
-        }
+    "patient_id": str(sample_patient_id),
+    "diagnosis": "Major Depressive Disorder",
+    "generated_at": datetime.now(UTC).isoformat(),
+    "recommendations": {
+    "medications": [
+    {
+    "type": "medication",
+    "recommendation_text": "Consider starting sertraline 50mg daily",
+    "importance": 0.9,
+    "evidence_level": "A",
+    "genetic_basis": [
+    {
+    "gene": "CYP2D6",
+    "variant": "*4/*4",
+    "impact": "reduced metabolism"
+    }
+    ]
+    }
+    ],
+    "therapy": [
+    {
+    "type": "therapy",
+    "recommendation_text": "Cognitive Behavioral Therapy, 1 session per week",
+    "importance": 0.85,
+    "evidence_level": "A",
+    "genetic_basis": None
+    }
+    ],
+    "lifestyle": [
+    {
+    "type": "lifestyle",
+    "recommendation_text": "Daily 30-minute moderate exercise",
+    "importance": 0.7,
+    "evidence_level": "B",
+    "genetic_basis": None
+    }
+    ],
+    "summary": [ # Added summary based on schema
+    {
+    "type": "summary",
+    "recommendation_text": "Combined medication and therapy approach recommended",
+    "importance": 0.95,
+    "evidence_level": "A",
+    "genetic_basis": None
+    }
+    ]
+    },
+    "personalization_factors": [
+    {
+    "factor": "genetic_profile",
+    "impact": "high",
+    "description": "Genetic variants suggest good response to SSRIs"
+    },
+    {
+    "factor": "biometric_data",
+    "impact": "medium",
+    "description": "Sleep patterns suggest need for sleep hygiene intervention"
+    }
+    ]
+    }
 
 
 @pytest.mark.db_required() # Assuming db_required is a valid marker
@@ -378,12 +378,12 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.get_digital_twin_status.return_value = sample_status_response
 
         # Execute
-        response = client.get(f"/digital-twins/patients/{sample_patient_id}/status")
+    response = client.get(f"/digital-twins/patients/{sample_patient_id}/status")
 
         # Verify
-        assert response.status_code == 200
-        assert response.json() == sample_status_response
-        mock_digital_twin_service.get_digital_twin_status.assert_called_once_with(sample_patient_id)
+    assert response.status_code == 200
+    assert response.json() == sample_status_response
+    mock_digital_twin_service.get_digital_twin_status.assert_called_once_with(sample_patient_id)
 
     def test_get_patient_insights(self, client, mock_digital_twin_service, sample_patient_id, sample_insights_response):
         """Test that get_patient_insights returns the correct response."""
@@ -391,13 +391,13 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.generate_comprehensive_patient_insights.return_value = sample_insights_response
 
         # Execute
-        response = client.get(f"/digital-twins/patients/{sample_patient_id}/insights")
+    response = client.get(f"/digital-twins/patients/{sample_patient_id}/insights")
 
         # Verify
-        assert response.status_code == 200
-        assert response.json() == sample_insights_response
+    assert response.status_code == 200
+    assert response.json() == sample_insights_response
         # Check if the mock was called (adjust arguments if needed based on actual implementation)
-        mock_digital_twin_service.generate_comprehensive_patient_insights.assert_called_once()
+    mock_digital_twin_service.generate_comprehensive_patient_insights.assert_called_once()
 
 
     def test_update_digital_twin(self, client, mock_digital_twin_service, sample_patient_id, sample_status_response):
@@ -406,28 +406,28 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.update_digital_twin.return_value = {"status": "success"} # Assume simple success message
         mock_digital_twin_service.get_digital_twin_status.return_value = sample_status_response # Status after update
 
-        update_data = {
-            "symptom_history": [
-                {
-                    "symptom": "anxiety",
-                    "severity": 7,
-                    "timestamp": datetime.now(UTC).isoformat()
-                }
-            ]
-        }
+    update_data = {
+    "symptom_history": [
+    {
+    "symptom": "anxiety",
+    "severity": 7,
+    "timestamp": datetime.now(UTC).isoformat()
+    }
+    ]
+    }
 
         # Execute
-        response = client.post(
-            f"/digital-twins/patients/{sample_patient_id}/update",
-            json=update_data
-        )
+    response = client.post(
+    f"/digital-twins/patients/{sample_patient_id}/update",
+    json=update_data
+    )
 
         # Verify
-        assert response.status_code == 200
+    assert response.status_code == 200
         # The endpoint returns the status after update
-        assert response.json() == sample_status_response
-        mock_digital_twin_service.update_digital_twin.assert_called_once()
-        mock_digital_twin_service.get_digital_twin_status.assert_called_once_with(sample_patient_id)
+    assert response.json() == sample_status_response
+    mock_digital_twin_service.update_digital_twin.assert_called_once()
+    mock_digital_twin_service.get_digital_twin_status.assert_called_once_with(sample_patient_id)
 
     def test_get_symptom_forecast(self, client, mock_digital_twin_service, sample_patient_id, sample_forecast_response):
         """Test that get_symptom_forecast returns the correct response."""
@@ -435,12 +435,12 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.symptom_forecasting_service.forecast_symptoms.return_value = sample_forecast_response
 
         # Execute
-        response = client.get(f"/digital-twins/patients/{sample_patient_id}/symptom-forecast")
+    response = client.get(f"/digital-twins/patients/{sample_patient_id}/symptom-forecast")
 
         # Verify
-        assert response.status_code == 200
-        assert response.json() == sample_forecast_response
-        mock_digital_twin_service.symptom_forecasting_service.forecast_symptoms.assert_called_once()
+    assert response.status_code == 200
+    assert response.json() == sample_forecast_response
+    mock_digital_twin_service.symptom_forecasting_service.forecast_symptoms.assert_called_once()
 
     def test_get_biometric_correlations(self, client, mock_digital_twin_service, sample_patient_id, sample_correlation_response):
         """Test that get_biometric_correlations returns the correct response."""
@@ -448,54 +448,54 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.biometric_correlation_service.analyze_correlations.return_value = sample_correlation_response
 
         # Execute
-        response = client.get(f"/digital-twins/patients/{sample_patient_id}/biometric-correlations")
+    response = client.get(f"/digital-twins/patients/{sample_patient_id}/biometric-correlations")
 
         # Verify
-        assert response.status_code == 200
-        assert response.json() == sample_correlation_response
-        mock_digital_twin_service.biometric_correlation_service.analyze_correlations.assert_called_once()
+    assert response.status_code == 200
+    assert response.json() == sample_correlation_response
+    mock_digital_twin_service.biometric_correlation_service.analyze_correlations.assert_called_once()
 
     def test_predict_medication_response(self, client, mock_digital_twin_service, sample_patient_id, sample_medication_response):
         """Test that predict_medication_response returns the correct response."""
         # Setup
         mock_digital_twin_service.pharmacogenomics_service.predict_medication_responses.return_value = sample_medication_response
 
-        request_data = {
-            "medications": ["sertraline", "fluoxetine", "escitalopram"]
-        }
+    request_data = {
+    "medications": ["sertraline", "fluoxetine", "escitalopram"]
+    }
 
         # Execute
-        response = client.post(
-            f"/digital-twins/patients/{sample_patient_id}/medication-response",
-            json=request_data
-        )
+    response = client.post(
+    f"/digital-twins/patients/{sample_patient_id}/medication-response",
+    json=request_data
+    )
 
         # Verify
-        assert response.status_code == 200
-        assert response.json() == sample_medication_response
-        mock_digital_twin_service.pharmacogenomics_service.predict_medication_responses.assert_called_once()
+    assert response.status_code == 200
+    assert response.json() == sample_medication_response
+    mock_digital_twin_service.pharmacogenomics_service.predict_medication_responses.assert_called_once()
 
     def test_generate_treatment_plan(self, client, mock_digital_twin_service, sample_patient_id, sample_treatment_plan):
         """Test that generate_treatment_plan returns the correct response."""
         # Setup
         mock_digital_twin_service.pharmacogenomics_service.recommend_treatment_plan.return_value = sample_treatment_plan
 
-        request_data = {
-            "diagnosis": "Major Depressive Disorder",
-            "treatment_goals": ["Reduce depressive symptoms", "Improve sleep quality"],
-            "treatment_constraints": ["History of adverse reaction to fluoxetine"]
-        }
+    request_data = {
+    "diagnosis": "Major Depressive Disorder",
+    "treatment_goals": ["Reduce depressive symptoms", "Improve sleep quality"],
+    "treatment_constraints": ["History of adverse reaction to fluoxetine"]
+    }
 
         # Execute
-        response = client.post(
-            f"/digital-twins/patients/{sample_patient_id}/treatment-plan",
-            json=request_data
-        )
+    response = client.post(
+    f"/digital-twins/patients/{sample_patient_id}/treatment-plan",
+    json=request_data
+    )
 
         # Verify
-        assert response.status_code == 200
-        assert response.json() == sample_treatment_plan
-        mock_digital_twin_service.pharmacogenomics_service.recommend_treatment_plan.assert_called_once()
+    assert response.status_code == 200
+    assert response.json() == sample_treatment_plan
+    mock_digital_twin_service.pharmacogenomics_service.recommend_treatment_plan.assert_called_once()
 
     def test_error_handling(self, client, mock_digital_twin_service, sample_patient_id):
         """Test that errors are properly handled and don't leak PHI."""
@@ -504,14 +504,14 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.get_digital_twin_status.side_effect = ModelInferenceError(error_message)
 
         # Execute
-        response = client.get(f"/digital-twins/patients/{sample_patient_id}/status")
+    response = client.get(f"/digital-twins/patients/{sample_patient_id}/status")
 
         # Verify
-        assert response.status_code == 400 # Assuming ModelInferenceError maps to 400
-        assert response.json()["detail"] == error_message
+    assert response.status_code == 400 # Assuming ModelInferenceError maps to 400
+    assert response.json()["detail"] == error_message
 
         # Ensure no PHI is leaked in the error
-        assert str(sample_patient_id) not in response.text # Check raw text
+    assert str(sample_patient_id) not in response.text # Check raw text
 
     def test_hipaa_compliance_in_responses(self, client, mock_digital_twin_service, sample_patient_id, sample_insights_response):
         """Test that responses maintain HIPAA compliance by not including unnecessary PHI."""
@@ -519,20 +519,20 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.generate_comprehensive_patient_insights.return_value = sample_insights_response
 
         # Execute
-        response = client.get(f"/digital-twins/patients/{sample_patient_id}/insights")
+    response = client.get(f"/digital-twins/patients/{sample_patient_id}/insights")
 
         # Verify
-        assert response.status_code == 200
-        response_data = response.json()
+    assert response.status_code == 200
+    response_data = response.json()
 
         # Check that only necessary PHI is included
-        assert "patient_id" in response_data  # This is necessary for identification
+    assert "patient_id" in response_data  # This is necessary for identification
 
         # Check that detailed PHI is not included (assuming these are not part of the schema)
-        assert "medical_record_number" not in response_data
-        assert "social_security_number" not in response_data
-        assert "date_of_birth" not in response_data
-        assert "address" not in response_data
+    assert "medical_record_number" not in response_data
+    assert "social_security_number" not in response_data
+    assert "date_of_birth" not in response_data
+    assert "address" not in response_data
 
         # Check that biometric data is properly anonymized (if included)
         # This depends heavily on the actual structure of sample_insights_response

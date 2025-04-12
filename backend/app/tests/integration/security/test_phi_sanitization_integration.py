@@ -32,7 +32,7 @@ from app.infrastructure.security.log_sanitizer import get_sanitized_logger
 async def test_patient() -> Patient:
     """Create a test patient with PHI for testing."""
     patient_id = uuid.uuid4()
-    return Patient(
+#     return Patient( # FIXME: return outside function
         id=patient_id,
         first_name="Integration",
         last_name="Test",
@@ -93,153 +93,153 @@ class TestPHISanitizationIntegration:
     
     @pytest.mark.asyncio()
     async def test_patient_phi_database_encryption(self, test_patient: Patient):
-        """Test that PHI is encrypted in database and decrypted when retrieved."""
+    """Test that PHI is encrypted in database and decrypted when retrieved."""
         # Convert to model (encrypts PHI)
-        patient_model = PatientModel.from_domain(test_patient)
+    patient_model = PatientModel.from_domain(test_patient)
         
         # Save to database
-        async with await get_db_session() as session:
-            session.add(patient_model)
-            await session.commit()
+    async with await get_db_session() as session:
+    session.add(patient_model)
+    await session.commit()
             
             # Get patient ID for later lookup
-            patient_id = patient_model.id
+    patient_id = patient_model.id
             
             # Close session to clear cache
-            await session.close()
+    await session.close()
             
             # Get a new session
-            async with await get_db_session() as new_session:
+    async with await get_db_session() as new_session:
                 # Get raw data directly with SQL to verify encryption
-                result = await new_session.execute(f"""
-                    SELECT first_name, last_name, email, phone 
-                    FROM patients WHERE id = '{patient_id}'
-                """)
-                row = result.fetchone()
+    result = await new_session.execute(f"""
+    SELECT first_name, last_name, email, phone
+    FROM patients WHERE id = '{patient_id}'
+    """)
+    row = result.fetchone()
                 
                 # Verify PHI is stored encrypted (raw DB values)
-                assert row.first_name  !=  test_patient.first_name, "First name not encrypted in database"
-                assert row.email  !=  test_patient.email, "Email not encrypted in database"
-                assert row.phone  !=  test_patient.phone, "Phone not encrypted in database"
+    assert row.first_name  !=  test_patient.first_name, "First name not encrypted in database"
+    assert row.email  !=  test_patient.email, "Email not encrypted in database"
+    assert row.phone  !=  test_patient.phone, "Phone not encrypted in database"
                 
                 # Retrieve through ORM and convert back to domain
-                db_patient_model = await new_session.get(PatientModel, patient_id)
-                retrieved_patient = db_patient_model.to_domain()
+    db_patient_model = await new_session.get(PatientModel, patient_id)
+    retrieved_patient = db_patient_model.to_domain()
                 
                 # Verify domain entity has decrypted PHI
-                assert retrieved_patient.first_name  ==  test_patient.first_name, "First name mismatch"
-                assert retrieved_patient.email  ==  test_patient.email, "Email mismatch"
-                assert retrieved_patient.phone  ==  test_patient.phone, "Phone mismatch"
+    assert retrieved_patient.first_name  ==  test_patient.first_name, "First name mismatch"
+    assert retrieved_patient.email  ==  test_patient.email, "Email mismatch"
+    assert retrieved_patient.phone  ==  test_patient.phone, "Phone mismatch"
                 
                 # Clean up test data
-                await new_session.delete(db_patient_model)
-                await new_session.commit()
+    await new_session.delete(db_patient_model)
+    await new_session.commit()
     
     @pytest.mark.asyncio()
     async def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
-        """Test that PHI is properly sanitized in logs."""
+    """Test that PHI is properly sanitized in logs."""
         # Set up logger
-        logger = get_sanitized_logger("test.phi.integration") # Use correct function
+    logger = get_sanitized_logger("test.phi.integration") # Use correct function
         
         # Log some PHI
-        logger.info(
-            f"Processing patient record",
-            {
-                "patient_id": str(test_patient.id),
-                "email": test_patient.email,
-                "phone": test_patient.phone,
-                "dob": str(test_patient.date_of_birth)
-            }
-        )
+    logger.info(
+    f"Processing patient record",
+    {
+    "patient_id": str(test_patient.id),
+    "email": test_patient.email,
+    "phone": test_patient.phone,
+    "dob": str(test_patient.date_of_birth)
+    }
+    )
         
         # Get log content
-        log_content = log_capture.getvalue()
+    log_content = log_capture.getvalue()
         
         # Verify PHI is not in logs
-        assert test_patient.email not in log_content, "Email found in logs"
-        assert test_patient.phone not in log_content, "Phone found in logs"
-        assert str(test_patient.date_of_birth) not in log_content, "Date of birth found in logs"
+    assert test_patient.email not in log_content, "Email found in logs"
+    assert test_patient.phone not in log_content, "Phone found in logs"
+    assert str(test_patient.date_of_birth) not in log_content, "Date of birth found in logs"
         
         # Verify patient ID (non-PHI) is in logs
-        assert str(test_patient.id) in log_content, "Patient ID should be in logs"
+    assert str(test_patient.id) in log_content, "Patient ID should be in logs"
     
     @pytest.mark.asyncio()
     async def test_phi_sanitization_during_errors(self, test_patient: Patient, log_capture: StringIO):
-        """Test that PHI is sanitized even during error handling."""
+    """Test that PHI is sanitized even during error handling."""
         # Set up logger
-        logger = get_sanitized_logger("test.phi.error") # Use correct function
+    logger = get_sanitized_logger("test.phi.error") # Use correct function
         
-        try:
+    try:
             # Simulate an error with PHI in the message
-            error_message = (
-                f"Error processing patient {test_patient.first_name} {test_patient.last_name} "
-                f"(DOB: {test_patient.date_of_birth}, Email: {test_patient.email})"
-            )
-            raise ValueError(error_message)
-        except ValueError as e:
+    error_message = (
+    f"Error processing patient {test_patient.first_name} {test_patient.last_name} "
+    f"(DOB: {test_patient.date_of_birth}, Email: {test_patient.email})"
+    )
+    raise ValueError(error_message)
+    except ValueError as e:
             # Log the error
-            logger.error(
-                f"An error occurred: {str(e)}",
-                {
-                    "patient_id": str(test_patient.id),
-                    "error_details": str(e)
-                }
-            )
+    logger.error(
+    f"An error occurred: {str(e)}",
+    {
+    "patient_id": str(test_patient.id),
+    "error_details": str(e)
+    }
+    )
         
         # Get log content
-        log_content = log_capture.getvalue()
+    log_content = log_capture.getvalue()
         
         # Verify PHI is not in logs
-        assert test_patient.email not in log_content, "Email found in logs during error"
-        assert test_patient.first_name not in log_content, "First name found in logs during error"
-        assert test_patient.last_name not in log_content, "Last name found in logs during error"
-        assert str(test_patient.date_of_birth) not in log_content, "DOB found in logs during error"
+    assert test_patient.email not in log_content, "Email found in logs during error"
+    assert test_patient.first_name not in log_content, "First name found in logs during error"
+    assert test_patient.last_name not in log_content, "Last name found in logs during error"
+    assert str(test_patient.date_of_birth) not in log_content, "DOB found in logs during error"
         
         # Verify sanitized placeholders are in logs instead
-        assert "ANONYMIZED" in log_content or "REDACTED" in log_content, "No sanitization markers found"
+    assert "ANONYMIZED" in log_content or "REDACTED" in log_content, "No sanitization markers found"
     
     @pytest.mark.asyncio()
     async def test_cross_module_phi_protection(self, test_patient: Patient, log_capture: StringIO):
-        """Test PHI protection across module boundaries."""
+    """Test PHI protection across module boundaries."""
         # This test simulates a full pipeline that processes patient data
         
         # Convert to model (simulating data access layer)
-        patient_model = PatientModel.from_domain(test_patient)
+    patient_model = PatientModel.from_domain(test_patient)
         
         # Simulate processing in service layer
     def process_patient_data(model: PatientModel) -> Dict[str, Any]:
-            """Simulate processing in another module."""
+        """Simulate processing in another module."""
             logger = get_sanitized_logger("service.patient") # Use correct function
             
             # Log the processing (with PHI that should be sanitized)
-            logger.info(
-                f"Processing patient: {model.first_name} {model.last_name}",
-                {"email": model.email, "phone": model.phone}
-            )
+    logger.info(
+    f"Processing patient: {model.first_name} {model.last_name}",
+    {"email": model.email, "phone": model.phone}
+    )
             
             # Return processed data
-            return {
-                "id": model.id,
-                "contact_info": f"{model.email} / {model.phone}",
-                "full_name": f"{model.first_name} {model.last_name}",
-                "status": "processed"
-            }
+#     return { # FIXME: return outside function
+    "id": model.id,
+    "contact_info": f"{model.email} / {model.phone}",
+    "full_name": f"{model.first_name} {model.last_name}",
+    "status": "processed"
+    }
         
         # Process the patient
-        processed_data = process_patient_data(patient_model)
+    processed_data = process_patient_data(patient_model)
         
         # Verify the processed data still contains PHI (no sanitization of actual data)
-        assert test_patient.email in processed_data["contact_info"], "Email missing from processed data"
-        assert test_patient.phone in processed_data["contact_info"], "Phone missing from processed data"
-        assert test_patient.first_name in processed_data["full_name"], "First name missing from processed data"
+    assert test_patient.email in processed_data["contact_info"], "Email missing from processed data"
+    assert test_patient.phone in processed_data["contact_info"], "Phone missing from processed data"
+    assert test_patient.first_name in processed_data["full_name"], "First name missing from processed data"
         
         # Get log content
-        log_content = log_capture.getvalue()
+    log_content = log_capture.getvalue()
         
         # Verify logs do not contain PHI
-        assert test_patient.email not in log_content, "Email found in logs during cross-module processing"
-        assert test_patient.phone not in log_content, "Phone found in logs during cross-module processing"
-        assert test_patient.first_name not in log_content, "First name found in logs during cross-module processing"
+    assert test_patient.email not in log_content, "Email found in logs during cross-module processing"
+    assert test_patient.phone not in log_content, "Phone found in logs during cross-module processing"
+    assert test_patient.first_name not in log_content, "First name found in logs during cross-module processing"
 
 
 if __name__ == "__main__":

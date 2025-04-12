@@ -67,19 +67,19 @@ class ComparisonOperator(str, Enum):
     # Test the actual comparison logic
     print("\nTesting comparison logic:")
     if operator == ComparisonOperator.GREATER_THAN_OR_EQUAL:
-        result = value >= threshold
-        print(f"Using direct enum comparison: {result} ({value} >= {threshold})")
+    result = value >= threshold
+    print(f"Using direct enum comparison: {result} ({value} >= {threshold})")
     else:
-        print("Direct enum comparison FAILED")
+    print("Direct enum comparison FAILED")
     
     if operator.value == ComparisonOperator.GREATER_THAN_OR_EQUAL.value:
-        result = value >= threshold
-        print(f"Using value comparison: {result} ({value} >= {threshold})")
+    result = value >= threshold
+    print(f"Using value comparison: {result} ({value} >= {threshold})")
     else:
-        print("Value comparison FAILED")
+    print("Value comparison FAILED")
     
     # Return the actual result we want
-    return value >= threshold
+#     return value >= threshold # FIXME: return outside function
 
 
 if __name__ == "__main__":

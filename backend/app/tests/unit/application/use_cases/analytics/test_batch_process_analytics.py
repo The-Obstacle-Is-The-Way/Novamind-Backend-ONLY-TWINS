@@ -99,226 +99,226 @@ class TestBatchProcessAnalyticsUseCase:
     
     @pytest.mark.asyncio()
     async def test_execute_with_empty_batch(self, use_case):
-        """
-        Test processing an empty batch returns appropriate result.
-        """
+    """
+    Test processing an empty batch returns appropriate result.
+    """
         # Arrange
-        events = []
-        batch_id = "test-batch-123"
+    events = []
+    batch_id = "test-batch-123"
         
         # Act
-        result = await use_case.execute(events, batch_id)
+    result = await use_case.execute(events, batch_id)
         
         # Assert
-        assert result.events  ==  []
-        assert result.batch_id  ==  batch_id
-        assert result.processed_count  ==  0
-        assert result.failed_count  ==  0
+    assert result.events  ==  []
+    assert result.batch_id  ==  batch_id
+    assert result.processed_count  ==  0
+    assert result.failed_count  ==  0
         
         # Verify warning was logged
-        use_case._logger.warning.assert_called_with("Received empty batch of analytics events")
+    use_case._logger.warning.assert_called_with("Received empty batch of analytics events")
     
     @pytest.mark.asyncio()
     async def test_execute_with_valid_events(self, use_case, mock_event_processor):
-        """
-        Test processing a batch of valid events.
-        """
+    """
+    Test processing a batch of valid events.
+    """
         # Arrange
-        events = [
-            {
-                "event_type": "page_view",
-                "event_data": {"page": "/dashboard"},
-                "user_id": "user-123",
-                "session_id": "session-abc"
-            },
-            {
-                "event_type": "feature_use",
-                "event_data": {"feature": "digital_twin"},
-                "user_id": "user-456"
-            }
-        ]
-        batch_id = "test-batch-456"
+    events = [
+    {
+    "event_type": "page_view",
+    "event_data": {"page": "/dashboard"},
+    "user_id": "user-123",
+    "session_id": "session-abc"
+    },
+    {
+    "event_type": "feature_use",
+    "event_data": {"feature": "digital_twin"},
+    "user_id": "user-456"
+    }
+    ]
+    batch_id = "test-batch-456"
         
         # Act
-        result = await use_case.execute(events, batch_id)
+    result = await use_case.execute(events, batch_id)
         
         # Assert
-        assert len(result.events) == 2
-        assert result.batch_id  ==  batch_id
-        assert result.processed_count  ==  2
-        assert result.failed_count  ==  0
+    assert len(result.events) == 2
+    assert result.batch_id  ==  batch_id
+    assert result.processed_count  ==  2
+    assert result.failed_count  ==  0
         
         # Verify events were processed
-        assert mock_event_processor.execute.call_count  ==  2
+    assert mock_event_processor.execute.call_count  ==  2
         
         # Verify appropriate logging
-        use_case._logger.info.assert _any_call(
-            f"Starting batch processing of {len(events)} analytics events",
-            {"batch_id": batch_id}
-        )
-        use_case._logger.info.assert _any_call(
-            f"Completed batch processing: {result.processed_count} succeeded, "
-            f"{result.failed_count} failed",
-            {"batch_id": batch_id}
-        )
+    use_case._logger.info.assert _any_call(
+    f"Starting batch processing of {len(events)} analytics events",
+    {"batch_id": batch_id}
+    )
+    use_case._logger.info.assert _any_call(
+    f"Completed batch processing: {result.processed_count} succeeded, "
+    f"{result.failed_count} failed",
+    {"batch_id": batch_id}
+    )
     
     @pytest.mark.asyncio()
     async def test_partial_failure_handling(self, use_case, mock_event_processor):
-        """
-        Test batch processing continues even if some events fail.
-        """
+    """
+    Test batch processing continues even if some events fail.
+    """
         # Arrange
-        events = [
-            {
-                "event_type": "error_type",  # This will cause an error
-                "event_data": {"test": "error_data"}
-            },
-            {
-                "event_type": "valid_type",
-                "event_data": {"test": "valid_data"}
-            },
-            {
-                "event_type": "error_type",  # Another error
-                "event_data": {"test": "more_error_data"}
-            }
-        ]
+    events = [
+    {
+    "event_type": "error_type",  # This will cause an error
+    "event_data": {"test": "error_data"}
+    },
+    {
+    "event_type": "valid_type",
+    "event_data": {"test": "valid_data"}
+    },
+    {
+    "event_type": "error_type",  # Another error
+    "event_data": {"test": "more_error_data"}
+    }
+    ]
         
         # Act
-        result = await use_case.execute(events)
+    result = await use_case.execute(events)
         
         # Assert
-        assert len(result.events) == 1  # Only one valid event
-        assert result.processed_count  ==  1
-        assert result.failed_count  ==  2
+    assert len(result.events) == 1  # Only one valid event
+    assert result.processed_count  ==  1
+    assert result.failed_count  ==  2
         
         # Verify error logging
-        assert use_case._logger.error.call_count  ==  2
+    assert use_case._logger.error.call_count  ==  2
     
     @pytest.mark.asyncio()
     async def test_event_timestamp_handling(self, use_case, mock_event_processor):
-        """
-        Test proper handling of event timestamps.
-        """
+    """
+    Test proper handling of event timestamps.
+    """
         # Arrange
-        timestamp1 = datetime(2025, 3, 15, 12, 0, 0)
-        timestamp2 = "2025-03-20T14:30:00"  # String timestamp
-        invalid_timestamp = "not-a-timestamp"
+    timestamp1 = datetime(2025, 3, 15, 12, 0, 0)
+    timestamp2 = "2025-03-20T14:30:00"  # String timestamp
+    invalid_timestamp = "not-a-timestamp"
         
-        events = [
-            {
-                "event_type": "type1",
-                "event_data": {"data": 1},
-                "timestamp": timestamp1.isoformat()
-            },
-            {
-                "event_type": "type2",
-                "event_data": {"data": 2},
-                "timestamp": timestamp2
-            },
-            {
-                "event_type": "type3",
-                "event_data": {"data": 3},
-                "timestamp": invalid_timestamp
-            }
-        ]
+    events = [
+    {
+    "event_type": "type1",
+    "event_data": {"data": 1},
+    "timestamp": timestamp1.isoformat()
+    },
+    {
+    "event_type": "type2",
+    "event_data": {"data": 2},
+    "timestamp": timestamp2
+    },
+    {
+    "event_type": "type3",
+    "event_data": {"data": 3},
+    "timestamp": invalid_timestamp
+    }
+    ]
         
         # Act
-        await use_case.execute(events)
+    await use_case.execute(events)
         
         # Assert - check call arguments for timestamps
-        call_args_list = mock_event_processor.execute.call_args_list
+    call_args_list = mock_event_processor.execute.call_args_list
         
         # First event should have parsed the ISO timestamp
-        assert call_args_list[0][1]["timestamp"].year == 2025
-        assert call_args_list[0][1]["timestamp"].month == 3
-        assert call_args_list[0][1]["timestamp"].day == 15
+    assert call_args_list[0][1]["timestamp"].year == 2025
+    assert call_args_list[0][1]["timestamp"].month == 3
+    assert call_args_list[0][1]["timestamp"].day == 15
         
         # Second event should have parsed the ISO timestamp
-        assert call_args_list[1][1]["timestamp"].year == 2025
-        assert call_args_list[1][1]["timestamp"].month == 3
-        assert call_args_list[1][1]["timestamp"].day == 20
+    assert call_args_list[1][1]["timestamp"].year == 2025
+    assert call_args_list[1][1]["timestamp"].month == 3
+    assert call_args_list[1][1]["timestamp"].day == 20
         
         # Third event should have used current time due to invalid timestamp
         # We can only check that it's a datetime object since we can't predict exact time
-        assert isinstance(call_args_list[2][1]["timestamp"], datetime)
+    assert isinstance(call_args_list[2][1]["timestamp"], datetime)
     
     @pytest.mark.asyncio()
     async def test_batch_metadata_saved(self, use_case, mock_cache_service):
-        """
-        Test that batch metadata is properly saved.
-        """
+    """
+    Test that batch metadata is properly saved.
+    """
         # Arrange
-        events = [
-            {
-                "event_type": "type1",
-                "event_data": {"data": 1}
-            },
-            {
-                "event_type": "type2",
-                "event_data": {"data": 2}
-            },
-            {
-                "event_type": "type1",  # Duplicate event type
-                "event_data": {"data": 3}
-            }
-        ]
+    events = [
+    {
+    "event_type": "type1",
+    "event_data": {"data": 1}
+    },
+    {
+    "event_type": "type2",
+    "event_data": {"data": 2}
+    },
+    {
+    "event_type": "type1",  # Duplicate event type
+    "event_data": {"data": 3}
+    }
+    ]
         
         # Act
-        await use_case.execute(events)
+    await use_case.execute(events)
         
         # Assert - check batch counter was incremented
-        mock_cache_service.increment.assert _any_call("analytics:batches:processed")
+    mock_cache_service.increment.assert _any_call("analytics:batches:processed")
         
         # Check event type counters were updated
-        mock_cache_service.increment.assert _any_call(
-            "analytics:batches:event_types:type1", 
-            increment=2
-        )
-        mock_cache_service.increment.assert _any_call(
-            "analytics:batches:event_types:type2", 
-            increment=1
-        )
+    mock_cache_service.increment.assert _any_call(
+    "analytics:batches:event_types:type1",
+    increment=2
+    )
+    mock_cache_service.increment.assert _any_call(
+    "analytics:batches:event_types:type2",
+    increment=1
+    )
     
     @pytest.mark.asyncio()
     async def test_large_batch_chunking(self, use_case, mock_event_processor):
-        """
-        Test that large batches are processed in chunks.
-        """
+    """
+    Test that large batches are processed in chunks.
+    """
         # Arrange
         # Create 250 events (should be processed in 3 chunks with chunk_size=100)
-        events = []
-        for i in range(250):
-            events.append({
-                "event_type": f"type{i % 5}",
-                "event_data": {"index": i}
-            })
+    events = []
+    for i in range(250):
+    events.append({
+    "event_type": f"type{i % 5}",
+    "event_data": {"index": i}
+    })
         
         # Act
-        result = await use_case.execute(events)
+    result = await use_case.execute(events)
         
         # Assert
-        assert result.processed_count  ==  250
-        assert result.failed_count  ==  0
-        assert len(result.events) == 250
+    assert result.processed_count  ==  250
+    assert result.failed_count  ==  0
+    assert len(result.events) == 250
         
         # Verify all events were processed
-        assert mock_event_processor.execute.call_count  ==  250
+    assert mock_event_processor.execute.call_count  ==  250
         
         # Verify the _process_chunk method was called 3 times
         # We'll need to check this through the implementation details
         # by counting the number of chunks in the call sequence
         
         # Extract the event indices from calls to execute
-        event_indices = []
-        for call_args in mock_event_processor.execute.call_args_list:
-            event_index = call_args[1]["event_data"]["index"]
-            event_indices.append(event_index)
+    event_indices = []
+    for call_args in mock_event_processor.execute.call_args_list:
+    event_index = call_args[1]["event_data"]["index"]
+    event_indices.append(event_index)
         
         # Check that the events were processed in chunks by ensuring order
         # is preserved within chunks (we expect 0-99, 100-199, 200-249)
-        assert event_indices[0] == 0
-        assert event_indices[99] == 99
-        assert event_indices[100] == 100
-        assert event_indices[199] == 199
-        assert event_indices[200] == 200
-        assert event_indices[249] == 249
+    assert event_indices[0] == 0
+    assert event_indices[99] == 99
+    assert event_indices[100] == 100
+    assert event_indices[199] == 199
+    assert event_indices[200] == 200
+    assert event_indices[249] == 249

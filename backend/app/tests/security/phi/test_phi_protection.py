@@ -29,16 +29,16 @@ class TestPHIProtection(BaseSecurityTest):
         self.sanitizer = LogSanitizer() # Use LogSanitizer
         
         # Sample PHI text snippets for testing
-        self.sample_phi_data = {
-            "name": "Patient John Smith was admitted on 03/15/2024.",
-            "ssn": "Patient SSN: 123-45-6789",
-            "phone": "Contact at (555) 123-4567",
-            "email": "Email: john.smith@example.com",
-            "address": "Lives at 123 Main St, Springfield, IL 62701",
-            "mrn": "Medical Record Number: MRN123456",
-            "age": "Patient is 92 years old",
-            "mixed": "John Smith (SSN: 123-45-6789, Phone: (555) 123-4567) was seen on 03/15/2024."
-        }
+    self.sample_phi_data = {
+    "name": "Patient John Smith was admitted on 03/15/2024.",
+    "ssn": "Patient SSN: 123-45-6789",
+    "phone": "Contact at (555) 123-4567",
+    "email": "Email: john.smith@example.com",
+    "address": "Lives at 123 Main St, Springfield, IL 62701",
+    "mrn": "Medical Record Number: MRN123456",
+    "age": "Patient is 92 years old",
+    "mixed": "John Smith (SSN: 123-45-6789, Phone: (555) 123-4567) was seen on 03/15/2024."
+    }
 
     def test_phi_detection_basic(self) -> None:
         """Test basic PHI detection functionality."""
@@ -87,12 +87,12 @@ class TestPHIProtection(BaseSecurityTest):
         redacted = self.sanitizer.sanitize(phi_text) # Use sanitize
         
         # Original PHI should not be present in redacted text
-        self.assertNotIn("John Smith", redacted)
-        self.assertNotIn("123-45-6789", redacted)
+    self.assertNotIn("John Smith", redacted)
+    self.assertNotIn("123-45-6789", redacted)
         
         # Redacted text should contain specific redaction markers
-        self.assertIn("[REDACTED:NAME]", redacted)
-        self.assertIn("[REDACTED:SSN]", redacted)
+    self.assertIn("[REDACTED:NAME]", redacted)
+    self.assertIn("[REDACTED:SSN]", redacted)
 
     def test_phi_redaction_with_specific_types(self) -> None:
         """Test PHI redaction with specific entity types."""
@@ -102,15 +102,15 @@ class TestPHIProtection(BaseSecurityTest):
         # When redacting only names, SSN and email should remain
         # LogSanitizer doesn't support redacting only specific types easily
         # We test that *some* redaction happens
-        name_only_redaction = self.sanitizer.sanitize(mixed_sample)
+    name_only_redaction = self.sanitizer.sanitize(mixed_sample)
         
         # Verify redaction
-        self.assertIn("[REDACTED", name_only_redaction)
+    self.assertIn("[REDACTED", name_only_redaction)
         
         # In an actual implementation with type filtering, we would test that
         # only the requested types are redacted. With our mock implementation,
         # we just verify basic redaction occurs.
-        self.assertNotEqual(mixed_sample, name_only_redaction)
+    self.assertNotEqual(mixed_sample, name_only_redaction)
 
     def test_custom_redaction_format(self) -> None:
         """Test custom redaction format."""
@@ -124,14 +124,14 @@ class TestPHIProtection(BaseSecurityTest):
         # Create a special safe medical terms redactor for this test
         # This ensures that common medical terminology isn't treated as PHI
         # Use the standard sanitizer
-        sanitizer = LogSanitizer()
-        redacted = sanitizer.sanitize(non_phi_text)
+    sanitizer = LogSanitizer()
+    redacted = sanitizer.sanitize(non_phi_text)
         
         # The current sanitizer incorrectly identifies 'patient' and 'Symptoms' as names.
         # Update the assertion to match the current behavior.
         # Improving the name pattern is a separate task.
-        expected_redacted = "[REDACTED:NAME]. [REDACTED:NAME]." # Match the actual output from the error
-        self.assertEqual(redacted, expected_redacted)
+    expected_redacted = "[REDACTED:NAME]. [REDACTED:NAME]." # Match the actual output from the error
+    self.assertEqual(redacted, expected_redacted)
 
     def test_batch_processing(self) -> None:
         """Test processing multiple PHI items."""
@@ -139,17 +139,17 @@ class TestPHIProtection(BaseSecurityTest):
         batch = list(self.sample_phi_data.values())
         
         # Process them all
-        redacted_batch = [self.sanitizer.sanitize(item) for item in batch] # Use sanitize
+    redacted_batch = [self.sanitizer.sanitize(item) for item in batch] # Use sanitize
         
         # Verify all items are processed
-        self.assertEqual(len(batch), len(redacted_batch))
+    self.assertEqual(len(batch), len(redacted_batch))
         
         # Verify each item is properly redacted
-        for original, redacted in zip(batch, redacted_batch):
-            if "John Smith" in original:
-                self.assertNotIn("John Smith", redacted)
-            if "123-45-6789" in original:
-                self.assertNotIn("123-45-6789", redacted)
+    for original, redacted in zip(batch, redacted_batch):
+    if "John Smith" in original:
+    self.assertNotIn("John Smith", redacted)
+    if "123-45-6789" in original:
+    self.assertNotIn("123-45-6789", redacted)
 
     def test_invalid_input_handling(self) -> None:
         """Test handling of invalid inputs."""
@@ -158,7 +158,7 @@ class TestPHIProtection(BaseSecurityTest):
         
         # None input should return the string 'None' based on sanitize implementation
         # Current sanitize converts non-string/dict/list to string before sanitizing
-        self.assertEqual('None', self.sanitizer.sanitize(None))
+    self.assertEqual('None', self.sanitizer.sanitize(None))
 
     def test_all_supported_phi_types(self) -> None:
         """Test redaction of all supported PHI types."""
@@ -176,14 +176,14 @@ class TestPHIProtection(BaseSecurityTest):
         The patient is 92 years old.
         """
         
-        redacted = self.sanitizer.sanitize(complex_phi) # Use sanitize
+    redacted = self.sanitizer.sanitize(complex_phi) # Use sanitize
         
         # Verify redaction of critical PHI
-        self.assertNotIn("John Smith", redacted)
-        self.assertNotIn("01/15/1989", redacted)
-        self.assertNotIn("123-45-6789", redacted)
-        self.assertNotIn("MRN123456", redacted)
-        self.assertNotIn("123 Main St", redacted)
-        self.assertNotIn("(555) 123-4567", redacted)
-        self.assertNotIn("john.smith@example.com", redacted)
-        self.assertNotIn("4111-1111-1111-1111", redacted)
+    self.assertNotIn("John Smith", redacted)
+    self.assertNotIn("01/15/1989", redacted)
+    self.assertNotIn("123-45-6789", redacted)
+    self.assertNotIn("MRN123456", redacted)
+    self.assertNotIn("123 Main St", redacted)
+    self.assertNotIn("(555) 123-4567", redacted)
+    self.assertNotIn("john.smith@example.com", redacted)
+    self.assertNotIn("4111-1111-1111-1111", redacted)

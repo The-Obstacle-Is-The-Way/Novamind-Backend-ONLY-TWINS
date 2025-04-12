@@ -98,24 +98,24 @@ class TestAWSXGBoostServiceInitialization:
         mock_aws_clients['s3'].head_bucket.return_value = {}
         mock_aws_clients['sagemaker'].list_endpoints.return_value = {'Endpoints': []}
         
-        service = AWSXGBoostService(
-            region_name='us-east-1',
-            endpoint_prefix='xgboost-',
-            dynamodb_table='predictions',
-            s3_bucket='xgboost-models',
-            log_level='INFO'
-        )
+    service = AWSXGBoostService(
+    region_name='us-east-1',
+    endpoint_prefix='xgboost-',
+    dynamodb_table='predictions',
+    s3_bucket='xgboost-models',
+    log_level='INFO'
+    )
         
-        assert service.region_name  ==  'us-east-1'
-        assert service.endpoint_prefix  ==  'xgboost-'
-        assert service.dynamodb_table  ==  'predictions'
-        assert service.s3_bucket  ==  'xgboost-models'
+    assert service.region_name  ==  'us-east-1'
+    assert service.endpoint_prefix  ==  'xgboost-'
+    assert service.dynamodb_table  ==  'predictions'
+    assert service.s3_bucket  ==  'xgboost-models'
         
         # Verify AWS clients initialization
-        mock_aws_clients['dynamodb'].Table.assert_called_once_with('predictions')
-        mock_aws_clients['predictions_table'].scan.assert_called_once()
-        mock_aws_clients['s3'].head_bucket.assert_called_once_with(Bucket='xgboost-models')
-        mock_aws_clients['sagemaker'].list_endpoints.assert_called_once()
+    mock_aws_clients['dynamodb'].Table.assert_called_once_with('predictions')
+    mock_aws_clients['predictions_table'].scan.assert_called_once()
+    mock_aws_clients['s3'].head_bucket.assert_called_once_with(Bucket='xgboost-models')
+    mock_aws_clients['sagemaker'].list_endpoints.assert_called_once()
     
     def test_initialization_failure_dynamodb(self, mock_aws_clients):
         """Test initialization failure due to DynamoDB error."""
@@ -124,16 +124,16 @@ class TestAWSXGBoostServiceInitialization:
             'Scan'
         )
         
-        with pytest.raises(ServiceConfigurationError) as exc_info:
-            AWSXGBoostService(
-                region_name='us-east-1',
-                endpoint_prefix='xgboost-',
-                dynamodb_table='nonexistent-table',
-                s3_bucket='xgboost-models',
-                log_level='INFO'
-            )
+    with pytest.raises(ServiceConfigurationError) as exc_info:
+    AWSXGBoostService(
+    region_name='us-east-1',
+    endpoint_prefix='xgboost-',
+    dynamodb_table='nonexistent-table',
+    s3_bucket='xgboost-models',
+    log_level='INFO'
+    )
         
-        assert "Resource not found" in str(exc_info.value)
+    assert "Resource not found" in str(exc_info.value)
     
     def test_initialization_failure_s3(self, mock_aws_clients):
         """Test initialization failure due to S3 error."""
@@ -143,16 +143,16 @@ class TestAWSXGBoostServiceInitialization:
             'HeadBucket'
         )
         
-        with pytest.raises(ServiceConfigurationError) as exc_info:
-            AWSXGBoostService(
-                region_name='us-east-1',
-                endpoint_prefix='xgboost-',
-                dynamodb_table='predictions',
-                s3_bucket='nonexistent-bucket',
-                log_level='INFO'
-            )
+    with pytest.raises(ServiceConfigurationError) as exc_info:
+    AWSXGBoostService(
+    region_name='us-east-1',
+    endpoint_prefix='xgboost-',
+    dynamodb_table='predictions',
+    s3_bucket='nonexistent-bucket',
+    log_level='INFO'
+    )
         
-        assert "validation failed" in str(exc_info.value)
+    assert "validation failed" in str(exc_info.value)
 
 
 class TestPredictRisk:
@@ -168,68 +168,68 @@ class TestPredictRisk:
         }
         
         # Mock SageMaker runtime response
-        mock_response = {
-            'Body': MagicMock()
-        }
-        mock_response['Body'].read.return_value = json.dumps({
-            'risk_score': 0.75,
-            'confidence': 0.85,
-            'features_used': ['age', 'phq9_score'],
-            'explanation': 'High risk based on PHQ-9 score',
-            'contributing_factors': [
-                {
-                    'name': 'phq9_score',
-                    'impact': 0.8,
-                    'description': 'Elevated depression score'
-                }
-            ],
-            'model_id': 'model-123'
-        }).encode('utf-8')
-        mock_aws_clients['sagemaker_runtime'].invoke_endpoint.return_value = mock_response
+    mock_response = {
+    'Body': MagicMock()
+    }
+    mock_response['Body'].read.return_value = json.dumps({
+    'risk_score': 0.75,
+    'confidence': 0.85,
+    'features_used': ['age', 'phq9_score'],
+    'explanation': 'High risk based on PHQ-9 score',
+    'contributing_factors': [
+    {
+    'name': 'phq9_score',
+    'impact': 0.8,
+    'description': 'Elevated depression score'
+    }
+    ],
+    'model_id': 'model-123'
+    }).encode('utf-8')
+    mock_aws_clients['sagemaker_runtime'].invoke_endpoint.return_value = mock_response
         
         # Mock DynamoDB put_item
-        mock_aws_clients['predictions_table'].put_item.return_value = {}
+    mock_aws_clients['predictions_table'].put_item.return_value = {}
         
         # Test data
-        patient_id = 'patient-123'
-        risk_type = ModelType.RISK_RELAPSE # Use ModelType
-        features = {
-            'age': 35,
-            'phq9_score': 18,
-            'gender': 'female'
-        }
-        time_frame_days = 90
+    patient_id = 'patient-123'
+    risk_type = ModelType.RISK_RELAPSE # Use ModelType
+    features = {
+    'age': 35,
+    'phq9_score': 18,
+    'gender': 'female'
+    }
+    time_frame_days = 90
         
         # Call method
-        with patch('uuid.uuid4', return_value=uuid.UUID('123e4567-e89b-12d3-a456-426614174000')):
-            result = aws_xgboost_service.predict_risk(
-                patient_id=patient_id,
-                risk_type=risk_type,
-                features=features,
-                time_frame_days=time_frame_days
-            )
+    with patch('uuid.uuid4', return_value=uuid.UUID('123e4567-e89b-12d3-a456-426614174000')):
+    result = aws_xgboost_service.predict_risk(
+    patient_id=patient_id,
+    risk_type=risk_type,
+    features=features,
+    time_frame_days=time_frame_days
+    )
         
         # Verify result
-        assert result.prediction_id  ==  '123e4567-e89b-12d3-a456-426614174000'
-        assert result.patient_id  ==  patient_id
-        assert result.prediction_type  ==  risk_type
-        assert result.risk_level  ==  RiskLevel.HIGH  # Based on risk_score 0.75
-        assert result.risk_score  ==  0.75
-        assert result.confidence  ==  0.85
-        assert result.time_frame_days  ==  time_frame_days
-        assert len(result.contributing_factors) == 1
-        assert result.contributing_factors[0]['name'] == 'phq9_score'
+    assert result.prediction_id  ==  '123e4567-e89b-12d3-a456-426614174000'
+    assert result.patient_id  ==  patient_id
+    assert result.prediction_type  ==  risk_type
+    assert result.risk_level  ==  RiskLevel.HIGH  # Based on risk_score 0.75
+    assert result.risk_score  ==  0.75
+    assert result.confidence  ==  0.85
+    assert result.time_frame_days  ==  time_frame_days
+    assert len(result.contributing_factors) == 1
+    assert result.contributing_factors[0]['name'] == 'phq9_score'
         
         # Verify API calls
-        mock_aws_clients['sagemaker'].describe_endpoint.assert_called_with(
-            EndpointName='xgboost-risk_relapse'
-        )
-        mock_aws_clients['sagemaker_runtime'].invoke_endpoint.assert_called_with(
-            EndpointName='xgboost-risk_relapse',
-            ContentType='application/json',
-            Body=ANY  # Can't easily check the exact serialized body
-        )
-        mock_aws_clients['predictions_table'].put_item.assert_called_once()
+    mock_aws_clients['sagemaker'].describe_endpoint.assert_called_with(
+    EndpointName='xgboost-risk_relapse'
+    )
+    mock_aws_clients['sagemaker_runtime'].invoke_endpoint.assert_called_with(
+    EndpointName='xgboost-risk_relapse',
+    ContentType='application/json',
+    Body=ANY  # Can't easily check the exact serialized body
+    )
+    mock_aws_clients['predictions_table'].put_item.assert_called_once()
     
     def test_predict_risk_model_not_found(self, aws_xgboost_service, mock_aws_clients):
         """Test risk prediction with non-existent model."""
@@ -241,22 +241,22 @@ class TestPredictRisk:
         )
         
         # Test data
-        patient_id = 'patient-123'
-        risk_type = ModelType.RISK_RELAPSE # Use ModelType
-        features = {
-            'age': 35,
-            'phq9_score': 18
-        }
+    patient_id = 'patient-123'
+    risk_type = ModelType.RISK_RELAPSE # Use ModelType
+    features = {
+    'age': 35,
+    'phq9_score': 18
+    }
         
         # Call method and verify exception
-        with pytest.raises(ModelNotFoundError) as exc_info:
-            aws_xgboost_service.predict_risk(
-                patient_id=patient_id,
-                risk_type=risk_type,
-                features=features
-            )
+    with pytest.raises(ModelNotFoundError) as exc_info:
+    aws_xgboost_service.predict_risk(
+    patient_id=patient_id,
+    risk_type=risk_type,
+    features=features
+    )
         
-        assert "No model available for risk_relapse" in str(exc_info.value)
+    assert "No model available for risk_relapse" in str(exc_info.value)
     
     def test_predict_risk_invalid_risk_type(self, aws_xgboost_service):
         """Test risk prediction with invalid risk type."""
@@ -269,14 +269,14 @@ class TestPredictRisk:
         }
         
         # Call method and verify exception
-        with pytest.raises(ValidationError) as exc_info: # Use ValidationError
-            aws_xgboost_service.predict_risk(
-                patient_id=patient_id,
-                risk_type=risk_type,
-                features=features
-            )
+    with pytest.raises(ValidationError) as exc_info: # Use ValidationError
+    aws_xgboost_service.predict_risk(
+    patient_id=patient_id,
+    risk_type=risk_type,
+    features=features
+    )
         
-        assert "Invalid risk type" in str(exc_info.value)
+    assert "Invalid risk type" in str(exc_info.value)
     
     def test_predict_risk_invocation_error(self, aws_xgboost_service, mock_aws_clients):
         """Test risk prediction with SageMaker invocation error."""
@@ -288,28 +288,28 @@ class TestPredictRisk:
         }
         
         # Mock SageMaker runtime error
-        mock_aws_clients['sagemaker_runtime'].invoke_endpoint.side_effect = ClientError(
-            {'Error': {'Code': 'ModelError', 'Message': 'Model error'}},
-            'InvokeEndpoint'
-        )
+    mock_aws_clients['sagemaker_runtime'].invoke_endpoint.side_effect = ClientError(
+    {'Error': {'Code': 'ModelError', 'Message': 'Model error'}},
+    'InvokeEndpoint'
+    )
         
         # Test data
-        patient_id = 'patient-123'
-        risk_type = ModelType.RISK_RELAPSE # Use ModelType
-        features = {
-            'age': 35,
-            'phq9_score': 18
-        }
+    patient_id = 'patient-123'
+    risk_type = ModelType.RISK_RELAPSE # Use ModelType
+    features = {
+    'age': 35,
+    'phq9_score': 18
+    }
         
         # Call method and verify exception
-        with pytest.raises(ServiceConnectionError) as exc_info:
-            aws_xgboost_service.predict_risk(
-                patient_id=patient_id,
-                risk_type=risk_type,
-                features=features
-            )
+    with pytest.raises(ServiceConnectionError) as exc_info:
+    aws_xgboost_service.predict_risk(
+    patient_id=patient_id,
+    risk_type=risk_type,
+    features=features
+    )
         
-        assert "Failed to invoke endpoint" in str(exc_info.value)
+    assert "Failed to invoke endpoint" in str(exc_info.value)
 
 
 class TestGetPrediction:
@@ -340,20 +340,20 @@ class TestGetPrediction:
         }
         
         # Call method
-        result = aws_xgboost_service.get_prediction('pred-123')
+    result = aws_xgboost_service.get_prediction('pred-123')
         
         # Verify result
-        assert result.prediction_id  ==  'pred-123'
-        assert result.patient_id  ==  'patient-456'
-        assert result.prediction_type  ==  ModelType.RISK_RELAPSE # Use ModelType
-        assert result.risk_level  ==  RiskLevel.HIGH
-        assert result.risk_score  ==  0.75
-        assert result.confidence  ==  0.85
+    assert result.prediction_id  ==  'pred-123'
+    assert result.patient_id  ==  'patient-456'
+    assert result.prediction_type  ==  ModelType.RISK_RELAPSE # Use ModelType
+    assert result.risk_level  ==  RiskLevel.HIGH
+    assert result.risk_score  ==  0.75
+    assert result.confidence  ==  0.85
         
         # Verify API calls
-        mock_aws_clients['predictions_table'].get_item.assert_called_with(
-            Key={'prediction_id': 'pred-123'}
-        )
+    mock_aws_clients['predictions_table'].get_item.assert_called_with(
+    Key={'prediction_id': 'pred-123'}
+    )
     
     def test_get_prediction_not_found(self, aws_xgboost_service, mock_aws_clients):
         """Test retrieving a non-existent prediction."""
@@ -361,10 +361,10 @@ class TestGetPrediction:
         mock_aws_clients['predictions_table'].get_item.return_value = {}
         
         # Call method and verify exception
-        with pytest.raises(ResourceNotFoundError) as exc_info: # Use ResourceNotFoundError
-            aws_xgboost_service.get_prediction('pred-123')
+    with pytest.raises(ResourceNotFoundError) as exc_info: # Use ResourceNotFoundError
+    aws_xgboost_service.get_prediction('pred-123')
         
-        assert "Prediction pred-123 not found" in str(exc_info.value)
+    assert "Prediction pred-123 not found" in str(exc_info.value)
     
     def test_get_prediction_dynamodb_error(self, aws_xgboost_service, mock_aws_clients):
         """Test retrieving a prediction with DynamoDB error."""
@@ -375,10 +375,10 @@ class TestGetPrediction:
         )
         
         # Call method and verify exception
-        with pytest.raises(ServiceConnectionError) as exc_info: # Correct exception type
-            aws_xgboost_service.get_prediction('pred-123')
+    with pytest.raises(ServiceConnectionError) as exc_info: # Correct exception type
+    aws_xgboost_service.get_prediction('pred-123')
         
-        assert "Failed to retrieve prediction" in str(exc_info.value)
+    assert "Failed to retrieve prediction" in str(exc_info.value)
 
 
 class TestValidatePrediction:
@@ -388,42 +388,42 @@ class TestValidatePrediction:
         """Test successfully validating a prediction."""
         # Mock get_prediction and update_prediction
         with patch.object(aws_xgboost_service, '_update_prediction') as mock_update:
-            mock_update.return_value = None
+        mock_update.return_value = None
             
             # Call method
-            result = aws_xgboost_service.validate_prediction(
-                prediction_id='pred-123',
+    result = aws_xgboost_service.validate_prediction(
+    prediction_id='pred-123',
                 # status=ValidationStatus.VALIDATED, # TODO: ValidationStatus enum removed/renamed, update test logic
-                status="validated", # Using string literal temporarily
-                validator_notes='Clinically confirmed'
-            )
+    status="validated", # Using string literal temporarily
+    validator_notes='Clinically confirmed'
+    )
             
             # Verify result
-            assert result is True
+    assert result is True
             
             # Verify update called with correct params
-            mock_update.assert_called_once_with(
-                'pred-123',
-                {
-                    'validation_status': 'validated',
-                    'validator_notes': 'Clinically confirmed'
-                }
-            )
+    mock_update.assert_called_once_with(
+    'pred-123',
+    {
+    'validation_status': 'validated',
+    'validator_notes': 'Clinically confirmed'
+    }
+    )
     
     def test_validate_prediction_not_found(self, aws_xgboost_service, mock_aws_clients):
         """Test validating a non-existent prediction."""
         # Mock update_prediction with not found error
         with patch.object(aws_xgboost_service, '_update_prediction') as mock_update:
-            mock_update.side_effect = PredictionNotFoundError('Prediction pred-123 not found')
+        mock_update.side_effect = PredictionNotFoundError('Prediction pred-123 not found')
             
             # Call method and verify exception
-            with pytest.raises(PredictionNotFoundError) as exc_info:
-                aws_xgboost_service.validate_prediction(
-                    prediction_id='pred-123',
-                    status=ValidationStatus.VALIDATED
-                )
+    with pytest.raises(PredictionNotFoundError) as exc_info:
+    aws_xgboost_service.validate_prediction(
+    prediction_id='pred-123',
+    status=ValidationStatus.VALIDATED
+    )
             
-            assert "Prediction pred-123 not found" in str(exc_info.value)
+    assert "Prediction pred-123 not found" in str(exc_info.value)
 
 
 class TestHealthcheck:
@@ -448,16 +448,16 @@ class TestHealthcheck:
         }
         
         # Call method
-        result = aws_xgboost_service.healthcheck()
+    result = aws_xgboost_service.healthcheck()
         
         # Verify result
-        assert result['status'] == 'healthy'
-        assert 'timestamp' in result
-        assert result['components']['dynamodb']['status'] == 'healthy'
-        assert result['components']['s3']['status'] == 'healthy'
-        assert result['components']['sagemaker']['status'] == 'healthy'
-        assert result['models']['risk_relapse'] == 'active'
-        assert result['models']['treatment_response_medication'] == 'active'
+    assert result['status'] == 'healthy'
+    assert 'timestamp' in result
+    assert result['components']['dynamodb']['status'] == 'healthy'
+    assert result['components']['s3']['status'] == 'healthy'
+    assert result['components']['sagemaker']['status'] == 'healthy'
+    assert result['models']['risk_relapse'] == 'active'
+    assert result['models']['treatment_response_medication'] == 'active'
     
     def test_healthcheck_degraded(self, aws_xgboost_service, mock_aws_clients):
         """Test healthcheck with some components degraded."""
@@ -481,14 +481,14 @@ class TestHealthcheck:
         }
         
         # Call method
-        result = aws_xgboost_service.healthcheck()
+    result = aws_xgboost_service.healthcheck()
         
         # Verify result
-        assert result['status'] == 'degraded'
-        assert 'timestamp' in result
-        assert result['components']['dynamodb']['status'] == 'healthy'
-        assert result['components']['s3']['status'] == 'unhealthy'
-        assert 'error' in result['components']['s3']
-        assert result['components']['sagemaker']['status'] == 'healthy'
-        assert result['models']['risk_relapse'] == 'active'
-        assert result['models']['treatment_response_medication'] == 'updating'
+    assert result['status'] == 'degraded'
+    assert 'timestamp' in result
+    assert result['components']['dynamodb']['status'] == 'healthy'
+    assert result['components']['s3']['status'] == 'unhealthy'
+    assert 'error' in result['components']['s3']
+    assert result['components']['sagemaker']['status'] == 'healthy'
+    assert result['models']['risk_relapse'] == 'active'
+    assert result['models']['treatment_response_medication'] == 'updating'

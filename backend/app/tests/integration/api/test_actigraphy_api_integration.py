@@ -89,15 +89,15 @@ class TestActigraphyAPI:
             json=actigraphy_data
         )
         
-        assert response.status_code  ==  200
-        data = response.json()
-        assert "analysis_id" in data
-        assert "patient_id" in data
-        assert data["patient_id"] == actigraphy_data["patient_id"]
-        assert "timestamp" in data
-        assert "results" in data
-        assert "data_summary" in data
-        assert data["data_summary"]["readings_count"] == len(actigraphy_data["readings"])
+    assert response.status_code  ==  200
+    data = response.json()
+    assert "analysis_id" in data
+    assert "patient_id" in data
+    assert data["patient_id"] == actigraphy_data["patient_id"]
+    assert "timestamp" in data
+    assert "results" in data
+    assert "data_summary" in data
+    assert data["data_summary"]["readings_count"] == len(actigraphy_data["readings"])
     
     def test_get_actigraphy_embeddings(self, client: TestClient, auth_headers, actigraphy_data): # Use client fixture
         """Test generating embeddings from actigraphy data."""
@@ -110,21 +110,21 @@ class TestActigraphyAPI:
             "sampling_rate_hz": actigraphy_data["sampling_rate_hz"]
         }
         
-        response = client.post(
-            "/api/v1/actigraphy/embeddings",
-            headers=auth_headers,
-            json=embedding_data
-        )
+    response = client.post(
+    "/api/v1/actigraphy/embeddings",
+    headers=auth_headers,
+    json=embedding_data
+    )
         
-        assert response.status_code  ==  200
-        data = response.json()
-        assert "embedding_id" in data
-        assert "patient_id" in data
-        assert data["patient_id"] == actigraphy_data["patient_id"]
-        assert "timestamp" in data
-        assert "embedding" in data
-        assert "vector" in data["embedding"]
-        assert "dimension" in data["embedding"]
+    assert response.status_code  ==  200
+    data = response.json()
+    assert "embedding_id" in data
+    assert "patient_id" in data
+    assert data["patient_id"] == actigraphy_data["patient_id"]
+    assert "timestamp" in data
+    assert "embedding" in data
+    assert "vector" in data["embedding"]
+    assert "dimension" in data["embedding"]
     
     def test_get_analysis_by_id(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test retrieving an analysis by ID."""
@@ -139,47 +139,47 @@ class TestActigraphyAPI:
             analysis_types=["activity_levels"]
         )
         
-        analysis_id = analysis_data["analysis_id"]
+    analysis_id = analysis_data["analysis_id"]
         
-        response = client.get(
-            f"/api/v1/actigraphy/analyses/{analysis_id}",
-            headers=auth_headers
-        )
+    response = client.get(
+    f"/api/v1/actigraphy/analyses/{analysis_id}",
+    headers=auth_headers
+    )
         
-        assert response.status_code  ==  200
-        data = response.json()
-        assert "analysis_id" in data
-        assert data["analysis_id"] == analysis_id
-        assert "patient_id" in data
-        assert "timestamp" in data
+    assert response.status_code  ==  200
+    data = response.json()
+    assert "analysis_id" in data
+    assert data["analysis_id"] == analysis_id
+    assert "patient_id" in data
+    assert "timestamp" in data
     
     def test_get_patient_analyses(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test retrieving analyses for a patient."""
         patient_id = "test-patient-123"
         
         # Create a few analyses for the patient
-        for i in range(3):
-            mock_pat_service.analyze_actigraphy(
-                patient_id=patient_id,
-                readings=[{"x": 0.1, "y": 0.2, "z": 0.3, "timestamp": f"2025-03-28T12:0{i}:00Z"}],
-                start_time=f"2025-03-28T12:0{i}:00Z",
-                end_time=f"2025-03-28T12:0{i+1}:00Z",
-                sampling_rate_hz=1.0,
-                device_info={"name": "Test Device"},
-                analysis_types=["activity_levels"]
-            )
+    for i in range(3):
+    mock_pat_service.analyze_actigraphy(
+    patient_id=patient_id,
+    readings=[{"x": 0.1, "y": 0.2, "z": 0.3, "timestamp": f"2025-03-28T12:0{i}:00Z"}],
+    start_time=f"2025-03-28T12:0{i}:00Z",
+    end_time=f"2025-03-28T12:0{i+1}:00Z",
+    sampling_rate_hz=1.0,
+    device_info={"name": "Test Device"},
+    analysis_types=["activity_levels"]
+    )
         
-        response = client.get(
-            f"/api/v1/actigraphy/patient/{patient_id}/analyses",
-            headers=auth_headers
-        )
+    response = client.get(
+    f"/api/v1/actigraphy/patient/{patient_id}/analyses",
+    headers=auth_headers
+    )
         
-        assert response.status_code  ==  200
-        data = response.json()
-        assert "analyses" in data
-        assert isinstance(data["analyses"], list)
-        assert len(data["analyses"]) > 0
-        assert "pagination" in data
+    assert response.status_code  ==  200
+    data = response.json()
+    assert "analyses" in data
+    assert isinstance(data["analyses"], list)
+    assert len(data["analyses"]) > 0
+    assert "pagination" in data
     
     def test_get_model_info(self, client: TestClient, auth_headers): # Use client fixture
         """Test getting model information."""
@@ -188,12 +188,12 @@ class TestActigraphyAPI:
             headers=auth_headers
         )
         
-        assert response.status_code  ==  200
-        data = response.json()
-        assert "name" in data
-        assert "version" in data
-        assert "capabilities" in data
-        assert "description" in data
+    assert response.status_code  ==  200
+    data = response.json()
+    assert "name" in data
+    assert "version" in data
+    assert "capabilities" in data
+    assert "description" in data
     
     def test_integrate_with_digital_twin(self, client: TestClient, auth_headers, mock_pat_service): # Use client fixture
         """Test integrating analysis with digital twin."""
@@ -208,29 +208,29 @@ class TestActigraphyAPI:
             analysis_types=["activity_levels"]
         )
         
-        integration_data = {
-            "patient_id": "test-patient-123",
-            "profile_id": "test-profile-456",
-            "analysis_id": analysis_data["analysis_id"]
-        }
+    integration_data = {
+    "patient_id": "test-patient-123",
+    "profile_id": "test-profile-456",
+    "analysis_id": analysis_data["analysis_id"]
+    }
         
-        response = client.post(
-            "/api/v1/actigraphy/integrate-with-digital-twin",
-            headers=auth_headers,
-            json=integration_data
-        )
+    response = client.post(
+    "/api/v1/actigraphy/integrate-with-digital-twin",
+    headers=auth_headers,
+    json=integration_data
+    )
         
-        assert response.status_code  ==  200
-        data = response.json()
-        assert "integration_id" in data
-        assert "patient_id" in data
-        assert data["patient_id"] == integration_data["patient_id"]
-        assert "profile_id" in data
-        assert data["profile_id"] == integration_data["profile_id"]
-        assert "analysis_id" in data
-        assert data["analysis_id"] == integration_data["analysis_id"]
-        assert "status" in data
-        assert data["status"] == "success"
+    assert response.status_code  ==  200
+    data = response.json()
+    assert "integration_id" in data
+    assert "patient_id" in data
+    assert data["patient_id"] == integration_data["patient_id"]
+    assert "profile_id" in data
+    assert data["profile_id"] == integration_data["profile_id"]
+    assert "analysis_id" in data
+    assert data["analysis_id"] == integration_data["analysis_id"]
+    assert "status" in data
+    assert data["status"] == "success"
     
     def test_unauthorized_access(self, client: TestClient, actigraphy_data): # Use client fixture
         """Test unauthorized access to API."""
@@ -240,4 +240,4 @@ class TestActigraphyAPI:
         )
         
         # Should fail with 401 Unauthorized
-        assert response.status_code  ==  401
+    assert response.status_code  ==  401

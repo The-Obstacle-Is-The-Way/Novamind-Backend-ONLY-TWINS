@@ -312,7 +312,7 @@ def mock_pat_service(
     mock_service.get_model_info = AsyncMock(return_value=model_info)
     mock_service.integrate_with_digital_twin = AsyncMock(return_value=integration_result)
 
-    return mock_service
+#     return mock_service # FIXME: return outside function
 
 @pytest.fixture
 def app(mock_pat_service):
@@ -347,7 +347,7 @@ def app(mock_pat_service):
 
 
     app_instance.include_router(router, prefix="/api/v1/actigraphy") # Add prefix if needed
-    return app_instance
+#     return app_instance # FIXME: return outside function
 
 
 @pytest.fixture
@@ -378,11 +378,11 @@ class TestActigraphyRoutes:
         )
 
         # Check the response
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == analysis_result
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == analysis_result
 
         # Verify service call
-        mock_pat_service.analyze_actigraphy.assert_called_once()
+    mock_pat_service.analyze_actigraphy.assert_called_once()
 
     def test_analyze_actigraphy_unauthorized(
         self,
@@ -396,17 +396,17 @@ class TestActigraphyRoutes:
         modified_request["patient_id"] = "different_patient"
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/analyze", # Added prefix
-            json=modified_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/analyze", # Added prefix
+    json=modified_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response (depends on how auth is implemented)
         # If auth checks patient_id against token 'sub', this should fail
         # Assuming a 403 Forbidden if patient_id doesn't match user_id
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "Not authorized" in response.json()["detail"]
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "Not authorized" in response.json()["detail"]
 
     def test_analyze_actigraphy_validation_error(
         self,
@@ -420,15 +420,15 @@ class TestActigraphyRoutes:
         mock_pat_service.analyze_actigraphy.side_effect = ValidationError("Invalid input")
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/analyze", # Added prefix
-            json=analysis_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/analyze", # Added prefix
+    json=analysis_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        assert "Invalid input" in response.json()["detail"]
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Invalid input" in response.json()["detail"]
 
     def test_analyze_actigraphy_analysis_error(
         self,
@@ -442,15 +442,15 @@ class TestActigraphyRoutes:
         mock_pat_service.analyze_actigraphy.side_effect = AnalysisError("Analysis failed")
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/analyze", # Added prefix
-            json=analysis_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/analyze", # Added prefix
+    json=analysis_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Analysis failed" in response.json()["detail"]
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert "Analysis failed" in response.json()["detail"]
 
     def test_get_actigraphy_embeddings_success(
         self,
@@ -469,11 +469,11 @@ class TestActigraphyRoutes:
         )
 
         # Check the response
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == embedding_result
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == embedding_result
 
         # Verify service call
-        mock_pat_service.get_actigraphy_embeddings.assert_called_once()
+    mock_pat_service.get_actigraphy_embeddings.assert_called_once()
 
     def test_get_actigraphy_embeddings_unauthorized(
         self,
@@ -487,15 +487,15 @@ class TestActigraphyRoutes:
         modified_request["patient_id"] = "different_patient"
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/embeddings", # Added prefix
-            json=modified_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/embeddings", # Added prefix
+    json=modified_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "Not authorized" in response.json()["detail"]
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "Not authorized" in response.json()["detail"]
 
     def test_get_actigraphy_embeddings_validation_error(
         self,
@@ -509,15 +509,15 @@ class TestActigraphyRoutes:
         mock_pat_service.get_actigraphy_embeddings.side_effect = ValidationError("Invalid input")
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/embeddings", # Added prefix
-            json=embedding_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/embeddings", # Added prefix
+    json=embedding_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        assert "Invalid input" in response.json()["detail"]
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Invalid input" in response.json()["detail"]
 
     def test_get_actigraphy_embeddings_embedding_error(
         self,
@@ -531,15 +531,15 @@ class TestActigraphyRoutes:
         mock_pat_service.get_actigraphy_embeddings.side_effect = EmbeddingError("Embedding failed")
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/embeddings", # Added prefix
-            json=embedding_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/embeddings", # Added prefix
+    json=embedding_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Embedding failed" in response.json()["detail"]
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert "Embedding failed" in response.json()["detail"]
 
     def test_get_analysis_by_id_success(
         self,
@@ -557,11 +557,11 @@ class TestActigraphyRoutes:
         )
 
         # Check the response
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == analysis_result
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == analysis_result
 
         # Verify service call
-        mock_pat_service.get_analysis_by_id.assert_called_once_with(analysis_id)
+    mock_pat_service.get_analysis_by_id.assert_called_once_with(analysis_id)
 
     def test_get_analysis_by_id_not_found(
         self,
@@ -575,14 +575,14 @@ class TestActigraphyRoutes:
         mock_pat_service.get_analysis_by_id.side_effect = ResourceNotFoundError("Analysis not found")
 
         # Make the request
-        response = client.get(
-            f"/api/v1/actigraphy/analyses/{analysis_id}", # Added prefix
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.get(
+    f"/api/v1/actigraphy/analyses/{analysis_id}", # Added prefix
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-        assert "Analysis not found" in response.json()["detail"]
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert "Analysis not found" in response.json()["detail"]
 
     def test_get_analysis_by_id_unauthorized(
         self,
@@ -597,14 +597,14 @@ class TestActigraphyRoutes:
         mock_pat_service.get_analysis_by_id.side_effect = AuthorizationError("Not authorized")
 
         # Make the request
-        response = client.get(
-            f"/api/v1/actigraphy/analyses/{analysis_id}", # Added prefix
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.get(
+    f"/api/v1/actigraphy/analyses/{analysis_id}", # Added prefix
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "Not authorized" in response.json()["detail"]
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "Not authorized" in response.json()["detail"]
 
     def test_get_patient_analyses_success(
         self,
@@ -622,13 +622,13 @@ class TestActigraphyRoutes:
         )
 
         # Check the response
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == analyses_list
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == analyses_list
 
         # Verify service call
-        mock_pat_service.get_patient_analyses.assert_called_once_with(
-            patient_id=patient_id, limit=10, offset=0 # Check default pagination
-        )
+    mock_pat_service.get_patient_analyses.assert_called_once_with(
+    patient_id=patient_id, limit=10, offset=0 # Check default pagination
+    )
 
     def test_get_patient_analyses_unauthorized(
         self,
@@ -644,8 +644,8 @@ class TestActigraphyRoutes:
         )
 
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "Not authorized" in response.json()["detail"]
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "Not authorized" in response.json()["detail"]
 
     def test_get_model_info_success(
         self,
@@ -662,11 +662,11 @@ class TestActigraphyRoutes:
         )
 
         # Check the response
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == model_info
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == model_info
 
         # Verify service call
-        mock_pat_service.get_model_info.assert_called_once()
+    mock_pat_service.get_model_info.assert_called_once()
 
     def test_integrate_with_digital_twin_success(
         self,
@@ -685,11 +685,11 @@ class TestActigraphyRoutes:
         )
 
         # Check the response
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == integration_result
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == integration_result
 
         # Verify service call
-        mock_pat_service.integrate_with_digital_twin.assert_called_once()
+    mock_pat_service.integrate_with_digital_twin.assert_called_once()
 
     def test_integrate_with_digital_twin_unauthorized(
         self,
@@ -703,15 +703,15 @@ class TestActigraphyRoutes:
         modified_request["patient_id"] = "different_patient"
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/integrate", # Added prefix
-            json=modified_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/integrate", # Added prefix
+    json=modified_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "Not authorized" in response.json()["detail"]
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "Not authorized" in response.json()["detail"]
 
     def test_integrate_with_digital_twin_not_found(
         self,
@@ -725,15 +725,15 @@ class TestActigraphyRoutes:
         mock_pat_service.integrate_with_digital_twin.side_effect = ResourceNotFoundError("Analysis not found")
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/integrate", # Added prefix
-            json=integration_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/integrate", # Added prefix
+    json=integration_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-        assert "Analysis not found" in response.json()["detail"]
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert "Analysis not found" in response.json()["detail"]
 
     def test_integrate_with_digital_twin_authorization_error(
         self,
@@ -747,15 +747,15 @@ class TestActigraphyRoutes:
         mock_pat_service.integrate_with_digital_twin.side_effect = AuthorizationError("Integration not allowed")
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/integrate", # Added prefix
-            json=integration_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/integrate", # Added prefix
+    json=integration_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "Integration not allowed" in response.json()["detail"]
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert "Integration not allowed" in response.json()["detail"]
 
     def test_integrate_with_digital_twin_validation_error(
         self,
@@ -769,15 +769,15 @@ class TestActigraphyRoutes:
         mock_pat_service.integrate_with_digital_twin.side_effect = ValidationError("Invalid profile ID")
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/integrate", # Added prefix
-            json=integration_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/integrate", # Added prefix
+    json=integration_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        assert "Invalid profile ID" in response.json()["detail"]
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Invalid profile ID" in response.json()["detail"]
 
     def test_integrate_with_digital_twin_integration_error(
         self,
@@ -791,12 +791,12 @@ class TestActigraphyRoutes:
         mock_pat_service.integrate_with_digital_twin.side_effect = Exception("Integration failed") # Generic exception
 
         # Make the request
-        response = client.post(
-            "/api/v1/actigraphy/integrate", # Added prefix
-            json=integration_request,
-            headers={"Authorization": f"Bearer {mock_token}"}
-        )
+    response = client.post(
+    "/api/v1/actigraphy/integrate", # Added prefix
+    json=integration_request,
+    headers={"Authorization": f"Bearer {mock_token}"}
+    )
 
         # Check the response
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert "Integration failed" in response.json()["detail"]
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert "Integration failed" in response.json()["detail"]

@@ -62,23 +62,23 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     ) -> Dict[str, Any]:
         """Mock process method."""
         if not prompt:
-            raise InvalidRequestError("Prompt cannot be empty")
+        raise InvalidRequestError("Prompt cannot be empty")
         
-        if model == "nonexistent-model":
-            raise ModelNotFoundError("Model not found", model_name=model)
+    if model == "nonexistent-model":
+    raise ModelNotFoundError("Model not found", model_name=model)
         
-        return {
-            "response_id": str(uuid.uuid4()),
-            "model": model or "mentallama-33b-lora",
-            "provider": "aws-bedrock",
-            "text": f"Mock response for: {prompt[:30]}...",
-            "structured_data": {"raw_text": f"Mock response for: {prompt[:30]}..."},
-            "confidence": "high",
-            "processing_time": 0.5,
-            "tokens_used": 100,
-            "created_at": datetime.now().isoformat(),
-            "metadata": {"task": task or "general_analysis"}
-        }
+#     return { # FIXME: return outside function
+    "response_id": str(uuid.uuid4()),
+    "model": model or "mentallama-33b-lora",
+    "provider": "aws-bedrock",
+    "text": f"Mock response for: {prompt[:30]}...",
+    "structured_data": {"raw_text": f"Mock response for: {prompt[:30]}..."},
+    "confidence": "high",
+    "processing_time": 0.5,
+    "tokens_used": 100,
+    "created_at": datetime.now().isoformat(),
+    "metadata": {"task": task or "general_analysis"}
+    }
     
     def depression_detection(
         self, 
@@ -93,31 +93,31 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     ) -> Dict[str, Any]:
         """Mock depression detection."""
         if not text:
-            raise InvalidRequestError("Text cannot be empty")
+        raise InvalidRequestError("Text cannot be empty")
         
-        if model == "nonexistent-model":
-            raise ModelNotFoundError("Model not found", model_name=model)
+    if model == "nonexistent-model":
+    raise ModelNotFoundError("Model not found", model_name=model)
         
-        structured_data = {
-            "depression_indicated": True,
-            "severity": "moderate",
-            "key_indicators": ["depressed mood", "fatigue", "sleep disturbance"]
-        }
+    structured_data = {
+    "depression_indicated": True,
+    "severity": "moderate",
+    "key_indicators": ["depressed mood", "fatigue", "sleep disturbance"]
+    }
         
-        if include_rationale:
-            structured_data["rationale"] = "Mock rationale for depression detection"
+    if include_rationale:
+    structured_data["rationale"] = "Mock rationale for depression detection"
         
-        return {
-            "response_id": str(uuid.uuid4()),
-            "model": model or "mentallama-33b-lora",
-            "provider": "aws-bedrock",
-            "text": "Mock depression detection analysis",
-            "structured_data": structured_data,
-            "confidence": "high",
-            "processing_time": 0.5,
-            "tokens_used": 120,
-            "created_at": datetime.now().isoformat()
-        }
+#     return { # FIXME: return outside function
+    "response_id": str(uuid.uuid4()),
+    "model": model or "mentallama-33b-lora",
+    "provider": "aws-bedrock",
+    "text": "Mock depression detection analysis",
+    "structured_data": structured_data,
+    "confidence": "high",
+    "processing_time": 0.5,
+    "tokens_used": 120,
+    "created_at": datetime.now().isoformat()
+    }
     
     def risk_assessment(
         self, 
@@ -132,34 +132,34 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     ) -> Dict[str, Any]:
         """Mock risk assessment."""
         if not text:
-            raise InvalidRequestError("Text cannot be empty")
+        raise InvalidRequestError("Text cannot be empty")
         
-        if model == "nonexistent-model":
-            raise ModelNotFoundError("Model not found", model_name=model)
+    if model == "nonexistent-model":
+    raise ModelNotFoundError("Model not found", model_name=model)
         
-        structured_data = {
-            "risk_level": "low",
-            "key_indicators": ["concern about future", "minor sleep issues"],
-            "rationale": "Mock rationale for risk assessment"
-        }
+    structured_data = {
+    "risk_level": "low",
+    "key_indicators": ["concern about future", "minor sleep issues"],
+    "rationale": "Mock rationale for risk assessment"
+    }
         
-        if include_suggested_actions:
-            structured_data["suggested_actions"] = [
-                "Regular follow-up", 
-                "Monitor sleep patterns"
-            ]
+    if include_suggested_actions:
+    structured_data["suggested_actions"] = [
+    "Regular follow-up",
+    "Monitor sleep patterns"
+    ]
         
-        return {
-            "response_id": str(uuid.uuid4()),
-            "model": model or "mentallama-33b-lora",
-            "provider": "aws-bedrock",
-            "text": "Mock risk assessment analysis",
-            "structured_data": structured_data,
-            "confidence": "high",
-            "processing_time": 0.5,
-            "tokens_used": 130,
-            "created_at": datetime.now().isoformat()
-        }
+#     return { # FIXME: return outside function
+    "response_id": str(uuid.uuid4()),
+    "model": model or "mentallama-33b-lora",
+    "provider": "aws-bedrock",
+    "text": "Mock risk assessment analysis",
+    "structured_data": structured_data,
+    "confidence": "high",
+    "processing_time": 0.5,
+    "tokens_used": 130,
+    "created_at": datetime.now().isoformat()
+    }
     
     def sentiment_analysis(
         self, 
@@ -173,39 +173,39 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     ) -> Dict[str, Any]:
         """Mock sentiment analysis."""
         if not text:
-            raise InvalidRequestError("Text cannot be empty")
+        raise InvalidRequestError("Text cannot be empty")
         
-        if model == "nonexistent-model":
-            raise ModelNotFoundError("Model not found", model_name=model)
+    if model == "nonexistent-model":
+    raise ModelNotFoundError("Model not found", model_name=model)
         
-        structured_data = {
-            "overall_sentiment": "mixed",
-            "sentiment_score": 0.2,
-            "key_phrases": ["looking forward", "feeling tired"]
-        }
+    structured_data = {
+    "overall_sentiment": "mixed",
+    "sentiment_score": 0.2,
+    "key_phrases": ["looking forward", "feeling tired"]
+    }
         
-        if include_emotion_distribution:
-            structured_data["emotion_distribution"] = {
-                "joy": 0.3,
-                "sadness": 0.2,
-                "anger": 0.1,
-                "fear": 0.1,
-                "surprise": 0.1,
-                "disgust": 0.0,
-                "neutral": 0.2
-            }
+    if include_emotion_distribution:
+    structured_data["emotion_distribution"] = {
+    "joy": 0.3,
+    "sadness": 0.2,
+    "anger": 0.1,
+    "fear": 0.1,
+    "surprise": 0.1,
+    "disgust": 0.0,
+    "neutral": 0.2
+    }
         
-        return {
-            "response_id": str(uuid.uuid4()),
-            "model": model or "mentallama-33b-lora",
-            "provider": "aws-bedrock",
-            "text": "Mock sentiment analysis",
-            "structured_data": structured_data,
-            "confidence": "high",
-            "processing_time": 0.5,
-            "tokens_used": 110,
-            "created_at": datetime.now().isoformat()
-        }
+#     return { # FIXME: return outside function
+    "response_id": str(uuid.uuid4()),
+    "model": model or "mentallama-33b-lora",
+    "provider": "aws-bedrock",
+    "text": "Mock sentiment analysis",
+    "structured_data": structured_data,
+    "confidence": "high",
+    "processing_time": 0.5,
+    "tokens_used": 110,
+    "created_at": datetime.now().isoformat()
+    }
     
     def wellness_dimensions(
         self, 
@@ -220,36 +220,36 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     ) -> Dict[str, Any]:
         """Mock wellness dimensions."""
         if not text:
-            raise InvalidRequestError("Text cannot be empty")
+        raise InvalidRequestError("Text cannot be empty")
         
-        if model == "nonexistent-model":
-            raise ModelNotFoundError("Model not found", model_name=model)
+    if model == "nonexistent-model":
+    raise ModelNotFoundError("Model not found", model_name=model)
         
-        dim_list = dimensions or ["emotional", "social", "physical", "intellectual"]
+    dim_list = dimensions or ["emotional", "social", "physical", "intellectual"]
         
-        structured_data = {
-            "dimension_scores": {dim: 0.7 for dim in dim_list},
-            "areas_of_strength": ["social connection", "intellectual engagement"],
-            "areas_for_improvement": ["physical activity", "emotional regulation"]
-        }
+    structured_data = {
+    "dimension_scores": {dim: 0.7 for dim in dim_list},
+    "areas_of_strength": ["social connection", "intellectual engagement"],
+    "areas_for_improvement": ["physical activity", "emotional regulation"]
+    }
         
-        if include_recommendations:
-            structured_data["recommendations"] = [
-                "Increase daily physical activity",
-                "Practice mindfulness for emotional regulation"
-            ]
+    if include_recommendations:
+    structured_data["recommendations"] = [
+    "Increase daily physical activity",
+    "Practice mindfulness for emotional regulation"
+    ]
         
-        return {
-            "response_id": str(uuid.uuid4()),
-            "model": model or "mentallama-33b-lora",
-            "provider": "aws-bedrock",
-            "text": "Mock wellness dimensions analysis",
-            "structured_data": structured_data,
-            "confidence": "high",
-            "processing_time": 0.5,
-            "tokens_used": 140,
-            "created_at": datetime.now().isoformat()
-        }
+#     return { # FIXME: return outside function
+    "response_id": str(uuid.uuid4()),
+    "model": model or "mentallama-33b-lora",
+    "provider": "aws-bedrock",
+    "text": "Mock wellness dimensions analysis",
+    "structured_data": structured_data,
+    "confidence": "high",
+    "processing_time": 0.5,
+    "tokens_used": 140,
+    "created_at": datetime.now().isoformat()
+    }
 
 
 # Mock authentication
@@ -274,10 +274,10 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     ml_settings.enable_digital_twin = True
     
     with patch("app.api.routes.ml.get_mentalllama_service") as mock_mentalllama:
-        mock_mentalllama.return_value = MockMentaLLaMAService()
-        yield {
-            "mentalllama": mock_mentalllama
-        }
+    mock_mentalllama.return_value = MockMentaLLaMAService()
+    yield {
+    "mentalllama": mock_mentalllama
+    }
 
 
 # Tests
@@ -475,8 +475,8 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     ml_settings.enable_mentallama = False
     
     request_data = {
-        "prompt": "This is a test prompt for processing.",
-        "task": "general_analysis"
+    "prompt": "This is a test prompt for processing.",
+    "task": "general_analysis"
     }
     
     response = client.post("/api/v1/ml/process", json=request_data)

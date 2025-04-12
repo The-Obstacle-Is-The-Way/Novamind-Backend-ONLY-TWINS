@@ -75,85 +75,85 @@ class MockXGBoostService:
         )
         
         # Treatment response prediction
-        self.predict_treatment_response.return_value = MagicMock(
-            prediction_id=str(uuid.uuid4()),
-            patient_id="patient-123",
-            model_type=ModelType.TREATMENT_MEDICATION_SSRI,
-            model_version="1.0.0",
-            response_level=ResponseLevel.GOOD,
-            response_score=0.75,
-            confidence=0.85,
-            timestamp=datetime.now(),
-            treatment_type="medication",
-            treatment_details={"medication": "Escitalopram", "dosage": "10mg"},
-            suggested_adjustments=[{"type": "dosage", "action": "increase", "value": "15mg"}],
-            explanation="Good response expected based on medication history"
-        )
+    self.predict_treatment_response.return_value = MagicMock(
+    prediction_id=str(uuid.uuid4()),
+    patient_id="patient-123",
+    model_type=ModelType.TREATMENT_MEDICATION_SSRI,
+    model_version="1.0.0",
+    response_level=ResponseLevel.GOOD,
+    response_score=0.75,
+    confidence=0.85,
+    timestamp=datetime.now(),
+    treatment_type="medication",
+    treatment_details={"medication": "Escitalopram", "dosage": "10mg"},
+    suggested_adjustments=[{"type": "dosage", "action": "increase", "value": "15mg"}],
+    explanation="Good response expected based on medication history"
+    )
         
         # Outcome prediction
-        self.predict_outcome.return_value = MagicMock(
-            prediction_id=str(uuid.uuid4()),
-            patient_id="patient-123",
-            model_type=ModelType.OUTCOME_SYMPTOM,
-            model_version="1.0.0",
-            outcome_score=0.72,
-            confidence=0.80,
-            timestamp=datetime.now(),
-            domain_predictions={
-                "depression": 0.65,
-                "anxiety": 0.70,
-                "functioning": 0.80
-            },
-            timeframe_weeks=12,
-            explanation="Positive outcome expected within 12 weeks"
-        )
+    self.predict_outcome.return_value = MagicMock(
+    prediction_id=str(uuid.uuid4()),
+    patient_id="patient-123",
+    model_type=ModelType.OUTCOME_SYMPTOM,
+    model_version="1.0.0",
+    outcome_score=0.72,
+    confidence=0.80,
+    timestamp=datetime.now(),
+    domain_predictions={
+    "depression": 0.65,
+    "anxiety": 0.70,
+    "functioning": 0.80
+    },
+    timeframe_weeks=12,
+    explanation="Positive outcome expected within 12 weeks"
+    )
         
         # Feature importance
-        self.get_feature_importance.return_value = [
-            MagicMock(
-                feature_name="phq9_score",
-                importance_value=0.35,
-                category="clinical",
-                description="Patient Health Questionnaire score"
-            ),
-            MagicMock(
-                feature_name="medication_adherence",
-                importance_value=0.25,
-                category="treatment",
-                description="Adherence to prescribed medication"
-            )
-        ]
+    self.get_feature_importance.return_value = [
+    MagicMock(
+    feature_name="phq9_score",
+    importance_value=0.35,
+    category="clinical",
+    description="Patient Health Questionnaire score"
+    ),
+    MagicMock(
+    feature_name="medication_adherence",
+    importance_value=0.25,
+    category="treatment",
+    description="Adherence to prescribed medication"
+    )
+    ]
         
         # Digital twin simulation
-        self.simulate_digital_twin.return_value = {
-            "simulation_id": str(uuid.uuid4()),
-            "final_state": {
-                "phq9_score": 8,
-                "gad7_score": 6
-            },
-            "trajectories": {
-                "depression": [15, 12, 10, 8],
-                "anxiety": [12, 10, 8, 6]
-            }
-        }
+    self.simulate_digital_twin.return_value = {
+    "simulation_id": str(uuid.uuid4()),
+    "final_state": {
+    "phq9_score": 8,
+    "gad7_score": 6
+    },
+    "trajectories": {
+    "depression": [15, 12, 10, 8],
+    "anxiety": [12, 10, 8, 6]
+    }
+    }
         
         # Model info
-        self.get_model_info.return_value = {
-            "model_type": "risk_suicide",
-            "model_version": "1.0.0",
-            "training_date": "2025-01-01T00:00:00Z",
-            "accuracy_metrics": {
-                "accuracy": 0.92,
-                "precision": 0.94,
-                "recall": 0.90,
-                "f1_score": 0.92,
-                "auc_roc": 0.95,
-                "calibration_error": 0.03
-            },
-            "feature_requirements": [
-                "phq9_score", "gad7_score", "age", "gender", "previous_attempts"
-            ]
-        }
+    self.get_model_info.return_value = {
+    "model_type": "risk_suicide",
+    "model_version": "1.0.0",
+    "training_date": "2025-01-01T00:00:00Z",
+    "accuracy_metrics": {
+    "accuracy": 0.92,
+    "precision": 0.94,
+    "recall": 0.90,
+    "f1_score": 0.92,
+    "auc_roc": 0.95,
+    "calibration_error": 0.03
+    },
+    "feature_requirements": [
+    "phq9_score", "gad7_score", "age", "gender", "previous_attempts"
+    ]
+    }
     
     def setup_error_responses(self):
         """Set up mock responses for error cases."""
@@ -182,12 +182,12 @@ def client():
     
     # Override the security dependency to bypass authentication
     async def override_get_current_user():
-        return {
-            "user_id": "test-user-id",
-            "role": "clinician",
-            "access_level": "full",
-            "organization_id": "main-clinic"
-        }
+    return {
+    "user_id": "test-user-id",
+    "role": "clinician",
+    "access_level": "full",
+    "organization_id": "main-clinic"
+    }
     
     app.dependency_overrides[get_current_user] = override_get_current_user
     
@@ -198,12 +198,12 @@ def client():
 def mock_dependencies():
     """Set up dependency overrides for testing."""
     with patch("app.api.routes.xgboost.get_current_user", return_value=MockUser()):
-        with patch("app.api.routes.xgboost._get_xgboost_service") as mock_get_service:
-            service = MockXGBoostService()
+    with patch("app.api.routes.xgboost._get_xgboost_service") as mock_get_service:
+    service = MockXGBoostService()
             service.setup_success_responses()
             # Make the service callable to match the expected behavior
             async def get_service():
-                return service
+    return service
             mock_get_service.return_value = get_service
             yield service
 
@@ -213,12 +213,12 @@ def mock_dependencies():
 def mock_error_dependencies():
     """Set up dependency overrides for error cases."""
     with patch("app.api.routes.xgboost.get_current_user", return_value=MockUser()):
-        with patch("app.api.routes.xgboost._get_xgboost_service") as mock_get_service:
-            service = MockXGBoostService()
+    with patch("app.api.routes.xgboost._get_xgboost_service") as mock_get_service:
+    service = MockXGBoostService()
             service.setup_error_responses()
             # Make the service callable to match the expected behavior
             async def get_service():
-                return service
+    return service
             mock_get_service.return_value = get_service
             yield service
 

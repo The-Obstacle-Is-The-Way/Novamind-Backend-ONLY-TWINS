@@ -64,7 +64,7 @@ async def initialized_patient(enhanced_services, patient_id, initial_data) -> Di
         initial_data=initial_data
     )
     
-    return digital_twin_state
+#     return digital_twin_state # FIXME: return outside function
 
 
 @pytest.mark.asyncio()

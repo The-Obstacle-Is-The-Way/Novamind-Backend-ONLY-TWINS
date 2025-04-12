@@ -91,8 +91,8 @@ class TestBiometricEventProcessor:
         processor = BiometricEventProcessor()
         processor.add_rule(sample_rule)
         
-        assert sample_rule.rule_id in processor.rules
-        assert processor.rules[sample_rule.rule_id] == sample_rule
+    assert sample_rule.rule_id in processor.rules
+    assert processor.rules[sample_rule.rule_id] == sample_rule
     
     @pytest.mark.standalone()
     def test_remove_rule(self, sample_rule):
@@ -101,7 +101,7 @@ class TestBiometricEventProcessor:
         processor.add_rule(sample_rule)
         processor.remove_rule(sample_rule.rule_id)
         
-        assert sample_rule.rule_id not in processor.rules
+    assert sample_rule.rule_id not in processor.rules
     
     @pytest.mark.standalone()
     def test_register_observer(self, mock_observer):
@@ -109,9 +109,9 @@ class TestBiometricEventProcessor:
         processor = BiometricEventProcessor()
         processor.register_observer(mock_observer, [AlertPriority.WARNING])
         
-        assert mock_observer in processor.observers[AlertPriority.WARNING]
-        assert mock_observer not in processor.observers[AlertPriority.URGENT]
-        assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
+    assert mock_observer in processor.observers[AlertPriority.WARNING]
+    assert mock_observer not in processor.observers[AlertPriority.URGENT]
+    assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
     
     @pytest.mark.standalone()
     def test_unregister_observer(self, mock_observer):
@@ -120,9 +120,9 @@ class TestBiometricEventProcessor:
         processor.register_observer(mock_observer, [AlertPriority.WARNING, AlertPriority.URGENT])
         processor.unregister_observer(mock_observer)
         
-        assert mock_observer not in processor.observers[AlertPriority.WARNING]
-        assert mock_observer not in processor.observers[AlertPriority.URGENT]
-        assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
+    assert mock_observer not in processor.observers[AlertPriority.WARNING]
+    assert mock_observer not in processor.observers[AlertPriority.URGENT]
+    assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
     
     @pytest.mark.standalone()
     def test_process_data_point_no_patient_id(self):
@@ -139,8 +139,8 @@ class TestBiometricEventProcessor:
             confidence=0.95
         )
         
-        with pytest.raises(ValidationError):
-            processor.process_data_point(data_point)
+    with pytest.raises(ValidationError):
+    processor.process_data_point(data_point)
     
     @pytest.mark.standalone()
     def test_process_data_point_no_matching_rules(self, sample_data_point):
@@ -160,9 +160,9 @@ class TestBiometricEventProcessor:
         )
         processor.add_rule(rule)
         
-        alerts = processor.process_data_point(sample_data_point)
+    alerts = processor.process_data_point(sample_data_point)
         
-        assert len(alerts) == 0
+    assert len(alerts) == 0
     
     @pytest.mark.standalone()
     def test_process_data_point_matching_rule(self, sample_data_point, sample_rule, mock_observer):
@@ -171,16 +171,16 @@ class TestBiometricEventProcessor:
         processor.add_rule(sample_rule)
         processor.register_observer(mock_observer, [AlertPriority.WARNING])
         
-        alerts = processor.process_data_point(sample_data_point)
+    alerts = processor.process_data_point(sample_data_point)
         
-        assert len(alerts) == 1
-        assert alerts[0].patient_id == sample_data_point.patient_id
-        assert alerts[0].rule_id == sample_rule.rule_id
-        assert alerts[0].priority == sample_rule.priority
-        assert alerts[0].data_point == sample_data_point
+    assert len(alerts) == 1
+    assert alerts[0].patient_id == sample_data_point.patient_id
+    assert alerts[0].rule_id == sample_rule.rule_id
+    assert alerts[0].priority == sample_rule.priority
+    assert alerts[0].data_point == sample_data_point
         
-        mock_observer.notify.assert_called_once()
-        assert mock_observer.notify.call_args[0][0] == alerts[0]
+    mock_observer.notify.assert_called_once()
+    assert mock_observer.notify.call_args[0][0] == alerts[0]
     
     @pytest.mark.standalone()
     def test_process_data_point_patient_specific_rule(self, sample_data_point, sample_rule, sample_clinician_id):
@@ -188,31 +188,31 @@ class TestBiometricEventProcessor:
         processor = BiometricEventProcessor()
         
         # Add a patient-specific rule for a different patient
-        other_patient_id = UUID("99999999-9999-9999-9999-999999999999")
-        patient_specific_rule = AlertRule(
-            rule_id="test-rule-2",
-            name="Patient-Specific High Heart Rate",
-            description="Alert when heart rate exceeds 90 bpm for a specific patient",
-            priority=AlertPriority.WARNING,
-            condition={
-                "data_type": "heart_rate",
-                "operator": ">",
-                "threshold": 90.0
-            },
-            created_by=sample_clinician_id,
-            patient_id=other_patient_id
-        )
-        processor.add_rule(patient_specific_rule)
+    other_patient_id = UUID("99999999-9999-9999-9999-999999999999")
+    patient_specific_rule = AlertRule(
+    rule_id="test-rule-2",
+    name="Patient-Specific High Heart Rate",
+    description="Alert when heart rate exceeds 90 bpm for a specific patient",
+    priority=AlertPriority.WARNING,
+    condition={
+    "data_type": "heart_rate",
+    "operator": ">",
+    "threshold": 90.0
+    },
+    created_by=sample_clinician_id,
+    patient_id=other_patient_id
+    )
+    processor.add_rule(patient_specific_rule)
         
         # Add a general rule
-        processor.add_rule(sample_rule)
+    processor.add_rule(sample_rule)
         
         # Process a data point for the sample patient
-        alerts = processor.process_data_point(sample_data_point)
+    alerts = processor.process_data_point(sample_data_point)
         
         # Should only match the general rule, not the patient-specific one
-        assert len(alerts) == 1
-        assert alerts[0].rule_id == sample_rule.rule_id
+    assert len(alerts) == 1
+    assert alerts[0].rule_id == sample_rule.rule_id
     
     @pytest.mark.standalone()
     def test_process_data_point_inactive_rule(self, sample_data_point, sample_rule):
@@ -221,9 +221,9 @@ class TestBiometricEventProcessor:
         sample_rule.is_active = False
         processor.add_rule(sample_rule)
         
-        alerts = processor.process_data_point(sample_data_point)
+    alerts = processor.process_data_point(sample_data_point)
         
-        assert len(alerts) == 0
+    assert len(alerts) == 0
     
     @pytest.mark.standalone()
     def test_process_data_point_updates_context(self, sample_data_point):
@@ -231,13 +231,13 @@ class TestBiometricEventProcessor:
         processor = BiometricEventProcessor()
         
         # Process a data point
-        processor.process_data_point(sample_data_point)
+    processor.process_data_point(sample_data_point)
         
         # Check that the context was updated
-        assert sample_data_point.patient_id in processor.patient_context
-        assert "latest_values" in processor.patient_context[sample_data_point.patient_id]
-        assert sample_data_point.data_type in processor.patient_context[sample_data_point.patient_id]["latest_values"]
-        assert processor.patient_context[sample_data_point.patient_id]["latest_values"][sample_data_point.data_type] == sample_data_point.value
+    assert sample_data_point.patient_id in processor.patient_context
+    assert "latest_values" in processor.patient_context[sample_data_point.patient_id]
+    assert sample_data_point.data_type in processor.patient_context[sample_data_point.patient_id]["latest_values"]
+    assert processor.patient_context[sample_data_point.patient_id]["latest_values"][sample_data_point.data_type] == sample_data_point.value
 
 
 class TestAlertRule:
@@ -250,9 +250,9 @@ class TestAlertRule:
         sample_rule.condition["data_type"] = "blood_pressure"
         
         # Evaluate the rule
-        result = sample_rule.evaluate(sample_data_point, {})
+    result = sample_rule.evaluate(sample_data_point, {})
         
-        assert result is False
+    assert result is False
     
     @pytest.mark.standalone()
     def test_evaluate_greater_than(self, sample_rule, sample_data_point):
@@ -263,15 +263,15 @@ class TestAlertRule:
         sample_data_point.value = 120.0
         
         # Evaluate the rule
-        result = sample_rule.evaluate(sample_data_point, {})
+    result = sample_rule.evaluate(sample_data_point, {})
         
-        assert result is True
+    assert result is True
         
         # Test with a value that doesn't meet the condition
-        sample_data_point.value = 80.0
-        result = sample_rule.evaluate(sample_data_point, {})
+    sample_data_point.value = 80.0
+    result = sample_rule.evaluate(sample_data_point, {})
         
-        assert result is False
+    assert result is False
     
     @pytest.mark.standalone()
     def test_evaluate_greater_than_or_equal(self, sample_rule, sample_data_point):
@@ -281,19 +281,19 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
         
         # Test with a value greater than the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
         
         # Test with a value equal to the threshold
-        sample_data_point.value = 100.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 100.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
         
         # Test with a value less than the threshold
-        sample_data_point.value = 80.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 80.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
     
     @pytest.mark.standalone()
     def test_evaluate_less_than(self, sample_rule, sample_data_point):
@@ -303,14 +303,14 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
         
         # Test with a value less than the threshold
-        sample_data_point.value = 80.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 80.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
         
         # Test with a value greater than the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
     
     @pytest.mark.standalone()
     def test_evaluate_less_than_or_equal(self, sample_rule, sample_data_point):
@@ -320,19 +320,19 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
         
         # Test with a value less than the threshold
-        sample_data_point.value = 80.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 80.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
         
         # Test with a value equal to the threshold
-        sample_data_point.value = 100.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 100.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
         
         # Test with a value greater than the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
     
     @pytest.mark.standalone()
     def test_evaluate_equal(self, sample_rule, sample_data_point):
@@ -342,14 +342,14 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
         
         # Test with a value equal to the threshold
-        sample_data_point.value = 100.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 100.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
         
         # Test with a value not equal to the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
     
     @pytest.mark.standalone()
     def test_evaluate_not_equal(self, sample_rule, sample_data_point):
@@ -359,14 +359,14 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
         
         # Test with a value not equal to the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
         
         # Test with a value equal to the threshold
-        sample_data_point.value = 100.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 100.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
 
 
 class TestBiometricAlert:
@@ -388,17 +388,17 @@ class TestBiometricAlert:
         )
         
         # Initially not acknowledged
-        assert alert.acknowledged is False
-        assert alert.acknowledged_at is None
-        assert alert.acknowledged_by is None
+    assert alert.acknowledged is False
+    assert alert.acknowledged_at is None
+    assert alert.acknowledged_by is None
         
         # Acknowledge the alert
-        alert.acknowledge(sample_clinician_id)
+    alert.acknowledge(sample_clinician_id)
         
         # Now acknowledged
-        assert alert.acknowledged is True
-        assert alert.acknowledged_at is not None
-        assert alert.acknowledged_by  ==  sample_clinician_id
+    assert alert.acknowledged is True
+    assert alert.acknowledged_at is not None
+    assert alert.acknowledged_by  ==  sample_clinician_id
 
 
 class TestAlertObservers:
@@ -411,24 +411,24 @@ class TestAlertObservers:
         email_service = MagicMock()
         
         # Create an observer
-        observer = EmailAlertObserver(email_service)
+    observer = EmailAlertObserver(email_service)
         
         # Create an alert
-        alert = BiometricAlert(
-            alert_id="test-alert-1",
-            patient_id=sample_data_point.patient_id,
-            rule_id=sample_rule.rule_id,
-            rule_name=sample_rule.name,
-            priority=sample_rule.priority,
-            data_point=sample_data_point,
-            message="Test alert message",
-            context={}
-        )
+    alert = BiometricAlert(
+    alert_id="test-alert-1",
+    patient_id=sample_data_point.patient_id,
+    rule_id=sample_rule.rule_id,
+    rule_name=sample_rule.name,
+    priority=sample_rule.priority,
+    data_point=sample_data_point,
+    message="Test alert message",
+    context={}
+    )
         
         # Patch the _get_recipient_for_patient method
-        with patch.object(observer, '_get_recipient_for_patient', return_value="clinician@example.com"):
+    with patch.object(observer, '_get_recipient_for_patient', return_value="clinician@example.com"):
             # Notify the observer
-            observer.notify(alert)
+    observer.notify(alert)
             
             # Check that the email service was not called (since it's commented out in the implementation)
             # email_service.send_email.assert_called_once()
@@ -440,24 +440,24 @@ class TestAlertObservers:
         sms_service = MagicMock()
         
         # Create an observer
-        observer = SMSAlertObserver(sms_service)
+    observer = SMSAlertObserver(sms_service)
         
         # Create an urgent alert
-        alert = BiometricAlert(
-            alert_id="test-alert-1",
-            patient_id=sample_data_point.patient_id,
-            rule_id=sample_rule.rule_id,
-            rule_name=sample_rule.name,
-            priority=AlertPriority.URGENT,
-            data_point=sample_data_point,
-            message="Test alert message",
-            context={}
-        )
+    alert = BiometricAlert(
+    alert_id="test-alert-1",
+    patient_id=sample_data_point.patient_id,
+    rule_id=sample_rule.rule_id,
+    rule_name=sample_rule.name,
+    priority=AlertPriority.URGENT,
+    data_point=sample_data_point,
+    message="Test alert message",
+    context={}
+    )
         
         # Patch the _get_recipient_for_patient method
-        with patch.object(observer, '_get_recipient_for_patient', return_value="+1234567890"):
+    with patch.object(observer, '_get_recipient_for_patient', return_value="+1234567890"):
             # Notify the observer
-            observer.notify(alert)
+    observer.notify(alert)
             
             # Check that the SMS service was not called (since it's commented out in the implementation)
             # sms_service.send_sms.assert_called_once()
@@ -469,22 +469,22 @@ class TestAlertObservers:
         sms_service = MagicMock()
         
         # Create an observer
-        observer = SMSAlertObserver(sms_service)
+    observer = SMSAlertObserver(sms_service)
         
         # Create a warning alert
-        alert = BiometricAlert(
-            alert_id="test-alert-1",
-            patient_id=sample_data_point.patient_id,
-            rule_id=sample_rule.rule_id,
-            rule_name=sample_rule.name,
-            priority=AlertPriority.WARNING,
-            data_point=sample_data_point,
-            message="Test alert message",
-            context={}
-        )
+    alert = BiometricAlert(
+    alert_id="test-alert-1",
+    patient_id=sample_data_point.patient_id,
+    rule_id=sample_rule.rule_id,
+    rule_name=sample_rule.name,
+    priority=AlertPriority.WARNING,
+    data_point=sample_data_point,
+    message="Test alert message",
+    context={}
+    )
         
         # Notify the observer
-        observer.notify(alert)
+    observer.notify(alert)
         
         # Check that the SMS service was not called
         # sms_service.send_sms.assert _not_called()
@@ -496,22 +496,22 @@ class TestAlertObservers:
         notification_service = MagicMock()
         
         # Create an observer
-        observer = InAppAlertObserver(notification_service)
+    observer = InAppAlertObserver(notification_service)
         
         # Create an alert
-        alert = BiometricAlert(
-            alert_id="test-alert-1",
-            patient_id=sample_data_point.patient_id,
-            rule_id=sample_rule.rule_id,
-            rule_name=sample_rule.name,
-            priority=sample_rule.priority,
-            data_point=sample_data_point,
-            message="Test alert message",
-            context={}
-        )
+    alert = BiometricAlert(
+    alert_id="test-alert-1",
+    patient_id=sample_data_point.patient_id,
+    rule_id=sample_rule.rule_id,
+    rule_name=sample_rule.name,
+    priority=sample_rule.priority,
+    data_point=sample_data_point,
+    message="Test alert message",
+    context={}
+    )
         
         # Notify the observer
-        observer.notify(alert)
+    observer.notify(alert)
         
         # Check that the notification service was not called (since it's commented out in the implementation)
         # notification_service.send_notification.assert_called_once()
@@ -526,23 +526,23 @@ class TestClinicalRuleEngine:
         engine = ClinicalRuleEngine()
         
         # Create a template
-        template = {
-            "id": "high_blood_pressure",
-            "name": "High Blood Pressure",
-            "description": "Alert when blood pressure exceeds a threshold",
-            "priority": AlertPriority.WARNING,
-            "condition": {
-                "data_type": "blood_pressure",
-                "operator": ">",
-                "threshold": "${threshold}"
-            },
-            "parameters": ["threshold"]
-        }
+    template = {
+    "id": "high_blood_pressure",
+    "name": "High Blood Pressure",
+    "description": "Alert when blood pressure exceeds a threshold",
+    "priority": AlertPriority.WARNING,
+    "condition": {
+    "data_type": "blood_pressure",
+    "operator": ">",
+    "threshold": "${threshold}"
+    },
+    "parameters": ["threshold"]
+    }
         
-        engine.register_rule_template(template=template)
+    engine.register_rule_template(template=template)
         
-        assert "high_blood_pressure" in engine.rule_templates
-        assert engine.rule_templates["high_blood_pressure"] == template
+    assert "high_blood_pressure" in engine.rule_templates
+    assert engine.rule_templates["high_blood_pressure"] == template
     
     @pytest.mark.standalone()
     def test_register_custom_condition(self):
@@ -553,10 +553,10 @@ class TestClinicalRuleEngine:
         def custom_condition(data_point, context, **kwargs):
             return data_point.value > kwargs.get("threshold", 0)
         
-        engine.register_custom_condition("custom_gt", custom_condition)
+    engine.register_custom_condition("custom_gt", custom_condition)
         
-        assert "custom_gt" in engine.custom_conditions
-        assert engine.custom_conditions["custom_gt"] == custom_condition
+    assert "custom_gt" in engine.custom_conditions
+    assert engine.custom_conditions["custom_gt"] == custom_condition
     
     @pytest.mark.standalone()
     def test_create_rule_from_template(self, sample_clinician_id):
@@ -564,31 +564,31 @@ class TestClinicalRuleEngine:
         engine = ClinicalRuleEngine()
         
         # Register a template
-        template = {
-            "id": "high_heart_rate",
-            "name": "High Heart Rate",
-            "description": "Alert when heart rate exceeds a threshold",
-            "priority": AlertPriority.WARNING,
-            "condition": {
-                "data_type": "heart_rate",
-                "operator": ">",
-                "threshold": "${threshold}"
-            },
-            "parameters": ["threshold"]
-        }
-        engine.register_rule_template(template=template)
+    template = {
+    "id": "high_heart_rate",
+    "name": "High Heart Rate",
+    "description": "Alert when heart rate exceeds a threshold",
+    "priority": AlertPriority.WARNING,
+    "condition": {
+    "data_type": "heart_rate",
+    "operator": ">",
+    "threshold": "${threshold}"
+    },
+    "parameters": ["threshold"]
+    }
+    engine.register_rule_template(template=template)
         
         # Create a rule from the template
-        rule = engine.create_rule_from_template(template_id="high_heart_rate", rule_id="test-rule-1", created_by=sample_clinician_id, parameters={"threshold": 100.0})
+    rule = engine.create_rule_from_template(template_id="high_heart_rate", rule_id="test-rule-1", created_by=sample_clinician_id, parameters={"threshold": 100.0})
         
-        assert rule.rule_id  ==  "test-rule-1"
-        assert rule.name  ==  template["name"]
-        assert rule.description  ==  template["description"]
-        assert rule.priority  ==  template["priority"]
-        assert rule.condition["data_type"] == "heart_rate"
-        assert rule.condition["operator"] == ">"
-        assert rule.condition["threshold"] == 100.0
-        assert rule.created_by  ==  sample_clinician_id
+    assert rule.rule_id  ==  "test-rule-1"
+    assert rule.name  ==  template["name"]
+    assert rule.description  ==  template["description"]
+    assert rule.priority  ==  template["priority"]
+    assert rule.condition["data_type"] == "heart_rate"
+    assert rule.condition["operator"] == ">"
+    assert rule.condition["threshold"] == 100.0
+    assert rule.created_by  ==  sample_clinician_id
     
     @pytest.mark.standalone()
     def test_create_rule_from_template_missing_parameter(self, sample_clinician_id):
@@ -596,23 +596,23 @@ class TestClinicalRuleEngine:
         engine = ClinicalRuleEngine()
         
         # Register a template
-        template = {
-            "id": "high_heart_rate",
-            "name": "High Heart Rate",
-            "description": "Alert when heart rate exceeds a threshold",
-            "priority": AlertPriority.WARNING,
-            "condition": {
-                "data_type": "heart_rate",
-                "operator": ">",
-                "threshold": "${threshold}"
-            },
-            "parameters": ["threshold"]
-        }
-        engine.register_rule_template(template=template)
+    template = {
+    "id": "high_heart_rate",
+    "name": "High Heart Rate",
+    "description": "Alert when heart rate exceeds a threshold",
+    "priority": AlertPriority.WARNING,
+    "condition": {
+    "data_type": "heart_rate",
+    "operator": ">",
+    "threshold": "${threshold}"
+    },
+    "parameters": ["threshold"]
+    }
+    engine.register_rule_template(template=template)
         
         # Try to create a rule without the required parameter
-        with pytest.raises(ValidationError):
-            engine.create_rule_from_template(template_id="high_heart_rate", rule_id="test-rule-1", created_by=sample_clinician_id, parameters={})
+    with pytest.raises(ValidationError):
+    engine.create_rule_from_template(template_id="high_heart_rate", rule_id="test-rule-1", created_by=sample_clinician_id, parameters={})
     
     @pytest.mark.standalone()
     def test_create_rule_from_template_unknown_template(self, sample_clinician_id):
@@ -620,5 +620,5 @@ class TestClinicalRuleEngine:
         engine = ClinicalRuleEngine()
         
         # Try to create a rule from a non-existent template
-        with pytest.raises(ValueError):
-            engine.create_rule_from_template(template_id="non_existent_template", rule_id="test-rule-1", created_by=sample_clinician_id, parameters={"threshold": 100.0})
+    with pytest.raises(ValueError):
+    engine.create_rule_from_template(template_id="non_existent_template", rule_id="test-rule-1", created_by=sample_clinician_id, parameters={"threshold": 100.0})

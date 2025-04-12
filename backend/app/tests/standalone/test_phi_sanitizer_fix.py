@@ -25,16 +25,16 @@ class TestPHISanitizer:
             "is_insured": True        # Not PHI
         }
         
-        sanitized = sanitizer.sanitize_dict(mixed_data)
+    sanitized = sanitizer.sanitize_dict(mixed_data)
         
         # PHI should be sanitized
-        assert sanitized["name"] != "John Smith"
-        assert sanitized["ssn"] != "123-45-6789"
-        assert sanitized["patient_id"] != "PT12345"  # Patient ID is PHI and should be redacted
+    assert sanitized["name"] != "John Smith"
+    assert sanitized["ssn"] != "123-45-6789"
+    assert sanitized["patient_id"] != "PT12345"  # Patient ID is PHI and should be redacted
         
         # Non-PHI should be preserved
-        assert sanitized["status"] == "Active"
-        assert sanitized["priority"] == 1
-        assert sanitized["is_insured"] is True
+    assert sanitized["status"] == "Active"
+    assert sanitized["priority"] == 1
+    assert sanitized["is_insured"] is True
 
     # Additional tests can be added here if needed

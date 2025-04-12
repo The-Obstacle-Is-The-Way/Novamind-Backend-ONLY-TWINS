@@ -73,16 +73,16 @@ class TestMockPAT:
         pat = MockPAT()
         pat.initialize({})
         
-        assert pat.configured is True
-        assert pat.delay_ms  ==  0
+    assert pat.configured is True
+    assert pat.delay_ms  ==  0
     
     def test_initialization_with_delay(self):
         """Test initialization with delay parameter."""
         pat = MockPAT()
         pat.initialize({"delay_ms": 100})
         
-        assert pat.configured is True
-        assert pat.delay_ms  ==  100
+    assert pat.configured is True
+    assert pat.delay_ms  ==  100
     
     def test_analyze_actigraphy_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful actigraphy analysis."""
@@ -97,32 +97,32 @@ class TestMockPAT:
         )
         
         # Verify response structure
-        assert "analysis_id" in result
-        assert result["patient_id"] == "test-patient"
-        assert "timestamp" in result
-        assert result["device_info"] == sample_device_info
-        assert "sleep_quality" in result
-        assert "activity_levels" in result
+    assert "analysis_id" in result
+    assert result["patient_id"] == "test-patient"
+    assert "timestamp" in result
+    assert result["device_info"] == sample_device_info
+    assert "sleep_quality" in result
+    assert "activity_levels" in result
         
         # Verify that the analysis was stored
-        analysis_id = result["analysis_id"]
-        assert analysis_id in mock_pat.analyses
+    analysis_id = result["analysis_id"]
+    assert analysis_id in mock_pat.analyses
         
         # Verify sleep quality fields
-        sleep_quality = result["sleep_quality"]
-        assert "duration_hours" in sleep_quality
-        assert "efficiency" in sleep_quality
-        assert "deep_sleep_percentage" in sleep_quality
-        assert "rem_sleep_percentage" in sleep_quality
-        assert "light_sleep_percentage" in sleep_quality
+    sleep_quality = result["sleep_quality"]
+    assert "duration_hours" in sleep_quality
+    assert "efficiency" in sleep_quality
+    assert "deep_sleep_percentage" in sleep_quality
+    assert "rem_sleep_percentage" in sleep_quality
+    assert "light_sleep_percentage" in sleep_quality
         
         # Verify activity levels fields
-        activity_levels = result["activity_levels"]
-        assert "total_steps" in activity_levels
-        assert "light_activity_minutes" in activity_levels
-        assert "moderate_activity_minutes" in activity_levels
-        assert "vigorous_activity_minutes" in activity_levels
-        assert "sedentary_minutes" in activity_levels
+    activity_levels = result["activity_levels"]
+    assert "total_steps" in activity_levels
+    assert "light_activity_minutes" in activity_levels
+    assert "moderate_activity_minutes" in activity_levels
+    assert "vigorous_activity_minutes" in activity_levels
+    assert "sedentary_minutes" in activity_levels
     
     def test_analyze_actigraphy_with_all_types(self, mock_pat, sample_readings, sample_device_info):
         """Test actigraphy analysis with all analysis types."""
@@ -140,16 +140,16 @@ class TestMockPAT:
         )
         
         # Verify all analysis types are present
-        assert "sleep_quality" in result
-        assert "activity_levels" in result
-        assert "circadian_rhythm" in result
-        assert "behavioral_patterns" in result
-        assert "mood_indicators" in result
+    assert "sleep_quality" in result
+    assert "activity_levels" in result
+    assert "circadian_rhythm" in result
+    assert "behavioral_patterns" in result
+    assert "mood_indicators" in result
     
     def test_analyze_actigraphy_missing_patient_id(self, mock_pat, sample_readings, sample_device_info):
         """Test actigraphy analysis with missing patient ID."""
         with pytest.raises(ValidationError) as excinfo:
-            mock_pat.analyze_actigraphy(
+        mock_pat.analyze_actigraphy(
                 patient_id="",  # Empty patient ID
                 readings=sample_readings,
                 start_time="2025-03-28T00:00:00Z",
@@ -159,12 +159,12 @@ class TestMockPAT:
                 analysis_types=["sleep_quality"]
             )
         
-        assert "Patient ID is required" in str(excinfo.value)
+    assert "Patient ID is required" in str(excinfo.value)
     
     def test_analyze_actigraphy_invalid_sampling_rate(self, mock_pat, sample_readings, sample_device_info):
         """Test actigraphy analysis with invalid sampling rate."""
         with pytest.raises(ValidationError) as excinfo:
-            mock_pat.analyze_actigraphy(
+        mock_pat.analyze_actigraphy(
                 patient_id="test-patient",
                 readings=sample_readings,
                 start_time="2025-03-28T00:00:00Z",
@@ -174,7 +174,7 @@ class TestMockPAT:
                 analysis_types=["sleep_quality"]
             )
         
-        assert "Sampling rate must be positive" in str(excinfo.value)
+    assert "Sampling rate must be positive" in str(excinfo.value)
     
     def test_analyze_actigraphy_insufficient_readings(self, mock_pat, sample_device_info):
         """Test actigraphy analysis with insufficient readings."""
@@ -182,26 +182,26 @@ class TestMockPAT:
         readings = []
         base_timestamp = datetime.now().isoformat()
         
-        for i in range(5):
-            readings.append({
-                "timestamp": f"{base_timestamp[:-7]}{i:02d}Z",
-                "x": float(i) / 50.0,
-                "y": float(i + 10) / 50.0,
-                "z": float(i + 20) / 50.0
-            })
+    for i in range(5):
+    readings.append({
+    "timestamp": f"{base_timestamp[:-7]}{i:02d}Z",
+    "x": float(i) / 50.0,
+    "y": float(i + 10) / 50.0,
+    "z": float(i + 20) / 50.0
+    })
         
-        with pytest.raises(ValidationError) as excinfo:
-            mock_pat.analyze_actigraphy(
-                patient_id="test-patient",
-                readings=readings,  # Only 5 readings
-                start_time="2025-03-28T00:00:00Z",
-                end_time="2025-03-28T08:00:00Z",
-                sampling_rate_hz=10.0,
-                device_info=sample_device_info,
-                analysis_types=["sleep_quality"]
-            )
+    with pytest.raises(ValidationError) as excinfo:
+    mock_pat.analyze_actigraphy(
+    patient_id="test-patient",
+    readings=readings,  # Only 5 readings
+    start_time="2025-03-28T00:00:00Z",
+    end_time="2025-03-28T08:00:00Z",
+    sampling_rate_hz=10.0,
+    device_info=sample_device_info,
+    analysis_types=["sleep_quality"]
+    )
         
-        assert "At least 10 readings are required" in str(excinfo.value)
+    assert "At least 10 readings are required" in str(excinfo.value)
     
     def test_analyze_actigraphy_invalid_reading_format(self, mock_pat, sample_device_info):
         """Test actigraphy analysis with invalid reading format."""
@@ -209,31 +209,31 @@ class TestMockPAT:
         readings = []
         base_timestamp = datetime.now().isoformat()
         
-        for i in range(20):
+    for i in range(20):
             # Missing z field
-            readings.append({
-                "timestamp": f"{base_timestamp[:-7]}{i:02d}Z",
-                "x": float(i) / 50.0,
-                "y": float(i + 10) / 50.0
-            })
+    readings.append({
+    "timestamp": f"{base_timestamp[:-7]}{i:02d}Z",
+    "x": float(i) / 50.0,
+    "y": float(i + 10) / 50.0
+    })
         
-        with pytest.raises(ValidationError) as excinfo:
-            mock_pat.analyze_actigraphy(
-                patient_id="test-patient",
-                readings=readings,
-                start_time="2025-03-28T00:00:00Z",
-                end_time="2025-03-28T08:00:00Z",
-                sampling_rate_hz=10.0,
-                device_info=sample_device_info,
-                analysis_types=["sleep_quality"]
-            )
+    with pytest.raises(ValidationError) as excinfo:
+    mock_pat.analyze_actigraphy(
+    patient_id="test-patient",
+    readings=readings,
+    start_time="2025-03-28T00:00:00Z",
+    end_time="2025-03-28T08:00:00Z",
+    sampling_rate_hz=10.0,
+    device_info=sample_device_info,
+    analysis_types=["sleep_quality"]
+    )
         
-        assert "missing required fields" in str(excinfo.value)
+    assert "missing required fields" in str(excinfo.value)
     
     def test_analyze_actigraphy_unsupported_analysis_type(self, mock_pat, sample_readings, sample_device_info):
         """Test actigraphy analysis with unsupported analysis type."""
         with pytest.raises(ValidationError) as excinfo:
-            mock_pat.analyze_actigraphy(
+        mock_pat.analyze_actigraphy(
                 patient_id="test-patient",
                 readings=sample_readings,
                 start_time="2025-03-28T00:00:00Z",
@@ -243,7 +243,7 @@ class TestMockPAT:
                 analysis_types=["unsupported_type"]  # Unsupported type
             )
         
-        assert "Unsupported analysis type" in str(excinfo.value)
+    assert "Unsupported analysis type" in str(excinfo.value)
     
     def test_get_actigraphy_embeddings_success(self, mock_pat, sample_readings):
         """Test successful embeddings generation."""
@@ -256,21 +256,21 @@ class TestMockPAT:
         )
         
         # Verify response structure
-        assert "embedding_id" in result
-        assert result["patient_id"] == "test-patient"
-        assert "timestamp" in result
-        assert "embedding_vector" in result
-        assert len(result["embedding_vector"]) == 128  # Fixed size in mock implementation
-        assert result["embedding_dimensions"] == 128
+    assert "embedding_id" in result
+    assert result["patient_id"] == "test-patient"
+    assert "timestamp" in result
+    assert "embedding_vector" in result
+    assert len(result["embedding_vector"]) == 128  # Fixed size in mock implementation
+    assert result["embedding_dimensions"] == 128
         
         # Verify that the embedding was stored
-        embedding_id = result["embedding_id"]
-        assert embedding_id in mock_pat.embeddings
+    embedding_id = result["embedding_id"]
+    assert embedding_id in mock_pat.embeddings
         
         # Verify that the vector is normalized
-        vector = result["embedding_vector"]
-        magnitude = sum(x ** 2 for x in vector) ** 0.5
-        assert abs(magnitude - 1.0) < 1e-6  # Should be very close to 1.0
+    vector = result["embedding_vector"]
+    magnitude = sum(x ** 2 for x in vector) ** 0.5
+    assert abs(magnitude - 1.0) < 1e-6  # Should be very close to 1.0
     
     def test_get_analysis_by_id_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful retrieval of analysis by ID."""
@@ -285,29 +285,29 @@ class TestMockPAT:
             analysis_types=["sleep_quality"]
         )
         
-        analysis_id = result["analysis_id"]
+    analysis_id = result["analysis_id"]
         
         # Now, retrieve the analysis
-        retrieved = mock_pat.get_analysis_by_id(analysis_id)
+    retrieved = mock_pat.get_analysis_by_id(analysis_id)
         
         # Verify that the retrieved analysis matches the original
-        assert retrieved["analysis_id"] == analysis_id
-        assert retrieved["patient_id"] == "test-patient"
-        assert retrieved["device_info"] == sample_device_info
-        assert "sleep_quality" in retrieved
+    assert retrieved["analysis_id"] == analysis_id
+    assert retrieved["patient_id"] == "test-patient"
+    assert retrieved["device_info"] == sample_device_info
+    assert "sleep_quality" in retrieved
     
     def test_get_analysis_by_id_not_found(self, mock_pat):
         """Test retrieval of analysis by ID when not found."""
         with pytest.raises(ResourceNotFoundError) as excinfo:
-            mock_pat.get_analysis_by_id("non-existent-id")
+        mock_pat.get_analysis_by_id("non-existent-id")
         
-        assert "not found" in str(excinfo.value)
+    assert "not found" in str(excinfo.value)
     
     def test_get_patient_analyses_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful retrieval of patient analyses."""
         # Create multiple analyses for the same patient
         for i in range(3):
-            mock_pat.analyze_actigraphy(
+        mock_pat.analyze_actigraphy(
                 patient_id="test-patient",
                 readings=sample_readings,
                 start_time=f"2025-03-{28-i}T00:00:00Z",
@@ -318,27 +318,27 @@ class TestMockPAT:
             )
         
         # Retrieve analyses for the patient
-        result = mock_pat.get_patient_analyses("test-patient")
+    result = mock_pat.get_patient_analyses("test-patient")
         
         # Verify response structure
-        assert "analyses" in result
-        assert "total" in result
-        assert "limit" in result
-        assert "offset" in result
+    assert "analyses" in result
+    assert "total" in result
+    assert "limit" in result
+    assert "offset" in result
         
         # Verify that we got the correct number of analyses
-        assert len(result["analyses"]) == 3
-        assert result["total"] == 3
+    assert len(result["analyses"]) == 3
+    assert result["total"] == 3
         
         # Verify that the analyses are sorted by timestamp (newest first)
-        timestamps = [analysis["timestamp"] for analysis in result["analyses"]]
-        assert timestamps  ==  sorted(timestamps, reverse=True)
+    timestamps = [analysis["timestamp"] for analysis in result["analyses"]]
+    assert timestamps  ==  sorted(timestamps, reverse=True)
     
     def test_get_patient_analyses_with_pagination(self, mock_pat, sample_readings, sample_device_info):
         """Test retrieval of patient analyses with pagination."""
         # Create multiple analyses for the same patient
         for i in range(5):
-            mock_pat.analyze_actigraphy(
+        mock_pat.analyze_actigraphy(
                 patient_id="test-patient",
                 readings=sample_readings,
                 start_time=f"2025-03-{28-i}T00:00:00Z",
@@ -349,31 +349,31 @@ class TestMockPAT:
             )
         
         # Retrieve analyses with pagination
-        result = mock_pat.get_patient_analyses("test-patient", limit=2, offset=1)
+    result = mock_pat.get_patient_analyses("test-patient", limit=2, offset=1)
         
         # Verify pagination
-        assert len(result["analyses"]) == 2
-        assert result["total"] == 5
-        assert result["limit"] == 2
-        assert result["offset"] == 1
+    assert len(result["analyses"]) == 2
+    assert result["total"] == 5
+    assert result["limit"] == 2
+    assert result["offset"] == 1
     
     def test_get_patient_analyses_empty(self, mock_pat):
         """Test retrieval of patient analyses when none exist."""
         result = mock_pat.get_patient_analyses("non-existent-patient")
         
-        assert len(result["analyses"]) == 0
-        assert result["total"] == 0
+    assert len(result["analyses"]) == 0
+    assert result["total"] == 0
     
     def test_get_model_info(self, mock_pat):
         """Test getting model information."""
         info = mock_pat.get_model_info()
         
-        assert info["model_name"] == "MockPAT"
-        assert "version" in info
-        assert "description" in info
-        assert "capabilities" in info
-        assert info["provider"] == "mock"
-        assert len(info["capabilities"]) > 0
+    assert info["model_name"] == "MockPAT"
+    assert "version" in info
+    assert "description" in info
+    assert "capabilities" in info
+    assert info["provider"] == "mock"
+    assert len(info["capabilities"]) > 0
     
     def test_integrate_with_digital_twin_success(self, mock_pat, sample_readings, sample_device_info):
         """Test successful integration with digital twin."""
@@ -391,49 +391,49 @@ class TestMockPAT:
             ]
         )
         
-        analysis_id = result["analysis_id"]
+    analysis_id = result["analysis_id"]
         
         # Now, integrate with a digital twin profile
-        integration = mock_pat.integrate_with_digital_twin(
-            patient_id="test-patient",
-            profile_id="test-profile",
-            analysis_id=analysis_id
-        )
+    integration = mock_pat.integrate_with_digital_twin(
+    patient_id="test-patient",
+    profile_id="test-profile",
+    analysis_id=analysis_id
+    )
         
         # Verify response structure
-        assert integration["patient_id"] == "test-patient"
-        assert integration["profile_id"] == "test-profile"
-        assert integration["integration_status"] == "success"
-        assert "timestamp" in integration
-        assert "integrated_profile" in integration
+    assert integration["patient_id"] == "test-patient"
+    assert integration["profile_id"] == "test-profile"
+    assert integration["integration_status"] == "success"
+    assert "timestamp" in integration
+    assert "integrated_profile" in integration
         
         # Verify that the profile was stored
-        profile_id = integration["profile_id"]
-        assert profile_id in mock_pat.profiles
+    profile_id = integration["profile_id"]
+    assert profile_id in mock_pat.profiles
         
         # Verify integrated profile structure
-        profile = integration["integrated_profile"]
-        assert profile["id"] == "test-profile"
-        assert profile["patient_id"] == "test-patient"
-        assert profile["actigraphy_analysis_id"] == analysis_id
+    profile = integration["integrated_profile"]
+    assert profile["id"] == "test-profile"
+    assert profile["patient_id"] == "test-patient"
+    assert profile["actigraphy_analysis_id"] == analysis_id
         
         # Verify that all analysis components were integrated
-        assert "activity_summary" in profile
-        assert "sleep_summary" in profile
-        assert "circadian_rhythm" in profile
-        assert "behavioral_insights" in profile
-        assert "mood_assessment" in profile
+    assert "activity_summary" in profile
+    assert "sleep_summary" in profile
+    assert "circadian_rhythm" in profile
+    assert "behavioral_insights" in profile
+    assert "mood_assessment" in profile
     
     def test_integrate_with_digital_twin_analysis_not_found(self, mock_pat):
         """Test integration with digital twin when analysis is not found."""
         with pytest.raises(ResourceNotFoundError) as excinfo:
-            mock_pat.integrate_with_digital_twin(
+        mock_pat.integrate_with_digital_twin(
                 patient_id="test-patient",
                 profile_id="test-profile",
                 analysis_id="non-existent-id"
             )
         
-        assert "not found" in str(excinfo.value)
+    assert "not found" in str(excinfo.value)
     
     def test_integrate_with_digital_twin_wrong_patient(self, mock_pat, sample_readings, sample_device_info):
         """Test integration with digital twin when analysis belongs to different patient."""
@@ -448,14 +448,14 @@ class TestMockPAT:
             analysis_types=["sleep_quality"]
         )
         
-        analysis_id = result["analysis_id"]
+    analysis_id = result["analysis_id"]
         
         # Now, try to integrate with a profile for patient2
-        with pytest.raises(AuthorizationError) as excinfo:
-            mock_pat.integrate_with_digital_twin(
-                patient_id="patient2",  # Different patient
-                profile_id="test-profile",
-                analysis_id=analysis_id
-            )
+    with pytest.raises(AuthorizationError) as excinfo:
+    mock_pat.integrate_with_digital_twin(
+    patient_id="patient2",  # Different patient
+    profile_id="test-profile",
+    analysis_id=analysis_id
+    )
         
-        assert "does not belong to patient" in str(excinfo.value)
+    assert "does not belong to patient" in str(excinfo.value)

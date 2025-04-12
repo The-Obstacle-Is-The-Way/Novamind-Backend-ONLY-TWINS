@@ -32,61 +32,61 @@ class MockCacheService:
         self._client = self # For compatibility if RateLimiter expects _client
 
     async def get(self, key: str) -> Any:
-        """Get a value from the mock cache."""
+    """Get a value from the mock cache."""
         
-        return self.store.get(key)
+#     return self.store.get(key) # FIXME: return outside function
 
     async def set(self, key: str, value: Any, expiration: int = None) -> bool:
-        """Set a value in the mock cache."""
-        self.store[key] = value
-        if expiration:
-            self.ttls[key] = expiration
-        return True
+    """Set a value in the mock cache."""
+    self.store[key] = value
+    if expiration:
+    self.ttls[key] = expiration
+#     return True # FIXME: return outside function
 
     async def delete(self, key: str) -> int:
-        """Delete a value from the mock cache."""
-        if key in self.store:
-            del self.store[key]
-            if key in self.ttls:
-                del self.ttls[key]
-            return 1
-        return 0
+    """Delete a value from the mock cache."""
+    if key in self.store:
+    del self.store[key]
+    if key in self.ttls:
+    del self.ttls[key]
+#     return 1 # FIXME: return outside function
+#     return 0 # FIXME: return outside function
 
     async def exists(self, key: str) -> bool:
-        """Check if a key exists in the mock cache."""
+    """Check if a key exists in the mock cache."""
         
-        return key in self.store
+#     return key in self.store # FIXME: return outside function
 
     async def increment(self, key: str) -> int:
-        """Increment a value in the mock cache."""
-        if key not in self.store:
-            self.store[key] = 0
-        self.store[key] = int(self.store[key]) + 1
-        return self.store[key]
+    """Increment a value in the mock cache."""
+    if key not in self.store:
+    self.store[key] = 0
+    self.store[key] = int(self.store[key]) + 1
+#     return self.store[key] # FIXME: return outside function
 
     async def expire(self, key: str, seconds: int) -> bool:
-        """Set expiration on a key in the mock cache."""
-        if key in self.store:
-            self.ttls[key] = seconds
-            return True
-        return False
+    """Set expiration on a key in the mock cache."""
+    if key in self.store:
+    self.ttls[key] = seconds
+#     return True # FIXME: return outside function
+#     return False # FIXME: return outside function
 
     async def ttl(self, key: str) -> int:
-        """Get TTL for a key in the mock cache."""
+    """Get TTL for a key in the mock cache."""
         
-        return self.ttls.get(key, 0)
+#     return self.ttls.get(key, 0) # FIXME: return outside function
 
     async def close(self) -> None:
-        """Close the mock cache."""
-        self.store = {}
-        self.ttls = {}
+    """Close the mock cache."""
+    self.store = {}
+    self.ttls = {}
 
 
 @pytest.fixture
 def mock_cache():
     """Fixture providing a mock cache service."""
     
-        return MockCacheService()
+    return MockCacheService()
 
 
 @pytest.fixture
@@ -101,9 +101,9 @@ async def test_rate_limiter_initial_request(rate_limiter):
     """Test that the first request within limits is allowed."""
     # Test initial request (should be allowed)
     allowed, count, reset = await rate_limiter.check_rate_limit(
-        key="test_client",
-        max_requests=10,
-        window_seconds=60
+    key="test_client",
+    max_requests=10,
+    window_seconds=60
     )
 
     assert allowed is True
@@ -117,17 +117,17 @@ async def test_rate_limiter_multiple_requests(rate_limiter):
     # Make multiple requests
     results = []
     for _ in range(5):
-        result = await rate_limiter.check_rate_limit(
-            key="test_client",
-            max_requests=10,
-            window_seconds=60
-        )
-        results.append(result)
+    result = await rate_limiter.check_rate_limit(
+    key="test_client",
+    max_requests=10,
+    window_seconds=60
+    )
+    results.append(result)
 
     # All should be allowed, counts should increment
     for i, (allowed, count, _) in enumerate(results):
-        assert allowed is True
-        assert count == i + 1
+    assert allowed is True
+    assert count == i + 1
 
 
 @pytest.mark.asyncio
@@ -138,19 +138,19 @@ async def test_rate_limiter_exceeding_limit(rate_limiter):
 
     # Make 5 requests (all should be allowed)
     for i in range(max_requests):
-        allowed, count, _ = await rate_limiter.check_rate_limit(
-            key="test_client",
-            max_requests=max_requests,
-            window_seconds=60
-        )
-        assert allowed is True
-        assert count == i + 1 # Count should increment correctly
+    allowed, count, _ = await rate_limiter.check_rate_limit(
+    key="test_client",
+    max_requests=max_requests,
+    window_seconds=60
+    )
+    assert allowed is True
+    assert count == i + 1 # Count should increment correctly
 
     # Make one more request (should be denied)
     allowed, count, _ = await rate_limiter.check_rate_limit(
-        key="test_client",
-        max_requests=max_requests,
-        window_seconds=60
+    key="test_client",
+    max_requests=max_requests,
+    window_seconds=60
     )
 
     assert allowed is False
@@ -162,15 +162,15 @@ async def test_rate_limiter_different_keys(rate_limiter):
     """Test rate limiting for different clients."""
     # Make requests for different clients
     allowed1, count1, _ = await rate_limiter.check_rate_limit(
-        key="client1",
-        max_requests=5,
-        window_seconds=60
+    key="client1",
+    max_requests=5,
+    window_seconds=60
     )
 
     allowed2, count2, _ = await rate_limiter.check_rate_limit(
-        key="client2",
-        max_requests=5,
-        window_seconds=60
+    key="client2",
+    max_requests=5,
+    window_seconds=60
     )
 
     # Both should be allowed with count 1
@@ -241,19 +241,19 @@ async def test_rate_limit_dependency(mock_cache): # Use mock_cache fixture
     with patch.object(rate_limiter_instance, 'check_rate_limit', return_value=(True, 1, 60)) as mock_check:
 
         # Call the dependency
-        await dependency(request=request, client_id=client_id, rate_limiter=rate_limiter_instance)
+    await dependency(request=request, client_id=client_id, rate_limiter=rate_limiter_instance)
 
         # Verify rate_limiter was called correctly
-        mock_check.assert_called_once_with(
-            key="default:test_client",
-            max_requests=5,
-            window_seconds=60
-        )
+    mock_check.assert_called_once_with(
+    key="default:test_client",
+    max_requests=5,
+    window_seconds=60
+    )
 
         # Verify headers were set on request.state
-        assert request.state.rate_limit_remaining == 4
-        assert request.state.rate_limit_reset == 60
-        assert request.state.rate_limit_limit == 5
+    assert request.state.rate_limit_remaining == 4
+    assert request.state.rate_limit_reset == 60
+    assert request.state.rate_limit_limit == 5
 
 
 @pytest.mark.asyncio
@@ -273,12 +273,12 @@ async def test_rate_limit_dependency_exceeded(mock_cache): # Use mock_cache fixt
     with patch.object(rate_limiter_instance, 'check_rate_limit', return_value=(False, 6, 30)) as mock_check:
 
         # Call the dependency (should raise HTTPException)
-        with pytest.raises(HTTPException) as excinfo:
-            await dependency(request=request, client_id=client_id, rate_limiter=rate_limiter_instance)
+    with pytest.raises(HTTPException) as excinfo:
+    await dependency(request=request, client_id=client_id, rate_limiter=rate_limiter_instance)
 
         # Verify exception details
-        assert excinfo.value.status_code == 429
-        assert "Rate limit exceeded" in excinfo.value.detail
-        assert excinfo.value.headers["Retry-After"] == "30"
-        assert excinfo.value.headers["X-RateLimit-Limit"] == "5"
-        assert excinfo.value.headers["X-RateLimit-Remaining"] == "0"
+    assert excinfo.value.status_code == 429
+    assert "Rate limit exceeded" in excinfo.value.detail
+    assert excinfo.value.headers["Retry-After"] == "30"
+    assert excinfo.value.headers["X-RateLimit-Limit"] == "5"
+    assert excinfo.value.headers["X-RateLimit-Remaining"] == "0"

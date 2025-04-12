@@ -43,9 +43,9 @@ class TestPHISanitizer(unittest.TestCase):
             ("Email: patient@example.com", "Email: [EMAIL REDACTED]"),
         ]
         
-        for input_text, expected_output in test_cases:
-            sanitized = PHISanitizer.sanitize_string(input_text)
-            self.assertEqual(sanitized, expected_output)
+    for input_text, expected_output in test_cases:
+    sanitized = PHISanitizer.sanitize_string(input_text)
+    self.assertEqual(sanitized, expected_output)
     
     def test_sanitize_string_without_phi(self):
         """Test sanitization of strings without PHI."""
@@ -57,9 +57,9 @@ class TestPHISanitizer(unittest.TestCase):
             "Medication prescribed at standard dose"
         ]
         
-        for text in non_phi_strings:
-            sanitized = PHISanitizer.sanitize_string(text)
-            self.assertEqual(sanitized, text)
+    for text in non_phi_strings:
+    sanitized = PHISanitizer.sanitize_string(text)
+    self.assertEqual(sanitized, text)
     
     def test_sanitize_empty_and_none_inputs(self):
         """Test sanitization with empty or None inputs."""
@@ -91,26 +91,26 @@ class TestPHISanitizer(unittest.TestCase):
             }
         }
         
-        expected_output = {
-            "patient_id": "A12345",  # Not matched by PHI patterns
-            "name": "[NAME REDACTED]",
-            "contact": {
-                "email": "[EMAIL REDACTED]",
-                "phone": "[PHONE REDACTED]",
-                "address": "[ADDRESS REDACTED]"
-            },
-            "dob": "[DOB REDACTED]",
-            "ssn": "[SSN REDACTED]",
-            "notes": "Patient reports feeling better",  # No PHI
-            "medications": ["Med A", "Med B"],  # No PHI
-            "vitals": {
-                "heart_rate": 72,  # Not a string
-                "blood_pressure": "120/80"  # Not matching PHI patterns
-            }
-        }
+    expected_output = {
+    "patient_id": "A12345",  # Not matched by PHI patterns
+    "name": "[NAME REDACTED]",
+    "contact": {
+    "email": "[EMAIL REDACTED]",
+    "phone": "[PHONE REDACTED]",
+    "address": "[ADDRESS REDACTED]"
+    },
+    "dob": "[DOB REDACTED]",
+    "ssn": "[SSN REDACTED]",
+    "notes": "Patient reports feeling better",  # No PHI
+    "medications": ["Med A", "Med B"],  # No PHI
+    "vitals": {
+    "heart_rate": 72,  # Not a string
+    "blood_pressure": "120/80"  # Not matching PHI patterns
+    }
+    }
         
-        sanitized = PHISanitizer.sanitize_dict(test_dict)
-        self.assertEqual(sanitized, expected_output)
+    sanitized = PHISanitizer.sanitize_dict(test_dict)
+    self.assertEqual(sanitized, expected_output)
     
     def test_sanitize_dict_with_excluded_keys(self):
         """Test dictionary sanitization with excluded keys."""
@@ -123,17 +123,17 @@ class TestPHISanitizer(unittest.TestCase):
         }
         
         # Exclude name from sanitization
-        sanitized = PHISanitizer.sanitize_dict(test_dict, exclude_keys={"name"})
+    sanitized = PHISanitizer.sanitize_dict(test_dict, exclude_keys={"name"})
         
-        expected = {
-            "patient_id": "A12345",
-            "name": "John Smith",  # Not sanitized
-            "contact": {
-                "email": "[EMAIL REDACTED]"
-            }
-        }
+    expected = {
+    "patient_id": "A12345",
+    "name": "John Smith",  # Not sanitized
+    "contact": {
+    "email": "[EMAIL REDACTED]"
+    }
+    }
         
-        self.assertEqual(sanitized, expected)
+    self.assertEqual(sanitized, expected)
     
     def test_sanitize_list(self):
         """Test sanitization of lists containing PHI."""
@@ -144,31 +144,31 @@ class TestPHISanitizer(unittest.TestCase):
             123
         ]
         
-        expected_output = [
-            "Patient: [NAME REDACTED]",
-            {"ssn": "[SSN REDACTED]", "notes": "Regular checkup"},
-            ["Call at [PHONE REDACTED]", "Email: [EMAIL REDACTED]"],
-            123
-        ]
+    expected_output = [
+    "Patient: [NAME REDACTED]",
+    {"ssn": "[SSN REDACTED]", "notes": "Regular checkup"},
+    ["Call at [PHONE REDACTED]", "Email: [EMAIL REDACTED]"],
+    123
+    ]
 
-        sanitized = PHISanitizer.sanitize_list(test_list)
-        self.assertEqual(sanitized, expected_output)
+    sanitized = PHISanitizer.sanitize_list(test_list)
+    self.assertEqual(sanitized, expected_output)
     
     def test_sanitize_error_message(self):
         """Test sanitization of error messages containing PHI."""
         error_message = "Error processing data for John Smith (SSN: 123-45-6789)"
         expected = "Error processing data for [NAME REDACTED] (SSN: [SSN REDACTED])"
         
-        sanitized = PHISanitizer.sanitize_error_message(error_message)
-        self.assertEqual(sanitized, expected)
+    sanitized = PHISanitizer.sanitize_error_message(error_message)
+    self.assertEqual(sanitized, expected)
     
     def test_sanitize_log_entry(self):
         """Test sanitization of log entries containing PHI."""
         log_entry = "User accessed record for patient John Smith (DOB: 01/01/1980)"
         expected = "User accessed record for patient [NAME REDACTED] (DOB: [DOB REDACTED])"
         
-        sanitized = PHISanitizer.sanitize_log_entry(log_entry)
-        self.assertEqual(sanitized, expected)
+    sanitized = PHISanitizer.sanitize_log_entry(log_entry)
+    self.assertEqual(sanitized, expected)
     
     def test_update_patterns(self):
         """Test updating PHI detection patterns."""
@@ -178,14 +178,14 @@ class TestPHISanitizer(unittest.TestCase):
         self.assertEqual(PHISanitizer.sanitize_string(test_string), test_string)
         
         # Add new pattern
-        import re
-        PHISanitizer.update_patterns({
-            "patient_id": re.compile(r'\bPT-\d{5}-[A-Z]{3}\b')
-        })
+    import re
+    PHISanitizer.update_patterns({
+    "patient_id": re.compile(r'\bPT-\d{5}-[A-Z]{3}\b')
+    })
         
         # Now should be redacted
-        expected = "Patient ID: [PATIENT_ID REDACTED]"
-        self.assertEqual(PHISanitizer.sanitize_string(test_string), expected)
+    expected = "Patient ID: [PATIENT_ID REDACTED]"
+    self.assertEqual(PHISanitizer.sanitize_string(test_string), expected)
 
 
 if __name__ == "__main__":

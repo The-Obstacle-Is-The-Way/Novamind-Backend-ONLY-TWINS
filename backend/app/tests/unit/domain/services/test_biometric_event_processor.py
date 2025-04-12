@@ -94,8 +94,8 @@ class TestBiometricEventProcessor:
         processor = BiometricEventProcessor()
         processor.add_rule(sample_rule)
 
-        assert sample_rule.rule_id in processor.rules
-        assert processor.rules[sample_rule.rule_id] == sample_rule
+    assert sample_rule.rule_id in processor.rules
+    assert processor.rules[sample_rule.rule_id] == sample_rule
 
     def test_remove_rule(self, sample_rule):
         """Test that remove_rule removes a rule from the processor."""
@@ -103,16 +103,16 @@ class TestBiometricEventProcessor:
         processor.add_rule(sample_rule)
         processor.remove_rule(sample_rule.rule_id)
 
-        assert sample_rule.rule_id not in processor.rules
+    assert sample_rule.rule_id not in processor.rules
 
     def test_register_observer(self, mock_observer):
         """Test that register_observer registers an observer for specific priorities."""
         processor = BiometricEventProcessor()
         processor.register_observer(mock_observer, [AlertPriority.WARNING])
 
-        assert mock_observer in processor.observers[AlertPriority.WARNING]
-        assert mock_observer not in processor.observers[AlertPriority.URGENT]
-        assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
+    assert mock_observer in processor.observers[AlertPriority.WARNING]
+    assert mock_observer not in processor.observers[AlertPriority.URGENT]
+    assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
 
     def test_unregister_observer(self, mock_observer):
         """Test that unregister_observer unregisters an observer from all priorities."""
@@ -120,9 +120,9 @@ class TestBiometricEventProcessor:
         processor.register_observer(mock_observer, [AlertPriority.WARNING, AlertPriority.URGENT])
         processor.unregister_observer(mock_observer)
 
-        assert mock_observer not in processor.observers[AlertPriority.WARNING]
-        assert mock_observer not in processor.observers[AlertPriority.URGENT]
-        assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
+    assert mock_observer not in processor.observers[AlertPriority.WARNING]
+    assert mock_observer not in processor.observers[AlertPriority.URGENT]
+    assert mock_observer not in processor.observers[AlertPriority.INFORMATIONAL]
 
     def test_process_data_point_no_patient_id(self):
         """Test that process_data_point raises an error if the data point has no patient ID."""
@@ -138,8 +138,8 @@ class TestBiometricEventProcessor:
             confidence=0.95
         )
 
-        with pytest.raises(ValidationError):
-            processor.process_data_point(data_point)
+    with pytest.raises(ValidationError):
+    processor.process_data_point(data_point)
 
     def test_process_data_point_no_matching_rules(self, sample_data_point):
         """Test that process_data_point returns no alerts if no rules match."""
@@ -159,9 +159,9 @@ class TestBiometricEventProcessor:
         )
         processor.add_rule(rule)
 
-        alerts = processor.process_data_point(sample_data_point)
+    alerts = processor.process_data_point(sample_data_point)
 
-        assert len(alerts) == 0
+    assert len(alerts) == 0
 
     def test_process_data_point_matching_rule(self, sample_data_point, sample_rule, mock_observer):
         """Test that process_data_point returns alerts for matching rules and notifies observers."""
@@ -169,20 +169,20 @@ class TestBiometricEventProcessor:
         processor.add_rule(sample_rule)
         processor.register_observer(mock_observer, [AlertPriority.WARNING])
 
-        alerts = processor.process_data_point(sample_data_point)
+    alerts = processor.process_data_point(sample_data_point)
 
-        assert len(alerts) == 1
-        alert = alerts[0]
-        assert isinstance(alert, BiometricAlert)
-        assert alert.patient_id == sample_data_point.patient_id
-        assert alert.rule_id == sample_rule.rule_id
-        assert alert.priority == sample_rule.priority
-        assert alert.data_point == sample_data_point
+    assert len(alerts) == 1
+    alert = alerts[0]
+    assert isinstance(alert, BiometricAlert)
+    assert alert.patient_id == sample_data_point.patient_id
+    assert alert.rule_id == sample_rule.rule_id
+    assert alert.priority == sample_rule.priority
+    assert alert.data_point == sample_data_point
 
-        mock_observer.notify.assert_called_once()
+    mock_observer.notify.assert_called_once()
         # Check the first argument passed to notify
-        call_args, _ = mock_observer.notify.call_args
-        assert call_args[0] == alert
+    call_args, _ = mock_observer.notify.call_args
+    assert call_args[0] == alert
 
 
     def test_process_data_point_patient_specific_rule(self, sample_data_point, sample_rule, sample_clinician_id):
@@ -190,46 +190,46 @@ class TestBiometricEventProcessor:
         processor = BiometricEventProcessor()
 
         # Add a patient-specific rule for a different patient
-        other_patient_id = UUID("99999999-9999-9999-9999-999999999999")
-        patient_specific_rule = AlertRule(
-            rule_id="test-rule-2",
-            name="Patient-Specific High Heart Rate",
-            description="Alert when heart rate exceeds 90 bpm for a specific patient",
-            priority=AlertPriority.WARNING,
-            condition={
-                "data_type": "heart_rate",
-                "operator": ">",
-                "threshold": 90.0
-            },
-            created_by=sample_clinician_id,
-            patient_id=other_patient_id, # Specific patient
-            is_active=True
-        )
-        processor.add_rule(patient_specific_rule)
+    other_patient_id = UUID("99999999-9999-9999-9999-999999999999")
+    patient_specific_rule = AlertRule(
+    rule_id="test-rule-2",
+    name="Patient-Specific High Heart Rate",
+    description="Alert when heart rate exceeds 90 bpm for a specific patient",
+    priority=AlertPriority.WARNING,
+    condition={
+    "data_type": "heart_rate",
+    "operator": ">",
+    "threshold": 90.0
+    },
+    created_by=sample_clinician_id,
+    patient_id=other_patient_id, # Specific patient
+    is_active=True
+    )
+    processor.add_rule(patient_specific_rule)
 
         # Add a general rule (no patient_id)
-        general_rule = AlertRule(
-            rule_id="test-rule-general",
-            name="General High Heart Rate",
-            description="Alert when heart rate exceeds 100 bpm",
-            priority=AlertPriority.WARNING,
-            condition={
-                "data_type": "heart_rate",
-                "operator": ">",
-                "threshold": 100.0
-            },
-            created_by=sample_clinician_id,
-            patient_id=None, # General rule
-            is_active=True
-        )
-        processor.add_rule(general_rule)
+    general_rule = AlertRule(
+    rule_id="test-rule-general",
+    name="General High Heart Rate",
+    description="Alert when heart rate exceeds 100 bpm",
+    priority=AlertPriority.WARNING,
+    condition={
+    "data_type": "heart_rate",
+    "operator": ">",
+    "threshold": 100.0
+    },
+    created_by=sample_clinician_id,
+    patient_id=None, # General rule
+    is_active=True
+    )
+    processor.add_rule(general_rule)
 
         # Process a data point for the sample patient (heart rate 120)
-        alerts = processor.process_data_point(sample_data_point)
+    alerts = processor.process_data_point(sample_data_point)
 
         # Should only match the general rule, not the one for other_patient_id
-        assert len(alerts) == 1
-        assert alerts[0].rule_id == general_rule.rule_id
+    assert len(alerts) == 1
+    assert alerts[0].rule_id == general_rule.rule_id
 
     def test_process_data_point_inactive_rule(self, sample_data_point, sample_rule):
         """Test that process_data_point ignores inactive rules."""
@@ -237,23 +237,23 @@ class TestBiometricEventProcessor:
         sample_rule.is_active = False
         processor.add_rule(sample_rule)
 
-        alerts = processor.process_data_point(sample_data_point)
+    alerts = processor.process_data_point(sample_data_point)
 
-        assert len(alerts) == 0
+    assert len(alerts) == 0
 
     def test_process_data_point_updates_context(self, sample_data_point):
         """Test that process_data_point updates the patient context."""
         processor = BiometricEventProcessor()
 
         # Process a data point
-        processor.process_data_point(sample_data_point)
+    processor.process_data_point(sample_data_point)
 
         # Check that the context was updated
-        assert sample_data_point.patient_id in processor.patient_context
-        context = processor.patient_context[sample_data_point.patient_id]
-        assert "latest_values" in context
-        assert sample_data_point.data_type in context["latest_values"]
-        assert context["latest_values"][sample_data_point.data_type] == sample_data_point.value
+    assert sample_data_point.patient_id in processor.patient_context
+    context = processor.patient_context[sample_data_point.patient_id]
+    assert "latest_values" in context
+    assert sample_data_point.data_type in context["latest_values"]
+    assert context["latest_values"][sample_data_point.data_type] == sample_data_point.value
 
 
 class TestAlertRule:
@@ -265,9 +265,9 @@ class TestAlertRule:
         sample_rule.condition["data_type"] = "blood_pressure"
 
         # Evaluate the rule
-        result = sample_rule.evaluate(sample_data_point, {})
+    result = sample_rule.evaluate(sample_data_point, {})
 
-        assert result is False
+    assert result is False
 
     def test_evaluate_greater_than(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the > operator."""
@@ -277,15 +277,15 @@ class TestAlertRule:
         sample_data_point.value = 120.0
 
         # Evaluate the rule
-        result = sample_rule.evaluate(sample_data_point, {})
+    result = sample_rule.evaluate(sample_data_point, {})
 
-        assert result is True
+    assert result is True
 
         # Test with a value that doesn't meet the condition
-        sample_data_point.value = 80.0
-        result = sample_rule.evaluate(sample_data_point, {})
+    sample_data_point.value = 80.0
+    result = sample_rule.evaluate(sample_data_point, {})
 
-        assert result is False
+    assert result is False
 
     def test_evaluate_greater_than_or_equal(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the >= operator."""
@@ -294,19 +294,19 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
 
         # Test with a value greater than the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
 
         # Test with a value equal to the threshold
-        sample_data_point.value = 100.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 100.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
 
         # Test with a value less than the threshold
-        sample_data_point.value = 80.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 80.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
 
     def test_evaluate_less_than(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the < operator."""
@@ -315,14 +315,14 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
 
         # Test with a value less than the threshold
-        sample_data_point.value = 80.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 80.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
 
         # Test with a value greater than the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
 
     def test_evaluate_less_than_or_equal(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the <= operator."""
@@ -331,19 +331,19 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
 
         # Test with a value less than the threshold
-        sample_data_point.value = 80.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 80.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
 
         # Test with a value equal to the threshold
-        sample_data_point.value = 100.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 100.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
 
         # Test with a value greater than the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
 
     def test_evaluate_equal(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the == operator."""
@@ -352,14 +352,14 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
 
         # Test with a value equal to the threshold
-        sample_data_point.value = 100.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 100.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
 
         # Test with a value not equal to the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
 
     def test_evaluate_not_equal(self, sample_rule, sample_data_point):
         """Test that evaluate correctly handles the != operator."""
@@ -368,14 +368,14 @@ class TestAlertRule:
         sample_rule.condition["threshold"] = 100.0
 
         # Test with a value not equal to the threshold
-        sample_data_point.value = 120.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is True
+    sample_data_point.value = 120.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is True
 
         # Test with a value equal to the threshold
-        sample_data_point.value = 100.0
-        result = sample_rule.evaluate(sample_data_point, {})
-        assert result is False
+    sample_data_point.value = 100.0
+    result = sample_rule.evaluate(sample_data_point, {})
+    assert result is False
 
 
 class TestBiometricAlert:
@@ -396,17 +396,17 @@ class TestBiometricAlert:
         )
 
         # Initially not acknowledged
-        assert alert.acknowledged is False
-        assert alert.acknowledged_at is None
-        assert alert.acknowledged_by is None
+    assert alert.acknowledged is False
+    assert alert.acknowledged_at is None
+    assert alert.acknowledged_by is None
 
         # Acknowledge the alert
-        alert.acknowledge(sample_clinician_id)
+    alert.acknowledge(sample_clinician_id)
 
         # Now acknowledged
-        assert alert.acknowledged is True
-        assert alert.acknowledged_at is not None
-        assert alert.acknowledged_by == sample_clinician_id
+    assert alert.acknowledged is True
+    assert alert.acknowledged_at is not None
+    assert alert.acknowledged_by == sample_clinician_id
 
 
 class TestAlertObservers:
@@ -418,24 +418,24 @@ class TestAlertObservers:
         email_service = MagicMock()
 
         # Create an observer
-        observer = EmailAlertObserver(email_service)
+    observer = EmailAlertObserver(email_service)
 
         # Create an alert
-        alert = BiometricAlert(
-            alert_id="test-alert-1",
-            patient_id=sample_data_point.patient_id,
-            rule_id=sample_rule.rule_id,
-            rule_name=sample_rule.name,
-            priority=sample_rule.priority,
-            data_point=sample_data_point,
-            message="Test alert message",
-            context={}
-        )
+    alert = BiometricAlert(
+    alert_id="test-alert-1",
+    patient_id=sample_data_point.patient_id,
+    rule_id=sample_rule.rule_id,
+    rule_name=sample_rule.name,
+    priority=sample_rule.priority,
+    data_point=sample_data_point,
+    message="Test alert message",
+    context={}
+    )
 
         # Patch the _get_recipient_for_patient method
-        with patch.object(observer, '_get_recipient_for_patient', return_value="clinician@example.com"):
+    with patch.object(observer, '_get_recipient_for_patient', return_value="clinician@example.com"):
             # Notify the observer
-            observer.notify(alert)
+    observer.notify(alert)
 
             # Check that the email service was called (assuming implementation calls it)
             # email_service.send_email.assert_called_once() # Uncomment if implemented
@@ -446,24 +446,24 @@ class TestAlertObservers:
         sms_service = MagicMock()
 
         # Create an observer
-        observer = SMSAlertObserver(sms_service)
+    observer = SMSAlertObserver(sms_service)
 
         # Create an urgent alert
-        alert = BiometricAlert(
-            alert_id="test-alert-1",
-            patient_id=sample_data_point.patient_id,
-            rule_id=sample_rule.rule_id,
-            rule_name=sample_rule.name,
-            priority=AlertPriority.URGENT, # Urgent priority
-            data_point=sample_data_point,
-            message="Test alert message",
-            context={}
-        )
+    alert = BiometricAlert(
+    alert_id="test-alert-1",
+    patient_id=sample_data_point.patient_id,
+    rule_id=sample_rule.rule_id,
+    rule_name=sample_rule.name,
+    priority=AlertPriority.URGENT, # Urgent priority
+    data_point=sample_data_point,
+    message="Test alert message",
+    context={}
+    )
 
         # Patch the _get_recipient_for_patient method
-        with patch.object(observer, '_get_recipient_for_patient', return_value="+1234567890"):
+    with patch.object(observer, '_get_recipient_for_patient', return_value="+1234567890"):
             # Notify the observer
-            observer.notify(alert)
+    observer.notify(alert)
 
             # Check that the SMS service was called (assuming implementation calls it)
             # sms_service.send_sms.assert_called_once() # Uncomment if implemented
@@ -474,25 +474,25 @@ class TestAlertObservers:
         sms_service = MagicMock()
 
         # Create an observer
-        observer = SMSAlertObserver(sms_service)
+    observer = SMSAlertObserver(sms_service)
 
         # Create a warning alert
-        alert = BiometricAlert(
-            alert_id="test-alert-1",
-            patient_id=sample_data_point.patient_id,
-            rule_id=sample_rule.rule_id,
-            rule_name=sample_rule.name,
-            priority=AlertPriority.WARNING, # Non-urgent priority
-            data_point=sample_data_point,
-            message="Test alert message",
-            context={}
-        )
+    alert = BiometricAlert(
+    alert_id="test-alert-1",
+    patient_id=sample_data_point.patient_id,
+    rule_id=sample_rule.rule_id,
+    rule_name=sample_rule.name,
+    priority=AlertPriority.WARNING, # Non-urgent priority
+    data_point=sample_data_point,
+    message="Test alert message",
+    context={}
+    )
 
         # Notify the observer
-        observer.notify(alert)
+    observer.notify(alert)
 
         # Check that the SMS service was not called
-        sms_service.send_sms.assert_not_called() # Assuming send_sms is the method
+    sms_service.send_sms.assert_not_called() # Assuming send_sms is the method
 
     def test_in_app_alert_observer(self, sample_data_point, sample_rule):
         """Test that InAppAlertObserver correctly notifies via in-app notifications."""
@@ -500,24 +500,24 @@ class TestAlertObservers:
         notification_service = MagicMock()
 
         # Create an observer
-        observer = InAppAlertObserver(notification_service)
+    observer = InAppAlertObserver(notification_service)
 
         # Create an alert
-        alert = BiometricAlert(
-            alert_id="test-alert-1",
-            patient_id=sample_data_point.patient_id,
-            rule_id=sample_rule.rule_id,
-            rule_name=sample_rule.name,
-            priority=sample_rule.priority,
-            data_point=sample_data_point,
-            message="Test alert message",
-            context={}
-        )
+    alert = BiometricAlert(
+    alert_id="test-alert-1",
+    patient_id=sample_data_point.patient_id,
+    rule_id=sample_rule.rule_id,
+    rule_name=sample_rule.name,
+    priority=sample_rule.priority,
+    data_point=sample_data_point,
+    message="Test alert message",
+    context={}
+    )
 
         # Patch the _get_recipients_for_patient method
-        with patch.object(observer, '_get_recipients_for_patient', return_value=[UUID("00000000-0000-0000-0000-000000000001")]):
+    with patch.object(observer, '_get_recipients_for_patient', return_value=[UUID("00000000-0000-0000-0000-000000000001")]):
             # Notify the observer
-            observer.notify(alert)
+    observer.notify(alert)
 
             # Check that the notification service was called (assuming implementation calls it)
             # notification_service.send_notification.assert_called() # Uncomment if implemented

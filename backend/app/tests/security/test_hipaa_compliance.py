@@ -99,7 +99,7 @@ except ImportError as e:
 # Test fixtures
 @pytest.fixture
         def test_user():
-    """Create a test user for authentication tests."""
+            """Create a test user for authentication tests."""
     
     return {
         "id": str(uuid.uuid4()),
@@ -112,7 +112,7 @@ except ImportError as e:
 
 @pytest.fixture
         def test_phi_data():
-    """Create test PHI data for encryption tests."""
+            """Create test PHI data for encryption tests."""
     
     return {
         "patient_id": str(uuid.uuid4()),
@@ -128,7 +128,7 @@ except ImportError as e:
 
 @pytest.fixture
         def test_jwt_token(test_user):
-    """Create a valid JWT token for testing."""
+            """Create a valid JWT token for testing."""
     expires_delta = timedelta(minutes=30)
     data = {
         "sub": test_user["username"],
@@ -137,19 +137,19 @@ except ImportError as e:
         "permissions": test_user["permissions"],
         "exp": datetime.now(UTC) + expires_delta
     }
-    return jwt.encode(data, settings.JWT_SECRET_KEY, algorithm="HS256")
+#     return jwt.encode(data, settings.JWT_SECRET_KEY, algorithm="HS256") # FIXME: return outside function
 
 
 @pytest.fixture
         def mock_audit_logger():
-    """Create a mock audit logger for testing."""
+            """Create a mock audit logger for testing."""
     with mock.patch("app.infrastructure.logging.audit_logger.log_phi_access") as mock_logger:
         yield mock_logger
 
 
 @pytest.fixture
         def mock_rbac():
-    """Create a mock RBAC system for testing."""
+            """Create a mock RBAC system for testing."""
     with mock.patch("app.infrastructure.security.rbac.role_manager.check_permission") as mock_check:
         mock_check.return_value = True
         yield mock_check
@@ -165,14 +165,14 @@ class TestPHIEncryption:
         encrypted_data = encrypt_phi(test_phi_data)
         
         # Verify the encrypted data is not the same as the original
-        assert encrypted_data  !=  test_phi_data
-        assert isinstance(encrypted_data, str)
+    assert encrypted_data  !=  test_phi_data
+    assert isinstance(encrypted_data, str)
         
         # Decrypt the data
-        decrypted_data = decrypt_phi(encrypted_data)
+    decrypted_data = decrypt_phi(encrypted_data)
         
         # Verify the decrypted data matches the original
-        assert decrypted_data  ==  test_phi_data
+    assert decrypted_data  ==  test_phi_data
     
     def test_encrypt_field_sensitive_data(self):
         """Test that specific fields can be encrypted individually."""
@@ -180,14 +180,14 @@ class TestPHIEncryption:
         encrypted_ssn = encrypt_field(ssn)
         
         # Verify the encrypted field is not the same as the original
-        assert encrypted_ssn  !=  ssn
-        assert isinstance(encrypted_ssn, str)
+    assert encrypted_ssn  !=  ssn
+    assert isinstance(encrypted_ssn, str)
         
         # Decrypt the field
-        decrypted_ssn = decrypt_field(encrypted_ssn)
+    decrypted_ssn = decrypt_field(encrypted_ssn)
         
         # Verify the decrypted field matches the original
-        assert decrypted_ssn  ==  ssn
+    assert decrypted_ssn  ==  ssn
     
     def test_encryption_key_requirements(self):
         """Test that encryption key meets strength requirements."""
@@ -195,8 +195,8 @@ class TestPHIEncryption:
         key = generate_phi_key()
         
         # Verify the key meets strength requirements
-        assert isinstance(key, str)
-        assert len(key) >= 32, "Encryption key must be at least 32 characters"
+    assert isinstance(key, str)
+    assert len(key) >= 32, "Encryption key must be at least 32 characters"
 
 
 # Authentication Tests
@@ -210,16 +210,16 @@ class TestAuthentication:
         )
         
         # Verify the token is created successfully
-        assert isinstance(token, str)
-        assert len(token) > 0
+    assert isinstance(token, str)
+    assert len(token) > 0
     
     def test_decode_access_token(self, test_jwt_token, test_user):
         """Test that access tokens can be decoded correctly."""
         decoded = decode_token(test_jwt_token)
         
         # Verify the decoded token contains the expected data
-        assert decoded["sub"] == test_user["username"]
-        assert "exp" in decoded
+    assert decoded["sub"] == test_user["username"]
+    assert "exp" in decoded
     
     def test_expired_token_rejection(self):
         """Test that expired tokens are rejected."""
@@ -233,8 +233,8 @@ class TestAuthentication:
         )
         
         # Verify the expired token is rejected
-        with pytest.raises((jwt.JWTError, AuthenticationError)):
-            decode_token(expired_token)
+    with pytest.raises((jwt.JWTError, AuthenticationError)):
+    decode_token(expired_token)
     
     def test_invalid_token_rejection(self):
         """Test that invalid tokens are rejected."""
@@ -242,8 +242,8 @@ class TestAuthentication:
         invalid_token = "invalid.token.format"
         
         # Verify the invalid token is rejected
-        with pytest.raises((jwt.JWTError, AuthenticationError)):
-            decode_token(invalid_token)
+    with pytest.raises((jwt.JWTError, AuthenticationError)):
+    decode_token(invalid_token)
 
 
 # Authorization Tests
@@ -260,8 +260,8 @@ class TestAuthorization:
         )
         
         # Verify permission check succeeds
-        assert result is True
-        mock_rbac.assert_called_once()
+    assert result is True
+    mock_rbac.assert_called_once()
     
     def test_rbac_permission_denied(self, test_user, mock_rbac):
         """Test that RBAC denies unauthorized access."""
@@ -269,14 +269,14 @@ class TestAuthorization:
         mock_rbac.return_value = False
         
         # Check permission for a resource the user shouldn't access
-        result = check_permission(
-            user_id=test_user["id"],
-            permission="read:phi_data",
-            resource_id="different_user_id"
-        )
+    result = check_permission(
+    user_id=test_user["id"],
+    permission="read:phi_data",
+    resource_id="different_user_id"
+    )
         
         # Verify permission check fails
-        assert result is False
+    assert result is False
     
     def test_cross_patient_data_access_prevented(self, test_user):
         """Test that patients cannot access other patients' data."""
@@ -306,10 +306,10 @@ class TestAuditLogging:
         )
         
         # Verify the logger was called with the correct parameters
-        mock_audit_logger.assert_called_once()
-        args, kwargs = mock_audit_logger.call_args
-        assert kwargs["user_id"] == test_user["id"]
-        assert kwargs["action"] == "view"
+    mock_audit_logger.assert_called_once()
+    args, kwargs = mock_audit_logger.call_args
+    assert kwargs["user_id"] == test_user["id"]
+    assert kwargs["action"] == "view"
     
     def test_phi_sanitization(self, test_phi_data):
         """Test that PHI is properly sanitized in logs."""
@@ -317,8 +317,8 @@ class TestAuditLogging:
         sanitized = sanitize_phi(json.dumps(test_phi_data))
         
         # Verify sensitive data is redacted
-        assert "123-45-6789" not in sanitized
-        assert "[REDACTED]" in sanitized
+    assert "123-45-6789" not in sanitized
+    assert "[REDACTED]" in sanitized
 
 
 # Security Boundaries Tests
@@ -339,7 +339,7 @@ class TestSecurityBoundaries:
         try:
             # This would be a real call that might fail
             if not hasattr(decrypt_phi, "__wrapped__"):
-                raise PHIAccessError("Failed to decrypt PHI data")
+        raise PHIAccessError("Failed to decrypt PHI data")
             raise PHIAccessError("Failed to decrypt PHI data")
         except PHIAccessError as e:
             # Verify the error doesn't contain PHI
@@ -355,14 +355,14 @@ class TestHIPAACompliance:
     def test_field_level_encryption(self, test_phi_data):
         """Test that field-level encryption is available for PHI."""
         for field in ["ssn", "diagnosis", "medication"]:
-            if field in test_phi_data:
-                value = test_phi_data[field]
+        if field in test_phi_data:
+        value = test_phi_data[field]
                 encrypted = encrypt_field(value)
                 decrypted = decrypt_field(encrypted)
                 
                 # Verify encryption and decryption work
-                assert encrypted  !=  value
-                assert decrypted  ==  value
+    assert encrypted  !=  value
+    assert decrypted  ==  value
     
     def test_minimum_necessary_principle(self, test_phi_data):
         """Test that only necessary PHI fields are included in responses."""
@@ -371,9 +371,9 @@ class TestHIPAACompliance:
         response_data = {k: test_phi_data[k] for k in necessary_fields if k in test_phi_data}
         
         # Verify unnecessary PHI is excluded
-        assert "ssn" not in response_data
-        assert "diagnosis" not in response_data
-        assert "medication" not in response_data
+    assert "ssn" not in response_data
+    assert "diagnosis" not in response_data
+    assert "medication" not in response_data
     
     def test_secure_configuration(self):
         """Test that security configuration is properly set up."""
@@ -381,14 +381,14 @@ class TestHIPAACompliance:
         pass # No need to re-assign if using the imported/mocked settings directly
         
         # Verify essential security settings are configured
-        assert hasattr(settings, "PHI_ENCRYPTION_KEY")
-        assert hasattr(settings, "JWT_SECRET_KEY")
-        assert hasattr(settings, "JWT_ALGORITHM")
-        assert hasattr(settings, "JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+    assert hasattr(settings, "PHI_ENCRYPTION_KEY")
+    assert hasattr(settings, "JWT_SECRET_KEY")
+    assert hasattr(settings, "JWT_ALGORITHM")
+    assert hasattr(settings, "JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
         
         # Verify TLS settings for secure transmission
-        assert hasattr(settings, "USE_TLS")
-        assert settings.USE_TLS is True
+    assert hasattr(settings, "USE_TLS")
+    assert settings.USE_TLS is True
     
     def test_password_policy(self):
         """Test that password policy meets HIPAA requirements."""
@@ -399,10 +399,10 @@ class TestHIPAACompliance:
         requires_mixed_case = True
         requires_numbers = True
         
-        test_password = "Str0ng!P@ssw0rd"
+    test_password = "Str0ng!P@ssw0rd"
         
         # Verify password meets policy requirements
-        assert len(test_password) >= min_length
-        assert any(c.isdigit() for c in test_password) == requires_numbers
-        assert any(c.isupper() for c in test_password) and any(c.islower() for c in test_password) == requires_mixed_case
-        assert any(c in "!@#$%^&*()-_=+[]{}|;:,.<>?/~`" for c in test_password) == requires_special_chars
+    assert len(test_password) >= min_length
+    assert any(c.isdigit() for c in test_password) == requires_numbers
+    assert any(c.isupper() for c in test_password) and any(c.islower() for c in test_password) == requires_mixed_case
+    assert any(c in "!@#$%^&*()-_=+[]{}|;:,.<>?/~`" for c in test_password) == requires_special_chars
