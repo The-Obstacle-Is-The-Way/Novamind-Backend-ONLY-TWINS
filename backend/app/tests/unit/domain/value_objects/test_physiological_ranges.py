@@ -27,7 +27,8 @@ class TestPhysiologicalRange:
                 min=100.0, max=60.0, critical_min=40.0, critical_max=140.0
             )
 
-        assert "Minimum value must be less than maximum value" in str(excinfo.value)
+        assert "Minimum value must be less than maximum value" in str(
+            excinfo.value)
 
     def test_init_with_invalid_critical_min(self):
         """Test initialization with critical_min > min raises error."""

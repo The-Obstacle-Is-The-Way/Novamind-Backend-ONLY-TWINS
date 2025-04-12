@@ -50,7 +50,9 @@ class TestPHISanitizer:
                 "diagnosis": "Depression",
                 "severity": "Moderate",
             },
-            "non_phi_data": {"appointment_type": "Follow-up", "duration_minutes": 30},
+            "non_phi_data": {
+                "appointment_type": "Follow-up",
+                "duration_minutes": 30},
         }
 
         # List with PHI
@@ -186,7 +188,6 @@ class TestPHISanitizer:
         # Test with string
         string_sanitized = self.sanitizer.sanitize(self.text_with_phi)
         assert isinstance(string_sanitized, str)
-
 
         class TestCustomPHISanitizer:
     """Test cases for PHI sanitization with custom patterns."""

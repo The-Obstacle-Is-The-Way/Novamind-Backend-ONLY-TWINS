@@ -28,79 +28,85 @@ with the HIPAA Security Rule.:
     try:
     from app.core.config import settings
     from app.domain.exceptions import
-        AuthenticationError,   
-        AuthorizationError,  
-        PHIAccessError,  
-        SecurityError,  
-    (    )
+        AuthenticationError,
+        AuthorizationError,
+        PHIAccessError,
+        SecurityError,
+    ()
     from app.infrastructure.security.encryption import
-        encrypt_phi,   
-        decrypt_phi,  
-        generate_phi_key,  
-        encrypt_field,  
+        encrypt_phi,
+        decrypt_phi,
+        generate_phi_key,
+        encrypt_field,
         decrypt_field
-    (    )
+    ()
     from app.infrastructure.security.auth.jwt_handler import
-        create_access_token,  
-        decode_token,  
+        create_access_token,
+        decode_token,
         get_current_user
-    (    )
+    ()
     from app.infrastructure.security.rbac.role_manager import
-        RoleBasedAccessControl,  
+        RoleBasedAccessControl,
         check_permission
-    (    )
+    ()
     from app.infrastructure.logging.audit_logger import
-        AuditLogger,  
-        log_phi_access,  
-        sanitize_phi,  
-    (    )
+        AuditLogger,
+        log_phi_access,
+        sanitize_phi,
+    ()
     except ImportError as e:
     # Create placeholder for these modules if they don't exist yet
     # This allows the tests to be defined even before implementation
     print(f"Warning: Could not import required modules: {str(e)}")
-    
+
     # Mock the missing modules/functions
     from unittest.mock import MagicMock
-    
+
     # Mock the settings object directly if imports fail
     settings = MagicMock()
-        PHI_ENCRYPTION_KEY="test_key_for_phi_encryption_testing_only",
-        JWT_SECRET_KEY="test_jwt_secret_key_for_testing_only",
-        JWT_ALGORITHM="HS256",
-        JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30,
+        PHI_ENCRYPTION_KEY = "test_key_for_phi_encryption_testing_only",
+        JWT_SECRET_KEY = "test_jwt_secret_key_for_testing_only",
+        JWT_ALGORITHM = "HS256",
+        JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30,
         # Add other necessary attributes if needed by tests
-        USE_TLS=True # Assuming this is needed based on later test
-    (    )
-    
+        USE_TLS = True  # Assuming this is needed based on later test
+    ()
+
     @pytest.mark.db_required()
     class AuthenticationError(Exception): pass
     class AuthorizationError(Exception): pass
     class PHIAccessError(Exception): pass
     class SecurityError(Exception): pass
-    
+
     encrypt_phi = MagicMock(return_value="encrypted_data")
     decrypt_phi = MagicMock(return_value="decrypted_data")
     generate_phi_key = MagicMock(return_value="generated_key")
     encrypt_field = MagicMock(return_value="encrypted_field")
     decrypt_field = MagicMock(return_value="decrypted_field")
-    
+
     create_access_token = MagicMock(return_value="access_token")
-    decode_token = MagicMock(return_value={"sub": "test_user", "permissions": []})
-    get_current_user = MagicMock(return_value={"id": "user_id", "role": "patient"})
-    
+    decode_token = MagicMock(
+    return_value={
+        "sub": "test_user",
+         "permissions": []})
+    get_current_user = MagicMock(
+    return_value={
+        "id": "user_id",
+         "role": "patient"})
+
     RoleBasedAccessControl = MagicMock()
     check_permission = MagicMock(return_value=True)
-    
+
     AuditLogger = MagicMock()
     log_phi_access = MagicMock()
     sanitize_phi = MagicMock(return_value="[REDACTED]")
 
-
     # Test fixtures
+
     @pytest.fixture
         def test_user():
             """Create a test user for authentication tests."""
-    
+
             return {
             "id": str(uuid.uuid4()),
             "username": f"test_user_{secrets.token_hex(4)}",
@@ -113,7 +119,7 @@ with the HIPAA Security Rule.:
 @pytest.fixture
         def test_phi_data():
             """Create test PHI data for encryption tests."""
-    
+
             return {
             "patient_id": str(uuid.uuid4()),
             "first_name": "Test",
@@ -137,7 +143,8 @@ with the HIPAA Security Rule.:
             "permissions": test_user["permissions"],
             "exp": datetime.now(UTC) + expires_delta
     }
-#     return jwt.encode(data, settings.JWT_SECRET_KEY, algorithm="HS256") # FIXME: return outside function
+# return jwt.encode(data, settings.JWT_SECRET_KEY, algorithm="HS256") #
+# FIXME: return outside function
 
 
 @pytest.fixture
@@ -146,7 +153,6 @@ with the HIPAA Security Rule.:
             with mock.patch("app.infrastructure.logging.audit_logger.log_phi_access") as mock_logger:
         yield mock_logger
 
-
         @pytest.fixture
         def mock_rbac():
             """Create a mock RBAC system for testing."""
@@ -154,8 +160,8 @@ with the HIPAA Security Rule.:
         mock_check.return_value = True
         yield mock_check
 
-
         # PHI Encryption Tests
+
         class TestPHIEncryption:
     """Test PHI encryption and decryption functionality."""
     

@@ -44,7 +44,6 @@ class MockAsyncSession:
         self.queries.append((query, params))
         return None
 
-
         class MockResult:
     """Mock result from a database query."""
 
@@ -59,7 +58,6 @@ class MockAsyncSession:
         def fetchone(self):
         """Return first result or None."""
         return self.data[0] if self.data else None
-
 
         class MockEntityFactory:
     """Mock factory for creating test entities."""
@@ -82,7 +80,8 @@ class MockAsyncSession:
         def list(self, entity_type: str = None) -> List[Dict[str, Any]]:
         """List all entities, optionally filtered by type."""
         if entity_type:
-            return [e for e in self.entities.values() if e.get("type") == entity_type]
+            return [e for e in self.entities.values() if e.get("type")
+                    == entity_type]
             return list(self.entities.values())
 
             def delete(self, entity_id: str) -> bool:
@@ -91,7 +90,6 @@ class MockAsyncSession:
             del self.entities[entity_id]
             return True
             return False
-
 
             class RoleBasedAccessControl:
     """Mock role-based access control for testing."""
@@ -106,7 +104,8 @@ class MockAsyncSession:
             self.role_permissions[role] = set()
             self.role_permissions[role].add(permission)
 
-            def remove_role_permission(self, role: str, permission: str) -> None:
+            def remove_role_permission(
+                    self, role: str, permission: str) -> None:
         """Remove a permission from a role."""
         if role in self.role_permissions and permission in self.role_permissions[role]:
             self.role_permissions[role].remove(permission)
@@ -114,8 +113,7 @@ class MockAsyncSession:
             def has_permission(self, role: str, permission: str) -> bool:
         """Check if a role has a specific permission."""
         return (
-            role in self.role_permissions and permission in self.role_permissions[role]
-        )
+            role in self.role_permissions and permission in self.role_permissions[role])
 
     def get_role_permissions(self, role: str) -> List[str]:
         """Get all permissions for a role."""

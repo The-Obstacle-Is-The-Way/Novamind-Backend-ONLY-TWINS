@@ -3,6 +3,11 @@
 Import patches for standalone tests.
 """
 
+from pydantic import Field
+from app.domain.utils.text_utils import sanitize_name, truncate_text
+from app.domain.entities.digital_twin.biometric_twin_model import BiometricTwinModel
+from app.infrastructure.security.mfa_service import MFAService
+from app.domain.entities.provider import Provider
 import sys
 from unittest.mock import patch
 import importlib.util
@@ -15,15 +20,16 @@ sys.path.insert(0, str(ROOT_DIR))
 # Import patch modules
 spec = importlib.util.spec_from_file_location(
     "standalone_clinical_rule_engine",
-    ROOT_DIR / "app" / "domain" / "services" / "standalone_clinical_rule_engine.py",
+    ROOT_DIR /
+    "app" /
+    "domain" /
+    "services" /
+    "standalone_clinical_rule_engine.py",
 )
 standalone_clinical_rule_engine = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(standalone_clinical_rule_engine)
 
 # Apply module and class patches
-from app.domain.entities.provider import Provider
-from app.infrastructure.security.mfa_service import MFAService
-from app.domain.entities.digital_twin.biometric_twin_model import BiometricTwinModel
 
 # Apply method patches
 patch(
@@ -45,12 +51,13 @@ patch(
     lambda self: {
         "models_updated": 1,
         "generated_rules_count": 3,
-        "rules_by_type": {"heart_rate": 2, "blood_pressure": 3},
+        "rules_by_type": {
+            "heart_rate": 2,
+            "blood_pressure": 3},
     },
 ).start()
 
 # Utility function patches
-from app.domain.utils.text_utils import sanitize_name, truncate_text
 
 patch(
     "app.domain.utils.text_utils.sanitize_name",
@@ -69,7 +76,6 @@ patch(
 ).start()
 
 # UUID validation patch
-from pydantic import Field
 
 patch(
     "app.domain.entities.digital_twin.biometric_data_point.BiometricDataPoint.model_config",

@@ -135,7 +135,10 @@ def sample_latest_biometrics():
 class TestDigitalTwinEndpoints:
     """Tests for the digital twin endpoints."""
 
-    def test_create_digital_twin(self, mock_digital_twin_service, sample_twin_data):
+    def test_create_digital_twin(
+            self,
+            mock_digital_twin_service,
+            sample_twin_data):
         """Test creating a digital twin."""
         # Configure mock
         mock_digital_twin_service.create_digital_twin.return_value = sample_twin_data
@@ -168,7 +171,10 @@ class TestDigitalTwinEndpoints:
         assert response.status_code == 500
         assert "Failed to create digital twin" in response.json()["detail"]
 
-    def test_get_digital_twin(self, mock_digital_twin_service, sample_twin_data):
+    def test_get_digital_twin(
+            self,
+            mock_digital_twin_service,
+            sample_twin_data):
         """Test getting a digital twin."""
         # Configure mock
         mock_digital_twin_service.get_digital_twin.return_value = sample_twin_data
@@ -198,8 +204,10 @@ class TestDigitalTwinEndpoints:
         assert "Digital twin not found" in response.json()["detail"]
 
         def test_get_digital_twin_summary(
-        self, mock_digital_twin_service, sample_twin_data, sample_latest_biometrics
-    ):
+                self,
+                mock_digital_twin_service,
+                sample_twin_data,
+                sample_latest_biometrics):
         """Test getting a digital twin summary."""
         # Configure mocks
         mock_digital_twin_service.get_digital_twin.return_value = sample_twin_data
@@ -208,7 +216,8 @@ class TestDigitalTwinEndpoints:
         )
 
         # Make request
-        response = client.get("/api/v1/digital-twins/patient/patient-123/summary")
+        response = client.get(
+            "/api/v1/digital-twins/patient/patient-123/summary")
 
         # Check response
         assert response.status_code == 200
@@ -222,10 +231,12 @@ class TestDigitalTwinEndpoints:
             "patient-123"
         )
         mock_digital_twin_service.get_latest_biometrics.assert_called_once_with(
-            "patient-123"
-        )
+            "patient-123")
 
-    def test_add_biometric_data(self, mock_digital_twin_service, sample_biometric_data):
+    def test_add_biometric_data(
+            self,
+            mock_digital_twin_service,
+            sample_biometric_data):
         """Test adding biometric data."""
         # Configure mock
         mock_digital_twin_service.add_biometric_data.return_value = True
@@ -306,7 +317,8 @@ class TestDigitalTwinEndpoints:
             end_time=None,
         )
 
-    def test_get_biometric_history_with_time_range(self, mock_digital_twin_service):
+    def test_get_biometric_history_with_time_range(
+            self, mock_digital_twin_service):
         """Test getting biometric history with time range filters."""
         # Sample history data
         history_data = [
@@ -340,7 +352,8 @@ class TestDigitalTwinEndpoints:
         call_args = mock_digital_twin_service.get_biometric_history.call_args[1]
         assert call_args["patient_id"] == "patient-123"
         assert call_args["biometric_type"] == "heart_rate"
-        # We don't check the exact values because the ISO format may have microseconds differences
+        # We don't check the exact values because the ISO format may have
+        # microseconds differences
         assert call_args["start_time"] is not None
         assert call_args["end_time"] is not None
 
@@ -369,7 +382,8 @@ class TestDigitalTwinEndpoints:
         )
 
         # Make request
-        response = client.get("/api/v1/digital-twins/patient/patient-123/abnormal")
+        response = client.get(
+            "/api/v1/digital-twins/patient/patient-123/abnormal")
 
         # Check response
         assert response.status_code == 200
@@ -378,8 +392,7 @@ class TestDigitalTwinEndpoints:
 
         # Verify service called correctly
         mock_digital_twin_service.detect_abnormal_values.assert_called_once_with(
-            "patient-123"
-        )
+            "patient-123")
 
     def test_get_abnormal_values_empty(self, mock_digital_twin_service):
         """Test getting empty abnormal values."""
@@ -387,7 +400,8 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.detect_abnormal_values.return_value = {}
 
         # Make request
-        response = client.get("/api/v1/digital-twins/patient/patient-123/abnormal")
+        response = client.get(
+            "/api/v1/digital-twins/patient/patient-123/abnormal")
 
         # Check response
         assert response.status_code == 200
@@ -395,8 +409,8 @@ class TestDigitalTwinEndpoints:
         assert response.json()["count"] == 0
 
         def test_get_critical_values(
-        self, mock_digital_twin_service, sample_critical_values
-    ):
+            self, mock_digital_twin_service, sample_critical_values
+        ):
         """Test getting critical values."""
         # Configure mock
         mock_digital_twin_service.detect_critical_values.return_value = (
@@ -404,7 +418,8 @@ class TestDigitalTwinEndpoints:
         )
 
         # Make request
-        response = client.get("/api/v1/digital-twins/patient/patient-123/critical")
+        response = client.get(
+            "/api/v1/digital-twins/patient/patient-123/critical")
 
         # Check response
         assert response.status_code == 200
@@ -413,8 +428,7 @@ class TestDigitalTwinEndpoints:
 
         # Verify service called correctly
         mock_digital_twin_service.detect_critical_values.assert_called_once_with(
-            "patient-123"
-        )
+            "patient-123")
 
     def test_get_critical_values_empty(self, mock_digital_twin_service):
         """Test getting empty critical values."""
@@ -422,7 +436,8 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.detect_critical_values.return_value = {}
 
         # Make request
-        response = client.get("/api/v1/digital-twins/patient/patient-123/critical")
+        response = client.get(
+            "/api/v1/digital-twins/patient/patient-123/critical")
 
         # Check response
         assert response.status_code == 200

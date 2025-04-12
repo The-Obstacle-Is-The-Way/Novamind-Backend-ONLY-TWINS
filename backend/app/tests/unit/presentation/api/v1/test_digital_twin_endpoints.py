@@ -22,7 +22,6 @@ def test_client():
     """Create a test client for the FastAPI app."""
     return TestClient(app)
 
-
     @pytest.fixture
     def mock_digital_twin_service():
     """Create a mock digital twin service."""
@@ -36,7 +35,6 @@ def test_client():
     mock_service.get_latest_biometrics = AsyncMock()
 
     return mock_service
-
 
     @pytest.fixture
     def sample_digital_twin():
@@ -129,19 +127,20 @@ class TestDigitalTwinEndpoints:
 
         # Make request
         patient_id = "nonexistent-patient"
-        response = test_client.get(f"/api/v1/patients/{patient_id}/digital-twin")
+        response = test_client.get(
+            f"/api/v1/patients/{patient_id}/digital-twin")
 
         # Check response
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
         @patch("app.presentation.api.dependencies.get_digital_twin_service")
         async def test_add_biometric_data(
-        self,
-        mock_get_service,
-        test_client,
-        mock_digital_twin_service,
-        sample_digital_twin,
-    ):
+            self,
+            mock_get_service,
+            test_client,
+            mock_digital_twin_service,
+            sample_digital_twin,
+        ):
         """Test adding biometric data to a digital twin."""
         # Setup mocks
         mock_get_service.return_value = mock_digital_twin_service
@@ -189,8 +188,7 @@ class TestDigitalTwinEndpoints:
         patient_id = sample_digital_twin["patient_id"]
         biometric_type = "heart_rate"
         response = test_client.get(
-            f"/api/v1/patients/{patient_id}/digital-twin/biometrics/{biometric_type}"
-        )
+            f"/api/v1/patients/{patient_id}/digital-twin/biometrics/{biometric_type}")
 
         # Check response
         assert response.status_code == status.HTTP_200_OK
@@ -200,8 +198,7 @@ class TestDigitalTwinEndpoints:
 
         # Check call arguments
         mock_digital_twin_service.get_biometric_history.assert_called_once_with(
-            patient_id, biometric_type, None, None
-        )
+            patient_id, biometric_type, None, None)
 
     @patch("app.presentation.api.dependencies.get_digital_twin_service")
     async def test_get_biometric_history_with_timerange(
@@ -229,7 +226,9 @@ class TestDigitalTwinEndpoints:
 
         response = test_client.get(
             f"/api/v1/patients/{patient_id}/digital-twin/biometrics/{biometric_type}",
-            params={"start_time": start_time, "end_time": end_time},
+            params={
+                "start_time": start_time,
+                "end_time": end_time},
         )
 
         # Check response
@@ -240,8 +239,7 @@ class TestDigitalTwinEndpoints:
 
         # Check call arguments
         mock_digital_twin_service.get_biometric_history.assert_called_once_with(
-            patient_id, biometric_type, start_time, end_time
-        )
+            patient_id, biometric_type, start_time, end_time)
 
     @patch("app.presentation.api.dependencies.get_digital_twin_service")
     async def test_get_latest_biometrics(
@@ -284,7 +282,8 @@ class TestDigitalTwinEndpoints:
         assert "heart_rate" in data
         assert "blood_pressure" in data
         assert data["heart_rate"]["value"] == 72.5
-        assert data["blood_pressure"]["value"] == {"systolic": 120, "diastolic": 80}
+        assert data["blood_pressure"]["value"] == {
+            "systolic": 120, "diastolic": 80}
 
     @patch("app.presentation.api.dependencies.get_digital_twin_service")
     async def test_update_digital_twin(
@@ -340,8 +339,8 @@ class TestDigitalTwinEndpoints:
 
         # Make request
         response = test_client.post(
-            f"/api/v1/patients/{patient_id}/digital-twin/biometrics", json=invalid_data
-        )
+            f"/api/v1/patients/{patient_id}/digital-twin/biometrics",
+            json=invalid_data)
 
         # Check response
         assert response.status_code in (

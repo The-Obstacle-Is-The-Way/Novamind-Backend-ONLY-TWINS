@@ -39,7 +39,6 @@ def mock_jwt_service():
     service.decode_token = MagicMock()
     return service
 
-
     @pytest.fixture
     def app(mock_jwt_service):
     """Create a FastAPI test app with test endpoints."""
@@ -59,46 +58,45 @@ def mock_jwt_service():
         return {"user_id": str(user_id)}
 
     @app_instance.get("/test/patient/{patient_id}")
-    async def test_get_patient_id_endpoint(patient_id: UUID = Depends(get_patient_id)):
+    async def test_get_patient_id_endpoint(
+            patient_id: UUID = Depends(get_patient_id)):
         return {"patient_id": str(patient_id)}
 
         @app_instance.get("/test/user-role")
         async def test_get_current_user_role_endpoint(
-        role: str = Depends(get_current_user_role(jwt_service=mock_jwt_service)),
-    ):  # Pass mock directly if needed
+            role: str = Depends(get_current_user_role(jwt_service=mock_jwt_service)),
+        ):  # Pass mock directly if needed
         return {"role": role}
 
         @app_instance.get("/test/clinician-only")
         async def test_require_clinician_role_endpoint(
-        _: None = Depends(
-            require_clinician_role(jwt_service=mock_jwt_service)
-        ),  # Pass mock
-        user_id: UUID = Depends(
-            get_current_user_id(jwt_service=mock_jwt_service)
-        ),  # Pass mock
-    ):
+            _: None = Depends(
+                require_clinician_role(jwt_service=mock_jwt_service)
+            ),  # Pass mock
+            user_id: UUID = Depends(
+                get_current_user_id(jwt_service=mock_jwt_service)
+            ),  # Pass mock
+        ):
         return {"user_id": str(user_id)}
 
         @app_instance.get("/test/admin-only")
         async def test_require_admin_role_endpoint(
-        _: None = Depends(
-            require_admin_role(jwt_service=mock_jwt_service)
-        ),  # Pass mock
-        user_id: UUID = Depends(
-            get_current_user_id(jwt_service=mock_jwt_service)
-        ),  # Pass mock
-    ):
+            _: None = Depends(
+                require_admin_role(jwt_service=mock_jwt_service)
+            ),  # Pass mock
+            user_id: UUID = Depends(
+                get_current_user_id(jwt_service=mock_jwt_service)
+            ),  # Pass mock
+        ):
         return {"user_id": str(user_id)}
 
         return app_instance
-
 
         @pytest.fixture
         def client(app):
     """Create a test client for the FastAPI app."""
 
     return TestClient(app)
-
 
     @pytest.mark.db_required()
     class TestBiometricEndpointsDependencies:
@@ -122,23 +120,27 @@ def mock_jwt_service():
         mock_jwt_service.decode_token.assert_called_once_with("test_token")
 
     @pytest.mark.asyncio
-    async def test_get_current_user_id_missing_sub(self, client, mock_jwt_service):
+    async def test_get_current_user_id_missing_sub(
+            self, client, mock_jwt_service):
         """Test that get_current_user_id raises an error if sub is missing."""
-        mock_jwt_service.decode_token.return_value = {"role": "clinician"}  # No 'sub'
+        mock_jwt_service.decode_token.return_value = {
+            "role": "clinician"}  # No 'sub'
 
         response = await client.get(
             "/test/user-id", headers={"Authorization": "Bearer test_token"}
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert "Invalid authentication credentials" in response.json()["detail"]
+        assert "Invalid authentication credentials" in response.json()[
+            "detail"]
 
     @pytest.mark.asyncio
     async def test_get_current_user_id_authentication_exception(
         self, client, mock_jwt_service
     ):
         """Test that get_current_user_id handles AuthenticationError."""
-        mock_jwt_service.decode_token.side_effect = AuthenticationError("Invalid token")
+        mock_jwt_service.decode_token.side_effect = AuthenticationError(
+            "Invalid token")
 
         response = await client.get(
             "/test/user-id", headers={"Authorization": "Bearer test_token"}
@@ -152,7 +154,8 @@ def mock_jwt_service():
         self, client, mock_jwt_service
     ):
         """Test that get_current_user_id handles generic exceptions."""
-        mock_jwt_service.decode_token.side_effect = Exception("Unexpected error")
+        mock_jwt_service.decode_token.side_effect = Exception(
+            "Unexpected error")
 
         response = await client.get(
             "/test/user-id", headers={"Authorization": "Bearer test_token"}
@@ -181,7 +184,8 @@ def mock_jwt_service():
         assert response.json() == {"patient_id": str(patient_id)}
 
     @pytest.mark.asyncio
-    async def test_get_current_user_role_success(self, client, mock_jwt_service):
+    async def test_get_current_user_role_success(
+            self, client, mock_jwt_service):
         """Test that get_current_user_role returns the role from the token."""
         mock_jwt_service.decode_token.return_value = {
             "sub": str(uuid4()),
@@ -196,7 +200,8 @@ def mock_jwt_service():
         assert response.json() == {"role": "admin"}
 
     @pytest.mark.asyncio
-    async def test_get_current_user_role_missing_role(self, client, mock_jwt_service):
+    async def test_get_current_user_role_missing_role(
+            self, client, mock_jwt_service):
         """Test that get_current_user_role raises an error if role is missing."""
         mock_jwt_service.decode_token.return_value = {
             "sub": str(uuid4())
@@ -207,10 +212,12 @@ def mock_jwt_service():
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert "Invalid authentication credentials" in response.json()["detail"]
+        assert "Invalid authentication credentials" in response.json()[
+            "detail"]
 
     @pytest.mark.asyncio
-    async def test_require_clinician_role_success(self, client, mock_jwt_service):
+    async def test_require_clinician_role_success(
+            self, client, mock_jwt_service):
         """Test that require_clinician_role allows clinicians."""
         mock_jwt_service.decode_token.return_value = {
             "sub": str(uuid4()),
@@ -225,7 +232,8 @@ def mock_jwt_service():
         assert response.json() == {"user_id": str(uuid4())}
 
     @pytest.mark.asyncio
-    async def test_require_clinician_role_admin(self, client, mock_jwt_service):
+    async def test_require_clinician_role_admin(
+            self, client, mock_jwt_service):
         """Test that require_clinician_role allows admins."""
         mock_jwt_service.decode_token.return_value = {
             "sub": str(uuid4()),
@@ -240,7 +248,8 @@ def mock_jwt_service():
         assert response.json() == {"user_id": str(uuid4())}
 
     @pytest.mark.asyncio
-    async def test_require_clinician_role_patient(self, client, mock_jwt_service):
+    async def test_require_clinician_role_patient(
+            self, client, mock_jwt_service):
         """Test that require_clinician_role rejects patients."""
         mock_jwt_service.decode_token.return_value = {
             "sub": str(uuid4()),
@@ -270,7 +279,8 @@ def mock_jwt_service():
         assert response.json() == {"user_id": str(uuid4())}
 
     @pytest.mark.asyncio
-    async def test_require_admin_role_clinician(self, client, mock_jwt_service):
+    async def test_require_admin_role_clinician(
+            self, client, mock_jwt_service):
         """Test that require_admin_role rejects clinicians."""
         mock_jwt_service.decode_token.return_value = {
             "sub": str(uuid4()),

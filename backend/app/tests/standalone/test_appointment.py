@@ -25,7 +25,6 @@ def future_datetime():
 
     return datetime.now() + timedelta(days=1)
 
-
     @pytest.fixture
     def valid_appointment_data(future_datetime):
     """Fixture for valid appointment data."""
@@ -53,7 +52,6 @@ def valid_appointment(valid_appointment_data):
 
     return Appointment(**valid_appointment_data)
 
-
     class TestAppointment:
     """Tests for the Appointment class."""
 
@@ -67,9 +65,8 @@ def valid_appointment(valid_appointment_data):
         assert appointment.provider_id == valid_appointment_data["provider_id"]
         assert appointment.start_time == valid_appointment_data["start_time"]
         assert appointment.end_time == valid_appointment_data["end_time"]
-        assert (
-            appointment.appointment_type == valid_appointment_data["appointment_type"]
-        )
+        assert (appointment.appointment_type ==
+                valid_appointment_data["appointment_type"])
         assert appointment.status == valid_appointment_data["status"]
         assert appointment.priority == valid_appointment_data["priority"]
 
@@ -122,7 +119,8 @@ def valid_appointment(valid_appointment_data):
         assert valid_appointment.notes.endswith(notes)
 
         @pytest.mark.standalone()
-        def test_reschedule_appointment(self, valid_appointment, future_datetime):
+        def test_reschedule_appointment(
+                self, valid_appointment, future_datetime):
         """Test rescheduling an appointment."""
         new_start_time = future_datetime + timedelta(days=1)
         new_end_time = new_start_time + timedelta(hours=1)
@@ -136,7 +134,8 @@ def valid_appointment(valid_appointment_data):
         assert valid_appointment.notes.endswith(reason)
 
         @pytest.mark.standalone()
-        def test_cannot_reschedule_completed(self, valid_appointment, future_datetime):
+        def test_cannot_reschedule_completed(
+                self, valid_appointment, future_datetime):
         """Test cannot reschedule a completed appointment."""
         valid_appointment.status = AppointmentStatus.COMPLETED
 

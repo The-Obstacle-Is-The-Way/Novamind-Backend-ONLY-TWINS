@@ -29,7 +29,6 @@ def run_quantum_security_tests():
     test_runner.run_all_tests()
     return test_runner.results
 
-
     class SecurityTestRunner:
     """Quantum-grade test collector and runner for NovaMind security tests."""
 
@@ -39,14 +38,15 @@ def run_quantum_security_tests():
         Args:
             output_path: Path to save test reports
             """
-            self.base_dir = os.path.dirname(os.path.abspath(__file__))
-            self.output_path = output_path or os.path.join(self.base_dir, "test_results")
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.output_path = output_path or os.path.join(
+            self.base_dir, "test_results")
 
-            # Ensure output directory exists
-            os.makedirs(self.output_path, exist_ok=True)
+        # Ensure output directory exists
+        os.makedirs(self.output_path, exist_ok=True)
 
-            # Test categories in priority order
-            self.test_categories = [
+        # Test categories in priority order
+        self.test_categories = [
             {"name": "Core Encryption", "pattern": "test_ml_encryption.py"},
             {"name": "PHI Handling", "pattern": "test_address_helper.py"},
             {
@@ -59,10 +59,10 @@ def run_quantum_security_tests():
             {"name": "Security Patterns", "pattern": "test_*security*.py"},
             {"name": "Audit Logging", "pattern": "test_audit*.py"},
             {"name": "API Security", "pattern": "test_api*.py"},
-            ]
+        ]
 
-            # Test results collection
-            self.results = {
+        # Test results collection
+        self.results = {
             "timestamp": datetime.now().isoformat(),
             "summary": {
                 "total": 0,
@@ -83,10 +83,10 @@ def run_quantum_security_tests():
             Returns:
             List of matching file paths
             """
-            import glob
+        import glob
 
-            # Handle both relative and absolute patterns
-            if os.path.isabs(pattern):
+        # Handle both relative and absolute patterns
+        if os.path.isabs(pattern):
             search_pattern = pattern
             else:
             search_pattern = os.path.join(self.base_dir, pattern)
@@ -102,8 +102,8 @@ def run_quantum_security_tests():
             Returns:
             Dictionary with test results
             """
-            # Determine the pytest command for JSON output
-            cmd = [
+        # Determine the pytest command for JSON output
+        cmd = [
             sys.executable,
             "-m",
             "pytest",
@@ -111,12 +111,12 @@ def run_quantum_security_tests():
             "--json-report",
             "--no-header",
             "--no-summary",
-            ]
+        ]
 
-            # Create a temporary directory for the JSON report
-            import tempfile
+        # Create a temporary directory for the JSON report
+        import tempfile
 
-            with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory() as tmpdir:
             # Set the report path
             json_path = os.path.join(tmpdir, "report.json")
             cmd.extend(["--json-report-file", json_path])
@@ -154,8 +154,8 @@ def run_quantum_security_tests():
             Returns:
             Simplified test results
             """
-            # Extract summary statistics
-            summary = {
+        # Extract summary statistics
+        summary = {
             "total": results.get("summary", {}).get("total", 0),
             "passed": results.get("summary", {}).get("passed", 0),
             "failed": results.get("summary", {}).get("failed", 0),
@@ -182,21 +182,26 @@ def run_quantum_security_tests():
         Args:
             category: Dictionary with category name and file pattern
             """
-            name = category["name"]
-            pattern = category["pattern"]
+        name = category["name"]
+        pattern = category["pattern"]
 
-            print("\n" + "=" * 60)
-            print(f"RUNNING TESTS: {name}")
-            print("=" * 60)
+        print("\n" + "=" * 60)
+        print(f"RUNNING TESTS: {name}")
+        print("=" * 60)
 
-            # Find test files for this category
-            test_files = self.find_test_files(pattern)
+        # Find test files for this category
+        test_files = self.find_test_files(pattern)
 
-            # Initialize category results
-            category_results = {
+        # Initialize category results
+        category_results = {
             "files_found": len(test_files),
             "files": [],
-            "tests": {"total": 0, "passed": 0, "failed": 0, "skipped": 0, "errors": 0},
+            "tests": {
+                "total": 0,
+                "passed": 0,
+                "failed": 0,
+                "skipped": 0,
+                "errors": 0},
         }
 
         # Run tests for each file
@@ -224,8 +229,9 @@ def run_quantum_security_tests():
 
                 # Print file summary
                 print(
-                f"  Passed: {parsed_results['summary']['passed']}/{parsed_results['summary']['total']}"
-            )
+                    f"  Passed: {
+                        parsed_results['summary']['passed']}/{
+                        parsed_results['summary']['total']}")
             print(f"  Failed: {parsed_results['summary']['failed']}")
             print(f"  Errors: {parsed_results['summary']['errors']}")
 
@@ -240,8 +246,9 @@ def run_quantum_security_tests():
             print(f"\nSummary for {name}:")
             print(f"Files found: {category_results['files_found']}")
             print(
-            f"Tests passed: {category_results['tests']['passed']}/{category_results['tests']['total']}"
-        )
+                f"Tests passed: {
+                    category_results['tests']['passed']}/{
+                    category_results['tests']['total']}")
         print(f"Tests failed: {category_results['tests']['failed']}")
         print(f"Tests with errors: {category_results['tests']['errors']}")
 
@@ -256,7 +263,8 @@ def run_quantum_security_tests():
 
             end_time = datetime.now()
             self.results["end_time"] = end_time.isoformat()
-            self.results["duration_seconds"] = (end_time - start_time).total_seconds()
+            self.results["duration_seconds"] = (
+                end_time - start_time).total_seconds()
 
             # Output final summary
             print("\n" + "=" * 60)
@@ -281,8 +289,8 @@ def run_quantum_security_tests():
 
         # Save results to file
         report_filename = (
-            f"security_test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        )
+            f"security_test_report_{
+                datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
         report_path = os.path.join(self.output_path, report_filename)
         with open(report_path, "w") as f:
             json.dump(self.results, f, indent=2)
@@ -295,14 +303,12 @@ def run_quantum_security_tests():
                 from app.tests.security.dashboard import generate_dashboard
 
                 dashboard_path = os.path.join(
-                    self.output_path,
-                    f"dashboard_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
-                )
+                    self.output_path, f"dashboard_{
+                        datetime.now().strftime('%Y%m%d_%H%M%S')}.html", )
                 generate_dashboard(self.results, dashboard_path)
                 print(f"Dashboard generated at: {dashboard_path}")
             except ImportError:
                 print("Dashboard generation module not available.")
-
 
                 if __name__ == "__main__":
     run_quantum_security_tests()

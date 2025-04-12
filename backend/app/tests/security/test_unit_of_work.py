@@ -2,7 +2,7 @@
 """
 HIPAA Security Test Suite - Database Security Tests
 
-Tests for the SQLAlchemy Unit of Work implementation to ensure HIPAA-compliant 
+Tests for the SQLAlchemy Unit of Work implementation to ensure HIPAA-compliant
 data integrity and proper transaction management for PHI operations.
 """
 
@@ -26,8 +26,8 @@ class TestSQLAlchemyUnitOfWork:
         4. Clean session management to prevent data leaks
         """
 
-        @pytest.fixture
-        def mock_session_factory(self):
+    @pytest.fixture
+    def mock_session_factory(self):
         """Create a mock session factory for testing."""
         mock_session = MagicMock()
         mock_session_factory = MagicMock(return_value=mock_session)
@@ -39,7 +39,8 @@ class TestSQLAlchemyUnitOfWork:
         factory, _ = mock_session_factory
         return SQLAlchemyUnitOfWork(session_factory=factory)
 
-        def test_successful_transaction(self, unit_of_work, mock_session_factory):
+        def test_successful_transaction(
+                self, unit_of_work, mock_session_factory):
         """Test that a successful transaction commits all changes."""
         # Arrange
         _, mock_session = mock_session_factory
@@ -48,20 +49,20 @@ class TestSQLAlchemyUnitOfWork:
         with unit_of_work:
             # Simulate repository operations
             # In real usage, this would be something like:
-                # unit_of_work.patients.add(patient)
-                pass
+            # unit_of_work.patients.add(patient)
+            pass
 
-                # Complete the transaction
-                unit_of_work.commit()
+            # Complete the transaction
+            unit_of_work.commit()
 
-                # Assert
-                mock_session.begin.assert_called_once()
-                mock_session.commit.assert_called_once()
-                mock_session.close.assert_called_once()
+            # Assert
+            mock_session.begin.assert_called_once()
+            mock_session.commit.assert_called_once()
+            mock_session.close.assert_called_once()
 
-                def test_transaction_rollback_on_exception(
+            def test_transaction_rollback_on_exception(
                 self, unit_of_work, mock_session_factory
-    ):
+            ):
         """Test that an exception inside the transaction triggers rollback.
 
         This ensures that PHI data integrity is maintained even when errors occur.
@@ -81,7 +82,8 @@ class TestSQLAlchemyUnitOfWork:
                 mock_session.commit.assert_not_called()
                 mock_session.close.assert_called_once()
 
-                def test_nested_transaction_support(self, unit_of_work, mock_session_factory):
+                def test_nested_transaction_support(
+                        self, unit_of_work, mock_session_factory):
         """Test that nested transactions are handled correctly.
 
         This is important for complex PHI operations that span multiple repositories.
@@ -100,12 +102,14 @@ class TestSQLAlchemyUnitOfWork:
                 unit_of_work.commit()
 
                 # Assert
-                # Verify that the session's begin_nested was called for the inner transaction
+                # Verify that the session's begin_nested was called for the
+                # inner transaction
                 mock_session.begin_nested.assert_called_once()
                 mock_session.commit.assert_called_once()
                 mock_session.close.assert_called_once()
 
-                def test_read_only_transaction(self, unit_of_work, mock_session_factory):
+                def test_read_only_transaction(
+                        self, unit_of_work, mock_session_factory):
         """Test read-only transaction support for safer PHI access."""
         # Arrange
         _, mock_session = mock_session_factory
@@ -123,8 +127,8 @@ class TestSQLAlchemyUnitOfWork:
             mock_session.close.assert_called_once()
 
             def test_read_only_transaction_prevents_commits(
-            self, unit_of_work, mock_session_factory
-    ):
+                self, unit_of_work, mock_session_factory
+            ):
         """Test that read-only transactions cannot commit changes."""
         # Arrange
         _, mock_session = mock_session_factory
@@ -138,7 +142,8 @@ class TestSQLAlchemyUnitOfWork:
                 mock_session.commit.assert_not_called()
                 mock_session.rollback.assert_called()
 
-                def test_transaction_metadata_for_audit(self, unit_of_work, mock_session_factory):
+                def test_transaction_metadata_for_audit(
+                        self, unit_of_work, mock_session_factory):
         """Test that transaction metadata is captured for HIPAA audit purposes."""
         # Arrange
         _, mock_session = mock_session_factory

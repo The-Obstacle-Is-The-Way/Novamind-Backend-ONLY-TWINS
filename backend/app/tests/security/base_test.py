@@ -30,12 +30,12 @@ class BaseSecurityTest(TestCase):
     """
 
     # Default user ID for testing:
-        test_user_id: str = "test-user-id-12345"
+    test_user_id: str = "test-user-id-12345"
 
-        # Default roles for testing, to be overridden by subclasses as needed
-        test_roles: list[Role] = [Role.USER]
+    # Default roles for testing, to be overridden by subclasses as needed
+    test_roles: list[Role] = [Role.USER]
 
-        def setUp(self):
+    def setUp(self):
         """Set up security test fixtures.
 
         This method sets up the following:
@@ -44,19 +44,19 @@ class BaseSecurityTest(TestCase):
             3. Mocked audit logger
             4. Test user with configured roles
             """
-            # Create mocked components
-            self.mock_auth_service = MagicMock()
-            self.mock_audit_logger = MagicMock()
+        # Create mocked components
+        self.mock_auth_service = MagicMock()
+        self.mock_audit_logger = MagicMock()
 
-            # Create test user
-            self.user = self._create_test_user()
+        # Create test user
+        self.user = self._create_test_user()
 
-            # Set up patches
-            self._setup_auth_patches()
-            self._setup_audit_patches()
+        # Set up patches
+        self._setup_auth_patches()
+        self._setup_audit_patches()
 
-            # Start all patches
-            for patcher in self.patchers:
+        # Start all patches
+        for patcher in self.patchers:
             patcher.start()
 
             # Set environment for testing
@@ -82,7 +82,7 @@ class BaseSecurityTest(TestCase):
         Returns:
             Dict[str, Any]: A dictionary representing the test user
             """
-            return {
+        return {
             "id": self.test_user_id,
             "username": "test_user",
             "email": "test_user@example.com",
@@ -101,8 +101,8 @@ class BaseSecurityTest(TestCase):
 
         # Patch get_current_user_id to return our test user ID
         current_user_id_patcher = patch(
-            "app.core.security.auth.get_current_user_id", return_value=self.test_user_id
-        )
+            "app.core.security.auth.get_current_user_id",
+            return_value=self.test_user_id)
         self.patchers.append(current_user_id_patcher)
 
         # Patch has_role to check against our test roles
@@ -110,8 +110,8 @@ class BaseSecurityTest(TestCase):
             return role in self.test_roles
 
             has_role_patcher = patch(
-            "app.core.security.auth.has_role", side_effect=mock_has_role
-        )
+                "app.core.security.auth.has_role", side_effect=mock_has_role
+            )
         self.patchers.append(has_role_patcher)
 
     def _setup_audit_patches(self):
@@ -136,7 +136,7 @@ class BaseSecurityTest(TestCase):
             Raises:
             AssertionError: If PHI access was not properly logged
             """
-            self.mock_audit_logger.log_phi_access.assert_called_with(
+        self.mock_audit_logger.log_phi_access.assert_called_with(
             user_id=self.test_user_id,
             action=action,
             resource_type=resource_type,
@@ -153,7 +153,7 @@ class BaseSecurityTest(TestCase):
             Raises:
             AssertionError: If the test user doesn't have the required role
             """
-            self.assertIn(
+        self.assertIn(
             required_role,
             self.test_roles,
             f"Test user doesn't have the required role: {required_role}",

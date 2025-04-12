@@ -23,18 +23,24 @@ class TestEnsembleModel:
         def mock_transformer_model(self):
         """Create a mock transformer model."""
         model = MagicMock(spec=TransformerModel)
-        model.predict = AsyncMock(return_value=np.array([4.2, 4.0, 3.8, 3.6, 3.4]))
+        model.predict = AsyncMock(
+            return_value=np.array([4.2, 4.0, 3.8, 3.6, 3.4]))
         return model
 
         @pytest.fixture
         def mock_xgboost_model(self):
         """Create a mock XGBoost model."""
         model = MagicMock(spec=XGBoostModel)
-        model.predict = AsyncMock(return_value=np.array([4.0, 3.9, 3.7, 3.5, 3.3]))
+        model.predict = AsyncMock(
+            return_value=np.array([4.0, 3.9, 3.7, 3.5, 3.3]))
         return model
 
         @pytest.fixture
-        def ensemble_model(self, ml_settings, mock_transformer_model, mock_xgboost_model):
+        def ensemble_model(
+                self,
+                ml_settings,
+                mock_transformer_model,
+                mock_xgboost_model):
         """Create an ensemble model with mock component models."""
         # Create an ensemble model with mock component models
         ensemble = EnsembleModel(settings=ml_settings)
@@ -78,9 +84,8 @@ class TestEnsembleModel:
         # Verify ensemble weights are initialized
         assert isinstance(model.ensemble_weights, dict)
         assert (
-            model.ensemble_weights["transformer"] + model.ensemble_weights["xgboost"]
-            == 1.0
-        )
+            model.ensemble_weights["transformer"] +
+            model.ensemble_weights["xgboost"] == 1.0)
 
     @pytest.mark.asyncio
     async def test_predict(self, ensemble_model, sample_input_data):
@@ -143,7 +148,8 @@ class TestEnsembleModel:
             )
 
     @pytest.mark.asyncio
-    async def test_predict_with_interventions(self, ensemble_model, sample_input_data):
+    async def test_predict_with_interventions(
+            self, ensemble_model, sample_input_data):
         """Test prediction with interventions applied."""
         # Set up
         forecast_days = 5
@@ -193,17 +199,18 @@ class TestEnsembleModel:
         std = np.array([0.5, 0.5, 0.4, 0.4, 0.3])
 
         # Execute
-        lower, upper = ensemble_model.get_confidence_intervals(predictions, std)
+        lower, upper = ensemble_model.get_confidence_intervals(
+            predictions, std)
 
         # Verify
         assert len(lower) == len(predictions)
         assert len(upper) == len(predictions)
 
         # Check that intervals make sense (lower < prediction < upper)
-        assert all(
-            lower[i] < predictions[i] < upper[i] for i in range(len(predictions))
-        )
+        assert all(lower[i] < predictions[i] < upper[i]
+                   for i in range(len(predictions)))
 
-        # Typical 95% confidence interval is approximately ±1.96 standard deviations
+        # Typical 95% confidence interval is approximately ±1.96 standard
+        # deviations
         np.testing.assert_allclose(lower, predictions - 1.96 * std, rtol=1e-5)
         np.testing.assert_allclose(upper, predictions + 1.96 * std, rtol=1e-5)

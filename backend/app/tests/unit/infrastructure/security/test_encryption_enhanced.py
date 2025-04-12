@@ -107,7 +107,6 @@ class TestEncryptionUtils:
         # Test false comparison
         assert secure_compare("wrong_password", hashed, salt) is False
 
-
         @pytest.fixture
         def encryption_service():
     """Create an EncryptionService instance for testing."""
@@ -120,7 +119,6 @@ class TestEncryptionUtils:
 
     with patch.dict(os.environ, env_vars):
         return EncryptionService()
-
 
         @pytest.mark.unit()
         class TestEncryptionService:
@@ -244,7 +242,8 @@ class TestEncryptionUtils:
         with patch("builtins.open", mock_open(read_data=test_content)):
             with patch("os.path.exists", return_value=True):
                 # Encrypt the file
-                encryption_service.encrypt_file(str(test_file), str(encrypted_file))
+                encryption_service.encrypt_file(
+                    str(test_file), str(encrypted_file))
 
                 # Get encrypted content for mock
                 encrypted_content = encryption_service.encrypt(test_content)
@@ -269,9 +268,11 @@ class TestEncryptionUtils:
         with patch("os.path.exists", return_value=False):
             # Attempt to encrypt nonexistent file
             with pytest.raises(FileNotFoundError):
-                encryption_service.encrypt_file(str(nonexistent_file), str(output_file))
+                encryption_service.encrypt_file(
+                    str(nonexistent_file), str(output_file))
 
-                def test_decrypt_file_nonexistent(self, encryption_service, tmp_path):
+                def test_decrypt_file_nonexistent(
+                        self, encryption_service, tmp_path):
         """Test decryption of nonexistent file."""
         # Nonexistent input file
         nonexistent_file = tmp_path / "nonexistent.bin"
@@ -281,4 +282,5 @@ class TestEncryptionUtils:
         with patch("os.path.exists", return_value=False):
             # Attempt to decrypt nonexistent file
             with pytest.raises(FileNotFoundError):
-                encryption_service.decrypt_file(str(nonexistent_file), str(output_file))
+                encryption_service.decrypt_file(
+                    str(nonexistent_file), str(output_file))

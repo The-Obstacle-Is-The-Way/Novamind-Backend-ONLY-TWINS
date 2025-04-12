@@ -36,7 +36,6 @@ def mock_redis_client():
 
     return client
 
-
     @pytest.fixture
     def redis_cache_service(mock_redis_client):
     """Create a Redis cache service with mocked dependencies for testing."""
@@ -68,7 +67,6 @@ async def test_get_cache_hit(redis_cache_service, mock_redis_client):
     mock_redis_client.get.assert_called_once_with("test:test-key")
     assert result == expected_value
 
-
     @pytest.mark.asyncio()
     async def test_get_cache_miss(redis_cache_service, mock_redis_client):
     """Test retrieving a value from cache when the key doesn't exist."""
@@ -82,7 +80,6 @@ async def test_get_cache_hit(redis_cache_service, mock_redis_client):
     # Assert
     mock_redis_client.get.assert_called_once_with("test:missing-key")
     assert result is None
-
 
     @pytest.mark.asyncio()
     async def test_set_with_ttl(redis_cache_service, mock_redis_client):
@@ -116,7 +113,6 @@ async def test_delete_existing_key(redis_cache_service, mock_redis_client):
     mock_redis_client.delete.assert_called_once_with("test:existing-key")
     assert result is True
 
-
     @pytest.mark.asyncio()
     async def test_increment(redis_cache_service, mock_redis_client):
     """Test incrementing a counter."""
@@ -131,7 +127,6 @@ async def test_delete_existing_key(redis_cache_service, mock_redis_client):
     mock_redis_client.incrby.assert_called_once_with("test:counter-key", 1)
     assert result == 5
 
-
     @pytest.mark.asyncio()
     async def test_expire(redis_cache_service, mock_redis_client):
     """Test setting expiration on a key."""
@@ -143,9 +138,9 @@ async def test_delete_existing_key(redis_cache_service, mock_redis_client):
     result = await redis_cache_service.expire(key, seconds)
 
     # Assert
-    mock_redis_client.expire.assert_called_once_with("test:expire-key", seconds)
+    mock_redis_client.expire.assert_called_once_with(
+        "test:expire-key", seconds)
     assert result is True
-
 
     @pytest.mark.asyncio()
     async def test_get_hash(redis_cache_service, mock_redis_client):

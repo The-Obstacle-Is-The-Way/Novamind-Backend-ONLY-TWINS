@@ -23,7 +23,6 @@ def mock_limiter():
     limiter.check_rate_limit.return_value = True
     return limiter
 
-
     @pytest.fixture
     def app_with_rate_limited_routes(mock_limiter):
     """Create a FastAPI app with rate-limited routes."""
@@ -43,8 +42,10 @@ def mock_limiter():
     )
 
     admin_limit = RateLimitDependency(
-        requests=100, window_seconds=60, limiter=mock_limiter, scope_key="admin"
-    )
+        requests=100,
+        window_seconds=60,
+        limiter=mock_limiter,
+        scope_key="admin")
 
     # Define routes with different rate limits
     @app.get("/api/basic")
@@ -62,20 +63,18 @@ def mock_limiter():
         # Test route with factory function
         @app.get("/api/factory")
         async def factory_endpoint(
-        rate_check=Depends(
-            rate_limit(requests=15, window_seconds=30, scope_key="factory")
-        )
-    ):
+            rate_check=Depends(
+                rate_limit(requests=15, window_seconds=30, scope_key="factory")
+            )
+        ):
         return {"message": "factory"}
 
         return app
-
 
         @pytest.fixture
         def client(app_with_rate_limited_routes):
     """Create a test client for the FastAPI app."""
     return TestClient(app_with_rate_limited_routes)
-
 
     class TestRateLimitDependency:
     """Test suite for the rate limit dependency."""
@@ -188,7 +187,6 @@ def mock_limiter():
             # Check limiter was called
             mock_limiter.check_rate_limit.assert_called_once()
 
-
             class TestRateLimitDependencyIntegration:
     """Integration tests for the rate limit dependency with FastAPI."""
 
@@ -277,7 +275,6 @@ def mock_limiter():
         assert args[1].requests == 15  # Custom limit
         assert args[1].window_seconds == 30  # Custom window
 
-
         class TestRateLimitFactoryFunctions:
     """Test suite for the rate limit factory functions."""
 
@@ -323,8 +320,7 @@ def mock_limiter():
 
         # Verify dependency was created with correct parameters
         mock_dependency_class.assert_called_once_with(
-            requests=100, window_seconds=60, block_seconds=None, scope_key="admin"
-        )
+            requests=100, window_seconds=60, block_seconds=None, scope_key="admin")
 
         # Result should be the created dependency
         assert result == mock_dependency_class.return_value

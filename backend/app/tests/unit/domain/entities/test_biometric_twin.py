@@ -39,7 +39,6 @@ def sample_data_points():
         ),
     ]
 
-
     @pytest.fixture
     def sample_physiological_range():
     """Create a sample physiological range for testing."""
@@ -247,7 +246,8 @@ class TestBiometricTwin:
         initial_count = len(
             sample_biometric_twin.timeseries_data[BiometricType.HEART_RATE].data_points
         )
-        sample_biometric_twin.add_data_point(BiometricType.HEART_RATE, new_point)
+        sample_biometric_twin.add_data_point(
+            BiometricType.HEART_RATE, new_point)
 
         assert (
             len(
@@ -267,7 +267,8 @@ class TestBiometricTwin:
             metadata={"method": "oral"},
         )
 
-        sample_biometric_twin.add_data_point(BiometricType.TEMPERATURE, new_point, "°C")
+        sample_biometric_twin.add_data_point(
+            BiometricType.TEMPERATURE, new_point, "°C")
 
         assert BiometricType.TEMPERATURE in sample_biometric_twin.timeseries_data
         assert (
@@ -283,9 +284,13 @@ class TestBiometricTwin:
             == "°C"
         )
 
-    def test_get_biometric_data(self, sample_biometric_twin, sample_timeseries):
+    def test_get_biometric_data(
+            self,
+            sample_biometric_twin,
+            sample_timeseries):
         """Test getting biometric data for a specific type."""
-        result = sample_biometric_twin.get_biometric_data(BiometricType.HEART_RATE)
+        result = sample_biometric_twin.get_biometric_data(
+            BiometricType.HEART_RATE)
 
         assert result == sample_timeseries
         assert result.get_latest_value().value == 70.5
@@ -362,7 +367,8 @@ class TestBiometricTwin:
         assert twin.patient_id == "patient-456"
         assert BiometricType.HEART_RATE in twin.timeseries_data
         assert twin.timeseries_data[BiometricType.HEART_RATE].unit == "bpm"
-        assert len(twin.timeseries_data[BiometricType.HEART_RATE].data_points) == 1
+        assert len(
+            twin.timeseries_data[BiometricType.HEART_RATE].data_points) == 1
         assert (
             twin.timeseries_data[BiometricType.HEART_RATE].data_points[0].value == 72.5
         )

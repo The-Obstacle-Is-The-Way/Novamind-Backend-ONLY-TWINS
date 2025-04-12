@@ -21,7 +21,6 @@ class Role(str, Enum):
     SUPERVISOR = "supervisor"
     RESEARCHER = "researcher"
 
-
     class BaseSecurityTest(unittest.TestCase):
     """
     Base class for security and authorization testing.
@@ -84,7 +83,6 @@ class TestBaseSecurityTest(BaseSecurityTest):
         user = self.mock_auth_service.get_user_by_id(self.test_user_id)
         self.assertEqual(user, self.test_user)
 
-
         class AdminSecurityTest(BaseSecurityTest):
     """Test subclassing with different roles."""
 
@@ -97,7 +95,6 @@ class TestBaseSecurityTest(BaseSecurityTest):
         self.assertEqual(self.test_roles, [Role.ADMIN, Role.USER])
         self.assertEqual(self.test_user["roles"], [Role.ADMIN, Role.USER])
 
-
         class ClinicianSecurityTest(BaseSecurityTest):
     """Test subclassing with clinician roles."""
 
@@ -109,7 +106,6 @@ class TestBaseSecurityTest(BaseSecurityTest):
         """Test that the clinician roles are set correctly."""
         self.assertEqual(self.test_roles, [Role.CLINICIAN, Role.USER])
         self.assertEqual(self.test_user["roles"], [Role.CLINICIAN, Role.USER])
-
 
         if __name__ == "__main__":
     unittest.main()

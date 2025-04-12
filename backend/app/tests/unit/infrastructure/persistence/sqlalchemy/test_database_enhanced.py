@@ -25,7 +25,6 @@ class TestModel(Base):
     name = Column(String(100), nullable=False)
     value = Column(String(100), nullable=True)
 
-
     @pytest.fixture
     def mock_settings():
     """Mock application settings."""
@@ -42,7 +41,6 @@ class TestModel(Base):
         mock.return_value = settings
         yield settings
 
-
         @pytest.fixture
         def in_memory_db():
     """Create an in-memory SQLite database."""
@@ -50,7 +48,6 @@ class TestModel(Base):
     Base.metadata.create_all(db.engine)
     yield db
     Base.metadata.drop_all(db.engine)
-
 
     @pytest.fixture
     def enhanced_db():
@@ -127,7 +124,8 @@ class TestDatabase:
 
             # Verify record was committed
             with in_memory_db.session_scope() as session:
-            result = session.query(TestModel).filter_by(name="test_scope").first()
+            result = session.query(TestModel).filter_by(
+                name="test_scope").first()
             assert result is not None
             assert result.value == "context_manager"
 
@@ -143,7 +141,8 @@ class TestDatabase:
 
             # Verify record was not committed
             with in_memory_db.session_scope() as session:
-            result = session.query(TestModel).filter_by(name="should_rollback").first()
+            result = session.query(TestModel).filter_by(
+                name="should_rollback").first()
             assert result is None
 
             @patch("app.infrastructure.persistence.sqlalchemy.database.logger")
@@ -156,8 +155,8 @@ class TestDatabase:
 
             # Execute raw query
             results = in_memory_db.execute_query(
-            "SELECT * FROM test_models WHERE name = :name", {"name": "query_test"}
-        )
+                "SELECT * FROM test_models WHERE name = :name", {"name": "query_test"}
+            )
 
         assert len(results) == 1
         assert results[0]["name"] == "query_test"
@@ -174,8 +173,8 @@ class TestEnhancedDatabase:
         assert db.db_url == mock_settings.DATABASE_URL
         assert db.echo == False
         assert db.pool_size == 5
-        assert db.enable_encryption == True
-        assert db.enable_audit == True
+        assert db.enable_encryption
+        assert db.enable_audit
         assert db.engine is not None
 
         @patch("app.infrastructure.persistence.sqlalchemy.database.logger")
@@ -187,17 +186,20 @@ class TestEnhancedDatabase:
 
             # Verify audit logging calls
             assert mock_logger.info.call_count >= 2
-            log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
+            log_calls = [call[0][0]
+                         for call in mock_logger.info.call_args_list]
             assert any("Starting transaction" in log for log in log_calls)
             assert any("Committing transaction" in log for log in log_calls)
             assert any("Closed transaction" in log for log in log_calls)
 
             @patch("app.infrastructure.persistence.sqlalchemy.database.logger")
-            def test_session_scope_rollback_with_audit(self, mock_logger, enhanced_db):
+            def test_session_scope_rollback_with_audit(
+                    self, mock_logger, enhanced_db):
         """Test session scope rollback with audit logging."""
         try:
             with enhanced_db.session_scope() as session:
-                test_model = TestModel(name="audit_rollback", value="should_log")
+                test_model = TestModel(
+                    name="audit_rollback", value="should_log")
                 session.add(test_model)
                 raise ValueError("Test exception")
                 except ValueError:
@@ -215,7 +217,6 @@ class TestEnhancedDatabase:
 
         # In our implementation, this currently returns the same engine
         assert protected_engine is enhanced_db.engine
-
 
         class TestDatabaseFactory:
     """Tests for the database factory functions."""

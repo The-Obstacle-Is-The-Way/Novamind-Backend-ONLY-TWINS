@@ -16,6 +16,7 @@ from app.core.services.ml.pat.factory import PATServiceFactory
 from app.core.services.ml.pat.interface import PATInterface
 from app.core.services.ml.pat.mock import MockPATService
 
+
 class TestPATServiceFactory(unittest.TestCase):
     """Test cases for PATServiceFactory."""
 
@@ -27,8 +28,10 @@ class TestPATServiceFactory(unittest.TestCase):
         # Clear the instance cache before each test
         PATServiceFactory._instance_cache = {}
         # Create patches for PAT implementations
-        self.mock_pat_patcher = patch("app.core.services.ml.pat.factory.MockPATService")
-        self.bedrock_pat_patcher = patch("app.core.services.ml.pat.factory.BedrockPAT")
+        self.mock_pat_patcher = patch(
+            "app.core.services.ml.pat.factory.MockPATService")
+        self.bedrock_pat_patcher = patch(
+            "app.core.services.ml.pat.factory.BedrockPAT")
 
         # Start the patches
         self.mock_mock_pat = self.mock_pat_patcher.start()
@@ -63,7 +66,7 @@ class TestPATServiceFactory(unittest.TestCase):
 
         # Act
     pat = PATServiceFactory.get_pat_service(config)
-        # Assert
+    # Assert
     self.assertEqual(pat, self.mock_mock_pat_instance)
     self.mock_mock_pat.assert_called_once()
     self.mock_mock_pat_instance.initialize.assert_called_once_with(config)
@@ -81,7 +84,7 @@ class TestPATServiceFactory(unittest.TestCase):
 
         # Act
     pat = PATServiceFactory.get_pat_service(config)
-        # Assert
+    # Assert
     self.assertEqual(pat, self.mock_bedrock_pat_instance)
     self.mock_bedrock_pat.assert_called_once()
     self.mock_bedrock_pat_instance.initialize.assert_called_once_with(config)
@@ -96,7 +99,7 @@ class TestPATServiceFactory(unittest.TestCase):
 
         # Act
     pat = PATServiceFactory.get_pat_service(config)
-        # Assert
+    # Assert
     self.assertEqual(pat, self.mock_mock_pat_instance)
     self.mock_mock_pat.assert_called_once()
     self.mock_mock_pat_instance.initialize.assert_called_once_with(config)
@@ -127,9 +130,10 @@ class TestPATServiceFactory(unittest.TestCase):
         # Act
     pat1 = PATServiceFactory.get_pat_service(config)
     pat2 = PATServiceFactory.get_pat_service(config)
-        # Assert
-    self.assertEqual(pat1, pat2) # Should be the same instance due to caching
-    self.mock_mock_pat.assert_called_once() # Constructor should only be called once
+    # Assert
+    self.assertEqual(pat1, pat2)  # Should be the same instance due to caching
+    # Constructor should only be called once
+    self.mock_mock_pat.assert_called_once()
     self.mock_mock_pat_instance.initialize.assert_called_once_with(config)
 
     def test_different_configs_create_different_instances(self) -> None:
@@ -141,19 +145,19 @@ class TestPATServiceFactory(unittest.TestCase):
         }
 
     config2 = {
-    "provider": "mock",
-    "storage_path": tempfile.mkdtemp()
+        "provider": "mock",
+        "storage_path": tempfile.mkdtemp()
     }
 
-        # Configure mocks for different instances
+    # Configure mocks for different instances
     mock_instance1 = MagicMock(spec=MockPATService)
     mock_instance2 = MagicMock(spec=MockPATService)
     self.mock_mock_pat.side_effect = [mock_instance1, mock_instance2]
 
-        # Act
+    # Act
     pat1 = PATServiceFactory.get_pat_service(config1)
     pat2 = PATServiceFactory.get_pat_service(config2)
-        # Assert
+    # Assert
     self.assertNotEqual(pat1, pat2)
     self.assertEqual(self.mock_mock_pat.call_count, 2)
     mock_instance1.initialize.assert_called_once_with(config1)
@@ -167,45 +171,45 @@ class TestPATServiceFactory(unittest.TestCase):
         mock_cache.__setitem__ = MagicMock()
 
         config = {
-        "provider": "mock",
-        "storage_path": "/tmp/path1",
-        "option1": "value1",
-        "option2": "value2"
-    }
+            "provider": "mock",
+            "storage_path": "/tmp/path1",
+            "option1": "value1",
+            "option2": "value2"
+        }
 
         # Act
     PATServiceFactory.get_pat_service(config)
-        # Assert
-        # Verify that __setitem__ was called exactly once
+    # Assert
+    # Verify that __setitem__ was called exactly once
     self.assertEqual(mock_cache.__setitem__.call_count, 1)
 
-        # Get the key that was used
+    # Get the key that was used
     key = mock_cache.__setitem__.call_args[0][0]
 
-        # Verify that the key contains the provider
+    # Verify that the key contains the provider
     self.assertTrue(key.startswith("mock-"))
 
-        # Create a different config with the same values but different order
+    # Create a different config with the same values but different order
     config2 = {
-    "option2": "value2",
-    "provider": "mock",
-    "option1": "value1",
-    "storage_path": "/tmp/path1"
+        "option2": "value2",
+        "provider": "mock",
+        "option1": "value1",
+        "storage_path": "/tmp/path1"
     }
 
-        # Reset the mock
+    # Reset the mock
     mock_cache.__setitem__.reset_mock()
 
-        # Act again with the reordered config
+    # Act again with the reordered config
     PATServiceFactory.get_pat_service(config2)
-        # Assert
-        # Verify that __setitem__ was called exactly once
+    # Assert
+    # Verify that __setitem__ was called exactly once
     self.assertEqual(mock_cache.__setitem__.call_count, 1)
 
-        # Get the new key
+    # Get the new key
     key2 = mock_cache.__setitem__.call_args[0][0]
 
-        # Verify that the keys are identical despite different dict order
+    # Verify that the keys are identical despite different dict order
     self.assertEqual(key, key2)
 
 

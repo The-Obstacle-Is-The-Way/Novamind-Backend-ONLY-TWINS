@@ -35,23 +35,25 @@ class TestPHISanitizer:
 
         # Dictionary with PHI
         self.dict_with_phi = {
-        "name": self.patient_name,
-        "contact": {
-            "email": self.patient_email,
-            "phone": self.patient_phone,
-        },
-        "demographics": {
-            "dob": self.patient_dob,
-            "ssn": self.patient_ssn,
-            "address": self.patient_address,
-        },
-        "medical_info": {
-            "mrn": self.patient_mrn,
-            "diagnosis": "Depression",
-            "severity": "Moderate",
-        },
-        "non_phi_data": {"appointment_type": "Follow-up", "duration_minutes": 30},
-    }
+            "name": self.patient_name,
+            "contact": {
+                "email": self.patient_email,
+                "phone": self.patient_phone,
+            },
+            "demographics": {
+                "dob": self.patient_dob,
+                "ssn": self.patient_ssn,
+                "address": self.patient_address,
+            },
+            "medical_info": {
+                "mrn": self.patient_mrn,
+                "diagnosis": "Depression",
+                "severity": "Moderate",
+            },
+            "non_phi_data": {
+                "appointment_type": "Follow-up",
+                "duration_minutes": 30},
+        }
 
     # List with PHI
     self.list_with_phi = [
@@ -97,9 +99,8 @@ class TestPHISanitizer:
         assert sanitized["non_phi_data"]["appointment_type"] == "Follow-up"
         assert sanitized["non_phi_data"]["duration_minutes"] == 30
         assert sanitized["medical_info"]["diagnosis"] == "Depression"
-        assert (
-        sanitized["medical_info"]["severity" @ pytest.mark.standalone()] == "Moderate"
-    )
+        assert (sanitized["medical_info"]["severity" @
+                                          pytest.mark.standalone()] == "Moderate")
 
     def test_sanitize_list(self):
         """Test that lists containing PHI are properly sanitized."""

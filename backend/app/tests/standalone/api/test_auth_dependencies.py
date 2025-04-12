@@ -82,7 +82,8 @@ class TestAuthDependencies:
             mock_repository.get_by_id.assert_called_once_with("test-user-123")
 
             @pytest.mark.asyncio()
-            async def test_get_current_user_not_found(self, test_token, db_session):
+            async def test_get_current_user_not_found(
+                    self, test_token, db_session):
         """Test get_current_user when user is not found."""
         # Mock the token payload and repository
         mock_payload = {"sub": "test-user-123"}
@@ -104,10 +105,14 @@ class TestAuthDependencies:
                 assert "User not found" in exc_info.value.detail
 
                 @pytest.mark.asyncio()
-                async def test_get_current_active_clinician(self, test_token, db_session):
+                async def test_get_current_active_clinician(
+                        self, test_token, db_session):
         """Test get_current_active_clinician dependency."""
         # Mock the user with clinician role
-        mock_user = {"id": "test-user-123", "is_active": True, "roles": ["clinician"]}
+        mock_user = {
+            "id": "test-user-123",
+            "is_active": True,
+            "roles": ["clinician"]}
 
         with patch("app.api.dependencies.auth.get_current_user") as mock_get_user:
             mock_get_user.return_value = mock_user
@@ -121,11 +126,14 @@ class TestAuthDependencies:
 
             @pytest.mark.asyncio()
             async def test_get_current_active_clinician_not_clinician(
-            self, test_token, db_session
-    ):
+                self, test_token, db_session
+            ):
         """Test get_current_active_clinician when user is not a clinician."""
         # Mock the user without clinician role
-        mock_user = {"id": "test-user-123", "is_active": True, "roles": ["patient"]}
+        mock_user = {
+            "id": "test-user-123",
+            "is_active": True,
+            "roles": ["patient"]}
 
         with patch("app.api.dependencies.auth.get_current_user") as mock_get_user:
             mock_get_user.return_value = mock_user
@@ -138,10 +146,14 @@ class TestAuthDependencies:
                 assert "Not a clinician" in exc_info.value.detail
 
                 @pytest.mark.asyncio()
-                async def test_get_current_active_admin(self, test_token, db_session):
+                async def test_get_current_active_admin(
+                        self, test_token, db_session):
         """Test get_current_active_admin dependency."""
         # Mock the user with admin role
-        mock_user = {"id": "test-user-123", "is_active": True, "roles": ["admin"]}
+        mock_user = {
+            "id": "test-user-123",
+            "is_active": True,
+            "roles": ["admin"]}
 
         with patch("app.api.dependencies.auth.get_current_user") as mock_get_user:
             mock_get_user.return_value = mock_user
@@ -154,10 +166,14 @@ class TestAuthDependencies:
             mock_get_user.assert_called_once()
 
             @pytest.mark.asyncio()
-            async def test_get_current_active_admin_not_admin(self, test_token, db_session):
+            async def test_get_current_active_admin_not_admin(
+                    self, test_token, db_session):
         """Test get_current_active_admin when user is not an admin."""
         # Mock the user without admin role
-        mock_user = {"id": "test-user-123", "is_active": True, "roles": ["clinician"]}
+        mock_user = {
+            "id": "test-user-123",
+            "is_active": True,
+            "roles": ["clinician"]}
 
         with patch("app.api.dependencies.auth.get_current_user") as mock_get_user:
             mock_get_user.return_value = mock_user

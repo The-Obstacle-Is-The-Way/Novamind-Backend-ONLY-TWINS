@@ -32,14 +32,13 @@ def sensitive_data() -> Dict[str, Any]:
 @pytest.fixture
 def encryption_service() -> EncryptionService:
     """Test fixture for encryption service with test key."""
-    return EncryptionService(direct_key="test_key_for_unit_tests_only_12345678")
-
+    return EncryptionService(
+        direct_key="test_key_for_unit_tests_only_12345678")
 
     @pytest.fixture
     def field_encryptor(encryption_service) -> FieldEncryptor:
     """Test fixture for field encryption with test encryption service."""
     return FieldEncryptor(encryption_service)
-
 
     @pytest.fixture
     def patient_record() -> Dict[str, Any]:
@@ -121,8 +120,10 @@ class TestEncryptionService:
         def test_different_keys(self):
         """Test that different encryption keys produce different outputs."""
         # Create two services with different keys using direct key injection
-        service1 = EncryptionService(direct_key="test_key_for_unit_tests_only_12345678")
-        service2 = EncryptionService(direct_key="different_test_key_for_unit_tests_456")
+        service1 = EncryptionService(
+            direct_key="test_key_for_unit_tests_only_12345678")
+        service2 = EncryptionService(
+            direct_key="different_test_key_for_unit_tests_456")
 
         # Create test data
         test_value = "HIPAA_PHI_TEST_DATA_123"
@@ -223,14 +224,18 @@ class TestFieldEncryption:
         ]
 
         # Act
-        encrypted_record = field_encryptor.encrypt_fields(patient_record, phi_fields)
-        decrypted_record = field_encryptor.decrypt_fields(encrypted_record, phi_fields)
+        encrypted_record = field_encryptor.encrypt_fields(
+            patient_record, phi_fields)
+        decrypted_record = field_encryptor.decrypt_fields(
+            encrypted_record, phi_fields)
 
         # Assert - All PHI should be encrypted, non-PHI should remain clear
         # Verify PHI is encrypted
         assert encrypted_record["medical_record_number"].startswith("v1:")
-        assert encrypted_record["demographics"]["name"]["first"].startswith("v1:")
-        assert encrypted_record["demographics"]["name"]["last"].startswith("v1:")
+        assert encrypted_record["demographics"]["name"]["first"].startswith(
+            "v1:")
+        assert encrypted_record["demographics"]["name"]["last"].startswith(
+            "v1:")
         assert encrypted_record["demographics"]["ssn"].startswith("v1:")
         assert isinstance(encrypted_record["demographics"]["address"], str)
         assert encrypted_record["demographics"]["address"].startswith("v1:")

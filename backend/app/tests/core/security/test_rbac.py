@@ -9,10 +9,13 @@ proper role and permission management for security.
 
 import unittest
 
-# from app.core.security.rbac import RoleBasedAccessControl # Class does not exist
+# from app.core.security.rbac import RoleBasedAccessControl # Class does
+# not exist
 from app.core.security.rbac import check_permission  # Import existing function
-from app.domain.entities.user import User  # Import User for testing check_permission
-from app.domain.enums.role import Role  # Import Role for testing check_permission
+# Import User for testing check_permission
+from app.domain.entities.user import User
+# Import Role for testing check_permission
+from app.domain.enums.role import Role
 
 
 @pytest.mark.venv_only()
@@ -20,12 +23,12 @@ class TestRoleBasedAccessControl(unittest.TestCase):
     """Test suite for Role-Based Access Control functionality."""
 
     # Commenting out tests for non-existent RoleBasedAccessControl class
-    # TODO: Rewrite these tests for the check_permission function and RBACMiddleware
+    # TODO: Rewrite these tests for the check_permission function and
+    # RBACMiddleware
     def setUp(self):
         """Set up test environment."""
         # self.rbac = RoleBasedAccessControl() # Class does not exist
         pass
-
 
         # def test_add_role(self):
     #         """Test adding a new role."""
@@ -131,7 +134,6 @@ class TestRoleBasedAccessControl(unittest.TestCase):
     #         # Check nonexistent permission
     #         # self.assertEqual(self.rbac.get_roles_with_permission('nonexistent'), [])
     #         pass
-
 
     if __name__ == "__main__":
     unittest.main()

@@ -27,7 +27,6 @@ async def test_engine_creation():
         elif engine.dialect.name == "postgresql":
         assert "postgresql+asyncpg" in str(engine.url)
 
-
         @pytest.mark.asyncio()
         @pytest.mark.db_required()
         async def test_init_db():
@@ -45,7 +44,6 @@ async def test_engine_creation():
         # Count tables (should be > 0 if initialization worked)
         table_count = len(Base.metadata.tables)
         assert table_count > 0
-
 
         @pytest.mark.asyncio()
         @pytest.mark.db_required()
@@ -67,7 +65,7 @@ async def test_engine_creation():
         row = result.scalar()
         assert row == 1
         finally:
-        # Clean up
+            # Clean up
         try:
             await session.close()
             except Exception:
@@ -79,13 +77,12 @@ async def test_engine_creation():
             except StopAsyncIteration:
             pass
 
-
             # Define TestModel at module level
+
             class TestModel(Base):
     __tablename__ = "test_models_temp"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-
 
     class TestDatabaseBase:
     """Test base class for database-related tests."""

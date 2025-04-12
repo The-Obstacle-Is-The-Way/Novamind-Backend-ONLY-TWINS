@@ -3,7 +3,7 @@
 HIPAA Compliance Testing - API Security Tests
 
 These tests validate that API endpoints properly secure access to sensitive patient data
-according to HIPAA requirements. Tests focus on authentication, authorization, 
+according to HIPAA requirements. Tests focus on authentication, authorization,
 input validation, and secure communication.
 """
 
@@ -17,14 +17,16 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.testclient import TestClient
 
 # Removed direct app import
-from app.api.dependencies.auth import get_current_user # Corrected path, removed AuthHandler
-# from app.infrastructure.security.rate_limiting import RateLimiter # RateLimiter removed or refactored
+# Corrected path, removed AuthHandler
+from app.api.dependencies.auth import get_current_user
+# from app.infrastructure.security.rate_limiting import RateLimiter #
+# RateLimiter removed or refactored
 
 
 # Removed local test_client fixture; tests will use client from conftest.py
 @pytest.fixture
 def mock_token():
-                """Generate a mock JWT token."""    
+                """Generate a mock JWT token."""
     return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJyb2xlIjoicGF0aWVudCIsImV4cCI6OTk5OTk5OTk5OX0.signature"
     @pytest.fixture
     def mock_user():

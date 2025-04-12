@@ -21,7 +21,6 @@ def mock_encryption_key():
     # Generate a valid Fernet key for testing
     return base64.urlsafe_b64encode(b"0" * 32)
 
-
     @pytest.fixture
     def patient_data():
     """Sample patient data for testing."""
@@ -52,19 +51,18 @@ class Patient:
             if kwargs.get("first_name")
             else None
         )
-        self._last_name = (
-            encrypt_value(kwargs.get("last_name")) if kwargs.get("last_name") else None
-        )
-        self._dob = encrypt_value(kwargs.get("dob")) if kwargs.get("dob") else None
+        self._last_name = (encrypt_value(kwargs.get("last_name"))
+                           if kwargs.get("last_name") else None)
+        self._dob = encrypt_value(
+            kwargs.get("dob")) if kwargs.get("dob") else None
         self._email = (
             encrypt_value(kwargs.get("email")) if kwargs.get("email") else None
         )
         self._phone = (
             encrypt_value(kwargs.get("phone")) if kwargs.get("phone") else None
         )
-        self._address = (
-            encrypt_value(kwargs.get("address")) if kwargs.get("address") else None
-        )
+        self._address = (encrypt_value(kwargs.get("address"))
+                         if kwargs.get("address") else None)
         self._medical_record_number = (
             encrypt_value(kwargs.get("medical_record_number"))
             if kwargs.get("medical_record_number")
@@ -74,7 +72,8 @@ class Patient:
         if kwargs.get("extra_data"):
             import json
 
-            self._extra_data = encrypt_value(json.dumps(kwargs.get("extra_data")))
+            self._extra_data = encrypt_value(
+                json.dumps(kwargs.get("extra_data")))
             else:
             self._extra_data = None
 
@@ -167,7 +166,6 @@ class Patient:
             else:
             self._extra_data = None
 
-
             class TestPatientEncryption:
     """Tests for the Patient model encryption functionality."""
 
@@ -204,8 +202,8 @@ class Patient:
 
         @patch("app.infrastructure.security.encryption.get_encryption_key")
         def test_patient_property_updates(
-        self, mock_get_key, mock_encryption_key, patient_data
-    ):
+            self, mock_get_key, mock_encryption_key, patient_data
+        ):
         """Test that updating patient properties properly encrypts new values."""
         # Set up mock encryption key
         mock_get_key.return_value = mock_encryption_key
@@ -229,7 +227,11 @@ class Patient:
         assert patient.email == "jane.smith@example.com"
 
         @patch("app.infrastructure.security.encryption.get_encryption_key")
-        def test_patient_extra_data(self, mock_get_key, mock_encryption_key, patient_data):
+        def test_patient_extra_data(
+                self,
+                mock_get_key,
+                mock_encryption_key,
+                patient_data):
         """Test encryption and decryption of extra_data JSON."""
         # Set up mock encryption key
         mock_get_key.return_value = mock_encryption_key
@@ -302,7 +304,8 @@ class Patient:
         assert patient.last_name == "Patient"
 
         @patch("app.infrastructure.security.encryption.get_encryption_key")
-        def test_encryption_error_handling(self, mock_get_key, mock_encryption_key):
+        def test_encryption_error_handling(
+                self, mock_get_key, mock_encryption_key):
         """Test encryption error handling."""
         # Set up mock encryption key
         mock_get_key.return_value = mock_encryption_key

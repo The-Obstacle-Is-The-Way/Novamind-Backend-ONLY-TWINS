@@ -23,7 +23,6 @@ def phi_detection_service():
     service.initialize()
     return service
 
-
     @pytest.mark.db_required()
     def test_initialize_loads_default_patterns():
     """Test that initialize loads default patterns when file loading fails."""
@@ -36,7 +35,6 @@ def phi_detection_service():
     assert service.initialized
     assert len(service.patterns) > 0
 
-
     def test_ensure_initialized_calls_initialize():
     """Test that ensure_initialized calls initialize if not initialized."""
     service = PHIDetectionService()
@@ -44,7 +42,6 @@ def phi_detection_service():
 
     service.ensure_initialized()
     assert service.initialized
-
 
     def test_detect_phi_empty_text():
     """Test that detect_phi returns empty list for empty text."""
@@ -55,7 +52,6 @@ def phi_detection_service():
     assert isinstance(results, list)
     assert len(results) == 0
 
-
     def test_contains_phi_empty_text():
     """Test that contains_phi returns False for empty text."""
     service = PHIDetectionService()
@@ -63,43 +59,41 @@ def phi_detection_service():
 
     assert not service.contains_phi("")
 
-
     @pytest.mark.parametrize(
-    "text,expected",
-    [
-        ("No PHI here", False),
-        ("SSN: 123-45-6789", True),
-        ("Contact me at test@example.com", True),
-        ("Call me at (555) 123-4567", True),
-        ("John Smith is 92 years old", True),
-        ("The patient's MRN is MRN12345", True),
-    ],
-)
+        "text,expected",
+        [
+            ("No PHI here", False),
+            ("SSN: 123-45-6789", True),
+            ("Contact me at test@example.com", True),
+            ("Call me at (555) 123-4567", True),
+            ("John Smith is 92 years old", True),
+            ("The patient's MRN is MRN12345", True),
+        ],
+    )
 def test_contains_phi(phi_detection_service, text, expected):
     """Test contains_phi with various texts containing/not containing PHI."""
     assert phi_detection_service.contains_phi(text) == expected
 
-
     @pytest.mark.parametrize(
-    "text,phi_type",
-    [
-        ("SSN: 123-45-6789", "US SSN"),
-        ("Contact me at test@example.com", "Email Address"),
-        ("Call me at (555) 123-4567", "US Phone Number"),
-        ("John Smith lives here", "Name"),
-        ("Born on 01/01/1980", "Date"),
-        ("Lives at 123 Main St, Anytown, CA 12345", "Address"),
-        ("Credit card: 4111 1111 1111 1111", "Credit Card"),
-        ("Patient is 95 years old", "Age over 90"),
-    ],
-)
-def test_detect_phi_finds_different_types(phi_detection_service, text, phi_type):
+        "text,phi_type",
+        [
+            ("SSN: 123-45-6789", "US SSN"),
+            ("Contact me at test@example.com", "Email Address"),
+            ("Call me at (555) 123-4567", "US Phone Number"),
+            ("John Smith lives here", "Name"),
+            ("Born on 01/01/1980", "Date"),
+            ("Lives at 123 Main St, Anytown, CA 12345", "Address"),
+            ("Credit card: 4111 1111 1111 1111", "Credit Card"),
+            ("Patient is 95 years old", "Age over 90"),
+        ],
+    )
+def test_detect_phi_finds_different_types(
+        phi_detection_service, text, phi_type):
     """Test that detect_phi finds different types of PHI."""
     results = phi_detection_service.detect_phi(text)
 
     # Should find at least one instance of the expected PHI type
     assert any(r["type"] == phi_type for r in results)
-
 
     def test_detect_phi_results_format():
     """Test that detect_phi returns correctly formatted results."""
@@ -121,21 +115,19 @@ def test_detect_phi_finds_different_types(phi_detection_service, text, phi_type)
     assert "value" in first_result
     assert "description" in first_result
 
-
     @pytest.mark.parametrize(
-    "text,replacement,expected",
-    [
-        ("SSN: 123-45-6789", "[REDACTED]", "SSN: [REDACTED]"),
-        ("Contact: test@example.com", "***PHI***", "Contact: ***PHI***"),
-        ("John Smith, DOB: 01/01/1980", "[PHI]", "[PHI], DOB: [PHI]"),
-        ("No PHI here", "[REDACTED]", "No PHI here"),
-    ],
-)
+        "text,replacement,expected",
+        [
+            ("SSN: 123-45-6789", "[REDACTED]", "SSN: [REDACTED]"),
+            ("Contact: test@example.com", "***PHI***", "Contact: ***PHI***"),
+            ("John Smith, DOB: 01/01/1980", "[PHI]", "[PHI], DOB: [PHI]"),
+            ("No PHI here", "[REDACTED]", "No PHI here"),
+        ],
+    )
 def test_redact_phi(phi_detection_service, text, replacement, expected):
     """Test redacting PHI with different replacement strings."""
     redacted = phi_detection_service.redact_phi(text, replacement)
     assert redacted == expected
-
 
     def test_redact_phi_empty_text():
     """Test that redact_phi handles empty text gracefully."""
@@ -144,14 +136,14 @@ def test_redact_phi(phi_detection_service, text, replacement, expected):
 
     assert service.redact_phi("") == ""
 
-
     def test_redact_phi_overlapping_matches():
     """Test that redact_phi correctly handles overlapping PHI."""
     service = PHIDetectionService()
     service.initialize()
 
     # Create text with potentially overlapping PHI
-    # For example, "John Smith" (name) contains "John" (could be detected as a name too)
+    # For example, "John Smith" (name) contains "John" (could be detected as a
+    # name too)
     text = "Patient John Smith has SSN 123-45-6789"
     redacted = service.redact_phi(text)
 
@@ -160,7 +152,6 @@ def test_redact_phi(phi_detection_service, text, replacement, expected):
     assert "[REDACTED]" in redacted
     assert "123-45-6789" not in redacted
     assert "John Smith" not in redacted
-
 
     def test_get_phi_types():
     """Test getting the list of PHI types."""
@@ -173,7 +164,6 @@ def test_redact_phi(phi_detection_service, text, replacement, expected):
     assert len(phi_types) > 0
     assert "US SSN" in phi_types
     assert "Email Address" in phi_types
-
 
     def test_get_statistics():
     """Test getting statistics about PHI patterns."""
@@ -189,7 +179,6 @@ def test_redact_phi(phi_detection_service, text, replacement, expected):
     assert stats["total_patterns"] > 0
     assert len(stats["categories"]) > 0
     assert "high" in stats["risk_levels"]
-
 
     @patch("app.infrastructure.ml.phi_detection.re")
     def test_phi_pattern_creation(mock_re):

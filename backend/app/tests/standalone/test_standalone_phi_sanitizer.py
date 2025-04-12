@@ -15,10 +15,13 @@ from enum import Enum
 from typing import Any
 
 # ============= PHI Sanitizer Implementation =============
+
+
 class RedactionStrategy(Enum):
     """Redaction strategy for PHI."""
     FULL = "full"  # Completely replace with [REDACTED]
-    PARTIAL = "partial"  # Replace part of the data (e.g., last 4 digits visible)
+    # Replace part of the data (e.g., last 4 digits visible)
+    PARTIAL = "partial"
     HASH = "hash"  # Replace with a hash of the data
     class PHIPattern:
     """Represents a pattern for detecting PHI."""
@@ -30,10 +33,10 @@ class RedactionStrategy(Enum):
         fuzzy_match: list[str] = None,
         context_patterns: list[str] = None,
         strategy: RedactionStrategy = RedactionStrategy.FULL
-    (        ):
+    ():
         self.name = name
         self.strategy = strategy
-        
+
         # Initialize matchers
     self._regex_pattern = re.compile(regex) if regex else None
     self._exact_matches = set(exact_match) if exact_match else set()
@@ -42,21 +45,23 @@ class RedactionStrategy(Enum):
     self._context_patterns = [re.compile(pattern, re.IGNORECASE)
     for pattern in context_patterns] if context_patterns else []
     pass
+
     def matches(self, text: str) -> bool:
         """Check if this pattern matches the given text."""
         # Regex match
-            if self._regex_pattern and self._regex_pattern.search(text):    return True
-        
+            if self._regex_pattern and self._regex_pattern.search(text): return True
+
         # Exact match
-        if any(exact in text for exact in self._exact_matches):    return True
-        
+        if any(exact in text for exact in self._exact_matches): return True
+
         # Fuzzy match
-        if any(pattern.search(text) for pattern in self._fuzzy_patterns):    return True
-        
+        if any(pattern.search(text) for pattern in self._fuzzy_patterns): return True
+
         # Context match
-        if any(pattern.search(text) for pattern in self._context_patterns):    return True    return False
+        if any(pattern.search(text) for pattern in self._context_patterns): return True return False
         class PatternRepository:
     """Repository of PHI patterns."""
+
     def __init__(self):
         """Initialize with default patterns."""
         self._patterns: dict[str, PHIPattern] = {}
@@ -64,53 +69,57 @@ class RedactionStrategy(Enum):
         def _add_default_patterns(self):
         """Add default PHI patterns."""
             self.add_pattern(PHIPattern())
-            name="patient_name",
-            regex=r'\b[A-Z][a-z]+ [A-Z][a-z]+\b',
-            context_patterns=[r'patient name', r'patient:', r'name:']
-        ((            ))
-        
+            name = "patient_name",
+            regex = r'\b[A-Z][a-z]+ [A-Z][a-z]+\b',
+            context_patterns = [r'patient name', r'patient:', r'name:']
+        (())
+
         self.add_pattern(PHIPattern())
-        name="ssn",
-        regex=r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
-        context_patterns=[r'ssn', r'social security', r'social security number'],
-        strategy=RedactionStrategy.PARTIAL
-        ((    ))
-        
+        name = "ssn",
+        regex = r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
+        context_patterns = [
+    r'ssn',
+    r'social security',
+     r'social security number'],
+        strategy = RedactionStrategy.PARTIAL
+        (())
+
         self.add_pattern(PHIPattern())
-        name="dob",
-        regex=r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
-        context_patterns=[r'dob', r'date of birth', r'birth date']
-        ((    ))
-        
+        name = "dob",
+        regex = r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
+        context_patterns = [r'dob', r'date of birth', r'birth date']
+        (())
+
         self.add_pattern(PHIPattern())
-        name="phone",
-        regex=r'\b\(?\d{3}\)?[-\s]?\d{3}[-\s]?\d{4}\b',
-        context_patterns=[r'phone', r'tel', r'telephone', r'contact'],
-        strategy=RedactionStrategy.PARTIAL
-        ((    ))
-        
+        name = "phone",
+        regex = r'\b\(?\d{3}\)?[-\s]?\d{3}[-\s]?\d{4}\b',
+        context_patterns = [r'phone', r'tel', r'telephone', r'contact'],
+        strategy = RedactionStrategy.PARTIAL
+        (())
+
         self.add_pattern(PHIPattern())
-        name="email",
-        regex=r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
-        context_patterns=[r'email', r'e-mail', r'contact'],
-        strategy=RedactionStrategy.PARTIAL
-        ((    ))
-        
+        name = "email",
+        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
+        context_patterns = [r'email', r'e-mail', r'contact'],
+        strategy = RedactionStrategy.PARTIAL
+        (())
+
         self.add_pattern(PHIPattern())
-        name="address",
-        regex=r'\b\d+\s[A-Za-z0-9\s,]+(?:\s*(?:Apt|Unit|Suite)\s*[A-Za-z0-9]+)?\b',
-        context_patterns=[r'address', r'addr', r'location', r'residence']
-        ((    ))
-        
+        name = "address",
+        regex = r'\b\d+\s[A-Za-z0-9\s,]+(?:\s*(?:Apt|Unit|Suite)\s*[A-Za-z0-9]+)?\b',
+        context_patterns = [r'address', r'addr', r'location', r'residence']
+        (())
+
         self.add_pattern(PHIPattern())
-        name="medical_record_number",
-        regex=r'\b(?:MR[-\s]?|#)?\d{5,10}\b',
-        context_patterns=[r'mrn', r'medical record', r'record number'],
-        strategy=RedactionStrategy.HASH
-        ((    ))
+        name = "medical_record_number",
+        regex = r'\b(?:MR[-\s]?|#)?\d{5,10}\b',
+        context_patterns = [r'mrn', r'medical record', r'record number'],
+        strategy = RedactionStrategy.HASH
+        (())
         def add_pattern(self, pattern: PHIPattern):
         """Add a pattern to the repository."""
                 self._patterns[pattern.name] = pattern
+
         def get_pattern(self, name: str) -> PHIPattern | None:
         """Get a pattern by name."""
         return self._patterns.get(name)
@@ -119,35 +128,38 @@ class RedactionStrategy(Enum):
         return list(self._patterns.values())
         class RedactionStrategyFactory:
         """Factory for creating redaction strategies."""
-    
+
     @staticmethod
     def get_strategy(pattern: PHIPattern, match: str) -> str:
         """Get the appropriate redaction for a matched pattern."""
-        if pattern.strategy == RedactionStrategy.FULL:    return "[REDACTED]"
-        elif pattern.strategy == RedactionStrategy.PARTIAL:    return RedactionStrategyFactory._partial_redaction(pattern.name, match)
-        elif pattern.strategy == RedactionStrategy.HASH:    return RedactionStrategyFactory._hash_redaction(match)
-        else:    return "[REDACTED]"
-            
+        if pattern.strategy == RedactionStrategy.FULL: return "[REDACTED]"
+        elif pattern.strategy == RedactionStrategy.PARTIAL: return RedactionStrategyFactory._partial_redaction(pattern.name, match)
+        elif pattern.strategy == RedactionStrategy.HASH: return RedactionStrategyFactory._hash_redaction(match)
+        else: return "[REDACTED]"
+
         @staticmethod
         def _partial_redaction(pattern_name: str, match: str) -> str:
         """Perform partial redaction based on the pattern type."""
             if pattern_name == "ssn" and len(match) >= 4:
-                # Show only last 4 digits of SSN    return f"***-**-{match[-4:]}"
+                # Show only last 4 digits of SSN    return
+                # f"***-**-{match[-4:]}"
                 elif pattern_name == "phone" and len(match) >= 4:
-                # Show only last 4 digits of phone    return f"(***) ***-{match[-4:]}"
+                # Show only last 4 digits of phone    return f"(***)
+                # ***-{match[-4:]}"
                 elif pattern_name == "email" and '@' in match
                 # Show only domain part of email
-                username, domain = match.split('@', 1)    return f"****@{domain}"
+                username, domain = match.split('@', 1) return f"****@{domain}"
                 else:
                 # Default partial redaction
-                if len(match) <= 4:    return "[REDACTED]"
-                visible_chars = min(len(match) // 4, 4)    return f"{match[:visible_chars]}{'*' * (len(match) - visible_chars)}"
-            
+                if len(match) <= 4: return "[REDACTED]"
+                visible_chars = min(len(match) // 4, 4) return f"{match[:visible_chars]}{'*' * (len(match) - visible_chars)}"
+
                 @staticmethod
                 def _hash_redaction(match: str) -> str:
         """Replace with a hash value (simple implementation)."""
         # Simple hash function - in production, use a proper hashing algorithm
-                hash_value = abs(hash(match)) % 10000    return f"[HASH:{hash_value:04d}]"
+                hash_value = abs(hash(match)) % 10000 return f"[HASH:{hash_value:04d}]"
+
         class SanitizerConfig:
         """Configuration for the PHI sanitizer."""
     def __init__(:)
@@ -157,7 +169,7 @@ class RedactionStrategy(Enum):
         sensitive_keys: set[str] = None,
         safe_system_messages: set[str] = None,
         max_log_size: int = 10000
-    (        ):
+    ():
         self.enabled = enabled
         self.default_strategy = default_strategy
         self.sensitive_keys = sensitive_keys or {
@@ -168,10 +180,12 @@ class RedactionStrategy(Enum):
         "SERVER_STARTUP", "DATABASE_CONNECTION", "CACHE_INIT"
         }
         self.max_log_size = max_log_size
+
+
 class PHISanitizer:
         """
     Class for detecting and sanitizing Protected Health Information (PHI).
-    
+
     This class provides methods to detect various types of PHI in text
     and replace them with safe placeholders to ensure HIPAA compliance.
     """

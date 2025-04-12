@@ -110,7 +110,8 @@ class TestSymptomForecastingModelService:
         }
 
     @pytest.mark.asyncio
-    async def test_preprocess_patient_data_success(self, service, sample_patient_data):
+    async def test_preprocess_patient_data_success(
+            self, service, sample_patient_data):
         """Test that preprocess_patient_data correctly processes valid patient data."""
         # Execute
         patient_id = UUID(sample_patient_data["patient_id"])
@@ -143,7 +144,8 @@ class TestSymptomForecastingModelService:
             await service.preprocess_patient_data(patient_id, incomplete_data)
 
             @pytest.mark.asyncio
-            async def test_predict_symptom_progression(self, service, sample_patient_data):
+            async def test_predict_symptom_progression(
+                    self, service, sample_patient_data):
         """Test prediction of symptom progression."""
         # Setup
         patient_id = UUID(sample_patient_data["patient_id"])
@@ -263,5 +265,6 @@ class TestSymptomForecastingModelService:
             assert "intervention_effect" in result
             assert len(result["intervention_effect"]) > 0
 
-            # The baseline forecast should be different from the intervention forecast
+            # The baseline forecast should be different from the intervention
+            # forecast
             assert result["forecast"] != result["baseline_forecast"]

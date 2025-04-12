@@ -22,7 +22,6 @@ class PatternType(Enum):
     FUZZY = "FUZZY"
     CONTEXT = "CONTEXT"
 
-
     class RedactionMode(Enum):
     """Modes of redacting identified PHI."""
 
@@ -30,7 +29,6 @@ class PatternType(Enum):
     PARTIAL = "PARTIAL"  # Keep some characters and redact the rest
     HASH = "HASH"  # Replace with a cryptographic hash
     CUSTOM = "CUSTOM"  # Use a custom redaction function
-
 
     class PHIPattern:
     """Pattern for identifying PHI in text."""
@@ -55,15 +53,15 @@ class PatternType(Enum):
             context_words: List of words that provide context (for CONTEXT type)
             examples: Example matches for testing/documentation
             """
-            self.name = name
-            self.pattern = pattern
-            self.type = type
-            self.priority = priority
-            self.context_words = context_words or []
-            self.examples = examples or []
+        self.name = name
+        self.pattern = pattern
+        self.type = type
+        self.priority = priority
+        self.context_words = context_words or []
+        self.examples = examples or []
 
-            # Precompile regex patterns for efficiency
-            if type == PatternType.REGEX and pattern:
+        # Precompile regex patterns for efficiency
+        if type == PatternType.REGEX and pattern:
             self.regex = re.compile(pattern, re.IGNORECASE)
 
             def matches(self, text: str, context: str = None) -> bool:
@@ -77,7 +75,7 @@ class PatternType(Enum):
             Returns:
             bool: True if the pattern matches, False otherwise
             """
-            if text is None:
+        if text is None:
             return False
 
             if self.type == PatternType.REGEX:
@@ -94,10 +92,10 @@ class PatternType(Enum):
                 return False
 
                 context_lower = context.lower()
-                return any(word.lower() in context_lower for word in self.context_words)
+                return any(
+                    word.lower() in context_lower for word in self.context_words)
 
                 return False
-
 
                 class PatternRepository:
     """Repository of PHI detection patterns."""
@@ -109,13 +107,13 @@ class PatternType(Enum):
         Args:
             patterns_file: Optional path to a YAML file with pattern definitions
             """
-            self._patterns = []
+        self._patterns = []
 
-            # Add default patterns
-            self._add_default_patterns()
+        # Add default patterns
+        self._add_default_patterns()
 
-            # Load patterns from file if provided
-            if patterns_file:
+        # Load patterns from file if provided
+        if patterns_file:
             self._load_patterns_from_file(patterns_file)
 
             def _add_default_patterns(self):
@@ -147,8 +145,7 @@ class PatternType(Enum):
                 pattern=r"\b(\+\d{1,2}\s?)?(\(?\d{3}\)?[\s.-]?)?\d{3}[\s.-]?\d{4}\b",
                 type=PatternType.REGEX,
                 priority=7,
-            )
-        )
+            ))
 
         # Patient ID pattern
         self.add_pattern(
@@ -187,11 +184,11 @@ class PatternType(Enum):
         Args:
             file_path: Path to the YAML file
             """
-            # In the mock implementation, we'll just simulate loading patterns
-            # In a real implementation, this would load from a YAML file
+        # In the mock implementation, we'll just simulate loading patterns
+        # In a real implementation, this would load from a YAML file
 
-            # Pretend we loaded these patterns
-            samples = [
+        # Pretend we loaded these patterns
+        samples = [
             {
                 "name": "Test Pattern",
                 "pattern": r"test\d+",
@@ -206,10 +203,10 @@ class PatternType(Enum):
                 "type": "FUZZY",
                 "priority": 5,
             },
-            ]
+        ]
 
-            # Add the loaded patterns
-            for sample in samples:
+        # Add the loaded patterns
+        for sample in samples:
             self.add_pattern(
                 PHIPattern(
                     name=sample["name"],
@@ -228,12 +225,12 @@ class PatternType(Enum):
         Args:
             pattern: The PHIPattern to add
             """
-            self._patterns.append(pattern)
+        self._patterns.append(pattern)
 
-            # Sort patterns by priority (descending)
-            self._patterns.sort(key=lambda p: p.priority, reverse=True)
+        # Sort patterns by priority (descending)
+        self._patterns.sort(key=lambda p: p.priority, reverse=True)
 
-            def get_patterns(self) -> List[PHIPattern]:
+        def get_patterns(self) -> List[PHIPattern]:
         """
         Get all patterns in the repository.
 
@@ -241,10 +238,9 @@ class PatternType(Enum):
             List of PHIPattern objects
             """
 
-            return self._patterns
+        return self._patterns
 
-
-            class SanitizerConfig:
+        class SanitizerConfig:
     """Configuration for log sanitization."""
 
     def __init__(
@@ -281,15 +277,15 @@ class PatternType(Enum):
             max_log_size: Maximum log size before truncation
             disable_for_debug: Whether to disable sanitization in debug mode
             """
-            self.enabled = enabled
-            self.redaction_mode = redaction_mode
-            self.redaction_marker = redaction_marker
-            self.partial_redaction_length = partial_redaction_length
-            self.identifier_hash_salt = identifier_hash_salt
-            self.hash_length = hash_length
-            self.custom_redaction_func = custom_redaction_func
-            self.scan_nested_objects = scan_nested_objects
-            self.sensitive_field_names = sensitive_field_names or [
+        self.enabled = enabled
+        self.redaction_mode = redaction_mode
+        self.redaction_marker = redaction_marker
+        self.partial_redaction_length = partial_redaction_length
+        self.identifier_hash_salt = identifier_hash_salt
+        self.hash_length = hash_length
+        self.custom_redaction_func = custom_redaction_func
+        self.scan_nested_objects = scan_nested_objects
+        self.sensitive_field_names = sensitive_field_names or [
             "ssn",
             "social_security",
             "social_security_number",
@@ -325,14 +321,13 @@ class PatternType(Enum):
             "secret",
             "token",
             "api_key",
-            ]
-            self.sensitive_keys_case_sensitive = sensitive_keys_case_sensitive
-            self.hash_identifiers = hash_identifiers
-            self.max_log_size = max_log_size
-            self.disable_for_debug = disable_for_debug
+        ]
+        self.sensitive_keys_case_sensitive = sensitive_keys_case_sensitive
+        self.hash_identifiers = hash_identifiers
+        self.max_log_size = max_log_size
+        self.disable_for_debug = disable_for_debug
 
-
-            class RedactionStrategy:
+        class RedactionStrategy:
     """Base class for redaction strategies."""
 
     def redact(self, text: str, pattern: PHIPattern = None) -> str:
@@ -346,10 +341,9 @@ class PatternType(Enum):
             Returns:
             The redacted text
             """
-            raise NotImplementedError("Subclasses must implement redact()")
+        raise NotImplementedError("Subclasses must implement redact()")
 
-
-            class FullRedactionStrategy(RedactionStrategy):
+        class FullRedactionStrategy(RedactionStrategy):
     """Strategy that completely redacts the text with a marker."""
 
     def __init__(self, marker: str = "[REDACTED]"):
@@ -359,9 +353,9 @@ class PatternType(Enum):
         Args:
             marker: The redaction marker
             """
-            self.marker = marker
+        self.marker = marker
 
-            def redact(self, text: str, pattern: PHIPattern = None) -> str:
+        def redact(self, text: str, pattern: PHIPattern = None) -> str:
         """
         Completely redact the given text.
 
@@ -372,10 +366,9 @@ class PatternType(Enum):
             Returns:
             The redaction marker
             """
-            if pattern and pattern.name:
+        if pattern and pattern.name:
             return f"[REDACTED:{pattern.name}]"
             return self.marker
-
 
             class PartialRedactionStrategy(RedactionStrategy):
     """Strategy that partially redacts the text, keeping some characters."""
@@ -388,10 +381,10 @@ class PatternType(Enum):
             visible_length: Number of characters to keep visible
             marker: The redaction marker for when the text is too short
             """
-            self.visible_length = visible_length
-            self.marker = marker
+        self.visible_length = visible_length
+        self.marker = marker
 
-            def redact(self, text: str, pattern: PHIPattern = None) -> str:
+        def redact(self, text: str, pattern: PHIPattern = None) -> str:
         """
         Partially redact the given text.
 
@@ -402,7 +395,7 @@ class PatternType(Enum):
             Returns:
             The partially redacted text
             """
-            if not text:
+        if not text:
             return self.marker
 
             if len(text) <= self.visible_length:
@@ -415,21 +408,21 @@ class PatternType(Enum):
                 return "xxx-xx-" + text[-4:]
 
                 elif pattern.name == "EMAIL" and "@" in text:
-                # For email, keep the domain
+                    # For email, keep the domain
                 username, domain = text.split("@", 1)
                 return "xxxx@" + domain
 
                 elif pattern.name == "PHONE" and len(text) >= 10:
-                # For phone, keep the last 4 digits
+                    # For phone, keep the last 4 digits
                 return "xxx-xxx-" + text[-4:]
 
                 elif pattern.name == "PATIENTID" and len(text) >= self.visible_length:
-                # For patient ID, show last digits
+                    # For patient ID, show last digits
                 return f"[ID ending in {text[-self.visible_length:]}]"
 
                 # Default: redact all but the last few characters
-                return "x" * (len(text) - self.visible_length) + text[-self.visible_length :]
-
+                return "x" * (len(text) - self.visible_length) + \
+                    text[-self.visible_length:]
 
                 class HashRedactionStrategy(RedactionStrategy):
     """Strategy that replaces the text with a hash."""
@@ -442,10 +435,10 @@ class PatternType(Enum):
             salt: Salt to add to the hash for security
             hash_length: Length of the generated hash
             """
-            self.salt = salt
-            self.hash_length = hash_length
+        self.salt = salt
+        self.hash_length = hash_length
 
-            def redact(self, text: str, pattern: PHIPattern = None) -> str:
+        def redact(self, text: str, pattern: PHIPattern = None) -> str:
         """
         Replace the text with a hash.
 
@@ -456,7 +449,7 @@ class PatternType(Enum):
             Returns:
             A hash of the text
             """
-            if not text:
+        if not text:
             return "0" * self.hash_length
 
             # Create a hash of the text with the salt
@@ -466,7 +459,6 @@ class PatternType(Enum):
 
             # Return a substring of the hash
             return hash_hex[: self.hash_length]
-
 
             class RedactionStrategyFactory:
     """Factory for creating redaction strategies."""
@@ -485,7 +477,7 @@ class PatternType(Enum):
             Returns:
             The appropriate redaction strategy
             """
-            if mode == RedactionMode.FULL:
+        if mode == RedactionMode.FULL:
             return FullRedactionStrategy(marker=config.redaction_marker)
 
             elif mode == RedactionMode.PARTIAL:
@@ -496,8 +488,8 @@ class PatternType(Enum):
 
         elif mode == RedactionMode.HASH:
             return HashRedactionStrategy(
-                salt=config.identifier_hash_salt, hash_length=config.hash_length
-            )
+                salt=config.identifier_hash_salt,
+                hash_length=config.hash_length)
 
         elif mode == RedactionMode.CUSTOM and config.custom_redaction_func:
             # We'd implement a custom strategy here, but for the mock
@@ -506,7 +498,6 @@ class PatternType(Enum):
 
             # Default to full redaction
             return FullRedactionStrategy(marker=config.redaction_marker)
-
 
             class LogSanitizer:
     """HIPAA-compliant log sanitizer for detecting and redacting PHI."""
@@ -527,11 +518,10 @@ class PatternType(Enum):
             strategy: Redaction strategy to use
             hooks: Additional redaction hooks
             """
-            self.config = config or SanitizerConfig()
-            self.patterns = patterns or PatternRepository()
-            self.strategy = strategy or RedactionStrategyFactory.create_strategy(
-            self.config.redaction_mode, self.config
-        )
+        self.config = config or SanitizerConfig()
+        self.patterns = patterns or PatternRepository()
+        self.strategy = strategy or RedactionStrategyFactory.create_strategy(
+            self.config.redaction_mode, self.config)
         self.hooks = hooks or []
 
     def sanitize(self, log_entry) -> str:
@@ -544,14 +534,15 @@ class PatternType(Enum):
             Returns:
             The sanitized log entry
             """
-            if not self.config.enabled:
+        if not self.config.enabled:
             return log_entry
 
             if log_entry is None:
             return None
 
             # If the log entry is too large, truncate it
-            if isinstance(log_entry, str) and len(log_entry) > self.config.max_log_size:
+            if isinstance(log_entry, str) and len(
+                    log_entry) > self.config.max_log_size:
             return "Short log"  # Simplified for testing
 
             # Handle different types
@@ -577,7 +568,7 @@ class PatternType(Enum):
             Returns:
             The sanitized string
             """
-            if not text:
+        if not text:
             return text
 
             # First apply any custom hooks
@@ -591,7 +582,8 @@ class PatternType(Enum):
             for pattern in self.patterns.get_patterns():
             if pattern.matches(text):
                 # In this simplified version, we're replacing the entire string
-                # A real implementation would use regex to replace only the matched parts
+                # A real implementation would use regex to replace only the
+                # matched parts
                 return self.strategy.redact(text, pattern)
 
                 return text
@@ -606,13 +598,13 @@ class PatternType(Enum):
             Returns:
             The sanitized dictionary
             """
-            if not data:
+        if not data:
             return data
 
             result = {}
 
             for key, value in data.items():
-            # Check if this key is sensitive
+                # Check if this key is sensitive
             if self._is_sensitive_key(key):
                 result[key] = self.strategy.redact(str(value))
                 elif isinstance(value, dict) and self.config.scan_nested_objects:
@@ -636,7 +628,7 @@ class PatternType(Enum):
             Returns:
             The sanitized list
             """
-            if not data:
+        if not data:
             return data
 
             result = []
@@ -663,10 +655,10 @@ class PatternType(Enum):
             Returns:
             The sanitized log
             """
-            # This is similar to sanitize_dict, but with special handling
-            # for common log fields
+        # This is similar to sanitize_dict, but with special handling
+        # for common log fields
 
-            if not log:
+        if not log:
             return log
 
             result = {}
@@ -707,11 +699,11 @@ class PatternType(Enum):
             Returns:
             True if the key is sensitive, False otherwise
             """
-            if self.config.sensitive_keys_case_sensitive:
+        if self.config.sensitive_keys_case_sensitive:
             return key in self.config.sensitive_field_names
             else:
-            return key.lower() in [k.lower() for k in self.config.sensitive_field_names]
-
+            return key.lower() in [k.lower()
+                                   for k in self.config.sensitive_field_names]
 
             class PHIFormatter(logging.Formatter):
     """Formatter that sanitizes log messages for PHI."""
@@ -726,10 +718,10 @@ class PatternType(Enum):
             style: The style of the format string
             sanitizer: The log sanitizer to use
             """
-            super().__init__(fmt, datefmt, style)
-            self.sanitizer = sanitizer or LogSanitizer()
+        super().__init__(fmt, datefmt, style)
+        self.sanitizer = sanitizer or LogSanitizer()
 
-            def format(self, record):
+        def format(self, record):
         """
         Format and sanitize a log record.
 
@@ -739,16 +731,15 @@ class PatternType(Enum):
             Returns:
             The formatted and sanitized log record
             """
-            # First get the formatted message
-            formatted = super().format(record)
+        # First get the formatted message
+        formatted = super().format(record)
 
-            # Then sanitize it
-            sanitized = self.sanitizer.sanitize(formatted)
+        # Then sanitize it
+        sanitized = self.sanitizer.sanitize(formatted)
 
-            return sanitized
+        return sanitized
 
-
-            class PHIRedactionHandler(logging.Handler):
+        class PHIRedactionHandler(logging.Handler):
     """Log handler that sanitizes messages for PHI."""
 
     def __init__(self, sanitizer=None, level=logging.NOTSET):
@@ -759,30 +750,29 @@ class PatternType(Enum):
             sanitizer: The log sanitizer to use
             level: The logging level
             """
-            super().__init__(level)
-            self.sanitizer = sanitizer or LogSanitizer()
+        super().__init__(level)
+        self.sanitizer = sanitizer or LogSanitizer()
 
-            def emit(self, record):
+        def emit(self, record):
         """
         Emit a sanitized log record.
 
         Args:
             record: The log record to emit
             """
-            # Sanitize the message
-            if isinstance(record.msg, (dict, list)):
+        # Sanitize the message
+        if isinstance(record.msg, (dict, list)):
             # For structured logging
             record.msg = self.sanitizer.sanitize(record.msg)
             else:
-            # For string messages
+                # For string messages
             record.msg = self.sanitizer.sanitize(str(record.msg))
 
             # Sanitize exception info
             if record.exc_info:
-            # We can't modify the actual exception, but we can sanitize the text
-            # when it's formatted. This is a simplified approach.
+                # We can't modify the actual exception, but we can sanitize the text
+                # when it's formatted. This is a simplified approach.
             record.exc_text = self.sanitizer.sanitize(str(record.exc_info[1]))
-
 
             class SanitizedLogger(logging.Logger):
     """Logger that automatically sanitizes all logs for PHI."""
@@ -796,14 +786,13 @@ class PatternType(Enum):
             level: The logging level
             sanitizer: The log sanitizer to use
             """
-            super().__init__(name, level)
-            self.sanitizer = sanitizer or LogSanitizer()
+        super().__init__(name, level)
+        self.sanitizer = sanitizer or LogSanitizer()
 
-            # Add a PHI redaction handler
-            handler = PHIRedactionHandler(sanitizer=self.sanitizer)
-            handler.setFormatter(
-            logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        )
+        # Add a PHI redaction handler
+        handler = PHIRedactionHandler(sanitizer=self.sanitizer)
+        handler.setFormatter(logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
         self.addHandler(handler)
 
     def _log(
@@ -828,11 +817,11 @@ class PatternType(Enum):
             stack_info: Stack info
             stacklevel: Stack level
             """
-            # Sanitize the message
-            sanitized_msg = self.sanitizer.sanitize(msg)
+        # Sanitize the message
+        sanitized_msg = self.sanitizer.sanitize(msg)
 
-            # Call the parent _log method with the sanitized message
-            super()._log(
+        # Call the parent _log method with the sanitized message
+        super()._log(
             level, sanitized_msg, args, exc_info, extra, stack_info, stacklevel
         )
 
@@ -848,10 +837,9 @@ def get_sanitized_logger(name):
         A SanitizedLogger instance
         """
 
-        return SanitizedLogger(name)
+    return SanitizedLogger(name)
 
-
-        def sanitize_logs(sanitizer=None):
+    def sanitize_logs(sanitizer=None):
     """
     Decorator to sanitize function logs.
 
@@ -861,9 +849,10 @@ def get_sanitized_logger(name):
         Returns:
         The decorated function
         """
-        _sanitizer = sanitizer or LogSanitizer()
+    _sanitizer = sanitizer or LogSanitizer()
 
-        def decorator(func):
+    def decorator(func):
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             # Set up a PHI redaction handler for this function call
@@ -875,7 +864,7 @@ def get_sanitized_logger(name):
             try:
                 return func(*args, **kwargs)
                 finally:
-                # Remove the handler when done
+                    # Remove the handler when done
                 logger.removeHandler(handler)
 
                 return wrapper

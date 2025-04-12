@@ -22,7 +22,6 @@ class Gender(str, Enum):
     OTHER = "other"
     PREFER_NOT_TO_SAY = "prefer_not_to_say"
 
-
     class InsuranceStatus(str, Enum):
     """Insurance verification status enum."""
 
@@ -31,7 +30,6 @@ class Gender(str, Enum):
     UNVERIFIED = "unverified"
     EXPIRED = "expired"
 
-
     class PatientStatus(str, Enum):
     """Patient status enum."""
 
@@ -39,12 +37,10 @@ class Gender(str, Enum):
     INACTIVE = "inactive"
     ARCHIVED = "archived"
 
-
     class ValidationException(Exception):
     """Exception raised for validation errors."""
 
     pass
-
 
     @dataclass
     class Patient:
@@ -105,7 +101,9 @@ class Gender(str, Enum):
                     self.date_of_birth, "%Y-%m-%d"
                 ).date()
                 except ValueError:
-                raise ValidationException(f"Invalid date format: {self.date_of_birth}")
+                raise ValidationException(
+                    f"Invalid date format: {
+                        self.date_of_birth}")
 
                 # Convert string enums to enum values
                 if isinstance(self.gender, str):
@@ -126,7 +124,9 @@ class Gender(str, Enum):
             try:
                 self.status = PatientStatus(self.status)
                 except ValueError:
-                raise ValidationException(f"Invalid patient status: {self.status}")
+                raise ValidationException(
+                    f"Invalid patient status: {
+                        self.status}")
 
                 # Validate email format if provided
                 if self.email and not self._validate_email(self.email):
@@ -161,11 +161,13 @@ class Gender(str, Enum):
                     try:
                         value = datetime.strptime(value, "%Y-%m-%d").date()
                         except ValueError:
-                        raise ValidationException(f"Invalid date format: {value}")
+                        raise ValidationException(
+                            f"Invalid date format: {value}")
                         setattr(self, key, value)
                         self.updated_at = datetime.now()
 
-                        def update_insurance_info(self, insurance_info=None, insurance_status=None):
+                        def update_insurance_info(
+                                self, insurance_info=None, insurance_status=None):
         """Update insurance information."""
         if insurance_info is not None:
             self.insurance_info = insurance_info
@@ -189,14 +191,16 @@ class Gender(str, Enum):
     def remove_emergency_contact(self, index):
         """Remove an emergency contact by index."""
         if index >= len(self.emergency_contacts):
-            raise IndexError(f"Index {index} out of range for emergency contacts")
+            raise IndexError(
+                f"Index {index} out of range for emergency contacts")
             self.emergency_contacts.pop(index)
             self.updated_at = datetime.now()
 
             def add_medical_history_item(self, item):
         """Add a medical history item."""
         if "condition" not in item:
-            raise ValidationException("Medical history item must have a condition")
+            raise ValidationException(
+                "Medical history item must have a condition")
             self.medical_history.append(item)
             self.updated_at = datetime.now()
 
@@ -240,14 +244,15 @@ class Gender(str, Enum):
         self.notes = notes
         self.updated_at = datetime.now()
 
-        def update_appointment_times(self, last_appointment=None, next_appointment=None):
+        def update_appointment_times(
+                self,
+                last_appointment=None,
+                next_appointment=None):
         """Update appointment times."""
         self.last_appointment = (
-            last_appointment if last_appointment is not None else self.last_appointment
-        )
+            last_appointment if last_appointment is not None else self.last_appointment)
         self.next_appointment = (
-            next_appointment if next_appointment is not None else self.next_appointment
-        )
+            next_appointment if next_appointment is not None else self.next_appointment)
         self.updated_at = datetime.now()
 
     def set_preferred_provider(self, provider_id):
@@ -314,4 +319,7 @@ class Gender(str, Enum):
         def __str__(self):
         """String representation."""
 
-        return f"Patient(id={self.id}, name={self.first_name} {self.last_name})"
+        return f"Patient(id={
+            self.id}, name={
+            self.first_name} {
+            self.last_name})"

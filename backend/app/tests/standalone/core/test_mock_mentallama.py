@@ -34,10 +34,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.service.initialize({})
 
         self.sample_text = (
-        "I've been feeling down for several weeks. I'm constantly tired, "
-        "have trouble sleeping, and don't enjoy things anymore. Sometimes "
-        "I wonder if life is worth living, but I wouldn't actually hurt myself."
-    )
+            "I've been feeling down for several weeks. I'm constantly tired, "
+            "have trouble sleeping, and don't enjoy things anymore. Sometimes "
+            "I wonder if life is worth living, but I wouldn't actually hurt myself.")
 
     def tearDown(self) -> None:
         """Clean up after each test."""
@@ -53,7 +52,10 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.assertTrue(service.is_healthy())
 
         # Test initialization with custom mock responses
-        custom_responses = {"general": {"custom": True, "model_type": "general"}}
+        custom_responses = {
+            "general": {
+                "custom": True,
+                "model_type": "general"}}
         service = MockMentaLLaMA()
         service.initialize({"mock_responses": custom_responses})
         self.assertTrue(service.is_healthy())
@@ -119,7 +121,8 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.assertIn("severity", result["depression_signals"])
         self.assertIn("confidence", result["depression_signals"])
         self.assertIn("key_indicators", result["depression_signals"])
-        self.assertIsInstance(result["depression_signals"]["key_indicators"], list)
+        self.assertIsInstance(
+            result["depression_signals"]["key_indicators"], list)
 
         # Verify clinical recommendations
         self.assertIn("recommendations", result)
@@ -168,7 +171,8 @@ class TestMockMentaLLaMA(BaseUnitTest):
             self.sample_text, dimensions=["emotional", "social"]
         )
         self.assertIn("wellness_dimensions", result)
-        dimensions = [dim["dimension"] for dim in result["wellness_dimensions"]]
+        dimensions = [dim["dimension"]
+                      for dim in result["wellness_dimensions"]]
         self.assertIn("emotional", dimensions)
 
         # Ensure analysis and recommendations are provided

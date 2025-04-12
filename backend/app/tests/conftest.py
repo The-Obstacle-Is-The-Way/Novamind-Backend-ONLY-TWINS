@@ -18,15 +18,15 @@ if str(app_dir) not in sys.path:
     try:
     from app.tests.helpers.patch_imports import patch_imports
     except ImportError:
-    # Use a dummy context manager if the import fails
+        # Use a dummy context manager if the import fails
     from contextlib import contextmanager
 
     @contextmanager
     def patch_imports():
         yield
 
-
         # Use the patch_imports context manager during collection
+
         def pytest_collection_modifyitems(config, items):
     """
     Pytest hook that runs after test collection but before test execution.
@@ -34,7 +34,6 @@ if str(app_dir) not in sys.path:
     We use this hook to patch problematic imports during test collection.
     """
     pass  # The patching is already done by pytest_configure
-
 
     def pytest_configure(config):
     """
@@ -48,21 +47,25 @@ if str(app_dir) not in sys.path:
         # which happens before collection
         pass
 
-
         # Register custom markers
+
         def pytest_sessionstart(session):
     """Set up the pytest session."""
     # Define custom markers
     config = session.config
-    config.addinivalue_line("markers", "ml: Mark test as a machine learning test")
+    config.addinivalue_line(
+        "markers",
+        "ml: Mark test as a machine learning test")
     config.addinivalue_line("markers", "phi: Mark test as a PHI-related test")
-    config.addinivalue_line("markers", "integration: Mark test as integration test")
+    config.addinivalue_line(
+        "markers",
+        "integration: Mark test as integration test")
     config.addinivalue_line("markers", "unit: Mark test as unit test")
     config.addinivalue_line("markers", "security: Mark test as security test")
     config.addinivalue_line("markers", "api: Mark test as API test")
 
-
     # Define fixtures that can be shared across tests
+
     @pytest.fixture(scope="session")
     def test_environment():
     """Set up the test environment variables."""

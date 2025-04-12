@@ -24,20 +24,17 @@ def sample_patient_id():
     # Use a fixed UUID for testing to ensure reproducibility
     return UUID("12345678-1234-5678-1234-567812345678")
 
-
     @pytest.fixture
     def sample_provider_id():
     """Create a sample provider ID."""
 
     return UUID("00000000-0000-0000-0000-000000000001")
 
-
     @pytest.fixture
     def sample_rule_id():
     """Create a sample rule ID."""
 
     return UUID("00000000-0000-0000-0000-000000000002")
-
 
     @pytest.fixture
     def sample_data_points():
@@ -151,7 +148,8 @@ class TestBiometricAlert:
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
 
-        def test_acknowledge_already_acknowledged(self, sample_alert, sample_provider_id):
+        def test_acknowledge_already_acknowledged(
+                self, sample_alert, sample_provider_id):
         """Test acknowledging an already acknowledged alert."""
         # Arrange
         original_provider_id = UUID("00000000-0000-0000-0000-000000000003")
@@ -180,7 +178,8 @@ class TestBiometricAlert:
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
 
-        def test_mark_in_progress_from_acknowledged(self, sample_alert, sample_provider_id):
+        def test_mark_in_progress_from_acknowledged(
+                self, sample_alert, sample_provider_id):
         """Test marking an acknowledged alert as in progress."""
         # Arrange
         sample_alert.acknowledge(sample_provider_id)
@@ -213,7 +212,8 @@ class TestBiometricAlert:
         assert sample_alert.resolution_notes == notes
         assert sample_alert.updated_at is not None
 
-        def test_resolve_from_in_progress(self, sample_alert, sample_provider_id):
+        def test_resolve_from_in_progress(
+                self, sample_alert, sample_provider_id):
         """Test resolving an in-progress alert."""
         # Arrange
         sample_alert.mark_in_progress(sample_provider_id)
@@ -250,7 +250,8 @@ class TestBiometricAlert:
         assert sample_alert.resolution_notes == notes
         assert sample_alert.updated_at is not None
 
-        def test_dismiss_from_acknowledged(self, sample_alert, sample_provider_id):
+        def test_dismiss_from_acknowledged(
+                self, sample_alert, sample_provider_id):
         """Test dismissing an acknowledged alert."""
         # Arrange
         sample_alert.acknowledge(sample_provider_id)

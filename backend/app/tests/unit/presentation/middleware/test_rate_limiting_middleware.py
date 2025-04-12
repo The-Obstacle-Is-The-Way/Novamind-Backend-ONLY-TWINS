@@ -27,16 +27,13 @@ def mock_limiter():
     limiter.check_rate_limit.return_value = True
     return limiter
 
-
     async def dummy_endpoint(request):
     """Dummy endpoint for testing."""
     return JSONResponse({"message": "success"})
 
-
     async def other_endpoint(request):
     """Another endpoint for testing different paths."""
     return JSONResponse({"message": "other"})
-
 
     @pytest.fixture
     def app(mock_limiter):
@@ -73,7 +70,6 @@ def client(app):
     """Create a test client for the application."""
     return TestClient(app)
 
-
     class TestRateLimitingMiddleware:
     """Test suite for the rate limiting middleware."""
 
@@ -92,7 +88,8 @@ def client(app):
         def test_ip_rate_limited(self, client, mock_limiter):
         """Test that exceeding IP rate limit returns 429."""
         # First call for IP check returns False (limit exceeded)
-        # Second call for global check would return True (not reached, but included for clarity)
+        # Second call for global check would return True (not reached, but
+        # included for clarity)
         mock_limiter.check_rate_limit.side_effect = [False, True]
 
         response = client.get("/api/test")
@@ -148,7 +145,8 @@ def client(app):
         response = client.get("/api/test")
 
         assert "X-Rate-Limit-Limit" in response.headers
-        assert response.headers["X-Rate-Limit-Limit"] == "10"  # Default IP limit
+        # Default IP limit
+        assert response.headers["X-Rate-Limit-Limit"] == "10"
 
         @patch("app.presentation.middleware.rate_limiting_middleware.time")
         def test_get_key_function(self, mock_time, app, mock_limiter):
@@ -159,8 +157,9 @@ def client(app):
         routes = [Route("/api/test", dummy_endpoint)]
         app = Starlette(routes=routes)
         app.add_middleware(
-            RateLimitingMiddleware, limiter=mock_limiter, get_key=custom_key_func
-        )
+            RateLimitingMiddleware,
+            limiter=mock_limiter,
+            get_key=custom_key_func)
 
         mock_time.time.return_value = 123.456  # Mock time for consistent timing
 
@@ -196,7 +195,8 @@ def client(app):
         key = middleware._default_get_key(mock_request)
         # Convert to synchronous result (in tests this happens automatically)
         if hasattr(key, "__await__"):
-            key = pytest.fail("_default_get_key should be a normal method, not async")
+            key = pytest.fail(
+                "_default_get_key should be a normal method, not async")
 
             assert key == "192.168.1.1"
 
@@ -218,7 +218,6 @@ def client(app):
 
         # Should use first IP in X-Forwarded-For chain
         assert key == "10.0.0.1"
-
 
         class TestRateLimitingMiddlewareFactory:
     """Test suite for rate limiting middleware factory function."""

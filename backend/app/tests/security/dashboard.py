@@ -4,7 +4,7 @@
 NovaMind Digital Twin Security Dashboard Generator
 
 This module generates a comprehensive visualization dashboard for the
-security test results, highlighting HIPAA compliance metrics and 
+security test results, highlighting HIPAA compliance metrics and
 quantum-level encryption effectiveness across all components.
 """
 
@@ -16,35 +16,35 @@ from typing import Dict, Any, List
 
 def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
     """Generate HTML dashboard for security test results.
-    
+
     Args:
         results: Dictionary with test results
         output_path: Path to save the dashboard HTML
         """
-        # Calculate overall metrics
-        total_tests = results['summary']['total']
-        passed_tests = results['summary']['passed']
-        failed_tests = results['summary']['failed']
-        error_tests = results['summary']['errors']
-        skipped_tests = results['summary']['skipped']
-    
-        # Calculate success rate
-        if total_tests > 0:
+    # Calculate overall metrics
+    total_tests = results['summary']['total']
+    passed_tests = results['summary']['passed']
+    failed_tests = results['summary']['failed']
+    error_tests = results['summary']['errors']
+    skipped_tests = results['summary']['skipped']
+
+    # Calculate success rate
+    if total_tests > 0:
         success_rate = 100 * passed_tests / total_tests
         else:
         success_rate = 0
-    
+
         # Generate timestamp
         timestamp = datetime.fromisoformat(results['timestamp'])
         formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
-    
+
         # Generate category summaries
         category_rows = []
         for name, category in results['categories'].items():
         cat_total = category['tests']['total']
         cat_passed = category['tests']['passed']
         cat_success_rate = 100 * cat_passed / cat_total if cat_total > 0 else 0
-        
+
         # Set color based on success rate
         if cat_success_rate >= 95:
             color_class = "success"
@@ -52,7 +52,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
             color_class = "warning"
             else:
             color_class = "danger"
-            
+
             category_rows.append(f"""
             <tr class="{color_class}">
             <td>{name}</td>
@@ -63,21 +63,21 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
             <td>{cat_success_rate:.2f}%</td>
             </tr>
             """)
-    
+
             # Generate detailed test file results
             file_sections = []
             for name, category in results['categories'].items():
         file_rows = []
-        
+
         for file_result in category.get('files', []):
             file_name = file_result.get('file', 'Unknown')
             file_path = file_result.get('path', 'Unknown')
             file_summary = file_result.get('summary', {})
-            
+
             file_total = file_summary.get('total', 0)
             file_passed = file_summary.get('passed', 0)
             file_success_rate = 100 * file_passed / file_total if file_total > 0 else 0
-            
+
             # Set color based on success rate
             if file_success_rate >= 95:
                 color_class = "success"
@@ -85,7 +85,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
                 color_class = "warning"
                 else:
                 color_class = "danger"
-                
+
                 file_rows.append(f"""
                 <tr class="{color_class}">
                 <td>{file_name}</td>
@@ -96,7 +96,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
                 <td>{file_success_rate:.2f}%</td>
                 </tr>
                 """)
-            
+
                 # Add detailed test results
                 test_rows = []
                 for test in file_result.get('tests', []):
@@ -104,7 +104,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
                 test_outcome = test.get('outcome', 'unknown')
                 test_duration = test.get('duration', 0)
                 test_message = test.get('message', '')
-                
+
                 # Set color based on outcome
                 if test_outcome == 'passed':
                     row_class = "success"
@@ -112,7 +112,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
                     row_class = "warning"
                     else:
                     row_class = "danger"
-                    
+
                     test_rows.append(f"""
                     <tr class="{row_class}">
                     <td>{test_name}</td>
@@ -121,7 +121,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
                     <td><pre class="message">{test_message}</pre></td>
                     </tr>
                     """)
-                
+
                     # Add test details if available
                     if test_rows:
                 file_rows.append(f"""
@@ -145,7 +145,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
                     </td>
                 </tr>
                 """)
-                
+
                 # Add file section
                 if file_rows:
             file_sections.append(f"""
@@ -172,7 +172,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
                 </div>
             </div>
             """)
-    
+
             # Determine overall status color
             if success_rate >= 95:
         status_class = "success"
@@ -183,7 +183,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
         else:
         status_class = "danger"
         status_text = "NON-COMPLIANT"
-    
+
         # Generate the HTML
         html = f"""<!DOCTYPE html>
         <html lang="en">
@@ -345,72 +345,78 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
             <p>HIPAA Security Compliance Report</p>
         </div>
         </footer>
-    
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
         // Toggle test details on file row click
         document.addEventListener('DOMContentLoaded', function() {
-            const testDetails = document.querySelectorAll('.test-details');
-            testDetails.forEach(detail => {
-                detail.style.display = 'none';
-            });
-            
-            const fileRows = document.querySelectorAll('tr:not(:has(td[colspan]))');
-            fileRows.forEach(row => {
+            const testDetails = document.querySelectorAll('.test-details')
+            testDetails.forEach(detail=> {
+                detail.style.display = 'none'
+            })
+
+            const fileRows = document.querySelectorAll('tr:not(:has(td[colspan]))')
+            fileRows.forEach(row=> {
                 row.addEventListener('click', function() {
-                    const nextRow = this.nextElementSibling;
-                    if (nextRow && nextRow.querySelector('.test-details')) {
-                        const details = nextRow.querySelector('.test-details');
-                        details.style.display = details.style.display === 'none' ? 'block' : 'none';
+                    const nextRow = this.nextElementSibling
+                    if (nextRow & & nextRow.querySelector('.test-details')) {
+                        const details = nextRow.querySelector('.test-details')
+                        details.style.display = details.style.display == = 'none' ? 'block': 'none'
                     }
-                });
-            });
+                })
+            })
         });
     </script>
 </body>
 </html>
 """
-    
+
     # Write the HTML to the output file
     with open(output_path, 'w') as f:
         f.write(html)
 
-
         def parse_test_results(results_path: str) -> Dict[str, Any]:
     """Parse a test results JSON file.
-    
+
     Args:
         results_path: Path to the results JSON file
-        
+
         Returns:
         Parsed results dictionary
         """
-        with open(results_path, 'r') as f:
+    with open(results_path, 'r') as f:
         return json.load(f)
 
-
         if __name__ == "__main__":
-    # Get the most recent results file
+            # Get the most recent results file
     base_dir = os.path.dirname(os.path.abspath(__file__))
     results_dir = os.path.join(base_dir, 'test_results')
-    
+
     if not os.path.exists(results_dir):
         print(f"Results directory not found: {results_dir}")
         exit(1)
-    
+
         # Find the most recent results file
-        results_files = [f for f in os.listdir(results_dir) if f.endswith('.json')]
+        results_files = [f for f in os.listdir(
+            results_dir) if f.endswith('.json')]
         if not results_files:
         print("No results files found")
         exit(1)
-        
+
         # Sort by modification time (most recent first)
-        results_files.sort(key=lambda f: os.path.getmtime(os.path.join(results_dir, f)), reverse=True)
+        results_files.sort(
+            key=lambda f: os.path.getmtime(
+                os.path.join(
+                    results_dir,
+                    f)),
+            reverse=True)
         latest_file = os.path.join(results_dir, results_files[0])
-    
+
         # Generate dashboard
         results = parse_test_results(latest_file)
-        dashboard_path = os.path.join(results_dir, f"dashboard_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html")
+        dashboard_path = os.path.join(
+            results_dir, f"dashboard_{
+                datetime.now().strftime('%Y%m%d_%H%M%S')}.html")
         generate_dashboard(results, dashboard_path)
-    
+
         print(f"Dashboard generated at: {dashboard_path}")

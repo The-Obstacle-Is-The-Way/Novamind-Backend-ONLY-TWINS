@@ -13,7 +13,6 @@ def sanitizer():
 
     return LogSanitizer()
 
-
     class TestPHISanitizer:
     """Test suite for PHI sanitization functionality."""
 

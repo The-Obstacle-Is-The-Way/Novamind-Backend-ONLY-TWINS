@@ -9,12 +9,12 @@ These tests verify that repositories handling PHI/ePHI properly:
     4. Validate access permissions before operations
     5. Maintain audit trails for all operations
     """
-    import pytest
-    import json
-    import uuid
-    from unittest.mock import patch, MagicMock, ANY
+import pytest
+import json
+import uuid
+from unittest.mock import patch, MagicMock, ANY
 
-    from app.infrastructure.persistence.sqlalchemy.patient_repository import (
+from app.infrastructure.persistence.sqlalchemy.patient_repository import (
     PatientRepository,
 )
 from app.infrastructure.security.encryption_service import EncryptionService
@@ -34,7 +34,6 @@ def encryption_service():
         service._encryption_key = test_key
         yield service
 
-
         @pytest.fixture
         def db_session():
     """Create a mock database session."""
@@ -46,16 +45,15 @@ def encryption_service():
     session.first.return_value = None
     return session
 
-
     @pytest.fixture
     def patient_repository(db_session, encryption_service):
     """Create a patient repository with mocked dependencies."""
 
     return PatientRepository(db_session, encryption_service)
 
-
     @pytest.mark.db_required()
-    def test_patient_creation_encrypts_phi(patient_repository, encryption_service):
+    def test_patient_creation_encrypts_phi(
+            patient_repository, encryption_service):
     """Test that patient creation encrypts PHI fields."""
     # Spy on the encryption service
     with patch.object(
@@ -85,7 +83,8 @@ def encryption_service():
         ), "Expected at least 5 encryption calls for PHI fields"
 
         # Check specific fields were encrypted
-        encrypted_fields = [call.args[0] for call in mock_encrypt.call_args_list]
+        encrypted_fields = [call.args[0]
+                            for call in mock_encrypt.call_args_list]
         assert "123-45-6789" in encrypted_fields, "SSN should be encrypted"
         assert "john.doe@example.com" in encrypted_fields, "Email should be encrypted"
         assert "555-123-4567" in encrypted_fields, "Phone should be encrypted"
@@ -130,8 +129,8 @@ def test_patient_retrieval_decrypts_phi(
         assert patient.ssn == "123-45-6789"
         assert patient.email == "john.doe@example.com"
 
-
-        def test_repository_filters_inactive_records(patient_repository, db_session):
+        def test_repository_filters_inactive_records(
+                patient_repository, db_session):
     """Test that repository filters out inactive/deleted records by default."""
     # Setup mock to verify filtering
     db_session.filter = MagicMock(return_value=db_session)
@@ -145,8 +144,8 @@ def test_patient_retrieval_decrypts_phi(
     filter_args = db_session.filter.call_args[0][0]
     assert "is_active" in str(filter_args), "Should filter by is_active"
 
-
-    def test_audit_logging_on_patient_changes(patient_repository, encryption_service):
+    def test_audit_logging_on_patient_changes(
+            patient_repository, encryption_service):
     """Test that all patient changes are audit logged."""
     patient_id = str(uuid.uuid4())
     patient = Patient(
@@ -181,7 +180,6 @@ def test_patient_retrieval_decrypts_phi(
             assert "john.doe@example.com" not in json.dumps(
                 log_payload
             ), "Email should not be in audit log"
-
 
             def test_authorization_check_before_operations(patient_repository):
     """Test that authorization is checked before sensitive operations."""
@@ -218,8 +216,8 @@ def test_patient_retrieval_decrypts_phi(
             with pytest.raises(Exception, match="Unauthorized"):
             patient_repository.delete(patient_id)
 
-
-            def test_phi_never_appears_in_exceptions(patient_repository, db_session):
+            def test_phi_never_appears_in_exceptions(
+                    patient_repository, db_session):
     """Test that PHI never appears in exception messages."""
     # Make DB session fail with an exception containing PHI
     error_msg = "Error processing patient John Doe with SSN 123-45-6789"
@@ -239,18 +237,18 @@ def test_patient_retrieval_decrypts_phi(
         exception_str = str(excinfo.value)
         assert "123-45-6789" not in exception_str, "SSN should not appear in exceptions"
         assert (
-        "John Doe" not in exception_str
-    ), "Patient name should not appear in exceptions"
+            "John Doe" not in exception_str
+        ), "Patient name should not appear in exceptions"
         assert (
-        "[REDACTED]" in exception_str or "PHI redacted" in exception_str
-    ), "Exception should indicate PHI redaction"
+            "[REDACTED]" in exception_str or "PHI redacted" in exception_str
+        ), "Exception should indicate PHI redaction"
 
-
-        def test_bulk_operations_maintain_encryption(patient_repository, encryption_service):
+        def test_bulk_operations_maintain_encryption(
+                patient_repository, encryption_service):
     """Test that bulk operations maintain encryption for all records."""
     # Create multiple patients
     patients = [
-        Patient(id=str(uuid.uuid4()), first_name=f"Patient-{i}", ssn=f"123-45-{1000+i}")
+        Patient(id=str(uuid.uuid4()), first_name=f"Patient-{i}", ssn=f"123-45-{1000 + i}")
         for i in range(5)
     ]
 
@@ -270,8 +268,8 @@ def test_patient_retrieval_decrypts_phi(
                 patient.ssn in call.args for call in mock_encrypt.call_args_list
             ), f"SSN {patient.ssn} should be encrypted"
 
-
-            def test_search_filters_without_exposing_phi(patient_repository, db_session):
+            def test_search_filters_without_exposing_phi(
+                    patient_repository, db_session):
     """Test that search operations filter records without exposing PHI."""
     # Mock query builder
     mock_query = MagicMock()
@@ -302,7 +300,6 @@ def test_patient_retrieval_decrypts_phi(
         for call in mock_logger.info.call_args_list:
             log_message = call[0][0]
             assert "123-45-6789" not in log_message, "SSN should not appear in logs"
-
 
             def test_encryption_key_rotation(encryption_service):
     """Test that encryption key rotation works correctly."""
@@ -335,7 +332,6 @@ def test_patient_retrieval_decrypts_phi(
         encryption_service._encryption_key = new_key
         decrypted = encryption_service.decrypt(new_encrypted)
         assert decrypted == original_text
-
 
         def test_field_level_encryption(encryption_service):
     """Test that encryption operates at the field level not record level."""

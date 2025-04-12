@@ -21,22 +21,47 @@ def test_is_date_in_range():
 
     # Test dates within range
     assert is_date_in_range(
-        base_date, base_date - timedelta(days=10), base_date + timedelta(days=10)
-    )
+        base_date,
+        base_date -
+        timedelta(
+            days=10),
+        base_date +
+        timedelta(
+            days=10))
 
     # Test dates at range boundaries
-    assert is_date_in_range(base_date, base_date, base_date + timedelta(days=10))
     assert is_date_in_range(
-        base_date + timedelta(days=10), base_date, base_date + timedelta(days=10)
-    )
+        base_date,
+        base_date,
+        base_date +
+        timedelta(
+            days=10))
+    assert is_date_in_range(
+        base_date +
+        timedelta(
+            days=10),
+        base_date,
+        base_date +
+        timedelta(
+            days=10))
 
     # Test dates outside range
     assert not is_date_in_range(
-        base_date - timedelta(days=1), base_date, base_date + timedelta(days=10)
-    )
+        base_date -
+        timedelta(
+            days=1),
+        base_date,
+        base_date +
+        timedelta(
+            days=10))
     assert not is_date_in_range(
-        base_date + timedelta(days=11), base_date, base_date + timedelta(days=10)
-    )
+        base_date +
+        timedelta(
+            days=11),
+        base_date,
+        base_date +
+        timedelta(
+            days=10))
 
 
 @pytest.mark.standalone()
@@ -50,7 +75,6 @@ def test_format_date_iso():
 
     # Test date-only formatting
     assert format_date_iso(test_date, include_time=False) == "2025-01-01"
-
 
     @pytest.mark.standalone()
     def test_sanitize_name():
@@ -66,7 +90,6 @@ def test_format_date_iso():
     # Test empty input
     assert sanitize_name("") == ""
     assert sanitize_name(None) == ""
-
 
     @pytest.mark.standalone()
     def test_truncate_text():

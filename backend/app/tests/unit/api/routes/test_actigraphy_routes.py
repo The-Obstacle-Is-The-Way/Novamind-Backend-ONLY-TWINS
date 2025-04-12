@@ -40,13 +40,11 @@ def mock_token() -> str:
     # This is just a placeholder, actual token validation is mocked
     return "mock_jwt_token"
 
-
     @pytest.fixture
     def patient_id() -> str:
     """Create a mock patient ID."""
 
     return "patient123"
-
 
     @pytest.fixture
     def sample_readings() -> List[Dict[str, Any]]:
@@ -92,11 +90,18 @@ def analysis_request(
     return {
         "patient_id": patient_id,
         "readings": sample_readings,
-        "start_time": datetime.now(UTC).isoformat() + "Z",
-        "end_time": (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z",
+        "start_time": datetime.now(UTC).isoformat() +
+        "Z",
+        "end_time": (
+            datetime.now(UTC) +
+            timedelta(
+                hours=1)).isoformat() +
+        "Z",
         "sampling_rate_hz": 10.0,
         "device_info": device_info,
-        "analysis_types": [AnalysisType.ACTIVITY_LEVEL.value, AnalysisType.SLEEP.value],
+        "analysis_types": [
+            AnalysisType.ACTIVITY_LEVEL.value,
+            AnalysisType.SLEEP.value],
     }
 
 
@@ -127,7 +132,8 @@ def integration_request(patient_id: str) -> Dict[str, Any]:
 
 
 @pytest.fixture
-def analysis_result(patient_id: str, device_info: Dict[str, Any]) -> Dict[str, Any]:
+def analysis_result(
+        patient_id: str, device_info: Dict[str, Any]) -> Dict[str, Any]:
     """Create an analysis result."""
     now_iso = datetime.now(UTC).isoformat() + "Z"
     end_iso = (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z"
@@ -202,37 +208,31 @@ def embedding_result(patient_id: str) -> Dict[str, Any]:
 def integration_result(patient_id: str) -> Dict[str, Any]:
     """Create an integration result."""
     now_iso = datetime.now(UTC).isoformat() + "Z"
-    return {
-        "integration_id": "integration123",
-        "patient_id": patient_id,
-        "profile_id": "profile123",
-        "analysis_id": "analysis123",
-        "timestamp": now_iso,
-        "status": "success",
-        "insights": [
-            {
-                "type": "activity_pattern",
-                "description": "Daily activity levels show a predominantly sedentary pattern",
-                "recommendation": "Consider incorporating more light activity throughout the day",
-                "confidence": 0.85,
-            },
-            {
-                "type": "sleep_quality",
-                "description": "Sleep efficiency suggests suboptimal rest quality",
-                "recommendation": "Consistent sleep schedule and improved sleep hygiene may be beneficial",
-                "confidence": 0.9,
-            },
-        ],
-        "profile_update": {
-            "updated_aspects": [
-                "physical_activity_patterns",
-                "sleep_patterns",
-                "behavioral_patterns",
-            ],
-            "confidence_score": 0.92,
-            "updated_at": now_iso,
-        },
-    }
+    return {"integration_id": "integration123",
+            "patient_id": patient_id,
+            "profile_id": "profile123",
+            "analysis_id": "analysis123",
+            "timestamp": now_iso,
+            "status": "success",
+            "insights": [{"type": "activity_pattern",
+                          "description": "Daily activity levels show a predominantly sedentary pattern",
+                          "recommendation": "Consider incorporating more light activity throughout the day",
+                          "confidence": 0.85,
+                          },
+                         {"type": "sleep_quality",
+                          "description": "Sleep efficiency suggests suboptimal rest quality",
+                          "recommendation": "Consistent sleep schedule and improved sleep hygiene may be beneficial",
+                          "confidence": 0.9,
+                          },
+                         ],
+            "profile_update": {"updated_aspects": ["physical_activity_patterns",
+                                                   "sleep_patterns",
+                                                   "behavioral_patterns",
+                                                   ],
+                               "confidence_score": 0.92,
+                               "updated_at": now_iso,
+                               },
+            }
 
 
 @pytest.fixture
@@ -275,8 +275,11 @@ def analyses_list(patient_id: str) -> Dict[str, Any]:
                 ],
                 "data_summary": {
                     "start_time": now_iso,
-                    "end_time": (datetime.now(UTC) + timedelta(hours=1)).isoformat()
-                    + "Z",
+                    "end_time": (
+                        datetime.now(UTC) +
+                        timedelta(
+                            hours=1)).isoformat() +
+                    "Z",
                     "duration_seconds": 3600.0,
                     "readings_count": 10,
                     "sampling_rate_hz": 10.0,
@@ -285,7 +288,8 @@ def analyses_list(patient_id: str) -> Dict[str, Any]:
             {
                 "analysis_id": "analysis456",
                 "timestamp": yesterday_iso,
-                "analysis_types": [AnalysisType.ACTIVITY_LEVEL.value],
+                "analysis_types": [
+                    AnalysisType.ACTIVITY_LEVEL.value],
                 "data_summary": {
                     "start_time": yesterday_iso,
                     "end_time": yesterday_end_iso,
@@ -295,7 +299,11 @@ def analyses_list(patient_id: str) -> Dict[str, Any]:
                 },
             },
         ],
-        "pagination": {"total": 2, "limit": 10, "offset": 0, "has_more": False},
+        "pagination": {
+            "total": 2,
+            "limit": 10,
+            "offset": 0,
+            "has_more": False},
     }
 
 
@@ -309,11 +317,13 @@ def mock_pat_service(
     analyses_list: Dict[str, Any],
 ) -> MagicMock:
     """Create a mock PAT service."""
-    mock_service = AsyncMock(spec=PATInterface)  # Use AsyncMock for async methods
+    mock_service = AsyncMock(
+        spec=PATInterface)  # Use AsyncMock for async methods
 
     # Mock methods
     mock_service.analyze_actigraphy = AsyncMock(return_value=analysis_result)
-    mock_service.get_actigraphy_embeddings = AsyncMock(return_value=embedding_result)
+    mock_service.get_actigraphy_embeddings = AsyncMock(
+        return_value=embedding_result)
     mock_service.get_analysis_by_id = AsyncMock(return_value=analysis_result)
     mock_service.get_patient_analyses = AsyncMock(return_value=analyses_list)
     mock_service.get_model_info = AsyncMock(return_value=model_info)
@@ -334,8 +344,8 @@ def app(mock_pat_service):
     def mock_validate_jwt(token: Optional[str] = None):
         if token != "mock_jwt_token":
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-            )
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token")
         return {"sub": "patient123"}  # Return mock payload
 
     def mock_get_current_user_id(payload: dict = Depends(mock_validate_jwt)):
@@ -365,19 +375,16 @@ def app(mock_pat_service):
         pass
 
         app_instance.include_router(
-        router, prefix="/api/v1/actigraphy"
-    )  # Add prefix if needed
-
+            router, prefix="/api/v1/actigraphy"
+        )  # Add prefix if needed
 
         #     return app_instance # FIXME: return outside function
-
 
         @pytest.fixture
         def client(app):
     """Create TestClient."""
 
     return TestClient(app)
-
 
     @pytest.mark.db_required()  # Assuming db_required is a valid marker
     class TestActigraphyRoutes:
@@ -411,17 +418,18 @@ def app(mock_pat_service):
         self, client: TestClient, mock_token: str, analysis_request: Dict[str, Any]
     ) -> None:
         """Test unauthorized actigraphy analysis."""
-        # Change patient ID to trigger authorization error (assuming auth checks this)
+        # Change patient ID to trigger authorization error (assuming auth
+        # checks this)
         modified_request = analysis_request.copy()
         modified_request["patient_id"] = "different_patient"
 
         # Make the request
 
         response = client.post(
-        "/api/v1/actigraphy/analyze",  # Added prefix
-        json=modified_request,
-        headers={"Authorization": f"Bearer {mock_token}"},
-    )
+            "/api/v1/actigraphy/analyze",  # Added prefix
+            json=modified_request,
+            headers={"Authorization": f"Bearer {mock_token}"},
+        )
 
     # Check the response (depends on how auth is implemented)
     # If auth checks patient_id against token 'sub', this should fail
@@ -514,10 +522,10 @@ def app(mock_pat_service):
         # Make the request
 
         response = client.post(
-        "/api/v1/actigraphy/embeddings",  # Added prefix
-        json=modified_request,
-        headers={"Authorization": f"Bearer {mock_token}"},
-    )
+            "/api/v1/actigraphy/embeddings",  # Added prefix
+            json=modified_request,
+            headers={"Authorization": f"Bearer {mock_token}"},
+        )
 
     # Check the response
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -533,8 +541,7 @@ def app(mock_pat_service):
         """Test embedding generation with validation error."""
         # Setup the mock to raise a validation error
         mock_pat_service.get_actigraphy_embeddings.side_effect = ValidationError(
-            "Invalid input"
-        )
+            "Invalid input")
 
         # Make the request
 
@@ -558,8 +565,7 @@ def app(mock_pat_service):
         """Test embedding generation with embedding error."""
         # Setup the mock to raise an embedding error
         mock_pat_service.get_actigraphy_embeddings.side_effect = EmbeddingError(
-            "Embedding failed"
-        )
+            "Embedding failed")
 
         # Make the request
 
@@ -603,8 +609,7 @@ def app(mock_pat_service):
         analysis_id = "nonexistent-analysis"
         # Setup the mock to raise ResourceNotFoundError
         mock_pat_service.get_analysis_by_id.side_effect = ResourceNotFoundError(
-            "Analysis not found"
-        )
+            "Analysis not found")
 
         # Make the request
 
@@ -653,7 +658,8 @@ def app(mock_pat_service):
         """Test successful patient analyses retrieval."""
         # Make the request
         response = client.get(
-            f"/api/v1/actigraphy/patients/{patient_id}/analyses",  # Added prefix
+            # Added prefix
+            f"/api/v1/actigraphy/patients/{patient_id}/analyses",
             headers={"Authorization": f"Bearer {mock_token}"},
         )
 
@@ -739,10 +745,10 @@ def app(mock_pat_service):
         # Make the request
 
         response = client.post(
-        "/api/v1/actigraphy/integrate",  # Added prefix
-        json=modified_request,
-        headers={"Authorization": f"Bearer {mock_token}"},
-    )
+            "/api/v1/actigraphy/integrate",  # Added prefix
+            json=modified_request,
+            headers={"Authorization": f"Bearer {mock_token}"},
+        )
 
     # Check the response
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -783,8 +789,7 @@ def app(mock_pat_service):
         """Test digital twin integration with authorization error."""
         # Setup mock to raise error
         mock_pat_service.integrate_with_digital_twin.side_effect = AuthorizationError(
-            "Integration not allowed"
-        )
+            "Integration not allowed")
 
         # Make the request
 
@@ -808,8 +813,7 @@ def app(mock_pat_service):
         """Test digital twin integration with validation error."""
         # Setup mock to raise error
         mock_pat_service.integrate_with_digital_twin.side_effect = ValidationError(
-            "Invalid profile ID"
-        )
+            "Invalid profile ID")
 
         # Make the request
 
@@ -839,10 +843,10 @@ def app(mock_pat_service):
         # Make the request
 
         response = client.post(
-        "/api/v1/actigraphy/integrate",  # Added prefix
-        json=integration_request,
-        headers={"Authorization": f"Bearer {mock_token}"},
-    )
+            "/api/v1/actigraphy/integrate",  # Added prefix
+            json=integration_request,
+            headers={"Authorization": f"Bearer {mock_token}"},
+        )
 
     # Check the response
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR

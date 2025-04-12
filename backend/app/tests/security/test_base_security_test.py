@@ -71,28 +71,29 @@ class TestBaseSecurityTest(unittest.TestCase):
         # A better test would decode the token and check claims.
         # self.assertIn(security_test.test_user_id, token)
         # for role in security_test.test_roles:
-            #     self.assertIn(role, token)
+        #     self.assertIn(role, token)
 
-            # Test with custom values
-            custom_user_id = "custom_user_123"
-            custom_roles = ["admin", "auditor"]
-            custom_claims = {"extra": "value"}
+        # Test with custom values
+        custom_user_id = "custom_user_123"
+        custom_roles = ["admin", "auditor"]
+        custom_claims = {"extra": "value"}
 
-            token = security_test.get_auth_token(
-            user_id=custom_user_id, roles=custom_roles, custom_claims=custom_claims
-        )
+        token = security_test.get_auth_token(
+            user_id=custom_user_id,
+            roles=custom_roles,
+            custom_claims=custom_claims)
 
         # Token should contain custom values (weak assert ion)
         # self.assertIn(custom_user_id, token)
         # for role in custom_roles:
-            #     self.assertIn(role, token)
-            # self.assertIn("extra", token)
-            # self.assertIn("value", token)
+        #     self.assertIn(role, token)
+        # self.assertIn("extra", token)
+        # self.assertIn("value", token)
 
-            # Clean up
-            security_test.tearDown()
+        # Clean up
+        security_test.tearDown()
 
-            def test_get_auth_headers(self):
+        def test_get_auth_headers(self):
         """Test generation of authentication headers."""
         security_test = BaseSecurityTest()
         security_test.setUp()
@@ -140,7 +141,8 @@ class TestBaseSecurityTest(unittest.TestCase):
         self.assertIsNotNone(security_test.entity_factory)
 
         # Test creating entities
-        entity = security_test.entity_factory.create("patient", name="Test Patient")
+        entity = security_test.entity_factory.create(
+            "patient", name="Test Patient")
         self.assertEqual(entity["type"], "patient")
         self.assertEqual(entity["name"], "Test Patient")
         self.assertIn("id", entity)
@@ -151,7 +153,6 @@ class TestBaseSecurityTest(unittest.TestCase):
 
         # Clean up
         security_test.tearDown()
-
 
         if __name__ == "__main__":
     unittest.main()

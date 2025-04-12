@@ -39,7 +39,8 @@ class TestPHISanitizer(unittest.TestCase):
             # Phone
             ("Phone: (555) 123-4567", "Phone: [PHONE REDACTED]"),
             ("Call me at 555-123-4567", "Call me at [PHONE REDACTED]"),
-            ("International: +1 555 123 4567", "International: [PHONE REDACTED]"),
+            ("International: +1 555 123 4567",
+             "International: [PHONE REDACTED]"),
             # Email
             ("Email: patient@example.com", "Email: [EMAIL REDACTED]"),
         ]
@@ -119,7 +120,8 @@ class TestPHISanitizer(unittest.TestCase):
         }
 
         # Exclude name from sanitization
-        sanitized = PHISanitizer.sanitize_dict(test_dict, exclude_keys={"name"})
+        sanitized = PHISanitizer.sanitize_dict(
+            test_dict, exclude_keys={"name"})
 
         expected = {
             "patient_id": "A12345",
@@ -171,7 +173,9 @@ class TestPHISanitizer(unittest.TestCase):
         # Original string with custom pattern
         test_string = "Patient ID: PT-12345-ABC"
         # Should not be redacted with default patterns
-        self.assertEqual(PHISanitizer.sanitize_string(test_string), test_string)
+        self.assertEqual(
+            PHISanitizer.sanitize_string(test_string),
+            test_string)
 
         # Add new pattern
         PHISanitizer.update_patterns(

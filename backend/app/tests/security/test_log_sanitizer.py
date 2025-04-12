@@ -17,8 +17,8 @@ class TestLogSanitizer:
         3. The sanitizer handles edge cases correctly
         """
 
-        @pytest.fixture
-        def log_sanitizer(self):
+    @pytest.fixture
+    def log_sanitizer(self):
         """Create a LogSanitizer instance for testing."""
         return LogSanitizer()
 
@@ -226,9 +226,8 @@ class TestLogSanitizer:
         # Arrange
         # Create a large log message with repeated PHI patterns
         large_log = " ".join(
-            ["Patient John Smith with email john@example.com called from 555-123-4567"]
-            * 100
-        )
+            ["Patient John Smith with email john@example.com called from 555-123-4567"] *
+            100)
 
         # Act
         start_time = time.time()
@@ -272,14 +271,17 @@ class TestLogSanitizer:
         # Mock the audit logger
         mock_audit_logger = MagicMock(spec=AuditLogger)
 
-        # Sensitive message that should be sanitized before being passed to the audit logger
+        # Sensitive message that should be sanitized before being passed to the
+        # audit logger
         sensitive_message = (
             "Patient John Smith (SSN: 123-45-6789) accessed their records"
         )
 
-        # Act - simulate what would happen when log sanitizer is used with audit logger
+        # Act - simulate what would happen when log sanitizer is used with
+        # audit logger
         sanitized = log_sanitizer.sanitize(sensitive_message)
-        # In production, the sanitized message would be passed to the audit logger
+        # In production, the sanitized message would be passed to the audit
+        # logger
         mock_audit_logger.log_access.return_value = None
         mock_audit_logger.log_access(sanitized)
 

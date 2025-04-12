@@ -25,10 +25,14 @@ class TestXGBoostSymptomModel:
         """Create an XGBoostSymptomModel with mocked internals."""
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb', autospec=True):
             model = XGBoostSymptomModel()
-                model_path="test_model_path",
-                feature_names=["symptom_history_1", "symptom_history_2", "medication_adherence", "sleep_quality"],
-                target_names=["depression_score"]
-            (            )
+            model_path = "test_model_path",
+            feature_names = [
+                "symptom_history_1",
+                "symptom_history_2",
+                "medication_adherence",
+                "sleep_quality"],
+            target_names = ["depression_score"]
+            ()
             # Mock the internal models
             model.models = {"depression_score": MagicMock()}
             return model
@@ -36,23 +40,23 @@ class TestXGBoostSymptomModel:
             def test_load_model(self, tmp_path):
         """Test that the model loads correctly from a file."""
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.joblib', autospec=True) as mock_joblib, \
-             patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.os.path.exists', return_value=True):
-                 # Setup
-                 mock_joblib.load.return_value = {
-                 "models": {"depression_score": MagicMock()},
-                 "feature_names": ["f1", "f2", "f3"],
-                 "target_names": ["t1"],
-                 "params": {"n_estimators": 100}
+                patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.os.path.exists', return_value=True):
+            # Setup
+            mock_joblib.load.return_value = {
+                "models": {"depression_score": MagicMock()},
+                "feature_names": ["f1", "f2", "f3"],
+                "target_names": ["t1"],
+                "params": {"n_estimators": 100}
             }
-            
+
             # Execute
     model = XGBoostSymptomModel(model_path="test/model/path.json")
-            
-            # Verify
+
+    # Verify
     mock_joblib.load.assert_called_once_with("test/model/path.json")
     assert "depression_score" in model.models
-    assert model.feature_names  ==  ["f1", "f2", "f3"]
-    assert model.target_names  ==  ["t1"]
+    assert model.feature_names == ["f1", "f2", "f3"]
+    assert model.target_names == ["t1"]
     assert model.params["n_estimators"] == 100
 
     def test_save_model(self, model, tmp_path):
@@ -60,7 +64,7 @@ class TestXGBoostSymptomModel:
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.joblib', autospec=True) as mock_joblib:
             # Execute
             model.save_model(f"{tmp_path}/model.json")
-            
+
             # Verify
             mock_joblib.dump.assert_called_once()
             # Check that the model data was passed to dump
@@ -76,26 +80,27 @@ class TestXGBoostSymptomModel:
         """Test that the model predicts correctly."""
         # Setup
         X = np.array([)
-        [3.0, 4.0, 0.8, 0.6],
-        [2.0, 3.0, 0.9, 0.5],
-        [4.0, 5.0, 0.7, 0.8]
-        (    ])
+                     [3.0, 4.0, 0.8, 0.6],
+                     [2.0, 3.0, 0.9, 0.5],
+                     [4.0, 5.0, 0.7, 0.8]
+                     (])
         horizon = 3
-        
+
         # Mock the internal dmatrix and predict function
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb.DMatrix', autospec=True) as mock_dmatrix:
             # Setup the mock prediction
-        model.models["depression_score"].predict.return_value = np.array([4.2, 3.8, 4.5])
-            
-            # Execute
+        model.models["depression_score"].predict.return_value = np.array([
+                                                                         4.2, 3.8, 4.5])
+
+        # Execute
         result = await model.predict(X, horizon)
-            
-            # Verify
+
+        # Verify
         assert "values" in result
         assert "feature_importance" in result
         assert "model_type" in result
         assert result["model_type"] == "xgboost"
-            # The result shape should be (n_samples, horizon, n_targets)
+        # The result shape should be (n_samples, horizon, n_targets)
         assert result["values"].shape == (3, 3, 1)
 
         def test_get_feature_importance(self, model):
@@ -108,11 +113,11 @@ class TestXGBoostSymptomModel:
             "medication_adherence": 25.7,
             "sleep_quality": 18.2
         }
-        
+
         # Execute
     result = model.get_feature_importance()
-        
-        # Verify
+
+    # Verify
     assert "depression_score" in result
     assert result["depression_score"]["medication_adherence"] == 25.7
     mock_model.get_score.assert_called_once_with(importance_type="gain")
@@ -121,7 +126,7 @@ class TestXGBoostSymptomModel:
         """Test that model info is correctly reported."""
         # Execute
         info = model.get_model_info()
-        
+
         # Verify
         assert "model_type" in info
         assert "feature_names" in info
@@ -129,36 +134,39 @@ class TestXGBoostSymptomModel:
         assert "params" in info
         assert "num_models" in info
         assert "timestamp" in info
-        assert info["feature_names"] == ["symptom_history_1", "symptom_history_2", "medication_adherence", "sleep_quality"]
+        assert info["feature_names"] == [
+            "symptom_history_1",
+            "symptom_history_2",
+            "medication_adherence",
+            "sleep_quality"]
         assert info["target_names"] == ["depression_score"]
 
         def test_train(self, model):
         """Test that the model trains correctly."""
         # Setup
         X_train = np.array([)
-            [3.0, 4.0, 0.8, 0.6],
-            [2.0, 3.0, 0.9, 0.5],
-            [4.0, 5.0, 0.7, 0.8]
-        (        ])
+                           [3.0, 4.0, 0.8, 0.6],
+                           [2.0, 3.0, 0.9, 0.5],
+                           [4.0, 5.0, 0.7, 0.8]
+                           (])
         y_train = np.array([4.2, 3.8, 4.5])
-        
+
         # Mock the internal training
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb', autospec=True) as mock_xgb:
         mock_xgb.DMatrix.return_value = MagicMock()
         mock_xgb.train.return_value = MagicMock()
-            
-            # Set up the model to return feature importance
-        mock_model = mock_xgb.train.return_value=mock_model.get_score.return_value = {
-        "symptom_history_1": 15.5,
-        "symptom_history_2": 12.3,
-        "medication_adherence": 25.7,
-        "sleep_quality": 18.2
-    }
-            
-            # Execute
+
+        # Set up the model to return feature importance
+        mock_model = mock_xgb.train.return_value = mock_model.get_score.return_value = {
+            "symptom_history_1": 15.5,
+            "symptom_history_2": 12.3,
+            "medication_adherence": 25.7,
+            "sleep_quality": 18.2}
+
+        # Execute
     result = model.train(X_train, y_train, optimize=False)
-            
-            # Verify
+
+    # Verify
     assert "training_results" in result
     assert "feature_names" in result
     assert "target_names" in result

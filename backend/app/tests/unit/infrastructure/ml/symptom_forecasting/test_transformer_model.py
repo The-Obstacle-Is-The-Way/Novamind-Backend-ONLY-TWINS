@@ -117,7 +117,8 @@ class TestTransformerTimeSeriesModel:
             assert model.is_initialized
             assert model._model is not None
 
-            async def test_predict_returns_forecast(self, model, sample_input_data):
+            async def test_predict_returns_forecast(
+                    self, model, sample_input_data):
         """Test that predict returns a forecast with the expected structure."""
         # Execute
         result = await model.predict(sample_input_data, horizon=4)
@@ -185,7 +186,8 @@ class TestTransformerTimeSeriesModel:
 
             assert "Missing required column" in str(excinfo.value)
 
-            async def test_preprocess_input_data(self, model, sample_input_data):
+            async def test_preprocess_input_data(
+                    self, model, sample_input_data):
         """Test that _preprocess_input_data correctly transforms the input data."""
         # Setup
         with patch.object(
@@ -206,7 +208,8 @@ class TestTransformerTimeSeriesModel:
                 sample_input_data
             )  # Same number of time steps
 
-            async def test_postprocess_predictions(self, model, sample_input_data):
+            async def test_postprocess_predictions(
+                    self, model, sample_input_data):
         """Test that _postprocess_predictions correctly transforms the model output."""
         # Setup
         raw_predictions = np.array([4.2, 4.0, 3.8, 3.5])

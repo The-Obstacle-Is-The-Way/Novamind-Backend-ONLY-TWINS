@@ -74,7 +74,9 @@ class TestSettings:
         def test_cors_origins_parsing(self, monkeypatch):
         """Test parsing of CORS_ORIGINS from environment variables."""
         # Test comma-separated string format
-        monkeypatch.setenv("CORS_ORIGINS", "http://localhost,https://example.com")
+        monkeypatch.setenv(
+            "CORS_ORIGINS",
+            "http://localhost,https://example.com")
 
         assert len(settings.CORS_ORIGINS) == 2
         assert "http://localhost" in settings.CORS_ORIGINS
@@ -82,8 +84,8 @@ class TestSettings:
 
         # Test list format
         monkeypatch.setenv(
-            "CORS_ORIGINS", '["http://localhost:8000", "https://api.example.com"]'
-        )
+            "CORS_ORIGINS",
+            '["http://localhost:8000", "https://api.example.com"]')
 
         assert len(settings.CORS_ORIGINS) == 2
         assert "http://localhost:8000" in settings.CORS_ORIGINS

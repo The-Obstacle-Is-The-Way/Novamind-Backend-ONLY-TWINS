@@ -138,9 +138,15 @@ class TestPharmacogenomicsService:
     def sample_patient_data(self):
         """Create sample patient data for testing."""
         return {
-            "id": str(uuid4()),
-            "demographics": {"age": 42, "gender": "female", "ethnicity": "caucasian"},
-            "conditions": ["major_depressive_disorder", "generalized_anxiety_disorder"],
+            "id": str(
+                uuid4()),
+            "demographics": {
+                "age": 42,
+                "gender": "female",
+                "ethnicity": "caucasian"},
+            "conditions": [
+                "major_depressive_disorder",
+                "generalized_anxiety_disorder"],
             "medication_history": [
                 {
                     "name": "citalopram",
@@ -148,10 +154,11 @@ class TestPharmacogenomicsService:
                     "start_date": "2024-01-15",
                     "end_date": "2024-03-01",
                     "efficacy": "moderate",
-                    "side_effects": ["nausea", "insomnia"],
+                    "side_effects": [
+                            "nausea",
+                            "insomnia"],
                     "reason_for_discontinuation": "insufficient_efficacy",
-                }
-            ],
+                }],
         }
 
     @pytest.fixture
@@ -160,14 +167,14 @@ class TestPharmacogenomicsService:
         return str(uuid4())
 
         async def test_predict_medication_response_success(
-        self,
-        service,
-        mock_gene_medication_model,
-        mock_treatment_model,
-        sample_genetic_data,
-        sample_patient_data,
-        sample_patient_id,
-    ):
+            self,
+            service,
+            mock_gene_medication_model,
+            mock_treatment_model,
+            sample_genetic_data,
+            sample_patient_data,
+            sample_patient_id,
+        ):
         """Test that predict_medication_response correctly processes data and returns predictions."""
         # Setup
         medications = ["fluoxetine", "sertraline", "bupropion"]
@@ -194,8 +201,7 @@ class TestPharmacogenomicsService:
 
         # Verify model arguments
         gene_model_args = (
-            mock_gene_medication_model.predict_medication_interactions.call_args[1]
-        )
+            mock_gene_medication_model.predict_medication_interactions.call_args[1])
         assert gene_model_args["genetic_data"] == sample_genetic_data
         assert gene_model_args["medications"] == medications
 
@@ -243,8 +249,7 @@ class TestPharmacogenomicsService:
         assert "patient data is required" in str(excinfo.value).lower()
 
     async def test_predict_medication_response_no_medications(
-        self, service, sample_genetic_data, sample_patient_data, sample_patient_id
-    ):
+            self, service, sample_genetic_data, sample_patient_data, sample_patient_id):
         """Test that predict_medication_response handles empty medications list."""
         # Execute/Assert
         with pytest.raises(ValueError) as excinfo:
@@ -269,8 +274,7 @@ class TestPharmacogenomicsService:
         # Setup
         medications = ["fluoxetine", "sertraline"]
         mock_gene_medication_model.predict_medication_interactions.side_effect = (
-            Exception("Model error")
-        )
+            Exception("Model error"))
 
         # Execute/Assert
         with pytest.raises(RuntimeError) as excinfo:
@@ -327,7 +331,9 @@ class TestPharmacogenomicsService:
         assert "metabolizer_status" in result
         mock_gene_medication_model.predict_medication_interactions.assert_called_once()
 
-    async def test_analyze_medication_interactions_no_genetic_data(self, service):
+    async def test_analyze_medication_interactions_no_genetic_data(
+            self,
+            service):
         """Test analyze_medication_interactions with no genetic data."""
         # Setup
         medications = ["fluoxetine", "sertraline"]
@@ -361,8 +367,8 @@ class TestPharmacogenomicsService:
         assert await service.is_model_healthy() is True
 
         async def test_get_model_info(
-        self, service, mock_gene_medication_model, mock_treatment_model
-    ):
+            self, service, mock_gene_medication_model, mock_treatment_model
+        ):
         """Test the get_model_info method."""
         # Setup mock responses
         mock_gene_medication_model.get_model_info = AsyncMock(
@@ -370,16 +376,14 @@ class TestPharmacogenomicsService:
                 "name": "GeneMedicationModel",
                 "version": "1.0.0",
                 "description": "Predicts medication interactions based on genetic variants",
-            }
-        )
+            })
 
         mock_treatment_model.get_model_info = AsyncMock(
             return_value={
                 "name": "PharmacogenomicsModel",
                 "version": "1.0.0",
                 "description": "Predicts treatment response based on genetic and patient data",
-            }
-        )
+            })
 
         # Execute
         result = await service.get_model_info()

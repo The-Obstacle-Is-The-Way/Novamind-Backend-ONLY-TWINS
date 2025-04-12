@@ -20,7 +20,6 @@ def in_memory_rate_limiter():
     """Create an in-memory rate limiter for testing."""
     return InMemoryRateLimiter()
 
-
     @pytest.fixture
     def mock_redis():
     """Create a mock Redis client."""
@@ -31,19 +30,20 @@ def in_memory_rate_limiter():
     mock.exists.return_value = False
     return mock
 
-
     @pytest.fixture
     def redis_rate_limiter(mock_redis):
     """Create a Redis rate limiter with mocked Redis client."""
     return RedisRateLimiter(redis_client=mock_redis)
-
 
     class TestRateLimitConfig:
     """Tests for the RateLimitConfig class."""
 
     def test_init(self):
         """Test initialization of RateLimitConfig."""
-        config = RateLimitConfig(requests=100, window_seconds=60, block_seconds=300)
+        config = RateLimitConfig(
+            requests=100,
+            window_seconds=60,
+            block_seconds=300)
 
         assert config.requests == 100
         assert config.window_seconds == 60
@@ -56,7 +56,6 @@ def in_memory_rate_limiter():
         assert config.requests == 100
         assert config.window_seconds == 60
         assert config.block_seconds is None
-
 
         class TestInMemoryRateLimiter:
     """Tests for the InMemoryRateLimiter implementation."""
@@ -188,7 +187,10 @@ def in_memory_rate_limiter():
             def test_check_rate_limit_over_limit(self):
         """Test check_rate_limit when over the limit."""
         rate_limiter = InMemoryRateLimiter()
-        config = RateLimitConfig(requests=5, window_seconds=60, block_seconds=300)
+        config = RateLimitConfig(
+            requests=5,
+            window_seconds=60,
+            block_seconds=300)
 
         # Make 5 requests (reach the limit)
         for _ in range(5):
@@ -203,7 +205,10 @@ def in_memory_rate_limiter():
             def test_check_rate_limit_blocked_key(self):
         """Test check_rate_limit with a blocked key."""
         rate_limiter = InMemoryRateLimiter()
-        config = RateLimitConfig(requests=5, window_seconds=60, block_seconds=300)
+        config = RateLimitConfig(
+            requests=5,
+            window_seconds=60,
+            block_seconds=300)
 
         # Block the key
         rate_limiter._block_key("test-key", 300)
@@ -230,7 +235,10 @@ def in_memory_rate_limiter():
         def test_logging_on_rate_limit(self, mock_logging):
         """Test logging when a request is rate limited."""
         rate_limiter = InMemoryRateLimiter()
-        config = RateLimitConfig(requests=1, window_seconds=60, block_seconds=300)
+        config = RateLimitConfig(
+            requests=1,
+            window_seconds=60,
+            block_seconds=300)
 
         # First request is allowed
         assert rate_limiter.check_rate_limit("test-key", config) is True
@@ -253,13 +261,16 @@ def in_memory_rate_limiter():
 
         # Test API endpoint (use a different key)
         for _ in range(10):
-            assert rate_limiter.check_rate_limit("api-endpoint", api_config) is True
+            assert rate_limiter.check_rate_limit(
+                "api-endpoint", api_config) is True
 
             # Test Auth endpoint (should hit limit after 5 requests)
             for _ in range(5):
-            assert rate_limiter.check_rate_limit("auth-endpoint", auth_config) is True
+            assert rate_limiter.check_rate_limit(
+                "auth-endpoint", auth_config) is True
 
-            assert rate_limiter.check_rate_limit("auth-endpoint", auth_config) is False
+            assert rate_limiter.check_rate_limit(
+                "auth-endpoint", auth_config) is False
 
             # Verify logging was called for the rate limited request
             mock_logging.warning.assert_called()
@@ -273,18 +284,22 @@ def in_memory_rate_limiter():
 
         # Simulate a burst of requests from a client
         for i in range(10):
-            assert rate_limiter.check_rate_limit("client-1", normal_config) is True
+            assert rate_limiter.check_rate_limit(
+                "client-1", normal_config) is True
 
             # The next request should be rate limited
-            assert rate_limiter.check_rate_limit("client-1", normal_config) is False
+            assert rate_limiter.check_rate_limit(
+                "client-1", normal_config) is False
 
             # A different client should not be affected
-            assert rate_limiter.check_rate_limit("client-2", normal_config) is True
+            assert rate_limiter.check_rate_limit(
+                "client-2", normal_config) is True
 
-            # After resetting the rate limiter for client-1, they can make requests again
+            # After resetting the rate limiter for client-1, they can make
+            # requests again
             rate_limiter.reset_limits("client-1")
-            assert rate_limiter.check_rate_limit("client-1", normal_config) is True
-
+            assert rate_limiter.check_rate_limit(
+                "client-1", normal_config) is True
 
             class TestRedisRateLimiter:
     """Tests for the RedisRateLimiter implementation."""
@@ -302,7 +317,8 @@ def in_memory_rate_limiter():
             mock_client = MagicMock()
             mock_from_url.return_value = mock_client
 
-            rate_limiter = RedisRateLimiter(redis_url="redis://localhost:6379/0")
+            rate_limiter = RedisRateLimiter(
+                redis_url="redis://localhost:6379/0")
 
             assert rate_limiter._redis is mock_client
             mock_from_url.assert_called_once_with("redis://localhost:6379/0")
@@ -379,30 +395,41 @@ def in_memory_rate_limiter():
 
         def test_check_rate_limit(self, redis_rate_limiter, mock_redis):
         """Test check_rate_limit with Redis."""
-        config = RateLimitConfig(requests=5, window_seconds=60, block_seconds=300)
+        config = RateLimitConfig(
+            requests=5,
+            window_seconds=60,
+            block_seconds=300)
 
-        # Setup mock to return false for is_blocked and 3 for count_recent_requests
+        # Setup mock to return false for is_blocked and 3 for
+        # count_recent_requests
         with patch.object(redis_rate_limiter, "_is_blocked", return_value=False):
             with patch.object(
                 redis_rate_limiter, "_count_recent_requests", return_value=3
             ):
                 # Should be under the limit
-                assert redis_rate_limiter.check_rate_limit("test-key", config) is True
+                assert redis_rate_limiter.check_rate_limit(
+                    "test-key", config) is True
 
                 # Verify _add_request was called
                 mock_redis.zadd.assert_called_once()
 
-                def test_check_rate_limit_over_limit(self, redis_rate_limiter, mock_redis):
+                def test_check_rate_limit_over_limit(
+                        self, redis_rate_limiter, mock_redis):
         """Test check_rate_limit with Redis when over the limit."""
-        config = RateLimitConfig(requests=5, window_seconds=60, block_seconds=300)
+        config = RateLimitConfig(
+            requests=5,
+            window_seconds=60,
+            block_seconds=300)
 
-        # Setup mock to return false for is_blocked and 6 for count_recent_requests
+        # Setup mock to return false for is_blocked and 6 for
+        # count_recent_requests
         with patch.object(redis_rate_limiter, "_is_blocked", return_value=False):
             with patch.object(
                 redis_rate_limiter, "_count_recent_requests", return_value=6
             ):
                 # Should be over the limit
-                assert redis_rate_limiter.check_rate_limit("test-key", config) is False
+                assert redis_rate_limiter.check_rate_limit(
+                    "test-key", config) is False
 
                 # Verify _block_key was called
                 mock_redis.setex.assert_called_once()
@@ -415,7 +442,6 @@ def in_memory_rate_limiter():
         assert mock_redis.delete.call_count == 2
         mock_redis.delete.assert_any_call("rate_limit:test-key")
         mock_redis.delete.assert_any_call("rate_limit_block:test-key")
-
 
         class TestRateLimiterFactory:
     """Tests for the RateLimiterFactory."""

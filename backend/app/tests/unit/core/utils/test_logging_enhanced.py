@@ -27,7 +27,6 @@ def mock_logger():
     logger = MagicMock(spec=logging.Logger)
     return logger
 
-
     @pytest.fixture
     def temp_log_file():
     """Create a temporary log file for testing."""
@@ -39,7 +38,6 @@ def mock_logger():
         os.remove(path)
         except OSError:
         pass
-
 
         class TestLoggingSetup:
     """Test suite for logging setup."""
@@ -114,7 +112,6 @@ def mock_logger():
         for handler_name, handler_config in config["handlers"].items():
             if "filters" in handler_config:
                 assert "phi_filter" in handler_config["filters"]
-
 
                 class TestPHISanitizingFilter:
     """Test suite for PHI sanitizing filter."""
@@ -255,14 +252,14 @@ class TestStructuredJsonFormatter:
 
             # Create log record with exception
             record = logging.LogRecord(
-            name="test_logger",
-            level=logging.ERROR,
-            pathname="/app/main.py",
-            lineno=42,
-            msg="Exception occurred",
-            args=(),
-            exc_info=exc_info,
-        )
+                name="test_logger",
+                level=logging.ERROR,
+                pathname="/app/main.py",
+                lineno=42,
+                msg="Exception occurred",
+                args=(),
+                exc_info=exc_info,
+            )
 
         # Format the record
         formatted = formatter.format(record)
@@ -348,7 +345,6 @@ class TestCorrelationId:
         # Get a new one - should be different
         new_id = get_correlation_id()
         assert new_id != "test-correlation-123"
-
 
         class TestAuditLogging:
     """Test suite for audit logging functionality."""

@@ -25,8 +25,10 @@ class TestPatientModel:
 
         # Act
         patient = Patient(
-            id=patient_id, medical_record_number=mrn, name=name, date_of_birth=dob
-        )
+            id=patient_id,
+            medical_record_number=mrn,
+            name=name,
+            date_of_birth=dob)
 
         # Assert
         assert patient.id == patient_id

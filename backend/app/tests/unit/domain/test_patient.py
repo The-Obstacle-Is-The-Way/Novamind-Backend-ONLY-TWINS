@@ -20,7 +20,6 @@ def mock_encryption_service():
     mock.decrypt.side_effect = lambda x: x.replace("encrypted_", "")
     return mock
 
-
     @pytest.fixture
     def valid_patient_data(mock_encryption_service):
     """Create valid patient test data."""
@@ -29,11 +28,18 @@ def mock_encryption_service():
         "id": UUID("12345678-1234-5678-1234-567812345678"),
         "first_name": "John",
         "last_name": "Doe",
-        "date_of_birth": date(1990, 1, 1),
-        "contact_info": ContactInfo(email="john.doe@example.com", phone="123-456-7890"),
+        "date_of_birth": date(
+            1990,
+            1,
+            1),
+        "contact_info": ContactInfo(
+            email="john.doe@example.com",
+            phone="123-456-7890"),
         "address": Address(
-            street="123 Main St", city="Anytown", state="NY", zip_code="12345"
-        ),
+            street="123 Main St",
+            city="Anytown",
+            state="NY",
+            zip_code="12345"),
         "encryption_service": mock_encryption_service,
     }
 
@@ -68,7 +74,6 @@ def test_create_patient(valid_patient_data, mock_encryption_service):
     assert patient._contact_info.email.startswith("encrypted_")
     assert patient._contact_info.phone.startswith("encrypted_")
 
-
     def test_update_patient(valid_patient_data, mock_encryption_service):
     """Test patient update."""
     # Create initial patient
@@ -78,7 +83,9 @@ def test_create_patient(valid_patient_data, mock_encryption_service):
     patient.update(
         first_name="Jane",
         last_name="Smith",
-        contact_info=ContactInfo(email="jane.smith@example.com", phone="987-654-3210"),
+        contact_info=ContactInfo(
+            email="jane.smith@example.com",
+            phone="987-654-3210"),
     )
 
     # Verify updates

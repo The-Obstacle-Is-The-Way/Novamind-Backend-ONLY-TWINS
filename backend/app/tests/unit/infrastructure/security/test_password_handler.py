@@ -96,7 +96,6 @@ class TestPasswordHashing:
             duration > 0.05
         ), "Password hashing is too fast and may be vulnerable to brute force"
 
-
         class TestPasswordStrengthValidation:
     """Test suite for password strength validation."""
 
@@ -118,7 +117,8 @@ class TestPasswordHashing:
 
         assert result.is_valid is False
         assert result.score < 3
-        assert any("length" in feedback.lower() for feedback in result.feedback)
+        assert any("length" in feedback.lower()
+                   for feedback in result.feedback)
 
         def test_password_without_numbers(self):
         """Test that passwords without numbers get appropriate feedback."""
@@ -128,7 +128,8 @@ class TestPasswordHashing:
 
         # Might still be valid depending on other criteria
         if not result.is_valid:
-            assert any("number" in feedback.lower() for feedback in result.feedback)
+            assert any("number" in feedback.lower()
+                       for feedback in result.feedback)
 
             def test_password_without_special_chars(self):
         """Test that passwords without special characters get appropriate feedback."""
@@ -152,7 +153,8 @@ class TestPasswordHashing:
 
         assert result.is_valid is False
         assert result.score < 2  # Very weak
-        assert any("common" in feedback.lower() for feedback in result.feedback)
+        assert any("common" in feedback.lower()
+                   for feedback in result.feedback)
 
         def test_password_with_personal_info(self):
         """Test that passwords with personal info get appropriate feedback."""
@@ -166,7 +168,8 @@ class TestPasswordHashing:
             result = validate_password_strength(password)
 
             assert result.is_valid is False
-            assert any("personal" in feedback.lower() for feedback in result.feedback)
+            assert any("personal" in feedback.lower()
+                       for feedback in result.feedback)
 
             def test_validation_raises_exception_mode(self):
         """Test that validation raises exception in strict mode for weak passwords."""
@@ -206,7 +209,6 @@ class TestPasswordHashing:
                 break
 
                 assert repetition_feedback
-
 
                 class TestRandomPasswordGeneration:
     """Test suite for random password generation."""

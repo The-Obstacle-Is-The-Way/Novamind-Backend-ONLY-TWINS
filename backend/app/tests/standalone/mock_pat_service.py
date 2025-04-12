@@ -34,7 +34,12 @@ class MockPATService:
         self._logger = logging.getLogger(__name__)
 
         # Supported analysis types
-        self._supported_types = ["sleep", "activity", "stress", "circadian", "anomaly"]
+        self._supported_types = [
+            "sleep",
+            "activity",
+            "stress",
+            "circadian",
+            "anomaly"]
 
         def initialize(self, config: Dict[str, Any]) -> None:
         """
@@ -43,18 +48,18 @@ class MockPATService:
         Args:
             config: Configuration settings for the service
             """
-            self._initialized = True
-            self._mock_delay_ms = config.get("mock_delay_ms", 0)
-            self._logger.info("Mock PAT service initialized")
+        self._initialized = True
+        self._mock_delay_ms = config.get("mock_delay_ms", 0)
+        self._logger.info("Mock PAT service initialized")
 
-            def _check_initialized(self) -> None:
+        def _check_initialized(self) -> None:
         """
         Check if the service is initialized.
 
         Raises:
             InitializationError: If the service is not initialized
             """
-            if not self._initialized:
+        if not self._initialized:
             raise InitializationError("Mock PAT service not initialized")
 
             def _simulate_delay(self) -> None:
@@ -63,15 +68,15 @@ class MockPATService:
             time.sleep(self._mock_delay_ms / 1000.0)
 
             def analyze_actigraphy(
-            self,
-            patient_id: str,
-            readings: List[Dict[str, float]],
-            start_time: str,
-            end_time: str,
-            sampling_rate_hz: float,
-            device_info: Dict[str, str],
-            analysis_types: List[str],
-    ) -> Dict[str, Any]:
+                self,
+                patient_id: str,
+                readings: List[Dict[str, float]],
+                start_time: str,
+                end_time: str,
+                sampling_rate_hz: float,
+                device_info: Dict[str, str],
+                analysis_types: List[str],
+            ) -> Dict[str, Any]:
         """
         Analyze actigraphy data for a patient.
 
@@ -91,24 +96,25 @@ class MockPATService:
             InitializationError: If the service is not initialized
             ValidationError: If input validation fails
             """
-            self._check_initialized()
+        self._check_initialized()
 
-            # Validate inputs
-            if not readings:
+        # Validate inputs
+        if not readings:
             raise ValidationError("Readings must be a non-empty list")
 
             for reading in readings:
             if "x" not in reading or "y" not in reading or "z" not in reading:
-                raise ValidationError("Each reading must contain x, y, z values")
+                raise ValidationError(
+                    "Each reading must contain x, y, z values")
 
                 if sampling_rate_hz <= 0:
             raise ValidationError("Sampling rate must be positive")
 
             if (
-            not device_info
-            or "device_type" not in device_info
-            or "manufacturer" not in device_info
-        ):
+                not device_info
+                or "device_type" not in device_info
+                or "manufacturer" not in device_info
+            ):
             raise ValidationError(
                 "Device info must include device_type and manufacturer"
             )
@@ -118,7 +124,8 @@ class MockPATService:
 
             for analysis_type in analysis_types:
             if analysis_type not in self._supported_types:
-                raise ValidationError(f"Unsupported analysis type: {analysis_type}")
+                raise ValidationError(
+                    f"Unsupported analysis type: {analysis_type}")
 
                 # Simulate processing delay
                 self._simulate_delay()
@@ -128,16 +135,16 @@ class MockPATService:
 
                 # Create mock result data based on input
                 result = {
-                "analysis_id": analysis_id,
-                "patient_id": patient_id,
-                "created_at": datetime.now(UTC).isoformat(),
-                "start_time": start_time,
-                "end_time": end_time,
-                "device_info": device_info,
-                "analysis_types": analysis_types,
-                "status": "completed",
-                "results": {},
-        }
+                    "analysis_id": analysis_id,
+                    "patient_id": patient_id,
+                    "created_at": datetime.now(UTC).isoformat(),
+                    "start_time": start_time,
+                    "end_time": end_time,
+                    "device_info": device_info,
+                    "analysis_types": analysis_types,
+                    "status": "completed",
+                    "results": {},
+                }
 
         # Generate mock results for each analysis type
         for analysis_type in analysis_types:
@@ -157,7 +164,10 @@ class MockPATService:
                     "sedentary_minutes": 720,
                     "calories_burned": 2150,
                     "step_count": 8500,
-                    "intensity_scores": {"light": 120, "moderate": 85, "vigorous": 40},
+                    "intensity_scores": {
+                        "light": 120,
+                        "moderate": 85,
+                        "vigorous": 40},
                 }
             elif analysis_type == "stress":
                 result["results"]["stress"] = {
@@ -170,10 +180,8 @@ class MockPATService:
             else:
                 # Generic data for other analysis types
                 result["results"][analysis_type] = {
-                    "score": 75.0,
-                    "confidence": 0.85,
-                    "metrics": {"metric1": 0.6, "metric2": 0.8, "metric3": 0.4},
-                }
+                    "score": 75.0, "confidence": 0.85, "metrics": {
+                        "metric1": 0.6, "metric2": 0.8, "metric3": 0.4}, }
 
         # Store the analysis
         self._analyses[analysis_id] = result
@@ -186,14 +194,14 @@ class MockPATService:
             return result
 
             def get_actigraphy_embeddings(
-            self,
-            patient_id: str,
-            readings: List[Dict[str, float]],
-            start_time: str,
-            end_time: str,
-            sampling_rate_hz: float,
-            embedding_dim: int = 384,
-    ) -> Dict[str, Any]:
+                self,
+                patient_id: str,
+                readings: List[Dict[str, float]],
+                start_time: str,
+                end_time: str,
+                sampling_rate_hz: float,
+                embedding_dim: int = 384,
+            ) -> Dict[str, Any]:
         """
         Generate embeddings from actigraphy data.
 
@@ -212,10 +220,10 @@ class MockPATService:
             InitializationError: If the service is not initialized
             ValidationError: If input validation fails
             """
-            self._check_initialized()
+        self._check_initialized()
 
-            # Validate inputs
-            if not readings:
+        # Validate inputs
+        if not readings:
             raise ValidationError("Readings must be a non-empty list")
 
             if sampling_rate_hz <= 0:
@@ -230,7 +238,7 @@ class MockPATService:
             # Create a deterministic embedding based on inputs
             embedding = []
             for i in range(embedding_dim):
-            # Simple deterministic pattern based on i
+                # Simple deterministic pattern based on i
             value = 0.1 * ((i % 10) - 5)
             if i % 2 == 0:
                 value = -value
@@ -238,19 +246,19 @@ class MockPATService:
 
                 # Create result
                 result = {
-                "embedding_id": embedding_id,
-                "patient_id": patient_id,
-                "created_at": datetime.now(UTC).isoformat(),
-                "embedding_type": "actigraphy",
-                "embedding_dim": embedding_dim,
-                "embedding": embedding,
-                "metadata": {
-                "start_time": start_time,
-                "end_time": end_time,
-                "sampling_rate_hz": sampling_rate_hz,
-                "readings_count": len(readings),
-            },
-        }
+                    "embedding_id": embedding_id,
+                    "patient_id": patient_id,
+                    "created_at": datetime.now(UTC).isoformat(),
+                    "embedding_type": "actigraphy",
+                    "embedding_dim": embedding_dim,
+                    "embedding": embedding,
+                    "metadata": {
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "sampling_rate_hz": sampling_rate_hz,
+                        "readings_count": len(readings),
+                    },
+                }
 
         # Store the embedding
         self._embeddings[embedding_id] = result
@@ -271,16 +279,16 @@ class MockPATService:
             InitializationError: If the service is not initialized
             ResourceNotFoundError: If the analysis is not found
             """
-            self._check_initialized()
+        self._check_initialized()
 
-            if analysis_id not in self._analyses:
+        if analysis_id not in self._analyses:
             raise ResourceNotFoundError(f"Analysis not found: {analysis_id}")
 
             return self._analyses[analysis_id]
 
             def get_patient_analyses(
-            self, patient_id: str, limit: int = 10, offset: int = 0
-    ) -> Dict[str, Any]:
+                self, patient_id: str, limit: int = 10, offset: int = 0
+            ) -> Dict[str, Any]:
         """
         Retrieve all analyses for a patient with pagination.
 
@@ -295,19 +303,19 @@ class MockPATService:
             Raises:
             InitializationError: If the service is not initialized
             """
-            self._check_initialized()
+        self._check_initialized()
 
-            # Get all analysis IDs for this patient
-            analysis_ids = self._patients_analyses.get(patient_id, [])
-            total = len(analysis_ids)
+        # Get all analysis IDs for this patient
+        analysis_ids = self._patients_analyses.get(patient_id, [])
+        total = len(analysis_ids)
 
-            # Apply pagination
-            paginated_ids = analysis_ids[offset : offset + limit]
+        # Apply pagination
+        paginated_ids = analysis_ids[offset: offset + limit]
 
-            # Get full analysis data for each ID
-            analyses = [self._analyses[aid] for aid in paginated_ids]
+        # Get full analysis data for each ID
+        analyses = [self._analyses[aid] for aid in paginated_ids]
 
-            return {
+        return {
             "analyses": analyses,
             "pagination": {
                 "total": total,
@@ -327,18 +335,18 @@ class MockPATService:
             Raises:
             InitializationError: If the service is not initialized
             """
-            self._check_initialized()
+        self._check_initialized()
 
-            return {
+        return {
             "name": "MockPATModel",
             "version": "1.0.0",
             "description": "Mock implementation of the PAT model for testing",
             "capabilities": [
-                "actigraphy_analysis",
-                "sleep_detection",
-                "activity_classification",
-                "stress_assessment",
-                "anomaly_detection",
+                    "actigraphy_analysis",
+                    "sleep_detection",
+                    "activity_classification",
+                    "stress_assessment",
+                    "anomaly_detection",
             ],
             "supported_analysis_types": self._supported_types,
             "supported_devices": [
@@ -376,18 +384,17 @@ class MockPATService:
             InitializationError: If the service is not initialized
             ResourceNotFoundError: If the analysis is not found
             """
-            self._check_initialized()
+        self._check_initialized()
 
-            # Verify the analysis exists
-            if analysis_id not in self._analyses:
+        # Verify the analysis exists
+        if analysis_id not in self._analyses:
             raise ResourceNotFoundError(f"Analysis not found: {analysis_id}")
 
             # Verify the analysis belongs to the patient
             analysis = self._analyses[analysis_id]
             if analysis["patient_id"] != patient_id:
             raise ValidationError(
-                f"Analysis {analysis_id} does not belong to patient {patient_id}"
-            )
+                f"Analysis {analysis_id} does not belong to patient {patient_id}")
 
         # Simulate processing delay
         self._simulate_delay()
@@ -425,8 +432,7 @@ class MockPATService:
                         "Maintain consistent sleep schedule",
                         "Reduce screen time before bed",
                     ],
-                }
-            )
+                })
 
         if "activity" in analysis_types:
             result["updated_profile"]["insights"].append(
@@ -439,8 +445,7 @@ class MockPATService:
                         "Increase daily steps to 10,000",
                         "Add 30 minutes of moderate exercise",
                     ],
-                }
-            )
+                })
 
         # Store the integration
         self._integrations[integration_id] = result

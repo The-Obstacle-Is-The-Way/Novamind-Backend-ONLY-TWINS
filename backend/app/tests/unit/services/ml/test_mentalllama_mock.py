@@ -20,7 +20,6 @@ def mock_service():
     service.initialize({"provider": "mock"})
     return service
 
-
     @pytest.mark.db_required()
     def test_initialization_success():
     """Test successful initialization of mock service."""
@@ -35,7 +34,6 @@ def mock_service():
     assert service._initialized is True
     assert len(service._available_models) > 0
 
-
     def test_initialization_missing_provider():
     """Test initialization with missing provider."""
     # Arrange
@@ -44,7 +42,6 @@ def mock_service():
     # Act & Assert
     with pytest.raises(InvalidConfigurationError):
         service.initialize({})
-
 
         def test_process(mock_service):
     """Test general processing functionality."""
@@ -68,7 +65,6 @@ def mock_service():
     assert "metadata" in result
     assert result["provider"] == "mock"
 
-
     def test_depression_detection_positive(mock_service):
     """Test depression detection with positive indicators."""
     # Arrange
@@ -87,7 +83,6 @@ def mock_service():
     assert "severity" in result
     assert "rationale" in result
 
-
     def test_depression_detection_negative(mock_service):
     """Test depression detection with negative indicators."""
     # Arrange
@@ -102,7 +97,6 @@ def mock_service():
     assert "depression_indicated" in result
     assert result["depression_indicated"] is False
     assert "key_indicators" in result
-
 
     def test_risk_assessment_high(mock_service):
     """Test risk assessment with high risk indicators."""
@@ -123,7 +117,6 @@ def mock_service():
     assert len(result["suggested_actions"]) > 0
     assert "rationale" in result
 
-
     def test_risk_assessment_low(mock_service):
     """Test risk assessment with low risk indicators."""
     # Arrange
@@ -140,7 +133,6 @@ def mock_service():
     assert "key_indicators" in result
     assert "suggested_actions" in result
     assert "rationale" in result
-
 
     def test_sentiment_analysis_positive(mock_service):
     """Test sentiment analysis with positive sentiment."""
@@ -162,7 +154,6 @@ def mock_service():
     assert "emotion_distribution" in result
     assert isinstance(result["emotion_distribution"], dict)
 
-
     def test_sentiment_analysis_negative(mock_service):
     """Test sentiment analysis with negative sentiment."""
     # Arrange
@@ -180,7 +171,6 @@ def mock_service():
     assert result["sentiment_score"] < 0
     assert "key_phrases" in result
     assert "emotion_distribution" in result
-
 
     def test_wellness_dimensions(mock_service):
     """Test wellness dimensions analysis."""
@@ -202,7 +192,6 @@ def mock_service():
     assert "recommendations" in result
     assert isinstance(result["recommendations"], list)
 
-
     def test_service_shutdown(mock_service):
     """Test service shutdown functionality."""
     # Act
@@ -212,7 +201,6 @@ def mock_service():
     assert mock_service._initialized is False
     assert mock_service._config is None
     assert mock_service._available_models == {}
-
 
     def test_mock_response_parsing():
     """Test parsing of mock service responses."""

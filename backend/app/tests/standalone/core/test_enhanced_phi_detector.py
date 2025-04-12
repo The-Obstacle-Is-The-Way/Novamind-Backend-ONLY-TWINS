@@ -22,7 +22,8 @@ class TestEnhancedPHIDetector:
     def test_contains_phi_with_standard_patterns(self):
         """Test detection of PHI using standard patterns."""
         # Test with email
-        assert EnhancedPHIDetector.contains_phi("Contact me at john.doe@example.com")
+        assert EnhancedPHIDetector.contains_phi(
+            "Contact me at john.doe@example.com")
 
         # Test with phone number
 
@@ -44,7 +45,8 @@ class TestEnhancedPHIDetector:
 
         # Test with address
 
-        assert EnhancedPHIDetector.contains_phi("Lives at 123 Main Street, Anytown")
+        assert EnhancedPHIDetector.contains_phi(
+            "Lives at 123 Main Street, Anytown")
 
         # Test with medical record number
         assert EnhancedPHIDetector.contains_phi("MRN: ABC123456")
@@ -75,17 +77,21 @@ class TestEnhancedPHIDetector:
 
         # Convert results to a dict for easier testing
 
-        detected_types = {phi_type.name.lower(): match for phi_type, match in results}
+        detected_types = {
+            phi_type.name.lower(): match for phi_type,
+            match in results}
 
         assert "name" in detected_types
         assert "dob" in detected_types
-        assert any(key in ["mrn", "medical_record"] for key in detected_types.keys())
+        assert any(key in ["mrn", "medical_record"]
+                   for key in detected_types.keys())
         assert "address" in detected_types
 
         # Verify specific matches
         assert "John Doe" in detected_types.values()
         assert "1980-01-01" in detected_types.values()
-        assert any("MRN: 12345678" in match for match in detected_types.values())
+        assert any(
+            "MRN: 12345678" in match for match in detected_types.values())
         assert any("123 Main St" in match for match in detected_types.values())
 
         def test_no_phi_in_regular_text(self):
@@ -121,7 +127,8 @@ class TestEnhancedPHISanitizer:
         message = "Patient {name} (DOB: {dob}) has appointment on {date}"
         args = {"name": "John Doe", "dob": "1980-01-01", "date": "2025-04-01"}
 
-        safe_message = EnhancedPHISanitizer.create_safe_log_message(message, **args)
+        safe_message = EnhancedPHISanitizer.create_safe_log_message(
+            message, **args)
 
         # Verify PHI has been sanitized
         assert "John Doe" not in safe_message
@@ -137,8 +144,12 @@ class TestEnhancedPHISanitizer:
         data = {
             "patient": {
                 "name": "John Doe",
-                "contact": {"email": "john.doe@example.com", "phone": "555-123-4567"},
-                "medical_info": {"mrn": "12345678", "diagnosis": "Anxiety"},
+                "contact": {
+                    "email": "john.doe@example.com",
+                    "phone": "555-123-4567"},
+                "medical_info": {
+                    "mrn": "12345678",
+                    "diagnosis": "Anxiety"},
             },
             "appointment_date": "2025-04-01",
         }
@@ -219,7 +230,6 @@ class TestEnhancedPHISecureLogger:
             # Exception message is handled separately by the logging module
             # We're just checking that our message was sanitized
             assert "Exception occurred" in mock_exception.call_args[0][0]
-
 
             @pytest.mark.standalone()
             def test_get_enhanced_phi_secure_logger():

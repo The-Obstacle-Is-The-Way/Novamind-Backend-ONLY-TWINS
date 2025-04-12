@@ -87,7 +87,8 @@ class TestMLSettings:
 
         # Verify properties match input values
         assert settings.model_path == sample_ml_config["model_path"]
-        assert settings.model_type == MLModelType(sample_ml_config["model_type"])
+        assert settings.model_type == MLModelType(
+            sample_ml_config["model_type"])
         assert settings.framework == MLFramework(sample_ml_config["framework"])
         assert settings.batch_size == sample_ml_config["batch_size"]
         assert settings.use_gpu == sample_ml_config["use_gpu"]
@@ -166,7 +167,8 @@ class TestMLSettings:
 
         # Verify properties match input config
         assert settings.model_path == sample_ml_config["model_path"]
-        assert settings.model_type == MLModelType(sample_ml_config["model_type"])
+        assert settings.model_type == MLModelType(
+            sample_ml_config["model_type"])
         assert settings.framework == MLFramework(sample_ml_config["framework"])
         assert settings.batch_size == sample_ml_config["batch_size"]
         assert settings.components == sample_ml_config["components"]
@@ -247,7 +249,8 @@ class TestMLSettingsConfig:
         config = load_model_config("/config/ml/symptom_prediction.json")
 
         # Verify file was opened and config loaded
-        mock_open.assert_called_once_with("/config/ml/symptom_prediction.json", "r")
+        mock_open.assert_called_once_with(
+            "/config/ml/symptom_prediction.json", "r")
         assert config == test_config
 
     @patch("app.core.config.ml_settings.open")
@@ -262,7 +265,8 @@ class TestMLSettingsConfig:
 
             @patch("app.core.config.ml_settings.open")
             @patch("app.core.config.ml_settings.json.load")
-            def test_load_model_config_invalid_json(self, mock_json_load, mock_open):
+            def test_load_model_config_invalid_json(
+                    self, mock_json_load, mock_open):
         """Test handling of invalid JSON configuration file."""
         # Mock JSON parsing error
         mock_json_load.side_effect = ValueError("Invalid JSON")
