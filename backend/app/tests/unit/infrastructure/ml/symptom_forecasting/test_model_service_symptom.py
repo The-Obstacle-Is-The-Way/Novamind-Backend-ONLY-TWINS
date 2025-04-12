@@ -33,8 +33,8 @@ class TestSymptomForecastingService:
             "model_metrics": {
                 "mae": 0.42,
                 "rmse": 0.68
-            }
-        })
+            
+        
         return model
 
     @pytest.fixture
@@ -48,8 +48,8 @@ class TestSymptomForecastingService:
             "model_metrics": {
                 "mae": 0.47,
                 "rmse": 0.72
-            }
-        })
+            
+        
         return model
 
     @pytest.fixture
@@ -66,7 +66,7 @@ class TestSymptomForecastingService:
     model_dir=model_dir,
     feature_names=["anxiety", "depression", "stress"],
     target_names=["anxiety_severity"]
-    )
+    
                 
                 # Manually set forecast parameters that we would test
     service.forecast_days = 4
@@ -129,9 +129,9 @@ class TestSymptomForecastingService:
                     "date": (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d"),
                     "symptom_type": "anxiety",
                     "severity": 4
-                }
+                
             ]
-        }
+        
 
     async def test_preprocess_patient_data_success(self, service, sample_patient_data):
     """Test that preprocess_patient_data correctly processes valid patient data."""
@@ -154,7 +154,7 @@ class TestSymptomForecastingService:
     patient_data = {
     "patient_id": str(uuid4()),
     "time_series": []
-    }
+    
 
         # Execute and verify
     patient_id = UUID(patient_data["patient_id"])
@@ -171,9 +171,9 @@ class TestSymptomForecastingService:
     "date": datetime.now().strftime("%Y-%m-%d"),
                     # Missing symptom_type
     "severity": 5
-    }
+    
     ]
-    }
+    
 
         # Execute/Verify
     with pytest.raises(ValueError) as excinfo:
@@ -193,7 +193,7 @@ class TestSymptomForecastingService:
     data=sample_patient_data,
     horizon=14,
     use_ensemble=True
-    )
+    
         
         # Verify
     assert "patient_id" in result
@@ -221,7 +221,7 @@ class TestSymptomForecastingService:
     data=sample_patient_data,
     horizon=14,
     use_ensemble=False
-    )
+    
         
         # Verify
     assert "values" in result
@@ -244,7 +244,7 @@ class TestSymptomForecastingService:
     data=sample_patient_data,
     horizon=14,
     use_ensemble=False
-    )
+    
 
     async def test_forecast_symptom_severity_insufficient_data(self, service):
     """Test forecasting with insufficient data."""
@@ -256,9 +256,9 @@ class TestSymptomForecastingService:
     "date": datetime.now().strftime("%Y-%m-%d"),
     "symptom_type": "anxiety",
     "severity": 5
-    }
+    
     ]
-    }
+    
         # Execute and verify
     patient_id = UUID(patient_data["patient_id"])
     with pytest.raises(ValidationError) as excinfo:
@@ -267,7 +267,7 @@ class TestSymptomForecastingService:
     data=patient_data,
     horizon=14,
     use_ensemble=True
-    )
+    
             
         # Just verify the exception contains the right message
     assert "insufficient" in str(excinfo.value).lower()
@@ -286,7 +286,7 @@ class TestSymptomForecastingService:
     model_dir=model_dir,
     feature_names=["anxiety", "depression", "stress"],
     target_names=["anxiety_severity"]
-    )
+    
     service.forecast_days = 4
         
         # Execute
@@ -307,4 +307,4 @@ class TestSymptomForecastingService:
     data=sample_patient_data,
     horizon=14,
     use_ensemble=False
-    )
+    

@@ -17,7 +17,7 @@ class TestPatientEncryption:
         mock_service.encrypt.side_effect = lambda text: f"ENC:{text}" if text else None
         mock_service.decrypt.side_effect = lambda text: text[4:] if text and text.startswith("ENC:") else None
         
-    return mock_service
+        return mock_service
     
     @pytest.fixture
     def sample_patient(self):
@@ -52,40 +52,40 @@ class TestPatientEncryption:
         # Import here to avoid circular imports
         with patch('app.infrastructure.persistence.sqlalchemy.models.patient.encryption_service',
                   mock_encryption_service):
-        from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
+            from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
             
             # Convert domain entity to model
-    patient_model = PatientModel.from_domain(sample_patient)
+            patient_model = PatientModel.from_domain(sample_patient)
             
             # Verify PHI data is encrypted
-    assert patient_model.first_name == f"ENC:{sample_patient.first_name}"
-    assert patient_model.last_name == f"ENC:{sample_patient.last_name}"
-    assert patient_model.email == f"ENC:{sample_patient.email}"
-    assert patient_model.phone == f"ENC:{sample_patient.phone}"
-    assert patient_model.address_line1 == f"ENC:{sample_patient.address.line1}"
-    assert patient_model.address_line2 == f"ENC:{sample_patient.address.line2}"
+            assert patient_model.first_name == f"ENC:{sample_patient.first_name}"
+            assert patient_model.last_name == f"ENC:{sample_patient.last_name}"
+            assert patient_model.email == f"ENC:{sample_patient.email}"
+            assert patient_model.phone == f"ENC:{sample_patient.phone}"
+            assert patient_model.address_line1 == f"ENC:{sample_patient.address.line1}"
+            assert patient_model.address_line2 == f"ENC:{sample_patient.address.line2}"
             
             # Non-PHI data should not be encrypted
-    assert patient_model.gender == sample_patient.gender
-    assert patient_model.marital_status == sample_patient.marital_status
+            assert patient_model.gender == sample_patient.gender
+            assert patient_model.marital_status == sample_patient.marital_status
     
     def test_decrypt_patient_data(self, sample_patient, mock_encryption_service):
         """Test that patient PHI is decrypted when converted back to a domain entity."""
         # Import here to avoid circular imports
         with patch('app.infrastructure.persistence.sqlalchemy.models.patient.encryption_service',
                   mock_encryption_service):
-        from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
+            from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
             
             # First convert domain to model (will encrypt)
-    patient_model = PatientModel.from_domain(sample_patient)
+            patient_model = PatientModel.from_domain(sample_patient)
             
             # Then convert back to domain (should decrypt)
-    decrypted_patient = patient_model.to_domain()
+            decrypted_patient = patient_model.to_domain()
             
             # Verify PHI data is correctly decrypted and matches original
-    assert decrypted_patient.first_name == sample_patient.first_name
-    assert decrypted_patient.last_name == sample_patient.last_name
-    assert decrypted_patient.email == sample_patient.email
-    assert decrypted_patient.phone == sample_patient.phone
-    assert decrypted_patient.address.line1 == sample_patient.address.line1
-    assert decrypted_patient.address.line2 == sample_patient.address.line2
+            assert decrypted_patient.first_name == sample_patient.first_name
+            assert decrypted_patient.last_name == sample_patient.last_name
+            assert decrypted_patient.email == sample_patient.email
+            assert decrypted_patient.phone == sample_patient.phone
+            assert decrypted_patient.address.line1 == sample_patient.address.line1
+            assert decrypted_patient.address.line2 == sample_patient.address.line2

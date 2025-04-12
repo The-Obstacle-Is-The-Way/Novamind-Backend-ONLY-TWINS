@@ -18,7 +18,7 @@ class TestBiometricTwin:
             id=UUID("00000000-0000-0000-0000-000000000001"),
             patient_id=UUID("00000000-0000-0000-0000-000000000002"),
             created_by=UUID("00000000-0000-0000-0000-000000000003")
-        )
+        
     
     def test_initialization(self, sample_twin):
         """Test BiometricTwin initialization."""
@@ -37,7 +37,7 @@ class TestBiometricTwin:
             value=75.0,
             timestamp=datetime.now(),
             source="apple_watch"
-        )
+        
         
         # Add to the twin
     sample_twin.add_data_point(data_point)
@@ -61,7 +61,7 @@ class TestBiometricTwin:
     value=75.0 + i,
     timestamp=now + timedelta(minutes=i),
     source="apple_watch"
-    ))
+    
         
         # Add all data points
     for dp in data_points:
@@ -88,7 +88,7 @@ class TestBiometricTwin:
     value=75.0,
     timestamp=now,
     source="apple_watch"
-    )
+    
     sample_twin.add_data_point(heart_point)
         
         # Add a step count data point
@@ -99,7 +99,7 @@ class TestBiometricTwin:
     value=10000,
     timestamp=now,
     source="apple_watch"
-    )
+    
     sample_twin.add_data_point(step_point)
         
         # Verify both types exist
@@ -127,7 +127,7 @@ class TestBiometricTwin:
     value=75.0 + i,
     timestamp=now + timedelta(hours=i),
     source="apple_watch"
-    ))
+    
         
         # Add them out of order to test sorting
     sample_twin.add_data_point(data_points[2])  # middle
@@ -163,7 +163,7 @@ class TestBiometricTwin:
     value=75.0 + i,
     timestamp=now + timedelta(hours=i),
     source="apple_watch"
-    ))
+    
         
         # Add the data points to the twin
     for dp in data_points:
@@ -201,7 +201,7 @@ class TestBiometricTwin:
     value=75.0,
     timestamp=now,
     source="apple_watch"
-    )
+    
     sample_twin.add_data_point(data_point)
         
         # Request a range that doesn't include the point
@@ -209,7 +209,7 @@ class TestBiometricTwin:
     end_time = now + timedelta(hours=2)
     range_points = sample_twin.get_data_points_in_range(
     BiometricType.HEART_RATE, start_time, end_time
-    )
+    
         
         # Should return an empty list
     assert len(range_points) == 0
