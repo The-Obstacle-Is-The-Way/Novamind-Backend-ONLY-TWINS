@@ -9,12 +9,12 @@ proper data encapsulation and validation.
 
 import pytest
 from datetime import date
-, from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional
 
 from app.domain.value_objects.emergency_contact import EmergencyContact
-, from app.domain.value_objects.psychiatric_assessment import PsychiatricAssessment
+from app.domain.value_objects.psychiatric_assessment import PsychiatricAssessment
 from app.domain.value_objects.address import Address
-, from app.domain.value_objects.contact_info import ContactInfo
+from app.domain.value_objects.contact_info import ContactInfo
 
 
 @pytest.mark.venv_only()

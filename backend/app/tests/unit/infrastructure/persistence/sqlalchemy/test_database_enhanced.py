@@ -11,7 +11,7 @@ import logging
 from unittest.mock import patch, MagicMock, AsyncMock, PropertyMock
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine
 from sqlalchemy.orm import sessionmaker
-, from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import NullPool
 from sqlalchemy.exc import SQLAlchemyError
 
 # Corrected imports

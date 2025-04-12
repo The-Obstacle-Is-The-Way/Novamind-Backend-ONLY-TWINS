@@ -8,10 +8,10 @@ work correctly and handle edge cases properly.
 import json
 import uuid
 from datetime import datetime
-, from typing import Any, Dict, List
+from typing import Any, Dict, List
 from unittest.mock import patch
 
-, import pytest
+import pytest
 
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,  
@@ -21,7 +21,7 @@ from app.core.services.ml.pat.exceptions import (
     ResourceNotFoundError,  
     ValidationError,  
 )
-from app.core.services.ml.pat.mock import MockPATService , as MockPAT
+from app.core.services.ml.pat.mock import MockPATService as MockPAT # Corrected import alias syntax
 
 @pytest.fixture
 def mock_pat():

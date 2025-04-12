@@ -3,12 +3,12 @@
 
 import pytest
 from datetime import date
-, from unittest.mock import MagicMock
+from unittest.mock import MagicMock
 from uuid import UUID
 
-, from app.domain.entities.patient import Patient
+from app.domain.entities.patient import Patient
 from app.domain.value_objects.contact_info import ContactInfo
-, from app.domain.value_objects.address import Address
+from app.domain.value_objects.address import Address
 from app.infrastructure.security.encryption import EncryptionService
 
 

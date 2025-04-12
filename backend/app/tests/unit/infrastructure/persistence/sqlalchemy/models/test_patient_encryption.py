@@ -8,10 +8,10 @@ and decrypted according to HIPAA compliance requirements.
 
 import pytest
 from datetime import date
-, from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 from app.domain.entities.patient import Patient
-, from app.domain.value_objects.address import Address
+from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
 # from app.domain.value_objects.insurance import Insurance # Commented out - Module not found
 from app.infrastructure.security.encryption import EncryptionService

@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from botocore.exceptions import BotoCoreError
 
-, from app.core.config.settings import get_settings
+from app.core.config.settings import get_settings
 from app.core.exceptions import InitializationError, ModelNotFoundError, ServiceUnavailableError
 from app.core.services.ml.mentallama.bedrock_service import BedrockMentalLamaService
 

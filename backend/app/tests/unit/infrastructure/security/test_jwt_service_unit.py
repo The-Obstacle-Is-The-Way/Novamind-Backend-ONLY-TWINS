@@ -11,11 +11,11 @@ import datetime
 import time
 from unittest.mock import patch, MagicMock
 from freezegun import freeze_time
-, from typing import Dict, Any # Added Any
+from typing import Dict, Any # Added Any
 
 # Corrected imports: Removed non-existent classes/enums
 from app.infrastructure.security.jwt_service import JWTService
-, from jwt.exceptions import PyJWTError # Import standard JWT errors
+from jwt.exceptions import PyJWTError # Import standard JWT errors
 
 # Removed JWTConfig and related imports as they don't exist in jwt_service.py
 

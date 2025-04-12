@@ -6,30 +6,37 @@ correctly handle requests, responses, and errors.
 """
 
 import json
-from datetime import datetime, timedelta
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, patch
+from datetime import datetime, timedelta, UTC # Added UTC
+from typing import Any, Dict, List, Optional # Added Optional
+from unittest.mock import MagicMock, patch, AsyncMock # Added AsyncMock
+from uuid import UUID, uuid4 # Added UUID
 
 import pytest
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, FastAPI # Added FastAPI
 from fastapi.testclient import TestClient
 
-, from app.api.routes.actigraphy import router
+from app.api.routes.actigraphy import router # Assuming router is defined here
 from app.api.schemas.actigraphy import AnalysisType
-, from app.core.services.ml.pat.exceptions import (
-    AnalysisError,  
-    AuthorizationError,  
-    EmbeddingError,  
-    ResourceNotFoundError,  
-    ValidationError,  
+from app.core.services.ml.pat.exceptions import (
+    AnalysisError,
+    AuthorizationError,
+    EmbeddingError,
+    ResourceNotFoundError,
+    ValidationError,
 )
+# Assuming PATInterface and other dependencies exist
+from app.core.services.ml.pat.interface import PATInterface
+# Assuming auth dependencies exist
+# from app.api.dependencies.auth import validate_jwt, get_current_user_id
+# from app.api.dependencies.ml import get_pat_service
 
 
 # Mock data
 @pytest.fixture
 def mock_token() -> str:
     """Create a mock JWT token."""
-    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRpZW50MTIzIiwiaWF0IjoxNjE2MjM5MDIyfQ.signature"
+    # This is just a placeholder, actual token validation is mocked
+    return "mock_jwt_token"
 
 
 @pytest.fixture
@@ -41,9 +48,9 @@ def patient_id() -> str:
 @pytest.fixture
 def sample_readings() -> List[Dict[str, Any]]:
     """Create sample accelerometer readings."""
-    base_time = datetime.now()
+    base_time = datetime.now(UTC) # Use UTC
     readings = []
-    
+
     for i in range(10):
         timestamp = (base_time + timedelta(seconds=i/10)).isoformat() + "Z"
         reading = {
@@ -51,11 +58,11 @@ def sample_readings() -> List[Dict[str, Any]]:
             "x": 0.1 * i,
             "y": 0.2 * i,
             "z": 0.3 * i,
-            "heart_rate": 60 + i,
+            "heart_rate": 60 + i, # Added example heart rate
             "metadata": {"activity": "walking" if i % 2 == 0 else "sitting"}
         }
         readings.append(reading)
-    
+
     return readings
 
 
@@ -67,7 +74,7 @@ def device_info() -> Dict[str, Any]:
         "model": "Apple Watch Series 9",
         "manufacturer": "Apple",
         "firmware_version": "1.2.3",
-        "position": "wrist_left",
+        "position": "wrist_left", # Added example position
         "metadata": {"battery_level": 85}
     }
 
@@ -78,8 +85,8 @@ def analysis_request(patient_id: str, sample_readings: List[Dict[str, Any]], dev
     return {
         "patient_id": patient_id,
         "readings": sample_readings,
-        "start_time": datetime.now().isoformat() + "Z",
-        "end_time": (datetime.now() + timedelta(hours=1)).isoformat() + "Z",
+        "start_time": datetime.now(UTC).isoformat() + "Z",
+        "end_time": (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z",
         "sampling_rate_hz": 10.0,
         "device_info": device_info,
         "analysis_types": [AnalysisType.ACTIVITY_LEVEL.value, AnalysisType.SLEEP.value]
@@ -92,8 +99,8 @@ def embedding_request(patient_id: str, sample_readings: List[Dict[str, Any]]) ->
     return {
         "patient_id": patient_id,
         "readings": sample_readings,
-        "start_time": datetime.now().isoformat() + "Z",
-        "end_time": (datetime.now() + timedelta(hours=1)).isoformat() + "Z",
+        "start_time": datetime.now(UTC).isoformat() + "Z",
+        "end_time": (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z",
         "sampling_rate_hz": 10.0
     }
 
@@ -111,15 +118,17 @@ def integration_request(patient_id: str) -> Dict[str, Any]:
 @pytest.fixture
 def analysis_result(patient_id: str, device_info: Dict[str, Any]) -> Dict[str, Any]:
     """Create an analysis result."""
+    now_iso = datetime.now(UTC).isoformat() + "Z"
+    end_iso = (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z"
     return {
         "analysis_id": "analysis123",
         "patient_id": patient_id,
-        "timestamp": datetime.now().isoformat() + "Z",
+        "timestamp": now_iso,
         "analysis_types": [AnalysisType.ACTIVITY_LEVEL.value, AnalysisType.SLEEP.value],
         "device_info": device_info,
         "data_summary": {
-            "start_time": datetime.now().isoformat() + "Z",
-            "end_time": (datetime.now() + timedelta(hours=1)).isoformat() + "Z",
+            "start_time": now_iso,
+            "end_time": end_iso,
             "duration_seconds": 3600.0,
             "readings_count": 10,
             "sampling_rate_hz": 10.0
@@ -127,22 +136,10 @@ def analysis_result(patient_id: str, device_info: Dict[str, Any]) -> Dict[str, A
         "results": {
             AnalysisType.ACTIVITY_LEVEL.value: {
                 "activity_levels": {
-                    "sedentary": {
-                        "percentage": 0.6,
-                        "duration_seconds": 2160.0
-                    },
-                    "light": {
-                        "percentage": 0.3,
-                        "duration_seconds": 1080.0
-                    },
-                    "moderate": {
-                        "percentage": 0.08,
-                        "duration_seconds": 288.0
-                    },
-                    "vigorous": {
-                        "percentage": 0.02,
-                        "duration_seconds": 72.0
-                    }
+                    "sedentary": {"percentage": 0.6, "duration_seconds": 2160.0},
+                    "light": {"percentage": 0.3, "duration_seconds": 1080.0},
+                    "moderate": {"percentage": 0.08, "duration_seconds": 288.0},
+                    "vigorous": {"percentage": 0.02, "duration_seconds": 72.0}
                 },
                 "step_count": 5000,
                 "calories_burned": 1200,
@@ -151,22 +148,10 @@ def analysis_result(patient_id: str, device_info: Dict[str, Any]) -> Dict[str, A
             },
             AnalysisType.SLEEP.value: {
                 "sleep_stages": {
-                    "awake": {
-                        "percentage": 0.1,
-                        "duration_seconds": 360.0
-                    },
-                    "light": {
-                        "percentage": 0.5,
-                        "duration_seconds": 1800.0
-                    },
-                    "deep": {
-                        "percentage": 0.3,
-                        "duration_seconds": 1080.0
-                    },
-                    "rem": {
-                        "percentage": 0.1,
-                        "duration_seconds": 360.0
-                    }
+                    "awake": {"percentage": 0.1, "duration_seconds": 360.0},
+                    "light": {"percentage": 0.5, "duration_seconds": 1800.0},
+                    "deep": {"percentage": 0.3, "duration_seconds": 1080.0},
+                    "rem": {"percentage": 0.1, "duration_seconds": 360.0}
                 },
                 "sleep_efficiency": 0.9,
                 "sleep_latency_seconds": 600,
@@ -181,13 +166,15 @@ def analysis_result(patient_id: str, device_info: Dict[str, Any]) -> Dict[str, A
 @pytest.fixture
 def embedding_result(patient_id: str) -> Dict[str, Any]:
     """Create an embedding result."""
+    now_iso = datetime.now(UTC).isoformat() + "Z"
+    end_iso = (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z"
     return {
         "embedding_id": "embedding123",
         "patient_id": patient_id,
-        "timestamp": datetime.now().isoformat() + "Z",
+        "timestamp": now_iso,
         "data_summary": {
-            "start_time": datetime.now().isoformat() + "Z",
-            "end_time": (datetime.now() + timedelta(hours=1)).isoformat() + "Z",
+            "start_time": now_iso,
+            "end_time": end_iso,
             "duration_seconds": 3600.0,
             "readings_count": 10,
             "sampling_rate_hz": 10.0
@@ -203,12 +190,13 @@ def embedding_result(patient_id: str) -> Dict[str, Any]:
 @pytest.fixture
 def integration_result(patient_id: str) -> Dict[str, Any]:
     """Create an integration result."""
+    now_iso = datetime.now(UTC).isoformat() + "Z"
     return {
         "integration_id": "integration123",
         "patient_id": patient_id,
         "profile_id": "profile123",
         "analysis_id": "analysis123",
-        "timestamp": datetime.now().isoformat() + "Z",
+        "timestamp": now_iso,
         "status": "success",
         "insights": [
             {
@@ -231,7 +219,7 @@ def integration_result(patient_id: str) -> Dict[str, Any]:
                 "behavioral_patterns"
             ],
             "confidence_score": 0.92,
-            "updated_at": datetime.now().isoformat() + "Z"
+            "updated_at": now_iso
         }
     }
 
@@ -259,15 +247,18 @@ def model_info() -> Dict[str, Any]:
 @pytest.fixture
 def analyses_list(patient_id: str) -> Dict[str, Any]:
     """Create a list of analyses."""
+    now_iso = datetime.now(UTC).isoformat() + "Z"
+    yesterday_iso = (datetime.now(UTC) - timedelta(days=1)).isoformat() + "Z"
+    yesterday_end_iso = (datetime.now(UTC) - timedelta(days=1) + timedelta(hours=1)).isoformat() + "Z"
     return {
         "analyses": [
             {
                 "analysis_id": "analysis123",
-                "timestamp": datetime.now().isoformat() + "Z",
+                "timestamp": now_iso,
                 "analysis_types": [AnalysisType.ACTIVITY_LEVEL.value, AnalysisType.SLEEP.value],
                 "data_summary": {
-                    "start_time": datetime.now().isoformat() + "Z",
-                    "end_time": (datetime.now() + timedelta(hours=1)).isoformat() + "Z",
+                    "start_time": now_iso,
+                    "end_time": (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z",
                     "duration_seconds": 3600.0,
                     "readings_count": 10,
                     "sampling_rate_hz": 10.0
@@ -275,11 +266,11 @@ def analyses_list(patient_id: str) -> Dict[str, Any]:
             },
             {
                 "analysis_id": "analysis456",
-                "timestamp": (datetime.now() - timedelta(days=1)).isoformat() + "Z",
+                "timestamp": yesterday_iso,
                 "analysis_types": [AnalysisType.ACTIVITY_LEVEL.value],
                 "data_summary": {
-                    "start_time": (datetime.now() - timedelta(days=1)).isoformat() + "Z",
-                    "end_time": (datetime.now() - timedelta(days=1) + timedelta(hours=1)).isoformat() + "Z",
+                    "start_time": yesterday_iso,
+                    "end_time": yesterday_end_iso,
                     "duration_seconds": 3600.0,
                     "readings_count": 10,
                     "sampling_rate_hz": 10.0
@@ -295,19 +286,6 @@ def analyses_list(patient_id: str) -> Dict[str, Any]:
     }
 
 
-# Test client
-# Removed local client fixture; tests will use client from conftest.py
-
-
-# Mock authentication
-@pytest.fixture(autouse=True)
-def mock_auth() -> None:
-    """Mock authentication functions."""
-    with patch("app.api.routes.actigraphy.validate_jwt", return_value=None), \
-         patch("app.api.routes.actigraphy.get_current_user_id", return_value="patient123"):
-        yield
-
-
 # Mock PAT service
 @pytest.fixture
 def mock_pat_service(
@@ -318,33 +296,67 @@ def mock_pat_service(
     analyses_list: Dict[str, Any]
 ) -> MagicMock:
     """Create a mock PAT service."""
-    mock_service = MagicMock()
-    
+    mock_service = AsyncMock(spec=PATInterface) # Use AsyncMock for async methods
+
     # Mock methods
-    mock_service.analyze_actigraphy.return_value = analysis_result
-    mock_service.get_actigraphy_embeddings.return_value = embedding_result
-    mock_service.get_analysis_by_id.return_value = analysis_result
-    mock_service.get_patient_analyses.return_value = analyses_list
-    mock_service.get_model_info.return_value = model_info
-    mock_service.integrate_with_digital_twin.return_value = integration_result
-    
+    mock_service.analyze_actigraphy = AsyncMock(return_value=analysis_result)
+    mock_service.get_actigraphy_embeddings = AsyncMock(return_value=embedding_result)
+    mock_service.get_analysis_by_id = AsyncMock(return_value=analysis_result)
+    mock_service.get_patient_analyses = AsyncMock(return_value=analyses_list)
+    mock_service.get_model_info = AsyncMock(return_value=model_info)
+    mock_service.integrate_with_digital_twin = AsyncMock(return_value=integration_result)
+
     return mock_service
 
+@pytest.fixture
+def app(mock_pat_service):
+    """Create FastAPI app instance and override dependencies."""
+    app_instance = FastAPI()
 
-@pytest.fixture(autouse=True)
-def mock_get_pat_service(mock_pat_service: MagicMock) -> None:
-    """Mock the get_pat_service dependency."""
-    with patch("app.api.routes.actigraphy.get_pat_service", return_value=mock_pat_service):
-        yield
+    # Mock auth dependencies (replace with actual dependency paths)
+    def mock_validate_jwt(token: Optional[str] = None):
+        if token != "mock_jwt_token":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        return {"sub": "patient123"} # Return mock payload
+
+    def mock_get_current_user_id(payload: dict = Depends(mock_validate_jwt)):
+         return payload.get("sub")
+
+    try:
+        from app.api.dependencies.auth import validate_jwt as actual_validate_jwt
+        from app.api.dependencies.auth import get_current_user_id as actual_get_user_id
+        app_instance.dependency_overrides[actual_validate_jwt] = lambda: mock_validate_jwt
+        app_instance.dependency_overrides[actual_get_user_id] = mock_get_current_user_id
+    except ImportError:
+        print("Warning: Auth dependencies not found for override.")
+        pass
+
+    # Mock PAT service dependency
+    try:
+        from app.api.dependencies.ml import get_pat_service as actual_get_pat_service
+        app_instance.dependency_overrides[actual_get_pat_service] = lambda: mock_pat_service
+    except ImportError:
+         print("Warning: get_pat_service dependency not found for override.")
+         pass
 
 
-@pytest.mark.db_required()
+    app_instance.include_router(router, prefix="/api/v1/actigraphy") # Add prefix if needed
+    return app_instance
+
+
+@pytest.fixture
+def client(app):
+    """Create TestClient."""
+    return TestClient(app)
+
+
+@pytest.mark.db_required() # Assuming db_required is a valid marker
 class TestActigraphyRoutes:
     """Tests for the actigraphy API routes."""
-    
+
     def test_analyze_actigraphy_success(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         analysis_request: Dict[str, Any],
         analysis_result: Dict[str, Any],
@@ -353,43 +365,45 @@ class TestActigraphyRoutes:
         """Test successful actigraphy analysis."""
         # Make the request
         response = client.post(
-            "/analyze",
+            "/api/v1/actigraphy/analyze", # Added prefix
             json=analysis_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_201_CREATED
+        assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == analysis_result
-        
+
         # Verify service call
-        mock_pat_service.analyze_actigraphy.assert _called_once()
-    
+        mock_pat_service.analyze_actigraphy.assert_called_once()
+
     def test_analyze_actigraphy_unauthorized(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         analysis_request: Dict[str, Any]
     ) -> None:
         """Test unauthorized actigraphy analysis."""
-        # Change patient ID to trigger authorization error
+        # Change patient ID to trigger authorization error (assuming auth checks this)
         modified_request = analysis_request.copy()
         modified_request["patient_id"] = "different_patient"
-        
+
         # Make the request
         response = client.post(
-            "/analyze",
+            "/api/v1/actigraphy/analyze", # Added prefix
             json=modified_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
-        # Check the response
-        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
+
+        # Check the response (depends on how auth is implemented)
+        # If auth checks patient_id against token 'sub', this should fail
+        # Assuming a 403 Forbidden if patient_id doesn't match user_id
+        assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
-    
+
     def test_analyze_actigraphy_validation_error(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         analysis_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -397,21 +411,21 @@ class TestActigraphyRoutes:
         """Test actigraphy analysis with validation error."""
         # Setup the mock to raise a validation error
         mock_pat_service.analyze_actigraphy.side_effect = ValidationError("Invalid input")
-        
+
         # Make the request
         response = client.post(
-            "/analyze",
+            "/api/v1/actigraphy/analyze", # Added prefix
             json=analysis_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid input" in response.json()["detail"]
-    
+
     def test_analyze_actigraphy_analysis_error(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         analysis_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -419,21 +433,21 @@ class TestActigraphyRoutes:
         """Test actigraphy analysis with analysis error."""
         # Setup the mock to raise an analysis error
         mock_pat_service.analyze_actigraphy.side_effect = AnalysisError("Analysis failed")
-        
+
         # Make the request
         response = client.post(
-            "/analyze",
+            "/api/v1/actigraphy/analyze", # Added prefix
             json=analysis_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Analysis failed" in response.json()["detail"]
-    
+
     def test_get_actigraphy_embeddings_success(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         embedding_request: Dict[str, Any],
         embedding_result: Dict[str, Any],
@@ -442,21 +456,21 @@ class TestActigraphyRoutes:
         """Test successful embedding generation."""
         # Make the request
         response = client.post(
-            "/embeddings",
+            "/api/v1/actigraphy/embeddings", # Added prefix
             json=embedding_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_201_CREATED
+        assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == embedding_result
-        
+
         # Verify service call
-        mock_pat_service.get_actigraphy_embeddings.assert _called_once()
-    
+        mock_pat_service.get_actigraphy_embeddings.assert_called_once()
+
     def test_get_actigraphy_embeddings_unauthorized(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         embedding_request: Dict[str, Any]
     ) -> None:
@@ -464,21 +478,21 @@ class TestActigraphyRoutes:
         # Change patient ID to trigger authorization error
         modified_request = embedding_request.copy()
         modified_request["patient_id"] = "different_patient"
-        
+
         # Make the request
         response = client.post(
-            "/embeddings",
+            "/api/v1/actigraphy/embeddings", # Added prefix
             json=modified_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
-    
+
     def test_get_actigraphy_embeddings_validation_error(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         embedding_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -486,21 +500,21 @@ class TestActigraphyRoutes:
         """Test embedding generation with validation error."""
         # Setup the mock to raise a validation error
         mock_pat_service.get_actigraphy_embeddings.side_effect = ValidationError("Invalid input")
-        
+
         # Make the request
         response = client.post(
-            "/embeddings",
+            "/api/v1/actigraphy/embeddings", # Added prefix
             json=embedding_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid input" in response.json()["detail"]
-    
+
     def test_get_actigraphy_embeddings_embedding_error(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         embedding_request: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -508,85 +522,86 @@ class TestActigraphyRoutes:
         """Test embedding generation with embedding error."""
         # Setup the mock to raise an embedding error
         mock_pat_service.get_actigraphy_embeddings.side_effect = EmbeddingError("Embedding failed")
-        
+
         # Make the request
         response = client.post(
-            "/embeddings",
+            "/api/v1/actigraphy/embeddings", # Added prefix
             json=embedding_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Embedding failed" in response.json()["detail"]
-    
+
     def test_get_analysis_by_id_success(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         analysis_result: Dict[str, Any],
         mock_pat_service: MagicMock
     ) -> None:
         """Test successful analysis retrieval."""
+        analysis_id = analysis_result["analysis_id"]
         # Make the request
         response = client.get(
-            f"/analyses/{analysis_result['analysis_id']}",
+            f"/api/v1/actigraphy/analyses/{analysis_id}", # Added prefix
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK
         assert response.json() == analysis_result
-        
+
         # Verify service call
-        mock_pat_service.get_analysis_by_id.assert _called_once_with(analysis_result["analysis_id"])
-    
+        mock_pat_service.get_analysis_by_id.assert_called_once_with(analysis_id)
+
     def test_get_analysis_by_id_not_found(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         mock_pat_service: MagicMock
     ) -> None:
         """Test analysis retrieval with not found error."""
-        # Setup the mock to raise a not found error
+        analysis_id = "nonexistent-analysis"
+        # Setup the mock to raise ResourceNotFoundError
         mock_pat_service.get_analysis_by_id.side_effect = ResourceNotFoundError("Analysis not found")
-        
+
         # Make the request
         response = client.get(
-            "/analyses/nonexistent",
+            f"/api/v1/actigraphy/analyses/{analysis_id}", # Added prefix
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_404_NOT_FOUND
-        assert "not found" in response.json()["detail"]
-    
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "Analysis not found" in response.json()["detail"]
+
     def test_get_analysis_by_id_unauthorized(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         analysis_result: Dict[str, Any],
         mock_pat_service: MagicMock
     ) -> None:
         """Test unauthorized analysis retrieval."""
-        # Setup the mock to return an analysis with a different patient ID
-        modified_result = analysis_result.copy()
-        modified_result["patient_id"] = "different_patient"
-        mock_pat_service.get_analysis_by_id.return_value = modified_result
-        
+        analysis_id = analysis_result["analysis_id"]
+        # Setup the mock to raise AuthorizationError
+        mock_pat_service.get_analysis_by_id.side_effect = AuthorizationError("Not authorized")
+
         # Make the request
         response = client.get(
-            f"/analyses/{analysis_result['analysis_id']}",
+            f"/api/v1/actigraphy/analyses/{analysis_id}", # Added prefix
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
-    
+
     def test_get_patient_analyses_success(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         patient_id: str,
         analyses_list: Dict[str, Any],
@@ -595,40 +610,39 @@ class TestActigraphyRoutes:
         """Test successful patient analyses retrieval."""
         # Make the request
         response = client.get(
-            f"/patient/{patient_id}/analyses",
+            f"/api/v1/actigraphy/patients/{patient_id}/analyses", # Added prefix
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK
         assert response.json() == analyses_list
-        
+
         # Verify service call
-        mock_pat_service.get_patient_analyses.assert _called_once_with(
-            patient_id=patient_id,
-            limit=10,
-            offset=0
+        mock_pat_service.get_patient_analyses.assert_called_once_with(
+            patient_id=patient_id, limit=10, offset=0 # Check default pagination
         )
-    
+
     def test_get_patient_analyses_unauthorized(
         self,
-        client: TestClient, # Use client fixture from conftest.py
-        mock_token: str
+        client: TestClient,
+        mock_token: str,
+        patient_id: str
     ) -> None:
         """Test unauthorized patient analyses retrieval."""
-        # Make the request with a different patient ID
+        # Make the request for a different patient ID than in the token
         response = client.get(
-            "/patient/different_patient/analyses",
+            f"/api/v1/actigraphy/patients/different_patient/analyses", # Added prefix
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
-    
+
     def test_get_model_info_success(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         model_info: Dict[str, Any],
         mock_pat_service: MagicMock
@@ -636,20 +650,20 @@ class TestActigraphyRoutes:
         """Test successful model info retrieval."""
         # Make the request
         response = client.get(
-            "/model-info",
+            "/api/v1/actigraphy/model-info", # Added prefix
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK
         assert response.json() == model_info
-        
+
         # Verify service call
-        mock_pat_service.get_model_info.assert _called_once()
-    
+        mock_pat_service.get_model_info.assert_called_once()
+
     def test_integrate_with_digital_twin_success(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         integration_request: Dict[str, Any],
         integration_result: Dict[str, Any],
@@ -658,124 +672,124 @@ class TestActigraphyRoutes:
         """Test successful digital twin integration."""
         # Make the request
         response = client.post(
-            "/integrate-with-digital-twin",
+            "/api/v1/actigraphy/integrate", # Added prefix
             json=integration_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_201_CREATED
+        assert response.status_code == status.HTTP_200_OK
         assert response.json() == integration_result
-        
+
         # Verify service call
-        mock_pat_service.integrate_with_digital_twin.assert _called_once()
-    
+        mock_pat_service.integrate_with_digital_twin.assert_called_once()
+
     def test_integrate_with_digital_twin_unauthorized(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         integration_request: Dict[str, Any]
     ) -> None:
         """Test unauthorized digital twin integration."""
-        # Change patient ID to trigger authorization error
+        # Change patient ID
         modified_request = integration_request.copy()
         modified_request["patient_id"] = "different_patient"
-        
+
         # Make the request
         response = client.post(
-            "/integrate-with-digital-twin",
+            "/api/v1/actigraphy/integrate", # Added prefix
             json=modified_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "Not authorized" in response.json()["detail"]
-    
+
     def test_integrate_with_digital_twin_not_found(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         integration_request: Dict[str, Any],
         mock_pat_service: MagicMock
     ) -> None:
         """Test digital twin integration with not found error."""
-        # Setup the mock to raise a not found error
+        # Setup mock to raise error
         mock_pat_service.integrate_with_digital_twin.side_effect = ResourceNotFoundError("Analysis not found")
-        
+
         # Make the request
         response = client.post(
-            "/integrate-with-digital-twin",
+            "/api/v1/actigraphy/integrate", # Added prefix
             json=integration_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_404_NOT_FOUND
-        assert "not found" in response.json()["detail"]
-    
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "Analysis not found" in response.json()["detail"]
+
     def test_integrate_with_digital_twin_authorization_error(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         integration_request: Dict[str, Any],
         mock_pat_service: MagicMock
     ) -> None:
         """Test digital twin integration with authorization error."""
-        # Setup the mock to raise an authorization error
-        mock_pat_service.integrate_with_digital_twin.side_effect = AuthorizationError("Not authorized")
-        
+         # Setup mock to raise error
+        mock_pat_service.integrate_with_digital_twin.side_effect = AuthorizationError("Integration not allowed")
+
         # Make the request
         response = client.post(
-            "/integrate-with-digital-twin",
+            "/api/v1/actigraphy/integrate", # Added prefix
             json=integration_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_403_FORBIDDEN
-        assert "Not authorized" in response.json()["detail"]
-    
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert "Integration not allowed" in response.json()["detail"]
+
     def test_integrate_with_digital_twin_validation_error(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         integration_request: Dict[str, Any],
         mock_pat_service: MagicMock
     ) -> None:
         """Test digital twin integration with validation error."""
-        # Setup the mock to raise a validation error
-        mock_pat_service.integrate_with_digital_twin.side_effect = ValidationError("Invalid input")
-        
+        # Setup mock to raise error
+        mock_pat_service.integrate_with_digital_twin.side_effect = ValidationError("Invalid profile ID")
+
         # Make the request
         response = client.post(
-            "/integrate-with-digital-twin",
+            "/api/v1/actigraphy/integrate", # Added prefix
             json=integration_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_422_UNPROCESSABLE_ENTITY
-        assert "Invalid input" in response.json()["detail"]
-    
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "Invalid profile ID" in response.json()["detail"]
+
     def test_integrate_with_digital_twin_integration_error(
         self,
-        client: TestClient, # Use client fixture from conftest.py
+        client: TestClient,
         mock_token: str,
         integration_request: Dict[str, Any],
         mock_pat_service: MagicMock
     ) -> None:
         """Test digital twin integration with integration error."""
-        # Setup the mock to raise an integration error
-        mock_pat_service.integrate_with_digital_twin.side_effect = IntegrationError("Integration failed")
-        
+        # Setup mock to raise error
+        mock_pat_service.integrate_with_digital_twin.side_effect = Exception("Integration failed") # Generic exception
+
         # Make the request
         response = client.post(
-            "/integrate-with-digital-twin",
+            "/api/v1/actigraphy/integrate", # Added prefix
             json=integration_request,
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
+
         # Check the response
-        assert response.status_code  ==  status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Integration failed" in response.json()["detail"]

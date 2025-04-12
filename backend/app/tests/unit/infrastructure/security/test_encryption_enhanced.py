@@ -12,9 +12,9 @@ from unittest.mock import patch, MagicMock, mock_open
 import base64
 import hashlib
 from cryptography.fernet import Fernet
-, from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-, from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends import default_backend
 
 from app.infrastructure.security.encryption import (
     EncryptionService,  
