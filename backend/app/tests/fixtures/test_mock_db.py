@@ -69,25 +69,25 @@ class TestMockAsyncSession:
         # Verify entity is still tracked
         assert test_entity in mock_db._committed_objects
     
-    @pytest.mark.asyncio()
-    @pytest.mark.db_required()
-    async def test_mock_session_delete(self, mock_db): # Correct decorator and async def order
-    """Test the delete operation."""
-    test_entity = object() # Use standard object
-    test_entity.id = uuid4()
+    @pytest.mark.asyncio
+    @pytest.mark.db_required
+    async def test_mock_session_delete(self, mock_db):
+        """Test the delete operation."""
+        test_entity = object()  # Use standard object
+        test_entity.id = uuid4()
         
         # Add and commit entity
-    mock_db.add(test_entity)
-    await mock_db.commit()
+        mock_db.add(test_entity)
+        await mock_db.commit()
         
         # Delete entity
-    mock_db.delete(test_entity)
-    assert test_entity in mock_db._deleted_objects
+        mock_db.delete(test_entity)
+        assert test_entity in mock_db._deleted_objects
         
         # Commit deletion
-    await mock_db.commit()
-    assert test_entity not in mock_db._committed_objects
-    assert not mock_db._deleted_objects
+        await mock_db.commit()
+        assert test_entity not in mock_db._committed_objects
+        assert not mock_db._deleted_objects
     
     @pytest.mark.asyncio()
     @pytest.mark.db_required()
