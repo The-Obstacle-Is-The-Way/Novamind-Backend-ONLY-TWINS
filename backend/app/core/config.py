@@ -1,47 +1,48 @@
 """
-Application configuration settings.
+Application configuration management for the NovaMind Digital Twin system.
 
-This module contains settings for the entire application, loaded from
-environment variables and default values. It follows the 12-factor app
-methodology for configuration.
+This module handles configuration settings for various environments (development,
+testing, production) in a secure and consistent way, supporting HIPAA compliance.
 """
-import os
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, PostgresDsn, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+from functools import lru_cache
+from typing import Optional, Dict, Any, List
+
+from pydantic import (
+    BaseSettings,
+    Field,
+    PostgresDsn,
+    validator,
+    SecretStr
+)
 
 
 class Settings(BaseSettings):
-    """
-    Application settings loaded from environment variables.
+    """Application settings with environment variable support."""
     
-    This uses pydantic for validation and loading from .env files.
-    """
-    # Project info
-    PROJECT_NAME: str = "Novamind Digital Twin"
-    APP_DESCRIPTION: str = "Advanced psychiatric digital twin platform for mental health analytics and treatment optimization"
-    VERSION: str = "1.0.0"
+    # API Configuration
     API_V1_STR: str = "/api/v1"
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    API_V2_STR: str = "/api/v2"
+    PROJECT_NAME: str = "NovaMind Digital Twin"
     
-    # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "CHANGE_THIS_TO_A_PROPER_SECRET_IN_PRODUCTION")
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    # Security settings
+    SECRET_KEY: str = Field(
+        default="novamind_development_secret_key_please_change_in_production", 
+        env="SECRET_KEY"
+    )
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
+    ALGORITHM: str = Field(default="HS256", env="ALGORITHM")
     
-    # Encryption (HIPAA Compliance)
-    ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "")
-    PREVIOUS_ENCRYPTION_KEY: Optional[str] = os.getenv("PREVIOUS_ENCRYPTION_KEY", None)
-    ENCRYPTION_SALT: str = os.getenv("ENCRYPTION_SALT", "novamind-digital-twin-salt")
+    # CORS Configuration
+    BACKEND_CORS_ORIGINS: List[str] = Field(
+        default=["http://localhost:3000", "http://localhost:8000"],
+        env="BACKEND_CORS_ORIGINS"
+    )
     
-    # Backend URLs
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-    
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        """Parse CORS origin setting from comma-separated string."""
+    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    def assemble_cors_origins(cls, v: Any) -> List[str]:
+        """Parse CORS origins from environment variable."""
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, (list, str)):
@@ -49,63 +50,47 @@ class Settings(BaseSettings):
         raise ValueError(v)
     
     # Database
-    POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "")
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "")
+    POSTGRES_SERVER: str = Field(default="localhost", env="POSTGRES_SERVER")
+    POSTGRES_USER: str = Field(default="postgres", env="POSTGRES_USER")
+    POSTGRES_PASSWORD: str = Field(default="postgres", env="POSTGRES_PASSWORD")
+    POSTGRES_DB: str = Field(default="novamind", env="POSTGRES_DB")
+    POSTGRES_PORT: str = Field(default="5432", env="POSTGRES_PORT")
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
     
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
+    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
-        """Assemble database URI from components."""
+        """Assemble database connection string from components."""
         if isinstance(v, str):
             return v
-        
-        server = values.data.get("POSTGRES_SERVER")
-        user = values.data.get("POSTGRES_USER")
-        password = values.data.get("POSTGRES_PASSWORD")
-        db = values.data.get("POSTGRES_DB")
-        
-        if all([server, user, password, db]):
-            # PostgreSQL connection string
-            return f"postgresql+asyncpg://{user}:{password}@{server}/{db}"
-            # For tests (defaults to using async drivers)
-        
-        # Default to SQLite for development
-        base_dir = Path(__file__).resolve().parent.parent.parent
-        return f"sqlite+aiosqlite:///{base_dir}/novamind.db"
+        return PostgresDsn.build(
+            scheme="postgresql",
+            user=values.get("POSTGRES_USER"),
+            password=values.get("POSTGRES_PASSWORD"),
+            host=values.get("POSTGRES_SERVER"),
+            port=values.get("POSTGRES_PORT"),
+            path=f"/{values.get('POSTGRES_DB') or ''}",
+        )
     
-    # HIPAA Settings
-    AUDIT_LOG_ENABLED: bool = True
-    PHI_ANONYMIZATION_ENABLED: bool = True
-    SESSION_TIMEOUT_MINUTES: int = 30  # Auto-logout for inactivity
+    # Encryption Settings
+    ENCRYPTION_KEY: Optional[str] = Field(default=None, env="ENCRYPTION_KEY")
+    PREVIOUS_ENCRYPTION_KEY: Optional[str] = Field(default=None, env="PREVIOUS_ENCRYPTION_KEY")
+    ENCRYPTION_SALT: str = Field(default="novamind-salt", env="ENCRYPTION_SALT")
     
-    # Digital Twin settings
-    DEFAULT_TIME_SERIES_DAYS: int = 90
-    DEFAULT_TIME_STEP_HOURS: int = 24
+    # Other settings
+    ENVIRONMENT: str = Field(default="development", env="ENVIRONMENT")
     
-    # AWS Cognito (optional, for production)
-    COGNITO_USER_POOL_ID: Optional[str] = None
-    COGNITO_APP_CLIENT_ID: Optional[str] = None
-    COGNITO_REGION: str = "us-east-1"
-    
-    # XGBoost model settings
-    XGBOOST_MODEL_PATH: Optional[str] = None
-    
-    # LLM settings
-    MENTALLLAMA_API_URL: Optional[str] = None
-    MENTALLLAMA_API_KEY: Optional[str] = None
-    
-    # Paths
-    BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
-    
-    model_config = SettingsConfigDict(
-        case_sensitive=True,
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore"
-    )
+    class Config:
+        """Pydantic configuration."""
+        case_sensitive = True
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
-# Create a global settings object
-settings = Settings()
+@lru_cache()
+def get_settings() -> Settings:
+    """Get cached application settings.
+    
+    Returns:
+        Settings instance with values loaded from environment.
+    """
+    return Settings()
