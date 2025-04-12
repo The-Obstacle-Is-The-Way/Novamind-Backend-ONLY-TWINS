@@ -38,9 +38,9 @@ class TestPatientModel:
         assert patient.age > 0
     
     @pytest.mark.parametrize("invalid_name", [
-    "",
-    None,
-    "   "
+        "",
+        None,
+        "   "
     ])
     def test_patient_creation_invalid_name(self, invalid_name):
         """Test that a patient cannot be created with an invalid name."""
