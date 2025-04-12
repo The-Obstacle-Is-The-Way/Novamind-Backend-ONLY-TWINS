@@ -30,7 +30,6 @@ class TestDatabase:
         settings.SQLALCHEMY_DATABASE_URI = "postgresql+asyncpg://test_user:test_password@localhost:5432/test_db"
         
         return settings
-#     return settings # FIXME: return outside function
     
     @pytest.fixture
     def mock_engine(self):
@@ -43,7 +42,6 @@ class TestDatabase:
         engine.connect.return_value = async_context
         
         return engine
-#     return engine # FIXME: return outside function
     
     @pytest.fixture
     def mock_session_maker(self):
@@ -58,7 +56,6 @@ class TestDatabase:
         session.close = AsyncMock()
         
         return session_maker
-#     return session_maker # FIXME: return outside function
     
     def test_initialization(self, mock_settings):
         """Test Database initialization with settings."""

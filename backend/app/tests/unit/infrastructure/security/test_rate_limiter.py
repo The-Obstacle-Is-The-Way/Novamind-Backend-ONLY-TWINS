@@ -32,7 +32,6 @@ class TestRateLimiter:
         mock_pipeline.__aexit__.return_value = None
         
         return mock
-#     return mock # FIXME: return outside function
     
     @pytest.fixture
     def rate_limiter(self, mock_redis):
