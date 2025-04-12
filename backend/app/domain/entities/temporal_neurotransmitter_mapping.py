@@ -69,10 +69,9 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         Args:
             patient_id: Optional UUID of the associated patient
         """
-        super().__init__()
+        super().__init__(patient_id=patient_id)
         
-        # Patient ID allows for patient-specific mappings
-        self.patient_id = patient_id
+        # Track temporal sequences
         
         # Track temporal sequences
         self.temporal_sequences: dict[tuple[BrainRegion, Neurotransmitter], list[TemporalSequence]] = {}
@@ -1127,9 +1126,9 @@ def extend_neurotransmitter_mapping(base_mapping: NeurotransmitterMapping, patie
             for nt, value in nt_map.items():
                 temporal_mapping.receptor_map[region][nt] = value
     
-    # Copy production maps
-    if hasattr(base_mapping, 'production_map') and hasattr(temporal_mapping, 'production_map'):
-        for key, value in base_mapping.production_map.items():
-            temporal_mapping.production_map[key] = value
+    # Copy production sites
+    if hasattr(base_mapping, 'production_sites'):
+        for key, value in base_mapping.production_sites.items():
+            temporal_mapping.production_sites[key] = value
     
     return temporal_mapping

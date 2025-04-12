@@ -6,6 +6,7 @@ including receptor profiles, neurotransmitter production sites, and
 brain region neurotransmitter sensitivity patterns.
 """
 
+from app.domain.entities.digital_twin.receptor_subtype import ReceptorSubtype
 from .receptor_profile import ReceptorProfile, ReceptorType
 from .neurotransmitter_mapping import NeurotransmitterMapping, create_default_neurotransmitter_mapping
 
@@ -14,4 +15,5 @@ __all__ = [
     'ReceptorType',
     'NeurotransmitterMapping',
     'create_default_neurotransmitter_mapping',
+    'ReceptorSubtype',
 ]

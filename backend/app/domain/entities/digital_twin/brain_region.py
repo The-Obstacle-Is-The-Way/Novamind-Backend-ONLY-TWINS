@@ -44,6 +44,8 @@ class BrainRegion(str, Enum):
     CEREBRAL_CORTEX = "cerebral_cortex"
     BASAL_FOREBRAIN = "basal_forebrain"
     STRIATUM = "striatum"
+    VENTRAL_STRIATUM = "ventral_striatum"
+    DORSAL_STRIATUM = "dorsal_striatum"
     MIDBRAIN = "midbrain"
     
     @classmethod

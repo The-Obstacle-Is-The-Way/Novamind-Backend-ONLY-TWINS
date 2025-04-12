@@ -56,12 +56,13 @@ class NeurotransmitterMapping:
     
     def add_receptor_profile(self, profile: ReceptorProfile) -> None:
         """Add a new receptor profile to the mapping."""
-        # Check if a profile for this region/neurotransmitter already exists
+        # Check if a profile for this region/neurotransmitter/subtype already exists
         existing_profiles = [p for p in self.receptor_profiles 
                             if p.brain_region == profile.brain_region 
-                            and p.neurotransmitter == profile.neurotransmitter]
+                            and p.neurotransmitter == profile.neurotransmitter
+                            and p.receptor_subtype == profile.receptor_subtype]
         
-        # If it exists, replace it
+        # If it exists with the same subtype, replace it
         if existing_profiles:
             self.receptor_profiles.remove(existing_profiles[0])
             

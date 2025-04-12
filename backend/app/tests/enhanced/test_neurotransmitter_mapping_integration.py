@@ -99,7 +99,7 @@ async def test_custom_neurotransmitter_mapping(enhanced_services, patient_id, in
     digital_twin_service, = enhanced_services
     
     # Create a custom mapping
-    custom_mapping = NeurotransmitterMapping()
+    custom_mapping = NeurotransmitterMapping(patient_id=patient_id)
     
     # Add some receptor profiles
     custom_mapping.add_receptor_profile(

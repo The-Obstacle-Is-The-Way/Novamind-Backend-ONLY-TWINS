@@ -514,33 +514,35 @@ class NeurotransmitterEffectVisualizer:
         for key, value in base_result.items():
             result[key] = value
             
+        # Add required fields for tests
+        # First ensure we have the effects array
+        if "effects" not in result:
+            result["effects"] = [{
+                "neurotransmitter": effect.neurotransmitter.value,
+                "effect_size": effect.effect_size,
+                "confidence_interval": effect.confidence_interval,
+                "p_value": effect.p_value,
+                "clinical_significance": effect.clinical_significance.value if effect.clinical_significance else None,
+                "is_significant": effect.is_statistically_significant
+            } for effect in effects]
+
         # Add comparison_metrics field (required by tests)
         if "summary" in result:
             result["comparison_metrics"] = result["summary"]
         else:
-            # Fallback in case summary is missing
+            # Compute rankings
+            sorted_effects = sorted(effects, key=lambda e: (e.is_statistically_significant, abs(e.effect_size)), reverse=True)
+            
+            # Fallback comprehensive metrics
             result["comparison_metrics"] = {
                 "brain_regions": [],
                 "neurotransmitters": [nt.value for nt in set(effect.neurotransmitter for effect in effects)],
                 "max_effect_size": max([abs(effect.effect_size) for effect in effects], default=0.0),
                 "significant_count": sum(1 for effect in effects if effect.is_statistically_significant),
-                "total_effects": len(effects)
+                "total_effects": len(effects),
+                "most_significant": sorted_effects[0].neurotransmitter.value if sorted_effects else None,
+                "largest_effect": max(effects, key=lambda e: abs(e.effect_size)).neurotransmitter.value if effects else None,
+                "magnitude_ranking": [e.neurotransmitter.value for e in sorted(effects, key=lambda e: abs(e.effect_size), reverse=True)]
             }
             
         return result
-        
-    def generate_effect_comparison(
-        self,
-        effects: list[NeurotransmitterEffect]
-    ) -> dict[str, Any]:
-        """
-        Generate visualization data for comparing multiple effects.
-        This is an alias for generate_comparative_visualization for backward compatibility.
-        
-        Args:
-            effects: List of neurotransmitter effects to compare
-            
-        Returns:
-            Dictionary with comparative visualization data
-        """
-        return self.generate_comparative_visualization(effects)

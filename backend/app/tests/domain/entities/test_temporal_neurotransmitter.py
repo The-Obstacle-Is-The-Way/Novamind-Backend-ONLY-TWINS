@@ -331,15 +331,11 @@ class TestTemporalNeurotransmitterMapping:
     def extended_mapping(self):
         """Create an extended neurotransmitter mapping for tests."""
         # Start with the default mapping
-        base_mapping = create_default_neurotransmitter_mapping()
+        test_patient_id = uuid.uuid4()
+        base_mapping = create_default_neurotransmitter_mapping(patient_id=test_patient_id)
     
         # Extend with temporal methods
-        extended = extend_neurotransmitter_mapping(base_mapping)
-        
-        # Copy over the key components from the base mapping
-        extended.production_map = base_mapping.production_map
-        extended.receptor_profiles = base_mapping.receptor_profiles
-        extended._build_lookup_maps()
+        extended = extend_neurotransmitter_mapping(base_mapping, patient_id=test_patient_id)
         
         return extended
     

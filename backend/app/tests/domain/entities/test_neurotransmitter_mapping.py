@@ -5,6 +5,8 @@ These tests verify that the neurotransmitter mapping models behave correctly
 and perform calculations accurately.
 """
 import pytest
+import uuid
+from uuid import UUID
 from app.domain.entities.digital_twin import (
     BrainRegion,   Neurotransmitter,   ClinicalSignificance
 )
@@ -17,17 +19,19 @@ from app.domain.entities.neurotransmitter_mapping import (
 @pytest.mark.venv_only()
 def test_neurotransmitter_mapping_creation():
     """Test creating a new neurotransmitter mapping."""
-    mapping = NeurotransmitterMapping()
+    test_patient_id = uuid.uuid4()
+    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
     
     assert mapping is not None
     assert isinstance(mapping, NeurotransmitterMapping)
     assert len(mapping.receptor_profiles) == 0
-    assert len(mapping.production_map) == 0
+    assert mapping.patient_id == test_patient_id
 
 
 def test_add_receptor_profile():
     """Test adding receptor profiles to a mapping."""
-    mapping = NeurotransmitterMapping()
+    test_patient_id = uuid.uuid4()
+    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
     
     # Create a receptor profile
     profile = ReceptorProfile(
@@ -66,7 +70,8 @@ def test_add_receptor_profile():
 
 def test_get_receptor_profiles():
     """Test retrieving receptor profiles for specific region and neurotransmitter."""
-    mapping = NeurotransmitterMapping()
+    test_patient_id = uuid.uuid4()
+    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
     
     # Add multiple profiles
     profiles = [
@@ -133,7 +138,8 @@ def test_get_receptor_profiles():
 
 def test_add_production_site():
     """Test adding neurotransmitter production sites."""
-    mapping = NeurotransmitterMapping()
+    test_patient_id = uuid.uuid4()
+    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
     
     # Add production sites
     mapping.add_production_site(Neurotransmitter.SEROTONIN, BrainRegion.RAPHE_NUCLEI)
@@ -141,19 +147,20 @@ def test_add_production_site():
     mapping.add_production_site(Neurotransmitter.DOPAMINE, BrainRegion.VENTRAL_TEGMENTAL_AREA)
     
     # Verify they were added
-    assert Neurotransmitter.SEROTONIN in mapping.production_map
-    assert Neurotransmitter.DOPAMINE in mapping.production_map
-    assert len(mapping.production_map[Neurotransmitter.SEROTONIN]) == 1
-    assert len(mapping.production_map[Neurotransmitter.DOPAMINE]) == 2
+    assert Neurotransmitter.SEROTONIN in mapping.production_sites
+    assert Neurotransmitter.DOPAMINE in mapping.production_sites
+    assert len(mapping.production_sites[Neurotransmitter.SEROTONIN]) == 1
+    assert len(mapping.production_sites[Neurotransmitter.DOPAMINE]) == 2
     
     # Add duplicate (should not increase count)
     mapping.add_production_site(Neurotransmitter.SEROTONIN, BrainRegion.RAPHE_NUCLEI)
-    assert len(mapping.production_map[Neurotransmitter.SEROTONIN]) == 1
+    assert len(mapping.production_sites[Neurotransmitter.SEROTONIN]) == 1
 
 
 def test_get_producing_regions():
     """Test retrieving regions that produce a specific neurotransmitter."""
-    mapping = NeurotransmitterMapping()
+    test_patient_id = uuid.uuid4()
+    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
     
     # Add production sites
     mapping.add_production_site(Neurotransmitter.SEROTONIN, BrainRegion.RAPHE_NUCLEI)
@@ -178,7 +185,8 @@ def test_get_producing_regions():
 
 def test_calculate_region_response():
     """Test calculating neurotransmitter effect on a brain region."""
-    mapping = NeurotransmitterMapping()
+    test_patient_id = uuid.uuid4()
+    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
     
     # Add profiles with different receptor types (excitatory vs inhibitory)
     profiles = [
@@ -240,17 +248,18 @@ def test_calculate_region_response():
 
 def test_default_mapping_creation():
     """Test creating a default scientific mapping."""
-    mapping = create_default_neurotransmitter_mapping()
+    test_patient_id = uuid.uuid4()
+    mapping = create_default_neurotransmitter_mapping(patient_id=test_patient_id)
     
     # Verify it's not empty
     assert mapping is not None
     assert len(mapping.receptor_profiles) > 0
-    assert len(mapping.production_map) > 0
+    assert len(mapping.production_sites) > 0
     
     # Check that major neurotransmitters have production sites
-    assert Neurotransmitter.SEROTONIN in mapping.production_map
-    assert Neurotransmitter.DOPAMINE in mapping.production_map
-    assert Neurotransmitter.GABA in mapping.production_map
+    assert Neurotransmitter.SEROTONIN in mapping.production_sites
+    assert Neurotransmitter.DOPAMINE in mapping.production_sites
+    assert Neurotransmitter.GABA in mapping.production_sites
     
     # Check that major brain regions have receptors
     pfc_profiles = [p for p in mapping.receptor_profiles if p.brain_region == BrainRegion.PREFRONTAL_CORTEX]
