@@ -103,7 +103,7 @@ class TestSqlAlchemyEventRepository:
         
         # Verify
         assert result  ==  test_event.event_id
-        mock_session.add.assert _called_once()
+        mock_session.add.assert_called_once()
         mock_session.flush.assert _awaited_once()
         
         # Verify model creation
@@ -143,7 +143,7 @@ class TestSqlAlchemyEventRepository:
         assert result.timestamp  ==  mock_event_model.timestamp
         assert result.event_metadata  ==  mock_event_model.event_metadata # Renamed
         
-        mock_session.execute.assert _called_once()
+        mock_session.execute.assert_called_once()
     
     @pytest.mark.asyncio()
         async def test_get_event_by_id_not_found(self, mock_session):
@@ -163,7 +163,7 @@ class TestSqlAlchemyEventRepository:
         
         # Verify
         assert result is None
-        mock_session.execute.assert _called_once()
+        mock_session.execute.assert_called_once()
     
     @pytest.mark.asyncio()
         async def test_get_events_by_correlation_id(self, mock_session, mock_event_model, mock_child_event_model):
@@ -186,7 +186,7 @@ class TestSqlAlchemyEventRepository:
         assert results[0].event_id == mock_event_model.id
         assert results[1].event_id == mock_child_event_model.id
         
-        mock_session.execute.assert _called_once()
+        mock_session.execute.assert_called_once()
     
     @pytest.mark.asyncio()
         async def test_get_event_chain(self, mock_session, mock_event_model, mock_child_event_model):
@@ -216,7 +216,7 @@ class TestSqlAlchemyEventRepository:
             
             # In a real implementation, rebuild_hierarchy would link events properly
             # but we mock this here by verifying that get_events_by_correlation_id was called
-        mock_get_events.assert _called_once_with(mock_event_model.correlation_id)
+        mock_get_events.assert_called_once_with(mock_event_model.correlation_id)
     
     @pytest.mark.asyncio()
         async def test_get_patient_events(self, mock_session, mock_event_model, mock_child_event_model):
@@ -244,7 +244,7 @@ class TestSqlAlchemyEventRepository:
         assert results[1].event_id == mock_child_event_model.id
         
         # Verify the query parameters were used
-        mock_session.execute.assert _called_once()
+        mock_session.execute.assert_called_once()
         assert "event_type" in str(mock_session.execute.call_args)
         assert "limit(10)" in str(mock_session.execute.call_args)
     

@@ -272,7 +272,7 @@ class TestMockXGBoostService:
         )
         
         # Verify notification was sent
-        observer.notify_prediction.assert _called_once()
+        observer.notify_prediction.assert_called_once()
         
         # Unregister observer
         result = service.unregister_prediction_observer(observer_id)

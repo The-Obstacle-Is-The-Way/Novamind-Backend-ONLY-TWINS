@@ -89,7 +89,7 @@ class TestMFAService:
         
         # Check the result
         assert result is True
-        mock_totp_instance.verify.assert _called_once_with("123456")
+        mock_totp_instance.verify.assert_called_once_with("123456")
     
     @patch('pyotp.TOTP')
     def test_verify_totp_invalid(self, mock_totp, mfa_service):
@@ -102,7 +102,7 @@ class TestMFAService:
         
         # Check the result
         assert result is False
-        mock_totp_instance.verify.assert _called_once_with("123456")
+        mock_totp_instance.verify.assert_called_once_with("123456")
     
     @patch('random.choice')
     def test_generate_verification_code(self, mock_choice, mfa_service):
@@ -272,7 +272,7 @@ class TestTOTPStrategy:
             
             # Check the result
             assert result  ==  {"result": "success"}
-            mfa_service.setup_totp.assert _called_once_with("user123", "test@example.com")
+            mfa_service.setup_totp.assert_called_once_with("user123", "test@example.com")
     
     def test_setup_missing_email(self, mfa_service):
         """Test setting up TOTP without an email."""
@@ -295,7 +295,7 @@ class TestTOTPStrategy:
             
             # Check the result
             assert result is True
-            mfa_service.verify_totp.assert _called_once_with("ABCDEFGH", "123456")
+            mfa_service.verify_totp.assert_called_once_with("ABCDEFGH", "123456")
     
     def test_verify_missing_parameters(self, mfa_service):
         """Test verifying TOTP without required parameters."""
@@ -322,7 +322,7 @@ class TestSMSStrategy:
             
             # Check the result
             assert result  ==  {"result": "success"}
-            mfa_service.setup_sms_mfa.assert _called_once_with("user123", "+1234567890")
+            mfa_service.setup_sms_mfa.assert_called_once_with("user123", "+1234567890")
     
     def test_setup_missing_phone_number(self, mfa_service):
         """Test setting up SMS MFA without a phone number."""
@@ -349,7 +349,7 @@ class TestSMSStrategy:
             
             # Check the result
             assert result is True
-            mfa_service.verify_code.assert _called_once_with("123456", "123456", 1300)
+            mfa_service.verify_code.assert_called_once_with("123456", "123456", 1300)
     
     def test_verify_missing_parameters(self, mfa_service):
         """Test verifying SMS code without required parameters."""
@@ -376,7 +376,7 @@ class TestEmailStrategy:
             
             # Check the result
             assert result  ==  {"result": "success"}
-            mfa_service.setup_email_mfa.assert _called_once_with("user123", "test@example.com")
+            mfa_service.setup_email_mfa.assert_called_once_with("user123", "test@example.com")
     
     def test_setup_missing_email(self, mfa_service):
         """Test setting up email MFA without an email."""
@@ -403,7 +403,7 @@ class TestEmailStrategy:
             
             # Check the result
             assert result is True
-            mfa_service.verify_code.assert _called_once_with("12345678", "12345678", 1300)
+            mfa_service.verify_code.assert_called_once_with("12345678", "12345678", 1300)
     
     def test_verify_missing_parameters(self, mfa_service):
         """Test verifying email code without required parameters."""

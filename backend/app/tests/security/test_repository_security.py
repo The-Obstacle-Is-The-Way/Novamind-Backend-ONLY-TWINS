@@ -127,7 +127,7 @@ def test_repository_filters_inactive_records(patient_repository, db_session):
     patient_repository.get_all()
     
     # Verify filter was called with is_active=True
-    db_session.filter.assert _called_once()
+    db_session.filter.assert_called_once()
     # Extract the filter criteria (varies by ORM implementation)
     filter_args = db_session.filter.call_args[0][0]
     assert "is_active" in str(filter_args), "Should filter by is_active"

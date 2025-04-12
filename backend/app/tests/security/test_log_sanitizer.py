@@ -228,7 +228,7 @@ class TestLogSanitizer:
         # Arrange - Add a custom pattern for patient IDs
                                                                 with patch.object(log_sanitizer, 'add_custom_pattern') as mock_add:
                                                                 log_sanitizer.add_custom_pattern('PATIENT-ID', r'P\d{6}')
-                                                                mock_add.assert _called_once()
+                                                                mock_add.assert_called_once()
         
         # Create a message with the custom pattern
                                                                 log_message = "Retrieved record for patient ID P123456"
@@ -262,7 +262,7 @@ class TestLogSanitizer:
         # Assert
                                                                     assert "John Smith" not in sanitized
                                                                     assert "123-45-6789" not in sanitized
-                                                                    mock_audit_logger.log_access.assert _called_once()
+                                                                    mock_audit_logger.log_access.assert_called_once()
         # Check that the message passed to the audit logger was sanitized
                                                                     call_args = mock_audit_logger.log_access.call_args[0][0]
                                                                     assert "John Smith" not in call_args

@@ -49,7 +49,7 @@ class TestPHIMiddleware:
         await self.middleware.dispatch(request, call_next)
         
         # Verify call_next was called with the original request
-        call_next.assert _called_once_with(request)
+        call_next.assert_called_once_with(request)
         # No sanitization should occur for excluded paths
 
     @pytest.mark.asyncio()
@@ -75,7 +75,7 @@ class TestPHIMiddleware:
             # Verify warning was logged
             assert mock_warning.called
             # The call_next should be called with the original request
-            call_next.assert _called_once()
+            call_next.assert_called_once()
 
     @pytest.mark.asyncio()
     async def test_sanitize_response_with_phi(self):
@@ -299,7 +299,7 @@ class TestPHIMiddleware:
         )
         
         # Verify add_middleware was called with correct arguments
-        app.add_middleware.assert _called_once()
+        app.add_middleware.assert_called_once()
         args, kwargs = app.add_middleware.call_args
         assert args[0] == PHIMiddleware
         assert "/custom/" in kwargs["exclude_paths"]

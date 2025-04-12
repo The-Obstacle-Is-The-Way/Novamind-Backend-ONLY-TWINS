@@ -148,8 +148,8 @@ class TestGeneMedicationModel:
             await model.initialize()
             
             # Verify
-            mock_joblib.load.assert _called_once_with("test_model_path")
-            mock_json.load.assert _called_once()
+            mock_joblib.load.assert_called_once_with("test_model_path")
+            mock_json.load.assert_called_once()
             assert model.is_initialized
             assert model._model is not None
             assert model._knowledge_base is not None
@@ -173,7 +173,7 @@ class TestGeneMedicationModel:
             await model.initialize()
             
             # Verify
-            mock_logging.warning.assert _called()
+            mock_logging.warning.assert_called()
             assert model.is_initialized
             assert model._model is not None
             assert model._knowledge_base is not None
@@ -240,7 +240,7 @@ class TestGeneMedicationModel:
             await model.predict_medication_interactions(sample_genetic_data, ["fluoxetine"])
             
             # Verify
-            mock_extract.assert _called_once_with(sample_genetic_data)
+            mock_extract.assert_called_once_with(sample_genetic_data)
             
             # Call directly to test
             features = model._extract_gene_features(sample_genetic_data)

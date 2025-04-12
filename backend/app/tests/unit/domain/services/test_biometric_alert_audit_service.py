@@ -128,8 +128,8 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        mock_alert_repository.get_by_id.assert _called_once_with(sample_alert_id)
-        mock_alert_repository.update_status.assert _called_once_with(
+        mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
+        mock_alert_repository.update_status.assert_called_once_with(
             sample_alert_id,
             AlertStatus.ACKNOWLEDGED,
             sample_provider_id,
@@ -164,8 +164,8 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        mock_alert_repository.get_by_id.assert _called_once_with(sample_alert_id)
-        mock_alert_repository.update_status.assert _called_once_with(
+        mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
+        mock_alert_repository.update_status.assert_called_once_with(
             sample_alert_id,
             AlertStatus.RESOLVED,
             sample_provider_id,
@@ -200,8 +200,8 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        mock_alert_repository.get_by_id.assert _called_once_with(sample_alert_id)
-        mock_alert_repository.update_status.assert _called_once_with(
+        mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
+        mock_alert_repository.update_status.assert_called_once_with(
             sample_alert_id,
             AlertStatus.DISMISSED,
             sample_provider_id,
@@ -312,6 +312,6 @@ class TestBiometricAlertAuditService:
         )
         
         # Verify
-        mock_alert_repository.get_by_id.assert _called_once_with(sample_alert_id)
+        mock_alert_repository.get_by_id.assert_called_once_with(sample_alert_id)
         mock_alert_repository.update_status.assert _not_called()
         mock_audit_logger.log_event.assert _not_called()

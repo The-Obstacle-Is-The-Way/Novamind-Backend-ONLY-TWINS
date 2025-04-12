@@ -180,7 +180,7 @@ class TestInputValidation:
             )
             
             # Verify sanitize was called with the malicious input
-            mock_sanitize.assert _called_once_with(malicious_input)
+            mock_sanitize.assert_called_once_with(malicious_input)
     def test_input_length_limits(self, client: TestClient, mock_token, mock_user) # Use client fixture
                 """Test that input length limits are enforced."""
         # Create overly long inputs

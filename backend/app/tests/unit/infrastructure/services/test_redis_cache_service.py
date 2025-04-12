@@ -65,7 +65,7 @@ async def test_get_cache_hit(redis_cache_service, mock_redis_client):
     result = await redis_cache_service.get(key)
     
     # Assert
-    mock_redis_client.get.assert _called_once_with("test:test-key")
+    mock_redis_client.get.assert_called_once_with("test:test-key")
     assert result  ==  expected_value
 
 
@@ -80,7 +80,7 @@ async def test_get_cache_miss(redis_cache_service, mock_redis_client):
     result = await redis_cache_service.get(key)
     
     # Assert
-    mock_redis_client.get.assert _called_once_with("test:missing-key")
+    mock_redis_client.get.assert_called_once_with("test:missing-key")
     assert result is None
 
 
@@ -96,7 +96,7 @@ async def test_set_with_ttl(redis_cache_service, mock_redis_client):
     result = await redis_cache_service.set(key, value, ttl)
     
     # Assert
-    mock_redis_client.setex.assert _called_once_with(
+    mock_redis_client.setex.assert_called_once_with(
         "test:ttl-key", ttl, json.dumps(value)
     )
     assert result is True
@@ -113,7 +113,7 @@ async def test_delete_existing_key(redis_cache_service, mock_redis_client):
     result = await redis_cache_service.delete(key)
     
     # Assert
-    mock_redis_client.delete.assert _called_once_with("test:existing-key")
+    mock_redis_client.delete.assert_called_once_with("test:existing-key")
     assert result is True
 
 
@@ -128,7 +128,7 @@ async def test_increment(redis_cache_service, mock_redis_client):
     result = await redis_cache_service.increment(key)
     
     # Assert
-    mock_redis_client.incrby.assert _called_once_with("test:counter-key", 1)
+    mock_redis_client.incrby.assert_called_once_with("test:counter-key", 1)
     assert result  ==  5
 
 
@@ -143,7 +143,7 @@ async def test_expire(redis_cache_service, mock_redis_client):
     result = await redis_cache_service.expire(key, seconds)
     
     # Assert
-    mock_redis_client.expire.assert _called_once_with("test:expire-key", seconds)
+    mock_redis_client.expire.assert_called_once_with("test:expire-key", seconds)
     assert result is True
 
 
@@ -161,6 +161,6 @@ async def test_get_hash(redis_cache_service, mock_redis_client):
     result = await redis_cache_service.get_hash(key)
     
     # Assert
-    mock_redis_client.hgetall.assert _called_once_with("test:hash-key")
+    mock_redis_client.hgetall.assert_called_once_with("test:hash-key")
     assert result["field1"] == "value1"
     assert result["field2"]["nested"] == "value"

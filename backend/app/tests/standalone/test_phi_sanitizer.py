@@ -217,7 +217,7 @@ class TestPHISanitizer:
             result = test_sanitizer.sanitize_text("Patient SSN: 123-45-6789")
             
             # Verify PHI detector was called
-            mock_detector_instance.detect_phi.assert _called_once()
+            mock_detector_instance.detect_phi.assert_called_once()
             assert "123-45-6789" not in result
 
     @pytest.mark.standalone()

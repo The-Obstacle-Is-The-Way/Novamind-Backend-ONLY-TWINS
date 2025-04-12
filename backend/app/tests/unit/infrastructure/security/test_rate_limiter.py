@@ -118,8 +118,8 @@ class TestDistributedRateLimiter:
             assert info["remaining"] == 109  # 100 + 10 burst - 1 current request
         
         # Verify cache interactions
-            mock_cache_service.exists.assert _called_once()
-            mock_cache_service.set.assert _called_once()
+            mock_cache_service.exists.assert_called_once()
+            mock_cache_service.set.assert_called_once()
         # Check contents of what was stored in cache
             call_args = mock_cache_service.set.call_args[1]
             assert call_args["key"].startswith("rate_limit:default:test-ip")
@@ -146,9 +146,9 @@ class TestDistributedRateLimiter:
             assert info["reset_at"] == current_time + 30
         
         # Verify cache interactions
-            mock_cache_service.exists.assert _called_once()
-            mock_cache_service.get.assert _called_once()
-            mock_cache_service.set.assert _called_once()
+            mock_cache_service.exists.assert_called_once()
+            mock_cache_service.get.assert_called_once()
+            mock_cache_service.set.assert_called_once()
         # Check contents of what was stored in cache
             call_args = mock_cache_service.set.call_args[1]
             assert call_args["key"].startswith("rate_limit:default:test-ip")
@@ -173,9 +173,9 @@ class TestDistributedRateLimiter:
             assert info["remaining"] == 109  # Bucket was reset
         
         # Verify cache interactions
-            mock_cache_service.exists.assert _called_once()
-            mock_cache_service.get.assert _called_once()
-            mock_cache_service.set.assert _called_once()
+            mock_cache_service.exists.assert_called_once()
+            mock_cache_service.get.assert_called_once()
+            mock_cache_service.set.assert_called_once()
 
     @pytest.mark.asyncio()
             async def test_is_rate_limited_no_tokens_left(self, rate_limiter, mock_cache_service):
@@ -197,8 +197,8 @@ class TestDistributedRateLimiter:
             assert info["retry_after"] >= 29  # At least 29 seconds left
         
         # Verify cache interactions
-            mock_cache_service.exists.assert _called_once()
-            mock_cache_service.get.assert _called_once()
+            mock_cache_service.exists.assert_called_once()
+            mock_cache_service.get.assert_called_once()
         # No set called since the bucket wasn't modified
 
     @pytest.mark.asyncio()
@@ -214,7 +214,7 @@ class TestDistributedRateLimiter:
             assert "remaining" in info
         
         # Verify cache interactions
-            mock_cache_service.exists.assert _called_once()
+            mock_cache_service.exists.assert_called_once()
         # Check the key includes the user ID
             call_args = mock_cache_service.exists.call_args[0][0]
             assert "user123" in call_args
@@ -271,7 +271,7 @@ class TestDistributedRateLimiter:
             assert info["remaining"] == 99
             
             # Verify is_rate_limited was called with the correct identifier
-            rate_limiter.is_rate_limited.assert _called_once()
+            rate_limiter.is_rate_limited.assert_called_once()
             call_args = rate_limiter.is_rate_limited.call_args
             assert call_args[0][0] == "ip:127.0.0.1"
             assert call_args[1]["limit_type"] == RateLimitType.DEFAULT
@@ -289,7 +289,7 @@ class TestDistributedRateLimiter:
             assert info["remaining"] == 99
             
             # Verify is_rate_limited was called with the correct identifier and type
-            rate_limiter.is_rate_limited.assert _called_once()
+            rate_limiter.is_rate_limited.assert_called_once()
             call_args = rate_limiter.is_rate_limited.call_args
             assert call_args[0][0] == "api_key:test-api-key"
             assert call_args[1]["limit_type"] == RateLimitType.API_KEY
@@ -307,7 +307,7 @@ class TestDistributedRateLimiter:
             assert info["remaining"] == 99
             
             # Verify is_rate_limited was called with the correct user_id
-            rate_limiter.is_rate_limited.assert _called_once()
+            rate_limiter.is_rate_limited.assert_called_once()
             call_args = rate_limiter.is_rate_limited.call_args
             assert call_args[1]["user_id"] == "user123"
 
@@ -324,6 +324,6 @@ class TestDistributedRateLimiter:
             assert info["remaining"] == 99
             
             # Verify is_rate_limited was called with the correct limit_type
-            rate_limiter.is_rate_limited.assert _called_once()
+            rate_limiter.is_rate_limited.assert_called_once()
             call_args = rate_limiter.is_rate_limited.call_args
             assert call_args[1]["limit_type"] == RateLimitType.LOGIN

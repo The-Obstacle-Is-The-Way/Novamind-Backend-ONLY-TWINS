@@ -339,7 +339,7 @@ class TestXGBoostAPIIntegration:
         assert len(result["factors"]) == 2
         
         # Verify service was called with correct data
-        mock_xgboost_service.predict_risk.assert _called_once_with(
+        mock_xgboost_service.predict_risk.assert_called_once_with(
             patient_id="test-patient-123",
             risk_type="relapse",
             clinical_data=valid_risk_prediction_data["clinical_data"],
@@ -490,7 +490,7 @@ class TestXGBoostAPIIntegration:
         assert len(result["factors"]) == 2
         
         # Verify service was called with correct data
-        mock_xgboost_service.predict_treatment_response.assert _called_once_with(
+        mock_xgboost_service.predict_treatment_response.assert_called_once_with(
             patient_id="test-patient-123",
             treatment_type="medication",
             treatment_details=valid_treatment_response_data["treatment_details"],
@@ -566,7 +566,7 @@ class TestXGBoostAPIIntegration:
         assert len(result["recommendations"]) == 2
         
         # Verify service was called with correct data
-        mock_xgboost_service.predict_outcome.assert _called_once_with(
+        mock_xgboost_service.predict_outcome.assert_called_once_with(
             patient_id="test-patient-123",
             outcome_timeframe=valid_outcome_prediction_data["outcome_timeframe"],
             clinical_data=valid_outcome_prediction_data["clinical_data"],
@@ -626,7 +626,7 @@ class TestXGBoostAPIIntegration:
         assert "local_importance" in result
         
         # Verify service was called with correct data
-        mock_xgboost_service.get_feature_importance.assert _called_once_with(
+        mock_xgboost_service.get_feature_importance.assert_called_once_with(
             patient_id="test-patient-123",
             model_type="risk",
             prediction_id="risk-123"
@@ -706,7 +706,7 @@ class TestXGBoostAPIIntegration:
         assert "details" in result
         
         # Verify service was called with correct data
-        mock_xgboost_service.integrate_with_digital_twin.assert _called_once_with(
+        mock_xgboost_service.integrate_with_digital_twin.assert_called_once_with(
             patient_id="test-patient-123",
             profile_id="profile-123",
             prediction_id="risk-123"
@@ -756,7 +756,7 @@ class TestXGBoostAPIIntegration:
         assert "description" in result
         
         # Verify service was called with correct data
-        mock_xgboost_service.get_model_info.assert _called_once_with(
+        mock_xgboost_service.get_model_info.assert_called_once_with(
             model_type="relapse_risk"
         )
 

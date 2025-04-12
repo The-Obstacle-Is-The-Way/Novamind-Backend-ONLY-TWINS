@@ -260,7 +260,7 @@ class TestAuthorization:
         
         # Verify permission check succeeds
         assert result is True
-        mock_rbac.assert _called_once()
+        mock_rbac.assert_called_once()
     
     def test_rbac_permission_denied(self, test_user, mock_rbac):
         """Test that RBAC denies unauthorized access."""
@@ -305,7 +305,7 @@ class TestAuditLogging:
         )
         
         # Verify the logger was called with the correct parameters
-        mock_audit_logger.assert _called_once()
+        mock_audit_logger.assert_called_once()
         args, kwargs = mock_audit_logger.call_args
         assert kwargs["user_id"] == test_user["id"]
         assert kwargs["action"] == "view"

@@ -95,7 +95,7 @@ class TestDatabase:
             db = Database()
             
             # Check that engine was created with correct URL and parameters
-            mock_create_engine.assert _called_once()
+            mock_create_engine.assert_called_once()
             args, kwargs = mock_create_engine.call_args
             
             # Check DB URL construction
@@ -115,8 +115,8 @@ class TestDatabase:
                 async with db.session() as session:
                     # Session should be returned by the factory
                     assert session  ==  mock_session_maker.return_value=# Check session lifecycle methods were called
-                mock_session_maker.return_value.commit.assert _called_once()
-                mock_session_maker.return_value.close.assert _called_once()
+                mock_session_maker.return_value.commit.assert_called_once()
+                mock_session_maker.return_value.close.assert_called_once()
     
     @pytest.mark.asyncio()
     async def test_database_dispose(self, mock_engine):
@@ -129,7 +129,7 @@ class TestDatabase:
             await db.dispose()
             
             # Check that engine was disposed
-            mock_engine.dispose.assert _called_once()
+            mock_engine.dispose.assert_called_once()
     
     @pytest.mark.asyncio()
     async def test_get_db_dependency(self, mock_engine, mock_session_maker):
@@ -173,11 +173,11 @@ class TestDatabase:
                 await db_instance.create_all()
                 
                 # Check that the engine's begin method was called
-                mock_engine.begin.assert _called_once()
+                mock_engine.begin.assert_called_once()
                 
                 # Check that Base.metadata.create_all was called (via run_sync)
                 # The argument check is complex due to run_sync, so we just check if it was called.
-                mock_metadata_create_all.assert _called_once()
+                mock_metadata_create_all.assert_called_once()
     
     @pytest.mark.asyncio()
     async def test_get_engine(self, mock_settings): # Added mock_settings
@@ -199,7 +199,7 @@ class TestDatabase:
             
             # Check returned engine
             assert engine  ==  mock_engine_instance
-            mock_create_engine.assert _called_once() # Ensure engine was created
+            mock_create_engine.assert_called_once() # Ensure engine was created
     
     @pytest.mark.asyncio()
     async def test_connection_error_handling(self, mock_settings):
@@ -214,7 +214,7 @@ class TestDatabase:
                     db = Database()
                 
                 # Check error was logged
-                mock_logger.error.assert _called_once()
+                mock_logger.error.assert_called_once()
                 assert "Failed to initialize database engine" in mock_logger.error.call_args[0][0]
     
     @pytest.mark.asyncio()
@@ -238,8 +238,8 @@ class TestDatabase:
                         await session.execute("SELECT 1")
                 
                 # Verify rollback was called
-                mock_session.rollback.assert _called_once()
-                mock_session.close.assert _called_once()
+                mock_session.rollback.assert_called_once()
+                mock_session.close.assert_called_once()
     
     @pytest.mark.asyncio()
     async def test_pool_configuration(self, mock_settings):
@@ -249,7 +249,7 @@ class TestDatabase:
             db = Database()
             
             # Check engine configuration
-            mock_create_engine.assert _called_once()
+            mock_create_engine.assert_called_once()
             kwargs = mock_create_engine.call_args[1]
             assert kwargs["pool_size"] == mock_settings.database.POOL_SIZE
             assert kwargs["max_overflow"] == mock_settings.database.MAX_OVERFLOW
@@ -267,7 +267,7 @@ class TestDatabase:
             db = Database()
             
             # Check engine configuration
-            mock_create_engine.assert _called_once()
+            mock_create_engine.assert_called_once()
             args, kwargs = mock_create_engine.call_args
             
             # Should not have pool settings for SQLite

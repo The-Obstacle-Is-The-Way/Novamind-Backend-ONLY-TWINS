@@ -103,7 +103,7 @@ class TestAppointmentService:
         assert appointment  ==  valid_appointment
         
         # Check that the repository was called
-        appointment_repository.get_by_id.assert _called_once_with(valid_appointment.id)
+        appointment_repository.get_by_id.assert_called_once_with(valid_appointment.id)
     
     def test_get_appointment_not_found(self, appointment_service):
         """Test getting a non-existent appointment."""
@@ -123,7 +123,7 @@ class TestAppointmentService:
         assert appointments[0] == valid_appointment
         
         # Check that the repository was called
-        appointment_repository.get_by_patient_id.assert _called_once_with(
+        appointment_repository.get_by_patient_id.assert_called_once_with(
             "patient123", None, None, None
         )
     
@@ -148,7 +148,7 @@ class TestAppointmentService:
         assert appointments[0] == valid_appointment
         
         # Check that the repository was called
-        appointment_repository.get_by_provider_id.assert _called_once_with(
+        appointment_repository.get_by_provider_id.assert_called_once_with(
             "provider456", None, None, None
         )
     
@@ -188,7 +188,7 @@ class TestAppointmentService:
         assert appointment.reason  ==  "Anxiety and depression"
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_create_appointment_with_default_end_time(self, appointment_service, future_datetime):
         """Test creating an appointment with default end time."""
@@ -299,7 +299,7 @@ class TestAppointmentService:
         assert "Provider unavailable" in updated_appointment.notes
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_reschedule_appointment_with_default_end_time(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
         """Test rescheduling an appointment with default end time."""
@@ -371,7 +371,7 @@ class TestAppointmentService:
         assert updated_appointment.cancelled_at is not None
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_cancel_appointment_not_found(self, appointment_service):
         """Test cancelling a non-existent appointment."""
@@ -395,7 +395,7 @@ class TestAppointmentService:
         assert updated_appointment.status  ==  AppointmentStatus.CONFIRMED
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_check_in_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test checking in an appointment."""
@@ -411,7 +411,7 @@ class TestAppointmentService:
         assert updated_appointment.status  ==  AppointmentStatus.CHECKED_IN
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_start_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test starting an appointment."""
@@ -428,7 +428,7 @@ class TestAppointmentService:
         assert updated_appointment.status  ==  AppointmentStatus.IN_PROGRESS
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_complete_appointment(self, appointment_service, appointment_repository, valid_appointment):
         """Test completing an appointment."""
@@ -445,7 +445,7 @@ class TestAppointmentService:
         assert updated_appointment.status  ==  AppointmentStatus.COMPLETED
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_mark_no_show(self, appointment_service, appointment_repository, valid_appointment):
         """Test marking an appointment as no-show."""
@@ -461,7 +461,7 @@ class TestAppointmentService:
         assert updated_appointment.status  ==  AppointmentStatus.NO_SHOW
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_schedule_follow_up(self, appointment_service, appointment_repository, valid_appointment, future_datetime):
         """Test scheduling a follow-up appointment."""
@@ -509,7 +509,7 @@ class TestAppointmentService:
         assert updated_appointment.reminder_sent_at is not None
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()
     
     def test_update_notes(self, appointment_service, appointment_repository, valid_appointment):
         """Test updating appointment notes."""
@@ -529,4 +529,4 @@ class TestAppointmentService:
         assert updated_appointment.notes  ==  new_notes
         
         # Check that the repository was called
-        appointment_repository.save.assert _called_once()
+        appointment_repository.save.assert_called_once()

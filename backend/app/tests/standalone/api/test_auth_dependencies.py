@@ -34,7 +34,7 @@ class TestAuthDependencies:
             
             # Verify
             assert result  ==  {"sub": "test-user-123", "roles": ["clinician"]}
-            mock_validate.assert _called_once_with(test_token)
+            mock_validate.assert_called_once_with(test_token)
 
     @pytest.mark.asyncio()
     async def test_get_current_token_payload_invalid(self):
@@ -72,8 +72,8 @@ class TestAuthDependencies:
             
             # Verify
             assert result  ==  mock_user
-            mock_get_payload.assert _called_once_with(test_token)
-            mock_repository.get_by_id.assert _called_once_with("test-user-123")
+            mock_get_payload.assert_called_once_with(test_token)
+            mock_repository.get_by_id.assert_called_once_with("test-user-123")
 
     @pytest.mark.asyncio()
     async def test_get_current_user_not_found(self, test_token, db_session):
@@ -113,7 +113,7 @@ class TestAuthDependencies:
             
             # Verify
             assert result  ==  mock_user
-            mock_get_user.assert _called_once()
+            mock_get_user.assert_called_once()
 
     @pytest.mark.asyncio()
     async def test_get_current_active_clinician_not_clinician(self, test_token, db_session):
@@ -153,7 +153,7 @@ class TestAuthDependencies:
             
             # Verify
             assert result  ==  mock_user
-            mock_get_user.assert _called_once()
+            mock_get_user.assert_called_once()
 
     @pytest.mark.asyncio()
     async def test_get_current_active_admin_not_admin(self, test_token, db_session):

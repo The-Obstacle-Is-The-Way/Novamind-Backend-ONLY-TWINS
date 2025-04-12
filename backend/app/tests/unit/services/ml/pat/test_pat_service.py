@@ -368,13 +368,13 @@ class TestBedrockPAT:
         assert result["sleep_metrics"]["sleep_efficiency"] == 0.85
         
         # Verify Bedrock was called correctly
-        bedrock_pat_service.bedrock_runtime.invoke_model.assert _called_once()
+        bedrock_pat_service.bedrock_runtime.invoke_model.assert_called_once()
         args, kwargs = bedrock_pat_service.bedrock_runtime.invoke_model.call_args
         assert kwargs["contentType"] == "application/json"
         assert kwargs["accept"] == "application/json"
         
         # Verify DynamoDB was called correctly
-        bedrock_pat_service.dynamodb_client.put_item.assert _called_once()
+        bedrock_pat_service.dynamodb_client.put_item.assert_called_once()
         args, kwargs = bedrock_pat_service.dynamodb_client.put_item.call_args
         assert kwargs["TableName"] == "test-table"
     
@@ -420,7 +420,7 @@ class TestBedrockPAT:
         assert result["model_version"] == "PAT-1.0"
         
         # Verify Bedrock was called correctly
-        bedrock_pat_service.bedrock_runtime.invoke_model.assert _called_once()
+        bedrock_pat_service.bedrock_runtime.invoke_model.assert_called_once()
     
     def test_get_analysis_by_id(self, bedrock_pat_service: BedrockPAT) -> None:
         """Test retrieving an analysis by ID with the Bedrock service."""
@@ -455,7 +455,7 @@ class TestBedrockPAT:
         assert result["sleep_metrics"]["sleep_efficiency"] == 0.85
         
         # Verify DynamoDB was called correctly
-        bedrock_pat_service.dynamodb_client.get_item.assert _called_once()
+        bedrock_pat_service.dynamodb_client.get_item.assert_called_once()
         args, kwargs = bedrock_pat_service.dynamodb_client.get_item.call_args
         assert kwargs["TableName"] == "test-table"
         assert kwargs["Key"]["AnalysisId"]["S"] == analysis_id
@@ -535,7 +535,7 @@ class TestBedrockPAT:
         assert result["total"] == 2
         
         # Verify DynamoDB was called correctly
-        bedrock_pat_service.dynamodb_client.query.assert _called_once()
+        bedrock_pat_service.dynamodb_client.query.assert_called_once()
         args, kwargs = bedrock_pat_service.dynamodb_client.query.call_args
         assert kwargs["TableName"] == "test-table"
         assert kwargs["IndexName"] == "PatientIdIndex"
@@ -616,7 +616,7 @@ class TestBedrockPAT:
         assert "mental_health_indicators" in result["integrated_profile"]
         
         # Verify Bedrock was called correctly
-        bedrock_pat_service.bedrock_runtime.invoke_model.assert _called_once()
+        bedrock_pat_service.bedrock_runtime.invoke_model.assert_called_once()
 
 
 class TestPATFactory:

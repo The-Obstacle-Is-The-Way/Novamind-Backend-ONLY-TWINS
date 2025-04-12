@@ -132,7 +132,7 @@ class TestRetrieveAggregatedAnalyticsUseCase:
         assert result[1].dimensions["event_type"] == "feature_usage"
         
         # Verify repository was called with correct parameters
-        mock_analytics_repository.get_aggregates.assert _called_once()
+        mock_analytics_repository.get_aggregates.assert_called_once()
         call_args = mock_analytics_repository.get_aggregates.call_args[1]
         assert call_args["aggregate_type"] == aggregate_type
         assert call_args["dimensions"] == dimensions

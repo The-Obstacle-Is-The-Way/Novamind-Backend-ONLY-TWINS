@@ -241,7 +241,7 @@ class TestHIPAAAuthCompliance:
         token = jwt_service.create_access_token(test_data)
         
         # Verify encode was called with correct data
-        mock_encode.assert _called()
+        mock_encode.assert_called()
         call_args = mock_encode.call_args[0]
         assert "sub" in call_args[0]
         assert "exp" in call_args[0]
@@ -251,7 +251,7 @@ class TestHIPAAAuthCompliance:
         payload = jwt_service.decode_token(token)
         
         # Verify decode was called with correct data
-        mock_decode.assert _called()
+        mock_decode.assert_called()
         assert mock_decode.call_args[0][0] == token
     
     def test_multi_factor_auth_support(self, jwt_service):

@@ -98,10 +98,10 @@ class TestProcessAnalyticsEventUseCase:
         assert result.event_id  ==  "test-event-id-123"
         
         # Verify repository was called correctly
-        mock_analytics_repository.save_event.assert _called_once()
+        mock_analytics_repository.save_event.assert_called_once()
         
         # Verify appropriate logging (without PHI)
-        use_case._logger.info.assert _called_with(
+        use_case._logger.info.assert_called_with(
             f"Processing analytics event of type: {event_type}",
             {"session_id": session_id}
         )
@@ -130,7 +130,7 @@ class TestProcessAnalyticsEventUseCase:
         assert result.event_id  ==  "test-event-id-123"
         
         # Verify appropriate logging (without PHI)
-        use_case._logger.info.assert _called_with(
+        use_case._logger.info.assert_called_with(
             f"Processing analytics event of type: {event_type}",
             {"session_id": None}
         )
@@ -176,7 +176,7 @@ class TestProcessAnalyticsEventUseCase:
         )
         
         # Assert - only non-PHI should be logged
-        use_case._logger.info.assert _called_with(
+        use_case._logger.info.assert_called_with(
             f"Processing analytics event of type: {event_type}",
             {"session_id": session_id}
         )

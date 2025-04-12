@@ -427,7 +427,7 @@ class TestAlertObservers:
             observer.notify(alert)
             
             # Check that the email service was not called (since it's commented out in the implementation)
-            # email_service.send_email.assert _called_once()
+            # email_service.send_email.assert_called_once()
     
     @pytest.mark.standalone()
     def test_sms_alert_observer_urgent(self, sample_data_point, sample_rule):
@@ -456,7 +456,7 @@ class TestAlertObservers:
             observer.notify(alert)
             
             # Check that the SMS service was not called (since it's commented out in the implementation)
-            # sms_service.send_sms.assert _called_once()
+            # sms_service.send_sms.assert_called_once()
     
     @pytest.mark.standalone()
     def test_sms_alert_observer_non_urgent(self, sample_data_point, sample_rule):
@@ -510,7 +510,7 @@ class TestAlertObservers:
         observer.notify(alert)
         
         # Check that the notification service was not called (since it's commented out in the implementation)
-        # notification_service.send_notification.assert _called_once()
+        # notification_service.send_notification.assert_called_once()
 
 
 class TestClinicalRuleEngine:

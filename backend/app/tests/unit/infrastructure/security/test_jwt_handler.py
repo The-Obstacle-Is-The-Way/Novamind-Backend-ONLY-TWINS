@@ -358,7 +358,7 @@ class TestJWTHandler:
         )
         
         # Assert logger was called but didn't contain the token
-        mock_logger.info.assert _called_once()
+        mock_logger.info.assert_called_once()
         # Verify the log message contains user ID but not the token
         log_message = mock_logger.info.call_args[0][0]
         assert user_id in log_message

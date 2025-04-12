@@ -118,8 +118,8 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result  ==  test_sequence.sequence_id
-        mock_session.add.assert _called_once()
-        mock_session.add_all.assert _called_once()
+        mock_session.add.assert_called_once()
+        mock_session.add_all.assert_called_once()
         mock_session.flush.assert _awaited_once()
         
         # Verify model creation
@@ -193,7 +193,7 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result is None
-        mock_session.execute.assert _called_once()
+        mock_session.execute.assert_called_once()
     
     @pytest.mark.asyncio()
     async def test_get_by_patient_id(self, mock_session, mock_sequence_model, mock_data_points):
@@ -331,4 +331,4 @@ class TestSqlAlchemyTemporalSequenceRepository:
         
         # Verify
         assert result is None
-        mock_session.execute.assert _called_once()
+        mock_session.execute.assert_called_once()

@@ -600,7 +600,7 @@ class TestLoggingIntegration:
         logger.info("Patient SSN: 123-45-6789")
         
         # Verify the mock was called
-        mock_emit.assert _called_once()
+        mock_emit.assert_called_once()
         
         # The original message contains PHI, but we're mocking the emit method
         # so we don't need to check the actual output
@@ -622,7 +622,7 @@ class TestLoggingIntegration:
         logger.info("Info message with email: john.doe@example.com")
         
         # Check sanitizer was called
-        mock_sanitizer.sanitize.assert _called()
+        mock_sanitizer.sanitize.assert_called()
 
     def test_get_sanitized_logger(self):
         """Test get_sanitized_logger function."""

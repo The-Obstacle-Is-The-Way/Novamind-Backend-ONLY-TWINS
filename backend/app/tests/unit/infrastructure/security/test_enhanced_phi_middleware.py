@@ -101,7 +101,7 @@ class TestEnhancedPHIMiddleware:
                                 assert "PHI detected in request" in response.json()["error"]
         
         # Verify audit logging
-                                mock_audit_logger.log_security_event.assert _called_once()
+                                mock_audit_logger.log_security_event.assert_called_once()
     
     @patch("app.infrastructure.security.enhanced_phi_middleware.EnhancedPHISanitizer")
     def test_phi_sanitization_in_response(self, mock_sanitizer, test_client):
@@ -133,7 +133,7 @@ class TestEnhancedPHIMiddleware:
                                             assert response.status_code  ==  200
         
         # Verify error was logged
-                                            mock_logger.warning.assert _called_once()
+                                            mock_logger.warning.assert_called_once()
                                             assert "Error sanitizing response" in mock_logger.warning.call_args[0][0]
     def test_setup_enhanced_phi_middleware():
                                                 """Test the setup function for the middleware."""

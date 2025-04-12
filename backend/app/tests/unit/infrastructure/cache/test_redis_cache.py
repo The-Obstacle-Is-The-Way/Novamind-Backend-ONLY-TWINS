@@ -42,7 +42,7 @@ async def test_get_nonexistent_key(redis_cache, mock_redis_client):
     mock_redis_client.get.return_value = None
     result = await redis_cache.get("nonexistent-key")
     assert result is None
-    mock_redis_client.get.assert _called_once_with("nonexistent-key")
+    mock_redis_client.get.assert_called_once_with("nonexistent-key")
 
 
 @pytest.mark.asyncio()
@@ -54,7 +54,7 @@ async def test_get_existing_key(redis_cache, mock_redis_client):
     result = await redis_cache.get("existing-key")
     
     assert result  ==  mock_data
-    mock_redis_client.get.assert _called_once_with("existing-key")
+    mock_redis_client.get.assert_called_once_with("existing-key")
 
 
 @pytest.mark.asyncio()
@@ -65,7 +65,7 @@ async def test_get_invalid_json(redis_cache, mock_redis_client):
     result = await redis_cache.get("invalid-key")
     
     assert result is None
-    mock_redis_client.get.assert _called_once_with("invalid-key")
+    mock_redis_client.get.assert_called_once_with("invalid-key")
 
 
 @pytest.mark.asyncio()
@@ -77,7 +77,7 @@ async def test_set_simple_value(redis_cache, mock_redis_client):
     success = await redis_cache.set("test-key", value, ttl)
     
     assert success is True
-    mock_redis_client.setex.assert _called_once()
+    mock_redis_client.setex.assert_called_once()
     # Check JSON serialization occurred
     args = mock_redis_client.setex.call_args[0]
     assert args[0] == "test-key"
@@ -95,7 +95,7 @@ async def test_set_complex_value(redis_cache, mock_redis_client):
     success = await redis_cache.set("complex-key", value, ttl)
     
     assert success is True
-    mock_redis_client.setex.assert _called_once()
+    mock_redis_client.setex.assert_called_once()
     args = mock_redis_client.setex.call_args[0]
     assert args[0] == "complex-key"
     assert args[1] == ttl
@@ -125,7 +125,7 @@ async def test_set_redis_error(redis_cache, mock_redis_client):
     success = await redis_cache.set("error-key", "value", 60)
     
     assert success is False
-    mock_redis_client.setex.assert _called_once()
+    mock_redis_client.setex.assert_called_once()
 
 
 @pytest.mark.asyncio()
@@ -136,7 +136,7 @@ async def test_delete_existing_key(redis_cache, mock_redis_client):
     success = await redis_cache.delete("existing-key")
     
     assert success is True
-    mock_redis_client.delete.assert _called_once_with("existing-key")
+    mock_redis_client.delete.assert_called_once_with("existing-key")
 
 
 @pytest.mark.asyncio()
@@ -147,7 +147,7 @@ async def test_delete_nonexistent_key(redis_cache, mock_redis_client):
     success = await redis_cache.delete("nonexistent-key")
     
     assert success is True  # We consider this a success since the key doesn't exist
-    mock_redis_client.delete.assert _called_once_with("nonexistent-key")
+    mock_redis_client.delete.assert_called_once_with("nonexistent-key")
 
 
 @pytest.mark.asyncio()
@@ -158,7 +158,7 @@ async def test_delete_redis_error(redis_cache, mock_redis_client):
     success = await redis_cache.delete("error-key")
     
     assert success is False
-    mock_redis_client.delete.assert _called_once_with("error-key")
+    mock_redis_client.delete.assert_called_once_with("error-key")
 
 
 @pytest.mark.asyncio()
@@ -169,7 +169,7 @@ async def test_exists_true(redis_cache, mock_redis_client):
     exists = await redis_cache.exists("existing-key")
     
     assert exists is True
-    mock_redis_client.exists.assert _called_once_with("existing-key")
+    mock_redis_client.exists.assert_called_once_with("existing-key")
 
 
 @pytest.mark.asyncio()
@@ -180,7 +180,7 @@ async def test_exists_false(redis_cache, mock_redis_client):
     exists = await redis_cache.exists("nonexistent-key")
     
     assert exists is False
-    mock_redis_client.exists.assert _called_once_with("nonexistent-key")
+    mock_redis_client.exists.assert_called_once_with("nonexistent-key")
 
 
 @pytest.mark.asyncio()
@@ -191,7 +191,7 @@ async def test_exists_redis_error(redis_cache, mock_redis_client):
     exists = await redis_cache.exists("error-key")
     
     assert exists is False
-    mock_redis_client.exists.assert _called_once_with("error-key")
+    mock_redis_client.exists.assert_called_once_with("error-key")
 
 
 @pytest.mark.asyncio()
@@ -202,7 +202,7 @@ async def test_increment_success(redis_cache, mock_redis_client):
     new_value = await redis_cache.increment("counter-key", 5)
     
     assert new_value  ==  6
-    mock_redis_client.incrby.assert _called_once_with("counter-key", 5)
+    mock_redis_client.incrby.assert_called_once_with("counter-key", 5)
 
 
 @pytest.mark.asyncio()
@@ -213,7 +213,7 @@ async def test_increment_redis_error(redis_cache, mock_redis_client):
     new_value = await redis_cache.increment("error-key", 1)
     
     assert new_value is None
-    mock_redis_client.incrby.assert _called_once_with("error-key", 1)
+    mock_redis_client.incrby.assert_called_once_with("error-key", 1)
 
 
 @pytest.mark.asyncio()
@@ -224,7 +224,7 @@ async def test_get_ttl_success(redis_cache, mock_redis_client):
     ttl = await redis_cache.get_ttl("test-key")
     
     assert ttl  ==  42
-    mock_redis_client.ttl.assert _called_once_with("test-key")
+    mock_redis_client.ttl.assert_called_once_with("test-key")
 
 
 @pytest.mark.asyncio()
@@ -235,7 +235,7 @@ async def test_get_ttl_nonexistent_key(redis_cache, mock_redis_client):
     ttl = await redis_cache.get_ttl("nonexistent-key")
     
     assert ttl is None
-    mock_redis_client.ttl.assert _called_once_with("nonexistent-key")
+    mock_redis_client.ttl.assert_called_once_with("nonexistent-key")
 
 
 @pytest.mark.asyncio()
@@ -246,7 +246,7 @@ async def test_get_ttl_persistent_key(redis_cache, mock_redis_client):
     ttl = await redis_cache.get_ttl("persistent-key")
     
     assert ttl is None
-    mock_redis_client.ttl.assert _called_once_with("persistent-key")
+    mock_redis_client.ttl.assert_called_once_with("persistent-key")
 
 
 @pytest.mark.asyncio()
@@ -257,7 +257,7 @@ async def test_get_ttl_redis_error(redis_cache, mock_redis_client):
     ttl = await redis_cache.get_ttl("error-key")
     
     assert ttl is None
-    mock_redis_client.ttl.assert _called_once_with("error-key")
+    mock_redis_client.ttl.assert_called_once_with("error-key")
 
 
 def test_no_redis_available():

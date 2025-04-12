@@ -49,7 +49,7 @@ class TestXGBoostSymptomModel:
             model = XGBoostSymptomModel(model_path="test/model/path.json")
             
             # Verify
-            mock_joblib.load.assert _called_once_with("test/model/path.json")
+            mock_joblib.load.assert_called_once_with("test/model/path.json")
             assert "depression_score" in model.models
             assert model.feature_names  ==  ["f1", "f2", "f3"]
             assert model.target_names  ==  ["t1"]
@@ -62,7 +62,7 @@ class TestXGBoostSymptomModel:
             model.save_model(f"{tmp_path}/model.json")
             
             # Verify
-            mock_joblib.dump.assert _called_once()
+            mock_joblib.dump.assert_called_once()
             # Check that the model data was passed to dump
             args, _ = mock_joblib.dump.call_args
             assert "models" in args[0]
@@ -115,7 +115,7 @@ class TestXGBoostSymptomModel:
         # Verify
         assert "depression_score" in result
         assert result["depression_score"]["medication_adherence"] == 25.7
-        mock_model.get_score.assert _called_once_with(importance_type="gain")
+        mock_model.get_score.assert_called_once_with(importance_type="gain")
 
     def test_get_model_info(self, model):
         """Test that model info is correctly reported."""

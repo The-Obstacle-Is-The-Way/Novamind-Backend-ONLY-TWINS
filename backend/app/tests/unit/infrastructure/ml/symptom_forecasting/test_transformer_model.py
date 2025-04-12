@@ -72,7 +72,7 @@ class TestTransformerTimeSeriesModel:
             await model.initialize()
             
             # Verify
-            mock_torch.load.assert _called_once()
+            mock_torch.load.assert_called_once()
             assert model.is_initialized
             assert model._model is not None
 
@@ -90,7 +90,7 @@ class TestTransformerTimeSeriesModel:
             await model.initialize()
             
             # Verify
-            mock_transformer_cls.assert _called_once()
+            mock_transformer_cls.assert_called_once()
             assert model.is_initialized
             assert model._model is not None
 
@@ -167,7 +167,7 @@ class TestTransformerTimeSeriesModel:
             await model.predict(sample_input_data, horizon=4)
             
             # Verify
-            mock_preprocess.assert _called_once_with(sample_input_data)
+            mock_preprocess.assert_called_once_with(sample_input_data)
             
             # Get the processed data
             processed_data = mock_preprocess.return_value=# Verify the processed data has the expected structure
@@ -187,7 +187,7 @@ class TestTransformerTimeSeriesModel:
             await model.predict(sample_input_data, horizon=4)
             
             # Verify
-            mock_postprocess.assert _called_once()
+            mock_postprocess.assert_called_once()
             
             # Call directly to test
             result = model._postprocess_predictions(raw_predictions, raw_std)

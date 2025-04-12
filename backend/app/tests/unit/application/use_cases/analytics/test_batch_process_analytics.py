@@ -116,7 +116,7 @@ class TestBatchProcessAnalyticsUseCase:
         assert result.failed_count  ==  0
         
         # Verify warning was logged
-        use_case._logger.warning.assert _called_with("Received empty batch of analytics events")
+        use_case._logger.warning.assert_called_with("Received empty batch of analytics events")
     
     @pytest.mark.asyncio()
     async def test_execute_with_valid_events(self, use_case, mock_event_processor):

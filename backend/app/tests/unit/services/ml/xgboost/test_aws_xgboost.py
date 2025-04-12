@@ -92,7 +92,7 @@ class TestAWSPhiDetector:
         assert result["matches"][0]["type"] == "NAME"
         
         # Verify AWS client was called correctly
-        mock_boto3_client['comprehend_medical'].detect_phi.assert _called_once_with(
+        mock_boto3_client['comprehend_medical'].detect_phi.assert_called_once_with(
             Text=text
         )
         
@@ -321,7 +321,7 @@ class TestAWSXGBoostService:
         assert len(result["factors"]) == 2
         
         # Verify SageMaker was called
-        mock_boto3_client['sagemaker'].invoke_endpoint.assert _called_once()
+        mock_boto3_client['sagemaker'].invoke_endpoint.assert_called_once()
         
             def test_predict_risk_sagemaker_error(self, xgboost_service, mock_boto3_client):
         """Test handling SageMaker errors during prediction."""
@@ -406,7 +406,7 @@ class TestAWSXGBoostService:
         assert "alternative_treatments" in result
         
         # Verify SageMaker was called
-        mock_boto3_client['sagemaker'].invoke_endpoint.assert _called_once()
+        mock_boto3_client['sagemaker'].invoke_endpoint.assert_called_once()
         
             def test_get_model_info(self, xgboost_service):
         """Test getting model information."""
@@ -470,7 +470,7 @@ class TestAWSXGBoostService:
         assert "interactions" in result
         
         # Verify SageMaker was called
-        mock_boto3_client['sagemaker'].invoke_endpoint.assert _called_once()
+        mock_boto3_client['sagemaker'].invoke_endpoint.assert_called_once()
         
             def test_get_feature_importance_prediction_not_found(self, xgboost_service):
         """Test getting feature importance for non-existent prediction."""
@@ -542,7 +542,7 @@ class TestAWSXGBoostService:
         assert "details" in result
         
         # Verify SageMaker was called
-        mock_boto3_client['sagemaker'].invoke_endpoint.assert _called_once()
+        mock_boto3_client['sagemaker'].invoke_endpoint.assert_called_once()
         
             def test_integrate_with_digital_twin_no_endpoint(self, xgboost_service):
         """Test digital twin integration with no endpoint."""
