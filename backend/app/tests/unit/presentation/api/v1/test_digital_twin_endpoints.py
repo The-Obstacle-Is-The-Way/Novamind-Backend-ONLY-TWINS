@@ -97,20 +97,20 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.get_digital_twin.return_value = sample_twin
         
         # Make the request
-    twin_id = str(sample_twin.id)
-    response = client.get(f"/api/v1/digital-twins/{twin_id}")
+        twin_id = str(sample_twin.id)
+        response = client.get(f"/api/v1/digital-twins/{twin_id}")
         
         # Check response
-    assert response.status_code == 200
+        assert response.status_code == 200
         
         # Parse response JSON
-    response_data = response.json()
-    assert response_data["id"] == twin_id
-    assert response_data["patient_id"] == str(sample_twin.patient_id)
-    assert response_data["status"] == sample_twin.status.value
+        response_data = response.json()
+        assert response_data["id"] == twin_id
+        assert response_data["patient_id"] == str(sample_twin.patient_id)
+        assert response_data["status"] == sample_twin.status.value
         
         # Verify service was called with the correct ID
-    mock_digital_twin_service.get_digital_twin.assert_called_once_with(UUID(twin_id))
+        mock_digital_twin_service.get_digital_twin.assert_called_once_with(UUID(twin_id))
     
     def test_get_digital_twin_not_found(self, client, mock_digital_twin_service, mock_jwt_auth):
         """Test getting a non-existent digital twin returns 404."""
@@ -118,14 +118,14 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.get_digital_twin.return_value = None
         
         # Make the request
-    twin_id = "00000000-0000-0000-0000-000000000099"  # Non-existent ID
-    response = client.get(f"/api/v1/digital-twins/{twin_id}")
+        twin_id = "00000000-0000-0000-0000-000000000099"  # Non-existent ID
+        response = client.get(f"/api/v1/digital-twins/{twin_id}")
         
         # Check response
-    assert response.status_code == 404
+        assert response.status_code == 404
         
         # Verify service was called with the correct ID
-    mock_digital_twin_service.get_digital_twin.assert_called_once_with(UUID(twin_id))
+        mock_digital_twin_service.get_digital_twin.assert_called_once_with(UUID(twin_id))
     
     def test_create_digital_twin(self, client, mock_digital_twin_service, sample_twin, mock_jwt_auth):
         """Test creating a new digital twin."""
@@ -133,22 +133,22 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.create_digital_twin.return_value = sample_twin
         
         # Create a request body
-    request_data = {
-    "patient_id": str(sample_twin.patient_id),
-    "metadata": sample_twin.metadata
-    }
+        request_data = {
+            "patient_id": str(sample_twin.patient_id),
+            "metadata": sample_twin.metadata
+        }
         
         # Make the request
-    response = client.post(
-    "/api/v1/digital-twins",
-    json=request_data
-    )
+        response = client.post(
+            "/api/v1/digital-twins",
+            json=request_data
+        )
         
         # Check response
-    assert response.status_code == 201
+        assert response.status_code == 201
         
         # Parse response JSON
-    response_data = response.json()
-    assert response_data["id"] == str(sample_twin.id)
-    assert response_data["patient_id"] == str(sample_twin.patient_id)
-    assert response_data["status"] == sample_twin.status.value
+        response_data = response.json()
+        assert response_data["id"] == str(sample_twin.id)
+        assert response_data["patient_id"] == str(sample_twin.patient_id)
+        assert response_data["status"] == sample_twin.status.value

@@ -69,12 +69,12 @@ class TestEnhancedPHIMiddleware:
         response = test_client.get("/test-with-phi")
         assert response.status_code == 200
         
-    data = response.json()
+        data = response.json()
         # PHI should be sanitized
-    assert data["patient"] != "John Doe"
-    assert "ANONYMIZED_NAME" in data["patient"]
-    assert data["ssn"] != "123-45-6789"
-    assert data["ssn"] == "000-00-0000"
+        assert data["patient"] != "John Doe"
+        assert "ANONYMIZED_NAME" in data["patient"]
+        assert data["ssn"] != "123-45-6789"
+        assert data["ssn"] == "000-00-0000"
     
     def test_block_request_with_phi_in_query(self, test_client):
         """Test that requests with PHI in query parameters are blocked."""
@@ -112,12 +112,12 @@ class TestEnhancedPHIMiddleware:
         # Mock the PHI detector to always detect PHI
         mock_detector.contains_phi.return_value = True
         
-    response = test_client.get("/test")
-    assert response.status_code == 400
-    assert "PHI detected in request" in response.json()["error"]
+        response = test_client.get("/test")
+        assert response.status_code == 400
+        assert "PHI detected in request" in response.json()["error"]
         
         # Verify audit logging
-    mock_audit_logger.log_security_event.assert_called_once()
+        mock_audit_logger.log_security_event.assert_called_once()
     
     @patch("app.infrastructure.security.enhanced_phi_middleware.EnhancedPHISanitizer")
     def test_phi_sanitization_in_response(self, mock_sanitizer, test_client):
@@ -125,19 +125,19 @@ class TestEnhancedPHIMiddleware:
         # Mock the sanitizer to return a specific sanitized value
         mock_sanitizer.sanitize_structured_data.return_value = {"sanitized": True}
         
-    response = test_client.get("/test-with-phi")
-    assert response.status_code == 200
-    assert response.json() == {"sanitized": True}
+        response = test_client.get("/test-with-phi")
+        assert response.status_code == 200
+        assert response.json() == {"sanitized": True}
     
     def test_non_json_response_not_sanitized(self, test_app, test_client):
         """Test that non-JSON responses are not sanitized."""
         @test_app.get("/test-text")
         async def test_text():
-        return "This is a text response with John Doe's information"
+            return "This is a text response with John Doe's information"
         
-    response = test_client.get("/test-text")
-    assert response.status_code == 200
-    assert "John Doe" in response.text
+        response = test_client.get("/test-text")
+        assert response.status_code == 200
+        assert "John Doe" in response.text
     
     @patch("app.infrastructure.security.enhanced_phi_middleware.logger")
     def test_error_handling_in_response_processing(self, mock_logger, test_app, test_client):
@@ -148,12 +148,12 @@ class TestEnhancedPHIMiddleware:
             # Return a response that will cause a JSON decode error
             return JSONResponse(content=b"invalid json")
         
-    response = test_client.get("/test-error")
-    assert response.status_code == 200
+        response = test_client.get("/test-error")
+        assert response.status_code == 200
         
         # Verify error was logged
-    mock_logger.warning.assert_called_once()
-    assert "Error sanitizing response" in mock_logger.warning.call_args[0][0]
+        mock_logger.warning.assert_called_once()
+        assert "Error sanitizing response" in mock_logger.warning.call_args[0][0]
 
 def test_setup_enhanced_phi_middleware():
     """Test the setup function for the middleware."""
@@ -162,24 +162,24 @@ def test_setup_enhanced_phi_middleware():
 
     # Setup middleware with custom options
     setup_enhanced_phi_middleware(
-    app,
-    audit_logger=mock_logger,
-    exclude_paths=["/custom-exclude"],
-    sanitize_responses=False,
-    block_phi_in_requests=True
+        app,
+        audit_logger=mock_logger,
+        exclude_paths=["/custom-exclude"],
+        sanitize_responses=False,
+        block_phi_in_requests=True
     )
 
     # Verify middleware was added
     assert any(
-    isinstance(middleware, EnhancedPHIMiddleware)
-    for middleware in app.user_middleware
+        isinstance(middleware, EnhancedPHIMiddleware)
+        for middleware in app.user_middleware
     )
 
     # Get the middleware instance
     phi_middleware = next(
-    middleware.cls
-    for middleware in app.user_middleware
-    if middleware.cls == EnhancedPHIMiddleware
+        middleware.cls
+        for middleware in app.user_middleware
+        if middleware.cls == EnhancedPHIMiddleware
     )
 
     # Verify middleware was configured correctly
