@@ -22,6 +22,7 @@ class ClinicalSignificance(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
     MODERATE = "moderate"
+    MILD = "mild"    # Added for test compatibility
     LOW = "low"
     INFORMATIONAL = "informational"
     
@@ -32,7 +33,8 @@ class ClinicalSignificance(str, Enum):
             cls.CRITICAL: 5,
             cls.HIGH: 4,
             cls.MODERATE: 3,
-            cls.LOW: 2,
+            cls.MILD: 2,
+            cls.LOW: 1,
             cls.INFORMATIONAL: 1,
             cls.NONE: 0
         }
