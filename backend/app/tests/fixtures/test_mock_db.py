@@ -35,7 +35,8 @@ class TestMockAsyncSession:
         assert not mock_db._pending_objects
 
         # Test execution of a query
-        # For mock testing, we can simulate query execution without a real query object
+        # For mock testing, we can simulate query execution without a real
+        # query object
         query = "mock_query"
         mock_db._query_results = [test_entity]  # Set expected result
 

@@ -64,11 +64,11 @@ def mock_auth_dependencies():
         "app.api.dependencies.auth.get_current_user"
     ) as mock_get_user:
         # Set up mock returns
-        mock_get_clinician.return_value = {"id": "clinician-123", "name": "Dr. Smith"}
+        mock_get_clinician.return_value = {
+            "id": "clinician-123", "name": "Dr. Smith"}
         mock_get_user.return_value = {"id": "user-123", "name": "Test User"}
 
         yield
-
 
         @pytest.fixture(autouse=True)
         def mock_service():
@@ -280,13 +280,13 @@ def mock_auth_dependencies():
         with patch("app.api.routes.xgboost._get_xgboost_service", mock_get_service):
         yield mock_service
 
-
         @pytest.mark.db_required()
         class TestXGBoostIntegration:
     """Integration tests for the XGBoost API."""
 
     @pytest.mark.asyncio()
-    async def test_risk_prediction_flow(self, client: TestClient, mock_service):
+    async def test_risk_prediction_flow(
+            self, client: TestClient, mock_service):
         """Test the complete risk prediction workflow."""
         # 1. Request risk prediction
         risk_request = {
@@ -294,13 +294,16 @@ def mock_auth_dependencies():
             "profile_id": "profile-456",  # Assume a profile exists
             "features": {"age": 55, "bmi": 28.5, "genetic_marker_x": 0.8},
         }
-        response = client.post("/api/v1/ml/xgboost/risk-prediction", json=risk_request)
+        response = client.post(
+            "/api/v1/ml/xgboost/risk-prediction",
+            json=risk_request)
         assert response.status_code == 200
         assert "prediction_id" in response.json()
         prediction_id = response.json()["prediction_id"]
 
         # 2. Retrieve the prediction
-        response = client.get(f"/api/v1/ml/xgboost/predictions/{prediction_id}")
+        response = client.get(
+            f"/api/v1/ml/xgboost/predictions/{prediction_id}")
         assert response.status_code == 200
         prediction_data = response.json()
         assert prediction_data["prediction_id"] == prediction_id
@@ -321,8 +324,7 @@ def mock_auth_dependencies():
 
         # 4. Get explanation for the prediction
         response = client.get(
-            f"/api/v1/ml/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed"
-        )
+            f"/api/v1/ml/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed")
         assert response.status_code == 200
         explanation_data = response.json()
         assert "feature_importance" in explanation_data
@@ -338,11 +340,13 @@ def mock_auth_dependencies():
             "/api/v1/ml/xgboost/digital-twin/integrate", json=update_request
         )
         assert response.status_code == 200
-        assert response.json()["message"] == "Prediction integrated successfully."
+        assert response.json()[
+            "message"] == "Prediction integrated successfully."
         assert response.json()["prediction_id"] == prediction_id
 
     @pytest.mark.asyncio()
-    async def test_treatment_comparison_flow(self, client: TestClient, mock_service):
+    async def test_treatment_comparison_flow(
+            self, client: TestClient, mock_service):
         """Test the treatment comparison workflow."""
         # 1. Request treatment comparison
         comparison_request = {
@@ -367,7 +371,8 @@ def mock_auth_dependencies():
     async def test_model_info_flow(self, client: TestClient, mock_service):
         """Test the model information workflow."""
         # This test assumes a model has been loaded or is mockable
-        # We'll use a placeholder model ID, assuming the mock service handles it
+        # We'll use a placeholder model ID, assuming the mock service handles
+        # it
         model_id = "mock-model-123"
 
         # 1. Get model details

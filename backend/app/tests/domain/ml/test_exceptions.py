@@ -108,7 +108,8 @@ class TestMentalLLaMAExceptions:
         }
         details = {"request_id": "req-123456"}
 
-        exception = MentalLLaMAValidationError(message, validation_errors, details)
+        exception = MentalLLaMAValidationError(
+            message, validation_errors, details)
 
         # Verify properties
         assert exception.message == message
@@ -150,10 +151,12 @@ class TestMentalLLaMAExceptions:
         """Test that all exceptions inherit from MentalLLaMABaseException."""
         # Create instances of all exception types
         base_exc = MentalLLaMABaseException("Base error")
-        conn_exc = MentalLLaMAConnectionError("Connection error", "/api/v1/endpoint")
+        conn_exc = MentalLLaMAConnectionError(
+            "Connection error", "/api/v1/endpoint")
         auth_exc = MentalLLaMAAuthenticationError("Auth error")
         infer_exc = MentalLLaMAInferenceError("Inference error", "model-name")
-        valid_exc = MentalLLaMAValidationError("Validation error", {"field": "error"})
+        valid_exc = MentalLLaMAValidationError(
+            "Validation error", {"field": "error"})
         quota_exc = MentalLLaMAQuotaExceededError("Quota error", 100, 101)
 
         # Verify that all exceptions are instances of MentalLLaMABaseException
@@ -165,7 +168,13 @@ class TestMentalLLaMAExceptions:
         assert isinstance(quota_exc, MentalLLaMABaseException)
 
         # Verify that all exceptions can be caught as MentalLLaMABaseException
-        exceptions = [base_exc, conn_exc, auth_exc, infer_exc, valid_exc, quota_exc]
+        exceptions = [
+            base_exc,
+            conn_exc,
+            auth_exc,
+            infer_exc,
+            valid_exc,
+            quota_exc]
 
         for exc in exceptions:
             try:

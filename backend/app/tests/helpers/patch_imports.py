@@ -40,5 +40,5 @@ def patch_imports():
             try:
         yield
         finally:
-        # Restore the original import
+            # Restore the original import
         setattr(builtins_module, "__import__", original_import)

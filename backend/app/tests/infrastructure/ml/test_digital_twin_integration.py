@@ -393,16 +393,15 @@ async def test_generate_integrated_recommendations(integration_service):
     if len(clinical_recs) > 1:
         assert clinical_recs[0]["importance"] >= clinical_recs[1]["importance"]
 
-
         @pytest.mark.asyncio()
-        async def test_handle_microservice_failure(integration_service, patient_data):
+        async def test_handle_microservice_failure(
+                integration_service, patient_data):
     """Test handling of microservice failures."""
     patient_id = uuid4()
 
     # Make symptom forecasting service fail
     integration_service.symptom_forecasting_service.forecast_symptoms.side_effect = (
-        ModelInferenceError("Test error")
-    )
+        ModelInferenceError("Test error"))
 
     # Generate insights despite the failure
     insights = await integration_service.generate_comprehensive_patient_insights(
@@ -426,7 +425,8 @@ async def test_sanitize_patient_data(integration_service, patient_data):
     patient_data_with_phi["ssn"] = "123-45-6789"
 
     # Sanitize data
-    sanitized_data = integration_service._sanitize_patient_data(patient_data_with_phi)
+    sanitized_data = integration_service._sanitize_patient_data(
+        patient_data_with_phi)
 
     # Verify that PHI is removed
     assert "name" not in sanitized_data

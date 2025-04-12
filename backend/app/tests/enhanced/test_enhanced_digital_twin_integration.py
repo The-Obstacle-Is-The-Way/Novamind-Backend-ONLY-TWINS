@@ -30,8 +30,7 @@ from app.domain.services.enhanced_mentalllama_service import EnhancedMentalLLaMA
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 from app.domain.services.enhanced_pat_service import EnhancedPATService
 from app.domain.entities.digital_twin.temporal_neurotransmitter_sequence import (
-    TemporalNeurotransmitterSequence,
-)
+    TemporalNeurotransmitterSequence, )
 from app.domain.ml.ml_model import MLModel, ModelType
 from app.presentation.api.schemas.ml_schemas import (
     DigitalTwinCreateRequest,
@@ -54,12 +53,10 @@ def enhanced_services() -> (
     """Fixture to create enhanced mock services for testing."""
     return EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()
 
-
     @pytest.fixture
     def patient_id() -> UUID:
     """Fixture to create a consistent patient ID for tests."""
     return uuid.UUID("12345678-1234-5678-1234-567812345678")
-
 
     @pytest.fixture
     def initial_data() -> Dict:
@@ -91,9 +88,9 @@ async def test_factory_creates_services(enhanced_services):
     assert isinstance(xgboost_service, EnhancedXGBoostService)
     assert isinstance(pat_service, EnhancedPATService)
 
-
     @pytest.mark.asyncio()
-    async def test_initialize_digital_twin(enhanced_services, patient_id, initial_data):
+    async def test_initialize_digital_twin(
+            enhanced_services, patient_id, initial_data):
     """Test initializing a Digital Twin with knowledge graph and belief network."""
     digital_twin_service, _, _, _ = enhanced_services
 
@@ -129,7 +126,8 @@ async def test_factory_creates_services(enhanced_services):
 
 
 @pytest.mark.asyncio()
-async def test_process_multimodal_data(enhanced_services, patient_id, initial_data):
+async def test_process_multimodal_data(
+        enhanced_services, patient_id, initial_data):
     """Test processing multimodal data through the Digital Twin."""
     digital_twin_service, _, _, _ = enhanced_services
 
@@ -143,7 +141,10 @@ async def test_process_multimodal_data(enhanced_services, patient_id, initial_da
         "content": "Patient reports continued low mood and anxiety. Sleep has improved slightly."
     }
 
-    physiological_data = {"heart_rate_variability": {"rmssd": 25.3, "sdnn": 42.8}}
+    physiological_data = {
+        "heart_rate_variability": {
+            "rmssd": 25.3,
+            "sdnn": 42.8}}
 
     behavioral_data = {
         "activity": {
@@ -164,11 +165,13 @@ async def test_process_multimodal_data(enhanced_services, patient_id, initial_da
     assert updated_state is not None
     assert updated_state.patient_id == patient_id
     assert updated_state.version > 1  # Should be incremented from initial state
-    assert len(results) >= 0  # May have results depending on mock implementation
+    # May have results depending on mock implementation
+    assert len(results) >= 0
 
 
 @pytest.mark.asyncio()
-async def test_knowledge_graph_operations(enhanced_services, patient_id, initial_data):
+async def test_knowledge_graph_operations(
+        enhanced_services, patient_id, initial_data):
     """Test operations on the knowledge graph."""
     digital_twin_service, _, _, _ = enhanced_services
 
@@ -195,15 +198,20 @@ async def test_knowledge_graph_operations(enhanced_services, patient_id, initial
                 confidence=0.85,
                 timestamp=datetime.datetime.now(),
                 clinical_significance=ClinicalSignificance.MODERATE,
-                brain_regions=[BrainRegion.HYPOTHALAMUS, BrainRegion.BRAIN_STEM],
-                neurotransmitters=[Neurotransmitter.SEROTONIN, Neurotransmitter.GABA],
-                supporting_evidence=["Polysomnography", "Sleep diary"],
+                brain_regions=[
+                    BrainRegion.HYPOTHALAMUS,
+                    BrainRegion.BRAIN_STEM],
+                neurotransmitters=[
+                    Neurotransmitter.SEROTONIN,
+                    Neurotransmitter.GABA],
+                supporting_evidence=[
+                    "Polysomnography",
+                    "Sleep diary"],
                 recommended_actions=[
                     "Sleep hygiene protocol",
                     "Medication timing adjustment",
                 ],
-            )
-        ],
+            )],
     }
 
     # Update the knowledge graph
@@ -234,18 +242,17 @@ async def test_knowledge_graph_operations(enhanced_services, patient_id, initial
 
     # Verify that the REM sleep node and brain regions exist
     assert any(
-        node.label == "Decreased REM Sleep" for node in updated_graph.nodes.values()
-    )
-    assert any(
-        node.node_type == NodeType.BRAIN_REGION for node in updated_graph.nodes.values()
-    )
+        node.label == "Decreased REM Sleep" for node in updated_graph.nodes.values())
+    assert any(node.node_type ==
+               NodeType.BRAIN_REGION for node in updated_graph.nodes.values())
     assert len(updated_graph.edges) >= len(
         knowledge_graph.edges
     )  # May have added edges
 
 
 @pytest.mark.asyncio()
-async def test_belief_network_operations(enhanced_services, patient_id, initial_data):
+async def test_belief_network_operations(
+        enhanced_services, patient_id, initial_data):
     """Test operations on the belief network."""
     digital_twin_service, _, _, _ = enhanced_services
 
@@ -359,7 +366,8 @@ async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
 
 
 @pytest.mark.asyncio()
-async def test_counterfactual_simulation(enhanced_services, patient_id, initial_data):
+async def test_counterfactual_simulation(
+        enhanced_services, patient_id, initial_data):
     """Test counterfactual simulation of intervention scenarios."""
     digital_twin_service, _, _, _ = enhanced_services
 
@@ -427,7 +435,8 @@ async def test_counterfactual_simulation(enhanced_services, patient_id, initial_
 
 
 @pytest.mark.asyncio()
-async def test_clinical_summary_generation(enhanced_services, patient_id, initial_data):
+async def test_clinical_summary_generation(
+        enhanced_services, patient_id, initial_data):
     """Test generation of a comprehensive clinical summary."""
     digital_twin_service, _, _, _ = enhanced_services
 

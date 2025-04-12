@@ -13,7 +13,7 @@ test_file_path = os.path.join(os.path.dirname(__file__), test_file)
 if __name__ == "__main__":
     print(f"Running test: {test_file_path}")
     # Use -xvs flags:
-        # x: exit on first failure
-        # v: verbose
-        # s: show output
-        sys.exit(pytest.main(["-xvs", test_file_path]))
+    # x: exit on first failure
+    # v: verbose
+    # s: show output
+    sys.exit(pytest.main(["-xvs", test_file_path]))

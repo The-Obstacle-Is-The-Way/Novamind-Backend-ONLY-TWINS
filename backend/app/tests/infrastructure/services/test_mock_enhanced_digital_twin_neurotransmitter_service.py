@@ -26,8 +26,7 @@ from app.domain.entities.neurotransmitter_mapping import (
     ReceptorSubtype,
 )
 from app.infrastructure.services.mock_enhanced_digital_twin_core_service import (
-    MockEnhancedDigitalTwinCoreService,
-)
+    MockEnhancedDigitalTwinCoreService, )
 
 
 @pytest.fixture
@@ -35,7 +34,6 @@ def mock_service():
     """Create an instance of the mock service for testing."""
 
     return MockEnhancedDigitalTwinCoreService()
-
 
     @pytest.fixture
     @pytest.mark.venv_only()
@@ -60,7 +58,8 @@ def mock_service():
 
 
 @pytest.mark.asyncio()
-async def test_initialize_neurotransmitter_mapping_patient_not_found(mock_service):
+async def test_initialize_neurotransmitter_mapping_patient_not_found(
+        mock_service):
     """Test that initialize_neurotransmitter_mapping raises an error for nonexistent patients."""
     non_existent_id = uuid.uuid4()
 
@@ -130,7 +129,8 @@ async def test_initialize_neurotransmitter_mapping_without_default_or_custom(
     mock_service, test_patient_id
 ):
     """Test initializing an empty neurotransmitter mapping."""
-    # Initialize with neither default nor custom (should create an empty mapping)
+    # Initialize with neither default nor custom (should create an empty
+    # mapping)
     mapping = await mock_service.initialize_neurotransmitter_mapping(
         patient_id=test_patient_id, use_default_mapping=False, custom_mapping=None
     )
@@ -245,7 +245,8 @@ async def test_get_neurotransmitter_effects_creates_mapping_if_needed(
 
 
 @pytest.mark.asyncio()
-async def test_get_neurotransmitter_effects_with_regions(mock_service, test_patient_id):
+async def test_get_neurotransmitter_effects_with_regions(
+        mock_service, test_patient_id):
     """Test getting neurotransmitter effects with specific brain regions."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -277,11 +278,10 @@ async def test_get_neurotransmitter_effects_with_regions(mock_service, test_pati
         assert "receptor_count" in effects[region]
         assert "is_produced_here" in effects[region]
 
-
         @pytest.mark.asyncio()
         async def test_get_neurotransmitter_effects_without_regions(
-        mock_service, test_patient_id
-):
+            mock_service, test_patient_id
+        ):
     """Test getting neurotransmitter effects for all brain regions."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -301,8 +301,7 @@ async def test_get_neurotransmitter_effects_with_regions(mock_service, test_pati
 
 @pytest.mark.asyncio()
 async def test_get_brain_region_neurotransmitter_sensitivity_creates_mapping_if_needed(
-    mock_service, test_patient_id
-):
+        mock_service, test_patient_id):
     """Test that get_brain_region_neurotransmitter_sensitivity creates a mapping if needed."""
     # Call the method without initializing a mapping first
     sensitivities = await mock_service.get_brain_region_neurotransmitter_sensitivity(
@@ -318,8 +317,7 @@ async def test_get_brain_region_neurotransmitter_sensitivity_creates_mapping_if_
 
 @pytest.mark.asyncio()
 async def test_get_brain_region_neurotransmitter_sensitivity_with_neurotransmitters(
-    mock_service, test_patient_id
-):
+        mock_service, test_patient_id):
     """Test getting brain region sensitivity with specific neurotransmitters."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -353,11 +351,9 @@ async def test_get_brain_region_neurotransmitter_sensitivity_with_neurotransmitt
         assert "clinical_relevance" in data
         assert "is_produced_here" in data
 
-
         @pytest.mark.asyncio()
         async def test_get_brain_region_neurotransmitter_sensitivity_without_neurotransmitters(
-        mock_service, test_patient_id
-):
+                mock_service, test_patient_id):
     """Test getting brain region sensitivity for all neurotransmitters."""
     # Initialize mapping first
     await mock_service.initialize_neurotransmitter_mapping(
@@ -380,7 +376,9 @@ async def test_simulate_neurotransmitter_cascade_creates_mapping_if_needed(
 ):
     """Test that simulate_neurotransmitter_cascade creates a mapping if needed."""
     # Define initial changes
-    initial_changes = {Neurotransmitter.SEROTONIN: 0.2, Neurotransmitter.DOPAMINE: 0.1}
+    initial_changes = {
+        Neurotransmitter.SEROTONIN: 0.2,
+        Neurotransmitter.DOPAMINE: 0.1}
 
     # Call the method without initializing a mapping first
     results = await mock_service.simulate_neurotransmitter_cascade(
@@ -440,11 +438,9 @@ async def test_simulate_neurotransmitter_cascade_with_parameters(
         for effect in step_data["region_effects"].values():
             assert abs(effect) >= 0.15
 
-
             @pytest.mark.asyncio()
             async def test_analyze_treatment_neurotransmitter_effects_creates_mapping_if_needed(
-            mock_service, test_patient_id
-):
+                    mock_service, test_patient_id):
     """Test that analyze_treatment_neurotransmitter_effects creates a mapping if needed."""
     # Define test parameters
     treatment_id = uuid.uuid4()
@@ -510,7 +506,6 @@ async def test_analyze_treatment_neurotransmitter_effects_with_parameters(
         affected_regions = results["affected_brain_regions"]
         assert len(affected_regions) > 0
 
-
         @pytest.mark.asyncio()
         async def test_events_are_published(mock_service, test_patient_id):
     """Test that events are published when neurotransmitter mapping operations are performed."""
@@ -561,13 +556,13 @@ async def test_analyze_treatment_neurotransmitter_effects_with_parameters(
 
     # Check event types
     assert events_received[0]["event_type"] == "neurotransmitter_mapping.initialized"
-    assert (
-        events_received[1]["event_type"] == "neurotransmitter_mapping.profiles_updated"
-    )
+    assert (events_received[1]["event_type"] ==
+            "neurotransmitter_mapping.profiles_updated")
 
     # Check event data
     assert "patient_id" in events_received[0]["event_data"]
-    assert events_received[0]["event_data"]["patient_id"] == str(test_patient_id)
+    assert events_received[0]["event_data"]["patient_id"] == str(
+        test_patient_id)
 
     # Clean up subscription
     await mock_service.unsubscribe_from_events(subscription_id)

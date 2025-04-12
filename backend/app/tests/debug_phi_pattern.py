@@ -24,16 +24,16 @@ for text, description in test_cases:
     print("\n\nTESTING ALTERNATIVE PATTERNS:")
 
     patterns = [
-    # More specific pattern for phone numbers with parentheses
-    r"\(\d{3}\)\s*\d{3}-\d{4}",
-    # General pattern for various phone formats
-    r"(?:\+\d{1,2}\s*)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}",
-    # Explicit patterns for all test cases
-    r"(?:\(\d{3}\)\s*\d{3}-\d{4}|\d{3}-\d{3}-\d{4}|\+\d{1,2}\s\d{3}\s\d{3}\s\d{4})",
+        # More specific pattern for phone numbers with parentheses
+        r"\(\d{3}\)\s*\d{3}-\d{4}",
+        # General pattern for various phone formats
+        r"(?:\+\d{1,2}\s*)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}",
+        # Explicit patterns for all test cases
+        r"(?:\(\d{3}\)\s*\d{3}-\d{4}|\d{3}-\d{3}-\d{4}|\+\d{1,2}\s\d{3}\s\d{3}\s\d{4})",
     ]
 
     for i, pattern in enumerate(patterns):
-    print(f"\nAlternative pattern {i+1}: {pattern}")
+    print(f"\nAlternative pattern {i + 1}: {pattern}")
     for text, description in test_cases:
         match = re.search(pattern, text)
         print(f"  {description}: {match.group(0) if match else 'NO MATCH'}")

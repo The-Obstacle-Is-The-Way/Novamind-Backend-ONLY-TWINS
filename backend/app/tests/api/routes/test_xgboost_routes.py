@@ -69,70 +69,75 @@ def client():
 
         return TestClient(app)
 
-
         @pytest.mark.api()
         @pytest.mark.parametrize(
-        "endpoint, request_model, response_model",
-        [
-        (
-            "/api/xgboost/risk-prediction",
-            RiskPredictionRequest(
-                patient_id="123",
-                risk_type=RiskType.RELAPSE,
-                clinical_data={
-                    "risk_factors": ["depression", "anxiety"],
-                    "previous_episodes": 2,
-                    "current_treatment": "cbt",
-                },
-            ),
-            RiskPredictionResponse,
-        ),
-        (
-            "/api/xgboost/treatment-response",
-            TreatmentResponseRequest(
-                patient_id="123",
-                treatment_type=TreatmentType.THERAPY_CBT,
-                treatment_details=TherapyDetails(
-                    frequency="weekly", duration_minutes=60, modality="individual"
-                ),
-                clinical_data={
-                    "previous_treatments": ["medication_ssri"],
-                    "duration_weeks": 12,
-                },
-            ),
-            TreatmentResponseResponse,
-        ),
-        (
-            "/api/xgboost/outcome-prediction",
-            OutcomePredictionRequest(
-                patient_id="123",
-                outcome_type=OutcomeType.SYMPTOM,
-                outcome_timeframe=TimeFrame(weeks=8),
-                clinical_data={
-                    "target_outcome": "remission",
-                    "current_symptoms": ["depressed_mood", "insomnia"],
-                },
-                treatment_plan={
-                    "medication": "fluoxetine",
-                    "therapy": "cbt",
-                    "duration_weeks": 12,
-                },
-            ),
-            OutcomePredictionResponse,
-        ),
-        (
-            "/api/xgboost/model-info",
-            ModelInfoRequest(
-                model_id="xgb-risk-v1",
-                model_type="risk_prediction",
-                include_metrics=True,
-            ),
-            ModelInfoResponse,
-        ),
-        ],
-)
+            "endpoint, request_model, response_model",
+            [
+                ("/api/xgboost/risk-prediction",
+                 RiskPredictionRequest(
+                     patient_id="123",
+                     risk_type=RiskType.RELAPSE,
+                     clinical_data={
+                         "risk_factors": [
+                             "depression",
+                             "anxiety"],
+                         "previous_episodes": 2,
+                         "current_treatment": "cbt",
+                     },
+                 ),
+                    RiskPredictionResponse,
+                 ),
+                ("/api/xgboost/treatment-response",
+                 TreatmentResponseRequest(
+                     patient_id="123",
+                     treatment_type=TreatmentType.THERAPY_CBT,
+                     treatment_details=TherapyDetails(
+                         frequency="weekly",
+                         duration_minutes=60,
+                         modality="individual"),
+                     clinical_data={
+                         "previous_treatments": ["medication_ssri"],
+                         "duration_weeks": 12,
+                     },
+                 ),
+                 TreatmentResponseResponse,
+                 ),
+                ("/api/xgboost/outcome-prediction",
+                 OutcomePredictionRequest(
+                     patient_id="123",
+                     outcome_type=OutcomeType.SYMPTOM,
+                     outcome_timeframe=TimeFrame(
+                         weeks=8),
+                     clinical_data={
+                         "target_outcome": "remission",
+                         "current_symptoms": [
+                             "depressed_mood",
+                             "insomnia"],
+                     },
+                     treatment_plan={
+                         "medication": "fluoxetine",
+                         "therapy": "cbt",
+                         "duration_weeks": 12,
+                     },
+                 ),
+                 OutcomePredictionResponse,
+                 ),
+                ("/api/xgboost/model-info",
+                 ModelInfoRequest(
+                     model_id="xgb-risk-v1",
+                     model_type="risk_prediction",
+                     include_metrics=True,
+                 ),
+                 ModelInfoResponse,
+                 ),
+            ],
+        )
 @pytest.mark.db_required()
-def test_xgboost_endpoints_return_200(client, endpoint, request_model, response_model):
+def test_xgboost_endpoints_return_200(
+        client,
+        endpoint,
+        request_model,
+        response_model):
     """Test that XGBoost endpoints return 200 status code."""
     # Setup mock return value
     mock_response = response_model(prediction=0.75, confidence=0.85)
@@ -142,11 +147,12 @@ def test_xgboost_endpoints_return_200(client, endpoint, request_model, response_
     mock_xgboost_service.get_model_info.return_value = mock_response
 
     # Make request
-    response = client.post(endpoint, json=json.loads(request_model.model_dump_json()))
+    response = client.post(
+        endpoint, json=json.loads(
+            request_model.model_dump_json()))
 
     # Check status code
     assert response.status_code == status.HTTP_200_OK
-
 
     @pytest.mark.api()
     def test_xgboost_risk_prediction_with_invalid_data(client):

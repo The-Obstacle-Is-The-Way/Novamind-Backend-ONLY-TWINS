@@ -9,13 +9,13 @@ This package contains all tests for the Novamind Digital Twin Platform, organize
     All tests follow SOLID principles and Clean Architecture guidelines, with proper
     separation of concerns and dependency injection for testability.
     """
-    import os
+from app.tests.fixtures.mock_db_fixture import MockAsyncSession
+import os
 
-    # Ensure test environment is set
-    os.environ.setdefault("TESTING", "1")
-    os.environ.setdefault("ENVIRONMENT", "testing")
+# Ensure test environment is set
+os.environ.setdefault("TESTING", "1")
+os.environ.setdefault("ENVIRONMENT", "testing")
 
-    # Import common test fixtures and utilities
-    from app.tests.fixtures.mock_db_fixture import MockAsyncSession
+# Import common test fixtures and utilities
 
-    __all__ = ["MockAsyncSession"]
+__all__ = ["MockAsyncSession"]

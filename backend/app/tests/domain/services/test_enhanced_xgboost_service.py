@@ -43,7 +43,8 @@ class TestEnhancedXGBoostService:
             "stress_level": 0.6,
         }
 
-    def test_predict_treatment_response_basic(self, xgboost_service, test_patient_id):
+    def test_predict_treatment_response_basic(
+            self, xgboost_service, test_patient_id):
         """Test basic treatment response prediction."""
         # Test prediction for increasing serotonin
         prediction = xgboost_service.predict_treatment_response(
@@ -87,7 +88,8 @@ class TestEnhancedXGBoostService:
         assert "baseline_dopamine" in importance
         assert "baseline_serotonin" in importance
 
-    def test_prediction_different_brain_regions(self, xgboost_service, test_patient_id):
+    def test_prediction_different_brain_regions(
+            self, xgboost_service, test_patient_id):
         """Test predictions for different brain regions."""
         # Test prediction for different brain regions
         regions = [
@@ -109,8 +111,10 @@ class TestEnhancedXGBoostService:
             predictions.append(prediction["predicted_response"])
 
         # Verify that predictions differ by region
-        # Not all predictions should be identical (extremely unlikely with our algorithm)
-        assert len(set(predictions)) > 1, "Predictions should differ by brain region"
+        # Not all predictions should be identical (extremely unlikely with our
+        # algorithm)
+        assert len(
+            set(predictions)) > 1, "Predictions should differ by brain region"
 
     def test_prediction_different_neurotransmitters(
         self, xgboost_service, test_patient_id
@@ -202,7 +206,8 @@ class TestEnhancedXGBoostService:
         region_encoding1 = xgboost_service._encode_brain_region(
             BrainRegion.PREFRONTAL_CORTEX
         )
-        region_encoding2 = xgboost_service._encode_brain_region(BrainRegion.AMYGDALA)
+        region_encoding2 = xgboost_service._encode_brain_region(
+            BrainRegion.AMYGDALA)
 
         # Test encoding neurotransmitter
         nt_encoding1 = xgboost_service._encode_neurotransmitter(
@@ -222,7 +227,8 @@ class TestEnhancedXGBoostService:
         assert region_encoding1 != region_encoding2
         assert nt_encoding1 != nt_encoding2
 
-    def test_consistency_of_predictions(self, xgboost_service, test_patient_id):
+    def test_consistency_of_predictions(
+            self, xgboost_service, test_patient_id):
         """Test that predictions are consistent for the same inputs."""
         # Make prediction twice with same inputs
         prediction1 = xgboost_service.predict_treatment_response(

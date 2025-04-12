@@ -43,25 +43,25 @@ def mock_auth_dependencies():
         "app.api.dependencies.auth.verify_patient_access"
     ) as mock_verify_access:
         # Set up mock returns
-        mock_get_clinician.return_value = {"id": "clinician-123", "name": "Dr. Smith"}
+        mock_get_clinician.return_value = {
+            "id": "clinician-123", "name": "Dr. Smith"}
         mock_verify_access.return_value = None
 
         yield
-
 
         @pytest.fixture(autouse=True)
         def mock_service():
     """Set up a real MockXGBoostService for integration testing."""
     # Create a real mock service (not a MagicMock)
     mock_service = MockXGBoostService(
-        mock_risk_level=RiskLevel.MODERATE, mock_risk_score=0.45, mock_confidence=0.85
-    )
+        mock_risk_level=RiskLevel.MODERATE,
+        mock_risk_score=0.45,
+        mock_confidence=0.85)
 
     # Patch the factory function to return our configured mock service
     with patch("app.api.routes.xgboost.get_xgboost_service") as mock_get_service:
         mock_get_service.return_value = mock_service
         yield mock_service
-
 
         @pytest.mark.db_required()
         class TestXGBoostIntegration:
@@ -74,7 +74,10 @@ def mock_auth_dependencies():
         risk_request = {
             "patient_id": "patient-123",
             "risk_type": "risk_relapse",
-            "features": {"age": 45, "phq9_score": 15, "previous_hospitalizations": 1},
+            "features": {
+                "age": 45,
+                "phq9_score": 15,
+                "previous_hospitalizations": 1},
             "time_frame_days": 90,
         }
 
@@ -99,24 +102,27 @@ def mock_auth_dependencies():
     }
 
     response = client.post(
-        f"/api/v1/xgboost/predictions/{prediction_id}/validate", json=validation_request
-    )
+        f"/api/v1/xgboost/predictions/{prediction_id}/validate",
+        json=validation_request)
     assert response.status_code == 200
     assert response.json()["status"] == "validated"
     assert response.json()["success"] is True
 
     # Step 4: Generate explanation for the prediction
     response = client.get(
-        f"/api/v1/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed"
-    )
+        f"/api/v1/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed")
     assert response.status_code == 200
     assert response.json()["prediction_id"] == prediction_id
     assert "important_features" in response.json()
 
     # Step 5: Update digital twin with the prediction
-    update_request = {"patient_id": "patient-123", "prediction_ids": [prediction_id]}
+    update_request = {
+        "patient_id": "patient-123",
+        "prediction_ids": [prediction_id]}
 
-    response = client.post("/api/v1/xgboost/digital-twin/update", json=update_request)
+    response = client.post(
+        "/api/v1/xgboost/digital-twin/update",
+        json=update_request)
     assert response.status_code == 200
     assert response.json()["digital_twin_updated"] is True
     assert response.json()["prediction_count"] == 1
@@ -190,5 +196,6 @@ def mock_auth_dependencies():
         response = client.get("/api/v1/xgboost/healthcheck")
 
         assert response.status_code == 200
-        assert response.json()["status"] in ["healthy", "degraded", "unhealthy"]
+        assert response.json()["status"] in [
+            "healthy", "degraded", "unhealthy"]
         assert "components" in response.json()

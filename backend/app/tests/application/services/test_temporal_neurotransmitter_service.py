@@ -39,7 +39,6 @@ def test_patient_id():
 
     return uuid.uuid4()
 
-
     @pytest.fixture
     def mock_sequence_repository():
     """Create a mock sequence repository."""
@@ -50,7 +49,6 @@ def test_patient_id():
 
     return repository
 
-
     @pytest.fixture
     def mock_event_repository():
     """Create a mock event repository."""
@@ -58,7 +56,6 @@ def test_patient_id():
     repository.save = AsyncMock(return_value=uuid.uuid4())
 
     return repository
-
 
     @pytest.fixture
     def mock_xgboost_service():
@@ -102,14 +99,14 @@ def mock_sequence():
 
         # Create sequence with compatible parameters
         sequence = TemporalSequence(
-        name="test_sequence",
-        sequence_id=uuid.uuid4(),
-        patient_id=uuid.uuid4(),
-        feature_names=feature_names,
-        timestamps=timestamps,
-        values=values,
-        metadata={"test": "data"},
-    )
+            name="test_sequence",
+            sequence_id=uuid.uuid4(),
+            patient_id=uuid.uuid4(),
+            feature_names=feature_names,
+            timestamps=timestamps,
+            values=values,
+            metadata={"test": "data"},
+        )
 
     # No need to add events, they're already in the values list
 
@@ -159,8 +156,11 @@ class TestTemporalNeurotransmitterService:
 
             @pytest.mark.asyncio()
             async def test_analyze_patient_neurotransmitter_levels(
-            self, temporal_service, mock_sequence_repository, mock_sequence, test_patient_id
-    ):
+                    self,
+                    temporal_service,
+                    mock_sequence_repository,
+                    mock_sequence,
+                    test_patient_id):
         """Test analysis of neurotransmitter levels."""
         # Setup - configure mock to return a sequence
         mock_sequence_repository.get_latest_by_feature.return_value = mock_sequence
@@ -206,8 +206,7 @@ class TestTemporalNeurotransmitterService:
         """Test simulation of treatment response."""
         # Setup for empty sequence check
         mock_sequence_repository.get_latest_by_feature.return_value = MagicMock(
-            sequence_length=0
-        )
+            sequence_length=0)
 
         # Execute
         response_sequences = await temporal_service.simulate_treatment_response(
@@ -277,8 +276,8 @@ class TestTemporalNeurotransmitterService:
 
         @pytest.mark.asyncio()
         async def test_get_visualization_data_invalid_id(
-        self, temporal_service, mock_sequence_repository
-    ):
+            self, temporal_service, mock_sequence_repository
+        ):
         """Test visualization data retrieval with invalid ID."""
         # Setup
         sequence_id = uuid.uuid4()
@@ -289,7 +288,8 @@ class TestTemporalNeurotransmitterService:
             await temporal_service.get_visualization_data(sequence_id)
 
             @pytest.mark.asyncio()
-            async def test_get_cascade_visualization(self, temporal_service, test_patient_id):
+            async def test_get_cascade_visualization(
+                    self, temporal_service, test_patient_id):
         """Test cascade visualization."""
         # Execute
         cascade_data = await temporal_service.get_cascade_visualization(
@@ -311,8 +311,11 @@ class TestTemporalNeurotransmitterService:
 
     @pytest.mark.asyncio()
     async def test_xgboost_integration_treatment_adjustment(
-        self, temporal_service, mock_sequence_repository, mock_sequence, test_patient_id
-    ):
+            self,
+            temporal_service,
+            mock_sequence_repository,
+            mock_sequence,
+            test_patient_id):
         """Test XGBoost integration for treatment effect adjustment."""
         # Setup - ensure baseline data is available
         mock_sequence_repository.get_latest_by_feature.return_value = mock_sequence
@@ -361,7 +364,8 @@ class TestTemporalNeurotransmitterService:
         pass
 
         @pytest.mark.asyncio()
-        async def test_identify_trend_insufficient_data(self, service, mock_repository):
+        async def test_identify_trend_insufficient_data(
+                self, service, mock_repository):
         """Test trend identification when there isn't enough data."""
         pass
 
@@ -371,17 +375,20 @@ class TestTemporalNeurotransmitterService:
         pass
 
         @pytest.mark.asyncio()
-        async def test_detect_anomalies_normal_data(self, service, mock_repository):
+        async def test_detect_anomalies_normal_data(
+                self, service, mock_repository):
         """Test anomaly detection when data falls within expected ranges."""
         pass
 
         @pytest.mark.asyncio()
-        async def test_predict_future_concentration(self, service, mock_repository):
+        async def test_predict_future_concentration(
+                self, service, mock_repository):
         """Test predicting a future neurotransmitter concentration."""
         pass
 
         @pytest.mark.asyncio()
-        async def test_predict_future_concentration_no_data(self, service, mock_repository):
+        async def test_predict_future_concentration_no_data(
+                self, service, mock_repository):
         """Test prediction when there's not enough historical data."""
         pass
 
@@ -389,7 +396,6 @@ class TestTemporalNeurotransmitterService:
         async def test_generate_time_series(self, service, mock_repository):
         """Test generation of neurotransmitter time series."""
         pass
-
 
         @pytest.mark.asyncio
         async def test_temporal_service_initialization():

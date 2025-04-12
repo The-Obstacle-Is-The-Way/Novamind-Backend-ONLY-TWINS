@@ -73,7 +73,9 @@ class TestTemporalEvents:
         correlation_id = uuid.uuid4()
         chain = EventChain(correlation_id=correlation_id)
 
-        root_event = CorrelatedEvent(event_type="root", correlation_id=correlation_id)
+        root_event = CorrelatedEvent(
+            event_type="root",
+            correlation_id=correlation_id)
 
         child1 = CorrelatedEvent(
             event_type="child1",
@@ -120,7 +122,6 @@ class TestTemporalEvents:
 
         with pytest.raises(ValueError):
             chain.add_event(wrong_event)
-
 
             class TestTemporalSequence:
     """Test suite for temporal sequences."""
@@ -194,11 +195,11 @@ class TestTemporalEvents:
             values.append([i / 10.0, 1.0 - i / 10.0])
 
             sequence = TemporalSequence.create(
-            feature_names=feature_names,
-            timestamps=timestamps,
-            values=values,
-            patient_id=uuid.uuid4(),
-        )
+                feature_names=feature_names,
+                timestamps=timestamps,
+                values=values,
+                patient_id=uuid.uuid4(),
+            )
 
         # Test numpy conversion
         X, y = sequence.to_numpy_arrays()
@@ -218,7 +219,8 @@ class TestTemporalEvents:
         subsequence = sequence.extract_subsequence(2, 7)
         assert subsequence.sequence_length == 5
         assert subsequence.feature_dimension == 2
-        assert subsequence.values[0][0] == 0.2  # First value of extracted sequence
+        # First value of extracted sequence
+        assert subsequence.values[0][0] == 0.2
 
         # Test statistics
         stats = sequence.get_feature_statistics()
@@ -387,7 +389,8 @@ class TestTemporalNeurotransmitterMapping:
 
         # 10 hours of data: first 5 at baseline, next 5 increasing
         timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
-        levels = [0.5] * 5 + [0.6, 0.7, 0.8, 0.9, 1.0]  # Increase after baseline
+        # Increase after baseline
+        levels = [0.5] * 5 + [0.6, 0.7, 0.8, 0.9, 1.0]
 
         time_series_data = list(zip(timestamps, levels))
 
@@ -403,8 +406,9 @@ class TestTemporalNeurotransmitterMapping:
         # Verify the analysis
         assert effect.neurotransmitter == Neurotransmitter.SEROTONIN
         assert effect.effect_size > 0  # Should be positive
-        assert effect.is_statistically_significant == True  # Compare to Python boolean
-        assert effect.effect_magnitude in ["large", "medium"]  # Should be substantial
+        assert effect.is_statistically_significant  # Compare to Python boolean
+        assert effect.effect_magnitude in [
+            "large", "medium"]  # Should be substantial
         assert effect.direction == "increase"
 
     def test_simulate_treatment_response(self, extended_mapping):
@@ -426,13 +430,15 @@ class TestTemporalNeurotransmitterMapping:
         serotonin_seq = responses[Neurotransmitter.SEROTONIN]
 
         # Check for direct effect on serotonin
-        serotonin_idx = list(Neurotransmitter).index(Neurotransmitter.SEROTONIN)
+        serotonin_idx = list(Neurotransmitter).index(
+            Neurotransmitter.SEROTONIN)
         initial_level = serotonin_seq.values[0][serotonin_idx]
         max_level = max(ts[serotonin_idx] for ts in serotonin_seq.values)
 
         assert max_level > initial_level, "Treatment had no effect on serotonin levels"
 
-        # Check for indirect effects on other neurotransmitters - Less strict threshold
+        # Check for indirect effects on other neurotransmitters - Less strict
+        # threshold
         indirect_effects = False
         for nt, seq in responses.items():
             if nt != Neurotransmitter.SEROTONIN:
@@ -445,7 +451,6 @@ class TestTemporalNeurotransmitterMapping:
                     break
 
                 assert indirect_effects, "No indirect effects on other neurotransmitters"
-
 
                 class TestVisualizationPreprocessor:
     """Test suite for visualization preprocessors."""
@@ -473,7 +478,8 @@ class TestTemporalNeurotransmitterMapping:
         assert geometry["time_steps"] == 5
 
         # First time step should have only amygdala active
-        active_t0 = len(geometry["vertices_by_time"][0]) // 3  # 3 coordinates per point
+        active_t0 = len(geometry["vertices_by_time"][0]
+                        ) // 3  # 3 coordinates per point
         assert active_t0 == 1  # Just amygdala
 
         # Last time step should have all regions active
@@ -534,8 +540,10 @@ class TestTemporalNeurotransmitterMapping:
         assert "neurotransmitter" in timeline
         assert "timeline" in timeline
         assert "metrics" in timeline
-        assert len(timeline["timeline"]) > 1  # Should have multiple time points
-        assert timeline["timeline"][0]["effect_size"] == 0.8  # Initial effect size
+        # Should have multiple time points
+        assert len(timeline["timeline"]) > 1
+        # Initial effect size
+        assert timeline["timeline"][0]["effect_size"] == 0.8
         assert (
             timeline["timeline"][-1]["is_prediction"] is True
         )  # Last point is a prediction

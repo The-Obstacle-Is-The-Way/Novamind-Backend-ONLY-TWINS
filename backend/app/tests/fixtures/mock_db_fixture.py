@@ -94,11 +94,16 @@ class MockAsyncSession(MagicMock):
         """Mock implementation of scalars."""
         # Create a mock that can be used with first(), all(), etc.
         mock_scalar_result = MagicMock()
-        mock_scalar_result.first = MagicMock(return_value=None)  # Default to None
-        mock_scalar_result.all = MagicMock(return_value=[])  # Default to empty list
+        mock_scalar_result.first = MagicMock(
+            return_value=None)  # Default to None
+        mock_scalar_result.all = MagicMock(
+            return_value=[])  # Default to empty list
 
         # Can be configured in test to return specific values
-        query_str = str(result.query) if hasattr(result, "query") else "unknown_query"
+        query_str = str(
+            result.query) if hasattr(
+            result,
+            "query") else "unknown_query"
         if query_str in self.query_results:
             result_value = self.query_results[query_str]
             if isinstance(result_value, list):
@@ -140,11 +145,10 @@ class MockAsyncSession(MagicMock):
             query: Query string or identifier
             results: Results to return (single object or list)
             """
-            self.query_results[query] = results
+        self.query_results[query] = results
 
-
-            @pytest_asyncio.fixture
-            async def mock_db_session():
+        @pytest_asyncio.fixture
+        async def mock_db_session():
     """
     Fixture that provides a mock database session for testing.
 
@@ -154,12 +158,11 @@ class MockAsyncSession(MagicMock):
     Returns:
         MockAsyncSession: A configured mock database session
         """
-        session = MockAsyncSession()
-        yield session
+    session = MockAsyncSession()
+    yield session
 
-
-        @pytest.fixture
-        def mock_db_fixture():
+    @pytest.fixture
+    def mock_db_fixture():
     """
     Fixture that provides both a mock session and utility functions.
 
@@ -168,13 +171,12 @@ class MockAsyncSession(MagicMock):
         session is a MockAsyncSession and configure_mock is a
         function to configure the session with mock results
         """
-        session = MockAsyncSession()
+    session = MockAsyncSession()
 
-        def configure_mock(query: str, results: Any):
+    def configure_mock(query: str, results: Any):
         """Configure the mock session to return specific results for a query."""
         session.configure_mock_results(query, results)
         return session, configure_mock
-
 
         class MockRepository:
     """Base repository mock for testing repository pattern implementations."""
@@ -233,4 +235,4 @@ def mock_repository():
         MockRepository: A configured mock repository
         """
 
-        return MockRepository()
+    return MockRepository()

@@ -169,9 +169,9 @@ async def test_preprocess_patient_data_with_missing_data(forecasting_service):
     with pytest.raises(ValidationError):
         await forecasting_service.preprocess_patient_data(patient_id, missing_data)
 
-
         @pytest.mark.asyncio()
-        async def test_forecast_symptoms_with_ensemble(forecasting_service, patient_data):
+        async def test_forecast_symptoms_with_ensemble(
+                forecasting_service, patient_data):
     """Test symptom forecasting with ensemble approach."""
     patient_id = uuid4()
 
@@ -201,7 +201,8 @@ async def test_preprocess_patient_data_with_missing_data(forecasting_service):
 
 
 @pytest.mark.asyncio()
-async def test_forecast_symptoms_without_ensemble(forecasting_service, patient_data):
+async def test_forecast_symptoms_without_ensemble(
+        forecasting_service, patient_data):
     """Test symptom forecasting without ensemble approach."""
     patient_id = uuid4()
 
@@ -289,7 +290,6 @@ async def test_identify_risk_periods(forecasting_service, patient_data):
         assert "end_date" in alert
         assert "recommendation" in alert
 
-
         @pytest.mark.asyncio()
         async def test_get_model_performance_metrics(forecasting_service):
     """Test retrieval of model performance metrics."""
@@ -307,7 +307,6 @@ async def test_identify_risk_periods(forecasting_service, patient_data):
         assert "mae" in metrics[model_type]
         assert "r2" in metrics[model_type]
         assert "calibration_score" in metrics[model_type]
-
 
         @pytest.mark.asyncio()
         async def test_sanitize_patient_data(forecasting_service):
@@ -328,7 +327,8 @@ async def test_identify_risk_periods(forecasting_service, patient_data):
     }
 
     # Sanitize data using the private method
-    sanitized_data = forecasting_service._sanitize_patient_data(patient_data_with_phi)
+    sanitized_data = forecasting_service._sanitize_patient_data(
+        patient_data_with_phi)
 
     # Verify that PHI is removed
     assert "patient_name" not in sanitized_data
@@ -360,7 +360,8 @@ async def test_model_failure_handling(forecasting_service, patient_data):
 
     # Reset transformer model and make XGBoost model fail
     forecasting_service.transformer_model.predict.side_effect = None
-    forecasting_service.xgboost_model.predict.side_effect = Exception("Model failure")
+    forecasting_service.xgboost_model.predict.side_effect = Exception(
+        "Model failure")
 
     # Verify that service falls back to transformer model only
     forecast = await forecasting_service.forecast_symptoms(

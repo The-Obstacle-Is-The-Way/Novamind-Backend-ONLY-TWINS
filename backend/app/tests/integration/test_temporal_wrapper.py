@@ -25,7 +25,7 @@ async def test_temporal_endpoints_integration()
 ():
         """
     Test API integration with the neurotransmitter service.
-    
+
     This test verifies that the API layer correctly integrates with the service layer
     without directly importing the router module.
     """

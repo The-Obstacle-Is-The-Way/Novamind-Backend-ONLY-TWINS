@@ -39,15 +39,14 @@ from app.infrastructure.factories.enhanced_mock_digital_twin_factory import (
 def enhanced_services() -> Tuple[EnhancedDigitalTwinCoreService, ...]:
     """Fixture to create enhanced mock services for testing."""
     services = EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()
-    return (services[0],)  # Only return the Digital Twin service for simplicity
-
+    # Only return the Digital Twin service for simplicity
+    return (services[0],)
 
     @pytest.fixture
     def patient_id() -> UUID:
     """Fixture to create a consistent patient ID for tests."""
 
     return uuid.UUID("12345678-1234-5678-1234-567812345678")
-
 
     @pytest.fixture
     def initial_data() -> Dict:
@@ -108,11 +107,10 @@ async def test_initialize_neurotransmitter_mapping(
         producing_regions = mapping.get_producing_regions(nt)
         assert len(producing_regions) > 0, f"No production sites for {nt}"
 
-
         @pytest.mark.asyncio()
         async def test_custom_neurotransmitter_mapping(
-        enhanced_services, patient_id, initialized_patient
-):
+            enhanced_services, patient_id, initialized_patient
+        ):
     """Test creating a custom neurotransmitter mapping for a patient."""
     (digital_twin_service,) = enhanced_services
 
@@ -221,9 +219,8 @@ async def test_update_receptor_profiles(
         BrainRegion.THALAMUS, Neurotransmitter.GLUTAMATE
     )
     assert len(thalamus_profiles) > 0
-    assert any(
-        p.receptor_subtype == ReceptorSubtype.GLUTAMATE_NMDA for p in thalamus_profiles
-    )
+    assert any(p.receptor_subtype ==
+               ReceptorSubtype.GLUTAMATE_NMDA for p in thalamus_profiles)
 
     hippocampus_profiles = updated_mapping.get_receptor_profiles(
         BrainRegion.HIPPOCAMPUS, Neurotransmitter.ACETYLCHOLINE
@@ -389,11 +386,11 @@ async def test_analyze_treatment_neurotransmitter_effects(
     time_points = [
         datetime.datetime.now() + datetime.timedelta(days=i * 7)
         for i in range(5)  # 0, 7, 14, 21, 28 days:
-            ]
+    ]
 
-            # Run analysis
-            analysis_results = (
-            await digital_twin_service.analyze_treatment_neurotransmitter_effects(
+    # Run analysis
+    analysis_results = (
+        await digital_twin_service.analyze_treatment_neurotransmitter_effects(
             patient_id=patient_id,
             treatment_id=treatment_id,
             time_points=time_points,

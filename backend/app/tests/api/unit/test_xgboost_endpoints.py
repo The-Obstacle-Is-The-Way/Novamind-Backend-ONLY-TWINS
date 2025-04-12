@@ -44,9 +44,10 @@ class MockUser:
         self.role = role
         self.username = "test.user@novamind.com"
 
-
         # Mock XGBoost service
+
         class MockXGBoostService:
+
     def __init__(self):
         # Set up mock methods with MagicMock for all methods
         self.predict_risk = MagicMock()
@@ -132,10 +133,12 @@ class MockUser:
 
         # Digital twin simulation
         self.simulate_digital_twin.return_value = {
-            "simulation_id": str(uuid.uuid4()),
-            "final_state": {"phq9_score": 8, "gad7_score": 6},
-            "trajectories": {"depression": [15, 12, 10, 8], "anxiety": [12, 10, 8, 6]},
-        }
+            "simulation_id": str(
+                uuid.uuid4()), "final_state": {
+                "phq9_score": 8, "gad7_score": 6}, "trajectories": {
+                "depression": [
+                    15, 12, 10, 8], "anxiety": [
+                        12, 10, 8, 6]}, }
 
         # Model info
         self.get_model_info.return_value = {
@@ -213,8 +216,8 @@ def mock_dependencies():
                 mock_get_service.return_value = get_service
                 yield service
 
-
                 # Mock error dependency overrides
+
                 @pytest.fixture
                 def mock_error_dependencies():
     """Set up dependency overrides for error cases."""
@@ -230,11 +233,10 @@ def mock_dependencies():
                 mock_get_service.return_value = get_service
                 yield service
 
-
                 # === Test Cases ===
 
-
-                def test_predict_risk_endpoint(client: TestClient, mock_dependencies):
+                def test_predict_risk_endpoint(
+                        client: TestClient, mock_dependencies):
     """Test the risk prediction endpoint with valid data."""
     # Prepare request data
     request_data = {
@@ -259,15 +261,22 @@ def mock_dependencies():
     assert "detail" in data
 
 
-def test_predict_treatment_response_endpoint(client: TestClient, mock_dependencies):
+def test_predict_treatment_response_endpoint(
+        client: TestClient, mock_dependencies):
     """Test the treatment response prediction endpoint with valid data."""
     # Prepare request data
     request_data = {
         "patient_id": "patient-123",
         "treatment_type": "ssri",
-        "treatment_details": {"medication": "Escitalopram", "dosage": "10mg daily"},
-        "clinical_data": {"phq9_score": 15, "gad7_score": 12},
-        "genetic_data": ["CYP2D6*1/*2", "SLC6A4 L/L"],
+        "treatment_details": {
+            "medication": "Escitalopram",
+            "dosage": "10mg daily"},
+        "clinical_data": {
+            "phq9_score": 15,
+            "gad7_score": 12},
+        "genetic_data": [
+            "CYP2D6*1/*2",
+            "SLC6A4 L/L"],
     }
 
     # Make the request
@@ -309,7 +318,8 @@ def test_predict_outcome_endpoint(client: TestClient, mock_dependencies):
     assert "detail" in data
 
 
-def test_get_feature_importance_endpoint(client: TestClient, mock_dependencies):
+def test_get_feature_importance_endpoint(
+        client: TestClient, mock_dependencies):
     """Test the feature importance endpoint."""
     # Prepare request data
     request_data = {
@@ -329,7 +339,8 @@ def test_get_feature_importance_endpoint(client: TestClient, mock_dependencies):
     assert "detail" in data
 
 
-def test_digital_twin_integration_endpoint(client: TestClient, mock_dependencies):
+def test_digital_twin_integration_endpoint(
+        client: TestClient, mock_dependencies):
     """Test the digital twin integration endpoint."""
     # Prepare request data
     request_data = {
@@ -364,11 +375,11 @@ def test_model_info_endpoint(client: TestClient, mock_dependencies):
     data = response.json()
     assert "detail" in data
 
-
     # === Error Handling Tests ===
 
-
-    def test_model_not_found_error(client: TestClient, mock_error_dependencies):
+    def test_model_not_found_error(
+            client: TestClient,
+            mock_error_dependencies):
     """Test handling of ModelNotFoundError."""
     # Prepare request data
     request_data = {
