@@ -1,0 +1,147 @@
+{
+  "timestamp": "2025-04-12T18:25:53.584311",
+  "summary": {
+    "total": 14,
+    "passed": 7,
+    "failed": 2,
+    "skipped": 0,
+    "errors": 5
+  },
+  "categories": {
+    "Core Encryption": {
+      "name": "Core Encryption",
+      "pattern": "test_ml_encryption.py",
+      "files_found": 1,
+      "tests": {
+        "total": 12,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 5
+      },
+      "results": [
+        {
+          "file": "test_ml_encryption.py",
+          "success": true,
+          "output": "============================= test session starts ==============================\ncollecting ... collected 7 items\n\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_encrypt_decrypt_data PASSED [ 14%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_encryption_is_deterministic PASSED [ 28%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_different_keys \n-------------------------------- live log call ---------------------------------\n2025-04-12 18:25:54 [   ERROR] Decryption error: Encryption key mismatch\nPASSED                                                                   [ 42%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_detect_tampering \n-------------------------------- live log call ---------------------------------\n2025-04-12 18:25:54 [   ERROR] Decryption error: Tampering detected: encrypted content modified\nPASSED                                                                   [ 57%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_handle_invalid_input \n-------------------------------- live log call ---------------------------------\n2025-04-12 18:25:54 [   ERROR] Decryption error: Encrypted value cannot be empty\n2025-04-12 18:25:54 [   ERROR] Encryption error: Value must be a string or convertible to string\n2025-04-12 18:25:54 [   ERROR] Decryption error: Invalid encryption format - expected v1: prefix\nPASSED                                                                   [ 71%]\napp/tests/security/test_ml_encryption.py::TestEncryptionService::test_key_rotation PASSED [ 85%]\napp/tests/security/test_ml_encryption.py::TestFieldEncryption::test_encrypt_decrypt_fields PASSED [100%]\n\n============================== 7 passed in 0.10s ===============================\n",
+          "error": "",
+          "tests": {
+            "total": 12,
+            "passed": 7,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 5
+          }
+        }
+      ]
+    },
+    "PHI Handling": {
+      "name": "PHI Handling",
+      "pattern": "test_address_helper.py",
+      "files_found": 1,
+      "tests": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0,
+        "errors": 0
+      },
+      "results": [
+        {
+          "file": "test_address_helper.py",
+          "success": false,
+          "output": "============================= test session starts ==============================\ncollecting ... collected 1 item\n\napp/tests/security/test_address_helper.py::test_address_field_encryption FAILED [100%]\n\n=================================== FAILURES ===================================\n________________________ test_address_field_encryption _________________________\n\n    def test_address_field_encryption():\n        \"\"\"Test address field handling in the field encryptor.\"\"\"\n        # Setup\n        encryption_service = EncryptionService(direct_key=\"test_address\")\n        field_encryptor = FieldEncryptor(encryption_service)\n    \n        # Sample nested address\n        data = {\n            \"demographics\": {\n                \"address\": {\n                    \"street\": \"123 Main St\",\n                    \"city\": \"Anytown\",\n                    \"state\": \"CA\",\n                    \"zip\": \"12345\"\n                }\n            }\n        }\n    \n        # Encrypt the address\n        encrypted = field_encryptor.encrypt_fields(data, [\"demographics.address\"])\n    \n        # Verify all components got encrypted properly\n>       assert encrypted[\"demographics\"][\"address\"][\"street\"].startswith(\"v1:\")\nE       TypeError: string indices must be integers, not 'str'\n\napp/tests/security/test_address_helper.py:34: TypeError\n=========================== short test summary info ============================\nFAILED app/tests/security/test_address_helper.py::test_address_field_encryption\n============================== 1 failed in 0.11s ===============================\n",
+          "error": "",
+          "tests": {
+            "total": 2,
+            "passed": 0,
+            "failed": 2,
+            "skipped": 0,
+            "errors": 0
+          }
+        }
+      ]
+    },
+    "JWT Authentication": {
+      "name": "JWT Authentication",
+      "pattern": "test_jwt*.py",
+      "files_found": 0,
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      },
+      "results": []
+    },
+    "HIPAA Compliance": {
+      "name": "HIPAA Compliance",
+      "pattern": "test_hipaa*.py",
+      "files_found": 0,
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      },
+      "results": []
+    },
+    "PHI Protection": {
+      "name": "PHI Protection",
+      "pattern": "test_phi*.py",
+      "files_found": 0,
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      },
+      "results": []
+    },
+    "Security Patterns": {
+      "name": "Security Patterns",
+      "pattern": "test_*security*.py",
+      "files_found": 0,
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      },
+      "results": []
+    },
+    "Audit Logging": {
+      "name": "Audit Logging",
+      "pattern": "test_audit*.py",
+      "files_found": 0,
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      },
+      "results": []
+    },
+    "API Security": {
+      "name": "API Security",
+      "pattern": "test_api*.py",
+      "files_found": 0,
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      },
+      "results": []
+    }
+  },
+  "start_time": "2025-04-12T18:25:53.584323",
+  "end_time": "2025-04-12T18:25:54.655838",
+  "duration_seconds": 1.071515
+}

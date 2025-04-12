@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaMind Digital Twin - Security Test Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+        .subtitle {
+            font-style: italic;
+            margin-top: 10px;
+        }
+        .summary-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .summary-stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .stat-box {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .passed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .skipped {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .total {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+        .category-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .category-name {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .category-priority {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .priority-Critical {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .priority-High {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .priority-Medium {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .priority-Low {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .category-description {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        .test-results {
+            margin-top: 20px;
+        }
+        .test-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .test-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .success-true {
+            color: #155724;
+            font-weight: bold;
+        }
+        .success-false {
+            color: #721c24;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        .meter {
+            height: 10px;
+            position: relative;
+            background: #f3f3f3;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .meter > span {
+            display: block;
+            height: 100%;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-good {
+            background-color: #28a745;
+        }
+        .progress-warning {
+            background-color: #ffc107;
+        }
+        .progress-bad {
+            background-color: #dc3545;
+        }
+        details {
+            margin: 10px 0;
+        }
+        summary {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .error-output {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #721c24;
+            border-left: 3px solid #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>NovaMind Digital Twin</h1>
+        <div class="subtitle">Security Test Dashboard</div>
+    </header>
+    <div class="container">
+        <div class="summary-card">
+            <h2>Test Summary</h2>
+            <p>Generated on: 2025-04-12 18:29:37</p>
+            <p>Test Duration: 2.01 seconds</p>
+            
+            <div class="summary-stats">
+                <div class="stat-box total">
+                    <div class="stat-number">20</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat-box passed">
+                    <div class="stat-number">9</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="stat-box failed">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat-box error">
+                    <div class="stat-number">11</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+                <div class="stat-box skipped">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Skipped</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3>Overall Success Rate:</h3>
+                <div class="meter">
+                    <span style="width: 45.0%"
+                          class="progress-bad"></span>
+                </div>
+                <p style="text-align: right; margin-top: 5px;">
+                    45.00%
+                </p>
+            </div>
+        </div>
+        
+        <h2>Test Categories</h2>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-name">Encryption</div>
+                <div class="category-priority priority-Critical">Critical</div>
+            </div>
+            <div class="category-description">Military-grade encryption for HIPAA-compliant data protection</div>
+            
+            <div>
+                <strong>Files Found:</strong> 2
+                <br>
+                <strong>Tests Run:</strong> 15
+                <br>
+                <strong>Success Rate:</strong> 46.67%
+                <div class="meter">
+                    <span style="width: 46.666666666666664%"
+                          class="progress-bad"></span>
+                </div>
+            </div>
+
+            <div class="test-results">
+                <h3>Test Results</h3>
+                <table class="test-table">
+                    <thead>
+                        <tr>
+                            <th>Test File</th>
+                            <th>Success</th>
+                            <th>Passed</th>
+                            <th>Failed</th>
+                            <th>Errors</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td>test_encryption.py</td>
+                            <td class="success-false">False</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>3</td>
+                            <td>
+                                <details>
+                                    <summary>View Details</summary>
+                                    <pre style="white-space: pre-wrap; font-size: 0.8em;">============================= test session starts ==============================
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+____________ ERROR collecting app/tests/security/test_encryption.py ____________
+../.venv/lib/python3.13/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+../.venv/lib/python3.13/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+../.venv/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:177: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+../.venv/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:359: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ast.py:54: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_encryption.py", line 25
+E       from app.infrastructure.security.encryption import ()
+E                                                           ^
+E   SyntaxError: invalid syntax
+=========================== short test summary info ============================
+ERROR app/tests/security/test_encryption.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.08s ===============================
+</pre>
+                                    
+                                </details>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>test_ml_encryption.py</td>
+                            <td class="success-true">True</td>
+                            <td>7</td>
+                            <td>0</td>
+                            <td>5</td>
+                            <td>
+                                <details>
+                                    <summary>View Details</summary>
+                                    <pre style="white-space: pre-wrap; font-size: 0.8em;">============================= test session starts ==============================
+collecting ... collected 7 items
+
+app/tests/security/test_ml_encryption.py::TestEncryptionService::test_encrypt_decrypt_data PASSED [ 14%]
+app/tests/security/test_ml_encryption.py::TestEncryptionService::test_encryption_is_deterministic PASSED [ 28%]
+app/tests/security/test_ml_encryption.py::TestEncryptionService::test_different_keys 
+-------------------------------- live log call ---------------------------------
+2025-04-12 18:29:36 [   ERROR] Decryption error: Encryption key mismatch
+PASSED                                                                   [ 42%]
+app/tests/security/test_ml_encryption.py::TestEncryptionService::test_detect_tampering 
+-------------------------------- live log call ---------------------------------
+2025-04-12 18:29:36 [   ERROR] Decryption error: Tampering detected: encrypted content modified
+PASSED                                                                   [ 57%]
+app/tests/security/test_ml_encryption.py::TestEncryptionService::test_handle_invalid_input 
+-------------------------------- live log call ---------------------------------
+2025-04-12 18:29:36 [   ERROR] Decryption error: Encrypted value cannot be empty
+2025-04-12 18:29:36 [   ERROR] Encryption error: Value must be a string or convertible to string
+2025-04-12 18:29:36 [   ERROR] Decryption error: Invalid encryption format - expected v1: prefix
+PASSED                                                                   [ 71%]
+app/tests/security/test_ml_encryption.py::TestEncryptionService::test_key_rotation PASSED [ 85%]
+app/tests/security/test_ml_encryption.py::TestFieldEncryption::test_encrypt_decrypt_fields PASSED [100%]
+
+============================== 7 passed in 0.09s ===============================
+</pre>
+                                    
+                                </details>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-name">Field Encryption</div>
+                <div class="category-priority priority-Critical">Critical</div>
+            </div>
+            <div class="category-description">Granular field-level encryption for PHI protection</div>
+            
+            <div>
+                <strong>Files Found:</strong> 2
+                <br>
+                <strong>Tests Run:</strong> 2
+                <br>
+                <strong>Success Rate:</strong> 100.00%
+                <div class="meter">
+                    <span style="width: 100.0%"
+                          class="progress-good"></span>
+                </div>
+            </div>
+
+            <div class="test-results">
+                <h3>Test Results</h3>
+                <table class="test-table">
+                    <thead>
+                        <tr>
+                            <th>Test File</th>
+                            <th>Success</th>
+                            <th>Passed</th>
+                            <th>Failed</th>
+                            <th>Errors</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td>test_address_helper.py</td>
+                            <td class="success-true">True</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>
+                                <details>
+                                    <summary>View Details</summary>
+                                    <pre style="white-space: pre-wrap; font-size: 0.8em;">============================= test session starts ==============================
+collecting ... collected 1 item
+
+app/tests/security/test_address_helper.py::test_address_field_encryption PASSED [100%]
+
+============================== 1 passed in 0.09s ===============================
+</pre>
+                                    
+                                </details>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>test_fixtures.py</td>
+                            <td class="success-true">True</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>
+                                <details>
+                                    <summary>View Details</summary>
+                                    <pre style="white-space: pre-wrap; font-size: 0.8em;">============================= test session starts ==============================
+collecting ... collected 1 item
+
+app/tests/security/test_fixtures.py::test_fixture_generation PASSED      [100%]
+
+============================== 1 passed in 0.02s ===============================
+</pre>
+                                    
+                                </details>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-name">Authentication</div>
+                <div class="category-priority priority-High">High</div>
+            </div>
+            <div class="category-description">JWT-based authentication and authorization</div>
+            
+            <div>
+                <strong>Files Found:</strong> 0
+                <br>
+                <strong>Tests Run:</strong> 0
+                <br>
+                <strong>Success Rate:</strong> 0.00%
+                <div class="meter">
+                    <span style="width: 0%"
+                          class="progress-bad"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-name">HIPAA Compliance</div>
+                <div class="category-priority priority-Critical">Critical</div>
+            </div>
+            <div class="category-description">Regulatory compliance with HIPAA requirements</div>
+            
+            <div>
+                <strong>Files Found:</strong> 0
+                <br>
+                <strong>Tests Run:</strong> 0
+                <br>
+                <strong>Success Rate:</strong> 0.00%
+                <div class="meter">
+                    <span style="width: 0%"
+                          class="progress-bad"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-name">Audit Logging</div>
+                <div class="category-priority priority-High">High</div>
+            </div>
+            <div class="category-description">Compliant audit logging for PHI access</div>
+            
+            <div>
+                <strong>Files Found:</strong> 0
+                <br>
+                <strong>Tests Run:</strong> 0
+                <br>
+                <strong>Success Rate:</strong> 0.00%
+                <div class="meter">
+                    <span style="width: 0%"
+                          class="progress-bad"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-name">API Security</div>
+                <div class="category-priority priority-High">High</div>
+            </div>
+            <div class="category-description">REST API security patterns and protections</div>
+            
+            <div>
+                <strong>Files Found:</strong> 0
+                <br>
+                <strong>Tests Run:</strong> 0
+                <br>
+                <strong>Success Rate:</strong> 0.00%
+                <div class="meter">
+                    <span style="width: 0%"
+                          class="progress-bad"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-name">Database Security</div>
+                <div class="category-priority priority-Medium">Medium</div>
+            </div>
+            <div class="category-description">Database access and security patterns</div>
+            
+            <div>
+                <strong>Files Found:</strong> 1
+                <br>
+                <strong>Tests Run:</strong> 3
+                <br>
+                <strong>Success Rate:</strong> 0.00%
+                <div class="meter">
+                    <span style="width: 0.0%"
+                          class="progress-bad"></span>
+                </div>
+            </div>
+
+            <div class="test-results">
+                <h3>Test Results</h3>
+                <table class="test-table">
+                    <thead>
+                        <tr>
+                            <th>Test File</th>
+                            <th>Success</th>
+                            <th>Passed</th>
+                            <th>Failed</th>
+                            <th>Errors</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td>test_unit_of_work.py</td>
+                            <td class="success-false">False</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>3</td>
+                            <td>
+                                <details>
+                                    <summary>View Details</summary>
+                                    <pre style="white-space: pre-wrap; font-size: 0.8em;">============================= test session starts ==============================
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+___________ ERROR collecting app/tests/security/test_unit_of_work.py ___________
+../.venv/lib/python3.13/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+../.venv/lib/python3.13/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+../.venv/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:177: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+../.venv/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:359: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ast.py:54: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend/app/tests/security/test_unit_of_work.py", line 295
+E       unit_of_work.set_metadata({)
+E                                  ^
+E   SyntaxError: closing parenthesis ')' does not match opening parenthesis '{'
+=========================== short test summary info ============================
+ERROR app/tests/security/test_unit_of_work.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.08s ===============================
+</pre>
+                                    
+                                </details>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>NovaMind Digital Twin - HIPAA Compliance and Security Testing Suite</p>
+            <p>Quantum Security Analytics for Healthcare Data Protection</p>
+        </footer>
+    </div>
+</body>
+</html>
