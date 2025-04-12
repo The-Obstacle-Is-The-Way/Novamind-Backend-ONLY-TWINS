@@ -206,3 +206,19 @@ class TestPatientEncryption:
         # Check that values are properly decrypted
         assert patient.first_name == "Test"
         assert patient.last_name == "Patient"
+        
+    @patch("app.core.security.encryption.get_encryption_key")
+    def test_encryption_error_handling(self, mock_get_key, mock_encryption_key):
+        """Test encryption error handling."""
+        # Set up mock encryption key
+        mock_get_key.return_value = mock_encryption_key
+        
+        # Create patient
+        patient = Patient(first_name="Test", last_name="Patient")
+        
+        # Modify _first_name to be invalid encrypted data
+        patient._first_name = "invalid_encrypted_data"
+        
+        # Test that the property gracefully handles decryption failures
+        # by returning None instead of raising an exception
+        assert patient.first_name is None

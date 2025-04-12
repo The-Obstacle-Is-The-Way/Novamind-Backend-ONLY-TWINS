@@ -257,3 +257,59 @@ class TestDigitalTwinEndpoints:
         assert "blood_pressure" in data
         assert data["heart_rate"]["value"] == 72.5
         assert data["blood_pressure"]["value"] == {"systolic": 120, "diastolic": 80}
+        
+    @patch("app.presentation.api.dependencies.get_digital_twin_service")
+    async def test_update_digital_twin(
+        self, mock_get_service, test_client, mock_digital_twin_service, sample_digital_twin
+    ):
+        """Test updating a digital twin's metadata."""
+        # Setup mocks
+        mock_get_service.return_value = mock_digital_twin_service
+        mock_digital_twin_service.update_digital_twin.return_value = sample_digital_twin
+        
+        # Prepare update data
+        patient_id = sample_digital_twin["patient_id"]
+        update_data = {
+            "metadata": {
+                "care_provider": "Dr. Smith",
+                "last_reviewed": datetime.now().isoformat()
+            }
+        }
+        
+        # Make request
+        response = test_client.patch(
+            f"/api/v1/patients/{patient_id}/digital-twin",
+            json=update_data
+        )
+        
+        # Check response
+        assert response.status_code == status.HTTP_200_OK
+        mock_digital_twin_service.update_digital_twin.assert_called_once_with(
+            patient_id, update_data
+        )
+        
+    @patch("app.presentation.api.dependencies.get_digital_twin_service")
+    async def test_error_handling(
+        self, mock_get_service, test_client, mock_digital_twin_service
+    ):
+        """Test error handling in digital twin endpoints."""
+        # Setup mocks
+        mock_get_service.return_value = mock_digital_twin_service
+        mock_digital_twin_service.add_biometric_data.side_effect = ValueError("Invalid biometric data")
+        
+        # Prepare request data with invalid values
+        patient_id = "patient-123"
+        invalid_data = {
+            "biometric_type": "heart_rate",
+            "value": "invalid",  # Should be a number
+            "source": "wearable"
+        }
+        
+        # Make request
+        response = test_client.post(
+            f"/api/v1/patients/{patient_id}/digital-twin/biometrics",
+            json=invalid_data
+        )
+        
+        # Check response
+        assert response.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_422_UNPROCESSABLE_ENTITY)
