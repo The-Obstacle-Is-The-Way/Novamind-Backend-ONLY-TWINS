@@ -10,7 +10,7 @@ import json
 import pytest
 import uuid
 from datetime import datetime
-, from typing import Dict, Any, List
+from typing import Dict, Any, List
 
 # Test data
 TEST_USER = {

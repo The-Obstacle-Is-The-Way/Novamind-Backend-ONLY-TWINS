@@ -15,7 +15,7 @@ from typing import Dict, List, Any, Optional
 try:
     from fastapi import FastAPI, Depends, HTTPException, status
     from fastapi.security import OAuth2PasswordBearer
-    , from fastapi.testclient import TestClient
+    from fastapi.testclient import TestClient
     from app.presentation.api.v1.endpoints.patients import router , as patients_router
     from app.presentation.api.v1.middleware.logging_middleware import PHISanitizingMiddleware
 , except ImportError:

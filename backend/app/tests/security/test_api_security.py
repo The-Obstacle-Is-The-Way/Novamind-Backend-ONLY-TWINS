@@ -14,7 +14,7 @@ from unittest.mock import patch, MagicMock
 
 from fastapi import status, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
-, from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient
 
 # Removed direct app import
 from app.api.dependencies.auth import get_current_user # Corrected path, removed AuthHandler

@@ -14,14 +14,14 @@ import logging
 import pytest
 import uuid
 from datetime import date
-, from unittest.mock import patch, MagicMock, ANY
+from unittest.mock import patch, MagicMock, ANY
 
 from app.domain.entities.patient import Patient
-, from app.domain.value_objects.address import Address
+from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
 # from app.domain.value_objects.insurance import Insurance # Insurance VO removed or refactored
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
-, from app.infrastructure.security.encryption import EncryptionService
+from app.infrastructure.security.encryption import EncryptionService
 from app.core.utils.logging import get_logger
 
 

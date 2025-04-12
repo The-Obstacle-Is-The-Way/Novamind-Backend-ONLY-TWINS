@@ -1,271 +1,233 @@
 # -*- coding: utf-8 -*-
 """
-Enhanced unit tests for the HIPAA-compliant logging utility.
+Enhanced unit tests for the HIPAA-compliant logging utilities.
 
-This test suite provides comprehensive coverage for the logging module,
-focusing on HIPAA compliance, PHI protection, and proper audit trails.
+This test suite provides comprehensive coverage for the enhanced PHI detection
+and sanitization modules, focusing on HIPAA compliance and PHI protection.
 """
 
 import logging
-import os
-import json
-import tempfile
-import time
-import asyncio
 import pytest
-from unittest.mock import patch, MagicMock, mock_open, call
+from unittest.mock import patch, MagicMock
 
-from app.core.utils.logging import get_logger # Corrected import, removed HIPAACompliantLogger, audit_log
+from app.core.utils.enhanced_phi_detector import (
+    EnhancedPHIDetector, 
+    EnhancedPHISanitizer, 
+    EnhancedPHISecureLogger,
+    get_enhanced_phi_secure_logger
+)
+from app.core.utils.phi_sanitizer import PHIType
 
 
-@pytest.mark.db_required()
-class TestHIPAACompliantLogger:
-            """Comprehensive tests for the HIPAACompliantLogger class."""
-@pytest.fixture
-    def mock_settings(self):
-        """Create a mock settings object."""
-        with patch('app.core.utils.logging.settings') as mock_settings:
-            # Configure default settings
-        mock_settings.DEBUG = True
-        mock_settings.logging.LOG_TO_CONSOLE = True
-        mock_settings.logging.LOG_TO_FILE = True
-        mock_settings.logging.LOG_FILE_PATH = "test.log"
-        mock_settings.logging.ENABLE_AUDIT_LOGGING = True
-        mock_settings.logging.LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        yield mock_settings
-@pytest.fixture
-    def temp_log_file(self):
-            """Create a temporary log file."""
-            fd, path = tempfile.mkstemp()
-            try:
-            os.close(fd)
-            yield path
-            finally:
-            if os.path.exists(path):
-            os.unlink(path)
-    def test_logger_initialization(self, mock_settings):
-                """Test logger initialization with various configurations."""
-        # Test with default settings
-                logger = HIPAACompliantLogger("test_logger")
-                assert logger.logger.level  ==  logging.DEBUG
-                assert len(logger.logger.handlers) >= 1
+class TestEnhancedPHIDetector:
+    """Comprehensive tests for the EnhancedPHIDetector class."""
+    
+    def test_contains_phi_with_standard_patterns(self):
+        """Test PHI detection with standard patterns."""
+        # Test email detection
+        text_with_email = "Contact user@example.com for support"
+        assert EnhancedPHIDetector.contains_phi(text_with_email)
         
-        # Test with file logging disabled
-                mock_settings.logging.LOG_TO_FILE = False
-                logger = HIPAACompliantLogger("test_logger")
-                assert any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler) 
-                for h in logger.logger.handlers)
+        # Test SSN detection
+        text_with_ssn = "SSN: 123-45-6789"
+        assert EnhancedPHIDetector.contains_phi(text_with_ssn)
         
-        # Test with console logging disabled
-                mock_settings.logging.LOG_TO_FILE = True
-                mock_settings.logging.LOG_TO_CONSOLE = False
-                logger = HIPAACompliantLogger("test_logger")
-                assert any(isinstance(h, logging.FileHandler) for h in logger.logger.handlers)
-                assert not any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler) 
-                for h in logger.logger.handlers):
-    def test_get_formatter(self):
-                    """Test the formatter creation."""
-                    logger = HIPAACompliantLogger("test_logger")
-                    formatter = logger._get_formatter()
-                    assert isinstance(formatter, logging.Formatter)
-                    assert formatter._fmt  ==  '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    def test_mask_phi(self):
-                        """Test PHI masking in log messages."""
-                        logger = HIPAACompliantLogger("test_logger")
+        # Test phone detection
+        text_with_phone = "Call (555) 123-4567"
+        assert EnhancedPHIDetector.contains_phi(text_with_phone)
+    
+    def test_contains_phi_with_enhanced_patterns(self):
+        """Test PHI detection with enhanced patterns."""
+        # Test name detection with enhanced pattern
+        text_with_name = "Dr. John Smith is your new physician"
+        assert EnhancedPHIDetector.contains_phi(text_with_name)
         
-        # Test email masking
-                        email_msg = "Contact us at patient@example.com"
-                        masked_email = logger._mask_phi(email_msg)
-                        assert "patient@example.com" not in masked_email
+        # Test address detection with enhanced pattern
+        text_with_address = "Appointment at 123 Medical Boulevard"
+        assert EnhancedPHIDetector.contains_phi(text_with_address)
         
-        # Test SSN masking
-                        ssn_msg = "Patient SSN: 123-45-6789"
-                        masked_ssn = logger._mask_phi(ssn_msg)
-                        assert "123-45-6789" not in masked_ssn
+        # Test MRN detection with enhanced pattern
+        text_with_mrn = "Patient ID: ABC1234567"
+        assert EnhancedPHIDetector.contains_phi(text_with_mrn)
+    
+    def test_contains_phi_with_medical_context(self):
+        """Test PHI detection with medical context combined with potential identifiers."""
+        text_with_context = "Patient Johnson reported symptoms of dizziness"
+        assert EnhancedPHIDetector.contains_phi(text_with_context)
         
-        # Test phone masking
-                        phone_msg = "Call at (555) 123-4567"
-                        masked_phone = logger._mask_phi(phone_msg)
-                        assert "(555) 123-4567" not in masked_phone
-    def test_logging_methods(self, mock_settings, temp_log_file):
-                            """Test all logging level methods."""
-                            mock_settings.logging.LOG_FILE_PATH = temp_log_file
+        # Test with numbers in medical context
+        text_with_id = "Patient diagnosis 12345 confirmed"
+        assert EnhancedPHIDetector.contains_phi(text_with_id)
+    
+    def test_detect_phi_types(self):
+        """Test detection of specific PHI types with the enhanced detector."""
+        # Create test text with multiple PHI types
+        test_text = "Patient John Doe (SSN: 123-45-6789) can be reached at john.doe@example.com or (555) 123-4567"
         
-                            with patch.object(HIPAACompliantLogger, '_log') as mock_log:
-                            logger = HIPAACompliantLogger("test_logger")
-            
-            # Test debug method
-                            logger.debug("Debug message", {"key": "value"})
-                            mock_log.assert _called_with(logging.DEBUG, "Debug message", {"key": "value"})
-            
-            # Test info method
-                            logger.info("Info message", {"key": "value"})
-                            mock_log.assert _called_with(logging.INFO, "Info message", {"key": "value"})
-            
-            # Test warning method
-                            logger.warning("Warning message", {"key": "value"})
-                            mock_log.assert _called_with(logging.WARNING, "Warning message", {"key": "value"})
-            
-            # Test error method
-                            logger.error("Error message", {"key": "value"})
-                            mock_log.assert _called_with(logging.ERROR, "Error message", {"key": "value"})
-            
-            # Test critical method
-                            logger.critical("Critical message", {"key": "value"})
-                            mock_log.assert _called_with(logging.CRITICAL, "Critical message", {"key": "value"})
-    def test_create_audit_log(self):
-                                """Test audit log creation."""
-                                logger = HIPAACompliantLogger("test_logger")
+        # Detect PHI types
+        detected = EnhancedPHIDetector.detect_phi_types(test_text)
         
-        # Basic audit log
-                                audit_log = logger._create_audit_log(
-                                logging.INFO, 
-                                "Test message",
-                                {"user": "test_user"}
-                                )
+        # Check that all types were detected
+        phi_types = [phi_type for phi_type, _ in detected]
+        assert PHIType.SSN in phi_types
+        assert PHIType.EMAIL in phi_types
+        assert PHIType.PHONE in phi_types
+        assert PHIType.NAME in phi_types
         
-                                assert audit_log["level"] == "INFO"
-                                assert audit_log["message"] == "Test message"
-                                assert audit_log["source"] == "test_logger"
-                                assert "timestamp" in audit_log
-                                assert audit_log["extra"]["user"] == "test_user"
+        # Check that PHI values were correctly matched
+        phi_values = [value for _, value in detected]
+        assert "123-45-6789" in phi_values
+        assert "john.doe@example.com" in phi_values
+        assert "(555) 123-4567" in phi_values
+    
+    def test_no_phi_in_regular_text(self):
+        """Test that regular non-PHI text is not flagged."""
+        regular_text = "This is a standard message without any PHI"
+        assert not EnhancedPHIDetector.contains_phi(regular_text)
         
-        # Audit log with PHI
-                                phi_audit_log = logger._create_audit_log(
-                                logging.INFO,
-                                "Patient email: john@example.com",
-                                {"ssn": "123-45-6789"}
-                                )
+        # Technical text
+        tech_text = "Error code 404 occurred at module LoadBalance.function()"
+        assert not EnhancedPHIDetector.contains_phi(tech_text)
+
+
+class TestEnhancedPHISanitizer:
+    """Tests for the EnhancedPHISanitizer class."""
+    
+    def test_sanitize_text(self):
+        """Test sanitization of text containing PHI."""
+        # Create test text with PHI
+        text_with_phi = "Patient John Doe (SSN: 123-45-6789) can be reached at john.doe@example.com"
         
-                                assert "john@example.com" not in phi_audit_log["message"]
-                                assert "123-45-6789" not in phi_audit_log["extra"]["ssn"]
-    def test_store_audit_log(self, mock_settings, temp_log_file):
-                                    """Test audit log storage."""
-                                    mock_settings.logging.ENABLE_AUDIT_LOGGING = True
+        # Sanitize
+        sanitized = EnhancedPHISanitizer.sanitize_text(text_with_phi)
         
-        # Create a mock for _store_audit_log
-                                    with patch.object(HIPAACompliantLogger, '_store_audit_log') as mock_store:
-                                    logger = HIPAACompliantLogger("test_logger")
-            
-            # Create and store an audit log
-                                    audit_data = {
-                                    "timestamp": "2025-03-27T12:00:00",
-                                    "level": "INFO",
-                                    "message": "Test audit log",
-                                    "source": "test_logger"
-                                    }
-            
-                                    logger._store_audit_log(audit_data)
-                                    mock_store.assert _called_once_with(audit_data)
-    def test_log_method(self, mock_settings):
-                                        """Test the base _log method."""
-                                        with patch.object(HIPAACompliantLogger, '_create_audit_log') as mock_create_audit:
-                                        with patch.object(HIPAACompliantLogger, '_store_audit_log') as mock_store_audit:
-                                        logger = HIPAACompliantLogger("test_logger")
-                
-                # Mock the underlying logger
-                                        logger.logger = MagicMock()
-                
-                # Test _log method
-                                        logger._log(logging.INFO, "Test message", {"extra": "value"})
-                
-                # Verify audit log was created
-                                        mock_create_audit.assert _called_once_with(
-                                        logging.INFO, "Test message", {"extra": "value"}
-                                        )
-                
-                # Verify logger was called
-                                        logger.logger.log.assert _called_once()
-                
-                # Verify audit log was stored
-                                        mock_store_audit.assert _called_once()
-    def test_integration_with_file(self, mock_settings, temp_log_file):
-                                            """Test integration with file logging."""
-                                            mock_settings.logging.LOG_FILE_PATH = temp_log_file
-                                            mock_settings.logging.LOG_TO_FILE = True
-                                            mock_settings.logging.LOG_TO_CONSOLE = False
+        # Check PHI has been removed
+        assert "John Doe" not in sanitized
+        assert "123-45-6789" not in sanitized
+        assert "john.doe@example.com" not in sanitized
         
-                                            logger = HIPAACompliantLogger("test_logger")
+        # Check anonymized values were added
+        assert "ANONYMIZED_NAME" in sanitized or "ANONYMIZED" in sanitized
+        assert "000-00-0000" in sanitized or "ANONYMIZED" in sanitized
+    
+    def test_create_safe_log_message(self):
+        """Test creation of safe log messages."""
+        # Create log message with PHI
+        log_message = "User {} accessed records for patient {}"
+        user = "admin"
+        patient = "John Smith (MRN: 12345678)"
         
-        # Log a test message
-                                            test_message = "Test message for file logging"
-                                            logger.info(test_message)
+        # Create safe log message
+        safe_message = EnhancedPHISanitizer.create_safe_log_message(
+            log_message, user, patient
+        )
         
-        # Verify the message was written to the file
-                                            with open(temp_log_file, 'r') as f:
-                                            log_content = f.read()
-                                            assert test_message in log_content
-class TestAuditLogDecorator:
-            """Tests for the audit_log decorator."""
-@pytest.fixture
+        # Check PHI has been sanitized
+        assert "John Smith" not in safe_message
+        assert "12345678" not in safe_message
+    
+    def test_sanitize_structured_data(self):
+        """Test sanitization of structured data."""
+        # Create structured data with PHI
+        data = {
+            "patient": {
+                "name": "John Doe",
+                "ssn": "123-45-6789",
+                "contact": {
+                    "email": "john.doe@example.com",
+                    "phone": "(555) 123-4567"
+                },
+                "appointment_date": "2025-06-15"  # Future date should be preserved
+            },
+            "doctor": "Dr. Jane Smith",
+            "notes": "Patient reported symptoms"
+        }
+        
+        # Sanitize data
+        sanitized = EnhancedPHISanitizer.sanitize_structured_data(data)
+        
+        # Check PHI was sanitized
+        assert sanitized["patient"]["name"] != "John Doe"
+        assert sanitized["patient"]["ssn"] != "123-45-6789"
+        assert sanitized["patient"]["contact"]["email"] != "john.doe@example.com"
+        assert sanitized["doctor"] != "Dr. Jane Smith"
+        
+        # Check appointment date was preserved
+        assert sanitized["patient"]["appointment_date"] == "2025-06-15"
+
+
+class TestEnhancedPHISecureLogger:
+    """Tests for the EnhancedPHISecureLogger class."""
+    
+    @pytest.fixture
     def mock_logger(self):
-        """Create a mock logger."""
-        mock = MagicMock(spec=HIPAACompliantLogger)
-        with patch('app.core.utils.logging.HIPAACompliantLogger', return_value=mock)))
-        yield mock
-    def test_sync_function_success(self, mock_logger):
-            """Test the decorator on a synchronous function that succeeds."""
-        # Define a sync function with the decorator
-        @audit_log("test_event")
-    def test_function(a, b):    return a + b
-        
-        # Call the decorated function
-                result = test_function(2, 3)
-        
-        # Verify the result
-                assert result  ==  5
-        
-        # Verify logging
-                mock_logger.info.assert _called_once()
-                assert "test_event completed successfully" in mock_logger.info.call_args[0][0]
-    def test_sync_function_error(self, mock_logger):
-                    """Test the decorator on a synchronous function that fails."""
-        # Define a sync function that raises an exception
-        @audit_log("test_event")
-    def failing_function():
-                        raise ValueError("Test error")
-        
-        # Call the decorated function and expect an exception
-                        with pytest.raises(ValueError):
-                        failing_function()
-        
-        # Verify error logging
-                        mock_logger.error.assert _called_once()
-                        assert "test_event failed" in mock_logger.error.call_args[0][0]
-                        assert "Test error" in str(mock_logger.error.call_args[0][1])
+        """Create a mock underlying logger."""
+        return MagicMock()
     
-    @pytest.mark.asyncio()
-                        async def test_async_function_success(self, mock_logger):
-                        """Test the decorator on an asynchronous function that succeeds."""
-        # Define an async function with the decorator
-        @audit_log("test_async_event")
-                        async def test_async_function(a, b):
-                        await asyncio.sleep(0.01)  # Simulate async work    return a + b
-        
-        # Call the decorated async function
-                        result = await test_async_function(2, 3)
-        
-        # Verify the result
-                        assert result  ==  5
-        
-        # Verify logging
-                        mock_logger.info.assert _called_once()
-                        assert "test_async_event completed successfully" in mock_logger.info.call_args[0][0]
+    def test_secure_logger_initialization(self):
+        """Test initialization of secure logger."""
+        logger = EnhancedPHISecureLogger("test_logger")
+        assert isinstance(logger.logger, logging.Logger)
+        assert logger.logger.name == "test_logger"
     
-    @pytest.mark.asyncio()
-                        async def test_async_function_error(self, mock_logger):
-                        """Test the decorator on an asynchronous function that fails."""
-        # Define an async function that raises an exception
-        @audit_log("test_async_event")
-                        async def failing_async_function():
-                        await asyncio.sleep(0.01)  # Simulate async work
-                        raise ValueError("Async test error")
+    def test_debug_log_sanitization(self, mock_logger):
+        """Test sanitization of debug logs."""
+        # Setup
+        secure_logger = EnhancedPHISecureLogger("test")
+        secure_logger.logger = mock_logger
         
-        # Call the decorated async function and expect an exception
-                        with pytest.raises(ValueError):
-                        await failing_async_function()
+        # Log with PHI
+        secure_logger.debug("Debug log with SSN: 123-45-6789")
         
-        # Verify error logging
-                        mock_logger.error.assert _called_once()
-                        assert "test_async_event failed" in mock_logger.error.call_args[0][0]
-                        assert "Async test error" in str(mock_logger.error.call_args[0][1])
+        # Check sanitization
+        call_args = mock_logger.debug.call_args[0][0]
+        assert "123-45-6789" not in call_args
+    
+    def test_info_log_sanitization(self, mock_logger):
+        """Test sanitization of info logs."""
+        # Setup
+        secure_logger = EnhancedPHISecureLogger("test")
+        secure_logger.logger = mock_logger
+        
+        # Log with PHI
+        secure_logger.info("Info log with email: user@example.com")
+        
+        # Check sanitization
+        call_args = mock_logger.info.call_args[0][0]
+        assert "user@example.com" not in call_args
+    
+    def test_error_log_sanitization(self, mock_logger):
+        """Test sanitization of error logs."""
+        # Setup
+        secure_logger = EnhancedPHISecureLogger("test")
+        secure_logger.logger = mock_logger
+        
+        # Log with PHI
+        secure_logger.error("Error log with phone: (555) 123-4567")
+        
+        # Check sanitization
+        call_args = mock_logger.error.call_args[0][0]
+        assert "(555) 123-4567" not in call_args
+    
+    def test_exception_log_sanitization(self, mock_logger):
+        """Test sanitization of exception logs."""
+        # Setup
+        secure_logger = EnhancedPHISecureLogger("test")
+        secure_logger.logger = mock_logger
+        
+        # Log with PHI
+        secure_logger.exception("Exception with patient name: John Smith")
+        
+        # Check sanitization
+        call_args = mock_logger.exception.call_args[0][0]
+        assert "John Smith" not in call_args
+        assert mock_logger.exception.call_args[1].get('exc_info') is True
+
+
+def test_get_enhanced_phi_secure_logger():
+    """Test getting an enhanced PHI secure logger."""
+    logger = get_enhanced_phi_secure_logger("test_logger")
+    
+    # Verify it's the right type
+    assert isinstance(logger, EnhancedPHISecureLogger)
+    assert logger.logger.name == "test_logger"

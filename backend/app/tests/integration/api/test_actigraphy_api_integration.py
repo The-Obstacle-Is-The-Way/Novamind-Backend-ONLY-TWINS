@@ -15,7 +15,7 @@ import pytest
 from fastapi.testclient import TestClient # Keep for type hinting
 from unittest.mock import patch
 
-, from app.core.services.ml.pat.mock import MockPATService
+from app.core.services.ml.pat.mock import MockPATService
 from app.presentation.api.dependencies import get_pat_service # Corrected import path
 # Removed direct app import
 

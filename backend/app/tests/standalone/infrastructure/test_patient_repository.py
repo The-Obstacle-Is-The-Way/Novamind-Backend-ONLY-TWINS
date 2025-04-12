@@ -7,10 +7,10 @@ to ensure proper database operations without requiring a real database.
 import pytest
 from uuid import uuid4, UUID
 from datetime import datetime
-, from typing import List, Optional
+from typing import List, Optional
 
 from app.domain.entities.patient import Patient
-, from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
+from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
 

@@ -7,7 +7,7 @@ These tests verify the behavior of the Patient model without any external depend
 import pytest
 from datetime import date
 
-, from backend.app.domain.models.patient import Patient
+from backend.app.domain.models.patient import Patient
 from backend.app.domain.value_objects import PatientId, MedicalRecordNumber
 
 

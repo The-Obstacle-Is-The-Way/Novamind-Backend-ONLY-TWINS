@@ -11,7 +11,7 @@ import logging
 import re
 import unittest
 from collections.abc import Callable
-, from enum import Enum
+from enum import Enum
 from typing import Any
 
 # ============= PHI Sanitizer Implementation =============

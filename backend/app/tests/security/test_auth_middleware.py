@@ -2,7 +2,7 @@
 import pytest
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.testclient import TestClient
-, from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.auth_middleware import (
     JWTAuthMiddleware,   
@@ -13,7 +13,7 @@ from app.infrastructure.security.auth_middleware import (
     get_current_user
 )
 from app.infrastructure.security.jwt_service import JWTService
-, from app.domain.exceptions import AuthenticationError, TokenExpiredError
+from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
 
 @pytest.mark.db_required()

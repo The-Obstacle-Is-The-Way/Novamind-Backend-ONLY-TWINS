@@ -28,7 +28,7 @@ from jose import jwt
 # Import application code
 try:
     from app.core.config import settings
-    , from app.domain.exceptions import (
+    from app.domain.exceptions import (
         AuthenticationError,   
         AuthorizationError,  
         PHIAccessError,  

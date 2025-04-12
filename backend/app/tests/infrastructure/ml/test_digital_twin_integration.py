@@ -11,10 +11,10 @@ import os
 import json
 from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime
-, from uuid import UUID, uuid4
+from uuid import UUID, uuid4
 
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
-, from app.domain.exceptions import ModelInferenceError, ValidationError
+from app.domain.exceptions import ModelInferenceError, ValidationError
 
 
 @pytest.fixture

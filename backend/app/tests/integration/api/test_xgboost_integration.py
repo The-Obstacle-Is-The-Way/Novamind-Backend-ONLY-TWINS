@@ -11,13 +11,13 @@ import pytest
 # Remove direct FastAPI/TestClient imports if no longer needed at module level
 # from fastapi import FastAPI
 # from fastapi.testclient import TestClient
-, from unittest.mock import patch
+from unittest.mock import patch
 # Import TestClient for type hinting the fixture
 from fastapi.testclient import TestClient
 
 # Router import remains the same
 from app.api.routes.xgboost import router
-, from app.core.services.ml.xgboost import (
+from app.core.services.ml.xgboost import (
     get_xgboost_service,  
     MockXGBoostService,  
     PredictionType,  

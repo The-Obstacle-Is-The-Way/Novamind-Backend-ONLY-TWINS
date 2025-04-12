@@ -8,9 +8,9 @@ making it completely independent of the rest of the application.
 
 import unittest
 from datetime import date
-, from enum import Enum
+from enum import Enum
 from typing import Any
-, from uuid import uuid4
+from uuid import uuid4
 
 # ============= Patient Entity Implementation =============
 

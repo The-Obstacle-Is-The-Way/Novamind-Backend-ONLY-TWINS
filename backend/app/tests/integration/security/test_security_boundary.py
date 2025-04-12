@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.jwt.token_handler import JWTHandler
-, from app.infrastructure.security.password.password_handler import PasswordHandler
+from app.infrastructure.security.password.password_handler import PasswordHandler
 from app.infrastructure.security.rbac.role_manager import RoleBasedAccessControl # Removed Role, Permission
 
 

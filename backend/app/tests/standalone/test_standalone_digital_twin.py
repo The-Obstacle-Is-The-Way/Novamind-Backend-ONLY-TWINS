@@ -9,7 +9,7 @@ in a single file, making it completely independent of the rest of the applicatio
 import unittest
 from datetime import datetime, timedelta
 from enum import Enum
-, from typing import Any
+from typing import Any
 from uuid import uuid4
 
 # ================= Digital Twin Enums =================

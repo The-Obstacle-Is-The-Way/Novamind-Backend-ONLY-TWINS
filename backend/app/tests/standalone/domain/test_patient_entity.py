@@ -7,11 +7,11 @@ without any external dependencies.
 
 import pytest
 from unittest.mock import Mock
-, from datetime import date
+from datetime import date
 
 # Import the domain entity class
 from app.domain.entities.patient import Patient
-, from app.domain.value_objects.patient_id import PatientId
+from app.domain.value_objects.patient_id import PatientId
 
 
 def test_patient_creation_with_valid_data_succeeds():

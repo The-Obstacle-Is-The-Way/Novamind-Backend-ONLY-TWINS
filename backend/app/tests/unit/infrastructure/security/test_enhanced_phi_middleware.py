@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-, from starlette.testclient import TestClient
+from starlette.testclient import TestClient
 
 from app.infrastructure.security.enhanced_phi_middleware import (
     EnhancedPHIMiddleware,  

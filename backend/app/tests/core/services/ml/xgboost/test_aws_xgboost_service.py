@@ -11,7 +11,7 @@ import uuid
 import pytest
 from unittest.mock import patch, MagicMock, ANY
 from datetime import datetime
-, from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError
 
 from app.core.services.ml.xgboost.aws import AWSXGBoostService
 # Import Enums from the correct schema location

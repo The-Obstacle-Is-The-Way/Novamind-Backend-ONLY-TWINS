@@ -13,7 +13,7 @@ from datetime import datetime, UTC, timedelta
 from typing import Dict, List, Optional
 from uuid import UUID
 
-, from app.domain.entities.digital_twin import (
+from app.domain.entities.digital_twin import (
     BrainRegion,   ClinicalSignificance,   Neurotransmitter,  
     DigitalTwinState
 )

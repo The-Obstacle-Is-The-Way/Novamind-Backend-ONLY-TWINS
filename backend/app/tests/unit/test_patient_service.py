@@ -5,12 +5,12 @@ These tests require Python packages but mock database access.
 They test service layer functionality in isolation from actual database.
 """
 from datetime import datetime
-, from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from app.application.services.patient_service import PatientService
-, from app.domain.entities.patient import Patient
+from app.domain.entities.patient import Patient
 from app.domain.exceptions.patient_exceptions import PatientNotFoundError
 
 

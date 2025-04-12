@@ -20,7 +20,7 @@ from app.core.services.ml.pat.exceptions import (
     ValidationError  
 )
 from app.core.services.ml.pat.interface import PATInterface
-, from app.core.services.ml.pat.mock import MockPATService # Corrected import
+from app.core.services.ml.pat.mock import MockPATService # Corrected import
 @pytest.fixture
 def mock_pat() -> MockPATService:
     """Create a MockPAT instance."""    return MockPATService()

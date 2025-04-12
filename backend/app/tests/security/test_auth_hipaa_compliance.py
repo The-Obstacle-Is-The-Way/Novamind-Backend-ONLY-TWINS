@@ -16,7 +16,7 @@ import json
 # Import JWT service or mock it if not available
 try:
     from app.infrastructure.security.jwt_service import JWTService
-    , from app.infrastructure.security.auth_middleware import AuthMiddleware
+    from app.infrastructure.security.auth_middleware import AuthMiddleware
     from app.infrastructure.security.rbac.role_manager import RoleManager
 , except ImportError:
     # Mock classes for testing auth functionality

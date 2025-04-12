@@ -15,10 +15,10 @@ from unittest.mock import MagicMock, patch, AsyncMock
 import starlette.requests
 from fastapi import FastAPI, Request, Response
 from starlette.datastructures import Headers
-, from starlette.types import Scope
+from starlette.types import Scope
 
 from app.core.utils.validation import PHIDetector
-, from app.infrastructure.security.phi_middleware import PHIMiddleware, add_phi_middleware
+from app.infrastructure.security.phi_middleware import PHIMiddleware, add_phi_middleware
 
 
 @pytest.mark.db_required()

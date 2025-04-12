@@ -3,7 +3,7 @@ from unittest.mock import patch
 , import pytest
 from fastapi import HTTPException
 
-, from app.core.security.encryption import EncryptionService
+from app.core.security.encryption import EncryptionService
 from app.tests.security.base_test import BaseSecurityTest
 
 , class TestDatabaseSecurity(BaseSecurityTest):

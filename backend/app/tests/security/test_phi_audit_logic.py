@@ -16,7 +16,7 @@ import shutil
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 
-, from scripts.run_hipaa_phi_audit import PHIAuditor, PHIAuditResult
+from scripts.run_hipaa_phi_audit import PHIAuditor, PHIAuditResult
 
 
 @pytest.mark.db_required()

@@ -7,7 +7,7 @@ without requiring external dependencies.
 
 import pytest
 from datetime import datetime
-, from unittest.mock import MagicMock
+from unittest.mock import MagicMock
 
 from app.core.services.ml.pat.exceptions import (
     ValidationError,  

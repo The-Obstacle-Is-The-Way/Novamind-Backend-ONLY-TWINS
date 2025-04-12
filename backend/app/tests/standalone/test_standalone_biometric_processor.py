@@ -8,9 +8,9 @@ in a single file, making it completely independent of the rest of the applicatio
 
 import unittest
 from collections.abc import Callable
-, from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 from enum import Enum
-, from typing import Any
+from typing import Any
 from uuid import uuid4
 
 # ============= Biometric Event Processor Implementation =============

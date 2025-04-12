@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime
 
-, from app.domain.entities.analytics import AnalyticsEvent
+from app.domain.entities.analytics import AnalyticsEvent
 from app.application.use_cases.analytics.process_analytics_event import ProcessAnalyticsEventUseCase
 
 

@@ -12,7 +12,7 @@ from datetime import datetime, UTC, UTC, timedelta, timezone
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.jwt_service import JWTService
-, from app.core.config import Settings
+from app.core.config import Settings
 
 
 @pytest.mark.db_required()

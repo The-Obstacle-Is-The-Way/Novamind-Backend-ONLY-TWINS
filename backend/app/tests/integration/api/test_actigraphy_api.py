@@ -21,7 +21,7 @@ from app.main import create_application
 # Import necessary components for testing actigraphy API
 from app.api.routes.actigraphy import get_pat_service, router as actigraphy_router
 from app.core.services.ml.pat.mock import MockPATService
-, from app.presentation.api.dependencies import get_pat_service
+from app.presentation.api.dependencies import get_pat_service
 from app.api.schemas.actigraphy import (
     AnalysisType,  
     DeviceInfo,  

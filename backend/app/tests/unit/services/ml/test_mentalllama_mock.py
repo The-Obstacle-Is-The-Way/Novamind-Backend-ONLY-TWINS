@@ -10,7 +10,7 @@ import pytest
 from typing import Dict, Any
 
 from app.core.exceptions import InvalidConfigurationError
-, from app.core.services.ml.providers.mock import MockMentaLLaMA
+from app.core.services.ml.providers.mock import MockMentaLLaMA
 
 
 @pytest.fixture

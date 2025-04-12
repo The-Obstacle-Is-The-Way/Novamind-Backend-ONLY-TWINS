@@ -16,11 +16,11 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.testclient import TestClient
 
-, from app.api.dependencies.auth import get_current_user
+from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.ml import get_pat_service
-, from app.api.routes.actigraphy import router as actigraphy_router
+from app.api.routes.actigraphy import router as actigraphy_router
 from app.domain.entities.user import User
-, from app.core.services.ml.pat.mock import MockPATService
+from app.core.services.ml.pat.mock import MockPATService
 
 
 @pytest.fixture

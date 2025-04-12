@@ -9,9 +9,9 @@ import pytest
 import json
 from fastapi.testclient import TestClient
 
-, from backend.app.main import app
+from backend.app.main import app
 from backend.app.infrastructure.database.models import PatientModel
-, from backend.app.infrastructure.database.session import get_session
+from backend.app.infrastructure.database.session import get_session
 
 
 @pytest.fixture

@@ -15,9 +15,9 @@ from typing import Dict, List, Any, Optional
 # Import database components or mock them if not available
 try:
     from app.infrastructure.persistence.sqlalchemy.config.database import Database
-    , from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
+    from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
     from app.infrastructure.persistence.sqlalchemy.unit_of_work import UnitOfWork
-    , from app.domain.entities.patient import Patient
+    from app.domain.entities.patient import Patient
     from app.infrastructure.security.encryption import encrypt_phi, decrypt_phi
 except ImportError:
     # Mock classes for testing database PHI protection

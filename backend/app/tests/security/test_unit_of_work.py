@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import MagicMock, patch, call
 from sqlalchemy.exc import SQLAlchemyError
 
-, from app.infrastructure.persistence.sqlalchemy.unit_of_work import SQLAlchemyUnitOfWork
+from app.infrastructure.persistence.sqlalchemy.unit_of_work import SQLAlchemyUnitOfWork
 from app.domain.exceptions import RepositoryError # Changed from TransactionError
 
 

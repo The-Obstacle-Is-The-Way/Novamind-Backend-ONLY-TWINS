@@ -9,13 +9,13 @@ import json
 import logging
 import uuid
 from datetime import datetime
-, from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import boto3
 import pytest
 from botocore.exceptions import ClientError
 
-, from app.core.services.ml.pat.aws import AWSPATService
+from app.core.services.ml.pat.aws import AWSPATService
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,  
     AuthorizationError,  

@@ -8,7 +8,7 @@ verifying both success paths and error handling.
 import logging
 import pytest
 from datetime import datetime
-, from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,  

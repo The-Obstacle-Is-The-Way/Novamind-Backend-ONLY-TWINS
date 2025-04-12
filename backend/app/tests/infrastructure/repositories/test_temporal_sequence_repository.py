@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
-, from app.domain.entities.temporal_sequence import TemporalSequence
+from app.domain.entities.temporal_sequence import TemporalSequence
 from app.infrastructure.models.temporal_sequence_model import (
     TemporalSequenceModel,  
     TemporalDataPointModel

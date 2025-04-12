@@ -9,7 +9,7 @@ edge cases appropriately.
 import pytest
 from unittest.mock import MagicMock
 
-, from app.core.services.ml.xgboost.mock import MockXGBoostService
+from app.core.services.ml.xgboost.mock import MockXGBoostService
 from app.core.services.ml.xgboost.exceptions import (
     ValidationError,   DataPrivacyError,   ResourceNotFoundError,  
     ModelNotFoundError

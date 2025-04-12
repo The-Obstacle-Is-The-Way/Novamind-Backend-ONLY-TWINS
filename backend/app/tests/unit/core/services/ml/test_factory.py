@@ -11,9 +11,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.core.exceptions import InvalidConfigurationError
-, from app.core.services.ml.factory import MLServiceFactory
+from app.core.services.ml.factory import MLServiceFactory
 from app.core.services.ml.mentalllama import MentaLLaMA
-, from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
+from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
 from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
 
 

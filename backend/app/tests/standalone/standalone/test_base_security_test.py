@@ -7,7 +7,7 @@ in a single file to validate that the test infrastructure is working correctly.
 """
 import unittest
 from enum import Enum
-, from typing import Any
+from typing import Any
 from unittest.mock import MagicMock
 
 

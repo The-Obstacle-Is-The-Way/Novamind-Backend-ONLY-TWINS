@@ -13,14 +13,14 @@ import asyncio
 import logging
 import uuid
 from datetime import date
-, from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional
 from io import StringIO
 
-, from app.domain.entities.patient import Patient
+from app.domain.entities.patient import Patient
 from app.domain.value_objects.address import Address
-, from app.domain.value_objects.emergency_contact import EmergencyContact
+from app.domain.value_objects.emergency_contact import EmergencyContact
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
-, from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
 from app.core.utils.phi_sanitizer import PHIDetector, PHISanitizer
 # Removed incorrect import
 # Import the correct function for getting a sanitized logger

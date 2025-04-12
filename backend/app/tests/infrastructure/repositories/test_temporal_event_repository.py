@@ -9,9 +9,9 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
-, from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
+from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
 from app.infrastructure.models.temporal_sequence_model import EventModel
-, from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
+from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
 @pytest.fixture
 def mock_session():
                 """Create a mock SQLAlchemy session for testing."""

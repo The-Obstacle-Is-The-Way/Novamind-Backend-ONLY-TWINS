@@ -3,7 +3,7 @@ Tests for the MockAsyncSession fixture.
 """
 import pytest
 from sqlalchemy import select
-, from uuid import uuid4
+from uuid import uuid4
 
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 # from app.domain.entities.base import BaseEntity # BaseEntity does not exist

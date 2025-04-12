@@ -12,7 +12,7 @@ import asyncio
 from datetime import datetime, UTC, UTC
 
 from app.domain.entities.analytics import AnalyticsEvent
-, from app.application.use_cases.analytics.batch_process_analytics import BatchProcessAnalyticsUseCase
+from app.application.use_cases.analytics.batch_process_analytics import BatchProcessAnalyticsUseCase
 from app.application.use_cases.analytics.process_analytics_event import ProcessAnalyticsEventUseCase
 
 

@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime, UTC, UTC, timedelta
 
 from app.domain.entities.analytics import AnalyticsAggregate
-, from app.application.use_cases.analytics.retrieve_aggregated_analytics import RetrieveAggregatedAnalyticsUseCase
+from app.application.use_cases.analytics.retrieve_aggregated_analytics import RetrieveAggregatedAnalyticsUseCase
 
 
 @pytest.fixture

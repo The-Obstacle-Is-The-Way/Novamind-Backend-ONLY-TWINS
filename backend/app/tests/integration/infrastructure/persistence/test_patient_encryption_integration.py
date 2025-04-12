@@ -9,15 +9,15 @@ the database and decrypted when retrieved, according to HIPAA requirements.
 import uuid
 import pytest
 from datetime import date
-, from sqlalchemy import text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-, from app.domain.entities.patient import Patient
+from app.domain.entities.patient import Patient
 from app.domain.value_objects.address import Address
-, from app.domain.value_objects.emergency_contact import EmergencyContact
+from app.domain.value_objects.emergency_contact import EmergencyContact
 # Removed import of non-existent Insurance value object
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
-, from app.infrastructure.security.encryption import EncryptionService
+from app.infrastructure.security.encryption import EncryptionService
 
 
 @pytest.mark.db_required()

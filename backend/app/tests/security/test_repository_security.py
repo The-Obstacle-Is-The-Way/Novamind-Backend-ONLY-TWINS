@@ -15,7 +15,7 @@ import uuid
 from unittest.mock import patch, MagicMock, ANY
 
 from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
-, from app.infrastructure.security.encryption_service import EncryptionService
+from app.infrastructure.security.encryption_service import EncryptionService
 from app.domain.entities.patient import Patient
 
 

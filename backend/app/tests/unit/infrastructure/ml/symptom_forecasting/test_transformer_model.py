@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel
-, from app.core.interfaces.ml.base_model import BaseMLModel
+from app.core.interfaces.ml.base_model import BaseMLModel
 
 
 class TestTransformerTimeSeriesModel:

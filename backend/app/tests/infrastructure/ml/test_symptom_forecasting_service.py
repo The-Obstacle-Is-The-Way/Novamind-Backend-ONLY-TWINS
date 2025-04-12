@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.symptom_forecasting.model_service import SymptomForecastingService
-, from app.domain.exceptions import ModelInferenceError, ValidationError
+from app.domain.exceptions import ModelInferenceError, ValidationError
 
 
 @pytest.fixture

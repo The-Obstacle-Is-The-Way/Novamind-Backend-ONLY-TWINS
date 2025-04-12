@@ -6,10 +6,10 @@ from uuid import UUID, uuid4
 from typing import List, Dict, Any, Optional
 from fastapi import HTTPException
 
-, from app.core.security.authentication import authenticate_user, get_current_user
+from app.core.security.authentication import authenticate_user, get_current_user
 from app.core.security.rbac import RBACMiddleware, check_permission
 from app.domain.entities.user import User
-, from app.domain.enums.role import Role
+from app.domain.enums.role import Role
 from app.tests.fixtures.user_fixtures import test_user_id, test_roles
 
 
