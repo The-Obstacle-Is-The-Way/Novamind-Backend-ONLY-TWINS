@@ -21,7 +21,8 @@ client = TestClient(app)
 
 @pytest.fixture
 def mock_digital_twin_service(mocker: MockerFixture):
-    """Create a mock digital twin service."""
+
+            """Create a mock digital twin service."""
     service_mock = AsyncMock()
     mocker.patch(
         "app.presentation.api.dependencies.get_digital_twin_service",
@@ -32,7 +33,8 @@ def mock_digital_twin_service(mocker: MockerFixture):
 
 @pytest.fixture
 def sample_twin_data():
-    """Create sample twin data for testing."""
+
+            """Create sample twin data for testing."""
     now = datetime.now()
     return {
         "id": "12345678-1234-5678-1234-567812345678",
@@ -70,7 +72,8 @@ def sample_twin_data():
 
 @pytest.fixture
 def sample_biometric_data():
-    """Create sample biometric data for testing."""
+
+            """Create sample biometric data for testing."""
     return {
         "biometric_type": "heart_rate",
         "value": 72.5,
@@ -82,7 +85,8 @@ def sample_biometric_data():
 
 @pytest.fixture
 def sample_abnormal_values():
-    """Create sample abnormal values for testing."""
+
+            """Create sample abnormal values for testing."""
     now = datetime.now()
     return {
         "heart_rate": [
@@ -98,7 +102,8 @@ def sample_abnormal_values():
 
 @pytest.fixture
 def sample_critical_values():
-    """Create sample critical values for testing."""
+
+            """Create sample critical values for testing."""
     now = datetime.now()
     return {
         "heart_rate": [
@@ -114,7 +119,8 @@ def sample_critical_values():
 
 @pytest.fixture
 def sample_latest_biometrics():
-    """Create sample latest biometrics for testing."""
+
+            """Create sample latest biometrics for testing."""
     now = datetime.now()
     return {
         "heart_rate": {
@@ -129,10 +135,7 @@ def sample_latest_biometrics():
             "source": "clinical",
             "metadata": {"position": "sitting"},
         },
-    }
-
-
-class TestDigitalTwinEndpoints:
+    }class TestDigitalTwinEndpoints:
     """Tests for the digital twin endpoints."""
 
     def test_create_digital_twin(
@@ -158,7 +161,9 @@ class TestDigitalTwinEndpoints:
         )
 
     def test_create_digital_twin_error(self, mock_digital_twin_service):
-        """Test error handling when creating a digital twin fails."""
+
+
+                    """Test error handling when creating a digital twin fails."""
         # Configure mock
         mock_digital_twin_service.create_digital_twin.return_value = None
 
@@ -192,7 +197,9 @@ class TestDigitalTwinEndpoints:
         )
 
     def test_get_digital_twin_not_found(self, mock_digital_twin_service):
-        """Test handling when a digital twin is not found."""
+
+
+                    """Test handling when a digital twin is not found."""
         # Configure mock
         mock_digital_twin_service.get_digital_twin.return_value = None
 
@@ -279,7 +286,9 @@ class TestDigitalTwinEndpoints:
         assert "Failed to add biometric data" in response.json()["detail"]
 
     def test_get_biometric_history(self, mock_digital_twin_service):
-        """Test getting biometric history."""
+
+
+                    """Test getting biometric history."""
         # Sample history data
         history_data = [
             {
@@ -334,10 +343,10 @@ class TestDigitalTwinEndpoints:
         mock_digital_twin_service.get_biometric_history.return_value = history_data
 
         # Make request with query parameters
-        start_time = (datetime.now() - timedelta(days=1)).isoformat()
-        end_time = datetime.now().isoformat()
+        start_time = (datetime.now() - timedelta(days=1)).isoformat(,
+        end_time= datetime.now().isoformat(,
 
-        response = client.get(
+        response= client.get(
             f"/api/v1/digital-twins/patient/patient-123/biometrics/heart_rate",
             params={"start_time": start_time, "end_time": end_time},
         )
@@ -348,8 +357,8 @@ class TestDigitalTwinEndpoints:
         assert response.json()["count"] == 1
 
         # Verify service called correctly
-        mock_digital_twin_service.get_biometric_history.assert_called_once()
-        call_args = mock_digital_twin_service.get_biometric_history.call_args[1]
+        mock_digital_twin_service.get_biometric_history.assert_called_once(,
+        call_args= mock_digital_twin_service.get_biometric_history.call_args[1]
         assert call_args["patient_id"] == "patient-123"
         assert call_args["biometric_type"] == "heart_rate"
         # We don't check the exact values because the ISO format may have
@@ -358,7 +367,9 @@ class TestDigitalTwinEndpoints:
         assert call_args["end_time"] is not None
 
     def test_get_biometric_history_empty(self, mock_digital_twin_service):
-        """Test getting empty biometric history."""
+
+
+                    """Test getting empty biometric history."""
         # Configure mock
         mock_digital_twin_service.get_biometric_history.return_value = []
 
@@ -395,7 +406,9 @@ class TestDigitalTwinEndpoints:
             "patient-123")
 
     def test_get_abnormal_values_empty(self, mock_digital_twin_service):
-        """Test getting empty abnormal values."""
+
+
+                    """Test getting empty abnormal values."""
         # Configure mock
         mock_digital_twin_service.detect_abnormal_values.return_value = {}
 
@@ -431,7 +444,9 @@ class TestDigitalTwinEndpoints:
             "patient-123")
 
     def test_get_critical_values_empty(self, mock_digital_twin_service):
-        """Test getting empty critical values."""
+
+
+                    """Test getting empty critical values."""
         # Configure mock
         mock_digital_twin_service.detect_critical_values.return_value = {}
 

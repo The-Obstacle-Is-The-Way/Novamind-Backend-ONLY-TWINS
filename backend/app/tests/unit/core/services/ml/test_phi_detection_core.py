@@ -12,20 +12,18 @@ from unittest.mock import MagicMock, patch
 import pytest
 from botocore.exceptions import ClientError
 
-from app.core.exceptions import
+from app.core.exceptions import (
 InvalidConfigurationError,
 InvalidRequestError,
 ServiceUnavailableError
-()
+)
 
 
-@pytest.mark.db_required()  # Assuming db_required is a valid marker, otherwise remove
-class TestAWSComprehendMedicalPHIDetection:
-    """Test suite for AWS Comprehend Medical PHI detection service."""
+@pytest.mark.db_required()  # Assuming db_required is a valid marker, otherwise removeclass TestAWSComprehendMedicalPHIDetection:
+    """Test suite for AWS Comprehend Medical PHI detection service."""@pytest.fixture
+def mock_comprehend_response_with_phi(self):
 
-    @pytest.fixture
-    def mock_comprehend_response_with_phi(self):
-        """Create a mock AWS Comprehend Medical response with PHI."""
+                """Create a mock AWS Comprehend Medical response with PHI."""
 
         return {
             "Entities": [
@@ -48,21 +46,19 @@ class TestAWSComprehendMedicalPHIDetection:
             ],
             "UnmappedAttributes": [],
             "ModelVersion": "0.1.0"
-        }
+        }@pytest.fixture
+def mock_comprehend_response_without_phi(self):
 
-    @pytest.fixture
-    def mock_comprehend_response_without_phi(self):
-        """Create a mock AWS Comprehend Medical response without PHI."""
+                """Create a mock AWS Comprehend Medical response without PHI."""
 
         return {
             "Entities": [],
             "UnmappedAttributes": [],
             "ModelVersion": "0.1.0"
-        }
+        }@pytest.fixture
+def phi_detection_service(self):
 
-    @pytest.fixture
-    def phi_detection_service(self):
-        """Create a PHI detection service instance with mocked dependencies."""
+                """Create a PHI detection service instance with mocked dependencies."""
         service = AWSComprehendMedicalPHIDetection()
         with patch("boto3.client") as mock_boto3:
             mock_client = MagicMock()
@@ -73,7 +69,9 @@ class TestAWSComprehendMedicalPHIDetection:
             return service
 
             def test_initialization(self):
-        """Test service initialization with valid configuration."""
+
+
+                            """Test service initialization with valid configuration."""
         service = AWSComprehendMedicalPHIDetection()
 
         with patch("boto3.client") as mock_boto3:
@@ -90,7 +88,9 @@ class TestAWSComprehendMedicalPHIDetection:
         mock_boto3.assert_called_once()  # Corrected method name
 
         def test_initialization_boto_error(self):
-        """Test service initialization with Boto error."""
+
+
+                        """Test service initialization with Boto error."""
         service = AWSComprehendMedicalPHIDetection()
 
         with patch("boto3.client") as mock_boto3:
@@ -142,19 +142,25 @@ class TestAWSComprehendMedicalPHIDetection:
         assert len(result["phi_types"]) == 0
 
         def test_detect_phi_empty_text(self, phi_detection_service):
-        """Test PHI detection with empty text."""
+
+
+                        """Test PHI detection with empty text."""
         with pytest.raises(InvalidRequestError):
             phi_detection_service.detect_phi("")
 
             def test_detect_phi_service_not_initialized(self):
-        """Test PHI detection with uninitialized service."""
+
+
+                            """Test PHI detection with uninitialized service."""
         service = AWSComprehendMedicalPHIDetection()
 
         with pytest.raises(ServiceUnavailableError):
         service.detect_phi("Patient is John Doe")
 
         def test_detect_phi_aws_error(self, phi_detection_service):
-        """Test PHI detection with AWS Comprehend Medical error."""
+
+
+                        """Test PHI detection with AWS Comprehend Medical error."""
         with patch.object()
         phi_detection_service._comprehend_medical_client,
         "detect_phi",
@@ -209,12 +215,16 @@ class TestAWSComprehendMedicalPHIDetection:
         assert result["redacted_text_length"] == len(test_text)
 
         def test_redact_phi_empty_text(self, phi_detection_service):
-        """Test PHI redaction with empty text."""
+
+
+                        """Test PHI redaction with empty text."""
         with pytest.raises(InvalidRequestError):
             phi_detection_service.redact_phi("")
 
             def test_redact_phi_service_not_initialized(self):
-        """Test PHI redaction with uninitialized service."""
+
+
+                            """Test PHI redaction with uninitialized service."""
         service = AWSComprehendMedicalPHIDetection()
 
         with pytest.raises(ServiceUnavailableError):

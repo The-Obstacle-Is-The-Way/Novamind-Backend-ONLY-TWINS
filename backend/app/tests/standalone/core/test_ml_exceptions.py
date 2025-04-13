@@ -10,20 +10,21 @@ to validate that the test infrastructure is working correctly.
 """
 
 
-# Exception classes that would normally be in app/core/ml/exceptions.py
-class MentalLLaMABaseError(Exception):
+# Exception classes that would normally be in app/core/ml/exceptions.pyclass MentalLLaMABaseError(Exception):
     """Base exception for all MentalLLaMA errors."""
 
     def __init__(self, message: str, details: dict[str, Any] | None = None):
-        self.message = message
-        self.details = details or {}
-        super().__init__(message)
 
-        class MentalLLaMAInferenceError(MentalLLaMABaseError):
+
+                self.message = message
+        self.details = details or {}
+        super().__init__(message)class MentalLLaMAInferenceError(MentalLLaMABaseError):
     """Exception raised when inference with MentalLLaMA model fails."""
 
     def __init__():
-        self,
+
+
+                self,
         message: str,
         model_id: str | None = None,
         input_text: str | None = None,
@@ -44,13 +45,13 @@ class MentalLLaMABaseError(Exception):
     if details:
         combined_details.update(details)
 
-        super().__init__(message, combined_details)
-
-        class MentalLLaMAValidationError(MentalLLaMABaseError):
+        super().__init__(message, combined_details)class MentalLLaMAValidationError(MentalLLaMABaseError):
     """Exception raised when input validation for MentalLLaMA model fails."""
 
     def __init__():
-        self,
+
+
+                self,
         message: str,
         validation_errors: dict[str, Any] | None = None,
         details: dict[str, Any] | None = None
@@ -67,14 +68,13 @@ class MentalLLaMABaseError(Exception):
 
         super().__init__(message, combined_details)
 
-        # Test class for the exceptions
-
-        class TestMLExceptions(unittest.TestCase):
+        # Test class for the exceptionsclass TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
 
     @pytest.mark.standalone()
     def test_base_error(self):
-        """Test the base error class."""
+
+                    """Test the base error class."""
         # Arrange
         message = "Base error message"
         details = {"source": "test"}
@@ -89,7 +89,8 @@ class MentalLLaMABaseError(Exception):
 
         @pytest.mark.standalone()
         def test_inference_error(self):
-        """Test the inference error class."""
+
+                        """Test the inference error class."""
         # Arrange
         message = "Inference error message"
         model_id = "llama-13b"
@@ -98,8 +99,8 @@ class MentalLLaMABaseError(Exception):
         details = {"latency_ms": 15000}
 
         # Act
-        error = MentalLLaMAInferenceError()
-        message = message,
+        error = MentalLLaMAInferenceError(,
+        message= message,
         model_id = model_id,
         input_text = input_text,
         error_type = error_type,
@@ -120,7 +121,8 @@ class MentalLLaMABaseError(Exception):
 
         @pytest.mark.standalone()
         def test_validation_error(self):
-        """Test the validation error class."""
+
+                        """Test the validation error class."""
         # Arrange
         message = "Validation error message"
         validation_errors = {
@@ -128,8 +130,8 @@ class MentalLLaMABaseError(Exception):
         details = {"model_version": "2.0"}
 
         # Act
-        error = MentalLLaMAValidationError()
-        message = message,
+        error = MentalLLaMAValidationError(,
+        message= message,
         validation_errors = validation_errors,
         details = details
         ()

@@ -14,46 +14,40 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.domain.entities.digital_twin.biometric_alert import AlertPriority
-from app.domain.entities.digital_twin.biometric_rule import
+from app.domain.entities.digital_twin.biometric_rule import (
 BiometricRule, RuleCondition, RuleOperator, LogicalOperator
-()
+)
 
 
-@pytest.mark.db_required()  # Assuming db_required is a valid marker
-class TestClinicalRuleEngine:
-    """Tests for the ClinicalRuleEngine service."""
+@pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestClinicalRuleEngine:
+    """Tests for the ClinicalRuleEngine service."""@pytest.fixture
+def mock_rule_repository(self):
 
-    @pytest.fixture
-    def mock_rule_repository(self):
-        """Create a mock BiometricRuleRepository."""
+                """Create a mock BiometricRuleRepository."""
         repo = AsyncMock()
         repo.save = AsyncMock()
         repo.get_by_id = AsyncMock()
         repo.get_by_patient_id = AsyncMock()
         repo.get_all_active = AsyncMock()
-        return repo
+        return repo@pytest.fixture
+def rule_engine(self, mock_rule_repository):
 
-        @pytest.fixture
-        def rule_engine(self, mock_rule_repository):
-        """Create a ClinicalRuleEngine with mock dependencies."""
+                """Create a ClinicalRuleEngine with mock dependencies."""
 
-        return ClinicalRuleEngine(mock_rule_repository)
+        return ClinicalRuleEngine(mock_rule_repository)@pytest.fixture
+def sample_patient_id(self):
 
-        @pytest.fixture
-        def sample_patient_id(self):
-        """Create a sample patient ID."""
+                """Create a sample patient ID."""
 
-        return UUID('12345678-1234-5678-1234-567812345678')
+        return UUID('12345678-1234-5678-1234-567812345678')@pytest.fixture
+def sample_provider_id(self):
 
-        @pytest.fixture
-        def sample_provider_id(self):
-        """Create a sample provider ID."""
+                """Create a sample provider ID."""
 
-        return UUID('87654321-8765-4321-8765-432187654321')
+        return UUID('87654321-8765-4321-8765-432187654321')@pytest.fixture
+def sample_rule_data(self):
 
-        @pytest.fixture
-        def sample_rule_data(self):
-        """Create sample rule data for testing."""
+                """Create sample rule data for testing."""
 
         return {
             "name": "Elevated Heart Rate",
@@ -68,19 +62,18 @@ class TestClinicalRuleEngine:
             ],
             "logical_operator": "AND",
             "alert_priority": "WARNING"
-        }
+        }@pytest.fixture
+def sample_rule(self, sample_patient_id, sample_provider_id):
 
-    @pytest.fixture
-    def sample_rule(self, sample_patient_id, sample_provider_id):
-        """Create a sample BiometricRule."""
-        condition = RuleCondition()
-        data_type = "heart_rate",
+                """Create a sample BiometricRule."""
+        condition = RuleCondition(,
+        data_type= "heart_rate",
         operator = RuleOperator.GREATER_THAN,
         threshold_value = 100,
         time_window_hours = 1
         ()
-        return BiometricRule()
-        name = "Elevated Heart Rate",
+        return BiometricRule(,
+        name= "Elevated Heart Rate",
         description = "Alert when heart rate is above 100",
         conditions = [condition],
         logical_operator = LogicalOperator.AND,
@@ -98,8 +91,8 @@ class TestClinicalRuleEngine:
     mock_rule_repository.save.return_value = MagicMock()  # Return a mock object
 
     # Execute
-    result = await rule_engine.create_rule()
-    name = sample_rule_data["name"],
+    result = await rule_engine.create_rule(,
+    name= sample_rule_data["name"],
     description = sample_rule_data["description"],
     conditions = sample_rule_data["conditions"],
     logical_operator = sample_rule_data["logical_operator"],
@@ -109,8 +102,8 @@ class TestClinicalRuleEngine:
     ()
 
     # Verify
-    mock_rule_repository.save.assert_called_once()
-    saved_rule = mock_rule_repository.save.call_args[0][0]
+    mock_rule_repository.save.assert_called_once(,
+    saved_rule= mock_rule_repository.save.call_args[0][0]
     assert isinstance(saved_rule, BiometricRule)
     assert saved_rule.name == sample_rule_data["name"]
     assert saved_rule.description == sample_rule_data["description"]
@@ -134,8 +127,8 @@ class TestClinicalRuleEngine:
 
     # Execute and verify
     with pytest.raises(ValidationError):
-        await rule_engine.create_rule()
-        name = sample_rule_data["name"],
+        await rule_engine.create_rule(,
+        name= sample_rule_data["name"],
         description = sample_rule_data["description"],
         conditions = sample_rule_data["conditions"],
         logical_operator = sample_rule_data["logical_operator"],
@@ -150,8 +143,8 @@ class TestClinicalRuleEngine:
     """Test that create_rule raises ValidationError for invalid logical operators."""
     # Execute and verify
     with pytest.raises(ValidationError):
-        await rule_engine.create_rule()
-        name = sample_rule_data["name"],
+        await rule_engine.create_rule(,
+        name= sample_rule_data["name"],
         description = sample_rule_data["description"],
         conditions = sample_rule_data["conditions"],
         logical_operator = "INVALID_OPERATOR",
@@ -166,8 +159,8 @@ class TestClinicalRuleEngine:
     """Test that create_rule raises ValidationError for invalid priorities."""
     # Execute and verify
     with pytest.raises(ValidationError):
-        await rule_engine.create_rule()
-        name = sample_rule_data["name"],
+        await rule_engine.create_rule(,
+        name= sample_rule_data["name"],
         description = sample_rule_data["description"],
         conditions = sample_rule_data["conditions"],
         logical_operator = sample_rule_data["logical_operator"],
@@ -189,8 +182,8 @@ class TestClinicalRuleEngine:
         mock_rule_repository.save.return_value = sample_rule  # Return the rule itself
 
         # Execute
-        result = await rule_engine.update_rule()
-        rule_id = rule_id,
+        result = await rule_engine.update_rule(,
+        rule_id= rule_id,
         name = "Updated Rule Name",
         description = "Updated description",
         is_active = False
@@ -198,8 +191,8 @@ class TestClinicalRuleEngine:
 
         # Verify
         mock_rule_repository.get_by_id.assert_called_once_with(rule_id)
-        mock_rule_repository.save.assert_called_once()
-        updated_rule = mock_rule_repository.save.call_args[0][0]
+        mock_rule_repository.save.assert_called_once(,
+        updated_rule= mock_rule_repository.save.call_args[0][0]
         assert updated_rule.name == "Updated Rule Name"
         assert updated_rule.description == "Updated description"
         assert updated_rule.is_active is False
@@ -233,8 +226,8 @@ class TestClinicalRuleEngine:
         ]
 
         # Execute
-    result = await rule_engine.update_rule()
-    rule_id = rule_id,
+    result = await rule_engine.update_rule(,
+    rule_id= rule_id,
     conditions = new_conditions,
     logical_operator = "OR"
 
@@ -260,8 +253,8 @@ assert updated_rule.conditions[1].data_type == "blood_pressure_systolic"
 
         # Execute and verify
         with pytest.raises(ValidationError):
-        await rule_engine.update_rule()
-        rule_id = rule_id,
+        await rule_engine.update_rule(,
+        rule_id= rule_id,
         name = "Updated Rule Name"
         ()
 
@@ -272,12 +265,12 @@ assert updated_rule.conditions[1].data_type == "blood_pressure_systolic"
     # Setup
     # Make save return the rule passed to it
     async def save_side_effect(rule):
-        #     return rule # FIXME: return outside function
+             #     return rule # FIXME: return outside function
         mock_rule_repository.save.side_effect = save_side_effect
 
         # Execute
-        result = await rule_engine.create_standard_rules()
-        provider_id = sample_provider_id,
+        result = await rule_engine.create_standard_rules(,
+        provider_id= sample_provider_id,
         patient_id = sample_patient_id
         ()
 
@@ -304,8 +297,8 @@ assert updated_rule.conditions[1].data_type == "blood_pressure_systolic"
     """Test that get_active_rules_for_patient returns all active rules for a patient."""
     # Setup
     patient_specific_rule = sample_rule
-    global_rule = BiometricRule()
-    name = "Global Rule",
+    global_rule = BiometricRule(,
+    name= "Global Rule",
     description = "A rule that applies to all patients",
     conditions = [
         RuleCondition()

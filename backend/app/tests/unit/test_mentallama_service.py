@@ -14,21 +14,16 @@ from unittest.mock import patch, MagicMock, ANY
 
 import pytest
 from app.core.services.ml.mentalllama import MentaLLaMA as MentaLLaMAService
-from app.core.exceptions import ServiceUnavailableError, ModelNotFoundError, InvalidRequestError
+from app.core.exceptions import ServiceUnavailableError, ModelNotFoundError, InvalidRequestErrorclass TestMentaLLaMAService:
+    """Test suite for MentaLLaMA service."""@pytest.fixture
+def service(self):
 
+                """Create a MentaLLaMA service instance for testing."""
 
-class TestMentaLLaMAService:
-    """Test suite for MentaLLaMA service."""
+        return MentaLLaMAService()@pytest.fixture
+def mock_config(self):
 
-    @pytest.fixture
-    def service(self):
-        """Create a MentaLLaMA service instance for testing."""
-
-        return MentaLLaMAService()
-
-        @pytest.fixture
-        def mock_config(self):
-        """Create a mock configuration for testing."""
+                """Create a mock configuration for testing."""
 
         return {
             "provider": "internal",
@@ -45,7 +40,9 @@ class TestMentaLLaMAService:
             }
 
     def test_initialization(self, service, mock_config):
-        """Test service initialization."""
+
+
+                    """Test service initialization."""
         # Patch the setup client methods to avoid actual client creation
         with patch.object(service, '_setup_client'), \
         patch.object(service, '_load_models'):
@@ -59,7 +56,9 @@ class TestMentaLLaMAService:
             assert service._provider == "internal"
 
             def test_initialization_failure(self, service, mock_config):
-        """Test service initialization failure."""
+
+
+                            """Test service initialization failure."""
         # Mock _setup_client to raise an exception
         with patch.object(service, '_setup_client', side_effect=Exception("Setup failed")), \
         patch.object(service, '_load_models'):
@@ -73,7 +72,9 @@ class TestMentaLLaMAService:
         assert service._initialized is False
 
         def test_is_healthy(self, service):
-        """Test health check method."""
+
+
+                        """Test health check method."""
         # Not initialized
         assert service.is_healthy() is False
 
@@ -87,7 +88,9 @@ class TestMentaLLaMAService:
         assert service.is_healthy() is True
 
         def test_shutdown(self, service):
-        """Test shutdown method."""
+
+
+                        """Test shutdown method."""
         # Set up service for shutdown
         service._initialized = True
         service._client = {"type": "internal"}
@@ -114,8 +117,8 @@ class TestMentaLLaMAService:
         """Test process method for task execution."""
         # Set up mocks
         mock_uuid.return_value = uuid.UUID(
-            '12345678-1234-5678-1234-567812345678')
-        mock_now = datetime(2025, 3, 28, 10, 0, 0)
+            '12345678-1234-5678-1234-567812345678',
+        mock_now= datetime(2025, 3, 28, 10, 0, 0)
         mock_datetime.now.return_value = mock_now
         mock_datetime.now.return_value.isoformat.return_value = mock_now.isoformat()
         mock_sanitize.return_value = "Sanitized prompt"
@@ -149,8 +152,8 @@ class TestMentaLLaMAService:
             }
 
            # Call the process method
-    result = service.process()
-    prompt = "Test prompt",
+    result = service.process(,
+    prompt= "Test prompt",
     model = "mentallama-33b-lora",
     task = "depression_detection",
     context = {"patient_history": "Brief history"},
@@ -186,10 +189,12 @@ class TestMentaLLaMAService:
 ()
 
    def test_process_service_not_initialized(self, service):
-        """Test process method when service is not initialized."""
+
+
+                   """Test process method when service is not initialized."""
         with pytest.raises(ServiceUnavailableError) as exc_info:
-            service.process()
-                prompt = "Test prompt",
+            service.process(,
+                prompt= "Test prompt",
                 model = "mentallama-33b-lora",
                 task = "depression_detection"
             ()
@@ -197,7 +202,9 @@ class TestMentaLLaMAService:
             assert "not initialized" in str(exc_info.value)
 
             def test_process_model_not_found(self, service):
-        """Test process method with non-existent model."""
+
+
+                            """Test process method with non-existent model."""
         # Initialize service
         service._initialized = True
         service._models = {
@@ -208,8 +215,8 @@ class TestMentaLLaMAService:
         }
 
     with pytest.raises(ModelNotFoundError) as exc_info:
-        service.process()
-        prompt = "Test prompt",
+        service.process(,
+        prompt= "Test prompt",
         model = "non-existent-model",
         task = "depression_detection"
         ()
@@ -217,7 +224,9 @@ class TestMentaLLaMAService:
         assert "not found" in str(exc_info.value)
 
         def test_process_unsupported_task(self, service):
-        """Test process method with unsupported task."""
+
+
+                        """Test process method with unsupported task."""
         # Initialize service
         service._initialized = True
         service._models = {
@@ -228,8 +237,8 @@ class TestMentaLLaMAService:
         }
 
     with pytest.raises(InvalidRequestError) as exc_info:
-        service.process()
-        prompt = "Test prompt",
+        service.process(,
+        prompt= "Test prompt",
         model = "mentallama-33b-lora",
         task = "unsupported_task"
         ()
@@ -238,7 +247,8 @@ class TestMentaLLaMAService:
 
         @patch('app.core.services.ml.mentalllama.sanitize_text')
         def test_sanitize_input(self, mock_sanitize, service):
-        """Test PHI sanitization function."""
+
+                        """Test PHI sanitization function."""
         mock_sanitize.return_value = "Sanitized text without PHI"
 
         result = service._sanitize_input("Original text with PHI")
@@ -247,7 +257,9 @@ class TestMentaLLaMAService:
         mock_sanitize.assert_called_once_with("Original text with PHI")
 
         def test_post_process_response_depression_detection(self, service):
-        """Test post-processing for depression detection task."""
+
+
+                        """Test post-processing for depression detection task."""
         # Mock extraction methods
         with patch.object(service, '_extract_severity', return_value="moderate"), \
         patch.object(service, '_extract_indicators', return_value=["indicator1", "indicator2"]), \
@@ -269,7 +281,9 @@ class TestMentaLLaMAService:
     assert len(result["structured_data"]["key_indicators"]) == 2
 
     def test_post_process_response_risk_assessment(self, service):
-        """Test post-processing for risk assessment task."""
+
+
+                    """Test post-processing for risk assessment task."""
         # Mock extraction methods
         with patch.object(service, '_extract_risk_level', return_value="low"), \
         patch.object(service, '_extract_indicators', return_value=["indicator1"]), \
@@ -293,7 +307,9 @@ class TestMentaLLaMAService:
     assert len(result["structured_data"]["suggested_actions"]) == 1
 
     def test_create_task_prompt(self, service):
-        """Test task prompt creation."""
+
+
+                    """Test task prompt creation."""
         user_prompt = "User provided text for analysis"
         context = {"patient_history": "Patient history text"}
 
@@ -323,7 +339,8 @@ class TestMentaLLaMAService:
 
         @patch('app.core.services.ml.mentalllama.sanitize_text')
         def test_task_specific_methods(self, mock_sanitize, service):
-        """Test the specialized task-specific methods."""
+
+                        """Test the specialized task-specific methods."""
         # Set up mocks
         mock_sanitize.return_value = "Sanitized text"
 
@@ -332,14 +349,14 @@ class TestMentaLLaMAService:
         mock_process.return_value = {"result": "success"}
 
            # Test depression_detection method
-        result = service.depression_detection()
-        text = "Test text",
+        result = service.depression_detection(,
+        text= "Test text",
         model = "mentallama-33b-lora",
         include_rationale = True,
         severity_assessment = True
         ()
-        mock_process.assert_called_with()
-        prompt = "Test text",
+        mock_process.assert_called_with(,
+        prompt= "Test text",
         model = "mentallama-33b-lora",
         task = "depression_detection",
         context = {"include_rationale": True, "severity_assessment": True},
@@ -348,14 +365,14 @@ class TestMentaLLaMAService:
         assert result ==  {"result": "success"}
 
            # Test risk_assessment method
-        result = service.risk_assessment()
-        text = "Test text",
+        result = service.risk_assessment(,
+        text= "Test text",
         model = "mentallama-33b-lora",
         include_key_phrases = True,
         include_suggested_actions = True
         ()
-        mock_process.assert_called_with()
-        prompt = "Test text",
+        mock_process.assert_called_with(,
+        prompt= "Test text",
         model = "mentallama-33b-lora",
         task = "risk_assessment",
         context = {"include_key_phrases": True, "include_suggested_actions": True},
@@ -364,13 +381,13 @@ class TestMentaLLaMAService:
         assert result ==  {"result": "success"}
 
            # Test sentiment_analysis method
-        result = service.sentiment_analysis()
-        text = "Test text",
+        result = service.sentiment_analysis(,
+        text= "Test text",
         model = "mentallama-33b-lora",
         include_emotion_distribution = True
         ()
-        mock_process.assert_called_with()
-        prompt = "Test text",
+        mock_process.assert_called_with(,
+        prompt= "Test text",
         model = "mentallama-33b-lora",
         task = "sentiment_analysis",
         context = {"include_emotion_distribution": True},
@@ -380,14 +397,14 @@ class TestMentaLLaMAService:
 
            # Test wellness_dimensions method with dimensions
         dimensions = ["emotional", "social", "physical"]
-        result = service.wellness_dimensions()
-        text = "Test text",
+        result = service.wellness_dimensions(,
+        text= "Test text",
         model = "mentallama-33b-lora",
         dimensions = dimensions,
         include_recommendations = True
         ()
-        mock_process.assert_called_with()
-        prompt = "Test text",
+        mock_process.assert_called_with(,
+        prompt= "Test text",
         model = "mentallama-33b-lora",
         task = "wellness_dimensions",
         context = {"dimensions": dimensions, "include_recommendations": True},
@@ -397,10 +414,11 @@ class TestMentaLLaMAService:
 
         @patch('app.core.services.ml.mentalllama.boto3')
         def test_setup_aws_client(self, mock_boto3, service):
-        """Test AWS Bedrock client setup."""
+
+                        """Test AWS Bedrock client setup."""
         # Set up mock session and client
-        mock_session = MagicMock()
-        mock_bedrock_client = MagicMock()
+        mock_session = MagicMock(,
+        mock_bedrock_client= MagicMock()
         mock_boto3.Session.return_value = mock_session
         mock_session.client.return_value = mock_bedrock_client
         mock_boto3.client.return_value = mock_bedrock_client
@@ -432,7 +450,8 @@ class TestMentaLLaMAService:
 
     @patch('app.core.services.ml.mentalllama.boto3')
     def test_setup_aws_client_error(self, mock_boto3, service):
-        """Test AWS Bedrock client setup with errors."""
+
+                    """Test AWS Bedrock client setup with errors."""
         # Test ImportError
         mock_boto3.side_effect = ImportError("boto3 not installed")
 
@@ -456,7 +475,8 @@ class TestMentaLLaMAService:
 
         @patch('app.core.services.ml.mentalllama.OpenAI')
         def test_setup_openai_client(self, mock_openai, service):
-        """Test OpenAI client setup."""
+
+                        """Test OpenAI client setup."""
         # Set up mock OpenAI client
         mock_openai_client = MagicMock()
         mock_openai.return_value = mock_openai_client
@@ -472,8 +492,8 @@ class TestMentaLLaMAService:
     service._setup_openai_client()
 
        # Verify client creation
-    mock_openai.assert_called_once_with()
-    api_key = "test-api-key",
+    mock_openai.assert_called_once_with(,
+    api_key= "test-api-key",
     timeout = 60,
     organization = "test-org"
 ()
@@ -482,7 +502,8 @@ class TestMentaLLaMAService:
 
     @patch('app.core.services.ml.mentalllama.OpenAI')
     def test_setup_openai_client_error(self, mock_openai, service):
-        """Test OpenAI client setup with errors."""
+
+                    """Test OpenAI client setup with errors."""
         # Test ImportError
         mock_openai.side_effect = ImportError("openai not installed")
 
@@ -505,7 +526,9 @@ class TestMentaLLaMAService:
         assert "OpenAI client initialization failed" in str(exc_info.value)
 
         def test_process_with_provider(self, service):
-        """Test provider selection in process method."""
+
+
+                        """Test provider selection in process method."""
         service._provider = "internal"
 
         # Mock the specific provider methods
@@ -553,7 +576,9 @@ class TestMentaLLaMAService:
         assert "unknown provider" in str(exc_info.value).lower()
 
         def test_estimate_tokens_used(self, service):
-        """Test token estimation."""
+
+
+                        """Test token estimation."""
         # Short text
         text = "This is a short text."
         tokens = service._estimate_tokens_used(text)

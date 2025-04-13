@@ -34,14 +34,14 @@ from app.infrastructure.security.jwt_service import JWTService
 
 @pytest.fixture
 def mock_jwt_service():
-    """Create a mock JWT service."""
+
+            """Create a mock JWT service."""
     service = MagicMock(spec=JWTService)  # Use spec for better mocking
     service.decode_token = MagicMock()
-    return service
+    return service@pytest.fixture
+def app(mock_jwt_service):
 
-    @pytest.fixture
-    def app(mock_jwt_service):
-    """Create a FastAPI test app with test endpoints."""
+            """Create a FastAPI test app with test endpoints."""
     app_instance = FastAPI()
 
     # Override JWTService dependency (assuming it's injected somewhere)
@@ -90,21 +90,19 @@ def mock_jwt_service():
         ):
         return {"user_id": str(user_id)}
 
-        return app_instance
+        return app_instance@pytest.fixture
+def client(app):
 
-        @pytest.fixture
-        def client(app):
-    """Create a test client for the FastAPI app."""
+            """Create a test client for the FastAPI app."""
 
     return TestClient(app)
 
-    @pytest.mark.db_required()
-    class TestBiometricEndpointsDependencies:
+    @pytest.mark.db_required()class TestBiometricEndpointsDependencies:
     """Tests for the biometric endpoints dependencies."""
 
     @pytest.mark.asyncio
     async def test_get_current_user_id_success(self, client, mock_jwt_service):
-        """Test that get_current_user_id returns the user ID from the token."""
+                 """Test that get_current_user_id returns the user ID from the token."""
         user_id = uuid4()
         mock_jwt_service.decode_token.return_value = {
             "sub": str(user_id),
@@ -140,9 +138,9 @@ def mock_jwt_service():
     ):
         """Test that get_current_user_id handles AuthenticationError."""
         mock_jwt_service.decode_token.side_effect = AuthenticationError(
-            "Invalid token")
+            "Invalid token",
 
-        response = await client.get(
+        response= await client.get(
             "/test/user-id", headers={"Authorization": "Bearer test_token"}
         )
 
@@ -155,9 +153,9 @@ def mock_jwt_service():
     ):
         """Test that get_current_user_id handles generic exceptions."""
         mock_jwt_service.decode_token.side_effect = Exception(
-            "Unexpected error")
+            "Unexpected error",
 
-        response = await client.get(
+        response= await client.get(
             "/test/user-id", headers={"Authorization": "Bearer test_token"}
         )
 
@@ -166,7 +164,7 @@ def mock_jwt_service():
 
     @pytest.mark.asyncio
     async def test_get_patient_id(self, client, mock_jwt_service):
-        """Test that get_patient_id returns the patient ID from the path."""
+                 """Test that get_patient_id returns the patient ID from the path."""
         patient_id = uuid4()
         mock_jwt_service.decode_token.return_value = {
             "sub": str(uuid4()),
@@ -265,7 +263,7 @@ def mock_jwt_service():
 
     @pytest.mark.asyncio
     async def test_require_admin_role_success(self, client, mock_jwt_service):
-        """Test that require_admin_role allows admins."""
+                 """Test that require_admin_role allows admins."""
         mock_jwt_service.decode_token.return_value = {
             "sub": str(uuid4()),
             "role": "admin",

@@ -17,15 +17,11 @@ from app.infrastructure.ml.pharmacogenomics.model_service import Pharmacogenomic
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import (
     GeneMedicationModel,
 )
-from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel
+from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModelclass TestPharmacogenomicsService:
+    """Tests for the PharmacogenomicsService."""@pytest.fixture
+def mock_gene_medication_model(self):
 
-
-class TestPharmacogenomicsService:
-    """Tests for the PharmacogenomicsService."""
-
-    @pytest.fixture
-    def mock_gene_medication_model(self):
-        """Create a mock GeneMedicationModel."""
+                """Create a mock GeneMedicationModel."""
         model = AsyncMock(spec=GeneMedicationModel)
         model.is_initialized = True
         model.predict_medication_interactions = AsyncMock(
@@ -57,11 +53,10 @@ class TestPharmacogenomicsService:
                 },
             }
         )
-        return model
+        return model@pytest.fixture
+def mock_treatment_model(self):
 
-    @pytest.fixture
-    def mock_treatment_model(self):
-        """Create a mock TreatmentResponseModel."""
+                """Create a mock TreatmentResponseModel."""
         model = AsyncMock(spec=PharmacogenomicsModel)
         model.is_initialized = True
         model.predict_treatment_response = AsyncMock(
@@ -113,30 +108,27 @@ class TestPharmacogenomicsService:
                 },
             }
         )
-        return model
+        return model@pytest.fixture
+def service(self, mock_gene_medication_model, mock_treatment_model):
 
-    @pytest.fixture
-    def service(self, mock_gene_medication_model, mock_treatment_model):
-        """Create a PharmacogenomicsService with mock dependencies."""
+                """Create a PharmacogenomicsService with mock dependencies."""
         return PharmacogenomicsService(
             gene_medication_model=mock_gene_medication_model,
             treatment_model=mock_treatment_model,
-        )
+        )@pytest.fixture
+def sample_genetic_data(self):
 
-    @pytest.fixture
-    def sample_genetic_data(self):
-        """Create sample genetic data for testing."""
+                """Create sample genetic data for testing."""
         return {
             "genes": [
                 {"gene": "CYP2D6", "variant": "*1/*1", "function": "normal"},
                 {"gene": "CYP2C19", "variant": "*1/*2", "function": "intermediate"},
                 {"gene": "CYP1A2", "variant": "*1F/*1F", "function": "rapid"},
             ]
-        }
+        }@pytest.fixture
+def sample_patient_data(self):
 
-    @pytest.fixture
-    def sample_patient_data(self):
-        """Create sample patient data for testing."""
+                """Create sample patient data for testing."""
         return {
             "id": str(
                 uuid4()),
@@ -159,11 +151,10 @@ class TestPharmacogenomicsService:
                             "insomnia"],
                     "reason_for_discontinuation": "insufficient_efficacy",
                 }],
-        }
+        }@pytest.fixture
+def sample_patient_id(self):
 
-    @pytest.fixture
-    def sample_patient_id(self):
-        """Create a sample patient ID."""
+                """Create a sample patient ID."""
         return str(uuid4())
 
         async def test_predict_medication_response_success(
@@ -309,8 +300,8 @@ class TestPharmacogenomicsService:
         )
 
         # Verify PHI access logging
-        mock_log_phi_access.assert_called_once()
-        log_args = mock_log_phi_access.call_args[0]
+        mock_log_phi_access.assert_called_once(,
+        log_args= mock_log_phi_access.call_args[0]
         assert log_args[0] == "PharmacogenomicsService.predict_medication_response"
         assert log_args[1] == sample_patient_id
 

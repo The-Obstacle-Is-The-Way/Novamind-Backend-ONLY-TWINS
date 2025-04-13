@@ -16,7 +16,8 @@ from app.core.services.ml.phi_detection_service import PhiDetectionService
 
 @pytest.fixture
 def mock_phi_detection_service():
-    """Create a mock PHI detection service."""
+
+            """Create a mock PHI detection service."""
     service = MagicMock(spec=PhiDetectionService)
 
     # Configure mock detection method to return clean by default
@@ -32,7 +33,8 @@ def mock_phi_detection_service():
 
 @pytest.fixture
 def middleware(mock_phi_detection_service):
-    """Create the middleware with a mock PHI detection service."""
+
+            """Create the middleware with a mock PHI detection service."""
     config = PhiSanitizerConfig(
         enabled=True,
         sensitivity_threshold=0.7,
@@ -50,17 +52,19 @@ def middleware(mock_phi_detection_service):
 
 @pytest.fixture
 def app_with_middleware(mock_phi_detection_service):
-    """Create a FastAPI app with the PHI middleware."""
+
+            """Create a FastAPI app with the PHI middleware."""
     app = FastAPI()
 
     # Add some test routes
     @app.get("/test")
     def test_route():
-        return {"message": "This is a test response"}
+
+                return {"message": "This is a test response"}
 
         @app.post("/api/data")
         async def post_data(request: Request):
-        data = await request.json()
+             data = await request.json()
         return {"received": data}
 
         # Add middleware
@@ -84,14 +88,15 @@ def app_with_middleware(mock_phi_detection_service):
 
 @pytest.fixture
 def client(app_with_middleware):
-    """Create a test client."""
-    return TestClient(app_with_middleware)
 
-    class TestEnhancedPhiMiddleware:
+            """Create a test client."""
+    return TestClient(app_with_middleware)class TestEnhancedPhiMiddleware:
     """Test suite for the Enhanced PHI Middleware."""
 
     def test_init(self, middleware):
-        """Test initialization of the middleware."""
+
+
+                    """Test initialization of the middleware."""
         assert middleware.config.enabled is True
         assert middleware.config.sensitivity_threshold == 0.7
         assert middleware.config.log_detections is True
@@ -100,7 +105,9 @@ def client(app_with_middleware):
         assert "/docs" in middleware.config.excluded_paths
 
         def test_should_process_path(self, middleware):
-        """Test path exclusion logic."""
+
+
+                        """Test path exclusion logic."""
         # Excluded paths
         assert middleware._should_process_path("/docs") is False
         assert middleware._should_process_path("/redoc") is False
@@ -111,7 +118,9 @@ def client(app_with_middleware):
         assert middleware._should_process_path("/test") is True
 
         def test_safe_request_no_phi(self, client, mock_phi_detection_service):
-        """Test processing a safe request with no PHI."""
+
+
+                        """Test processing a safe request with no PHI."""
         # Configure mock to detect no PHI
         mock_phi_detection_service.detect_phi.return_value = PhiDetectionResult(
             contains_phi=False,
@@ -178,13 +187,15 @@ def client(app_with_middleware):
         )
 
     def test_disabled_middleware(self, mock_phi_detection_service):
-        """Test middleware when disabled."""
+
+
+                    """Test middleware when disabled."""
         # Create app with disabled middleware
         app = FastAPI()
 
         @app.post("/api/data")
         async def post_data(request: Request):
-            data = await request.json()
+                 data = await request.json()
             return {"received": data}
 
             # Disabled middleware
@@ -201,9 +212,9 @@ def client(app_with_middleware):
         app.add_middleware(
             EnhancedPhiMiddleware,
             phi_service=mock_phi_detection_service,
-            config=config)
+            config=config,
 
-        client = TestClient(app)
+        client= TestClient(app)
 
         # Make a request with PHI
         response = client.post(
@@ -258,7 +269,7 @@ def client(app_with_middleware):
 
     @pytest.mark.asyncio
     async def test_process_invalid_json_response(self, middleware):
-        """Test processing a response with invalid JSON."""
+                 """Test processing a response with invalid JSON."""
         # Set up a mock response with invalid JSON
         mock_response = MagicMock()
         mock_response.headers = {"content-type": "application/json"}

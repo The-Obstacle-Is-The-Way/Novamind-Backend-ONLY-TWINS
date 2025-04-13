@@ -75,7 +75,8 @@ ADDRESS_TEST_STR = "v1:encrypted_address_for_test_123"
 
 # Function to generate test patient record with deterministic values
 def get_test_patient_record() -> Dict[str, Any]:
-    """Get a deterministic test patient record with PHI data.
+
+        """Get a deterministic test patient record with PHI data.
 
     Returns:
         Complete patient record with PHI fields
@@ -160,9 +161,12 @@ PHI_FIELDS = [
 
 
 def test_fixture_generation():
-    """Verify test fixture generation is deterministic."""
-    record1 = get_test_patient_record()
-    record2 = get_test_patient_record()
+
+
+
+            """Verify test fixture generation is deterministic."""
+    record1 = get_test_patient_record(,
+    record2= get_test_patient_record()
 
     # Records should be equal but not the same object
     assert record1 == record2

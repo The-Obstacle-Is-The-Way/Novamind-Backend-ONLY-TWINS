@@ -25,31 +25,29 @@ for Protected Health Information (PHI) in the patient model, including:
     from app.infrastructure.security.encryption import EncryptionService
     from app.core.utils.logging import get_logger
 
-    @pytest.mark.db_required()
-    class TestPatientPHISecurity:
-    """Test suite for HIPAA security compliance of Patient PHI."""
+    @pytest.mark.db_required()class TestPatientPHISecurity:
+    """Test suite for HIPAA security compliance of Patient PHI."""@pytest.fixture
+def sample_patient_with_phi(self):
 
-    @pytest.fixture
-    def sample_patient_with_phi(self):
-        """Create a sample patient with highly sensitive PHI for testing."""
+                """Create a sample patient with highly sensitive PHI for testing."""
 
-        return Patient()
-        id = uuid.uuid4(),
+        return Patient(,
+        id= uuid.uuid4(),
         first_name = "Alexandra",
         last_name = "Johnson",
         date_of_birth = date(1975, 3, 12),
         email = "alexandra.johnson@example.com",
         phone = "555-867-5309",
-        address = Address()
-        line1 = "789 Confidential Drive",
+        address = Address(,
+        line1= "789 Confidential Drive",
         line2 = "Suite 101",
         city = "Securityville",
         state = "CA",
         postal_code = "90210",
         country = "USA"
         (),
-        emergency_contact = EmergencyContact()
-        name = "Robert Johnson",
+        emergency_contact = EmergencyContact(,
+        name= "Robert Johnson",
         phone = "555-123-7890",
         relationship = "Spouse"
         (),

@@ -14,25 +14,21 @@ from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 
 
-@pytest.mark.venv_only()
-class TestEnhancedXGBoostService:
-    """Test suite for the EnhancedXGBoostService."""
+@pytest.mark.venv_only()class TestEnhancedXGBoostService:
+    """Test suite for the EnhancedXGBoostService."""@pytest.fixture
+def xgboost_service(self):
 
-    @pytest.fixture
-    def xgboost_service(self):
-        """Create an EnhancedXGBoostService instance for testing."""
+                """Create an EnhancedXGBoostService instance for testing."""
 
-        return EnhancedXGBoostService()
+        return EnhancedXGBoostService()@pytest.fixture
+def test_patient_id(self):
 
-        @pytest.fixture
-        def test_patient_id(self):
-        """Generate a test patient ID."""
+                """Generate a test patient ID."""
 
-        return uuid.uuid4()
+        return uuid.uuid4()@pytest.fixture
+def test_baseline_data(self):
 
-        @pytest.fixture
-        def test_baseline_data(self):
-        """Create test baseline data."""
+                """Create test baseline data."""
 
         return {
             "baseline_serotonin": 0.4,
@@ -173,7 +169,9 @@ class TestEnhancedXGBoostService:
         ), "Positive and negative treatment effects should yield different predictions"
 
     def test_analyze_treatment_interactions(self, xgboost_service):
-        """Test analysis of interactions between neurotransmitter treatments."""
+
+
+                    """Test analysis of interactions between neurotransmitter treatments."""
         # Test interaction analysis
         interactions = xgboost_service.analyze_treatment_interactions(
             primary_neurotransmitter=Neurotransmitter.SEROTONIN,
@@ -201,19 +199,21 @@ class TestEnhancedXGBoostService:
         assert "is_synergistic" in dopamine_interaction
 
     def test_feature_encoding(self, xgboost_service):
-        """Test that features are correctly encoded."""
+
+
+                    """Test that features are correctly encoded."""
         # Test encoding brain region
         region_encoding1 = xgboost_service._encode_brain_region(
             BrainRegion.PREFRONTAL_CORTEX
-        )
-        region_encoding2 = xgboost_service._encode_brain_region(
+        ,
+        region_encoding2= xgboost_service._encode_brain_region(
             BrainRegion.AMYGDALA)
 
         # Test encoding neurotransmitter
         nt_encoding1 = xgboost_service._encode_neurotransmitter(
             Neurotransmitter.SEROTONIN
-        )
-        nt_encoding2 = xgboost_service._encode_neurotransmitter(
+        ,
+        nt_encoding2= xgboost_service._encode_neurotransmitter(
             Neurotransmitter.DOPAMINE
         )
 
@@ -236,9 +236,9 @@ class TestEnhancedXGBoostService:
             brain_region=BrainRegion.PREFRONTAL_CORTEX,
             neurotransmitter=Neurotransmitter.SEROTONIN,
             treatment_effect=0.5,
-        )
+        ,
 
-        prediction2 = xgboost_service.predict_treatment_response(
+        prediction2= xgboost_service.predict_treatment_response(
             patient_id=test_patient_id,
             brain_region=BrainRegion.PREFRONTAL_CORTEX,
             neurotransmitter=Neurotransmitter.SEROTONIN,

@@ -38,7 +38,8 @@ mock_xgboost_service = AsyncMock()
 # Define fixtures needed for tests
 @pytest.fixture
 def client():
-    """Create a test client for testing API routes."""
+
+            """Create a test client for testing API routes."""
     from fastapi import FastAPI
 
     app = FastAPI()
@@ -51,19 +52,19 @@ def client():
     # Define mock endpoints matching the real router
     @mock_router.post("/risk-prediction")
     async def mock_predict_risk():
-        return mock_xgboost_service.predict_risk.return_value
+             return mock_xgboost_service.predict_risk.return_value
 
         @mock_router.post("/treatment-response")
         async def mock_predict_treatment_response():
-        return mock_xgboost_service.predict_treatment_response.return_value
+             return mock_xgboost_service.predict_treatment_response.return_value
 
         @mock_router.post("/outcome-prediction")
         async def mock_predict_outcome():
-        return mock_xgboost_service.predict_outcome.return_value
+             return mock_xgboost_service.predict_outcome.return_value
 
         @mock_router.post("/model-info")
         async def mock_get_model_info():
-        return mock_xgboost_service.get_model_info.return_value
+             return mock_xgboost_service.get_model_info.return_value
 
         app.include_router(mock_router, prefix="/api/xgboost")
 
@@ -156,7 +157,8 @@ def test_xgboost_endpoints_return_200(
 
     @pytest.mark.api()
     def test_xgboost_risk_prediction_with_invalid_data(client):
-    """Test that risk prediction endpoint validates input data."""
+
+                """Test that risk prediction endpoint validates input data."""
     # Invalid request missing required fields
     response = client.post("/api/xgboost/risk-prediction", json={})
 

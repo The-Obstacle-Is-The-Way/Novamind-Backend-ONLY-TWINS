@@ -16,13 +16,14 @@ from app.application.use_cases.analytics.process_analytics_event import ProcessA
 
 @pytest.fixture
 def mock_analytics_repository():
-    """Create a mock analytics repository for testing."""
+
+            """Create a mock analytics repository for testing."""
     repo = AsyncMock()
 
     # Set up the save_event method to return a modified event with an ID
     async def save_event_mock(event):
-        return AnalyticsEvent()
-        event_type = event.event_type,
+             return AnalyticsEvent(,
+        event_type= event.event_type,
         event_data = event.event_data,
         user_id = event.user_id,
         session_id = event.session_id,
@@ -31,29 +32,27 @@ def mock_analytics_repository():
         ()
 
         repo.save_event = save_event_mock
-        return repo
+        return repo@pytest.fixture
+def mock_cache_service():
 
-        @pytest.fixture
-        def mock_cache_service():
-    """Create a mock cache service for testing."""
+            """Create a mock cache service for testing."""
     cache = AsyncMock()
 
     # Set up increment method to return a count
     async def increment_mock(key, increment=1):
-        return 10  # Mock counter value after increment
+             return 10  # Mock counter value after increment
 
         cache.increment = increment_mock
-        return cache
+        return cache@pytest.fixture
+def use_case(mock_analytics_repository, mock_cache_service):
 
-        @pytest.fixture
-        def use_case(mock_analytics_repository, mock_cache_service):
-    """Create the use case with mocked dependencies."""
+            """Create the use case with mocked dependencies."""
     with patch('app.core.utils.logging.get_logger') as mock_logger:
         mock_logger_instance = MagicMock()
         mock_logger.return_value = mock_logger_instance
 
-        use_case = ProcessAnalyticsEventUseCase()
-        analytics_repository = mock_analytics_repository,
+        use_case = ProcessAnalyticsEventUseCase(,
+        analytics_repository= mock_analytics_repository,
         cache_service = mock_cache_service
         ()
 
@@ -61,8 +60,7 @@ def mock_analytics_repository():
         use_case._logger = mock_logger_instance
         return use_case
 
-        @pytest.mark.db_required()
-        class TestProcessAnalyticsEventUseCase:
+        @pytest.mark.db_required()class TestProcessAnalyticsEventUseCase:
     """Test suite for the ProcessAnalyticsEventUseCase."""
 
     @pytest.mark.asyncio()
@@ -79,8 +77,8 @@ def mock_analytics_repository():
         timestamp = datetime(2025, 3, 30, 0, 0, 0)
 
         # Act
-        result = await use_case.execute()
-        event_type = event_type,
+        result = await use_case.execute(,
+        event_type= event_type,
         event_data = event_data,
         user_id = user_id,
         session_id = session_id,
@@ -106,7 +104,7 @@ def mock_analytics_repository():
 
         @pytest.mark.asyncio()
         async def test_execute_with_minimal_parameters(self, use_case):
-        """
+             """
         Test processing an event with only required parameters.
         """
         # Arrange
@@ -114,8 +112,8 @@ def mock_analytics_repository():
         event_data = {"feature": "digital_twin", "action": "zoom"}
 
         # Act
-        result = await use_case.execute()
-        event_type = event_type,
+        result = await use_case.execute(,
+        event_type= event_type,
         event_data = event_data
         ()
 
@@ -145,8 +143,8 @@ def mock_analytics_repository():
         user_id = "provider-789"
 
         # Act
-        await use_case.execute()
-        event_type = event_type,
+        await use_case.execute(,
+        event_type= event_type,
         event_data = event_data,
         user_id = user_id
         ()
@@ -157,7 +155,7 @@ def mock_analytics_repository():
 
         @pytest.mark.asyncio()
         async def test_phi_not_logged(self, use_case):
-        """
+             """
         Test that PHI is not included in logs even if present in event data.
         """
         # Arrange - include data that could be PHI
@@ -167,8 +165,8 @@ def mock_analytics_repository():
         session_id = "session-xyz"
 
         # Act
-        await use_case.execute()
-        event_type = event_type,
+        await use_case.execute(,
+        event_type= event_type,
         event_data = event_data,
         user_id = user_id,
         session_id = session_id
@@ -201,8 +199,8 @@ def mock_analytics_repository():
 
         # Act & Assert
         with pytest.raises(Exception) as excinfo:
-        await use_case.execute()
-        event_type = "error_test",
+        await use_case.execute(,
+        event_type= "error_test",
         event_data = {"test": True}
         ()
 

@@ -15,7 +15,8 @@ from app.core.config.ml_settings import (
 
 @pytest.fixture
 def sample_ml_config():
-    """Create a sample ML configuration dictionary."""
+
+            """Create a sample ML configuration dictionary."""
     return {
         "model_path": "/models/symptom_prediction/",
         "model_type": "ensemble",
@@ -46,7 +47,8 @@ def sample_ml_config():
 
 @pytest.fixture
 def ml_settings(sample_ml_config):
-    """Create an MLSettings instance."""
+
+            """Create an MLSettings instance."""
     return MLSettings(
         model_path=sample_ml_config["model_path"],
         model_type=MLModelType(sample_ml_config["model_type"]),
@@ -61,14 +63,13 @@ def ml_settings(sample_ml_config):
         cache_ttl=sample_ml_config["cache_ttl"],
         version=sample_ml_config["version"],
         components=sample_ml_config["components"],
-    )
-
-
-class TestMLSettings:
+    )class TestMLSettings:
     """Test suite for MLSettings model."""
 
     def test_init(self, sample_ml_config):
-        """Test initialization with valid settings."""
+
+
+                    """Test initialization with valid settings."""
         settings = MLSettings(
             model_path=sample_ml_config["model_path"],
             model_type=MLModelType(sample_ml_config["model_type"]),
@@ -102,7 +103,9 @@ class TestMLSettings:
         assert settings.components == sample_ml_config["components"]
 
     def test_default_values(self):
-        """Test that default values are set correctly."""
+
+
+                    """Test that default values are set correctly."""
         # Create with minimal required fields
         settings = MLSettings(
             model_path="/models/minimal/",
@@ -123,7 +126,9 @@ class TestMLSettings:
         assert settings.components == {}  # Default components
 
     def test_model_type_enum(self):
-        """Test the MLModelType enum."""
+
+
+                    """Test the MLModelType enum."""
         # Check enum values
         assert MLModelType.TRANSFORMER.value == "transformer"
         assert MLModelType.ENSEMBLE.value == "ensemble"
@@ -136,7 +141,9 @@ class TestMLSettings:
         assert MLModelType("ensemble") == MLModelType.ENSEMBLE
 
         def test_framework_enum(self):
-        """Test the MLFramework enum."""
+
+
+                        """Test the MLFramework enum."""
         # Check enum values
         assert MLFramework.PYTORCH.value == "pytorch"
         assert MLFramework.TENSORFLOW.value == "tensorflow"
@@ -148,7 +155,9 @@ class TestMLSettings:
         assert MLFramework("tensorflow") == MLFramework.TENSORFLOW
 
         def test_to_dict(self, ml_settings, sample_ml_config):
-        """Test conversion to dictionary."""
+
+
+                        """Test conversion to dictionary."""
         # Convert to dict
         settings_dict = ml_settings.to_dict()
 
@@ -161,7 +170,9 @@ class TestMLSettings:
         assert settings_dict["components"] == sample_ml_config["components"]
 
         def test_from_dict(self, sample_ml_config):
-        """Test creation from dictionary."""
+
+
+                        """Test creation from dictionary."""
         # Create from dict
         settings = MLSettings.from_dict(sample_ml_config)
 
@@ -174,7 +185,9 @@ class TestMLSettings:
         assert settings.components == sample_ml_config["components"]
 
         def test_validation(self):
-        """Test validation of MLSettings."""
+
+
+                        """Test validation of MLSettings."""
         # Test invalid batch size
         with pytest.raises(ValueError):
             MLSettings(
@@ -201,15 +214,13 @@ class TestMLSettings:
                 framework=MLFramework.PYTORCH,
                 cache_results=True,
                 cache_ttl=-10,  # Invalid - should be positive
-            )
-
-
-class TestMLSettingsConfig:
+            )class TestMLSettingsConfig:
     """Test suite for ML settings configuration functions."""
 
     @patch("app.core.config.ml_settings.get_settings")
     def test_get_ml_settings(self, mock_get_settings):
-        """Test getting ML settings from general settings."""
+
+                    """Test getting ML settings from general settings."""
         # Mock settings to return ML path
         mock_settings = MagicMock()
         mock_settings.ML_CONFIG_PATH = "/config/ml/"
@@ -236,7 +247,8 @@ class TestMLSettingsConfig:
     @patch("app.core.config.ml_settings.open")
     @patch("app.core.config.ml_settings.json.load")
     def test_load_model_config(self, mock_json_load, mock_open):
-        """Test loading model configuration from file."""
+
+                    """Test loading model configuration from file."""
         # Mock JSON loading
         test_config = {
             "model_path": "/models/test/",
@@ -255,7 +267,8 @@ class TestMLSettingsConfig:
 
     @patch("app.core.config.ml_settings.open")
     def test_load_model_config_file_not_found(self, mock_open):
-        """Test handling of missing configuration file."""
+
+                    """Test handling of missing configuration file."""
         # Mock file not found
         mock_open.side_effect = FileNotFoundError("File not found")
 

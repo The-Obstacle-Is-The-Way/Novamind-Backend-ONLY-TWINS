@@ -51,16 +51,14 @@ def enhanced_services() -> (
     ]
 ):
     """Fixture to create enhanced mock services for testing."""
-    return EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()
+    return EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()@pytest.fixture
+def patient_id() -> UUID:
 
-    @pytest.fixture
-    def patient_id() -> UUID:
-    """Fixture to create a consistent patient ID for tests."""
-    return uuid.UUID("12345678-1234-5678-1234-567812345678")
+            """Fixture to create a consistent patient ID for tests."""
+    return uuid.UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+def initial_data() -> Dict:
 
-    @pytest.fixture
-    def initial_data() -> Dict:
-    """Fixture to provide initial patient data for testing."""
+            """Fixture to provide initial patient data for testing."""
     return {
         "diagnoses": ["Major Depressive Disorder", "Generalized Anxiety Disorder"],
         "symptoms": ["fatigue", "insomnia", "worry", "anhedonia"],
@@ -74,7 +72,7 @@ def enhanced_services() -> (
 @pytest.mark.asyncio()
 @pytest.mark.db_required()
 async def test_factory_creates_services(enhanced_services):
-    """Test that the factory correctly creates all enhanced services."""
+             """Test that the factory correctly creates all enhanced services."""
     (
         digital_twin_service,
         mental_llama_service,
@@ -280,7 +278,7 @@ async def test_belief_network_operations(
 
 @pytest.mark.asyncio()
 async def test_event_system(enhanced_services, patient_id):
-    """Test the event subscription and publication system."""
+             """Test the event subscription and publication system."""
     digital_twin_service, _, _, _ = enhanced_services
 
     # Create a listener to capture events
@@ -314,7 +312,7 @@ async def test_event_system(enhanced_services, patient_id):
 
 @pytest.mark.asyncio()
 async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
-    """Test advanced analyses provided by the Enhanced Digital Twin."""
+             """Test advanced analyses provided by the Enhanced Digital Twin."""
     digital_twin_service, _, _, _ = enhanced_services
 
     # Initialize the Digital Twin

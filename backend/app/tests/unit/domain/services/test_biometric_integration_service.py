@@ -17,21 +17,18 @@ from app.domain.exceptions import BiometricIntegrationError
 from app.domain.services.biometric_integration_service import BiometricIntegrationService
 
 
-@pytest.mark.db_required()  # Assuming db_required is a valid marker
-class TestBiometricIntegrationService:
-    """Tests for the BiometricIntegrationService class."""
+@pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestBiometricIntegrationService:
+    """Tests for the BiometricIntegrationService class."""@pytest.fixture
+def mock_repository(self):
 
-    @pytest.fixture
-    def mock_repository(self):
-        """Create a mock repository for testing."""
+                """Create a mock repository for testing."""
         repo = AsyncMock()  # Use AsyncMock for async methods
         repo.get_by_patient_id = AsyncMock()
         repo.save = AsyncMock()
-        return repo
+        return repo@pytest.fixture
+def service(self, mock_repository):
 
-        @pytest.fixture
-        def service(self, mock_repository):
-        """Create a BiometricIntegrationService instance for testing."""
+                """Create a BiometricIntegrationService instance for testing."""
 
         return BiometricIntegrationService(
             biometric_twin_repository=mock_repository)
@@ -41,8 +38,8 @@ class TestBiometricIntegrationService:
                 self, service, mock_repository):
         """Test retrieving an existing biometric twin."""
         # Arrange
-        patient_id = uuid4()
-        mock_twin = BiometricTwin(patient_id=patient_id)
+        patient_id = uuid4(,
+        mock_twin= BiometricTwin(patient_id=patient_id)
         mock_repository.get_by_patient_id.return_value = mock_twin
 
         # Act
@@ -63,7 +60,7 @@ class TestBiometricIntegrationService:
         # Make save return the object passed to it
 
         async def save_side_effect(twin):
-            #     return twin # FIXME: return outside function
+                 #     return twin # FIXME: return outside function
         mock_repository.save.side_effect = save_side_effect
 
         # Act
@@ -92,10 +89,10 @@ class TestBiometricIntegrationService:
 
         @pytest.mark.asyncio
         async def test_add_biometric_data(self, service, mock_repository):
-        """Test adding a biometric data point."""
+                 """Test adding a biometric data point."""
         # Arrange
-        patient_id = uuid4()
-        mock_twin = MagicMock(spec=BiometricTwin)
+        patient_id = uuid4(,
+        mock_twin= MagicMock(spec=BiometricTwin)
         mock_twin.patient_id = patient_id
         mock_twin.add_data_point = MagicMock()  # Mock the method
 
@@ -104,8 +101,8 @@ class TestBiometricIntegrationService:
             return_value=mock_twin)
 
         # Act
-        data_point = await service.add_biometric_data()
-        patient_id = patient_id,
+        data_point = await service.add_biometric_data(,
+        patient_id= patient_id,
         data_type = "heart_rate",
         value = 75,
         source = "smartwatch",
@@ -140,8 +137,8 @@ class TestBiometricIntegrationService:
 
         # Act & Assert
         with pytest.raises(BiometricIntegrationError) as exc_info:
-        await service.add_biometric_data()
-        patient_id = patient_id,
+        await service.add_biometric_data(,
+        patient_id= patient_id,
         data_type = "heart_rate",
         value = 75,
         source = "smartwatch"
@@ -154,8 +151,8 @@ class TestBiometricIntegrationService:
                 self, service, mock_repository):
         """Test adding multiple biometric data points in a batch."""
         # Arrange
-        patient_id = uuid4()
-        mock_twin = MagicMock(spec=BiometricTwin)
+        patient_id = uuid4(,
+        mock_twin= MagicMock(spec=BiometricTwin)
         mock_twin.patient_id = patient_id
         mock_twin.add_data_point = MagicMock()  # Mock the method
 
@@ -192,28 +189,28 @@ class TestBiometricIntegrationService:
 
     @pytest.mark.asyncio
     async def test_get_biometric_data(self, service, mock_repository):
-        """Test retrieving biometric data with filtering."""
+                 """Test retrieving biometric data with filtering."""
         # Arrange
-        patient_id = uuid4()
-        mock_twin = MagicMock(spec=BiometricTwin)
+        patient_id = uuid4(,
+        mock_twin= MagicMock(spec=BiometricTwin)
 
         # Create some test data points
-        now = datetime.now(UTC)
-        data_points = [
-            BiometricDataPoint()
-            data_type = "heart_rate",
+        now = datetime.now(UTC,
+        data_points= [
+            BiometricDataPoint(,
+            data_type= "heart_rate",
             value = 75,
             timestamp = now,
             source = "smartwatch"
             (),
-            BiometricDataPoint()
-            data_type = "heart_rate",
+            BiometricDataPoint(,
+            data_type= "heart_rate",
             value = 80,
             timestamp = now - timedelta(hours=1),
             source = "smartwatch"
             (),
-            BiometricDataPoint()
-            data_type = "blood_pressure",
+            BiometricDataPoint(,
+            data_type= "blood_pressure",
             value = "120/80",
             timestamp = now,
             source = "blood_pressure_monitor"
@@ -226,8 +223,8 @@ class TestBiometricIntegrationService:
         mock_repository.get_by_patient_id.return_value = mock_twin
 
         # Act - Get all heart rate data
-        result = await service.get_biometric_data()
-        patient_id = patient_id,
+        result = await service.get_biometric_data(,
+        patient_id= patient_id,
         data_type = "heart_rate"
         ()
 
@@ -238,8 +235,8 @@ class TestBiometricIntegrationService:
             data_type="heart_rate", start_time=None, end_time=None, source=None)
 
         # Act - Get data from a specific source
-        result = await service.get_biometric_data()
-        patient_id = patient_id,
+        result = await service.get_biometric_data(,
+        patient_id= patient_id,
         source = "blood_pressure_monitor"
         ()
 
@@ -268,33 +265,33 @@ class TestBiometricIntegrationService:
 
         @pytest.mark.asyncio
         async def test_analyze_trends(self, service, mock_repository):
-        """Test analyzing trends in biometric data."""
+                 """Test analyzing trends in biometric data."""
         # Arrange
         patient_id = uuid4()
 
         # Mock the get_biometric_data method to return test data
-        now = datetime.now(UTC)
-        test_data = [
-            BiometricDataPoint()
-            data_type = "heart_rate",
+        now = datetime.now(UTC,
+        test_data= [
+            BiometricDataPoint(,
+            data_type= "heart_rate",
             value = 70,
             timestamp = now - timedelta(days=3),
             source = "smartwatch"
             (),
-            BiometricDataPoint()
-            data_type = "heart_rate",
+            BiometricDataPoint(,
+            data_type= "heart_rate",
             value = 75,
             timestamp = now - timedelta(days=2),
             source = "smartwatch"
             (),
-            BiometricDataPoint()
-            data_type = "heart_rate",
+            BiometricDataPoint(,
+            data_type= "heart_rate",
             value = 80,
             timestamp = now - timedelta(days=1),
             source = "smartwatch"
             (),
-            BiometricDataPoint()
-            data_type = "heart_rate",
+            BiometricDataPoint(,
+            data_type= "heart_rate",
             value = 85,
             timestamp = now,
             source = "smartwatch"
@@ -304,8 +301,8 @@ class TestBiometricIntegrationService:
         service.get_biometric_data = AsyncMock(return_value=test_data)
 
         # Act
-        result = await service.analyze_trends()
-        patient_id = patient_id,
+        result = await service.analyze_trends(,
+        patient_id= patient_id,
         data_type = "heart_rate",
         window_days = 7
         ()
@@ -328,8 +325,8 @@ class TestBiometricIntegrationService:
         service.get_biometric_data = AsyncMock(return_value=[])
 
         # Act
-        result = await service.analyze_trends()
-        patient_id = patient_id,
+        result = await service.analyze_trends(,
+        patient_id= patient_id,
         data_type = "heart_rate"
         ()
 
@@ -338,17 +335,17 @@ class TestBiometricIntegrationService:
 
         @pytest.mark.asyncio
         async def test_detect_correlations(self, service, mock_repository):
-        """Test detecting correlations between different biometric data types."""
+                 """Test detecting correlations between different biometric data types."""
         # Arrange
-        patient_id = uuid4()
-        mock_twin = MagicMock(spec=BiometricTwin)
+        patient_id = uuid4(,
+        mock_twin= MagicMock(spec=BiometricTwin)
         mock_repository.get_by_patient_id.return_value = mock_twin
 
         # Mock the get_data_points_by_type method to return sufficient data
-        now = datetime.now(UTC)
-        heart_rate_data = [
-            BiometricDataPoint()
-            data_type = "heart_rate",
+        now = datetime.now(UTC,
+        heart_rate_data= [
+            BiometricDataPoint(,
+            data_type= "heart_rate",
             value = 70 + i,
             timestamp = now - timedelta(hours=i),
             source = "smartwatch"
@@ -356,8 +353,8 @@ class TestBiometricIntegrationService:
         ]
 
         sleep_data = [
-            BiometricDataPoint()
-            data_type = "sleep_quality",
+            BiometricDataPoint(,
+            data_type= "sleep_quality",
             value = 0.8 - (i * 0.05),
             timestamp = now - timedelta(hours=i),
             source = "sleep_tracker"
@@ -380,8 +377,8 @@ class TestBiometricIntegrationService:
             side_effect=get_data_points_side_effect)
 
         # Act
-        result = await service.detect_correlations()
-        patient_id = patient_id,
+        result = await service.detect_correlations(,
+        patient_id= patient_id,
         primary_data_type = "heart_rate",
         secondary_data_types = ["sleep_quality", "activity_level"]
         ()
@@ -395,10 +392,10 @@ class TestBiometricIntegrationService:
 
         @pytest.mark.asyncio
         async def test_connect_device(self, service, mock_repository):
-        """Test connecting a device to a biometric twin."""
+                 """Test connecting a device to a biometric twin."""
         # Arrange
-        patient_id = uuid4()
-        mock_twin = MagicMock(spec=BiometricTwin)
+        patient_id = uuid4(,
+        mock_twin= MagicMock(spec=BiometricTwin)
         mock_twin.connect_device = MagicMock()  # Mock the method
 
         # Mock the get_or_create_biometric_twin method
@@ -409,8 +406,8 @@ class TestBiometricIntegrationService:
         service.add_biometric_data = AsyncMock()
 
         # Act
-        result = await service.connect_device()
-        patient_id = patient_id,
+        result = await service.connect_device(,
+        patient_id= patient_id,
         device_id = "smartwatch-123",
         device_type = "smartwatch",
         connection_metadata = {"model": "Apple Watch Series 7"}
@@ -424,10 +421,10 @@ class TestBiometricIntegrationService:
 
         @pytest.mark.asyncio
         async def test_disconnect_device(self, service, mock_repository):
-        """Test disconnecting a device from a biometric twin."""
+                 """Test disconnecting a device from a biometric twin."""
         # Arrange
-        patient_id = uuid4()
-        mock_twin = MagicMock(spec=BiometricTwin)
+        patient_id = uuid4(,
+        mock_twin= MagicMock(spec=BiometricTwin)
         mock_twin.disconnect_device = MagicMock()  # Mock the method
         mock_repository.get_by_patient_id.return_value = mock_twin
 
@@ -435,8 +432,8 @@ class TestBiometricIntegrationService:
         service.add_biometric_data = AsyncMock()
 
         # Act
-        result = await service.disconnect_device()
-        patient_id = patient_id,
+        result = await service.disconnect_device(,
+        patient_id= patient_id,
         device_id = "smartwatch-123",
         reason = "user_requested"
         ()
@@ -456,8 +453,8 @@ class TestBiometricIntegrationService:
         mock_repository.get_by_patient_id.return_value = None
 
         # Act
-        result = await service.disconnect_device()
-        patient_id = patient_id,
+        result = await service.disconnect_device(,
+        patient_id= patient_id,
         device_id = "smartwatch-123"
         ()
 

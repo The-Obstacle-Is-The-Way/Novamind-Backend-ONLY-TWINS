@@ -10,53 +10,50 @@ import pytest
 from unittest.mock import MagicMock
 
 from app.core.services.ml.xgboost.mock import MockXGBoostService
-from app.core.services.ml.xgboost.exceptions import
+from app.core.services.ml.xgboost.exceptions import (
 ValidationError, DataPrivacyError, ResourceNotFoundError,
 ModelNotFoundError
-()
+)
 
 
-@pytest.mark.venv_only()
-class TestMockXGBoostService:
-    """Test case for the MockXGBoostService class."""
+@pytest.mark.venv_only()class TestMockXGBoostService:
+    """Test case for the MockXGBoostService class."""@pytest.fixture
+def service(self):
 
-    @pytest.fixture
-    def service(self):
-        """Fixture that provides an initialized MockXGBoostService."""
+                """Fixture that provides an initialized MockXGBoostService."""
         service = MockXGBoostService()
         service.initialize({)
                            "data_privacy_level": 2,
                            "confidence_threshold": 0.7
                            (})
-        return service
+        return service@pytest.fixture
+def sample_patient_id(self):
 
-        @pytest.fixture
-        def sample_patient_id(self):
-        """Fixture that provides a sample patient ID."""
-        return "patient-123"
+                """Fixture that provides a sample patient ID."""
+        return "patient-123"@pytest.fixture
+def sample_clinical_data(self):
 
-        @pytest.fixture
-        def sample_clinical_data(self):
-        """Fixture that provides sample clinical data."""
+                """Fixture that provides sample clinical data."""
         return {
             "severity": "moderate",
             "assessment_scores": {
                 "phq9": 15,
                 "gad7": 12
             }
-        }
+        }@pytest.fixture
+def observer(self):
 
-    @pytest.fixture
-    def observer(self):
-        """Fixture that provides a mock observer."""
+                """Fixture that provides a mock observer."""
         observer = MagicMock()
         observer.notify_prediction = MagicMock()
         return observer
 
         def test_initialization(self):
-        """Test initialization of the service."""
-        service = MockXGBoostService()
-        config = {
+
+
+                        """Test initialization of the service."""
+        service = MockXGBoostService(,
+        config= {
             "data_privacy_level": 3,
             "confidence_threshold": 0.8
         }
@@ -73,8 +70,8 @@ class TestMockXGBoostService:
             sample_patient_id,
             sample_clinical_data):
         """Test risk prediction with valid data."""
-        result = service.predict_risk()
-        patient_id = sample_patient_id,
+        result = service.predict_risk(,
+        patient_id= sample_patient_id,
         risk_type = "relapse",
         clinical_data = sample_clinical_data
         ()
@@ -99,31 +96,33 @@ class TestMockXGBoostService:
                 "phq9": 15}}
 
     with pytest.raises(DataPrivacyError):
-        service.predict_risk()
-        patient_id = sample_patient_id,
+        service.predict_risk(,
+        patient_id= sample_patient_id,
         risk_type = "relapse",
         clinical_data = clinical_data
         ()
 
         def test_predict_risk_with_invalid_data(self, service):
-        """Test risk prediction with invalid data."""
+
+
+                        """Test risk prediction with invalid data."""
         with pytest.raises(ValidationError):
-            service.predict_risk()
-            patient_id = "",  # Empty patient ID
+            service.predict_risk(,
+            patient_id= "",  # Empty patient ID
             risk_type = "relapse",
             clinical_data = {}
             ()
 
             with pytest.raises(ValidationError):
-        service.predict_risk()
-        patient_id = "patient-123",
+        service.predict_risk(,
+        patient_id= "patient-123",
         risk_type = "",  # Empty risk type
         clinical_data = {}
         ()
 
         with pytest.raises(ValidationError):
-        service.predict_risk()
-        patient_id = "patient-123",
+        service.predict_risk(,
+        patient_id= "patient-123",
         risk_type = "relapse",
         clinical_data = None  # Missing clinical data
         ()
@@ -136,8 +135,8 @@ class TestMockXGBoostService:
             "dosage": "20mg"
         }
 
-    result = service.predict_treatment_response()
-    patient_id = sample_patient_id,
+    result = service.predict_treatment_response(,
+    patient_id= sample_patient_id,
     treatment_type = "ssri",
     treatment_details = treatment_details,
     clinical_data = sample_clinical_data,
@@ -174,8 +173,8 @@ assert "estimated_efficacy" in result
             "frequency": "weekly"
         }
 
-    result = service.predict_outcome()
-    patient_id = sample_patient_id,
+    result = service.predict_outcome(,
+    patient_id= sample_patient_id,
     outcome_timeframe = outcome_timeframe,
     clinical_data = sample_clinical_data,
     treatment_plan = treatment_plan,
@@ -193,18 +192,20 @@ assert "success_probability" in result
   assert "key_factors" in result
 
    def test_get_feature_importance(self, service, sample_patient_id):
-        """Test feature importance retrieval."""
+
+
+                   """Test feature importance retrieval."""
         # First make a prediction to get a prediction ID
-        prediction = service.predict_risk()
-        patient_id = sample_patient_id,
+        prediction = service.predict_risk(,
+        patient_id= sample_patient_id,
         risk_type = "relapse",
         clinical_data = {"severity": "moderate"}
-        ()
+        (,
 
-        prediction_id = prediction["prediction_id"]
+        prediction_id= prediction["prediction_id"]
 
-        result = service.get_feature_importance()
-        patient_id = sample_patient_id,
+        result = service.get_feature_importance(,
+        patient_id= sample_patient_id,
         model_type = "risk",
         prediction_id = prediction_id
         ()
@@ -221,8 +222,8 @@ assert "success_probability" in result
                 self, service, sample_patient_id):
         """Test feature importance with non-existent prediction ID."""
         with pytest.raises(ResourceNotFoundError):
-            service.get_feature_importance()
-            patient_id = sample_patient_id,
+            service.get_feature_importance(,
+            patient_id= sample_patient_id,
             model_type = "risk",
             prediction_id = "non-existent-id"
             ()
@@ -231,16 +232,16 @@ assert "success_probability" in result
                     self, service, sample_patient_id):
         """Test digital twin integration."""
         # First make a prediction to get a prediction ID
-        prediction = service.predict_risk()
-        patient_id = sample_patient_id,
+        prediction = service.predict_risk(,
+        patient_id= sample_patient_id,
         risk_type = "relapse",
         clinical_data = {"severity": "moderate"}
-        ()
+        (,
 
-        prediction_id = prediction["prediction_id"]
+        prediction_id= prediction["prediction_id"]
 
-        result = service.integrate_with_digital_twin()
-        patient_id = sample_patient_id,
+        result = service.integrate_with_digital_twin(,
+        patient_id= sample_patient_id,
         profile_id = "profile-456",
         prediction_id = prediction_id
         ()
@@ -253,7 +254,9 @@ assert "success_probability" in result
         assert "digital_twin_updates" in result
 
         def test_get_model_info(self, service):
-        """Test model info retrieval."""
+
+
+                        """Test model info retrieval."""
         result = service.get_model_info(model_type="risk_relapse")
 
         assert result is not None
@@ -264,7 +267,9 @@ assert "success_probability" in result
         assert "performance_metrics" in result
 
         def test_get_model_info_not_found(self, service):
-        """Test model info with non-existent model type."""
+
+
+                        """Test model info with non-existent model type."""
         with pytest.raises(ModelNotFoundError):
             service.get_model_info(model_type="non_existent_model")
 
@@ -278,8 +283,8 @@ assert "success_probability" in result
         assert observer_id in service.observers
 
         # Make a prediction to trigger notification
-        service.predict_risk()
-        patient_id = sample_patient_id,
+        service.predict_risk(,
+        patient_id= sample_patient_id,
         risk_type = "relapse",
         clinical_data = {"severity": "moderate"}
         ()
@@ -294,13 +299,17 @@ assert "success_probability" in result
         assert observer_id not in service.observers
 
         def test_unregister_nonexistent_observer(self, service):
-        """Test unregistering a non-existent observer."""
+
+
+                        """Test unregistering a non-existent observer."""
         result = service.unregister_prediction_observer("non-existent-id")
 
         assert result is False
 
         def test_phi_detection(self, service):
-        """Test the PHI detection functionality."""
+
+
+                        """Test the PHI detection functionality."""
         phi_detector = service.phi_detector
 
         # Test with non-PHI data
@@ -328,7 +337,9 @@ assert "success_probability" in result
     assert len(result["matches"]) > 0
 
     def test_prediction_sanitization(self, service):
-        """Test sanitization of predictions before notifying observers."""
+
+
+                    """Test sanitization of predictions before notifying observers."""
         phi_detector = service.phi_detector
 
         # Create a prediction with potential PHI

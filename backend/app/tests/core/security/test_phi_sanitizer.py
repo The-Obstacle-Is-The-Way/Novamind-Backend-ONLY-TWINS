@@ -5,14 +5,13 @@ import pytest
 import re
 from typing import Dict, List, Any, Union
 
-from app.core.security.phi_sanitizer import PHISanitizer
-
-
-class TestPHISanitizer:
+from app.core.security.phi_sanitizer import PHISanitizerclass TestPHISanitizer:
     """Test cases for the PHI sanitization utilities."""
 
     def setup_method(self):
-        """Set up test fixtures before each test method."""
+
+
+                    """Set up test fixtures before each test method."""
         self.sanitizer = PHISanitizer()
 
         # Sample PHI data
@@ -65,7 +64,9 @@ class TestPHISanitizer:
         ]
 
     def test_sanitize_string(self):
-        """Test that strings containing PHI are properly sanitized."""
+
+
+                    """Test that strings containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.text_with_phi)
 
         # Verify PHI is redacted
@@ -81,7 +82,9 @@ class TestPHISanitizer:
         assert "[REDACTED]" in sanitized
 
         def test_sanitize_dict(self):
-        """Test that dictionaries containing PHI are properly sanitized."""
+
+
+                        """Test that dictionaries containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.dict_with_phi)
 
         # Check that PHI fields are sanitized
@@ -100,7 +103,9 @@ class TestPHISanitizer:
         assert sanitized["medical_info"]["severity"] == "Moderate"
 
         def test_sanitize_list(self):
-        """Test that lists containing PHI are properly sanitized."""
+
+
+                        """Test that lists containing PHI are properly sanitized."""
         sanitized = self.sanitizer.sanitize(self.list_with_phi)
 
         # Check that PHI entries are sanitized
@@ -114,7 +119,9 @@ class TestPHISanitizer:
             assert "Notes: Patient reports improved mood" in sanitized
 
             def test_sanitize_complex_nested_structure(self):
-        """Test sanitization of complex nested data structures with PHI."""
+
+
+                            """Test sanitization of complex nested data structures with PHI."""
         complex_structure = {
             "patients": [
                 {
@@ -155,16 +162,18 @@ class TestPHISanitizer:
             assert sanitized["metadata"]["timestamp"] == "2025-04-10T00:00:00Z"
 
             def test_sanitize_with_custom_patterns(self):
-        """Test sanitization with custom PHI patterns."""
+
+
+                            """Test sanitization with custom PHI patterns."""
         # Create sanitizer with custom patterns
         custom_sanitizer = PHISanitizer(
             additional_patterns=[
                 r"Depression",  # Now treat "Depression" as PHI
                 r"Moderate",  # Now treat "Moderate" as PHI
             ]
-        )
+        ,
 
-        sanitized = custom_sanitizer.sanitize(self.dict_with_phi)
+        sanitized= custom_sanitizer.sanitize(self.dict_with_phi)
 
         # Standard PHI should be sanitized
         assert sanitized["name"] != self.patient_name
@@ -174,7 +183,9 @@ class TestPHISanitizer:
         assert sanitized["medical_info"]["severity"] != "Moderate"
 
     def test_sanitization_preserves_structure(self):
-        """Test that sanitization preserves the structure of the input data."""
+
+
+                    """Test that sanitization preserves the structure of the input data."""
         # Test with dictionary
         dict_sanitized = self.sanitizer.sanitize(self.dict_with_phi)
         assert isinstance(dict_sanitized, dict)
@@ -187,9 +198,7 @@ class TestPHISanitizer:
 
         # Test with string
         string_sanitized = self.sanitizer.sanitize(self.text_with_phi)
-        assert isinstance(string_sanitized, str)
-
-        class TestCustomPHISanitizer:
+        assert isinstance(string_sanitized, str)class TestCustomPHISanitizer:
     """Test cases for PHI sanitization with custom patterns."""
 
     # Define custom patterns using PHISanitizer's internal structure
@@ -201,18 +210,24 @@ class TestPHISanitizer:
     ]
 
     def setup_method(self):
-        """Set up test fixtures for custom sanitization."""
+
+
+                    """Set up test fixtures for custom sanitization."""
         self.sanitizer = PHISanitizer(additional_patterns=self.CUSTOM_PATTERNS)
         self.text_with_phi = "EmployeeID: 1234, ProjectCode: ABC-1234"
 
         def test_custom_patterns_in_string(self):
-        """Test custom patterns in string sanitization."""
+
+
+                        """Test custom patterns in string sanitization."""
         sanitized_text = self.sanitizer.sanitize(self.text_with_phi)
         assert "[REDACTED EMPLOYEE ID]" in sanitized_text
         assert "[REDACTED PROJECT CODE]" in sanitized_text
 
         def test_custom_patterns_in_dict(self):
-        """Test custom patterns in dictionary sanitization."""
+
+
+                        """Test custom patterns in dictionary sanitization."""
         dict_with_phi = {"employee_id": "1234", "project_code": "ABC-1234"}
         sanitized_dict = self.sanitizer.sanitize(dict_with_phi)
         assert sanitized_dict["employee_id"] == "[REDACTED EMPLOYEE ID]"

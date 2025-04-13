@@ -26,22 +26,17 @@ sys.path.insert(
             os.path.dirname(__file__),
             '../../scripts')))
 
-# Import PHI auditor
+# Import PHI auditorclass TestPHIAudit:
+    """Test suite for PHI audit functionality with fixed tests."""@pytest.fixture
+def temp_dir(self):
 
-
-class TestPHIAudit:
-    """Test suite for PHI audit functionality with fixed tests."""
-
-    @pytest.fixture
-    def temp_dir(self):
-        """Create a temporary directory for test files."""
+                """Create a temporary directory for test files."""
         temp_dir = tempfile.mkdtemp()
         yield temp_dir
-        shutil.rmtree(temp_dir)
+        shutil.rmtree(temp_dir)@pytest.fixture
+def mock_app_directory(self, temp_dir):
 
-        @pytest.fixture
-        def mock_app_directory(self, temp_dir):
-        """Create a mock app directory with test files."""
+                """Create a mock app directory with test files."""
         # Create a directory structure mimicking an app
         app_dir = os.path.join(temp_dir, "mock_app")
         os.makedirs(os.path.join(app_dir, "domain"))
@@ -49,23 +44,25 @@ class TestPHIAudit:
 
         # Create a file with PHI for testing detection
         with open(os.path.join(app_dir, "domain", "patient.py"), "w") as f:
-        f.write(""")
-        class Patient:
+        f.write(""")class Patient:
     \"\"\"Patient entity class.\"\"\"
 
     def __init__(self, name, ssn):
-        self.name = name  # Patient name
+
+
+                self.name = name  # Patient name
         self.ssn = ssn    # Patient SSN: 123-45-6789
 
         def get_patient_info(self):
-        \"\"\"Get patient information.\"\"\"
+
+
+                    \"\"\"Get patient information.\"\"\"
         return f"Patient: {self.name}, SSN: {self.ssn}"
         (""")
 
         # Create a file without PHI
         with open(os.path.join(app_dir, "infrastructure", "config.py"), "w") as f:
-        f.write(""")
-        class Config:
+        f.write(""")class Config:
     \"\"\"Application configuration.\"\"\"
 
     DEBUG = False
@@ -77,7 +74,8 @@ class TestPHIAudit:
 
     @patch('scripts.test.security.run_hipaa_phi_audit.logger')
     def test_audit_detects_phi_in_code(self, mock_logger, mock_app_directory):
-        """Test that the auditor correctly finds PHI in code."""
+
+                    """Test that the auditor correctly finds PHI in code."""
         auditor = PHIAuditor(app_dir=mock_app_directory)
         auditor.audit_code_for_phi()
 
@@ -95,7 +93,8 @@ class TestPHIAudit:
 
         @patch('scripts.test.security.run_hipaa_phi_audit.logger')
         def test_audit_excludes_test_files(self, mock_logger, temp_dir):
-        """Test that the auditor correctly excludes test files."""
+
+                        """Test that the auditor correctly excludes test files."""
         # Create a test directory with test files
         app_dir = os.path.join(temp_dir, "test_app")
         os.makedirs(os.path.join(app_dir, "tests"))
@@ -104,7 +103,8 @@ class TestPHIAudit:
         with open(os.path.join(app_dir, "tests", "test_phi.py"), "w") as f:
         f.write(""")
         def test_phi_detection():
-        \"\"\"Test PHI detection in test context.\"\"\"
+
+                    \"\"\"Test PHI detection in test context.\"\"\"
         # This is a test SSN and should not trigger a finding
         test_ssn = "123-45-6789"
         assert test_ssn  !=  "[REDACTED]"
@@ -121,19 +121,21 @@ class TestPHIAudit:
 
         @patch('scripts.test.security.run_hipaa_phi_audit.logger')
         def test_clean_app_directory_special_case(self, mock_logger, temp_dir):
-        """Test that clean_app directory passes audit even with intentional PHI for testing."""
+
+                        """Test that clean_app directory passes audit even with intentional PHI for testing."""
         # Create a clean_app directory with test PHI content
         app_dir = os.path.join(temp_dir, "clean_app_test_data")
         os.makedirs(os.path.join(app_dir, "domain"))
 
         # Create a file with PHI - this would normally cause a failure
         with open(os.path.join(app_dir, "domain", "test_data.py"), "w") as f:
-        f.write(""")
-        class TestData:
+        f.write(""")class TestData:
     \"\"\"Test data class with intentional PHI for testing.\"\"\"
 
     def get_test_ssn(self):
-        \"\"\"Return test SSN data.\"\"\"
+
+
+                \"\"\"Return test SSN data.\"\"\"
         return "123-45-6789"  # This is test data, not real PHI
         (""")
 
@@ -154,25 +156,27 @@ class TestPHIAudit:
 
         @patch('scripts.test.security.run_hipaa_phi_audit.logger')
         def test_audit_with_clean_files(self, mock_logger, temp_dir):
-        """Test auditor with clean files (no PHI)."""
+
+                        """Test auditor with clean files (no PHI)."""
         # Create a clean app directory
         app_dir = os.path.join(temp_dir, "clean_app")
         os.makedirs(os.path.join(app_dir, "domain"))
 
         # Create a clean file
         with open(os.path.join(app_dir, "domain", "clean.py"), "w") as f:
-        f.write(""")
-        class Utility:
+        f.write(""")class Utility:
     \"\"\"A clean utility class with no PHI.\"\"\"
 
     def process_data(self, data_id):
-        \"\"\"Process data safely.\"\"\"
+
+
+                \"\"\"Process data safely.\"\"\"
         return f"Processed {data_id}"
         (""")
 
         # Run audit
-        auditor = PHIAuditor(app_dir=app_dir)
-        result = auditor.run_audit()
+        auditor = PHIAuditor(app_dir=app_dir,
+        result= auditor.run_audit()
 
         # Audit should pass (return True) because we have no issues
         assert result is True
@@ -186,7 +190,8 @@ class TestPHIAudit:
 
         @patch('scripts.test.security.run_hipaa_phi_audit.logger')
         def test_phi_detector_ssn_pattern(self, mock_logger):
-        """Test that the PHI detector correctly identifies SSN patterns."""
+
+                        """Test that the PHI detector correctly identifies SSN patterns."""
         detector = PHIDetector()
 
         # Text with SSN pattern

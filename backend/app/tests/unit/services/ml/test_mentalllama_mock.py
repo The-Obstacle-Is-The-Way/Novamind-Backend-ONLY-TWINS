@@ -15,14 +15,16 @@ from app.core.services.ml.providers.mock import MockMentaLLaMA
 
 @pytest.fixture
 def mock_service():
-    """Create a mock MentaLLaMA service instance."""
+
+            """Create a mock MentaLLaMA service instance."""
     service = MockMentaLLaMA()
     service.initialize({"provider": "mock"})
     return service
 
     @pytest.mark.db_required()
     def test_initialization_success():
-    """Test successful initialization of mock service."""
+
+                """Test successful initialization of mock service."""
     # Arrange
     service = MockMentaLLaMA()
 
@@ -35,7 +37,9 @@ def mock_service():
     assert len(service._available_models) > 0
 
     def test_initialization_missing_provider():
-    """Test initialization with missing provider."""
+
+
+                """Test initialization with missing provider."""
     # Arrange
     service = MockMentaLLaMA()
 
@@ -44,7 +48,9 @@ def mock_service():
         service.initialize({})
 
         def test_process(mock_service):
-    """Test general processing functionality."""
+
+
+                    """Test general processing functionality."""
     # Arrange
     prompt = "How are you feeling today?"
 
@@ -66,7 +72,9 @@ def mock_service():
     assert result["provider"] == "mock"
 
     def test_depression_detection_positive(mock_service):
-    """Test depression detection with positive indicators."""
+
+
+                """Test depression detection with positive indicators."""
     # Arrange
     text = "I feel very depressed and hopeless. I don't enjoy anything anymore."
 
@@ -84,7 +92,9 @@ def mock_service():
     assert "rationale" in result
 
     def test_depression_detection_negative(mock_service):
-    """Test depression detection with negative indicators."""
+
+
+                """Test depression detection with negative indicators."""
     # Arrange
     text = "I'm feeling good today. Everything is going well."
 
@@ -99,7 +109,9 @@ def mock_service():
     assert "key_indicators" in result
 
     def test_risk_assessment_high(mock_service):
-    """Test risk assessment with high risk indicators."""
+
+
+                """Test risk assessment with high risk indicators."""
     # Arrange
     text = "I have a plan to end my life. I've decided I can't go on like this."
 
@@ -118,7 +130,9 @@ def mock_service():
     assert "rationale" in result
 
     def test_risk_assessment_low(mock_service):
-    """Test risk assessment with low risk indicators."""
+
+
+                """Test risk assessment with low risk indicators."""
     # Arrange
     text = "I'm a bit stressed but overall doing fine. No thoughts of harming myself."
 
@@ -135,7 +149,9 @@ def mock_service():
     assert "rationale" in result
 
     def test_sentiment_analysis_positive(mock_service):
-    """Test sentiment analysis with positive sentiment."""
+
+
+                """Test sentiment analysis with positive sentiment."""
     # Arrange
     text = "I feel happy and excited about the progress I'm making. I'm grateful for all the support."
 
@@ -155,7 +171,9 @@ def mock_service():
     assert isinstance(result["emotion_distribution"], dict)
 
     def test_sentiment_analysis_negative(mock_service):
-    """Test sentiment analysis with negative sentiment."""
+
+
+                """Test sentiment analysis with negative sentiment."""
     # Arrange
     text = "I'm feeling unhappy and frustrated with everything. Nothing is working out."
 
@@ -173,7 +191,9 @@ def mock_service():
     assert "emotion_distribution" in result
 
     def test_wellness_dimensions(mock_service):
-    """Test wellness dimensions analysis."""
+
+
+                """Test wellness dimensions analysis."""
     # Arrange
     text = "I'm doing well at work but struggling with my personal relationships. I exercise regularly but feel spiritually disconnected."
 
@@ -193,7 +213,9 @@ def mock_service():
     assert isinstance(result["recommendations"], list)
 
     def test_service_shutdown(mock_service):
-    """Test service shutdown functionality."""
+
+
+                """Test service shutdown functionality."""
     # Act
     mock_service.shutdown()
 
@@ -203,7 +225,9 @@ def mock_service():
     assert mock_service._available_models == {}
 
     def test_mock_response_parsing():
-    """Test parsing of mock service responses."""
+
+
+                """Test parsing of mock service responses."""
     # Arrange
     service = MockMentaLLaMA()
     service.initialize({"provider": "mock"})
@@ -234,7 +258,10 @@ def mock_service():
 
 
 def test_generate_with_invalid_input(mock_service):
-    """Test generation with invalid inputs."""
+
+
+
+            """Test generation with invalid inputs."""
     # Act
     result = mock_service._generate(
         prompt="",  # Empty prompt

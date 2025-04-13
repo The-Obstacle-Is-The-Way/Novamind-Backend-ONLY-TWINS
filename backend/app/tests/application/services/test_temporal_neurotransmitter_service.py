@@ -35,31 +35,29 @@ from app.domain.services.visualization_preprocessor import (
 @pytest.fixture
 @pytest.mark.db_required()
 def test_patient_id():
-    """Generate a test patient ID."""
 
-    return uuid.uuid4()
+            """Generate a test patient ID."""
 
-    @pytest.fixture
-    def mock_sequence_repository():
-    """Create a mock sequence repository."""
+    return uuid.uuid4()@pytest.fixture
+def mock_sequence_repository():
+
+            """Create a mock sequence repository."""
     repository = AsyncMock()
     repository.save = AsyncMock(return_value=uuid.uuid4())
     repository.get_by_id = AsyncMock()
     repository.get_latest_by_feature = AsyncMock()
 
-    return repository
+    return repository@pytest.fixture
+def mock_event_repository():
 
-    @pytest.fixture
-    def mock_event_repository():
-    """Create a mock event repository."""
+            """Create a mock event repository."""
     repository = AsyncMock()
     repository.save = AsyncMock(return_value=uuid.uuid4())
 
-    return repository
+    return repository@pytest.fixture
+def mock_xgboost_service():
 
-    @pytest.fixture
-    def mock_xgboost_service():
-    """Create a mock XGBoost service."""
+            """Create a mock XGBoost service."""
     service = MagicMock()
     service.predict_treatment_response = MagicMock(
         return_value={
@@ -79,10 +77,11 @@ def test_patient_id():
 
 @pytest.fixture
 def mock_sequence():
-    """Create a mock temporal sequence."""
+
+            """Create a mock temporal sequence."""
     # Create timestamps
-    now = datetime.now()
-    timestamps = [now + timedelta(hours=i * 6) for i in range(5)]
+    now = datetime.now(,
+    timestamps= [now + timedelta(hours=i * 6) for i in range(5)]
 
     # Create feature names for multiple neurotransmitters
     feature_names = [nt.value for nt in Neurotransmitter]
@@ -126,10 +125,7 @@ def temporal_service(
         sequence_repository=mock_sequence_repository,
         event_repository=mock_event_repository,
         xgboost_service=mock_xgboost_service,
-    )
-
-
-class TestTemporalNeurotransmitterService:
+    )class TestTemporalNeurotransmitterService:
     """Test suite for the TemporalNeurotransmitterService."""
 
     @pytest.mark.asyncio()
@@ -355,12 +351,12 @@ class TestTemporalNeurotransmitterService:
 
     @pytest.mark.asyncio()
     async def test_calculate_average_concentration_invalid_time(self, service):
-        """Test average concentration calculation with an invalid time range."""
+                 """Test average concentration calculation with an invalid time range."""
         pass
 
         @pytest.mark.asyncio()
         async def test_identify_trend(self, service, mock_repository):
-        """Test identifying the trend of neurotransmitter concentration."""
+                 """Test identifying the trend of neurotransmitter concentration."""
         pass
 
         @pytest.mark.asyncio()
@@ -371,7 +367,7 @@ class TestTemporalNeurotransmitterService:
 
         @pytest.mark.asyncio()
         async def test_detect_anomalies(self, service, mock_repository):
-        """Test detecting anomalous concentration values."""
+                 """Test detecting anomalous concentration values."""
         pass
 
         @pytest.mark.asyncio()
@@ -394,9 +390,9 @@ class TestTemporalNeurotransmitterService:
 
         @pytest.mark.asyncio()
         async def test_generate_time_series(self, service, mock_repository):
-        """Test generation of neurotransmitter time series."""
+                 """Test generation of neurotransmitter time series."""
         pass
 
         @pytest.mark.asyncio
         async def test_temporal_service_initialization():
-    pass
+         pass

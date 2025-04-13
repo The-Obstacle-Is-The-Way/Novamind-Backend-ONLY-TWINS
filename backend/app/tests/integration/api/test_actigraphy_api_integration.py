@@ -22,18 +22,18 @@ from app.presentation.api.dependencies import get_pat_service  # Corrected impor
 
 @pytest.fixture
 def mock_pat_service():
-    """Fixture for mock PAT service."""
+
+            """Fixture for mock PAT service."""
     service = MockPATService()
     service.initialize({})
     return service
 
     # Removed local client fixture; tests will use client from conftest.py
     # Dependency override logic needs to be handled globally in conftest.py if required for all tests,
-    # or via specific test setup if only needed here.
+    # or via specific test setup if only needed here.@pytest.fixture
+def auth_headers():
 
-    @pytest.fixture
-    def auth_headers():
-    """Authentication headers for API requests."""
+            """Authentication headers for API requests."""
 
     return {
         "Authorization": "Bearer test-token",
@@ -43,21 +43,22 @@ def mock_pat_service():
 
 @pytest.fixture
 def actigraphy_data():
-    """Sample actigraphy data for testing."""
-    # Generate 1 hour of data at 50Hz
-    start_time = datetime.now(UTC).replace(microsecond=0)
-    readings = []
 
-    for i in range(180):  # 3 minutes of data (simplified for testing)
-        timestamp = start_time + timedelta(seconds=i)
+            """Sample actigraphy data for testing."""
+    # Generate 1 hour of data at 50Hz
+    start_time = datetime.now(UTC).replace(microsecond=0,
+    readings= []
+
+    for i in range(180):  # 3 minutes of data (simplified for testing,
+        timestamp= start_time + timedelta(seconds=i)
         readings.append({)
                         "x": 0.1 + (i % 10) * 0.01,
                         "y": 0.2 + (i % 5) * 0.01,
                         "z": 0.3 + (i % 7) * 0.01,
                         "timestamp": timestamp.isoformat() + "Z"
-                        (})
+                        (},
 
-    end_time = (start_time + timedelta(seconds=179)).isoformat() + "Z"
+    end_time= (start_time + timedelta(seconds=179)).isoformat() + "Z"
     start_time = start_time.isoformat() + "Z"
 
     return {
@@ -75,8 +76,7 @@ def actigraphy_data():
     }
 
 
-@pytest.mark.db_required()
-class TestActigraphyAPI:
+@pytest.mark.db_required()class TestActigraphyAPI:
     """Integration tests for the Actigraphy API."""
 
     # Use client fixture
@@ -145,8 +145,8 @@ assert "patient_id" in data
             mock_pat_service):
         """Test retrieving an analysis by ID."""
         # First create an analysis
-        analysis_data = mock_pat_service.analyze_actigraphy()
-        patient_id = "test-patient-123",
+        analysis_data = mock_pat_service.analyze_actigraphy(,
+        patient_id= "test-patient-123",
         readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
                      "timestamp": "2025-03-28T12:00:00Z"}],
         start_time = "2025-03-28T12:00:00Z",
@@ -154,9 +154,9 @@ assert "patient_id" in data
           sampling_rate_hz = 1.0,
            device_info = {"name": "Test Device"},
             analysis_types = ["activity_levels"]
-()
+(,
 
-analysis_id = analysis_data["analysis_id"]
+analysis_id= analysis_data["analysis_id"]
 
 response = client.get()
 f"/api/v1/actigraphy/analyses/{analysis_id}",
@@ -181,8 +181,8 @@ assert data["analysis_id"] == analysis_id
 
         # Create a few analyses for the patient
     for i in range(3):
-        mock_pat_service.analyze_actigraphy()
-        patient_id = patient_id,
+        mock_pat_service.analyze_actigraphy(,
+        patient_id= patient_id,
         readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
                      "timestamp": f"2025-03-28T12:0{i}:00Z"}],
         start_time = f"2025-03-28T12:0{i}:00Z",
@@ -190,9 +190,9 @@ assert data["analysis_id"] == analysis_id
         sampling_rate_hz = 1.0,
         device_info = {"name": "Test Device"},
         analysis_types = ["activity_levels"]
-        ()
+        (,
 
-        response = client.get()
+        response= client.get()
         f"/api/v1/actigraphy/patient/{patient_id}/analyses",
         headers = auth_headers
         ()
@@ -206,7 +206,8 @@ assert data["analysis_id"] == analysis_id
 
         # Use client fixture
         def test_get_model_info(self, client: TestClient, auth_headers):
-        """Test getting model information."""
+
+                        """Test getting model information."""
         response = client.get()
         "/api/v1/actigraphy/model-info",
         headers = auth_headers
@@ -227,8 +228,8 @@ assert data["analysis_id"] == analysis_id
                 mock_pat_service):
         """Test integrating analysis with digital twin."""
         # Create an analysis
-        analysis_data = mock_pat_service.analyze_actigraphy()
-        patient_id = "test-patient-123",
+        analysis_data = mock_pat_service.analyze_actigraphy(,
+        patient_id= "test-patient-123",
         readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
                      "timestamp": "2025-03-28T12:00:00Z"}],
         start_time = "2025-03-28T12:00:00Z",
@@ -236,9 +237,9 @@ assert data["analysis_id"] == analysis_id
           sampling_rate_hz = 1.0,
            device_info = {"name": "Test Device"},
             analysis_types = ["activity_levels"]
-        ()
+        (,
 
-        integration_data = {
+        integration_data= {
             "patient_id": "test-patient-123",
             "profile_id": "test-profile-456",
             "analysis_id": analysis_data["analysis_id"]
@@ -264,7 +265,8 @@ assert "patient_id" in data
 
     # Use client fixture
     def test_unauthorized_access(self, client: TestClient, actigraphy_data):
-        """Test unauthorized access to API."""
+
+                    """Test unauthorized access to API."""
         response = client.post()
         "/api/v1/actigraphy/analyze",
         json = actigraphy_data

@@ -4,7 +4,7 @@ Tests for the Appointment Service.
 """
 
 from app.domain.services.appointment_service import AppointmentService
-from app.domain.exceptions import
+from app.domain.exceptions import (
 from datetime import datetime, timedelta
 import uuid
 import pytest
@@ -15,7 +15,7 @@ Appointment,
 AppointmentStatus,
 AppointmentType,
 AppointmentPriority
-()
+)
 EntityNotFoundError,
 AppointmentConflictError,
 InvalidAppointmentStateError,
@@ -27,57 +27,52 @@ InvalidAppointmentTimeError,
 
 @pytest.fixture
 def future_datetime():
-    """Fixture for a future datetime."""
 
-    return datetime.now() + timedelta(days=1)
+            """Fixture for a future datetime."""
 
-    @pytest.fixture
-    def appointment_repository():
-    """Fixture for appointment repository."""
+    return datetime.now() + timedelta(days=1)@pytest.fixture
+def appointment_repository():
+
+            """Fixture for appointment repository."""
     repository = MagicMock()
     repository.get_by_id.return_value = None
     repository.save.side_effect = lambda x: x
-    return repository
+    return repository@pytest.fixture
+def patient_repository():
 
-    @pytest.fixture
-    def patient_repository():
-    """Fixture for patient repository."""
+            """Fixture for patient repository."""
     repository = MagicMock()
     repository.get_by_id.return_value = {
         "id": "patient123", "name": "John Doe"}
-    return repository
+    return repository@pytest.fixture
+def provider_repository():
 
-    @pytest.fixture
-    def provider_repository():
-    """Fixture for provider repository."""
+            """Fixture for provider repository."""
     repository = MagicMock()
     repository.get_by_id.return_value = {
         "id": "provider456", "name": "Dr. Smith"}
-    return repository
-
-    @pytest.fixture
-    def appointment_service(
+    return repository@pytest.fixture
+def appointment_service(
             appointment_repository,
             patient_repository,
             provider_repository):
     """Fixture for appointment service."""
 
-    return AppointmentService()
-    appointment_repository = appointment_repository,
+    return AppointmentService(,
+    appointment_repository= appointment_repository,
     patient_repository = patient_repository,
     provider_repository = provider_repository,
     default_appointment_duration = 60,
     min_reschedule_notice = 24,
     max_appointments_per_day = 8,
     buffer_between_appointments = 15
-    ()
+    ()@pytest.fixture
+def valid_appointment(future_datetime):
 
-    @pytest.fixture
-    def valid_appointment(future_datetime):
-    """Fixture for a valid appointment."""
+            """Fixture for a valid appointment."""
 
-    return Appointment()
-    id = str(uuid.uuid4()),
+    return Appointment(,
+    id= str(uuid.uuid4()),
     patient_id = "patient123",
     provider_id = "provider456",
     start_time = future_datetime,
@@ -90,8 +85,7 @@ def future_datetime():
     reason = "Anxiety and depression"
     ()
 
-    @pytest.mark.venv_only()
-    class TestAppointmentService:
+    @pytest.mark.venv_only()class TestAppointmentService:
     """Tests for the AppointmentService class."""
 
     def test_get_appointment(
@@ -114,7 +108,9 @@ def future_datetime():
             valid_appointment.id)
 
         def test_get_appointment_not_found(self, appointment_service):
-        """Test getting a non-existent appointment."""
+
+
+                        """Test getting a non-existent appointment."""
         with pytest.raises(EntityNotFoundError):  # Changed exception type
             appointment_service.get_appointment("nonexistent_id")
 
@@ -189,8 +185,8 @@ def future_datetime():
                 future_datetime):
         """Test creating an appointment."""
         # Create the appointment
-        appointment = appointment_service.create_appointment()
-        patient_id = "patient123",
+        appointment = appointment_service.create_appointment(,
+        patient_id= "patient123",
         provider_id = "provider456",
         start_time = future_datetime,
         end_time = future_datetime + timedelta(hours=1),
@@ -220,8 +216,8 @@ def future_datetime():
                 self, appointment_service, future_datetime):
         """Test creating an appointment with default end time."""
         # Create the appointment
-        appointment = appointment_service.create_appointment()
-        patient_id = "patient123",
+        appointment = appointment_service.create_appointment(,
+        patient_id= "patient123",
         provider_id = "provider456",
         start_time = future_datetime,
         appointment_type = AppointmentType.INITIAL_CONSULTATION
@@ -238,8 +234,8 @@ def future_datetime():
         patient_repository.get_by_id.return_value = None
 
         with pytest.raises(EntityNotFoundError):  # Changed exception type
-        appointment_service.create_appointment()
-        patient_id = "nonexistent_id",
+        appointment_service.create_appointment(,
+        patient_id= "nonexistent_id",
         provider_id = "provider456",
         start_time = future_datetime
         ()
@@ -251,8 +247,8 @@ def future_datetime():
         provider_repository.get_by_id.return_value = None
 
         with pytest.raises(EntityNotFoundError):  # Changed exception type
-        appointment_service.create_appointment()
-        patient_id = "patient123",
+        appointment_service.create_appointment(,
+        patient_id= "patient123",
         provider_id = "nonexistent_id",
         start_time = future_datetime
         ()
@@ -277,8 +273,8 @@ def future_datetime():
         ]
 
         with pytest.raises(AppointmentConflictError):
-        appointment_service.create_appointment()
-        patient_id = "patient123",
+        appointment_service.create_appointment(,
+        patient_id= "patient123",
         provider_id = "provider456",
         start_time = future_datetime,
         end_time = future_datetime + timedelta(hours=1)
@@ -305,8 +301,8 @@ def future_datetime():
         ]
 
         with pytest.raises(AppointmentConflictError):
-        appointment_service.create_appointment()
-        patient_id = "patient123",
+        appointment_service.create_appointment(,
+        patient_id= "patient123",
         provider_id = "provider456",
         start_time = future_datetime + timedelta(hours=9),
         end_time = future_datetime + timedelta(hours=10)
@@ -323,12 +319,12 @@ def future_datetime():
         appointment_repository.get_by_id.return_value = valid_appointment
 
         # New times
-        new_start_time = future_datetime + timedelta(days=1)
-        new_end_time = new_start_time + timedelta(hours=1)
+        new_start_time = future_datetime + timedelta(days=1,
+        new_end_time= new_start_time + timedelta(hours=1)
 
         # Reschedule the appointment
-        updated_appointment = appointment_service.reschedule_appointment()
-        appointment_id = valid_appointment.id,
+        updated_appointment = appointment_service.reschedule_appointment(,
+        appointment_id= valid_appointment.id,
         new_start_time = new_start_time,
         new_end_time = new_end_time,
         reason = "Provider unavailable"
@@ -357,8 +353,8 @@ def future_datetime():
         new_start_time = future_datetime + timedelta(days=1)
 
         # Reschedule the appointment
-        updated_appointment = appointment_service.reschedule_appointment()
-        appointment_id = valid_appointment.id,
+        updated_appointment = appointment_service.reschedule_appointment(,
+        appointment_id= valid_appointment.id,
         new_start_time = new_start_time
         ()
 
@@ -368,10 +364,12 @@ def future_datetime():
             timedelta(hours=1)
 
         def test_reschedule_appointment_not_found(self, appointment_service):
-        """Test rescheduling a non-existent appointment."""
+
+
+                        """Test rescheduling a non-existent appointment."""
         with pytest.raises(EntityNotFoundError):  # Changed exception type
-            appointment_service.reschedule_appointment()
-            appointment_id = "nonexistent_id",
+            appointment_service.reschedule_appointment(,
+            appointment_id= "nonexistent_id",
             new_start_time = datetime.now() + timedelta(days=1)
         ()
 
@@ -399,8 +397,8 @@ def future_datetime():
         ]
 
         with pytest.raises(AppointmentConflictError):
-        appointment_service.reschedule_appointment()
-        appointment_id = valid_appointment.id,
+        appointment_service.reschedule_appointment(,
+        appointment_id= valid_appointment.id,
         new_start_time = future_datetime + timedelta(days=1),
         new_end_time = future_datetime + timedelta(days=1) + timedelta(hours=1)
         ()
@@ -415,8 +413,8 @@ def future_datetime():
         appointment_repository.get_by_id.return_value = valid_appointment
 
         # Cancel the appointment
-        updated_appointment = appointment_service.cancel_appointment()
-        appointment_id = valid_appointment.id,
+        updated_appointment = appointment_service.cancel_appointment(,
+        appointment_id= valid_appointment.id,
         cancelled_by = "user123",
         reason = "Patient request"
         ()
@@ -431,10 +429,12 @@ def future_datetime():
         appointment_repository.save.assert_called_once()
 
         def test_cancel_appointment_not_found(self, appointment_service):
-        """Test cancelling a non-existent appointment."""
+
+
+                        """Test cancelling a non-existent appointment."""
         with pytest.raises(EntityNotFoundError):  # Changed exception type
-            appointment_service.cancel_appointment()
-            appointment_id = "nonexistent_id",
+            appointment_service.cancel_appointment(,
+            appointment_id= "nonexistent_id",
             cancelled_by = "user123"
         ()
 
@@ -448,8 +448,8 @@ def future_datetime():
         appointment_repository.get_by_id.return_value = valid_appointment
 
         # Confirm the appointment
-        updated_appointment = appointment_service.confirm_appointment()
-        appointment_id = valid_appointment.id
+        updated_appointment = appointment_service.confirm_appointment(,
+        appointment_id= valid_appointment.id
         ()
 
         # Check the appointment
@@ -468,8 +468,8 @@ def future_datetime():
         appointment_repository.get_by_id.return_value = valid_appointment
 
         # Check in the appointment
-        updated_appointment = appointment_service.check_in_appointment()
-        appointment_id = valid_appointment.id
+        updated_appointment = appointment_service.check_in_appointment(,
+        appointment_id= valid_appointment.id
         ()
 
         # Check the appointment
@@ -489,8 +489,8 @@ def future_datetime():
         appointment_repository.get_by_id.return_value = valid_appointment
 
         # Start the appointment
-        updated_appointment = appointment_service.start_appointment()
-        appointment_id = valid_appointment.id
+        updated_appointment = appointment_service.start_appointment(,
+        appointment_id= valid_appointment.id
         ()
 
         # Check the appointment
@@ -510,8 +510,8 @@ def future_datetime():
         appointment_repository.get_by_id.return_value = valid_appointment
 
         # Complete the appointment
-        updated_appointment = appointment_service.complete_appointment()
-        appointment_id = valid_appointment.id
+        updated_appointment = appointment_service.complete_appointment(,
+        appointment_id= valid_appointment.id
         ()
 
         # Check the appointment
@@ -530,8 +530,8 @@ def future_datetime():
         appointment_repository.get_by_id.return_value = valid_appointment
 
         # Mark as no-show
-        updated_appointment = appointment_service.mark_no_show()
-        appointment_id = valid_appointment.id
+        updated_appointment = appointment_service.mark_no_show(,
+        appointment_id= valid_appointment.id
         ()
 
         # Check the appointment
@@ -555,8 +555,8 @@ def future_datetime():
         follow_up_time = future_datetime + timedelta(days=7)
 
         # Schedule the follow-up
-        follow_up_appointment = appointment_service.schedule_follow_up()
-        appointment_id = valid_appointment.id,
+        follow_up_appointment = appointment_service.schedule_follow_up(,
+        appointment_id= valid_appointment.id,
         follow_up_start_time = follow_up_time,
         follow_up_end_time = follow_up_time + timedelta(hours=1),
         appointment_type = AppointmentType.FOLLOW_UP,
@@ -588,8 +588,8 @@ def future_datetime():
         appointment_repository.get_by_id.return_value = valid_appointment
 
         # Send the reminder
-        updated_appointment = appointment_service.send_reminder()
-        appointment_id = valid_appointment.id
+        updated_appointment = appointment_service.send_reminder(,
+        appointment_id= valid_appointment.id
         ()
 
         # Check the appointment
@@ -612,8 +612,8 @@ def future_datetime():
         new_notes = "Patient reported improvement in symptoms"
 
         # Update the notes
-        updated_appointment = appointment_service.update_notes()
-        appointment_id = valid_appointment.id,
+        updated_appointment = appointment_service.update_notes(,
+        appointment_id= valid_appointment.id,
         notes = new_notes
         ()
 

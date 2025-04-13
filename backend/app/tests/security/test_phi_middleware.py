@@ -21,12 +21,13 @@ from app.core.utils.validation import PHIDetector
 from app.infrastructure.security.phi_middleware import PHIMiddleware, add_phi_middleware
 
 
-@pytest.mark.db_required()
-class TestPHIMiddleware:
+@pytest.mark.db_required()class TestPHIMiddleware:
     """Test suite for PHI middleware functionality."""
 
     def setup_method(self):
-        """Set up test fixtures."""
+
+
+                    """Set up test fixtures."""
         self.app = MagicMock()
         self.phi_detector = PHIDetector()
         self.middleware = PHIMiddleware()
@@ -39,10 +40,10 @@ class TestPHIMiddleware:
 
         @pytest.mark.asyncio()
         async def test_exclude_path(self):
-        """Test that excluded paths are not processed."""
+                 """Test that excluded paths are not processed."""
         # Mock a request to an excluded path
-        request = self._create_mock_request("/static/image.png")
-        call_next = AsyncMock()
+        request = self._create_mock_request("/static/image.png",
+        call_next= AsyncMock()
         call_next.return_value = Response(content="Test")
 
         # Process the request
@@ -54,12 +55,12 @@ class TestPHIMiddleware:
 
         @pytest.mark.asyncio()
         async def test_sanitize_request_with_phi(self):
-        """Test that requests with PHI are logged but not modified."""
+                 """Test that requests with PHI are logged but not modified."""
         # Mock a request with PHI in body
         phi_body = json.dumps(
-            {"patient": "John Doe", "ssn": "123-45-6789"}).encode('utf-8')
-        request = self._create_mock_request()
-        path = "/api/patients",
+            {"patient": "John Doe", "ssn": "123-45-6789"}).encode('utf-8',
+        request= self._create_mock_request(,
+        path= "/api/patients",
         body = phi_body,
         headers = {"Content-Type": "application/json"}
         ()
@@ -80,7 +81,7 @@ class TestPHIMiddleware:
 
         @pytest.mark.asyncio()
         async def test_sanitize_response_with_phi(self):
-        """Test that responses with PHI are sanitized."""
+                 """Test that responses with PHI are sanitized."""
         # Mock request
         request = self._create_mock_request("/api/patients")
 
@@ -89,9 +90,9 @@ class TestPHIMiddleware:
             "patient": {"name": "John Doe", "ssn": "123-45-6789"},
             "appointment": {"date": "2023-04-15"}
         }
-    response_body = json.dumps(phi_response).encode('utf-8')
-    response = Response()
-    content = response_body,
+    response_body = json.dumps(phi_response).encode('utf-8',
+    response= Response(,
+    content= response_body,
     status_code = 200,
     headers = {"content-type": "application/json"}
 
@@ -118,7 +119,7 @@ assert sanitized_data["patient"]["name"] == "[REDACTED]"
 
    @pytest.mark.asyncio()
     async def test_whitelist_patterns(self):
-        """Test that whitelisted patterns are not sanitized."""
+                 """Test that whitelisted patterns are not sanitized."""
         # Create middleware with whitelist
         middleware = PHIMiddleware()
         self.app,
@@ -164,7 +165,7 @@ assert sanitized_data["ssn"] == "123-45-6789"
 
   @pytest.mark.asyncio()
    async def test_audit_mode(self):
-        """Test that audit mode logs but doesn't redact PHI."""
+                 """Test that audit mode logs but doesn't redact PHI."""
         # Create middleware in audit mode
         middleware = PHIMiddleware()
         self.app,
@@ -177,9 +178,9 @@ assert sanitized_data["ssn"] == "123-45-6789"
 
         # Mock response with PHI
         phi_response = {"patient": {"name": "John Doe", "ssn": "123-45-6789"}}
-        response_body = json.dumps(phi_response).encode('utf-8')
-        response = Response()
-        content = response_body,
+        response_body = json.dumps(phi_response).encode('utf-8',
+        response= Response(,
+        content= response_body,
         status_code = 200,
         headers = {"content-type": "application/json"}
         ()
@@ -197,21 +198,21 @@ assert sanitized_data["ssn"] == "123-45-6789"
         assert mock_warning.called
 
         # In audit mode, response should not be sanitized
-        sanitized_body = sanitized_response.body.decode('utf-8')
-        sanitized_data = json.loads(sanitized_body)
+        sanitized_body = sanitized_response.body.decode('utf-8',
+        sanitized_data= json.loads(sanitized_body)
         assert sanitized_data["patient"]["name"] == "John Doe"
         assert sanitized_data["patient"]["ssn"] == "123-45-6789"
 
         @pytest.mark.asyncio()
         async def test_sanitize_non_json_response(self):
-        """Test that non-JSON responses are not sanitized."""
+                 """Test that non-JSON responses are not sanitized."""
         # Mock request
         request = self._create_mock_request("/api/patients")
 
         # Mock HTML response with PHI
         html_response = "<html><body>Patient: John Doe, SSN: 123-45-6789</body></html>"
-        response = Response()
-        content = html_response,
+        response = Response(,
+        content= html_response,
         status_code = 200,
         headers = {"content-type": "text/html"}
         ()
@@ -228,7 +229,7 @@ assert sanitized_data["ssn"] == "123-45-6789"
 
         @pytest.mark.asyncio()
         async def test_sanitize_nested_json(self):
-        """Test that deeply nested JSON is properly sanitized."""
+                 """Test that deeply nested JSON is properly sanitized."""
         # Mock request
         request = self._create_mock_request("/api/patients")
 
@@ -257,9 +258,9 @@ assert sanitized_data["ssn"] == "123-45-6789"
                 ]
             }
         }
-    response_body = json.dumps(phi_response).encode('utf-8')
-    response = Response()
-    content = response_body,
+    response_body = json.dumps(phi_response).encode('utf-8',
+    response= Response(,
+    content= response_body,
     status_code = 200,
     headers = {"content-type": "application/json"}
 ()
@@ -286,7 +287,9 @@ assert patient["profile"]["personal"]["name"] == "[REDACTED]"
     assert patient["medical"]["insurance"]["provider"] == "Health Co"
 
     def test_add_phi_middleware(self):
-        """Test the helper function to add PHI middleware to FastAPI app."""
+
+
+                    """Test the helper function to add PHI middleware to FastAPI app."""
         # Create a FastAPI app
         app = FastAPI()
 
@@ -311,7 +314,9 @@ assert patient["profile"]["personal"]["name"] == "[REDACTED]"
         assert kwargs["audit_mode"] is True
 
         def _create_mock_request():
-        self,
+
+
+                    self,
         path: str,
         method: str = "GET",
         body: Optional[bytes] = None,
@@ -332,10 +337,10 @@ assert patient["profile"]["personal"]["name"] == "[REDACTED]"
                 "headers": [[k.lower().encode("utf-8"), v.encode("utf-8")] for k, v in headers.items()]
             }
 
-    receive = AsyncMock()
-    send = AsyncMock()
+    receive = AsyncMock(,
+    send= AsyncMock(,
 
-    request = Request(scope=scope, receive=receive, send=send)
+    request= Request(scope=scope, receive=receive, send=send)
 
     # Mock the request body
     if body:

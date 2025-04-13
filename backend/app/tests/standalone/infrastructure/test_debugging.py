@@ -4,10 +4,7 @@ from enum import Enum
 
 """
 Debugging test to check enum behavior issues.
-"""
-
-
-class ComparisonOperator(str, Enum):
+"""class ComparisonOperator(str, Enum):
     """Comparison operators for rule conditions."""
     GREATER_THAN = "greater_than"
     GREATER_THAN_OR_EQUAL = "greater_than_or_equal"
@@ -18,7 +15,8 @@ class ComparisonOperator(str, Enum):
 
     @pytest.mark.standalone()
     def test_enum_behavior():
-        """Test the behavior of Enum classes."""
+
+                    """Test the behavior of Enum classes."""
         print("\nDEBUG: Testing enum behavior")
 
         # 1. Create an enum instance
@@ -53,7 +51,9 @@ class ComparisonOperator(str, Enum):
         assert op1 == "greater_than_or_equal"  # This is key!
 
         def simulate_rule_evaluation():
-        """Simulate the rule evaluation with the enum."""
+
+
+                        """Simulate the rule evaluation with the enum."""
         print("\nDEBUG: Simulating rule evaluation")
 
         # Mimic the rule and data point
@@ -94,8 +94,8 @@ class ComparisonOperator(str, Enum):
     print("\n=== Enum Behavior Debug ===")
     test_enum_behavior()
 
-    print("\n=== Rule Evaluation Simulation ===")
-    result = simulate_rule_evaluation()
+    print("\n=== Rule Evaluation Simulation ===",
+    result= simulate_rule_evaluation()
     print(f"\nFinal result: {result}")
 
     print("\nAll debug tests passed!")

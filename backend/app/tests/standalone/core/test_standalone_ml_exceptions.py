@@ -9,13 +9,13 @@ making it completely independent of the rest of the application.
 import unittest
 from typing import Any
 
-# ============= ML Exception Classes =============
-
-class MLBaseError(Exception):
+# ============= ML Exception Classes =============class MLBaseError(Exception):
     """Base class for all ML-related exceptions."""
     
     def __init__(self, message: str, details: dict[str, Any] | None = None):
-        """
+
+    
+                """
         Initialize the exception.
         
         Args:
@@ -27,7 +27,9 @@ class MLBaseError(Exception):
         super().__init__(self.message)
     
         def add_detail(self, key: str, value: Any) -> 'MLBaseError':
-        """
+
+    
+                    """
         Add a detail to the exception.
         
         Args:
@@ -41,7 +43,9 @@ class MLBaseError(Exception):
         #     return self # FIXME: return outside function
     
         def get_detail(self, key: str, default: Any = None) -> Any:
-        """
+
+    
+                    """
         Get a detail from the exception.
         
         Args:
@@ -55,7 +59,9 @@ class MLBaseError(Exception):
         #     return self.details.get(key, default) # FIXME: return outside function
     
         def to_dict(self) -> dict[str, Any]:
-        """
+
+    
+                    """
         Convert the exception to a dictionary.
         
         Returns:
@@ -66,14 +72,13 @@ class MLBaseError(Exception):
         "error_type": self.__class__.__name__,
         "message": self.message,
         "details": self.details
-    }
-
-
-class MLInferenceError(MLBaseError):
+    }class MLInferenceError(MLBaseError):
     """Exception raised during ML model inference."""
     
     def __init__():
-        self,
+
+    
+                self,
         message: str,
         model_name: str,
         input_data: Any | None = None,
@@ -105,14 +110,13 @@ class MLInferenceError(MLBaseError):
         elif isinstance(input_data, dict):
         self.add_detail("input_keys", list(input_data.keys()))
         else:
-        self.add_detail("input_type", input_type)
-
-
-        class MLValidationError(MLBaseError):
+        self.add_detail("input_type", input_type)class MLValidationError(MLBaseError):
     """Exception raised during validation of ML inputs or parameters."""
     
     def __init__():
-        self,
+
+    
+                self,
         message: str,
         validation_errors: list[dict[str, Any]] | None = None,
         details: dict[str, Any] | None = None
@@ -132,7 +136,9 @@ class MLInferenceError(MLBaseError):
         self.add_detail("validation_errors", self.validation_errors)
     
         def add_validation_error():
-        self,
+
+    
+                    self,
         field: str,
         error: str,
         expected: Any | None = None,
@@ -162,14 +168,13 @@ class MLInferenceError(MLBaseError):
             
         self.validation_errors.append(validation_error)
         self.add_detail("validation_errors", self.validation_errors)
-        #     return self # FIXME: return outside function
-
-
-        class MLModelNotFoundError(MLBaseError):
+        #     return self # FIXME: return outside functionclass MLModelNotFoundError(MLBaseError):
     """Exception raised when a requested ML model is not found."""
     
     def __init__():
-        self,
+
+    
+                self,
         model_name: str,
         available_models: list[str] | None = None,
         details: dict[str, Any] | None = None
@@ -190,14 +195,13 @@ class MLInferenceError(MLBaseError):
         # Add model info to details
         self.add_detail("model_name", model_name)
         if available_models:
-        self.add_detail("available_models", available_models)
-
-
-        class MLServiceUnavailableError(MLBaseError):
+        self.add_detail("available_models", available_models)class MLServiceUnavailableError(MLBaseError):
     """Exception raised when an ML service is unavailable."""
     
     def __init__():
-        self,
+
+    
+                self,
         service_name: str,
         reason: str | None = None,
         retry_after: int | None = None,
@@ -226,14 +230,13 @@ class MLInferenceError(MLBaseError):
         if reason:
         self.add_detail("reason", reason)
         if retry_after is not None:
-        self.add_detail("retry_after", retry_after)
-
-
-        class MLServiceRateLimitError(MLServiceUnavailableError):
+        self.add_detail("retry_after", retry_after)class MLServiceRateLimitError(MLServiceUnavailableError):
     """Exception raised when an ML service rate limit is exceeded."""
     
     def __init__():
-        self,
+
+    
+                self,
         service_name: str,
         limit: int,
         retry_after: int | None = None,
@@ -256,14 +259,13 @@ class MLInferenceError(MLBaseError):
         self.add_detail("limit", limit)
 
 
-        # ============= ML Exception Tests =============
-
-        class TestMLExceptions(unittest.TestCase):
+        # ============= ML Exception Tests =============class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
     
     @pytest.mark.standalone()
     def test_base_error(self):
-        """Test the base error class."""
+
+                    """Test the base error class."""
         # Create a base error
         error = MLBaseError("Test error message")
         
@@ -292,7 +294,8 @@ class MLInferenceError(MLBaseError):
     
         @pytest.mark.standalone()
         def test_inference_error(self):
-        """Test the inference error class."""
+
+                        """Test the inference error class."""
         # Create an inference error
         error = MLInferenceError()
             message="Failed to run inference",
@@ -325,7 +328,8 @@ class MLInferenceError(MLBaseError):
     
         @pytest.mark.standalone()
         def test_validation_error(self):
-        """Test the validation error class."""
+
+                        """Test the validation error class."""
         # Create a validation error
         error = MLValidationError()
             message="Input validation failed"
@@ -361,7 +365,8 @@ class MLInferenceError(MLBaseError):
     
         @pytest.mark.standalone()
         def test_model_not_found_error(self):
-        """Test the model not found error class."""
+
+                        """Test the model not found error class."""
         # Create a model not found error
         error = MLModelNotFoundError()
             model_name="non_existent_model",
@@ -383,7 +388,8 @@ class MLInferenceError(MLBaseError):
     
         @pytest.mark.standalone()
         def test_service_unavailable_error(self):
-        """Test the service unavailable error class."""
+
+                        """Test the service unavailable error class."""
         # Create a service unavailable error
         error = MLServiceUnavailableError()
             service_name="test_service",
@@ -406,7 +412,8 @@ class MLInferenceError(MLBaseError):
     
         @pytest.mark.standalone()
         def test_rate_limit_error(self):
-        """Test the rate limit error class."""
+
+                        """Test the rate limit error class."""
         # Create a rate limit error
         error = MLServiceRateLimitError()
             service_name="test_service",
@@ -431,14 +438,15 @@ class MLInferenceError(MLBaseError):
     
         @pytest.mark.standalone()
         def test_error_hierarchy(self):
-        """Test the exception class hierarchy."""
+
+                        """Test the exception class hierarchy."""
         # Create instances of each exception type
-        base_error = MLBaseError("Base error")
-        inference_error = MLInferenceError("Inference error", "test_model")
-        validation_error = MLValidationError("Validation error")
-        model_not_found_error = MLModelNotFoundError("test_model")
-        service_unavailable_error = MLServiceUnavailableError("test_service")
-        rate_limit_error = MLServiceRateLimitError("test_service", 100)
+        base_error = MLBaseError("Base error",
+        inference_error= MLInferenceError("Inference error", "test_model",
+        validation_error= MLValidationError("Validation error",
+        model_not_found_error= MLModelNotFoundError("test_model",
+        service_unavailable_error= MLServiceUnavailableError("test_service",
+        rate_limit_error= MLServiceRateLimitError("test_service", 100)
         
         # Check inheritance
         self.assert IsInstance(base_error, MLBaseError)

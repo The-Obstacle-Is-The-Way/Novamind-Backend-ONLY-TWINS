@@ -18,7 +18,7 @@ from app.infrastructure.factories.mock_digital_twin_factory import (
 @pytest.mark.asyncio()
 @pytest.mark.db_required()
 async def test_digital_twin_complete_workflow():
-    """
+         """
     Test a complete Digital Twin workflow from patient creation to treatment recommendations.
     This test demonstrates how all components work together in a typical scenario.
     """
@@ -31,8 +31,8 @@ async def test_digital_twin_complete_workflow():
     digital_twin_core = system["services"]["digital_twin_core"]
 
     # 1. Create a test patient
-    patient_id = uuid.uuid4()
-    patient = Patient(
+    patient_id = uuid.uuid4(,
+    patient= Patient(
         id=patient_id,
         first_name="Jane",
         last_name="Doe",

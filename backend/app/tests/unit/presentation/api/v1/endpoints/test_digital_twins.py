@@ -6,7 +6,7 @@ Tests the API endpoints for Digital Twin functionality, including
 the MentaLLaMA integration for clinical text processing.
 """
 
-from app.presentation.api.v1.endpoints.digital_twins import
+from app.presentation.api.v1.endpoints.digital_twins import (
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 from app.presentation.api.v1.schemas.digital_twin_schemas import
 import json
@@ -23,20 +23,10 @@ from pydantic import parse_obj_as
 # Placeholder imports for exceptions if the original ones cause issues
 
 
-@pytest.mark.db_required()  # Assuming db_required is a valid marker
-class MentalLLaMAInferenceError(Exception):
-    pass
-
-
-class PhiDetectionError(Exception):
-    pass
-
-
-class ModelInferenceError(Exception):
-    pass  # Added placeholder
-
-
-class ValidationError(Exception):
+@pytest.mark.db_required)  # Assuming db_required is a valid markerclass MentalLLaMAInferenceError(Exception):
+    passclass PhiDetectionError(Exception):
+    passclass ModelInferenceError(Exception):
+    pass  # Added placeholderclass ValidationError(Exception):
     pass  # Added placeholder
 
 
@@ -58,7 +48,8 @@ class ValidationError(Exception):
 
 @pytest.fixture
 def mock_digital_twin_service():
-    """Create a mock DigitalTwinIntegrationService."""
+
+            """Create a mock DigitalTwinIntegrationService."""
     service = AsyncMock(spec=DigitalTwinIntegrationService)
 
     # Mock methods
@@ -82,17 +73,15 @@ def mock_digital_twin_service():
     service.pharmacogenomics_service.predict_medication_responses = AsyncMock()
     service.pharmacogenomics_service.recommend_treatment_plan = AsyncMock()
 
-    return service
+    return service@pytest.fixture
+def mock_current_user_id():
 
-    @pytest.fixture
-    def mock_current_user_id():
-    """Fixture for a mock user ID."""
+            """Fixture for a mock user ID."""
 
-    return UUID("00000000-0000-0000-0000-000000000001")
+    return UUID("00000000-0000-0000-0000-000000000001")@pytest.fixture
+def app(mock_digital_twin_service, mock_current_user_id):
 
-    @pytest.fixture
-    def app(mock_digital_twin_service, mock_current_user_id):
-    """Create a FastAPI test application."""
+            """Create a FastAPI test application."""
     app_instance = FastAPI()
 
     # Override dependencies
@@ -113,23 +102,20 @@ def mock_digital_twin_service():
         # Include router
         app_instance.include_router(digital_twins_router)
 
-        return app_instance
+        return app_instance@pytest.fixture
+def client(app):
 
-        @pytest.fixture
-        def client(app):
-    """Create a test client for the FastAPI app."""
+            """Create a test client for the FastAPI app."""
 
-    return TestClient(app)
+    return TestClient(app)@pytest.fixture
+def sample_patient_id():
 
-    @pytest.fixture
-    def sample_patient_id():
-    """Create a sample patient ID."""
+            """Create a sample patient ID."""
 
-    return UUID("12345678-1234-5678-1234-567812345678")
+    return UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+def sample_status_response(sample_patient_id):
 
-    @pytest.fixture
-    def sample_status_response(sample_patient_id):
-    """Create a sample digital twin status response."""
+            """Create a sample digital twin status response."""
 
     return {
         "patient_id": str(sample_patient_id),
@@ -157,7 +143,8 @@ def mock_digital_twin_service():
 
 @pytest.fixture
 def sample_insights_response(sample_patient_id):
-    """Create a sample patient insights response."""
+
+            """Create a sample patient insights response."""
     # Using the structure from PersonalizedInsightResponse schema
     return {
         "patient_id": str(sample_patient_id),
@@ -216,7 +203,8 @@ def sample_insights_response(sample_patient_id):
 
 @pytest.fixture
 def sample_forecast_response(sample_patient_id):
-    """Create a sample symptom forecast response."""
+
+            """Create a sample symptom forecast response."""
     # Assuming a schema similar to SymptomForecastResponse exists
     return {
         "patient_id": str(sample_patient_id),
@@ -252,7 +240,8 @@ def sample_forecast_response(sample_patient_id):
 
 @pytest.fixture
 def sample_correlation_response(sample_patient_id):
-    """Create a sample biometric correlation response."""
+
+            """Create a sample biometric correlation response."""
 
     return {
         "patient_id": str(sample_patient_id),
@@ -285,7 +274,8 @@ def sample_correlation_response(sample_patient_id):
 
 @pytest.fixture
 def sample_medication_response(sample_patient_id):
-    """Create a sample medication response prediction."""
+
+            """Create a sample medication response prediction."""
 
     return {
         "patient_id": str(sample_patient_id),
@@ -316,7 +306,8 @@ def sample_medication_response(sample_patient_id):
 
 @pytest.fixture
 def sample_treatment_plan(sample_patient_id):
-    """Create a sample treatment plan response."""
+
+            """Create a sample treatment plan response."""
 
     return {
         "patient_id": str(sample_patient_id),
@@ -381,8 +372,7 @@ def sample_treatment_plan(sample_patient_id):
     }
 
 
-@pytest.mark.db_required()  # Assuming db_required is a valid marker
-class TestDigitalTwinEndpoints:
+@pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestDigitalTwinEndpoints:
     """Tests for the Digital Twin API endpoints."""
 
     def test_get_digital_twin_status(

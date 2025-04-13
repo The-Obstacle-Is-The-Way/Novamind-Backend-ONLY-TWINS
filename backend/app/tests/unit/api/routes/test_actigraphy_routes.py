@@ -36,19 +36,18 @@ from app.core.services.ml.pat.interface import PATInterface
 # Mock data
 @pytest.fixture
 def mock_token() -> str:
-    """Create a mock JWT token."""
+
+            """Create a mock JWT token."""
     # This is just a placeholder, actual token validation is mocked
-    return "mock_jwt_token"
+    return "mock_jwt_token"@pytest.fixture
+def patient_id() -> str:
 
-    @pytest.fixture
-    def patient_id() -> str:
-    """Create a mock patient ID."""
+            """Create a mock patient ID."""
 
-    return "patient123"
+    return "patient123"@pytest.fixture
+def sample_readings() -> List[Dict[str, Any]]:
 
-    @pytest.fixture
-    def sample_readings() -> List[Dict[str, Any]]:
-    """Create sample accelerometer readings."""
+            """Create sample accelerometer readings."""
     base_time = datetime.now(UTC)  # Use UTC
     readings = []
 
@@ -69,7 +68,8 @@ def mock_token() -> str:
 
 @pytest.fixture
 def device_info() -> Dict[str, Any]:
-    """Create sample device info."""
+
+            """Create sample device info."""
 
     return {
         "device_type": "smartwatch",
@@ -122,7 +122,8 @@ def embedding_request(
 
 @pytest.fixture
 def integration_request(patient_id: str) -> Dict[str, Any]:
-    """Create an integration request."""
+
+            """Create an integration request."""
 
     return {
         "patient_id": patient_id,
@@ -182,7 +183,8 @@ def analysis_result(
 
 @pytest.fixture
 def embedding_result(patient_id: str) -> Dict[str, Any]:
-    """Create an embedding result."""
+
+            """Create an embedding result."""
     now_iso = datetime.now(UTC).isoformat() + "Z"
     end_iso = (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z"
     return {
@@ -206,7 +208,8 @@ def embedding_result(patient_id: str) -> Dict[str, Any]:
 
 @pytest.fixture
 def integration_result(patient_id: str) -> Dict[str, Any]:
-    """Create an integration result."""
+
+            """Create an integration result."""
     now_iso = datetime.now(UTC).isoformat() + "Z"
     return {"integration_id": "integration123",
             "patient_id": patient_id,
@@ -237,7 +240,8 @@ def integration_result(patient_id: str) -> Dict[str, Any]:
 
 @pytest.fixture
 def model_info() -> Dict[str, Any]:
-    """Create model info."""
+
+            """Create model info."""
 
     return {
         "name": "MockPAT",
@@ -258,7 +262,8 @@ def model_info() -> Dict[str, Any]:
 
 @pytest.fixture
 def analyses_list(patient_id: str) -> Dict[str, Any]:
-    """Create a list of analyses."""
+
+            """Create a list of analyses."""
     now_iso = datetime.now(UTC).isoformat() + "Z"
     yesterday_iso = (datetime.now(UTC) - timedelta(days=1)).isoformat() + "Z"
     yesterday_end_iso = (
@@ -337,19 +342,23 @@ def mock_pat_service(
 
 @pytest.fixture
 def app(mock_pat_service):
-    """Create FastAPI app instance and override dependencies."""
+
+            """Create FastAPI app instance and override dependencies."""
     app_instance = FastAPI()
 
     # Mock auth dependencies (replace with actual dependency paths)
     def mock_validate_jwt(token: Optional[str] = None):
-        if token != "mock_jwt_token":
+
+                if token != "mock_jwt_token":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token")
         return {"sub": "patient123"}  # Return mock payload
 
     def mock_get_current_user_id(payload: dict = Depends(mock_validate_jwt)):
-        return payload.get("sub")
+
+
+                return payload.get("sub")
 
         try:
         from app.api.dependencies.auth import validate_jwt as actual_validate_jwt
@@ -378,16 +387,14 @@ def app(mock_pat_service):
             router, prefix="/api/v1/actigraphy"
         )  # Add prefix if needed
 
-        #     return app_instance # FIXME: return outside function
+        #     return app_instance # FIXME: return outside function@pytest.fixture
+def client(app):
 
-        @pytest.fixture
-        def client(app):
-    """Create TestClient."""
+            """Create TestClient."""
 
     return TestClient(app)
 
-    @pytest.mark.db_required()  # Assuming db_required is a valid marker
-    class TestActigraphyRoutes:
+    @pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestActigraphyRoutes:
     """Tests for the actigraphy API routes."""
 
     def test_analyze_actigraphy_success(
@@ -419,8 +426,8 @@ def app(mock_pat_service):
     ) -> None:
         """Test unauthorized actigraphy analysis."""
         # Change patient ID to trigger authorization error (assuming auth
-        # checks this)
-        modified_request = analysis_request.copy()
+        # checks this,
+        modified_request= analysis_request.copy()
         modified_request["patient_id"] = "different_patient"
 
         # Make the request

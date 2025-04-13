@@ -16,7 +16,8 @@ from app.application.use_cases.analytics.retrieve_aggregated_analytics import Re
 
 @pytest.fixture
 def mock_analytics_repository():
-    """Create a mock analytics repository for testing."""
+
+            """Create a mock analytics repository for testing."""
     repo = AsyncMock()
 
     # Set up the get_aggregates method to return mock data
@@ -67,21 +68,20 @@ def mock_analytics_repository():
             ]
 
             repo.get_aggregates = get_aggregates_mock
-            return repo
+            return repo@pytest.fixture
+def mock_cache_service():
 
-            @pytest.fixture
-            def mock_cache_service():
-    """Create a mock cache service for testing."""
+            """Create a mock cache service for testing."""
     cache = AsyncMock()
 
     # Track cache keys and values
     cache_data = {}
 
     async def get_mock(key):
-        return cache_data.get(key)
+             return cache_data.get(key)
 
         async def set_mock(key, value, ttl=None):
-        cache_data[key] = value
+             cache_data[key] = value
         return True
 
         cache.get = get_mock
@@ -90,17 +90,16 @@ def mock_analytics_repository():
         # Attach the cache data for test inspection
         cache._cache_data = cache_data
 
-        return cache
+        return cache@pytest.fixture
+def use_case(mock_analytics_repository, mock_cache_service):
 
-        @pytest.fixture
-        def use_case(mock_analytics_repository, mock_cache_service):
-    """Create the use case with mocked dependencies."""
+            """Create the use case with mocked dependencies."""
     with patch('app.core.utils.logging.get_logger') as mock_logger:
         mock_logger_instance = MagicMock()
         mock_logger.return_value = mock_logger_instance
 
-        use_case = RetrieveAggregatedAnalyticsUseCase()
-           analytics_repository = mock_analytics_repository,
+        use_case = RetrieveAggregatedAnalyticsUseCase(,
+           analytics_repository= mock_analytics_repository,
             cache_service = mock_cache_service
         ()
 
@@ -108,8 +107,7 @@ def mock_analytics_repository():
         use_case._logger = mock_logger_instance
         return use_case
 
-        @pytest.mark.db_required()
-        class TestRetrieveAggregatedAnalyticsUseCase:
+        @pytest.mark.db_required()class TestRetrieveAggregatedAnalyticsUseCase:
     """Test suite for the RetrieveAggregatedAnalyticsUseCase."""
 
     @pytest.mark.asyncio()
@@ -123,8 +121,8 @@ def mock_analytics_repository():
         dimensions = ["event_type"]
 
         # Act
-        result = await use_case.execute()
-        aggregate_type = aggregate_type,
+        result = await use_case.execute(,
+        aggregate_type= aggregate_type,
         dimensions = dimensions
         ()
 
@@ -135,8 +133,8 @@ def mock_analytics_repository():
         assert result[1].dimensions["event_type"] == "feature_usage"
 
         # Verify repository was called with correct parameters
-        mock_analytics_repository.get_aggregates.assert_called_once()
-        call_args = mock_analytics_repository.get_aggregates.call_args[1]
+        mock_analytics_repository.get_aggregates.assert_called_once(,
+        call_args= mock_analytics_repository.get_aggregates.call_args[1]
         assert call_args["aggregate_type"] == aggregate_type
         assert call_args["dimensions"] == dimensions
 
@@ -159,13 +157,13 @@ def mock_analytics_repository():
         aggregate_type = "avg"
         dimensions = ["user_role"]
         filters = {"platform": "web", "browser": "chrome"}
-        now = datetime.now(UTC)
-        week_ago = now - timedelta(days=7)
-        time_range = {"start": week_ago, "end": now}
+        now = datetime.now(UTC,
+        week_ago= now - timedelta(days=7,
+        time_range= {"start": week_ago, "end": now}
 
         # Act
-        result = await use_case.execute()
-        aggregate_type = aggregate_type,
+        result = await use_case.execute(,
+        aggregate_type= aggregate_type,
         dimensions = dimensions,
         filters = filters,
         time_range = time_range
@@ -197,8 +195,8 @@ def mock_analytics_repository():
         }
 
         # Act
-    result = await use_case.execute()
-    aggregate_type = "count",
+    result = await use_case.execute(,
+    aggregate_type= "count",
     dimensions = ["event_type"],
     time_range = time_range
 ()
@@ -225,8 +223,8 @@ def mock_analytics_repository():
         }
 
         # Act
-    result = await use_case.execute()
-    aggregate_type = "count",
+    result = await use_case.execute(,
+    aggregate_type= "count",
     dimensions = ["event_type"],
     time_range = time_range
 ()
@@ -249,8 +247,8 @@ def mock_analytics_repository():
         dimensions = ["event_type", "invalid_dimension", "user_role"]
 
         # Act
-        result = await use_case.execute()
-        aggregate_type = "count",
+        result = await use_case.execute(,
+        aggregate_type= "count",
         dimensions = dimensions
         ()
 
@@ -275,8 +273,8 @@ def mock_analytics_repository():
         }
 
         # Act
-    result = await use_case.execute()
-    aggregate_type = "count",
+    result = await use_case.execute(,
+    aggregate_type= "count",
     dimensions = ["event_type"],
     filters = filters
 ()
@@ -303,8 +301,8 @@ def mock_analytics_repository():
         dimensions = ["event_type"]
 
         # Act - first call should hit the repository
-        result1 = await use_case.execute()
-        aggregate_type = aggregate_type,
+        result1 = await use_case.execute(,
+        aggregate_type= aggregate_type,
         dimensions = dimensions,
         use_cache = True
         ()
@@ -318,8 +316,8 @@ def mock_analytics_repository():
         cache_key = cache_keys[0]
 
         # Act - second call with same parameters should use cache
-        result2 = await use_case.execute()
-        aggregate_type = aggregate_type,
+        result2 = await use_case.execute(,
+        aggregate_type= aggregate_type,
         dimensions = dimensions,
         use_cache = True
         ()
@@ -335,36 +333,36 @@ def mock_analytics_repository():
 
         @pytest.mark.asyncio()
         async def test_cache_ttl_determination(self, use_case):
-        """
+             """
         Test different TTL values based on query parameters.
         """
-        # Historical data (older than 1 day)
-        now = datetime.now(UTC)
-        historical_start = now - timedelta(days=10)
-        historical_end = now - timedelta(days=2)
+        # Historical data (older than 1 day,
+        now= datetime.now(UTC,
+        historical_start= now - timedelta(days=10,
+        historical_end= now - timedelta(days=2,
 
-        historical_ttl = use_case._get_cache_ttl()
-        aggregate_type = "count",
+        historical_ttl= use_case._get_cache_ttl(,
+        aggregate_type= "count",
         start_time = historical_start,
         end_time = historical_end
         ()
 
-        # Recent data (within last hour)
-        recent_start = now - timedelta(hours=1)
-        recent_end = now
+        # Recent data (within last hour,
+        recent_start= now - timedelta(hours=1,
+        recent_end= now
 
-        recent_ttl = use_case._get_cache_ttl()
-        aggregate_type = "count",
+        recent_ttl = use_case._get_cache_ttl(,
+        aggregate_type= "count",
         start_time = recent_start,
         end_time = recent_end
         ()
 
-        # Regular data (between recent and historical)
-        regular_start = now - timedelta(hours=12)
-        regular_end = now - timedelta(hours=2)
+        # Regular data (between recent and historical,
+        regular_start= now - timedelta(hours=12,
+        regular_end= now - timedelta(hours=2,
 
-        regular_ttl = use_case._get_cache_ttl()
-        aggregate_type = "count",
+        regular_ttl= use_case._get_cache_ttl(,
+        aggregate_type= "count",
         start_time = regular_start,
         end_time = regular_end
         ()
@@ -376,19 +374,19 @@ def mock_analytics_repository():
 
         @pytest.mark.asyncio()
         async def test_cache_key_generation(self, use_case):
-        """
+             """
         Test generation of cache keys from parameters.
         """
         # Arrange
         aggregate_type = "count"
         dimensions = ["event_type", "user_role"]
         filters = {"platform": "web", "browser": "chrome"}
-        now = datetime.now(UTC)
-        week_ago = now - timedelta(days=7)
+        now = datetime.now(UTC,
+        week_ago= now - timedelta(days=7)
 
         # Act
-        key = use_case._generate_cache_key()
-        aggregate_type = aggregate_type,
+        key = use_case._generate_cache_key(,
+        aggregate_type= aggregate_type,
         dimensions = dimensions,
         filters = filters,
         start_time = week_ago,
@@ -404,8 +402,8 @@ def mock_analytics_repository():
         assert "to:" in key
 
         # Different parameters should generate different keys
-        key2 = use_case._generate_cache_key()
-        aggregate_type = "sum",
+        key2 = use_case._generate_cache_key(,
+        aggregate_type= "sum",
         dimensions = dimensions,
         filters = filters,
         start_time = week_ago,
@@ -424,8 +422,8 @@ def mock_analytics_repository():
         dimensions = []
 
         # Act
-        result = await use_case.execute()
-        aggregate_type = "count",
+        result = await use_case.execute(,
+        aggregate_type= "count",
         dimensions = dimensions
         ()
 
@@ -439,14 +437,14 @@ def mock_analytics_repository():
         """
         Test limiting of very large time ranges.
         """
-        # Arrange - huge time range (2 years)
-        now = datetime.now(UTC)
-        start = now - timedelta(days=730)
-        time_range = {"start": start, "end": now}
+        # Arrange - huge time range (2 years,
+        now= datetime.now(UTC,
+        start= now - timedelta(days=730,
+        time_range= {"start": start, "end": now}
 
         # Act
-        result = await use_case.execute()
-        aggregate_type = "count",
+        result = await use_case.execute(,
+        aggregate_type= "count",
         dimensions = ["event_type"],
         time_range = time_range
         ()

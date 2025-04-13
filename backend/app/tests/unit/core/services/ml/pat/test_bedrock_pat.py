@@ -15,32 +15,34 @@ import pytest
 from botocore.exceptions import ClientError
 
 from app.core.services.ml.pat.bedrock import BedrockPAT
-from app.core.services.ml.pat.exceptions import
+from app.core.services.ml.pat.exceptions import (
 AnalysisError,
 AuthorizationError,
 EmbeddingError,
 InitializationError,
 ResourceNotFoundError,
 ValidationError
-()
+)
 
 
 @pytest.fixture
 def mock_aws_session():
-    """Mock the get_aws_session utility function."""
+
+            """Mock the get_aws_session utility function."""
     with patch("app.core.services.ml.pat.bedrock.get_aws_session") as mock_get_session:
         session = MagicMock()
         mock_get_session.return_value = session
 
         # Create mock clients
-        mock_bedrock = MagicMock()
-        mock_s3 = MagicMock()
-        mock_dynamodb = MagicMock()
-        mock_dynamodb_resource = MagicMock()
+        mock_bedrock = MagicMock(,
+        mock_s3= MagicMock(,
+        mock_dynamodb= MagicMock(,
+        mock_dynamodb_resource= MagicMock()
 
         # Configure session to return mock clients
         def client_side_effect(service, **kwargs):
-            if service == 'bedrock-runtime':
+
+                        if service == 'bedrock-runtime':
                 return mock_bedrock
                 elif service == 's3':
                 return mock_s3
@@ -62,7 +64,8 @@ def mock_aws_session():
 
 @pytest.fixture
 def bedrock_pat_service(mock_aws_session):
-    """Create a BedrockPAT service instance for testing."""
+
+            """Create a BedrockPAT service instance for testing."""
     service = BedrockPAT()
 
     # Configure the mock S3 and DynamoDB clients to pass validation
@@ -82,7 +85,8 @@ def bedrock_pat_service(mock_aws_session):
 
 @pytest.fixture
 def mock_bedrock_response():
-    """Create a mock response from Bedrock."""
+
+            """Create a mock response from Bedrock."""
     mock_response = {
         'body': Mock()
     }
@@ -129,7 +133,9 @@ class TestBedrockPAT(
         self.mock_bedrock_response = mock_bedrock_response
 
         def test_initialization(self):
-        """Test that the service initializes correctly."""
+
+
+                        """Test that the service initializes correctly."""
         # Arrange
         service = BedrockPAT()
 
@@ -154,7 +160,9 @@ class TestBedrockPAT(
     self.assertEqual(service._kms_key_id, 'test-kms-key-id')
 
     def test_initialization_missing_bucket(self):
-        """Test initialization fails when S3 bucket is missing."""
+
+
+                    """Test initialization fails when S3 bucket is missing."""
         # Arrange
         service = BedrockPAT()
 
@@ -167,7 +175,9 @@ class TestBedrockPAT(
         self.assertIn("S3 bucket name is required", str(cm.exception))
 
         def test_initialization_missing_table(self):
-        """Test initialization fails when DynamoDB table is missing."""
+
+
+                        """Test initialization fails when DynamoDB table is missing."""
         # Arrange
         service = BedrockPAT()
 
@@ -180,7 +190,9 @@ class TestBedrockPAT(
         self.assertIn("DynamoDB table name is required", str(cm.exception))
 
         def test_initialization_missing_model_id(self):
-        """Test initialization fails when Bedrock model ID is missing."""
+
+
+                        """Test initialization fails when Bedrock model ID is missing."""
         # Arrange
         service = BedrockPAT()
 
@@ -193,7 +205,9 @@ class TestBedrockPAT(
         self.assertIn("Bedrock model ID is required", str(cm.exception))
 
         def test_initialization_s3_bucket_not_found(self):
-        """Test initialization fails when S3 bucket does not exist."""
+
+
+                        """Test initialization fails when S3 bucket does not exist."""
         # Arrange
         service = BedrockPAT()
 
@@ -212,7 +226,9 @@ class TestBedrockPAT(
         self.assertIn("S3 bucket test-bucket not found", str(cm.exception))
 
         def test_initialization_dynamodb_table_not_found(self):
-        """Test initialization fails when DynamoDB table does not exist."""
+
+
+                        """Test initialization fails when DynamoDB table does not exist."""
         # Arrange
         service = BedrockPAT()
 
@@ -237,7 +253,9 @@ class TestBedrockPAT(
         self.assertIn("DynamoDB table test-table not found", str(cm.exception))
 
         def test_analyze_actigraphy_success(self):
-        """Test successful actigraphy analysis."""
+
+
+                        """Test successful actigraphy analysis."""
         # Arrange
         self.mock_aws_session['bedrock'].invoke_model.return_value = self.mock_bedrock_response
 
@@ -262,8 +280,8 @@ class TestBedrockPAT(
     analysis_types = ["sleep"]
 
     # Act
-    result = self.bedrock_pat_service.analyze_actigraphy()
-    patient_id = patient_id,
+    result = self.bedrock_pat_service.analyze_actigraphy(,
+    patient_id= patient_id,
     readings = readings,
     start_time = start_time,
     end_time = end_time,
@@ -298,18 +316,20 @@ self.assertEqual(invoke_model_call["modelId"], "test-model-id")
 body = json.loads(invoke_model_call["body"])
 self.assertEqual(
     body["task"],
-    "Analyze actigraphy data to extract insights, patterns, and health indicators.")
+    "Analyze actigraphy data to extract insights, patterns, and health indicators.",
 
-input_data = json.loads(body["inputText"])
+input_data= json.loads(body["inputText"])
  self.assertEqual(input_data["patient_id"], patient_id)
   self.assertEqual(input_data["analysis_types"], analysis_types)
 
    def test_analyze_actigraphy_invalid_input(self):
-        """Test actigraphy analysis with invalid input."""
+
+
+                   """Test actigraphy analysis with invalid input."""
         # Act & Assert - Missing patient_id
         with self.assertRaises(ValidationError) as cm:
-            self.bedrock_pat_service.analyze_actigraphy()
-            patient_id = "",
+            self.bedrock_pat_service.analyze_actigraphy(,
+            patient_id= "",
             readings = [{"timestamp": "2025-01-01T00:00:00Z",
                          "x": 0.1, "y": 0.2, "z": 0.3}],
             start_time = "2025-01-01T00:00:00Z",
@@ -322,8 +342,8 @@ input_data = json.loads(body["inputText"])
 
             # Act & Assert - Too few readings
             with self.assertRaises(ValidationError) as cm:
-        self.bedrock_pat_service.analyze_actigraphy()
-        patient_id = "test-patient",
+        self.bedrock_pat_service.analyze_actigraphy(,
+        patient_id= "test-patient",
         readings = [{"timestamp": "2025-01-01T00:00:00Z",
                      "x": 0.1, "y": 0.2, "z": 0.3}],
         start_time = "2025-01-01T00:00:00Z",
@@ -336,8 +356,8 @@ input_data = json.loads(body["inputText"])
 
         # Act & Assert - Missing analysis_types
         with self.assertRaises(ValidationError) as cm:
-        self.bedrock_pat_service.analyze_actigraphy()
-        patient_id = "test-patient",
+        self.bedrock_pat_service.analyze_actigraphy(,
+        patient_id= "test-patient",
         readings = [{"timestamp": "2025-01-01T00:00:00Z",
                      "x": 0.1, "y": 0.2, "z": 0.3} for _ in range(20)],
         start_time = "2025-01-01T00:00:00Z",
@@ -351,7 +371,9 @@ input_data = json.loads(body["inputText"])
                 cm.exception))
 
         def test_analyze_actigraphy_bedrock_error(self):
-        """Test actigraphy analysis when Bedrock returns an error."""
+
+
+                        """Test actigraphy analysis when Bedrock returns an error."""
         # Arrange
         self.mock_aws_session['s3'].put_object.return_value = {}
         self.mock_aws_session['bedrock'].invoke_model.side_effect = ClientError(
@@ -369,8 +391,8 @@ input_data = json.loads(body["inputText"])
 
         # Act & Assert
         with self.assertRaises(AnalysisError) as cm:
-        self.bedrock_pat_service.analyze_actigraphy()
-        patient_id = patient_id,
+        self.bedrock_pat_service.analyze_actigraphy(,
+        patient_id= patient_id,
         readings = readings,
         start_time = "2025-01-01T00:00:00Z",
         end_time = "2025-01-01T08:00:00Z",
@@ -381,7 +403,9 @@ input_data = json.loads(body["inputText"])
         self.assertIn("Model inference error", str(cm.exception))
 
         def test_get_actigraphy_embeddings_success(self):
-        """Test successful actigraphy embeddings generation."""
+
+
+                        """Test successful actigraphy embeddings generation."""
         # Arrange
         self.mock_aws_session['bedrock'].invoke_model.return_value = self.mock_bedrock_response
 
@@ -400,8 +424,8 @@ input_data = json.loads(body["inputText"])
         sampling_rate_hz = 50.0
 
         # Act
-        result = self.bedrock_pat_service.get_actigraphy_embeddings()
-        patient_id = patient_id,
+        result = self.bedrock_pat_service.get_actigraphy_embeddings(,
+        patient_id= patient_id,
         readings = readings,
         start_time = start_time,
         end_time = end_time,
@@ -435,7 +459,9 @@ input_data = json.loads(body["inputText"])
             "Generate vector embeddings from the actigraphy data for similarity comparison and pattern recognition.")
 
         def test_get_analysis_by_id_success(self):
-        """Test successful retrieval of analysis by ID."""
+
+
+                        """Test successful retrieval of analysis by ID."""
         # Arrange
         analysis_id = "test-analysis-id"
         mock_analysis = {
@@ -459,7 +485,9 @@ input_data = json.loads(body["inputText"])
         Key={"analysis_id": analysis_id})
 
     def test_get_analysis_by_id_not_found(self):
-        """Test retrieval of non-existent analysis."""
+
+
+                    """Test retrieval of non-existent analysis."""
         # Arrange
         analysis_id = "non-existent-id"
 
@@ -476,7 +504,9 @@ input_data = json.loads(body["inputText"])
                 cm.exception))
 
         def test_get_patient_analyses_success(self):
-        """Test successful retrieval of patient analyses."""
+
+
+                        """Test successful retrieval of patient analyses."""
         # Arrange
         patient_id = "test-patient"
         mock_analyses = [
@@ -512,7 +542,9 @@ input_data = json.loads(body["inputText"])
         f"PATIENT#{patient_id}")
 
     def test_get_model_info(self):
-        """Test retrieval of model information."""
+
+
+                    """Test retrieval of model information."""
         # Act
         result = self.bedrock_pat_service.get_model_info()
 
@@ -525,7 +557,9 @@ input_data = json.loads(body["inputText"])
         self.assertIn("input_format", result)
 
         def test_integrate_with_digital_twin_success(self):
-        """Test successful integration with digital twin."""
+
+
+                        """Test successful integration with digital twin."""
         # Arrange
         patient_id = "test-patient"
         profile_id = "test-profile"
@@ -546,8 +580,8 @@ input_data = json.loads(body["inputText"])
         self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
         # Act
-        result = self.bedrock_pat_service.integrate_with_digital_twin()
-        patient_id = patient_id,
+        result = self.bedrock_pat_service.integrate_with_digital_twin(,
+        patient_id= patient_id,
         profile_id = profile_id,
         analysis_id = analysis_id
         ()
@@ -567,7 +601,9 @@ input_data = json.loads(body["inputText"])
         # f"PROFILE#{profile_id}")
 
         def test_integrate_with_digital_twin_authorization_error(self):
-        """Test integration authorization error when patient IDs don't match."""
+
+
+                        """Test integration authorization error when patient IDs don't match."""
         # Arrange
         patient_id = "test-patient"
         profile_id = "test-profile"
@@ -582,8 +618,8 @@ input_data = json.loads(body["inputText"])
     with patch.object(self.bedrock_pat_service, 'get_analysis_by_id', return_value=mock_analysis):
         # Act & Assert
         with self.assertRaises(AuthorizationError) as cm:
-        self.bedrock_pat_service.integrate_with_digital_twin()
-        patient_id = patient_id,
+        self.bedrock_pat_service.integrate_with_digital_twin(,
+        patient_id= patient_id,
         profile_id = profile_id,
         analysis_id = analysis_id
         ()

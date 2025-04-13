@@ -11,15 +11,13 @@ import unittest
 import json
 from unittest.mock import patch
 
-from app.tests.security.base_security_test import BaseSecurityTest
-
-
-class TestBaseSecurityTest(unittest.TestCase):
+from app.tests.security.base_security_test import BaseSecurityTestclass TestBaseSecurityTest(unittest.TestCase):
     """Test suite for BaseSecurityTest functionality."""
 
     # Corrected indentation for all test methods
     def test_initialization(self):
-        """Test that BaseSecurityTest initializes with correct attributes."""
+
+                    """Test that BaseSecurityTest initializes with correct attributes."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 
@@ -35,7 +33,9 @@ class TestBaseSecurityTest(unittest.TestCase):
         security_test.tearDown()
 
         def test_has_permission(self):
-        """Test permission checking functionality."""
+
+
+                        """Test permission checking functionality."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 
@@ -56,7 +56,9 @@ class TestBaseSecurityTest(unittest.TestCase):
         security_test.tearDown()
 
     def test_get_auth_token(self):
-        """Test generation of authentication tokens."""
+
+
+                    """Test generation of authentication tokens."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 
@@ -94,7 +96,9 @@ class TestBaseSecurityTest(unittest.TestCase):
         security_test.tearDown()
 
         def test_get_auth_headers(self):
-        """Test generation of authentication headers."""
+
+
+                        """Test generation of authentication headers."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 
@@ -122,7 +126,8 @@ class TestBaseSecurityTest(unittest.TestCase):
 
         @patch("app.tests.security.base_security_test.MockAsyncSession")
         def test_db_session_setup(self, mock_session_class):
-        """Test database session is properly set up."""
+
+                        """Test database session is properly set up."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 
@@ -133,7 +138,9 @@ class TestBaseSecurityTest(unittest.TestCase):
         security_test.tearDown()
 
         def test_entity_factory_setup(self):
-        """Test entity factory is properly set up."""
+
+
+                        """Test entity factory is properly set up."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 

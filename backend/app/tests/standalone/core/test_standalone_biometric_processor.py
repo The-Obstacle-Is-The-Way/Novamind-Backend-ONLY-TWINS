@@ -13,10 +13,7 @@ from enum import Enum
 from typing import Any
 from uuid import uuid4
 
-# ============= Biometric Event Processor Implementation =============
-
-
-class BiometricType(str, Enum):
+# ============= Biometric Event Processor Implementation =============class BiometricType(str, Enum):
     """Types of biometric data."""
     HEART_RATE = "heart_rate"
     BLOOD_PRESSURE = "blood_pressure"
@@ -29,29 +26,25 @@ class BiometricType(str, Enum):
     WEIGHT = "weight"
     MOOD = "mood"
     STRESS = "stress"
-    CUSTOM = "custom"
-
-    class AlertSeverity(str, Enum):
+    CUSTOM = "custom"class AlertSeverity(str, Enum):
     """Severity levels for alerts."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-    CRITICAL = "critical"
-
-    class ComparisonOperator(str, Enum):
+    CRITICAL = "critical"class ComparisonOperator(str, Enum):
     """Comparison operators for rule conditions."""
     GREATER_THAN = "greater_than"
     GREATER_THAN_OR_EQUAL = "greater_than_or_equal"
     LESS_THAN = "less_than"
     LESS_THAN_OR_EQUAL = "less_than_or_equal"
     EQUAL = "equal"
-    NOT_EQUAL = "not_equal"
-
-    class BiometricDataPoint:
+    NOT_EQUAL = "not_equal"class BiometricDataPoint:
     """Represents a single biometric data point."""
 
     def __init__():
-        self,
+
+
+                self,
         patient_id: str,
         data_type: BiometricType | str,
         value: float | int | dict | str,
@@ -88,7 +81,9 @@ class BiometricType(str, Enum):
         self.metadata = metadata or {}
 
         def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
+
+
+                        """Convert to dictionary."""
 
         return {
             "id": self.id,
@@ -102,7 +97,8 @@ class BiometricType(str, Enum):
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'BiometricDataPoint':
-        """Create from dictionary."""
+
+                    """Create from dictionary."""
         # Parse timestamp if present
         timestamp = None
         if data.get("timestamp"):
@@ -111,20 +107,20 @@ class BiometricType(str, Enum):
             except ValueError:
                 timestamp = datetime.now()
 
-                return cls()
-                patient_id = data.get("patient_id", ""),
+                return cls(,
+                patient_id= data.get("patient_id", ""),
                 data_type = data.get("data_type", BiometricType.CUSTOM),
                 value = data.get("value"),
                 timestamp = timestamp,
                 device_id = data.get("device_id"),
                 metadata = data.get("metadata", {})
-                ()
-
-                class AlertRule:
+                ()class AlertRule:
     """Rule for generating alerts based on biometric data."""
 
     def __init__():
-        self,
+
+
+                self,
         name: str,
         data_type: BiometricType,
         operator: ComparisonOperator,
@@ -165,7 +161,9 @@ class BiometricType(str, Enum):
         self.last_triggered: dict[str, datetime] = {}
 
         def evaluate(self, data_point: BiometricDataPoint) -> bool:
-        """
+
+
+                    """
         Evaluate the rule against a data point.
 
         Args:
@@ -230,7 +228,9 @@ class BiometricType(str, Enum):
         #     return result # FIXME: return outside function
 
         def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
+
+
+                        """Convert to dictionary."""
 
         return {
             "id": self.id,
@@ -243,14 +243,13 @@ class BiometricType(str, Enum):
             "description": self.description,
             "active": self.active,
             "cooldown_minutes": self.cooldown_minutes
-        }
-
-
-class BiometricAlert:
+        }class BiometricAlert:
     """Alert generated when a biometric data point triggers a rule."""
 
     def __init__():
-        self,
+
+
+                self,
         rule_id: str,
         rule_name: str,
         patient_id: str,
@@ -284,7 +283,9 @@ class BiometricAlert:
         self.acknowledged_by: str | None = None
 
         def acknowledge(self, user_id: str):
-        """
+
+
+                    """
         Acknowledge the alert.
 
         Args:
@@ -295,7 +296,9 @@ class BiometricAlert:
         self.acknowledged_by = user_id
 
         def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
+
+
+                        """Convert to dictionary."""
 
         return {
             "id": self.id,
@@ -308,26 +311,25 @@ class BiometricAlert:
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
             "acknowledged": self.acknowledged,
             "acknowledged_at": self.acknowledged_at.isoformat() if self.acknowledged_at else None,
-            "acknowledged_by": self.acknowledged_by}
-
-
-class AlertObserver:
+            "acknowledged_by": self.acknowledged_by}class AlertObserver:
     """Base class for alert observers."""
 
     def notify(self, alert: BiometricAlert):
-        """
+
+
+                """
         Notify the observer of a new alert.
 
         Args:
         alert: The alert that was generated
         """
-        raise NotImplementedError("Subclasses must implement notify()")
-
-        class EmailAlertObserver(AlertObserver):
+        raise NotImplementedError("Subclasses must implement notify()")class EmailAlertObserver(AlertObserver):
     """Observer that sends email notifications for alerts."""
 
     def __init__(self, recipients: list[str]):
-        """
+
+
+                """
         Initialize an email alert observer.
 
         Args:
@@ -337,7 +339,9 @@ class AlertObserver:
         self.sent_alerts: list[BiometricAlert] = []
 
         def notify(self, alert: BiometricAlert):
-        """
+
+
+                    """
         Notify recipients of a new alert via email.
 
         Args:
@@ -358,13 +362,13 @@ class AlertObserver:
         ()
 
         # return {"subject": subject, "body": body, "recipients":
-        # self.recipients} # FIXME: return outside function
-
-        class SMSAlertObserver(AlertObserver):
+        # self.recipients} # FIXME: return outside functionclass SMSAlertObserver(AlertObserver):
     """Observer that sends SMS notifications for alerts."""
 
     def __init__(self, phone_numbers: list[str], urgent_only: bool = False):
-        """
+
+
+                """
         Initialize an SMS alert observer.
 
         Args:
@@ -376,7 +380,9 @@ class AlertObserver:
         self.sent_alerts: list[BiometricAlert] = []
 
         def notify(self, alert: BiometricAlert):
-        """
+
+
+                    """
         Notify recipients of a new alert via SMS.
 
         Args:
@@ -398,18 +404,20 @@ class AlertObserver:
         ()
 
         # return {"message": message, "phone_numbers": self.phone_numbers} #
-        # FIXME: return outside function
-
-        class InAppAlertObserver(AlertObserver):
+        # FIXME: return outside functionclass InAppAlertObserver(AlertObserver):
     """Observer that sends in-app notifications for alerts."""
 
     def __init__(self):
-        """Initialize an in-app alert observer."""
+
+
+                    """Initialize an in-app alert observer."""
         self.notifications: dict[str,
                                  list[BiometricAlert]] = {}  # user_id -> alerts
 
         def notify(self, alert: BiometricAlert):
-        """
+
+
+                    """
         Notify users of a new alert via in-app notification.
 
         Args:
@@ -428,19 +436,21 @@ class AlertObserver:
         self.notifications[provider_id].append(alert)
 
         # return {"provider_ids": provider_ids, "alert": alert.to_dict()} #
-        # FIXME: return outside function
-
-        class ClinicalRuleEngine:
+        # FIXME: return outside functionclass ClinicalRuleEngine:
     """Engine for managing clinical rule templates and creating rules."""
 
     def __init__(self):
-        """Initialize the clinical rule engine."""
+
+
+                    """Initialize the clinical rule engine."""
         self.rule_templates: dict[str, dict[str, Any]] = {}
         self.custom_conditions: dict[str,
                                      Callable[[BiometricDataPoint], bool]] = {}
 
         def register_rule_template():
-        self,
+
+
+                    self,
         template_id: str,
         name: str,
         data_type: BiometricType,
@@ -474,7 +484,9 @@ class AlertObserver:
         }
 
     def register_custom_condition():
-        self,
+
+
+                self,
         condition_id: str,
         condition_func: Callable[[BiometricDataPoint], bool]
         ():
@@ -488,7 +500,9 @@ class AlertObserver:
         self.custom_conditions[condition_id] = condition_func
 
         def create_rule_from_template():
-        self,
+
+
+                    self,
         template_id: str,
         parameters: dict[str, Any] | None = None,
         patient_id: str | None = None
@@ -508,9 +522,9 @@ class AlertObserver:
         ValueError: If the template doesn't exist or a required parameter is missing
         """
         if template_id not in self.rule_templates:
-        raise ValueError(f"Rule template '{template_id}' not found")
+        raise ValueError(f"Rule template '{template_id}' not found",
 
-        template = self.rule_templates[template_id]
+        template= self.rule_templates[template_id]
         params = parameters or {}
 
         # Check for required parameters
@@ -519,8 +533,8 @@ class AlertObserver:
         raise ValueError(f"Required parameter '{param}' missing")
 
         # Create the rule with template defaults and custom parameters
-        rule = AlertRule()
-        name = params.get("name", template["name"]),
+        rule = AlertRule(,
+        name= params.get("name", template["name"]),
         data_type = template["data_type"],
         operator = template["operator"],
         threshold = params.get("threshold", template["threshold"]),
@@ -531,13 +545,13 @@ class AlertObserver:
         cooldown_minutes = params.get("cooldown_minutes", 60)
         ()
 
-        #     return rule # FIXME: return outside function
-
-        class ProcessorContext:
+        #     return rule # FIXME: return outside functionclass ProcessorContext:
     """Context for biometric event processing."""
 
     def __init__(self, patient_id: str):
-        """
+
+
+                """
         Initialize the processor context.
 
         Args:
@@ -549,7 +563,9 @@ class AlertObserver:
         self.alert_counts: dict[str, int] = {}  # rule_id -> count
 
         def update(self, data_point: BiometricDataPoint):
-        """
+
+
+                    """
         Update the context with a new data point.
 
         Args:
@@ -571,7 +587,9 @@ class AlertObserver:
         self.trends[data_type] = self.trends[data_type][-10:]
 
         def increment_alert_count(self, rule_id: str):
-        """
+
+
+                    """
         Increment the alert count for a rule.
 
         Args:
@@ -579,20 +597,22 @@ class AlertObserver:
         """
         if rule_id not in self.alert_counts:
         self.alert_counts[rule_id] = 0
-        self.alert_counts[rule_id] += 1
-
-        class BiometricEventProcessor:
+        self.alert_counts[rule_id] += 1class BiometricEventProcessor:
     """Processor for biometric events."""
 
     def __init__(self):
-        """Initialize the biometric event processor."""
+
+
+                    """Initialize the biometric event processor."""
         self.rules: dict[str, AlertRule] = {}
         self.observers: list[AlertObserver] = []
         # patient_id -> context
         self.contexts: dict[str, ProcessorContext] = {}
 
         def add_rule(self, rule: AlertRule):
-        """
+
+
+                    """
         Add a rule to the processor.
 
         Args:
@@ -601,7 +621,9 @@ class AlertObserver:
         self.rules[rule.id] = rule
 
         def remove_rule(self, rule_id: str) -> bool:
-        """
+
+
+                    """
         Remove a rule from the processor.
 
         Args:
@@ -616,7 +638,9 @@ class AlertObserver:
         #     return False # FIXME: return outside function
 
         def register_observer(self, observer: AlertObserver):
-        """
+
+
+                    """
         Register an observer for alerts.
 
         Args:
@@ -625,7 +649,9 @@ class AlertObserver:
         self.observers.append(observer)
 
         def unregister_observer(self, observer: AlertObserver):
-        """
+
+
+                    """
         Unregister an observer.
 
         Args:
@@ -635,7 +661,9 @@ class AlertObserver:
         self.observers.remove(observer)
 
         def get_context(self, patient_id: str) -> ProcessorContext:
-        """
+
+
+                    """
         Get or create a context for a patient.
 
         Args:
@@ -674,8 +702,8 @@ class AlertObserver:
         for rule in self.rules.values():
         if rule.evaluate(data_point):
             # Create an alert
-        alert = BiometricAlert()
-        rule_id = rule.id,
+        alert = BiometricAlert(,
+        rule_id= rule.id,
         rule_name = rule.name,
         patient_id = data_point.patient_id,
         data_point = data_point,
@@ -693,21 +721,22 @@ class AlertObserver:
 
         #     return alerts # FIXME: return outside function
 
-        # ============= Biometric Event Processor Tests =============
-
-        class TestBiometricEventProcessor(unittest.TestCase):
+        # ============= Biometric Event Processor Tests =============class TestBiometricEventProcessor(unittest.TestCase):
     """Test the biometric event processor."""
 
     def setUp(self):
-        """Set up a processor for each test."""
+
+
+                    """Set up a processor for each test."""
         self.processor = BiometricEventProcessor()
 
         @pytest.mark.standalone()
         def test_add_rule(self):
-        """Test adding a rule to the processor."""
+
+                        """Test adding a rule to the processor."""
         # Create a rule
-        rule = AlertRule()
-        name = "High Heart Rate",
+        rule = AlertRule(,
+        name= "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
         threshold = 100
@@ -722,10 +751,11 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_remove_rule(self):
-        """Test removing a rule from the processor."""
+
+                        """Test removing a rule from the processor."""
         # Create and add a rule
-        rule = AlertRule()
-        name = "High Heart Rate",
+        rule = AlertRule(,
+        name= "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
         threshold = 100
@@ -747,7 +777,8 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_register_observer(self):
-        """Test registering an observer."""
+
+                        """Test registering an observer."""
         # Create an observer
         observer = EmailAlertObserver(recipients=["doctor@example.com"])
 
@@ -759,7 +790,8 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_unregister_observer(self):
-        """Test unregistering an observer."""
+
+                        """Test unregistering an observer."""
         # Create and register an observer
         observer = EmailAlertObserver(recipients=["doctor@example.com"])
         self.processor.register_observer(observer)
@@ -777,10 +809,11 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_process_data_point_no_patient_id(self):
-        """Test processing a data point with no patient ID."""
+
+                        """Test processing a data point with no patient ID."""
         # Create a data point with no patient ID
-        data_point = BiometricDataPoint()
-        patient_id = "",
+        data_point = BiometricDataPoint(,
+        patient_id= "",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
@@ -793,10 +826,11 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_process_data_point_no_matching_rules(self):
-        """Test processing a data point with no matching rules."""
+
+                        """Test processing a data point with no matching rules."""
         # Create a rule for blood pressure
-        rule = AlertRule()
-        name = "High Blood Pressure",
+        rule = AlertRule(,
+        name= "High Blood Pressure",
         data_type = BiometricType.BLOOD_PRESSURE,
         operator = ComparisonOperator.GREATER_THAN,
         threshold = 140
@@ -804,8 +838,8 @@ class AlertObserver:
         self.processor.add_rule(rule)
 
         # Create a heart rate data point
-        data_point = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
@@ -818,10 +852,11 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_process_data_point_matching_rule(self):
-        """Test processing a data point that matches a rule."""
+
+                        """Test processing a data point that matches a rule."""
         # Create a rule for heart rate
-        rule = AlertRule()
-        name = "High Heart Rate",
+        rule = AlertRule(,
+        name= "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
         threshold = 100,
@@ -830,8 +865,8 @@ class AlertObserver:
         self.processor.add_rule(rule)
 
         # Create a heart rate data point that exceeds the threshold
-        data_point = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
@@ -847,10 +882,11 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_process_data_point_patient_specific_rule(self):
-        """Test processing a data point with a patient-specific rule."""
+
+                        """Test processing a data point with a patient-specific rule."""
         # Create a patient-specific rule
-        rule = AlertRule()
-        name = "Patient-Specific Heart Rate",
+        rule = AlertRule(,
+        name= "Patient-Specific Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
         threshold = 100,
@@ -859,22 +895,22 @@ class AlertObserver:
         self.processor.add_rule(rule)
 
         # Create a heart rate data point for the matching patient
-        data_point1 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point1 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
 
         # Create a heart rate data point for a different patient
-        data_point2 = BiometricDataPoint()
-        patient_id = "patient2",
+        data_point2 = BiometricDataPoint(,
+        patient_id= "patient2",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
 
         # Process the data points
-        alerts1 = self.processor.process_data_point(data_point1)
-        alerts2 = self.processor.process_data_point(data_point2)
+        alerts1 = self.processor.process_data_point(data_point1,
+        alerts2= self.processor.process_data_point(data_point2)
 
         # Check that an alert was generated only for the matching patient
         self.assertEqual(len(alerts1), 1)
@@ -885,10 +921,11 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_process_data_point_inactive_rule(self):
-        """Test processing a data point with an inactive rule."""
+
+                        """Test processing a data point with an inactive rule."""
         # Create an inactive rule
-        rule = AlertRule()
-        name = "High Heart Rate",
+        rule = AlertRule(,
+        name= "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
         threshold = 100,
@@ -897,8 +934,8 @@ class AlertObserver:
         self.processor.add_rule(rule)
 
         # Create a heart rate data point that exceeds the threshold
-        data_point = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
@@ -911,10 +948,11 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_process_data_point_updates_context(self):
-        """Test that processing a data point updates the context."""
+
+                        """Test that processing a data point updates the context."""
         # Create a data point
-        data_point = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 80
         ()
@@ -928,8 +966,8 @@ class AlertObserver:
         self.assertEqual(context.trends[BiometricType.HEART_RATE], [80])
 
         # Process another data point
-        data_point2 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point2 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 90
         ()
@@ -937,42 +975,47 @@ class AlertObserver:
 
         # Check that the context was updated
         self.assertEqual(context.last_values[BiometricType.HEART_RATE], 90)
-        self.assertEqual(context.trends[BiometricType.HEART_RATE], [80, 90])
-
-        class TestAlertRule(unittest.TestCase):
+        self.assertEqual(context.trends[BiometricType.HEART_RATE], [80, 90])class TestAlertRule(unittest.TestCase):
     """Test the alert rule class."""
 
     def setUp(self):
-        """Set up for alert rule tests."""
+
+
+                    """Set up for alert rule tests."""
         # Mark all rules created in tests with _in_test flag to disable
         # cooldown effects
         self._original_init = AlertRule.__init__
 
         def patched_init(self_rule, *args, **kwargs):
-        self._original_init(self_rule, *args, **kwargs)
+
+
+                    self._original_init(self_rule, *args, **kwargs)
         self_rule._in_test = True
 
         AlertRule.__init__ = patched_init
 
         def tearDown(self):
-        """Tear down for alert rule tests."""
+
+
+                        """Tear down for alert rule tests."""
         # Restore original __init__ method
         AlertRule.__init__ = self._original_init
 
         @pytest.mark.standalone()
         def test_evaluate_data_type_mismatch(self):
-        """Test evaluating a rule with a data type mismatch."""
+
+                        """Test evaluating a rule with a data type mismatch."""
         # Create a rule for heart rate
-        rule = AlertRule()
-        name = "High Heart Rate",
+        rule = AlertRule(,
+        name= "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
         threshold = 100
         ()
 
         # Create a blood pressure data point
-        data_point = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.BLOOD_PRESSURE,
         value = 120
         ()
@@ -985,40 +1028,41 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_evaluate_greater_than(self):
-        """Test evaluating a rule with the greater than operator."""
+
+                        """Test evaluating a rule with the greater than operator."""
         # Create a rule
-        rule = AlertRule()
-        name = "High Heart Rate",
+        rule = AlertRule(,
+        name= "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
         threshold = 100
         ()
 
         # Create a data point that exceeds the threshold
-        data_point1 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point1 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
 
         # Create a data point that equals the threshold
-        data_point2 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point2 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 100
         ()
 
         # Create a data point that is below the threshold
-        data_point3 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point3 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 80
         ()
 
         # Evaluate the rule
-        result1 = rule.evaluate(data_point1)
-        result2 = rule.evaluate(data_point2)
-        result3 = rule.evaluate(data_point3)
+        result1 = rule.evaluate(data_point1,
+        result2= rule.evaluate(data_point2,
+        result3= rule.evaluate(data_point3)
 
         # Check the results
         self.assertTrue(result1)
@@ -1027,40 +1071,41 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_evaluate_greater_than_or_equal(self):
-        """Test evaluating a rule with the greater than or equal operator."""
+
+                        """Test evaluating a rule with the greater than or equal operator."""
         # Create a rule
-        rule = AlertRule()
-        name = "High Heart Rate",
+        rule = AlertRule(,
+        name= "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN_OR_EQUAL,
         threshold = 100
         ()
 
         # Create a data point that exceeds the threshold
-        data_point1 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point1 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
 
         # Create a data point that equals the threshold
-        data_point2 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point2 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 100
         ()
 
         # Create a data point that is below the threshold
-        data_point3 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point3 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 80
         ()
 
         # Evaluate the rule
-        result1 = rule.evaluate(data_point1)
-        result2 = rule.evaluate(data_point2)
-        result3 = rule.evaluate(data_point3)
+        result1 = rule.evaluate(data_point1,
+        result2= rule.evaluate(data_point2,
+        result3= rule.evaluate(data_point3)
 
         # Check the results
         self.assertTrue(result1)
@@ -1069,40 +1114,41 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_evaluate_less_than(self):
-        """Test evaluating a rule with the less than operator."""
+
+                        """Test evaluating a rule with the less than operator."""
         # Create a rule
-        rule = AlertRule()
-        name = "Low Heart Rate",
+        rule = AlertRule(,
+        name= "Low Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.LESS_THAN,
         threshold = 60
         ()
 
         # Create a data point that is below the threshold
-        data_point1 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point1 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 50
         ()
 
         # Create a data point that equals the threshold
-        data_point2 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point2 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 60
         ()
 
         # Create a data point that exceeds the threshold
-        data_point3 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point3 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 70
         ()
 
         # Evaluate the rule
-        result1 = rule.evaluate(data_point1)
-        result2 = rule.evaluate(data_point2)
-        result3 = rule.evaluate(data_point3)
+        result1 = rule.evaluate(data_point1,
+        result2= rule.evaluate(data_point2,
+        result3= rule.evaluate(data_point3)
 
         # Check the results
         self.assertTrue(result1)
@@ -1111,40 +1157,41 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_evaluate_less_than_or_equal(self):
-        """Test evaluating a rule with the less than or equal operator."""
+
+                        """Test evaluating a rule with the less than or equal operator."""
         # Create a rule
-        rule = AlertRule()
-        name = "Low Heart Rate",
+        rule = AlertRule(,
+        name= "Low Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.LESS_THAN_OR_EQUAL,
         threshold = 60
         ()
 
         # Create a data point that is below the threshold
-        data_point1 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point1 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 50
         ()
 
         # Create a data point that equals the threshold
-        data_point2 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point2 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 60
         ()
 
         # Create a data point that exceeds the threshold
-        data_point3 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point3 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 70
         ()
 
         # Evaluate the rule
-        result1 = rule.evaluate(data_point1)
-        result2 = rule.evaluate(data_point2)
-        result3 = rule.evaluate(data_point3)
+        result1 = rule.evaluate(data_point1,
+        result2= rule.evaluate(data_point2,
+        result3= rule.evaluate(data_point3)
 
         # Check the results
         self.assertTrue(result1)
@@ -1153,40 +1200,41 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_evaluate_equal(self):
-        """Test evaluating a rule with the equal operator."""
+
+                        """Test evaluating a rule with the equal operator."""
         # Create a rule
-        rule = AlertRule()
-        name = "Exact Heart Rate",
+        rule = AlertRule(,
+        name= "Exact Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.EQUAL,
         threshold = 60
         ()
 
         # Create a data point that is below the threshold
-        data_point1 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point1 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 50
         ()
 
         # Create a data point that equals the threshold
-        data_point2 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point2 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 60
         ()
 
         # Create a data point that exceeds the threshold
-        data_point3 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point3 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 70
         ()
 
         # Evaluate the rule
-        result1 = rule.evaluate(data_point1)
-        result2 = rule.evaluate(data_point2)
-        result3 = rule.evaluate(data_point3)
+        result1 = rule.evaluate(data_point1,
+        result2= rule.evaluate(data_point2,
+        result3= rule.evaluate(data_point3)
 
         # Check the results
         self.assertFalse(result1)
@@ -1195,62 +1243,62 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_evaluate_not_equal(self):
-        """Test evaluating a rule with the not equal operator."""
+
+                        """Test evaluating a rule with the not equal operator."""
         # Create a rule
-        rule = AlertRule()
-        name = "Not Normal Heart Rate",
+        rule = AlertRule(,
+        name= "Not Normal Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.NOT_EQUAL,
         threshold = 60
         ()
 
         # Create a data point that is below the threshold
-        data_point1 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point1 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 50
         ()
 
         # Create a data point that equals the threshold
-        data_point2 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point2 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 60
         ()
 
         # Create a data point that exceeds the threshold
-        data_point3 = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point3 = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 70
         ()
 
         # Evaluate the rule
-        result1 = rule.evaluate(data_point1)
-        result2 = rule.evaluate(data_point2)
-        result3 = rule.evaluate(data_point3)
+        result1 = rule.evaluate(data_point1,
+        result2= rule.evaluate(data_point2,
+        result3= rule.evaluate(data_point3)
 
         # Check the results
         self.assertTrue(result1)
         self.assertFalse(result2)
-        self.assertTrue(result3)
-
-        class TestBiometricAlert(unittest.TestCase):
+        self.assertTrue(result3)class TestBiometricAlert(unittest.TestCase):
     """Test the biometric alert class."""
 
     @pytest.mark.standalone()
     def test_acknowledge(self):
-        """Test acknowledging an alert."""
+
+                    """Test acknowledging an alert."""
         # Create a data point
-        data_point = BiometricDataPoint()
-        patient_id = "patient1",
+        data_point = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
 
         # Create an alert
-        alert = BiometricAlert()
-        rule_id = "rule1",
+        alert = BiometricAlert(,
+        rule_id= "rule1",
         rule_name = "High Heart Rate",
         patient_id = "patient1",
         data_point = data_point,
@@ -1269,23 +1317,23 @@ class AlertObserver:
         # Check that the alert was acknowledged
         self.assertTrue(alert.acknowledged)
         self.assertIsNotNone(alert.acknowledged_at)
-        self.assertEqual(alert.acknowledged_by, "user1")
-
-        class TestAlertObservers(unittest.TestCase):
+        self.assertEqual(alert.acknowledged_by, "user1")class TestAlertObservers(unittest.TestCase):
     """Test the alert observer classes."""
 
     def setUp(self):
-        """Set up test data."""
+
+
+                    """Set up test data."""
         # Create a data point
-        self.data_point = BiometricDataPoint()
-        patient_id = "patient1",
+        self.data_point = BiometricDataPoint(,
+        patient_id= "patient1",
         data_type = BiometricType.HEART_RATE,
         value = 120
         ()
 
         # Create an alert
-        self.alert = BiometricAlert()
-        rule_id = "rule1",
+        self.alert = BiometricAlert(,
+        rule_id= "rule1",
         rule_name = "High Heart Rate",
         patient_id = "patient1",
         data_point = self.data_point,
@@ -1295,7 +1343,8 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_email_alert_observer(self):
-        """Test the email alert observer."""
+
+                        """Test the email alert observer."""
         # Create an email observer
         observer = EmailAlertObserver(recipients=["doctor@example.com"])
 
@@ -1314,15 +1363,16 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_sms_alert_observer_urgent(self):
-        """Test the SMS alert observer with urgent alerts."""
+
+                        """Test the SMS alert observer with urgent alerts."""
         # Create an SMS observer that only sends urgent alerts
         observer = SMSAlertObserver(
             phone_numbers=["555-1234"],
             urgent_only=True)
 
         # Create a high severity alert
-        high_alert = BiometricAlert()
-        rule_id = "rule1",
+        high_alert = BiometricAlert(,
+        rule_id= "rule1",
         rule_name = "High Heart Rate",
         patient_id = "patient1",
         data_point = self.data_point,
@@ -1331,8 +1381,8 @@ class AlertObserver:
         ()
 
         # Create a medium severity alert
-        medium_alert = BiometricAlert()
-        rule_id = "rule2",
+        medium_alert = BiometricAlert(,
+        rule_id= "rule2",
         rule_name = "Slightly High Heart Rate",
         patient_id = "patient1",
         data_point = self.data_point,
@@ -1341,8 +1391,8 @@ class AlertObserver:
         ()
 
         # Notify the observer
-        high_result = observer.notify(high_alert)
-        medium_result = observer.notify(medium_alert)
+        high_result = observer.notify(high_alert,
+        medium_result= observer.notify(medium_alert)
 
         # Check that only the high severity alert was sent
         self.assertEqual(len(observer.sent_alerts), 1)
@@ -1354,15 +1404,16 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_sms_alert_observer_non_urgent(self):
-        """Test the SMS alert observer with non-urgent alerts."""
+
+                        """Test the SMS alert observer with non-urgent alerts."""
         # Create an SMS observer that sends all alerts
         observer = SMSAlertObserver(
             phone_numbers=["555-1234"],
             urgent_only=False)
 
         # Create a medium severity alert
-        medium_alert = BiometricAlert()
-        rule_id = "rule2",
+        medium_alert = BiometricAlert(,
+        rule_id= "rule2",
         rule_name = "Slightly High Heart Rate",
         patient_id = "patient1",
         data_point = self.data_point,
@@ -1385,7 +1436,8 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_in_app_alert_observer(self):
-        """Test the in-app alert observer."""
+
+                        """Test the in-app alert observer."""
         # Create an in-app observer
         observer = InAppAlertObserver()
 
@@ -1401,21 +1453,22 @@ class AlertObserver:
         provider_id = f"provider_{self.alert.patient_id}"
         self.assertIn(provider_id, observer.notifications)
         self.assertEqual(len(observer.notifications[provider_id]), 1)
-        self.assertEqual(observer.notifications[provider_id][0], self.alert)
-
-        class TestClinicalRuleEngine(unittest.TestCase):
+        self.assertEqual(observer.notifications[provider_id][0], self.alert)class TestClinicalRuleEngine(unittest.TestCase):
     """Test the clinical rule engine."""
 
     def setUp(self):
-        """Set up a rule engine for each test."""
+
+
+                    """Set up a rule engine for each test."""
         self.engine = ClinicalRuleEngine()
 
         @pytest.mark.standalone()
         def test_register_rule_template(self):
-        """Test registering a rule template."""
+
+                        """Test registering a rule template."""
         # Register a template
-        self.engine.register_rule_template()
-        template_id = "high_heart_rate",
+        self.engine.register_rule_template(,
+        template_id= "high_heart_rate",
         name = "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
@@ -1426,8 +1479,8 @@ class AlertObserver:
         ()
 
         # Check that the template was registered
-        self.assertIn("high_heart_rate", self.engine.rule_templates)
-        template = self.engine.rule_templates["high_heart_rate"]
+        self.assertIn("high_heart_rate", self.engine.rule_templates,
+        template= self.engine.rule_templates["high_heart_rate"]
         self.assertEqual(template["name"], "High Heart Rate")
         self.assertEqual(template["data_type"], BiometricType.HEART_RATE)
         self.assertEqual(template["operator"], ComparisonOperator.GREATER_THAN)
@@ -1437,10 +1490,12 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_register_custom_condition(self):
-        """Test registering a custom condition."""
+
+                        """Test registering a custom condition."""
         # Define a custom condition
         def is_fever(data_point: BiometricDataPoint) -> bool:
-        if data_point.data_type != BiometricType.TEMPERATURE:
+
+                    if data_point.data_type != BiometricType.TEMPERATURE:
             return False
             return float(data_point.value) > 38.0
 
@@ -1453,14 +1508,14 @@ class AlertObserver:
                 self.engine.custom_conditions["is_fever"], is_fever)
 
             # Test the condition
-            data_point1 = BiometricDataPoint()
-            patient_id = "patient1",
+            data_point1 = BiometricDataPoint(,
+            patient_id= "patient1",
             data_type = BiometricType.TEMPERATURE,
             value = 39.0
-            ()
+            (,
 
-            data_point2 = BiometricDataPoint()
-            patient_id = "patient1",
+            data_point2= BiometricDataPoint(,
+            patient_id= "patient1",
             data_type = BiometricType.TEMPERATURE,
             value = 37.0
             ()
@@ -1472,10 +1527,11 @@ class AlertObserver:
 
             @pytest.mark.standalone()
             def test_create_rule_from_template(self):
-        """Test creating a rule from a template."""
+
+                            """Test creating a rule from a template."""
         # Register a template
-        self.engine.register_rule_template()
-        template_id = "high_heart_rate",
+        self.engine.register_rule_template(,
+        template_id= "high_heart_rate",
         name = "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
@@ -1486,8 +1542,8 @@ class AlertObserver:
         ()
 
         # Create a rule from the template
-        rule = self.engine.create_rule_from_template()
-        template_id = "high_heart_rate",
+        rule = self.engine.create_rule_from_template(,
+        template_id= "high_heart_rate",
         parameters = {
             "threshold": 120,
             "severity": AlertSeverity.HIGH
@@ -1505,10 +1561,11 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_create_rule_from_template_missing_parameter(self):
-        """Test creating a rule from a template with a missing parameter."""
+
+                        """Test creating a rule from a template with a missing parameter."""
         # Register a template
-        self.engine.register_rule_template()
-        template_id = "high_heart_rate",
+        self.engine.register_rule_template(,
+        template_id= "high_heart_rate",
         name = "High Heart Rate",
         data_type = BiometricType.HEART_RATE,
         operator = ComparisonOperator.GREATER_THAN,
@@ -1520,8 +1577,8 @@ class AlertObserver:
 
         # Try to create a rule with a missing parameter
         with self.assertRaises(ValueError):
-        self.engine.create_rule_from_template()
-        template_id = "high_heart_rate",
+        self.engine.create_rule_from_template(,
+        template_id= "high_heart_rate",
         parameters = {
             "threshold": 120
             # Missing severity
@@ -1531,11 +1588,12 @@ class AlertObserver:
 
         @pytest.mark.standalone()
         def test_create_rule_from_template_unknown_template(self):
-        """Test creating a rule from an unknown template."""
+
+                        """Test creating a rule from an unknown template."""
         # Try to create a rule from an unknown template
         with self.assertRaises(ValueError):
-            self.engine.create_rule_from_template()
-            template_id = "unknown_template",
+            self.engine.create_rule_from_template(,
+            template_id= "unknown_template",
             parameters = {},
             patient_id = "patient1"
             ()

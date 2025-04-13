@@ -21,7 +21,7 @@ from fastapi.testclient import TestClient
 from app.domain.services.analytics_service import AnalyticsService
 # Assuming RedisCache is used
 from app.infrastructure.cache.redis_cache import RedisCache
-from app.presentation.api.endpoints.analytics_endpoints import
+from app.presentation.api.endpoints.analytics_endpoints import (
 router,
 get_analytics_service,
 _process_treatment_outcomes,
@@ -32,13 +32,14 @@ AnalyticsEvent  # Import AnalyticsEvent
 # Assuming get_cache_service exists or is defined elsewhere
 # If not, the dependency override needs adjustment
 # get_cache_service
-()
+)
 # Assuming BaseRepository exists for type hinting
 
 
 @pytest.fixture
 def mock_analytics_service():
-    """Create a mock AnalyticsService for testing."""
+
+            """Create a mock AnalyticsService for testing."""
     mock = AsyncMock(spec=AnalyticsService)
 
     # Setup mock responses for various methods
@@ -79,17 +80,17 @@ def mock_analytics_service():
 
 @pytest.fixture
 def mock_cache_service():
-    """Create a mock RedisCache for testing."""
+
+            """Create a mock RedisCache for testing."""
     mock = AsyncMock(spec=RedisCache)
     mock.get.return_value = None  # Default to cache miss
     mock.set = AsyncMock(return_value=True)  # Mock set as async
     mock.increment = AsyncMock(return_value=1)
     mock.expire = AsyncMock(return_value=True)
-    return mock
+    return mock@pytest.fixture
+def app(mock_analytics_service, mock_cache_service):
 
-    @pytest.fixture
-    def app(mock_analytics_service, mock_cache_service):
-    """Create a FastAPI app with the analytics router for testing."""
+            """Create a FastAPI app with the analytics router for testing."""
     app_instance = FastAPI()
 
     # Override dependencies
@@ -107,24 +108,21 @@ def mock_cache_service():
         # Include the router
         app_instance.include_router(router)
 
-        return app_instance
+        return app_instance@pytest.fixture
+def client(app):
 
-        @pytest.fixture
-        def client(app):
-    """Create a TestClient for the app."""
+            """Create a TestClient for the app."""
 
-    return TestClient(app)
+    return TestClient(app)@pytest.fixture
+def mock_background_tasks():
 
-    @pytest.fixture
-    def mock_background_tasks():
-    """Create a mock background tasks."""
+            """Create a mock background tasks."""
     mock = MagicMock(spec=BackgroundTasks)
     mock.add_task = MagicMock()
-    return mock
+    return mock@pytest.fixture
+def mock_user():
 
-    @pytest.fixture
-    def mock_user():
-    """Create a mock user for testing."""
+            """Create a mock user for testing."""
     # Assuming user object has an 'id' attribute
     user = MagicMock()
     user.id = "test-user-123"  # Use string ID for consistency if needed
@@ -166,8 +164,7 @@ def mock_cache_service():
 
             app.dependency_overrides = {}
 
-            @pytest.mark.db_required()  # Assuming db_required is a valid marker
-            class TestAnalyticsEndpoints:
+            @pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestAnalyticsEndpoints:
     """Tests for analytics endpoints."""
 
     @pytest.mark.asyncio

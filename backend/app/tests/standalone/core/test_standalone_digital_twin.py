@@ -12,10 +12,7 @@ from enum import Enum
 from typing import Any
 from uuid import uuid4
 
-# ================= Digital Twin Enums =================
-
-
-class TwinModelType(str, Enum):
+# ================= Digital Twin Enums =================class TwinModelType(str, Enum):
     """Types of digital twin models."""
     PSYCHIATRIC = "psychiatric"
     NEUROTRANSMITTER = "neurotransmitter"
@@ -23,9 +20,7 @@ class TwinModelType(str, Enum):
     SYMPTOM_PREDICTION = "symptom_prediction"
     BIOMETRIC = "biometric"
     KNOWLEDGE_GRAPH = "knowledge_graph"
-    CUSTOM = "custom"
-
-    class BiometricDataType(str, Enum):
+    CUSTOM = "custom"class BiometricDataType(str, Enum):
     """Types of biometric data."""
     HEART_RATE = "heart_rate"
     BLOOD_PRESSURE = "blood_pressure"
@@ -37,9 +32,7 @@ class TwinModelType(str, Enum):
     RESPIRATORY_RATE = "respiratory_rate"
     WEIGHT = "weight"
     STRESS = "stress"
-    CUSTOM = "custom"
-
-    class PredictionInterval(str, Enum):
+    CUSTOM = "custom"class PredictionInterval(str, Enum):
     """Time intervals for predictions."""
     HOURLY = "hourly"
     DAILY = "daily"
@@ -47,13 +40,13 @@ class TwinModelType(str, Enum):
     MONTHLY = "monthly"
     CUSTOM = "custom"
 
-    # ================= Digital Twin Models =================
-
-    class TwinModel:
+    # ================= Digital Twin Models =================class TwinModel:
     """Base class for all digital twin models."""
 
     def __init__():
-        self,
+
+
+                self,
         name: str,
         model_type: TwinModelType,
         patient_id: str,
@@ -82,7 +75,9 @@ class TwinModelType(str, Enum):
         self.version = "1.0.0"
 
         def update_metadata(self, key: str, value: Any) -> None:
-        """
+
+
+                    """
         Update model metadata.
 
         Args:
@@ -93,7 +88,9 @@ class TwinModelType(str, Enum):
         self.updated_at = datetime.now()
 
         def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
+
+
+                        """Convert to dictionary."""
 
         return {
             "id": self.id,
@@ -105,14 +102,13 @@ class TwinModelType(str, Enum):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "version": self.version
-        }
-
-
-class TimeSeriesModel(TwinModel):
+        }class TimeSeriesModel(TwinModel):
     """Time series model for forecasting symptoms and biometrics."""
 
     def __init__():
-        self,
+
+
+                self,
         name: str,
         patient_id: str,
         data_type: BiometricDataType | str,
@@ -135,8 +131,8 @@ class TimeSeriesModel(TwinModel):
         description: Model description
         metadata: Additional model metadata
         """
-        super().__init__()
-        name = name,
+        super().__init__(,
+        name= name,
         model_type = TwinModelType.SYMPTOM_PREDICTION,
         patient_id = patient_id,
         description = description,
@@ -159,7 +155,9 @@ class TimeSeriesModel(TwinModel):
         self.performance_metrics = {}
 
         def train(self, data: list[dict[str, Any]]) -> dict[str, float]:
-        """
+
+
+                    """
         Train the model on historical data.
 
         Args:
@@ -233,23 +231,24 @@ class TimeSeriesModel(TwinModel):
         #     return predictions # FIXME: return outside function
 
         def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
-        base_dict = super().to_dict()
-        time_series_dict = {
+
+
+                        """Convert to dictionary."""
+        base_dict = super().to_dict(,
+        time_series_dict= {
             "data_type": self.data_type.value,
             "prediction_interval": self.prediction_interval.value,
             "lookback_window": self.lookback_window,
             "forecast_horizon": self.forecast_horizon,
             "last_trained": self.last_trained.isoformat() if self.last_trained else None,
             "performance_metrics": self.performance_metrics}
-        return {**base_dict, **time_series_dict}
-
-
-class BiometricTwinModel(TwinModel):
+        return {**base_dict, **time_series_dict}class BiometricTwinModel(TwinModel):
     """Model for biometric data analysis and alerting."""
 
     def __init__():
-        self,
+
+
+                self,
         name: str,
         patient_id: str,
         biometric_types: list[BiometricDataType],
@@ -266,8 +265,8 @@ class BiometricTwinModel(TwinModel):
         description: Model description
         metadata: Additional model metadata
         """
-        super().__init__()
-        name = name,
+        super().__init__(,
+        name= name,
         model_type = TwinModelType.BIOMETRIC,
         patient_id = patient_id,
         description = description,
@@ -279,7 +278,9 @@ class BiometricTwinModel(TwinModel):
         self.baseline_values = {}
 
         def add_alert_rule(self, rule: dict[str, Any]) -> str:
-        """
+
+
+                    """
         Add an alert rule for a biometric type.
 
         Args:
@@ -295,7 +296,9 @@ class BiometricTwinModel(TwinModel):
         #     return rule_id # FIXME: return outside function
 
         def remove_alert_rule(self, rule_id: str) -> bool:
-        """
+
+
+                    """
         Remove an alert rule.
 
         Args:
@@ -337,9 +340,9 @@ class BiometricTwinModel(TwinModel):
         alerts = []
 
         # Extract data from the data point
-        biometric_type = data_point.get("type")
-        value = data_point.get("value")
-        timestamp = data_point.get("timestamp", datetime.now().isoformat())
+        biometric_type = data_point.get("type",
+        value= data_point.get("value",
+        timestamp= data_point.get("timestamp", datetime.now().isoformat())
 
         # Check if this biometric type is supported by this model
         if not any(bt.value == biometric_type for bt in self.biometric_types):
@@ -351,8 +354,8 @@ class BiometricTwinModel(TwinModel):
         continue
 
         # Check if the rule condition is met
-        operator = rule.get("operator")
-        threshold = rule.get("threshold")
+        operator = rule.get("operator",
+        threshold= rule.get("threshold")
 
         if operator == ">" and value > threshold:
         triggered = True
@@ -387,21 +390,22 @@ class BiometricTwinModel(TwinModel):
 #     return alerts # FIXME: return outside function
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
-        base_dict = super().to_dict()
-        biometric_dict = {
+
+
+                    """Convert to dictionary."""
+        base_dict = super().to_dict(,
+        biometric_dict= {
             "biometric_types": [bt.value for bt in self.biometric_types],
             "alert_rules": self.alert_rules,
             "baseline_values": self.baseline_values
         }
-        return {**base_dict, **biometric_dict}
-
-
-class DigitalTwin:
+        return {**base_dict, **biometric_dict}class DigitalTwin:
     """Complete digital twin for a patient."""
 
     def __init__():
-        self,
+
+
+                self,
         patient_id: str,
         name: str | None = None,
         description: str | None = None,
@@ -427,7 +431,9 @@ class DigitalTwin:
         self.models: dict[str, TwinModel] = {}
 
         def add_model(self, model: TwinModel) -> None:
-        """
+
+
+                    """
         Add a model to the digital twin.
 
         Args:
@@ -441,7 +447,9 @@ class DigitalTwin:
         self.updated_at = datetime.now()
 
         def remove_model(self, model_id: str) -> bool:
-        """
+
+
+                    """
         Remove a model from the digital twin.
 
         Args:
@@ -472,7 +480,9 @@ class DigitalTwin:
         # == model_type] # FIXME: return outside function
 
         def generate_biometric_alert_rules(self) -> dict[str, Any]:
-        """
+
+
+                    """
         Generate alert rules for all biometric models.
 
         Returns:
@@ -544,7 +554,9 @@ class DigitalTwin:
         #     return rules_info # FIXME: return outside function
 
         def predict_symptoms(self, horizon_days: int = 7) -> dict[str, Any]:
-        """
+
+
+                    """
         Generate symptom predictions for all time series models.
 
         Args:
@@ -615,7 +627,9 @@ class DigitalTwin:
         #     return results # FIXME: return outside function
 
         def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
+
+
+                        """Convert to dictionary."""
 
         return {
             "id": self.id,
@@ -631,19 +645,20 @@ class DigitalTwin:
                 model in self.models.items()}}
 
 
-# ================= Tests =================
-
-class TestDigitalTwin(unittest.TestCase):
+# ================= Tests =================class TestDigitalTwin(unittest.TestCase):
     """Test the DigitalTwin class."""
 
     def setUp(self):
-        """Set up for each test."""
+
+
+                    """Set up for each test."""
         self.patient_id = "patient123"
         self.digital_twin = DigitalTwin(patient_id=self.patient_id)
 
         @pytest.mark.standalone()
         def test_creation(self):
-        """Test creating a DigitalTwin."""
+
+                        """Test creating a DigitalTwin."""
         # Check basic attributes
         self.assertEqual(self.digital_twin.patient_id, self.patient_id)
         self.assertTrue(self.digital_twin.name.startswith(
@@ -654,8 +669,8 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(len(self.digital_twin.models), 0)
 
         # Check creation with custom attributes
-        custom_twin = DigitalTwin()
-        patient_id = "patient456",
+        custom_twin = DigitalTwin(,
+        patient_id= "patient456",
         name = "Custom Twin",
         description = "Custom description",
         metadata = {"key": "value"}
@@ -666,10 +681,11 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_add_model(self):
-        """Test adding a model to the DigitalTwin."""
+
+                        """Test adding a model to the DigitalTwin."""
         # Create a model
-        model = TwinModel()
-        name = "Test Model",
+        model = TwinModel(,
+        name= "Test Model",
         model_type = TwinModelType.PSYCHIATRIC,
         patient_id = self.patient_id
         ()
@@ -682,8 +698,8 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(self.digital_twin.models[model.id], model)
 
         # Try to add a model with a different patient ID
-        invalid_model = TwinModel()
-        name = "Invalid Model",
+        invalid_model = TwinModel(,
+        name= "Invalid Model",
         model_type = TwinModelType.PSYCHIATRIC,
         patient_id = "different_patient"
         ()
@@ -694,10 +710,11 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_remove_model(self):
-        """Test removing a model from the DigitalTwin."""
+
+                        """Test removing a model from the DigitalTwin."""
         # Create and add a model
-        model = TwinModel()
-        name = "Test Model",
+        model = TwinModel(,
+        name= "Test Model",
         model_type = TwinModelType.PSYCHIATRIC,
         patient_id = self.patient_id
         ()
@@ -718,20 +735,21 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_get_models_by_type(self):
-        """Test getting models by type."""
+
+                        """Test getting models by type."""
         # Create and add models of different types
-        model1 = TwinModel()
-        name = "Psychiatric Model",
+        model1 = TwinModel(,
+        name= "Psychiatric Model",
         model_type = TwinModelType.PSYCHIATRIC,
         patient_id = self.patient_id
-        ()
-        model2 = TwinModel()
-        name = "Biometric Model",
+        (,
+        model2= TwinModel(,
+        name= "Biometric Model",
         model_type = TwinModelType.BIOMETRIC,
         patient_id = self.patient_id
-        ()
-        model3 = TwinModel()
-        name = "Another Psychiatric Model",
+        (,
+        model3= TwinModel(,
+        name= "Another Psychiatric Model",
         model_type = TwinModelType.PSYCHIATRIC,
         patient_id = self.patient_id
         ()
@@ -742,10 +760,10 @@ class TestDigitalTwin(unittest.TestCase):
 
         # Get models by type
         psychiatric_models = self.digital_twin.get_models_by_type(
-            TwinModelType.PSYCHIATRIC)
-        biometric_models = self.digital_twin.get_models_by_type(
-            TwinModelType.BIOMETRIC)
-        custom_models = self.digital_twin.get_models_by_type(
+            TwinModelType.PSYCHIATRIC,
+        biometric_models= self.digital_twin.get_models_by_type(
+            TwinModelType.BIOMETRIC,
+        custom_models= self.digital_twin.get_models_by_type(
             TwinModelType.CUSTOM)
 
         # Check the results
@@ -759,10 +777,11 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_generate_biometric_alert_rules(self):
-        """Test generating biometric alert rules."""
+
+                        """Test generating biometric alert rules."""
         # Create and add a biometric model
-        model = BiometricTwinModel()
-        name = "Heart Rate Model",
+        model = BiometricTwinModel(,
+        name= "Heart Rate Model",
         patient_id = self.patient_id,
         biometric_types = [
             BiometricDataType.HEART_RATE,
@@ -788,10 +807,11 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_process_biometric_data(self):
-        """Test processing biometric data."""
+
+                        """Test processing biometric data."""
         # Create and add a biometric model
-        model = BiometricTwinModel()
-        name = "Heart Rate Model",
+        model = BiometricTwinModel(,
+        name= "Heart Rate Model",
         patient_id = self.patient_id,
         biometric_types = [BiometricDataType.HEART_RATE]
         ()
@@ -827,9 +847,9 @@ class TestDigitalTwin(unittest.TestCase):
     # Check the results
     self.assertEqual(results["processed_points"], 2)
     self.assertEqual(results["alerts_generated"], 1)
-    self.assertEqual(len(results["alerts"]), 1)
+    self.assertEqual(len(results["alerts"]), 1,
 
-    alert = results["alerts"][0]
+    alert= results["alerts"][0]
     self.assertEqual(alert["patient_id"], self.patient_id)
     self.assertEqual(
         alert["biometric_type"],
@@ -840,10 +860,11 @@ class TestDigitalTwin(unittest.TestCase):
 
     @pytest.mark.standalone()
     def test_predict_symptoms(self):
-        """Test predicting symptoms."""
+
+                    """Test predicting symptoms."""
         # Create and add a time series model
-        model = TimeSeriesModel()
-        name = "Heart Rate Prediction",
+        model = TimeSeriesModel(,
+        name= "Heart Rate Prediction",
         patient_id = self.patient_id,
         data_type = BiometricDataType.HEART_RATE,
         prediction_interval = PredictionInterval.DAILY,
@@ -856,9 +877,9 @@ class TestDigitalTwin(unittest.TestCase):
 
         # Check the results
         self.assertEqual(len(predictions), 1)
-        self.assertIn(model.id, predictions)
+        self.assertIn(model.id, predictions,
 
-        model_predictions = predictions[model.id]
+        model_predictions= predictions[model.id]
         self.assertEqual(model_predictions["model_name"], model.name)
         self.assertEqual(
             model_predictions["data_type"],
@@ -871,10 +892,11 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_to_dict(self):
-        """Test converting to dictionary."""
+
+                        """Test converting to dictionary."""
         # Create and add a model
-        model = TwinModel()
-        name = "Test Model",
+        model = TwinModel(,
+        name= "Test Model",
         model_type = TwinModelType.PSYCHIATRIC,
         patient_id = self.patient_id
         ()
@@ -888,16 +910,16 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(twin_dict["name"], self.digital_twin.name)
         self.assertEqual(twin_dict["version"], "1.0.0")
         self.assertIn(model.id, twin_dict["models"])
-        self.assertEqual(twin_dict["models"][model.id]["name"], model.name)
-
-        class TestTimeSeriesModel(unittest.TestCase):
+        self.assertEqual(twin_dict["models"][model.id]["name"], model.name)class TestTimeSeriesModel(unittest.TestCase):
     """Test the TimeSeriesModel class."""
 
     def setUp(self):
-        """Set up for each test."""
+
+
+                    """Set up for each test."""
         self.patient_id = "patient123"
-        self.model = TimeSeriesModel()
-        name = "Heart Rate Prediction",
+        self.model = TimeSeriesModel(,
+        name= "Heart Rate Prediction",
         patient_id = self.patient_id,
         data_type = BiometricDataType.HEART_RATE,
         prediction_interval = PredictionInterval.DAILY,
@@ -906,7 +928,8 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_creation(self):
-        """Test creating a TimeSeriesModel."""
+
+                        """Test creating a TimeSeriesModel."""
         # Check basic attributes
         self.assertEqual(self.model.name, "Heart Rate Prediction")
         self.assertEqual(self.model.patient_id, self.patient_id)
@@ -920,8 +943,8 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(self.model.performance_metrics, {})
 
         # Check creation with a string data type
-        string_model = TimeSeriesModel()
-        name = "Custom Prediction",
+        string_model = TimeSeriesModel(,
+        name= "Custom Prediction",
         patient_id = self.patient_id,
         data_type = "custom_data_type",
         prediction_interval = PredictionInterval.WEEKLY
@@ -933,7 +956,8 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_train(self):
-        """Test training the model."""
+
+                        """Test training the model."""
         # Create sample data
         data = [
             {"timestamp": "2025-01-01T00:00:00", "value": 70},
@@ -955,7 +979,8 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_predict(self):
-        """Test generating predictions."""
+
+                        """Test generating predictions."""
         # Generate predictions
         predictions = self.model.predict()
 
@@ -976,21 +1001,22 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(len(set(timestamps)), 7)
 
         # Check with different prediction interval
-        model = TimeSeriesModel()
-        name = "Hourly Prediction",
+        model = TimeSeriesModel(,
+        name= "Hourly Prediction",
         patient_id = self.patient_id,
         data_type = BiometricDataType.HEART_RATE,
         prediction_interval = PredictionInterval.HOURLY,
         forecast_horizon = 5
-        ()
-        hourly_predictions = model.predict()
+        (,
+        hourly_predictions= model.predict()
 
         # Check the results
         self.assertEqual(len(hourly_predictions), 5)  # 5 hours of predictions
 
         @pytest.mark.standalone()
         def test_to_dict(self):
-        """Test converting to dictionary."""
+
+                        """Test converting to dictionary."""
         # Train the model to populate performance metrics
         data = [
             {"timestamp": "2025-01-01T00:00:00", "value": 70},
@@ -1016,16 +1042,16 @@ class TestDigitalTwin(unittest.TestCase):
         self.assertEqual(model_dict["forecast_horizon"], 7)
         self.assertEqual(model_dict["lookback_window"], 7)
         self.assertIsNotNone(model_dict["last_trained"])
-        self.assertIn("performance_metrics", model_dict)
-
-        class TestBiometricTwinModel(unittest.TestCase):
+        self.assertIn("performance_metrics", model_dict)class TestBiometricTwinModel(unittest.TestCase):
     """Test the BiometricTwinModel class."""
 
     def setUp(self):
-        """Set up for each test."""
+
+
+                    """Set up for each test."""
         self.patient_id = "patient123"
-        self.model = BiometricTwinModel()
-        name = "Biometric Monitor",
+        self.model = BiometricTwinModel(,
+        name= "Biometric Monitor",
         patient_id = self.patient_id,
         biometric_types = [
             BiometricDataType.HEART_RATE,
@@ -1034,7 +1060,8 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_creation(self):
-        """Test creating a BiometricTwinModel."""
+
+                        """Test creating a BiometricTwinModel."""
         # Check basic attributes
         self.assertEqual(self.model.name, "Biometric Monitor")
         self.assertEqual(self.model.patient_id, self.patient_id)
@@ -1050,7 +1077,8 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_add_alert_rule(self):
-        """Test adding an alert rule."""
+
+                        """Test adding an alert rule."""
         # Create a rule
         rule = {
             "name": "High Heart Rate",
@@ -1070,7 +1098,8 @@ class TestDigitalTwin(unittest.TestCase):
 
     @pytest.mark.standalone()
     def test_remove_alert_rule(self):
-        """Test removing an alert rule."""
+
+                    """Test removing an alert rule."""
         # Add a rule
         rule = {
             "name": "High Heart Rate",
@@ -1095,7 +1124,8 @@ class TestDigitalTwin(unittest.TestCase):
 
     @pytest.mark.standalone()
     def test_set_baseline(self):
-        """Test setting a baseline value."""
+
+                    """Test setting a baseline value."""
         # Set a baseline
         self.model.set_baseline(BiometricDataType.HEART_RATE, 70)
 
@@ -1115,7 +1145,8 @@ class TestDigitalTwin(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_process_biometric_data(self):
-        """Test processing biometric data."""
+
+                        """Test processing biometric data."""
         # Add alert rules
         high_hr_rule = {
             "name": "High Heart Rate",
@@ -1124,9 +1155,9 @@ class TestDigitalTwin(unittest.TestCase):
             "threshold": 100,
             "severity": "medium"
         }
-        self.model.add_alert_rule(high_hr_rule)
+        self.model.add_alert_rule(high_hr_rule,
 
-    low_hr_rule = {
+    low_hr_rule= {
         "name": "Low Heart Rate",
         "biometric_type": BiometricDataType.HEART_RATE.value,
         "operator": "<",
@@ -1161,10 +1192,10 @@ class TestDigitalTwin(unittest.TestCase):
     }
 
     # Process the data
-    high_alerts = self.model.process_biometric_data(high_hr_data)
-    normal_alerts = self.model.process_biometric_data(normal_hr_data)
-    low_alerts = self.model.process_biometric_data(low_hr_data)
-    bp_alerts = self.model.process_biometric_data(bp_data)
+    high_alerts = self.model.process_biometric_data(high_hr_data,
+    normal_alerts= self.model.process_biometric_data(normal_hr_data,
+    low_alerts= self.model.process_biometric_data(low_hr_data,
+    bp_alerts= self.model.process_biometric_data(bp_data)
 
     # Check the results
     self.assertEqual(len(high_alerts), 1)
@@ -1196,7 +1227,8 @@ class TestDigitalTwin(unittest.TestCase):
 
     @pytest.mark.standalone()
     def test_to_dict(self):
-        """Test converting to dictionary."""
+
+                    """Test converting to dictionary."""
         # Add a rule and baseline
         rule = {
             "name": "High Heart Rate",

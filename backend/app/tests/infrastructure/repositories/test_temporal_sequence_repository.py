@@ -1,7 +1,7 @@
 """
 Tests for the SQL Alchemy implementation of the temporal sequence repository.
 """
-from app.infrastructure.repositories.temporal_sequence_repository import
+from app.infrastructure.repositories.temporal_sequence_repository import (
 import pytest
 from datetime import datetime, UTC, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -14,14 +14,15 @@ from app.domain.entities.temporal_sequence import TemporalSequence
 from app.infrastructure.models.temporal_sequence_model import
 TemporalSequenceModel,
 TemporalDataPointModel
-()
+)
 SqlAlchemyTemporalSequenceRepository
 ()
 
 
 @pytest.fixture
 def mock_session():
-    """Create a mock SQLAlchemy session for testing."""
+
+            """Create a mock SQLAlchemy session for testing."""
     session = AsyncMock(spec=AsyncSession)
 
     # Mock for execute that will be customized in tests
@@ -39,14 +40,15 @@ def mock_session():
     @pytest.fixture
     @pytest.mark.db_required()
     def test_sequence():
-    """Create a test temporal sequence for tests."""
-    now = datetime.now()
-    sequence_id = uuid4()
-    patient_id = uuid4()
+
+                """Create a test temporal sequence for tests."""
+    now = datetime.now(,
+    sequence_id= uuid4(,
+    patient_id= uuid4()
 
     # Create sequence with three time points
-    sequence = TemporalSequence()
-    sequence_id = sequence_id,
+    sequence = TemporalSequence(,
+    sequence_id= sequence_id,
     patient_id = patient_id,
     feature_names = ["dopamine", "serotonin", "gaba"],
     timestamps = [
@@ -63,15 +65,14 @@ def mock_session():
                          "type": "neurotransmitter_levels"}  # Renamed
     ()
 
-    return sequence
+    return sequence@pytest.fixture
+def mock_sequence_model():
 
-    @pytest.fixture
-    def mock_sequence_model():
-    """Create a mock sequence model for tests."""
-    now = datetime.now()
-    sequence_id = uuid4()
+            """Create a mock sequence model for tests."""
+    now = datetime.now(,
+    sequence_id= uuid4(,
 
-    model = MagicMock(spec=TemporalSequenceModel)
+    model= MagicMock(spec=TemporalSequenceModel)
     model.sequence_id = sequence_id
     model.patient_id = uuid4()
     model.feature_names = ["dopamine", "serotonin", "gaba"]
@@ -79,14 +80,13 @@ def mock_session():
                                "type": "neurotransmitter_levels"}  # Renamed
     model.created_at = now
 
-    return model
+    return model@pytest.fixture
+def mock_data_points(mock_sequence_model):
 
-    @pytest.fixture
-    def mock_data_points(mock_sequence_model):
-    """Create mock data points for tests."""
-    now = datetime.now()
+            """Create mock data points for tests."""
+    now = datetime.now(,
 
-    data_points = []
+    data_points= []
     for i in range(3):
         point = MagicMock(spec=TemporalDataPointModel)
         point.sequence_id = mock_sequence_model.sequence_id
@@ -95,19 +95,19 @@ def mock_session():
         point.values = [0.5 + (i * 0.1), 0.3 + (i * 0.1), 0.7 - (i * 0.1)]
         data_points.append(point)
 
-        return data_points
-
-        class TestSqlAlchemyTemporalSequenceRepository:
+        return data_pointsclass TestSqlAlchemyTemporalSequenceRepository:
     """Tests for SqlAlchemyTemporalSequenceRepository."""
 
     def test_init(self, mock_session):
-        """Test repository initialization."""
+
+
+                    """Test repository initialization."""
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
         assert repo.session == mock_session
 
         @pytest.mark.asyncio()
         async def test_save(self, mock_session, test_sequence):
-        """Test saving a temporal sequence."""
+                 """Test saving a temporal sequence."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
 
@@ -153,9 +153,9 @@ def mock_session():
         mock_sequence_result.scalars = MagicMock(
             return_value=mock_sequence_result)
         mock_sequence_result.first = MagicMock(
-            return_value=mock_sequence_model)
+            return_value=mock_sequence_model,
 
-        mock_data_points_result = MagicMock()
+        mock_data_points_result= MagicMock()
         mock_data_points_result.scalars = MagicMock(
             return_value=mock_data_points_result)
         mock_data_points_result.all = MagicMock(return_value=mock_data_points)
@@ -182,7 +182,7 @@ def mock_session():
 
         @pytest.mark.asyncio()
         async def test_get_by_id_not_found(self, mock_session):
-        """Test getting a sequence by ID when not found."""
+                 """Test getting a sequence by ID when not found."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
 
@@ -215,9 +215,9 @@ def mock_session():
         mock_sequence_result.scalars = MagicMock(
             return_value=mock_sequence_result)
         mock_sequence_result.all = MagicMock(
-            return_value=[mock_sequence_model])
+            return_value=[mock_sequence_model],
 
-        mock_data_points_result = MagicMock()
+        mock_data_points_result= MagicMock()
         mock_data_points_result.scalars = MagicMock(
             return_value=mock_data_points_result)
         mock_data_points_result.all = MagicMock(return_value=mock_data_points)
@@ -241,12 +241,12 @@ def mock_session():
 
         @pytest.mark.asyncio()
         async def test_delete_success(self, mock_session):
-        """Test deleting a sequence successfully."""
+                 """Test deleting a sequence successfully."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
 
-        # Mock successful deletion (rowcount > 0)
-        mock_result1 = MagicMock()
+        # Mock successful deletion (rowcount > 0,
+        mock_result1= MagicMock()
         mock_result1.rowcount = 2  # Deleted data points
 
         mock_result2 = MagicMock()
@@ -263,12 +263,12 @@ def mock_session():
 
         @pytest.mark.asyncio()
         async def test_delete_not_found(self, mock_session):
-        """Test deleting a sequence that doesn't exist."""
+                 """Test deleting a sequence that doesn't exist."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
 
-        # Mock unsuccessful deletion (rowcount = 0)
-        mock_result1 = MagicMock()
+        # Mock unsuccessful deletion (rowcount = 0,
+        mock_result1= MagicMock()
         mock_result1.rowcount = 0  # No data points deleted
 
         mock_result2 = MagicMock()
@@ -298,9 +298,9 @@ def mock_session():
         mock_sequence_result.scalars = MagicMock(
             return_value=mock_sequence_result)
         mock_sequence_result.all = MagicMock(
-            return_value=[mock_sequence_model])
+            return_value=[mock_sequence_model],
 
-        mock_data_points_result = MagicMock()
+        mock_data_points_result= MagicMock()
         mock_data_points_result.scalars = MagicMock(
             return_value=mock_data_points_result)
         mock_data_points_result.all = MagicMock(return_value=mock_data_points)
@@ -311,8 +311,8 @@ def mock_session():
         ]
 
         # Execute
-        result = await repo.get_latest_by_feature()
-        patient_id = mock_sequence_model.patient_id,
+        result = await repo.get_latest_by_feature(,
+        patient_id= mock_sequence_model.patient_id,
         feature_name = "dopamine",
         limit = 5
         ()
@@ -331,7 +331,7 @@ def mock_session():
 
         @pytest.mark.asyncio()
         async def test_get_latest_by_feature_not_found(self, mock_session):
-        """Test getting the latest sequence by feature when not found."""
+                 """Test getting the latest sequence by feature when not found."""
         # Setup
         repo = SqlAlchemyTemporalSequenceRepository(session=mock_session)
 
@@ -343,8 +343,8 @@ def mock_session():
         mock_session.execute.return_value = mock_result
 
         # Execute
-        result = await repo.get_latest_by_feature()
-        patient_id = uuid4(),
+        result = await repo.get_latest_by_feature(,
+        patient_id= uuid4(),
         feature_name = "nonexistent_feature"
         ()
 

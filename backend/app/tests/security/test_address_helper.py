@@ -10,10 +10,13 @@ from app.core.security.field_encryption import FieldEncryptor
 
 
 def test_address_field_encryption():
-    """Test address field handling in the field encryptor."""
+
+
+
+            """Test address field handling in the field encryptor."""
     # Setup
-    encryption_service = EncryptionService(direct_key="test_address")
-    field_encryptor = FieldEncryptor(encryption_service)
+    encryption_service = EncryptionService(direct_key="test_address",
+    field_encryptor= FieldEncryptor(encryption_service)
 
     # Sample nested address
     data = {

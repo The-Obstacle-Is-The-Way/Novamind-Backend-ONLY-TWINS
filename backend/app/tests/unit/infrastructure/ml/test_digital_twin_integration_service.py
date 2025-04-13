@@ -17,13 +17,11 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 
 
-@pytest.mark.db_required()
-class TestDigitalTwinIntegrationService:
-    """Tests for the DigitalTwinIntegrationService."""
+@pytest.mark.db_required()class TestDigitalTwinIntegrationService:
+    """Tests for the DigitalTwinIntegrationService."""@pytest.fixture
+def mock_symptom_forecasting_service(self):
 
-    @pytest.fixture
-    def mock_symptom_forecasting_service(self):
-        """Create a mock SymptomForecastingService."""
+                """Create a mock SymptomForecastingService."""
         service = AsyncMock()
         service.generate_forecast = AsyncMock(return_value={)
                                               "patient_id": str(uuid4()),
@@ -46,11 +44,10 @@ class TestDigitalTwinIntegrationService:
                 "xgboost": {"weight": 0.3, "metrics": {"mae": 0.47, "rmse": 0.72}}
         }
             (})
-        return service
+        return service@pytest.fixture
+def mock_biometric_correlation_service(self):
 
-    @pytest.fixture
-    def mock_biometric_correlation_service(self):
-        """Create a mock BiometricCorrelationService."""
+                """Create a mock BiometricCorrelationService."""
         service = AsyncMock()
         service.analyze_correlations = AsyncMock(return_value={)
                                                  "patient_id": str(uuid4()),
@@ -86,11 +83,10 @@ class TestDigitalTwinIntegrationService:
                 }
         ]
             (})
-        return service
+        return service@pytest.fixture
+def mock_medication_response_service(self):
 
-    @pytest.fixture
-    def mock_medication_response_service(self):
-        """Create a mock MedicationResponseService."""
+                """Create a mock MedicationResponseService."""
         service = AsyncMock()
         service.predict_medication_response = AsyncMock(return_value={)
                                                         "medication_predictions": {
@@ -167,11 +163,10 @@ class TestDigitalTwinIntegrationService:
                 }
         }
             (})
-        return service
+        return service@pytest.fixture
+def mock_patient_repository(self):
 
-    @pytest.fixture
-    def mock_patient_repository(self):
-        """Create a mock PatientRepository."""
+                """Create a mock PatientRepository."""
         repo = AsyncMock()
         repo.get_by_id = AsyncMock(return_value={)
                                    "id": str(uuid4()),
@@ -182,10 +177,8 @@ class TestDigitalTwinIntegrationService:
                                    "conditions": ["anxiety", "depression"],
                                    "medications": ["fluoxetine"]
                                    (})
-        return repo
-
-        @pytest.fixture
-        def integration_service(
+        return repo@pytest.fixture
+def integration_service(
             self,
             mock_symptom_forecasting_service,
             mock_biometric_correlation_service,
@@ -193,16 +186,15 @@ class TestDigitalTwinIntegrationService:
         (mock_medication_response_service, mock_patient_repository):
         """Create a DigitalTwinIntegrationService with mock dependencies."""
 
-    return DigitalTwinIntegrationService()
-    symptom_forecasting_service = mock_symptom_forecasting_service,
+    return DigitalTwinIntegrationService(,
+    symptom_forecasting_service= mock_symptom_forecasting_service,
     biometric_correlation_service = mock_biometric_correlation_service,
     medication_response_service = mock_medication_response_service,
     patient_repository = mock_patient_repository
-    ()
+    ()@pytest.fixture
+def sample_patient_id(self):
 
-    @pytest.fixture
-    def sample_patient_id(self):
-        """Create a sample patient ID."""
+                """Create a sample patient ID."""
 
         return str(uuid4())
 
@@ -267,9 +259,9 @@ class TestDigitalTwinIntegrationService:
         """Test that generate_comprehensive_insights handles service errors gracefully."""
         # Setup
         integration_service.symptom_forecasting_service.generate_forecast.side_effect = Exception(
-            "Service error")
+            "Service error",
 
-        options = {
+        options= {
             "include_symptom_forecast": True,
             "include_biometric_correlations": True,
             "include_medication_predictions": True

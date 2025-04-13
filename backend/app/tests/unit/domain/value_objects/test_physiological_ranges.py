@@ -3,14 +3,13 @@
 import pytest
 from typing import Dict
 
-from app.domain.value_objects.physiological_ranges import PhysiologicalRange
-
-
-class TestPhysiologicalRange:
+from app.domain.value_objects.physiological_ranges import PhysiologicalRangeclass TestPhysiologicalRange:
     """Tests for the PhysiologicalRange value object."""
 
     def test_init_with_valid_values(self):
-        """Test initialization with valid values."""
+
+
+                    """Test initialization with valid values."""
         range_obj = PhysiologicalRange(
             min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
         )
@@ -21,7 +20,9 @@ class TestPhysiologicalRange:
         assert range_obj.critical_max == 140.0
 
     def test_init_with_min_greater_than_max(self):
-        """Test initialization with min > max raises error."""
+
+
+                    """Test initialization with min > max raises error."""
         with pytest.raises(ValueError) as excinfo:
             PhysiologicalRange(
                 min=100.0, max=60.0, critical_min=40.0, critical_max=140.0
@@ -31,7 +32,9 @@ class TestPhysiologicalRange:
             excinfo.value)
 
     def test_init_with_invalid_critical_min(self):
-        """Test initialization with critical_min > min raises error."""
+
+
+                    """Test initialization with critical_min > min raises error."""
         with pytest.raises(ValueError) as excinfo:
             PhysiologicalRange(
                 min=60.0, max=100.0, critical_min=70.0, critical_max=140.0
@@ -40,7 +43,9 @@ class TestPhysiologicalRange:
         assert "Critical minimum must be <= minimum" in str(excinfo.value)
 
     def test_init_with_invalid_critical_max(self):
-        """Test initialization with critical_max < max raises error."""
+
+
+                    """Test initialization with critical_max < max raises error."""
         with pytest.raises(ValueError) as excinfo:
             PhysiologicalRange(
                 min=60.0, max=100.0, critical_min=40.0, critical_max=90.0
@@ -49,7 +54,9 @@ class TestPhysiologicalRange:
         assert "Critical maximum must be >= maximum" in str(excinfo.value)
 
     def test_is_normal(self):
-        """Test is_normal method."""
+
+
+                    """Test is_normal method."""
         range_obj = PhysiologicalRange(
             min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
         )
@@ -68,7 +75,9 @@ class TestPhysiologicalRange:
         assert range_obj.is_normal(150.0) is False
 
     def test_is_abnormal(self):
-        """Test is_abnormal method."""
+
+
+                    """Test is_abnormal method."""
         range_obj = PhysiologicalRange(
             min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
         )
@@ -87,7 +96,9 @@ class TestPhysiologicalRange:
         assert range_obj.is_abnormal(150.0) is False
 
     def test_is_critical(self):
-        """Test is_critical method."""
+
+
+                    """Test is_critical method."""
         range_obj = PhysiologicalRange(
             min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
         )
@@ -120,7 +131,9 @@ class TestPhysiologicalRange:
         )  # Just above critical_max is critical
 
     def test_get_severity(self):
-        """Test get_severity method."""
+
+
+                    """Test get_severity method."""
         range_obj = PhysiologicalRange(
             min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
         )
@@ -139,12 +152,14 @@ class TestPhysiologicalRange:
         assert range_obj.get_severity(150.0) == "critical"
 
     def test_to_dict(self):
-        """Test to_dict method."""
+
+
+                    """Test to_dict method."""
         range_obj = PhysiologicalRange(
             min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
-        )
+        ,
 
-        range_dict = range_obj.to_dict()
+        range_dict= range_obj.to_dict()
 
         assert isinstance(range_dict, dict)
         assert range_dict["min"] == 60.0
@@ -153,7 +168,9 @@ class TestPhysiologicalRange:
         assert range_dict["critical_max"] == 140.0
 
     def test_from_dict(self):
-        """Test from_dict class method."""
+
+
+                    """Test from_dict class method."""
         range_dict = {
             "min": 60.0,
             "max": 100.0,
@@ -170,14 +187,16 @@ class TestPhysiologicalRange:
         assert range_obj.critical_max == 140.0
 
     def test_roundtrip_dict_conversion(self):
-        """Test round-trip conversion to dict and back."""
+
+
+                    """Test round-trip conversion to dict and back."""
         original = PhysiologicalRange(
             min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
         )
 
         # Convert to dict and back
-        dict_form = original.to_dict()
-        reconstructed = PhysiologicalRange.from_dict(dict_form)
+        dict_form = original.to_dict(,
+        reconstructed= PhysiologicalRange.from_dict(dict_form)
 
         assert original.min == reconstructed.min
         assert original.max == reconstructed.max
@@ -185,7 +204,9 @@ class TestPhysiologicalRange:
         assert original.critical_max == reconstructed.critical_max
 
     def test_get_default_range(self):
-        """Test get_default_range class method."""
+
+
+                    """Test get_default_range class method."""
         # Test with known biometric type
         heart_rate_range = PhysiologicalRange.get_default_range("heart_rate")
 
@@ -207,7 +228,9 @@ class TestPhysiologicalRange:
         assert unknown_range is None
 
         def test_default_ranges_are_valid(self):
-        """Test all default ranges are valid."""
+
+
+                        """Test all default ranges are valid."""
         for biometric_type, range_data in PhysiologicalRange.DEFAULT_RANGES.items():
             # Verify the range data has required keys
             assert "min" in range_data

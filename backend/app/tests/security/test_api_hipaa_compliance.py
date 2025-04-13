@@ -20,15 +20,13 @@ try:
     from app.presentation.api.v1.middleware.logging_middleware import PHISanitizingMiddleware
     , except ImportError:
     # Mock FastAPI components for testing
-    @pytest.mark.db_required()
-    class HTTPException(Exception):
+    @pytest.mark.db_required()class HTTPException(Exception):
         """Mock HTTPException."""
         def __init__(self, status_code, detail=None, headers=None):
-            self.status_code = status_code
-            self.detail = detail
-            self.headers = headers
 
-            class status:
+                        self.status_code = status_code
+            self.detail = detail
+            self.headers = headersclass status:
         """Mock status codes."""
         HTTP_200_OK = 200
         HTTP_201_CREATED = 201
@@ -37,107 +35,128 @@ try:
         HTTP_403_FORBIDDEN = 403
         HTTP_404_NOT_FOUND = 404
         HTTP_422_UNPROCESSABLE_ENTITY = 422
-        HTTP_500_INTERNAL_SERVER_ERROR = 500
-
-        class OAuth2PasswordBearer:
+        HTTP_500_INTERNAL_SERVER_ERROR = 500class OAuth2PasswordBearer:
         """Mock OAuth2PasswordBearer."""
         def __init__(self, tokenUrl):
-            self.tokenUrl = tokenUrl
+
+                        self.tokenUrl = tokenUrl
             
             async def __call__(self, request=None):
-            if not request or "Authorization" not in request.headers:
-            raise HTTPException(status_code=401, detail="Not authenticated")
-            auth = request.headers["Authorization"]
+                 if not request or "Authorization" not in request.headers:
+            raise HTTPException(status_code=401, detail="Not authenticated",
+            auth= request.headers["Authorization"]
             if not auth.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="Invalid token type")
-            #         return auth.replace("Bearer ", "") # FIXME: return outside function
-            
-            class Depends:
+            #         return auth.replace("Bearer ", "") # FIXME: return outside functionclass Depends:
         """Mock Depends."""
         def __init__(self, dependency=None):
-            self.dependency = dependency
 
-            class FastAPI:
+                        self.dependency = dependencyclass FastAPI:
         """Mock FastAPI."""
         def __init__(self, title=None, description=None, version=None):
-            self.title = title
+
+                        self.title = title
             self.description = description
             self.version = version
             self.routes = []
             self.middleware = []
             
             def include_router(self, router, prefix=None, tags=None):
-            """Include a router."""
+
+            
+                                """Include a router."""
             self.routes.append((router, prefix, tags))
             
             def add_middleware(self, middleware_class, **options):
-            """Add middleware."""
-            self.middleware.append((middleware_class, options))
+
             
-            class APIRouter:
+                                """Add middleware."""
+            self.middleware.append((middleware_class, options))class APIRouter:
         """Mock APIRouter."""
         def __init__(self, prefix=None, tags=None):
-            self.prefix = prefix
+
+                        self.prefix = prefix
             self.tags = tags
             self.routes = []
             
             def get(self, path, **kwargs):
-            """Register a GET endpoint."""
+
+            
+                                """Register a GET endpoint."""
             def decorator(func):
-            self.routes.append(("GET", path, func, kwargs))
+
+                            self.routes.append(("GET", path, func, kwargs))
                 return func
             return decorator
             
             def post(self, path, **kwargs):
-            """Register a POST endpoint."""
+
+            
+                                """Register a POST endpoint."""
             def decorator(func):
-            self.routes.append(("POST", path, func, kwargs))
+
+                            self.routes.append(("POST", path, func, kwargs))
                 return func
             return decorator
             
             def put(self, path, **kwargs):
-            """Register a PUT endpoint."""
+
+            
+                                """Register a PUT endpoint."""
             def decorator(func):
-            self.routes.append(("PUT", path, func, kwargs))
+
+                            self.routes.append(("PUT", path, func, kwargs))
                 return func
             return decorator
             
             def delete(self, path, **kwargs):
-            """Register a DELETE endpoint."""
-            def decorator(func):
-            self.routes.append(("DELETE", path, func, kwargs))
-                return func
-            return decorator
+
             
-            class TestClient:
+                                """Register a DELETE endpoint."""
+            def decorator(func):
+
+                            self.routes.append(("DELETE", path, func, kwargs))
+                return func
+            return decoratorclass TestClient:
         """Mock TestClient."""
         def __init__(self, app):
-            self.app = app
+
+                        self.app = app
             self.base_url = "http://test"
             self.headers = {}
             
             def get(self, url, headers=None, params=None):
-            """Simulate a GET request."""
+
+            
+                                """Simulate a GET request."""
             
             return self._make_request("GET", url, headers, params=params)
             
             def post(self, url, headers=None, json=None, data=None):
-            """Simulate a POST request."""
+
+            
+                                """Simulate a POST request."""
             
             return self._make_request("POST", url, headers, json=json, data=data)
             
             def put(self, url, headers=None, json=None, data=None):
-            """Simulate a PUT request."""
+
+            
+                                """Simulate a PUT request."""
             
             return self._make_request("PUT", url, headers, json=json, data=data)
             
             def delete(self, url, headers=None):
-            """Simulate a DELETE request."""
+
+            
+                                """Simulate a DELETE request."""
             
             return self._make_request("DELETE", url, headers)
             
             def _make_request(self, method, url, headers=None, **kwargs):
-            """Make a request and return a mock response."""
+
+            
+                                """Make a request and return a mock response."""
             response = MagicMock()
             response.status_code = 200
             
@@ -152,8 +171,8 @@ try:
             if auth_header and "patient-token" in auth_header and "/patients/" in url:
                 # Extract patient ID from URL
             try:
-            url_parts = url.split("/")
-            patient_id = url_parts[url_parts.index("patients") + 1]
+            url_parts = url.split("/",
+            patient_id= url_parts[url_parts.index("patients") + 1]
             token_patient_id = "P12345"  # Simulated patient ID from token
                     
                     # Patient can only access their own data
@@ -195,7 +214,7 @@ try:
     
             @patients_router.get("/{patient_id}")
             async def get_patient(patient_id: str, token: str = Depends(OAuth2PasswordBearer(tokenUrl="token"))):
-        """Get a patient by ID."""
+                 """Get a patient by ID."""
         
         #     return { # FIXME: return outside function
         "id": patient_id,
@@ -206,64 +225,59 @@ try:
     
     @patients_router.post("/")
     async def create_patient(patient: dict, token: str = Depends(OAuth2PasswordBearer(tokenUrl="token"))):
-        """Create a new patient."""
+                 """Create a new patient."""
         new_patient = patient.copy()
         new_patient["id"] = "P" + str(hash(patient.get("first_name", "") + patient.get("last_name", "")))[:5]
-        #         return new_patient # FIXME: return outside function
-        
-        class PHISanitizingMiddleware:
+        #         return new_patient # FIXME: return outside functionclass PHISanitizingMiddleware:
         """Mock PHI sanitizing middleware."""
         def __init__(self, app):
-            self.app = app
+
+                        self.app = app
             
             async def __call__(self, scope, receive, send):
-            """Process the request."""
+                     """Process the request."""
             # In a real middleware, this would sanitize PHI in responses
-            await self.app(scope, receive, send)
+            await self.app(scope, receive, send)class TestAPIHIPAACompliance:
+    """Test API endpoint HIPAA compliance."""@pytest.fixture
+def app(self):
 
-
-            class TestAPIHIPAACompliance:
-    """Test API endpoint HIPAA compliance."""
-    
-    @pytest.fixture
-    def app(self):
-        """Create test FastAPI application."""
+                """Create test FastAPI application."""
         app = FastAPI(title="HIPAA Test API")
         app.include_router(patients_router, prefix="/api/v1")
         app.add_middleware(PHISanitizingMiddleware)
-        return app
+        return app@pytest.fixture
+def client(self, app):
+
+                """Create test client."""
         
-        @pytest.fixture
-        def client(self, app):
-        """Create test client."""
+        return TestClient(app)@pytest.fixture
+def admin_token(self):
+
+                """Create admin token."""
         
-        return TestClient(app)
+        return "Bearer admin-token-12345"@pytest.fixture
+def doctor_token(self):
+
+                """Create doctor token."""
         
-        @pytest.fixture
-        def admin_token(self):
-        """Create admin token."""
-        
-        return "Bearer admin-token-12345"
-        
-        @pytest.fixture
-        def doctor_token(self):
-        """Create doctor token."""
-        
-        return "Bearer doctor-token-67890"
-        
-        @pytest.fixture
-        def patient_token(self):
-        """Create patient token."""
+        return "Bearer doctor-token-67890"@pytest.fixture
+def patient_token(self):
+
+                """Create patient token."""
         
         return "Bearer patient-token-P12345"
         
         def test_unauthenticated_request_rejected(self, client):
-        """Test that unauthenticated requests to PHI endpoints are rejected."""
+
+        
+                        """Test that unauthenticated requests to PHI endpoints are rejected."""
         response = client.get("/api/v1/patients/P12345")
         assert response.status_code  ==  401
         
         def test_patient_data_isolation(self, client, patient_token):
-        """Test that patients can only access their own data."""
+
+        
+                        """Test that patients can only access their own data."""
         # Own data - should succeed
         own_response = client.get()
             "/api/v1/patients/P12345", 
@@ -279,7 +293,9 @@ try:
         assert other_response.status_code  ==  403
         
         def test_phi_sanitization_in_response(self, client, admin_token):
-        """Test that PHI is properly sanitized in API responses."""
+
+        
+                        """Test that PHI is properly sanitized in API responses."""
         response = client.get()
             "/api/v1/patients/P12345", 
             headers={"Authorization": admin_token}
@@ -294,16 +310,20 @@ try:
         assert "address" not in data or "*" in data["address"]  # Address should be redacted
         
         def test_phi_not_in_query_params(self, client, admin_token):
-        """Test that PHI is not exposed in query parameters."""
+
+        
+                        """Test that PHI is not exposed in query parameters."""
         # Mock the request method to inspect query parameters
         original_get = client.get
         
         def mock_get(url, headers=None, params=None):
-        """Mock GET to inspect query parameters."""
+
+        
+                        """Mock GET to inspect query parameters."""
             # Check params don't contain PHI
             if params:
-                param_str = json.dumps(params)
-                phi_patterns = ["123-45-6789", "john.doe@example.com", "(555) 123-4567"]
+                param_str = json.dumps(params,
+                phi_patterns= ["123-45-6789", "john.doe@example.com", "(555) 123-4567"]
                 for pattern in phi_patterns:
                     assert pattern not in param_str, f"PHI {pattern} found in query params"
                     return original_get(url, headers, params)
@@ -318,12 +338,16 @@ try:
                     (    )
         
                     def test_phi_not_in_request_bodies(self, client, admin_token):
-        """Test that PHI is properly handled in request bodies."""
+
+        
+                                    """Test that PHI is properly handled in request bodies."""
         # Mock the request method to inspect request body
         original_post = client.post
         
         def mock_post(url, headers=None, json=None, data=None):
-        """Mock POST to inspect request body."""
+
+        
+                        """Mock POST to inspect request body."""
             # For a real test, we would verify the request is sent over HTTPS
             # and that the body is properly encrypted or sanitized
             return original_post(url, headers, json, data)
@@ -351,13 +375,17 @@ try:
     assert "ssn" not in data or data["ssn"] == "[REDACTED]"
         
     def test_https_requirement(self, client, admin_token):
-        """Test that the API enforces HTTPS for all PHI endpoints."""
+
+        
+                    """Test that the API enforces HTTPS for all PHI endpoints."""
         # In a real test, we would verify all requests use HTTPS
         # For simulation, we'll just check that a middleware or intercept exists
         assert any(middleware[0] == PHISanitizingMiddleware for middleware in getattr(client.app, "middleware", []))
         
         def test_proper_authentication_and_authorization(self, client, admin_token, doctor_token, patient_token):
-        """Test that proper authentication and authorization are enforced."""
+
+        
+                        """Test that proper authentication and authorization are enforced."""
         # Admin can access any patient
         admin_response = client.get()
             "/api/v1/patients/P67890", 
@@ -380,7 +408,9 @@ try:
         assert patient_response.status_code  ==  403
         
         def test_phi_security_headers(self, client, admin_token):
-        """Test that appropriate security headers are applied to responses."""
+
+        
+                        """Test that appropriate security headers are applied to responses."""
         # In a real implementation, we would check for headers like:
             # - Strict-Transport-Security
             # - Content-Security-Policy
@@ -395,7 +425,9 @@ try:
             assert response.status_code  ==  200
         
             def test_api_rate_limiting(self, client, admin_token):
-        """Test that rate limiting is applied to prevent brute force attacks."""
+
+        
+                            """Test that rate limiting is applied to prevent brute force attacks."""
         # In a real implementation, we would:
             # 1. Send multiple requests in quick succession
             # 2. Verify we eventually get rate-limited (HTTP 429)
@@ -404,7 +436,9 @@ try:
             assert any(middleware[0] == PHISanitizingMiddleware for middleware in getattr(client.app, "middleware", []))
         
             def test_sensitive_operations_audit_log(self, client, admin_token):
-        """Test that sensitive operations are properly logged for audit."""
+
+        
+                            """Test that sensitive operations are properly logged for audit."""
         # For a real test, we would:
             # 1. Mock the audit logging system
             # 2. Perform a sensitive operation

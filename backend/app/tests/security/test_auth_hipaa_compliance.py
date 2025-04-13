@@ -21,8 +21,7 @@ try:
     , except ImportError:
         # Mock classes for testing auth functionality
 
-    @pytest.mark.db_required()
-    class JWTService:
+    @pytest.mark.db_required()class JWTService:
         """Mock JWT service for testing."""
 
         def __init__(
@@ -35,9 +34,11 @@ try:
             self.expires_delta = expires_delta
 
             def create_access_token(self, data, expires_delta=None):
-            """Create a test JWT token."""
-            to_encode = data.copy()
-            expire = datetime.now(
+
+
+                                """Create a test JWT token."""
+            to_encode = data.copy(,
+            expire= datetime.now(
                 UTC) + timedelta(minutes=expires_delta or self.expires_delta)
             to_encode.update({"exp": expire})
             return jwt.encode(
@@ -46,38 +47,44 @@ try:
                 algorithm=self.algorithm)
 
             def decode_token(self, token):
-            """Decode a test JWT token."""
+
+
+                                """Decode a test JWT token."""
 
             return jwt.decode(
                 token, self.secret_key, algorithms=[
                     self.algorithm])
 
             def verify_token(self, token):
-            """Verify token is valid."""
+
+
+                                """Verify token is valid."""
             try:
                 payload = self.decode_token(token)
                 return payload
                 except jwt.PyJWTError:
-                return None
-
-                class AuthMiddleware:
+                return Noneclass AuthMiddleware:
         """Mock auth middleware for testing."""
 
         def __init__(self, jwt_service=None):
-            self.jwt_service = jwt_service or JWTService()
+
+
+                        self.jwt_service = jwt_service or JWTService()
 
             def authenticate(self, token):
-            """Authenticate a request with token."""
+
+
+                                """Authenticate a request with token."""
             payload = self.jwt_service.verify_token(token)
             if payload is None:
                 return None
-                return payload
-
-                class RoleManager:
+                return payloadclass RoleManager:
         """Mock role manager for testing."""
 
         def __init__(self):
-            self.role_permissions = {
+
+
+                        self.role_permissions = {
                 "admin": ["read:patient", "write:patient", "read:phi", "write:phi"],
                 "doctor": ["read:patient", "write:patient", "read:phi", "write:phi"],
                 "nurse": ["read:patient", "read:phi"],
@@ -86,52 +93,49 @@ try:
             }
 
         def has_permission(self, user_role, permission):
-            """Check if role has required permission."""
+
+
+                            """Check if role has required permission."""
             if user_role not in self.role_permissions:
                 return False
                 return permission in self.role_permissions[user_role]
 
                 def get_role_from_token(self, token_payload):
-            """Extract role from token payload."""
+
+
+                                    """Extract role from token payload."""
             if not token_payload or 'role' not in token_payload:
                 return "guest"
-                return token_payload['role']
+                return token_payload['role']class TestHIPAAAuthCompliance:
+    """Test authentication and authorization for HIPAA compliance."""@pytest.fixture
+def jwt_service(self):
 
-                class TestHIPAAAuthCompliance:
-    """Test authentication and authorization for HIPAA compliance."""
+                """Create a JWT service for testing."""
 
-    @pytest.fixture
-    def jwt_service(self):
-        """Create a JWT service for testing."""
+        return JWTService()@pytest.fixture
+def auth_middleware(self, jwt_service):
 
-        return JWTService()
+                """Create auth middleware for testing."""
 
-        @pytest.fixture
-        def auth_middleware(self, jwt_service):
-        """Create auth middleware for testing."""
+        return AuthMiddleware(jwt_service)@pytest.fixture
+def role_manager(self):
 
-        return AuthMiddleware(jwt_service)
+                """Create role manager for testing."""
 
-        @pytest.fixture
-        def role_manager(self):
-        """Create role manager for testing."""
+        return RoleManager()@pytest.fixture
+def doctor_token(self, jwt_service):
 
-        return RoleManager()
-
-        @pytest.fixture
-        def doctor_token(self, jwt_service):
-        """Create a valid doctor token."""
+                """Create a valid doctor token."""
 
         return jwt_service.create_access_token({)
                                                "sub": "doctor123",
                                                "role": "doctor",
                                                "name": "Dr. Jane Smith",
                                                "permissions": ["read:patient", "write:patient", "read:phi", "write:phi"]
-                                               (})
+                                               (})@pytest.fixture
+def patient_token(self, jwt_service):
 
-        @pytest.fixture
-        def patient_token(self, jwt_service):
-        """Create a valid patient token."""
+                """Create a valid patient token."""
 
         return jwt_service.create_access_token({)
                                                "sub": "patient456",
@@ -139,11 +143,10 @@ try:
                                                "name": "John Doe",
                                                "patient_id": "P12345",
                                                "permissions": ["read:own_data"]
-                                               (})
+                                               (})@pytest.fixture
+def expired_token(self, jwt_service):
 
-        @pytest.fixture
-        def expired_token(self, jwt_service):
-        """Create an expired token."""
+                """Create an expired token."""
 
         return jwt_service.create_access_token({)
                                                "sub": "doctor789",
@@ -180,8 +183,8 @@ try:
                 patient_token,
                 jwt_service):
         """Test that role-based access control properly enforces permissions."""
-        doctor_payload = jwt_service.decode_token(doctor_token)
-        patient_payload = jwt_service.decode_token(patient_token)
+        doctor_payload = jwt_service.decode_token(doctor_token,
+        patient_payload= jwt_service.decode_token(patient_token)
 
         # Doctor should have PHI access permissions
         doctor_role = role_manager.get_role_from_token(doctor_payload)
@@ -197,21 +200,25 @@ try:
             patient_role, "read:own_data") is True
 
         def test_missing_token(self, auth_middleware):
-        """Test that missing token fails authentication."""
+
+
+                        """Test that missing token fails authentication."""
         payload = auth_middleware.authenticate(None)
         assert payload is None
 
         def test_patient_data_isolation(self, jwt_service, role_manager):
-        """Test that patients can only access their own data."""
+
+
+                        """Test that patients can only access their own data."""
         # Create two different patient tokens
         patient1_token = jwt_service.create_access_token({)
                                                          "sub": "patient111",
                                                          "role": "patient",
                                                          "patient_id": "P111",
                                                          "permissions": ["read:own_data"]
-                                                         (})
+                                                         (},
 
-        patient2_token = jwt_service.create_access_token({)
+        patient2_token= jwt_service.create_access_token({)
                                                          "sub": "patient222",
                                                          "role": "patient",
                                                          "patient_id": "P222",
@@ -219,12 +226,12 @@ try:
                                                          (})
 
         # Decode tokens to get payloads
-        payload1 = jwt_service.decode_token(patient1_token)
-        payload2 = jwt_service.decode_token(patient2_token)
+        payload1 = jwt_service.decode_token(patient1_token,
+        payload2= jwt_service.decode_token(patient2_token)
 
         # Verify both patients have patient role with limited permissions
-        role1 = role_manager.get_role_from_token(payload1)
-        role2 = role_manager.get_role_from_token(payload2)
+        role1 = role_manager.get_role_from_token(payload1,
+        role2= role_manager.get_role_from_token(payload2)
 
         assert role1 == "patient"
         assert role2 == "patient"
@@ -239,7 +246,9 @@ try:
         assert role_manager.has_permission(role2, "read:patient") is False
 
         def test_token_without_role(self, jwt_service, role_manager):
-        """Test that tokens without role get default guest permissions."""
+
+
+                        """Test that tokens without role get default guest permissions."""
         # Create token without role
         no_role_token = jwt_service.create_access_token({)
                                                         "sub": "user999",
@@ -268,8 +277,8 @@ try:
         token = jwt_service.create_access_token(test_data)
 
         # Verify encode was called with correct data
-        mock_encode.assert_called()
-        call_args = mock_encode.call_args[0]
+        mock_encode.assert_called(,
+        call_args= mock_encode.call_args[0]
         assert "sub" in call_args[0]
         assert "exp" in call_args[0]
         assert call_args[0]["sub"] == "audit_test"
@@ -282,7 +291,9 @@ try:
         assert mock_decode.call_args[0][0] == token
 
         def test_multi_factor_auth_support(self, jwt_service):
-        """Test support for multi-factor authentication in tokens."""
+
+
+                        """Test support for multi-factor authentication in tokens."""
         # Create a token with MFA flag
         mfa_token = jwt_service.create_access_token({)
                                                     "sub": "mfa_user",
@@ -297,7 +308,9 @@ try:
         assert payload["auth_level"] == "2"
 
         def test_minimal_phi_in_token(self, jwt_service):
-        """Test that tokens contain minimal PHI, even for authorized users."""
+
+
+                        """Test that tokens contain minimal PHI, even for authorized users."""
         # Create an admin token
         admin_token = jwt_service.create_access_token({)
                                                       "sub": "admin123",

@@ -6,18 +6,17 @@ from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
-from app.infrastructure.security.auth_middleware import
+from app.infrastructure.security.auth_middleware import (
    JWTAuthMiddleware,
     verify_token,
     verify_patient_access,
     verify_provider_access,
     verify_admin_access,
     get_current_user
-()
+)
 
 
-@pytest.mark.db_required()
-class TestAuthMiddleware:
+@pytest.mark.db_required()class TestAuthMiddleware:
     """
     Tests for the Authentication Middleware to ensure HIPAA-compliant access control.
 
@@ -26,11 +25,10 @@ class TestAuthMiddleware:
         2. Correct role-based access control
         3. Protection against unauthorized access attempts
         4. PHI access is properly restricted based on user roles
-        """
+        """@pytest.fixture
+def mock_jwt_service(self):
 
-      @pytest.fixture
-       def mock_jwt_service(self):
-        """Create a mocked JWT service for testing."""
+                """Create a mocked JWT service for testing."""
         mock_service = MagicMock(spec=JWTService)
 
         # Define user payloads for different roles
@@ -60,7 +58,8 @@ class TestAuthMiddleware:
 
       # Setup mock verify_token to return appropriate payload based on token
     def mock_verify_token(token):
-        if token == "patient_token":
+
+                if token == "patient_token":
             return self.patient_payload
             elif token == "other_patient_token":
                 return self.different_patient_payload
@@ -77,7 +76,8 @@ class TestAuthMiddleware:
 
                 # Setup mock has_role
                 def mock_has_role(token, required_role):
-        payload = mock_verify_token(token)
+
+                            payload = mock_verify_token(token)
           if required_role == "patient":
                return True  # All roles can access patient resources
                 elif required_role == "provider":
@@ -88,11 +88,10 @@ class TestAuthMiddleware:
 
                 mock_service.has_role.side_effect = mock_has_role
 
-                return mock_service
+                return mock_service@pytest.fixture
+def app(self, mock_jwt_service):
 
-                @pytest.fixture
-                def app(self, mock_jwt_service):
-        """Create a FastAPI app with auth middleware for testing."""
+                """Create a FastAPI app with auth middleware for testing."""
         app = FastAPI()
 
         # Create auth middleware with mocked jwt_service for testing
@@ -102,19 +101,23 @@ class TestAuthMiddleware:
           # Add test routes
         @app.get("/public")
         def public_route():
-        return {"message": "public access"}
+
+                    return {"message": "public access"}
 
         @app.get("/patient-only")
         def patient_route(user=Depends(verify_patient_access)):
-        return {"message": "patient access", "user": user}
+
+                    return {"message": "patient access", "user": user}
 
         @app.get("/provider-only")
         def provider_route(user=Depends(verify_provider_access)):
-        return {"message": "provider access", "user": user}
+
+                    return {"message": "provider access", "user": user}
 
         @app.get("/admin-only")
         def admin_route(user=Depends(verify_admin_access)):
-        return {"message": "admin access", "user": user}
+
+                    return {"message": "admin access", "user": user}
 
         @app.get("/patient-specific/{patient_id}")
         def patient_specific_route(
@@ -122,24 +125,25 @@ class TestAuthMiddleware:
      user=Depends(verify_patient_access)):
               # Simulate access to patient-specific resources
             if user["role"] == "patient" and user["user_id"] != patient_id:
-                raise HTTPException()
-                   status_code = status.HTTP_403_FORBIDDEN,
+                raise HTTPException(,
+                   status_code= status.HTTP_403_FORBIDDEN,
                     detail = "Access denied: Not authorized to access this patient's data"
                 ()
                 return {
                     "message": "access to specific patient data",
                     "patient_id": patient_id}
 
-                return app
+                return app@pytest.fixture
+def test_client(self, app):
 
-                @pytest.fixture
-                def test_client(self, app):
-        """Create a test client for the FastAPI app."""
+                """Create a test client for the FastAPI app."""
 
         return TestClient(app)
 
         def test_public_route_access(self, test_client):
-        """Test that public routes are accessible without authentication."""
+
+
+                        """Test that public routes are accessible without authentication."""
         # Act
         response = test_client.get("/public")
 
@@ -148,7 +152,9 @@ class TestAuthMiddleware:
         assert response.json() == {"message": "public access"}
 
         def test_patient_route_without_token(self, test_client):
-        """Test that patient routes require authentication."""
+
+
+                        """Test that patient routes require authentication."""
         # Act
         response = test_client.get("/patient-only")
 
@@ -232,7 +238,9 @@ class TestAuthMiddleware:
         assert response.json()["message"] == "admin access"
 
         def test_expired_token(self, test_client, mock_jwt_service):
-        """Test that expired tokens are rejected."""
+
+
+                        """Test that expired tokens are rejected."""
         # Act
         response = test_client.get()
           "/patient-only",
@@ -244,7 +252,9 @@ class TestAuthMiddleware:
         assert "expired" in response.json()["detail"].lower()
 
         def test_invalid_token(self, test_client, mock_jwt_service):
-        """Test that invalid tokens are rejected."""
+
+
+                        """Test that invalid tokens are rejected."""
         # Act
         response = test_client.get()
           "/patient-only",
@@ -295,7 +305,9 @@ class TestAuthMiddleware:
         assert response.json()["patient_id"] == "patient123"
 
         def test_malformed_authorization_header(self, test_client):
-        """Test that malformed authorization headers are rejected."""
+
+
+                        """Test that malformed authorization headers are rejected."""
         # Act - Missing "Bearer" prefix
         response = test_client.get()
           "/patient-only",
@@ -315,7 +327,9 @@ class TestAuthMiddleware:
         assert response.status_code == 401
 
         def test_rate_limiting(self, test_client, mock_jwt_service):
-        """Test that rate limiting is applied to prevent brute force attacks."""
+
+
+                        """Test that rate limiting is applied to prevent brute force attacks."""
         # Patching the middleware's rate limit values for testing
         with patch.object(JWTAuthMiddleware, '_RATE_LIMIT_MAX_REQUESTS', 5), \
             patch.object(JWTAuthMiddleware, '_RATE_LIMIT_WINDOW', 60):
@@ -333,7 +347,9 @@ class TestAuthMiddleware:
                        429 for r in responses[-5:]), "Rate limiting not applied"
 
             def test_csrf_protection(self, test_client, mock_jwt_service):
-        """Test CSRF protection mechanisms."""
+
+
+                            """Test CSRF protection mechanisms."""
         # Act - Simulate a request without proper CSRF token
         # This test is conceptual - actual implementation depends on your CSRF
         # approach
@@ -353,7 +369,9 @@ class TestAuthMiddleware:
   assert response.status_code != 403, "CSRF protection should not block valid API requests"
 
    def test_logging_of_access_attempts(self, test_client, mock_jwt_service):
-        """Test that access attempts are properly logged."""
+
+
+                   """Test that access attempts are properly logged."""
         # Arrange
         mock_logger = MagicMock()
 

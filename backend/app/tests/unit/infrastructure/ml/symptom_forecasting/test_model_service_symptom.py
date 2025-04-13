@@ -12,33 +12,27 @@ from app.infrastructure.ml.symptom_forecasting.model_service import (
 from app.domain.entities.patient import Patient
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
 from app.infrastructure.ml.interfaces.model_registry import ModelRegistry
-from app.core.config.ml_settings import MLSettings
+from app.core.config.ml_settings import MLSettingsclass TestSymptomForecastingModelService:
+    """Test suite for the SymptomForecastingModelService."""@pytest.fixture
+def mock_model_registry(self):
 
-
-class TestSymptomForecastingModelService:
-    """Test suite for the SymptomForecastingModelService."""
-
-    @pytest.fixture
-    def mock_model_registry(self):
-        """Create a mock model registry."""
+                """Create a mock model registry."""
         registry = MagicMock(spec=ModelRegistry)
         registry.get_model.return_value = MagicMock(spec=EnsembleModel)
         registry.get_model.return_value.predict = AsyncMock(
             return_value=np.array([3.5, 4.2, 3.8])
         )
-        return registry
+        return registry@pytest.fixture
+def service(self, mock_model_registry):
 
-    @pytest.fixture
-    def service(self, mock_model_registry):
-        """Create a SymptomForecastingModelService instance for testing."""
+                """Create a SymptomForecastingModelService instance for testing."""
         settings = MLSettings()
         return SymptomForecastingModelService(
             model_registry=mock_model_registry, settings=settings
-        )
+        )@pytest.fixture
+def sample_patient(self):
 
-    @pytest.fixture
-    def sample_patient(self):
-        """Create a sample patient for testing."""
+                """Create a sample patient for testing."""
         return Patient(
             id=UUID("00000000-0000-0000-0000-000000000001"),
             first_name="John",
@@ -47,11 +41,10 @@ class TestSymptomForecastingModelService:
             email="john.doe@example.com",
             phone="555-123-4567",
             active=True,
-        )
+        )@pytest.fixture
+def sample_patient_data(self, sample_patient):
 
-    @pytest.fixture
-    def sample_patient_data(self, sample_patient):
-        """Create sample patient symptom data for testing."""
+                """Create sample patient symptom data for testing."""
         return {
             "patient_id": str(sample_patient.id),
             "demographics": {
@@ -129,7 +122,7 @@ class TestSymptomForecastingModelService:
 
     @pytest.mark.asyncio
     async def test_preprocess_patient_data_missing_data(self, service):
-        """Test handling of missing data during preprocessing."""
+                 """Test handling of missing data during preprocessing."""
         # Setup
         incomplete_data = {
             "patient_id": "00000000-0000-0000-0000-000000000001",
@@ -148,8 +141,8 @@ class TestSymptomForecastingModelService:
                     self, service, sample_patient_data):
         """Test prediction of symptom progression."""
         # Setup
-        patient_id = UUID(sample_patient_data["patient_id"])
-        forecast_days = 3
+        patient_id = UUID(sample_patient_data["patient_id"],
+        forecast_days= 3
 
         # Mock the preprocessing
         with patch.object(
@@ -215,8 +208,8 @@ class TestSymptomForecastingModelService:
     ):
         """Test prediction with interventions."""
         # Setup
-        patient_id = UUID(sample_patient_data["patient_id"])
-        forecast_days = 7
+        patient_id = UUID(sample_patient_data["patient_id"],
+        forecast_days= 7
         interventions = [
             {
                 "type": "medication",

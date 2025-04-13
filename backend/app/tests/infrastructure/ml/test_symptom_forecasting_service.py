@@ -22,7 +22,8 @@ from app.domain.exceptions import ModelInferenceError, ValidationError
 
 @pytest.fixture
 def mock_transformer_model():
-    """Create a mock transformer model."""
+
+            """Create a mock transformer model."""
     model = AsyncMock()
     model.predict = AsyncMock(
         return_value={
@@ -39,7 +40,8 @@ def mock_transformer_model():
 
 @pytest.fixture
 def mock_xgboost_model():
-    """Create a mock XGBoost model."""
+
+            """Create a mock XGBoost model."""
     model = AsyncMock()
     model.predict = AsyncMock(
         return_value={
@@ -59,7 +61,8 @@ def mock_xgboost_model():
 
 @pytest.fixture
 def forecasting_service(mock_transformer_model, mock_xgboost_model):
-    """Create a Symptom Forecasting Service with mock models."""
+
+            """Create a Symptom Forecasting Service with mock models."""
     with patch(
         "app.infrastructure.ml.symptom_forecasting.model_service.SymptomTransformerModel",
         return_value=mock_transformer_model,
@@ -88,7 +91,8 @@ def forecasting_service(mock_transformer_model, mock_xgboost_model):
 
 @pytest.fixture
 def patient_data():
-    """Create sample patient data for testing."""
+
+            """Create sample patient data for testing."""
 
     return {
         "time_series": [
@@ -139,7 +143,7 @@ def patient_data():
 @pytest.mark.asyncio()
 @pytest.mark.db_required()
 async def test_preprocess_patient_data(forecasting_service, patient_data):
-    """Test preprocessing of patient data."""
+             """Test preprocessing of patient data."""
     patient_id = uuid4()
 
     # Preprocess data
@@ -159,7 +163,7 @@ async def test_preprocess_patient_data(forecasting_service, patient_data):
 
 @pytest.mark.asyncio()
 async def test_preprocess_patient_data_with_missing_data(forecasting_service):
-    """Test preprocessing with missing data."""
+             """Test preprocessing with missing data."""
     patient_id = uuid4()
 
     # Create data with missing time series
@@ -220,7 +224,7 @@ async def test_forecast_symptoms_without_ensemble(
 
 @pytest.mark.asyncio()
 async def test_forecast_symptoms_with_insufficient_data(forecasting_service):
-    """Test forecasting with insufficient data."""
+             """Test forecasting with insufficient data."""
     patient_id = uuid4()
 
     # Create data with insufficient time points
@@ -240,7 +244,7 @@ async def test_forecast_symptoms_with_insufficient_data(forecasting_service):
 
 @pytest.mark.asyncio()
 async def test_analyze_symptom_patterns(forecasting_service, patient_data):
-    """Test analysis of symptom patterns."""
+             """Test analysis of symptom patterns."""
     patient_id = uuid4()
 
     # Analyze symptom patterns
@@ -263,7 +267,7 @@ async def test_analyze_symptom_patterns(forecasting_service, patient_data):
 
 @pytest.mark.asyncio()
 async def test_identify_risk_periods(forecasting_service, patient_data):
-    """Test identification of risk periods."""
+             """Test identification of risk periods."""
     patient_id = uuid4()
 
     # First generate a forecast
@@ -292,7 +296,7 @@ async def test_identify_risk_periods(forecasting_service, patient_data):
 
         @pytest.mark.asyncio()
         async def test_get_model_performance_metrics(forecasting_service):
-    """Test retrieval of model performance metrics."""
+             """Test retrieval of model performance metrics."""
     # Get performance metrics
     metrics = await forecasting_service.get_model_performance_metrics()
 
@@ -310,7 +314,7 @@ async def test_identify_risk_periods(forecasting_service, patient_data):
 
         @pytest.mark.asyncio()
         async def test_sanitize_patient_data(forecasting_service):
-    """Test sanitization of patient data for HIPAA compliance."""
+             """Test sanitization of patient data for HIPAA compliance."""
     # Create patient data with PHI
     patient_data_with_phi = {
         "patient_name": "John Doe",
@@ -344,7 +348,7 @@ async def test_identify_risk_periods(forecasting_service, patient_data):
 
 @pytest.mark.asyncio()
 async def test_model_failure_handling(forecasting_service, patient_data):
-    """Test handling of model failures."""
+             """Test handling of model failures."""
     patient_id = uuid4()
 
     # Make transformer model fail

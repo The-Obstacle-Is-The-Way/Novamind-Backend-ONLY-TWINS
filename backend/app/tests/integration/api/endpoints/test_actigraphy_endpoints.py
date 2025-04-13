@@ -25,17 +25,17 @@ from app.core.services.ml.pat.mock import MockPATService
 
 @pytest.fixture
 def pat_storage() -> Generator[str, None, None]:
-    """Fixture that provides a temporary directory for PAT storage.
+
+        """Fixture that provides a temporary directory for PAT storage.
 
     Yields:
         Temporary directory path
         """
         with tempfile.TemporaryDirectory() as temp_dir:
-        yield temp_dir
+        yield temp_dir@pytest.fixture
+def mock_pat(pat_storage: str) -> MockPATService:
 
-        @pytest.fixture
-        def mock_pat(pat_storage: str) -> MockPATService:
-    """Fixture that returns a configured MockPATService instance.
+        """Fixture that returns a configured MockPATService instance.
 
     Args:
         pat_storage: Temporary storage directory
@@ -49,11 +49,10 @@ def pat_storage() -> Generator[str, None, None]:
 
         # Local test_app and client fixtures removed; tests will use client from conftest.py
         # Dependency overrides need to be handled globally in conftest.py or
-        # via specific test markers.
+        # via specific test markers.@pytest.fixture
+def patient_token() -> str:
 
-        @pytest.fixture
-        def patient_token() -> str:
-    """Fixture that returns a JWT token for a patient user.
+        """Fixture that returns a JWT token for a patient user.
 
     Returns:
         JWT token
@@ -67,7 +66,8 @@ def pat_storage() -> Generator[str, None, None]:
 
 @pytest.fixture
 def provider_token() -> str:
-    """Fixture that returns a JWT token for a provider user.
+
+        """Fixture that returns a JWT token for a provider user.
 
     Returns:
         JWT token
@@ -81,7 +81,8 @@ def provider_token() -> str:
 
 @pytest.fixture
 def admin_token() -> str:
-    """Fixture that returns a JWT token for an admin user.
+
+        """Fixture that returns a JWT token for an admin user.
 
     Returns:
         JWT token
@@ -95,7 +96,8 @@ def admin_token() -> str:
 
 @pytest.fixture
 def sample_readings() -> List[Dict[str, float]]:
-    """Fixture that returns sample accelerometer readings.
+
+        """Fixture that returns sample accelerometer readings.
 
     Returns:
         Sample accelerometer readings
@@ -105,11 +107,10 @@ def sample_readings() -> List[Dict[str, float]]:
         {"x": 0.1, "y": 0.2, "z": 0.9},
         {"x": 0.2, "y": 0.3, "z": 0.8},
         {"x": 0.3, "y": 0.4, "z": 0.7}
-        ]
+        ]@pytest.fixture
+def sample_device_info() -> Dict[str, Any]:
 
-        @pytest.fixture
-        def sample_device_info() -> Dict[str, Any]:
-    """Fixture that returns sample device information.
+        """Fixture that returns sample device information.
 
     Returns:
         Sample device information
@@ -125,7 +126,8 @@ def sample_readings() -> List[Dict[str, float]]:
 
 @pytest.mark.db_required()
 def test_unauthenticated_access(client: TestClient) -> None:
-    """Test that unauthenticated requests are rejected.
+
+        """Test that unauthenticated requests are rejected.
 
     Args:
         client: Test client
@@ -190,7 +192,10 @@ def test_unauthenticated_access(client: TestClient) -> None:
 
 
 def test_phi_data_sanitization():
-    client: TestClient,
+
+
+
+        client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
@@ -248,7 +253,10 @@ def test_phi_data_sanitization():
 
 
 def test_role_based_access_control():
-    client: TestClient,
+
+
+
+        client: TestClient,
     patient_token: str,
     provider_token: str,
     admin_token: str,
@@ -314,7 +322,10 @@ def test_role_based_access_control():
 
 
 def test_hipaa_audit_logging():
-    client: TestClient,
+
+
+
+        client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
@@ -369,8 +380,8 @@ def test_hipaa_audit_logging():
 
             # Flush and read the log file
             temp_log.flush()
-            temp_log.seek(0)
-            log_content = temp_log.read()
+            temp_log.seek(0,
+            log_content= temp_log.read()
 
             # Verify log doesn't contain PHI
             assert "test-patient-1" not in log_content
@@ -387,7 +398,10 @@ def test_hipaa_audit_logging():
 
 
             def test_secure_data_transmission():
-    client: TestClient,
+
+
+
+                    client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
@@ -429,12 +443,13 @@ def test_hipaa_audit_logging():
     assert provider_response.status_code  ==  200
     analysis_id = provider_response.json()["analysis_id"]
     
-    # Create a client that captures request details
-    class RequestCaptureClient(TestClient):
+    # Create a client that captures request detailsclass RequestCaptureClient(TestClient):
         """Test client that captures request details."""
         
         def __init__(self, *args, **kwargs):
-            """Initialize the client.
+
+        
+                        """Initialize the client.
             
             Args:
             *args: Variable length argument list
@@ -444,7 +459,9 @@ def test_hipaa_audit_logging():
             self.captured_requests = []
         
             def request(self, *args, **kwargs):
-            """Capture request details.
+
+        
+                            """Capture request details.
             
             Args:
             *args: Variable length argument list
@@ -472,8 +489,8 @@ def test_hipaa_audit_logging():
             assert "test-patient-1" not in captured_request[0][1]
     
             # Check headers only contain token
-            headers = captured_request[1].get("headers", {})
-            auth_header = headers.get("Authorization", "")
+            headers = captured_request[1].get("headers", {},
+            auth_header= headers.get("Authorization", "")
             assert "Bearer " in auth_header
     
             # Verify no PHI in query parameters
@@ -482,7 +499,10 @@ def test_hipaa_audit_logging():
 
 
             def test_api_response_structure():
-            client: TestClient,
+
+
+
+                            client: TestClient,
             provider_token: str,
             sample_readings: List[Dict[str, Any]],
             sample_device_info: Dict[str, Any]

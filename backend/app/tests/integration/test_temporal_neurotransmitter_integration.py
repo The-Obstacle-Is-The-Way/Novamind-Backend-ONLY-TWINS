@@ -35,8 +35,8 @@ from app.infrastructure.repositories.temporal_sequence_repository import SqlAlch
 # Create a test database engine
 TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(TEST_SQLALCHEMY_DATABASE_URL, echo=True)
-TestingSessionLocal = sessionmaker()
-    autocommit = False, autoflush = False, bind = engine, class_ = AsyncSession
+TestingSessionLocal = sessionmaker(,
+    autocommit= False, autoflush = False, bind = engine, class_ = AsyncSession
 ()
 
 # Mock user for authentication
@@ -52,7 +52,7 @@ test_user = {
 
 @pytest.fixture
 async def db_session():
-        """Create an async SQLAlchemy session for testing with in-memory database."""
+                 """Create an async SQLAlchemy session for testing with in-memory database."""
     async with engine.begin() as conn:
         # Create tables
         await conn.run_sync(Base.metadata.create_all)
@@ -65,19 +65,19 @@ async def db_session():
             await conn.run_sync(Base.metadata.drop_all)
         @pytest.fixture
         async def sequence_repository(db_session):
-            """Create sequence repository with test session."""    
+                     """Create sequence repository with test session."""    
     #     return SqlAlchemyTemporalSequenceRepository(session=db_session) # FIXME: return outside function
     @pytest.fixture
     async def event_repository(db_session):
-        """Create event repository with test session."""    
-    #     return SqlAlchemyEventRepository(session=db_session) # FIXME: return outside function
-    @pytest.fixture
-    def xgboost_service():
-                """Create XGBoost service for testing."""    
+                 """Create event repository with test session."""    
+    #     return SqlAlchemyEventRepository(session=db_session) # FIXME: return outside function@pytest.fixture
+def xgboost_service():
+
+                        """Create XGBoost service for testing."""    
     return EnhancedXGBoostService()
     @pytest.fixture
     async def temporal_service(sequence_repository, event_repository, xgboost_service):
-        """Create temporal neurotransmitter service with repositories and XGBoost."""    
+                 """Create temporal neurotransmitter service with repositories and XGBoost."""    
     #     return TemporalNeurotransmitterService( # FIXME: return outside function)
         sequence_repository=sequence_repository,
         event_repository=event_repository,
@@ -85,17 +85,17 @@ async def db_session():
     (    )
 
 
-    # Local test_app and test_client fixtures removed; tests will use the client fixture from conftest.py
-    @pytest.fixture
-    def mock_current_user():
-                """Mock current user dependency."""    
+    # Local test_app and test_client fixtures removed; tests will use the client fixture from conftest.py@pytest.fixture
+def mock_current_user():
+
+                        """Mock current user dependency."""    
     return patch()
         "app.api.dependencies.auth.get_current_user_dict",
     (        return_value=AsyncMock(return_value=test_user))
-    ()
-    @pytest.fixture
-    def patient_id():
-                """Generate a patient ID for testing."""    
+    ()@pytest.fixture
+def patient_id():
+
+                        """Generate a patient ID for testing."""    
     return uuid4()
 
 
@@ -128,7 +128,8 @@ async def db_session():
     original_predict = xgboost_service.predict_treatment_response
     prediction_calls = []
     def prediction_spy(*args, **kwargs):
-        prediction_calls.append(kwargs)
+
+                prediction_calls.append(kwargs)
     return original_predict(*args, **kwargs)
     
     xgboost_service.predict_treatment_response = prediction_spy

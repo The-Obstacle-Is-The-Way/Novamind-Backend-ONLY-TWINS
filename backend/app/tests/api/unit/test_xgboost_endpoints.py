@@ -37,19 +37,19 @@ from app.api.schemas.xgboost import (
 
 
 # Mock user for authentication
-@pytest.mark.db_required()
-class MockUser:
+@pytest.mark.db_required()class MockUser:
     def __init__(self, id="test-user-id", role="clinician"):
-        self.id = id
+
+                self.id = id
         self.role = role
         self.username = "test.user@novamind.com"
 
-        # Mock XGBoost service
-
-        class MockXGBoostService:
+        # Mock XGBoost serviceclass MockXGBoostService:
 
     def __init__(self):
-        # Set up mock methods with MagicMock for all methods
+
+
+                # Set up mock methods with MagicMock for all methods
         self.predict_risk = MagicMock()
         self.predict_treatment_response = MagicMock()
         self.predict_outcome = MagicMock()
@@ -58,7 +58,9 @@ class MockUser:
         self.get_model_info = MagicMock()
 
         def setup_success_responses(self):
-        """Set up mock responses for successful API calls."""
+
+
+                        """Set up mock responses for successful API calls."""
         # Risk prediction response
         self.predict_risk.return_value = {
             "prediction_id": str(uuid.uuid4()),
@@ -163,7 +165,9 @@ class MockUser:
         }
 
     def setup_error_responses(self):
-        """Set up mock responses for error cases."""
+
+
+                    """Set up mock responses for error cases."""
         self.predict_risk.side_effect = ModelNotFoundError(
             "Model not found: risk_nonexistent", model_type="risk_nonexistent"
         )
@@ -182,13 +186,14 @@ class MockUser:
 # Client fixture
 @pytest.fixture
 def client():
-    """Create a test client for testing API endpoints."""
+
+            """Create a test client for testing API endpoints."""
     app = FastAPI()
     app.include_router(router)
 
     # Override the security dependency to bypass authentication
     async def override_get_current_user():
-        return {
+             return {
             "user_id": "test-user-id",
             "role": "clinician",
             "access_level": "full",
@@ -203,7 +208,8 @@ def client():
 # Mock dependency overrides
 @pytest.fixture
 def mock_dependencies():
-    """Set up dependency overrides for testing."""
+
+            """Set up dependency overrides for testing."""
     with patch("app.api.routes.xgboost.get_current_user", return_value=MockUser()):
         with patch("app.api.routes.xgboost._get_xgboost_service") as mock_get_service:
             service = MockXGBoostService()
@@ -211,16 +217,15 @@ def mock_dependencies():
 
             # Make the service callable to match the expected behavior
             async def get_service():
-                return service
+                     return service
 
                 mock_get_service.return_value = get_service
                 yield service
 
-                # Mock error dependency overrides
+                # Mock error dependency overrides@pytest.fixture
+def mock_error_dependencies():
 
-                @pytest.fixture
-                def mock_error_dependencies():
-    """Set up dependency overrides for error cases."""
+            """Set up dependency overrides for error cases."""
     with patch("app.api.routes.xgboost.get_current_user", return_value=MockUser()):
         with patch("app.api.routes.xgboost._get_xgboost_service") as mock_get_service:
             service = MockXGBoostService()
@@ -228,7 +233,7 @@ def mock_dependencies():
 
             # Make the service callable to match the expected behavior
             async def get_service():
-                return service
+                     return service
 
                 mock_get_service.return_value = get_service
                 yield service
@@ -291,7 +296,10 @@ def test_predict_treatment_response_endpoint(
 
 
 def test_predict_outcome_endpoint(client: TestClient, mock_dependencies):
-    """Test the outcome prediction endpoint with valid data."""
+
+
+
+            """Test the outcome prediction endpoint with valid data."""
     # Prepare request data
     request_data = {
         "patient_id": "patient-123",
@@ -361,7 +369,10 @@ def test_digital_twin_integration_endpoint(
 
 
 def test_model_info_endpoint(client: TestClient, mock_dependencies):
-    """Test the model info endpoint."""
+
+
+
+            """Test the model info endpoint."""
     # Prepare request data
     request_data = {"model_type": "risk-suicide"}
 
@@ -401,7 +412,10 @@ def test_model_info_endpoint(client: TestClient, mock_dependencies):
 
 
 def test_prediction_error(client: TestClient, mock_error_dependencies):
-    """Test handling of PredictionError."""
+
+
+
+            """Test handling of PredictionError."""
     # Prepare request data
     request_data = {
         "patient_id": "patient-123",
@@ -423,7 +437,10 @@ def test_prediction_error(client: TestClient, mock_error_dependencies):
 
 
 def test_service_connection_error(client: TestClient, mock_error_dependencies):
-    """Test handling of ServiceConnectionError."""
+
+
+
+            """Test handling of ServiceConnectionError."""
     # Prepare request data
     request_data = {
         "patient_id": "patient-123",
@@ -445,7 +462,10 @@ def test_service_connection_error(client: TestClient, mock_error_dependencies):
 
 
 def test_validation_error(client: TestClient):
-    """Test handling of validation errors with missing required fields."""
+
+
+
+            """Test handling of validation errors with missing required fields."""
     # Prepare request data with missing required fields
     request_data = {
         "patient_id": "patient-123",

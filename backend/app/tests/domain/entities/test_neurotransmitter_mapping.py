@@ -23,9 +23,10 @@ from app.domain.entities.neurotransmitter_mapping import (
 
 @pytest.mark.venv_only()
 def test_neurotransmitter_mapping_creation():
-    """Test creating a new neurotransmitter mapping."""
-    test_patient_id = uuid.uuid4()
-    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
+
+            """Test creating a new neurotransmitter mapping."""
+    test_patient_id = uuid.uuid4(,
+    mapping= NeurotransmitterMapping(patient_id=test_patient_id)
 
     assert mapping is not None
     assert isinstance(mapping, NeurotransmitterMapping)
@@ -33,9 +34,11 @@ def test_neurotransmitter_mapping_creation():
     assert mapping.patient_id == test_patient_id
 
     def test_add_receptor_profile():
-    """Test adding receptor profiles to a mapping."""
-    test_patient_id = uuid.uuid4()
-    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
+
+
+                """Test adding receptor profiles to a mapping."""
+    test_patient_id = uuid.uuid4(,
+    mapping= NeurotransmitterMapping(patient_id=test_patient_id)
 
     # Create a receptor profile
     profile = ReceptorProfile(
@@ -73,9 +76,12 @@ def test_neurotransmitter_mapping_creation():
 
 
 def test_get_receptor_profiles():
-    """Test retrieving receptor profiles for specific region and neurotransmitter."""
-    test_patient_id = uuid.uuid4()
-    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
+
+
+
+            """Test retrieving receptor profiles for specific region and neurotransmitter."""
+    test_patient_id = uuid.uuid4(,
+    mapping= NeurotransmitterMapping(patient_id=test_patient_id)
 
     # Add multiple profiles
     profiles = [
@@ -140,9 +146,12 @@ def test_get_receptor_profiles():
 
 
 def test_add_production_site():
-    """Test adding neurotransmitter production sites."""
-    test_patient_id = uuid.uuid4()
-    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
+
+
+
+            """Test adding neurotransmitter production sites."""
+    test_patient_id = uuid.uuid4(,
+    mapping= NeurotransmitterMapping(patient_id=test_patient_id)
 
     # Add production sites
     mapping.add_production_site(
@@ -169,9 +178,12 @@ def test_add_production_site():
 
 
 def test_get_producing_regions():
-    """Test retrieving regions that produce a specific neurotransmitter."""
-    test_patient_id = uuid.uuid4()
-    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
+
+
+
+            """Test retrieving regions that produce a specific neurotransmitter."""
+    test_patient_id = uuid.uuid4(,
+    mapping= NeurotransmitterMapping(patient_id=test_patient_id)
 
     # Add production sites
     mapping.add_production_site(
@@ -186,9 +198,9 @@ def test_get_producing_regions():
 
     # Get producing regions
     serotonin_regions = mapping.get_producing_regions(
-        Neurotransmitter.SEROTONIN)
-    dopamine_regions = mapping.get_producing_regions(Neurotransmitter.DOPAMINE)
-    gaba_regions = mapping.get_producing_regions(Neurotransmitter.GABA)
+        Neurotransmitter.SEROTONIN,
+    dopamine_regions= mapping.get_producing_regions(Neurotransmitter.DOPAMINE,
+    gaba_regions= mapping.get_producing_regions(Neurotransmitter.GABA)
 
     # Verify
     assert len(serotonin_regions) == 1
@@ -202,12 +214,15 @@ def test_get_producing_regions():
 
 
 def test_calculate_region_response():
-    """Test calculating neurotransmitter effect on a brain region."""
-    test_patient_id = uuid.uuid4()
-    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
 
-    # Add profiles with different receptor types (excitatory vs inhibitory)
-    profiles = [
+
+
+            """Test calculating neurotransmitter effect on a brain region."""
+    test_patient_id = uuid.uuid4(,
+    mapping= NeurotransmitterMapping(patient_id=test_patient_id)
+
+    # Add profiles with different receptor types (excitatory vs inhibitory,
+    profiles= [
         ReceptorProfile(
             brain_region=BrainRegion.PREFRONTAL_CORTEX,
             neurotransmitter=Neurotransmitter.SEROTONIN,
@@ -267,9 +282,12 @@ def test_calculate_region_response():
 
 
 def test_default_mapping_creation():
-    """Test creating a default scientific mapping."""
-    test_patient_id = uuid.uuid4()
-    mapping = create_default_neurotransmitter_mapping(
+
+
+
+            """Test creating a default scientific mapping."""
+    test_patient_id = uuid.uuid4(,
+    mapping= create_default_neurotransmitter_mapping(
         patient_id=test_patient_id)
 
     # Verify it's not empty
@@ -301,7 +319,9 @@ def test_default_mapping_creation():
     assert len(hippocampus_profiles) > 0
 
     def test_receptor_profile_creation():
-    """Test creating and manipulating receptor profiles."""
+
+
+                """Test creating and manipulating receptor profiles."""
     # Create a profile
     profile = ReceptorProfile(
         brain_region=BrainRegion.PREFRONTAL_CORTEX,
@@ -331,9 +351,9 @@ def test_default_mapping_creation():
         density=0.7,
         sensitivity=0.8,
         clinical_relevance=ClinicalSignificance.MODERATE,
-    )
+    ,
 
-    profile3 = ReceptorProfile(
+    profile3= ReceptorProfile(
         brain_region=BrainRegion.AMYGDALA,  # Different region
         neurotransmitter=Neurotransmitter.SEROTONIN,
         receptor_type=ReceptorType.EXCITATORY,

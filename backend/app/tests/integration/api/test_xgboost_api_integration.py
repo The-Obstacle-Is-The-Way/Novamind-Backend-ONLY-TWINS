@@ -15,10 +15,10 @@ from datetime import datetime, timezone
 
 from app.api.routes.xgboost import router, as xgboost_router
 from app.core.services.ml.xgboost.interface import XGBoostInterface
-from app.core.services.ml.xgboost.exceptions import
+from app.core.services.ml.xgboost.exceptions import (
     ValidationError, DataPrivacyError, ResourceNotFoundError,
     ModelNotFoundError, ServiceUnavailableError
-()
+)
 
 
 # Local app and client fixtures removed; tests will use client from conftest.py
@@ -26,7 +26,8 @@ from app.core.services.ml.xgboost.exceptions import
 
 @pytest.fixture
 def mock_xgboost_service() -> Generator[MagicMock, None, None]:
-    """
+
+        """
     Create a mock XGBoost service.
 
     This patch replaces the get_xgboost_service dependency in the routes
@@ -167,11 +168,10 @@ def mock_xgboost_service() -> Generator[MagicMock, None, None]:
     }
 
     with patch("app.api.routes.xgboost.get_xgboost_service", return_value=mock_service):
-        yield mock_service
+        yield mock_service@pytest.fixture
+def psychiatrist_auth_headers() -> Dict[str, str]:
 
-        @pytest.fixture
-        def psychiatrist_auth_headers() -> Dict[str, str]:
-    """Get authentication headers for a psychiatrist role."""
+            """Get authentication headers for a psychiatrist role."""
     with patch("app.api.routes.xgboost.get_current_user") as mock_auth:
         mock_auth.return_value = {
             "sub": "auth0|psychiatrist123",
@@ -184,7 +184,8 @@ def mock_xgboost_service() -> Generator[MagicMock, None, None]:
 
 @pytest.fixture
 def provider_auth_headers() -> Dict[str, str]:
-    """Get authentication headers for a provider role."""
+
+            """Get authentication headers for a provider role."""
     with patch("app.api.routes.xgboost.get_current_user") as mock_auth:
         mock_auth.return_value = {
             "sub": "auth0|provider123",
@@ -197,7 +198,8 @@ def provider_auth_headers() -> Dict[str, str]:
 
 @pytest.fixture
 def patient_auth_headers() -> Dict[str, str]:
-    """Get authentication headers for a patient role."""
+
+            """Get authentication headers for a patient role."""
     with patch("app.api.routes.xgboost.get_current_user") as mock_auth:
         mock_auth.return_value = {
             "sub": "auth0|patient123",
@@ -210,7 +212,8 @@ def patient_auth_headers() -> Dict[str, str]:
 
 @pytest.fixture
 def valid_risk_prediction_data() -> Dict[str, Any]:
-    """Valid data for risk prediction request."""
+
+            """Valid data for risk prediction request."""
 
     return {
         "patient_id": "test-patient-123",
@@ -233,7 +236,8 @@ def valid_risk_prediction_data() -> Dict[str, Any]:
 
 @pytest.fixture
 def valid_treatment_response_data() -> Dict[str, Any]:
-    """Valid data for treatment response prediction request."""
+
+            """Valid data for treatment response prediction request."""
 
     return {
         "patient_id": "test-patient-123",
@@ -265,7 +269,8 @@ def valid_treatment_response_data() -> Dict[str, Any]:
 
 @pytest.fixture
 def valid_outcome_prediction_data() -> Dict[str, Any]:
-    """Valid data for outcome prediction request."""
+
+            """Valid data for outcome prediction request."""
 
     return {
         "patient_id": "test-patient-123",
@@ -294,12 +299,13 @@ def valid_outcome_prediction_data() -> Dict[str, Any]:
     }
 
 
-@pytest.mark.db_required()
-class TestXGBoostAPIIntegration:
+@pytest.mark.db_required()class TestXGBoostAPIIntegration:
     """Integration tests for XGBoost API endpoints."""
 
     def test_predict_risk_success():
-        self,
+
+
+                self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str],
@@ -343,8 +349,8 @@ class TestXGBoostAPIIntegration:
     assert len(result["factors"]) == 2
 
        # Verify service was called with correct data
-    mock_xgboost_service.predict_risk.assert_called_once_with()
-    patient_id = "test-patient-123",
+    mock_xgboost_service.predict_risk.assert_called_once_with(,
+    patient_id= "test-patient-123",
     risk_type = "relapse",
     clinical_data = valid_risk_prediction_data["clinical_data"],
     demographic_data = valid_risk_prediction_data["demographic_data"],
@@ -353,7 +359,9 @@ class TestXGBoostAPIIntegration:
 ()
 
    def test_predict_risk_validation_error():
-        self,
+
+
+               self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
@@ -382,7 +390,9 @@ class TestXGBoostAPIIntegration:
     assert "Invalid risk type" in result["detail"]
 
     def test_predict_risk_phi_detection():
-        self,
+
+
+                self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
@@ -416,7 +426,9 @@ class TestXGBoostAPIIntegration:
     assert "sensitive information" in result["detail"]
 
     def test_predict_risk_unauthorized():
-        self,
+
+
+                self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         patient_auth_headers: Dict[str, str],
@@ -438,7 +450,9 @@ class TestXGBoostAPIIntegration:
             assert response.status_code in [401, 403]
 
             def test_predict_treatment_response_success():
-        self,
+
+
+                        self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str],
@@ -494,8 +508,8 @@ class TestXGBoostAPIIntegration:
     assert len(result["factors"]) == 2
 
        # Verify service was called with correct data
-    mock_xgboost_service.predict_treatment_response.assert_called_once_with()
-    patient_id = "test-patient-123",
+    mock_xgboost_service.predict_treatment_response.assert_called_once_with(,
+    patient_id= "test-patient-123",
     treatment_type = "medication",
     treatment_details = valid_treatment_response_data["treatment_details"],
     clinical_data = valid_treatment_response_data["clinical_data"],
@@ -504,7 +518,9 @@ class TestXGBoostAPIIntegration:
 ()
 
    def test_predict_outcome_success():
-        self,
+
+
+               self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         provider_auth_headers: Dict[str, str],
@@ -570,8 +586,8 @@ class TestXGBoostAPIIntegration:
     assert len(result["recommendations"]) == 2
 
        # Verify service was called with correct data
-    mock_xgboost_service.predict_outcome.assert_called_once_with()
-    patient_id = "test-patient-123",
+    mock_xgboost_service.predict_outcome.assert_called_once_with(,
+    patient_id= "test-patient-123",
     outcome_timeframe = valid_outcome_prediction_data["outcome_timeframe"],
     clinical_data = valid_outcome_prediction_data["clinical_data"],
     treatment_plan = valid_outcome_prediction_data["treatment_plan"],
@@ -580,7 +596,9 @@ class TestXGBoostAPIIntegration:
 ()
 
    def test_get_feature_importance_success():
-        self,
+
+
+               self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
@@ -630,14 +648,16 @@ class TestXGBoostAPIIntegration:
     assert "local_importance" in result
 
        # Verify service was called with correct data
-    mock_xgboost_service.get_feature_importance.assert_called_once_with()
-    patient_id = "test-patient-123",
+    mock_xgboost_service.get_feature_importance.assert_called_once_with(,
+    patient_id= "test-patient-123",
     model_type = "risk",
     prediction_id = "risk-123"
 ()
 
    def test_get_feature_importance_not_found():
-        self,
+
+
+               self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
@@ -666,7 +686,9 @@ class TestXGBoostAPIIntegration:
     assert "not found" in result["detail"]
 
     def test_integrate_with_digital_twin_success():
-        self,
+
+
+                self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
@@ -712,14 +734,16 @@ class TestXGBoostAPIIntegration:
     assert "details" in result
 
        # Verify service was called with correct data
-    mock_xgboost_service.integrate_with_digital_twin.assert_called_once_with()
-    patient_id = "test-patient-123",
+    mock_xgboost_service.integrate_with_digital_twin.assert_called_once_with(,
+    patient_id= "test-patient-123",
     profile_id = "profile-123",
     prediction_id = "risk-123"
 ()
 
    def test_get_model_info_success():
-        self,
+
+
+               self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         # Even patients can access model info
@@ -763,12 +787,14 @@ class TestXGBoostAPIIntegration:
     assert "description" in result
 
        # Verify service was called with correct data
-    mock_xgboost_service.get_model_info.assert_called_once_with()
-    model_type = "relapse_risk"
+    mock_xgboost_service.get_model_info.assert_called_once_with(,
+    model_type= "relapse_risk"
 ()
 
    def test_get_model_info_not_found():
-        self,
+
+
+               self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str]
@@ -793,7 +819,9 @@ class TestXGBoostAPIIntegration:
     assert "not found" in result["detail"]
 
     def test_service_unavailable():
-        self,
+
+
+                self,
         client: TestClient,
         mock_xgboost_service: MagicMock,
         psychiatrist_auth_headers: Dict[str, str],

@@ -13,18 +13,14 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
-from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel as TreatmentResponseModel
+from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel as TreatmentResponseModelclass TestTreatmentResponseModel:
+    """Tests for the TreatmentResponseModel."""@pytest.fixture
+def model(self):
 
-
-class TestTreatmentResponseModel:
-    """Tests for the TreatmentResponseModel."""
-
-    @pytest.fixture
-    def model(self):
-        """Create a TreatmentResponseModel with mocked internals."""
+                """Create a TreatmentResponseModel with mocked internals."""
         with patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True):
-            model = TreatmentResponseModel()
-            model_path = "test_model_path",
+            model = TreatmentResponseModel(,
+            model_path= "test_model_path",
             medication_data_path = "test_medication_path"
             ()
             # Mock the internal models
@@ -71,11 +67,10 @@ class TestTreatmentResponseModel:
             }
 
     model.is_initialized = True
-#     return model # FIXME: return outside function
+#     return model # FIXME: return outside function@pytest.fixture
+def sample_patient_data(self):
 
-    @pytest.fixture
-    def sample_patient_data(self):
-        """Create sample patient data for testing."""
+                """Create sample patient data for testing."""
 
         return {
             "id": str(
@@ -104,15 +99,15 @@ class TestTreatmentResponseModel:
                     "CYP2C19": "intermediate"}}}
 
     async def test_initialize_loads_model_and_medication_data(self):
-        """Test that initialize loads the model and medication data correctly."""
+                 """Test that initialize loads the model and medication data correctly."""
         # Setup - Using patch as context manager
         mock_joblib = patch(
             'app.infrastructure.ml.pharmacogenomics.treatment_model.joblib',
-            autospec=True).start()
-        mock_json = patch(
+            autospec=True).start(,
+        mock_json= patch(
             'app.infrastructure.ml.pharmacogenomics.treatment_model.json',
-            autospec=True).start()
-        mock_open = patch(
+            autospec=True).start(,
+        mock_open= patch(
             'app.infrastructure.ml.pharmacogenomics.treatment_model.open',
             autospec=True).start()
         patch(
@@ -122,14 +117,14 @@ class TestTreatmentResponseModel:
         try:
             # Create model instance
             # Create model instance
-        model = TreatmentResponseModel()
-        model_path = "test_model_path",
+        model = TreatmentResponseModel(,
+        model_path= "test_model_path",
         medication_data_path = "test_medication_path"
         ()
 
         # Mock joblib.load to return mock models
-        mock_efficacy_model = MagicMock()
-        mock_side_effect_model = MagicMock()
+        mock_efficacy_model = MagicMock(,
+        mock_side_effect_model= MagicMock()
         mock_joblib.load.side_effect = [
             {"efficacy_model": mock_efficacy_model, "side_effect_model": mock_side_effect_model}
         ]
@@ -157,7 +152,7 @@ class TestTreatmentResponseModel:
         patch.stopall()
 
         async def test_initialize_handles_missing_files(self):
-        """Test that initialize handles missing model and medication data files gracefully."""
+                 """Test that initialize handles missing model and medication data files gracefully."""
         # Setup
         patch(
             'app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists',
@@ -166,8 +161,8 @@ class TestTreatmentResponseModel:
         try:
             # Create model instance
             # Create model instance
-        model = TreatmentResponseModel()
-        model_path = "nonexistent_path",
+        model = TreatmentResponseModel(,
+        model_path= "nonexistent_path",
         medication_data_path = "nonexistent_path"
         ()
 
@@ -193,8 +188,8 @@ class TestTreatmentResponseModel:
         }
 
         # Execute
-    result = await model.predict_treatment_response()
-    patient_data = sample_patient_data,
+    result = await model.predict_treatment_response(,
+    patient_data= sample_patient_data,
     medications = medications,
     metabolizer_status = metabolizer_status
 
@@ -223,8 +218,8 @@ async def test_predict_treatment_response_no_medications(
     """Test prediction with empty medications list."""
     # Execute and assert
     with pytest.raises(ValueError):
-        await model.predict_treatment_response()
-        patient_data = sample_patient_data,
+        await model.predict_treatment_response(,
+        patient_data= sample_patient_data,
         medications = [],
         metabolizer_status = {"CYP2D6": "normal"}
         ()
@@ -236,8 +231,8 @@ async def test_predict_treatment_response_no_medications(
         medications = ["invalid_medication"]
 
         # Execute
-        result = await model.predict_treatment_response()
-        patient_data = sample_patient_data,
+        result = await model.predict_treatment_response(,
+        patient_data= sample_patient_data,
         medications = medications,
         metabolizer_status = {"CYP2D6": "normal"}
         ()
@@ -261,7 +256,7 @@ async def test_predict_treatment_response_no_medications(
         assert features.shape[1] > 0   # Multiple features
 
         async def test_format_efficacy_result(self, model):
-        """Test efficacy result formatting."""
+                 """Test efficacy result formatting."""
         # Setup
         efficacy_score = 0.72
         confidence = 0.85
@@ -278,7 +273,7 @@ async def test_predict_treatment_response_no_medications(
         assert 0 <= result["percentile"] <= 100
 
         async def test_format_side_effects_result(self, model):
-        """Test side effects result formatting."""
+                 """Test side effects result formatting."""
         # Setup
         medication = "fluoxetine"
         side_effect_risks = np.array([0.35, 0.28, 0.15])
@@ -299,7 +294,7 @@ async def test_predict_treatment_response_no_medications(
         assert risks == [0.35, 0.28, 0.15]
 
         async def test_get_model_info(self, model):
-        """Test model info retrieval."""
+                 """Test model info retrieval."""
         # Execute
         info = await model.get_model_info()
 

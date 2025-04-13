@@ -17,31 +17,31 @@ from app.presentation.api.dependencies.rate_limiter import (
 
 @pytest.fixture
 def mock_limiter():
-    """Create a mock rate limiter."""
+
+            """Create a mock rate limiter."""
     limiter = MagicMock(spec=RateLimiter)
     # Default to allowing requests
     limiter.check_rate_limit.return_value = True
-    return limiter
+    return limiter@pytest.fixture
+def app_with_rate_limited_routes(mock_limiter):
 
-    @pytest.fixture
-    def app_with_rate_limited_routes(mock_limiter):
-    """Create a FastAPI app with rate-limited routes."""
+            """Create a FastAPI app with rate-limited routes."""
     app = FastAPI()
 
     # Create rate limit dependencies with the mock limiter
     basic_rate_limit = RateLimitDependency(
         requests=10, window_seconds=60, limiter=mock_limiter
-    )
+    ,
 
-    sensitive_limit = RateLimitDependency(
+    sensitive_limit= RateLimitDependency(
         requests=5,
         window_seconds=60,
         block_seconds=300,
         limiter=mock_limiter,
         scope_key="sensitive",
-    )
+    ,
 
-    admin_limit = RateLimitDependency(
+    admin_limit= RateLimitDependency(
         requests=100,
         window_seconds=60,
         limiter=mock_limiter,
@@ -50,15 +50,15 @@ def mock_limiter():
     # Define routes with different rate limits
     @app.get("/api/basic")
     async def basic_endpoint(rate_check=Depends(basic_rate_limit)):
-        return {"message": "basic"}
+             return {"message": "basic"}
 
         @app.post("/api/sensitive")
         async def sensitive_endpoint(rate_check=Depends(sensitive_limit)):
-        return {"message": "sensitive"}
+             return {"message": "sensitive"}
 
         @app.get("/api/admin")
         async def admin_endpoint(rate_check=Depends(admin_limit)):
-        return {"message": "admin"}
+             return {"message": "admin"}
 
         # Test route with factory function
         @app.get("/api/factory")
@@ -69,18 +69,17 @@ def mock_limiter():
         ):
         return {"message": "factory"}
 
-        return app
+        return app@pytest.fixture
+def client(app_with_rate_limited_routes):
 
-        @pytest.fixture
-        def client(app_with_rate_limited_routes):
-    """Create a test client for the FastAPI app."""
-    return TestClient(app_with_rate_limited_routes)
-
-    class TestRateLimitDependency:
+            """Create a test client for the FastAPI app."""
+    return TestClient(app_with_rate_limited_routes)class TestRateLimitDependency:
     """Test suite for the rate limit dependency."""
 
     def test_init(self):
-        """Test initialization of the rate limit dependency."""
+
+
+                    """Test initialization of the rate limit dependency."""
         # Test with default values
         dependency = RateLimitDependency()
         assert dependency.config.requests == 30
@@ -103,7 +102,7 @@ def mock_limiter():
         assert dependency.scope_key == "custom"
 
     async def test_default_key_func(self):
-        """Test the default key function for extracting client IPs."""
+                 """Test the default key function for extracting client IPs."""
         dependency = RateLimitDependency()
 
         # Test with X-Forwarded-For header
@@ -126,7 +125,7 @@ def mock_limiter():
 
         @pytest.mark.asyncio
         async def test_get_rate_limit_key(self):
-        """Test getting the rate limit key with scope."""
+                 """Test getting the rate limit key with scope."""
         dependency = RateLimitDependency(scope_key="test_scope")
 
         # Mock the key_func to return a fixed value
@@ -146,9 +145,9 @@ def mock_limiter():
 
         @pytest.mark.asyncio
         async def test_call_under_limit(self, mock_limiter):
-        """Test the __call__ method when under the rate limit."""
-        dependency = RateLimitDependency(limiter=mock_limiter)
-        mock_request = MagicMock(spec=Request)
+                 """Test the __call__ method when under the rate limit."""
+        dependency = RateLimitDependency(limiter=mock_limiter,
+        mock_request= MagicMock(spec=Request)
 
         # Configure limiter to allow the request
         mock_limiter.check_rate_limit.return_value = True
@@ -164,13 +163,13 @@ def mock_limiter():
 
         @pytest.mark.asyncio
         async def test_call_over_limit(self, mock_limiter):
-        """Test the __call__ method when over the rate limit."""
+                 """Test the __call__ method when over the rate limit."""
         dependency = RateLimitDependency(
             limiter=mock_limiter,
             window_seconds=60,
             error_message="Custom error message",
-        )
-        mock_request = MagicMock(spec=Request)
+        ,
+        mock_request= MagicMock(spec=Request)
         mock_request.url.path = "/test/path"
 
         # Configure limiter to block the request
@@ -185,13 +184,13 @@ def mock_limiter():
             assert "Custom error message" in str(excinfo.value)
 
             # Check limiter was called
-            mock_limiter.check_rate_limit.assert_called_once()
-
-            class TestRateLimitDependencyIntegration:
+            mock_limiter.check_rate_limit.assert_called_once()class TestRateLimitDependencyIntegration:
     """Integration tests for the rate limit dependency with FastAPI."""
 
     def test_basic_route_allowed(self, client, mock_limiter):
-        """Test a basic route that is under the rate limit."""
+
+
+                    """Test a basic route that is under the rate limit."""
         # Configure limiter to allow the request
         mock_limiter.check_rate_limit.return_value = True
 
@@ -214,7 +213,9 @@ def mock_limiter():
         assert args[1].window_seconds == 60
 
         def test_basic_route_blocked(self, client, mock_limiter):
-        """Test a basic route that exceeds the rate limit."""
+
+
+                        """Test a basic route that exceeds the rate limit."""
         # Configure limiter to block the request
         mock_limiter.check_rate_limit.return_value = False
 
@@ -226,7 +227,9 @@ def mock_limiter():
         assert "Rate limit exceeded" in response.json()["detail"]
 
         def test_sensitive_route_uses_scope(self, client, mock_limiter):
-        """Test that the sensitive route uses the correct scope key."""
+
+
+                        """Test that the sensitive route uses the correct scope key."""
         # Configure limiter to allow the request
         mock_limiter.check_rate_limit.return_value = True
 
@@ -243,7 +246,9 @@ def mock_limiter():
         assert args[1].block_seconds == 300  # Has blocking configured
 
         def test_admin_route_uses_higher_limits(self, client, mock_limiter):
-        """Test that the admin route uses higher rate limits."""
+
+
+                        """Test that the admin route uses higher rate limits."""
         # Configure limiter to allow the request
         mock_limiter.check_rate_limit.return_value = True
 
@@ -259,7 +264,9 @@ def mock_limiter():
         assert args[1].requests == 100  # Higher limit
 
         def test_factory_route(self, client, mock_limiter):
-        """Test route using the factory function."""
+
+
+                        """Test route using the factory function."""
         # Configure limiter to allow the request
         mock_limiter.check_rate_limit.return_value = True
 
@@ -273,14 +280,13 @@ def mock_limiter():
         args, kwargs = mock_limiter.check_rate_limit.call_args
         assert "factory:" in args[0]  # Should have factory scope prefix
         assert args[1].requests == 15  # Custom limit
-        assert args[1].window_seconds == 30  # Custom window
-
-        class TestRateLimitFactoryFunctions:
+        assert args[1].window_seconds == 30  # Custom windowclass TestRateLimitFactoryFunctions:
     """Test suite for the rate limit factory functions."""
 
     @patch("app.presentation.api.dependencies.rate_limiter.RateLimitDependency")
     def test_rate_limit(self, mock_dependency_class):
-        """Test the regular rate_limit factory function."""
+
+                    """Test the regular rate_limit factory function."""
         # Create a rate limit with factory function
         result = rate_limit(
             requests=20, window_seconds=40, block_seconds=60, scope_key="test"
@@ -296,7 +302,8 @@ def mock_limiter():
 
     @patch("app.presentation.api.dependencies.rate_limiter.RateLimitDependency")
     def test_sensitive_rate_limit(self, mock_dependency_class):
-        """Test the sensitive_rate_limit factory function."""
+
+                    """Test the sensitive_rate_limit factory function."""
         # Create a sensitive rate limit
         result = sensitive_rate_limit(scope_key="custom")
 
@@ -314,7 +321,8 @@ def mock_limiter():
 
     @patch("app.presentation.api.dependencies.rate_limiter.RateLimitDependency")
     def test_admin_rate_limit(self, mock_dependency_class):
-        """Test the admin_rate_limit factory function."""
+
+                    """Test the admin_rate_limit factory function."""
         # Create an admin rate limit
         result = admin_rate_limit()
 
@@ -326,8 +334,8 @@ def mock_limiter():
         assert result == mock_dependency_class.return_value
 
         # Test with custom scope key
-        mock_dependency_class.reset_mock()
-        result = admin_rate_limit(scope_key="custom_admin")
+        mock_dependency_class.reset_mock(,
+        result= admin_rate_limit(scope_key="custom_admin")
 
         mock_dependency_class.assert_called_once_with(
             requests=100,

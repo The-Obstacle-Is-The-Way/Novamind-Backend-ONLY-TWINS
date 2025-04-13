@@ -35,12 +35,13 @@ from app.domain.services.visualization_preprocessor import (
 )
 
 
-@pytest.mark.db_required()
-class TestTemporalEvents:
+@pytest.mark.db_required()class TestTemporalEvents:
     """Test suite for temporal event correlation tracking."""
 
     def test_correlated_event_creation(self):
-        """Test creation of correlated events."""
+
+
+                    """Test creation of correlated events."""
         # Create a root event
         root_event = CorrelatedEvent(
             event_type="test_event", metadata={"test_key": "test_value"}
@@ -68,28 +69,30 @@ class TestTemporalEvents:
         assert child_event.id != root_event.id
 
     def test_event_chain(self):
-        """Test event chain functionality."""
+
+
+                    """Test event chain functionality."""
         # Create a chain and some events
-        correlation_id = uuid.uuid4()
-        chain = EventChain(correlation_id=correlation_id)
+        correlation_id = uuid.uuid4(,
+        chain= EventChain(correlation_id=correlation_id,
 
-        root_event = CorrelatedEvent(
+        root_event= CorrelatedEvent(
             event_type="root",
-            correlation_id=correlation_id)
+            correlation_id=correlation_id,
 
-        child1 = CorrelatedEvent(
+        child1= CorrelatedEvent(
             event_type="child1",
             correlation_id=correlation_id,
             parent_event_id=root_event.id,
-        )
+        ,
 
-        child2 = CorrelatedEvent(
+        child2= CorrelatedEvent(
             event_type="child2",
             correlation_id=correlation_id,
             parent_event_id=root_event.id,
-        )
+        ,
 
-        grandchild = CorrelatedEvent(
+        grandchild= CorrelatedEvent(
             event_type="grandchild",
             correlation_id=correlation_id,
             parent_event_id=child1.id,
@@ -121,16 +124,16 @@ class TestTemporalEvents:
         )
 
         with pytest.raises(ValueError):
-            chain.add_event(wrong_event)
-
-            class TestTemporalSequence:
+            chain.add_event(wrong_event)class TestTemporalSequence:
     """Test suite for temporal sequences."""
 
     def test_temporal_sequence_creation(self):
-        """Test creation of temporal sequences."""
+
+
+                    """Test creation of temporal sequences."""
         # Create test data
-        now = datetime.datetime.now()
-        timestamps = [now + datetime.timedelta(hours=i) for i in range(5)]
+        now = datetime.datetime.now(,
+        timestamps= [now + datetime.timedelta(hours=i) for i in range(5)]
         feature_names = ["feature1", "feature2"]
         values = [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]
         patient_id = uuid.uuid4()
@@ -183,18 +186,20 @@ class TestTemporalEvents:
             )
 
     def test_temporal_sequence_operations(self):
-        """Test operations on temporal sequences."""
+
+
+                    """Test operations on temporal sequences."""
         # Create test data
-        now = datetime.datetime.now()
-        timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
+        now = datetime.datetime.now(,
+        timestamps= [now + datetime.timedelta(hours=i) for i in range(10)]
         feature_names = ["f1", "f2"]
 
         # Create increasing values for f1, decreasing for f2
         values = []
         for i in range(10):
-            values.append([i / 10.0, 1.0 - i / 10.0])
+            values.append([i / 10.0, 1.0 - i / 10.0],
 
-            sequence = TemporalSequence.create(
+            sequence= TemporalSequence.create(
                 feature_names=feature_names,
                 timestamps=timestamps,
                 values=values,
@@ -238,14 +243,13 @@ class TestTemporalEvents:
         assert seq_dict["sequence_length"] == 10
         assert seq_dict["feature_dimension"] == 2
         assert len(seq_dict["timestamps"]) == 10
-        assert len(seq_dict["values"]) == 10
-
-
-class TestNeurotransmitterEffect:
+        assert len(seq_dict["values"]) == 10class TestNeurotransmitterEffect:
     """Test suite for neurotransmitter effect metrics."""
 
     def test_neurotransmitter_effect_creation(self):
-        """Test creation of neurotransmitter effects."""
+
+
+                    """Test creation of neurotransmitter effects."""
         # Create a basic effect
         effect = NeurotransmitterEffect(
             neurotransmitter=Neurotransmitter.DOPAMINE,
@@ -288,9 +292,11 @@ class TestNeurotransmitterEffect:
             )
 
     def test_neurotransmitter_effect_factory(self):
-        """Test factory method for neurotransmitter effects."""
-        # Create test data (higher values in intervention vs baseline)
-        baseline_data = [0.5, 0.4, 0.6, 0.5, 0.4]
+
+
+                    """Test factory method for neurotransmitter effects."""
+        # Create test data (higher values in intervention vs baseline,
+        baseline_data= [0.5, 0.4, 0.6, 0.5, 0.4]
         intervention_data = [0.8, 0.7, 0.9, 0.8, 0.7]
 
         # Create effect using factory
@@ -314,18 +320,14 @@ class TestNeurotransmitterEffect:
         assert viz_data["neurotransmitter"] == "serotonin"
         assert viz_data["effect_size"] > 0
         assert viz_data["is_significant"] is True
-        assert viz_data["clinical_significance"] == "moderate"
+        assert viz_data["clinical_significance"] == "moderate"class TestTemporalNeurotransmitterMapping:
+    """Test suite for temporal neurotransmitter mapping extensions."""@pytest.fixture
+def extended_mapping(self):
 
-
-class TestTemporalNeurotransmitterMapping:
-    """Test suite for temporal neurotransmitter mapping extensions."""
-
-    @pytest.fixture
-    def extended_mapping(self):
-        """Create an extended neurotransmitter mapping for tests."""
+                """Create an extended neurotransmitter mapping for tests."""
         # Start with the default mapping
-        test_patient_id = uuid.uuid4()
-        base_mapping = create_default_neurotransmitter_mapping(
+        test_patient_id = uuid.uuid4(,
+        base_mapping= create_default_neurotransmitter_mapping(
             patient_id=test_patient_id
         )
 
@@ -337,10 +339,12 @@ class TestTemporalNeurotransmitterMapping:
         return extended
 
     def test_generate_temporal_sequence(self, extended_mapping):
-        """Test generation of temporal sequences from neurotransmitter mapping."""
+
+
+                    """Test generation of temporal sequences from neurotransmitter mapping."""
         # Create test data
-        now = datetime.datetime.now()
-        timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
+        now = datetime.datetime.now(,
+        timestamps= [now + datetime.timedelta(hours=i) for i in range(10)]
 
         # Generate a sequence for serotonin in prefrontal cortex
         sequence = extended_mapping.generate_temporal_sequence(
@@ -359,7 +363,9 @@ class TestTemporalNeurotransmitterMapping:
         )
 
     def test_predict_cascade_effect(self, extended_mapping):
-        """Test prediction of cascade effects across brain regions."""
+
+
+                    """Test prediction of cascade effects across brain regions."""
         # Simulate cascade from amygdala
         cascade_results = extended_mapping.predict_cascade_effect(
             starting_region=BrainRegion.AMYGDALA,
@@ -382,10 +388,12 @@ class TestTemporalNeurotransmitterMapping:
                 assert propagated, "Cascade effect did not propagate to any other regions"
 
                 def test_analyze_temporal_response(self, extended_mapping):
-        """Test analysis of temporal response to neurotransmitter changes."""
+
+
+                                """Test analysis of temporal response to neurotransmitter changes."""
         # Create test data with increasing serotonin levels
-        now = datetime.datetime.now()
-        baseline_end = now + datetime.timedelta(hours=5)
+        now = datetime.datetime.now(,
+        baseline_end= now + datetime.timedelta(hours=5)
 
         # 10 hours of data: first 5 at baseline, next 5 increasing
         timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
@@ -412,10 +420,12 @@ class TestTemporalNeurotransmitterMapping:
         assert effect.direction == "increase"
 
     def test_simulate_treatment_response(self, extended_mapping):
-        """Test simulation of treatment response."""
+
+
+                    """Test simulation of treatment response."""
         # Create test data
-        now = datetime.datetime.now()
-        timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
+        now = datetime.datetime.now(,
+        timestamps= [now + datetime.timedelta(hours=i) for i in range(10)]
 
         # Simulate treatment increasing serotonin
         responses = extended_mapping.simulate_treatment_response(
@@ -431,8 +441,8 @@ class TestTemporalNeurotransmitterMapping:
 
         # Check for direct effect on serotonin
         serotonin_idx = list(Neurotransmitter).index(
-            Neurotransmitter.SEROTONIN)
-        initial_level = serotonin_seq.values[0][serotonin_idx]
+            Neurotransmitter.SEROTONIN,
+        initial_level= serotonin_seq.values[0][serotonin_idx]
         max_level = max(ts[serotonin_idx] for ts in serotonin_seq.values)
 
         assert max_level > initial_level, "Treatment had no effect on serotonin levels"
@@ -442,21 +452,21 @@ class TestTemporalNeurotransmitterMapping:
         indirect_effects = False
         for nt, seq in responses.items():
             if nt != Neurotransmitter.SEROTONIN:
-                nt_idx = list(Neurotransmitter).index(nt)
-                initial = seq.values[0][nt_idx]
+                nt_idx = list(Neurotransmitter).index(nt,
+                initial= seq.values[0][nt_idx]
                 maximum = max(ts[nt_idx] for ts in seq.values)
                 # Use a smaller threshold for detection
                 if abs(maximum - initial) > 0.01:  # Smaller threshold
                     indirect_effects = True
                     break
 
-                assert indirect_effects, "No indirect effects on other neurotransmitters"
-
-                class TestVisualizationPreprocessor:
+                assert indirect_effects, "No indirect effects on other neurotransmitters"class TestVisualizationPreprocessor:
     """Test suite for visualization preprocessors."""
 
     def test_precompute_cascade_geometry(self):
-        """Test precomputation of geometry for cascade visualization."""
+
+
+                    """Test precomputation of geometry for cascade visualization."""
         # Create test data
         preprocessor = NeurotransmitterVisualizationPreprocessor()
 
@@ -487,7 +497,9 @@ class TestTemporalNeurotransmitterMapping:
         assert active_t4 == 3  # All 3 regions
 
     def test_neurotransmitter_effect_visualizer(self):
-        """Test visualization of neurotransmitter effects."""
+
+
+                    """Test visualization of neurotransmitter effects."""
         # Create test data
         visualizer = NeurotransmitterEffectVisualizer()
 

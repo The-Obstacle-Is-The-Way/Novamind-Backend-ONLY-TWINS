@@ -17,11 +17,11 @@ from fastapi.testclient import TestClient
 
 from app.api.routes.ml import router , as ml_router
 from app.core.config.ml_settings import ml_settings
-from app.core.exceptions import
+from app.core.exceptions import (
     InvalidRequestError,  
     ModelNotFoundError,  
     ServiceUnavailableError,  
-()
+)
 from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-existent MLService
 
 
@@ -29,29 +29,38 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
 
 
 # Mock services
-@pytest.mark.db_required()
-class MockMentaLLaMAService(MentaLLaMAInterface):
+@pytest.mark.db_required()class MockMentaLLaMAService(MentaLLaMAInterface):
     """Mock MentaLLaMA service for testing."""
     
     def __init__(self):
-        """Initialize mock service."""
+
+    
+                    """Initialize mock service."""
         self.initialized = True
     
         def initialize(self, config: Dict[str, Any]) -> None:
-        """Mock initialization."""
+
+    
+                        """Mock initialization."""
         self.initialized = True
     
         def is_healthy(self) -> bool:
-        """Mock health check."""
+
+    
+                        """Mock health check."""
         
         return self.initialized
     
         def shutdown(self) -> None:
-        """Mock shutdown."""
+
+    
+                        """Mock shutdown."""
         self.initialized = False
     
         def process():
-        self,
+
+    
+                    self,
         prompt: str,
         model: str = None,
         task: str = None,
@@ -81,7 +90,9 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     }
     
     def depression_detection():
-        self, 
+
+    
+                self, 
         text: str, 
         model: str = None,
         include_rationale: bool = True,
@@ -96,9 +107,9 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
             raise InvalidRequestError("Text cannot be empty")
         
             if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model)
+        raise ModelNotFoundError("Model not found", model_name=model,
         
-        structured_data = {
+        structured_data= {
         "depression_indicated": True,
         "severity": "moderate",
         "key_indicators": ["depressed mood", "fatigue", "sleep disturbance"]
@@ -120,7 +131,9 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     }
     
     def risk_assessment():
-        self, 
+
+    
+                self, 
         text: str, 
         model: str = None,
         include_key_phrases: bool = True,
@@ -135,9 +148,9 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
             raise InvalidRequestError("Text cannot be empty")
         
             if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model)
+        raise ModelNotFoundError("Model not found", model_name=model,
         
-        structured_data = {
+        structured_data= {
         "risk_level": "low",
         "key_indicators": ["concern about future", "minor sleep issues"],
         "rationale": "Mock rationale for risk assessment"
@@ -162,7 +175,9 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     }
     
     def sentiment_analysis():
-        self, 
+
+    
+                self, 
         text: str, 
         model: str = None,
         include_emotion_distribution: bool = True,
@@ -176,9 +191,9 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
             raise InvalidRequestError("Text cannot be empty")
         
             if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model)
+        raise ModelNotFoundError("Model not found", model_name=model,
         
-        structured_data = {
+        structured_data= {
         "overall_sentiment": "mixed",
         "sentiment_score": 0.2,
         "key_phrases": ["looking forward", "feeling tired"]
@@ -208,7 +223,9 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     }
     
     def wellness_dimensions():
-        self, 
+
+    
+                self, 
         text: str, 
         model: str = None,
         dimensions: Optional[List[str]] = None,
@@ -223,9 +240,9 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
             raise InvalidRequestError("Text cannot be empty")
         
             if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model)
+        raise ModelNotFoundError("Model not found", model_name=model,
         
-        dim_list = dimensions or ["emotional", "social", "physical", "intellectual"]
+        dim_list= dimensions or ["emotional", "social", "physical", "intellectual"]
         
         structured_data = {
         "dimension_scores": {dim: 0.7 for dim in dim_list},
@@ -252,9 +269,8 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     }
 
 
-# Mock authentication
-@pytest.fixture
-    def mock_auth(client: TestClient): # Add client fixture dependency if needed by patch target
+# Mock authentication@pytest.fixture
+def mock_auth(client: TestClient): # Add client fixture dependency if needed by patch target
     """Mock authentication."""
     with patch("app.api.auth.dependencies.get_current_user") as mock:
         mock.return_value = {
@@ -262,11 +278,8 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
             "email": "test@example.com",
             "roles": ["provider", "admin"]
         }
-        yield mock
-
-
-@pytest.fixture
-    def mock_services(client: TestClient): # Add client fixture dependency if needed by patch target
+        yield mock@pytest.fixture
+def mock_services(client: TestClient): # Add client fixture dependency if needed by patch target
     """Mock ML services."""
     # Enable services in settings
     ml_settings.enable_mentallama = True
@@ -282,7 +295,8 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 # Tests
     def test_process_text(client: TestClient, mock_auth, mock_services):
-        """Test process text endpoint."""
+
+                    """Test process text endpoint."""
         request_data = {
         "prompt": "This is a test prompt for processing.",
         "task": "general_analysis",
@@ -307,23 +321,29 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 
     def test_process_text_with_missing_prompt(client: TestClient, mock_auth, mock_services):
-        """Test process text endpoint with missing prompt."""
+
+
+
+                    """Test process text endpoint with missing prompt."""
         request_data = {
         "prompt": "",  # Empty prompt
         "task": "general_analysis"
     }
     
     # Mock invalid request error
-    mock_services["mentalllama"].return_value.process.side_effect = InvalidRequestError("Prompt cannot be empty")
+    mock_services["mentalllama"].return_value.process.side_effect = InvalidRequestError("Prompt cannot be empty",
     
-    response = client.post("/api/v1/ml/process", json=request_data)
+    response= client.post("/api/v1/ml/process", json=request_data)
     
     assert response.status_code  ==  400
     assert "detail" in response.json()
 
 
     def test_process_text_with_nonexistent_model(client: TestClient, mock_auth, mock_services):
-        """Test process text endpoint with nonexistent model."""
+
+
+
+                    """Test process text endpoint with nonexistent model."""
         request_data = {
         "prompt": "This is a test prompt for processing.",
         "model": "nonexistent-model",
@@ -341,7 +361,10 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 
     def test_depression_detection(client: TestClient, mock_auth, mock_services):
-        """Test depression detection endpoint."""
+
+
+
+                    """Test depression detection endpoint."""
         request_data = {
         "text": "This is a test text for depression detection.",
         "include_rationale": True,
@@ -370,7 +393,10 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 
     def test_risk_assessment(client: TestClient, mock_auth, mock_services):
-        """Test risk assessment endpoint."""
+
+
+
+                    """Test risk assessment endpoint."""
         request_data = {
         "text": "This is a test text for risk assessment.",
         "include_key_phrases": True,
@@ -399,7 +425,10 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 
     def test_sentiment_analysis(client: TestClient, mock_auth, mock_services):
-        """Test sentiment analysis endpoint."""
+
+
+
+                    """Test sentiment analysis endpoint."""
         request_data = {
         "text": "This is a test text for sentiment analysis.",
         "include_emotion_distribution": True,
@@ -427,7 +456,10 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 
     def test_wellness_dimensions(client: TestClient, mock_auth, mock_services):
-        """Test wellness dimensions endpoint."""
+
+
+
+                    """Test wellness dimensions endpoint."""
         request_data = {
         "text": "This is a test text for wellness dimensions analysis.",
         "dimensions": ["emotional", "social", "physical", "intellectual"],
@@ -456,7 +488,10 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 
     def test_health_check(client: TestClient, mock_services):
-        """Test health check endpoint."""
+
+
+
+                    """Test health check endpoint."""
         response = client.get("/api/v1/ml/health")
     
         assert response.status_code  ==  200
@@ -470,7 +505,10 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
 
 
         def test_service_unavailable(client: TestClient, mock_auth):
-        """Test service unavailable error."""
+
+
+
+                        """Test service unavailable error."""
         # Disable MentaLLaMA service
         ml_settings.enable_mentallama = False
     

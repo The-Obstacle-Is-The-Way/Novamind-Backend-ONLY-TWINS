@@ -8,35 +8,27 @@ from unittest.mock import MagicMock, patch, AsyncMock
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
 from app.infrastructure.ml.symptom_forecasting.transformer_model import TransformerModel
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostModel
-from app.core.config.ml_settings import MLSettings
+from app.core.config.ml_settings import MLSettingsclass TestEnsembleModel:
+    """Test suite for the EnsembleModel class."""@pytest.fixture
+def ml_settings(self):
 
+                """Create ML settings for testing."""
+        return MLSettings()@pytest.fixture
+def mock_transformer_model(self):
 
-class TestEnsembleModel:
-    """Test suite for the EnsembleModel class."""
-
-    @pytest.fixture
-    def ml_settings(self):
-        """Create ML settings for testing."""
-        return MLSettings()
-
-        @pytest.fixture
-        def mock_transformer_model(self):
-        """Create a mock transformer model."""
+                """Create a mock transformer model."""
         model = MagicMock(spec=TransformerModel)
         model.predict = AsyncMock(
             return_value=np.array([4.2, 4.0, 3.8, 3.6, 3.4]))
-        return model
+        return model@pytest.fixture
+def mock_xgboost_model(self):
 
-        @pytest.fixture
-        def mock_xgboost_model(self):
-        """Create a mock XGBoost model."""
+                """Create a mock XGBoost model."""
         model = MagicMock(spec=XGBoostModel)
         model.predict = AsyncMock(
             return_value=np.array([4.0, 3.9, 3.7, 3.5, 3.3]))
-        return model
-
-        @pytest.fixture
-        def ensemble_model(
+        return model@pytest.fixture
+def ensemble_model(
                 self,
                 ml_settings,
                 mock_transformer_model,
@@ -54,16 +46,15 @@ class TestEnsembleModel:
         # Define ensemble weights
         ensemble.ensemble_weights = {"transformer": 0.7, "xgboost": 0.3}
 
-        return ensemble
+        return ensemble@pytest.fixture
+def sample_input_data(self):
 
-    @pytest.fixture
-    def sample_input_data(self):
-        """Create sample input data for testing."""
+                """Create sample input data for testing."""
         # Create a DataFrame with symptom severity data
         dates = pd.date_range(
             start=datetime.now() - timedelta(days=10), periods=10, freq="D"
-        )
-        data = {
+        ,
+        data= {
             "date": dates,
             "symptom_severity": [7, 6, 6, 5, 5, 4, 4, 4, 3, 3],
             "sleep_hours": [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.0, 8.5, 8.5],
@@ -73,7 +64,7 @@ class TestEnsembleModel:
 
     @pytest.mark.asyncio
     async def test_initialize(self, ml_settings):
-        """Test initialization of the ensemble model."""
+                 """Test initialization of the ensemble model."""
         model = EnsembleModel(settings=ml_settings)
 
         # Verify models dictionary is initialized
@@ -89,7 +80,7 @@ class TestEnsembleModel:
 
     @pytest.mark.asyncio
     async def test_predict(self, ensemble_model, sample_input_data):
-        """Test the predict method of the ensemble model."""
+                 """Test the predict method of the ensemble model."""
         # Set up
         forecast_days = 5
         symptom_type = "anxiety"
@@ -193,10 +184,10 @@ class TestEnsembleModel:
 
     @pytest.mark.asyncio
     async def test_get_confidence_intervals(self, ensemble_model):
-        """Test confidence interval calculation."""
+                 """Test confidence interval calculation."""
         # Set up mock predictions from component models
-        predictions = np.array([4.0, 3.8, 3.6, 3.4, 3.2])
-        std = np.array([0.5, 0.5, 0.4, 0.4, 0.3])
+        predictions = np.array([4.0, 3.8, 3.6, 3.4, 3.2],
+        std= np.array([0.5, 0.5, 0.4, 0.4, 0.3])
 
         # Execute
         lower, upper = ensemble_model.get_confidence_intervals(

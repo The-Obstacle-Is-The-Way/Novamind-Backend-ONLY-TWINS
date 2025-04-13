@@ -66,18 +66,18 @@ from app.domain.repositories.base_repository import BaseRepository
 
 @pytest.fixture
 def mock_biometric_event_processor():
-    """Create a mock BiometricEventProcessor."""
+
+            """Create a mock BiometricEventProcessor."""
     processor = AsyncMock(spec=BiometricEventProcessor)
     processor.add_rule = MagicMock()
     processor.remove_rule = MagicMock()
     processor.register_observer = MagicMock()
     processor.unregister_observer = MagicMock()
     processor.process_data_point = MagicMock()
-    return processor
+    return processor@pytest.fixture
+def mock_clinical_rule_engine():
 
-    @pytest.fixture
-    def mock_clinical_rule_engine():
-    """Create a mock ClinicalRuleEngine."""
+            """Create a mock ClinicalRuleEngine."""
     engine = AsyncMock(spec=ClinicalRuleEngine)
     engine.register_rule_template = MagicMock()
     engine.register_custom_condition = MagicMock()
@@ -109,34 +109,31 @@ def mock_biometric_event_processor():
 
 @pytest.fixture
 def mock_alert_repository():
-    """Create a mock alert repository."""
+
+            """Create a mock alert repository."""
     repository = AsyncMock(spec=BaseRepository)  # Use a base spec if available
     repository.get_alerts = AsyncMock()
     repository.get_alert_by_id = AsyncMock()
     repository.create_alert = AsyncMock()
     repository.update_alert = AsyncMock()
     repository.delete_alert = AsyncMock()
-    return repository
+    return repository@pytest.fixture
+def mock_rule_repository():
 
-    @pytest.fixture
-    def mock_rule_repository():
-    """Create a mock rule repository."""
+            """Create a mock rule repository."""
     repository = AsyncMock(spec=BaseRepository)  # Use a base spec if available
     repository.get_rules = AsyncMock()
     repository.get_rule_by_id = AsyncMock()
     repository.create_rule = AsyncMock()
     repository.update_rule = AsyncMock()
     repository.delete_rule = AsyncMock()
-    return repository
+    return repository@pytest.fixture
+def mock_current_user_id():
 
-    @pytest.fixture
-    def mock_current_user_id():
-    """Fixture for a mock user ID."""
+            """Fixture for a mock user ID."""
 
-    return UUID("00000000-0000-0000-0000-000000000001")
-
-    @pytest.fixture
-    def app(
+    return UUID("00000000-0000-0000-0000-000000000001")@pytest.fixture
+def app(
         mock_biometric_event_processor,
         mock_clinical_rule_engine,
         mock_alert_repository,
@@ -188,19 +185,18 @@ def mock_alert_repository():
 
 @pytest.fixture
 def client(app):
-    """Create a test client for the FastAPI app."""
 
-    return TestClient(app)
+            """Create a test client for the FastAPI app."""
 
-    @pytest.fixture
-    def sample_patient_id():
-    """Create a sample patient ID."""
+    return TestClient(app)@pytest.fixture
+def sample_patient_id():
 
-    return UUID("12345678-1234-5678-1234-567812345678")
+            """Create a sample patient ID."""
 
-    @pytest.fixture
-    def sample_rule(sample_patient_id):
-    """Create a sample alert rule."""
+    return UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+def sample_rule(sample_patient_id):
+
+            """Create a sample alert rule."""
     # Assuming AlertRule takes condition as a dict for simplicity in test setup
     return AlertRule(
         rule_id="test-rule-1",
@@ -219,7 +215,8 @@ def client(app):
 
 @pytest.fixture
 def sample_data_point(sample_patient_id):
-    """Create a sample biometric data point."""
+
+            """Create a sample biometric data point."""
 
     return BiometricDataPoint(
         data_id=UUID("00000000-0000-0000-0000-000000000002"),
@@ -235,7 +232,8 @@ def sample_data_point(sample_patient_id):
 
 @pytest.fixture
 def sample_alert(sample_rule, sample_data_point):
-    """Create a sample biometric alert."""
+
+            """Create a sample biometric alert."""
 
     return BiometricAlert(
         alert_id=uuid4(),  # Generate a UUID for the alert
@@ -252,12 +250,13 @@ def sample_alert(sample_rule, sample_data_point):
     )
 
 
-@pytest.mark.db_required()  # Assuming db_required is a valid marker
-class TestBiometricAlertsEndpoints:
+@pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestBiometricAlertsEndpoints:
     """Tests for the Biometric Alerts API endpoints."""
 
     def test_get_alert_rules(self, client, mock_rule_repository, sample_rule):
-        """Test that get_alert_rules returns the correct response."""
+
+
+                    """Test that get_alert_rules returns the correct response."""
         # Setup
         mock_rule_repository.get_rules.return_value = (
             [sample_rule],
@@ -290,9 +289,9 @@ class TestBiometricAlertsEndpoints:
         # Setup
         mock_clinical_rule_engine.create_rule_from_template.return_value = sample_rule
         # Assume create_rule returns the created rule or its ID
-        mock_rule_repository.create_rule = AsyncMock(return_value=sample_rule)
+        mock_rule_repository.create_rule = AsyncMock(return_value=sample_rule,
 
-        rule_data = {
+        rule_data= {
             # "rule_id": "test-rule-1", # ID should be generated by backend
             "name": "High Heart Rate",
             "description": "Alert when heart rate exceeds 100 bpm",
@@ -324,9 +323,9 @@ class TestBiometricAlertsEndpoints:
         """Test that create_alert_rule creates a rule from a condition."""
         # Setup
         # Assume create_rule returns the created rule or its ID
-        mock_rule_repository.create_rule = AsyncMock(return_value=sample_rule)
+        mock_rule_repository.create_rule = AsyncMock(return_value=sample_rule,
 
-        rule_data = {
+        rule_data= {
             # "rule_id": "test-rule-1", # ID should be generated
             "name": "High Heart Rate",
             "description": "Alert when heart rate exceeds 100 bpm",
@@ -354,9 +353,9 @@ class TestBiometricAlertsEndpoints:
         # Setup
         mock_clinical_rule_engine.create_rule_from_template.side_effect = (
             ValidationError("Missing required parameter")
-        )
+        ,
 
-    rule_data = {
+    rule_data= {
         "name": "High Heart Rate",
         "description": "Alert when heart rate exceeds 100 bpm",
         "priority": "warning",
@@ -374,7 +373,9 @@ class TestBiometricAlertsEndpoints:
     mock_clinical_rule_engine.create_rule_from_template.assert_called_once()
 
     def test_get_alert_rule(self, client, mock_rule_repository, sample_rule):
-        """Test that get_alert_rule returns the correct response."""
+
+
+                    """Test that get_alert_rule returns the correct response."""
         # Setup
         mock_rule_repository.get_rule_by_id.return_value = sample_rule
 
@@ -392,7 +393,9 @@ class TestBiometricAlertsEndpoints:
             sample_rule.rule_id)
 
         def test_get_alert_rule_not_found(self, client, mock_rule_repository):
-        """Test that get_alert_rule handles not found errors."""
+
+
+                        """Test that get_alert_rule handles not found errors."""
         # Setup
         rule_id = "nonexistent-rule"
         mock_rule_repository.get_rule_by_id.return_value = None
@@ -483,7 +486,9 @@ class TestBiometricAlertsEndpoints:
         )
 
     def test_get_rule_templates(self, client, mock_clinical_rule_engine):
-        """Test that get_rule_templates returns the correct response."""
+
+
+                    """Test that get_rule_templates returns the correct response."""
         # Setup - mock_clinical_rule_engine fixture already has templates
 
         # Execute
@@ -499,7 +504,9 @@ class TestBiometricAlertsEndpoints:
         assert template_ids == {"high_heart_rate", "low_heart_rate"}
 
         def test_get_alerts(self, client, mock_alert_repository, sample_alert):
-        """Test that get_alerts returns the correct response."""
+
+
+                        """Test that get_alerts returns the correct response."""
         # Setup
         mock_alert_repository.get_alerts.return_value = (
             [sample_alert],

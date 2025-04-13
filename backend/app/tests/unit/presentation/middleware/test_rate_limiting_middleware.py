@@ -21,23 +21,23 @@ from app.presentation.middleware.rate_limiting_middleware import (
 
 @pytest.fixture
 def mock_limiter():
-    """Create a mock rate limiter."""
+
+            """Create a mock rate limiter."""
     limiter = MagicMock(spec=RateLimiter)
     # Default to allowing requests
     limiter.check_rate_limit.return_value = True
     return limiter
 
     async def dummy_endpoint(request):
-    """Dummy endpoint for testing."""
+             """Dummy endpoint for testing."""
     return JSONResponse({"message": "success"})
 
     async def other_endpoint(request):
-    """Another endpoint for testing different paths."""
-    return JSONResponse({"message": "other"})
+             """Another endpoint for testing different paths."""
+    return JSONResponse({"message": "other"})@pytest.fixture
+def app(mock_limiter):
 
-    @pytest.fixture
-    def app(mock_limiter):
-    """Create a test application with rate limiting middleware."""
+            """Create a test application with rate limiting middleware."""
     routes = [
         Route("/api/test", dummy_endpoint),
         Route("/api/other", other_endpoint),
@@ -67,14 +67,15 @@ def mock_limiter():
 
 @pytest.fixture
 def client(app):
-    """Create a test client for the application."""
-    return TestClient(app)
 
-    class TestRateLimitingMiddleware:
+            """Create a test client for the application."""
+    return TestClient(app)class TestRateLimitingMiddleware:
     """Test suite for the rate limiting middleware."""
 
     def test_allowed_request(self, client, mock_limiter):
-        """Test that a valid request is allowed through."""
+
+
+                    """Test that a valid request is allowed through."""
         mock_limiter.check_rate_limit.return_value = True
 
         response = client.get("/api/test")
@@ -86,7 +87,9 @@ def client(app):
         assert mock_limiter.check_rate_limit.call_count == 2  # IP and global checks
 
         def test_ip_rate_limited(self, client, mock_limiter):
-        """Test that exceeding IP rate limit returns 429."""
+
+
+                        """Test that exceeding IP rate limit returns 429."""
         # First call for IP check returns False (limit exceeded)
         # Second call for global check would return True (not reached, but
         # included for clarity)
@@ -101,7 +104,9 @@ def client(app):
         assert mock_limiter.check_rate_limit.call_count == 1
 
         def test_global_rate_limited(self, client, mock_limiter):
-        """Test that exceeding global rate limit returns 429."""
+
+
+                        """Test that exceeding global rate limit returns 429."""
         # First call for IP check returns True (within limit)
         # Second call for global check returns False (limit exceeded)
         mock_limiter.check_rate_limit.side_effect = [True, False]
@@ -115,7 +120,9 @@ def client(app):
         assert mock_limiter.check_rate_limit.call_count == 2
 
         def test_exclude_paths(self, client, mock_limiter):
-        """Test that excluded paths bypass rate limiting."""
+
+
+                        """Test that excluded paths bypass rate limiting."""
         response = client.get("/docs")
 
         assert response.status_code == 200
@@ -124,7 +131,9 @@ def client(app):
         mock_limiter.check_rate_limit.assert_not_called()
 
         def test_path_specific_limits(self, client, mock_limiter):
-        """Test that path-specific limits are used when available."""
+
+
+                        """Test that path-specific limits are used when available."""
         mock_limiter.check_rate_limit.return_value = True
 
         client.get("/api/other")
@@ -139,7 +148,9 @@ def client(app):
         assert call_args[1].requests == 50  # Path-specific global limit
 
         def test_response_headers(self, client, mock_limiter):
-        """Test that rate limit headers are added to responses."""
+
+
+                        """Test that rate limit headers are added to responses."""
         mock_limiter.check_rate_limit.return_value = True
 
         response = client.get("/api/test")
@@ -150,11 +161,12 @@ def client(app):
 
         @patch("app.presentation.middleware.rate_limiting_middleware.time")
         def test_get_key_function(self, mock_time, app, mock_limiter):
-        """Test custom key function is used."""
-        # Create app with custom key function
-        custom_key_func = AsyncMock(return_value="custom_key")
 
-        routes = [Route("/api/test", dummy_endpoint)]
+                        """Test custom key function is used."""
+        # Create app with custom key function
+        custom_key_func = AsyncMock(return_value="custom_key",
+
+        routes= [Route("/api/test", dummy_endpoint)]
         app = Starlette(routes=routes)
         app.add_middleware(
             RateLimitingMiddleware,
@@ -177,13 +189,15 @@ def client(app):
         )
 
     def test_default_get_key_direct_client(self, app, mock_limiter):
-        """Test default key function with direct client."""
+
+
+                    """Test default key function with direct client."""
         # Create app without custom key function
         routes = [Route("/api/test", dummy_endpoint)]
         app = Starlette(routes=routes)
-        app.add_middleware(RateLimitingMiddleware, limiter=mock_limiter)
+        app.add_middleware(RateLimitingMiddleware, limiter=mock_limiter,
 
-        middleware = app.middleware_stack.app
+        middleware= app.middleware_stack.app
 
         # Create mock request with direct client
         mock_request = MagicMock(spec=Request)
@@ -201,13 +215,15 @@ def client(app):
             assert key == "192.168.1.1"
 
             def test_default_get_key_forwarded_header(self, app, mock_limiter):
-        """Test default key function with X-Forwarded-For header."""
+
+
+                            """Test default key function with X-Forwarded-For header."""
         # Create app without custom key function
         routes = [Route("/api/test", dummy_endpoint)]
         app = Starlette(routes=routes)
-        app.add_middleware(RateLimitingMiddleware, limiter=mock_limiter)
+        app.add_middleware(RateLimitingMiddleware, limiter=mock_limiter,
 
-        middleware = app.middleware_stack.app
+        middleware= app.middleware_stack.app
 
         # Create mock request with X-Forwarded-For header
         mock_request = MagicMock(spec=Request)
@@ -217,16 +233,15 @@ def client(app):
         key = middleware._default_get_key(mock_request)
 
         # Should use first IP in X-Forwarded-For chain
-        assert key == "10.0.0.1"
-
-        class TestRateLimitingMiddlewareFactory:
+        assert key == "10.0.0.1"class TestRateLimitingMiddlewareFactory:
     """Test suite for rate limiting middleware factory function."""
 
     @patch(
         "app.presentation.middleware.rate_limiting_middleware.RateLimitingMiddleware"
     )
     def test_create_rate_limiting_middleware(self, mock_middleware_class):
-        """Test the factory function for creating rate limiting middleware."""
+
+                    """Test the factory function for creating rate limiting middleware."""
         # Mock app
         mock_app = MagicMock()
 

@@ -27,12 +27,13 @@ from app.infrastructure.security.encryption import (
 from app.core.config.settings import Settings
 
 
-@pytest.mark.unit()
-class TestEncryptionUtils:
+@pytest.mark.unit()class TestEncryptionUtils:
     """Tests for the encryption utility functions."""
 
     def test_derive_key(self):
-        """Test key derivation from password and salt."""
+
+
+                    """Test key derivation from password and salt."""
         # Test with known inputs
         password = b"test_password"
         salt = b"test_salt"
@@ -45,8 +46,8 @@ class TestEncryptionUtils:
         # Base64-encoded keys are 44 bytes (32 bytes encoded to base64)
         assert len(base64.urlsafe_b64decode(key)) == 32
 
-        # Verify deterministic output (same inputs yield same key)
-        key2 = derive_key(password, salt)
+        # Verify deterministic output (same inputs yield same key,
+        key2= derive_key(password, salt)
         assert key == key2
 
         # Verify different inputs yield different keys
@@ -57,7 +58,9 @@ class TestEncryptionUtils:
         assert key != key4
 
         def test_encrypt_decrypt_data(self):
-        """Test encryption and decryption of data."""
+
+
+                        """Test encryption and decryption of data."""
         # Test data and key
         data = "Sensitive patient information"
         key = Fernet.generate_key()
@@ -76,7 +79,9 @@ class TestEncryptionUtils:
         assert decrypted == data
 
         def test_hash_data(self):
-        """Test hashing of data."""
+
+
+                        """Test hashing of data."""
         # Test data
         data = "password123"
 
@@ -96,7 +101,9 @@ class TestEncryptionUtils:
         assert hashed != hashed3
 
         def test_secure_compare(self):
-        """Test secure comparison of strings."""
+
+
+                        """Test secure comparison of strings."""
         # Test data
         data = "password123"
         hashed, salt = hash_data(data)
@@ -105,11 +112,10 @@ class TestEncryptionUtils:
         assert secure_compare(data, hashed, salt) is True
 
         # Test false comparison
-        assert secure_compare("wrong_password", hashed, salt) is False
+        assert secure_compare("wrong_password", hashed, salt) is False@pytest.fixture
+def encryption_service():
 
-        @pytest.fixture
-        def encryption_service():
-    """Create an EncryptionService instance for testing."""
+            """Create an EncryptionService instance for testing."""
     # Mock environment variables
     env_vars = {
         "ENCRYPTION_KEY": "test_key_12345678901234567890123456789012",
@@ -120,18 +126,21 @@ class TestEncryptionUtils:
     with patch.dict(os.environ, env_vars):
         return EncryptionService()
 
-        @pytest.mark.unit()
-        class TestEncryptionService:
+        @pytest.mark.unit()class TestEncryptionService:
     """Tests for the EncryptionService class."""
 
     def test_initialization(self, encryption_service):
-        """Test initialization of EncryptionService."""
+
+
+                    """Test initialization of EncryptionService."""
         # Verify the service is initialized
         assert encryption_service is not None
         assert encryption_service.cipher is not None
 
         def test_encrypt_decrypt(self, encryption_service):
-        """Test encryption and decryption of data."""
+
+
+                        """Test encryption and decryption of data."""
         # Test data
         data = "Sensitive patient information"
 
@@ -149,7 +158,9 @@ class TestEncryptionUtils:
         assert decrypted == data
 
         def test_encrypt_decrypt_dict(self, encryption_service):
-        """Test encryption and decryption of dictionaries."""
+
+
+                        """Test encryption and decryption of dictionaries."""
         # Test data
         data = {
             "patient_id": "12345",
@@ -188,7 +199,9 @@ class TestEncryptionUtils:
         assert decrypted["medications"][0]["name"] == data["medications"][0]["name"]
 
     def test_key_rotation(self):
-        """Test encryption key rotation."""
+
+
+                    """Test encryption key rotation."""
         # Initialize with original key
         env_vars = {
             "ENCRYPTION_KEY": "original_key_123456789012345678901234567890",
@@ -229,7 +242,9 @@ class TestEncryptionUtils:
                 assert service_new.decrypt(new_encrypted) == data
 
                 def test_file_encryption(self, encryption_service, tmp_path):
-        """Test encryption and decryption of files."""
+
+
+                                """Test encryption and decryption of files."""
         # Create test file paths
         test_file = tmp_path / "test.txt"
         encrypted_file = tmp_path / "encrypted.bin"
@@ -259,7 +274,9 @@ class TestEncryptionUtils:
         assert os.path.exists(test_file.parent)
 
     def test_encrypt_file_nonexistent(self, encryption_service, tmp_path):
-        """Test encryption of nonexistent file."""
+
+
+                    """Test encryption of nonexistent file."""
         # Nonexistent input file
         nonexistent_file = tmp_path / "nonexistent.txt"
         output_file = tmp_path / "output.bin"

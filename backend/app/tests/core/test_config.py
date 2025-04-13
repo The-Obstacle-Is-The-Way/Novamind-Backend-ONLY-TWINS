@@ -11,12 +11,13 @@ import os
 from app.core.config import settings
 
 
-@pytest.mark.db_required()
-class TestSettings:
+@pytest.mark.db_required()class TestSettings:
     """Test cases for the Settings class."""
 
     def test_default_settings(self):
-        """Test that default settings are loaded correctly."""
+
+
+                    """Test that default settings are loaded correctly."""
         # Check essential configuration values
         assert settings.PROJECT_NAME == "Novamind Digital Twin"
         assert settings.API_V1_STR == "/api/v1"
@@ -30,7 +31,9 @@ class TestSettings:
         assert settings.ENABLE_PHI_AUDITING is True
 
         def test_environment_override(self, monkeypatch):
-        """Test that environment variables override default settings."""
+
+
+                        """Test that environment variables override default settings."""
         # Set environment variables
         monkeypatch.setenv("PROJECT_NAME", "Custom Project Name")
         monkeypatch.setenv("API_V1_STR", "/api/custom")
@@ -46,7 +49,9 @@ class TestSettings:
         assert settings.ENABLE_PHI_AUDITING is False
 
         def test_database_url_override(self, monkeypatch):
-        """Test database URL override via environment variable."""
+
+
+                        """Test database URL override via environment variable."""
         test_db_url = "postgresql+asyncpg://testuser:testpass@testhost/testdb"
         monkeypatch.setenv("DATABASE_URL", test_db_url)
 
@@ -54,7 +59,9 @@ class TestSettings:
         assert str(settings.SQLALCHEMY_DATABASE_URI) == test_db_url
 
         def test_database_url_construction(self, monkeypatch):
-        """Test that database URL is constructed correctly from components."""
+
+
+                        """Test that database URL is constructed correctly from components."""
         # Setup database environment variables
         test_db_url = "postgresql://test-user:test-password@test-db-server:5432/test-db"
         monkeypatch.setenv("DATABASE_URL", test_db_url)
@@ -63,7 +70,9 @@ class TestSettings:
         assert str(settings.SQLALCHEMY_DATABASE_URI) == test_db_url
 
         def test_testing_environment(self, monkeypatch):
-        """Test settings specific to the testing environment."""
+
+
+                        """Test settings specific to the testing environment."""
         monkeypatch.setenv("TESTING", "1")
         monkeypatch.setenv("ENVIRONMENT", "testing")
 
@@ -72,7 +81,9 @@ class TestSettings:
         assert "DEBUG" in os.environ
 
         def test_cors_origins_parsing(self, monkeypatch):
-        """Test parsing of CORS_ORIGINS from environment variables."""
+
+
+                        """Test parsing of CORS_ORIGINS from environment variables."""
         # Test comma-separated string format
         monkeypatch.setenv(
             "CORS_ORIGINS",

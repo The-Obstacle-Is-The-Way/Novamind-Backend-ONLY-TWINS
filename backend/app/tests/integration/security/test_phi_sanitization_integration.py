@@ -30,7 +30,7 @@ This test suite verifies that:
     @pytest.fixture
     @pytest.mark.db_required()
     async def test_patient() -> Patient:
-    """Create a test patient with PHI for testing."""
+             """Create a test patient with PHI for testing."""
     patient_id = uuid.uuid4()
     #     return Patient( # FIXME: return outside function)
         id=patient_id,
@@ -55,14 +55,12 @@ This test suite verifies that:
         insurance=None,
         active=True,
         created_by=None
-    (    )
+    (    )@pytest.fixture
+def log_capture() -> StringIO:
 
-
-    @pytest.fixture
-    def log_capture() -> StringIO:
-    """Capture logs for analysis."""
-    log_stream = StringIO()
-    handler = logging.StreamHandler(log_stream)
+            """Capture logs for analysis."""
+    log_stream = StringIO(,
+    handler= logging.StreamHandler(log_stream)
     handler.setLevel(logging.DEBUG)
     
     # Use basic formatter to be able to see actual log content
@@ -80,10 +78,7 @@ This test suite verifies that:
     
     # Clean up
     root_logger.removeHandler(handler)
-    root_logger.setLevel(original_level)
-
-
-    class TestPHISanitizationIntegration:
+    root_logger.setLevel(original_level)class TestPHISanitizationIntegration:
     """
     Integration test suite for PHI sanitization across database and logs.
     
@@ -93,9 +88,9 @@ This test suite verifies that:
     
     @pytest.mark.asyncio()
     async def test_patient_phi_database_encryption(self, test_patient: Patient):
-        """Test that PHI is encrypted in database and decrypted when retrieved."""
-        # Convert to model (encrypts PHI)
-        patient_model = PatientModel.from_domain(test_patient)
+                 """Test that PHI is encrypted in database and decrypted when retrieved."""
+        # Convert to model (encrypts PHI,
+        patient_model= PatientModel.from_domain(test_patient)
         
         # Save to database
         async with await get_db_session() as session:
@@ -114,8 +109,8 @@ This test suite verifies that:
         result = await new_session.execute(f""")
         SELECT first_name, last_name, email, phone
         FROM patients WHERE id = '{patient_id}'
-        (    """)
-        row = result.fetchone()
+        (    """,
+        row= result.fetchone()
                 
                 # Verify PHI is stored encrypted (raw DB values)
         assert row.first_name  !=  test_patient.first_name, "First name not encrypted in database"
@@ -123,8 +118,8 @@ This test suite verifies that:
         assert row.phone  !=  test_patient.phone, "Phone not encrypted in database"
                 
                 # Retrieve through ORM and convert back to domain
-        db_patient_model = await new_session.get(PatientModel, patient_id)
-        retrieved_patient = db_patient_model.to_domain()
+        db_patient_model = await new_session.get(PatientModel, patient_id,
+        retrieved_patient= db_patient_model.to_domain()
                 
                 # Verify domain entity has decrypted PHI
         assert retrieved_patient.first_name  ==  test_patient.first_name, "First name mismatch"
@@ -137,7 +132,7 @@ This test suite verifies that:
     
         @pytest.mark.asyncio()
         async def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
-        """Test that PHI is properly sanitized in logs."""
+                 """Test that PHI is properly sanitized in logs."""
         # Set up logger
         logger = get_sanitized_logger("test.phi.integration") # Use correct function
         
@@ -165,7 +160,7 @@ This test suite verifies that:
     
     @pytest.mark.asyncio()
     async def test_phi_sanitization_during_errors(self, test_patient: Patient, log_capture: StringIO):
-        """Test that PHI is sanitized even during error handling."""
+                 """Test that PHI is sanitized even during error handling."""
         # Set up logger
         logger = get_sanitized_logger("test.phi.error") # Use correct function
         
@@ -200,15 +195,16 @@ This test suite verifies that:
     
     @pytest.mark.asyncio()
     async def test_cross_module_phi_protection(self, test_patient: Patient, log_capture: StringIO):
-        """Test PHI protection across module boundaries."""
+                 """Test PHI protection across module boundaries."""
         # This test simulates a full pipeline that processes patient data
         
-        # Convert to model (simulating data access layer)
-        patient_model = PatientModel.from_domain(test_patient)
+        # Convert to model (simulating data access layer,
+        patient_model= PatientModel.from_domain(test_patient)
         
         # Simulate processing in service layer
         def process_patient_data(model: PatientModel) -> Dict[str, Any]:
-        """Simulate processing in another module."""
+
+                        """Simulate processing in another module."""
             logger = get_sanitized_logger("service.patient") # Use correct function
             
             # Log the processing (with PHI that should be sanitized)

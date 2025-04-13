@@ -15,8 +15,7 @@ from app.tests.security.base_test import BaseSecurityTest
 from app.core.security.roles import Role
 
 
-@pytest.mark.venv_only()
-class TestPHIProtection(BaseSecurityTest):
+@pytest.mark.venv_only()class TestPHIProtection(BaseSecurityTest):
     """Tests for PHI protection mechanisms."""
 
     # Add required auth attributes that BaseSecurityTest expects
@@ -25,7 +24,9 @@ class TestPHIProtection(BaseSecurityTest):
     test_roles = [Role.USER, Role.ADMIN, Role.RESEARCHER]
 
     def setUp(self) -> None:
-        """Set up test fixtures."""
+
+
+                    """Set up test fixtures."""
         super().setUp()
         # Initialize PHI redactor for testing
         self.sanitizer = LogSanitizer()  # Use LogSanitizer
@@ -42,10 +43,12 @@ class TestPHIProtection(BaseSecurityTest):
             "mixed": "John Smith (SSN: 123-45-6789, Phone: (555) 123-4567) was seen on 03/15/2024."}
 
     def test_phi_detection_basic(self) -> None:
-        """Test basic PHI detection functionality."""
+
+
+                    """Test basic PHI detection functionality."""
         # Test with mixed PHI sample
-        # Check if sanitization changes the text (indicates PHI detection)
-        sanitized = self.sanitizer.sanitize(self.sample_phi_data["mixed"])
+        # Check if sanitization changes the text (indicates PHI detection,
+        sanitized= self.sanitizer.sanitize(self.sample_phi_data["mixed"])
         self.assertNotEqual(self.sample_phi_data["mixed"], sanitized)
         # Cannot easily verify specific types without parsing the redacted string
         # or modifying LogSanitizer to return detection details.
@@ -54,7 +57,9 @@ class TestPHIProtection(BaseSecurityTest):
         # directly
 
         def test_phi_detection_with_specific_types(self) -> None:
-        """Test PHI detection with specific entity types."""
+
+
+                        """Test PHI detection with specific entity types."""
         # Test for specific PHI types
         for phi_type, sample in [
             ("NAME", self.sample_phi_data["name"]),
@@ -71,21 +76,27 @@ class TestPHIProtection(BaseSecurityTest):
                 f"PHI type {phi_type} not detected/redacted in: {sample}")
 
             def test_phi_detection_confidence_levels(self) -> None:
-        """Test PHI detection with confidence thresholds."""
+
+
+                            """Test PHI detection with confidence thresholds."""
         # The underlying mock implementation should assign varying confidence levels
         # LogSanitizer doesn't expose confidence scores directly
         # Test is removed as it's not applicable to the current implementation
         pass
 
         def test_phi_detection_with_confidence_threshold(self) -> None:
-        """Test PHI detection with different confidence thresholds."""
+
+
+                        """Test PHI detection with different confidence thresholds."""
         # This test relies on the mock implementation applying confidence thresholds
         # LogSanitizer doesn't expose confidence scores or thresholds directly
         # Test is removed as it's not applicable to the current implementation
         pass
 
         def test_phi_redaction(self) -> None:
-        """Test basic PHI redaction functionality."""
+
+
+                        """Test basic PHI redaction functionality."""
         # Modified test to use explicit PHI text that must contain PHI as identified by the test
         # This allows the internal algorithm to change while the test remains
         # valid
@@ -101,7 +112,9 @@ class TestPHIProtection(BaseSecurityTest):
         self.assertIn("[REDACTED:SSN]", redacted)
 
         def test_phi_redaction_with_specific_types(self) -> None:
-        """Test PHI redaction with specific entity types."""
+
+
+                        """Test PHI redaction with specific entity types."""
         # Create a mixed sample with multiple PHI types
         mixed_sample = "John Smith (SSN: 123-45-6789) can be reached at john.smith@example.com"
 
@@ -119,19 +132,23 @@ class TestPHIProtection(BaseSecurityTest):
         self.assertNotEqual(mixed_sample, name_only_redaction)
 
         def test_custom_redaction_format(self) -> None:
-        """Test custom redaction format."""
+
+
+                        """Test custom redaction format."""
         # Skip this test for now as it requires more complex setup
         pytest.skip("Custom redaction format test requires more complex setup")
 
         def test_non_phi_text_unchanged(self) -> None:
-        """Test that non-PHI text remains unchanged."""
+
+
+                        """Test that non-PHI text remains unchanged."""
         non_phi_text = "The patient reported feeling better. Symptoms have decreased."
 
         # Create a special safe medical terms redactor for this test
         # This ensures that common medical terminology isn't treated as PHI
         # Use the standard sanitizer
-        sanitizer = LogSanitizer()
-        redacted = sanitizer.sanitize(non_phi_text)
+        sanitizer = LogSanitizer(,
+        redacted= sanitizer.sanitize(non_phi_text)
 
         # The current sanitizer incorrectly identifies 'patient' and 'Symptoms' as names.
         # Update the assertion to match the current behavior.
@@ -141,7 +158,9 @@ class TestPHIProtection(BaseSecurityTest):
         self.assertEqual(redacted, expected_redacted)
 
         def test_batch_processing(self) -> None:
-        """Test processing multiple PHI items."""
+
+
+                        """Test processing multiple PHI items."""
         # Create a list of text snippets
         batch = list(self.sample_phi_data.values())
 
@@ -160,7 +179,9 @@ class TestPHIProtection(BaseSecurityTest):
         self.assertNotIn("123-45-6789", redacted)
 
         def test_invalid_input_handling(self) -> None:
-        """Test handling of invalid inputs."""
+
+
+                        """Test handling of invalid inputs."""
         # Empty string should return empty string
         self.assertEqual("", self.sanitizer.sanitize(""))  # Use sanitize
 
@@ -170,7 +191,9 @@ class TestPHIProtection(BaseSecurityTest):
         self.assertEqual('None', self.sanitizer.sanitize(None))
 
         def test_all_supported_phi_types(self) -> None:
-        """Test redaction of all supported PHI types."""
+
+
+                        """Test redaction of all supported PHI types."""
         # This comprehensive test text includes various PHI types
         complex_phi = """
         Patient Name: John Smith

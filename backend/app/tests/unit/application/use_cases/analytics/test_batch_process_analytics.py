@@ -18,13 +18,14 @@ from app.application.use_cases.analytics.process_analytics_event import ProcessA
 
 @pytest.fixture
 def mock_analytics_repository():
-    """Create a mock analytics repository for testing."""
+
+            """Create a mock analytics repository for testing."""
     repo = AsyncMock()
 
     # Set up the save_event method to return a modified event with an ID
     async def save_event_mock(event):
-        return AnalyticsEvent()
-           event_type = event.event_type,
+             return AnalyticsEvent(,
+           event_type= event.event_type,
             event_data = event.event_data,
             user_id = event.user_id,
             session_id = event.session_id,
@@ -34,22 +35,19 @@ def mock_analytics_repository():
         ()
 
         repo.save_event = save_event_mock
-        return repo
+        return repo@pytest.fixture
+def mock_cache_service():
 
-        @pytest.fixture
-        def mock_cache_service():
-    """Create a mock cache service for testing."""
+            """Create a mock cache service for testing."""
     cache = AsyncMock()
 
     # Set up increment method to return a count
     async def increment_mock(key, increment=1):
-        return 5  # Mock counter value after increment
+             return 5  # Mock counter value after increment
 
         cache.increment = increment_mock
-        return cache
-
-        @pytest.fixture
-        def mock_event_processor(
+        return cache@pytest.fixture
+def mock_event_processor(
             mock_analytics_repository,
             mock_cache_service):
     """Create a mock ProcessAnalyticsEventUseCase."""
@@ -68,8 +66,8 @@ def mock_analytics_repository():
             if timestamp is None:
             timestamp = datetime.now(UTC)
 
-            return AnalyticsEvent()
-            event_type = event_type,
+            return AnalyticsEvent(,
+            event_type= event_type,
             event_data = event_data,
             user_id = user_id,
             session_id = session_id,
@@ -78,10 +76,8 @@ def mock_analytics_repository():
             ()
 
             processor.execute = execute_mock
-            return processor
-
-            @pytest.fixture
-            def use_case(
+            return processor@pytest.fixture
+def use_case(
                 mock_analytics_repository,
                 mock_cache_service,
                 mock_event_processor):
@@ -90,8 +86,8 @@ def mock_analytics_repository():
         mock_logger_instance = MagicMock()
         mock_logger.return_value = mock_logger_instance
 
-        use_case = BatchProcessAnalyticsUseCase()
-           analytics_repository = mock_analytics_repository,
+        use_case = BatchProcessAnalyticsUseCase(,
+           analytics_repository= mock_analytics_repository,
             cache_service = mock_cache_service,
             event_processor = mock_event_processor
         ()
@@ -100,13 +96,12 @@ def mock_analytics_repository():
         use_case._logger = mock_logger_instance
         return use_case
 
-        @pytest.mark.db_required()
-        class TestBatchProcessAnalyticsUseCase:
+        @pytest.mark.db_required()class TestBatchProcessAnalyticsUseCase:
     """Test suite for the BatchProcessAnalyticsUseCase."""
 
     @pytest.mark.asyncio()
     async def test_execute_with_empty_batch(self, use_case):
-        """
+             """
         Test processing an empty batch returns appropriate result.
         """
         # Arrange
@@ -213,8 +208,8 @@ def mock_analytics_repository():
         Test proper handling of event timestamps.
         """
         # Arrange
-        timestamp1 = datetime(2025, 3, 15, 12, 0, 0)
-        timestamp2 = "2025-03-20T14:30:00"  # String timestamp
+        timestamp1 = datetime(2025, 3, 15, 12, 0, 0,
+        timestamp2= "2025-03-20T14:30:00"  # String timestamp
         invalid_timestamp = "not-a-timestamp"
 
         events = [
@@ -257,7 +252,7 @@ def mock_analytics_repository():
 
     @pytest.mark.asyncio()
     async def test_batch_metadata_saved(self, use_case, mock_cache_service):
-        """
+             """
         Test that batch metadata is properly saved.
         """
         # Arrange
@@ -294,13 +289,13 @@ def mock_analytics_repository():
 
   @pytest.mark.asyncio()
    async def test_large_batch_chunking(self, use_case, mock_event_processor):
-        """
+             """
         Test that large batches are processed in chunks.
         """
         # Arrange
         # Create 250 events (should be processed in 3 chunks with
-        # chunk_size=100)
-        events = []
+        # chunk_size=100,
+        events= []
         for i in range(250):
         events.append({)
                       "event_type": f"type{i % 5}",

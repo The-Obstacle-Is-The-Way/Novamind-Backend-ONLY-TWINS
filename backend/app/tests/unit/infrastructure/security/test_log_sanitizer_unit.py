@@ -10,22 +10,23 @@ import json
 import logging
 from unittest.mock import patch, MagicMock, call
 
-from app.infrastructure.security.log_sanitizer import
+from app.infrastructure.security.log_sanitizer import (
 LogSanitizer,
 SanitizerConfig,
 PHIPattern,
 SanitizationStrategy,
 PatternType,
 RedactionMode
-()
+)
 
 
 @pytest.fixture
 def sanitizer_config():
-    """Create a log sanitizer configuration for testing."""
 
-    return SanitizerConfig()
-    enabled = True,
+            """Create a log sanitizer configuration for testing."""
+
+    return SanitizerConfig(,
+    enabled= True,
     redaction_mode = RedactionMode.PARTIAL,
     partial_redaction_length = 4,
     redaction_marker = "[REDACTED]",
@@ -44,11 +45,10 @@ def sanitizer_config():
     max_log_size_kb = 256,
     hash_identifiers = True,
     identifier_hash_salt = "novamind-phi-salt-key"
-    ()
+    ()@pytest.fixture
+def pattern_repository():
 
-    @pytest.fixture
-    def pattern_repository():
-    """Create a mock pattern repository with test data."""
+            """Create a mock pattern repository with test data."""
     mock_repo = MagicMock()
 
     # Mock the patterns with test data
@@ -87,21 +87,21 @@ def sanitizer_config():
         ()
     ]
 
-    return mock_repo
+    return mock_repo@pytest.fixture
+def log_sanitizer(sanitizer_config, pattern_repository):
 
-    @pytest.fixture
-    def log_sanitizer(sanitizer_config, pattern_repository):
-    """Create a log sanitizer for testing."""
+            """Create a log sanitizer for testing."""
     sanitizer = LogSanitizer(config=sanitizer_config)
     sanitizer.pattern_repository = pattern_repository
     return sanitizer
 
-    @pytest.mark.venv_only()
-    class TestLogSanitizer:
+    @pytest.mark.venv_only()class TestLogSanitizer:
     """Test suite for the log sanitizer."""
 
     def test_sanitize_simple_string(self, log_sanitizer):
-        """Test sanitization of a simple string with PHI."""
+
+
+                    """Test sanitization of a simple string with PHI."""
         # String with SSN
         input_string = "Patient record with SSN: 123-45-6789"
 
@@ -113,7 +113,9 @@ def sanitizer_config():
         assert "[REDACTED]" in sanitized
 
         def test_sanitize_json_string(self, log_sanitizer):
-        """Test sanitization of a JSON string with PHI."""
+
+
+                        """Test sanitization of a JSON string with PHI."""
         # JSON string with PHI
         json_string = json.dumps({)
                                  "patient_id": "PT123456",
@@ -142,7 +144,9 @@ def sanitizer_config():
     assert "phone" in sanitized_json["contact"]
 
     def test_sanitize_dict(self, log_sanitizer):
-        """Test sanitization of a dictionary with PHI."""
+
+
+                    """Test sanitization of a dictionary with PHI."""
         # Dictionary with PHI
         patient_dict = {
             "patient_id": "PT123456",
@@ -179,7 +183,9 @@ def sanitizer_config():
     assert sanitized["insurance"]["provider"] == "HealthCare Inc"
 
     def test_sanitize_list(self, log_sanitizer):
-        """Test sanitization of a list with PHI."""
+
+
+                    """Test sanitization of a list with PHI."""
         # List with PHI
         patient_list = [
             {
@@ -204,7 +210,9 @@ def sanitizer_config():
         assert "example.com" not in item["email"]
 
         def test_sensitive_key_detection(self, log_sanitizer):
-        """Test detection and sanitization based on sensitive key names."""
+
+
+                        """Test detection and sanitization based on sensitive key names."""
         # Dictionary with sensitive keys
         data = {
             "user_id": "user123",  # Not sensitive
@@ -232,7 +240,9 @@ def sanitizer_config():
     assert sanitized["nested"]["regular_field"] == "regular value"
 
     def test_pattern_based_detection(self, log_sanitizer):
-        """Test detection and sanitization based on PHI patterns."""
+
+
+                    """Test detection and sanitization based on PHI patterns."""
         # String with various PHI patterns but no sensitive keys
         log_message = """
         User login: admin
@@ -256,7 +266,9 @@ def sanitizer_config():
         assert "Reference: Document #12345 mentions insurance policy" in sanitized
 
         def test_contextual_detection(self, log_sanitizer):
-        """Test contextual detection of PHI."""
+
+
+                        """Test contextual detection of PHI."""
         # Enable contextual detection
         log_sanitizer.config.enable_contextual_detection = True
 
@@ -285,7 +297,9 @@ def sanitizer_config():
         assert "contact@example.org" not in sanitized_no_context
 
         def test_partial_redaction(self, log_sanitizer):
-        """Test partial redaction of PHI."""
+
+
+                        """Test partial redaction of PHI."""
         # Configure partial redaction
         log_sanitizer.config.redaction_mode = RedactionMode.PARTIAL
         log_sanitizer.config.partial_redaction_length = 4
@@ -306,7 +320,9 @@ def sanitizer_config():
         assert "example.com" in sanitized or "xxxx.xxxx@example.com" in sanitized
 
         def test_full_redaction(self, log_sanitizer):
-        """Test full redaction of PHI."""
+
+
+                        """Test full redaction of PHI."""
         # Configure full redaction
         log_sanitizer.config.redaction_mode = RedactionMode.FULL
         log_sanitizer.config.redaction_marker = "[REDACTED]"
@@ -325,7 +341,9 @@ def sanitizer_config():
         assert "example.com" not in sanitized  # Domain should not be visible
 
         def test_hash_redaction(self, log_sanitizer):
-        """Test hash-based redaction of PHI."""
+
+
+                        """Test hash-based redaction of PHI."""
         # Configure hash redaction
         log_sanitizer.config.redaction_mode = RedactionMode.HASH
 
@@ -344,10 +362,12 @@ def sanitizer_config():
         assert sanitized == sanitized2
 
         def test_log_message_sanitization(self, log_sanitizer):
-        """Test sanitization of log messages."""
+
+
+                        """Test sanitization of log messages."""
         # Create a log message with PHI
-        log_record = logging.LogRecord()
-        name = "test_logger",
+        log_record = logging.LogRecord(,
+        name= "test_logger",
         level = logging.INFO,
         pathname = "test_file.py",
         lineno = 100,
@@ -364,7 +384,9 @@ def sanitizer_config():
         assert "123-45-6789" not in sanitized_record.getMessage()
 
         def test_structured_log_sanitization(self, log_sanitizer):
-        """Test sanitization of structured logs."""
+
+
+                        """Test sanitization of structured logs."""
         # Structured log entry
         structured_log = {
             "timestamp": "2023-05-15T10:30:00Z",
@@ -411,7 +433,9 @@ def sanitizer_config():
     assert sanitized["context"]["action"] == "view"
 
     def test_disabled_sanitizer(self, log_sanitizer):
-        """Test behavior when sanitizer is disabled."""
+
+
+                    """Test behavior when sanitizer is disabled."""
         # Disable the sanitizer
         log_sanitizer.config.enabled = False
 
@@ -426,7 +450,9 @@ def sanitizer_config():
         assert "123-45-6789" in sanitized
 
         def test_exception_handling(self, log_sanitizer):
-        """Test sanitizer's exception handling."""
+
+
+                        """Test sanitizer's exception handling."""
         # Configure to allow exceptions
         log_sanitizer.config.exceptions_allowed = True
 
@@ -445,12 +471,14 @@ def sanitizer_config():
         assert result == "Test message with PHI"  # Original returned on error
 
         def test_max_log_size(self, log_sanitizer):
-        """Test handling of large log messages."""
+
+
+                        """Test handling of large log messages."""
         # Configure max log size
         log_sanitizer.config.max_log_size_kb = 1  # 1KB
 
-        # Create a large log message (>1KB)
-        large_message = "A" * 1500
+        # Create a large log message (>1KB,
+        large_message= "A" * 1500
 
         # Sanitize the large message
         sanitized = log_sanitizer.sanitize(large_message)
@@ -460,10 +488,13 @@ def sanitizer_config():
         assert "[Truncated]" in sanitized
 
         def test_sanitization_hook(self, log_sanitizer):
-        """Test custom sanitization hooks."""
+
+
+                        """Test custom sanitization hooks."""
         # Define a custom sanitization hook
         def custom_hook(value, context):
-            if isinstance(value, str) and "CUSTOM_PHI" in value:
+
+                        if isinstance(value, str) and "CUSTOM_PHI" in value:
                 return value.replace("CUSTOM_PHI", "[CUSTOM_REDACTED]")
                 return value
 
@@ -481,7 +512,9 @@ def sanitizer_config():
                 assert "[CUSTOM_REDACTED]" in sanitized
 
                 def test_multiple_phi_instances(self, log_sanitizer):
-        """Test sanitization of multiple PHI instances in the same message."""
+
+
+                                """Test sanitization of multiple PHI instances in the same message."""
         # Message with multiple PHI instances
         log_message = """
         Patient: John Smith
@@ -503,7 +536,9 @@ def sanitizer_config():
         assert "987-65-4321" not in sanitized
 
         def test_phi_at_boundaries(self, log_sanitizer):
-        """Test sanitization of PHI at string boundaries."""
+
+
+                        """Test sanitization of PHI at string boundaries."""
         # PHI at start, middle, and end of string
         log_message = "123-45-6789 is the SSN for patient and email is john@example.com"
 

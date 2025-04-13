@@ -19,15 +19,22 @@ TEST_SALT = b"pituitary_hypothalamus_encryption_salt_12345"[:16]
 
 
 def get_test_key() -> bytes:
-    """Return a deterministic encryption key for tests."""
+
+
+
+            """Return a deterministic encryption key for tests."""
     return TEST_KEY
 
     def get_test_salt() -> bytes:
-    """Return a deterministic salt for tests."""
+
+
+                """Return a deterministic salt for tests."""
     return TEST_SALT
 
     def setup_test_environment() -> Dict[str, str]:
-    """
+
+
+            """
     Setup the test environment with deterministic encryption keys.
 
     Returns:
@@ -47,7 +54,9 @@ def get_test_key() -> bytes:
         return env_vars
 
         def teardown_test_environment(env_vars: Dict[str, str]) -> None:
-    """
+
+
+                """
     Teardown the test environment, restoring original values.
 
     Args:
@@ -59,7 +68,9 @@ def get_test_key() -> bytes:
             del os.environ[key]
 
             def get_test_phi_data() -> Dict[str, Any]:
-    """
+
+
+                    """
     Get a test PHI data dictionary with various nested fields.
 
     Returns:
@@ -103,7 +114,10 @@ def get_test_key() -> bytes:
 
 
 def get_test_client_data() -> Dict[str, Any]:
-    """
+
+
+
+        """
     Get test client metadata that should not contain PHI.
 
     Returns:
@@ -121,17 +135,20 @@ def get_test_client_data() -> Dict[str, Any]:
 
 
 def generate_test_key_pair() -> Tuple[bytes, bytes]:
-    """
+
+
+
+        """
     Generate a deterministic key pair for testing.
 
     Returns:
         Tuple of (encryption_key, previous_encryption_key)
         """
-    # Generate current key from test bytes (ensure proper Fernet format)
-    current_key = Fernet.generate_key()
+    # Generate current key from test bytes (ensure proper Fernet format,
+    current_key= Fernet.generate_key()
 
     # Generate previous key from rotated test bytes (ensure proper Fernet
-    # format)
-    previous_key = Fernet.generate_key()
+    # format,
+    previous_key= Fernet.generate_key()
 
     return current_key, previous_key

@@ -16,15 +16,11 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.transformer_model import (
     SymptomTransformerModel,
 )
-from app.core.interfaces.ml.base_model import BaseMLModel
+from app.core.interfaces.ml.base_model import BaseMLModelclass TestTransformerTimeSeriesModel:
+    """Tests for the TransformerTimeSeriesModel."""@pytest.fixture
+def model(self):
 
-
-class TestTransformerTimeSeriesModel:
-    """Tests for the TransformerTimeSeriesModel."""
-
-    @pytest.fixture
-    def model(self):
-        """Create a TransformerTimeSeriesModel with mocked internals."""
+                """Create a TransformerTimeSeriesModel with mocked internals."""
         with patch(
             "app.infrastructure.ml.symptom_forecasting.transformer_model.torch",
             autospec=True,
@@ -49,16 +45,15 @@ class TestTransformerTimeSeriesModel:
                 )
             )
             model.is_initialized = True
-            return model
+            return model@pytest.fixture
+def sample_input_data(self):
 
-    @pytest.fixture
-    def sample_input_data(self):
-        """Create sample input data for testing."""
+                """Create sample input data for testing."""
         # Create a DataFrame with symptom severity data
         dates = pd.date_range(
             start=datetime.now() - timedelta(days=10), periods=10, freq="D"
-        )
-        data = {
+        ,
+        data= {
             "date": dates,
             "symptom_type": ["anxiety"] * 10,
             "severity": [5, 6, 7, 6, 5, 4, 5, 6, 5, 4],
@@ -66,7 +61,7 @@ class TestTransformerTimeSeriesModel:
         return pd.DataFrame(data)
 
     async def test_initialize_loads_model(self):
-        """Test that initialize loads the model correctly."""
+                 """Test that initialize loads the model correctly."""
         # Setup
         with patch(
             "app.infrastructure.ml.symptom_forecasting.transformer_model.torch",
@@ -94,7 +89,7 @@ class TestTransformerTimeSeriesModel:
             assert model._model is not None
 
             async def test_initialize_handles_missing_model(self):
-        """Test that initialize handles missing model files gracefully."""
+                 """Test that initialize handles missing model files gracefully."""
         # Setup
         with patch(
             "app.infrastructure.ml.symptom_forecasting.transformer_model.torch",
@@ -137,7 +132,7 @@ class TestTransformerTimeSeriesModel:
         assert "rmse" in result["model_metrics"]
 
         async def test_predict_with_quantiles(self, model, sample_input_data):
-        """Test that predict handles quantile predictions correctly."""
+                 """Test that predict handles quantile predictions correctly."""
         # Setup
         quantiles = [0.1, 0.5, 0.9]
 
@@ -157,7 +152,7 @@ class TestTransformerTimeSeriesModel:
             assert len(result["quantile_predictions"][q_str]) == 4
 
             async def test_predict_handles_empty_data(self, model):
-        """Test that predict handles empty input data gracefully."""
+                 """Test that predict handles empty input data gracefully."""
         # Setup
         empty_df = pd.DataFrame()
 
@@ -168,7 +163,7 @@ class TestTransformerTimeSeriesModel:
             assert "Empty input data" in str(excinfo.value)
 
             async def test_predict_handles_missing_columns(self, model):
-        """Test that predict handles input data with missing required columns."""
+                 """Test that predict handles input data with missing required columns."""
         # Setup
         incomplete_df = pd.DataFrame(
             {
@@ -212,8 +207,8 @@ class TestTransformerTimeSeriesModel:
                     self, model, sample_input_data):
         """Test that _postprocess_predictions correctly transforms the model output."""
         # Setup
-        raw_predictions = np.array([4.2, 4.0, 3.8, 3.5])
-        raw_std = np.array([0.2, 0.2, 0.2, 0.2])
+        raw_predictions = np.array([4.2, 4.0, 3.8, 3.5],
+        raw_std= np.array([0.2, 0.2, 0.2, 0.2])
 
         with patch.object(
             model, "_postprocess_predictions", wraps=model._postprocess_predictions
@@ -233,7 +228,7 @@ class TestTransformerTimeSeriesModel:
             assert "model_metrics" in result
 
             async def test_get_model_info(self, model):
-        """Test that get_model_info returns information about the model."""
+                 """Test that get_model_info returns information about the model."""
         # Execute
         info = await model.get_model_info()
 

@@ -10,18 +10,18 @@ from unittest.mock import patch, MagicMock
 from app.core.utils.encryption import EncryptionService
 
 
-@pytest.mark.venv_only()
-class TestEncryptionService:
-    """Tests for the HIPAA-compliant encryption service."""
+@pytest.mark.venv_only()class TestEncryptionService:
+    """Tests for the HIPAA-compliant encryption service."""@pytest.fixture
+def encryption_service(self):
 
-    @pytest.fixture
-    def encryption_service(self):
-        """Create an encryption service with a test key."""
+                """Create an encryption service with a test key."""
         with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_secret_key_for_encryption_service_tests"}):
             return EncryptionService()
 
             def test_initialization(self):
-        """Test encryption service initialization."""
+
+
+                            """Test encryption service initialization."""
         with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_key"}):
             service = EncryptionService()
             assert service.secret_key == "test_key"
@@ -30,14 +30,18 @@ class TestEncryptionService:
             assert service.cipher is not None
 
             def test_initialization_with_missing_key(self):
-        """Test initialization with missing key raises error."""
+
+
+                            """Test initialization with missing key raises error."""
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(ValueError) as excinfo:
             EncryptionService()
             assert "Encryption key not provided" in str(excinfo.value)
 
             def test_encrypt_decrypt_string(self, encryption_service):
-        """Test encrypting and decrypting a string."""
+
+
+                            """Test encrypting and decrypting a string."""
         plaintext = "This is sensitive patient information"
 
         # Encrypt the string
@@ -53,7 +57,9 @@ class TestEncryptionService:
         assert decrypted == plaintext
 
         def test_encrypt_decrypt_empty_string(self, encryption_service):
-        """Test encrypting and decrypting an empty string."""
+
+
+                        """Test encrypting and decrypting an empty string."""
         plaintext = ""
 
         # Encrypt the string
@@ -69,13 +75,17 @@ class TestEncryptionService:
         assert decrypted == ""
 
         def test_decrypt_invalid_string(self, encryption_service):
-        """Test decrypting an invalid string raises error."""
+
+
+                        """Test decrypting an invalid string raises error."""
         with pytest.raises(ValueError) as excinfo:
             encryption_service.decrypt_string("invalid_encrypted_text")
             assert "Failed to decrypt string" in str(excinfo.value)
 
             def test_encrypt_decrypt_dict(self, encryption_service):
-        """Test encrypting and decrypting a dictionary."""
+
+
+                            """Test encrypting and decrypting a dictionary."""
         data = {
             "patient_id": "12345",
             "name": "John Doe",
@@ -111,7 +121,9 @@ class TestEncryptionService:
     assert decrypted_data == data
 
     def test_encrypt_decrypt_nested_dict(self, encryption_service):
-        """Test encrypting and decrypting a nested dictionary."""
+
+
+                    """Test encrypting and decrypting a nested dictionary."""
         data = {
             "patient": {
                 "id": "12345",
@@ -149,7 +161,9 @@ class TestEncryptionService:
     assert decrypted_data == data
 
     def test_generate_verify_hash(self, encryption_service):
-        """Test generating and verifying a hash."""
+
+
+                    """Test generating and verifying a hash."""
         data = "sensitive_data"
 
         # Generate hash
@@ -169,7 +183,9 @@ class TestEncryptionService:
         assert is_valid is False
 
         def test_generate_verify_hmac(self, encryption_service):
-        """Test generating and verifying an HMAC."""
+
+
+                        """Test generating and verifying an HMAC."""
         data = "data_to_verify_integrity"
 
         # Generate HMAC

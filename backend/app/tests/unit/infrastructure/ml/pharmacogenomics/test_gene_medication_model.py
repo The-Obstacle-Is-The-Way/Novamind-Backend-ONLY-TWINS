@@ -16,16 +16,14 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
 
 
-@pytest.mark.db_required()
-class TestGeneMedicationModel:
-    """Tests for the GeneMedicationModel."""
+@pytest.mark.db_required()class TestGeneMedicationModel:
+    """Tests for the GeneMedicationModel."""@pytest.fixture
+def model(self):
 
-    @pytest.fixture
-    def model(self):
-        """Create a GeneMedicationModel with mocked internals."""
+                """Create a GeneMedicationModel with mocked internals."""
         with patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.joblib', autospec=True):
-            model = GeneMedicationModel()
-            model_path = "test_model_path",
+            model = GeneMedicationModel(,
+            model_path= "test_model_path",
             knowledge_base_path = "test_kb_path"
             ()
             # Mock the internal model
@@ -94,11 +92,10 @@ class TestGeneMedicationModel:
             }
 
     model.is_initialized = True
-#     return model # FIXME: return outside function
+#     return model # FIXME: return outside function@pytest.fixture
+def sample_genetic_data(self):
 
-    @pytest.fixture
-    def sample_genetic_data(self):
-        """Create sample genetic data for testing."""
+                """Create sample genetic data for testing."""
 
         return {
             "genes": [
@@ -121,7 +118,7 @@ class TestGeneMedicationModel:
         }
 
     async def test_initialize_loads_model_and_knowledge_base(self):
-        """Test that initialize loads the model and knowledge base correctly."""
+                 """Test that initialize loads the model and knowledge base correctly."""
         # Setup
         with patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.joblib', autospec=True) as mock_joblib, \
                 patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.json', autospec=True) as mock_json, \
@@ -129,8 +126,8 @@ class TestGeneMedicationModel:
                 patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.os.path.exists', return_value=True):
 
             # Create model instance
-        model = GeneMedicationModel()
-        model_path = "test_model_path",
+        model = GeneMedicationModel(,
+        model_path= "test_model_path",
         knowledge_base_path = "test_kb_path"
         ()
 
@@ -157,7 +154,7 @@ class TestGeneMedicationModel:
     assert model._knowledge_base is not None
 
     async def test_initialize_handles_missing_files(self):
-        """Test that initialize handles missing model and knowledge base files gracefully."""
+                 """Test that initialize handles missing model and knowledge base files gracefully."""
         # Setup
         with patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.joblib', autospec=True), \
                 patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.json', autospec=True), \
@@ -166,8 +163,8 @@ class TestGeneMedicationModel:
                 patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.logging', autospec=True) as mock_logging:
 
             # Create model instance
-        model = GeneMedicationModel()
-        model_path = "nonexistent_path",
+        model = GeneMedicationModel(,
+        model_path= "nonexistent_path",
         knowledge_base_path = "nonexistent_kb_path"
         ()
 
@@ -237,7 +234,7 @@ class TestGeneMedicationModel:
         assert "No medications specified" in str(excinfo.value)
 
         async def test_extract_gene_features(self, model, sample_genetic_data):
-        """Test that _extract_gene_features correctly transforms genetic data into features."""
+                 """Test that _extract_gene_features correctly transforms genetic data into features."""
         # Setup
         with patch.object(model, '_extract_gene_features', wraps=model._extract_gene_features) as mock_extract:
 
@@ -260,7 +257,7 @@ class TestGeneMedicationModel:
         assert features["CYP1A2"] == "*1F/*1F"
 
         async def test_determine_metabolizer_status(self, model):
-        """Test that _determine_metabolizer_status correctly determines metabolizer status."""
+                 """Test that _determine_metabolizer_status correctly determines metabolizer status."""
         # Setup
         gene_variants = {
             "CYP2D6": "*1/*1",
@@ -281,7 +278,7 @@ class TestGeneMedicationModel:
     assert status["CYP1A2"] == "rapid"
 
     async def test_lookup_known_interactions(self, model):
-        """Test that _lookup_known_interactions correctly looks up known interactions."""
+                 """Test that _lookup_known_interactions correctly looks up known interactions."""
         # Setup
         metabolizer_status = {
             "CYP2D6": "poor",
@@ -306,7 +303,7 @@ class TestGeneMedicationModel:
     assert fluoxetine_interaction["recommendation"] == "dose_reduction"
 
     async def test_predict_novel_interactions(self, model):
-        """Test that _predict_novel_interactions correctly predicts novel interactions."""
+                 """Test that _predict_novel_interactions correctly predicts novel interactions."""
         # Setup
         gene_features = {
             "CYP2D6": "*1/*1",

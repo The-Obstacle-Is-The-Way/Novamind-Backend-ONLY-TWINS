@@ -6,29 +6,36 @@ from pathlib import Path
 from scripts.test.security.run_hipaa_phi_audit import PHIAuditor, PHIDetector
 
 
-@pytest.mark.db_required()
-class TestPHIDetection:
+@pytest.mark.db_required()class TestPHIDetection:
     """Test PHI detection capabilities in our HIPAA compliance system."""
 
     def setup_method(self):
-        """Set up test environment."""
+
+
+                    """Set up test environment."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.base_dir = Path(self.temp_dir.name)
         self.detector = PHIDetector()
 
         def teardown_method(self):
-        """Clean up after tests."""
+
+
+                        """Clean up after tests."""
         self.temp_dir.cleanup()
 
         def create_test_file(self, filename, content):
-        """Create a test file with the given content."""
+
+
+                        """Create a test file with the given content."""
         filepath = self.base_dir / filename
         filepath.parent.mkdir(parents=True, exist_ok=True)
         filepath.write_text(content)
         return filepath
 
         def test_ssn_pattern_detection(self):
-        """Test detection of various SSN patterns."""
+
+
+                        """Test detection of various SSN patterns."""
         # Create file with various SSN formats
         content = """
         SSN: 123-45-6789
@@ -47,11 +54,13 @@ class TestPHIDetection:
         assert len(ssn_matches) >= 4, "Should detect at least 4 SSN patterns"
 
         def test_audit_with_clean_app_directory(self):
-        """Test that auditor passes with clean_app directory."""
+
+
+                        """Test that auditor passes with clean_app directory."""
         # Create a test file in a clean_app directory with PHI
         clean_dir = self.base_dir / "clean_app"
-        clean_dir.mkdir(parents=True, exist_ok=True)
-        test_file = clean_dir / "test_data.py"
+        clean_dir.mkdir(parents=True, exist_ok=True,
+        test_file= clean_dir / "test_data.py"
         test_file.write_text('SSN = "123-45-6789"')
 
         # Run audit on the clean_app directory
@@ -62,7 +71,9 @@ class TestPHIDetection:
         assert auditor._audit_passed() is True, "Audit should pass for clean_app directory"
 
         def test_phi_in_normal_code(self):
-        """Test that PHI is detected in normal code files."""
+
+
+                        """Test that PHI is detected in normal code files."""
         # Create a file with PHI but not in a test context
         content = 'user_data = {"name": "John Smith", "ssn": "123-45-6789"}'
         filepath = self.create_test_file("user_data.py", content)
@@ -76,7 +87,9 @@ class TestPHIDetection:
         assert len(auditor.findings["code_phi"]) > 0, "Should find PHI in code"
 
         def test_phi_in_test_files(self):
-        """Test that PHI in legitimate test files is allowed."""
+
+
+                        """Test that PHI in legitimate test files is allowed."""
         # Create a clean_app directory which should always pass the audit
         clean_dir = self.base_dir / "clean_app"
         clean_dir.mkdir(parents=True, exist_ok=True)
@@ -86,7 +99,9 @@ class TestPHIDetection:
         import pytest
 
         def test_phi_detection():
-            # This is a legitimate test case with PHI for testing detection
+
+
+                        # This is a legitimate test case with PHI for testing detection
             # Test for HIPAA compliance with PHI sanitization
             test_ssn = "123-45-6789"
             mock_phi_data = {"ssn": "123-45-6789", "phi": True}
@@ -105,7 +120,9 @@ class TestPHIDetection:
         assert auditor._audit_passed() is True, "Audit should pass for legitimate test files"
 
         def test_api_endpoint_security(self):
-        """Test that unprotected API endpoints are detected."""
+
+
+                        """Test that unprotected API endpoints are detected."""
         # Create an API file with protected and unprotected endpoints
         content = """
         from fastapi import APIRouter, Depends
@@ -115,16 +132,19 @@ class TestPHIDetection:
 
         @router.get("/protected")
         def protected_endpoint(user = Depends(get_current_user)):
-        return {"status": "protected"}
+
+                    return {"status": "protected"}
 
         @router.get("/unprotected")
         def unprotected_endpoint():
-        return {"status": "unprotected"}
+
+                    return {"status": "unprotected"}
 
         # This endpoint handles patient data but lacks auth
         @router.get("/patient/{patient_id}")
         def get_patient(patient_id: str):
-        return {"patient_id": patient_id}
+
+                    return {"patient_id": patient_id}
         """
         filepath = self.create_test_file("api_routes.py", content)
 
@@ -141,7 +161,9 @@ class TestPHIDetection:
             patient_endpoints) > 0, "Should detect patient endpoint as unprotected"
 
         def test_config_security_classification(self):
-        """Test that security settings are properly classified by criticality."""
+
+
+                        """Test that security settings are properly classified by criticality."""
         # Create a config file missing security settings
         content = """
         # Some settings present

@@ -23,12 +23,13 @@ from app.tests.unit.base_test_unit import (
 )  # Updated import path after rename
 
 
-@pytest.mark.db_required()
-class TestMockMentaLLaMA(BaseUnitTest):
+@pytest.mark.db_required()class TestMockMentaLLaMA(BaseUnitTest):
     """Test suite for MockMentaLLaMA class that provides psychiatric analysis."""
 
     def setUp(self) -> None:
-        """Set up test fixtures before each test method."""
+
+
+                    """Set up test fixtures before each test method."""
         super().setUp()
         self.service = MockMentaLLaMA()
         self.service.initialize({})
@@ -39,13 +40,17 @@ class TestMockMentaLLaMA(BaseUnitTest):
             "I wonder if life is worth living, but I wouldn't actually hurt myself.")
 
     def tearDown(self) -> None:
-        """Clean up after each test."""
+
+
+                    """Clean up after each test."""
         if hasattr(self, "service") and self.service.is_healthy():
             self.service.shutdown()
             super().tearDown()
 
             def test_initialization(self) -> None:
-        """Test initialization with valid and invalid configurations."""
+
+
+                            """Test initialization with valid and invalid configurations."""
         # Test default initialization
         service = MockMentaLLaMA()
         service.initialize({})
@@ -71,7 +76,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
             service.initialize({"mock_responses": "not-a-dict"})
 
             def test_process_with_invalid_inputs(self) -> None:
-        """Test process method with invalid inputs ensuring proper error handling."""
+
+
+                            """Test process method with invalid inputs ensuring proper error handling."""
         # Test empty text
         with self.assertRaises(InvalidRequestError):
             self.service.process("")
@@ -90,9 +97,11 @@ class TestMockMentaLLaMA(BaseUnitTest):
             uninitialized_service.process("Some text")
 
             def test_process_returns_expected_structure(self) -> None:
-        """Test that process returns the expected response structure with all required fields."""
-        # Test general model (default)
-        result = self.service.process(self.sample_text)
+
+
+                            """Test that process returns the expected response structure with all required fields."""
+        # Test general model (default,
+        result= self.service.process(self.sample_text)
         self.assertIsInstance(result, dict)
         self.assertIn("model_type", result)
         self.assertEqual(result["model_type"], "general")
@@ -115,7 +124,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
             self.assertEqual(result["model_type"], model_type)
 
             def test_detect_depression(self) -> None:
-        """Test depression detection functionality ensuring clinical metrics are present."""
+
+
+                            """Test depression detection functionality ensuring clinical metrics are present."""
         result = self.service.detect_depression(self.sample_text)
         self.assertIn("depression_signals", result)
         self.assertIn("severity", result["depression_signals"])
@@ -129,7 +140,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.assertIn("suggested_assessments", result["recommendations"])
 
         def test_assess_risk(self) -> None:
-        """Test risk assessment functionality for self-harm detection."""
+
+
+                        """Test risk assessment functionality for self-harm detection."""
         # Test without specific risk type
         result = self.service.assess_risk(self.sample_text)
         self.assertIn("risk_assessment", result)
@@ -147,7 +160,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
             self.assertIn("recommendations", result)
 
             def test_analyze_sentiment(self) -> None:
-        """Test sentiment analysis functionality for emotional valence detection."""
+
+
+                            """Test sentiment analysis functionality for emotional valence detection."""
         result = self.service.analyze_sentiment(self.sample_text)
         self.assertIn("sentiment", result)
         self.assertIn("emotions", result)
@@ -160,7 +175,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.assertIn("emotional_themes", result["analysis"])
 
         def test_analyze_wellness_dimensions(self) -> None:
-        """Test wellness dimensions analysis functionality with comprehensive measures."""
+
+
+                        """Test wellness dimensions analysis functionality with comprehensive measures."""
         # Test without specific dimensions
         result = self.service.analyze_wellness_dimensions(self.sample_text)
         self.assertIn("wellness_dimensions", result)
@@ -170,8 +187,8 @@ class TestMockMentaLLaMA(BaseUnitTest):
         result = self.service.analyze_wellness_dimensions(
             self.sample_text, dimensions=["emotional", "social"]
         )
-        self.assertIn("wellness_dimensions", result)
-        dimensions = [dim["dimension"]
+        self.assertIn("wellness_dimensions", result,
+        dimensions= [dim["dimension"]
                       for dim in result["wellness_dimensions"]]
         self.assertIn("emotional", dimensions)
 
@@ -180,7 +197,9 @@ class TestMockMentaLLaMA(BaseUnitTest):
         self.assertIn("recommendations", result)
 
     def test_digital_twin_session_workflow(self) -> None:
-        """Test the complete digital twin session workflow from creation to insights."""
+
+
+                    """Test the complete digital twin session workflow from creation to insights."""
         # Create a digital twin
         twin_result = self.service.generate_digital_twin(
             text_data=[self.sample_text],
@@ -188,15 +207,15 @@ class TestMockMentaLLaMA(BaseUnitTest):
             medical_history={"conditions": ["anxiety", "insomnia"]},
             treatment_history={"medications": ["escitalopram"]},
         )
-        self.assertIn("digital_twin_id", twin_result)
-        twin_id = twin_result["digital_twin_id"]
+        self.assertIn("digital_twin_id", twin_result,
+        twin_id= twin_result["digital_twin_id"]
 
         # Create a session with the digital twin
         session_result = self.service.create_digital_twin_session(
             twin_id, session_type="therapy"
         )
-        self.assertIn("session_id", session_result)
-        session_id = session_result["session_id"]
+        self.assertIn("session_id", session_result,
+        session_id= session_result["session_id"]
 
         # Get session details
         session_details = self.service.get_digital_twin_session(session_id)

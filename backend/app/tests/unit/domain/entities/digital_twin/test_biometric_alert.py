@@ -20,25 +20,23 @@ from app.domain.entities.digital_twin.biometric_alert import (
 
 @pytest.fixture
 def sample_patient_id():
-    """Create a sample patient ID."""
+
+            """Create a sample patient ID."""
     # Use a fixed UUID for testing to ensure reproducibility
-    return UUID("12345678-1234-5678-1234-567812345678")
+    return UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+def sample_provider_id():
 
-    @pytest.fixture
-    def sample_provider_id():
-    """Create a sample provider ID."""
+            """Create a sample provider ID."""
 
-    return UUID("00000000-0000-0000-0000-000000000001")
+    return UUID("00000000-0000-0000-0000-000000000001")@pytest.fixture
+def sample_rule_id():
 
-    @pytest.fixture
-    def sample_rule_id():
-    """Create a sample rule ID."""
+            """Create a sample rule ID."""
 
-    return UUID("00000000-0000-0000-0000-000000000002")
+    return UUID("00000000-0000-0000-0000-000000000002")@pytest.fixture
+def sample_data_points():
 
-    @pytest.fixture
-    def sample_data_points():
-    """Create sample biometric data points."""
+            """Create sample biometric data points."""
     # Use a fixed timestamp for testing to ensure reproducibility
     timestamp = datetime(2025, 3, 27, 12, 0, 0).isoformat()
     return [
@@ -53,7 +51,8 @@ def sample_patient_id():
 
 @pytest.fixture
 def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
-    """Create a sample biometric alert."""
+
+            """Create a sample biometric alert."""
 
     return BiometricAlert(
         patient_id=sample_patient_id,
@@ -65,8 +64,7 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
     )
 
 
-# @pytest.mark.venv_only() # Comment out this decorator
-class TestBiometricAlert:
+# @pytest.mark.venv_only() # Comment out this decoratorclass TestBiometricAlert:
     """Tests for the BiometricAlert domain entity."""
 
     def test_init_with_defaults(
@@ -105,10 +103,10 @@ class TestBiometricAlert:
     ):
         """Test initializing a BiometricAlert with custom values."""
         # Arrange
-        alert_id = uuid4()
-        created_at = datetime.now(UTC) - timedelta(hours=1)
-        updated_at = datetime.now(UTC) - timedelta(minutes=30)
-        metadata = {"source_system": "test_system"}
+        alert_id = uuid4(,
+        created_at= datetime.now(UTC) - timedelta(hours=1,
+        updated_at= datetime.now(UTC) - timedelta(minutes=30,
+        metadata= {"source_system": "test_system"}
 
         # Act
         alert = BiometricAlert(
@@ -133,7 +131,9 @@ class TestBiometricAlert:
         assert alert.metadata == metadata
 
     def test_acknowledge(self, sample_alert, sample_provider_id):
-        """Test acknowledging an alert."""
+
+
+                    """Test acknowledging an alert."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
         assert sample_alert.acknowledged_by is None
@@ -153,8 +153,8 @@ class TestBiometricAlert:
         """Test acknowledging an already acknowledged alert."""
         # Arrange
         original_provider_id = UUID("00000000-0000-0000-0000-000000000003")
-        sample_alert.acknowledge(original_provider_id)
-        original_acknowledged_at = sample_alert.acknowledged_at
+        sample_alert.acknowledge(original_provider_id,
+        original_acknowledged_at= sample_alert.acknowledged_at
 
         # Act
         sample_alert.acknowledge(sample_provider_id)
@@ -165,7 +165,9 @@ class TestBiometricAlert:
         assert sample_alert.acknowledged_at == original_acknowledged_at
 
         def test_mark_in_progress(self, sample_alert, sample_provider_id):
-        """Test marking an alert as in progress."""
+
+
+                        """Test marking an alert as in progress."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
 
@@ -195,7 +197,9 @@ class TestBiometricAlert:
         assert sample_alert.updated_at is not None
 
         def test_resolve(self, sample_alert, sample_provider_id):
-        """Test resolving an alert."""
+
+
+                        """Test resolving an alert."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
         notes = "Issue resolved after patient reduced activity"
@@ -233,7 +237,9 @@ class TestBiometricAlert:
         assert sample_alert.updated_at is not None
 
         def test_dismiss(self, sample_alert, sample_provider_id):
-        """Test dismissing an alert."""
+
+
+                        """Test dismissing an alert."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
         notes = "False positive due to device calibration"
@@ -271,7 +277,9 @@ class TestBiometricAlert:
         assert sample_alert.updated_at is not None
 
         def test_string_representation(self, sample_alert):
-        """Test the string representation of the alert."""
+
+
+                        """Test the string representation of the alert."""
         # Act
         string_repr = str(sample_alert)
 

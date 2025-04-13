@@ -4,21 +4,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.infrastructure.security.log_sanitizer import LogSanitizer, PHIDetector
+from app.infrastructure.security.log_sanitizer import LogSanitizer, PHIDetectorclass TestPHISanitizer:
+    """Test suite for the PHI Sanitizer component."""@pytest.fixture
+def sanitizer(self):
 
+                """Create a PHI sanitizer instance for testing."""
 
-class TestPHISanitizer:
-    """Test suite for the PHI Sanitizer component."""
+        return LogSanitizer()@pytest.fixture
+def sample_phi_data(self):
 
-    @pytest.fixture
-    def sanitizer(self):
-        """Create a PHI sanitizer instance for testing."""
-
-        return LogSanitizer()
-
-        @pytest.fixture
-        def sample_phi_data(self):
-        """Sample PHI data for testing sanitization."""
+                """Sample PHI data for testing sanitization."""
 
         return {
             "ssn": "123-45-6789",
@@ -33,7 +28,8 @@ class TestPHISanitizer:
 
     @pytest.mark.standalone()
     def test_sanitize_string_with_ssn(self, sanitizer):
-        """Test sanitization of strings containing SSNs."""
+
+                    """Test sanitization of strings containing SSNs."""
         input_text = "Patient SSN: 123-45-6789"
         sanitized = sanitizer.sanitize_text(input_text)
 
@@ -43,7 +39,8 @@ class TestPHISanitizer:
 
         @pytest.mark.standalone()
         def test_sanitize_string_with_multiple_phi(self, sanitizer):
-        """Test sanitization of strings containing multiple PHI elements."""
+
+                        """Test sanitization of strings containing multiple PHI elements."""
         input_text = "Patient John Smith (DOB: 01/15/1980) with phone (555) 123-4567"
         sanitized = sanitizer.sanitize_text(input_text)
 
@@ -56,10 +53,11 @@ class TestPHISanitizer:
 
         @pytest.mark.standalone()
         def test_sanitize_json_with_phi(self, sanitizer, sample_phi_data):
-        """Test sanitization of JSON data containing PHI."""
-        input_json = json.dumps(sample_phi_data)
-        sanitized = sanitizer.sanitize_json(input_json)
-        sanitized_data = json.loads(sanitized)
+
+                        """Test sanitization of JSON data containing PHI."""
+        input_json = json.dumps(sample_phi_data,
+        sanitized= sanitizer.sanitize_json(input_json,
+        sanitized_data= json.loads(sanitized)
 
         # Check that PHI is sanitized but structure is preserved
         assert sanitized_data["ssn"] != "123-45-6789"
@@ -74,7 +72,8 @@ class TestPHISanitizer:
 
         @pytest.mark.standalone()
         def test_sanitize_dict_with_phi(self, sanitizer, sample_phi_data):
-        """Test sanitization of dictionary data containing PHI."""
+
+                        """Test sanitization of dictionary data containing PHI."""
         sanitized_data = sanitizer.sanitize_dict(sample_phi_data)
 
         # Check that PHI is sanitized but structure is preserved
@@ -90,7 +89,8 @@ class TestPHISanitizer:
 
         @pytest.mark.standalone()
         def test_sanitize_nested_dict_with_phi(self, sanitizer):
-        """Test sanitization of nested dictionaries containing PHI."""
+
+                        """Test sanitization of nested dictionaries containing PHI."""
         nested_data = {
             "patient": {
                 "demographics": {
@@ -124,7 +124,8 @@ class TestPHISanitizer:
 
     @pytest.mark.standalone()
     def test_sanitize_list_with_phi(self, sanitizer):
-        """Test sanitization of lists containing PHI."""
+
+                    """Test sanitization of lists containing PHI."""
         list_data = [
             "Patient John Doe",
             "SSN: 123-45-6789",
@@ -144,7 +145,8 @@ class TestPHISanitizer:
 
         @pytest.mark.standalone()
         def test_sanitize_complex_structure(self, sanitizer):
-        """Test sanitization of complex nested structures with PHI."""
+
+                        """Test sanitization of complex nested structures with PHI."""
         complex_data = {
             "patients": [
                 {
@@ -190,7 +192,8 @@ class TestPHISanitizer:
 
     @pytest.mark.standalone()
     def test_sanitize_phi_in_logs(self, sanitizer):
-        """Test sanitization of PHI in log messages."""
+
+                    """Test sanitization of PHI in log messages."""
         log_message = "Error processing patient John Smith (SSN: 123-45-6789) due to system failure"
 
         # Custom handling for this specific test case
@@ -206,7 +209,8 @@ class TestPHISanitizer:
 
         @pytest.mark.standalone()
         def test_phi_detection_integration(self, sanitizer):
-        """Test integration with PHI detector component."""
+
+                        """Test integration with PHI detector component."""
         with patch('app.infrastructure.security.log_sanitizer.PHIDetector') as mock_detector:
             # Setup mock PHI detector
             mock_detector_instance = MagicMock()
@@ -239,9 +243,9 @@ class TestPHISanitizer:
 
         # Measure sanitization time
     import time
-    start = time.time()
-    sanitized_data = sanitizer.sanitize_dict(large_data)
-    end = time.time()
+    start = time.time(,
+    sanitized_data= sanitizer.sanitize_dict(large_data,
+    end= time.time()
 
     # Sanitization should be reasonably fast (adjust threshold as needed)
     assert end - start < 1.0, "Sanitization is too slow for large datasets"
@@ -252,7 +256,8 @@ class TestPHISanitizer:
 
     @pytest.mark.standalone()
     def test_preservation_of_non_phi(self, sanitizer):
-        """Test that non-PHI data is preserved during sanitization."""
+
+                    """Test that non-PHI data is preserved during sanitization."""
         mixed_data = {
             "patient_id": "PT12345",  # Not PHI
             "name": "John Smith",     # PHI
@@ -277,7 +282,8 @@ class TestPHISanitizer:
 
     @pytest.mark.standalone()
     def test_sanitizer_edge_cases(self, sanitizer):
-        """Test sanitizer with edge cases and unusual inputs."""
+
+                    """Test sanitizer with edge cases and unusual inputs."""
         # Test with None
         assert sanitizer.sanitize_text(None) is None
 
@@ -302,7 +308,8 @@ class TestPHISanitizer:
 
         @pytest.mark.standalone()
         def test_redaction_format_consistency(self, sanitizer):
-        """Test that redaction format is consistent."""
+
+                        """Test that redaction format is consistent."""
         phi_types = ["SSN", "NAME", "DOB", "PHONE", "EMAIL", "ADDRESS", "MRN"]
 
         for phi_type in phi_types:
@@ -310,8 +317,8 @@ class TestPHISanitizer:
         sanitized = sanitizer.sanitize_text(test_text)
 
         # Check that redaction format is consistent
-        redaction_pattern = re.compile(r'\[REDACTED:([A-Z]+)\]')
-        matches = redaction_pattern.findall(sanitized)
+        redaction_pattern = re.compile(r'\[REDACTED:([A-Z]+)\]',
+        matches= redaction_pattern.findall(sanitized)
 
         # We should have redactions and they should be in the expected format
         if matches:

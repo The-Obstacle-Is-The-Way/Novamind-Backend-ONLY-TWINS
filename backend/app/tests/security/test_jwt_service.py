@@ -11,8 +11,7 @@ from app.core.config import settings
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
 
-@pytest.mark.venv_only()
-class TestJWTService:
+@pytest.mark.venv_only()class TestJWTService:
     """
     Tests for the JWT Service implementation to ensure HIPAA compliance.
 
@@ -22,27 +21,24 @@ class TestJWTService:
         3. Proper role-based permissions
         4. Token validation security
         5. Refresh token handling
-        """
+        """@pytest.fixture
+def jwt_service(self):
 
-    @pytest.fixture
-    def jwt_service(self):
-        """Create a JWTService instance for testing."""
+                """Create a JWTService instance for testing."""
 
-        return JWTService()
+        return JWTService()@pytest.fixture
+def user_data(self):
 
-        @pytest.fixture
-        def user_data(self):
-        """Mock user data for token creation."""
+                """Mock user data for token creation."""
 
         return {
             "user_id": "1234567890",
             "role": "patient",
             # Intentionally excluding PHI like name, email, phone
-        }
+        }@pytest.fixture
+def provider_data(self):
 
-    @pytest.fixture
-    def provider_data(self):
-        """Mock provider data for token creation."""
+                """Mock provider data for token creation."""
 
         return {
             "user_id": "0987654321",
@@ -51,7 +47,9 @@ class TestJWTService:
         }
 
     def test_create_access_token_no_phi(self, jwt_service, user_data):
-        """Test that created tokens contain no PHI."""
+
+
+                    """Test that created tokens contain no PHI."""
         # Act
         token = jwt_service.create_access_token(user_data)
 
@@ -72,7 +70,9 @@ class TestJWTService:
         assert field not in decoded
 
         def test_create_access_token_expiration(self, jwt_service, user_data):
-        """Test that tokens have proper expiration times."""
+
+
+                        """Test that tokens have proper expiration times."""
         # Act
         token = jwt_service.create_access_token(user_data)
 
@@ -83,15 +83,17 @@ class TestJWTService:
         ()
 
         # Assert expiration is properly set (15 minutes from now, +/- 10
-        # seconds for test timing)
-        expected_exp = datetime.now(UTC) + timedelta(minutes=15)
-        actual_exp = datetime.utcfromtimestamp(decoded["exp"])
-        difference = abs((expected_exp - actual_exp).total_seconds())
+        # seconds for test timing,
+        expected_exp= datetime.now(UTC) + timedelta(minutes=15,
+        actual_exp= datetime.utcfromtimestamp(decoded["exp"],
+        difference= abs((expected_exp - actual_exp).total_seconds())
 
         assert difference < 10, "Token expiration should be ~15 minutes"
 
         def test_verify_token_valid(self, jwt_service, user_data):
-        """Test that valid tokens are properly verified."""
+
+
+                        """Test that valid tokens are properly verified."""
         # Arrange
         token = jwt_service.create_access_token(user_data)
 
@@ -103,20 +105,24 @@ class TestJWTService:
         assert payload["role"] == user_data["role"]
 
         def test_verify_token_expired(self, jwt_service, user_data):
-        """Test that expired tokens are rejected."""
+
+
+                        """Test that expired tokens are rejected."""
         # Arrange
         # Create a token that's already expired by setting a custom exp
         with patch.object(jwt_service, '_get_expiration_time') as mock_exp:
             # Set expiration to 1 second ago
-            mock_exp.return_value = datetime.now(UTC) - timedelta(seconds=1)
-            expired_token = jwt_service.create_access_token(user_data)
+            mock_exp.return_value = datetime.now(UTC) - timedelta(seconds=1,
+            expired_token= jwt_service.create_access_token(user_data)
 
             # Act/Assert
             with pytest.raises(TokenExpiredError):
         jwt_service.verify_token(expired_token)
 
         def test_verify_token_invalid_signature(self, jwt_service, user_data):
-        """Test that tokens with invalid signatures are rejected."""
+
+
+                        """Test that tokens with invalid signatures are rejected."""
         # Arrange
         token = jwt_service.create_access_token(user_data)
 
@@ -128,7 +134,9 @@ class TestJWTService:
         jwt_service.verify_token(tampered_token)
 
         def test_verify_token_invalid_format(self, jwt_service):
-        """Test that tokens with invalid format are rejected."""
+
+
+                        """Test that tokens with invalid format are rejected."""
         # Arrange
         invalid_token = "not.a.token"
 
@@ -137,7 +145,9 @@ class TestJWTService:
         jwt_service.verify_token(invalid_token)
 
         def test_admin_role_permissions(self, jwt_service):
-        """Test that admin tokens contain appropriate permissions."""
+
+
+                        """Test that admin tokens contain appropriate permissions."""
         # Arrange
         admin_data = {
             "user_id": "admin123",
@@ -145,8 +155,8 @@ class TestJWTService:
         }
 
         # Act
-    token = jwt_service.create_access_token(admin_data)
-    payload = jwt_service.verify_token(token)
+    token = jwt_service.create_access_token(admin_data,
+    payload= jwt_service.verify_token(token)
 
     # Assert
     assert payload["role"] == "admin"
@@ -157,7 +167,9 @@ class TestJWTService:
     assert jwt_service.has_role(token, "patient")
 
     def test_provider_role_permissions(self, jwt_service, provider_data):
-        """Test that provider tokens have appropriate permissions."""
+
+
+                    """Test that provider tokens have appropriate permissions."""
         # Act
         token = jwt_service.create_access_token(provider_data)
 
@@ -169,7 +181,9 @@ class TestJWTService:
         assert not jwt_service.has_role(token, "admin")
 
         def test_patient_role_permissions(self, jwt_service, user_data):
-        """Test that patient tokens have limited permissions."""
+
+
+                        """Test that patient tokens have limited permissions."""
         # Act
         token = jwt_service.create_access_token(user_data)
 
@@ -181,7 +195,9 @@ class TestJWTService:
         assert not jwt_service.has_role(token, "admin")
 
         def test_refresh_token_rotation(self, jwt_service, user_data):
-        """Test that refresh tokens are properly rotated for security."""
+
+
+                        """Test that refresh tokens are properly rotated for security."""
         # Arrange
         refresh_token = jwt_service.create_refresh_token(user_data)
 
@@ -198,7 +214,9 @@ class TestJWTService:
         jwt_service.refresh_tokens(refresh_token)
 
         def test_refresh_token_family_tracking(self, jwt_service, user_data):
-        """Test that refresh token families are tracked for breach detection."""
+
+
+                        """Test that refresh token families are tracked for breach detection."""
         # This test ensures we're following NIST recommendations for detecting
         # token theft by tracking token families
 
@@ -206,8 +224,8 @@ class TestJWTService:
         refresh_token = jwt_service.create_refresh_token(user_data)
 
         # Act - Create a chain of refresh tokens
-        new_tokens1 = jwt_service.refresh_tokens(refresh_token)
-        new_tokens2 = jwt_service.refresh_tokens(new_tokens1["refresh_token"])
+        new_tokens1 = jwt_service.refresh_tokens(refresh_token,
+        new_tokens2= jwt_service.refresh_tokens(new_tokens1["refresh_token"])
 
         # Assert - Verify parallel use of any token in chain is rejected
         # (indicates theft)

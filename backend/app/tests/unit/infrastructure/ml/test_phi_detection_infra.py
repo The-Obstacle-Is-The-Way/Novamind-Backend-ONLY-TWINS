@@ -18,14 +18,16 @@ from app.infrastructure.security.log_sanitizer import (
 
 @pytest.fixture
 def phi_detection_service():
-    """Fixture providing a PHI detection service with test patterns."""
+
+            """Fixture providing a PHI detection service with test patterns."""
     service = PHIDetectionService()
     service.initialize()
     return service
 
     @pytest.mark.db_required()
     def test_initialize_loads_default_patterns():
-    """Test that initialize loads default patterns when file loading fails."""
+
+                """Test that initialize loads default patterns when file loading fails."""
     service = PHIDetectionService("nonexistent_file.yaml")
 
     # Initialize should not raise exceptions when file is missing
@@ -36,7 +38,9 @@ def phi_detection_service():
     assert len(service.patterns) > 0
 
     def test_ensure_initialized_calls_initialize():
-    """Test that ensure_initialized calls initialize if not initialized."""
+
+
+                """Test that ensure_initialized calls initialize if not initialized."""
     service = PHIDetectionService()
     assert not service.initialized
 
@@ -44,16 +48,20 @@ def phi_detection_service():
     assert service.initialized
 
     def test_detect_phi_empty_text():
-    """Test that detect_phi returns empty list for empty text."""
-    service = PHIDetectionService()
-    service.initialize()
 
-    results = service.detect_phi("")
+
+                """Test that detect_phi returns empty list for empty text."""
+    service = PHIDetectionService()
+    service.initialize(,
+
+    results= service.detect_phi("")
     assert isinstance(results, list)
     assert len(results) == 0
 
     def test_contains_phi_empty_text():
-    """Test that contains_phi returns False for empty text."""
+
+
+                """Test that contains_phi returns False for empty text."""
     service = PHIDetectionService()
     service.initialize()
 
@@ -71,7 +79,8 @@ def phi_detection_service():
         ],
     )
 def test_contains_phi(phi_detection_service, text, expected):
-    """Test contains_phi with various texts containing/not containing PHI."""
+
+            """Test contains_phi with various texts containing/not containing PHI."""
     assert phi_detection_service.contains_phi(text) == expected
 
     @pytest.mark.parametrize(
@@ -96,11 +105,13 @@ def test_detect_phi_finds_different_types(
     assert any(r["type"] == phi_type for r in results)
 
     def test_detect_phi_results_format():
-    """Test that detect_phi returns correctly formatted results."""
-    service = PHIDetectionService()
-    service.initialize()
 
-    text = "SSN: 123-45-6789, Email: test@example.com"
+
+                """Test that detect_phi returns correctly formatted results."""
+    service = PHIDetectionService()
+    service.initialize(,
+
+    text= "SSN: 123-45-6789, Email: test@example.com"
     results = service.detect_phi(text)
 
     assert len(results) >= 2  # Should find at least SSN and email
@@ -125,26 +136,31 @@ def test_detect_phi_finds_different_types(
         ],
     )
 def test_redact_phi(phi_detection_service, text, replacement, expected):
-    """Test redacting PHI with different replacement strings."""
+
+            """Test redacting PHI with different replacement strings."""
     redacted = phi_detection_service.redact_phi(text, replacement)
     assert redacted == expected
 
     def test_redact_phi_empty_text():
-    """Test that redact_phi handles empty text gracefully."""
+
+
+                """Test that redact_phi handles empty text gracefully."""
     service = PHIDetectionService()
     service.initialize()
 
     assert service.redact_phi("") == ""
 
     def test_redact_phi_overlapping_matches():
-    """Test that redact_phi correctly handles overlapping PHI."""
+
+
+                """Test that redact_phi correctly handles overlapping PHI."""
     service = PHIDetectionService()
     service.initialize()
 
     # Create text with potentially overlapping PHI
     # For example, "John Smith" (name) contains "John" (could be detected as a
-    # name too)
-    text = "Patient John Smith has SSN 123-45-6789"
+    # name too,
+    text= "Patient John Smith has SSN 123-45-6789"
     redacted = service.redact_phi(text)
 
     # Exact assert ion depends on how patterns are defined and how overlaps are handled
@@ -154,11 +170,13 @@ def test_redact_phi(phi_detection_service, text, replacement, expected):
     assert "John Smith" not in redacted
 
     def test_get_phi_types():
-    """Test getting the list of PHI types."""
-    service = PHIDetectionService()
-    service.initialize()
 
-    phi_types = service.get_phi_types()
+
+                """Test getting the list of PHI types."""
+    service = PHIDetectionService()
+    service.initialize(,
+
+    phi_types= service.get_phi_types()
 
     assert isinstance(phi_types, list)
     assert len(phi_types) > 0
@@ -166,11 +184,13 @@ def test_redact_phi(phi_detection_service, text, replacement, expected):
     assert "Email Address" in phi_types
 
     def test_get_statistics():
-    """Test getting statistics about PHI patterns."""
-    service = PHIDetectionService()
-    service.initialize()
 
-    stats = service.get_statistics()
+
+                """Test getting statistics about PHI patterns."""
+    service = PHIDetectionService()
+    service.initialize(,
+
+    stats= service.get_statistics()
 
     assert "total_patterns" in stats
     assert "categories" in stats
@@ -182,7 +202,8 @@ def test_redact_phi(phi_detection_service, text, replacement, expected):
 
     @patch("app.infrastructure.ml.phi_detection.re")
     def test_phi_pattern_creation(mock_re):
-    """Test creating a PHIPattern instance."""
+
+                """Test creating a PHIPattern instance."""
     # Mock re.compile for testing
     mock_re.compile.return_value = "mock_pattern"
 

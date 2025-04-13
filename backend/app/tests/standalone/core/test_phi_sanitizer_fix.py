@@ -9,16 +9,16 @@ import json
 
 @pytest.fixture
 def sanitizer():
-    """Create a sanitizer with default configuration."""
 
-    return LogSanitizer()
+            """Create a sanitizer with default configuration."""
 
-    class TestPHISanitizer:
+    return LogSanitizer()class TestPHISanitizer:
     """Test suite for PHI sanitization functionality."""
 
     @pytest.mark.standalone()
     def test_preservation_of_non_phi(self, sanitizer):
-        """Test that non-PHI data is preserved during sanitization."""
+
+                    """Test that non-PHI data is preserved during sanitization."""
         mixed_data = {
             "patient_id": "PT12345",  # PHI - patient IDs are PHI under HIPAA
             "name": "John Smith",  # PHI

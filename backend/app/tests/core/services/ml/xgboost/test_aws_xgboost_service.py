@@ -39,22 +39,24 @@ from app.core.services.ml.xgboost import (
 
 @pytest.fixture
 def mock_aws_clients():
-    """Fixture to mock all AWS clients used by the service."""
+
+            """Fixture to mock all AWS clients used by the service."""
     with patch("boto3.client") as mock_client, patch("boto3.resource") as mock_resource:
         # Mock SageMaker clients
-        mock_sagemaker = MagicMock()
-        mock_sagemaker_runtime = MagicMock()
-        mock_s3 = MagicMock()
+        mock_sagemaker = MagicMock(,
+        mock_sagemaker_runtime= MagicMock(,
+        mock_s3= MagicMock()
 
         # Mock DynamoDB
-        mock_dynamodb = MagicMock()
-        mock_predictions_table = MagicMock()
+        mock_dynamodb = MagicMock(,
+        mock_predictions_table= MagicMock()
         mock_dynamodb.Table.return_value = mock_predictions_table
         mock_resource.return_value = mock_dynamodb
 
         # Set up client return values
         def get_boto_client(service, **kwargs):
-            if service == "sagemaker":
+
+                        if service == "sagemaker":
                 return mock_sagemaker
                 elif service == "sagemaker-runtime":
                 return mock_sagemaker_runtime
@@ -76,7 +78,8 @@ def mock_aws_clients():
 
 @pytest.fixture
 def aws_xgboost_service(mock_aws_clients):
-    """Fixture to create an AWSXGBoostService with mocked AWS clients."""
+
+            """Fixture to create an AWSXGBoostService with mocked AWS clients."""
     # Set up successful validation responses
     mock_aws_clients["predictions_table"].scan.return_value = {"Items": []}
     mock_aws_clients["s3"].head_bucket.return_value = {}
@@ -94,12 +97,13 @@ def aws_xgboost_service(mock_aws_clients):
     return service
 
 
-@pytest.mark.db_required()
-class TestAWSXGBoostServiceInitialization:
+@pytest.mark.db_required()class TestAWSXGBoostServiceInitialization:
     """Tests for AWSXGBoostService initialization."""
 
     def test_initialization_success(self, mock_aws_clients):
-        """Test successful initialization."""
+
+
+                    """Test successful initialization."""
         # Set up successful validation responses
         mock_aws_clients["predictions_table"].scan.return_value = {"Items": []}
         mock_aws_clients["s3"].head_bucket.return_value = {}
@@ -129,7 +133,9 @@ class TestAWSXGBoostServiceInitialization:
         mock_aws_clients["sagemaker"].list_endpoints.assert_called_once()
 
     def test_initialization_failure_dynamodb(self, mock_aws_clients):
-        """Test initialization failure due to DynamoDB error."""
+
+
+                    """Test initialization failure due to DynamoDB error."""
         mock_aws_clients["predictions_table"].scan.side_effect = ClientError(
             {
                 "Error": {
@@ -152,7 +158,9 @@ class TestAWSXGBoostServiceInitialization:
         assert "Resource not found" in str(exc_info.value)
 
     def test_initialization_failure_s3(self, mock_aws_clients):
-        """Test initialization failure due to S3 error."""
+
+
+                    """Test initialization failure due to S3 error."""
         mock_aws_clients["predictions_table"].scan.return_value = {"Items": []}
         mock_aws_clients["s3"].head_bucket.side_effect = ClientError(
             {"Error": {"Code": "NoSuchBucket", "Message": "Bucket not found"}},
@@ -168,14 +176,13 @@ class TestAWSXGBoostServiceInitialization:
                 log_level="INFO",
             )
 
-        assert "validation failed" in str(exc_info.value)
-
-
-class TestPredictRisk:
+        assert "validation failed" in str(exc_info.value)class TestPredictRisk:
     """Tests for the predict_risk method."""
 
     def test_predict_risk_success(self, aws_xgboost_service, mock_aws_clients):
-        """Test successful risk prediction."""
+
+
+                    """Test successful risk prediction."""
         # Mock endpoint lookup
         aws_xgboost_service.model_cache = {}  # Reset cache
         mock_aws_clients["sagemaker"].describe_endpoint.return_value = {
@@ -271,7 +278,9 @@ class TestPredictRisk:
         assert "No model available for risk_relapse" in str(exc_info.value)
 
     def test_predict_risk_invalid_risk_type(self, aws_xgboost_service):
-        """Test risk prediction with invalid risk type."""
+
+
+                    """Test risk prediction with invalid risk type."""
         # Test data
         patient_id = "patient-123"
         risk_type = (
@@ -314,10 +323,7 @@ class TestPredictRisk:
                 patient_id=patient_id, risk_type=risk_type, features=features
             )
 
-        assert "Failed to invoke endpoint" in str(exc_info.value)
-
-
-class TestGetPrediction:
+        assert "Failed to invoke endpoint" in str(exc_info.value)class TestGetPrediction:
     """Tests for the get_prediction method."""
 
     def test_get_prediction_success(
@@ -395,10 +401,7 @@ class TestGetPrediction:
         ) as exc_info:  # Correct exception type
             aws_xgboost_service.get_prediction("pred-123")
 
-        assert "Failed to retrieve prediction" in str(exc_info.value)
-
-
-class TestValidatePrediction:
+        assert "Failed to retrieve prediction" in str(exc_info.value)class TestValidatePrediction:
     """Tests for the validate_prediction method."""
 
     def test_validate_prediction_success(
@@ -442,10 +445,7 @@ class TestValidatePrediction:
                     prediction_id="pred-123", status=ValidationStatus.VALIDATED
                 )
 
-            assert "Prediction pred-123 not found" in str(exc_info.value)
-
-
-class TestHealthcheck:
+            assert "Prediction pred-123 not found" in str(exc_info.value)class TestHealthcheck:
     """Tests for the healthcheck method."""
 
     def test_healthcheck_all_healthy(
@@ -479,7 +479,9 @@ class TestHealthcheck:
         assert result["models"]["treatment_response_medication"] == "active"
 
     def test_healthcheck_degraded(self, aws_xgboost_service, mock_aws_clients):
-        """Test healthcheck with some components degraded."""
+
+
+                    """Test healthcheck with some components degraded."""
         # Mock component checks
         mock_aws_clients["predictions_table"].scan.return_value = {"Items": []}
         mock_aws_clients["s3"].head_bucket.side_effect = ClientError(

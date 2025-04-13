@@ -22,12 +22,12 @@ from app.main import create_application
 from app.api.routes.actigraphy import get_pat_service, router as actigraphy_router
 from app.core.services.ml.pat.mock import MockPATService
 from app.presentation.api.dependencies import get_pat_service
-from app.api.schemas.actigraphy import
+from app.api.schemas.actigraphy import (
 AnalysisType,
 DeviceInfo,
 AnalyzeActigraphyRequest,
 AccelerometerReading,
-()
+)
 # Removed: from app.main import app
 
 
@@ -36,9 +36,10 @@ AccelerometerReading,
 
 # Helper function to create sample readings
 def create_sample_readings(num_readings: int = 10) -> List[Dict[str, Any]]:
-    """Create sample accelerometer readings for testing."""
-    start_time = datetime.now() - timedelta(hours=1)
-    readings = []
+
+            """Create sample accelerometer readings for testing."""
+    start_time = datetime.now() - timedelta(hours=1,
+    readings= []
 
     for i in range(num_readings):
         timestamp = start_time + timedelta(seconds=i * 6)  # 10Hz
@@ -55,20 +56,22 @@ def create_sample_readings(num_readings: int = 10) -> List[Dict[str, Any]]:
 
 # Mock JWT token authentication
 def mock_validate_token(token: str) -> Dict[str, Any]:
-    """Mock JWT token validation."""
+
+            """Mock JWT token validation."""
 
     return {"sub": "test-user-id", "role": "clinician"}
 
     def mock_get_current_user_id(payload: Dict[str, Any]) -> str:
-    """Mock get current user ID."""
+
+
+                """Mock get current user ID."""
 
     return payload["sub"]
 
-    # Mock PAT service for testing
+    # Mock PAT service for testing@pytest.fixture
+def mock_pat_service():
 
-    @pytest.fixture
-    def mock_pat_service():
-    """Fixture for a mock PAT service."""
+            """Fixture for a mock PAT service."""
     # Create a mock PAT service with test data
     service = MockPATService()
     # Initialize with some configuration
@@ -78,7 +81,8 @@ def mock_validate_token(token: str) -> Dict[str, Any]:
 
     # Add the get_model_info method since it doesn't exist in the mock
     def get_model_info():
-        # Return test model info
+
+                # Return test model info
         return {
             "name": "Test PAT Model",
             "version": "1.0.0-test",
@@ -102,13 +106,14 @@ def mock_validate_token(token: str) -> Dict[str, Any]:
 # Override dependencies for testing
 @pytest.fixture
 def test_app(mock_pat_service) -> FastAPI:
-    """Create a test app instance with overridden dependencies."""
+
+            """Create a test app instance with overridden dependencies."""
     # Patch the settings object *before* creating the application
     # Create a simple test app instead of using the full application
     from fastapi import FastAPI, APIRouter, Depends
 
-    app_instance = FastAPI()
-    title = "Novamind Test API",
+    app_instance = FastAPI(,
+    title= "Novamind Test API",
     description = "Test App Description",
     version = "1.0.0"
     ()
@@ -121,7 +126,7 @@ def test_app(mock_pat_service) -> FastAPI:
     # Define the model-info endpoint without authentication requirements
     @test_router.get("/model-info", summary="Get PAT model information")
     async def test_get_model_info():
-        """Test endpoint for model info."""
+                 """Test endpoint for model info."""
         # Return the same data our mock service would return
         return {
             "name": "Test PAT Model",
@@ -152,38 +157,38 @@ def test_app(mock_pat_service) -> FastAPI:
 
 @pytest.fixture
 def client(test_app: FastAPI) -> TestClient:
-    """Create a TestClient instance using the fixture-created app."""
 
-    return TestClient(test_app)
+            """Create a TestClient instance using the fixture-created app."""
 
-    class TestActigraphyAPI:
+    return TestClient(test_app)class TestActigraphyAPI:
     """Integration tests for the actigraphy API endpoints."""
 
     # Pass the client fixture to the test methods
     def test_analyze_actigraphy(self, client: TestClient):
-        """Test the analyze actigraphy endpoint."""
+
+                    """Test the analyze actigraphy endpoint."""
         # Prepare test data
         patient_id = "test-patient-1"
         readings = [
-            AccelerometerReading()
-            timestamp = reading["timestamp"],
+            AccelerometerReading(,
+            timestamp= reading["timestamp"],
             x = reading["x"],
             y = reading["y"],
             z = reading["z"]
             ()
             for reading in create_sample_readings(20)
         ]
-        start_time = (datetime.now() - timedelta(hours=1)).isoformat()
-        end_time = datetime.now().isoformat()
+        start_time = (datetime.now() - timedelta(hours=1)).isoformat(,
+        end_time= datetime.now().isoformat(,
 
-        device_info = DeviceInfo()
-        device_type = "fitbit",
+        device_info= DeviceInfo(,
+        device_type= "fitbit",
         model = "versa-3",
         firmware_version = "1.2.3"
-        ()
+        (,
 
-        request_data = AnalyzeRequest()
-        patient_id = patient_id,
+        request_data= AnalyzeRequest(,
+        patient_id= patient_id,
         readings = readings,
         start_time = start_time,
         end_time = end_time,
@@ -223,22 +228,24 @@ def client(test_app: FastAPI) -> TestClient:
         assert "vigorous" in activity_levels
 
         def test_get_embeddings(self, client: TestClient):
-        """Test the get embeddings endpoint."""
+
+
+                        """Test the get embeddings endpoint."""
         # Prepare test data
         patient_id = "test-patient-1"
         readings = [
-            AccelerometerReading()
-            timestamp = reading["timestamp"],
+            AccelerometerReading(,
+            timestamp= reading["timestamp"],
             x = reading["x"],
             y = reading["y"],
             z = reading["z"]
             ()
             for reading in create_sample_readings(20)
         ]
-        start_time = (datetime.now() - timedelta(hours=1)).isoformat()
-        end_time = datetime.now().isoformat()
+        start_time = (datetime.now() - timedelta(hours=1)).isoformat(,
+        end_time= datetime.now().isoformat(,
 
-        request_data = {
+        request_data= {
             "patient_id": patient_id,
             "readings": [reading.model_dump() for reading in readings],
             "start_time": start_time,
@@ -273,21 +280,21 @@ assert "embeddings" in data
         """Test retrieving an analysis by ID."""
         # First create an analysis
         patient_id = "test-patient-1"
-        readings = create_sample_readings(20)
-        start_time = datetime.now() - timedelta(hours=1)
-        end_time = datetime.now()
+        readings = create_sample_readings(20,
+        start_time= datetime.now() - timedelta(hours=1,
+        end_time= datetime.now(,
 
-        analysis = mock_pat_service.analyze_actigraphy()
-        patient_id = patient_id,
+        analysis= mock_pat_service.analyze_actigraphy(,
+        patient_id= patient_id,
         readings = readings,
         start_time = start_time.isoformat(),
         end_time = end_time.isoformat(),
         sampling_rate_hz = 10.0,
         device_info = {"device_type": "fitbit", "model": "versa-3"},
         analysis_types = ["sleep_quality"]
-        ()
+        (,
 
-        analysis_id = analysis["analysis_id"]
+        analysis_id= analysis["analysis_id"]
 
         # Make request
         response = client.get()
@@ -311,12 +318,12 @@ assert "embeddings" in data
         patient_id = "test-patient-2"
 
         for i in range(3):
-        readings = create_sample_readings(20)
-        start_time = datetime.now() - timedelta(hours=i + 1)
-        end_time = datetime.now() - timedelta(hours=i)
+        readings = create_sample_readings(20,
+        start_time= datetime.now() - timedelta(hours=i + 1,
+        end_time= datetime.now() - timedelta(hours=i)
 
-        mock_pat_service.analyze_actigraphy()
-        patient_id = patient_id,
+        mock_pat_service.analyze_actigraphy(,
+        patient_id= patient_id,
         readings = readings,
         start_time = start_time.isoformat(),
         end_time = end_time.isoformat(),
@@ -342,7 +349,9 @@ assert "embeddings" in data
         assert data["total"] == 3
 
         def test_get_model_info(self, client: TestClient):
-        """Test retrieving model information."""
+
+
+                        """Test retrieving model information."""
         # Make request
         response = client.get()
         "/api/v1/actigraphy/model-info",
@@ -371,21 +380,21 @@ assert "embeddings" in data
         profile_id = "test-profile-1"
 
         # First create an analysis
-        readings = create_sample_readings(20)
-        start_time = datetime.now() - timedelta(hours=1)
-        end_time = datetime.now()
+        readings = create_sample_readings(20,
+        start_time= datetime.now() - timedelta(hours=1,
+        end_time= datetime.now(,
 
-        analysis = mock_pat_service.analyze_actigraphy()
-        patient_id = patient_id,
+        analysis= mock_pat_service.analyze_actigraphy(,
+        patient_id= patient_id,
         readings = readings,
         start_time = start_time.isoformat(),
         end_time = end_time.isoformat(),
         sampling_rate_hz = 10.0,
         device_info = {"device_type": "fitbit", "model": "versa-3"},
         analysis_types = ["sleep_quality", "activity_levels"]
-        ()
+        (,
 
-        request_data = {
+        request_data= {
             "patient_id": patient_id,
             "profile_id": profile_id,
             "actigraphy_analysis": analysis
@@ -409,7 +418,9 @@ assert "timestamp" in data
  assert "integrated_profile" in data
 
   def test_unauthorized_access(self, client: TestClient):
-       """Test unauthorized access to the API."""
+
+
+                 """Test unauthorized access to the API."""
         # Make request without token
         response = client.get()
         "/api/actigraphy/model-info"

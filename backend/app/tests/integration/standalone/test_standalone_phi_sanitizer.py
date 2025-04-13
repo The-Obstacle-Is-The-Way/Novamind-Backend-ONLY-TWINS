@@ -15,16 +15,13 @@ from enum import Enum
 from typing import Any, List, Set, Dict, Optional, Union
 
 
-# ============= PHI Sanitizer Implementation =============
-class RedactionStrategy(Enum):
+# ============= PHI Sanitizer Implementation =============class RedactionStrategy(Enum):
     """Redaction strategy for PHI."""
 
     FULL = "full"  # Completely replace with [REDACTED]
-    # Replace part of the data (e.g., last 4 digits visible)
-    PARTIAL = "partial"
-    HASH = "hash"  # Replace with a hash of the data
-
-    class PHIPattern:
+    # Replace part of the data (e.g., last 4 digits visible,
+    PARTIAL= "partial"
+    HASH = "hash"  # Replace with a hash of the dataclass PHIPattern:
     """Represents a pattern for detecting PHI."""
 
     def __init__(
@@ -54,7 +51,9 @@ class RedactionStrategy(Enum):
         )
 
     def matches(self, text: str) -> bool:
-        """Check if this pattern matches the given text."""
+
+
+                    """Check if this pattern matches the given text."""
         if text is None:
             return False
 
@@ -74,17 +73,19 @@ class RedactionStrategy(Enum):
             if any(pattern.search(text) for pattern in self._context_patterns):
             return True
 
-            return False
-
-            class PatternRepository:
+            return Falseclass PatternRepository:
     """Repository of PHI patterns."""
 
     def __init__(self):
-        self._patterns: List[PHIPattern] = []
+
+
+                self._patterns: List[PHIPattern] = []
         self._initialize_default_patterns()
 
         def _initialize_default_patterns(self):
-        """Initialize default patterns for PHI detection."""
+
+
+                        """Initialize default patterns for PHI detection."""
         # SSN pattern
         self.add_pattern(
             PHIPattern(
@@ -118,32 +119,36 @@ class RedactionStrategy(Enum):
         )
 
     def add_pattern(self, pattern: PHIPattern):
-        """Add a pattern to the repository."""
+
+
+                    """Add a pattern to the repository."""
         self._patterns.append(pattern)
 
         def get_patterns(self) -> List[PHIPattern]:
-        """Get all patterns in the repository."""
-        return self._patterns
 
-        class Redactor:
+
+                        """Get all patterns in the repository."""
+        return self._patternsclass Redactor:
     """Base class for redaction strategies."""
 
     def redact(self, text: str) -> str:
-        """Redact the given text."""
-        raise NotImplementedError("Subclasses must implement redact()")
 
-        class FullRedactor(Redactor):
+
+                    """Redact the given text."""
+        raise NotImplementedError("Subclasses must implement redact()")class FullRedactor(Redactor):
     """Fully redact text."""
 
     def redact(self, text: str) -> str:
-        """Replace text entirely with [REDACTED]."""
-        return "[REDACTED]"
 
-        class PartialRedactor(Redactor):
+
+                    """Replace text entirely with [REDACTED]."""
+        return "[REDACTED]"class PartialRedactor(Redactor):
     """Partially redact text, preserving some information."""
 
     def redact(self, text: str) -> str:
-        """Redact most of the text but preserve some information."""
+
+
+                    """Redact most of the text but preserve some information."""
         if not text:
             return ""
 
@@ -152,27 +157,26 @@ class RedactionStrategy(Enum):
             return text
 
             # Keep first and last character, replace the rest with asterisks
-            return text[0] + "*" * (len(text) - 2) + text[-1]
-
-            class HashRedactor(Redactor):
+            return text[0] + "*" * (len(text) - 2) + text[-1]class HashRedactor(Redactor):
     """Redact by replacing with a hash."""
 
     def redact(self, text: str) -> str:
-        """Replace text with a hash value."""
+
+
+                    """Replace text with a hash value."""
         if not text:
             return ""
 
             import hashlib
 
             hash_value = hashlib.md5(text.encode()).hexdigest()[:8]
-            return f"[HASH:{hash_value}]"
-
-            class RedactorFactory:
+            return f"[HASH:{hash_value}]"class RedactorFactory:
     """Factory for creating redactors."""
 
     @staticmethod
     def create_redactor(strategy: RedactionStrategy) -> Redactor:
-        """Create a redactor for the given strategy."""
+
+                    """Create a redactor for the given strategy."""
         if strategy == RedactionStrategy.FULL:
             return FullRedactor()
             elif strategy == RedactionStrategy.PARTIAL:
@@ -181,17 +185,19 @@ class RedactionStrategy(Enum):
             return HashRedactor()
             else:
                 # Default to full redaction
-            return FullRedactor()
-
-            class PHISanitizer:
+            return FullRedactor()class PHISanitizer:
     """Sanitizer for PHI in text."""
 
     def __init__(self, pattern_repository: Optional[PatternRepository] = None):
-        self._pattern_repo = pattern_repository or PatternRepository()
+
+
+                self._pattern_repo = pattern_repository or PatternRepository()
         self._redactor_factory = RedactorFactory()
 
         def sanitize(self, data: Any) -> Any:
-        """Sanitize PHI in the given data."""
+
+
+                        """Sanitize PHI in the given data."""
         # Handle None
         if data is None:
             return None
@@ -212,7 +218,9 @@ class RedactionStrategy(Enum):
             return data
 
             def _sanitize_text(self, text: str) -> str:
-        """Sanitize PHI in the given text."""
+
+
+                            """Sanitize PHI in the given text."""
         if not text:
             return text
 
@@ -222,8 +230,8 @@ class RedactionStrategy(Enum):
             for pattern in patterns:
             if pattern.matches(result):
                 redactor = self._redactor_factory.create_redactor(
-                    pattern.strategy)
-                result = (
+                    pattern.strategy,
+                result= (
                     pattern._regex_pattern.sub(
                         lambda m: redactor.redact(m.group(0)), result
                     )
@@ -234,17 +242,19 @@ class RedactionStrategy(Enum):
         return result
 
 
-# ============= TestCase Implementation =============
-class TestPHISanitizer(unittest.TestCase):
+# ============= TestCase Implementation =============class TestPHISanitizer(unittest.TestCase):
     """Test case for PHI sanitizer."""
 
     def setUp(self):
-        """Set up the test case."""
+
+
+                    """Set up the test case."""
         self.sanitizer = PHISanitizer()
 
         @pytest.mark.standalone()
         def test_sanitize_ssn(self):
-        """Test sanitizing SSN."""
+
+                        """Test sanitizing SSN."""
         text = "Patient SSN: 123-45-6789"
         sanitized = self.sanitizer.sanitize(text)
 
@@ -254,7 +264,8 @@ class TestPHISanitizer(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_sanitize_phone(self):
-        """Test sanitizing phone numbers."""
+
+                        """Test sanitizing phone numbers."""
         text = "Phone: (555) 123-4567"
         sanitized = self.sanitizer.sanitize(text)
 
@@ -268,7 +279,8 @@ class TestPHISanitizer(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_sanitize_email(self):
-        """Test sanitizing email addresses."""
+
+                        """Test sanitizing email addresses."""
         text = "Email: john.doe@example.com"
         sanitized = self.sanitizer.sanitize(text)
 
@@ -278,7 +290,8 @@ class TestPHISanitizer(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_sanitize_nested_structures(self):
-        """Test sanitizing nested structures."""
+
+                        """Test sanitizing nested structures."""
         data = {
             "patient": {
                 "name": "John Doe",
@@ -306,7 +319,8 @@ class TestPHISanitizer(unittest.TestCase):
 
     @pytest.mark.standalone()
     def test_non_phi_preserved(self):
-        """Test that non-PHI is preserved."""
+
+                    """Test that non-PHI is preserved."""
         text = "This is regular text without any PHI."
         sanitized = self.sanitizer.sanitize(text)
 
@@ -315,7 +329,8 @@ class TestPHISanitizer(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_sanitizer_edge_cases(self):
-        """Test sanitizer behavior with edge cases."""
+
+                        """Test sanitizer behavior with edge cases."""
         # Empty string
         self.assertEqual(self.sanitizer.sanitize(""), "")
 
@@ -334,7 +349,8 @@ class TestPHISanitizer(unittest.TestCase):
 
         @pytest.mark.standalone()
         def test_redaction_format_consistency(self):
-        """Test that redaction formats are consistent."""
+
+                        """Test that redaction formats are consistent."""
         # Full redaction
         pattern_repo = PatternRepository()
         pattern_repo.add_pattern(
@@ -357,9 +373,9 @@ class TestPHISanitizer(unittest.TestCase):
             PHIPattern(
                 name="test_hash",
                 regex=r"HASH\d+",
-                strategy=RedactionStrategy.HASH))
+                strategy=RedactionStrategy.HASH),
 
-        sanitizer = PHISanitizer(pattern_repository=pattern_repo)
+        sanitizer= PHISanitizer(pattern_repository=pattern_repo)
 
         # Test the different redaction formats
         text = "FULL12345 PARTIAL12345 HASH12345"

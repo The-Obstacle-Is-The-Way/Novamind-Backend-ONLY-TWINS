@@ -17,13 +17,13 @@ from app.infrastructure.security.encryption import (
 
 @pytest.fixture
 def mock_encryption_key():
-    """Mock encryption key for testing."""
-    # Generate a valid Fernet key for testing
-    return base64.urlsafe_b64encode(b"0" * 32)
 
-    @pytest.fixture
-    def patient_data():
-    """Sample patient data for testing."""
+            """Mock encryption key for testing."""
+    # Generate a valid Fernet key for testing
+    return base64.urlsafe_b64encode(b"0" * 32)@pytest.fixture
+def patient_data():
+
+            """Sample patient data for testing."""
     return {
         "first_name": "John",
         "last_name": "Doe",
@@ -40,12 +40,13 @@ def mock_encryption_key():
     }
 
 
-# Mock Patient class for testing
-class Patient:
+# Mock Patient class for testingclass Patient:
     """Mock Patient model with encrypted fields."""
 
     def __init__(self, **kwargs):
-        """Initialize patient with encrypted fields."""
+
+
+                    """Initialize patient with encrypted fields."""
         self._first_name = (
             encrypt_value(kwargs.get("first_name"))
             if kwargs.get("first_name")
@@ -79,77 +80,92 @@ class Patient:
 
             @property
             def first_name(self):
-        """Get decrypted first name."""
+
+                            """Get decrypted first name."""
         return decrypt_value(self._first_name)
 
         @first_name.setter
         def first_name(self, value):
-        """Set encrypted first name."""
+
+                        """Set encrypted first name."""
         self._first_name = encrypt_value(value) if value else None
 
         @property
         def last_name(self):
-        """Get decrypted last name."""
+
+                        """Get decrypted last name."""
         return decrypt_value(self._last_name)
 
         @last_name.setter
         def last_name(self, value):
-        """Set encrypted last name."""
+
+                        """Set encrypted last name."""
         self._last_name = encrypt_value(value) if value else None
 
         @property
         def dob(self):
-        """Get decrypted date of birth."""
+
+                        """Get decrypted date of birth."""
         return decrypt_value(self._dob)
 
         @dob.setter
         def dob(self, value):
-        """Set encrypted date of birth."""
+
+                        """Set encrypted date of birth."""
         self._dob = encrypt_value(value) if value else None
 
         @property
         def email(self):
-        """Get decrypted email."""
+
+                        """Get decrypted email."""
         return decrypt_value(self._email)
 
         @email.setter
         def email(self, value):
-        """Set encrypted email."""
+
+                        """Set encrypted email."""
         self._email = encrypt_value(value) if value else None
 
         @property
         def phone(self):
-        """Get decrypted phone."""
+
+                        """Get decrypted phone."""
         return decrypt_value(self._phone)
 
         @phone.setter
         def phone(self, value):
-        """Set encrypted phone."""
+
+                        """Set encrypted phone."""
         self._phone = encrypt_value(value) if value else None
 
         @property
         def address(self):
-        """Get decrypted address."""
+
+                        """Get decrypted address."""
         return decrypt_value(self._address)
 
         @address.setter
         def address(self, value):
-        """Set encrypted address."""
+
+                        """Set encrypted address."""
         self._address = encrypt_value(value) if value else None
 
         @property
         def medical_record_number(self):
-        """Get decrypted medical record number."""
+
+                        """Get decrypted medical record number."""
         return decrypt_value(self._medical_record_number)
 
         @medical_record_number.setter
         def medical_record_number(self, value):
-        """Set encrypted medical record number."""
+
+                        """Set encrypted medical record number."""
         self._medical_record_number = encrypt_value(value) if value else None
 
         @property
         def extra_data(self):
-        """Get decrypted extra data."""
+
+                        """Get decrypted extra data."""
         if self._extra_data:
             import json
 
@@ -158,15 +174,14 @@ class Patient:
 
             @extra_data.setter
             def extra_data(self, value):
-        """Set encrypted extra data."""
+
+                            """Set encrypted extra data."""
         if value:
             import json
 
             self._extra_data = encrypt_value(json.dumps(value))
             else:
-            self._extra_data = None
-
-            class TestPatientEncryption:
+            self._extra_data = Noneclass TestPatientEncryption:
     """Tests for the Patient model encryption functionality."""
 
     @patch("app.infrastructure.security.encryption.get_encryption_key")
@@ -268,7 +283,8 @@ class Patient:
 
     @patch("app.infrastructure.security.encryption.get_encryption_key")
     def test_null_values(self, mock_get_key, mock_encryption_key):
-        """Test handling of null values in encrypted fields."""
+
+                    """Test handling of null values in encrypted fields."""
         # Set up mock encryption key
         mock_get_key.return_value = mock_encryption_key
 
@@ -289,7 +305,8 @@ class Patient:
 
     @patch("app.infrastructure.security.encryption.get_encryption_key")
     def test_encryption_key_handling(self, mock_get_key, mock_encryption_key):
-        """Test that encryption key is properly handled when encrypting/decrypting."""
+
+                    """Test that encryption key is properly handled when encrypting/decrypting."""
         # Set up mock encryption key
         mock_get_key.return_value = mock_encryption_key
 

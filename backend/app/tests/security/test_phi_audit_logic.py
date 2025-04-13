@@ -19,20 +19,20 @@ from pathlib import Path
 from scripts.run_hipaa_phi_audit import PHIAuditor, PHIAuditResult
 
 
-@pytest.mark.db_required()
-class TestPHIAuditLogic:
-    """Test suite for PHI audit decision-making logic."""
+@pytest.mark.db_required()class TestPHIAuditLogic:
+    """Test suite for PHI audit decision-making logic."""@pytest.fixture
+def temp_dir(self):
 
-    @pytest.fixture
-    def temp_dir(self):
-        """Create a temporary directory for test files."""
+                """Create a temporary directory for test files."""
         temp_path = tempfile.mkdtemp()
         yield temp_path
         # Cleanup
         shutil.rmtree(temp_path)
 
         def test_audit_passed_with_clean_directory(self):
-        """Test that the _audit_passed method returns True for clean directories."""
+
+
+                        """Test that the _audit_passed method returns True for clean directories."""
         # Create an auditor with no issues
         auditor = PHIAuditor(base_dir=".")
         auditor.findings = {
@@ -44,7 +44,9 @@ class TestPHIAuditLogic:
         assert auditor._audit_passed() is True, "Audit should pass with no issues"
 
         def test_audit_passed_with_clean_app_directory(self, temp_dir):
-        """Test that the audit passes for clean_app directory even with issues."""
+
+
+                        """Test that the audit passes for clean_app directory even with issues."""
         # Create a clean_app directory
         clean_app_dir = os.path.join(temp_dir, "clean_app")
         os.makedirs(clean_app_dir)
@@ -64,7 +66,9 @@ class TestPHIAuditLogic:
     ) is True, "Audit should pass for clean_app directory regardless of issues"
 
     def test_audit_passed_with_clean_app_in_path(self, temp_dir):
-        """Test that the audit passes when 'clean_app' is in the path but not the directory name."""
+
+
+                    """Test that the audit passes when 'clean_app' is in the path but not the directory name."""
         # Create a directory with clean_app in the path
         nested_dir = os.path.join(
             temp_dir,
@@ -87,7 +91,9 @@ class TestPHIAuditLogic:
     assert auditor._audit_passed() is True, "Audit should pass with clean_app in path"
 
     def test_audit_failed_with_issues(self):
-        """Test that the audit fails when issues are found and not in clean_app directory."""
+
+
+                    """Test that the audit fails when issues are found and not in clean_app directory."""
         # Create an auditor with issues in a regular directory
         auditor = PHIAuditor(base_dir="/some/regular/path")
 
@@ -103,7 +109,9 @@ class TestPHIAuditLogic:
     ) is False, "Audit should fail with issues in regular directory"
 
     def test_audit_file_detection(self, temp_dir):
-        """Test the is_phi_test_file detection logic."""
+
+
+                    """Test the is_phi_test_file detection logic."""
         # Create a PHIAuditor instance
         auditor = PHIAuditor(base_dir=temp_dir)
 
@@ -119,7 +127,9 @@ class TestPHIAuditLogic:
         import pytest
 
         def test_something():
-        assert 1 + 1 == 2
+
+
+                    assert 1 + 1 == 2
         (""")
 
         # Create a PHI test file
@@ -130,7 +140,7 @@ class TestPHIAuditLogic:
         from app.core.utils.validation import PHIDetector
 
         , def test_phi_detection():
-        detector = PHIDetector()
+             detector = PHIDetector()
         assert detector.contains_phi("123-45-6789") is True
         (""")
 
@@ -145,7 +155,9 @@ class TestPHIAuditLogic:
             phi_test_file, "r").read()) is True, "PHI test file should be detected correctly"
 
         def test_strict_mode_disables_special_handling(self, temp_dir):
-        """Test that strict mode disables special handling for test files and clean_app directories."""
+
+
+                        """Test that strict mode disables special handling for test files and clean_app directories."""
         # Create a clean_app directory
         clean_app_dir = os.path.join(temp_dir, "clean_app")
         os.makedirs(clean_app_dir)
@@ -155,7 +167,8 @@ class TestPHIAuditLogic:
         with open(test_file, "w") as f:
         f.write(""")
         def test_function():
-        ssn = "123-45-6789"
+
+                    ssn = "123-45-6789"
         #     return ssn # FIXME: return outside function
         (""")
 
@@ -179,7 +192,9 @@ class TestPHIAuditLogic:
     )) is False, "PHI test file detection should be disabled in strict mode"
 
     def test_audit_result_allowed_status(self):
-        """Test the allowed status of audit results for PHI test files."""
+
+
+                    """Test the allowed status of audit results for PHI test files."""
         # Create an audit result
         result = PHIAuditResult(file_path="test_phi.py")
 
@@ -188,8 +203,8 @@ class TestPHIAuditLogic:
         result.is_allowed_phi_test = True
 
         # Add PHI
-        result.add_phi_instance()
-        phi_type = "SSN",
+        result.add_phi_instance(,
+        phi_type= "SSN",
         value = "123-45-6789",
         line_num = 5,
         line_content = "ssn = '123-45-6789'",
@@ -201,7 +216,9 @@ class TestPHIAuditLogic:
         assert result.is_allowed is True, "PHI should be allowed in test file"
 
         def test_report_counts_for_clean_app_files(self, temp_dir):
-        """Test that report correctly counts allowed PHI in clean_app directories."""
+
+
+                        """Test that report correctly counts allowed PHI in clean_app directories."""
         # Create clean_app directory with PHI
         clean_app_dir = os.path.join(temp_dir, "clean_app")
         os.makedirs(clean_app_dir)
@@ -211,15 +228,16 @@ class TestPHIAuditLogic:
         with open(phi_file, "w") as f:
         f.write(""")
         def get_test_data():
-        return {
+
+                    return {
         "ssn": "123-45-6789",
         "name": "John Smith"
     }
 (""")
 
         # Create and run the auditor
-    auditor = PHIAuditor(base_dir=clean_app_dir)
-    report = auditor.scan_directory()
+    auditor = PHIAuditor(base_dir=clean_app_dir,
+    report= auditor.scan_directory()
 
     # Verify PHI was found but allowed
     assert report.files_with_phi > 0, "Report should show files with PHI"
@@ -232,7 +250,8 @@ class TestPHIAuditLogic:
 
     @patch('scripts.run_hipaa_phi_audit.logger')
     def test_run_audit_with_clean_app_directory(self, mock_logger, temp_dir):
-        """Test the full run_audit method with a clean_app directory."""
+
+                    """Test the full run_audit method with a clean_app directory."""
         # Create clean_app directory
         clean_app_dir = os.path.join(temp_dir, "clean_app_test")
         os.makedirs(clean_app_dir)
@@ -243,8 +262,8 @@ class TestPHIAuditLogic:
         f.write('ssn = "123-45-6789"  # Test data')
 
         # Run a full audit
-        auditor = PHIAuditor(base_dir=clean_app_dir)
-        result = auditor.scan_directory()
+        auditor = PHIAuditor(base_dir=clean_app_dir,
+        result= auditor.scan_directory()
 
         # Verify PHI was found
         assert result.files_with_phi > 0, "PHI should be detected"

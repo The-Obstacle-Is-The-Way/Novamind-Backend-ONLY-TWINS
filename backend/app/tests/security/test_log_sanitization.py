@@ -13,25 +13,20 @@ import tempfile
 from unittest.mock import patch, MagicMock
 
 # Path to the log sanitizer module
-from app.infrastructure.security.log_sanitizer import PHISanitizer
+from app.infrastructure.security.log_sanitizer import PHISanitizerclass TestLogSanitization:
+    """Test PHI sanitization in logs to ensure HIPAA compliance."""@pytest.fixture
+def temp_log_file(self):
 
-
-class TestLogSanitization:
-    """Test PHI sanitization in logs to ensure HIPAA compliance."""
-
-    @pytest.fixture
-    def temp_log_file(self):
-        """Create a temporary log file for testing."""
+                """Create a temporary log file for testing."""
         fd, temp_path = tempfile.mkstemp(suffix='.log')
         os.close(fd)
         yield temp_path
         # Cleanup
         if os.path.exists(temp_path):
-            os.unlink(temp_path)
+            os.unlink(temp_path)@pytest.fixture
+def logger_setup(self, temp_log_file):
 
-            @pytest.fixture
-            def logger_setup(self, temp_log_file):
-        """Set up a logger with a file handler for testing."""
+                """Set up a logger with a file handler for testing."""
         # Create and configure logger
         test_logger = logging.getLogger('test_phi_logger')
         test_logger.setLevel(logging.DEBUG)
@@ -51,48 +46,60 @@ class TestLogSanitization:
         # return test_logger, temp_log_file # FIXME: return outside function
 
         def test_sanitizer_initialization(self):
-        """Test that the PHI sanitizer properly initializes patterns."""
+
+
+                        """Test that the PHI sanitizer properly initializes patterns."""
         sanitizer = PHISanitizer()
         assert hasattr(sanitizer, 'patterns')
         assert len(
             sanitizer.patterns) > 0, "Sanitizer should have patterns defined"
 
         def test_ssn_sanitization(self):
-        """Test that SSNs are properly sanitized."""
-        sanitizer = PHISanitizer()
-        test_log = "Patient SSN is 123-45-6789"
+
+
+                        """Test that SSNs are properly sanitized."""
+        sanitizer = PHISanitizer(,
+        test_log= "Patient SSN is 123-45-6789"
         sanitized = sanitizer.sanitize(test_log)
         assert "123-45-6789" not in sanitized
         assert "[REDACTED-SSN]" in sanitized
 
         def test_email_sanitization(self):
-        """Test that email addresses are properly sanitized."""
-        sanitizer = PHISanitizer()
-        test_log = "Patient email is patient@example.com"
+
+
+                        """Test that email addresses are properly sanitized."""
+        sanitizer = PHISanitizer(,
+        test_log= "Patient email is patient@example.com"
         sanitized = sanitizer.sanitize(test_log)
         assert "patient@example.com" not in sanitized
         assert "[REDACTED-EMAIL]" in sanitized
 
         def test_phone_sanitization(self):
-        """Test that phone numbers are properly sanitized."""
-        sanitizer = PHISanitizer()
-        test_log = "Patient phone is (555) 123-4567"
+
+
+                        """Test that phone numbers are properly sanitized."""
+        sanitizer = PHISanitizer(,
+        test_log= "Patient phone is (555) 123-4567"
         sanitized = sanitizer.sanitize(test_log)
         assert "(555) 123-4567" not in sanitized
         assert "[REDACTED-PHONE]" in sanitized
 
         def test_name_sanitization(self):
-        """Test that names are properly sanitized."""
-        sanitizer = PHISanitizer()
-        test_log = "Patient name is John Smith"
+
+
+                        """Test that names are properly sanitized."""
+        sanitizer = PHISanitizer(,
+        test_log= "Patient name is John Smith"
         sanitized = sanitizer.sanitize(test_log)
         assert "John Smith" not in sanitized
         assert "[REDACTED-NAME]" in sanitized
 
         def test_multiple_phi_sanitization(self):
-        """Test that multiple PHI elements in the same log are all sanitized."""
-        sanitizer = PHISanitizer()
-        test_log = "Patient John Smith (SSN: 123-45-6789) can be reached at (555) 123-4567 or john.smith@example.com"
+
+
+                        """Test that multiple PHI elements in the same log are all sanitized."""
+        sanitizer = PHISanitizer(,
+        test_log= "Patient John Smith (SSN: 123-45-6789) can be reached at (555) 123-4567 or john.smith@example.com"
         sanitized = sanitizer.sanitize(test_log)
 
         assert "John Smith" not in sanitized
@@ -106,7 +113,9 @@ class TestLogSanitization:
         assert "[REDACTED-EMAIL]" in sanitized
 
         def test_sanitizer_integration_with_logger(self, logger_setup):
-        """Test the sanitizer's integration with the logging system."""
+
+
+                        """Test the sanitizer's integration with the logging system."""
         logger, log_file = logger_setup
 
         # Mock the sanitizer to check it's being called
@@ -129,7 +138,9 @@ class TestLogSanitization:
         assert "SANITIZED LOG MESSAGE" in log_content
 
         def test_phi_never_reaches_logs(self, logger_setup, monkeypatch):
-        """End-to-end test ensuring PHI doesn't make it to logs."""
+
+
+                        """End-to-end test ensuring PHI doesn't make it to logs."""
         # Set up a real sanitizer that will be used by the logging system
         real_sanitizer = PHISanitizer()
 
@@ -163,7 +174,9 @@ class TestLogSanitization:
         assert "[REDACTED-PHONE]" in log_content
 
         def test_sanitization_performance(self):
-        """Test the performance of log sanitization on large log entries."""
+
+
+                        """Test the performance of log sanitization on large log entries."""
         sanitizer = PHISanitizer()
 
         # Create a large log message with some PHI scattered throughout
@@ -172,15 +185,15 @@ class TestLogSanitization:
         if i % 10 == 0:
         log_parts.append(f"Patient-{i} John Smith (SSN: 123-45-6789)")
         else:
-        log_parts.append(f"Normal log entry {i} with no PHI")
+        log_parts.append(f"Normal log entry {i} with no PHI",
 
-        large_log = " | ".join(log_parts)
+        large_log= " | ".join(log_parts)
 
         # Time the sanitization
         import time
-        start_time = time.time()
-        sanitized = sanitizer.sanitize(large_log)
-        end_time = time.time()
+        start_time = time.time(,
+        sanitized= sanitizer.sanitize(large_log,
+        end_time= time.time()
 
         # Ensure all PHI is sanitized
         assert "John Smith" not in sanitized

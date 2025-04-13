@@ -13,17 +13,16 @@ import pytest
 from datetime import datetime, UTC, timedelta
 from typing import Dict, Any, List
 
-from app.core.exceptions import
+from app.core.exceptions import (
 InvalidConfigurationError,
 InvalidRequestError,
 ModelNotFoundError,
 ServiceUnavailableError,
 ResourceNotFoundError
-()
+)
 
 
-@pytest.mark.db_required()
-class TestMockDigitalTwinService(BaseUnitTest):
+@pytest.mark.db_required()class TestMockDigitalTwinService(BaseUnitTest):
     """
     Test suite for MockDigitalTwinService class.
 
@@ -32,7 +31,9 @@ class TestMockDigitalTwinService(BaseUnitTest):
     """
 
     def setUp(self) -> None:
-        """Set up test fixtures before each test method."""
+
+
+                    """Set up test fixtures before each test method."""
         super().setUp()
         self.service = MockDigitalTwinService()
         self.service.initialize({})
@@ -66,13 +67,17 @@ class TestMockDigitalTwinService(BaseUnitTest):
     self.sample_message = "I've been feeling anxious in social situations lately."
 
     def tearDown(self) -> None:
-        """Clean up after each test."""
+
+
+                    """Clean up after each test."""
         if hasattr(self, 'service') and self.service.is_healthy():
             self.service.shutdown()
             super().tearDown()
 
             def test_initialization(self) -> None:
-        """Test service initialization with various configurations."""
+
+
+                            """Test service initialization with various configurations."""
         # Test default initialization
         service = MockDigitalTwinService()
         service.initialize({})
@@ -97,11 +102,13 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.assertFalse(service.is_healthy())
 
         def test_create_session(self) -> None:
-        """Test creating a digital twin therapy session."""
+
+
+                        """Test creating a digital twin therapy session."""
         # Test with different session types
         for session_type in ["therapy", "assessment", "medication_review"]:
-            result = self.service.create_session()
-            twin_id = self.twin_id,
+            result = self.service.create_session(,
+            twin_id= self.twin_id,
             session_type = session_type
             ()
 
@@ -124,13 +131,15 @@ class TestMockDigitalTwinService(BaseUnitTest):
                 (datetime.now(UTC) - start_time).total_seconds(), 10)
 
             def test_get_session(self) -> None:
-        """Test retrieving a digital twin therapy session."""
+
+
+                            """Test retrieving a digital twin therapy session."""
         # Create a session
-        create_result = self.service.create_session()
-        twin_id = self.twin_id,
+        create_result = self.service.create_session(,
+        twin_id= self.twin_id,
         session_type = "therapy"
-        ()
-        session_id = create_result["session_id"]
+        (,
+        session_id= create_result["session_id"]
 
         # Get the session
         get_result = self.service.get_session(session_id)
@@ -147,17 +156,19 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.service.get_session("nonexistent-session-id")
 
         def test_send_message(self) -> None:
-        """Test sending a message to a digital twin therapy session."""
+
+
+                        """Test sending a message to a digital twin therapy session."""
         # Create a session
-        create_result = self.service.create_session()
-        twin_id = self.twin_id,
+        create_result = self.service.create_session(,
+        twin_id= self.twin_id,
         session_type = "therapy"
-        ()
-        session_id = create_result["session_id"]
+        (,
+        session_id= create_result["session_id"]
 
         # Send a message
-        message_result = self.service.send_message()
-        session_id = session_id,
+        message_result = self.service.send_message(,
+        session_id= session_id,
         message = self.sample_message
         ()
 
@@ -177,19 +188,21 @@ class TestMockDigitalTwinService(BaseUnitTest):
 
         # Test sending to a non-existent session
         with self.assertRaises(ResourceNotFoundError):
-        self.service.send_message()
-        session_id = "nonexistent-session-id",
+        self.service.send_message(,
+        session_id= "nonexistent-session-id",
         message = self.sample_message
         ()
 
         def test_message_response_types(self) -> None:
-        """Test different types of responses based on message content."""
+
+
+                        """Test different types of responses based on message content."""
         # Create a session
-        create_result = self.service.create_session()
-        twin_id = self.twin_id,
+        create_result = self.service.create_session(,
+        twin_id= self.twin_id,
         session_type = "therapy"
-        ()
-        session_id = create_result["session_id"]
+        (,
+        session_id= create_result["session_id"]
 
         # Test different message types
         test_messages = {
@@ -203,8 +216,8 @@ class TestMockDigitalTwinService(BaseUnitTest):
     for topic, message in test_messages.items():
         result = self.service.send_message(
             session_id=session_id, message=message)
-        self.assertIn("response", result)
-        response = result["response"]
+        self.assertIn("response", result,
+        response= result["response"]
 
         # Response should be relevant to the topic
         self.assertTrue()
@@ -213,17 +226,19 @@ class TestMockDigitalTwinService(BaseUnitTest):
         ()
 
         def test_end_session(self) -> None:
-        """Test ending a digital twin therapy session."""
+
+
+                        """Test ending a digital twin therapy session."""
         # Create a session
-        create_result = self.service.create_session()
-        twin_id = self.twin_id,
+        create_result = self.service.create_session(,
+        twin_id= self.twin_id,
         session_type = "therapy"
-        ()
-        session_id = create_result["session_id"]
+        (,
+        session_id= create_result["session_id"]
 
         # Send a message to have some content
-        self.service.send_message()
-        session_id = session_id,
+        self.service.send_message(,
+        session_id= session_id,
         message = self.sample_message
         ()
 
@@ -250,13 +265,15 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.service.end_session(session_id)
 
         def test_get_insights(self) -> None:
-        """Test getting insights from a completed digital twin session."""
+
+
+                        """Test getting insights from a completed digital twin session."""
         # Create and complete a session with some messages
-        session_result = self.service.create_session()
-        twin_id = self.twin_id,
+        session_result = self.service.create_session(,
+        twin_id= self.twin_id,
         session_type = "therapy"
-        ()
-        session_id = session_result["session_id"]
+        (,
+        session_id= session_result["session_id"]
 
         # Send multiple messages to generate meaningful insights
         messages = [
@@ -289,7 +306,9 @@ class TestMockDigitalTwinService(BaseUnitTest):
             insights_result["insights"]["recommendations"], list)
 
         def test_mood_insights(self) -> None:
-        """Test mood tracking insights from digital twin sessions."""
+
+
+                        """Test mood tracking insights from digital twin sessions."""
         # Create and complete multiple sessions to track mood
         mood_messages = {
             "session1": [
@@ -300,11 +319,11 @@ class TestMockDigitalTwinService(BaseUnitTest):
     session_ids = []
     for session_name, messages in mood_messages.items():
         # Create session
-        session_result = self.service.create_session()
-        twin_id = self.twin_id,
+        session_result = self.service.create_session(,
+        twin_id= self.twin_id,
         session_type = "therapy"
-        ()
-        session_id = session_result["session_id"]
+        (,
+        session_id= session_result["session_id"]
         session_ids.append(session_id)
 
         # Send messages
@@ -330,7 +349,9 @@ class TestMockDigitalTwinService(BaseUnitTest):
             len(mood_insights["mood_data"]), 3)  # One per session
 
         def test_activity_insights(self) -> None:
-        """Test activity tracking insights from digital twin."""
+
+
+                        """Test activity tracking insights from digital twin."""
         # Generate activity insights
         activity_insights = self.service.get_activity_insights(self.twin_id)
 
@@ -342,7 +363,9 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.assertIn("recommendations", activity_insights)
 
         def test_sleep_insights(self) -> None:
-        """Test sleep tracking insights from digital twin."""
+
+
+                        """Test sleep tracking insights from digital twin."""
         # Generate sleep insights
         sleep_insights = self.service.get_sleep_insights(self.twin_id)
 
@@ -355,7 +378,9 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.assertIn("recommendations", sleep_insights)
 
         def test_medication_insights(self) -> None:
-        """Test medication insights from digital twin."""
+
+
+                        """Test medication insights from digital twin."""
         # Generate medication insights
         medication_insights = self.service.get_medication_insights(
             self.twin_id)
@@ -368,7 +393,9 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.assertIn("recommendations", medication_insights)
 
         def test_treatment_insights(self) -> None:
-        """Test treatment response insights from digital twin."""
+
+
+                        """Test treatment response insights from digital twin."""
         # Generate treatment insights
         treatment_insights = self.service.get_treatment_insights(self.twin_id)
 

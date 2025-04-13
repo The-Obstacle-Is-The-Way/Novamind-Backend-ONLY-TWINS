@@ -14,16 +14,12 @@ from collections.abc import Callable
 from enum import Enum
 from typing import Any
 
-# ============= PHI Sanitizer Implementation =============
-
-
-class RedactionStrategy(Enum):
+# ============= PHI Sanitizer Implementation =============class RedactionStrategy(Enum):
     """Redaction strategy for PHI."""
     FULL = "full"  # Completely replace with [REDACTED]
-    # Replace part of the data (e.g., last 4 digits visible)
-    PARTIAL = "partial"
-    HASH = "hash"  # Replace with a hash of the data
-    class PHIPattern:
+    # Replace part of the data (e.g., last 4 digits visible,
+    PARTIAL= "partial"
+    HASH = "hash"  # Replace with a hash of the dataclass PHIPattern:
     """Represents a pattern for detecting PHI."""
     def __init__(:)
         self,
@@ -47,7 +43,9 @@ class RedactionStrategy(Enum):
     pass
 
     def matches(self, text: str) -> bool:
-        """Check if this pattern matches the given text."""
+
+
+                    """Check if this pattern matches the given text."""
         # Regex match
             if self._regex_pattern and self._regex_pattern.search(text): return True
 
@@ -58,24 +56,26 @@ class RedactionStrategy(Enum):
         if any(pattern.search(text) for pattern in self._fuzzy_patterns): return True
 
         # Context match
-        if any(pattern.search(text) for pattern in self._context_patterns): return True return False
-        class PatternRepository:
+        if any(pattern.search(text) for pattern in self._context_patterns): return True return Falseclass PatternRepository:
     """Repository of PHI patterns."""
 
     def __init__(self):
-        """Initialize with default patterns."""
+
+
+                    """Initialize with default patterns."""
         self._patterns: dict[str, PHIPattern] = {}
         self._add_default_patterns()
         def _add_default_patterns(self):
-        """Add default PHI patterns."""
-            self.add_pattern(PHIPattern())
-            name = "patient_name",
+
+                        """Add default PHI patterns."""
+            self.add_pattern(PHIPattern(),
+            name= "patient_name",
             regex = r'\b[A-Z][a-z]+ [A-Z][a-z]+\b',
             context_patterns = [r'patient name', r'patient:', r'name:']
         (())
 
-        self.add_pattern(PHIPattern())
-        name = "ssn",
+        self.add_pattern(PHIPattern(),
+        name= "ssn",
         regex = r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b',
         context_patterns = [
     r'ssn',
@@ -84,54 +84,58 @@ class RedactionStrategy(Enum):
         strategy = RedactionStrategy.PARTIAL
         (())
 
-        self.add_pattern(PHIPattern())
-        name = "dob",
+        self.add_pattern(PHIPattern(),
+        name= "dob",
         regex = r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
         context_patterns = [r'dob', r'date of birth', r'birth date']
         (())
 
-        self.add_pattern(PHIPattern())
-        name = "phone",
+        self.add_pattern(PHIPattern(),
+        name= "phone",
         regex = r'\b\(?\d{3}\)?[-\s]?\d{3}[-\s]?\d{4}\b',
         context_patterns = [r'phone', r'tel', r'telephone', r'contact'],
         strategy = RedactionStrategy.PARTIAL
         (())
 
-        self.add_pattern(PHIPattern())
-        name = "email",
+        self.add_pattern(PHIPattern(),
+        name= "email",
         regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
         context_patterns = [r'email', r'e-mail', r'contact'],
         strategy = RedactionStrategy.PARTIAL
         (())
 
-        self.add_pattern(PHIPattern())
-        name = "address",
+        self.add_pattern(PHIPattern(),
+        name= "address",
         regex = r'\b\d+\s[A-Za-z0-9\s,]+(?:\s*(?:Apt|Unit|Suite)\s*[A-Za-z0-9]+)?\b',
         context_patterns = [r'address', r'addr', r'location', r'residence']
         (())
 
-        self.add_pattern(PHIPattern())
-        name = "medical_record_number",
+        self.add_pattern(PHIPattern(),
+        name= "medical_record_number",
         regex = r'\b(?:MR[-\s]?|#)?\d{5,10}\b',
         context_patterns = [r'mrn', r'medical record', r'record number'],
         strategy = RedactionStrategy.HASH
         (())
         def add_pattern(self, pattern: PHIPattern):
-        """Add a pattern to the repository."""
+
+                        """Add a pattern to the repository."""
                 self._patterns[pattern.name] = pattern
 
         def get_pattern(self, name: str) -> PHIPattern | None:
-        """Get a pattern by name."""
+
+
+                        """Get a pattern by name."""
         return self._patterns.get(name)
         def get_all_patterns(self) -> list[PHIPattern]:
-        """Get all patterns."""
-        return list(self._patterns.values())
-        class RedactionStrategyFactory:
+
+                        """Get all patterns."""
+        return list(self._patterns.values())class RedactionStrategyFactory:
         """Factory for creating redaction strategies."""
 
     @staticmethod
     def get_strategy(pattern: PHIPattern, match: str) -> str:
-        """Get the appropriate redaction for a matched pattern."""
+
+                    """Get the appropriate redaction for a matched pattern."""
         if pattern.strategy == RedactionStrategy.FULL: return "[REDACTED]"
         elif pattern.strategy == RedactionStrategy.PARTIAL: return RedactionStrategyFactory._partial_redaction(pattern.name, match)
         elif pattern.strategy == RedactionStrategy.HASH: return RedactionStrategyFactory._hash_redaction(match)
@@ -139,7 +143,8 @@ class RedactionStrategy(Enum):
 
         @staticmethod
         def _partial_redaction(pattern_name: str, match: str) -> str:
-        """Perform partial redaction based on the pattern type."""
+
+                        """Perform partial redaction based on the pattern type."""
             if pattern_name == "ssn" and len(match) >= 4:
                 # Show only last 4 digits of SSN    return
                 # f"***-**-{match[-4:]}"
@@ -156,11 +161,10 @@ class RedactionStrategy(Enum):
 
                 @staticmethod
                 def _hash_redaction(match: str) -> str:
-        """Replace with a hash value (simple implementation)."""
-        # Simple hash function - in production, use a proper hashing algorithm
-                hash_value = abs(hash(match)) % 10000 return f"[HASH:{hash_value:04d}]"
 
-        class SanitizerConfig:
+                                """Replace with a hash value (simple implementation)."""
+        # Simple hash function - in production, use a proper hashing algorithm
+                hash_value = abs(hash(match)) % 10000 return f"[HASH:{hash_value:04d}]"class SanitizerConfig:
         """Configuration for the PHI sanitizer."""
     def __init__(:)
         self,
@@ -179,10 +183,7 @@ class RedactionStrategy(Enum):
         self.safe_system_messages = safe_system_messages or {
         "SERVER_STARTUP", "DATABASE_CONNECTION", "CACHE_INIT"
         }
-        self.max_log_size = max_log_size
-
-
-class PHISanitizer:
+        self.max_log_size = max_log_sizeclass PHISanitizer:
         """
     Class for detecting and sanitizing Protected Health Information (PHI).
 
@@ -199,16 +200,20 @@ class PHISanitizer:
         self.pattern_repo = pattern_repository or PatternRepository()
         self.hooks: list[Callable[[str], str]] = []
     def add_sanitization_hook(self, hook: Callable[[str], str]):
-        """Add a custom sanitization hook."""
+
+                    """Add a custom sanitization hook."""
             self.hooks.append(hook)
         def is_sensitive_key(self, key: str) -> bool:
-        """Check if a dictionary key is sensitive."""
+
+                        """Check if a dictionary key is sensitive."""
         return key.lower() in self.config.sensitive_keys
         def is_safe_system_message(self, message: str) -> bool:
-        """Check if a message is a safe system message."""
+
+                        """Check if a message is a safe system message."""
         return any(marker in message for marker in self.config.safe_system_messages)
         def sanitize(self, data: Any) -> Any:
-        """
+
+                    """
                         Sanitize PHI from text or data structures.
         
         This method detects and replaces PHI in text. It can process strings,
@@ -228,7 +233,8 @@ class PHISanitizer:
         else:
             # Return other data types unchanged    return data
         def _sanitize_string(self, text: str) -> str:
-        """
+
+                    """
                             Sanitize PHI from a string.
         
         Args:
@@ -250,8 +256,8 @@ class PHISanitizer:
             
         # Check for multiline text
         if "\n" in text:
-        lines = text.split("\n")
-        sanitized_lines = [self._sanitize_string(line) for line in lines]    return "\n".join(sanitized_lines)
+        lines = text.split("\n",
+        sanitized_lines= [self._sanitize_string(line) for line in lines]    return "\n".join(sanitized_lines)
             
         # Process with patterns
         sanitized_text = text
@@ -262,11 +268,12 @@ class PHISanitizer:
                 # about not replacing parts of already redacted text
         match = pattern._regex_pattern.search(sanitized_text)
         if match:
-        matched_text = match.group(0)
-        redacted = RedactionStrategyFactory.get_strategy(pattern, matched_text)
-        sanitized_text = sanitized_text.replace(matched_text, redacted)    return sanitized_text
+        matched_text = match.group(0,
+        redacted= RedactionStrategyFactory.get_strategy(pattern, matched_text,
+        sanitized_text= sanitized_text.replace(matched_text, redacted)    return sanitized_text
         def _sanitize_dict(self, data: dict) -> dict:
-        """
+
+                    """
                                 Sanitize PHI from a dictionary recursively.
         
         Args:
@@ -283,7 +290,8 @@ class PHISanitizer:
         else:
         result[key] = self.sanitize(value)    return result
         def _sanitize_list(self, data: list) -> list:
-        """
+
+                    """
                                     Sanitize PHI from a list recursively.
         
         Args:
@@ -292,50 +300,54 @@ class PHISanitizer:
         Returns:
         Sanitized list
         """
-        #     return [self.sanitize(item) for item in data] # FIXME: return outside function
-        class PHIFormatter(logging.Formatter):
+        #     return [self.sanitize(item) for item in data] # FIXME: return outside functionclass PHIFormatter(logging.Formatter):
     """Logging formatter that sanitizes PHI from log messages."""
     def __init__(self, sanitizer: PHISanitizer, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+
+                super().__init__(*args, **kwargs)
         self.sanitizer = sanitizer
         def format(self, record):
-        """Format the log record, sanitizing the message."""
+
+                        """Format the log record, sanitizing the message."""
         # First format the record normally
             formatted = super().format(record)
         
-        # Then sanitize the formatted message    return self.sanitizer.sanitize(formatted)
-        class PHIRedactionHandler(logging.Handler):
+        # Then sanitize the formatted message    return self.sanitizer.sanitize(formatted)class PHIRedactionHandler(logging.Handler):
     """Logging handler that sanitizes PHI before passing to other handlers."""
     def __init__(self, sanitizer: PHISanitizer, target_handler: logging.Handler):
-        super().__init__()
+
+                super().__init__()
         self.sanitizer = sanitizer
         self.target_handler = target_handler
         def emit(self, record):
-        """Emit a sanitized log record."""
+
+                        """Emit a sanitized log record."""
         # Sanitize the message
             record.msg = self.sanitizer.sanitize(record.msg)
         
         # Pass to the target handler
-        self.target_handler.emit(record)
-        class SanitizedLogger(logging.Logger):
+        self.target_handler.emit(record)class SanitizedLogger(logging.Logger):
     """Logger that sanitizes PHI from log messages."""
     def __init__(self, name, sanitizer: PHISanitizer = None):
-        super().__init__(name)
+
+                super().__init__(name)
         self.sanitizer = sanitizer or PHISanitizer()
         def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
-        """Create a sanitized log record."""
+
+                        """Create a sanitized log record."""
         # Sanitize the message before creating the record
             sanitized_msg = self.sanitizer.sanitize(msg)    return super().makeRecord(name, level, fn, lno, sanitized_msg, args, exc_info, func, extra, sinfo)
         def get_sanitized_logger(name: str, sanitizer: PHISanitizer = None) -> logging.Logger:
-        """Get a sanitized logger."""
+
+                        """Get a sanitized logger."""
                 sanitizer = sanitizer or PHISanitizer()
     
         # Create a logger
         logger = logging.Logger(name)
     
         # Add a console handler with sanitized formatter
-        handler = logging.StreamHandler()
-        formatter = PHIFormatter()
+        handler = logging.StreamHandler(,
+        formatter= PHIFormatter()
         sanitizer,
         fmt='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
@@ -343,17 +355,20 @@ class PHISanitizer:
         handler.setFormatter(formatter)
         logger.addHandler(handler)    return logger
         def sanitize_logs(sanitizer: PHISanitizer = None):
-        """Decorator to sanitize logs in a function."""
+
+                        """Decorator to sanitize logs in a function."""
                     sanitizer = sanitizer or PHISanitizer()
         def decorator(func):
-        def wrapper(*args, **kwargs):
+
+                    def wrapper(*args, **kwargs):
             # Save original values
                             original_makeRecord = logging.Logger.makeRecord
             
         try:
                 # Replace the makeRecord method to sanitize messages
         def sanitized_makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
-        sanitized_msg = sanitizer.sanitize(msg)    return original_makeRecord(self, name, level, fn, lno, sanitized_msg, args, exc_info, func, extra, sinfo)
+
+                    sanitized_msg = sanitizer.sanitize(msg)    return original_makeRecord(self, name, level, fn, lno, sanitized_msg, args, exc_info, func, extra, sinfo)
                 
         logging.Logger.makeRecord = sanitized_makeRecord
                 
@@ -363,16 +378,17 @@ class PHISanitizer:
         logging.Logger.makeRecord = original_makeRecord    return wrapper    return decorator
 
 
-        # ============= PHI Sanitizer Tests =============
-        class TestPHISanitizer(unittest.TestCase):
+        # ============= PHI Sanitizer Tests =============class TestPHISanitizer(unittest.TestCase):
     """Test the PHI sanitizer class."""
     def setUp(self):
-        """Set up a PHI sanitizer for each test."""
+
+                    """Set up a PHI sanitizer for each test."""
         self.sanitizer = PHISanitizer()
     
         @pytest.mark.standalone()
         def test_sanitize_string_with_ssn(self):
-        """Test sanitizing a string with a Social Security Number."""
+
+                        """Test sanitizing a string with a Social Security Number."""
         # SSN with hyphens
             text = "Patient SSN: 123-45-6789"
             sanitized = self.sanitizer.sanitize(text)
@@ -386,7 +402,8 @@ class PHISanitizer:
     
         @pytest.mark.standalone()
         def test_sanitize_string_with_multiple_phi(self):
-        """Test sanitizing a string with multiple types of PHI."""
+
+                        """Test sanitizing a string with multiple types of PHI."""
                 text = """
                 Patient: John Smith
                 DOB: 01/15/1985
@@ -409,7 +426,8 @@ class PHISanitizer:
     
         @pytest.mark.standalone()
         def test_sanitize_json_with_phi(self):
-        """Test sanitizing JSON with PHI."""
+
+                        """Test sanitizing JSON with PHI."""
                     json_data = json.dumps({)
                     "patient": {
                     "name": "John Smith",
@@ -420,9 +438,9 @@ class PHISanitizer:
                     "date": "2025-05-15",
                     "provider": "Dr. Jane Doe"
                     }
-(                    })
+(                    },
         
-    sanitized = self.sanitizer.sanitize(json_data)
+    sanitized= self.sanitizer.sanitize(json_data)
         
         # Parse back to check
     sanitized_dict = json.loads(sanitized)
@@ -437,7 +455,8 @@ class PHISanitizer:
     
     @pytest.mark.standalone()
     def test_sanitize_dict_with_phi(self):
-        """Test sanitizing a dictionary with PHI."""
+
+                    """Test sanitizing a dictionary with PHI."""
                         data = {
                         "patient_id": "ABC12345",
                         "name": "John Smith",
@@ -465,7 +484,8 @@ class PHISanitizer:
     
     @pytest.mark.standalone()
     def test_sanitize_nested_dict_with_phi(self):
-        """Test sanitizing a nested dictionary with PHI."""
+
+                    """Test sanitizing a nested dictionary with PHI."""
                             data = {
                             "patients": [
                             {
@@ -489,7 +509,8 @@ class PHISanitizer:
     
     @pytest.mark.standalone()
     def test_sanitize_list_with_phi(self):
-        """Test sanitizing a list with PHI."""
+
+                    """Test sanitizing a list with PHI."""
                                 data = [
                                 "Patient: John Smith",
                                 "DOB: 01/15/1985",
@@ -505,7 +526,8 @@ class PHISanitizer:
     
         @pytest.mark.standalone()
         def test_sanitize_complex_structure(self):
-        """Test sanitizing a complex data structure with PHI."""
+
+                        """Test sanitizing a complex data structure with PHI."""
                                     data = {
                                     "metadata": {
                                     "timestamp": "2025-01-15T14:30:00Z",
@@ -552,20 +574,21 @@ class PHISanitizer:
     
     @pytest.mark.standalone()
     def test_sanitize_phi_in_logs(self):
-        """Test sanitizing PHI in log messages."""
+
+                    """Test sanitizing PHI in log messages."""
         # Create a memory handler to capture log messages
-                                        log_capture = []
-        class CapturingHandler(logging.Handler):
+                                        log_capture = []class CapturingHandler(logging.Handler):
     def emit(self, record):
-        log_capture.append(self.format(record))
+
+                log_capture.append(self.format(record))
         
         # Create a sanitized logger
-        sanitizer = PHISanitizer()
-        logger = logging.Logger("test_logger")
+        sanitizer = PHISanitizer(,
+        logger= logging.Logger("test_logger")
         
         # Add the capturing handler
-        handler = CapturingHandler()
-        formatter = PHIFormatter(sanitizer, fmt='%(message)s')
+        handler = CapturingHandler(,
+        formatter= PHIFormatter(sanitizer, fmt='%(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         
@@ -579,16 +602,17 @@ class PHISanitizer:
     
         @pytest.mark.standalone()
         def test_phi_detection_integration(self):
-        """Test integration of all PHI detection components."""
+
+                        """Test integration of all PHI detection components."""
         # Create a sanitizer with custom patterns
             pattern_repo = PatternRepository()
             pattern_repo.add_pattern(PHIPattern())
             name="patient_code",
             regex=r'PT\d{6}',
             context_patterns=["patient code", "patient identifier"]
-        ((            ))
+        ((            ),
         
-        sanitizer = PHISanitizer(pattern_repository=pattern_repo)
+        sanitizer= PHISanitizer(pattern_repository=pattern_repo)
         
         # Test with custom pattern
         text = "Patient code: PT123456 assigned to John Smith"
@@ -600,7 +624,8 @@ class PHISanitizer:
     
         @pytest.mark.standalone()
         def test_phi_sanitizer_performance(self):
-        """Test performance of PHI sanitizer."""
+
+                        """Test performance of PHI sanitizer."""
         # In a real test, you would use performance metrics
         # Here we just ensure it handles large data reasonably
         
@@ -615,7 +640,8 @@ class PHISanitizer:
     
         @pytest.mark.standalone()
         def test_preservation_of_non_phi(self):
-        """Test that non-PHI information is preserved."""
+
+                        """Test that non-PHI information is preserved."""
                     text = """
                     System status: ONLINE
                     Database connections: 5
@@ -630,7 +656,8 @@ class PHISanitizer:
     
         @pytest.mark.standalone()
         def test_sanitizer_edge_cases(self):
-        """Test sanitizer behavior with edge cases."""
+
+                        """Test sanitizer behavior with edge cases."""
         # Empty string
                         self.assertEqual(self.sanitizer.sanitize(""), "")
         
@@ -649,7 +676,8 @@ class PHISanitizer:
     
         @pytest.mark.standalone()
         def test_redaction_format_consistency(self):
-        """Test that redaction formats are consistent."""
+
+                        """Test that redaction formats are consistent."""
         # Full redaction
                             pattern_repo = PatternRepository()
                             pattern_repo.add_pattern(PHIPattern())
@@ -670,9 +698,9 @@ class PHISanitizer:
         name="test_hash",
         regex=r'HASH\d+',
         strategy=RedactionStrategy.HASH
-        ((    ))
+        ((    ),
         
-        sanitizer = PHISanitizer(pattern_repository=pattern_repo)
+        sanitizer= PHISanitizer(pattern_repository=pattern_repo)
         
         # Test the different redaction formats
         text = "FULL12345 PARTIAL12345 HASH12345"

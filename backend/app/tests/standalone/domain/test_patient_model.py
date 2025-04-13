@@ -11,16 +11,17 @@ from app.domain.entities.patient import Patient
 from app.domain.value_objects import PatientId, MedicalRecordNumber
 
 
-@pytest.mark.standalone()
-class TestPatientModel:
+@pytest.mark.standalone()class TestPatientModel:
     """Tests for the Patient domain model."""
 
     def test_patient_creation_valid_data(self):
-        """Test that a patient can be created with valid data."""
+
+
+                    """Test that a patient can be created with valid data."""
         # Arrange
-        patient_id = PatientId("P12345")
-        mrn = MedicalRecordNumber("MRN-678901")
-        name = "John Doe"
+        patient_id = PatientId("P12345",
+        mrn= MedicalRecordNumber("MRN-678901",
+        name= "John Doe"
         dob = date(1980, 1, 15)
 
         # Act
@@ -39,11 +40,12 @@ class TestPatientModel:
 
     @pytest.mark.parametrize("invalid_name", ["", None, "   "])
     def test_patient_creation_invalid_name(self, invalid_name):
-        """Test that a patient cannot be created with an invalid name."""
+
+                    """Test that a patient cannot be created with an invalid name."""
         # Arrange
-        patient_id = PatientId("P12345")
-        mrn = MedicalRecordNumber("MRN-678901")
-        dob = date(1980, 1, 15)
+        patient_id = PatientId("P12345",
+        mrn= MedicalRecordNumber("MRN-678901",
+        dob= date(1980, 1, 15)
 
         # Act & Assert
         with pytest.raises(ValueError) as exc_info:
@@ -57,11 +59,13 @@ class TestPatientModel:
         assert "name" in str(exc_info.value).lower()
 
     def test_patient_age_calculation(self):
-        """Test that patient age is calculated correctly."""
+
+
+                    """Test that patient age is calculated correctly."""
         # Arrange
-        patient_id = PatientId("P12345")
-        mrn = MedicalRecordNumber("MRN-678901")
-        name = "John Doe"
+        patient_id = PatientId("P12345",
+        mrn= MedicalRecordNumber("MRN-678901",
+        name= "John Doe"
 
         # Patient born exactly 30 years ago
         thirty_years_ago = date.today().replace(year=date.today().year - 30)

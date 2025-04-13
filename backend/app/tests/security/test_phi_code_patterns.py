@@ -17,18 +17,18 @@ from unittest.mock import patch, mock_open
 from app.core.utils.validation import PHIDetector
 
 
-@pytest.mark.db_required()
-class TestPHIInCodePatterns:
-    """Test suite for PHI detection in common code patterns."""
+@pytest.mark.db_required()class TestPHIInCodePatterns:
+    """Test suite for PHI detection in common code patterns."""@pytest.fixture
+def detector(self):
 
-    @pytest.fixture
-    def detector(self):
-        """Create a PHI detector for testing."""
+                """Create a PHI detector for testing."""
 
         return PHIDetector()
 
         def test_phi_in_variable_assignment(self, detector):
-        """Test detection of PHI in variable assignments."""
+
+
+                        """Test detection of PHI in variable assignments."""
         # Different programming languages and assignment styles
         code_samples = [
             # Python
@@ -60,7 +60,9 @@ class TestPHIInCodePatterns:
             config), f"Failed to detect PHI in config: {config}"
 
         def test_phi_in_api_examples(self, detector):
-        """Test detection of PHI in API examples and documentation."""
+
+
+                        """Test detection of PHI in API examples and documentation."""
         api_samples = [
             # JSON API request example
             """
@@ -104,12 +106,15 @@ class TestPHIInCodePatterns:
             api_doc), f"Failed to detect PHI in API example: {api_doc}"
 
         def test_phi_in_test_cases(self, detector):
-        """Test detection of PHI in test cases and fixtures."""
+
+
+                        """Test detection of PHI in test cases and fixtures."""
         test_samples = [
             # Python pytest test
             """
         def test_process_patient():
-        patient = {
+
+                    patient = {
                     "name": "John Smith",
                     "ssn": "123-45-6789"
                 }
@@ -130,10 +135,10 @@ class TestPHIInCodePatterns:
     """,
 
             # Test fixture
-            """
-    @pytest.fixture
-    def test_patient_data():
-        return {
+            """@pytest.fixture
+def test_patient_data():
+
+            return {
                     "name": "John Smith",
                     "ssn": "123-45-6789",
                     "medical_records": [...]
@@ -147,7 +152,9 @@ class TestPHIInCodePatterns:
             test_code), f"Failed to detect PHI in test: {test_code}"
 
         def test_phi_in_logs_and_errors(self, detector):
-        """Test detection of PHI in logging statements and error messages."""
+
+
+                        """Test detection of PHI in logging statements and error messages."""
         log_samples = [
             # Python logging
             'logger.info(f"Processing patient {patient_name} with SSN {ssn}")',
@@ -168,7 +175,9 @@ class TestPHIInCodePatterns:
             log), f"Failed to detect PHI in log: {log}"
 
         def test_phi_in_comments(self, detector):
-        """Test detection of PHI in code comments."""
+
+
+                        """Test detection of PHI in code comments."""
         comment_samples = [
             # Single line comments
             '# TODO: Remove test patient John Smith with SSN 123-45-6789',
@@ -203,11 +212,15 @@ class TestPHIInCodePatterns:
             comment), f"Failed to detect PHI in comment: {comment}"
 
         def test_phi_in_complex_code(self, detector):
-        """Test detection of PHI in more complex, realistic code samples."""
+
+
+                        """Test detection of PHI in more complex, realistic code samples."""
         complex_code = """
 
         def process_patient_data(patient_data):
-        \"\"\"Process patient data and store in database.\"\"\"
+
+
+                    \"\"\"Process patient data and store in database.\"\"\"
             # Validate SSN format
             if not is_valid_ssn(patient_data.get('ssn')):
                 # Example of invalid SSN: 123-456-7890 (too many digits)
@@ -239,15 +252,17 @@ class TestPHIInCodePatterns:
         assert detector.contains_phi(complex_code)
 
         # Verify specific PHI instances are detected
-        matches = detector.detect_phi(complex_code)
-        ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+        matches = detector.detect_phi(complex_code,
+        ssn_matches= [m for m in matches if m.phi_type == "SSN"]
         name_matches = [m for m in matches if m.phi_type == "NAME"]
 
         assert len(ssn_matches) >= 4  # At least 4 instances of SSN
         assert len(name_matches) >= 3  # At least 3 instances of name
 
         def test_phi_in_multiline_strings(self, detector):
-        """Test detection of PHI in multiline strings and text blocks."""
+
+
+                        """Test detection of PHI in multiline strings and text blocks."""
         multiline_samples = [
             # Python triple-quoted strings
             '''"""
@@ -283,7 +298,9 @@ class TestPHIInCodePatterns:
             multiline), f"Failed to detect PHI in multiline string: {multiline}"
 
         def test_phi_in_html_templates(self, detector):
-        """Test detection of PHI in HTML templates."""
+
+
+                        """Test detection of PHI in HTML templates."""
         html_samples = [
             # Basic HTML
             """
@@ -323,7 +340,9 @@ class TestPHIInCodePatterns:
             html), f"Failed to detect PHI in HTML: {html}"
 
         def test_phi_in_database_queries(self, detector):
-        """Test detection of PHI in database queries and ORM operations."""
+
+
+                        """Test detection of PHI in database queries and ORM operations."""
         query_samples = [
             # SQL queries
             "SELECT * FROM patients WHERE ssn = '123-45-6789'",
@@ -354,19 +373,18 @@ class TestPHIInCodePatterns:
         # Verify PHI is detected in all samples
         for query in query_samples:
         assert detector.contains_phi(
-            query), f"Failed to detect PHI in query: {query}"
+            query), f"Failed to detect PHI in query: {query}"class TestPHIInSourceFiles:
+    """Test PHI detection in various file types."""@pytest.fixture
+def detector(self):
 
-        class TestPHIInSourceFiles:
-    """Test PHI detection in various file types."""
-
-    @pytest.fixture
-    def detector(self):
-        """Create a PHI detector for testing."""
+                """Create a PHI detector for testing."""
 
         return PHIDetector()
 
         def _create_temp_file(self, content, extension=".py"):
-        """Helper to create a temporary file with given content."""
+
+
+                        """Helper to create a temporary file with given content."""
         fd, path = tempfile.mkstemp(suffix=extension)
         try:
             with os.fdopen(fd, 'w') as f:
@@ -377,13 +395,17 @@ class TestPHIInCodePatterns:
             raise
 
             def test_python_file_with_phi(self, detector):
-        """Test detection of PHI in Python source files."""
+
+
+                            """Test detection of PHI in Python source files."""
         python_code = """
         #!/usr/bin/env python3
         # Test file with PHI data
 
         def get_test_patient():
-        \"\"\"Return test patient data.\"\"\"
+
+
+                    \"\"\"Return test patient data.\"\"\"
             return {
                 "name": "John Smith",
                 "ssn": "123-45-6789",
@@ -391,11 +413,10 @@ class TestPHIInCodePatterns:
             }
 
         # TODO: Remove hardcoded SSN before production
-    DEFAULT_SSN = "123-45-6789"
-
-        class Patient:
+    DEFAULT_SSN = "123-45-6789"class Patient:
             def __init__(self, name="John Smith", ssn="123-45-6789"):
-                self.name = name
+
+                                self.name = name
                 self.ssn = ssn
 
                 if __name__ == "__main__":
@@ -414,8 +435,8 @@ class TestPHIInCodePatterns:
                 assert detector.contains_phi(file_content)
 
                 # Check specific patterns
-                matches = detector.detect_phi(file_content)
-                ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+                matches = detector.detect_phi(file_content,
+                ssn_matches= [m for m in matches if m.phi_type == "SSN"]
                 name_matches = [m for m in matches if m.phi_type == "NAME"]
 
                 assert len(ssn_matches) >= 4  # At least 4 instances of SSN
@@ -425,7 +446,9 @@ class TestPHIInCodePatterns:
             os.unlink(path)
 
             def test_js_file_with_phi(self, detector):
-                """Test detection of PHI in JavaScript source files."""
+
+
+                                    """Test detection of PHI in JavaScript source files."""
                 js_code = """
                 // Test file with PHI data
 
@@ -442,9 +465,7 @@ class TestPHIInCodePatterns:
         }
 
         // TODO: Remove hardcoded SSN before production
-        const DEFAULT_SSN = "123-45-6789";
-
-        class Patient {:
+        const DEFAULT_SSN = "123-45-6789";class Patient {:
             constructor(name = "John Smith", ssn = "123-45-6789") {
             this.name = name;
             this.ssn = ssn;
@@ -466,8 +487,8 @@ class TestPHIInCodePatterns:
                 assert detector.contains_phi(file_content)
 
                 # Check specific patterns
-                matches = detector.detect_phi(file_content)
-                ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+                matches = detector.detect_phi(file_content,
+                ssn_matches= [m for m in matches if m.phi_type == "SSN"]
                 name_matches = [m for m in matches if m.phi_type == "NAME"]
 
                 assert len(ssn_matches) >= 4
@@ -477,7 +498,9 @@ class TestPHIInCodePatterns:
             os.unlink(path)
 
             def test_config_file_with_phi(self, detector):
-                """Test detection of PHI in configuration files."""
+
+
+                                    """Test detection of PHI in configuration files."""
                 config_content = """
                 [database]
                 host = localhost
@@ -502,8 +525,8 @@ class TestPHIInCodePatterns:
                 assert detector.contains_phi(file_content)
 
                 # Check specific patterns
-                matches = detector.detect_phi(file_content)
-                ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+                matches = detector.detect_phi(file_content,
+                ssn_matches= [m for m in matches if m.phi_type == "SSN"]
                 name_matches = [m for m in matches if m.phi_type == "NAME"]
                 dob_matches = [m for m in matches if m.phi_type == "DATE"]
 

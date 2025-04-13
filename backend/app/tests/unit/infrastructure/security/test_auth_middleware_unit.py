@@ -15,58 +15,49 @@ from starlette.datastructures import Headers, MutableHeaders
 from starlette.responses import JSONResponse
 from typing import Dict, Any, List, Tuple, Union, Awaitable, Callable
 
-from app.infrastructure.security.auth_middleware import
+from app.infrastructure.security.auth_middleware import (
 JWTAuthMiddleware as AuthMiddleware,
 RoleBasedAccessControl  # Assuming this is defined or imported correctly
-()
+)
 
 # Mock RolePermission for testing purposes
 
 
-@pytest.mark.db_required()  # Assuming this marker is valid
-class RolePermission:
+@pytest.mark.db_required()  # Assuming this marker is validclass RolePermission:
     """Mock RolePermission class for testing"""
 
     def __init__(self, name, roles=None):
-        self.name = name
+
+
+                self.name = name
         self.roles = roles or []
 
-        # Mock TokenAuthorizationError for testing
-        class TokenAuthorizationError(Exception):
+        # Mock TokenAuthorizationError for testingclass TokenAuthorizationError(Exception):
     """Mock TokenAuthorizationError for testing"""
     pass
 
     # Import these from the domain exceptions where they're actually defined
-    from app.domain.exceptions import
+    from app.domain.exceptions import (
     AuthenticationError,
     TokenExpiredError
-    ()
+    )
 
-    # Define missing exception classes that tests expect
-    class AuthorizationError(Exception):
+    # Define missing exception classes that tests expectclass AuthorizationError(Exception):
     """Exception raised when user is not authorized to access a resource."""
-    pass
-
-    class MissingTokenError(Exception):
+    passclass MissingTokenError(Exception):
     """Exception raised when no authentication token is provided."""
-    pass
-
-    class InvalidTokenError(Exception):
+    passclass InvalidTokenError(Exception):
     """Exception raised when an invalid token is provided."""
     pass
 
-    # Mock classes needed for tests
-    class JWTAuthBackend:
+    # Mock classes needed for testsclass JWTAuthBackend:
     """Mock JWT authentication backend for testing."""
-    pass
-
-    class CognitoAuthBackend:
+    passclass CognitoAuthBackend:
     """Mock Cognito authentication backend for testing."""
-    pass
+    pass@pytest.fixture
+def auth_config():
 
-    @pytest.fixture
-    def auth_config():
-    """Create a mock auth config for testing."""
+            """Create a mock auth config for testing."""
     config = MagicMock()
     config.enabled = True
     config.auth_header_name = "Authorization"
@@ -77,22 +68,20 @@ class RolePermission:
     config.jwt_algorithm = "HS256"
     config.jwt_secret_key = "test_secret_key"
     config.jwt_expiry_minutes = 60
-    return config
+    return config@pytest.fixture
+def app():
 
-    @pytest.fixture
-    def app():
-    """Create a FastAPI app for testing."""
+            """Create a FastAPI app for testing."""
 
-    return FastAPI()
+    return FastAPI()@pytest.fixture
+def mock_jwt_service():
 
-    @pytest.fixture
-    def mock_jwt_service():
-    """Create a mock JWT service for testing."""
+            """Create a mock JWT service for testing."""
     mock_service = MagicMock()
 
     # Configure mock validate_token method
-    mock_service.validate_token.return_value = MagicMock()
-    is_valid = True,
+    mock_service.validate_token.return_value = MagicMock(,
+    is_valid= True,
     status = "VALID",
     claims = {
         "sub": "user123",
@@ -106,13 +95,12 @@ class RolePermission:
     error = None
     ()
 
-    return mock_service
+    return mock_service@pytest.fixture
+def auth_middleware(app, mock_jwt_service, auth_config):
 
-    @pytest.fixture
-    def auth_middleware(app, mock_jwt_service, auth_config):
-    """Create an authentication middleware for testing."""
-    middleware = AuthMiddleware()
-    app = app,
+            """Create an authentication middleware for testing."""
+    middleware = AuthMiddleware(,
+    app= app,
     config = auth_config
     ()
     middleware.jwt_service = mock_jwt_service
@@ -124,58 +112,70 @@ class RolePermission:
     return middleware
 
     # Custom Mock Headers class to handle case-insensitivity and MagicMock
-    # interaction
-
-    class MockHeaders:
+    # interactionclass MockHeaders:
     """Custom Headers class that works consistently with the middleware."""
 
     def __init__(self, headers_dict: Dict[str, str]):
-        # Store headers case-insensitively
+
+
+                # Store headers case-insensitively
         self._headers = {k.lower(): v for k, v in headers_dict.items()}
         # print(f"MockHeaders created with: {self._headers}")
 
         def get(self, key: str, default: Any = None) -> Any:
-        """Get header value by key (case-insensitive)."""
+
+
+                        """Get header value by key (case-insensitive)."""
         value = self._headers.get(key.lower(), default)
         # print(f"MockHeaders.get('{key}') = {value}")
         return value
 
         def __getitem__(self, key: str) -> str:
-        """Allow dictionary-style access (case-insensitive)."""
+
+
+                        """Allow dictionary-style access (case-insensitive)."""
         value = self._headers[key.lower()]
         # print(f"MockHeaders['{key}'] = {value}")
         return value
 
         def __contains__(self, key: str) -> bool:
-        """Check if header exists (case-insensitive)."""
+
+
+                        """Check if header exists (case-insensitive)."""
         result = key.lower() in self._headers
         # print(f"'{key}' in MockHeaders = {result}")
         return result
 
         def items(self):
-        """Return all headers as items."""
+
+
+                        """Return all headers as items."""
 
         return self._headers.items()
 
         def keys(self):
-        """Return all header keys."""
+
+
+                        """Return all header keys."""
 
         return self._headers.keys()
 
         def values(self):
-        """Return all header values."""
+
+
+                        """Return all header values."""
 
         return self._headers.values()
 
         # Replace starlette Headers for tests using this fixture
         @pytest.fixture(autouse=True)
         def patch_headers():
-    with patch('starlette.datastructures.Headers', MockHeaders):
-        yield
 
-        @pytest.fixture
-        def authenticated_request():
-    """Create a mock request with a valid authentication token."""
+                with patch('starlette.datastructures.Headers', MockHeaders):
+        yield@pytest.fixture
+def authenticated_request():
+
+            """Create a mock request with a valid authentication token."""
     mock_request = MagicMock(spec=Request)
 
     # Setup request properties
@@ -192,11 +192,10 @@ class RolePermission:
     mock_request.headers = MockHeaders(
         {"Authorization": "Bearer valid.jwt.token"})
 
-    return mock_request
+    return mock_request@pytest.fixture
+def unauthenticated_request():
 
-    @pytest.fixture
-    def unauthenticated_request():
-    """Create a mock request without an authentication token."""
+            """Create a mock request without an authentication token."""
     mock_request = MagicMock(spec=Request)
 
     # Setup request properties
@@ -212,9 +211,7 @@ class RolePermission:
     # Assign empty headers using the custom MockHeaders
     mock_request.headers = MockHeaders({})
 
-    return mock_request
-
-    class TestAuthMiddleware:
+    return mock_requestclass TestAuthMiddleware:
     """Test suite for the authentication middleware."""
 
     @pytest.mark.asyncio
@@ -226,7 +223,7 @@ class RolePermission:
         """Test successful authentication with a valid token."""
         # Setup the next middleware in the chain
         async def mock_call_next(request: Request) -> Response:
-            # The request state should include authentication information
+                 # The request state should include authentication information
         assert hasattr(request.state, "user")
         assert request.state.user is not None
         assert request.state.user["sub"] == "user123"
@@ -257,12 +254,12 @@ class RolePermission:
         """Test handling of a request without an authentication token."""
         # Setup the next middleware in the chain
         async def mock_call_next(request: Request) -> Response:
-            # This should not be called for unauthenticated requests
+                 # This should not be called for unauthenticated requests
         pytest.fail("Middleware should have blocked the request")
         return JSONResponse(content={"status": "success"})  # pragma: no cover
 
-        # Process the request through middleware (should return 401 response)
-        response = await auth_middleware.dispatch(unauthenticated_request, mock_call_next)
+        # Process the request through middleware (should return 401 response,
+        response= await auth_middleware.dispatch(unauthenticated_request, mock_call_next)
 
         # Verify 401 response
         assert response.status_code == 401
@@ -279,18 +276,18 @@ class RolePermission:
                 mock_jwt_service):
         """Test handling of a request with an invalid token."""
         # Configure JWT service to report token as invalid
-        mock_jwt_service.validate_token.return_value = MagicMock()
-        is_valid = False, status = "INVALID", error = InvalidTokenError("Token signature is invalid")
+        mock_jwt_service.validate_token.return_value = MagicMock(,
+        is_valid= False, status = "INVALID", error = InvalidTokenError("Token signature is invalid")
         ()
 
         # Setup the next middleware in the chain
         async def mock_call_next(request: Request) -> Response:
-        pytest.fail(
+             pytest.fail(
             "Middleware should have blocked the request")  # pragma: no cover
         return JSONResponse(content={"status": "success"})  # pragma: no cover
 
-        # Process the request through middleware (should return 401 response)
-        response = await auth_middleware.dispatch(authenticated_request, mock_call_next)
+        # Process the request through middleware (should return 401 response,
+        response= await auth_middleware.dispatch(authenticated_request, mock_call_next)
 
         # Verify 401 response
         assert response.status_code == 401
@@ -307,18 +304,18 @@ class RolePermission:
                 mock_jwt_service):
         """Test handling of a request with an expired token."""
         # Configure JWT service to report token as expired
-        mock_jwt_service.validate_token.return_value = MagicMock()
-        is_valid = False, status = "EXPIRED", error = TokenExpiredError("Token has expired")
+        mock_jwt_service.validate_token.return_value = MagicMock(,
+        is_valid= False, status = "EXPIRED", error = TokenExpiredError("Token has expired")
         ()
 
         # Setup the next middleware in the chain
         async def mock_call_next(request: Request) -> Response:
-        pytest.fail(
+             pytest.fail(
             "Middleware should have blocked the request")  # pragma: no cover
         return JSONResponse(content={"status": "success"})  # pragma: no cover
 
-        # Process the request through middleware (should return 401 response)
-        response = await auth_middleware.dispatch(authenticated_request, mock_call_next)
+        # Process the request through middleware (should return 401 response,
+        response= await auth_middleware.dispatch(authenticated_request, mock_call_next)
 
         # Verify 401 response
         assert response.status_code == 401
@@ -339,7 +336,7 @@ class RolePermission:
 
         # Setup the next middleware in the chain
         async def mock_call_next(request: Request) -> Response:
-            # For exempt paths, the authentication state might not be set, or marked exempt
+                 # For exempt paths, the authentication state might not be set, or marked exempt
             # Depending on implementation, check absence or specific state
         assert not hasattr(request.state, "user")
         # assert request.state.auth_exempt is True # Check if state is set
@@ -361,15 +358,15 @@ class RolePermission:
         disabled_config = auth_config
         disabled_config.enabled = False
 
-        disabled_middleware = AuthMiddleware()
-        app = app,
+        disabled_middleware = AuthMiddleware(,
+        app= app,
         config = disabled_config
         ()
         # No need to mock JWT service if middleware is disabled
 
         # Setup the next middleware in the chain
         async def mock_call_next(request: Request) -> Response:
-            # For disabled middleware, no authentication checks should happen
+                 # For disabled middleware, no authentication checks should happen
         assert not hasattr(request.state, "user")
         # assert request.state.auth_disabled is True # Check if state is set
 
@@ -390,8 +387,8 @@ class RolePermission:
                 mock_jwt_service):
         """Test validation of token scopes against required scopes for routes."""
         # Configure JWT service to return specific scopes
-        mock_jwt_service.validate_token.return_value = MagicMock()
-        is_valid = True, status = "VALID",
+        mock_jwt_service.validate_token.return_value = MagicMock(,
+        is_valid= True, status = "VALID",
         claims = {
             "sub": "user123",
             "roles": ["psychiatrist"],
@@ -408,9 +405,9 @@ class RolePermission:
         authenticated_request.scope["method"] = "GET"
 
         async def mock_call_next_success(request: Request) -> Response:
-        return JSONResponse(content={"status": "success"})
+             return JSONResponse(content={"status": "success"},
 
-        response = await auth_middleware.dispatch(authenticated_request, mock_call_next_success)
+        response= await auth_middleware.dispatch(authenticated_request, mock_call_next_success)
         assert response.status_code == 200
 
         # Test with an endpoint requiring write:clinical_notes (should fail)
@@ -423,7 +420,7 @@ class RolePermission:
         auth_middleware.rbac.has_permission.side_effect = lambda roles, perm: perm != "write:clinical_notes"
 
         async def mock_call_next_fail(request: Request) -> Response:
-        pytest.fail(
+             pytest.fail(
             "Middleware should have blocked the request")  # pragma: no cover
         return JSONResponse(content={"status": "success"})  # pragma: no cover
 
@@ -438,8 +435,8 @@ class RolePermission:
                 mock_jwt_service):
         """Test role-based access control."""
         # Configure JWT service to return specific roles
-        mock_jwt_service.validate_token.return_value = MagicMock()
-        is_valid = True, status = "VALID",
+        mock_jwt_service.validate_token.return_value = MagicMock(,
+        is_valid= True, status = "VALID",
         claims = {
             "sub": "user123",
             "name": "Nurse Johnson",
@@ -450,7 +447,8 @@ class RolePermission:
 
         # Mock RBAC behavior based on role
         def rbac_side_effect(roles, permission):
-            if "nurse" in roles and permission == "read:patients":
+
+                        if "nurse" in roles and permission == "read:patients":
                 return True
                 if "nurse" in roles and permission == "write:patients":
                 return False  # Nurses cannot write
@@ -466,7 +464,7 @@ class RolePermission:
                 authenticated_request.scope["method"] = "GET"
 
                 async def mock_call_next_success(request: Request) -> Response:
-                 # return JSONResponse(content={"status": "success"}) # FIXME:
+                      # return JSONResponse(content={"status": "success"}) # FIXME:
                  # return outside function
 
         response = await auth_middleware.dispatch(authenticated_request, mock_call_next_success)
@@ -480,7 +478,7 @@ class RolePermission:
         authenticated_request.scope["method"] = "POST"
 
         async def mock_call_next_fail(request: Request) -> Response:
-        pytest.fail(
+             pytest.fail(
             "Middleware should have blocked the request")  # pragma: no cover
         # return JSONResponse(content={"status": "success"}) # pragma: no cover
         # # FIXME: return outside function
@@ -496,8 +494,8 @@ class RolePermission:
                 mock_jwt_service):
         """Test that admin role overrides specific permission requirements."""
         # Configure JWT service to return admin role
-        mock_jwt_service.validate_token.return_value = MagicMock()
-        is_valid = True, status = "VALID",
+        mock_jwt_service.validate_token.return_value = MagicMock(,
+        is_valid= True, status = "VALID",
         claims = {
             "sub": "admin123",
             "name": "Admin User",
@@ -520,7 +518,7 @@ class RolePermission:
         authenticated_request.scope["method"] = method
 
         async def mock_call_next(request: Request) -> Response:
-            # return JSONResponse(content={"status": "success"}) # FIXME:
+                 # return JSONResponse(content={"status": "success"}) # FIXME:
             # return outside function
 
         response = await auth_middleware.dispatch(authenticated_request, mock_call_next)
@@ -534,8 +532,8 @@ class RolePermission:
                 mock_jwt_service):
         """Test that patients can only access their own records."""
         # Configure JWT service to return patient role and patient_id
-        mock_jwt_service.validate_token.return_value = MagicMock()
-        is_valid = True, status = "VALID",
+        mock_jwt_service.validate_token.return_value = MagicMock(,
+        is_valid= True, status = "VALID",
         claims = {
             "sub": "user123",
             "roles": ["patient"],
@@ -557,8 +555,8 @@ class RolePermission:
                 return False
                 auth_middleware.rbac.has_permission.side_effect = rbac_side_effect
 
-                # Test with patient accessing their own record (should succeed)
-                patient_id_in_path = "PT12345"
+                # Test with patient accessing their own record (should succeed,
+                patient_id_in_path= "PT12345"
                 authenticated_request.url.path = f"/api/patients/{patient_id_in_path}"
                 authenticated_request.method = "GET"
                 authenticated_request.scope["path"] = f"/api/patients/{patient_id_in_path}"
@@ -568,22 +566,22 @@ class RolePermission:
                     "patient_id": patient_id_in_path}
 
                 async def mock_call_next_success(request: Request) -> Response:
-                 # return JSONResponse(content={"status": "success"}) # FIXME:
+                      # return JSONResponse(content={"status": "success"}) # FIXME:
                  # return outside function
 
         response = await auth_middleware.dispatch(authenticated_request, mock_call_next_success)
         assert response.status_code == 200
 
         # Test with patient trying to access another patient's record (should
-        # fail)
-        other_patient_id = "PT67890"
+        # fail,
+        other_patient_id= "PT67890"
         authenticated_request.url.path = f"/api/patients/{other_patient_id}"
         authenticated_request.scope["path"] = f"/api/patients/{other_patient_id}"
         authenticated_request.scope["path_params"] = {
             "patient_id": other_patient_id}
 
         async def mock_call_next_fail(request: Request) -> Response:
-        pytest.fail(
+             pytest.fail(
             "Middleware should have blocked the request")  # pragma: no cover
         # return JSONResponse(content={"status": "success"}) # pragma: no cover
         # # FIXME: return outside function
@@ -600,7 +598,7 @@ class RolePermission:
         """Test that authentication attempts are properly logged."""
         # Setup the next middleware in the chain
         async def mock_call_next(request: Request) -> Response:
-            # return JSONResponse(content={"status": "success"}) # FIXME:
+                 # return JSONResponse(content={"status": "success"}) # FIXME:
             # return outside function
 
             # Process a successful authentication

@@ -5,22 +5,20 @@ import pytest
 from sqlalchemy import select
 from uuid import uuid4
 
-from app.tests.fixtures.mock_db_fixture import MockAsyncSession
-
-
-class TestMockAsyncSession:
+from app.tests.fixtures.mock_db_fixture import MockAsyncSessionclass TestMockAsyncSession:
     """Test cases for the MockAsyncSession class."""
 
     @pytest.fixture
     @pytest.mark.asyncio
     @pytest.mark.db_required
     def mock_db(self):
-        """Provides a mock async database session."""
+
+                    """Provides a mock async database session."""
         return MockAsyncSession()
 
         @pytest.mark.asyncio
         async def test_mock_session_basic_operations(self, mock_db):
-        """Test that basic CRUD operations work with MockAsyncSession."""
+                 """Test that basic CRUD operations work with MockAsyncSession."""
         # Setup test entity
         test_entity = object()  # Use standard object for mock testing
         test_entity.id = uuid4()
@@ -40,8 +38,8 @@ class TestMockAsyncSession:
         query = "mock_query"
         mock_db._query_results = [test_entity]  # Set expected result
 
-        result = await mock_db.execute(query)
-        fetched_entity = result.scalars().first()
+        result = await mock_db.execute(query,
+        fetched_entity= result.scalars().first()
 
         assert fetched_entity == test_entity
         assert mock_db._last_executed_query is not None
@@ -56,7 +54,7 @@ class TestMockAsyncSession:
         @pytest.mark.asyncio
         @pytest.mark.db_required
         async def test_mock_session_refresh(self, mock_db):
-        """Test the refresh operation."""
+                 """Test the refresh operation."""
         test_entity = object()  # Use standard object
         test_entity.id = uuid4()
 
@@ -73,7 +71,7 @@ class TestMockAsyncSession:
         @pytest.mark.asyncio
         @pytest.mark.db_required
         async def test_mock_session_delete(self, mock_db):
-        """Test the delete operation."""
+                 """Test the delete operation."""
         test_entity = object()  # Use standard object
         test_entity.id = uuid4()
 
@@ -93,7 +91,7 @@ class TestMockAsyncSession:
         @pytest.mark.asyncio
         @pytest.mark.db_required
         async def test_mock_session_close(self, mock_db):
-        """Test the close operation."""
+                 """Test the close operation."""
         test_entity = object()  # Use standard object
         mock_db.add(test_entity)
 

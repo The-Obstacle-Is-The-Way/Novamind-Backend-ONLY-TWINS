@@ -19,12 +19,12 @@ from app.domain.value_objects.physiological_ranges import PhysiologicalRange
 
 @pytest.fixture
 def test_client():
-    """Create a test client for the FastAPI app."""
-    return TestClient(app)
 
-    @pytest.fixture
-    def mock_digital_twin_service():
-    """Create a mock digital twin service."""
+            """Create a test client for the FastAPI app."""
+    return TestClient(app)@pytest.fixture
+def mock_digital_twin_service():
+
+            """Create a mock digital twin service."""
     mock_service = MagicMock()
 
     # Setup async method mocks
@@ -34,14 +34,13 @@ def test_client():
     mock_service.get_biometric_history = AsyncMock()
     mock_service.get_latest_biometrics = AsyncMock()
 
-    return mock_service
+    return mock_service@pytest.fixture
+def sample_digital_twin():
 
-    @pytest.fixture
-    def sample_digital_twin():
-    """Create a sample digital twin for testing."""
+            """Create a sample digital twin for testing."""
     patient_id = "patient-123"
-    timestamp = datetime.now()
-    twin_id = str(uuid.uuid4())
+    timestamp = datetime.now(,
+    twin_id= str(uuid.uuid4())
 
     # Create HR data
     hr_data_points = [
@@ -84,10 +83,7 @@ def test_client():
         },
         "created_at": (timestamp - timedelta(days=30)).isoformat(),
         "updated_at": timestamp.isoformat(),
-    }
-
-
-class TestDigitalTwinEndpoints:
+    }class TestDigitalTwinEndpoints:
     """Test suite for Digital Twin API endpoints."""
 
     @patch("app.presentation.api.dependencies.get_digital_twin_service")
@@ -221,10 +217,10 @@ class TestDigitalTwinEndpoints:
         # Make request with time range
         patient_id = sample_digital_twin["patient_id"]
         biometric_type = "heart_rate"
-        start_time = (datetime.now() - timedelta(days=1)).isoformat()
-        end_time = datetime.now().isoformat()
+        start_time = (datetime.now() - timedelta(days=1)).isoformat(,
+        end_time= datetime.now().isoformat(,
 
-        response = test_client.get(
+        response= test_client.get(
             f"/api/v1/patients/{patient_id}/digital-twin/biometrics/{biometric_type}",
             params={
                 "start_time": start_time,

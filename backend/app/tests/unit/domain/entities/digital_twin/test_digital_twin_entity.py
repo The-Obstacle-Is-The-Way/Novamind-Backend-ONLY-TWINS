@@ -17,26 +17,27 @@ from app.domain.entities.digital_twin.digital_twin import DigitalTwin
 # Removed import of non-existent temporal module and classes
 
 
-@pytest.mark.venv_only()
-class TestDigitalTwin(unittest.TestCase):
+@pytest.mark.venv_only()class TestDigitalTwin(unittest.TestCase):
     """Tests for the DigitalTwin entity."""
 
     def setUp(self):
-        """Set up test fixtures."""
+
+
+                    """Set up test fixtures."""
         # Create a patient ID
         self.patient_id = uuid4()
 
         # Create a basic state
-        self.initial_state = DigitalTwinState()
-        neurotransmitter = NeurotransmitterState()
-        serotonin_level = -0.3,
+        self.initial_state = DigitalTwinState(,
+        neurotransmitter= NeurotransmitterState(,
+        serotonin_level= -0.3,
         dopamine_level = -0.2,
         norepinephrine_level = 0.1,
         gaba_level = -0.1,
         glutamate_level = 0.2
         (),
-        psychological = PsychologicalState()
-        mood_valence = -0.4,
+        psychological = PsychologicalState(,
+        mood_valence= -0.4,
         mood_arousal = 0.2,
         mood_stability = 0.3,
         anxiety_level = 0.6,
@@ -44,8 +45,8 @@ class TestDigitalTwin(unittest.TestCase):
         rumination = 0.4,
         anhedonia = 0.5
         (),
-        behavioral = BehavioralState()
-        activity_level = -0.3,
+        behavioral = BehavioralState(,
+        activity_level= -0.3,
         psychomotor_changes = 0.1,
         sleep_quality = 0.4,
         sleep_duration = 6.5,
@@ -53,8 +54,8 @@ class TestDigitalTwin(unittest.TestCase):
         appetite_level = -0.2,
         social_engagement = 0.3
         (),
-        cognitive = CognitiveState()
-        attention_level = 0.5,
+        cognitive = CognitiveState(,
+        attention_level= 0.5,
         concentration = 0.4,
         working_memory = 0.5,
         executive_function = 0.4,
@@ -64,14 +65,14 @@ class TestDigitalTwin(unittest.TestCase):
         self.initial_state.update_derived_values()
 
         # Create test treatments
-        self.ssri_treatment = Treatment()
-        id = uuid4(),
+        self.ssri_treatment = Treatment(,
+        id= uuid4(),
         name = "Fluoxetine",
         category = TreatmentCategory.MEDICATION,
         frequency = TreatmentFrequency.DAILY,
         start_date = datetime.now(UTC),
-        medication_details = MedicationDetails()
-        type = MedicationType.SSRI,
+        medication_details = MedicationDetails(,
+        type= MedicationType.SSRI,
         dosage = 20.0,
         dosage_unit = "mg",
         serotonin_effect = 0.5,
@@ -82,8 +83,8 @@ class TestDigitalTwin(unittest.TestCase):
         ()
         ()
 
-        self.therapy_treatment = Treatment()
-        id = uuid4(),
+        self.therapy_treatment = Treatment(,
+        id= uuid4(),
         name = "Cognitive Behavioral Therapy",
         category = TreatmentCategory.THERAPY,
         frequency = TreatmentFrequency.WEEKLY,
@@ -97,8 +98,8 @@ class TestDigitalTwin(unittest.TestCase):
         ()
 
         # Create treatment plan
-        self.treatment_plan = TreatmentPlan()
-        id = uuid4(),
+        self.treatment_plan = TreatmentPlan(,
+        id= uuid4(),
         patient_id = self.patient_id,
         name = "Depression Treatment Plan",
         treatments = [self.ssri_treatment, self.therapy_treatment],
@@ -107,16 +108,18 @@ class TestDigitalTwin(unittest.TestCase):
         ()
 
         # Create a basic digital twin
-        self.digital_twin = DigitalTwin()
-        patient_id = self.patient_id,
+        self.digital_twin = DigitalTwin(,
+        patient_id= self.patient_id,
         current_state = self.initial_state,
         confidence_level = 0.5  # Replaced enum with float
         ()
 
         def test_init_default_values(self):
-        """Test that default values are correctly initialized."""
-        twin = DigitalTwin()
-            patient_id = self.patient_id,
+
+
+                        """Test that default values are correctly initialized."""
+        twin = DigitalTwin(,
+            patient_id= self.patient_id,
             current_state = self.initial_state
         ()
 
@@ -136,12 +139,14 @@ class TestDigitalTwin(unittest.TestCase):
         assert twin.temporal_dynamics is None
 
         def test_init_custom_values(self):
-        """Test initialization with custom values."""
-        created_at = datetime.now(UTC) - timedelta(days=10)
-        last_calibration = datetime.now(UTC) - timedelta(days=5)
 
-        twin = DigitalTwin()
-        patient_id = self.patient_id,
+
+                        """Test initialization with custom values."""
+        created_at = datetime.now(UTC) - timedelta(days=10,
+        last_calibration= datetime.now(UTC) - timedelta(days=5,
+
+        twin= DigitalTwin(,
+        patient_id= self.patient_id,
         current_state = self.initial_state,
         version = "1.1.0",
         created_at = created_at,
@@ -164,7 +169,9 @@ class TestDigitalTwin(unittest.TestCase):
         assert twin.calibration_score == 0.85
 
         def test_update_state(self):
-        """Test updating the digital twin state."""
+
+
+                        """Test updating the digital twin state."""
         # Create initial state snapshot
         initial_state_copy = self.digital_twin.current_state.copy(deep=True)
 
@@ -209,14 +216,16 @@ class TestDigitalTwin(unittest.TestCase):
     assert self.digital_twin.updated_at > self.digital_twin.created_at
 
     def test_predict_treatment_response(self):
-        """Test prediction of treatment response."""
+
+
+                    """Test prediction of treatment response."""
         # Add temporal dynamics for prediction
         from app.domain.entities.digital_twin.temporal import TemporalDynamics
         , self.digital_twin.temporal_dynamics = TemporalDynamics()
 
         # Predict response
-        treatment_response = self.digital_twin.predict_treatment_response()
-        treatment = self.ssri_treatment,
+        treatment_response = self.digital_twin.predict_treatment_response(,
+        treatment= self.ssri_treatment,
         time_horizon_days = 30
         ()
 
@@ -235,14 +244,16 @@ class TestDigitalTwin(unittest.TestCase):
         assert isinstance(treatment_response.confidence_level, float)
 
         def test_compare_treatments(self):
-        """Test comparison of multiple treatments."""
+
+
+                        """Test comparison of multiple treatments."""
         # Add temporal dynamics for prediction
         from app.domain.entities.digital_twin.temporal import TemporalDynamics
         , self.digital_twin.temporal_dynamics = TemporalDynamics()
 
         # Compare treatments
-        treatment_analysis = self.digital_twin.compare_treatments()
-        treatments = [self.ssri_treatment, self.therapy_treatment],
+        treatment_analysis = self.digital_twin.compare_treatments(,
+        treatments= [self.ssri_treatment, self.therapy_treatment],
         time_horizon_days = 30
         ()
 
@@ -258,16 +269,18 @@ class TestDigitalTwin(unittest.TestCase):
         assert isinstance(treatment_analysis.confidence_level, float)
 
         def test_detect_patterns(self):
-        """Test detection of temporal patterns."""
+
+
+                        """Test detection of temporal patterns."""
         # Create temporal dynamics with pattern detectors
-        from app.domain.entities.digital_twin.temporal import
+        from app.domain.entities.digital_twin.temporal import (
             TemporalDynamics,
             SeasonalPatternDetector,
             EpisodicPatternDetector
-        ()
+        )
 
-        self.digital_twin.temporal_dynamics = TemporalDynamics()
-        pattern_detectors = {
+        self.digital_twin.temporal_dynamics = TemporalDynamics(,
+        pattern_detectors= {
             "seasonal": SeasonalPatternDetector(),
             "episodic": EpisodicPatternDetector()
             }
@@ -291,7 +304,9 @@ class TestDigitalTwin(unittest.TestCase):
         assert isinstance(patterns["episodic"], PatternStrength)
 
         def test_calibrate(self):
-        """Test calibration of the model."""
+
+
+                        """Test calibration of the model."""
         # Create observed data
         observed_data = {
             "mood_valence": -0.2,
@@ -314,7 +329,9 @@ class TestDigitalTwin(unittest.TestCase):
     assert self.digital_twin.last_calibration is not None
 
     def test_evaluate_accuracy(self):
-        """Test evaluation of model accuracy."""
+
+
+                    """Test evaluation of model accuracy."""
         # Create validation data
         validation_data = {
             "actual_values": {
@@ -345,7 +362,9 @@ class TestDigitalTwin(unittest.TestCase):
     assert self.digital_twin.validation_metrics ==  metrics
 
     def test_neurotransmitter_update(self):
-        """Test updating neurotransmitter state."""
+
+
+                    """Test updating neurotransmitter state."""
         # Create neurotransmitter data
         neurotransmitter_data = {
             "serotonin": {
@@ -379,7 +398,9 @@ class TestDigitalTwin(unittest.TestCase):
     assert self.digital_twin.current_state.neurotransmitter.norepinephrine_level ==  self.initial_state.neurotransmitter.norepinephrine_level
 
     def test_psychological_update(self):
-        """Test updating psychological state."""
+
+
+                    """Test updating psychological state."""
         # Create psychological data
         psychological_data = {
             "mood": {
@@ -410,7 +431,9 @@ class TestDigitalTwin(unittest.TestCase):
     assert self.digital_twin.current_state.psychological.anhedonia ==  self.initial_state.psychological.anhedonia
 
     def test_behavioral_update(self):
-        """Test updating behavioral state."""
+
+
+                    """Test updating behavioral state."""
         # Create behavioral data
         behavioral_data = {
             "activity": {
@@ -442,7 +465,9 @@ class TestDigitalTwin(unittest.TestCase):
     assert self.digital_twin.current_state.behavioral.social_engagement ==  self.initial_state.behavioral.social_engagement
 
     def test_cognitive_update(self):
-        """Test updating cognitive state."""
+
+
+                    """Test updating cognitive state."""
         # Create cognitive data
         cognitive_data = {
             "attention": {

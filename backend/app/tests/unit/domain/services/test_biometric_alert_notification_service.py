@@ -12,34 +12,29 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertPriority, AlertStatus
-from app.domain.services.biometric_alert_notification_service import
+from app.domain.services.biometric_alert_notification_service import (
   BiometricAlertNotificationService, NotificationChannel
-()
+)
 
 
-@pytest.mark.db_required()
-class TestBiometricAlertNotificationService:
-    """Tests for the BiometricAlertNotificationService."""
+@pytest.mark.db_required()class TestBiometricAlertNotificationService:
+    """Tests for the BiometricAlertNotificationService."""@pytest.fixture
+def mock_alert_repository(self):
 
-    @pytest.fixture
-    def mock_alert_repository(self):
-        """Create a mock BiometricAlertRepository."""
+                """Create a mock BiometricAlertRepository."""
         repo = AsyncMock()
         repo.save = AsyncMock()
-        return repo
+        return repo@pytest.fixture
+def mock_notification_service(self):
 
-        @pytest.fixture
-        def mock_notification_service(self):
-        """Create a mock notification service provider."""
+                """Create a mock notification service provider."""
         service = AsyncMock()
         service.send_sms = AsyncMock()
         service.send_email = AsyncMock()
         service.send_in_app_notification = AsyncMock()
         service.send_push_notification = AsyncMock()
-        return service
-
-        @pytest.fixture
-        def notification_service(
+        return service@pytest.fixture
+def notification_service(
             self,
             mock_alert_repository,
             mock_notification_service):
@@ -48,32 +43,28 @@ class TestBiometricAlertNotificationService:
         return BiometricAlertNotificationService()
         mock_alert_repository,
         mock_notification_service
-        ()
+        ()@pytest.fixture
+def sample_patient_id(self):
 
-        @pytest.fixture
-        def sample_patient_id(self):
-        """Create a sample patient ID."""
+                """Create a sample patient ID."""
 
-        return UUID('12345678-1234-5678-1234-567812345678')
+        return UUID('12345678-1234-5678-1234-567812345678')@pytest.fixture
+def sample_provider_id(self):
 
-        @pytest.fixture
-        def sample_provider_id(self):
-        """Create a sample provider ID."""
+                """Create a sample provider ID."""
 
-        return UUID('87654321-8765-4321-8765-432187654321')
+        return UUID('87654321-8765-4321-8765-432187654321')@pytest.fixture
+def sample_rule_id(self):
 
-        @pytest.fixture
-        def sample_rule_id(self):
-        """Create a sample rule ID."""
+                """Create a sample rule ID."""
 
-        return UUID('11111111-2222-3333-4444-555555555555')
+        return UUID('11111111-2222-3333-4444-555555555555')@pytest.fixture
+def sample_urgent_alert(self, sample_patient_id, sample_rule_id):
 
-        @pytest.fixture
-        def sample_urgent_alert(self, sample_patient_id, sample_rule_id):
-        """Create a sample urgent BiometricAlert."""
+                """Create a sample urgent BiometricAlert."""
 
-        return BiometricAlert()
-        patient_id = sample_patient_id,
+        return BiometricAlert(,
+        patient_id= sample_patient_id,
         alert_type = "elevated_heart_rate",
         description = "Heart rate is significantly elevated",
         priority = AlertPriority.URGENT,
@@ -88,14 +79,13 @@ class TestBiometricAlertNotificationService:
     rule_id = sample_rule_id
 
 
-()
+()@pytest.fixture
+def sample_warning_alert(self, sample_patient_id, sample_rule_id):
 
-  @pytest.fixture
-   def sample_warning_alert(self, sample_patient_id, sample_rule_id):
-        """Create a sample warning BiometricAlert."""
+                """Create a sample warning BiometricAlert."""
 
-        return BiometricAlert()
-        patient_id = sample_patient_id,
+        return BiometricAlert(,
+        patient_id= sample_patient_id,
         alert_type = "sleep_disruption",
         description = "Sleep quality is poor",
         priority = AlertPriority.WARNING,
@@ -108,14 +98,13 @@ class TestBiometricAlertNotificationService:
             }
         ],
     rule_id = sample_rule_id
-()
+()@pytest.fixture
+def sample_info_alert(self, sample_patient_id, sample_rule_id):
 
-  @pytest.fixture
-   def sample_info_alert(self, sample_patient_id, sample_rule_id):
-        """Create a sample informational BiometricAlert."""
+                """Create a sample informational BiometricAlert."""
 
-        return BiometricAlert()
-        patient_id = sample_patient_id,
+        return BiometricAlert(,
+        patient_id= sample_patient_id,
         alert_type = "low_activity",
         description = "Physical activity is below target",
         priority = AlertPriority.INFORMATIONAL,
@@ -183,8 +172,8 @@ class TestBiometricAlertNotificationService:
       # Execute
     sms_message = notification_service._create_hipaa_compliant_message()
     sample_urgent_alert, NotificationChannel.SMS
-    ()
-    email_message = notification_service._create_hipaa_compliant_message()
+    (,
+    email_message= notification_service._create_hipaa_compliant_message()
     sample_urgent_alert, NotificationChannel.EMAIL
     ()
 
@@ -206,13 +195,13 @@ class TestBiometricAlertNotificationService:
     assert patient_id_str not in email_message
 
     async def test_get_channels_for_priority(self, notification_service):
-        """Test that appropriate channels are selected based on alert priority."""
+                 """Test that appropriate channels are selected based on alert priority."""
         # Execute
         urgent_channels = notification_service._get_channels_for_priority(
-            AlertPriority.URGENT)
-        warning_channels = notification_service._get_channels_for_priority(
-            AlertPriority.WARNING)
-        info_channels = notification_service._get_channels_for_priority(
+            AlertPriority.URGENT,
+        warning_channels= notification_service._get_channels_for_priority(
+            AlertPriority.WARNING,
+        info_channels= notification_service._get_channels_for_priority(
             AlertPriority.INFORMATIONAL)
 
         # Verify

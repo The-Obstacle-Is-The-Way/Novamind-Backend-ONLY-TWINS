@@ -17,15 +17,15 @@ SAMPLE_TEXT = "I've been feeling down lately and can't seem to find joy in activ
 
 @pytest.fixture
 def mentalllama_service():
-    """Create a BedrockMentalLamaService instance for testing."""
+
+            """Create a BedrockMentalLamaService instance for testing."""
     service = BedrockMentalLamaService()
     service._bedrock_client = Mock()
     service._model_id = "anthropic.claude-instant-v1"
-    return service
+    return service@pytest.fixture
+def mock_bedrock_response():
 
-    @pytest.fixture
-    def mock_bedrock_response():
-    """Create a mock response from AWS Bedrock."""
+            """Create a mock response from AWS Bedrock."""
 
     return {
         "body": {
@@ -45,16 +45,17 @@ def mentalllama_service():
 
 @pytest.fixture
 def mock_error_response():
-    """Create a mock error response for AWS Bedrock."""
+
+            """Create a mock error response for AWS Bedrock."""
     mock = Mock()
     mock.side_effect = BotoCoreError()
-    return mock
-
-    class TestBedrockMentalLamaService:
+    return mockclass TestBedrockMentalLamaService:
     """Test cases for the BedrockMentalLamaService."""
 
     def test_initialization(self):
-        """Test initialization of the service."""
+
+
+                    """Test initialization of the service."""
         settings = get_settings()
 
         # Test with default settings
@@ -74,12 +75,14 @@ def mock_error_response():
         assert service._bedrock_client is None
 
         def test_initialize(self):
-        """Test initialization of the AWS Bedrock client."""
+
+
+                        """Test initialization of the AWS Bedrock client."""
         service = BedrockMentalLamaService()
 
         # Mock the boto3 client
-        boto3_mock = Mock()
-        client_mock = Mock()
+        boto3_mock = Mock(,
+        client_mock= Mock()
         boto3_mock.client.return_value = client_mock
 
         with patch("boto3.client", return_value=client_mock):
@@ -87,7 +90,9 @@ def mock_error_response():
         assert service._bedrock_client is not None
 
         def test_initialize_error(self):
-        """Test handling of initialization errors."""
+
+
+                        """Test handling of initialization errors."""
         service = BedrockMentalLamaService()
 
         # Mock the boto3 client to raise an exception
@@ -96,7 +101,9 @@ def mock_error_response():
         service.initialize()
 
         def test_is_initialized(self):
-        """Test checking if the service is initialized."""
+
+
+                        """Test checking if the service is initialized."""
         service = BedrockMentalLamaService()
         assert not service.is_initialized()
 
@@ -150,7 +157,9 @@ def mock_error_response():
     mentalllama_service.detect_depression("I'm feeling sad today")
 
     def test_health_check(self, mentalllama_service):
-        """Test health check functionality."""
+
+
+                    """Test health check functionality."""
 
         with patch.object()
         mentalllama_service._bedrock_client,
@@ -162,7 +171,9 @@ def mock_error_response():
     assert "latency_ms" in status
 
     def test_health_check_error(self, mentalllama_service):
-        """Test health check with errors."""
+
+
+                    """Test health check with errors."""
 
         with patch.object()
         mentalllama_service._bedrock_client,
@@ -174,7 +185,9 @@ def mock_error_response():
     assert "error" in status
 
     def test_model_not_found(self, mentalllama_service):
-        """Test handling of model not found errors."""
+
+
+                    """Test handling of model not found errors."""
 
         # Test when model doesn't exist
         with patch.object()

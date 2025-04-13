@@ -36,7 +36,8 @@ from app.core.services.ml.xgboost import (
 # Override dependencies for testing
 @pytest.fixture(autouse=True)
 def mock_auth_dependencies():
-    """Mock authentication dependencies for all tests."""
+
+            """Mock authentication dependencies for all tests."""
     with patch(
         "app.api.dependencies.auth.get_current_clinician"
     ) as mock_get_clinician, patch(
@@ -51,9 +52,10 @@ def mock_auth_dependencies():
 
         @pytest.fixture(autouse=True)
         def mock_service():
-    """Set up a real MockXGBoostService for integration testing."""
-    # Create a real mock service (not a MagicMock)
-    mock_service = MockXGBoostService(
+
+                    """Set up a real MockXGBoostService for integration testing."""
+    # Create a real mock service (not a MagicMock,
+    mock_service= MockXGBoostService(
         mock_risk_level=RiskLevel.MODERATE,
         mock_risk_score=0.45,
         mock_confidence=0.85)
@@ -63,13 +65,13 @@ def mock_auth_dependencies():
         mock_get_service.return_value = mock_service
         yield mock_service
 
-        @pytest.mark.db_required()
-        class TestXGBoostIntegration:
+        @pytest.mark.db_required()class TestXGBoostIntegration:
     """Integration tests for the XGBoost API."""
 
     # Inject the client fixture
     def test_risk_prediction_flow(self, client: TestClient, mock_service):
-        """Test the complete risk prediction workflow."""
+
+                    """Test the complete risk prediction workflow."""
         # Step 1: Generate a risk prediction
         risk_request = {
             "patient_id": "patient-123",
@@ -129,7 +131,8 @@ def mock_auth_dependencies():
 
     # Inject the client fixture
     def test_treatment_comparison_flow(self, client: TestClient, mock_service):
-        """Test the treatment comparison workflow."""
+
+                    """Test the treatment comparison workflow."""
         # Step 1: Compare multiple treatment options
         comparison_request = {
             "patient_id": "patient-123",
@@ -166,7 +169,8 @@ def mock_auth_dependencies():
 
     # Inject the client fixture
     def test_model_info_flow(self, client: TestClient, mock_service):
-        """Test the model information workflow."""
+
+                    """Test the model information workflow."""
         # Step 1: Get available models
         response = client.get("/api/v1/xgboost/models")
 
@@ -192,7 +196,8 @@ def mock_auth_dependencies():
 
         # Inject the client fixture
         def test_healthcheck(self, client: TestClient, mock_service):
-        """Test the healthcheck endpoint."""
+
+                        """Test the healthcheck endpoint."""
         response = client.get("/api/v1/xgboost/healthcheck")
 
         assert response.status_code == 200

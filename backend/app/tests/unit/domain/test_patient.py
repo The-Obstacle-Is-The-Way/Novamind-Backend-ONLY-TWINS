@@ -14,15 +14,15 @@ from app.infrastructure.security.encryption import EncryptionService
 
 @pytest.fixture
 def mock_encryption_service():
-    """Create a mock encryption service."""
+
+            """Create a mock encryption service."""
     mock = MagicMock(spec=EncryptionService)
     mock.encrypt.side_effect = lambda x: f"encrypted_{x}"
     mock.decrypt.side_effect = lambda x: x.replace("encrypted_", "")
-    return mock
+    return mock@pytest.fixture
+def valid_patient_data(mock_encryption_service):
 
-    @pytest.fixture
-    def valid_patient_data(mock_encryption_service):
-    """Create valid patient test data."""
+            """Create valid patient test data."""
 
     return {
         "id": UUID("12345678-1234-5678-1234-567812345678"),
@@ -46,7 +46,8 @@ def mock_encryption_service():
 
 @pytest.mark.venv_only()
 def test_create_patient(valid_patient_data, mock_encryption_service):
-    """Test patient creation with valid data."""
+
+            """Test patient creation with valid data."""
     # Create patient
     patient = Patient(**valid_patient_data)
 
@@ -75,7 +76,9 @@ def test_create_patient(valid_patient_data, mock_encryption_service):
     assert patient._contact_info.phone.startswith("encrypted_")
 
     def test_update_patient(valid_patient_data, mock_encryption_service):
-    """Test patient update."""
+
+
+                """Test patient update."""
     # Create initial patient
     patient = Patient(**valid_patient_data)
 
@@ -104,7 +107,10 @@ def test_create_patient(valid_patient_data, mock_encryption_service):
 
 
 def test_patient_phi_masking(valid_patient_data):
-    """Test PHI masking in patient data."""
+
+
+
+            """Test PHI masking in patient data."""
     patient = Patient(**valid_patient_data)
 
     # Test PHI masking in dict representation

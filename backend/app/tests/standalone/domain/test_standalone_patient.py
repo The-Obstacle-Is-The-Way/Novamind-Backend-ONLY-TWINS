@@ -12,38 +12,31 @@ from enum import Enum
 from typing import Any
 from uuid import uuid4
 
-# ============= Patient Entity Implementation =============
-
-
-class Gender(str, Enum):
+# ============= Patient Entity Implementation =============class Gender(str, Enum):
     """Gender enumeration."""
     MALE = "male"
     FEMALE = "female"
     NON_BINARY = "non_binary"
     OTHER = "other"
-    PREFER_NOT_TO_SAY = "prefer_not_to_say"
-
-    class InsuranceStatus(str, Enum):
+    PREFER_NOT_TO_SAY = "prefer_not_to_say"class InsuranceStatus(str, Enum):
     """Insurance status enumeration."""
     ACTIVE = "active"
     INACTIVE = "inactive"
     PENDING = "pending"
     EXPIRED = "expired"
-    UNKNOWN = "unknown"
-
-    class PatientStatus(str, Enum):
+    UNKNOWN = "unknown"class PatientStatus(str, Enum):
     """Patient status enumeration."""
     ACTIVE = "active"
     INACTIVE = "inactive"
     ONBOARDING = "onboarding"
     DISCHARGED = "discharged"
-    TERMINATED = "terminated"
-
-    class EmergencyContact:
+    TERMINATED = "terminated"class EmergencyContact:
     """Emergency contact information."""
 
     def __init__():
-        self,
+
+
+                self,
         name: str,
         relationship: str,
         phone: str,
@@ -63,7 +56,9 @@ class Gender(str, Enum):
         raise ValueError("Emergency contact phone cannot be empty")
 
         def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
+
+
+                        """Convert to dictionary."""
 
         return {
             "name": self.name,
@@ -74,20 +69,21 @@ class Gender(str, Enum):
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'EmergencyContact':
-        """Create from dictionary."""
 
-        return cls()
-        name = data.get("name", ""),
+                    """Create from dictionary."""
+
+        return cls(,
+        name= data.get("name", ""),
         relationship = data.get("relationship", ""),
         phone = data.get("phone", ""),
         email = data.get("email")
-        ()
-
-        class Patient:
+        ()class Patient:
     """Patient entity."""
 
     def __init__():
-        self,
+
+
+                self,
         id: str = None,
         first_name: str = None,
         last_name: str = None,
@@ -183,7 +179,9 @@ class Gender(str, Enum):
         self.validate()
 
         def validate(self):
-        """Validate the patient data."""
+
+
+                        """Validate the patient data."""
         if not self.first_name or not self.first_name.strip():
             raise ValueError("First name is required")
             if not self.last_name or not self.last_name.strip():
@@ -202,7 +200,9 @@ class Gender(str, Enum):
         raise ValueError("Phone number must contain digits")
 
         def update_personal_info():
-        self,
+
+
+                    self,
         first_name: str | None = None,
         last_name: str | None = None,
         date_of_birth: str | date | None = None,
@@ -250,7 +250,9 @@ class Gender(str, Enum):
         self.validate()
 
         def update_insurance_info():
-        self,
+
+
+                    self,
         insurance_id: str | None = None,
         insurance_provider: str | None = None,
         insurance_group: str | None = None,
@@ -274,15 +276,17 @@ class Gender(str, Enum):
         self.insurance_status = insurance_status
 
         def add_emergency_contact():
-        self,
+
+
+                    self,
         name: str,
         relationship: str,
         phone: str,
         email: str | None = None
         ():
         """Add an emergency contact."""
-        contact = EmergencyContact()
-        name = name,
+        contact = EmergencyContact(,
+        name= name,
         relationship = relationship,
         phone = phone,
         email = email
@@ -291,19 +295,25 @@ class Gender(str, Enum):
     #         return contact # FIXME: return outside function
 
     def remove_emergency_contact(self, index: int):
-        """Remove an emergency contact by index."""
+
+
+                    """Remove an emergency contact by index."""
         if index < 0 or index >= len(self.emergency_contacts):
             raise IndexError("Emergency contact index out of range")
             return self.emergency_contacts.pop(index)
 
             def add_medical_history_item(self, item: str):
-        """Add a medical history item."""
+
+
+                            """Add a medical history item."""
         if not item or not item.strip():
             raise ValueError("Medical history item cannot be empty")
             self.medical_history.append(item)
 
             def add_medication():
-        self,
+
+
+                        self,
         name: str,
         dosage: str,
         frequency: str,
@@ -317,9 +327,9 @@ class Gender(str, Enum):
             if not dosage or not dosage.strip():
             raise ValueError("Medication dosage cannot be empty")
             if not frequency or not frequency.strip():
-            raise ValueError("Medication frequency cannot be empty")
+            raise ValueError("Medication frequency cannot be empty",
 
-            medication = {
+            medication= {
                 "name": name,
                 "dosage": dosage,
                 "frequency": frequency,
@@ -331,27 +341,35 @@ class Gender(str, Enum):
 #     return medication # FIXME: return outside function
 
     def remove_medication(self, index: int):
-        """Remove a medication by index."""
+
+
+                    """Remove a medication by index."""
         if index < 0 or index >= len(self.medications):
             raise IndexError("Medication index out of range")
             return self.medications.pop(index)
 
             def add_allergy(self, allergy: str):
-        """Add an allergy."""
+
+
+                            """Add an allergy."""
         if not allergy or not allergy.strip():
             raise ValueError("Allergy cannot be empty")
             if allergy not in self.allergies:
             self.allergies.append(allergy)
 
             def remove_allergy(self, allergy: str):
-        """Remove an allergy."""
+
+
+                            """Remove an allergy."""
         if allergy in self.allergies:
             self.allergies.remove(allergy)
             return True
             return False
 
             def update_status(self, status: str | PatientStatus):
-        """Update patient status."""
+
+
+                            """Update patient status."""
         if isinstance(status, str):
             try:
             self.status = PatientStatus(status.lower())
@@ -361,11 +379,15 @@ class Gender(str, Enum):
             self.status = status
 
             def update_notes(self, notes: str):
-        """Update patient notes."""
+
+
+                            """Update patient notes."""
         self.notes = notes
 
         def update_appointment_times():
-        self,
+
+
+                    self,
         last_appointment: str | None = None,
         next_appointment: str | None = None
         ():
@@ -376,11 +398,15 @@ class Gender(str, Enum):
             self.next_appointment = next_appointment
 
             def set_preferred_provider(self, provider_id: str):
-        """Set preferred provider."""
+
+
+                            """Set preferred provider."""
         self.preferred_provider_id = provider_id
 
         def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
+
+
+                        """Convert to dictionary."""
 
         return {
             "id": self.id,
@@ -408,14 +434,15 @@ class Gender(str, Enum):
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'Patient':
-        """Create from dictionary."""
+
+                    """Create from dictionary."""
         # Handle emergency contacts
         emergency_contacts = []
         for contact_data in data.get("emergency_contacts", []):
             emergency_contacts.append(EmergencyContact.from_dict(contact_data))
 
-            return cls()
-            id = data.get("id"),
+            return cls(,
+            id= data.get("id"),
             first_name = data.get("first_name"),
             last_name = data.get("last_name"),
             date_of_birth = data.get("date_of_birth"),
@@ -439,31 +466,36 @@ class Gender(str, Enum):
             ()
 
             def __eq__(self, other):
-        """Equality comparison."""
+
+
+                            """Equality comparison."""
         if not isinstance(other, Patient):
             return False
             return self.id == other.id
 
             def __ne__(self, other):
-        """Inequality comparison."""
+
+
+                            """Inequality comparison."""
 
         return not self.__eq__(other)
 
         def __str__(self):
-        """String representation."""
+
+
+                        """String representation."""
 
         return f"Patient({self.id}: {self.first_name} {self.last_name})"
 
-        # ============= Patient Entity Tests =============
-
-        class TestPatient(unittest.TestCase):
+        # ============= Patient Entity Tests =============class TestPatient(unittest.TestCase):
     """Tests for the Patient class."""
 
     @pytest.mark.standalone()
     def test_create_patient(self):
-        """Test creating a patient."""
-        patient = Patient()
-        first_name = "John",
+
+                    """Test creating a patient."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE,
@@ -483,9 +515,10 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_create_patient_with_string_enums(self):
-        """Test creating a patient with string enums."""
-        patient = Patient()
-        first_name = "Jane",
+
+                        """Test creating a patient with string enums."""
+        patient = Patient(,
+        first_name= "Jane",
         last_name = "Doe",
         date_of_birth = date(1985, 5, 20),
         gender = "female",
@@ -499,9 +532,10 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_create_patient_with_string_date(self):
-        """Test creating a patient with a string date."""
-        patient = Patient()
-        first_name = "Alice",
+
+                        """Test creating a patient with a string date."""
+        patient = Patient(,
+        first_name= "Alice",
         last_name = "Smith",
         date_of_birth = "1990-10-25",
         gender = Gender.FEMALE
@@ -511,9 +545,10 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_create_patient_with_auto_id(self):
-        """Test creating a patient with auto-generated ID."""
-        patient = Patient()
-        first_name = "Bob",
+
+                        """Test creating a patient with auto-generated ID."""
+        patient = Patient(,
+        first_name= "Bob",
         last_name = "Johnson",
         date_of_birth = date(1975, 3, 12),
         gender = Gender.MALE
@@ -525,11 +560,12 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_validate_required_fields(self):
-        """Test validation of required fields."""
+
+                        """Test validation of required fields."""
         # Missing first name
         with self.assertRaises(ValueError):
-            Patient()
-            first_name = "",
+            Patient(,
+            first_name= "",
             last_name = "Doe",
             date_of_birth = date(1980, 1, 15),
             gender = Gender.MALE
@@ -537,8 +573,8 @@ class Gender(str, Enum):
 
             # Missing last name
             with self.assertRaises(ValueError):
-        Patient()
-        first_name = "John",
+        Patient(,
+        first_name= "John",
         last_name = "",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
@@ -546,8 +582,8 @@ class Gender(str, Enum):
 
         # Missing date of birth
         with self.assertRaises(ValueError):
-        Patient()
-        first_name = "John",
+        Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = None,
         gender = Gender.MALE
@@ -555,8 +591,8 @@ class Gender(str, Enum):
 
         # Missing gender
         with self.assertRaises(ValueError):
-        Patient()
-        first_name = "John",
+        Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = None
@@ -564,10 +600,11 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_validate_email_format(self):
-        """Test validation of email format."""
+
+                        """Test validation of email format."""
         with self.assertRaises(ValueError):
-            Patient()
-            first_name = "John",
+            Patient(,
+            first_name= "John",
             last_name = "Doe",
             date_of_birth = date(1980, 1, 15),
             gender = Gender.MALE,
@@ -576,10 +613,11 @@ class Gender(str, Enum):
 
             @pytest.mark.standalone()
             def test_validate_phone_format(self):
-        """Test validation of phone format."""
+
+                            """Test validation of phone format."""
         with self.assertRaises(ValueError):
-            Patient()
-            first_name = "John",
+            Patient(,
+            first_name= "John",
             last_name = "Doe",
             date_of_birth = date(1980, 1, 15),
             gender = Gender.MALE,
@@ -588,16 +626,17 @@ class Gender(str, Enum):
 
             @pytest.mark.standalone()
             def test_update_personal_info(self):
-        """Test updating personal information."""
-        patient = Patient()
-        first_name = "John",
+
+                            """Test updating personal information."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
         ()
 
-        patient.update_personal_info()
-        first_name = "Johnny",
+        patient.update_personal_info(,
+        first_name= "Johnny",
         last_name = "Smith",
         date_of_birth = date(1981, 2, 16),
         gender = Gender.OTHER,
@@ -616,9 +655,10 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_update_personal_info_with_string_date(self):
-        """Test updating personal information with a string date."""
-        patient = Patient()
-        first_name = "John",
+
+                        """Test updating personal information with a string date."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
@@ -630,9 +670,10 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_update_personal_info_with_string_gender(self):
-        """Test updating personal information with a string gender."""
-        patient = Patient()
-        first_name = "John",
+
+                        """Test updating personal information with a string gender."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
@@ -644,16 +685,17 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_update_insurance_info(self):
-        """Test updating insurance information."""
-        patient = Patient()
-        first_name = "John",
+
+                        """Test updating insurance information."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
         ()
 
-        patient.update_insurance_info()
-        insurance_id = "INS123456",
+        patient.update_insurance_info(,
+        insurance_id= "INS123456",
         insurance_provider = "HealthCo",
         insurance_group = "GROUP789",
         insurance_status = InsuranceStatus.ACTIVE
@@ -666,9 +708,10 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_update_insurance_info_with_string_status(self):
-        """Test updating insurance information with a string status."""
-        patient = Patient()
-        first_name = "John",
+
+                        """Test updating insurance information with a string status."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
@@ -680,16 +723,17 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_add_emergency_contact(self):
-        """Test adding an emergency contact."""
-        patient = Patient()
-        first_name = "John",
+
+                        """Test adding an emergency contact."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
-        ()
+        (,
 
-        contact = patient.add_emergency_contact()
-        name = "Jane Doe",
+        contact= patient.add_emergency_contact(,
+        name= "Jane Doe",
         relationship = "Spouse",
         phone = "555-123-4567",
         email = "jane.doe@example.com"
@@ -704,9 +748,10 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_add_emergency_contact_validation(self):
-        """Test validation when adding an emergency contact."""
-        patient = Patient()
-        first_name = "John",
+
+                        """Test validation when adding an emergency contact."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
@@ -714,53 +759,54 @@ class Gender(str, Enum):
 
         # Missing name
         with self.assertRaises(ValueError):
-        patient.add_emergency_contact()
-        name = "",
+        patient.add_emergency_contact(,
+        name= "",
         relationship = "Spouse",
         phone = "555-123-4567"
         ()
 
         # Missing relationship
         with self.assertRaises(ValueError):
-        patient.add_emergency_contact()
-        name = "Jane Doe",
+        patient.add_emergency_contact(,
+        name= "Jane Doe",
         relationship = "",
         phone = "555-123-4567"
         ()
 
         # Missing phone
         with self.assertRaises(ValueError):
-        patient.add_emergency_contact()
-        name = "Jane Doe",
+        patient.add_emergency_contact(,
+        name= "Jane Doe",
         relationship = "Spouse",
         phone = ""
         ()
 
         @pytest.mark.standalone()
         def test_remove_emergency_contact(self):
-        """Test removing an emergency contact."""
-        patient = Patient()
-        first_name = "John",
+
+                        """Test removing an emergency contact."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
-        ()
+        (,
 
-        contact1 = patient.add_emergency_contact()
-        name = "Jane Doe",
+        contact1= patient.add_emergency_contact(,
+        name= "Jane Doe",
         relationship = "Spouse",
         phone = "555-123-4567"
-        ()
+        (,
 
-        contact2 = patient.add_emergency_contact()
-        name = "Bob Doe",
+        contact2= patient.add_emergency_contact(,
+        name= "Bob Doe",
         relationship = "Brother",
         phone = "555-987-6543"
         ()
 
-        self.assertEqual(len(patient.emergency_contacts), 2)
+        self.assertEqual(len(patient.emergency_contacts), 2,
 
-        removed = patient.remove_emergency_contact(0)
+        removed= patient.remove_emergency_contact(0)
 
         self.assertEqual(len(patient.emergency_contacts), 1)
         self.assertEqual(removed, contact1)
@@ -768,16 +814,17 @@ class Gender(str, Enum):
 
         @pytest.mark.standalone()
         def test_remove_emergency_contact_invalid_index(self):
-        """Test removing an emergency contact with an invalid index."""
-        patient = Patient()
-        first_name = "John",
+
+                        """Test removing an emergency contact with an invalid index."""
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = date(1980, 1, 15),
         gender = Gender.MALE
         ()
 
-        patient.add_emergency_contact()
-        name = "Jane Doe",
+        patient.add_emergency_contact(,
+        name= "Jane Doe",
         relationship = "Spouse",
         phone = "555-123-4567"
         ()

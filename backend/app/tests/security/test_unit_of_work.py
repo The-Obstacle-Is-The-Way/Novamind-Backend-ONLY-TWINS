@@ -14,8 +14,7 @@ from app.infrastructure.persistence.sqlalchemy.unit_of_work import SQLAlchemyUni
 from app.domain.exceptions import RepositoryError  # Changed from TransactionError
 
 
-@pytest.mark.db_required()
-class TestSQLAlchemyUnitOfWork:
+@pytest.mark.db_required()class TestSQLAlchemyUnitOfWork:
     """
     Tests for the SQLAlchemy Unit of Work to ensure HIPAA-compliant data integrity.
 
@@ -24,18 +23,16 @@ class TestSQLAlchemyUnitOfWork:
         2. Atomicity of related data changes
         3. Rollback on errors to prevent inconsistent PHI states
         4. Clean session management to prevent data leaks
-        """
+        """@pytest.fixture
+def mock_session_factory(self):
 
-    @pytest.fixture
-    def mock_session_factory(self):
-        """Create a mock session factory for testing."""
-        mock_session = MagicMock()
-        mock_session_factory = MagicMock(return_value=mock_session)
-        return mock_session_factory, mock_session
+                """Create a mock session factory for testing."""
+        mock_session = MagicMock(,
+        mock_session_factory= MagicMock(return_value=mock_session)
+        return mock_session_factory, mock_session@pytest.fixture
+def unit_of_work(self, mock_session_factory):
 
-        @pytest.fixture
-        def unit_of_work(self, mock_session_factory):
-        """Create a Unit of Work instance for testing."""
+                """Create a Unit of Work instance for testing."""
         factory, _ = mock_session_factory
         return SQLAlchemyUnitOfWork(session_factory=factory)
 
@@ -165,8 +162,8 @@ class TestSQLAlchemyUnitOfWork:
 
         # Assert
         # Verify the audit logger was called with the metadata
-        mock_audit.assert_called_once()
-        call_args = mock_audit.call_args[0][0]
+        mock_audit.assert_called_once(,
+        call_args= mock_audit.call_args[0][0]
         assert call_args["user_id"] == "provider123"
         assert call_args["action"] == "update_patient_record"
         assert call_args["patient_id"] == "patient456"

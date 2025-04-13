@@ -16,7 +16,8 @@ from app.core.security.field_encryption import FieldEncryptor
 
 @pytest.fixture
 def sensitive_data() -> Dict[str, Any]:
-    """Test fixture with sensitive PHI data."""
+
+            """Test fixture with sensitive PHI data."""
     return {
         "patient_id": "12345",
         "name": "John Smith",
@@ -31,18 +32,17 @@ def sensitive_data() -> Dict[str, Any]:
 
 @pytest.fixture
 def encryption_service() -> EncryptionService:
-    """Test fixture for encryption service with test key."""
+
+            """Test fixture for encryption service with test key."""
     return EncryptionService(
-        direct_key="test_key_for_unit_tests_only_12345678")
+        direct_key="test_key_for_unit_tests_only_12345678")@pytest.fixture
+def field_encryptor(encryption_service) -> FieldEncryptor:
 
-    @pytest.fixture
-    def field_encryptor(encryption_service) -> FieldEncryptor:
-    """Test fixture for field encryption with test encryption service."""
-    return FieldEncryptor(encryption_service)
+            """Test fixture for field encryption with test encryption service."""
+    return FieldEncryptor(encryption_service)@pytest.fixture
+def patient_record() -> Dict[str, Any]:
 
-    @pytest.fixture
-    def patient_record() -> Dict[str, Any]:
-    """Test fixture for a complete patient record with PHI."""
+            """Test fixture for a complete patient record with PHI."""
     return {
         "medical_record_number": "MRN12345",
         "demographics": {
@@ -87,20 +87,19 @@ def encryption_service() -> EncryptionService:
             "policy_number": "BCB123456789",
             "group_number": "654",
         },
-    }
-
-
-class TestEncryptionService:
+    }class TestEncryptionService:
     """Test suite for the HIPAA-compliant encryption service."""
 
     def test_encrypt_decrypt_data(self, encryption_service, sensitive_data):
-        """Test basic encryption and decryption of sensitive data."""
+
+
+                    """Test basic encryption and decryption of sensitive data."""
         # Arrange
         data_json = json.dumps(sensitive_data)
 
         # Act
-        encrypted = encryption_service.encrypt(data_json)
-        decrypted = encryption_service.decrypt(encrypted)
+        encrypted = encryption_service.encrypt(data_json,
+        decrypted= encryption_service.decrypt(encrypted)
 
         # Assert
         assert encrypted.startswith("v1:")
@@ -108,21 +107,25 @@ class TestEncryptionService:
         assert json.loads(decrypted) == sensitive_data
 
         def test_encryption_is_deterministic(self, encryption_service):
-        """Test that encryption produces consistent output for testing."""
+
+
+                        """Test that encryption produces consistent output for testing."""
         # Arrange & Act - Encrypt the same value twice
         value = "test-deterministic-value"
-        encrypted1 = encryption_service.encrypt(value)
-        encrypted2 = encryption_service.encrypt(value)
+        encrypted1 = encryption_service.encrypt(value,
+        encrypted2= encryption_service.encrypt(value)
 
         # Assert - With test keys, should be deterministic
         assert encrypted1 == encrypted2
 
         def test_different_keys(self):
-        """Test that different encryption keys produce different outputs."""
+
+
+                        """Test that different encryption keys produce different outputs."""
         # Create two services with different keys using direct key injection
         service1 = EncryptionService(
-            direct_key="test_key_for_unit_tests_only_12345678")
-        service2 = EncryptionService(
+            direct_key="test_key_for_unit_tests_only_12345678",
+        service2= EncryptionService(
             direct_key="different_test_key_for_unit_tests_456")
 
         # Create test data
@@ -140,7 +143,9 @@ class TestEncryptionService:
             service2.decrypt(encrypted_by_service1)
 
             def test_detect_tampering(self, encryption_service):
-        """Test that tampering with encrypted data is detected."""
+
+
+                            """Test that tampering with encrypted data is detected."""
         # Arrange
         original = "This is sensitive PHI data!"
         encrypted = encryption_service.encrypt(original)
@@ -153,7 +158,9 @@ class TestEncryptionService:
             encryption_service.decrypt(tampered)
 
             def test_handle_invalid_input(self, encryption_service):
-        """Test handling of invalid input for encryption/decryption."""
+
+
+                            """Test handling of invalid input for encryption/decryption."""
         # Test with None
         with pytest.raises(Exception):
             encryption_service.encrypt(None)
@@ -174,19 +181,21 @@ class TestEncryptionService:
             encryption_service.decrypt("not-encrypted")
 
             def test_key_rotation(self, sensitive_data):
-        """Test that key rotation works properly."""
+
+
+                            """Test that key rotation works properly."""
         # Arrange - Create service with current and previous keys
         service_old = EncryptionService(
             direct_key="rotation_old_key_12345678901234567890"
-        )
-        service_new = EncryptionService(
+        ,
+        service_new= EncryptionService(
             direct_key="rotation_new_key_12345678901234567890",
             previous_key="rotation_old_key_12345678901234567890",
         )
 
         # Act - Encrypt with old key
-        data_json = json.dumps(sensitive_data)
-        encrypted_old = service_old.encrypt(data_json)
+        data_json = json.dumps(sensitive_data,
+        encrypted_old= service_old.encrypt(data_json)
 
         # Assert - New service can decrypt data encrypted with old key
         decrypted_old = service_new.decrypt(encrypted_old)
@@ -197,14 +206,13 @@ class TestEncryptionService:
 
         # Assert - New service can decrypt data encrypted with new key
         decrypted_new = service_new.decrypt(encrypted_new)
-        assert json.loads(decrypted_new) == sensitive_data
-
-
-class TestFieldEncryption:
+        assert json.loads(decrypted_new) == sensitive_dataclass TestFieldEncryption:
     """Test suite for field-level encryption of PHI data."""
 
     def test_encrypt_decrypt_fields(self, field_encryptor, patient_record):
-        """Test selective field encryption and decryption for PHI data."""
+
+
+                    """Test selective field encryption and decryption for PHI data."""
         # Define PHI fields that need encryption according to HIPAA
         phi_fields = [
             "medical_record_number",
@@ -225,8 +233,8 @@ class TestFieldEncryption:
 
         # Act
         encrypted_record = field_encryptor.encrypt_fields(
-            patient_record, phi_fields)
-        decrypted_record = field_encryptor.decrypt_fields(
+            patient_record, phi_fields,
+        decrypted_record= field_encryptor.decrypt_fields(
             encrypted_record, phi_fields)
 
         # Assert - All PHI should be encrypted, non-PHI should remain clear

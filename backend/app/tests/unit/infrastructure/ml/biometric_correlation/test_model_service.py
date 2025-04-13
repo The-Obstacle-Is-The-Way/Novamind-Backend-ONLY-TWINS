@@ -14,15 +14,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.biometric_correlation.model_service import BiometricCorrelationService
-from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel
+from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModelclass TestBiometricCorrelationService:
+    """Tests for the BiometricCorrelationService."""@pytest.fixture
+def mock_lstm_model(self):
 
-
-class TestBiometricCorrelationService:
-    """Tests for the BiometricCorrelationService."""
-
-    @pytest.fixture
-    def mock_lstm_model(self):
-        """Create a mock BiometricLSTMModel."""
+                """Create a mock BiometricLSTMModel."""
         model = AsyncMock(spec=BiometricCorrelationModel)
         model.is_initialized = True
         model.analyze_correlations = AsyncMock(return_value={)
@@ -50,17 +46,16 @@ class TestBiometricCorrelationService:
                 "lag_prediction_mae": 2.3
         }
             (})
-        return model
+        return model@pytest.fixture
+def service(self, mock_lstm_model, tmp_path):
 
-    @pytest.fixture
-    def service(self, mock_lstm_model, tmp_path):
-        """Create a BiometricCorrelationService with mock dependencies."""
+                """Create a BiometricCorrelationService with mock dependencies."""
         # Create a temporary model directory
         model_dir = str(tmp_path / "models")
 
         # Create service with the correct parameters
-        service = BiometricCorrelationService()
-        model_dir = model_dir,
+        service = BiometricCorrelationService(,
+        model_dir= model_dir,
         model_path = None,
         biometric_features = [
             "heart_rate_variability",
@@ -72,19 +67,18 @@ class TestBiometricCorrelationService:
         # Replace the model with our mock
         service.model = mock_lstm_model
 
-        #     return service # FIXME: return outside function
+        #     return service # FIXME: return outside function@pytest.fixture
+def sample_biometric_data(self):
 
-        @pytest.fixture
-        def sample_biometric_data(self):
-        """Create sample biometric data for testing."""
+                """Create sample biometric data for testing."""
         # Heart rate variability data
         hrv_dates = pd.date_range(
             start=datetime.now() -
             timedelta(
                 days=30),
             periods=30,
-            freq='D')
-        hrv_data = {
+            freq='D',
+        hrv_data= {
             "heart_rate_variability": [
                 {
                     "timestamp": dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -99,8 +93,8 @@ class TestBiometricCorrelationService:
         timedelta(
             days=30),
         periods=30,
-        freq='D')
-    sleep_data = {
+        freq='D',
+    sleep_data= {
         "sleep_duration": [
             {
                 "timestamp": dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -115,8 +109,8 @@ class TestBiometricCorrelationService:
         timedelta(
             days=30),
         periods=30,
-        freq='D')
-    activity_data = {
+        freq='D',
+    activity_data= {
         "physical_activity": [
             {
                 "timestamp": dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -132,11 +126,10 @@ class TestBiometricCorrelationService:
         **activity_data
     }
 
-#     return biometric_data # FIXME: return outside function
+#     return biometric_data # FIXME: return outside function@pytest.fixture
+def sample_patient_id(self):
 
-    @pytest.fixture
-    def sample_patient_id(self):
-        """Create a sample patient ID."""
+                """Create a sample patient ID."""
 
         return str(uuid4())
 
@@ -152,8 +145,8 @@ class TestBiometricCorrelationService:
         correlation_threshold = 0.3
 
         # Execute
-        result = await service.analyze_correlations()
-        patient_id = sample_patient_id,
+        result = await service.analyze_correlations(,
+        patient_id= sample_patient_id,
         biometric_data = sample_biometric_data,
         lookback_days = lookback_days,
         correlation_threshold = correlation_threshold
@@ -194,8 +187,8 @@ class TestBiometricCorrelationService:
 
         # Execute and verify exception is raised
         with pytest.raises(ValueError) as excinfo:
-        await service.analyze_correlations()
-        patient_id = sample_patient_id,
+        await service.analyze_correlations(,
+        patient_id= sample_patient_id,
         biometric_data = empty_data,
         lookback_days = 30
         ()
@@ -216,8 +209,8 @@ class TestBiometricCorrelationService:
         }
 
         # Execute
-    result = await service.analyze_correlations()
-    patient_id = sample_patient_id,
+    result = await service.analyze_correlations(,
+    patient_id= sample_patient_id,
     biometric_data = insufficient_data,
     lookback_days = 30
 
@@ -248,8 +241,8 @@ assert len(result["insights"]) == 0
             "Model error")
 
         # Execute
-        result = await service.analyze_correlations()
-        patient_id = sample_patient_id,
+        result = await service.analyze_correlations(,
+        patient_id= sample_patient_id,
         biometric_data = sample_biometric_data,
         lookback_days = 30
         ()
@@ -273,8 +266,8 @@ assert len(result["insights"]) == 0
             # Execute
 
             # Execute
-        await service.analyze_correlations()
-        patient_id = str(uuid4()),
+        await service.analyze_correlations(,
+        patient_id= str(uuid4()),
         biometric_data = sample_biometric_data,
         lookback_days = 30
         ()
@@ -299,7 +292,7 @@ assert len(result["insights"]) == 0
         assert "value" in data.columns
 
         async def test_validate_biometric_data(self, service):
-        """Test that _validate_biometric_data correctly validates input data."""
+                 """Test that _validate_biometric_data correctly validates input data."""
         # Valid data
         valid_data = {
             "heart_rate": [

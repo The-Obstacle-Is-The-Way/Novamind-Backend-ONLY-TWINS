@@ -22,43 +22,52 @@ try:
     except ImportError:
         # Mock classes for testing database PHI protection
 
-    @pytest.mark.db_required()
-    class Database:
+    @pytest.mark.db_required()class Database:
         """Mock database for testing."""
 
         def __init__(self):
-            self.connection = MagicMock()
+
+
+                        self.connection = MagicMock()
             self.session = MagicMock()
 
             def get_session(self):
-            """Get a database session."""
 
-            return self.session
 
-            class UnitOfWork:
+                                """Get a database session."""
+
+            return self.sessionclass UnitOfWork:
         """Mock unit of work for testing."""
 
         def __init__(self, database=None):
-            self.database = database or Database()
+
+
+                        self.database = database or Database()
             self.committed = False
             self.rolled_back = False
 
             def __enter__(self):
-            return self
+
+
+                            return self
 
             def __exit__(self, exc_type, exc_val, exc_tb):
-            if exc_type:
+
+
+                            if exc_type:
                 self.rollback()
 
                 def commit(self):
-            """Commit the unit of work."""
+
+
+                                    """Commit the unit of work."""
             self.committed = True
 
             def rollback(self):
-            """Rollback the unit of work."""
-            self.rolled_back = True
 
-            class Patient:
+
+                                """Rollback the unit of work."""
+            self.rolled_back = Trueclass Patient:
         """Mock patient entity for testing."""
 
         def __init__(
@@ -78,9 +87,7 @@ try:
             self.email = email
             self.phone = phone
             self.address = address
-            self.medical_record_number = medical_record_number
-
-    class PatientRepository:
+            self.medical_record_number = medical_record_numberclass PatientRepository:
         """Mock patient repository for testing."""
 
         def __init__(
@@ -95,15 +102,17 @@ try:
             self.audit_log = []
 
             def get_by_id(self, patient_id: str) -> Optional[Patient]:
-            """Get patient by ID with proper access control."""
+
+
+                                """Get patient by ID with proper access control."""
             # Check authorization
             if not self._can_access_patient(patient_id):
                 self._log_access_attempt("get_by_id", patient_id, False)
                 return None
 
                 # Mock patient data
-                patient = Patient()
-                id = patient_id,
+                patient = Patient(,
+                id= patient_id,
                 first_name = "John",
                 last_name = "Doe",
                 date_of_birth = "1980-01-01",
@@ -164,7 +173,9 @@ try:
                 # return filtered_patients # FIXME: return outside function
 
                 def create(self, patient: Patient) -> Patient:
-            """Create a new patient with proper access control and encryption."""
+
+
+                                    """Create a new patient with proper access control and encryption."""
             # Check authorization
             if self.user_context["role"] not in ["admin", "doctor"]:
                 self._log_access_attempt("create", None, False)
@@ -184,7 +195,9 @@ try:
                 #         return patient # FIXME: return outside function
 
                 def update(self, patient: Patient) -> Patient:
-            """Update a patient with proper access control and encryption."""
+
+
+                                    """Update a patient with proper access control and encryption."""
             # Check authorization
             if not self._can_access_patient(patient.id):
                 self._log_access_attempt("update", patient.id, False)
@@ -202,7 +215,9 @@ try:
                 #         return patient # FIXME: return outside function
 
                 def delete(self, patient_id: str) -> bool:
-            """Delete a patient with proper access control."""
+
+
+                                    """Delete a patient with proper access control."""
             # Check authorization
             if self.user_context["role"] != "admin":
                 self._log_access_attempt("delete", patient_id, False)
@@ -213,7 +228,9 @@ try:
                 return True
 
                 def _can_access_patient(self, patient_id: str) -> bool:
-            """Check if current user can access the patient."""
+
+
+                                    """Check if current user can access the patient."""
             role = self.user_context["role"]
             user_id = self.user_context["user_id"]
 
@@ -224,7 +241,9 @@ try:
                 #         return False # FIXME: return outside function
 
             def _apply_phi_filters(self, patient: Patient) -> Patient:
-            """Apply PHI filters based on user role."""
+
+
+                                """Apply PHI filters based on user role."""
             role = self.user_context["role"]
 
             # Decrypt PHI fields first
@@ -261,13 +280,17 @@ try:
             #         return patient # FIXME: return outside function
 
             def _encrypt(self, value: str) -> str:
-            """Encrypt PHI value."""
+
+
+                                """Encrypt PHI value."""
             if not value:
                 return value
                 return f"ENCRYPTED_{value}"
 
                 def _decrypt(self, value: str) -> str:
-            """Decrypt PHI value."""
+
+
+                                    """Decrypt PHI value."""
             if not value or not value.startswith("ENCRYPTED_"):
                 return value
                 return value[10:]  # Remove "ENCRYPTED_" prefix
@@ -278,11 +301,11 @@ try:
                         patient_id: str,
                         success: bool) -> None:
             """Log access attempt to audit trail."""
-            timestamp = datetime.datetime.now().isoformat()
-            user = self.user_context.get("user_id", "anonymous")
-            role = self.user_context.get("role", "unknown")
+            timestamp = datetime.datetime.now().isoformat(,
+            user= self.user_context.get("user_id", "anonymous",
+            role= self.user_context.get("role", "unknown",
 
-            log_entry = {
+            log_entry= {
                 "timestamp": timestamp,
                 "operation": operation,
                 "patient_id": patient_id,
@@ -291,61 +314,53 @@ try:
                 "success": success
             }
 
-        self.audit_log.append(log_entry)
+        self.audit_log.append(log_entry)class TestDBPHIProtection:
+    """Test database PHI protection mechanisms for HIPAA compliance."""@pytest.fixture
+def db(self):
 
+                """Create test database."""
 
-class TestDBPHIProtection:
-    """Test database PHI protection mechanisms for HIPAA compliance."""
+        return Database()@pytest.fixture
+def unit_of_work(self, db):
 
-    @pytest.fixture
-    def db(self):
-        """Create test database."""
+                """Create test unit of work."""
 
-        return Database()
+        return UnitOfWork(db)@pytest.fixture
+def admin_context(self):
 
-        @pytest.fixture
-        def unit_of_work(self, db):
-        """Create test unit of work."""
+                """Create admin user context."""
 
-        return UnitOfWork(db)
+        return {"role": "admin", "user_id": "A12345"}@pytest.fixture
+def doctor_context(self):
 
-        @pytest.fixture
-        def admin_context(self):
-        """Create admin user context."""
+                """Create doctor user context."""
 
-        return {"role": "admin", "user_id": "A12345"}
+        return {"role": "doctor", "user_id": "D12345"}@pytest.fixture
+def nurse_context(self):
 
-        @pytest.fixture
-        def doctor_context(self):
-        """Create doctor user context."""
+                """Create nurse user context."""
 
-        return {"role": "doctor", "user_id": "D12345"}
+        return {"role": "nurse", "user_id": "N12345"}@pytest.fixture
+def patient_context(self):
 
-        @pytest.fixture
-        def nurse_context(self):
-        """Create nurse user context."""
+                """Create patient user context."""
 
-        return {"role": "nurse", "user_id": "N12345"}
+        return {"role": "patient", "user_id": "P12345"}@pytest.fixture
+def guest_context(self):
 
-        @pytest.fixture
-        def patient_context(self):
-        """Create patient user context."""
-
-        return {"role": "patient", "user_id": "P12345"}
-
-        @pytest.fixture
-        def guest_context(self):
-        """Create guest user context."""
+                """Create guest user context."""
 
         return {"role": "guest", "user_id": None}
 
         def test_data_encryption_at_rest(self, db, admin_context):
-        """Test that PHI is encrypted when stored in the database."""
+
+
+                        """Test that PHI is encrypted when stored in the database."""
         repo = PatientRepository(db.get_session(), user_context=admin_context)
 
         # Create a patient with PHI
-        patient = Patient()
-        first_name = "John",
+        patient = Patient(,
+        first_name= "John",
         last_name = "Doe",
         date_of_birth = "1980-01-01",
         ssn = "123-45-6789",
@@ -353,9 +368,9 @@ class TestDBPHIProtection:
         phone = "555-123-4567",
         address = "123 Main St, Anytown, CA 12345",
         medical_record_number = "MRN12345"
-        ()
+        (,
 
-        created_patient = repo.create(patient)
+        created_patient= repo.create(patient)
 
         # Verify PHI fields are encrypted
         assert created_patient.ssn != "123-45-6789"
@@ -374,21 +389,23 @@ class TestDBPHIProtection:
         assert created_patient.medical_record_number == "MRN12345"
 
         def test_role_based_access_control(self, db):
-        """Test that access to PHI is properly controlled by role."""
+
+
+                        """Test that access to PHI is properly controlled by role."""
         # Setup repositories with different user contexts
         admin_repo = PatientRepository(
             db.get_session(), user_context={
-                "role": "admin", "user_id": "A12345"})
-        doctor_repo = PatientRepository(
+                "role": "admin", "user_id": "A12345"},
+        doctor_repo= PatientRepository(
             db.get_session(), user_context={
-                "role": "doctor", "user_id": "D12345"})
-        nurse_repo = PatientRepository(
+                "role": "doctor", "user_id": "D12345"},
+        nurse_repo= PatientRepository(
             db.get_session(), user_context={
-                "role": "nurse", "user_id": "N12345"})
-        patient_repo = PatientRepository(
+                "role": "nurse", "user_id": "N12345"},
+        patient_repo= PatientRepository(
             db.get_session(), user_context={
-                "role": "patient", "user_id": "P12345"})
-        guest_repo = PatientRepository(
+                "role": "patient", "user_id": "P12345"},
+        guest_repo= PatientRepository(
             db.get_session(), user_context={
                 "role": "guest", "user_id": None})
 
@@ -427,11 +444,13 @@ class TestDBPHIProtection:
         doctor_repo.delete("P12345")
 
         def test_patient_data_isolation(self, db):
-        """Test that patients can only access their own data."""
+
+
+                        """Test that patients can only access their own data."""
         # Setup patient repositories with different patient IDs
         patient1_repo = PatientRepository(db.get_session(), )
-        (user_context={"role": "patient", "user_id": "P12345"})
-        patient2_repo = PatientRepository(db.get_session(), )
+        (user_context={"role": "patient", "user_id": "P12345"},
+        patient2_repo= PatientRepository(db.get_session(), )
         (user_context={"role": "patient", "user_id": "P67890"})
 
         # Each patient should only access their own record
@@ -450,7 +469,9 @@ class TestDBPHIProtection:
         assert len(patient2_repo.get_all()) == 0
 
         def test_audit_logging(self, db, admin_context):
-        """Test that all PHI access is properly logged for auditing."""
+
+
+                        """Test that all PHI access is properly logged for auditing."""
         repo = PatientRepository(db.get_session(), user_context=admin_context)
 
         # Perform various operations
@@ -481,26 +502,28 @@ class TestDBPHIProtection:
         assert "success" in entry
 
         def test_phi_filtering_by_role(self, db):
-        """Test that PHI is filtered based on user role."""
+
+
+                        """Test that PHI is filtered based on user role."""
         # Setup repositories with different user contexts
         admin_repo = PatientRepository(
             db.get_session(), user_context={
-                "role": "admin", "user_id": "A12345"})
-        doctor_repo = PatientRepository(
+                "role": "admin", "user_id": "A12345"},
+        doctor_repo= PatientRepository(
             db.get_session(), user_context={
-                "role": "doctor", "user_id": "D12345"})
-        nurse_repo = PatientRepository(
+                "role": "doctor", "user_id": "D12345"},
+        nurse_repo= PatientRepository(
             db.get_session(), user_context={
-                "role": "nurse", "user_id": "N12345"})
-        guest_repo = PatientRepository(
+                "role": "nurse", "user_id": "N12345"},
+        guest_repo= PatientRepository(
             db.get_session(), user_context={
                 "role": "guest", "user_id": None})
 
         # Get patient with different roles
-        admin_patient = admin_repo.get_by_id("P12345")
-        doctor_patient = doctor_repo.get_by_id("P12345")
-        nurse_patient = nurse_repo.get_by_id("P12345")
-        guest_patient = guest_repo.get_by_id("P12345")
+        admin_patient = admin_repo.get_by_id("P12345",
+        doctor_patient= doctor_repo.get_by_id("P12345",
+        nurse_patient= nurse_repo.get_by_id("P12345",
+        guest_patient= guest_repo.get_by_id("P12345")
 
         # Admin and doctor should see all PHI
         assert admin_patient is not None
@@ -520,12 +543,14 @@ class TestDBPHIProtection:
         assert guest_patient is None
 
         def test_transaction_rollback_on_error(self, db, admin_context):
-        """Test that transactions are rolled back when errors occur."""
-        with patch('tests.security.test_db_phi_protection.PatientRepository.create') as mock_create:
-            mock_create.side_effect = Exception("Database error")
 
-            uow = UnitOfWork(db)
-            repo = PatientRepository(
+
+                        """Test that transactions are rolled back when errors occur."""
+        with patch('tests.security.test_db_phi_protection.PatientRepository.create') as mock_create:
+            mock_create.side_effect = Exception("Database error",
+
+            uow= UnitOfWork(db,
+            repo= PatientRepository(
                 db.get_session(), user_context=admin_context)
 
             # Attempt operation that will fail
@@ -541,7 +566,9 @@ class TestDBPHIProtection:
         assert uow.committed is False
 
         def test_phi_in_query_parameters(self, db, admin_context):
-        """Test proper handling of PHI in query parameters."""
+
+
+                        """Test proper handling of PHI in query parameters."""
         repo = PatientRepository(db.get_session(), user_context=admin_context)
 
         # Mock the database session
@@ -550,7 +577,8 @@ class TestDBPHIProtection:
 
         # Override methods to test query parameters
         def execute_query(*args, **kwargs):
-        """Mock query execution to inspect parameters."""
+
+                        """Mock query execution to inspect parameters."""
         # Check that parameters don't contain raw PHI
         if 'params' in kwargs:
             params = kwargs['params']
@@ -561,8 +589,8 @@ class TestDBPHIProtection:
 
             mock_session.execute.side_effect = execute_query
 
-            # Try to search by PHI (should be encrypted or hashed)
-            patient = repo.get_by_id("P12345")
+            # Try to search by PHI (should be encrypted or hashed,
+            patient= repo.get_by_id("P12345")
 
             if __name__ == "__main__":
     pytest.main(["-v", __file__])

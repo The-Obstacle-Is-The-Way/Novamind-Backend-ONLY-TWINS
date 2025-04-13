@@ -31,14 +31,15 @@ from app.infrastructure.services.mock_enhanced_digital_twin_core_service import 
 
 @pytest.fixture
 def mock_service():
-    """Create an instance of the mock service for testing."""
+
+            """Create an instance of the mock service for testing."""
 
     return MockEnhancedDigitalTwinCoreService()
 
     @pytest.fixture
     @pytest.mark.venv_only()
     async def test_patient_id(mock_service) -> UUID:
-    """Create a test patient with an initialized digital twin."""
+             """Create a test patient with an initialized digital twin."""
     patient_id = uuid.uuid4()
 
     # Initialize the Digital Twin
@@ -130,8 +131,8 @@ async def test_initialize_neurotransmitter_mapping_without_default_or_custom(
 ):
     """Test initializing an empty neurotransmitter mapping."""
     # Initialize with neither default nor custom (should create an empty
-    # mapping)
-    mapping = await mock_service.initialize_neurotransmitter_mapping(
+    # mapping,
+    mapping= await mock_service.initialize_neurotransmitter_mapping(
         patient_id=test_patient_id, use_default_mapping=False, custom_mapping=None
     )
 
@@ -178,9 +179,9 @@ async def test_update_receptor_profiles_updates_existing_mapping(
     # Initialize a mapping first
     await mock_service.initialize_neurotransmitter_mapping(
         patient_id=test_patient_id, use_default_mapping=True
-    )
+    ,
 
-    original_mapping = mock_service._neurotransmitter_mappings[test_patient_id]
+    original_mapping= mock_service._neurotransmitter_mappings[test_patient_id]
     original_profile_count = len(original_mapping.receptor_profiles)
 
     # Define new profiles
@@ -288,8 +289,8 @@ async def test_get_neurotransmitter_effects_with_regions(
         patient_id=test_patient_id, use_default_mapping=True
     )
 
-    # Test without specifying regions (should return all)
-    effects = await mock_service.get_neurotransmitter_effects(
+    # Test without specifying regions (should return all,
+    effects= await mock_service.get_neurotransmitter_effects(
         patient_id=test_patient_id, neurotransmitter=Neurotransmitter.SEROTONIN
     )
 
@@ -360,8 +361,8 @@ async def test_get_brain_region_neurotransmitter_sensitivity_with_neurotransmitt
         patient_id=test_patient_id, use_default_mapping=True
     )
 
-    # Test without specifying neurotransmitters (should return all)
-    sensitivities = await mock_service.get_brain_region_neurotransmitter_sensitivity(
+    # Test without specifying neurotransmitters (should return all,
+    sensitivities= await mock_service.get_brain_region_neurotransmitter_sensitivity(
         patient_id=test_patient_id, brain_region=BrainRegion.PREFRONTAL_CORTEX
     )
 
@@ -443,8 +444,8 @@ async def test_simulate_neurotransmitter_cascade_with_parameters(
                     mock_service, test_patient_id):
     """Test that analyze_treatment_neurotransmitter_effects creates a mapping if needed."""
     # Define test parameters
-    treatment_id = uuid.uuid4()
-    time_points = [datetime.now() + timedelta(days=i * 7) for i in range(3)]
+    treatment_id = uuid.uuid4(,
+    time_points= [datetime.now() + timedelta(days=i * 7) for i in range(3)]
 
     # Call the method without initializing a mapping first
     results = await mock_service.analyze_treatment_neurotransmitter_effects(
@@ -473,8 +474,8 @@ async def test_analyze_treatment_neurotransmitter_effects_with_parameters(
     )
 
     # Define test parameters
-    treatment_id = uuid.uuid4()
-    time_points = [
+    treatment_id = uuid.uuid4(,
+    time_points= [
         datetime.now() + timedelta(days=i * 7)
         for i in range(5)  # 0, 7, 14, 21, 28 days
     ]
@@ -508,21 +509,21 @@ async def test_analyze_treatment_neurotransmitter_effects_with_parameters(
 
         @pytest.mark.asyncio()
         async def test_events_are_published(mock_service, test_patient_id):
-    """Test that events are published when neurotransmitter mapping operations are performed."""
+             """Test that events are published when neurotransmitter mapping operations are performed."""
     # Subscribe to events
     events_received = []
 
     async def event_handler(event_type, event_data, source, patient_id):
-        events_received.append(
+             events_received.append(
             {
                 "event_type": event_type,
                 "event_data": event_data,
                 "source": source,
                 "patient_id": patient_id,
             }
-        )
+        ,
 
-    subscription_id = await mock_service.subscribe_to_events(
+    subscription_id= await mock_service.subscribe_to_events(
         event_types=[
             "neurotransmitter_mapping.initialized",
             "neurotransmitter_mapping.profiles_updated",

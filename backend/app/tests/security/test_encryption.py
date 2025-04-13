@@ -25,36 +25,39 @@ from app.infrastructure.security.encryption import (
     PHIFieldEncryption,
     EncryptionKeyManager,
     EncryptionError,
-)
-
-
-class TestEncryptionKeyManager(unittest.TestCase):
+)class TestEncryptionKeyManager(unittest.TestCase):
     """Test suite for encryption key management."""
 
     def setUp(self):
-        """Set up test environment."""
+
+
+                    """Set up test environment."""
         self.key_manager = EncryptionKeyManager(key_source="env")
 
         def test_get_encryption_key(self):
-        """Test getting the encryption key."""
+
+
+                        """Test getting the encryption key."""
         key = self.key_manager.get_encryption_key()
         self.assertIsNotNone(key)
         self.assertIsInstance(key, bytes)
         self.assertTrue(len(key) >= 32)  # Sufficient key length for security
 
         def test_key_rotation(self):
-        """Test key rotation functionality."""
-        original_key = self.key_manager.get_encryption_key()
-        new_key = self.key_manager.rotate_encryption_key()
+
+
+                        """Test key rotation functionality."""
+        original_key = self.key_manager.get_encryption_key(,
+        new_key= self.key_manager.rotate_encryption_key()
 
         self.assertIsNotNone(new_key)
-        self.assertNotEqual(original_key, new_key)
-
-        class TestPHIFieldEncryption(unittest.TestCase):
+        self.assertNotEqual(original_key, new_key)class TestPHIFieldEncryption(unittest.TestCase):
     """Test suite for PHI field encryption."""
 
     def setUp(self):
-        """Set up test environment."""
+
+
+                    """Set up test environment."""
         self.key_manager = EncryptionKeyManager()
         self.encryption = PHIFieldEncryption(self.key_manager)
 
@@ -93,7 +96,9 @@ class TestEncryptionKeyManager(unittest.TestCase):
         }
 
     def test_encrypt_decrypt_value(self):
-        """Test encryption and decryption of a single value."""
+
+
+                    """Test encryption and decryption of a single value."""
         # Test with a regular string
         original = "This is sensitive PHI data"
         encrypted = self.encryption.encrypt(original)
@@ -110,7 +115,9 @@ class TestEncryptionKeyManager(unittest.TestCase):
         self.assertEqual(None, self.encryption.encrypt(None))
 
         def test_encrypt_decrypt_dict(self):
-        """Test encryption and decryption of PHI fields in a dictionary."""
+
+
+                        """Test encryption and decryption of PHI fields in a dictionary."""
         # Make a copy of the original data
         original_data = json.loads(json.dumps(self.test_data))
 
@@ -144,7 +151,9 @@ class TestEncryptionKeyManager(unittest.TestCase):
         self.assertEqual(original_data, decrypted_data)
 
     def test_nested_field_encryption(self):
-        """Test encryption of nested fields."""
+
+
+                    """Test encryption of nested fields."""
         # Make a copy of the original data
         original_data = json.loads(json.dumps(self.test_data))
 
@@ -169,20 +178,24 @@ class TestEncryptionKeyManager(unittest.TestCase):
         )
 
     def test_multiple_operations(self):
-        """Test multiple encryption/decryption operations."""
-        data = json.loads(json.dumps(self.test_data))
-        original_data = json.loads(json.dumps(self.test_data))
+
+
+                    """Test multiple encryption/decryption operations."""
+        data = json.loads(json.dumps(self.test_data),
+        original_data= json.loads(json.dumps(self.test_data))
 
         # Perform multiple encrypt/decrypt operations
         for _ in range(5):
-            data = self.encryption.encrypt_dict(data, self.phi_fields)
-            data = self.encryption.decrypt_dict(data, self.phi_fields)
+            data = self.encryption.encrypt_dict(data, self.phi_fields,
+            data= self.encryption.decrypt_dict(data, self.phi_fields)
 
             # Data should remain unchanged
             self.assertEqual(original_data, data)
 
             def test_error_handling(self):
-        """Test error handling during encryption/decryption."""
+
+
+                            """Test error handling during encryption/decryption."""
         # Test handling of invalid encrypted data
         invalid_encrypted = "ENC_INVALID"  # Missing proper format
 
@@ -196,7 +209,9 @@ class TestEncryptionKeyManager(unittest.TestCase):
             pass
 
             def test_hipaa_compliance(self):
-        """Verify compliance with HIPAA requirements."""
+
+
+                            """Verify compliance with HIPAA requirements."""
         # Generate some test data
         test_data = {
             "medical_record_number": "MRN12345",

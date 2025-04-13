@@ -17,28 +17,27 @@ from unittest.mock import patch, MagicMock
 # PHIProcessor removed or refactored
 from app.infrastructure.security.encryption import EncryptionService
 
-# from app.infrastructure.security.phi_redaction import
+# from app.infrastructure.security.phi_redaction import (
 # PHIRedactionService # Module/Class does not exist
 
 
 @pytest.fixture
-def mock_encryption_service():
-    """Mock encryption service for testing."""
+def mock_encryption_service):
+
+            """Mock encryption service for testing."""
     mock_service = MagicMock(spec=EncryptionService)
     mock_service.encrypt.return_value = b"encrypted_data"
     mock_service.decrypt.return_value = b'{"data": "sample_data"}'
-    return mock_service
+    return mock_service@pytest.fixture
+def mock_phi_redaction_service():
 
-    @pytest.fixture
-    def mock_phi_redaction_service():
-    """Mock PHI redaction service for testing."""
+            """Mock PHI redaction service for testing."""
     mock_service = MagicMock(spec=PHIRedactionService)
     mock_service.redact.return_value = {"data": "redacted_data"}
-    return mock_service
+    return mock_service@pytest.fixture
+def sample_patient_data():
 
-    @pytest.fixture
-    def sample_patient_data():
-    """Sample patient data containing PHI."""
+            """Sample patient data containing PHI."""
 
     return {
         "patient_id": str(uuid.uuid4()),
@@ -68,65 +67,64 @@ def mock_encryption_service():
 
 
 # TODO: Review and potentially reimplement these tests using current PHI handling components (e.g., PHISanitizer)
-# @pytest.mark.venv_only()
-class TestPHIHandling:
+# @pytest.mark.venv_only()class TestPHIHandling:
     #     """Test proper handling of PHI in ML components."""
     #
     #     def test_phi_data_is_never_logged(self, sample_patient_data, caplog):
-    #         """Test that PHI is never logged during ML processing."""
+                 #         """Test that PHI is never logged during ML processing."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #     def test_phi_is_never_stored_in_plain_text(self, sample_patient_data, mock_encryption_service):
-    #         """Test that PHI is never stored in plain text."""
+                 #         """Test that PHI is never stored in plain text."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #     def test_phi_is_properly_deidentified(self, sample_patient_data, mock_phi_redaction_service):
-    #         """Test that PHI is properly de-identified for ML training."""
+                 #         """Test that PHI is properly de-identified for ML training."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #     def test_patient_data_isolation(self, sample_patient_data):
-    #         """Test that patient data is isolated and not mixed with other patients."""
+                 #         """Test that patient data is isolated and not mixed with other patients."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #
-    # class TestMLDataProcessing:
+    #class TestMLDataProcessing:
     #     """Test ML data processing with PHI."""
     #
     #     def test_feature_extraction_anonymizes_phi(self, sample_patient_data):
-    #         """Test that feature extraction properly anonymizes PHI."""
+                 #         """Test that feature extraction properly anonymizes PHI."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #     def test_model_output_has_no_phi(self, sample_patient_data):
-    #         """Test that model output has no PHI."""
+                 #         """Test that model output has no PHI."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #     def test_batch_processing_isolates_patient_data(self):
-    #         """Test that batch processing properly isolates patient data."""
+                 #         """Test that batch processing properly isolates patient data."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #
-    # class TestMLSecureStorage:
+    #class TestMLSecureStorage:
     #     """Test secure storage of ML data."""
     #
     #     def test_ml_model_storage_encryption(self, mock_encryption_service):
-    #         """Test that ML models are stored encrypted."""
+                 #         """Test that ML models are stored encrypted."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #     def test_ml_model_loading_decryption(self, mock_encryption_service):
-    #         """Test that ML models are decrypted when loaded."""
+                 #         """Test that ML models are decrypted when loaded."""
     #         # ... (Original test code commented out) ...
     #         pass
     #
     #     def test_secure_temporary_files(self, sample_patient_data):
-    #         """Test that temporary files used in ML processing are secure."""
+                 #         """Test that temporary files used in ML processing are secure."""
     #         # ... (Original test code commented out) ...
     #         pass    pass
     pass

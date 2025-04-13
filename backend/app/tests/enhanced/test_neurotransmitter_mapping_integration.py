@@ -37,20 +37,19 @@ from app.infrastructure.factories.enhanced_mock_digital_twin_factory import (
 
 @pytest.fixture
 def enhanced_services() -> Tuple[EnhancedDigitalTwinCoreService, ...]:
-    """Fixture to create enhanced mock services for testing."""
+
+            """Fixture to create enhanced mock services for testing."""
     services = EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()
     # Only return the Digital Twin service for simplicity
-    return (services[0],)
+    return (services[0],)@pytest.fixture
+def patient_id() -> UUID:
 
-    @pytest.fixture
-    def patient_id() -> UUID:
-    """Fixture to create a consistent patient ID for tests."""
+            """Fixture to create a consistent patient ID for tests."""
 
-    return uuid.UUID("12345678-1234-5678-1234-567812345678")
+    return uuid.UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+def initial_data() -> Dict:
 
-    @pytest.fixture
-    def initial_data() -> Dict:
-    """Fixture to provide initial patient data for testing."""
+            """Fixture to provide initial patient data for testing."""
 
     return {
         "diagnoses": ["Major Depressive Disorder", "Generalized Anxiety Disorder"],
@@ -220,9 +219,9 @@ async def test_update_receptor_profiles(
     )
     assert len(thalamus_profiles) > 0
     assert any(p.receptor_subtype ==
-               ReceptorSubtype.GLUTAMATE_NMDA for p in thalamus_profiles)
+               ReceptorSubtype.GLUTAMATE_NMDA for p in thalamus_profiles,
 
-    hippocampus_profiles = updated_mapping.get_receptor_profiles(
+    hippocampus_profiles= updated_mapping.get_receptor_profiles(
         BrainRegion.HIPPOCAMPUS, Neurotransmitter.ACETYLCHOLINE
     )
     assert len(hippocampus_profiles) > 0
@@ -382,8 +381,8 @@ async def test_analyze_treatment_neurotransmitter_effects(
     # Create a treatment ID
     treatment_id = uuid.uuid4()
 
-    # Define time points for analysis (over 4 weeks)
-    time_points = [
+    # Define time points for analysis (over 4 weeks,
+    time_points= [
         datetime.datetime.now() + datetime.timedelta(days=i * 7)
         for i in range(5)  # 0, 7, 14, 21, 28 days:
     ]
