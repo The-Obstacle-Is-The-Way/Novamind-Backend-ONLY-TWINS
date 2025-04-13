@@ -11,7 +11,8 @@ from typing import Any, Dict, Optional
 
 from fastapi import Depends, HTTPException, status
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.exceptions import InvalidConfigurationError
 from app.core.services.ml.pat.factory import PATFactory
 from app.core.services.ml.pat.interface import PATInterface

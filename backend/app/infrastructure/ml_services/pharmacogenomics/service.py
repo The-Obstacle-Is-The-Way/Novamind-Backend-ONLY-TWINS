@@ -14,7 +14,8 @@ from uuid import UUID
 import numpy as np
 from pydantic import BaseModel, Field
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.domain.interfaces.ml_services import PharmacogenomicsService
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import (
     GeneMedicationModel,

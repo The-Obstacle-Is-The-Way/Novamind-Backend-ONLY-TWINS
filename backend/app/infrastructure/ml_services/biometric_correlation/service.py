@@ -14,7 +14,8 @@ from uuid import UUID
 import numpy as np
 from pydantic import BaseModel, Field
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.domain.interfaces.ml_services import BiometricCorrelationService
 from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricLSTMModel
 from app.infrastructure.ml.utils.preprocessing import preprocess_biometric_data
@@ -49,7 +50,7 @@ class BiometricCorrelationServiceImpl(BiometricCorrelationService):
     def _load_models(self) -> None:
         """Load all required models from storage."""
         try:
-            model_path = settings.BIOMETRIC_CORRELATION_MODEL_PATH
+            model_path = get_settings().BIOMETRIC_CORRELATION_MODEL_PATH
 
             # Load LSTM model
             self.lstm_model.load(f"{model_path}/lstm_model.pkl")

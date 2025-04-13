@@ -7,13 +7,14 @@ Implements HIPAA-compliant authentication with proper security measures.
 """
 
 import time
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Union
 
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.utils.logging import get_logger
 from app.domain.exceptions import AuthenticationError # Corrected exception name
 
@@ -91,11 +92,11 @@ class JWTHandler:
             else self.access_token_expire_minutes
         )
 
-        expire = datetime.now(UTC) + timedelta(minutes=expire_minutes)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
         to_encode = {
             "sub": str(user_id),
             "exp": expire,
-            "iat": datetime.now(UTC),
+            "iat": datetime.now(timezone.utc),
             "role": role,
             "permissions": permissions,
             "session_id": session_id,
@@ -130,7 +131,7 @@ class JWTHandler:
             token_data = TokenPayload(**payload)
 
             # Check if token is expired
-            if datetime.fromtimestamp(token_data.exp) < datetime.now(UTC):
+            if datetime.fromtimestamp(token_data.exp) < datetime.now(timezone.utc):
                 logger.warning(f"Expired token attempt for user: {token_data.sub}")
                 raise AuthenticationException("Token has expired")
 

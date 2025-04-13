@@ -11,8 +11,10 @@ import string
 from typing import Optional, Tuple
 
 from passlib.context import CryptContext
+from passlib.exc import UnknownHashError, MissingSaltError
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.utils.logging import get_logger # Use the standard logger function
 
 # Initialize logger

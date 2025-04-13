@@ -1,4 +1,4 @@
-FOR # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 MentaLLaMA Model Loader.
 
@@ -18,7 +18,8 @@ import aiohttp
 import httpx
 import numpy as np
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.exceptions.ml_exceptions import MentalLLaMAInferenceError, ModelLoadingError
 from app.core.logging.phi_logger import get_phi_safe_logger
 

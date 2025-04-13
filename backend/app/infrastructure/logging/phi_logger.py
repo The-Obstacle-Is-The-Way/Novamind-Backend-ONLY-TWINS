@@ -10,8 +10,8 @@ import datetime
 import logging
 import os
 from typing import Any, Dict, Optional, Union
-
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.infrastructure.security.log_sanitizer import PHIFormatter, LogSanitizer # Import LogSanitizer
 
 
@@ -31,7 +31,7 @@ class PHILogger:
             name: Logger name
             log_path: Path to log file
         """
-        self.settings = settings
+        self.settings = get_settings()
         self.logger = logging.getLogger(name)
         
         # Use getattr to safely get the log level with a default if not present

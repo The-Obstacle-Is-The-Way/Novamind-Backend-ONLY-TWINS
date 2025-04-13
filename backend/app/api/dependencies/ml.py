@@ -11,7 +11,8 @@ from typing import Dict, Any
 
 from fastapi import Depends
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.services.ml.pat.factory import PATServiceFactory
 from app.core.services.ml.pat.interface import PATInterface
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService

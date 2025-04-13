@@ -13,7 +13,8 @@ import requests
 from app.domain.services.mentallama_service import MentaLLaMAService
 from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository
 from app.domain.entities.observer import Subject
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.logging import get_logger
 
 

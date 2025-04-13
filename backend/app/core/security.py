@@ -4,7 +4,7 @@ Security utilities for authentication and authorization.
 This module provides security utilities for JWT token handling, password hashing,
 and other security-related functionality required for HIPAA compliance.
 """
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, timedelta
 from typing import Any, Dict, Optional, Union
 from uuid import UUID
 
@@ -12,7 +12,8 @@ import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 
 
 class TokenPayload(BaseModel):
@@ -39,14 +40,14 @@ def create_token(subject: Union[str, UUID], expires_delta: Optional[timedelta] =
         Encoded JWT token
     """
     if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+        expire = datetime.now(settings.TIMEZONE) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(settings.TIMEZONE) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode = {
         "sub": str(subject),
         "exp": expire.timestamp(),
-        "iat": datetime.now(UTC).timestamp(),
+        "iat": datetime.now(settings.TIMEZONE).timestamp(),
     }
     
     if roles:

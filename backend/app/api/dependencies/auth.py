@@ -11,7 +11,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer # Import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.db import get_session # Import get_session for AsyncSession dependency
 # Remove incorrect import of oauth2_scheme
 from app.core.auth import (

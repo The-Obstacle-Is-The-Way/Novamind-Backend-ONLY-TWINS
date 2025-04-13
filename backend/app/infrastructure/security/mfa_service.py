@@ -19,7 +19,8 @@ import pyotp
 import qrcode
 from io import BytesIO
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.utils.enhanced_phi_detector import enhanced_phi_secure_logger as logger
 
 

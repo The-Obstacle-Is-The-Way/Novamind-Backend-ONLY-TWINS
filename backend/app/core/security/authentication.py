@@ -4,7 +4,7 @@ Authentication module for the Novamind Digital Twin Backend.
 This module provides functions for user authentication, JWT token
 generation and validation, and current user retrieval for endpoints.
 """
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Union
 from uuid import UUID
 
@@ -13,7 +13,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import ValidationError
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.domain.entities.user import User
 
 # OAuth2 token URL endpoint
@@ -58,7 +59,7 @@ def _create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta
         JWT token string
     """
     to_encode = data.copy()
-    expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(settings.TIMEZONE) + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt

@@ -13,11 +13,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # Corrected import: Use get_db_session from the config module
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session as get_session_from_config
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 
-
-# Renamed function to avoid conflict with imported name
 from typing import Optional, Dict, Any # Ensure Optional is imported
+from app.core.utils.logging import get_logger
+from app.domain.exceptions import DatabaseError
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance
+
+logger = get_logger(__name__)
+
 async def get_db() -> dict:
     """
     Provide an async database session for endpoints.

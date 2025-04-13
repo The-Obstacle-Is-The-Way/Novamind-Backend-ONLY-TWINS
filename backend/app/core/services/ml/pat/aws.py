@@ -10,13 +10,14 @@ import json
 import logging
 import time
 import uuid
-from datetime import datetime, UTC, UTC
+from datetime import datetime, UTC
 from typing import Any, Dict, List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,
     AuthorizationError,

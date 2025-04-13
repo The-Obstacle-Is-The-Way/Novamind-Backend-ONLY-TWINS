@@ -27,7 +27,8 @@ Usage:
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Set, Union
 
-from app.core.config import settings # Corrected import
+from app.core.config import get_settings
+settings = get_settings() # Corrected import
 from app.domain.exceptions import AuthorizationError # Corrected exception name
 
 

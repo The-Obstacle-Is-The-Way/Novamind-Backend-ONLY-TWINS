@@ -461,9 +461,9 @@ def configure_fastapi_phi_protection(app: ASGIApp) -> None:
     
     # Add PHI auditing middleware in non-production environments
     # This helps detect potential PHI leaks during development and testing
-    from app.core.config import settings
-    
-    if not settings.PRODUCTION_ENV:
+    from app.core.config import get_settings
+    settings = get_settings()
+    if settings.ENVIRONMENT != "production":
         app.add_middleware(
             PHIAuditMiddleware,
             exclude_paths=["/docs", "/redoc", "/openapi.json"],

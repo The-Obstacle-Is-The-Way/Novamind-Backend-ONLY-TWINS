@@ -16,10 +16,10 @@ from fastapi.staticfiles import StaticFiles
 
 # Support both import structures for settings to maintain compatibility
 try:
-    from app.core.config import settings
+    from app.core.config import get_settings
 except (ImportError, AttributeError):
     try:
-        from app.core.config.settings import settings
+        from app.core.config.settings import get_settings
     except ImportError:
         # Fallback to a minimal settings implementation if neither import works
         from pydantic_settings import BaseSettings
@@ -31,7 +31,8 @@ except (ImportError, AttributeError):
             API_PREFIX: str = "/api/v1"
             ENABLE_ANALYTICS: bool = False
             
-        settings = MinimalSettings()
+        def get_settings():
+            return MinimalSettings()
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance
 from app.api.routes import api_router, setup_routers  # Import the setup_routers function
 from app.presentation.api.routes.analytics_endpoints import router as analytics_router
@@ -84,9 +85,10 @@ def create_application() -> FastAPI:
         FastAPI: Configured FastAPI application
     """
     # Get settings values with fallbacks to ensure we don't have AttributeError
-    project_name = getattr(settings, 'PROJECT_NAME', 'Novamind Digital Twin')
-    app_description = getattr(settings, 'APP_DESCRIPTION', 'Advanced psychiatric digital twin platform for mental health analytics and treatment optimization')
-    version = getattr(settings, 'VERSION', '1.0.0')
+    settings = get_settings()
+    project_name = settings.PROJECT_NAME
+    app_description = settings.APP_DESCRIPTION
+    version = settings.VERSION
     
     app = FastAPI(
         title=project_name,
@@ -97,7 +99,7 @@ def create_application() -> FastAPI:
     
     # Set up CORS middleware
     # Default to empty list if BACKEND_CORS_ORIGINS not defined in settings
-    origins = getattr(settings, 'BACKEND_CORS_ORIGINS', [])
+    origins = settings.BACKEND_CORS_ORIGINS
     if origins:
         app.add_middleware(
             CORSMiddleware,
@@ -114,7 +116,7 @@ def create_application() -> FastAPI:
     setup_routers()
     
     # Get API prefix and ensure it doesn't end with a slash
-    api_prefix = getattr(settings, 'API_PREFIX', '/api/v1')
+    api_prefix = settings.API_PREFIX
     if api_prefix.endswith('/'):
         api_prefix = api_prefix[:-1]
     
@@ -122,12 +124,12 @@ def create_application() -> FastAPI:
     app.include_router(api_router, prefix=api_prefix)
     
     # Include analytics router if analytics are enabled
-    if getattr(settings, "ENABLE_ANALYTICS", False):
+    if settings.ENABLE_ANALYTICS:
         app.include_router(analytics_router, prefix=api_prefix)
     
     
     # Mount static files if STATIC_DIR is defined in settings
-    static_dir = getattr(settings, "STATIC_DIR", None)
+    static_dir = settings.STATIC_DIR
     if static_dir:
         app.mount("/static", StaticFiles(directory=static_dir), name="static")
     

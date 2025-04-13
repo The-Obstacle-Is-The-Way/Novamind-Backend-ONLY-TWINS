@@ -13,7 +13,8 @@ from jwt.exceptions import InvalidTokenError, ExpiredSignatureError, DecodeError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 
 # OAuth2 scheme for JWT handling
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")

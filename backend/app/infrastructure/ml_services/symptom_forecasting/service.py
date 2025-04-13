@@ -14,7 +14,8 @@ from uuid import UUID
 import numpy as np
 from pydantic import BaseModel, Field
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.domain.interfaces.ml_services import SymptomForecastingService
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import (
     SymptomEnsembleModel,
@@ -62,7 +63,7 @@ class SymptomForecastingServiceImpl(SymptomForecastingService):
     def _load_models(self) -> None:
         """Load all required models from storage."""
         try:
-            model_path = settings.SYMPTOM_FORECASTING_MODEL_PATH
+            model_path = get_settings().SYMPTOM_FORECASTING_MODEL_PATH
 
             # Load individual models
             self.transformer_model.load(f"{model_path}/transformer_model.pkl")

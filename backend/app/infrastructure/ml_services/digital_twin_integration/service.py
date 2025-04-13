@@ -11,7 +11,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.domain.entities.digital_twin.digital_twin import DigitalTwin
 from app.domain.interfaces.ml_services import (
     BiometricCorrelationService,

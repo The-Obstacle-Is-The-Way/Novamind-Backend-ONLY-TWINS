@@ -6,7 +6,7 @@ in FastAPI endpoints, including JWT token validation and role-based access contr
 """
 
 import logging
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Union, Any, Callable
 
@@ -16,7 +16,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
+
 from app.domain.exceptions import (
     AuthenticationError,
     AuthorizationError,
@@ -325,9 +327,9 @@ class JWTHandler:
         to_encode = data.copy()
         
         if expires_delta:
-            expire = datetime.now(UTC) + expires_delta
+            expire = datetime.now() + expires_delta
         else:
-            expire = datetime.now(UTC) + timedelta(
+            expire = datetime.now() + timedelta(
                 minutes=self.config.access_token_expire_minutes
             )
             

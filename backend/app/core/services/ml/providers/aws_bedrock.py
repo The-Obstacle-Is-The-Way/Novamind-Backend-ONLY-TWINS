@@ -12,7 +12,8 @@ from typing import Any, Dict, List, Optional, Union
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
-from app.core.config import settings
+from app.core.config import get_settings
+settings = get_settings()
 from app.core.exceptions import (
     InvalidConfigurationError, 
     InvalidRequestError,
