@@ -25,11 +25,6 @@ from app.core.services.ml.xgboost import (
     RiskLevel,
 )
 
-# Remove module-level app/client creation
-# app = FastAPI()
-# app.include_router(router)
-# client = TestClient(app)
-
 
 # Create a test client fixture
 @pytest.fixture
@@ -66,18 +61,16 @@ def mock_auth_dependencies():
     ) as mock_get_user:
         # Set up mock returns
         mock_get_clinician.return_value = {
-            "id": "clinician-123", "name": "Dr. Smith"}
+            "id": "clinician-123", "name": "Dr. Smith"
+        }
         mock_get_user.return_value = {"id": "user-123", "name": "Test User"}
 
         yield
 
+
 @pytest.fixture
 def mock_service():
     """Set up a real MockXGBoostService for integration testing."""
-    # Import necessary modules
-    from unittest.mock import MagicMock
-    from datetime import datetime
-
     # Create a real mock service (not a MagicMock)
     mock_service = MockXGBoostService()
 
@@ -86,214 +79,135 @@ def mock_service():
         "log_level": "INFO",
         "mock_delay_ms": 0,  # No delay for tests
         "risk_level_distribution": {
-                "very_low": 5,
-                "low": 20,
-                "moderate": 50,  # Higher probability for moderate
-                "high": 20,
-                "very_high": 5,
+            "low": 0.7,
+            "medium": 0.2,
+            "high": 0.1,
+        },
+        # Configure mock responses based on known test values
+        "known_responses": {
+            # Patient 123 will always get high risk
+            "patient-123": {
+                "risk_level": "high",
+                "confidence": 0.92,
+                "factors": [
+                    "medication_non_compliance",
+                    "comorbid_anxiety",
+                    "family_history"
+                ]
             },
-        }
-    )
-
-    # Mock the required methods
-    # Override predict_risk to return a consistent result
-    mock_service.predict_risk = MagicMock(
-        return_value={
-            "prediction_id": "pred-123",
-            "patient_id": "patient-123",
-            "risk_type": "relapse",
-            "risk_level": "moderate",
-            "risk_score": 0.65,
-            "confidence": 0.8,
-            "time_frame_days": 90,
-            "timestamp": datetime.now().isoformat(),
-        }
-    )
-
-    # Mock get_prediction to return a prediction by ID
-    mock_service.get_prediction = MagicMock(
-        return_value={
-            "prediction_id": "pred-123",
-            "patient_id": "patient-123",
-            "risk_type": "relapse",
-            "risk_level": "moderate",
-            "risk_score": 0.65,
-            "confidence": 0.8,
-            "time_frame_days": 90,
-            "timestamp": datetime.now().isoformat(),
-            "risk_factors": {
-                "contributing_factors": [
-                    {"name": "high phq9_score", "weight": "high"},
-                    {"name": "previous hospitalizations", "weight": "medium"},
-                ],
-                "protective_factors": [
-                    {"name": "stable living situation", "weight": "medium"}
-                ],
+            # Patient 456 will always get low risk
+            "patient-456": {
+                "risk_level": "low",
+                "confidence": 0.89,
+                "factors": []
             },
-            "supporting_evidence": [
-                "Patient has shown symptoms of relapse in the past 30 days",
-                "PHQ-9 score has increased by 5 points in the last assessment",
-            ],
+        },
+        # Configure success rates for treatments
+        "treatment_responses": {
+            "therapy_cbt": {
+                "patient-123": 0.35,  # CBT not very effective for high risk
+                "patient-456": 0.85,  # CBT very effective for low risk
+            },
+            "medication_ssri": {
+                "patient-123": 0.75,  # SSRI effective for high risk
+                "patient-456": 0.65,  # SSRI somewhat effective for low risk
+            },
+            "combined_therapy": {
+                "patient-123": 0.9,   # Combined most effective for high risk
+                "patient-456": 0.75,  # Combined effective for low risk
+            }
         }
-    )
+    })
 
-    # Mock validate_prediction
-    mock_service.validate_prediction = MagicMock(
-        return_value={
-            "prediction_id": "pred-123",
-            "status": "validated",
-            "success": True,
-        }
-    )
+    # Set up mocks for the service methods
+    # Helper to add a prediction timestamp
+    def with_timestamp(response):
+        if isinstance(response, dict):
+            response["prediction_timestamp"] = datetime.now().isoformat()
+        return response
+            
+    # Create mocks for each service method
+    # Return real data from the mock service, just add timestamps
+    # Use side_effect to call the real methods
+    mock_service.predict_risk = MagicMock(side_effect=lambda patient_id, **kwargs:
+        with_timestamp(mock_service._predict_risk_internal(patient_id)))
 
-    # Mock get_prediction_explanation
-    mock_service.get_prediction_explanation = MagicMock(
-        return_value={
-            "prediction_id": "pred-123",
-            "important_features": [
-                {"name": "phq9_score", "importance": 0.45},
-                {"name": "age", "importance": 0.30},
-                {"name": "previous_hospitalizations", "importance": 0.25},
-            ],
-        }
-    )
-
-    # Mock integrate_with_digital_twin
-    mock_service.integrate_with_digital_twin = MagicMock(
-        return_value={
-            "profile_id": "profile-123",
-            "patient_id": "patient-123",
-            "prediction_id": "pred-123",
-            "status": "success",
-            "timestamp": datetime.now().isoformat(),
-        }
-    )
-
-    # Mock predict_treatment_response
     mock_service.predict_treatment_response = MagicMock(
         return_value={
             "prediction_id": "pred-456",
             "patient_id": "patient-123",
             "treatment_type": "medication_ssri",
-            "response_likelihood": "good",
-            "efficacy_score": 0.75,
-            "confidence": 0.8,
-            "treatments_compared": 3,
-            "prediction_horizon": "8_weeks",
-            "results": [
-                {"treatment": "medication_ssri", "score": 0.75},
-                {"treatment": "therapy_cbt", "score": 0.65},
-                {"treatment": "medication_snri", "score": 0.60},
-            ],
-            "recommendation": "medication_ssri is recommended as first-line treatment",
-            "treatment_details": {"medication": "escitalopram", "dose_mg": 10},
-            # Fix the side effect format to match the expected schema
-            "side_effect_risk": {
-                "common": [
-                    {"name": "nausea", "severity": "mild", "likelihood": "common"},
-                    {"name": "headache", "severity": "mild", "likelihood": "common"},
-                    {
-                        "name": "insomnia",
-                        "severity": "moderate",
-                        "likelihood": "common",
-                    },
-                ],
-                "rare": [
-                    {
-                        "name": "serotonin syndrome",
-                        "severity": "severe",
-                        "likelihood": "rare",
-                    }
-                ],
+            "success_probability": 0.75,
+            "confidence": 0.88,
+            "expected_outcomes": {
+                "response_time_days": 14,
+                "remission_probability": 0.65,
+                "side_effects_probability": 0.35
             },
-            "expected_outcome": {
-                "symptom_improvement": "Moderate improvement expected",
-                "time_to_response": "4-6 weeks",
-                "sustained_response_likelihood": "moderate",
-                "functional_improvement": "Some improvement in daily functioning expected",
+            "prediction_timestamp": datetime.now().isoformat(),
+            "model_version": "0.1.0"
+        }
+    )
+
+    # Set up tracking mocks
+    mock_service.track_prediction_feedback = MagicMock(return_value=True)
+    mock_service.track_treatment_outcome = MagicMock(return_value=True)
+    mock_service.get_prediction_history = MagicMock(return_value=[
+        {
+            "prediction_id": "pred-123",
+            "patient_id": "patient-123",
+            "type": "risk",
+            "prediction": {
+                "risk_level": "high",
+                "confidence": 0.92,
+                "factors": ["medication_non_compliance"]
             },
+            "timestamp": "2023-01-01T10:00:00",
+            "model_version": "0.1.0"
+        },
+        {
+            "prediction_id": "pred-456",
+            "patient_id": "patient-123",
+            "type": "treatment",
+            "prediction": {
+                "treatment_type": "medication_ssri",
+                "success_probability": 0.75
+            },
+            "timestamp": "2023-01-02T10:00:00",
+            "model_version": "0.1.0"
         }
-    )
+    ])
+            
+    # Return the configured mock service
+    return mock_service
 
-    # Mock get_models
-    mock_service.get_models = MagicMock(
-        return_value={
-            "count": 3,
-            "models": [
-                {"model_id": "model-123", "type": "relapse-risk", "version": "1.0.0"},
-                {"model_id": "model-456", "type": "suicide-risk", "version": "1.0.0"},
-                {
-                    "model_id": "model-789",
-                    "type": "hospitalization-risk",
-                    "version": "1.0.0",
-                },
-            ],
+
+@pytest.fixture
+def mock_get_service_factory(mock_service):
+    """Create a factory for the service."""
+    
+    # Patch the get_xgboost_service function
+    with patch("app.api.routes.xgboost.get_xgboost_service", return_value=mock_service):
+        yield
+
+
+class TestXGBoostIntegration:
+    """Integration tests for the XGBoost API."""
+
+    def test_risk_prediction_flow(self, client: TestClient, mock_service):
+        """Test the complete risk prediction workflow."""
+        # 1. Make a risk prediction request
+        risk_request = {
+            "patient_id": "patient-123",
+            "clinical_features": {
+                "age": 45,
+                "gender": "female",
+                "previous_episodes": 2,
+                "medication_history": ["fluoxetine", "sertraline"],
+                "current_phq9_score": 18
+            }
         }
-    )
-
-    # Mock get_model_info
-    mock_service.get_model_info = MagicMock(
-        return_value={
-            "model_id": "model-123",
-            "type": "relapse-risk",
-            "version": "1.0.0",
-            "description": "Relapse risk prediction model",
-        }
-    )
-
-    # Mock get_model_features
-    mock_service.get_model_features = MagicMock(
-        return_value={
-            "model_id": "model-123",
-            "features": [
-                {"name": "phq9_score", "importance": 0.45},
-                {"name": "age", "importance": 0.30},
-                {"name": "previous_hospitalizations", "importance": 0.25},
-            ],
-        }
-    )
-
-    # Mock healthcheck
-    mock_service.healthcheck = MagicMock(
-        return_value={
-            "status": "healthy",
-            "components": [
-                {"name": "risk_models", "status": "healthy"},
-                {"name": "treatment_models", "status": "healthy"},
-                {"name": "outcome_models", "status": "healthy"},
-            ],
-        }
-    )
-
-    # Create a MagicMock for the _get_xgboost_service function
-    from unittest.mock import MagicMock
-
-    # Create a function that returns our mock service
-    async def mock_get_service_factory():
-             return mock_service
-
-        # Create a MagicMock for the _get_xgboost_service function
-        mock_get_service = MagicMock()
-        mock_get_service.return_value = mock_get_service_factory
-
-        # Patch the _get_xgboost_service function in the router
-        with patch("app.api.routes.xgboost._get_xgboost_service", mock_get_service):
-            yield mock_service
-
-            @pytest.mark.db_required()
-            class TestXGBoostIntegration:
-            """Integration tests for the XGBoost API."""
-
-            @pytest.mark.asyncio()
-            async def test_risk_prediction_flow(
-            self, client: TestClient, mock_service):
-                """Test the complete risk prediction workflow."""
-                # 1. Request risk prediction
-                risk_request = {
-                "patient_id": "patient-123",
-                "profile_id": "profile-456",  # Assume a profile exists
-                "features": {"age": 55, "bmi": 28.5, "genetic_marker_x": 0.8},
-        }
+        
         response = client.post(
             "/api/v1/ml/xgboost/risk-prediction",
             json=risk_request)
@@ -303,60 +217,132 @@ def mock_service():
 
         # 2. Retrieve the prediction
         response = client.get(
-            f"/api/v1/ml/xgboost/predictions/{prediction_id}")
-        assert response.status_code == 200
-        prediction_data = response.json()
-        assert prediction_data["prediction_id"] == prediction_id
-        assert prediction_data["status"] == "pending_validation"
-        assert prediction_data["risk_level"] in list(RiskLevel)
-
-        # 3. Validate the prediction
-        validation_request = {
-            "status": "validated",
-            "validator_notes": "Clinically confirmed after review",
-        }
-        response = client.post(
-            f"/api/v1/ml/xgboost/predictions/{prediction_id}/validate",
-            json=validation_request,
+            f"/api/v1/ml/xgboost/prediction/{prediction_id}"
         )
         assert response.status_code == 200
-        assert response.json()["status"] == "validated"
-
-        # 4. Get explanation for the prediction
-        response = client.get(
-            f"/api/v1/ml/xgboost/predictions/{prediction_id}/explanation?detail_level=detailed")
-        assert response.status_code == 200
-        explanation_data = response.json()
-        assert "feature_importance" in explanation_data
-        assert explanation_data["prediction_id"] == prediction_id
-
-        # 5. Integrate with Digital Twin (using the same prediction ID,
-        update_request= {
-            "patient_id": "patient-123",
-            "profile_id": "profile-456",  # Ensure profile ID matches
-            "prediction_id": prediction_id,  # Use the ID from the prediction made
-        }
-        response = client.post(
-            "/api/v1/ml/xgboost/digital-twin/integrate", json=update_request
-        )
-        assert response.status_code == 200
-        assert response.json()[
-            "message"] == "Prediction integrated successfully."
         assert response.json()["prediction_id"] == prediction_id
+        assert response.json()["prediction"]["risk_level"] == "high"  # For patient-123
+        
+        # 3. Submit feedback on the prediction
+        feedback_request = {
+            "prediction_id": prediction_id,
+            "actual_outcome": "high",
+            "clinician_notes": "Patient showed severe symptoms exactly as predicted",
+            "accuracy_rating": 5  # 1-5 scale
+        }
+        
+        response = client.post(
+            f"/api/v1/ml/xgboost/feedback",
+            json=feedback_request
+        )
+        assert response.status_code == 200
+        assert response.json()["success"] == True
+        
+        # 4. Get treatment recommendations
+        treatment_request = {
+            "patient_id": "patient-123",
+            "clinical_features": {
+                "age": 45,
+                "gender": "female",
+                "previous_episodes": 2,
+                "medication_history": ["fluoxetine", "sertraline"],
+                "current_phq9_score": 18,
+                "comorbidities": ["anxiety", "insomnia"],
+                "previous_treatments": ["therapy_cbt"]
+            },
+            "treatment_options": ["medication_ssri", "therapy_cbt", "combined_therapy"]
+        }
+        
+        response = client.post(
+            "/api/v1/ml/xgboost/treatment-prediction",
+            json=treatment_request
+        )
+        assert response.status_code == 200
+        assert "predictions" in response.json()
+        assert len(response.json()["predictions"]) == 3  # One for each treatment option
+        
+        # 5. Track treatment outcome
+        outcome_request = {
+            "patient_id": "patient-123",
+            "treatment_type": "medication_ssri",
+            "outcome": "successful",
+            "outcome_details": {
+                "phq9_reduction": 10,
+                "remission_achieved": True,
+                "time_to_response_days": 21,
+                "side_effects": ["nausea", "insomnia"],
+                "side_effects_severity": "mild"
+            },
+            "clinician_notes": "Patient responded well to sertraline after 3 weeks"
+        }
+        
+        response = client.post(
+            "/api/v1/ml/xgboost/treatment-outcome",
+            json=outcome_request
+        )
+        assert response.status_code == 200
+        assert response.json()["success"] == True
+        
+        # 6. Get prediction history
+        response = client.get(
+            f"/api/v1/ml/xgboost/prediction-history/patient-123"
+        )
+        assert response.status_code == 200
+        assert "predictions" in response.json()
+        assert len(response.json()["predictions"]) > 0
 
-    @pytest.mark.asyncio()
-    async def test_treatment_comparison_flow(
-            self, client: TestClient, mock_service):
-                """Test the treatment comparison workflow."""
-                # 1. Request treatment comparison
-                comparison_request = {
-                "patient_id": "patient-789",
-                "profile_id": "profile-abc",
-                "features": {"age": 40, "prior_treatment_failures": 2, "severity_score": 7},
-                "treatment_options": [
+    def test_batch_risk_prediction(self, client: TestClient, mock_service):
+        """Test batch risk prediction functionality."""
+        # Create a batch request with multiple patients
+        batch_request = {
+            "patients": [
+                {
+                    "patient_id": "patient-123",
+                    "clinical_features": {
+                        "age": 45,
+                        "gender": "female",
+                        "previous_episodes": 2,
+                        "current_phq9_score": 18
+                    }
+                },
+                {
+                    "patient_id": "patient-456",
+                    "clinical_features": {
+                        "age": 32,
+                        "gender": "male",
+                        "previous_episodes": 0,
+                        "current_phq9_score": 8
+                    }
+                }
+            ]
+        }
+        
+        response = client.post(
+            "/api/v1/ml/xgboost/batch-risk-prediction",
+            json=batch_request
+        )
+        assert response.status_code == 200
+        results = response.json()["results"]
+        assert len(results) == 2
+        
+        # Check that patient-123 got high risk (based on our mock setup)
+        patient_123_result = next(r for r in results if r["patient_id"] == "patient-123")
+        assert patient_123_result["prediction"]["risk_level"] == "high"
+        
+        # Check that patient-456 got low risk (based on our mock setup)
+        patient_456_result = next(r for r in results if r["patient_id"] == "patient-456")
+        assert patient_456_result["prediction"]["risk_level"] == "low"
+    
+    def test_treatment_comparison(self, client: TestClient, mock_service):
+        """Test treatment comparison functionality."""
+        # Create a comparison request
+        comparison_request = {
+            "patient_id": "patient-123",
+            "clinical_features": {"age": 40, "prior_treatment_failures": 2, "severity_score": 7},
+            "treatment_options": [
                 {"treatment_id": "ssri_a", "category": TreatmentCategory.SSRI},
                 {"treatment_id": "snri_b", "category": TreatmentCategory.SNRI},
-                ],
+            ],
         }
         response = client.post(
             "/api/v1/ml/xgboost/treatment-response", json=comparison_request
@@ -367,12 +353,11 @@ def mock_service():
         assert len(comparison_data["results"]) == 2
         assert comparison_data["results"][0]["treatment_id"] == "ssri_a"
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_model_info_flow(self, client: TestClient, mock_service):
-                 """Test the model information workflow."""
+        """Test the model information workflow."""
         # This test assumes a model has been loaded or is mockable
-        # We'll use a placeholder model ID, assuming the mock service handles
-        # it
+        # We'll use a placeholder model ID, assuming the mock service handles it
         model_id = "mock-model-123"
 
         # 1. Get model details
@@ -388,13 +373,11 @@ def mock_service():
         assert response.status_code == 200
         features_data = response.json()
         assert isinstance(features_data["features"], list)
-        assert (
-            len(features_data["features"]) > 0
-        )  # Assuming mock provides some features
+        assert len(features_data["features"]) > 0  # Assuming mock provides some features
 
-        @pytest.mark.asyncio()
-        async def test_healthcheck(self, client: TestClient, mock_service):
-                 """Test the healthcheck endpoint."""
-            response = client.get("/api/v1/ml/xgboost/health")
-            assert response.status_code == 200
-            assert response.json() == {"status": "ok"}
+    @pytest.mark.asyncio
+    async def test_healthcheck(self, client: TestClient, mock_service):
+        """Test the healthcheck endpoint."""
+        response = client.get("/api/v1/ml/xgboost/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
