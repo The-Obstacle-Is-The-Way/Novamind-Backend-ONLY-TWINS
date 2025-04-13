@@ -69,6 +69,11 @@ services:
       TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@novamind-db-test:5432/novamind_test
       TEST_REDIS_URL: redis://novamind-redis-test:6379/0
 
+      # Python environment configuration
+      PYTHONPATH: "/app:/app/backend"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      
       # Test configuration
       TESTING: "1"
       TEST_MODE: "1"
@@ -76,6 +81,9 @@ services:
 
       # Debugging and performance settings
       LOG_LEVEL: DEBUG
+      
+      # Clean architecture enforcement
+      ENFORCE_CLEAN_ARCHITECTURE: "1"
 
     # Command can be overridden when running docker-compose
     # Default runs all tests in stages, but CI can specify specific test types

@@ -11,7 +11,7 @@ import pytest
 import logging
 from typing import Dict, Any, Optional, Tuple, List
 from datetime import datetime
-from app.domain.utils.datetime_utils import UTC
+from app.domain.utils.datetime_utils import UTC, now_utc
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncConnection
 from sqlalchemy import text, MetaData, Table, Column, Integer, String, DateTime, insert, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -119,7 +119,7 @@ class DatabaseConnectionValidator:
                 
                 # Insert test data
                 test_id = uuid.uuid4()
-                current_time = datetime.now(UTC)
+                current_time = now_utc()
                 stmt = insert(test_table).values(
                     id=test_id,
                     name="test_record",
