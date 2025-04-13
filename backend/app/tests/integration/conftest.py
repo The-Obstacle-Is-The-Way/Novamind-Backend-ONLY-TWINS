@@ -10,6 +10,8 @@ import os
 import json
 import asyncio
 from typing import Any, Dict, List, Optional, AsyncGenerator, Callable, Generator
+from fastapi.testclient import TestClient
+from app.main import app
 
 
 # Database fixtures
@@ -103,21 +105,15 @@ def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
 
 # API Testing Fixtures
 @pytest.fixture
-def test_client() -> Generator[Any, None, None]:
+def test_client() -> Generator[TestClient, None, None]:
     """
-    Creates a test client for API testing.
+    Creates a real test client for API integration testing.
 
     Yields:
         A FastAPI TestClient instance.
     """
-    # This would typically use FastAPI's TestClient
-    # Mock implementation for structure
-    from unittest.mock import MagicMock
-
-    client = MagicMock()
-    client.base_url = "http://test-server"
-
-    yield client
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture

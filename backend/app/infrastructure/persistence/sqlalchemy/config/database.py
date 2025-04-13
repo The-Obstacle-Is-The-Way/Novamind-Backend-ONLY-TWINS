@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.pool import NullPool, QueuePool
 from fastapi import Depends
 
-from app.core.database_settings import DatabaseSettings
+from app.core.config import Settings
 from app.core.utils.logging import get_logger
 from app.infrastructure.persistence.sqlalchemy.config.base import Base
 
@@ -29,12 +29,12 @@ class Database:
     providing controlled access to database sessions.
     """
     
-    def __init__(self, settings: DatabaseSettings):
+    def __init__(self, settings: Settings):
         """
-        Initialize the database with settings.
+        Initialize the database with main application settings.
         
         Args:
-            settings: Database connection settings
+            settings: Application settings object from app.core.config
         """
         self.settings = settings
         self.engine = self._create_engine()
@@ -42,31 +42,30 @@ class Database:
         
     def _create_engine(self):
         """
-        Create the SQLAlchemy async engine.
+        Create the SQLAlchemy async engine using the main settings.
         
         Returns:
             SQLAlchemy async engine
         """
-        connection_url = self.settings.get_connection_string()
+        # Use the assembled connection string directly from main settings
+        connection_url = str(self.settings.SQLALCHEMY_DATABASE_URI)
         
-        # Determine pooling configuration
-        pooling_args = {}
-        if self.settings.DISABLE_POOLING:
-            pooling_args["poolclass"] = NullPool
-        else:
-            pooling_args.update({
-                "poolclass": QueuePool,
-                "pool_size": self.settings.POOL_SIZE,
-                "max_overflow": self.settings.POOL_MAX_OVERFLOW,
-                "pool_timeout": self.settings.POOL_TIMEOUT,
-                "pool_recycle": self.settings.POOL_RECYCLE,
-                "pool_pre_ping": True
-            })
+        # Pooling configuration (using example defaults, ideally read from settings)
+        # TODO: Consider adding POOL_SIZE, POOL_MAX_OVERFLOW etc. to main Settings
+        pooling_args = {
+            "poolclass": QueuePool,
+            "pool_size": 5, 
+            "max_overflow": 10,
+            "pool_timeout": 30,
+            "pool_recycle": 1800,
+            "pool_pre_ping": True
+        }
             
         # Create engine
         return create_async_engine(
             connection_url,
-            echo=self.settings.ECHO_SQL,
+            # Use ENVIRONMENT from main settings to control echo
+            echo=self.settings.ENVIRONMENT == "development", 
             future=True,
             **pooling_args
         )
@@ -119,7 +118,7 @@ def get_db_instance() -> Database:
     Get the database singleton instance.
     
     This function returns the global database instance, initializing it
-    with settings from environment if not already initialized.
+    with main application settings if not already initialized.
     
     Returns:
         Database singleton instance
@@ -127,21 +126,14 @@ def get_db_instance() -> Database:
     global _db_instance
     
     if _db_instance is None:
-        from app.core.config import settings
+        from app.core.config import get_settings
         
-        # Load database settings from app settings
-        db_settings = DatabaseSettings(
-            HOST=settings.POSTGRES_SERVER,
-            PORT=settings.POSTGRES_PORT,
-            USERNAME=settings.POSTGRES_USER,
-            PASSWORD=settings.POSTGRES_PASSWORD,
-            DATABASE=settings.POSTGRES_DB,
-            ECHO_SQL=settings.DEBUG,
-            # Additional settings can be loaded here
-        )
+        # Get the main application settings instance
+        main_settings = get_settings()
         
-        _db_instance = Database(db_settings)
-        logger.info("Database instance initialized")
+        # Initialize Database with the main settings object
+        _db_instance = Database(main_settings)
+        logger.info("Database instance initialized using main application settings")
         
     return _db_instance
 

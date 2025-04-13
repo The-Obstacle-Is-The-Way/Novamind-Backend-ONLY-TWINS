@@ -5,7 +5,7 @@ This module provides functions for JWT token validation, user authentication,
 and related security operations following HIPAA compliant practices.
 """
 import time
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, timedelta
 from typing import Dict, Optional, Any, Union
 
 import jwt
@@ -16,7 +16,7 @@ from fastapi.security import OAuth2PasswordBearer
 from app.core.config import settings
 
 # OAuth2 scheme for JWT handling
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_PREFIX}/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
 
 # JWT algorithms
 ALGORITHM = "HS256"
@@ -40,9 +40,9 @@ def create_jwt_token(
     
     # Set expiration time
     if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+        expire = datetime.now() + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire})
     

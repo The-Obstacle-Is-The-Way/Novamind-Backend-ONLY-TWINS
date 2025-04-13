@@ -40,6 +40,26 @@ class AuthorizationError(DomainError):
     pass
 
 
+class AuthenticationError(AuthorizationError):
+    """Exception raised for authentication failures (e.g., invalid credentials, token)."""
+    pass
+
+
+class InvalidTokenError(AuthenticationError):
+    """Exception raised when an authentication token is invalid or malformed."""
+    pass
+
+
+class MissingTokenError(AuthenticationError):
+    """Exception raised when an authentication token is missing from the request."""
+    pass
+
+
+class TokenExpiredError(AuthenticationError):
+    """Exception raised when an authentication token has expired."""
+    pass
+
+
 class PHISecurityError(DomainError):
     """
     Exception raised for PHI security violations.
@@ -47,4 +67,14 @@ class PHISecurityError(DomainError):
     This exception is used when Protected Health Information (PHI)
     is accessed or modified in a way that violates HIPAA security rules.
     """
+    pass
+
+
+class InvalidAppointmentStateError(ValidationError):
+    """Exception raised for invalid appointment state transitions."""
+    pass
+
+
+class InvalidAppointmentTimeError(ValidationError):
+    """Exception raised for invalid appointment times (e.g., past date)."""
     pass

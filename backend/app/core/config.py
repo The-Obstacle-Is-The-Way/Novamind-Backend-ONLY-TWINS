@@ -9,8 +9,8 @@ import os
 from functools import lru_cache
 from typing import Optional, Dict, Any, List
 
+from pydantic_settings import BaseSettings
 from pydantic import (
-    BaseSettings,
     Field,
     PostgresDsn,
     validator,
