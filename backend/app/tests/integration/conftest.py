@@ -36,12 +36,13 @@ async def test_db_connection() -> AsyncGenerator[Any, None]:
 
     try:
         yield connection
-        finally:
-            # Cleanup would happen here
+    finally:
+        # Cleanup would happen here
         pass
 
-        @pytest.fixture
-        def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
+
+@pytest.fixture
+def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
     """
     Provides mock database data for tests.
 
@@ -118,15 +119,15 @@ def test_client() -> Generator[Any, None, None]:
 
     yield client
 
-    @pytest.fixture
-    def auth_headers() -> Dict[str, str]:
+
+@pytest.fixture
+def auth_headers() -> Dict[str, str]:
     """
     Provides authentication headers for authenticated API requests.
 
     Returns:
         Dictionary with Authorization header.
-        """
-
+    """
     return {
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXIiLCJpYXQiOjE2MTcxOTMxNDIsImV4cCI6MTYxNzI3OTU0Mn0.mock-token-signature"
     }
@@ -204,20 +205,22 @@ def mock_aws_service() -> Any:
         def upload_file(self, file_path: str, bucket: str, key: str) -> bool:
             return True
 
-            def download_file(
-                    self,
-                    bucket: str,
-                    key: str,
-                    local_path: str) -> bool:
-                # Simulate creating a file
+        def download_file(
+            self,
+            bucket: str,
+            key: str,
+            local_path: str
+        ) -> bool:
+            # Simulate creating a file
             with open(local_path, "w") as f:
                 f.write('{"mock": "data"}')
-                return True
+            return True
 
-                return MockAWSService()
+    return MockAWSService()
 
-                @pytest.fixture
-                def integration_fixture():
+
+@pytest.fixture
+def integration_fixture():
     """Basic fixture for integration tests."""
 
     return "integration_fixture"
