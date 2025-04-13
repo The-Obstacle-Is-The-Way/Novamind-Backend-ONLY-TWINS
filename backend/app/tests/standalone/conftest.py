@@ -15,8 +15,8 @@ def standalone_fixture():
 
     return "standalone_fixture"
 
-    @pytest.fixture
-    def mock_patient_data() -> Dict[str, Any]:
+@pytest.fixture
+def mock_patient_data() -> Dict[str, Any]:
     """Provides mock patient data for tests."""
 
     return {

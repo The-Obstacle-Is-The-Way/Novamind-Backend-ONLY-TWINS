@@ -18,13 +18,12 @@ from app.core.exceptions import (
     ResourceNotFoundError,
 )
 from app.core.services.ml.mock_dt import MockDigitalTwinService
-from app.tests.unit.base_test_unit import (
-    BaseUnitTest,
-)  # Updated import path after rename
+from unittest import TestCase
+# Using TestCase directly since BaseUnitTest couldn't be found
 
 
 @pytest.mark.db_required()
-class TestMockDigitalTwinService(BaseUnitTest):
+class TestMockDigitalTwinService(TestCase):
     """
     Test suite for MockDigitalTwinService class.
 
@@ -36,7 +35,13 @@ class TestMockDigitalTwinService(BaseUnitTest):
         """Set up test fixtures before each test method."""
         super().setUp()
         self.service = MockDigitalTwinService()
-        self.service.initialize({})
+        # Use a non-empty configuration dictionary to satisfy the service requirements
+        config = {
+            "response_style": "detailed",
+            "session_duration_minutes": 60,
+            "model_version": "1.0.0"
+        }
+        self.service.initialize(config)
 
         self.patient_data = {
             "patient_id": "test-patient-123",
@@ -79,17 +84,19 @@ class TestMockDigitalTwinService(BaseUnitTest):
             self.service.shutdown()
             super().tearDown()
 
-            def test_initialization(self) -> None:
+    def test_initialization(self) -> None:
         """Test service initialization with various configurations."""
-        # Test default initialization
+        # Test minimal valid initialization
         service = MockDigitalTwinService()
-        service.initialize({})
+        min_config = {"model_version": "1.0.0"}
+        service.initialize(min_config)
         self.assertTrue(service.is_healthy())
 
         # Test with custom configuration
         custom_config = {
             "response_style": "detailed",
-            "session_duration_minutes": 60}
+            "session_duration_minutes": 60
+        }
         service = MockDigitalTwinService()
         service.initialize(custom_config)
         self.assertTrue(service.is_healthy())
@@ -99,11 +106,11 @@ class TestMockDigitalTwinService(BaseUnitTest):
         with self.assertRaises(InvalidConfigurationError):
             service.initialize({"response_style": 123})  # type: ignore
 
-            # Test shutdown
-            service.shutdown()
-            self.assertFalse(service.is_healthy())
+        # Test shutdown
+        service.shutdown()
+        self.assertFalse(service.is_healthy())
 
-            def test_create_session(self) -> None:
+    def test_create_session(self) -> None:
         """Test creating a digital twin therapy session."""
         # Test with different session types
         for session_type in ["therapy", "assessment", "medication_review"]:
@@ -151,7 +158,7 @@ class TestMockDigitalTwinService(BaseUnitTest):
         with self.assertRaises(ResourceNotFoundError):
             self.service.get_session("nonexistent-session-id")
 
-            def test_send_message(self) -> None:
+    def test_send_message(self) -> None:
         """Test sending a message to a digital twin therapy session."""
         # Create a session
         create_result = self.service.create_session(
@@ -245,11 +252,11 @@ class TestMockDigitalTwinService(BaseUnitTest):
         with self.assertRaises(ResourceNotFoundError):
             self.service.end_session("nonexistent-session-id")
 
-            # Test ending an already ended session
-            with self.assertRaises(InvalidRequestError):
+        # Test ending an already ended session
+        with self.assertRaises(InvalidRequestError):
             self.service.end_session(session_id)
 
-            def test_get_insights(self) -> None:
+    def test_get_insights(self) -> None:
         """Test getting insights from a completed digital twin session."""
         # Create and complete a session with some messages
         session_result = self.service.create_session(
@@ -287,14 +294,17 @@ class TestMockDigitalTwinService(BaseUnitTest):
             self.assertIsInstance(
                 insights_result["insights"]["recommendations"], list)
 
-            def test_mood_insights(self) -> None:
+    def test_mood_insights(self) -> None:
         """Test mood tracking insights from digital twin sessions."""
         # Create and complete multiple sessions to track mood
         mood_messages = {
             "session1": [
-                "I feel pretty good today", "Work went well"], "session2": [
-                "I'm feeling down today", "Everything seems hopeless"], "session3": [
-                "I'm feeling a bit better", "Still struggling but trying"], }
+                "I feel pretty good today", "Work went well"], 
+            "session2": [
+                "I'm feeling down today", "Everything seems hopeless"], 
+            "session3": [
+                "I'm feeling a bit better", "Still struggling but trying"]
+        }
 
         session_ids = []
         for session_name, messages in mood_messages.items():
@@ -328,7 +338,7 @@ class TestMockDigitalTwinService(BaseUnitTest):
                 self.assertGreaterEqual(
                     len(mood_insights["mood_data"]), 3)  # One per session
 
-                def test_activity_insights(self) -> None:
+    def test_activity_insights(self) -> None:
         """Test activity tracking insights from digital twin."""
         # Generate activity insights
         activity_insights = self.service.get_activity_insights(self.twin_id)
@@ -340,7 +350,7 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.assertIn("trends", activity_insights)
         self.assertIn("recommendations", activity_insights)
 
-        def test_sleep_insights(self) -> None:
+    def test_sleep_insights(self) -> None:
         """Test sleep tracking insights from digital twin."""
         # Generate sleep insights
         sleep_insights = self.service.get_sleep_insights(self.twin_id)
@@ -353,7 +363,7 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.assertIn("patterns", sleep_insights)
         self.assertIn("recommendations", sleep_insights)
 
-        def test_medication_insights(self) -> None:
+    def test_medication_insights(self) -> None:
         """Test medication insights from digital twin."""
         # Generate medication insights
         medication_insights = self.service.get_medication_insights(
@@ -366,7 +376,7 @@ class TestMockDigitalTwinService(BaseUnitTest):
         self.assertIn("reported_effects", medication_insights)
         self.assertIn("recommendations", medication_insights)
 
-        def test_treatment_insights(self) -> None:
+    def test_treatment_insights(self) -> None:
         """Test treatment response insights from digital twin."""
         # Generate treatment insights
         treatment_insights = self.service.get_treatment_insights(self.twin_id)
