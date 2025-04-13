@@ -6,6 +6,7 @@ This module provides async database session factory and connection pooling
 for the SQLAlchemy ORM, configured according to the application settings.
 """
 
+import os
 from typing import Optional, Callable, Dict, Any, AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -13,10 +14,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.pool import NullPool, QueuePool, FallbackAsyncAdaptedQueuePool
 from fastapi import Depends
 
-from app.core.config import Settings
+from app.core.config import Settings, get_settings
 from app.core.utils.logging import get_logger
 from app.infrastructure.persistence.sqlalchemy.config.base import Base
-
 
 logger = get_logger(__name__)
 
@@ -116,25 +116,40 @@ _db_instance = None
 def get_db_instance() -> Database:
     """
     Get the database singleton instance.
-    
+
     This function returns the global database instance, initializing it
     with main application settings if not already initialized.
-    
+
+    For the 'test' environment, it ensures fresh settings are loaded
+    by bypassing the global instance and settings cache.
+
     Returns:
         Database singleton instance
     """
     global _db_instance
-    
+
+    # Check if running in the test environment
+    if os.getenv("ENVIRONMENT") == "test":
+        # Clear settings cache to force re-reading env vars loaded by conftest.py
+        get_settings.cache_clear()
+        test_settings = Settings()
+        # Log the constructed URI for debugging
+        logger.info(f"Test Environment SQLALCHEMY_DATABASE_URI: {test_settings.SQLALCHEMY_DATABASE_URI}")
+        # Create a new, separate Database instance for testing
+        # Do not assign to global _db_instance to avoid interfering with other tests
+        test_db_instance = Database(test_settings)
+        logger.info("Created dedicated database instance for test environment")
+        return test_db_instance
+
+    # Original logic for non-test environments
     if _db_instance is None:
-        from app.core.config import get_settings
-        
-        # Get the main application settings instance
+        # Get the main application settings instance (potentially cached)
         main_settings = get_settings()
-        
+
         # Initialize Database with the main settings object
         _db_instance = Database(main_settings)
         logger.info("Database instance initialized using main application settings")
-        
+
     return _db_instance
 
 

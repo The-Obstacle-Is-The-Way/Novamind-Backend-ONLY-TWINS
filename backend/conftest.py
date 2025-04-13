@@ -5,6 +5,18 @@ This file ensures pytest markers are properly registered regardless of how tests
 """
 
 import pytest
+import os
+from dotenv import load_dotenv
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_test_env():
+    """Load environment variables from .env.test before the test session starts."""
+    dotenv_path = os.path.join(os.path.dirname(__file__), '.env.test')
+    # Load .env.test, overriding existing environment variables only if OVERRIDE=true
+    # Set override=True to ensure .env.test values take precedence during tests
+    load_dotenv(dotenv_path=dotenv_path, override=True)
+    print(f"Loaded test environment variables from: {dotenv_path}")
 
 
 # Register custom markers to avoid "unknown mark" warnings

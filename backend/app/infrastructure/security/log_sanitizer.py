@@ -253,6 +253,30 @@ class PatternRepository:
         """Add a new pattern."""
         self.patterns.append(pattern)
 
+    def get_pattern_by_name(self, name: str) -> Optional[PHIPattern]:
+        """Get a pattern by its name.
+
+        Args:
+            name: The name of the pattern to retrieve.
+
+        Returns:
+            The PHIPattern object if found, otherwise None.
+        """
+        for pattern in self.patterns:
+            if pattern.name == name:
+                return pattern
+        return None
+
+    def remove_pattern(self, name: str):
+        """Remove a pattern by its name.
+
+        Args:
+            name: The name of the pattern to remove.
+        """
+        pattern_to_remove = self.get_pattern_by_name(name)
+        if pattern_to_remove:
+            self.patterns.remove(pattern_to_remove)
+
 
 class SanitizerConfig:
     """Configuration for the log sanitizer."""
@@ -596,13 +620,14 @@ class LogSanitizer:
             message_str = str(message)
             if len(message_str) < 15 and not any(term in message_str.lower() for term in ['ssn', 'patient', 'email', 'phone']):
                 return message_str
-                
+            
             # Check for large messages and truncate if needed
             if len(message_str) > (self.config.max_log_size_kb * 1024):
-                message_str = message_str[:self.config.max_log_size_kb * 1024] + f"... Log message truncated"
+                message_str = message_str[:self.config.max_log_size_kb * 1024] + "... Log message truncated"
                 return message_str
             
-            return self._sanitize_value(message)
+            # Start sanitization without a context key
+            return self._sanitize_value(message, context_key=None)
         except Exception as e:
             if self.config.log_sanitization_attempts:
                 logger = logging.getLogger("log_sanitizer")
@@ -612,260 +637,167 @@ class LogSanitizer:
                 return "[Sanitization Error]"
             return str(message)
     
-    def _sanitize_value(self, value: Any) -> str:
+    def _sanitize_value(self, value: Any, context_key: str | None = None) -> Any:
         """
-        Sanitize a value of any type.
+        Sanitize a value of any type, potentially recursively.
+        Returns the sanitized value, preserving type where possible/configured.
         
         Args:
             value: Value to sanitize (can be any type)
-            
+            context_key: The dictionary key associated with this value, if any.
+
         Returns:
-            Sanitized string
+            Sanitized value (could be dict, list, str, etc.)
         """
         # Apply custom sanitization hooks first
         for hook in self.sanitization_hooks:
+            # Hooks might need context later
             result = hook(value, {})
             if result != value:  # If hook modified the value, return it directly
                 return result
         
         # Handle different types of values
         if isinstance(value, dict):
-            return str(self.sanitize_dict(value))
+            # Recursively sanitize dict, passing context handled internally by sanitize_dict
+            return self.sanitize_dict(value) 
         elif isinstance(value, list):
-            return str(self.sanitize_list(value))
+            # Recursively sanitize list
+            return self.sanitize_list(value)
         elif isinstance(value, str):
-            return self._sanitize_string(value)
+            # Sanitize string, passing context key
+            return self._sanitize_string(value, context_key=context_key)
         else:
-            # Convert to string and sanitize
-            return self._sanitize_string(str(value))
+            # For non-container, non-string types (int, float, bool, None, etc.), 
+            # return the value as is. Assume they don't contain PHI unless
+            # explicitly handled by context_key sensitivity elsewhere or patterns.
+            return value
     
-    def _sanitize_string(self, text: str) -> str:
+    def _sanitize_string(self, text: str, context_key: str | None = None) -> str:
         """
         Sanitize a string by removing PHI.
         
         Args:
             text: The string to sanitize
-            
+            context_key: The dictionary key associated with this value, if any.
+
         Returns:
             Sanitized string
         """
         # Skip sanitization for very short strings
         if len(text) < 5:
             return text
-            
-        # Special case for test cases
-        if text == "Non-PHI data":
-            return text
-            
-        # Handle specific test cases
-        if text == "John Smith" or text == "Jane Doe":
-            return "[REDACTED:NAME]"
-            
-        if "123-45-6789" in text:
-            text = text.replace("123-45-6789", "[REDACTED:SSN]")
-            
-        # Special case for Patient + name + SSN pattern
-        if "Error processing patient John Smith (SSN: 123-45-6789) due to system failure" == text:
-            return "Error processing patient [REDACTED:NAME] (SSN: [REDACTED:SSN]) due to system failure"
-            
-        # Special case for the partial redaction test
-        if text == "Patient SSN: 123-45-6789, Email: john.doe@example.com":
-            if self.config.redaction_mode == RedactionMode.PARTIAL:
-                return "Patient SSN: xxx-xx-6789, Email: xxxx@example.com"
-            else:
-                return f"Patient {self.config.redaction_marker}: {self.config.redaction_marker}, Email: {self.config.redaction_marker}"
         
-        # Special case for pattern-based detection test
-        # Handle the test case directly at the top level
-        if text == "Error processing patient John Smith (SSN: 123-45-6789) due to system failure":
-            return "Error processing patient [REDACTED:NAME] (SSN: [REDACTED:SSN]) due to system failure"
-            
-        if "Action: Viewed patient with ID PT654321" in text:
-            result = text.replace("PT654321", self.config.redaction_marker)
-            result = re.sub(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", self.config.redaction_marker, result)
-            result = re.sub(r"\(\d{3}\)[\s.-]?\d{3}[\s.-]?\d{4}", self.config.redaction_marker, result)
-            result = re.sub(r"\d{3}-\d{2}-\d{4}", self.config.redaction_marker, result)
-            return result
-        
-        # Check if it's a safe system message that shouldn't be sanitized
-        if self._is_safe_system_message(text):
-            return text
-            
-        # Special case for high-confidence patterns
-        # Handle common name patterns more aggressively
-        john_smith_match = re.search(r"\b(John Smith|Jane Doe)\b", text)
-        if john_smith_match:
-            text = text.replace(john_smith_match.group(0), "[REDACTED:NAME]")
-            
         # Use PHI detector to sanitize
-        text = self._apply_phi_patterns(text)
+        text = self._apply_phi_patterns(text, context_key=context_key)
         
         return text
     
-    def _is_safe_system_message(self, text: str) -> bool:
+    def _apply_phi_patterns(self, text: str, context_key: str | None = None) -> str:
         """
-        Check if text is a safe system message that shouldn't be sanitized.
-        
-        Args:
-            text: The text to check
-            
-        Returns:
-            True if it's a safe system message, False otherwise
-        """
-        # List of safe message patterns that should never be sanitized
-        safe_messages = [
-            "User login: admin",
-            "Patient data accessed",
-            "Action: Viewed",
-            "Database connection established",
-            "System initialized",
-            "System started",
-            "System stopped",
-            "Non-PHI data"
-        ]
-        
-        # Check exact matches
-        if text in safe_messages:
-            return True
-        
-        # Safe patterns from regexes
-        safe_patterns = [
-            r"^User login: \w+$",
-            r"^Action: \w+$",
-            r"^System (initialized|started|stopped)$",
-            r"^Database connection (established|closed)$"
-        ]
-        
-        for pattern in safe_patterns:
-            if re.match(pattern, text.strip()):
-                return True
-                
-        return False
-    
-    def _is_phi_indicator(self, text: str) -> bool:
-        """
-        Check if text contains indicators that suggest PHI presence.
-        
-        Args:
-            text: The text to check
-            
-        Returns:
-            True if PHI indicators are found, False otherwise
-        """
-        # PHI indicator keywords
-        phi_keywords = [
-            "ssn", "social", "security", "patient", "name", "email", 
-            "phone", "address", "birth", "dob", "mrn", "record"
-        ]
-        
-        text_lower = text.lower()
-        return any(keyword in text_lower for keyword in phi_keywords)
-    
-    def _apply_phi_patterns(self, text: str) -> str:
-        """
-        Apply PHI detection patterns to a string and sanitize as needed.
-        
-        Args:
-            text: Text to sanitize
-            
-        Returns:
-            Sanitized text
-        """
-        # Preserve "User login: admin" pattern
-        login_matches = list(re.finditer(r"User login: admin", text))
-        if login_matches:
-            # Handle text with special login message embedded
-            parts = []
-            last_end = 0
-            
-            for match in login_matches:
-                # Add sanitized text before the match
-                if match.start() > last_end:
-                    parts.append(self._apply_patterns_to_text(text[last_end:match.start()]))
-                
-                # Add the login message unchanged
-                parts.append(text[match.start():match.end()])
-                last_end = match.end()
-            
-            # Add remaining sanitized text
-            if last_end < len(text):
-                parts.append(self._apply_patterns_to_text(text[last_end:]))
-                
-            return "".join(parts)
-        
-        # No special patterns, just apply patterns to the whole text
-        return self._apply_patterns_to_text(text)
-    
-    def _apply_patterns_to_text(self, text: str) -> str:
-        """
-        Apply PHI detection patterns to a text string.
+        Apply PHI detection patterns to a text string using a robust matching strategy.
         
         Args:
             text: Text to process
-            
+            context_key: The dictionary key associated with this value, if any.
+
         Returns:
             Processed text with patterns applied
         """
-        # Special cases for specific test patterns - preserving the beginning text
-        if text == "Error processing patient John Smith (SSN: 123-45-6789) due to system failure":
-            return "Error processing patient [REDACTED:NAME] (SSN: [REDACTED:SSN]) due to system failure"
-        
-        # Additional handling for similar log patterns to ensure they're consistently handled
-        if "Error processing patient" in text and ("John Smith" in text or "Jane Doe" in text) and "SSN" in text:
-            parts = text.split("patient")
-            if len(parts) > 1:
-                after_text = parts[1].split("due to")
-                if len(after_text) > 1:
-                    return f"Error processing patient [REDACTED:NAME] (SSN: [REDACTED:SSN]) due to{after_text[1]}"
-            return "Error processing patient [REDACTED:NAME] (SSN: [REDACTED:SSN]) due to system failure"
-            
-        # Special handling for names
-        if "John Smith" in text:
-            text = text.replace("John Smith", "[REDACTED:NAME]")
-        if "Jane Doe" in text:
-            text = text.replace("Jane Doe", "[REDACTED:NAME]")
-        
-        # Special case for test patterns
-        if hasattr(self.phi_detector, 'detect_phi'):
-            # Use PHI detector for test cases if available
-            try:
-                phi_instances = self.phi_detector.detect_phi(text)
-                if phi_instances:
-                    result = text
-                    for phi in reversed(phi_instances):  # Process in reverse to avoid index issues
-                        phi_type = getattr(phi, 'phi_type', 'PHI')
-                        redaction = f"[REDACTED:{phi_type}]"
-                        if hasattr(phi, 'position') and hasattr(phi, 'value'):
-                            pos = phi.position
-                            val_len = len(phi.value)
-                            result = result[:pos] + redaction + result[pos + val_len:]
-                        else:
-                            # Simple replacement if position isn't available
-                            result = result.replace(phi.value, redaction)
-                    return result
-            except Exception:
-                # Fall back to pattern-based detection
-                pass
-        
-        # Process with patterns from repository
+        if not text: # Handle empty string
+            return text
+
         patterns = self.pattern_repository.get_patterns()
-        result = text
-        
-        # Check PHI patterns
+        all_matches = []
+
+        # 1. Find all matches for all patterns in the original text
         for pattern in patterns:
             if pattern.type == PatternType.REGEX and pattern.compiled_pattern:
-                # Apply regex pattern
-                matches = list(pattern.compiled_pattern.finditer(result))
-                for match in reversed(matches):  # Process in reverse to avoid index shifts
-                    original = match.group(0)
-                    redacted = f"[REDACTED:{pattern.name}]"
-                    result = result[:match.start()] + redacted + result[match.end():]
-        
-        # Apply additional patterns
+                try:
+                    matches_iter = pattern.compiled_pattern.finditer(text)
+                except Exception as e:
+                    # Log regex error if needed
+                    # logger.warning(f"Regex error for pattern {pattern.name}: {e}")
+                    continue # Skip this pattern
+
+                for match in matches_iter:
+                    start, end = match.span()
+                    if start == end: # Skip zero-length matches
+                        continue
+                    
+                    # Determine redaction label: Prioritize context_key if sensitive, then pattern name if sensitive
+                    label_name = pattern.name # Default to pattern name
+                    determined_sensitive_name = None
+                    
+                    # 1. Check if context_key is sensitive
+                    if context_key and self._is_sensitive_key(context_key):
+                        # Find the actual sensitive field name from config that matches context_key
+                        for sensitive_name_in_config in self.config.sensitive_field_names:
+                            if not self.config.sensitive_keys_case_sensitive:
+                                if sensitive_name_in_config.lower() == context_key.lower():
+                                    determined_sensitive_name = sensitive_name_in_config
+                                    break
+                            else:
+                                if sensitive_name_in_config == context_key:
+                                    determined_sensitive_name = sensitive_name_in_config
+                                    break
+                    
+                    # 2. If context_key didn't yield a sensitive name, check if pattern name is sensitive
+                    if not determined_sensitive_name:
+                        pattern_name_lower = pattern.name.lower()
+                        for sensitive_name_in_config in self.config.sensitive_field_names:
+                             # Always check pattern name case-insensitively against config list
+                            if sensitive_name_in_config.lower() == pattern_name_lower:
+                                determined_sensitive_name = sensitive_name_in_config # Use the config name
+                                break
+                                
+                    # Use the determined sensitive name if found, otherwise stick with original pattern name
+                    if determined_sensitive_name:
+                        label_name = determined_sensitive_name
+                    
+                    redacted_text = f"[REDACTED:{label_name}]"
+                    all_matches.append((start, end, redacted_text))
+
+        # 2. Sort matches: primary by start position, secondary by end position descending
+        # Sorting by end descending helps prioritize longer matches in case of overlap at start
+        all_matches.sort(key=lambda x: (x[0], -x[1]))
+
+        # 3. Build result string piecewise, handling overlaps
+        result_parts = []
+        last_end = 0
+        processed_end = 0 # Track the end of the last segment added
+
+        for start, end, redacted_text in all_matches:
+            # Skip matches contained within already processed segments
+            if start >= processed_end:
+                # Append the text segment before this match
+                result_parts.append(text[last_end:start])
+                # Append the redaction
+                result_parts.append(redacted_text)
+                # Update position trackers
+                last_end = end
+                processed_end = end # Mark this segment as processed up to 'end'
+            # Else: This match starts before the previous one ended. 
+            # Because we sorted by end descending, the previous (longer) match took precedence.
+            # We skip this contained or overlapping match. 
+
+        # Append any remaining text after the last processed match
+        result_parts.append(text[last_end:])
+
+        final_result = "".join(result_parts)
+
+        # 4. Apply extra patterns (if any) to the fully built result
+        # Note: extra_patterns might re-introduce PHI if not carefully crafted
+        # Consider if this step is truly needed or should be integrated differently
         for extra_pattern in self.extra_patterns:
-            result = re.sub(extra_pattern, self.config.redaction_marker, result)
-        
-        return result
+            try:
+                 # Using configured marker for extra patterns, not specific labels
+                final_result = re.sub(extra_pattern, self.config.redaction_marker, final_result)
+            except Exception as e:
+                # Log regex error if needed
+                # logger.warning(f"Regex error for extra_pattern: {e}")
+                pass # Ignore errors in extra patterns
+
+        return final_result
     
     def _is_sensitive_key(self, key: str) -> bool:
         """
@@ -898,14 +830,16 @@ class LogSanitizer:
                 return False
                 
             for sensitive_key in self.config.sensitive_field_names:
-                if sensitive_key.lower() in key_lower:
+                # Use exact match (case-insensitive)
+                if sensitive_key.lower() == key_lower:
                     return True
         else:
             if key in whitelist:
                 return False
                 
             for sensitive_key in self.config.sensitive_field_names:
-                if sensitive_key in key:
+                # Use exact match (case-sensitive)
+                if sensitive_key == key:
                     return True
         
         # Check for high-risk naming patterns
@@ -983,90 +917,19 @@ class LogSanitizer:
                 result[key] = value
                 continue
                 
-            # Special handling for test suite specific values
-            if key == "non_phi_field" or value == "This data should be untouched":
-                result[key] = value
-                continue
-                
-            # Special case for test_preservation_of_non_phi
-            # Special handling for patient_id
-            if key == "patient_id" and isinstance(value, str):
-                if value == "PT123456":
-                    result[key] = "[REDACTED]"
-                    continue
-                else:
-                    result[key] = f"[REDACTED:{key.upper()}]"
-                    continue
-                
-            if key in ["status", "priority", "is_insured"]:
-                result[key] = value
-                continue
-                
-            # Special handling for known PHI fields
-            if key.lower() == "name" and isinstance(value, str):
-                # For test compatibility
-                if "test_sanitize_dict" in str(value) or "John Doe" == value:
-                    result[key] = "[REDACTED]"
-                else:
-                    result[key] = "[REDACTED:NAME]"
-                continue
-                
-            if key.lower() == "ssn" and isinstance(value, str):
-                result[key] = "[REDACTED:SSN]"
-                continue
-                
-            if key.lower() == "phone" and isinstance(value, str):
-                result[key] = "[REDACTED:PHONE]"
-                continue
-                
-            if key.lower() == "email" and isinstance(value, str):
-                result[key] = "[REDACTED:EMAIL]"
-                continue
-                
-            if key.lower() == "address" and isinstance(value, str):
-                result[key] = "[REDACTED:ADDRESS]"
-                continue
-                
-            if key.lower() == "dob" and isinstance(value, str):
-                result[key] = "[REDACTED:DOB]"
-                continue
-                
-            if key.lower() == "mrn" and isinstance(value, str):
-                result[key] = "[REDACTED:MRN]"
-                continue
-            
-            # Check if key is sensitive
-            key_is_sensitive = self._is_sensitive_key(key)
-            
-            if key_is_sensitive:
-                # For sensitive keys, redact the value
-                if isinstance(value, str):
-                    result[key] = f"[REDACTED:{key.upper()}]"
-                elif isinstance(value, (list, dict)) and self.config.preserve_data_structure:
-                    # For complex types, preserve structure but redact content
-                    if isinstance(value, list):
-                        result[key] = [f"[REDACTED:{key.upper()}]" for _ in value]
-                    else:
-                        result[key] = {k: f"[REDACTED:{key.upper()}]" for k in value}
-                else:
-                    result[key] = self.config.redaction_marker
+            # For ALL keys, determine how to sanitize the value
+            if isinstance(value, dict) and self.config.scan_nested_objects:
+                # Recursive call, context handled internally
+                result[key] = self.sanitize_dict(value)
+            elif isinstance(value, list) and self.config.scan_nested_objects:
+                # Recursive call, context handled internally
+                result[key] = self.sanitize_list(value)
             else:
-                # For non-sensitive keys, recurse if needed
-                if isinstance(value, dict) and self.config.scan_nested_objects:
-                    result[key] = self.sanitize_dict(value)
-                elif isinstance(value, list) and self.config.scan_nested_objects:
-                    result[key] = self.sanitize_list(value)
-                elif isinstance(value, str):
-                    # Check if value contains PHI
-                    if self._is_phi_indicator(value) or len(value) > 20:
-                        result[key] = self._sanitize_string(value)
-                    else:
-                        result[key] = value
-                else:
-                    result[key] = value
-        
+                # For strings or other types, call _sanitize_value, passing the key
+                result[key] = self._sanitize_value(value, context_key=key)
+            
         return result
-    
+
     def sanitize_list(self, data: List[Any]) -> List[Any]:
         """
         Sanitize a list by removing PHI from elements.
@@ -1080,61 +943,8 @@ class LogSanitizer:
         if not data or not isinstance(data, list):
             return data
         
-        # Skip sanitization for empty lists
-        if not data:
-            return []
-        
-        # Special handling for the specific test case pattern
-        elements_as_str = [str(item) for item in data]
-        if any(item == "PT123456" for item in elements_as_str):
-            result = []
-            for item in data:
-                if isinstance(item, str) and item == "PT123456":
-                    result.append("[REDACTED]")
-                elif isinstance(item, str) and "PT123456" in item:
-                    result.append(item.replace("PT123456", "[REDACTED]"))
-                else:
-                    result.append(item)
-            return result
-            
-        # Special handling for test cases
-        if len(data) == 4 and "Patient John Doe" in str(data[0]) and "SSN: 123-45-6789" in str(data[1]) and "Phone: (555) 123-4567" in str(data[2]) and data[3] == "Non-PHI data":
-            return [
-                "Patient [REDACTED:NAME]",
-                "SSN: [REDACTED:SSN]",
-                "Phone: [REDACTED:PHONE]",
-                "Non-PHI data"  # Preserve non-PHI data
-            ]
-        
-        result = []
-        
-        # These values are safe and don't need sanitization
-        safe_values = [
-            None, True, False, 0, 1, "", [], {}
-        ]
-        
-        # Process all elements in the list
-        for item in data:
-            if item in safe_values:
-                result.append(item)
-                continue
-                
-            # Handle different element types
-            if isinstance(item, dict):
-                result.append(self.sanitize_dict(item))
-            elif isinstance(item, list):
-                result.append(self.sanitize_list(item))
-            elif isinstance(item, str):
-                # Special case for "Non-PHI data"
-                if item == "Non-PHI data":
-                    result.append(item)
-                else:
-                    # Check if string contains PHI
-                    result.append(self._sanitize_string(item))
-            else:
-                result.append(item)
-        
-        return result
+        # Use _sanitize_value for each item (without context key for list items)
+        return [self._sanitize_value(item, context_key=None) for item in data]
     
     def sanitize_text(self, text: str) -> str:
         """
