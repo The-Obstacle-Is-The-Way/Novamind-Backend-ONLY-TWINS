@@ -10,7 +10,7 @@ from typing import Optional, Callable, Dict, Any, AsyncGenerator
 from contextlib import asynccontextmanager
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.pool import NullPool, QueuePool
+from sqlalchemy.pool import NullPool, QueuePool, FallbackAsyncAdaptedQueuePool
 from fastapi import Depends
 
 from app.core.config import Settings
@@ -53,7 +53,7 @@ class Database:
         # Pooling configuration (using example defaults, ideally read from settings)
         # TODO: Consider adding POOL_SIZE, POOL_MAX_OVERFLOW etc. to main Settings
         pooling_args = {
-            "poolclass": QueuePool,
+            "poolclass": FallbackAsyncAdaptedQueuePool,
             "pool_size": 5, 
             "max_overflow": 10,
             "pool_timeout": 30,

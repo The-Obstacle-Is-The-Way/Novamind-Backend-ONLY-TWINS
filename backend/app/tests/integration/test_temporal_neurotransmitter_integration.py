@@ -98,13 +98,16 @@ def visualization_preprocessor():
 async def temporal_service(sequence_repository: TemporalSequenceRepository,
                          event_repository: EventRepository,
                          xgboost_service: EnhancedXGBoostService,
-                         visualization_preprocessor: NeurotransmitterVisualizationPreprocessor):
-    """Create temporal neurotransmitter service with repositories, XGBoost, and visualization."""
+                         visualization_preprocessor: NeurotransmitterVisualizationPreprocessor,
+                         patient_id: UUID):
+    """Create temporal neurotransmitter service with repositories, XGBoost, visualization, and patient_id."""
+    # The service now requires patient_id if nt_mapping is not provided, which is the case here.
     return TemporalNeurotransmitterService(
         sequence_repository=sequence_repository,
         event_repository=event_repository,
         xgboost_service=xgboost_service,
-        visualization_preprocessor=visualization_preprocessor
+        visualization_preprocessor=visualization_preprocessor,
+        patient_id=patient_id
     )
 
 
@@ -311,10 +314,10 @@ async def test_full_neurotransmitter_coverage_with_treatment(
 
 @pytest.mark.asyncio()
 async def test_api_integration_with_service(
-    client: TestClient,  # Use client fixture from conftest.py
+    test_client: TestClient,  # Use test_client fixture from conftest.py
     mock_current_user,
     # test_app fixture removed
-    temporal_service: TemporalNeurotransmitterService,
+    temporal_service: TemporalNeurotransmitterService, # Fixture now provides a service linked to patient_id
     patient_id: UUID
 ):
     """
@@ -326,7 +329,7 @@ async def test_api_integration_with_service(
     with mock_current_user, patch("app.presentation.api.dependencies.services.get_temporal_neurotransmitter_service",
                                  return_value=AsyncMock(return_value=temporal_service)) as mock:
         # Test 1: Generate time series
-        time_series_response = client.post(  # Use client fixture
+        time_series_response = test_client.post(  # Use test_client fixture
             "/api/v1/temporal-neurotransmitter/time-series",
             json={
                 "patient_id": str(patient_id),
@@ -342,7 +345,7 @@ async def test_api_integration_with_service(
         assert "sequence_id" in time_series_response.json()
         
         # Test 2: Simulate treatment
-        treatment_response = client.post(  # Use client fixture
+        treatment_response = test_client.post(  # Use test_client fixture
             "/api/v1/temporal-neurotransmitter/simulate-treatment",
             json={
                 "patient_id": str(patient_id),
@@ -361,7 +364,7 @@ async def test_api_integration_with_service(
         first_sequence_id = list(treatment_response.json()["sequence_ids"].values())[0]
         
         # Test 3: Get visualization data
-        viz_response = client.post(  # Use client fixture
+        viz_response = test_client.post(  # Use test_client fixture
             "/api/v1/temporal-neurotransmitter/visualization-data",
             json={
                 "sequence_id": first_sequence_id

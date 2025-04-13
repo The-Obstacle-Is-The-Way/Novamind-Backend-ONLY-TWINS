@@ -73,7 +73,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         Args:
             patient_id: Optional UUID of the associated patient
         """
-        super().__init__()
+        super().__init__(patient_id=patient_id)
         
         # Track temporal sequences
         

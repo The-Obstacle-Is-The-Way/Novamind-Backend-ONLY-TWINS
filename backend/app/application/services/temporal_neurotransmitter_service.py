@@ -28,7 +28,8 @@ class TemporalNeurotransmitterService:
         event_repository: Optional[EventRepository] = None,
         nt_mapping: Optional[NeurotransmitterMapping] = None,
         visualization_preprocessor: Optional[NeurotransmitterVisualizationPreprocessor] = None,
-        xgboost_service = None  # Intentionally untyped to avoid cyclic imports
+        xgboost_service = None,  # Intentionally untyped to avoid cyclic imports
+        patient_id: Optional[UUID] = None
     ):
         """
         Initialize the service with required dependencies.
@@ -39,13 +40,29 @@ class TemporalNeurotransmitterService:
             nt_mapping: Optional custom neurotransmitter mapping
             visualization_preprocessor: Optional visualization preprocessor
             xgboost_service: Optional XGBoost machine learning service
+            patient_id: Optional patient ID for creating default mapping
         """
         self.sequence_repository = sequence_repository
         self.event_repository = event_repository
         
+        # Logic to handle default mapping creation using patient_id
+        if nt_mapping:
+            self.base_mapping = nt_mapping
+        elif patient_id:
+            self.base_mapping = create_default_neurotransmitter_mapping(patient_id=patient_id)
+        else:
+            raise ValueError(
+                "TemporalNeurotransmitterService requires either an explicit 'nt_mapping' "
+                "or a 'patient_id' to create a default mapping."
+            )
+
+        # Ensure base_mapping is set (should always be true with the above logic)
+        if not hasattr(self, 'base_mapping'):
+             # This path should ideally not be reachable
+             raise RuntimeError("NeurotransmitterMapping failed to initialize.")
+        
         # Create neurotransmitter mapping with temporal extensions
-        base_mapping = nt_mapping or create_default_neurotransmitter_mapping()
-        self.nt_mapping = extend_neurotransmitter_mapping(base_mapping)
+        self.nt_mapping = extend_neurotransmitter_mapping(self.base_mapping)
         
         # Initialize temporal profiles if needed
         if not hasattr(self.nt_mapping, 'temporal_profiles') or not self.nt_mapping.temporal_profiles:
