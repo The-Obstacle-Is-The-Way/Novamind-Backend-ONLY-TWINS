@@ -49,21 +49,21 @@ class BaseSecurityTest(unittest.TestCase):
         return mock
 
     def create_test_user(self) -> dict[str, Any]:
-
-
-                    """Create a test user with the configured ID and roles."""
+        """Create a test user with the configured ID and roles."""
         return {
             "id": self.test_user_id,
             "username": "test_user",
             "email": "test_user@example.com",
             "roles": self.test_roles,
-        }class TestBaseSecurityTest(BaseSecurityTest):
+        }
+
+
+class TestBaseSecurityTest(BaseSecurityTest):
     """Test the BaseSecurityTest class itself."""
 
     @pytest.mark.standalone()
     def test_default_attributes(self):
-
-                    """Test that the default attributes are set correctly."""
+        """Test that the default attributes are set correctly."""
         # Verify test_user_id attribute
         self.assertEqual(self.test_user_id, "test-user-id-12345")
 
@@ -76,14 +76,16 @@ class BaseSecurityTest(unittest.TestCase):
 
     @pytest.mark.standalone()
     def test_mock_auth_service(self):
-
-                    """Test that the mock auth service is configured correctly."""
+        """Test that the mock auth service is configured correctly."""
         # Verify authenticate method
         self.assertTrue(self.mock_auth_service.authenticate())
 
         # Verify get_user_by_id method
         user = self.mock_auth_service.get_user_by_id(self.test_user_id)
-        self.assertEqual(user, self.test_user)class AdminSecurityTest(BaseSecurityTest):
+        self.assertEqual(user, self.test_user)
+
+
+class AdminSecurityTest(BaseSecurityTest):
     """Test subclassing with different roles."""
 
     # Override test_roles for admin testing
@@ -91,10 +93,12 @@ class BaseSecurityTest(unittest.TestCase):
 
     @pytest.mark.standalone()
     def test_admin_roles(self):
-
-                    """Test that the admin roles are set correctly."""
+        """Test that the admin roles are set correctly."""
         self.assertEqual(self.test_roles, [Role.ADMIN, Role.USER])
-        self.assertEqual(self.test_user["roles"], [Role.ADMIN, Role.USER])class ClinicianSecurityTest(BaseSecurityTest):
+        self.assertEqual(self.test_user["roles"], [Role.ADMIN, Role.USER])
+
+
+class ClinicianSecurityTest(BaseSecurityTest):
     """Test subclassing with clinician roles."""
 
     # Override test_roles for clinician testing
@@ -102,10 +106,10 @@ class BaseSecurityTest(unittest.TestCase):
 
     @pytest.mark.standalone()
     def test_clinician_roles(self):
-
-                    """Test that the clinician roles are set correctly."""
+        """Test that the clinician roles are set correctly."""
         self.assertEqual(self.test_roles, [Role.CLINICIAN, Role.USER])
         self.assertEqual(self.test_user["roles"], [Role.CLINICIAN, Role.USER])
+
 
 if __name__ == "__main__":
     unittest.main()
