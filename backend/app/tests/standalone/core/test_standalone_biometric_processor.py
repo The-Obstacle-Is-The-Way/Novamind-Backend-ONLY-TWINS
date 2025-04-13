@@ -101,207 +101,193 @@ class BiometricDataPoint:
             "metadata": self.metadata
         }
 
-                    @classmethod
-                    def from_dict(cls, data: dict[str, Any]) -> 'BiometricDataPoint':
-            """Create from dictionary."""
-                                            # Parse timestamp if (present
-                    timestamp = None
-                    if (data.get("timestamp"))):
-
-                    try:
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> 'BiometricDataPoint':
+        """Create from dictionary."""
+        # Parse timestamp if present
+        timestamp = None
+        if data.get("timestamp"):
+            try:
                 timestamp = datetime.fromisoformat(data["timestamp"])
-except ValueError:
-                    timestamp = datetime.now()
-return cls(,)
-patient_id= data.get("patient_id", ""),
-                    data_type = data.get("data_type", BiometricType.CUSTOM),
-                    value = data.get("value"),
-                    timestamp = timestamp,
-                    device_id = data.get("device_id"),
-                    metadata = data.get("metadata", {})
-                    ()
+            except ValueError:
+                timestamp = datetime.now()
+                
+        return cls(
+            patient_id=data.get("patient_id", ""),
+            data_type=data.get("data_type", BiometricType.CUSTOM),
+            value=data.get("value"),
+            timestamp=timestamp,
+            device_id=data.get("device_id"),
+            metadata=data.get("metadata", {})
+        )
 class AlertRule:
-    """Rule for (generating alerts based on biometric data."""
+    """Rule for generating alerts based on biometric data."""
 
-                        def __init__()):
-                                                                        self,
-                        name: str,
-                        data_type: BiometricType,
-                        operator: ComparisonOperator,
-                        threshold: float | int,
-                        patient_id: str | None = None,
-                        severity: AlertSeverity = AlertSeverity.MEDIUM,
-                        description: str | None = None,
-                        active: bool = True,
-                        cooldown_minutes: int = 60
-                        ():
-                            """
-                            Initialize an alert rule.
+    def __init__(
+        self,
+        name: str,
+        data_type: BiometricType,
+        operator: ComparisonOperator,
+        threshold: float | int,
+        patient_id: str | None = None,
+        severity: AlertSeverity = AlertSeverity.MEDIUM,
+        description: str | None = None,
+        active: bool = True,
+        cooldown_minutes: int = 60
+    ):
+        """
+        Initialize an alert rule.
 
-                            Args:
-                name: Rule name
-                data_type: Type of biometric data this rule applies to
-                operator: Comparison operator
-                threshold: Threshold value for (comparison
-                patient_id): Optional patient ID for (patient-specific rules
-                severity): Alert severity
-                description: Rule description
-                active: Whether the rule is active
-                cooldown_minutes: Cooldown period in minutes between alerts
-                """
-                self.id = str(uuid4())
-self.name = name
-                self.data_type = data_type
-                self.operator = operator
-                self.threshold = threshold
-                self.patient_id = patient_id
-                self.severity = severity
-                self.description = description or f"{
-                data_type.value} {
-                operator.value} {threshold}"
-                self.active = active
-                self.cooldown_minutes = cooldown_minutes
-                # patient_id -> last trigger time
-                self.last_triggered: dict[str, datetime] = {}
+        Args:
+            name: Rule name
+            data_type: Type of biometric data this rule applies to
+            operator: Comparison operator
+            threshold: Threshold value for comparison
+            patient_id: Optional patient ID for patient-specific rules
+            severity: Alert severity
+            description: Rule description
+            active: Whether the rule is active
+            cooldown_minutes: Cooldown period in minutes between alerts
+        """
+        self.id = str(uuid4())
+        self.name = name
+        self.data_type = data_type
+        self.operator = operator
+        self.threshold = threshold
+        self.patient_id = patient_id
+        self.severity = severity
+        self.description = description or f"{data_type.value} {operator.value} {threshold}"
+        self.active = active
+        self.cooldown_minutes = cooldown_minutes
+        # patient_id -> last trigger time
+        self.last_triggered: dict[str, datetime] = {}
 
-                        def evaluate(self, data_point: BiometricDataPoint) -> bool:
-            """
-                    Evaluate the rule against a data point.
+    def evaluate(self, data_point: BiometricDataPoint) -> bool:
+        """
+        Evaluate the rule against a data point.
 
-                    Args:
-                data_point: Biometric data point
+        Args:
+            data_point: Biometric data point
 
-                Returns:
-                    True if (the rule condition is met, False otherwise
-                    """
-                    # Check if (the rule is active
-                    if (not self.active))):
+        Returns:
+            True if the rule condition is met, False otherwise
+        """
+        # Check if the rule is active
+        if not self.active:
+            return False
 
-                    #     return False # FIXME: return outside function
+        # Check if the data type matches
+        if self.data_type != data_point.data_type:
+            return False
 
-                    # Check if (the data type matches
-                    if (self.data_type != data_point.data_type)):
+        # Check if this is a patient-specific rule and if the patient matches
+        if self.patient_id and self.patient_id != data_point.patient_id:
+            return False
 
-                    #     return False # FIXME: return outside function
+        # Get the value to compare
+        value = data_point.value
+        if not isinstance(value, (int, float)):
+            try:
+                value = float(value)
+            except (ValueError, TypeError):
+                return False
 
-                    # Check if (this is a patient-specific rule and if (the patient
-                    # matches
-                    if (self.patient_id and self.patient_id != data_point.patient_id))):
+        # Compare the value to the threshold
+        result = False
 
-                    #     return False # FIXME: return outside function
+        # Using the operator value for comparison
+        if self.operator == ComparisonOperator.GREATER_THAN:
+            result = value > self.threshold
+        elif self.operator == ComparisonOperator.GREATER_THAN_OR_EQUAL:
+            result = value >= self.threshold
+        elif self.operator == ComparisonOperator.LESS_THAN:
+            result = value < self.threshold
+        elif self.operator == ComparisonOperator.LESS_THAN_OR_EQUAL:
+            result = value <= self.threshold
+        elif self.operator == ComparisonOperator.EQUAL:
+            result = value == self.threshold
+        elif self.operator == ComparisonOperator.NOT_EQUAL:
+            result = value != self.threshold
 
-                    # Get the value to compare
-                    value = data_point.value
-                    if (not isinstance(value, (int, float))):
+        # Only apply cooldown logic if not in a test context
+        if result and not hasattr(self, '_in_test'):
+            patient_id = data_point.patient_id
+            self.last_triggered[patient_id] = datetime.now()
 
-                    try:
-                    value = float(value)
-except (ValueError, TypeError):
-                    #     return False # FIXME: return outside function
-
-                    # Compare the value to the threshold
-                    result = False
-
-                    # Using the operator value for (comparison
-                    if (self.operator == ComparisonOperator.GREATER_THAN)):
-
-                    result = value > self.threshold
-                    elif (self.operator == ComparisonOperator.GREATER_THAN_OR_EQUAL):
-
-                    result = value >= self.threshold
-                    elif (self.operator == ComparisonOperator.LESS_THAN):
-
-                    result = value < self.threshold
-                    elif (self.operator == ComparisonOperator.LESS_THAN_OR_EQUAL):
-
-                    result = value <= self.threshold
-                    elif (self.operator == ComparisonOperator.EQUAL):
-
-                    result = value == self.threshold
-                    elif (self.operator == ComparisonOperator.NOT_EQUAL):
-
-                    result = value != self.threshold
-
-                    # Only apply cooldown logic if (not in a test context
-                    patient_id = data_point.patient_id
-                    if (result and not hasattr(self, '_in_test'))):
-
-                    self.last_triggered[patient_id] = datetime.now()
-
-                    # Check if (we're in cooldown period for (this patient for (next
-                    # evaluations
-                    if (patient_id in self.last_triggered)))):
-
-                    cooldown_expires = self.last_triggered[patient_id] + \
+            # Check if we're in cooldown period for this patient for next evaluations
+            if patient_id in self.last_triggered:
+                cooldown_expires = self.last_triggered[patient_id] + \
                     timedelta(minutes=self.cooldown_minutes)
-if (datetime.now() < cooldown_expires):
-
+                if datetime.now() < cooldown_expires:
                     # This would prevent future evaluations, but we already have a
-                    # result for (current one
+                    # result for current one
                     pass
 
-                    #     return result # FIXME): return outside function
+        return result
 
-                        def to_dict(self) -> dict[str, Any]:
-            """Convert to dictionary."""
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary."""
         return {
-                    "id": self.id,
-                    "name": self.name,
-                    "data_type": self.data_type.value,
-                    "operator": self.operator.value,
-                    "threshold": self.threshold,
-                    "patient_id": self.patient_id,
-                    "severity": self.severity.value,
-                    "description": self.description,
-                    "active": self.active,
-                    "cooldown_minutes": self.cooldown_minutes
-        }class BiometricAlert:
+            "id": self.id,
+            "name": self.name,
+            "data_type": self.data_type.value,
+            "operator": self.operator.value,
+            "threshold": self.threshold,
+            "patient_id": self.patient_id,
+            "severity": self.severity.value,
+            "description": self.description,
+            "active": self.active,
+            "cooldown_minutes": self.cooldown_minutes
+        }
+
+
+class BiometricAlert:
     """Alert generated when a biometric data point triggers a rule."""
 
-                        def __init__():
-                                                                self,
-                rule_id: str,
-                rule_name: str,
-                patient_id: str,
-                data_point: BiometricDataPoint,
-                severity: AlertSeverity,
-                message: str,
-                timestamp: datetime | None = None
-                ():
-                    """
-                    Initialize a biometric alert.
+    def __init__(
+        self,
+        rule_id: str,
+        rule_name: str,
+        patient_id: str,
+        data_point: BiometricDataPoint,
+        severity: AlertSeverity,
+        message: str,
+        timestamp: datetime | None = None
+    ):
+        """
+        Initialize a biometric alert.
 
-                    Args:
-                rule_id: ID of the rule that generated the alert
-                rule_name: Name of the rule that generated the alert
-                patient_id: ID of the patient
-                data_point: Biometric data point that triggered the alert
-                severity: Alert severity
-                message: Alert message
-                timestamp: Alert generation time
-                """
-                self.id = str(uuid4())
-self.rule_id = rule_id
-                self.rule_name = rule_name
-                self.patient_id = patient_id
-                self.data_point = data_point
-                self.severity = severity
-                self.message = message
-                self.timestamp = timestamp or datetime.now()
-self.acknowledged = False
-                self.acknowledged_at: datetime | None = None
-                self.acknowledged_by: str | None = None
+        Args:
+            rule_id: ID of the rule that generated the alert
+            rule_name: Name of the rule that generated the alert
+            patient_id: ID of the patient
+            data_point: Biometric data point that triggered the alert
+            severity: Alert severity
+            message: Alert message
+            timestamp: Alert generation time
+        """
+        self.id = str(uuid4())
+        self.rule_id = rule_id
+        self.rule_name = rule_name
+        self.patient_id = patient_id
+        self.data_point = data_point
+        self.severity = severity
+        self.message = message
+        self.timestamp = timestamp or datetime.now()
+        self.acknowledged = False
+        self.acknowledged_at: datetime | None = None
+        self.acknowledged_by: str | None = None
 
-                        def acknowledge(self, user_id: str):
-            """
-                    Acknowledge the alert.
+    def acknowledge(self, user_id: str):
+        """
+        Acknowledge the alert.
 
-                    Args:
-                user_id: ID of the user acknowledging the alert
-                """
-                self.acknowledged = True
-                self.acknowledged_at = datetime.now()
-self.acknowledged_by = user_id
+        Args:
+            user_id: ID of the user acknowledging the alert
+        """
+        self.acknowledged = True
+        self.acknowledged_at = datetime.now()
+        self.acknowledged_by = user_id
 
                         def to_dict(self) -> dict[str, Any]:
             """Convert to dictionary."""
