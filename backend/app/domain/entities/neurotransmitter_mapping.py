@@ -7,6 +7,8 @@ neurotransmitters across different brain regions and their effects.
 import uuid
 from enum import Enum, auto
 from uuid import UUID
+from typing import Dict, List, Optional, Set
+from collections import defaultdict
 
 from app.domain.entities.digital_twin_enums import (
     BrainRegion,
@@ -163,46 +165,40 @@ class NeurotransmitterMapping:
     brain regions, how they're produced, and the clinical effects observed.
     """
     
-    def __init__(self):
-        """Initialize a new neurotransmitter mapping."""
+    def __init__(self, patient_id: Optional[UUID] = None):
+        """Initialize a new neurotransmitter mapping.
+
+        Args:
+            patient_id: Optional UUID of the associated patient.
+        """
+        self.patient_id: UUID = patient_id if patient_id else uuid.uuid4()
         # For test compatibility: list of receptor profiles
-        self.receptor_profiles = []
-        
-        # Maps BrainRegion to dict of Neurotransmitter -> float (response level)
-        self.receptor_map = {}
-        
+        self.receptor_profiles: List[ReceptorProfile] = []
+
+        # Maps BrainRegion to dict of Neurotransmitter -> ReceptorProfile
+        self.receptor_map: Dict[BrainRegion, Dict[Neurotransmitter, ReceptorProfile]] = {}
+
         # Maps BrainRegion to list of Neurotransmitters it produces
-        self.production_map = {}
+        self.production_map: Dict[BrainRegion, Set[Neurotransmitter]] = {}
         
-        # For tracking temporal changes in neurotransmitter levels
-        self.temporal_sequences = {}
-    
+        # Maps BrainRegion to dict of BrainRegion -> connectivity strength
+        self.brain_region_connectivity: Dict[BrainRegion, Dict[BrainRegion, float]] = defaultdict(lambda: defaultdict(float))
+
     def add_receptor_profile(self, profile: ReceptorProfile) -> None:
         """
         Add a detailed receptor profile.
-        
+
         Args:
-            profile: ReceptorProfile to add
+            profile: The ReceptorProfile to add
         """
+        if not isinstance(profile, ReceptorProfile):
+            raise TypeError("Profile must be an instance of ReceptorProfile")
+
+        # Check if a profile for this exact region/neurotransmitter/type already exists
+        # to avoid duplicates. This might need refinement based on desired behavior.
+        # For now, simple append.
         self.receptor_profiles.append(profile)
-        
-        # Update the receptor map for backward compatibility
-        region = profile.brain_region
-        neurotransmitter = profile.neurotransmitter
-        
-        if region not in self.receptor_map:
-            self.receptor_map[region] = {}
-            
-        # Use max effect magnitude for simplified mapping
-        effect = profile.calculate_effect_magnitude()
-        if neurotransmitter in self.receptor_map[region]:
-            self.receptor_map[region][neurotransmitter] = max(
-                self.receptor_map[region][neurotransmitter],
-                effect
-            )
-        else:
-            self.receptor_map[region][neurotransmitter] = effect
-    
+
     def get_receptor_profiles(
         self, 
         brain_region: BrainRegion | None = None,
@@ -458,46 +454,11 @@ class NeurotransmitterMapping:
         
         return effect
     
-    def add_temporal_sequence(
-        self,
-        brain_region: BrainRegion,
-        neurotransmitter: Neurotransmitter,
-        sequence: TemporalSequence
-    ) -> None:
-        """
-        Add a temporal sequence for a brain region and neurotransmitter.
-        
-        Args:
-            brain_region: The brain region
-            neurotransmitter: The neurotransmitter
-            sequence: The temporal sequence of levels
-        """
-        key = (brain_region, neurotransmitter)
-        self.temporal_sequences[key] = sequence
-    
-    def get_temporal_sequence(
-        self,
-        brain_region: BrainRegion,
-        neurotransmitter: Neurotransmitter
-    ) -> TemporalSequence | None:
-        """
-        Get the temporal sequence for a brain region and neurotransmitter.
-        
-        Args:
-            brain_region: The brain region
-            neurotransmitter: The neurotransmitter
-            
-        Returns:
-            The temporal sequence or None if not found
-        """
-        key = (brain_region, neurotransmitter)
-        return self.temporal_sequences.get(key)
-    
     def _build_lookup_maps(self) -> None:
         """
         Build internal lookup maps for quick access to profiles by region and neurotransmitter.
         """
-        # Clear existing maps
+        # Clear existing map
         self.receptor_map = {}
         
         # Build receptor map from profiles
@@ -601,4 +562,13 @@ def create_default_neurotransmitter_mapping() -> NeurotransmitterMapping:
     for profile in profiles:
         mapping.add_receptor_profile(profile)
     
+    # Explicitly initialize connectivity map
+    mapping.brain_region_connectivity = defaultdict(lambda: defaultdict(float))
+    # Add some basic default connectivity if needed, e.g.:
+    # mapping.brain_region_connectivity[BrainRegion.PREFRONTAL_CORTEX][BrainRegion.AMYGDALA] = 0.5 
+    # mapping.brain_region_connectivity[BrainRegion.AMYGDALA][BrainRegion.PREFRONTAL_CORTEX] = 0.4
+
+    # Build the lookup maps *after* adding defaults
+    mapping._build_lookup_maps()
+
     return mapping

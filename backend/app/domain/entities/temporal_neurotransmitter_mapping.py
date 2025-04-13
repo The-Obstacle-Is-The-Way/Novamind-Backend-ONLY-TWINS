@@ -103,8 +103,8 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
                 # Default baseline is 0.5 (normalized range 0-1)
                 # Adjust based on whether the region produces this neurotransmitter
                 produces = False
-                if nt in self.production_sites:
-                    produces = region in self.production_sites[nt]
+                if nt in self.production_map:
+                    produces = region in self.production_map[nt]
                     
                 # Regions that produce a neurotransmitter have slightly higher baseline
                 self.baseline_levels[region][nt] = 0.6 if produces else 0.4
@@ -670,70 +670,8 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
                     
                 # Calculate rate of change
                 rate_of_change = m
-            else:
-                trend = "unknown"
-                rate_of_change = 0.0
                 
-            # Store statistics
-            results["statistics"][feature] = {
-                "mean": mean_value,
-                "std_dev": std_dev,
-                "min": min_value,
-                "max": max_value,
-                "range": max_value - min_value
-            }
-            
-            # Store trend
-            results["trends"][feature] = {
-                "direction": trend,
-                "rate_of_change": rate_of_change
-            }
-            
-        # Calculate correlations between neurotransmitters
-        if len(feature_names) > 1:
-            # Create correlation matrix
-            corr_matrix = np.zeros((len(feature_names), len(feature_names)))
-            for i in range(len(feature_names)):
-                for j in range(len(feature_names)):
-                    if i == j:
-                        corr_matrix[i, j] = 1.0
-                    else:
-                        values_i = [row[i] for row in sequence.values]
-                        values_j = [row[j] for row in sequence.values]
-                        
-                        # Calculate correlation coefficient
-                        mean_i = sum(values_i) / len(values_i)
-                        mean_j = sum(values_j) / len(values_j)
-                        
-                        num = sum((values_i[k] - mean_i) * (values_j[k] - mean_j) for k in range(len(values_i)))
-                        denom_i = sum((values_i[k] - mean_i) ** 2 for k in range(len(values_i)))
-                        denom_j = sum((values_j[k] - mean_j) ** 2 for k in range(len(values_j)))
-                        
-                        if denom_i > 0 and denom_j > 0:
-                            corr = num / (math.sqrt(denom_i) * math.sqrt(denom_j))
-                            corr_matrix[i, j] = corr
-                        else:
-                            corr_matrix[i, j] = 0.0
-            
-            for i, feature1 in enumerate(feature_names):
-                for j, feature2 in enumerate(feature_names):
-                    if i != j:
-                        correlation = float(corr_matrix[i, j])
-                        
-                        # Skip weak correlations
-                        if abs(correlation) > 0.3:
-                            if feature1 not in results["correlations"]:
-                                results["correlations"][feature1] = {}
-                                
-                            results["correlations"][feature1][feature2] = correlation
-        
-        # Detect oscillations and patterns
-        for i, feature in enumerate(feature_names):
-            values = [row[i] for row in sequence.values]
-            
-            # Detect oscillations (simplified)
-            # Count sign changes in first derivative
-            if len(values) > 3:
+                # Count sign changes in first derivative
                 diffs = [values[i+1] - values[i] for i in range(len(values)-1)]
                 sign_changes = sum(1 for i in range(len(diffs)-1) if diffs[i] * diffs[i+1] < 0)
                 
@@ -1099,7 +1037,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
 
 def extend_neurotransmitter_mapping(base_mapping: NeurotransmitterMapping, patient_id: UUID | None = None) -> TemporalNeurotransmitterMapping:
     """
-    Extends a base NeurotransmitterMapping with temporal capabilities.
+    Extends a base neurotransmitter mapping with temporal capabilities.
     
     This function takes a base mapping and creates a new TemporalNeurotransmitterMapping
     that inherits all the receptor profiles and mappings from the base, but adds
@@ -1112,31 +1050,36 @@ def extend_neurotransmitter_mapping(base_mapping: NeurotransmitterMapping, patie
     Returns:
         A TemporalNeurotransmitterMapping with data copied from the base mapping
     """
-    # Use base_mapping's patient_id if not specified
-    if patient_id is None and hasattr(base_mapping, 'patient_id'):
-        patient_id = base_mapping.patient_id
-    
-    # Create a new temporal mapping
-    temporal_mapping = TemporalNeurotransmitterMapping(patient_id=patient_id)
-    
-    # Copy receptor profiles
-    for profile in base_mapping.receptor_profiles:
-        temporal_mapping.add_receptor_profile(profile)
-    
-    # Copy receptor maps (if not updated by add_receptor_profile)
-    if hasattr(base_mapping, 'receptor_map') and hasattr(temporal_mapping, 'receptor_map'):
-        for region, nt_map in base_mapping.receptor_map.items():
-            if region not in temporal_mapping.receptor_map:
-                temporal_mapping.receptor_map[region] = {}
-            
-            for nt, value in nt_map.items():
-                temporal_mapping.receptor_map[region][nt] = value
-    
-    # Copy production sites
-    if hasattr(base_mapping, 'production_sites'):
-        for key, value in base_mapping.production_sites.items():
-            temporal_mapping.production_sites[key] = value
-    
+    if not base_mapping:
+        raise ValueError("Base mapping cannot be None for extension.")
+
+    # If patient_id is not provided, try to get it from base_mapping
+    effective_patient_id = patient_id or getattr(base_mapping, 'patient_id', None)
+
+    # Create a new temporal mapping instance
+    temporal_mapping = TemporalNeurotransmitterMapping(patient_id=effective_patient_id)
+
+    # Copy necessary attributes from the base mapping
+    temporal_mapping.brain_regions = base_mapping.brain_regions.copy() # Assuming list/dict copy needed
+    temporal_mapping.neurotransmitters = base_mapping.neurotransmitters.copy()
+    temporal_mapping.receptor_profiles = base_mapping.receptor_profiles.copy() # Deep copy might be needed depending on ReceptorProfile structure
+    temporal_mapping.interactions = base_mapping.interactions.copy() # Deep copy might be needed
+
+    # Build the lookup maps AFTER copying profiles and interactions
+    temporal_mapping._build_lookup_maps()
+
+    # Copy other relevant attributes if necessary (e.g., metadata)
+    # temporal_mapping.metadata = base_mapping.metadata.copy()
+
+    # Copy production map (Corrected attribute name)
+    if hasattr(base_mapping, 'production_map'):
+        # Ensure the target attribute exists (it should after super().__init__)
+        if not hasattr(temporal_mapping, 'production_map'):
+             temporal_mapping.production_map = {}
+        for key, value in base_mapping.production_map.items():
+            # Directly assign the set, assuming value is Set[Neurotransmitter]
+            temporal_mapping.production_map[key] = value
+
     # Copy brain region connectivity if available
     if hasattr(base_mapping, 'brain_region_connectivity'):
         temporal_mapping.brain_region_connectivity = base_mapping.brain_region_connectivity

@@ -4,6 +4,7 @@ Application service for temporal neurotransmitter analysis.
 from datetime import datetime, timedelta, UTC
 from typing import Dict, List, Optional, Tuple, Any
 from uuid import UUID
+import logging
 
 from app.domain.entities.temporal_sequence import TemporalSequence
 from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
@@ -49,7 +50,11 @@ class TemporalNeurotransmitterService:
         if nt_mapping:
             self.base_mapping = nt_mapping
         elif patient_id:
-            self.base_mapping = create_default_neurotransmitter_mapping(patient_id=patient_id)
+            # Correct logic: Create default mapping first (it handles its own default ID)
+            base_mapping_temp = create_default_neurotransmitter_mapping()
+            # Explicitly assign the provided patient_id from the fixture/service call
+            base_mapping_temp.patient_id = patient_id
+            self.base_mapping = base_mapping_temp
         else:
             raise ValueError(
                 "TemporalNeurotransmitterService requires either an explicit 'nt_mapping' "
@@ -60,6 +65,10 @@ class TemporalNeurotransmitterService:
         if not hasattr(self, 'base_mapping'):
              # This path should ideally not be reachable
              raise RuntimeError("NeurotransmitterMapping failed to initialize.")
+        
+        # --- DEBUG: Check right before calling extend_neurotransmitter_mapping ---
+        print(f"--- [Service Init - Before Call] hasattr(self.base_mapping, 'brain_region_connectivity'): {hasattr(self.base_mapping, 'brain_region_connectivity')} ---")
+        # --- END DEBUG ---
         
         # Create neurotransmitter mapping with temporal extensions
         self.nt_mapping = extend_neurotransmitter_mapping(self.base_mapping)
@@ -97,6 +106,7 @@ class TemporalNeurotransmitterService:
         Returns:
             UUID of the created temporal sequence
         """
+        
         # Generate timestamps
         end_time = datetime.now(UTC)
         start_time = end_time - timedelta(days=time_range_days)
@@ -126,7 +136,7 @@ class TemporalNeurotransmitterService:
                 sequence_id=sequence_id
             )
             await self.event_repository.save(event)
-            
+        
         return sequence_id
     
     async def analyze_patient_neurotransmitter_levels(
@@ -171,29 +181,16 @@ class TemporalNeurotransmitterService:
         split_idx = len(sequence.timestamps) // 3
         baseline_period = (sequence.timestamps[0], sequence.timestamps[split_idx])
         
-        # Use the correct method name: analyze_temporal_pattern instead of analyze_temporal_response
-        pattern_analysis = self.nt_mapping.analyze_temporal_pattern(
-            brain_region=brain_region,
-            neurotransmitter=neurotransmitter
-        )
-        
-        # Create a NeurotransmitterEffect object based on pattern analysis
-        effect = NeurotransmitterEffect(
-            neurotransmitter=neurotransmitter,
-            effect_size=0.5,  # Default value
-            p_value=0.05,  # Default value
-            confidence_interval=(0.3, 0.7),  # Default range
-            sample_size=len(time_series_data),  # Use the length of time series data
-            clinical_significance=ClinicalSignificance.MODERATE,
-            brain_region=brain_region,
-            time_series_data=time_series_data,
+        # Use the correct method name: analyze_temporal_response
+        effect_analysis = self.nt_mapping.analyze_temporal_response(
+            sequence=sequence, 
             baseline_period=baseline_period
         )
         
-        # Add brain region to the effect for downstream use
-        effect.brain_region = brain_region
-        effect.time_series_data = time_series_data
-        effect.baseline_period = baseline_period
+        # Create a NeurotransmitterEffect object based on pattern analysis
+        effect = effect_analysis
+        
+        # Add brain region to the effect for downstream use (already handled by analyze_temporal_response? check return type)
         effect.comparison_period = (sequence.timestamps[split_idx+1], sequence.timestamps[-1])
         
         # Track analysis event if repository available
@@ -229,8 +226,9 @@ class TemporalNeurotransmitterService:
         Returns:
             Dictionary mapping neurotransmitters to their sequence UUIDs
         """
-        # Adjust treatment effect using XGBoost predictions if available
+
         adjusted_effect = treatment_effect
+        # Predict treatment response using XGBoost
         xgboost_prediction = None
         
         if self._xgboost_service:
