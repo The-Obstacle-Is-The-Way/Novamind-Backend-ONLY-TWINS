@@ -118,12 +118,19 @@ class QuantumNeuralTestOrchestrator:
                 host = db_url.split("@")[1].split(":")[0]
                 self._wait_for_postgres(host)
             
-            # Check Redis connectivity if configured
+            # Check Redis connectivity with quantum-level precision
             redis_url = os.environ.get("TEST_REDIS_URL", "")
             if redis_url:
-                host = redis_url.split("@")[-1].split(":")[0]
-                if not host:
-                    host = redis_url.split("//")[-1].split(":")[0]
+                # Extract the correct host with mathematical precision
+                if "@" in redis_url:
+                    host = redis_url.split("@")[-1].split(":")[0]
+                else:
+                    url_parts = redis_url.split("//")[-1].split("/")
+                    host_port = url_parts[0].split(":")
+                    host = host_port[0]
+                
+                # Print the host for scientific verification
+                logger.info(f"Extracted Redis neural pathway: {host}")
                 self._wait_for_redis(host)
         
         logger.info("Quantum neural environment prepared with mathematical precision")
