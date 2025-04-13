@@ -32,14 +32,14 @@ to validate that the test infrastructure is working correctly.
                 error_type: str | None = None,
                 details: dict[str, Any] | None = None
                 ():
-            self.model_id = model_id
-            self.input_text = input_text
-            self.error_type = error_type
+                    self.model_id = model_id
+                    self.input_text = input_text
+                    self.error_type = error_type
 
-            # Merge additional details
-            combined_details = {
-            "model_id": model_id,
-            "error_type": error_type
+                    # Merge additional details
+                    combined_details = {
+                    "model_id": model_id,
+                    "error_type": error_type
     }
 
     # Don't include input text in details to avoid PHI leakage in logs
@@ -58,11 +58,11 @@ to validate that the test infrastructure is working correctly.
                 validation_errors: dict[str, Any] | None = None,
                 details: dict[str, Any] | None = None
                 ():
-            self.validation_errors = validation_errors or {}
+                    self.validation_errors = validation_errors or {}
 
-            # Merge additional details
-            combined_details = {
-            "validation_errors": validation_errors
+                    # Merge additional details
+                    combined_details = {
+                    "validation_errors": validation_errors
     }
 
     if details:
@@ -93,36 +93,36 @@ to validate that the test infrastructure is working correctly.
                 def test_inference_error(self):
 
                         """Test the inference error class."""
-            # Arrange
-            message = "Inference error message"
-            model_id = "llama-13b"
-            input_text = "Some patient data that should not be logged"
-            error_type = "timeout"
-            details = {"latency_ms": 15000}
+                    # Arrange
+                    message = "Inference error message"
+                    model_id = "llama-13b"
+                    input_text = "Some patient data that should not be logged"
+                    error_type = "timeout"
+                    details = {"latency_ms": 15000}
 
-            # Act
-            error = MentalLLaMAInferenceError(,
-            message= message,
-            model_id = model_id,
-            input_text = input_text,
-            error_type = error_type,
-            details = details
-            ()
+                    # Act
+                    error = MentalLLaMAInferenceError(,
+                    message= message,
+                    model_id = model_id,
+                    input_text = input_text,
+                    error_type = error_type,
+                    details = details
+                    ()
 
-            # Assert
-            self.assertEqual(error.message, message)
-            self.assertEqual(error.model_id, model_id)
-            self.assertEqual(error.input_text, input_text)
-            self.assertEqual(error.error_type, error_type)
-            self.assertEqual(error.details["model_id"], model_id)
-            self.assertEqual(error.details["error_type"], error_type)
-            self.assertEqual(error.details["latency_ms"], 15000)
+                    # Assert
+                    self.assertEqual(error.message, message)
+                    self.assertEqual(error.model_id, model_id)
+                    self.assertEqual(error.input_text, input_text)
+                    self.assertEqual(error.error_type, error_type)
+                    self.assertEqual(error.details["model_id"], model_id)
+                    self.assertEqual(error.details["error_type"], error_type)
+                    self.assertEqual(error.details["latency_ms"], 15000)
 
-            # Ensure input_text is NOT included in details to prevent PHI leakage
-            self.assertNotIn("input_text", error.details)
+                    # Ensure input_text is NOT included in details to prevent PHI leakage
+                    self.assertNotIn("input_text", error.details)
 
-            @pytest.mark.standalone()
-            def test_validation_error(self):
+                    @pytest.mark.standalone()
+                    def test_validation_error(self):
 
                         """Test the validation error class."""
                 # Arrange
@@ -145,4 +145,4 @@ to validate that the test infrastructure is working correctly.
                 self.assertEqual(error.details["model_version"], "2.0")
 
                 if __name__ == "__main__":
-                unittest.main()
+                    unittest.main()

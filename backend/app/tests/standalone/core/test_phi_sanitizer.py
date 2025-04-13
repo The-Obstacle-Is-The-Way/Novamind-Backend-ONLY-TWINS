@@ -16,7 +16,7 @@ class TestPHISanitizer:
 
                 """Sample PHI data for testing sanitization."""
 
-        return {
+            return {
             "ssn": "123-45-6789",
             "name": "John Smith",
             "dob": "01/15/1980",
@@ -75,26 +75,26 @@ class TestPHISanitizer:
                 def test_sanitize_dict_with_phi(self, sanitizer, sample_phi_data):
 
                         """Test sanitization of dictionary data containing PHI."""
-                sanitized_data = sanitizer.sanitize_dict(sample_phi_data)
+                    sanitized_data = sanitizer.sanitize_dict(sample_phi_data)
 
-                # Check that PHI is sanitized but structure is preserved
-                assert sanitized_data["ssn"] != "123-45-6789"
-                assert sanitized_data["name"] != "John Smith"
-                assert sanitized_data["phone"] != "(555) 123-4567"
-                assert sanitized_data["email"] != "john.smith@example.com"
+                    # Check that PHI is sanitized but structure is preserved
+                    assert sanitized_data["ssn"] != "123-45-6789"
+                    assert sanitized_data["name"] != "John Smith"
+                    assert sanitized_data["phone"] != "(555) 123-4567"
+                    assert sanitized_data["email"] != "john.smith@example.com"
 
-                # Verify redaction markers
-                assert "[REDACTED:SSN]" in sanitized_data["ssn"]
-                assert "[REDACTED:NAME]" in sanitized_data["name"]
-                assert "[REDACTED:PHONE]" in sanitized_data["phone"]
+                    # Verify redaction markers
+                    assert "[REDACTED:SSN]" in sanitized_data["ssn"]
+                    assert "[REDACTED:NAME]" in sanitized_data["name"]
+                    assert "[REDACTED:PHONE]" in sanitized_data["phone"]
 
-                @pytest.mark.standalone()
-                def test_sanitize_nested_dict_with_phi(self, sanitizer):
+                    @pytest.mark.standalone()
+                    def test_sanitize_nested_dict_with_phi(self, sanitizer):
 
                         """Test sanitization of nested dictionaries containing PHI."""
-                nested_data = {
-                "patient": {
-                "demographics": {
+                    nested_data = {
+                    "patient": {
+                    "demographics": {
                     "name": "Jane Doe",
                     "ssn": "987-65-4321",
                     "contact": {
@@ -212,28 +212,28 @@ class TestPHISanitizer:
                 def test_phi_detection_integration(self, sanitizer):
 
                         """Test integration with PHI detector component."""
-                with patch('app.infrastructure.security.log_sanitizer.PHIDetector') as mock_detector:
-                # Setup mock PHI detector
-                mock_detector_instance = MagicMock()
-                mock_detector.return_value = mock_detector_instance
+                    with patch('app.infrastructure.security.log_sanitizer.PHIDetector') as mock_detector:
+                    # Setup mock PHI detector
+                    mock_detector_instance = MagicMock()
+                    mock_detector.return_value = mock_detector_instance
 
-                # Configure mock to detect PHI
-                mock_detector_instance.detect_phi.return_value = [
-                MagicMock(phi_type="SSN", value="123-45-6789", position=10)
-                ]
+                    # Configure mock to detect PHI
+                    mock_detector_instance.detect_phi.return_value = [
+                    MagicMock(phi_type="SSN", value="123-45-6789", position=10)
+                    ]
 
-                # Create new sanitizer with mocked detector
-                test_sanitizer = LogSanitizer()
+                    # Create new sanitizer with mocked detector
+                    test_sanitizer = LogSanitizer()
 
-                # Test sanitization
-                result = test_sanitizer.sanitize_text("Patient SSN: 123-45-6789")
+                    # Test sanitization
+                    result = test_sanitizer.sanitize_text("Patient SSN: 123-45-6789")
 
-                # Verify PHI detector was called
-                mock_detector_instance.detect_phi.assert_called_once()
-                assert "123-45-6789" not in result
+                    # Verify PHI detector was called
+                    mock_detector_instance.detect_phi.assert_called_once()
+                    assert "123-45-6789" not in result
 
-                @pytest.mark.standalone()
-                def test_phi_sanitizer_performance(
+                    @pytest.mark.standalone()
+                    def test_phi_sanitizer_performance(
                     self, sanitizer, sample_phi_data):
                         """Test sanitizer performance with large nested structures."""
                         # Create a large nested structure with PHI
@@ -323,5 +323,5 @@ class TestPHISanitizer:
 
                 # We should have redactions and they should be in the expected format
                 if matches:
-                for match in matches:
-                assert match in phi_types
+                    for match in matches:
+                    assert match in phi_types

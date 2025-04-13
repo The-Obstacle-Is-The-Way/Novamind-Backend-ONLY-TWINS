@@ -135,22 +135,22 @@ class TestEnhancedPHISanitizer:
 
 
                         """Test creation of safe log messages."""
-            # Test with format string and arguments
-            message = "Patient {name} (DOB: {dob}) has appointment on {date}"
-            args = {"name": "John Doe", "dob": "1980-01-01", "date": "2025-04-01"}
+                    # Test with format string and arguments
+                    message = "Patient {name} (DOB: {dob}) has appointment on {date}"
+                    args = {"name": "John Doe", "dob": "1980-01-01", "date": "2025-04-01"}
 
-            safe_message = EnhancedPHISanitizer.create_safe_log_message(
-            message, **args)
+                    safe_message = EnhancedPHISanitizer.create_safe_log_message(
+                    message, **args)
 
-            # Verify PHI has been sanitized
-            assert "John Doe" not in safe_message
-            assert "ANONYMIZED_NAME" in safe_message
-            assert "1980-01-01" not in safe_message
-            assert "YYYY-MM-DD" in safe_message
-            # Non-PHI date should be preserved
-            assert "2025-04-01" in safe_message
+                    # Verify PHI has been sanitized
+                    assert "John Doe" not in safe_message
+                    assert "ANONYMIZED_NAME" in safe_message
+                    assert "1980-01-01" not in safe_message
+                    assert "YYYY-MM-DD" in safe_message
+                    # Non-PHI date should be preserved
+                    assert "2025-04-01" in safe_message
 
-            def test_sanitize_structured_data(self):
+                    def test_sanitize_structured_data(self):
 
 
                         """Test sanitization of structured data."""
@@ -204,19 +204,19 @@ class TestEnhancedPHISanitizer:
             def test_info_log_sanitization(self, mock_info):
 
                         """Test that info logs are sanitized."""
-            logger = EnhancedPHISecureLogger("test_logger")
-            logger.info("Email sent to {email}", email="patient@example.com")
+                logger = EnhancedPHISecureLogger("test_logger")
+                logger.info("Email sent to {email}", email="patient@example.com")
 
-            # Verify the sanitized message was logged
+                # Verify the sanitized message was logged
 
-            mock_info.assert_called_once(,
-            logged_message= mock_info.call_args[0][0]
+                mock_info.assert_called_once(,
+                logged_message= mock_info.call_args[0][0]
 
-            assert "patient@example.com" not in logged_message
-            assert "anonymized.email" in logged_message
+                assert "patient@example.com" not in logged_message
+                assert "anonymized.email" in logged_message
 
-            @patch("logging.Logger.error")
-            def test_error_log_sanitization(self, mock_error):
+                @patch("logging.Logger.error")
+                def test_error_log_sanitization(self, mock_error):
 
                         """Test that error logs are sanitized."""
                 logger = EnhancedPHISecureLogger("test_logger")
@@ -234,20 +234,20 @@ class TestEnhancedPHISanitizer:
                 def test_exception_log_sanitization(self, mock_exception):
 
                         """Test that exception logs are sanitized."""
-                logger = EnhancedPHISecureLogger("test_logger")
-                try:
-                raise ValueError("Error processing patient John Doe")
-                except ValueError:
-                logger.exception("Exception occurred")
+                    logger = EnhancedPHISecureLogger("test_logger")
+                    try:
+                    raise ValueError("Error processing patient John Doe")
+                    except ValueError:
+                    logger.exception("Exception occurred")
 
-                # Verify the sanitized message was logged
-                mock_exception.assert_called_once()
-                # Exception message is handled separately by the logging module
-                # We're just checking that our message was sanitized
-                assert "Exception occurred" in mock_exception.call_args[0][0]
+                    # Verify the sanitized message was logged
+                    mock_exception.assert_called_once()
+                    # Exception message is handled separately by the logging module
+                    # We're just checking that our message was sanitized
+                    assert "Exception occurred" in mock_exception.call_args[0][0]
 
-                @pytest.mark.standalone()
-                def test_get_enhanced_phi_secure_logger():
+                    @pytest.mark.standalone()
+                    def test_get_enhanced_phi_secure_logger():
 
                         """Test the factory function for getting a logger."""
                     logger = get_enhanced_phi_secure_logger("test_module")

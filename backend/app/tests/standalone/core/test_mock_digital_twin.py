@@ -121,9 +121,9 @@ class TestMockDigitalTwinService(TestCase):
                 """Test creating a digital twin therapy session."""
                 # Test with different contexts
                 for context_type in ["therapy", "assessment", "medication_review"]:
-            result = self.service.create_session(
-                patient_id=self.twin_id,
-                context={"session_type": context_type}
+                    result = self.service.create_session(
+                    patient_id=self.twin_id,
+                    context={"session_type": context_type}
             )
 
             # Verify result structure
@@ -167,13 +167,13 @@ class TestMockDigitalTwinService(TestCase):
                     pass
 
                     def test_send_message(self) -> None:
-                """Test sending a message to a digital twin therapy session."""
-                # We already have a session from setUp
-                session_id = self.session_id
+                        """Test sending a message to a digital twin therapy session."""
+                        # We already have a session from setUp
+                        session_id = self.session_id
 
-                # Send a message
-                message_result = self.service.send_message(
-                session_id=session_id, message=self.sample_message
+                        # Send a message
+                        message_result = self.service.send_message(
+                        session_id=session_id, message=self.sample_message
         )
 
         # Verify result structure - the mock service returns different keys than expected
@@ -205,10 +205,10 @@ class TestMockDigitalTwinService(TestCase):
                     pass
 
                     def test_message_response_types(self) -> None:
-                """Test different types of responses based on message content."""
-                # Create a session
-                create_result = self.service.create_session(
-                patient_id=self.twin_id
+                        """Test different types of responses based on message content."""
+                        # Create a session
+                        create_result = self.service.create_session(
+                        patient_id=self.twin_id
         )
         session_id = create_result["session_id"]
 
@@ -272,30 +272,30 @@ class TestMockDigitalTwinService(TestCase):
                 # NOTE: Method removed because the get_insights functionality isn't implemented correctly
                 # in the current MockDigitalTwinService (or it has a different structure than what the test expects)
                 # def test_get_insights(self) -> None:
-                #     """Test getting insights from a completed digital twin session."""
-                #     # This test has been disabled because the method behavior doesn't match expectations
+                    #     """Test getting insights from a completed digital twin session."""
+                    #     # This test has been disabled because the method behavior doesn't match expectations
 
-                # Method removed because get_mood_insights doesn't exist in MockDigitalTwinService
-                # def test_mood_insights(self) -> None:
-             #     """Test mood tracking insights from digital twin sessions."""
-            #     # This test has been disabled because the method doesn't exist in the implementation
+                    # Method removed because get_mood_insights doesn't exist in MockDigitalTwinService
+                    # def test_mood_insights(self) -> None:
+                    #     """Test mood tracking insights from digital twin sessions."""
+                    #     # This test has been disabled because the method doesn't exist in the implementation
 
-            # NOTE: Method removed because get_activity_insights doesn't exist in MockDigitalTwinService
-            # def test_activity_insights(self) -> None:
-             #     """Test activity tracking insights from digital twin."""
-            #     # This test has been disabled because the method doesn't exist in the implementation
+                    # NOTE: Method removed because get_activity_insights doesn't exist in MockDigitalTwinService
+                    # def test_activity_insights(self) -> None:
+                #     """Test activity tracking insights from digital twin."""
+                #     # This test has been disabled because the method doesn't exist in the implementation
 
-            # NOTE: Method removed because get_sleep_insights doesn't exist in MockDigitalTwinService
-            # def test_sleep_insights(self) -> None:
-             #     """Test sleep tracking insights from digital twin."""
-            #     # This test has been disabled because the method doesn't exist in the implementation
+                # NOTE: Method removed because get_sleep_insights doesn't exist in MockDigitalTwinService
+                # def test_sleep_insights(self) -> None:
+                #     """Test sleep tracking insights from digital twin."""
+                #     # This test has been disabled because the method doesn't exist in the implementation
 
-            # NOTE: Method removed because get_medication_insights doesn't exist in MockDigitalTwinService
-            # def test_medication_insights(self) -> None:
-             #     """Test medication insights from digital twin."""
-            #     # This test has been disabled because the method doesn't exist in the implementation
+                # NOTE: Method removed because get_medication_insights doesn't exist in MockDigitalTwinService
+                # def test_medication_insights(self) -> None:
+                #     """Test medication insights from digital twin."""
+                #     # This test has been disabled because the method doesn't exist in the implementation
 
-            # NOTE: Method removed because get_treatment_insights doesn't exist in MockDigitalTwinService
-            # def test_treatment_insights(self) -> None:
-             #     """Test treatment response insights from digital twin."""
-            #     # This test has been disabled because the method doesn't exist in the implementation
+                # NOTE: Method removed because get_treatment_insights doesn't exist in MockDigitalTwinService
+                # def test_treatment_insights(self) -> None:
+                #     """Test treatment response insights from digital twin."""
+                #     # This test has been disabled because the method doesn't exist in the implementation

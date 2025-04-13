@@ -45,10 +45,10 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
                     """Clean up after each test."""
             if hasattr(self, "service") and self.service.is_healthy():
-            self.service.shutdown()
-            super().tearDown()
+                self.service.shutdown()
+                super().tearDown()
 
-            def test_initialization(self) -> None:
+                def test_initialization(self) -> None:
 
 
                             """Test initialization with valid and invalid configurations."""
@@ -80,67 +80,67 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                             """Test process method with invalid inputs ensuring proper error handling."""
-                # Test empty text
-                with self.assertRaises(InvalidRequestError):
+                        # Test empty text
+                        with self.assertRaises(InvalidRequestError):
                     self.service.process("")
 
                     # Test non-string text
                     with self.assertRaises(InvalidRequestError):
-                self.service.process(123)  # type: ignore
+                        self.service.process(123)  # type: ignore
 
-                # Test invalid model type
-                with self.assertRaises(ModelNotFoundError):
+                        # Test invalid model type
+                        with self.assertRaises(ModelNotFoundError):
                     self.service.process("Some text", "nonexistent_model_type")
 
                     # Test with uninitialized service
                     uninitialized_service = MockMentaLLaMA()
                     with self.assertRaises(ServiceUnavailableError):
-                    uninitialized_service.process("Some text")
+                        uninitialized_service.process("Some text")
 
-                    def test_process_returns_expected_structure(self) -> None:
+                        def test_process_returns_expected_structure(self) -> None:
 
 
                             """Test that process returns the expected response structure with all required fields."""
-                    # Test general model (default,
-                    result= self.service.process(self.sample_text)
-                    self.assertIsInstance(result, dict)
-                    self.assertIn("model_type", result)
-                    self.assertEqual(result["model_type"], "general")
-                    self.assertIn("timestamp", result)
-                    self.assertIn("content", result)
+                        # Test general model (default,
+                        result= self.service.process(self.sample_text)
+                        self.assertIsInstance(result, dict)
+                        self.assertIn("model_type", result)
+                        self.assertEqual(result["model_type"], "general")
+                        self.assertIn("timestamp", result)
+                        self.assertIn("content", result)
 
-                    # Verify timestamp is recent ISO format
-                    timestamp = datetime.fromisoformat(result["timestamp"].rstrip("Z"))
-                    self.assertLess((datetime.now(UTC) - timestamp).total_seconds(), 10)
+                        # Verify timestamp is recent ISO format
+                        timestamp = datetime.fromisoformat(result["timestamp"].rstrip("Z"))
+                        self.assertLess((datetime.now(UTC) - timestamp).total_seconds(), 10)
 
-                    # Test all available model types
-                    for model_type in [
-                    "depression_detection",
-                    "risk_assessment",
-                    "sentiment_analysis",
-                    "wellness_dimensions",
-                    "digital_twin",
-                    ]:
-                    result = self.service.process(self.sample_text, model_type)
-                    self.assertEqual(result["model_type"], model_type)
+                        # Test all available model types
+                        for model_type in [
+                        "depression_detection",
+                        "risk_assessment",
+                        "sentiment_analysis",
+                        "wellness_dimensions",
+                        "digital_twin",
+                        ]:
+                        result = self.service.process(self.sample_text, model_type)
+                        self.assertEqual(result["model_type"], model_type)
 
-                    def test_detect_depression(self) -> None:
+                        def test_detect_depression(self) -> None:
 
 
                             """Test depression detection functionality ensuring clinical metrics are present."""
-                result = self.service.detect_depression(self.sample_text)
-                self.assertIn("depression_signals", result)
-                self.assertIn("severity", result["depression_signals"])
-                self.assertIn("confidence", result["depression_signals"])
-                self.assertIn("key_indicators", result["depression_signals"])
-                self.assertIsInstance(
-                result["depression_signals"]["key_indicators"], list)
+                        result = self.service.detect_depression(self.sample_text)
+                        self.assertIn("depression_signals", result)
+                        self.assertIn("severity", result["depression_signals"])
+                        self.assertIn("confidence", result["depression_signals"])
+                        self.assertIn("key_indicators", result["depression_signals"])
+                        self.assertIsInstance(
+                        result["depression_signals"]["key_indicators"], list)
 
-                # Verify clinical recommendations
-                self.assertIn("recommendations", result)
-                self.assertIn("suggested_assessments", result["recommendations"])
+                        # Verify clinical recommendations
+                        self.assertIn("recommendations", result)
+                        self.assertIn("suggested_assessments", result["recommendations"])
 
-                def test_assess_risk(self) -> None:
+                        def test_assess_risk(self) -> None:
 
 
                         """Test risk assessment functionality for self-harm detection."""
@@ -155,27 +155,27 @@ class TestMockMentaLLaMA(BaseUnitTest):
                     self.assertIn("risk_assessment", result)
                     # Check that only self-harm risks are included
                     for risk in result["risk_assessment"]["identified_risks"]:
-                self.assertEqual(risk["risk_type"], "self-harm")
+                        self.assertEqual(risk["risk_type"], "self-harm")
 
-                # Verify clinical recommendations exist
-                self.assertIn("recommendations", result)
+                        # Verify clinical recommendations exist
+                        self.assertIn("recommendations", result)
 
-                def test_analyze_sentiment(self) -> None:
+                        def test_analyze_sentiment(self) -> None:
 
 
                             """Test sentiment analysis functionality for emotional valence detection."""
-                result = self.service.analyze_sentiment(self.sample_text)
-                self.assertIn("sentiment", result)
-                self.assertIn("emotions", result)
-                self.assertIn("overall_score", result["sentiment"])
-                self.assertIn("primary_emotions", result["emotions"])
-                self.assertIsInstance(result["emotions"]["primary_emotions"], list)
+                    result = self.service.analyze_sentiment(self.sample_text)
+                    self.assertIn("sentiment", result)
+                    self.assertIn("emotions", result)
+                    self.assertIn("overall_score", result["sentiment"])
+                    self.assertIn("primary_emotions", result["emotions"])
+                    self.assertIsInstance(result["emotions"]["primary_emotions"], list)
 
-                # Check emotional insights
-                self.assertIn("analysis", result)
-                self.assertIn("emotional_themes", result["analysis"])
+                    # Check emotional insights
+                    self.assertIn("analysis", result)
+                    self.assertIn("emotional_themes", result["analysis"])
 
-                def test_analyze_wellness_dimensions(self) -> None:
+                    def test_analyze_wellness_dimensions(self) -> None:
 
 
                         """Test wellness dimensions analysis functionality with comprehensive measures."""

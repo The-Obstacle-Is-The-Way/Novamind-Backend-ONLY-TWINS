@@ -33,19 +33,19 @@ def mock_pat():
 
             """Create a list of valid accelerometer readings for testing."""
 
-        return [
-        {"x": 0.1, "y": 0.2, "z": 0.9},
-        {"x": 0.2, "y": 0.3, "z": 0.8},
-        {"x": 0.3, "y": 0.4, "z": 0.7},
-        ]@pytest.fixture
-        def valid_device_info():
+            return [
+            {"x": 0.1, "y": 0.2, "z": 0.9},
+            {"x": 0.2, "y": 0.3, "z": 0.8},
+            {"x": 0.3, "y": 0.4, "z": 0.7},
+            ]@pytest.fixture
+            def valid_device_info():
 
             """Create valid device information for testing."""
 
-        return {
-        "device_type": "Actigraph wGT3X-BT",
-        "manufacturer": "Actigraph",
-        "placement": "wrist",
+            return {
+            "device_type": "Actigraph wGT3X-BT",
+            "manufacturer": "Actigraph",
+            "placement": "wrist",
     }
 
 
@@ -66,55 +66,55 @@ def valid_analysis_types():
 
             # Test initialization raising error
             with pytest.raises(InitializationError):
-            mock_pat._check_initialized()
+                mock_pat._check_initialized()
 
-            # Initialize and check state
-            mock_pat.initialize({"mock_delay_ms": 100})
-            assert mock_pat._initialized
-            assert mock_pat._mock_delay_ms == 100
+                # Initialize and check state
+                mock_pat.initialize({"mock_delay_ms": 100})
+                assert mock_pat._initialized
+                assert mock_pat._mock_delay_ms == 100
 
-            # Should not raise error now
-            mock_pat._check_initialized()
+                # Should not raise error now
+                mock_pat._check_initialized()
 
-            def test_device_info_validation(self, mock_pat):
+                def test_device_info_validation(self, mock_pat):
 
 
                         """Test validation of device info."""
                 # Empty device info
                 with pytest.raises(ValidationError):
-                mock_pat._validate_device_info({})
+                    mock_pat._validate_device_info({})
 
-                # Missing required field
-                with pytest.raises(ValidationError):
-                mock_pat._validate_device_info({"device_type": "Actigraph"})
+                    # Missing required field
+                    with pytest.raises(ValidationError):
+                    mock_pat._validate_device_info({"device_type": "Actigraph"})
 
-                # Valid device info should not raise
-                mock_pat._validate_device_info({)
+                    # Valid device info should not raise
+                    mock_pat._validate_device_info({)
                                        "device_type": "Actigraph",
                                        "manufacturer": "Actigraph"
                                        (})
 
-                def test_analysis_types_validation(self, mock_pat):
+                    def test_analysis_types_validation(self, mock_pat):
 
 
                         """Test validation of analysis types."""
                     # Empty analysis types
                     with pytest.raises(ValidationError):
-                mock_pat._validate_analysis_types([])
+                        mock_pat._validate_analysis_types([])
 
-                # Invalid analysis type
-                with pytest.raises(ValidationError):
-                mock_pat._validate_analysis_types(["sleep", "invalid_type"])
+                        # Invalid analysis type
+                        with pytest.raises(ValidationError):
+                    mock_pat._validate_analysis_types(["sleep", "invalid_type"])
 
-                # Valid analysis types should not raise
-                mock_pat._validate_analysis_types(["sleep", "activity"])
+                    # Valid analysis types should not raise
+                    mock_pat._validate_analysis_types(["sleep", "activity"])
 
-                def test_analyze_actigraphy(
-                self,
-                initialized_mock_pat,
-                valid_readings,
-                valid_device_info,
-                valid_analysis_types):
+                    def test_analyze_actigraphy(
+                    self,
+                    initialized_mock_pat,
+                    valid_readings,
+                    valid_device_info,
+                    valid_analysis_types):
                     """Test actigraphy analysis with valid data."""
                     result = initialized_mock_pat.analyze_actigraphy(,
                     patient_id= "patient-123",
@@ -146,22 +146,22 @@ def valid_analysis_types():
                         ()
 
                         with pytest.raises(ValidationError):
-                initialized_mock_pat.analyze_actigraphy(,
-                patient_id= "patient-123",
-                readings = valid_readings,
-                start_time = "2025-03-27T12:00:00Z",
-                end_time = "2025-03-28T12:00:00Z",
-                sampling_rate_hz = 30.0,
-                device_info = valid_device_info,
-                analysis_types = [],  # Empty analysis types
-                ()
+                            initialized_mock_pat.analyze_actigraphy(,
+                            patient_id= "patient-123",
+                            readings = valid_readings,
+                            start_time = "2025-03-27T12:00:00Z",
+                            end_time = "2025-03-28T12:00:00Z",
+                            sampling_rate_hz = 30.0,
+                            device_info = valid_device_info,
+                            analysis_types = [],  # Empty analysis types
+                            ()
 
-                def test_get_analysis_by_id(
-                self,
-                initialized_mock_pat,
-                valid_readings,
-                valid_device_info,
-                valid_analysis_types):
+                            def test_get_analysis_by_id(
+                            self,
+                            initialized_mock_pat,
+                            valid_readings,
+                            valid_device_info,
+                            valid_analysis_types):
                     """Test getting analysis by ID."""
                     # Create an analysis
                     analysis = initialized_mock_pat.analyze_actigraphy(,

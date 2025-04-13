@@ -82,20 +82,20 @@ def test_is_date_in_range():
         def test_sanitize_name():
 
                 """Test name sanitization for security and consistency."""
-        # Test basic sanitization
-        assert sanitize_name("John O'Connor") == "John OConnor"
-        assert sanitize_name(" Bob Smith ") == "Bob Smith"
+            # Test basic sanitization
+            assert sanitize_name("John O'Connor") == "John OConnor"
+            assert sanitize_name(" Bob Smith ") == "Bob Smith"
 
-        # Test special character removal
-        assert sanitize_name("Alice <script>") == "Alice script"
-        assert sanitize_name("User@Example.com") == "UserExamplecom"
+            # Test special character removal
+            assert sanitize_name("Alice <script>") == "Alice script"
+            assert sanitize_name("User@Example.com") == "UserExamplecom"
 
-        # Test empty input
-        assert sanitize_name("") == ""
-        assert sanitize_name(None) == ""
+            # Test empty input
+            assert sanitize_name("") == ""
+            assert sanitize_name(None) == ""
 
-        @pytest.mark.standalone()
-        def test_truncate_text():
+            @pytest.mark.standalone()
+            def test_truncate_text():
 
                 """Test text truncation utility."""
             # Test no truncation needed
