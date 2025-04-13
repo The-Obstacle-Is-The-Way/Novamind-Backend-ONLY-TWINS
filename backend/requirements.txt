@@ -35,6 +35,9 @@ structlog>=23.1.0
 tenacity>=8.2.2
 pandas>=2.0.0
 
+# Caching
+redis>=5.0.0
+
 # Machine Learning
 torch>=2.0.0
 torchvision>=0.15.0
