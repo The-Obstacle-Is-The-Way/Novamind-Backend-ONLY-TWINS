@@ -8,7 +8,7 @@ The test infrastructure follows a layered architecture mirroring the core applic
 
 1. **Domain Layer**: Tests for pure business logic, neurotransmitter models, and clinical rules without external dependencies
 2. **Application Layer**: Tests for services, use cases, and state management
-3. **Infrastructure Layer**: Tests for databases, external services, and persistence mechanisms 
+3. **Infrastructure Layer**: Tests for databases, external services, and persistence mechanisms
 4. **API Layer**: Tests for endpoints, request validation, and response handling
 
 All tests are further organized by their dependency requirements, creating a robust matrix that ensures complete coverage without unnecessary coupling.
@@ -16,6 +16,7 @@ All tests are further organized by their dependency requirements, creating a rob
 ## Test Classification
 
 Tests are classified by the following dependency levels:
+
 
 | Level       | Description                                              | Directory                |
 |-------------|----------------------------------------------------------|--------------------------|
@@ -41,7 +42,7 @@ The Docker test environment consists of these services defined in `backend/docke
 
 ### Environment Variables
 
-```
+```env
 TEST_DATABASE_URL=postgresql+asyncpg://postgres:postgres@novamind-db-test:5432/novamind_test
 TEST_REDIS_URL=redis://novamind-redis-test:6379/0
 TESTING=1
@@ -60,6 +61,7 @@ The test runner script (`scripts/run_tests_by_level.py`) is the SSOT for test ex
 ### Database Connection Mechanism
 
 The test database connection follows a clean architecture pattern:
+
 1. Environment variables set configuration parameters
 2. Database settings component reads parameters
 3. SQLAlchemy engine configured using these settings
