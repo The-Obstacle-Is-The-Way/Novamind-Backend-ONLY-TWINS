@@ -200,60 +200,60 @@ class AlertRule:
         if self.operator == ComparisonOperator.GREATER_THAN:
             result = value > self.threshold
         elif self.operator == ComparisonOperator.GREATER_THAN_OR_EQUAL:
-result = value >= self.threshold
-                elif self.operator == ComparisonOperator.LESS_THAN:
-result = value < self.threshold
-                elif self.operator == ComparisonOperator.LESS_THAN_OR_EQUAL:
-result = value <= self.threshold
-                elif self.operator == ComparisonOperator.EQUAL:
-result = value == self.threshold
-                elif self.operator == ComparisonOperator.NOT_EQUAL:
-result = value != self.threshold
+            result = value >= self.threshold
+        elif self.operator == ComparisonOperator.LESS_THAN:
+            result = value < self.threshold
+        elif self.operator == ComparisonOperator.LESS_THAN_OR_EQUAL:
+            result = value <= self.threshold
+        elif self.operator == ComparisonOperator.EQUAL:
+            result = value == self.threshold
+        elif self.operator == ComparisonOperator.NOT_EQUAL:
+            result = value != self.threshold
 
-# Only apply cooldown logic if not in a test context
-                if result and not hasattr(self, '_in_test'):
-patient_id = data_point.patient_id
-self.last_triggered[patient_id] = datetime.now()
+        # Only apply cooldown logic if not in a test context
+        if result and not hasattr(self, '_in_test'):
+            patient_id = data_point.patient_id
+            self.last_triggered[patient_id] = datetime.now()
 
-# Check if we're in cooldown period for this patient for next evaluations
-                if patient_id in self.last_triggered:
-cooldown_expires = self.last_triggered[patient_id] + \
-timedelta(minutes=self.cooldown_minutes)
-                    if datetime.now() < cooldown_expires:
-# This would prevent future evaluations, but we already have a
-# result for current one
-pass
+        # Check if we're in cooldown period for this patient for next evaluations
+        if patient_id in self.last_triggered:
+            cooldown_expires = self.last_triggered[patient_id] + \
+                timedelta(minutes=self.cooldown_minutes)
+            if datetime.now() < cooldown_expires:
+                # This would prevent future evaluations, but we already have a
+                # result for current one
+                pass
 
-#                         return result
+        return result
 
-                    def to_dict(self) -> dict[str, Any]:
-"""Convert to dictionary."""
-return {
-"id": self.id,
-"name": self.name,
-"data_type": self.data_type.value,
-"operator": self.operator.value,
-"threshold": self.threshold,
-"patient_id": self.patient_id,
-"severity": self.severity.value,
-"description": self.description,
-"active": self.active,
-"cooldown_minutes": self.cooldown_minutes
-}
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "data_type": self.data_type.value,
+            "operator": self.operator.value,
+            "threshold": self.threshold,
+            "patient_id": self.patient_id,
+            "severity": self.severity.value,
+            "description": self.description,
+            "active": self.active,
+            "cooldown_minutes": self.cooldown_minutes
+        }
 
 
 class BiometricAlert:
     """Alert generated when a biometric data point triggers a rule."""
 
-    def __init__()
-    self,
-    rule_id: str,
-    rule_name: str,
-    patient_id: str,
-    data_point: BiometricDataPoint,
-    severity: AlertSeverity,
-    message: str,
-    timestamp: datetime | None = None
+    def __init__(
+        self,
+        rule_id: str,
+        rule_name: str,
+        patient_id: str,
+        data_point: BiometricDataPoint,
+        severity: AlertSeverity,
+        message: str,
+        timestamp: datetime | None = None
     ):
         """
         Initialize a biometric alert.
@@ -279,7 +279,7 @@ class BiometricAlert:
         self.acknowledged_at: datetime | None = None
         self.acknowledged_by: str | None = None
 
-            def acknowledge(self, user_id: str):
+    def acknowledge(self, user_id: str):
         """
         Acknowledge the alert.
 
@@ -290,20 +290,20 @@ class BiometricAlert:
         self.acknowledged_at = datetime.now()
         self.acknowledged_by = user_id
 
-            def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
-        "id": self.id,
-        "rule_id": self.rule_id,
-        "rule_name": self.rule_name,
-        "patient_id": self.patient_id,
-        "data_point": self.data_point.to_dict() if self.data_point else None,
-        "severity": self.severity.value if self.severity else None,
-        "message": self.message,
-        "timestamp": self.timestamp.isoformat() if self.timestamp else None,
-        "acknowledged": self.acknowledged,
-        "acknowledged_at": self.acknowledged_at.isoformat() if self.acknowledged_at else None,
-        "acknowledged_by": self.acknowledged_by
+            "id": self.id,
+            "rule_id": self.rule_id,
+            "rule_name": self.rule_name,
+            "patient_id": self.patient_id,
+            "data_point": self.data_point.to_dict() if self.data_point else None,
+            "severity": self.severity.value if self.severity else None,
+            "message": self.message,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "acknowledged": self.acknowledged,
+            "acknowledged_at": self.acknowledged_at.isoformat() if self.acknowledged_at else None,
+            "acknowledged_by": self.acknowledged_by
         }
 
 
@@ -333,7 +333,7 @@ class EmailAlertObserver(AlertObserver):
         self.recipients = recipients
         self.sent_alerts: list[BiometricAlert] = []
 
-            def notify(self, alert: BiometricAlert):
+    def notify(self, alert: BiometricAlert):
         """
         Notify recipients of a new alert via email.
 
@@ -353,7 +353,7 @@ class EmailAlertObserver(AlertObserver):
         body += f"Message: {alert.message}"
         
         # In a real implementation, this would return the email details
-#                 return {"subject": subject, "body": body, "recipients": self.recipients}
+        # return {"subject": subject, "body": body, "recipients": self.recipients}
 
 
 class SMSAlertObserver(AlertObserver):
@@ -371,7 +371,7 @@ class SMSAlertObserver(AlertObserver):
         self.urgent_only = urgent_only
         self.sent_alerts: list[BiometricAlert] = []
 
-            def notify(self, alert: BiometricAlert):
+    def notify(self, alert: BiometricAlert):
         """
         Notify recipients of a new alert via SMS.
 
@@ -379,21 +379,22 @@ class SMSAlertObserver(AlertObserver):
             alert: The alert that was generated
         """
         # Only send SMS for high severity alerts if urgent_only is True
-        if self.urgent_only and alert.severity not in []
-        AlertSeverity.HIGH, AlertSeverity.CRITICAL
+        if self.urgent_only and alert.severity not in [
+            AlertSeverity.HIGH, AlertSeverity.CRITICAL
         ]:
-#                 return None
+            # return None
+            return
 
-# In a real implementation, this would send an SMS
-# For testing, we just record that an alert was sent
-self.sent_alerts.append(alert)
+        # In a real implementation, this would send an SMS
+        # For testing, we just record that an alert was sent
+        self.sent_alerts.append(alert)
 
-# Simulated SMS message
-message = f"[{alert.severity.value.upper()}] Alert for patient {alert.patient_id}: " \
-f"{alert.rule_name} - {alert.data_point.value}"
+        # Simulated SMS message
+        message = f"[{alert.severity.value.upper()}] Alert for patient {alert.patient_id}: " \
+                 f"{alert.rule_name} - {alert.data_point.value}"
 
-# In a real implementation, this would return the SMS details
-#                 return {"message": message, "phone_numbers": self.phone_numbers}
+        # In a real implementation, this would return the SMS details
+        # return {"message": message, "phone_numbers": self.phone_numbers}
 
 
 class InAppAlertObserver(AlertObserver):
@@ -403,7 +404,7 @@ class InAppAlertObserver(AlertObserver):
         """Initialize an in-app alert observer."""
         self.notifications: dict[str, list[BiometricAlert]] = {}  # user_id -> alerts
 
-        def notify(self, alert: BiometricAlert):
+    def notify(self, alert: BiometricAlert):
         """
         Notify users of a new alert via in-app notification.
 
@@ -417,13 +418,13 @@ class InAppAlertObserver(AlertObserver):
         # Simulate getting the associated provider IDs
         provider_ids = [f"provider_{alert.patient_id}"]
 
-                for provider_id in provider_ids:
-                if provider_id not in self.notifications:
-                    self.notifications[provider_id] = []
-                    self.notifications[provider_id].append(alert)
+        for provider_id in provider_ids:
+            if provider_id not in self.notifications:
+                self.notifications[provider_id] = []
+            self.notifications[provider_id].append(alert)
 
         # In a real implementation, this would return notification details
-#                     return {"provider_ids": provider_ids, "alert": alert.to_dict()}
+        # return {"provider_ids": provider_ids, "alert": alert.to_dict()}
 
 
 class ClinicalRuleEngine:
@@ -434,7 +435,7 @@ class ClinicalRuleEngine:
         self.rule_templates: dict[str, dict[str, Any]] = {}
         self.custom_conditions: dict[str, Callable[[BiometricDataPoint], bool]] = {}
 
-        def register_rule_template()
+    def register_rule_template(
         self,
         template_id: str,
         name: str,
@@ -459,16 +460,16 @@ class ClinicalRuleEngine:
             parameters: List of parameters that can be customized when creating a rule
         """
         self.rule_templates[template_id] = {
-        "name": name,
-        "data_type": data_type,
-        "operator": operator,
-        "threshold": threshold,
-        "severity": severity,
-        "description": description,
-        "parameters": parameters or []
+            "name": name,
+            "data_type": data_type,
+            "operator": operator,
+            "threshold": threshold,
+            "severity": severity,
+            "description": description,
+            "parameters": parameters or []
         }
 
-        def register_custom_condition()
+    def register_custom_condition(
         self,
         condition_id: str,
         condition_func: Callable[[BiometricDataPoint], bool]
@@ -482,7 +483,7 @@ class ClinicalRuleEngine:
         """
         self.custom_conditions[condition_id] = condition_func
 
-        def create_rule_from_template()
+    def create_rule_from_template(
         self,
         template_id: str,
         parameters: dict[str, Any] | None = None,
@@ -502,31 +503,31 @@ class ClinicalRuleEngine:
         Raises:
             ValueError: If the template doesn't exist or a required parameter is missing
         """
-                if template_id not in self.rule_templates:
-        raise ValueError(f"Rule template '{template_id}' not found")
+        if template_id not in self.rule_templates:
+            raise ValueError(f"Rule template '{template_id}' not found")
         
         template = self.rule_templates[template_id]
         params = parameters or {}
 
         # Check for required parameters
-                for param in template.get("parameters", []):
-                if param not in params:
-        raise ValueError(f"Required parameter '{param}' missing")
+        for param in template.get("parameters", []):
+            if param not in params:
+                raise ValueError(f"Required parameter '{param}' missing")
 
         # Create the rule with template defaults and custom parameters
-        rule = AlertRule()
-        name=params.get("name", template["name"]),
-        data_type=template["data_type"],
-        operator=template["operator"],
-        threshold=params.get("threshold", template["threshold"]),
-        patient_id=patient_id,
-        severity=params.get("severity", template["severity"]),
-        description=params.get("description", template["description"]),
-        active=params.get("active", True),
-        cooldown_minutes=params.get("cooldown_minutes", 60)
+        rule = AlertRule(
+            name=params.get("name", template["name"]),
+            data_type=template["data_type"],
+            operator=template["operator"],
+            threshold=params.get("threshold", template["threshold"]),
+            patient_id=patient_id,
+            severity=params.get("severity", template["severity"]),
+            description=params.get("description", template["description"]),
+            active=params.get("active", True),
+            cooldown_minutes=params.get("cooldown_minutes", 60)
+        )
         
-
-#                     return rule
+        return rule
 
 
 class ProcessorContext:
@@ -544,7 +545,7 @@ class ProcessorContext:
         self.trends: dict[BiometricType, list[Any]] = {}
         self.alert_counts: dict[str, int] = {}  # rule_id -> count
 
-            def update(self, data_point: BiometricDataPoint):
+    def update(self, data_point: BiometricDataPoint):
         """
         Update the context with a new data point.
 
@@ -558,32 +559,35 @@ class ProcessorContext:
         self.last_values[data_type] = value
 
         # Update trend
-                if data_type not in self.trends:
-        self.trends[data_type] = []
+        if data_type not in self.trends:
+            self.trends[data_type] = []
         self.trends[data_type].append(value)
 
         # Keep only the last 10 values for each data type
-                if len(self.trends[data_type]) > 10:
-        self.trends[data_type] = self.trends[data_type][-10:]
+        if len(self.trends[data_type]) > 10:
+            self.trends[data_type] = self.trends[data_type][-10:]
 
-            def increment_alert_count(self, rule_id: str):
+    def increment_alert_count(self, rule_id: str):
         """
         Increment the alert count for a rule.
 
         Args:
             rule_id: ID of the rule
         """
-                if rule_id not in self.alert_counts:
-        self.alert_counts[rule_id] = 0
-                self.alert_counts[rule_id] += 1class BiometricEventProcessor:
+        if rule_id not in self.alert_counts:
+            self.alert_counts[rule_id] = 0
+        self.alert_counts[rule_id] += 1
+
+
+class BiometricEventProcessor:
     """Processor for biometric events."""
 
-            def __init__(self):
-    """Initialize the biometric event processor."""
-    self.rules: dict[str, AlertRule] = {}
-    self.observers: list[AlertObserver] = []
-    # patient_id -> context
-    self.contexts: dict[str, ProcessorContext] = {}
+    def __init__(self):
+        """Initialize the biometric event processor."""
+        self.rules: dict[str, AlertRule] = {}
+        self.observers: list[AlertObserver] = []
+        # patient_id -> context
+        self.contexts: dict[str, ProcessorContext] = {}
 
         def add_rule(self, rule: AlertRule):
     """
