@@ -20,68 +20,68 @@ class TestBiometricAlertAuditService:
     """Tests for the BiometricAlertAuditService."""@pytest.fixture
     def mock_alert_repository(self):
 
-                """Create a mock BiometricAlertRepository."""
+        """Create a mock BiometricAlertRepository."""
         repo = AsyncMock()
         repo.get_by_id = AsyncMock()
         repo.update_status = AsyncMock()
-        return repo@pytest.fixture
+#             return repo@pytest.fixture
         def mock_audit_logger(self):
 
-                """Create a mock audit logger."""
-        logger = AsyncMock()
-        logger.log_event = AsyncMock()
-        logger.search_events = AsyncMock()
-        return logger@pytest.fixture
-        def audit_service(self, mock_alert_repository, mock_audit_logger):
+            """Create a mock audit logger."""
+logger = AsyncMock()
+logger.log_event = AsyncMock()
+logger.search_events = AsyncMock()
+#                 return logger@pytest.fixture
+            def audit_service(self, mock_alert_repository, mock_audit_logger):
 
                 """Create a BiometricAlertAuditService with mock dependencies."""
 
-        return BiometricAlertAuditService()
-        mock_alert_repository,
-        mock_audit_logger
-        ()@pytest.fixture
-        def sample_patient_id(self):
+#                 return BiometricAlertAuditService()
+mock_alert_repository,
+mock_audit_logger
+()@pytest.fixture
+            def sample_patient_id(self):
 
                 """Create a sample patient ID."""
 
-        return UUID('12345678-1234-5678-1234-567812345678')@pytest.fixture
-        def sample_provider_id(self):
+#                 return UUID('12345678-1234-5678-1234-567812345678')@pytest.fixture
+            def sample_provider_id(self):
 
                 """Create a sample provider ID."""
 
-        return UUID('87654321-8765-4321-8765-432187654321')@pytest.fixture
-        def sample_rule_id(self):
+#                 return UUID('87654321-8765-4321-8765-432187654321')@pytest.fixture
+            def sample_rule_id(self):
 
                 """Create a sample rule ID."""
 
-        return UUID('11111111-2222-3333-4444-555555555555')@pytest.fixture
-        def sample_alert_id(self):
+#                 return UUID('11111111-2222-3333-4444-555555555555')@pytest.fixture
+            def sample_alert_id(self):
 
                 """Create a sample alert ID."""
 
-        return UUID('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')@pytest.fixture
-        def sample_alert(
-                self,
-                sample_patient_id,
-                sample_rule_id,
+#                 return UUID('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')@pytest.fixture
+def sample_alert()
+self,
+sample_patient_id,
+sample_rule_id,
                 sample_alert_id):
                     """Create a sample BiometricAlert."""
 
-                    return BiometricAlert(,
-                    alert_id= sample_alert_id,
-                    patient_id = sample_patient_id,
-                    alert_type = "elevated_heart_rate",
-                    description = "Heart rate is significantly elevated",
-                    priority = AlertPriority.URGENT,
-                    data_points = [
-                    {
-                    "data_type": "heart_rate",
-                    "value": 130,
-                    "timestamp": datetime.now(UTC).isoformat(),
-                    "source": "smartwatch"
-            }
-        ],
-    rule_id = sample_rule_id
+#                         return BiometricAlert(,)
+alert_id= sample_alert_id,
+patient_id = sample_patient_id,
+alert_type = "elevated_heart_rate",
+description = "Heart rate is significantly elevated",
+priority = AlertPriority.URGENT,
+data_points = []
+{
+"data_type": "heart_rate",
+"value": 130,
+"timestamp": datetime.now(UTC).isoformat(),
+"source": "smartwatch"
+}
+],
+rule_id = sample_rule_id
 
 
 ()
@@ -269,11 +269,11 @@ self, audit_service, mock_audit_logger, sample_alert
             """Test that search_audit_trail correctly builds search criteria."""
             # Setup
             mock_audit_logger.search_events.return_value = []
-            start_date = datetime.now(UTC,
+            start_date = datetime.now(UTC,)
             end_date= datetime.now(UTC)
 
             # Execute
-            await audit_service.search_audit_trail(,
+            await audit_service.search_audit_trail(,)
             patient_id= sample_patient_id,
             alert_id = sample_alert_id,
             provider_id = sample_provider_id,

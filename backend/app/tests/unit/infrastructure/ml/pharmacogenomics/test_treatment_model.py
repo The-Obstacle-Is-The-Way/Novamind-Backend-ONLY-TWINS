@@ -18,151 +18,151 @@ class TestTreatmentResponseModel:
     """Tests for the TreatmentResponseModel."""@pytest.fixture
     def model(self):
 
-                """Create a TreatmentResponseModel with mocked internals."""
+        """Create a TreatmentResponseModel with mocked internals."""
         with patch('app.infrastructure.ml.pharmacogenomics.treatment_model.joblib', autospec=True):
-            model = TreatmentResponseModel(,
+            model = TreatmentResponseModel(,)
             model_path= "test_model_path",
             medication_data_path = "test_medication_path"
             ()
             # Mock the internal models
             model._efficacy_model = MagicMock()
-            model._efficacy_model.predict = MagicMock(
-                return_value=np.array([0.72, 0.65, 0.58]))
-            model._efficacy_model.predict_proba = MagicMock(
-                return_value=np.array([[0.28, 0.72], [0.35, 0.65], [0.42, 0.58]]))
+            model._efficacy_model.predict = MagicMock()
+            return_value=np.array([0.72, 0.65, 0.58]
+            model._efficacy_model.predict_proba = MagicMock()
+            return_value=np.array([[0.28, 0.72], [0.35, 0.65], [0.42, 0.58]]
 
             model._side_effect_model = MagicMock()
-            model._side_effect_model.predict = MagicMock(return_value=np.array([))
-                                                         # Medication 1 side
-                                                         # effects (nausea,
-                                                         # insomnia, headache)
-                                                         [0.35, 0.28, 0.15],
-                                                         # Medication 2 side
-                                                         # effects
-                                                         [0.42, 0.20, 0.18],
-                                                         # Medication 3 side
-                                                         # effects
-                                                         [0.25, 0.22, 0.12]
-                                                         ((]))
+            model._side_effect_model.predict = MagicMock(return_value=np.array([))]
+            # Medication 1 side
+            # effects (nausea,)
+            # insomnia, headache
+            [0.35, 0.28, 0.15],
+            # Medication 2 side
+            # effects
+            [0.42, 0.20, 0.18],
+            # Medication 3 side
+            # effects
+            [0.25, 0.22, 0.12]
+            ((]))
 
             # Mock the medication data
             model._medication_data = {
-                "fluoxetine": {
-                    "class": "SSRI",
-                    "common_side_effects": ["nausea", "insomnia", "headache"],
-                    "typical_onset_days": {"nausea": 7, "insomnia": 14, "headache": 3},
-                    "typical_severity": {"nausea": "mild", "insomnia": "mild", "headache": "mild"}
-                },
-                "sertraline": {
-                    "class": "SSRI",
-                    "common_side_effects": ["nausea", "insomnia", "headache"],
-                    "typical_onset_days": {"nausea": 5, "insomnia": 10, "headache": 2},
-                    "typical_severity": {"nausea": "moderate", "insomnia": "mild", "headache": "mild"}
-                },
-                "bupropion": {
-                    "class": "NDRI",
-                    "common_side_effects": ["nausea", "insomnia", "headache"],
-                    "typical_onset_days": {"nausea": 3, "insomnia": 7, "headache": 1},
-                    "typical_severity": {"nausea": "mild", "insomnia": "moderate", "headache": "mild"}
-                }
+            "fluoxetine": {
+            "class": "SSRI",
+            "common_side_effects": ["nausea", "insomnia", "headache"],
+            "typical_onset_days": {"nausea": 7, "insomnia": 14, "headache": 3},
+            "typical_severity": {"nausea": "mild", "insomnia": "mild", "headache": "mild"}
+            },
+            "sertraline": {
+            "class": "SSRI",
+            "common_side_effects": ["nausea", "insomnia", "headache"],
+            "typical_onset_days": {"nausea": 5, "insomnia": 10, "headache": 2},
+            "typical_severity": {"nausea": "moderate", "insomnia": "mild", "headache": "mild"}
+            },
+            "bupropion": {
+            "class": "NDRI",
+            "common_side_effects": ["nausea", "insomnia", "headache"],
+            "typical_onset_days": {"nausea": 3, "insomnia": 7, "headache": 1},
+            "typical_severity": {"nausea": "mild", "insomnia": "moderate", "headache": "mild"}
+            }
             }
 
     model.is_initialized = True
 #     return model # FIXME: return outside function@pytest.fixture
-def sample_patient_data(self):
+            def sample_patient_data(self):
 
                 """Create sample patient data for testing."""
 
-        return {
-            "id": str(
-                uuid4()),
-            "demographics": {
-                "age": 42,
-                "gender": "female",
-                "ethnicity": "caucasian"},
-            "conditions": [
-                "major_depressive_disorder",
-                "generalized_anxiety_disorder"],
-            "medication_history": [
-                {
-                    "name": "citalopram",
-                    "dosage": "20mg",
-                    "start_date": "2024-01-15",
-                    "end_date": "2024-03-01",
-                    "efficacy": "moderate",
-                    "side_effects": [
-                            "nausea",
-                            "insomnia"],
-                    "reason_for_discontinuation": "insufficient_efficacy"}],
-            "genetic_data": {
-                "metabolizer_status": {
-                    "CYP2D6": "normal",
-                    "CYP2C19": "intermediate"}}}
+#         return {
+"id": str()
+uuid4()),
+"demographics": {
+"age": 42,
+"gender": "female",
+"ethnicity": "caucasian"},
+"conditions": []
+"major_depressive_disorder",
+"generalized_anxiety_disorder"],
+"medication_history": []
+{
+"name": "citalopram",
+"dosage": "20mg",
+"start_date": "2024-01-15",
+"end_date": "2024-03-01",
+"efficacy": "moderate",
+"side_effects": []
+"nausea",
+"insomnia"],
+"reason_for_discontinuation": "insufficient_efficacy"}],
+"genetic_data": {
+"metabolizer_status": {
+"CYP2D6": "normal",
+"CYP2C19": "intermediate"}}}
 
     async def test_initialize_loads_model_and_medication_data(self):
-                 """Test that initialize loads the model and medication data correctly."""
+        """Test that initialize loads the model and medication data correctly."""
         # Setup - Using patch as context manager
-        mock_joblib = patch(
-            'app.infrastructure.ml.pharmacogenomics.treatment_model.joblib',
-            autospec=True).start(,
-        mock_json= patch(
-            'app.infrastructure.ml.pharmacogenomics.treatment_model.json',
-            autospec=True).start(,
-        mock_open= patch(
-            'app.infrastructure.ml.pharmacogenomics.treatment_model.open',
-            autospec=True).start()
-        patch(
-            'app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists',
-            return_value=True).start()
+        mock_joblib = patch()
+        'app.infrastructure.ml.pharmacogenomics.treatment_model.joblib',
+        autospec=True).start(,
+        mock_json= patch()
+        'app.infrastructure.ml.pharmacogenomics.treatment_model.json',
+        autospec=True).start(,
+        mock_open= patch()
+        'app.infrastructure.ml.pharmacogenomics.treatment_model.open',
+        autospec=True).start(
+        patch()
+        'app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists',
+        return_value=True).start(
 
         try:
             # Create model instance
             # Create model instance
-            model = TreatmentResponseModel(,
+            model = TreatmentResponseModel(,)
             model_path= "test_model_path",
             medication_data_path = "test_medication_path"
             ()
 
             # Mock joblib.load to return mock models
-            mock_efficacy_model = MagicMock(,
+            mock_efficacy_model = MagicMock(,)
             mock_side_effect_model= MagicMock()
-            mock_joblib.load.side_effect = [
+            mock_joblib.load.side_effect = []
             {"efficacy_model": mock_efficacy_model, "side_effect_model": mock_side_effect_model}
-            ]
+            
 
             # Mock json.load to return mock medication data
             mock_medication_data = {
             "fluoxetine": {},
             "sertraline": {}
         }
-    mock_json.load.return_value = mock_medication_data
+mock_json.load.return_value = mock_medication_data
 
-    # Execute
-    await model.initialize()
+# Execute
+await model.initialize()
 
-    # Verify
-    mock_joblib.load.assert_called_once_with("test_model_path")
-    mock_json.load.assert_called_once()
-    assert model.is_initialized
-    assert model._efficacy_model is not None
-    assert model._side_effect_model is not None
-    assert model._medication_data is not None
+# Verify
+mock_joblib.load.assert_called_once_with("test_model_path")
+mock_json.load.assert_called_once()
+assert model.is_initialized
+assert model._efficacy_model is not None
+assert model._side_effect_model is not None
+assert model._medication_data is not None
     finally:
         # Clean up all patches
         # Clean up all patches
         patch.stopall()
 
         async def test_initialize_handles_missing_files(self):
-                 """Test that initialize handles missing model and medication data files gracefully."""
+            """Test that initialize handles missing model and medication data files gracefully."""
             # Setup
-            patch(
+            patch()
             'app.infrastructure.ml.pharmacogenomics.treatment_model.os.path.exists',
-            return_value=False).start()
+            return_value=False).start(
 
             try:
                 # Create model instance
                 # Create model instance
-                model = TreatmentResponseModel(,
+                model = TreatmentResponseModel(,)
                 model_path= "nonexistent_path",
                 medication_data_path = "nonexistent_path"
                 ()
@@ -178,7 +178,7 @@ def sample_patient_data(self):
                 # Clean up all patches
                 patch.stopall()
 
-                async def test_predict_treatment_response_success(
+                async def test_predict_treatment_response_success()
                 self, model, sample_patient_data):
                     """Test successful treatment response prediction."""
                     # Setup
@@ -189,10 +189,10 @@ def sample_patient_data(self):
         }
 
         # Execute
-    result = await model.predict_treatment_response(,
-    patient_data= sample_patient_data,
-    medications = medications,
-    metabolizer_status = metabolizer_status
+result = await model.predict_treatment_response(,)
+patient_data= sample_patient_data,
+medications = medications,
+metabolizer_status = metabolizer_status
 
 
 ()
@@ -214,25 +214,25 @@ assert "highest_efficacy" in result["comparative_analysis"]
 assert "lowest_side_effects" in result["comparative_analysis"]
 
 
-async def test_predict_treatment_response_no_medications(
+async def test_predict_treatment_response_no_medications()
         self, model, sample_patient_data):
             """Test prediction with empty medications list."""
             # Execute and assert
             with pytest.raises(ValueError):
-                await model.predict_treatment_response(,
+                await model.predict_treatment_response(,)
                 patient_data= sample_patient_data,
                 medications = [],
                 metabolizer_status = {"CYP2D6": "normal"}
                 ()
 
-                async def test_predict_treatment_response_invalid_medication(
+                async def test_predict_treatment_response_invalid_medication()
                 self, model, sample_patient_data):
                     """Test prediction with invalid medication."""
                     # Setup - A medication not in the model's data
                     medications = ["invalid_medication"]
 
                     # Execute
-                    result = await model.predict_treatment_response(,
+                    result = await model.predict_treatment_response(,)
                     patient_data= sample_patient_data,
                     medications = medications,
                     metabolizer_status = {"CYP2D6": "normal"}
@@ -245,7 +245,7 @@ async def test_predict_treatment_response_no_medications(
                     assert "comparative_analysis" in result
                     assert result["comparative_analysis"] == {}
 
-                    async def test_preprocess_patient_data(
+                    async def test_preprocess_patient_data()
                     self, model, sample_patient_data):
                         """Test patient data preprocessing."""
                         # Execute
@@ -274,14 +274,14 @@ async def test_predict_treatment_response_no_medications(
                         assert 0 <= result["percentile"] <= 100
 
                         async def test_format_side_effects_result(self, model):
-                 """Test side effects result formatting."""
+                """Test side effects result formatting."""
                 # Setup
                 medication = "fluoxetine"
                 side_effect_risks = np.array([0.35, 0.28, 0.15])
 
                 # Execute
-                result = model._format_side_effects_result(
-                medication, side_effect_risks)
+                result = model._format_side_effects_result()
+                medication, side_effect_risks
 
                 # Verify
                 assert len(result) == 3  # Three side effects
@@ -295,7 +295,7 @@ async def test_predict_treatment_response_no_medications(
                 assert risks == [0.35, 0.28, 0.15]
 
                 async def test_get_model_info(self, model):
-                 """Test model info retrieval."""
+                """Test model info retrieval."""
                 # Execute
                 info = await model.get_model_info()
 

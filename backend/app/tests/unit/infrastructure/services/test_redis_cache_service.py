@@ -16,7 +16,7 @@ from app.infrastructure.services.redis_cache_service import RedisCacheService
 @pytest.fixture
 def mock_redis_client():
 
-            """Create a mock Redis client for testing."""
+    """Create a mock Redis client for testing."""
     client = AsyncMock()
     client.get = AsyncMock()
     client.set = AsyncMock(return_value=True)
@@ -35,26 +35,26 @@ def mock_redis_client():
     pipeline_mock.execute = AsyncMock(return_value=[True])
     client.pipeline.return_value = pipeline_mock
 
-    return client@pytest.fixture
+#     return client@pytest.fixture
     def redis_cache_service(mock_redis_client):
 
-            """Create a Redis cache service with mocked dependencies for testing."""
+        """Create a Redis cache service with mocked dependencies for testing."""
         with patch("redis.asyncio.Redis.from_pool", return_value=mock_redis_client):
         with patch("redis.asyncio.connection.ConnectionPool"):
-            service = RedisCacheService(
-                host="localhost",
-                port=6379,
-                password="password",
-                ssl=True,
-                prefix="test:",
-            )
+            service = RedisCacheService()
+            host="localhost",
+            port=6379,
+            password="password",
+            ssl=True,
+            prefix="test:",
+            
             yield service
 
 
 @pytest.mark.asyncio()
 @pytest.mark.db_required()
 async def test_get_cache_hit(redis_cache_service, mock_redis_client):
-             """Test retrieving a value from cache when the key exists."""
+    """Test retrieving a value from cache when the key exists."""
     # Arrange
     key = "test-key"
     expected_value = {"name": "test", "value": 123}
@@ -69,7 +69,7 @@ async def test_get_cache_hit(redis_cache_service, mock_redis_client):
 
     @pytest.mark.asyncio()
     async def test_get_cache_miss(redis_cache_service, mock_redis_client):
-             """Test retrieving a value from cache when the key doesn't exist."""
+        """Test retrieving a value from cache when the key doesn't exist."""
         # Arrange
         key = "missing-key"
         mock_redis_client.get.return_value = None
@@ -83,7 +83,7 @@ async def test_get_cache_hit(redis_cache_service, mock_redis_client):
 
         @pytest.mark.asyncio()
         async def test_set_with_ttl(redis_cache_service, mock_redis_client):
-             """Test setting a value with TTL in cache."""
+            """Test setting a value with TTL in cache."""
             # Arrange
             key = "ttl-key"
             value = {"data": "test-data"}
@@ -93,15 +93,15 @@ async def test_get_cache_hit(redis_cache_service, mock_redis_client):
             result = await redis_cache_service.set(key, value, ttl)
 
             # Assert
-            mock_redis_client.setex.assert_called_once_with(
+            mock_redis_client.setex.assert_called_once_with()
             "test:ttl-key", ttl, json.dumps(value)
-    )
-    assert result is True
+    
+            assert result is True
 
 
 @pytest.mark.asyncio()
 async def test_delete_existing_key(redis_cache_service, mock_redis_client):
-             """Test deleting an existing key from cache."""
+    """Test deleting an existing key from cache."""
     # Arrange
     key = "existing-key"
     mock_redis_client.delete.return_value = 1
@@ -115,7 +115,7 @@ async def test_delete_existing_key(redis_cache_service, mock_redis_client):
 
     @pytest.mark.asyncio()
     async def test_increment(redis_cache_service, mock_redis_client):
-             """Test incrementing a counter."""
+        """Test incrementing a counter."""
         # Arrange
         key = "counter-key"
         mock_redis_client.incrby.return_value = 5
@@ -129,7 +129,7 @@ async def test_delete_existing_key(redis_cache_service, mock_redis_client):
 
         @pytest.mark.asyncio()
         async def test_expire(redis_cache_service, mock_redis_client):
-             """Test setting expiration on a key."""
+            """Test setting expiration on a key."""
             # Arrange
             key = "expire-key"
             seconds = 3600
@@ -138,13 +138,13 @@ async def test_delete_existing_key(redis_cache_service, mock_redis_client):
             result = await redis_cache_service.expire(key, seconds)
 
             # Assert
-            mock_redis_client.expire.assert_called_once_with(
-            "test:expire-key", seconds)
+            mock_redis_client.expire.assert_called_once_with()
+            "test:expire-key", seconds
             assert result is True
 
             @pytest.mark.asyncio()
             async def test_get_hash(redis_cache_service, mock_redis_client):
-             """Test getting a hash from cache."""
+            """Test getting a hash from cache."""
             # Arrange
             key = "hash-key"
             mock_redis_client.hgetall.return_value = {

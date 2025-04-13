@@ -10,9 +10,9 @@ import pytest
 
 # Removed Gender, Diagnosis, Medication
 from app.domain.entities.patient import Patient
-from app.infrastructure.factories.mock_digital_twin_factory import (
-    MockDigitalTwinFactory,
-)
+from app.infrastructure.factories.mock_digital_twin_factory import ()
+MockDigitalTwinFactory,
+
 
 
 @pytest.mark.asyncio()
@@ -32,36 +32,36 @@ async def test_digital_twin_complete_workflow():
 
     # 1. Create a test patient
     patient_id = uuid.uuid4()
-    patient = Patient(
-        id=patient_id,
-        first_name="Jane",
-        last_name="Doe",
-        date_of_birth=datetime.now() - timedelta(days=365 * 35),  # 35 years old
-        gender="female",  # Use string literal
-        contact_info={
-            "email": "jane.doe@example.com",
-            "phone": "+1-555-123-4567"
-        },
-        # Use strings for diagnoses as per patient.py entity
-        diagnoses=[
-            "F32.1: Major depressive disorder, single episode, moderate",
-            "F41.1: Generalized anxiety disorder",
-        ],
-        # Use strings for medications as per patient.py entity
-        medications=["Sertraline 50mg daily"],
-        allergies=["Penicillin"],
-    )
+    patient = Patient()
+    id=patient_id,
+    first_name="Jane",
+    last_name="Doe",
+    date_of_birth=datetime.now() - timedelta(days=365 * 35),  # 35 years old
+    gender="female",  # Use string literal
+    contact_info={
+    "email": "jane.doe@example.com",
+    "phone": "+1-555-123-4567"
+    },
+    # Use strings for diagnoses as per patient.py entity
+    diagnoses=[]
+    "F32.1: Major depressive disorder, single episode, moderate",
+    "F41.1: Generalized anxiety disorder",
+    ],
+    # Use strings for medications as per patient.py entity
+    medications=["Sertraline 50mg daily"],
+    allergies=["Penicillin"],
+    
 
     # Save the patient
     saved_patient = await patient_repo.save(patient)
     assert saved_patient.id == patient_id
 
     # 2. Initialize Digital Twin
-    initial_twin_state = await digital_twin_core.initialize_digital_twin(
-        patient_id=patient_id,
-        include_genetic_data=False,
-        include_biomarkers=True,
-    )
+    initial_twin_state = await digital_twin_core.initialize_digital_twin()
+    patient_id=patient_id,
+    include_genetic_data=False,
+    include_biomarkers=True,
+    
 
     # Verify the initial state was created
     assert initial_twin_state is not None
@@ -76,17 +76,17 @@ async def test_digital_twin_complete_workflow():
 
     # 4. Simulate a treatment event - adding a medication
     treatment_event = {
-        "type": "medication_added",
-        "medication": "Escitalopram 10mg daily",
-        "date": datetime.now(UTC),
-        "prescriber": "Dr. Smith",
-        "notes": "Initial prescription for depression and anxiety",
+    "type": "medication_added",
+    "medication": "Escitalopram 10mg daily",
+    "date": datetime.now(UTC),
+    "prescriber": "Dr. Smith",
+    "notes": "Initial prescription for depression and anxiety",
     }
 
     # Update the digital twin with the treatment event
-    updated_twin_state = await digital_twin_core.process_treatment_event(
-        patient_id=patient_id, event_data=treatment_event
-    )
+    updated_twin_state = await digital_twin_core.process_treatment_event()
+    patient_id=patient_id, event_data=treatment_event
+    
 
     # Verify the state was updated
     assert updated_twin_state is not None
@@ -96,11 +96,11 @@ async def test_digital_twin_complete_workflow():
     assert len(updated_twin_state.data["treatment_history"]) > 0
 
     # 5. Generate treatment recommendations
-    recommendations = await digital_twin_core.generate_treatment_recommendations(
-        patient_id=patient_id,
-        consider_current_medications=True,
-        include_therapy_options=True,
-    )
+    recommendations = await digital_twin_core.generate_treatment_recommendations()
+    patient_id=patient_id,
+    consider_current_medications=True,
+    include_therapy_options=True,
+    
 
     # Verify recommendations were generated
     assert recommendations is not None
@@ -121,20 +121,20 @@ async def test_digital_twin_complete_workflow():
     assert has_therapy
 
     # 6. Get visualization data for the 3D brain model
-    visualization_data = await digital_twin_core.get_visualization_data(
-        patient_id=patient_id, visualization_type="brain_model"
-    )
+    visualization_data = await digital_twin_core.get_visualization_data()
+    patient_id=patient_id, visualization_type="brain_model"
+    
 
     # Verify visualization data was generated
     assert visualization_data["visualization_type"] == "brain_model_3d"
     assert len(visualization_data["brain_regions"]) > 0
 
     # 7. Compare states to see changes over time
-    comparison = await digital_twin_core.compare_states(
-        patient_id=patient_id,
-        state_id_1=initial_twin_state.id,
-        state_id_2=updated_twin_state.id,
-    )
+    comparison = await digital_twin_core.compare_states()
+    patient_id=patient_id,
+    state_id_1=initial_twin_state.id,
+    state_id_2=updated_twin_state.id,
+    
 
     # Verify comparison data
     assert comparison["state_1"]["id"] == str(initial_twin_state.id)
@@ -144,9 +144,9 @@ async def test_digital_twin_complete_workflow():
     assert len(comparison["new_insights"]) > 0
 
     # 8. Generate a comprehensive clinical summary
-    summary = await digital_twin_core.generate_clinical_summary(
-        patient_id=patient_id, include_treatment_history=True, include_predictions=True
-    )
+    summary = await digital_twin_core.generate_clinical_summary()
+    patient_id=patient_id, include_treatment_history=True, include_predictions=True
+    
 
     # Verify summary data
     assert summary["patient"]["id"] == str(patient_id)

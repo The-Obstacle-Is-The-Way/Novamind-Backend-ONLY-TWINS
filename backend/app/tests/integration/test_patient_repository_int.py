@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import (
-    PatientRepository,  
-)
+from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import ()
+PatientRepository,  
+
 
 
 @pytest.mark.db_required()
@@ -25,24 +25,24 @@ class TestPatientRepository:
     @pytest.fixture
     async def repository(self, db_session):
         """Create a patient repository with a real DB session."""
-        return PatientRepository(db_session)
+#         return PatientRepository(db_session)
     
-    @pytest.fixture
+@pytest.fixture
     async def sample_patient_data(self):
         """Create sample patient data for testing."""
         patient_id = str(uuid.uuid4())
-        return {
-            "id": patient_id,
-            "name": f"Test Patient {patient_id[:8]}",
-            "date_of_birth": datetime.now() - timedelta(days=365*30),  # ~30 years old
-            "gender": "female",
-            "email": f"patient_{patient_id[:8]}@example.com",
-            "phone": "555-123-4567",
-            "address": "123 Test St, Test City, TS 12345",
-            "insurance_number": f"INS{patient_id[:8]}",
-            "created_at": datetime.now(),
-            "updated_at": datetime.now()
-        }
+#         return {
+"id": patient_id,
+"name": f"Test Patient {patient_id[:8]}",
+"date_of_birth": datetime.now() - timedelta(days=365*30),  # ~30 years old
+"gender": "female",
+"email": f"patient_{patient_id[:8]}@example.com",
+"phone": "555-123-4567",
+"address": "123 Test St, Test City, TS 12345",
+"insurance_number": f"INS{patient_id[:8]}",
+"created_at": datetime.now(),
+"updated_at": datetime.now()
+}
     
     async def test_create_patient(self, repository, sample_patient_data):
         """Test creating a patient in the database."""
@@ -82,8 +82,8 @@ class TestPatientRepository:
 
         # Update data
         update_data = {
-            "name": "Updated Name",
-            "email": "updated.email@example.com"
+        "name": "Updated Name",
+        "email": "updated.email@example.com"
         }
         
         # Update the patient

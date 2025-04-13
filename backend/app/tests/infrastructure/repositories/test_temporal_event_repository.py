@@ -17,7 +17,7 @@ from app.infrastructure.repositories.temporal_event_repository import SqlAlchemy
 @pytest.fixture
 def mock_session():
 
-                        """Create a mock SQLAlchemy session for testing."""
+    """Create a mock SQLAlchemy session for testing."""
     session = AsyncMock(spec=AsyncSession)
     
     # Mock for execute that will be customized in tests
@@ -32,11 +32,11 @@ def mock_session():
     @pytest.mark.db_required()
     def test_event():
 
-                    """Create a test correlated event for tests."""
-        now = datetime.now(,
-        event_id= uuid4(,
-        correlation_id= uuid4(,
-        patient_id= uuid4(,
+        """Create a test correlated event for tests."""
+        now = datetime.now(,)
+        event_id= uuid4(,)
+        correlation_id= uuid4(,)
+        patient_id= uuid4(,)
     
         event= CorrelatedEvent()
         event_id=event_id,
@@ -49,8 +49,8 @@ def mock_session():
         (    )    return event@pytest.fixture
         def test_child_event(test_event):
 
-                        """Create a test child event."""
-            child_id = uuid4(,
+            """Create a test child event."""
+            child_id = uuid4(,)
     
             child_event= CorrelatedEvent()
             event_id=child_id,
@@ -63,10 +63,10 @@ def mock_session():
             (    )    return child_event@pytest.fixture
             def mock_event_model():
 
-                        """Create a mock event model for tests."""
-        now = datetime.now(,
-        event_id= uuid4(,
-        correlation_id= uuid4(,
+                """Create a mock event model for tests."""
+        now = datetime.now(,)
+        event_id= uuid4(,)
+        correlation_id= uuid4(,)
     
         model= MagicMock(spec=EventModel)
         model.id = event_id
@@ -78,8 +78,8 @@ def mock_session():
         model.event_metadata = {"region": "prefrontal_cortex", "neurotransmitter": "serotonin", "value_change": 0.2} # Renamed    return model@pytest.fixture
         def mock_child_event_model(mock_event_model):
 
-                        """Create a mock child event model."""
-        child_id = uuid4(,
+            """Create a mock child event model."""
+        child_id = uuid4(,)
     
         model= MagicMock(spec=EventModel)
         model.id = child_id
@@ -92,13 +92,13 @@ def mock_session():
         """Tests for SqlAlchemyEventRepository."""
         def test_init(self, mock_session):
 
-                    """Test repository initialization."""
+            """Test repository initialization."""
             repo = SqlAlchemyEventRepository(session=mock_session)
             assert repo.session  ==  mock_session
     
             @pytest.mark.asyncio()
             async def test_save_event(self, mock_session, test_event):
-                 """Test saving a correlated event."""
+                """Test saving a correlated event."""
             # Setup
             repo = SqlAlchemyEventRepository(session=mock_session)
         
@@ -123,7 +123,7 @@ def mock_session():
     
             @pytest.mark.asyncio()
             async def test_get_event_by_id_found(self, mock_session, mock_event_model):
-                 """Test getting an event by ID when found."""
+                """Test getting an event by ID when found."""
                 # Setup
                 repo = SqlAlchemyEventRepository(session=mock_session)
         
@@ -151,7 +151,7 @@ def mock_session():
     
                 @pytest.mark.asyncio()
                 async def test_get_event_by_id_not_found(self, mock_session):
-                 """Test getting an event by ID when not found."""
+                """Test getting an event by ID when not found."""
                 # Setup
                 repo = SqlAlchemyEventRepository(session=mock_session)
         
@@ -171,7 +171,7 @@ def mock_session():
     
                 @pytest.mark.asyncio()
                 async def test_get_events_by_correlation_id(self, mock_session, mock_event_model, mock_child_event_model):
-                 """Test getting events by correlation ID."""
+                """Test getting events by correlation ID."""
                 # Setup
                 repo = SqlAlchemyEventRepository(session=mock_session)
         
@@ -194,17 +194,17 @@ def mock_session():
     
                 @pytest.mark.asyncio()
                 async def test_get_event_chain(self, mock_session, mock_event_model, mock_child_event_model):
-                 """Test getting an event chain by correlation ID."""
+                """Test getting an event chain by correlation ID."""
                 # Setup
                 repo = SqlAlchemyEventRepository(session=mock_session)
         
                 # Mock the get_events_by_correlation_id method
                 with patch.object(:)
                 repo, 'get_events_by_correlation_id',
-                ((    return_value=[))
+                ((    return_value=[))]
                 self._model_to_entity(mock_event_model),
                 self._model_to_entity(mock_child_event_model)
-                ]
+                
                 (    ) as mock_get_events:
             
                 # Execute
@@ -214,7 +214,7 @@ def mock_session():
                 assert isinstance(chain, EventChain)
                 assert len(chain.events) == 2
             
-                # Verify the hierarchy was set up correctly (root event has child,
+                # Verify the hierarchy was set up correctly (root event has child,)
                 root_event= next((e for e in chain.events if e.parent_event_id is None), None)
                 assert root_event is not None
             
@@ -224,7 +224,7 @@ def mock_session():
     
                 @pytest.mark.asyncio()
                 async def test_get_patient_events(self, mock_session, mock_event_model, mock_child_event_model):
-                 """Test getting events associated with a patient."""
+                """Test getting events associated with a patient."""
                 # Setup
                 repo = SqlAlchemyEventRepository(session=mock_session)
         

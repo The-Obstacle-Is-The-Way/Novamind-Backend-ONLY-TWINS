@@ -12,12 +12,12 @@ from datetime import datetime, UTC, timedelta
 from typing import Dict, Any, List
 import json
 
-from app.core.exceptions import (
-    InvalidConfigurationError,
-    InvalidRequestError,
-    ModelNotFoundError,
-    ServiceUnavailableError,
-)
+from app.core.exceptions import ()
+InvalidConfigurationError,
+InvalidRequestError,
+ModelNotFoundError,
+ServiceUnavailableError,
+
 from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
 
 
@@ -29,42 +29,42 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
     """Test suite for MockMentaLLaMA class."""@pytest.fixture
     def mock_service(self) -> MockMentaLLaMA:
 
-                """Create and initialize a MockMentaLLaMA instance."""
+        """Create and initialize a MockMentaLLaMA instance."""
         service = MockMentaLLaMA()
         service.initialize({})
-        return service@pytest.fixture
+#         return service@pytest.fixture
         def sample_text(self) -> str:
 
-                """Create sample text for testing."""
-        return (
-            "I've been feeling down for several weeks. I'm constantly tired, "
-            "have trouble sleeping, and don't enjoy things anymore. Sometimes "
-            "I wonder if life is worth living, but I wouldn't actually hurt myself.")
+            """Create sample text for testing."""
+#             return ()
+"I've been feeling down for several weeks. I'm constantly tired, "
+"have trouble sleeping, and don't enjoy things anymore. Sometimes "
+"I wonder if life is worth living, but I wouldn't actually hurt myself."
 
         def test_initialization(self):
 
 
-                    """Test initialization with valid and invalid configurations."""
-        # Test default initialization
-        service = MockMentaLLaMA()
-        service.initialize({})
-        assert service.is_healthy()
+            """Test initialization with valid and invalid configurations."""
+# Test default initialization
+service = MockMentaLLaMA()
+service.initialize({})
+assert service.is_healthy()
 
-        # Test initialization with custom mock responses
-        custom_responses = {
-            "general": {
-                "custom": True,
-                "model_type": "general"}}
-        service = MockMentaLLaMA()
-        service.initialize({"mock_responses": custom_responses})
-        assert service.is_healthy()
+# Test initialization with custom mock responses
+custom_responses = {
+"general": {
+"custom": True,
+"model_type": "general"}}
+service = MockMentaLLaMA()
+service.initialize({"mock_responses": custom_responses})
+assert service.is_healthy()
 
-        # Test shutdown
-        service.shutdown()
-        assert not service.is_healthy()
+# Test shutdown
+service.shutdown()
+assert not service.is_healthy()
 
-        # Test initialization failure
-        service = MockMentaLLaMA()
+# Test initialization failure
+service = MockMentaLLaMA()
         with pytest.raises(InvalidConfigurationError):
             # Pass invalid config that would cause error during processing
             service.initialize({"mock_responses": "not-a-dict"})
@@ -72,7 +72,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
             def test_process_with_invalid_inputs(self, mock_service):
 
 
-                            """Test process method with invalid inputs."""
+                """Test process method with invalid inputs."""
                 # Test empty text
                 with pytest.raises(InvalidRequestError):
                     mock_service.process("")
@@ -90,10 +90,10 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
                     with pytest.raises(ServiceUnavailableError):
                     uninitialized_service.process("Some text")
 
-                    def test_process_returns_expected_structure(
+                    def test_process_returns_expected_structure()
                     self, mock_service, sample_text):
                         """Test that process returns the expected response structure."""
-                        # Test general model (default,
+                        # Test general model (default,)
                         result= mock_service.process(sample_text)
                         assert isinstance(result, dict)
                         assert "model_type" in result
@@ -106,7 +106,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
                         assert (datetime.now(UTC) - timestamp).total_seconds() < 10
 
                         # Test all available model types
-                        for model_type in [
+                        for model_type in []
                         "depression_detection",
                         "risk_assessment",
                         "sentiment_analysis",
@@ -130,7 +130,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
                 def test_assess_risk(self, mock_service, sample_text):
 
 
-                        """Test risk assessment functionality."""
+                    """Test risk assessment functionality."""
                     # Test without specific risk type
                     result = mock_service.assess_risk(sample_text)
                     assert "risk_assessment" in result
@@ -142,12 +142,12 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
                     assert "risk_assessment" in result
                     # Check that only self-harm risks are included
                     for risk in result["risk_assessment"]["identified_risks"]:
-                assert risk["risk_type"] == "self-harm"
+                        assert risk["risk_type"] == "self-harm"
 
                 def test_analyze_sentiment(self, mock_service, sample_text):
 
 
-                            """Test sentiment analysis functionality."""
+                    """Test sentiment analysis functionality."""
                 result = mock_service.analyze_sentiment(sample_text)
                 assert "sentiment" in result
                 assert "emotions" in result
@@ -158,39 +158,39 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
                 def test_analyze_wellness_dimensions(self, mock_service, sample_text):
 
 
-                        """Test wellness dimensions analysis functionality."""
+                    """Test wellness dimensions analysis functionality."""
                     # Test without specific dimensions
                     result = mock_service.analyze_wellness_dimensions(sample_text)
                     assert "wellness_dimensions" in result
                     assert isinstance(result["wellness_dimensions"], list)
 
                     # Test with specific dimensions
-                    result = mock_service.analyze_wellness_dimensions(
+                    result = mock_service.analyze_wellness_dimensions()
                     sample_text, dimensions=["emotional", "social"]
-        )
-        assert "wellness_dimensions" in result
-        dimensions = [dim["dimension"]
-                      for dim in result["wellness_dimensions"]]
-        assert "emotional" in dimensions
+        
+                    assert "wellness_dimensions" in result
+dimensions = [dim["dimension"]]
+for dim in result["wellness_dimensions"
+assert "emotional" in dimensions
 
     def test_digital_twin_session_workflow(self, mock_service, sample_text):
 
 
-                    """Test the digital twin session workflow."""
+        """Test the digital twin session workflow."""
         # Create a digital twin
-        twin_result = mock_service.generate_digital_twin(
-            text_data=[sample_text],
-            demographic_data={"age": 35, "gender": "female"},
-            medical_history={"conditions": ["anxiety", "insomnia"]},
-            treatment_history={"medications": ["escitalopram"]},
-        )
+        twin_result = mock_service.generate_digital_twin()
+        text_data=[sample_text],
+        demographic_data={"age": 35, "gender": "female"},
+        medical_history={"conditions": ["anxiety", "insomnia"]},
+        treatment_history={"medications": ["escitalopram"]},
+        
         assert "digital_twin_id" in twin_result
         twin_id = twin_result["digital_twin_id"]
 
         # Create a session with the digital twin
-        session_result = mock_service.create_digital_twin_session(
-            twin_id, session_type="therapy"
-        )
+        session_result = mock_service.create_digital_twin_session()
+        twin_id, session_type="therapy"
+        
         assert "session_id" in session_result
         session_id = session_result["session_id"]
 
@@ -200,9 +200,9 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
         assert session_details["status"] == "active"
 
         # Send message to session
-        message_result = mock_service.send_message_to_session(
-            session_id, "How can I manage my anxiety better?"
-        )
+        message_result = mock_service.send_message_to_session()
+        session_id, "How can I manage my anxiety better?"
+        
         assert "response" in message_result
         assert "messages" in message_result
         assert len(message_result["messages"]) > 0
@@ -226,34 +226,34 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
                 """Create and initialize a MockPHIDetection instance."""
                 service = MockPHIDetection()
                 service.initialize({})
-                return service@pytest.fixture
+#                 return service@pytest.fixture
                 def sample_phi_text(self) -> str:
 
-                """Create sample text with mock PHI for testing."""
-        return (
-            "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
-            "His email is john.smith@example.com and phone number is (555) 123-4567. "
-            "He resides at 123 Main Street, Springfield, IL 62701.")
+"""Create sample text with mock PHI for testing."""
+#                     return ()
+"Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
+"His email is john.smith@example.com and phone number is (555) 123-4567. "
+"He resides at 123 Main Street, Springfield, IL 62701."
 
         def test_initialization(self):
 
 
-                    """Test initialization with valid and invalid configurations."""
-        # Test default initialization
-        service = MockPHIDetection()
-        service.initialize({})
-        assert service.is_healthy()
+            """Test initialization with valid and invalid configurations."""
+# Test default initialization
+service = MockPHIDetection()
+service.initialize({})
+assert service.is_healthy()
 
-        # Test shutdown
-        service.shutdown()
-        assert not service.is_healthy()
+# Test shutdown
+service.shutdown()
+assert not service.is_healthy()
 
-        # Test initialization with custom configuration
-        service = MockPHIDetection()
-        service.initialize({"detection_level": "aggressive"})
-        assert service.is_healthy()
+# Test initialization with custom configuration
+service = MockPHIDetection()
+service.initialize({"detection_level": "aggressive"})
+assert service.is_healthy()
 
-        def test_detect_phi_valid_inputs(
+def test_detect_phi_valid_inputs()
                 self, mock_phi_service, sample_phi_text):
                     """Test PHI detection with valid inputs."""
                     # Test with default parameters
@@ -268,8 +268,8 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
 
                     # Test with specific detection_level parameter
                     for level in ["minimal", "moderate", "aggressive"]:
-                        result = mock_phi_service.detect_phi(
-                        sample_phi_text, detection_level=level)
+                        result = mock_phi_service.detect_phi()
+                        sample_phi_text, detection_level=level
                         assert "phi_instances" in result
                         assert "detection_level" in result
                         assert result["detection_level"] == level
@@ -278,28 +278,28 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
 
 
                             """Test PHI detection with invalid inputs."""
-                # Test empty text
+# Test empty text
                 with pytest.raises(InvalidRequestError):
                     mock_phi_service.detect_phi("")
 
                     # Test non-string text
                     with pytest.raises(InvalidRequestError):
-                mock_phi_service.detect_phi(123)
+mock_phi_service.detect_phi(123)
 
-                # Test with uninitialized service
-                uninitialized_service = MockPHIDetection()
+# Test with uninitialized service
+uninitialized_service = MockPHIDetection()
                 with pytest.raises(ServiceUnavailableError):
                     uninitialized_service.detect_phi("Some text")
 
                     # Test with invalid detection level
                     with pytest.raises(InvalidRequestError):
-                    mock_phi_service.detect_phi(
-                    "Some text", detection_level="invalid_level")
+                    mock_phi_service.detect_phi()
+                    "Some text", detection_level="invalid_level"
 
                     def test_redact_phi(self, mock_phi_service, sample_phi_text):
 
 
-                            """Test PHI redaction functionality."""
+                        """Test PHI redaction functionality."""
                     # Test with default parameters
                     result = mock_phi_service.redact_phi(sample_phi_text)
                     assert "redacted_text" in result
@@ -312,28 +312,28 @@ pytestmark = [pytest.mark.unit, pytest.mark.ml]
                     assert "[REDACTED]" in redacted_text
 
                     # Test with custom redaction marker
-                    result = mock_phi_service.redact_phi(
-                    sample_phi_text, redaction_marker="[PHI]")
+                    result = mock_phi_service.redact_phi()
+                    sample_phi_text, redaction_marker="[PHI]"
                     assert "[PHI]" in result["redacted_text"]
 
                     # Test with specific detection level
-                    result = mock_phi_service.redact_phi(
+                    result = mock_phi_service.redact_phi()
                     sample_phi_text, detection_level="aggressive"
-        )
-        assert "detection_level" in result
-        assert result["detection_level"] == "aggressive"
+        
+                    assert "detection_level" in result
+                    assert result["detection_level"] == "aggressive"
 
     def test_phi_instance_creation(self, mock_phi_service):
 
 
-                    """Test internal _create_mock_phi_instances method."""
+        """Test internal _create_mock_phi_instances method."""
         # Access the protected method directly for testing
-        minimal_instances = mock_phi_service._create_mock_phi_instances(
-            "minimal",
-        moderate_instances= mock_phi_service._create_mock_phi_instances(
-            "moderate",
-        aggressive_instances= mock_phi_service._create_mock_phi_instances(
-            "aggressive")
+        minimal_instances = mock_phi_service._create_mock_phi_instances()
+        "minimal",
+        moderate_instances= mock_phi_service._create_mock_phi_instances()
+        "moderate",
+        aggressive_instances= mock_phi_service._create_mock_phi_instances()
+        "aggressive"
 
         # Check that each level produces expected number of instances
         assert len(minimal_instances) <= len(moderate_instances)

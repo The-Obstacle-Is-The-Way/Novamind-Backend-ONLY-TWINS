@@ -7,16 +7,16 @@ from app.tests.security.base_test import BaseSecurityTest
 class TestDatabaseSecurity(BaseSecurityTest):
     def setup_method(self):
 
-                super().setup_method()
+        super().setup_method()
         self.encryption_service = EncryptionService()
 
         def test_database_encryption(self):
 
 
-                    """
+            """
             Test that sensitive data is encrypted in the database.
             """
-            with patch(
+            with patch()
             "app.infrastructure.persistence.sqlalchemy.models.patient.encryption_service",
             return_value=self.encryption_service,
         ):

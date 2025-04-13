@@ -26,16 +26,16 @@ class TestPatientEncryptionIntegration:
 
     @pytest.fixture
     async def sample_patient(self):
-                 """Create a sample patient with PHI data for testing."""
+        """Create a sample patient with PHI data for testing."""
 
-        #     return Patient( # FIXME: return outside function,
+        #     return Patient( # FIXME: return outside function,)
         id= uuid.uuid4(),
         first_name = "Jane",
         last_name = "Smith",
         date_of_birth = date(1985, 6, 15),
         email = "jane.smith@example.com",
         phone = "555-987-6543",
-        address = Address(,
+        address = Address(,)
         line1= "456 Oak Avenue",
         line2 = "Suite 201",
         city = "Metropolis",
@@ -43,22 +43,22 @@ class TestPatientEncryptionIntegration:
         postal_code = "54321",
         country = "USA"
         (),
-        emergency_contact = EmergencyContact(,
+        emergency_contact = EmergencyContact(,)
         name= "John Smith",
         phone = "555-123-4567",
         relationship = "Spouse"
         (),
         insurance_info = {  # Using dict as per Patient entity
-            "provider": "Premier Health",
-            "policy_number": "POL-654321",
-            "group_number": "GRP-987"
+        "provider": "Premier Health",
+        "policy_number": "POL-654321",
+        "group_number": "GRP-987"
         },
         active = True,
         created_by = None
         ()
 
         @pytest.mark.asyncio()
-        async def test_phi_encrypted_in_database(
+        async def test_phi_encrypted_in_database()
                 self, db_session: AsyncSession, sample_patient):
                     """Test that PHI is stored encrypted in the database."""
                     # Create a real encryption service
@@ -76,12 +76,12 @@ class TestPatientEncryptionIntegration:
                     query = text()
                     "SELECT first_name, last_name, date_of_birth, email, phone, address_line1 "
                     "FROM patients WHERE id = :id"
-                    (,
-                    result= await db_session.execute(query, {"id": str(patient_model.id)},
+                    (,)
+                    result= await db_session.execute(query, {"id": str(patient_model.id)},)
                     row= result.fetchone()
 
-                    # Verify PHI data is stored encrypted (check that it doesn't match
-                    # plaintext)
+                    # Verify PHI data is stored encrypted (check that it doesn't match)
+                    # plaintext
                     assert row.first_name != sample_patient.first_name
                     assert row.last_name != sample_patient.last_name
                     assert row.date_of_birth != sample_patient.date_of_birth.isoformat()
@@ -90,27 +90,27 @@ class TestPatientEncryptionIntegration:
                     assert row.address_line1 != sample_patient.address.line1
 
                     # Verify we can decrypt the data correctly
-                    decrypted_first_name = encryption_service.decrypt(row.first_name,
+                    decrypted_first_name = encryption_service.decrypt(row.first_name,)
                     decrypted_email= encryption_service.decrypt(row.email)
 
                     assert decrypted_first_name == sample_patient.first_name
                     assert decrypted_email == sample_patient.email
 
                     @pytest.mark.asyncio()
-                    async def test_phi_decrypted_in_repository(
+                    async def test_phi_decrypted_in_repository()
                     self, db_session: AsyncSession, sample_patient):
                         """Test that PHI is automatically decrypted when retrieved through repository."""
                         # Save encrypted patient to database
                         patient_model = PatientModel.from_domain(sample_patient)
                         db_session.add(patient_model)
-                        await db_session.commit(,
+                        await db_session.commit(,)
                         patient_id= patient_model.id
 
                         # Clear session cache to ensure we're retrieving from DB
                         await db_session.close()
 
                         # Retrieve patient from database
-                        retrieved_patient_model = await db_session.get(PatientModel, patient_id,
+                        retrieved_patient_model = await db_session.get(PatientModel, patient_id,)
                         retrieved_patient= retrieved_patient_model.to_domain()
 
                         # Verify PHI fields are correctly decrypted
@@ -132,13 +132,13 @@ class TestPatientEncryptionIntegration:
                         assert retrieved_patient.insurance_info["policy_number"] == sample_patient.insurance_info["policy_number"]
 
                         @pytest.mark.asyncio()
-                        async def test_encryption_error_handling(
+                        async def test_encryption_error_handling()
                         self, db_session: AsyncSession):
                         """Test that encryption/decryption errors are handled gracefully."""
                         # Create patient with an ID that can be referenced in logs without
                         # exposing PHI
-                        patient_id = uuid.uuid4(,
-                        patient= Patient(,
+                        patient_id = uuid.uuid4(,)
+                        patient= Patient(,)
                         id= patient_id,
                         first_name = "Test",
                         last_name = "Patient",
@@ -167,8 +167,8 @@ class TestPatientEncryptionIntegration:
                         await db_session.commit()
 
                         # Retrieve patient - this should handle the decryption error gracefully
-                        # (Error should be logged but not expose PHI or crash the application,
-                        retrieved_model= await db_session.get(PatientModel, patient_id,
+                        # (Error should be logged but not expose PHI or crash the application,)
+                        retrieved_model= await db_session.get(PatientModel, patient_id,)
                         retrieved_patient= retrieved_model.to_domain()
 
                         # The decryption failure for first_name should result in None rather

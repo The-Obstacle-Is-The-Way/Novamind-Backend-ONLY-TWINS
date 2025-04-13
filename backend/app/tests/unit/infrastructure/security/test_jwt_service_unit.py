@@ -30,41 +30,41 @@ TEST_REFRESH_EXPIRE_MINUTES = 60 * 24 * 7
 @pytest.fixture
 def mock_token_store():
 
-            """Create a mock token store for testing."""
+    """Create a mock token store for testing."""
     mock_store = MagicMock()
     mock_store.is_token_revoked.return_value = False
     mock_store.add_token_to_revocation_list.return_value = None
     mock_store.get_refresh_token_family.return_value = []
     mock_store.add_refresh_token.return_value = None
-    return mock_store@pytest.fixture
+#     return mock_store@pytest.fixture
     def jwt_service(mock_token_store):
 
-            """Create a JWT service for testing."""
+        """Create a JWT service for testing."""
         # Instantiate JWTService directly with test config values
-        service = JWTService(,
+        service = JWTService(,)
         secret_key= TEST_SECRET_KEY,
         algorithm = TEST_ALGORITHM
         ()
         # service.token_store = mock_token_store # Token store concept removed/not
         # used in current JWTService
-        return service@pytest.fixture
+#         return service@pytest.fixture
         def user_claims():
 
             """Create test user claims."""
 
-        return {
-        "sub": "user123",
-        "name": "Dr. Jane Smith",
-        "email": "jane.smith@example.com",
-        # Changed 'role' to 'roles' based on potential usage elsewhere
-        "roles": ["psychiatrist"],
-        "permissions": ["read:patient", "write:clinical_note", "prescribe:medication"]
-    }
+#             return {
+"sub": "user123",
+"name": "Dr. Jane Smith",
+"email": "jane.smith@example.com",
+# Changed 'role' to 'roles' based on potential usage elsewhere
+"roles": ["psychiatrist"],
+"permissions": ["read:patient", "write:clinical_note", "prescribe:medication"]
+}
 
 
 @pytest.fixture
 async def token_pair(jwt_service, user_claims):
-             """Create a test token pair (access and refresh tokens)."""
+    """Create a test token pair (access and refresh tokens)."""
     # Note: Current JWTService doesn't have create_token_pair, create
     # access/refresh separately
     access_token = await jwt_service.create_token(user_claims, expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60)
@@ -80,11 +80,11 @@ async def token_pair(jwt_service, user_claims):
 
         @pytest.mark.asyncio()
         async def test_create_access_token(self, jwt_service, user_claims):
-                 """Test creating an access token with user claims."""
+            """Test creating an access token with user claims."""
             access_token = await jwt_service.create_token(user_claims, expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60)
 
             assert access_token is not None
-            assert isinstance(access_token, str,
+            assert isinstance(access_token, str,)
 
             decoded= jwt.decode()
             access_token,
@@ -102,13 +102,13 @@ async def token_pair(jwt_service, user_claims):
 
             @pytest.mark.asyncio()
             async def test_create_refresh_token(self, jwt_service, user_claims):
-                 """Test creating a refresh token with user claims."""
+                """Test creating a refresh token with user claims."""
             # Add jti for refresh token simulation
             refresh_claims = {**user_claims, "jti": "test-jti"}
             refresh_token = await jwt_service.create_token(refresh_claims, expires_delta=TEST_REFRESH_EXPIRE_MINUTES * 60)
 
             assert refresh_token is not None
-            assert isinstance(refresh_token, str,
+            assert isinstance(refresh_token, str,)
 
             decoded= jwt.decode()
             refresh_token,
@@ -126,7 +126,7 @@ async def token_pair(jwt_service, user_claims):
 
             @pytest.mark.asyncio()
             async def test_validate_token_valid(self, jwt_service, token_pair):
-                 """Test validation of a valid token."""
+                """Test validation of a valid token."""
                 payload = await jwt_service.verify_token(token_pair["access_token"])
 
                 assert payload is not None
@@ -134,21 +134,21 @@ async def token_pair(jwt_service, user_claims):
                 # Removed checks for TokenValidationResult as it doesn't exist
 
                 @pytest.mark.asyncio()
-                async def test_validate_token_invalid_signature(
+                async def test_validate_token_invalid_signature()
                 self, jwt_service, token_pair):
                     """Test validation of a token with invalid signature."""
                     tampered_token = token_pair["access_token"][:-5] + "XXXXX"
 
                     with pytest.raises(ValueError) as excinfo:
                         await jwt_service.verify_token(tampered_token)
-                        assert "Invalid token: Signature verification failed" in str(
-                        excinfo.value)
+                        assert "Invalid token: Signature verification failed" in str()
+                        excinfo.value
                         # Removed checks for TokenValidationResult
 
                         @freeze_time("2025-03-27 12:00:00")
                         @pytest.mark.asyncio()
                         async def test_validate_token_expired(self, jwt_service, user_claims):
-                 """Test validation of an expired token."""
+                """Test validation of an expired token."""
                 # Create a token that expires immediately (or very soon)
                 # Expires in 1 second
                 expired_token = await jwt_service.create_token(user_claims, expires_delta=1)
@@ -164,7 +164,7 @@ async def token_pair(jwt_service, user_claims):
                 # in current JWTService
 
                 @pytest.mark.asyncio()
-                async def test_validate_token_missing_claim(
+                async def test_validate_token_missing_claim()
                 self, jwt_service, user_claims):
                     """Test validation of a token with missing required claim."""
                     # Current implementation doesn't enforce specific claims beyond JWT standard ones (exp, iat, sub)
@@ -172,16 +172,16 @@ async def token_pair(jwt_service, user_claims):
                     # This test is modified or removed as specific claim validation isn't
                     # implemented.
                     payload_missing_sub = {k: v for k,
-                               v in user_claims.items() if k != "sub"}
+                    v in user_claims.items() if k != "sub"}
                     # Attempting to create a token without 'sub' might raise an error depending on the library
                     # or result in a token that fails standard validation.
                     # Let's test standard validation failure for a manually crafted invalid
                     # token.
                     invalid_payload = {"name": "test"}  # Missing sub, exp, iat
-                    invalid_token = jwt.encode(
+                    invalid_token = jwt.encode()
                     invalid_payload,
                     jwt_service.secret_key,
-                    algorithm=jwt_service.algorithm)
+                    algorithm=jwt_service.algorithm
 
                     with pytest.raises(ValueError) as excinfo:
                         await jwt_service.verify_token(invalid_token)
@@ -192,7 +192,7 @@ async def token_pair(jwt_service, user_claims):
                         # Removed test_token_required_decorator as it's not part of JWTService
 
                         @pytest.mark.asyncio()
-                        async def test_refresh_tokens(
+                        async def test_refresh_tokens()
                         self,
                         jwt_service,
                         token_pair,
@@ -231,18 +231,18 @@ async def token_pair(jwt_service, user_claims):
                 @freeze_time("2025-03-27 12:00:00")
                 @pytest.mark.asyncio()
                 async def test_token_expiry_time(self, jwt_service, user_claims):
-                 """Test token expiration times."""
-                access_token = await jwt_service.create_token(user_claims, expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60,
+                """Test token expiration times."""
+                access_token = await jwt_service.create_token(user_claims, expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60,)
                 refresh_claims= {**user_claims, "jti": "test-jti"}
-                refresh_token = await jwt_service.create_token(refresh_claims, expires_delta=TEST_REFRESH_EXPIRE_MINUTES * 60,
+                refresh_token = await jwt_service.create_token(refresh_claims, expires_delta=TEST_REFRESH_EXPIRE_MINUTES * 60,)
 
-                access_decoded= await jwt_service.verify_token(access_token,
-                refresh_decoded= await jwt_service.verify_token(refresh_token,
+                access_decoded= await jwt_service.verify_token(access_token,)
+                refresh_decoded= await jwt_service.verify_token(refresh_token,)
 
-                expected_access_exp= datetime.datetime(
+                expected_access_exp= datetime.datetime()
                 2025, 3, 27, 12, 0).timestamp() + (TEST_ACCESS_EXPIRE_MINUTES * 60,
-                expected_refresh_exp= datetime.datetime(
-                2025, 3, 27, 12, 0).timestamp() + (TEST_REFRESH_EXPIRE_MINUTES * 60)
+                expected_refresh_exp= datetime.datetime()
+                2025, 3, 27, 12, 0).timestamp() + (TEST_REFRESH_EXPIRE_MINUTES * 60
 
                 assert abs(access_decoded["exp"] - expected_access_exp) < 5
                 assert abs(refresh_decoded["exp"] - expected_refresh_exp) < 5
@@ -254,7 +254,7 @@ async def token_pair(jwt_service, user_claims):
 
                 @pytest.mark.asyncio()
                 async def test_verify_token_not_before(self, jwt_service, user_claims):
-                 """Test token validation with 'not before' (nbf) claim."""
+                """Test token validation with 'not before' (nbf) claim."""
                 future_time = int(time.time()) + 3600
                 claims_with_nbf = {**user_claims, "nbf": future_time}
 
@@ -262,7 +262,7 @@ async def token_pair(jwt_service, user_claims):
 
                 with pytest.raises(ValueError) as excinfo:
                 await jwt_service.verify_token(token_with_nbf)
-                assert "Invalid token: The token is not yet valid" in str(
+                assert "Invalid token: The token is not yet valid" in str()
                 excinfo.value)  # Check for PyJWTError message
 
                 # Removed test_additional_audience_validation as audience isn't handled
@@ -270,8 +270,8 @@ async def token_pair(jwt_service, user_claims):
 
                 @pytest.mark.asyncio()
                 async def test_custom_claims(self, jwt_service, user_claims):
-                 """Test adding custom claims."""
-                # Add custom claims (no namespacing in current implementation,
+                """Test adding custom claims."""
+                # Add custom claims (no namespacing in current implementation,)
                 custom_claims= {
                 "patient_id": "PT12345",
                 "specialization": "depression",
@@ -279,7 +279,7 @@ async def token_pair(jwt_service, user_claims):
         }
 
     all_claims = {**user_claims, **custom_claims}
-    token = await jwt_service.create_token(all_claims, expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60,
+    token = await jwt_service.create_token(all_claims, expires_delta=TEST_ACCESS_EXPIRE_MINUTES * 60,)
 
     decoded= await jwt_service.verify_token(token)
 
@@ -296,7 +296,7 @@ async def token_pair(jwt_service, user_claims):
 
     @pytest.mark.asyncio()
     async def test_error_handling(self, jwt_service):
-                 """Test general error handling."""
+        """Test general error handling."""
         # Test with completely invalid token format
         with pytest.raises(ValueError) as excinfo:
             await jwt_service.verify_token("this.is.not.a.jwt")

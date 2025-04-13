@@ -45,12 +45,12 @@ class PatientStatus(str, Enum):
 class EmergencyContact:
     """Emergency contact information."""
 
-    def __init__(
-        self,
-        name: str,
-        relationship: str,
-        phone: str,
-        email: Optional[str] = None
+    def __init__()
+    self,
+    name: str,
+    relationship: str,
+    phone: str,
+    email: Optional[str] = None
     ):
         self.name = name
         self.relationship = relationship
@@ -58,32 +58,32 @@ class EmergencyContact:
         self.email = email
 
         # Validation
-        if not name or not name.strip():
-            raise ValueError("Emergency contact name cannot be empty")
-        if not relationship or not relationship.strip():
-            raise ValueError("Emergency contact relationship cannot be empty")
-        if not phone or not phone.strip():
-            raise ValueError("Emergency contact phone cannot be empty")
+            if not name or not name.strip():
+        raise ValueError("Emergency contact name cannot be empty")
+                if not relationship or not relationship.strip():
+        raise ValueError("Emergency contact relationship cannot be empty")
+                if not phone or not phone.strip():
+        raise ValueError("Emergency contact phone cannot be empty")
 
-    def to_dict(self) -> dict[str, Any]:
+            def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
-            "name": self.name,
-            "relationship": self.relationship,
-            "phone": self.phone,
-            "email": self.email
+        "name": self.name,
+        "relationship": self.relationship,
+        "phone": self.phone,
+        "email": self.email
         }
 
 
 class Insurance:
     """Insurance information."""
 
-    def __init__(
-        self,
-        provider: str,
-        policy_number: str,
-        group_number: Optional[str] = None,
-        status: InsuranceStatus = InsuranceStatus.ACTIVE
+    def __init__()
+    self,
+    provider: str,
+    policy_number: str,
+    group_number: Optional[str] = None,
+    status: InsuranceStatus = InsuranceStatus.ACTIVE
     ):
         self.provider = provider
         self.policy_number = policy_number
@@ -91,35 +91,35 @@ class Insurance:
         self.status = status
 
         # Validation
-        if not provider or not provider.strip():
-            raise ValueError("Insurance provider cannot be empty")
-        if not policy_number or not policy_number.strip():
-            raise ValueError("Insurance policy number cannot be empty")
+            if not provider or not provider.strip():
+        raise ValueError("Insurance provider cannot be empty")
+                if not policy_number or not policy_number.strip():
+        raise ValueError("Insurance policy number cannot be empty")
 
-    def to_dict(self) -> dict[str, Any]:
+            def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
-            "provider": self.provider,
-            "policy_number": self.policy_number,
-            "group_number": self.group_number,
-            "status": self.status
+        "provider": self.provider,
+        "policy_number": self.policy_number,
+        "group_number": self.group_number,
+        "status": self.status
         }
 
 
 class Patient:
     """Patient entity."""
 
-    def __init__(
-        self,
-        first_name: str,
-        last_name: str,
-        date_of_birth: date,
-        gender: Gender,
-        patient_id: str = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        address: Optional[str] = None,
-        status: PatientStatus = PatientStatus.ACTIVE
+    def __init__()
+    self,
+    first_name: str,
+    last_name: str,
+    date_of_birth: date,
+    gender: Gender,
+    patient_id: str = None,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
+    address: Optional[str] = None,
+    status: PatientStatus = PatientStatus.ACTIVE
     ):
         self.patient_id = patient_id or str(uuid4())
         self.first_name = first_name
@@ -134,16 +134,16 @@ class Patient:
         self.insurance: Optional[Insurance] = None
 
         # Validation
-        if not first_name or not first_name.strip():
-            raise ValueError("First name cannot be empty")
-        if not last_name or not last_name.strip():
-            raise ValueError("Last name cannot be empty")
-        if not date_of_birth:
-            raise ValueError("Date of birth cannot be empty")
-        if not gender:
-            raise ValueError("Gender cannot be empty")
+            if not first_name or not first_name.strip():
+        raise ValueError("First name cannot be empty")
+                if not last_name or not last_name.strip():
+        raise ValueError("Last name cannot be empty")
+                if not date_of_birth:
+        raise ValueError("Date of birth cannot be empty")
+                if not gender:
+        raise ValueError("Gender cannot be empty")
 
-    def add_emergency_contact(
+        def add_emergency_contact()
         self,
         name: str,
         relationship: str,
@@ -151,22 +151,22 @@ class Patient:
         email: Optional[str] = None
     ) -> EmergencyContact:
         """Add an emergency contact."""
-        contact = EmergencyContact(
-            name=name,
-            relationship=relationship,
-            phone=phone,
-            email=email
-        )
+        contact = EmergencyContact()
+        name=name,
+        relationship=relationship,
+        phone=phone,
+        email=email
+        
         self.emergency_contacts.append(contact)
-        return contact
+#         return contact
 
-    def remove_emergency_contact(self, index: int) -> EmergencyContact:
+        def remove_emergency_contact(self, index: int) -> EmergencyContact:
         """Remove an emergency contact by index."""
-        if index < 0 or index >= len(self.emergency_contacts):
-            raise IndexError("Emergency contact index out of range")
+            if index < 0 or index >= len(self.emergency_contacts):
+        raise IndexError("Emergency contact index out of range")
         return self.emergency_contacts.pop(index)
 
-    def set_insurance(
+        def set_insurance()
         self,
         provider: str,
         policy_number: str,
@@ -174,33 +174,33 @@ class Patient:
         status: InsuranceStatus = InsuranceStatus.ACTIVE
     ) -> Insurance:
         """Set insurance information."""
-        insurance = Insurance(
-            provider=provider,
-            policy_number=policy_number,
-            group_number=group_number,
-            status=status
-        )
+        insurance = Insurance()
+        provider=provider,
+        policy_number=policy_number,
+        group_number=group_number,
+        status=status
+        
         self.insurance = insurance
-        return insurance
+#         return insurance
 
-    def update_status(self, status: PatientStatus) -> None:
+        def update_status(self, status: PatientStatus) -> None:
         """Update patient status."""
         self.status = status
 
-    def to_dict(self) -> dict[str, Any]:
+        def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
-            "patient_id": self.patient_id,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "date_of_birth": self.date_of_birth.isoformat(),
-            "gender": self.gender,
-            "email": self.email,
-            "phone": self.phone,
-            "address": self.address,
-            "status": self.status,
-            "emergency_contacts": [c.to_dict() for c in self.emergency_contacts],
-            "insurance": self.insurance.to_dict() if self.insurance else None
+        "patient_id": self.patient_id,
+        "first_name": self.first_name,
+        "last_name": self.last_name,
+        "date_of_birth": self.date_of_birth.isoformat(),
+        "gender": self.gender,
+        "email": self.email,
+        "phone": self.phone,
+        "address": self.address,
+        "status": self.status,
+        "emergency_contacts": [c.to_dict() for c in self.emergency_contacts],
+        "insurance": self.insurance.to_dict() if self.insurance else None
         }
 
 
@@ -211,15 +211,15 @@ class TestPatient(unittest.TestCase):
 
     def test_create_patient(self):
         """Test creating a patient."""
-        patient = Patient(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1980, 1, 15),
-            gender=Gender.MALE,
-            email="john.doe@example.com",
-            phone="555-123-4567",
-            address="123 Main St, Anytown, USA"
-        )
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE,
+        email="john.doe@example.com",
+        phone="555-123-4567",
+        address="123 Main St, Anytown, USA"
+        
         
         self.assertEqual(patient.first_name, "John")
         self.assertEqual(patient.last_name, "Doe")
@@ -232,55 +232,55 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(len(patient.emergency_contacts), 0)
         self.assertIsNone(patient.insurance)
 
-    def test_create_patient_with_invalid_data(self):
+        def test_create_patient_with_invalid_data(self):
         """Test creating a patient with invalid data."""
         with self.assertRaises(ValueError):
-            Patient(
-                first_name="",
-                last_name="Doe",
-                date_of_birth=date(1980, 1, 15),
-                gender=Gender.MALE
-            )
-        
-        with self.assertRaises(ValueError):
-            Patient(
-                first_name="John",
-                last_name="",
-                date_of_birth=date(1980, 1, 15),
-                gender=Gender.MALE
-            )
-        
-        with self.assertRaises(ValueError):
-            Patient(
-                first_name="John",
-                last_name="Doe",
-                date_of_birth=None,
-                gender=Gender.MALE
-            )
-        
-        with self.assertRaises(ValueError):
-            Patient(
-                first_name="John",
-                last_name="Doe",
-                date_of_birth=date(1980, 1, 15),
-                gender=None
-            )
-
-    def test_add_emergency_contact(self):
-        """Test adding an emergency contact."""
-        patient = Patient(
-            first_name="John",
+            Patient()
+            first_name="",
             last_name="Doe",
             date_of_birth=date(1980, 1, 15),
             gender=Gender.MALE
-        )
+            
         
-        contact = patient.add_emergency_contact(
-            name="Jane Doe",
-            relationship="Spouse",
-            phone="555-123-4567",
-            email="jane.doe@example.com"
-        )
+        with self.assertRaises(ValueError):
+            Patient()
+            first_name="John",
+            last_name="",
+            date_of_birth=date(1980, 1, 15),
+            gender=Gender.MALE
+            
+        
+        with self.assertRaises(ValueError):
+            Patient()
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=None,
+            gender=Gender.MALE
+            
+        
+        with self.assertRaises(ValueError):
+            Patient()
+            first_name="John",
+            last_name="Doe",
+            date_of_birth=date(1980, 1, 15),
+            gender=None
+            
+
+            def test_add_emergency_contact(self):
+        """Test adding an emergency contact."""
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE
+        
+        
+        contact = patient.add_emergency_contact()
+        name="Jane Doe",
+        relationship="Spouse",
+        phone="555-123-4567",
+        email="jane.doe@example.com"
+        
         
         self.assertEqual(len(patient.emergency_contacts), 1)
         self.assertEqual(patient.emergency_contacts[0], contact)
@@ -289,56 +289,56 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(contact.phone, "555-123-4567")
         self.assertEqual(contact.email, "jane.doe@example.com")
 
-    def test_add_emergency_contact_with_invalid_data(self):
+        def test_add_emergency_contact_with_invalid_data(self):
         """Test adding an emergency contact with invalid data."""
-        patient = Patient(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1980, 1, 15),
-            gender=Gender.MALE
-        )
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE
+        
         
         with self.assertRaises(ValueError):
-            patient.add_emergency_contact(
-                name="",
-                relationship="Spouse",
-                phone="555-123-4567"
-            )
-        
-        with self.assertRaises(ValueError):
-            patient.add_emergency_contact(
-                name="Jane Doe",
-                relationship="",
-                phone="555-123-4567"
-            )
-        
-        with self.assertRaises(ValueError):
-            patient.add_emergency_contact(
-                name="Jane Doe",
-                relationship="Spouse",
-                phone=""
-            )
-
-    def test_remove_emergency_contact(self):
-        """Test removing an emergency contact."""
-        patient = Patient(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1980, 1, 15),
-            gender=Gender.MALE
-        )
-        
-        contact1 = patient.add_emergency_contact(
-            name="Jane Doe",
+            patient.add_emergency_contact()
+            name="",
             relationship="Spouse",
             phone="555-123-4567"
-        )
+            
         
-        contact2 = patient.add_emergency_contact(
-            name="Bob Doe",
-            relationship="Brother",
-            phone="555-987-6543"
-        )
+        with self.assertRaises(ValueError):
+            patient.add_emergency_contact()
+            name="Jane Doe",
+            relationship="",
+            phone="555-123-4567"
+            
+        
+        with self.assertRaises(ValueError):
+            patient.add_emergency_contact()
+            name="Jane Doe",
+            relationship="Spouse",
+            phone=""
+            
+
+            def test_remove_emergency_contact(self):
+        """Test removing an emergency contact."""
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE
+        
+        
+        contact1 = patient.add_emergency_contact()
+        name="Jane Doe",
+        relationship="Spouse",
+        phone="555-123-4567"
+        
+        
+        contact2 = patient.add_emergency_contact()
+        name="Bob Doe",
+        relationship="Brother",
+        phone="555-987-6543"
+        
         
         self.assertEqual(len(patient.emergency_contacts), 2)
         removed = patient.remove_emergency_contact(0)
@@ -346,39 +346,39 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(removed, contact1)
         self.assertEqual(patient.emergency_contacts[0], contact2)
 
-    def test_remove_emergency_contact_invalid_index(self):
+        def test_remove_emergency_contact_invalid_index(self):
         """Test removing an emergency contact with an invalid index."""
-        patient = Patient(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1980, 1, 15),
-            gender=Gender.MALE
-        )
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE
         
-        patient.add_emergency_contact(
-            name="Jane Doe",
-            relationship="Spouse",
-            phone="555-123-4567"
-        )
+        
+        patient.add_emergency_contact()
+        name="Jane Doe",
+        relationship="Spouse",
+        phone="555-123-4567"
+        
         
         with self.assertRaises(IndexError):
             patient.remove_emergency_contact(1)
 
-    def test_set_insurance(self):
+            def test_set_insurance(self):
         """Test setting insurance information."""
-        patient = Patient(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1980, 1, 15),
-            gender=Gender.MALE
-        )
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE
         
-        insurance = patient.set_insurance(
-            provider="Blue Cross",
-            policy_number="BC123456789",
-            group_number="G987654321",
-            status=InsuranceStatus.ACTIVE
-        )
+        
+        insurance = patient.set_insurance()
+        provider="Blue Cross",
+        policy_number="BC123456789",
+        group_number="G987654321",
+        status=InsuranceStatus.ACTIVE
+        
         
         self.assertEqual(patient.insurance, insurance)
         self.assertEqual(insurance.provider, "Blue Cross")
@@ -386,35 +386,35 @@ class TestPatient(unittest.TestCase):
         self.assertEqual(insurance.group_number, "G987654321")
         self.assertEqual(insurance.status, InsuranceStatus.ACTIVE)
 
-    def test_set_insurance_with_invalid_data(self):
+        def test_set_insurance_with_invalid_data(self):
         """Test setting insurance information with invalid data."""
-        patient = Patient(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1980, 1, 15),
-            gender=Gender.MALE
-        )
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE
+        
         
         with self.assertRaises(ValueError):
-            patient.set_insurance(
-                provider="",
-                policy_number="BC123456789"
-            )
+            patient.set_insurance()
+            provider="",
+            policy_number="BC123456789"
+            
         
         with self.assertRaises(ValueError):
-            patient.set_insurance(
-                provider="Blue Cross",
-                policy_number=""
-            )
+            patient.set_insurance()
+            provider="Blue Cross",
+            policy_number=""
+            
 
-    def test_update_status(self):
+            def test_update_status(self):
         """Test updating patient status."""
-        patient = Patient(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1980, 1, 15),
-            gender=Gender.MALE
-        )
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE
+        
         
         self.assertEqual(patient.status, PatientStatus.ACTIVE)
         
@@ -424,30 +424,30 @@ class TestPatient(unittest.TestCase):
         patient.update_status(PatientStatus.INACTIVE)
         self.assertEqual(patient.status, PatientStatus.INACTIVE)
 
-    def test_to_dict(self):
+        def test_to_dict(self):
         """Test converting patient to dictionary."""
-        patient = Patient(
-            first_name="John",
-            last_name="Doe",
-            date_of_birth=date(1980, 1, 15),
-            gender=Gender.MALE,
-            email="john.doe@example.com",
-            phone="555-123-4567",
-            address="123 Main St, Anytown, USA"
-        )
+        patient = Patient()
+        first_name="John",
+        last_name="Doe",
+        date_of_birth=date(1980, 1, 15),
+        gender=Gender.MALE,
+        email="john.doe@example.com",
+        phone="555-123-4567",
+        address="123 Main St, Anytown, USA"
         
-        patient.add_emergency_contact(
-            name="Jane Doe",
-            relationship="Spouse",
-            phone="555-123-4567",
-            email="jane.doe@example.com"
-        )
         
-        patient.set_insurance(
-            provider="Blue Cross",
-            policy_number="BC123456789",
-            group_number="G987654321"
-        )
+        patient.add_emergency_contact()
+        name="Jane Doe",
+        relationship="Spouse",
+        phone="555-123-4567",
+        email="jane.doe@example.com"
+        
+        
+        patient.set_insurance()
+        provider="Blue Cross",
+        policy_number="BC123456789",
+        group_number="G987654321"
+        
         
         data = patient.to_dict()
         
@@ -465,5 +465,5 @@ class TestPatient(unittest.TestCase):
 
 
 # Run the tests if this file is executed directly
-if __name__ == "__main__":
-    unittest.main()
+            if __name__ == "__main__":
+unittest.main()

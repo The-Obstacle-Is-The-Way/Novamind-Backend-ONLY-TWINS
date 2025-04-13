@@ -10,12 +10,12 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi import HTTPException, status
 from typing import Dict, Any
 
-from app.api.dependencies.auth import (
+from app.api.dependencies.auth import ()
 get_current_token_payload,
 get_current_user,
 get_current_active_clinician,
 get_current_active_admin
-)
+
 
 
 @pytest.mark.db_required()
@@ -24,7 +24,7 @@ class TestAuthDependencies:
 
     @pytest.mark.asyncio()
     async def test_get_current_token_payload(self, test_token):
-                 """Test extracting payload from token."""
+        """Test extracting payload from token."""
         with patch("app.api.dependencies.auth.validate_jwt") as mock_validate:
             # Setup mock
             mock_validate.return_value = {
@@ -40,10 +40,10 @@ class TestAuthDependencies:
 
             @pytest.mark.asyncio()
             async def test_get_current_token_payload_invalid(self):
-                 """Test behavior with invalid token."""
+                """Test behavior with invalid token."""
                 with patch("app.api.dependencies.auth.validate_jwt") as mock_validate:
                 # Setup mock to raise an exception
-                mock_validate.side_effect = HTTPException(,
+                mock_validate.side_effect = HTTPException(,)
                 status_code= status.HTTP_401_UNAUTHORIZED,
                 detail = "Could not validate credentials"
                 ()
@@ -57,7 +57,7 @@ class TestAuthDependencies:
 
                 @pytest.mark.asyncio()
                 async def test_get_current_user(self, test_token, db_session):
-                 """Test get_current_user dependency."""
+                """Test get_current_user dependency."""
                 # Mock the token payload and repository
                 mock_payload = {"sub": "test-user-123"}
                 mock_user = {"id": "test-user-123", "is_active": True}
@@ -78,13 +78,13 @@ class TestAuthDependencies:
                 mock_repository.get_by_id.assert_called_once_with("test-user-123")
 
                 @pytest.mark.asyncio()
-                async def test_get_current_user_not_found(
+                async def test_get_current_user_not_found()
                 self, test_token, db_session):
                     """Test get_current_user when user is not found."""
                     # Mock the token payload and repository
                     mock_payload = {"sub": "test-user-123"}
 
-                    # Mock the repository to return None (user not found,
+                    # Mock the repository to return None (user not found,)
                     mock_repository= AsyncMock()
                     mock_repository.get_by_id.return_value = None
 
@@ -99,7 +99,7 @@ class TestAuthDependencies:
                 assert "User not found" in exc_info.value.detail
 
                 @pytest.mark.asyncio()
-                async def test_get_current_active_clinician(
+                async def test_get_current_active_clinician()
                 self, test_token, db_session):
                     """Test get_current_active_clinician dependency."""
                     # Mock the user with clinician role
@@ -120,7 +120,7 @@ class TestAuthDependencies:
         mock_get_user.assert_called_once()
 
         @pytest.mark.asyncio()
-        async def test_get_current_active_clinician_not_clinician(
+        async def test_get_current_active_clinician_not_clinician()
                 self, test_token, db_session):
                     """Test get_current_active_clinician when user is not a clinician."""
                     # Mock the user without clinician role
@@ -142,7 +142,7 @@ class TestAuthDependencies:
 
             @pytest.mark.asyncio()
             async def test_get_current_active_admin(self, test_token, db_session):
-                 """Test get_current_active_admin dependency."""
+                """Test get_current_active_admin dependency."""
                 # Mock the user with admin role
                 mock_user = {
                 "id": "test-user-123",
@@ -161,7 +161,7 @@ class TestAuthDependencies:
         mock_get_user.assert_called_once()
 
         @pytest.mark.asyncio()
-        async def test_get_current_active_admin_not_admin(
+        async def test_get_current_active_admin_not_admin()
                 self, test_token, db_session):
                     """Test get_current_active_admin when user is not an admin."""
                     # Mock the user without admin role

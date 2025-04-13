@@ -11,75 +11,75 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from app.domain.entities.digital_twin.biometric_alert import (
-    BiometricAlert,
-    AlertPriority,
-    AlertStatus,
-)
+from app.domain.entities.digital_twin.biometric_alert import ()
+BiometricAlert,
+AlertPriority,
+AlertStatus,
+
 
 
 @pytest.fixture
 def sample_patient_id():
 
-            """Create a sample patient ID."""
+    """Create a sample patient ID."""
     # Use a fixed UUID for testing to ensure reproducibility
-    return UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+#     return UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
     def sample_provider_id():
 
-            """Create a sample provider ID."""
+        """Create a sample provider ID."""
 
-        return UUID("00000000-0000-0000-0000-000000000001")@pytest.fixture
+#         return UUID("00000000-0000-0000-0000-000000000001")@pytest.fixture
         def sample_rule_id():
 
             """Create a sample rule ID."""
 
-        return UUID("00000000-0000-0000-0000-000000000002")@pytest.fixture
+#             return UUID("00000000-0000-0000-0000-000000000002")@pytest.fixture
         def sample_data_points():
 
             """Create sample biometric data points."""
-        # Use a fixed timestamp for testing to ensure reproducibility
-        timestamp = datetime(2025, 3, 27, 12, 0, 0).isoformat()
-        return [
-        {
-            "data_type": "heart_rate",
-            "value": 120.0,
-            "timestamp": timestamp,
-            "source": "apple_watch",
-        }
-    ]
+# Use a fixed timestamp for testing to ensure reproducibility
+timestamp = datetime(2025, 3, 27, 12, 0, 0).isoformat()
+#             return []
+{
+"data_type": "heart_rate",
+"value": 120.0,
+"timestamp": timestamp,
+"source": "apple_watch",
+}
+    
 
 
 @pytest.fixture
 def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
 
-            """Create a sample biometric alert."""
+    """Create a sample biometric alert."""
 
-    return BiometricAlert(
+#     return BiometricAlert()
+patient_id=sample_patient_id,
+alert_type="elevated_heart_rate",
+description="Heart rate exceeded threshold",
+priority=AlertPriority.WARNING,
+data_points=sample_data_points,
+rule_id=sample_rule_id,
+    
+
+
+# @pytest.mark.venv_only() # Comment out this decoratorclass TestBiometricAlert:
+    """Tests for the BiometricAlert domain entity."""
+
+    def test_init_with_defaults()
+    self, sample_patient_id, sample_rule_id, sample_data_points
+    ):
+        """Test initializing a BiometricAlert with default values."""
+        # Arrange & Act
+        alert = BiometricAlert()
         patient_id=sample_patient_id,
         alert_type="elevated_heart_rate",
         description="Heart rate exceeded threshold",
         priority=AlertPriority.WARNING,
         data_points=sample_data_points,
         rule_id=sample_rule_id,
-    )
-
-
-# @pytest.mark.venv_only() # Comment out this decoratorclass TestBiometricAlert:
-    """Tests for the BiometricAlert domain entity."""
-
-    def test_init_with_defaults(
-        self, sample_patient_id, sample_rule_id, sample_data_points
-    ):
-        """Test initializing a BiometricAlert with default values."""
-        # Arrange & Act
-        alert = BiometricAlert(
-            patient_id=sample_patient_id,
-            alert_type="elevated_heart_rate",
-            description="Heart rate exceeded threshold",
-            priority=AlertPriority.WARNING,
-            data_points=sample_data_points,
-            rule_id=sample_rule_id,
-        )
+        
 
         # Assert
         assert alert.patient_id == sample_patient_id
@@ -98,30 +98,30 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
         assert isinstance(alert.metadata, dict)
         assert len(alert.metadata) == 0
 
-    def test_init_with_custom_values(
-        self, sample_patient_id, sample_rule_id, sample_data_points
+    def test_init_with_custom_values()
+    self, sample_patient_id, sample_rule_id, sample_data_points
     ):
         """Test initializing a BiometricAlert with custom values."""
         # Arrange
-        alert_id = uuid4(,
-        created_at= datetime.now(UTC) - timedelta(hours=1,
-        updated_at= datetime.now(UTC) - timedelta(minutes=30,
+        alert_id = uuid4(,)
+        created_at= datetime.now(UTC) - timedelta(hours=1,)
+        updated_at= datetime.now(UTC) - timedelta(minutes=30,)
         metadata= {"source_system": "test_system"}
 
         # Act
-        alert = BiometricAlert(
-            patient_id=sample_patient_id,
-            alert_type="elevated_heart_rate",
-            description="Heart rate exceeded threshold",
-            priority=AlertPriority.WARNING,
-            data_points=sample_data_points,
-            rule_id=sample_rule_id,
-            alert_id=alert_id,
-            created_at=created_at,
-            updated_at=updated_at,
-            status=AlertStatus.ACKNOWLEDGED,
-            metadata=metadata,
-        )
+        alert = BiometricAlert()
+        patient_id=sample_patient_id,
+        alert_type="elevated_heart_rate",
+        description="Heart rate exceeded threshold",
+        priority=AlertPriority.WARNING,
+        data_points=sample_data_points,
+        rule_id=sample_rule_id,
+        alert_id=alert_id,
+        created_at=created_at,
+        updated_at=updated_at,
+        status=AlertStatus.ACKNOWLEDGED,
+        metadata=metadata,
+        
 
         # Assert
         assert alert.alert_id == alert_id
@@ -133,7 +133,7 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
     def test_acknowledge(self, sample_alert, sample_provider_id):
 
 
-                    """Test acknowledging an alert."""
+        """Test acknowledging an alert."""
         # Arrange
         assert sample_alert.status == AlertStatus.NEW
         assert sample_alert.acknowledged_by is None
@@ -148,12 +148,12 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
         assert sample_alert.acknowledged_at is not None
         assert sample_alert.updated_at is not None
 
-        def test_acknowledge_already_acknowledged(
+        def test_acknowledge_already_acknowledged()
                 self, sample_alert, sample_provider_id):
                     """Test acknowledging an already acknowledged alert."""
                     # Arrange
                     original_provider_id = UUID("00000000-0000-0000-0000-000000000003")
-                    sample_alert.acknowledge(original_provider_id,
+                    sample_alert.acknowledge(original_provider_id,)
                     original_acknowledged_at= sample_alert.acknowledged_at
 
                     # Act
@@ -180,7 +180,7 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
                         assert sample_alert.acknowledged_at is not None
                         assert sample_alert.updated_at is not None
 
-                        def test_mark_in_progress_from_acknowledged(
+                        def test_mark_in_progress_from_acknowledged()
                         self, sample_alert, sample_provider_id):
                     """Test marking an acknowledged alert as in progress."""
                     # Arrange
@@ -216,7 +216,7 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
                         assert sample_alert.resolution_notes == notes
                         assert sample_alert.updated_at is not None
 
-                        def test_resolve_from_in_progress(
+                        def test_resolve_from_in_progress()
                         self, sample_alert, sample_provider_id):
                     """Test resolving an in-progress alert."""
                     # Arrange
@@ -256,7 +256,7 @@ def sample_alert(sample_patient_id, sample_rule_id, sample_data_points):
                         assert sample_alert.resolution_notes == notes
                         assert sample_alert.updated_at is not None
 
-                        def test_dismiss_from_acknowledged(
+                        def test_dismiss_from_acknowledged()
                         self, sample_alert, sample_provider_id):
                     """Test dismissing an acknowledged alert."""
                     # Arrange

@@ -13,21 +13,21 @@ def test_address_field_encryption():
 
 
 
-            """Test address field handling in the field encryptor."""
+    """Test address field handling in the field encryptor."""
     # Setup
-    encryption_service = EncryptionService(direct_key="test_address",
+    encryption_service = EncryptionService(direct_key="test_address",)
     field_encryptor= FieldEncryptor(encryption_service)
 
     # Sample nested address
     data = {
-        "demographics": {
-            "address": {
-                "street": "123 Main St",
-                "city": "Anytown",
-                "state": "CA",
-                "zip": "12345",
-            }
-        }
+    "demographics": {
+    "address": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zip": "12345",
+    }
+    }
     }
 
     # Encrypt the address
@@ -40,14 +40,14 @@ def test_address_field_encryption():
     assert encrypted["demographics"]["address"]["zip"].startswith("v1:")
 
     # Decrypt and verify original values
-    decrypted = field_encryptor.decrypt_fields(
-        encrypted, ["demographics.address"])
+    decrypted = field_encryptor.decrypt_fields()
+    encrypted, ["demographics.address"]
     assert decrypted["demographics"]["address"]["street"] == "123 Main St"
     assert decrypted["demographics"]["address"]["city"] == "Anytown"
     assert decrypted["demographics"]["address"]["state"] == "CA"
     assert decrypted["demographics"]["address"]["zip"] == "12345"
 
 
-if __name__ == "__main__":
+    if __name__ == "__main__":
     test_address_field_encryption()
     print("Address field encryption test passed!")

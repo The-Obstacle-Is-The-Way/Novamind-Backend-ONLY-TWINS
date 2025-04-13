@@ -6,13 +6,13 @@ from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.infrastructure.persistence.sqlalchemy.database import (
-    Base,
-    Database,
-    EnhancedDatabase,
-    get_database,
-    get_db_session,
-)
+from app.infrastructure.persistence.sqlalchemy.database import ()
+Base,
+Database,
+EnhancedDatabase,
+get_database,
+get_db_session,
+
 
 
 # Define a test model for database operationsclass TestModel(Base):
@@ -20,13 +20,13 @@ from app.infrastructure.persistence.sqlalchemy.database import (
 
     __tablename__ = "test_models"
 
-    id = Column(Integer, primary_key=True, index=True,
-    name= Column(String(100), nullable=False,
+    id = Column(Integer, primary_key=True, index=True,)
+    name= Column(String(100), nullable=False,)
     value= Column(String(100), nullable=True)@pytest.fixture
     def mock_settings():
 
-            """Mock application settings."""
-        with patch(
+        """Mock application settings."""
+        with patch()
         "app.infrastructure.persistence.sqlalchemy.database.get_settings"
     ) as mock:
         settings = MagicMock()
@@ -48,107 +48,107 @@ from app.infrastructure.persistence.sqlalchemy.database import (
             def enhanced_db():
 
             """Create an enhanced in-memory SQLite database."""
-        db = EnhancedDatabase(
+        db = EnhancedDatabase()
         db_url="sqlite:///:memory:", enable_encryption=True, enable_audit=True
-    )
+    
     Base.metadata.create_all(db.engine)
     yield db
     Base.metadata.drop_all(db.engine)
 class TestDatabase:
-        """Tests for the base Database class."""
+    """Tests for the base Database class."""
 
-        def test_init(self, mock_settings):
+    def test_init(self, mock_settings):
 
 
-                    """Test database initialization."""
-            db = Database()
+        """Test database initialization."""
+        db = Database()
 
-            assert db.db_url == mock_settings.DATABASE_URL
-            assert db.echo == False
-            assert db.pool_size == 5
-            assert db.engine is not None
-            assert db.SessionLocal is not None
+        assert db.db_url == mock_settings.DATABASE_URL
+        assert db.echo == False
+        assert db.pool_size == 5
+        assert db.engine is not None
+        assert db.SessionLocal is not None
 
             def test_get_session(self, in_memory_db):
 
 
-                        """Test getting a database session."""
-            session = in_memory_db.get_session()
+                """Test getting a database session."""
+        session = in_memory_db.get_session()
 
-            assert isinstance(session, Session)
-            session.close()
+        assert isinstance(session, Session)
+        session.close()
 
-            def test_create_tables(self, in_memory_db):
+                def test_create_tables(self, in_memory_db):
 
 
-                        """Test creating database tables."""
-                # Tables are already created in the fixture
-                # This would normally fail if create_tables didn't work
+                    """Test creating database tables."""
+        # Tables are already created in the fixture
+        # This would normally fail if create_tables didn't work
 
-                # Insert a test record to verify table exists
+        # Insert a test record to verify table exists
                 with in_memory_db.session_scope() as session:
-                test_model = TestModel(name="test", value="value")
-                session.add(test_model)
+        test_model = TestModel(name="test", value="value")
+        session.add(test_model)
 
-                # Query to verify the record was inserted
+        # Query to verify the record was inserted
                 with in_memory_db.session_scope() as session:
-                result = session.query(TestModel).filter_by(name="test").first()
-                assert result is not None
-                assert result.name == "test"
-                assert result.value == "value"
+        result = session.query(TestModel).filter_by(name="test").first()
+        assert result is not None
+        assert result.name == "test"
+        assert result.value == "value"
 
-                def test_drop_tables(self, in_memory_db):
+                    def test_drop_tables(self, in_memory_db):
 
 
-                            """Test dropping database tables."""
-                    # Insert a test record
+                        """Test dropping database tables."""
+        # Insert a test record
                     with in_memory_db.session_scope() as session:
-                    test_model = TestModel(name="test", value="value")
-                    session.add(test_model)
+        test_model = TestModel(name="test", value="value")
+        session.add(test_model)
 
-                    # Drop tables
-                    in_memory_db.drop_tables()
+        # Drop tables
+        in_memory_db.drop_tables()
 
-                    # Re-create tables to verify they were dropped
-                    in_memory_db.create_tables()
+        # Re-create tables to verify they were dropped
+        in_memory_db.create_tables()
 
-                    # Query to verify no records exist
+        # Query to verify no records exist
                     with in_memory_db.session_scope() as session:
-                result = session.query(TestModel).filter_by(name="test").first()
-                assert result is None
+        result = session.query(TestModel).filter_by(name="test").first()
+        assert result is None
 
-                def test_session_scope(self, in_memory_db):
+                        def test_session_scope(self, in_memory_db):
 
 
                             """Test session scope context manager."""
-                    # Use context manager to add a record
+        # Use context manager to add a record
                     with in_memory_db.session_scope() as session:
-                    test_model = TestModel(name="test_scope", value="context_manager")
-                    session.add(test_model)
+        test_model = TestModel(name="test_scope", value="context_manager")
+        session.add(test_model)
 
-                    # Verify record was committed
+        # Verify record was committed
                     with in_memory_db.session_scope() as session:
-                result = session.query(TestModel).filter_by(
-                name="test_scope").first()
-                assert result is not None
-                assert result.value == "context_manager"
+        result = session.query(TestModel).filter_by()
+        name="test_scope").first(
+        assert result is not None
+        assert result.value == "context_manager"
 
-                def test_session_scope_rollback(self, in_memory_db):
+                        def test_session_scope_rollback(self, in_memory_db):
 
 
                             """Test session scope rollback on exception."""
                     try:
                     with in_memory_db.session_scope() as session:
-                test_model = TestModel(name="should_rollback", value="value")
-                session.add(test_model)
-                raise ValueError("Test exception")
+        test_model = TestModel(name="should_rollback", value="value")
+        session.add(test_model)
+        raise ValueError("Test exception")
                 except ValueError:
                     pass
 
                     # Verify record was not committed
                     with in_memory_db.session_scope() as session:
-                        result = session.query(TestModel).filter_by(
-                        name="should_rollback").first()
+                        result = session.query(TestModel).filter_by()
+                        name="should_rollback").first(
                         assert result is None
 
                         @patch("app.infrastructure.persistence.sqlalchemy.database.logger")
@@ -161,19 +161,19 @@ class TestDatabase:
                     session.add(test_model)
 
                     # Execute raw query
-                    results = in_memory_db.execute_query(
+                    results = in_memory_db.execute_query()
                     "SELECT * FROM test_models WHERE name = :name", {"name": "query_test"}
-            )
+            
 
-        assert len(results) == 1
-        assert results[0]["name"] == "query_test"
-        assert results[0]["value"] == "raw_sql"class TestEnhancedDatabase:
-            """Tests for the EnhancedDatabase class."""
+                    assert len(results) == 1
+                    assert results[0]["name"] == "query_test"
+                            assert results[0]["value"] == "raw_sql"class TestEnhancedDatabase:
+        """Tests for the EnhancedDatabase class."""
 
             def test_init(self, mock_settings):
 
 
-                    """Test enhanced database initialization."""
+                """Test enhanced database initialization."""
                 db = EnhancedDatabase()
 
                 assert db.db_url == mock_settings.DATABASE_URL
@@ -186,34 +186,34 @@ class TestDatabase:
                 @patch("app.infrastructure.persistence.sqlalchemy.database.logger")
                 def test_session_scope_with_audit(self, mock_logger, enhanced_db):
 
-                        """Test session scope with audit logging."""
+                    """Test session scope with audit logging."""
             with enhanced_db.session_scope() as session:
                 test_model = TestModel(name="audit_test", value="logged")
                 session.add(test_model)
 
                 # Verify audit logging calls
                 assert mock_logger.info.call_count >= 2
-                log_calls = [call[0][0]
-                         for call in mock_logger.info.call_args_list]
+                log_calls = [call[0][0]]
+                for call in mock_logger.info.call_args_list
                 assert any("Starting transaction" in log for log in log_calls)
                 assert any("Committing transaction" in log for log in log_calls)
                 assert any("Closed transaction" in log for log in log_calls)
 
                 @patch("app.infrastructure.persistence.sqlalchemy.database.logger")
-                def test_session_scope_rollback_with_audit(
+                def test_session_scope_rollback_with_audit()
                     self, mock_logger, enhanced_db):
                         """Test session scope rollback with audit logging."""
                         try:
                             with enhanced_db.session_scope() as session:
-                test_model = TestModel(
-                    name="audit_rollback", value="should_log")
+                test_model = TestModel()
+                name="audit_rollback", value="should_log"
                 session.add(test_model)
                 raise ValueError("Test exception")
                 except ValueError:
                     pass
 
                     # Verify error logging
-                    mock_logger.error.assert_called(,
+                    mock_logger.error.assert_called(,)
                     error_msg= mock_logger.error.call_args[0][0]
                     assert "Rolling back" in error_msg
                     assert "error" in error_msg.lower()
@@ -221,17 +221,17 @@ class TestDatabase:
                     def test_get_protected_engine(self, enhanced_db):
 
 
-                            """Test getting a protected database engine."""
+                        """Test getting a protected database engine."""
                         protected_engine = enhanced_db.get_protected_engine()
 
                         # In our implementation, this currently returns the same engine
-                        assert protected_engine is enhanced_db.engineclass TestDatabaseFactory:
+                            assert protected_engine is enhanced_db.engineclass TestDatabaseFactory:
                     """Tests for the database factory functions."""
 
-                    @patch(
+                    @patch()
                     "app.infrastructure.persistence.sqlalchemy.database._database_instance", None
-    )
-    def test_get_database(self, mock_settings):
+    
+                            def test_get_database(self, mock_settings):
 
                     """Test get_database function."""
         db = get_database()
@@ -246,9 +246,9 @@ class TestDatabase:
         def test_get_db_session(self, mock_settings):
 
 
-                        """Test get_db_session dependency injection function."""
+            """Test get_db_session dependency injection function."""
             # Reset global instance
-            from app.infrastructure.persistence.sqlalchemy.database import (
+            from app.infrastructure.persistence.sqlalchemy.database import ()
             _database_instance,
             ,
 

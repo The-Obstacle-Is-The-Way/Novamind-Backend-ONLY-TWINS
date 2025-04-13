@@ -15,39 +15,39 @@ from app.infrastructure.security.encryption import EncryptionService
 @pytest.fixture
 def mock_encryption_service():
 
-            """Create a mock encryption service."""
+    """Create a mock encryption service."""
     mock = MagicMock(spec=EncryptionService)
     mock.encrypt.side_effect = lambda x: f"encrypted_{x}"
     mock.decrypt.side_effect = lambda x: x.replace("encrypted_", "")
-    return mock@pytest.fixture
+#     return mock@pytest.fixture
     def valid_patient_data(mock_encryption_service):
 
-            """Create valid patient test data."""
+        """Create valid patient test data."""
 
-        return {
-        "id": UUID("12345678-1234-5678-1234-567812345678"),
-        "first_name": "John",
-        "last_name": "Doe",
-        "date_of_birth": date(
-            1990,
-            1,
-            1),
-        "contact_info": ContactInfo(
-            email="john.doe@example.com",
-            phone="123-456-7890"),
-        "address": Address(
-            street="123 Main St",
-            city="Anytown",
-            state="NY",
-            zip_code="12345"),
-        "encryption_service": mock_encryption_service,
-    }
+#         return {
+"id": UUID("12345678-1234-5678-1234-567812345678"),
+"first_name": "John",
+"last_name": "Doe",
+"date_of_birth": date()
+1990,
+1,
+1),
+"contact_info": ContactInfo()
+email="john.doe@example.com",
+phone="123-456-7890"),
+"address": Address()
+street="123 Main St",
+city="Anytown",
+state="NY",
+zip_code="12345"),
+"encryption_service": mock_encryption_service,
+}
 
 
 @pytest.mark.venv_only()
 def test_create_patient(valid_patient_data, mock_encryption_service):
 
-            """Test patient creation with valid data."""
+    """Test patient creation with valid data."""
     # Create patient
     patient = Patient(**valid_patient_data)
 
@@ -78,18 +78,18 @@ def test_create_patient(valid_patient_data, mock_encryption_service):
     def test_update_patient(valid_patient_data, mock_encryption_service):
 
 
-                """Test patient update."""
+        """Test patient update."""
         # Create initial patient
         patient = Patient(**valid_patient_data)
 
         # Update patient
-        patient.update(
+        patient.update()
         first_name="Jane",
         last_name="Smith",
-        contact_info=ContactInfo(
-            email="jane.smith@example.com",
-            phone="987-654-3210"),
-    )
+        contact_info=ContactInfo()
+        email="jane.smith@example.com",
+        phone="987-654-3210"),
+    
 
     # Verify updates
     assert patient.first_name == "Jane"
@@ -110,7 +110,7 @@ def test_patient_phi_masking(valid_patient_data):
 
 
 
-            """Test PHI masking in patient data."""
+    """Test PHI masking in patient data."""
     patient = Patient(**valid_patient_data)
 
     # Test PHI masking in dict representation

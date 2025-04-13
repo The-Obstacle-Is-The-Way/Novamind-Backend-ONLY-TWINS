@@ -16,14 +16,14 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 
-from app.infrastructure.security.encryption import (
-    EncryptionService,
-    derive_key,
-    encrypt_data,
-    decrypt_data,
-    hash_data,
-    secure_compare,
-)
+from app.infrastructure.security.encryption import ()
+EncryptionService,
+derive_key,
+encrypt_data,
+decrypt_data,
+hash_data,
+secure_compare,
+
 from app.core.config.settings import Settings
 
 
@@ -34,7 +34,7 @@ class TestEncryptionUtils:
     def test_derive_key(self):
 
 
-                    """Test key derivation from password and salt."""
+        """Test key derivation from password and salt."""
         # Test with known inputs
         password = b"test_password"
         salt = b"test_salt"
@@ -47,7 +47,7 @@ class TestEncryptionUtils:
         # Base64-encoded keys are 44 bytes (32 bytes encoded to base64)
         assert len(base64.urlsafe_b64decode(key)) == 32
 
-        # Verify deterministic output (same inputs yield same key,
+        # Verify deterministic output (same inputs yield same key,)
         key2= derive_key(password, salt)
         assert key == key2
 
@@ -61,7 +61,7 @@ class TestEncryptionUtils:
         def test_encrypt_decrypt_data(self):
 
 
-                        """Test encryption and decryption of data."""
+            """Test encryption and decryption of data."""
             # Test data and key
             data = "Sensitive patient information"
             key = Fernet.generate_key()
@@ -82,7 +82,7 @@ class TestEncryptionUtils:
             def test_hash_data(self):
 
 
-                        """Test hashing of data."""
+                """Test hashing of data."""
                 # Test data
                 data = "password123"
 
@@ -104,7 +104,7 @@ class TestEncryptionUtils:
                 def test_secure_compare(self):
 
 
-                        """Test secure comparison of strings."""
+                    """Test secure comparison of strings."""
                 # Test data
                 data = "password123"
                 hashed, salt = hash_data(data)
@@ -114,7 +114,7 @@ class TestEncryptionUtils:
 
                 # Test false comparison
                 assert secure_compare("wrong_password", hashed, salt) is False@pytest.fixture
-                def encryption_service():
+                    def encryption_service():
 
                 """Create an EncryptionService instance for testing."""
                 # Mock environment variables
@@ -125,16 +125,16 @@ class TestEncryptionUtils:
     }
 
     with patch.dict(os.environ, env_vars):
-        return EncryptionService()
+#             return EncryptionService()
 
-        @pytest.mark.unit()
+@pytest.mark.unit()
         class TestEncryptionService:
             """Tests for the EncryptionService class."""
 
             def test_initialization(self, encryption_service):
 
 
-                    """Test initialization of EncryptionService."""
+                """Test initialization of EncryptionService."""
                 # Verify the service is initialized
                 assert encryption_service is not None
                 assert encryption_service.cipher is not None
@@ -142,7 +142,7 @@ class TestEncryptionUtils:
                 def test_encrypt_decrypt(self, encryption_service):
 
 
-                        """Test encryption and decryption of data."""
+                    """Test encryption and decryption of data."""
             # Test data
             data = "Sensitive patient information"
 
@@ -159,57 +159,57 @@ class TestEncryptionUtils:
             # Verify decrypted data matches original
             assert decrypted == data
 
-            def test_encrypt_decrypt_dict(self, encryption_service):
+                    def test_encrypt_decrypt_dict(self, encryption_service):
 
 
                         """Test encryption and decryption of dictionaries."""
-                # Test data
-                data = {
-                "patient_id": "12345",
-                "name": "John Smith",
-                "diagnosis": "F41.1",
-                "ssn": "123-45-6789",
-                "address": {
-                "street": "123 Main St",
-                "city": "Anytown",
-                "state": "CA",
-                "zip": "12345",
+            # Test data
+            data = {
+            "patient_id": "12345",
+            "name": "John Smith",
+            "diagnosis": "F41.1",
+            "ssn": "123-45-6789",
+            "address": {
+            "street": "123 Main St",
+            "city": "Anytown",
+            "state": "CA",
+            "zip": "12345",
             },
-                "medications": [
-                {"name": "Med1", "dosage": "10mg"},
-                {"name": "Med2", "dosage": "20mg"},
-                ],
-        }
+            "medications": []
+            {"name": "Med1", "dosage": "10mg"},
+            {"name": "Med2", "dosage": "20mg"},
+            ],
+}
 
-        # Encrypt the data
-        encrypted = encryption_service.encrypt_dict(data)
+# Encrypt the data
+encrypted = encryption_service.encrypt_dict(data)
 
-        # Verify sensitive fields are encrypted
-        assert encrypted["patient_id"].startswith("v1:")
-        assert encrypted["name"].startswith("v1:")
-        assert encrypted["ssn"].startswith("v1:")
-        assert encrypted["address"]["street"].startswith("v1:")
+# Verify sensitive fields are encrypted
+assert encrypted["patient_id"].startswith("v1:")
+assert encrypted["name"].startswith("v1:")
+assert encrypted["ssn"].startswith("v1:")
+assert encrypted["address"]["street"].startswith("v1:")
 
-        # Decrypt the data
-        decrypted = encryption_service.decrypt_dict(encrypted)
+# Decrypt the data
+decrypted = encryption_service.decrypt_dict(encrypted)
 
-        # Verify decrypted data matches original
-        assert decrypted["patient_id"] == data["patient_id"]
-        assert decrypted["name"] == data["name"]
-        assert decrypted["ssn"] == data["ssn"]
-        assert decrypted["address"]["street"] == data["address"]["street"]
-        assert decrypted["medications"][0]["name"] == data["medications"][0]["name"]
+# Verify decrypted data matches original
+assert decrypted["patient_id"] == data["patient_id"]
+assert decrypted["name"] == data["name"]
+assert decrypted["ssn"] == data["ssn"]
+assert decrypted["address"]["street"] == data["address"]["street"]
+assert decrypted["medications"][0]["name"] == data["medications"][0]["name"]
 
-    def test_key_rotation(self):
+                def test_key_rotation(self):
 
 
                     """Test encryption key rotation."""
-        # Initialize with original key
-        env_vars = {
-            "ENCRYPTION_KEY": "original_key_123456789012345678901234567890",
-            "ENCRYPTION_SALT": "test_salt_12345678901234567890123456789012",
-            "PYTEST_CURRENT_TEST": "True",
-        }
+# Initialize with original key
+env_vars = {
+"ENCRYPTION_KEY": "original_key_123456789012345678901234567890",
+"ENCRYPTION_SALT": "test_salt_12345678901234567890123456789012",
+"PYTEST_CURRENT_TEST": "True",
+}
 
         with patch.dict(os.environ, env_vars):
             service = EncryptionService()
@@ -220,10 +220,10 @@ class TestEncryptionUtils:
 
             # Rotate the key
             new_env_vars = {
-                "PREVIOUS_ENCRYPTION_KEY": env_vars["ENCRYPTION_KEY"],
-                "ENCRYPTION_KEY": "new_key_1234567890123456789012345678901",
-                "ENCRYPTION_SALT": env_vars["ENCRYPTION_SALT"],
-                "PYTEST_CURRENT_TEST": "True",
+            "PREVIOUS_ENCRYPTION_KEY": env_vars["ENCRYPTION_KEY"],
+            "ENCRYPTION_KEY": "new_key_1234567890123456789012345678901",
+            "ENCRYPTION_SALT": env_vars["ENCRYPTION_SALT"],
+            "PYTEST_CURRENT_TEST": "True",
             }
 
             with patch.dict(os.environ, new_env_vars):
@@ -246,7 +246,7 @@ class TestEncryptionUtils:
                 def test_file_encryption(self, encryption_service, tmp_path):
 
 
-                                """Test encryption and decryption of files."""
+                    """Test encryption and decryption of files."""
                     # Create test file paths
                     test_file = tmp_path / "test.txt"
                     encrypted_file = tmp_path / "encrypted.bin"
@@ -259,8 +259,8 @@ class TestEncryptionUtils:
                     with patch("builtins.open", mock_open(read_data=test_content)):
                         with patch("os.path.exists", return_value=True):
                 # Encrypt the file
-                encryption_service.encrypt_file(
-                    str(test_file), str(encrypted_file))
+                encryption_service.encrypt_file()
+                str(test_file), str(encrypted_file
 
                 # Get encrypted content for mock
                 encrypted_content = encryption_service.encrypt(test_content)
@@ -268,29 +268,29 @@ class TestEncryptionUtils:
                 # Setup mock for reading encrypted content
                 with patch("builtins.open", mock_open(read_data=encrypted_content)):
                     # Decrypt the file
-                    encryption_service.decrypt_file(
-                        str(encrypted_file), str(decrypted_file)
-                    )
+                    encryption_service.decrypt_file()
+                    str(encrypted_file), str(decrypted_file)
+                    
 
-        # Verify write calls (can't easily verify content with mock_open)
-        assert os.path.exists(test_file.parent)
+# Verify write calls (can't easily verify content with mock_open)
+assert os.path.exists(test_file.parent)
 
-    def test_encrypt_file_nonexistent(self, encryption_service, tmp_path):
+                    def test_encrypt_file_nonexistent(self, encryption_service, tmp_path):
 
 
-                    """Test encryption of nonexistent file."""
-        # Nonexistent input file
-        nonexistent_file = tmp_path / "nonexistent.txt"
-        output_file = tmp_path / "output.bin"
+"""Test encryption of nonexistent file."""
+# Nonexistent input file
+nonexistent_file = tmp_path / "nonexistent.txt"
+output_file = tmp_path / "output.bin"
 
-        # Mock file existence check
+# Mock file existence check
         with patch("os.path.exists", return_value=False):
             # Attempt to encrypt nonexistent file
             with pytest.raises(FileNotFoundError):
-                encryption_service.encrypt_file(
-                    str(nonexistent_file), str(output_file))
+                encryption_service.encrypt_file()
+                str(nonexistent_file), str(output_file
 
-                def test_decrypt_file_nonexistent(
+                def test_decrypt_file_nonexistent()
                         self, encryption_service, tmp_path):
                             """Test decryption of nonexistent file."""
                             # Nonexistent input file
@@ -301,5 +301,5 @@ class TestEncryptionUtils:
                             with patch("os.path.exists", return_value=False):
                                 # Attempt to decrypt nonexistent file
                                 with pytest.raises(FileNotFoundError):
-                encryption_service.decrypt_file(
-                    str(nonexistent_file), str(output_file))
+                encryption_service.decrypt_file()
+                str(nonexistent_file), str(output_file

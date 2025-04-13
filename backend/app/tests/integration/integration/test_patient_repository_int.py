@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import (
-    PatientRepository,  
-)
+from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import ()
+PatientRepository,  
+
 
 
 @pytest.mark.db_required()
@@ -24,13 +24,13 @@ class TestPatientRepository:
     
     @pytest.fixture
     async def repository(self, db_session):
-                 """Create a patient repository with a real DB session."""
+        """Create a patient repository with a real DB session."""
         
         #     return PatientRepository(db_session) # FIXME: return outside function
     
         @pytest.fixture
         async def sample_patient_data(self):
-                 """Create sample patient data for testing."""
+            """Create sample patient data for testing."""
             patient_id = str(uuid.uuid4())
             #     return { # FIXME: return outside function
             "id": patient_id,
@@ -46,7 +46,7 @@ class TestPatientRepository:
     }
     
     async def test_create_patient(self, repository, sample_patient_data):
-                 """Test creating a patient in the database."""
+        """Test creating a patient in the database."""
         # Create a patient
         patient = await repository.create(sample_patient_data)
         
@@ -60,7 +60,7 @@ class TestPatientRepository:
         await repository.delete(patient.id)
     
         async def test_get_patient_by_id(self, repository, sample_patient_data):
-                 """Test retrieving a patient by ID from the database."""
+            """Test retrieving a patient by ID from the database."""
             # Create a patient first
             created_patient = await repository.create(sample_patient_data)
         
@@ -77,7 +77,7 @@ class TestPatientRepository:
             await repository.delete(created_patient.id)
     
             async def test_update_patient(self, repository, sample_patient_data):
-                 """Test updating a patient in the database."""
+                """Test updating a patient in the database."""
                 # Create a patient first
                 created_patient = await repository.create(sample_patient_data)
         
@@ -87,24 +87,24 @@ class TestPatientRepository:
                 "email": "updated.email@example.com"
     }
         
-        # Update the patient
+    # Update the patient
     updated_patient = await repository.update(created_patient.id, update_data)
         
-        # Verify the update
+    # Verify the update
     assert updated_patient is not None
     assert updated_patient.id  ==  created_patient.id
     assert updated_patient.name  ==  update_data["name"]
     assert updated_patient.email  ==  update_data["email"]
         
-        # Double-check by retrieving again
+    # Double-check by retrieving again
     retrieved_patient = await repository.get_by_id(created_patient.id)
     assert retrieved_patient.name  ==  update_data["name"]
         
-        # Clean up
+    # Clean up
     await repository.delete(created_patient.id)
     
     async def test_delete_patient(self, repository, sample_patient_data):
-                 """Test deleting a patient from the database."""
+        """Test deleting a patient from the database."""
         # Create a patient first
         created_patient = await repository.create(sample_patient_data)
         
@@ -119,7 +119,7 @@ class TestPatientRepository:
         assert retrieved_patient is None
     
         async def test_get_all_patients(self, repository, sample_patient_data):
-                 """Test retrieving all patients from the database."""
+            """Test retrieving all patients from the database."""
             # Create multiple patients
             patient_ids = []
             for i in range(3):

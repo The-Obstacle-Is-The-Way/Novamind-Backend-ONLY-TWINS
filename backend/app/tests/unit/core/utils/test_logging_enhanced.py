@@ -8,28 +8,28 @@ import time
 from datetime import datetime
 import tempfile
 
-from app.core.utils.logging_enhanced import (
-    setup_logging,
-    PHISanitizingFilter,
-    StructuredJsonFormatter,
-    get_logger,
-    audit_log,
-    log_phi_detection,
-    get_correlation_id,
-    set_correlation_id,
-    clear_correlation_id,
-)
+from app.core.utils.logging_enhanced import ()
+setup_logging,
+PHISanitizingFilter,
+StructuredJsonFormatter,
+get_logger,
+audit_log,
+log_phi_detection,
+get_correlation_id,
+set_correlation_id,
+clear_correlation_id,
+
 
 
 @pytest.fixture
 def mock_logger():
 
-            """Create a mock logger."""
+    """Create a mock logger."""
     logger = MagicMock(spec=logging.Logger)
-    return logger@pytest.fixture
+#     return logger@pytest.fixture
     def temp_log_file():
 
-            """Create a temporary log file for testing."""
+        """Create a temporary log file for testing."""
         fd, path = tempfile.mkstemp(suffix=".log")
         os.close(fd)
         yield path
@@ -67,7 +67,7 @@ def mock_logger():
                 @patch("app.core.utils.logging_enhanced.logging")
                 def test_setup_logging_with_file(self, mock_logging, temp_log_file):
 
-                        """Test logging setup with file output."""
+                    """Test logging setup with file output."""
             # Setup
             mock_dict_config = mock_logging.config.dictConfig
 
@@ -87,7 +87,7 @@ def mock_logger():
             @patch("app.core.utils.logging_enhanced.logging")
             def test_setup_logging_with_phi_filter(self, mock_logging):
 
-                        """Test logging setup with PHI filtering enabled."""
+                """Test logging setup with PHI filtering enabled."""
                 # Setup
                 mock_dict_config = mock_logging.config.dictConfig
 
@@ -104,13 +104,13 @@ def mock_logger():
                 assert "filters" in config
                 assert "phi_filter" in config["filters"]
                 assert "()" in config["filters"]["phi_filter"]
-                assert (
+                assert ()
                 config["filters"]["phi_filter"]["()"]
                 == "app.core.utils.logging_enhanced.PHISanitizingFilter"
-        )
+        
 
         # Check filter is applied to handlers
-        for handler_name, handler_config in config["handlers"].items():
+                for handler_name, handler_config in config["handlers"].items():
             if "filters" in handler_config:
                 assert "phi_filter" in handler_config["filters"]class TestPHISanitizingFilter:
                     """Test suite for PHI sanitizing filter."""
@@ -123,7 +123,7 @@ def mock_logger():
                         phi_filter = PHISanitizingFilter()
 
                         # Create a log record with potential PHI
-                        record = logging.LogRecord(
+                        record = logging.LogRecord()
                         name="test",
                         level=logging.INFO,
                         pathname="",
@@ -131,7 +131,7 @@ def mock_logger():
                         msg="Patient John Doe (DOB: 01/15/1980) with SSN 123-45-6789",
                         args=(),
                         exc_info=None,
-        )
+        
 
         # Apply filter
         result = phi_filter.filter(record)
@@ -148,21 +148,21 @@ def mock_logger():
     def test_filter_without_phi(self):
 
 
-                    """Test that the filter doesn't modify messages without PHI."""
+        """Test that the filter doesn't modify messages without PHI."""
         # Create a filter
         phi_filter = PHISanitizingFilter()
 
         # Create a log record without PHI
         original_msg = "Application started successfully"
-        record = logging.LogRecord(
-            name="test",
-            level=logging.INFO,
-            pathname="",
-            lineno=0,
-            msg=original_msg,
-            args=(),
-            exc_info=None,
-        )
+        record = logging.LogRecord()
+        name="test",
+        level=logging.INFO,
+        pathname="",
+        lineno=0,
+        msg=original_msg,
+        args=(),
+        exc_info=None,
+        
 
         # Apply filter
         result = phi_filter.filter(record)
@@ -176,31 +176,31 @@ def mock_logger():
     def test_filter_with_phi_patterns(self):
 
 
-                    """Test that the filter detects specific PHI patterns."""
+        """Test that the filter detects specific PHI patterns."""
         # Create a filter
         phi_filter = PHISanitizingFilter()
 
         # Test with various PHI patterns
-        test_cases = [
-            ("Email: john.doe@example.com", "john.doe@example.com"),  # Email
-            ("Phone: 555-123-4567", "555-123-4567"),  # Phone number
-            ("DOB: 01/15/1980", "01/15/1980"),  # Date of birth
-            ("SSN: 123-45-6789", "123-45-6789"),  # SSN
-            ("Address: 123 Main St, Anytown, US 12345", "123 Main St"),  # Address
-            ("MRN: MRN12345678", "MRN12345678"),  # Medical record number
-            ("ID: ABC-12345-XYZ", "ABC-12345-XYZ"),  # ID number
-        ]
+        test_cases = []
+        ("Email: john.doe@example.com", "john.doe@example.com"),  # Email
+        ("Phone: 555-123-4567", "555-123-4567"),  # Phone number
+        ("DOB: 01/15/1980", "01/15/1980"),  # Date of birth
+        ("SSN: 123-45-6789", "123-45-6789"),  # SSN
+        ("Address: 123 Main St, Anytown, US 12345", "123 Main St"),  # Address
+        ("MRN: MRN12345678", "MRN12345678"),  # Medical record number
+        ("ID: ABC-12345-XYZ", "ABC-12345-XYZ"),  # ID number
+        
 
         for message, phi in test_cases:
-            record = logging.LogRecord(
-                name="test",
-                level=logging.INFO,
-                pathname="",
-                lineno=0,
-                msg=message,
-                args=(),
-                exc_info=None,
-            )
+            record = logging.LogRecord()
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg=message,
+            args=(),
+            exc_info=None,
+            
 
             # Apply filter
             phi_filter.filter(record)
@@ -218,7 +218,7 @@ def mock_logger():
                     formatter = StructuredJsonFormatter()
 
                     # Create a simple log record
-                    record = logging.LogRecord(
+                    record = logging.LogRecord()
                     name="test_logger",
                     level=logging.INFO,
                     pathname="/app/main.py",
@@ -226,7 +226,7 @@ def mock_logger():
                     msg="Test message",
                     args=(),
                     exc_info=None,
-        )
+        
 
         # Format the record
         formatted = formatter.format(record)
@@ -246,7 +246,7 @@ def mock_logger():
     def test_format_with_exception(self):
 
 
-                    """Test formatting a record with exception information."""
+        """Test formatting a record with exception information."""
         # Create formatter
         formatter = StructuredJsonFormatter()
 
@@ -257,7 +257,7 @@ def mock_logger():
                 exc_info = pytest.importorskip("sys").exc_info()
 
                 # Create log record with exception
-                record = logging.LogRecord(
+                record = logging.LogRecord()
                 name="test_logger",
                 level=logging.ERROR,
                 pathname="/app/main.py",
@@ -265,7 +265,7 @@ def mock_logger():
                 msg="Exception occurred",
                 args=(),
                 exc_info=exc_info,
-            )
+            
 
         # Format the record
         formatted = formatter.format(record)
@@ -282,20 +282,20 @@ def mock_logger():
     def test_format_with_extra_fields(self):
 
 
-                    """Test formatting a record with extra context fields."""
+        """Test formatting a record with extra context fields."""
         # Create formatter
         formatter = StructuredJsonFormatter()
 
         # Create a log record with extra
-        record = logging.LogRecord(
-            name="test_logger",
-            level=logging.INFO,
-            pathname="/app/main.py",
-            lineno=42,
-            msg="Test message",
-            args=(),
-            exc_info=None,
-        )
+        record = logging.LogRecord()
+        name="test_logger",
+        level=logging.INFO,
+        pathname="/app/main.py",
+        lineno=42,
+        msg="Test message",
+        args=(),
+        exc_info=None,
+        
 
         # Add extra fields
         record.correlation_id = "abc-123"
@@ -317,7 +317,7 @@ def mock_logger():
             def test_get_correlation_id_default(self):
 
 
-                    """Test getting correlation ID when none set."""
+                """Test getting correlation ID when none set."""
                 # Clear any existing correlation ID
                 clear_correlation_id()
 
@@ -332,7 +332,7 @@ def mock_logger():
                 def test_set_and_get_correlation_id(self):
 
 
-                        """Test setting and getting a correlation ID."""
+                    """Test setting and getting a correlation ID."""
             # Set a specific correlation ID
             test_id = "test-correlation-123"
             set_correlation_id(test_id)
@@ -346,7 +346,7 @@ def mock_logger():
             def test_clear_correlation_id(self):
 
 
-                        """Test clearing correlation ID."""
+                """Test clearing correlation ID."""
                 # Set a correlation ID
                 set_correlation_id("test-correlation-123")
 
@@ -367,12 +367,12 @@ def mock_logger():
                 mock_get_logger.return_value = mock_audit_logger
 
                 # Call audit log
-                audit_log(
+                audit_log()
                 action="viewed_patient_record",
                 resource_id="patient-123",
                 user_id="doctor-456",
                 details={"access_reason": "scheduled_appointment"},
-        )
+        
 
         # Verify logger was called
         mock_get_logger.assert_called_once_with("audit")
@@ -384,23 +384,23 @@ def mock_logger():
         assert "patient-123" in log_call
         assert "doctor-456" in log_call
 
-    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+@patch("app.core.utils.logging_enhanced.logging.getLogger")
     def test_log_phi_detection(self, mock_get_logger):
 
-                    """Test PHI detection logging function."""
+        """Test PHI detection logging function."""
         # Setup mock logger
         mock_phi_logger = MagicMock()
         mock_get_logger.return_value = mock_phi_logger
 
         # Call PHI detection log
-        log_phi_detection(
-            source="api_request",
-            sensitivity_score=0.85,
-            detected_entities=["NAME", "SSN"],
-            sanitized=True,
-            request_path="/api/patients",
-            user_id="doctor-456",
-        )
+        log_phi_detection()
+        source="api_request",
+        sensitivity_score=0.85,
+        detected_entities=["NAME", "SSN"],
+        sanitized=True,
+        request_path="/api/patients",
+        user_id="doctor-456",
+        
 
         # Verify logger was called
         mock_get_logger.assert_called_once_with("phi")
@@ -416,7 +416,7 @@ def mock_logger():
             @patch("app.core.utils.logging_enhanced.logging.getLogger")
             def test_get_logger_basic(self, mock_get_logger):
 
-                    """Test getting a basic logger."""
+                """Test getting a basic logger."""
                 # Setup mock
                 mock_logger = MagicMock()
                 mock_get_logger.return_value = mock_logger
@@ -433,7 +433,7 @@ def mock_logger():
                 @patch("app.core.utils.logging_enhanced.logging.getLogger")
                 def test_get_logger_with_correlation(self, mock_get_logger):
 
-                        """Test that logger adds correlation ID filter."""
+                    """Test that logger adds correlation ID filter."""
             # Setup mocks
             mock_logger = MagicMock()
             mock_get_logger.return_value = mock_logger

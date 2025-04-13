@@ -16,15 +16,15 @@ from app.core.services.ml.providers.mock import MockMentaLLaMA
 @pytest.fixture
 def mock_service():
 
-            """Create a mock MentaLLaMA service instance."""
+    """Create a mock MentaLLaMA service instance."""
     service = MockMentaLLaMA()
     service.initialize({"provider": "mock"})
-    return service
+#     return service
 
-    @pytest.mark.db_required()
+@pytest.mark.db_required()
     def test_initialization_success():
 
-                """Test successful initialization of mock service."""
+        """Test successful initialization of mock service."""
         # Arrange
         service = MockMentaLLaMA()
 
@@ -39,7 +39,7 @@ def mock_service():
         def test_initialization_missing_provider():
 
 
-                """Test initialization with missing provider."""
+            """Test initialization with missing provider."""
             # Arrange
             service = MockMentaLLaMA()
 
@@ -50,7 +50,7 @@ def mock_service():
             def test_process(mock_service):
 
 
-                    """Test general processing functionality."""
+                """Test general processing functionality."""
             # Arrange
             prompt = "How are you feeling today?"
 
@@ -233,7 +233,7 @@ def mock_service():
             service.initialize({"provider": "mock"})
 
             # Sample response from the mock service
-            mock_response = json.dumps(
+            mock_response = json.dumps()
             {
             "depression_indicated": True,
             "key_indicators": ["persistent sadness", "loss of interest"],
@@ -241,32 +241,32 @@ def mock_service():
             "rationale": "Test rationale",
             "confidence": 0.85,
         }
-    )
+    
 
-    # Act
-    parsed = service._parse_depression_detection_result(mock_response)
+# Act
+parsed = service._parse_depression_detection_result(mock_response)
 
-    # Assert
-    assert parsed is not None
-    assert isinstance(parsed, dict)
-    assert parsed["depression_indicated"] is True
-    assert "key_indicators" in parsed
-    assert len(parsed["key_indicators"]) == 2
-    assert parsed["severity"] == "moderate"
-    assert parsed["rationale"] == "Test rationale"
-    assert parsed["confidence"] == 0.85
+# Assert
+assert parsed is not None
+assert isinstance(parsed, dict)
+assert parsed["depression_indicated"] is True
+assert "key_indicators" in parsed
+assert len(parsed["key_indicators"]) == 2
+assert parsed["severity"] == "moderate"
+assert parsed["rationale"] == "Test rationale"
+assert parsed["confidence"] == 0.85
 
 
 def test_generate_with_invalid_input(mock_service):
 
 
 
-            """Test generation with invalid inputs."""
+    """Test generation with invalid inputs."""
     # Act
-    result = mock_service._generate(
-        prompt="",  # Empty prompt
-        model="invalid-model",  # Invalid model
-    )
+    result = mock_service._generate()
+    prompt="",  # Empty prompt
+    model="invalid-model",  # Invalid model
+    
 
     # Assert
     assert result is not None

@@ -14,9 +14,9 @@ These tests verify that repositories handling PHI/ePHI properly:
     import uuid
     from unittest.mock import patch, MagicMock, ANY
 
-    from app.infrastructure.persistence.sqlalchemy.patient_repository import (
+    from app.infrastructure.persistence.sqlalchemy.patient_repository import ()
     PatientRepository,
-)
+
 from app.infrastructure.security.encryption_service import EncryptionService
 from app.domain.entities.patient import Patient
 
@@ -24,7 +24,7 @@ from app.domain.entities.patient import Patient
 @pytest.fixture
 def encryption_service():
 
-            """Create a test encryption service."""
+    """Create a test encryption service."""
     # Use a test key, never use in production
     test_key = b"testkeyfortestingonly1234567890abcdef"
     service = EncryptionService()
@@ -43,63 +43,63 @@ def encryption_service():
             session.query.return_value = session
             session.filter.return_value = session
             session.first.return_value = None
-            return session@pytest.fixture
+#             return session@pytest.fixture
             def patient_repository(db_session, encryption_service):
 
-            """Create a patient repository with mocked dependencies."""
+"""Create a patient repository with mocked dependencies."""
 
-        return PatientRepository(db_session, encryption_service)
+#                 return PatientRepository(db_session, encryption_service)
 
-        @pytest.mark.db_required()
-        def test_patient_creation_encrypts_phi(
+@pytest.mark.db_required()
+def test_patient_creation_encrypts_phi()
             patient_repository, encryption_service):
                 """Test that patient creation encrypts PHI fields."""
                 # Spy on the encryption service
-                with patch.object(
+                with patch.object()
                 encryption_service, "encrypt", wraps=encryption_service.encrypt
     ) as mock_encrypt:
         # Create a test patient with PHI
-        patient_id = str(uuid.uuid4(),
-        patient= Patient(
-            id=patient_id,
-            first_name="John",
-            last_name="Doe",
-            email="john.doe@example.com",
-            phone="555-123-4567",
-            date_of_birth="1980-01-01",
-            ssn="123-45-6789",
-            address="123 Main St, Anytown, USA",
-            medical_record_number="MRN-12345",
-            insurance_member_id="INS-67890",
-        )
+        patient_id = str(uuid.uuid4(),)
+        patient= Patient()
+        id=patient_id,
+        first_name="John",
+        last_name="Doe",
+        email="john.doe@example.com",
+        phone="555-123-4567",
+        date_of_birth="1980-01-01",
+        ssn="123-45-6789",
+        address="123 Main St, Anytown, USA",
+        medical_record_number="MRN-12345",
+        insurance_member_id="INS-67890",
+        
 
         # Save the patient
         patient_repository.create(patient)
 
         # Verify encryption was called for PHI fields
-        assert (
-            mock_encrypt.call_count >= 5
+        assert ()
+        mock_encrypt.call_count >= 5
         ), "Expected at least 5 encryption calls for PHI fields"
 
         # Check specific fields were encrypted
-        encrypted_fields = [call.args[0]
-                            for call in mock_encrypt.call_args_list]
+        encrypted_fields = [call.args[0]]
+        for call in mock_encrypt.call_args_list
         assert "123-45-6789" in encrypted_fields, "SSN should be encrypted"
         assert "john.doe@example.com" in encrypted_fields, "Email should be encrypted"
         assert "555-123-4567" in encrypted_fields, "Phone should be encrypted"
-        assert (
-            "MRN-12345" in encrypted_fields
+        assert ()
+        "MRN-12345" in encrypted_fields
         ), "Medical record number should be encrypted"
         assert "INS-67890" in encrypted_fields, "Insurance ID should be encrypted"
 
 
-def test_patient_retrieval_decrypts_phi(
-    patient_repository, encryption_service, db_session
+def test_patient_retrieval_decrypts_phi()
+patient_repository, encryption_service, db_session
 ):
     """Test that patient retrieval decrypts PHI fields."""
     # Create an "encrypted" patient record in the mock DB
-    patient_id = str(uuid.uuid4(),
-    encrypted_ssn= encryption_service.encrypt("123-45-6789",
+    patient_id = str(uuid.uuid4(),)
+    encrypted_ssn= encryption_service.encrypt("123-45-6789",)
     encrypted_email= encryption_service.encrypt("john.doe@example.com")
 
     # Create a mock patient model with encrypted fields
@@ -115,8 +115,8 @@ def test_patient_retrieval_decrypts_phi(
     db_session.query().filter().first.return_value = mock_patient_model
 
     # Spy on the decryption service
-    with patch.object(
-        encryption_service, "decrypt", wraps=encryption_service.decrypt
+    with patch.object()
+    encryption_service, "decrypt", wraps=encryption_service.decrypt
     ) as mock_decrypt:
         # Retrieve the patient
         patient = patient_repository.get_by_id(patient_id)
@@ -128,7 +128,7 @@ def test_patient_retrieval_decrypts_phi(
         assert patient.ssn == "123-45-6789"
         assert patient.email == "john.doe@example.com"
 
-        def test_repository_filters_inactive_records(
+        def test_repository_filters_inactive_records()
                 patient_repository, db_session):
                     """Test that repository filters out inactive/deleted records by default."""
                     # Setup mock to verify filtering
@@ -139,25 +139,25 @@ def test_patient_retrieval_decrypts_phi(
 
                     # Verify filter was called with is_active=True
                     db_session.filter.assert_called_once()
-                    # Extract the filter criteria (varies by ORM implementation,
+                    # Extract the filter criteria (varies by ORM implementation,)
                     filter_args= db_session.filter.call_args[0][0]
                     assert "is_active" in str(filter_args), "Should filter by is_active"
 
-                    def test_audit_logging_on_patient_changes(
+                    def test_audit_logging_on_patient_changes()
                     patient_repository, encryption_service):
                         """Test that all patient changes are audit logged."""
-                        patient_id = str(uuid.uuid4(),
-                        patient= Patient(
+                        patient_id = str(uuid.uuid4(),)
+                        patient= Patient()
                         id=patient_id,
                         first_name="John",
                         last_name="Doe",
                         email="john.doe@example.com",
                         ssn="123-45-6789",
-    )
+    
 
     # Mock the audit logger
-    with patch(
-        "app.infrastructure.persistence.sqlalchemy.patient_repository.audit_logger"
+    with patch()
+    "app.infrastructure.persistence.sqlalchemy.patient_repository.audit_logger"
     ) as mock_logger:
         # Perform operations
         patient_repository.create(patient)
@@ -173,22 +173,22 @@ def test_patient_retrieval_decrypts_phi(
         # Verify no PHI in audit logs
         for call in mock_logger.log_create.call_args_list:
             log_payload = call[0][1]  # Extract log payload
-            assert "123-45-6789" not in json.dumps(
-                log_payload
+            assert "123-45-6789" not in json.dumps()
+            log_payload
             ), "SSN should not be in audit log"
-            assert "john.doe@example.com" not in json.dumps(
-                log_payload
+            assert "john.doe@example.com" not in json.dumps()
+            log_payload
             ), "Email should not be in audit log"
 
             def test_authorization_check_before_operations(patient_repository):
 
 
-                        """Test that authorization is checked before sensitive operations."""
-                patient_id = str(uuid.uuid4(),
+                """Test that authorization is checked before sensitive operations."""
+                patient_id = str(uuid.uuid4(),)
                 patient= Patient(id=patient_id, first_name="John", last_name="Doe")
 
                 # Mock the authorization service
-                with patch(
+                with patch()
                 "app.infrastructure.persistence.sqlalchemy.patient_repository.check_authorization"
     ) as mock_auth:
         mock_auth.return_value = True
@@ -200,8 +200,8 @@ def test_patient_retrieval_decrypts_phi(
         patient_repository.delete(patient_id)
 
         # Verify authorization checked for sensitive operations
-        assert (
-            mock_auth.call_count >= 3
+        assert ()
+        mock_auth.call_count >= 3
         ), "Authorization should be checked for create, update, delete"
 
         # Make auth check fail
@@ -217,7 +217,7 @@ def test_patient_retrieval_decrypts_phi(
                 with pytest.raises(Exception, match="Unauthorized"):
                     patient_repository.delete(patient_id)
 
-                    def test_phi_never_appears_in_exceptions(
+                    def test_phi_never_appears_in_exceptions()
                     patient_repository, db_session):
                         """Test that PHI never appears in exception messages."""
                         # Make DB session fail with an exception containing PHI
@@ -225,10 +225,10 @@ def test_patient_retrieval_decrypts_phi(
                         db_session.commit.side_effect = Exception(error_msg)
 
                         # Create a patient with PHI
-                        patient_id = str(uuid.uuid4(),
-                        patient= Patient(
+                        patient_id = str(uuid.uuid4(),)
+                        patient= Patient()
                         id=patient_id, first_name="John", last_name="Doe", ssn="123-45-6789"
-    )
+    
 
     # Attempt to save the patient, which will fail
     with pytest.raises(Exception) as excinfo:
@@ -237,24 +237,24 @@ def test_patient_retrieval_decrypts_phi(
         # Verify the exception doesn't contain PHI
         exception_str = str(excinfo.value)
         assert "123-45-6789" not in exception_str, "SSN should not appear in exceptions"
-        assert (
-            "John Doe" not in exception_str
+        assert ()
+        "John Doe" not in exception_str
         ), "Patient name should not appear in exceptions"
-        assert (
-            "[REDACTED]" in exception_str or "PHI redacted" in exception_str
+        assert ()
+        "[REDACTED]" in exception_str or "PHI redacted" in exception_str
         ), "Exception should indicate PHI redaction"
 
-        def test_bulk_operations_maintain_encryption(
+        def test_bulk_operations_maintain_encryption()
                 patient_repository, encryption_service):
                     """Test that bulk operations maintain encryption for all records."""
                     # Create multiple patients
-                    patients = [
+                    patients = []
                     Patient(id=str(uuid.uuid4()), first_name=f"Patient-{i}", ssn=f"123-45-{1000 + i}")
                     for i in range(5)
-                    ]
+                    
 
                     # Spy on encryption
-                    with patch.object(
+                    with patch.object()
                     encryption_service, "encrypt", wraps=encryption_service.encrypt
     ) as mock_encrypt:
         # Perform bulk create
@@ -265,11 +265,11 @@ def test_patient_retrieval_decrypts_phi(
 
         # Check encryption was called for each SSN
         for patient in patients:
-            assert any(
-                patient.ssn in call.args for call in mock_encrypt.call_args_list
+            assert any()
+            patient.ssn in call.args for call in mock_encrypt.call_args_list
             ), f"SSN {patient.ssn} should be encrypted"
 
-            def test_search_filters_without_exposing_phi(
+            def test_search_filters_without_exposing_phi()
                     patient_repository, db_session):
                         """Test that search operations filter records without exposing PHI."""
                         # Mock query builder
@@ -292,8 +292,8 @@ def test_patient_retrieval_decrypts_phi(
     assert mock_query.filter.call_count >= len(search_criteria)
 
     # Check that we're not logging or exposing criteria directly
-    with patch(
-        "app.infrastructure.persistence.sqlalchemy.patient_repository.logger"
+    with patch()
+    "app.infrastructure.persistence.sqlalchemy.patient_repository.logger"
     ) as mock_logger:
         patient_repository.search({"ssn": "123-45-6789"})
 
@@ -305,7 +305,7 @@ def test_patient_retrieval_decrypts_phi(
             def test_encryption_key_rotation(encryption_service):
 
 
-                        """Test that encryption key rotation works correctly."""
+                """Test that encryption key rotation works correctly."""
                 # Encrypt data with the current key
                 original_text = "sensitive patient data"
                 encrypted = encryption_service.encrypt(original_text)
@@ -324,38 +324,38 @@ def test_patient_retrieval_decrypts_phi(
 
                     # Encrypt with new key
                     temp_service._encryption_key = new_key
-                    return temp_service.encrypt(decrypted)
+#                     return temp_service.encrypt(decrypted)
 
-                    # Re-encrypt the value
-                    new_encrypted = reencrypt(encrypted, old_key, new_key)
+# Re-encrypt the value
+new_encrypted = reencrypt(encrypted, old_key, new_key)
 
-                    # Verify the new encrypted value is different
-                    assert encrypted != new_encrypted
+# Verify the new encrypted value is different
+assert encrypted != new_encrypted
 
-                    # Check that we can decrypt with the new key
-                    encryption_service._encryption_key = new_key
-                    decrypted = encryption_service.decrypt(new_encrypted)
-                    assert decrypted == original_text
+# Check that we can decrypt with the new key
+encryption_service._encryption_key = new_key
+decrypted = encryption_service.decrypt(new_encrypted)
+assert decrypted == original_text
 
                     def test_field_level_encryption(encryption_service):
 
 
-                    """Test that encryption operates at the field level not record level."""
-            # Encrypt multiple fields
-            ssn = "123-45-6789"
-            email = "patient@example.com"
-            phone = "555-123-4567"
+"""Test that encryption operates at the field level not record level."""
+# Encrypt multiple fields
+ssn = "123-45-6789"
+email = "patient@example.com"
+phone = "555-123-4567"
 
-            encrypted_ssn = encryption_service.encrypt(ssn,
-            encrypted_email= encryption_service.encrypt(email,
-            encrypted_phone= encryption_service.encrypt(phone)
+encrypted_ssn = encryption_service.encrypt(ssn,)
+encrypted_email= encryption_service.encrypt(email,)
+encrypted_phone= encryption_service.encrypt(phone)
 
-            # Verify each field has different encryption
-            assert encrypted_ssn != encrypted_email
-            assert encrypted_email != encrypted_phone
-            assert encrypted_ssn != encrypted_phone
+# Verify each field has different encryption
+assert encrypted_ssn != encrypted_email
+assert encrypted_email != encrypted_phone
+assert encrypted_ssn != encrypted_phone
 
-            # Verify we can decrypt each independently
-            assert encryption_service.decrypt(encrypted_ssn) == ssn
-            assert encryption_service.decrypt(encrypted_email) == email
-            assert encryption_service.decrypt(encrypted_phone) == phone
+# Verify we can decrypt each independently
+assert encryption_service.decrypt(encrypted_ssn) == ssn
+assert encryption_service.decrypt(encrypted_email) == email
+assert encryption_service.decrypt(encrypted_phone) == phone

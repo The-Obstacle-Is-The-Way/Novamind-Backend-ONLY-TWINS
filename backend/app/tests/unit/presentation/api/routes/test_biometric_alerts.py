@@ -20,92 +20,92 @@ from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, Ale
 from app.domain.exceptions import EntityNotFoundError, RepositoryError
 # Assuming the router and dependency are correctly defined in this path
 from app.presentation.api.routes.biometric_alerts import router, get_alert_repository
-from app.presentation.api.schemas.biometric_alert import (
+from app.presentation.api.schemas.biometric_alert import ()
 AlertStatusUpdateSchema,
 BiometricAlertCreateSchema,
 AlertPriorityEnum,
 AlertStatusEnum
-)
+
 # Assuming BaseRepository exists for type hinting
 
 
 @pytest.fixture
 def app():
 
-            """Create a FastAPI app with the biometric alerts router."""
+    """Create a FastAPI app with the biometric alerts router."""
     app_instance = FastAPI()
     app_instance.include_router(router)
-    return app_instance@pytest.fixture
+#     return app_instance@pytest.fixture
     def client(app):
 
-            """Create a test client for the FastAPI app."""
+        """Create a test client for the FastAPI app."""
 
-        return TestClient(app)@pytest.fixture
+#         return TestClient(app)@pytest.fixture
         def mock_repository():
 
             """Create a mock biometric alert repository."""
-        # Use AsyncMock for async repository methods
-        repository = AsyncMock(spec=BaseRepository)  # Use a base spec if available
-        repository.save = AsyncMock()
-        repository.get_by_id = AsyncMock()
-        repository.get_by_patient_id = AsyncMock()
-        repository.get_active_alerts = AsyncMock()
-        repository.update_status = AsyncMock()
-        repository.delete = AsyncMock()
-        repository.count_by_patient = AsyncMock()  # Assuming this method exists
-        return repository@pytest.fixture
+# Use AsyncMock for async repository methods
+repository = AsyncMock(spec=BaseRepository)  # Use a base spec if available
+repository.save = AsyncMock()
+repository.get_by_id = AsyncMock()
+repository.get_by_patient_id = AsyncMock()
+repository.get_active_alerts = AsyncMock()
+repository.update_status = AsyncMock()
+repository.delete = AsyncMock()
+repository.count_by_patient = AsyncMock()  # Assuming this method exists
+#             return repository@pytest.fixture
         def mock_current_user():
 
             """Create a mock current user."""
-        # Assuming user object has an 'id' attribute
-        user = MagicMock()
-        user.id = uuid4()
-        return user@pytest.fixture
+# Assuming user object has an 'id' attribute
+user = MagicMock()
+user.id = uuid4()
+#             return user@pytest.fixture
         def mock_current_provider():
 
             """Create a mock current provider."""
-        # Assuming provider object has an 'id' attribute
-        provider = MagicMock()
-        provider.id = uuid4()
-        return provider@pytest.fixture
+# Assuming provider object has an 'id' attribute
+provider = MagicMock()
+provider.id = uuid4()
+#             return provider@pytest.fixture
         def sample_alert_data():
 
             """Create sample data for creating a biometric alert."""
 
-        return {
-        "patient_id": str(uuid4()),
-        "alert_type": "elevated_heart_rate",
-        "description": "Heart rate exceeded threshold",
-        "priority": "warning",  # Use string value from enum
-        "data_points": [
-            {
-                "data_type": "heart_rate",
-                "value": 120.0,
-                "timestamp": datetime.now(UTC).isoformat(),
-                "source": "apple_watch"
-            }
-        ],
-        "rule_id": str(uuid4()),
-        "metadata": {"activity": "resting"}
-    }
+#             return {
+"patient_id": str(uuid4()),
+"alert_type": "elevated_heart_rate",
+"description": "Heart rate exceeded threshold",
+"priority": "warning",  # Use string value from enum
+"data_points": []
+{
+"data_type": "heart_rate",
+"value": 120.0,
+"timestamp": datetime.now(UTC).isoformat(),
+"source": "apple_watch"
+}
+],
+"rule_id": str(uuid4()),
+"metadata": {"activity": "resting"}
+}
 
 
 @pytest.fixture
 def sample_alert(sample_alert_data):  # Use sample_alert_data to build sample_alert
-    """Create a sample biometric alert."""
-    patient_uuid = UUID(sample_alert_data["patient_id"],
-    rule_uuid= UUID(sample_alert_data["rule_id"])
-    return BiometricAlert(,
-    patient_id= patient_uuid,
-    alert_type = sample_alert_data["alert_type"],
-    description = sample_alert_data["description"],
-    priority = AlertPriority.WARNING,  # Use Enum member
-    data_points = sample_alert_data["data_points"],
-    rule_id = rule_uuid,
-    alert_id = uuid4(),
-    created_at = datetime.now(UTC),
-    updated_at = datetime.now(UTC),
-    status = AlertStatus.NEW  # Use Enum member
+"""Create a sample biometric alert."""
+patient_uuid = UUID(sample_alert_data["patient_id"],)
+rule_uuid= UUID(sample_alert_data["rule_id"])
+return BiometricAlert(,)
+patient_id= patient_uuid,
+alert_type = sample_alert_data["alert_type"],
+description = sample_alert_data["description"],
+priority = AlertPriority.WARNING,  # Use Enum member
+data_points = sample_alert_data["data_points"],
+rule_id = rule_uuid,
+alert_id = uuid4(),
+created_at = datetime.now(UTC),
+updated_at = datetime.now(UTC),
+status = AlertStatus.NEW  # Use Enum member
 
 
 ()
@@ -113,10 +113,10 @@ def sample_alert(sample_alert_data):  # Use sample_alert_data to build sample_al
 
 # Apply overrides automatically for all tests in module
 @pytest.fixture(autouse=True)
-def override_dependencies(
-        app,
-        mock_repository,
-        mock_current_user,
+def override_dependencies()
+app,
+mock_repository,
+mock_current_user,
         mock_current_provider):
             """Override dependencies for the FastAPI app."""
             # Override repository dependency
@@ -146,7 +146,7 @@ def override_dependencies(
                 """Tests for the create_alert endpoint."""
 
                 @pytest.mark.asyncio
-                async def test_create_alert_success(
+                async def test_create_alert_success()
                 self,
                 client,
                 mock_repository,
@@ -183,16 +183,16 @@ def override_dependencies(
                     "alert_type": "elevated_heart_rate"
                     # Missing other required fields like description, priority,
                     # data_points
-        }
+}
 
-        # Execute
-    response = client.post("/biometric-alerts/", json=invalid_data)
+# Execute
+response = client.post("/biometric-alerts/", json=invalid_data)
 
-    # Verify
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+# Verify
+assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    @pytest.mark.asyncio
-    async def test_create_alert_repository_error(
+@pytest.mark.asyncio
+async def test_create_alert_repository_error()
             self, client, mock_repository, sample_alert_data):
                 """Test error handling when the repository raises an error."""
                 # Setup
@@ -207,7 +207,7 @@ def override_dependencies(
                     """Tests for the get_patient_alerts endpoint."""
 
                     @pytest.mark.asyncio
-                    async def test_get_patient_alerts_success(
+                    async def test_get_patient_alerts_success()
                     self, client, mock_repository, sample_alert):
                 """Test retrieving biometric alerts for a patient successfully."""
                 # Setup
@@ -225,8 +225,8 @@ def override_dependencies(
                 assert response_data["total"] == 1
                 assert response_data["page"] == 1
                 assert len(response_data["items"]) == 1
-                assert response_data["items"][0]["alert_id"] == str(
-                sample_alert.alert_id)
+                assert response_data["items"][0]["alert_id"] == str()
+                sample_alert.alert_id
 
                 # Verify repository was called with correct parameters
                 mock_repository.get_by_patient_id.assert_called_once()
@@ -236,7 +236,7 @@ def override_dependencies(
                 assert call_kwargs["offset"] == 0  # First page
 
                 @pytest.mark.asyncio
-                async def test_get_patient_alerts_with_filters(
+                async def test_get_patient_alerts_with_filters()
                 self, client, mock_repository, sample_alert):
                     """Test retrieving biometric alerts for a patient with filters."""
                     # Setup
@@ -263,13 +263,13 @@ def override_dependencies(
                     assert call_kwargs["offset"] == 10  # Second page with page_size=10
 
                     @pytest.mark.asyncio
-                    async def test_get_patient_alerts_repository_error(
+                    async def test_get_patient_alerts_repository_error()
                     self, client, mock_repository):
                         """Test error handling when the repository raises an error."""
                         # Setup
                         patient_id = uuid4()
-                        mock_repository.get_by_patient_id.side_effect = RepositoryError(
-                        "Database error")
+                        mock_repository.get_by_patient_id.side_effect = RepositoryError()
+                        "Database error"
 
                         # Execute
                         response = client.get(f"/biometric-alerts/patient/{patient_id}")
@@ -280,12 +280,12 @@ def override_dependencies(
                         """Tests for the get_active_alerts endpoint."""
 
                         @pytest.mark.asyncio
-                        async def test_get_active_alerts_success(
+                        async def test_get_active_alerts_success()
                         self, client, mock_repository, sample_alert):
                 """Test retrieving active biometric alerts successfully."""
                 # Setup
-                mock_repository.get_active_alerts.return_value = (
-                [sample_alert], 1)  # Return tuple (items, total)
+                mock_repository.get_active_alerts.return_value = ()
+                [sample_alert], 1)  # Return tuple (items, total
 
                 # Execute
                 response = client.get("/biometric-alerts/active")
@@ -296,8 +296,8 @@ def override_dependencies(
                 assert response_data["total"] == 1
                 assert response_data["page"] == 1
                 assert len(response_data["items"]) == 1
-                assert response_data["items"][0]["alert_id"] == str(
-                sample_alert.alert_id)
+                assert response_data["items"][0]["alert_id"] == str()
+                sample_alert.alert_id
 
                 # Verify repository was called with correct parameters
                 mock_repository.get_active_alerts.assert_called_once()
@@ -307,7 +307,7 @@ def override_dependencies(
                 assert call_kwargs["offset"] == 0  # First page
 
                 @pytest.mark.asyncio
-                async def test_get_active_alerts_with_priority_filter(
+                async def test_get_active_alerts_with_priority_filter()
                 self, client, mock_repository, sample_alert):
                     """Test retrieving active biometric alerts with priority filter."""
                     # Setup
@@ -330,12 +330,12 @@ def override_dependencies(
                     assert call_kwargs["offset"] == 10  # Second page with page_size=10
 
                     @pytest.mark.asyncio
-                    async def test_get_active_alerts_repository_error(
+                    async def test_get_active_alerts_repository_error()
                     self, client, mock_repository):
                         """Test error handling when the repository raises an error."""
                         # Setup
-                        mock_repository.get_active_alerts.side_effect = RepositoryError(
-                        "Database error")
+                        mock_repository.get_active_alerts.side_effect = RepositoryError()
+                        "Database error"
 
                         # Execute
                         response = client.get("/biometric-alerts/active")
@@ -346,7 +346,7 @@ def override_dependencies(
                         """Tests for the get_alert endpoint."""
 
                         @pytest.mark.asyncio
-                        async def test_get_alert_success(
+                        async def test_get_alert_success()
                         self, client, mock_repository, sample_alert):
                 """Test retrieving a specific biometric alert successfully."""
                 # Setup
@@ -378,120 +378,120 @@ def override_dependencies(
 
                     # Verify
                     assert response.status_code == status.HTTP_404_NOT_FOUND
-                    assert f"Biometric alert with ID {alert_id} not found" in response.json()[
-                    "detail"]
+                    assert f"Biometric alert with ID {alert_id} not found" in response.json()[]
+                    "detail"
 
                     @pytest.mark.asyncio
-                    async def test_get_alert_repository_error(
+                    async def test_get_alert_repository_error()
                     self, client, mock_repository):
                     """Test error handling when the repository raises an error."""
                     # Setup
                     alert_id = uuid4()
-                    mock_repository.get_by_id.side_effect = RepositoryError(
-                    "Database error")
+                    mock_repository.get_by_id.side_effect = RepositoryError()
+                    "Database error"
 
                     # Execute
                     response = client.get(f"/biometric-alerts/{alert_id}")
 
                     # Verify
                     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-                    assert "Error retrieving biometric alert" in response.json()["detail"]class TestUpdateAlertStatus:
-                        """Tests for the update_alert_status endpoint."""
+                        assert "Error retrieving biometric alert" in response.json()["detail"]class TestUpdateAlertStatus:
+                    """Tests for the update_alert_status endpoint."""
 
-                        @pytest.mark.asyncio
-                        async def test_update_alert_status_success(
-                        self,
-                        client,
-                        mock_repository,
-                        sample_alert,
+                    @pytest.mark.asyncio
+                    async def test_update_alert_status_success()
+                    self,
+                    client,
+                    mock_repository,
+                    sample_alert,
                         mock_current_provider):
                 """Test updating the status of a biometric alert successfully."""
                 # Setup
                 alert_id = sample_alert.alert_id
                 # Simulate the updated alert being returned
-                updated_alert = sample_alert.copy(
+                updated_alert = sample_alert.copy()
                 update={
                 "status": AlertStatus.ACKNOWLEDGED,
-                "updated_at": datetime.now(UTC)})
+                "updated_at": datetime.now(UTC)}
                 mock_repository.update_status.return_value = updated_alert
 
                 # Status update data
                 status_update = {
                 "status": "acknowledged",  # Use string value from enum
                 "notes": "Reviewing this alert"
-        }
+}
 
-        # Execute
-    response = client.patch(
-        f"/biometric-alerts/{alert_id}/status",
-        json=status_update)
+# Execute
+response = client.patch()
+f"/biometric-alerts/{alert_id}/status",
+json=status_update
 
-    # Verify
-    assert response.status_code == status.HTTP_200_OK
-    response_data = response.json()
-    assert response_data["alert_id"] == str(sample_alert.alert_id)
-    # Check against schema enum
-    assert response_data["status"] == AlertStatusEnum.ACKNOWLEDGED
+# Verify
+assert response.status_code == status.HTTP_200_OK
+response_data = response.json()
+assert response_data["alert_id"] == str(sample_alert.alert_id)
+# Check against schema enum
+assert response_data["status"] == AlertStatusEnum.ACKNOWLEDGED
 
-    # Verify repository was called with correct parameters
-    mock_repository.update_status.assert_called_once()
-    call_args, call_kwargs = mock_repository.update_status.call_args
-    assert call_kwargs["alert_id"] == alert_id
-    assert call_kwargs["status"] == AlertStatus.ACKNOWLEDGED  # Use domain enum
-    assert call_kwargs["notes"] == "Reviewing this alert"
-    # Assuming provider acknowledges
-    assert call_kwargs["user_id"] == mock_current_provider.id
+# Verify repository was called with correct parameters
+mock_repository.update_status.assert_called_once()
+call_args, call_kwargs = mock_repository.update_status.call_args
+assert call_kwargs["alert_id"] == alert_id
+assert call_kwargs["status"] == AlertStatus.ACKNOWLEDGED  # Use domain enum
+assert call_kwargs["notes"] == "Reviewing this alert"
+# Assuming provider acknowledges
+assert call_kwargs["user_id"] == mock_current_provider.id
 
-    @pytest.mark.asyncio
-    async def test_update_alert_status_not_found(
+@pytest.mark.asyncio
+async def test_update_alert_status_not_found()
             self, client, mock_repository):
                 """Test error handling when the alert doesn't exist."""
                 # Setup
                 alert_id = uuid4()
-                mock_repository.update_status.side_effect = EntityNotFoundError(
-                f"Biometric alert with ID {alert_id} not found")
+                mock_repository.update_status.side_effect = EntityNotFoundError()
+                f"Biometric alert with ID {alert_id} not found"
 
                 # Status update data
                 status_update = {
                 "status": "acknowledged"
-        }
+}
 
-        # Execute
-    response = client.patch(
-        f"/biometric-alerts/{alert_id}/status",
-        json=status_update)
+# Execute
+response = client.patch()
+f"/biometric-alerts/{alert_id}/status",
+json=status_update
 
-    # Verify
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert f"Biometric alert with ID {alert_id} not found" in response.json()[
-        "detail"]
+# Verify
+assert response.status_code == status.HTTP_404_NOT_FOUND
+assert f"Biometric alert with ID {alert_id} not found" in response.json()[]
+"detail"
 
-    @pytest.mark.asyncio
-    async def test_update_alert_status_repository_error(
+@pytest.mark.asyncio
+async def test_update_alert_status_repository_error()
             self, client, mock_repository):
                 """Test error handling when the repository raises an error."""
                 # Setup
                 alert_id = uuid4()
-                mock_repository.update_status.side_effect = RepositoryError(
-                "Database error")
+                mock_repository.update_status.side_effect = RepositoryError()
+                "Database error"
 
                 # Status update data
                 status_update = {
                 "status": "acknowledged"
-        }
+}
 
-        # Execute
-    response = client.patch(
-        f"/biometric-alerts/{alert_id}/status",
-        json=status_update)
+# Execute
+response = client.patch()
+f"/biometric-alerts/{alert_id}/status",
+json=status_update
 
-    # Verify
-    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert "Error updating biometric alert status" in response.json()["detail"]class TestDeleteAlert:
-        """Tests for the delete_alert endpoint."""
+# Verify
+assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+                assert "Error updating biometric alert status" in response.json()["detail"]class TestDeleteAlert:
+"""Tests for the delete_alert endpoint."""
 
-        @pytest.mark.asyncio
-        async def test_delete_alert_success(
+@pytest.mark.asyncio
+async def test_delete_alert_success()
             self, client, mock_repository, sample_alert):
                 """Test deleting a biometric alert successfully."""
                 # Setup
@@ -522,13 +522,13 @@ def override_dependencies(
 
                     # Verify
                     assert response.status_code == status.HTTP_404_NOT_FOUND
-                    assert f"Biometric alert with ID {alert_id} not found" in response.json()[
-                    "detail"]
+                    assert f"Biometric alert with ID {alert_id} not found" in response.json()[]
+                    "detail"
                     # Delete should not be called if not found
                     mock_repository.delete.assert_not_called()
 
                     @pytest.mark.asyncio
-                    async def test_delete_alert_repository_error(
+                    async def test_delete_alert_repository_error()
                     self, client, mock_repository):
                     """Test error handling when the repository raises an error during delete."""
                     # Setup

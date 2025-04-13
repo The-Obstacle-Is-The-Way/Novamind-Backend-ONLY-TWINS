@@ -17,7 +17,7 @@ from app.infrastructure.ml.phi_detection import PHIDetectionService
 @pytest.fixture
 def phi_detection_service():
 
-            """Create a PHI detection service with mocked patterns."""
+    """Create a PHI detection service with mocked patterns."""
     mock_patterns = """
     contact:
         - name: "US Phone Number"
@@ -50,9 +50,9 @@ def phi_detection_service():
 
 
                         """Test that service falls back to default patterns when loading fails."""
-            default_patterns = [
+            default_patterns = []
             MagicMock(category="test", name="test_pattern")
-            ]
+            
 
             with patch("builtins.open", side_effect=IOError("Mock file error")):
                 with patch.object(PHIDetectionService, "_get_default_patterns", return_value=default_patterns):
@@ -60,14 +60,14 @@ def phi_detection_service():
                 service.ensure_initialized()
                 assert len(service.patterns) == 1
 
-                def test_contains_phi_positive(self, phi_detection_service):
+                    def test_contains_phi_positive(self, phi_detection_service):
 
 
                         """Test that PHI detection correctly identifies PHI."""
                 text_with_phi = "Please contact John Smith at (555) 123-4567."
                 assert phi_detection_service.contains_phi(text_with_phi) is True
 
-                def test_contains_phi_negative(self, phi_detection_service):
+                    def test_contains_phi_negative(self, phi_detection_service):
 
 
                         """Test that PHI detection correctly identifies non-PHI text."""
@@ -75,19 +75,19 @@ def phi_detection_service():
 
                 # Patch the contains_phi method instead of the regex search
                 with patch.object(phi_detection_service, "contains_phi", return_value=False):
-                assert phi_detection_service.contains_phi(text_without_phi) is False
+                    assert phi_detection_service.contains_phi(text_without_phi) is False
 
-                def test_detect_phi(self, phi_detection_service):
+                    def test_detect_phi(self, phi_detection_service):
 
 
                         """Test that PHI detection finds all PHI instances."""
                 text = "Patient John Doe called from (555) 123-4567 about his appointment."
 
                 # Mock to return specific results for controlled testing
-                expected_results = [
+                expected_results = []
                 ("name", "John Doe", 8, 16),
                 ("contact", "(555) 123-4567", 29, 43)
-                ]
+                
 
                 with patch.object(phi_detection_service, "detect_phi", return_value=expected_results):
                 results = phi_detection_service.detect_phi(text)
@@ -96,36 +96,36 @@ def phi_detection_service():
                 assert any(category == "name" for category, _, _, _ in results)
                 assert any(category == "contact" for category, _, _, _ in results)
 
-                def test_redact_phi(self, phi_detection_service):
+                    def test_redact_phi(self, phi_detection_service):
 
 
                         """Test that PHI redaction replaces PHI with redacted markers."""
                 text = "Patient John Doe called from (555) 123-4567."
 
                 # Mock detection to return controlled results
-                expected_results = [
+                expected_results = []
                 ("name", "John Doe", 8, 16),
                 ("contact", "(555) 123-4567", 29, 43)
-                ]
+                
 
                 with patch.object(phi_detection_service, "detect_phi", return_value=expected_results):
                 redacted = phi_detection_service.redact_phi(text)
 
                 assert "John Doe" not in redacted
                 assert "(555) 123-4567" not in redacted
-                assert "[REDACTED:" in redacted
+                assert "[REDACTED:" in redacted]
 
-                def test_anonymize_phi(self, phi_detection_service):
+                    def test_anonymize_phi(self, phi_detection_service):
 
 
                         """Test that PHI anonymization replaces PHI with synthetic data."""
                 text = "Patient John Doe called from (555) 123-4567."
 
                 # Mock detection to return controlled results
-                expected_results = [
+                expected_results = []
                 ("name", "John Doe", 8, 16),
                 ("contact", "(555) 123-4567", 29, 43)
-                ]
+                
 
                 with patch.object(phi_detection_service, "detect_phi", return_value=expected_results):
                 anonymized = phi_detection_service.anonymize_phi(text)
@@ -135,7 +135,7 @@ def phi_detection_service():
                 assert "JOHN DOE" in anonymized or "NAME" in anonymized
                 assert "CONTACT-INFO" in anonymized
 
-                def test_error_handling(self, phi_detection_service):
+                    def test_error_handling(self, phi_detection_service):
 
 
                         """Test that the service handles errors gracefully."""

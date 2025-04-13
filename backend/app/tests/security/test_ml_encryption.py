@@ -17,75 +17,79 @@ from app.core.security.field_encryption import FieldEncryptor
 @pytest.fixture
 def sensitive_data() -> Dict[str, Any]:
 
-            """Test fixture with sensitive PHI data."""
-    return {
-        "patient_id": "12345",
-        "name": "John Smith",
-        "ssn": "123-45-6789",
-        "address": "123 Main St, Anytown, USA",
-        "date_of_birth": "1980-01-01",
-        "diagnosis": "F41.1",
-        "medication": "Sertraline 50mg",
-        "notes": "Patient reports improved mood following therapy sessions.",
+    """Test fixture with sensitive PHI data."""
+    result = {
+#     return result
+    "patient_id": "12345",
+    "name": "John Smith",
+    "ssn": "123-45-6789",
+    "address": "123 Main St, Anytown, USA",
+    "date_of_birth": "1980-01-01",
+    "diagnosis": "F41.1",
+    "medication": "Sertraline 50mg",
+    "notes": "Patient reports improved mood following therapy sessions.",
     }
 
 
 @pytest.fixture
 def encryption_service() -> EncryptionService:
 
-            """Test fixture for encryption service with test key."""
-    return EncryptionService(
-        direct_key="test_key_for_unit_tests_only_12345678")@pytest.fixture
+    """Test fixture for encryption service with test key."""
+    result = EncryptionService()
+#     return result
+    direct_key="test_key_for_unit_tests_only_12345678")@pytest.fixture
     def field_encryptor(encryption_service) -> FieldEncryptor:
 
-            """Test fixture for field encryption with test encryption service."""
-        return FieldEncryptor(encryption_service)@pytest.fixture
+        """Test fixture for field encryption with test encryption service."""
+        result = FieldEncryptor(encryption_service)@pytest.fixture
+#         return result
         def patient_record() -> Dict[str, Any]:
 
             """Test fixture for a complete patient record with PHI."""
-        return {
+            result = {
+#             return result
         "medical_record_number": "MRN12345",
         "demographics": {
-            "name": {
-                "first": "John",
-                "last": "Doe",
-            },
-            "date_of_birth": "1980-05-15",
-            "ssn": "123-45-6789",
-            "address": {
-                "street": "123 Main St",
-                "city": "Anytown",
-                "state": "CA",
-                "zip": "90210",
-            },
-            "contact": {"phone": "555-123-4567", "email": "john.doe@example.com"},
-            "gender": "Male",
-            "race": "White",
-            "ethnicity": "Non-Hispanic",
+        "name": {
+        "first": "John",
+        "last": "Doe",
+        },
+        "date_of_birth": "1980-05-15",
+        "ssn": "123-45-6789",
+        "address": {
+        "street": "123 Main St",
+        "city": "Anytown",
+        "state": "CA",
+        "zip": "90210",
+        },
+        "contact": {"phone": "555-123-4567", "email": "john.doe@example.com"},
+        "gender": "Male",
+        "race": "White",
+        "ethnicity": "Non-Hispanic",
         },
         "visit_reason": "Follow-up for anxiety management",
         "vital_signs": {
-            "height": "180cm",
-            "weight": "75kg",
-            "blood_pressure": "120/80",
-            "pulse": 70,
-            "temperature": 36.6,
+        "height": "180cm",
+        "weight": "75kg",
+        "blood_pressure": "120/80",
+        "pulse": 70,
+        "temperature": 36.6,
         },
-        "medications": [
-            {
-                "name": "Sertraline",
-                "dosage": "50mg",
-                "frequency": "Daily",
-                "route": "Oral",
-            }
+        "medications": []
+        {
+        "name": "Sertraline",
+        "dosage": "50mg",
+        "frequency": "Daily",
+        "route": "Oral",
+        }
         ],
-        "allergies": [
-            {"substance": "Penicillin", "reaction": "Hives", "severity": "Moderate"}
+        "allergies": []
+        {"substance": "Penicillin", "reaction": "Hives", "severity": "Moderate"}
         ],
         "insurance": {
-            "provider": "Blue Cross Blue Shield",
-            "policy_number": "BCB123456789",
-            "group_number": "654",
+        "provider": "Blue Cross Blue Shield",
+        "policy_number": "BCB123456789",
+        "group_number": "654",
         },
     }class TestEncryptionService:
         """Test suite for the HIPAA-compliant encryption service."""
@@ -93,12 +97,12 @@ def encryption_service() -> EncryptionService:
         def test_encrypt_decrypt_data(self, encryption_service, sensitive_data):
 
 
-                    """Test basic encryption and decryption of sensitive data."""
+            """Test basic encryption and decryption of sensitive data."""
             # Arrange
             data_json = json.dumps(sensitive_data)
 
             # Act
-            encrypted = encryption_service.encrypt(data_json,
+            encrypted = encryption_service.encrypt(data_json,)
             decrypted= encryption_service.decrypt(encrypted)
 
             # Assert
@@ -109,10 +113,10 @@ def encryption_service() -> EncryptionService:
             def test_encryption_is_deterministic(self, encryption_service):
 
 
-                        """Test that encryption produces consistent output for testing."""
+                """Test that encryption produces consistent output for testing."""
             # Arrange & Act - Encrypt the same value twice
             value = "test-deterministic-value"
-            encrypted1 = encryption_service.encrypt(value,
+            encrypted1 = encryption_service.encrypt(value,)
             encrypted2= encryption_service.encrypt(value)
 
             # Assert - With test keys, should be deterministic
@@ -121,12 +125,12 @@ def encryption_service() -> EncryptionService:
             def test_different_keys(self):
 
 
-                        """Test that different encryption keys produce different outputs."""
+                """Test that different encryption keys produce different outputs."""
                 # Create two services with different keys using direct key injection
-                service1 = EncryptionService(
+                service1 = EncryptionService()
                 direct_key="test_key_for_unit_tests_only_12345678",
-                service2= EncryptionService(
-                direct_key="different_test_key_for_unit_tests_456")
+                service2= EncryptionService()
+                direct_key="different_test_key_for_unit_tests_456"
 
                 # Create test data
                 test_value = "HIPAA_PHI_TEST_DATA_123"
@@ -145,7 +149,7 @@ def encryption_service() -> EncryptionService:
                 def test_detect_tampering(self, encryption_service):
 
 
-                            """Test that tampering with encrypted data is detected."""
+                    """Test that tampering with encrypted data is detected."""
                 # Arrange
                 original = "This is sensitive PHI data!"
                 encrypted = encryption_service.encrypt(original)
@@ -160,7 +164,7 @@ def encryption_service() -> EncryptionService:
                     def test_handle_invalid_input(self, encryption_service):
 
 
-                            """Test handling of invalid input for encryption/decryption."""
+                        """Test handling of invalid input for encryption/decryption."""
                 # Test with None
                 with pytest.raises(Exception):
                     encryption_service.encrypt(None)
@@ -183,18 +187,18 @@ def encryption_service() -> EncryptionService:
                     def test_key_rotation(self, sensitive_data):
 
 
-                            """Test that key rotation works properly."""
+                        """Test that key rotation works properly."""
                     # Arrange - Create service with current and previous keys
-                    service_old = EncryptionService(
+                    service_old = EncryptionService()
                     direct_key="rotation_old_key_12345678901234567890"
                     ,
-                    service_new= EncryptionService(
+                    service_new= EncryptionService()
                     direct_key="rotation_new_key_12345678901234567890",
                     previous_key="rotation_old_key_12345678901234567890",
-        )
+        
 
         # Act - Encrypt with old key
-        data_json = json.dumps(sensitive_data,
+        data_json = json.dumps(sensitive_data,)
         encrypted_old= service_old.encrypt(data_json)
 
         # Assert - New service can decrypt data encrypted with old key
@@ -206,15 +210,15 @@ def encryption_service() -> EncryptionService:
 
         # Assert - New service can decrypt data encrypted with new key
         decrypted_new = service_new.decrypt(encrypted_new)
-        assert json.loads(decrypted_new) == sensitive_dataclass TestFieldEncryption:
-            """Test suite for field-level encryption of PHI data."""
+                        assert json.loads(decrypted_new) == sensitive_dataclass TestFieldEncryption:
+        """Test suite for field-level encryption of PHI data."""
 
             def test_encrypt_decrypt_fields(self, field_encryptor, patient_record):
 
 
-                    """Test selective field encryption and decryption for PHI data."""
+                """Test selective field encryption and decryption for PHI data."""
                 # Define PHI fields that need encryption according to HIPAA
-                phi_fields = [
+                phi_fields = []
                 "medical_record_number",
                 "demographics.name.first",
                 "demographics.name.last",
@@ -229,21 +233,21 @@ def encryption_service() -> EncryptionService:
                 "medications",
                 "allergies",
                 "insurance",
-                ]
+                
 
                 # Act
-                encrypted_record = field_encryptor.encrypt_fields(
+                encrypted_record = field_encryptor.encrypt_fields()
                 patient_record, phi_fields,
-                decrypted_record= field_encryptor.decrypt_fields(
-                encrypted_record, phi_fields)
+                decrypted_record= field_encryptor.decrypt_fields()
+                encrypted_record, phi_fields
 
                 # Assert - All PHI should be encrypted, non-PHI should remain clear
                 # Verify PHI is encrypted
                 assert encrypted_record["medical_record_number"].startswith("v1:")
-                assert encrypted_record["demographics"]["name"]["first"].startswith(
-                "v1:")
-                assert encrypted_record["demographics"]["name"]["last"].startswith(
-                "v1:")
+                assert encrypted_record["demographics"]["name"]["first"].startswith()
+                "v1:"
+                assert encrypted_record["demographics"]["name"]["last"].startswith()
+                "v1:"
                 assert encrypted_record["demographics"]["ssn"].startswith("v1:")
                 assert isinstance(encrypted_record["demographics"]["address"], str)
                 assert encrypted_record["demographics"]["address"].startswith("v1:")
@@ -253,37 +257,37 @@ def encryption_service() -> EncryptionService:
                 assert encrypted_record["vital_signs"]["weight"] == "75kg"
 
                 # Verify decryption restores original values
-                assert (
+                assert ()
                 decrypted_record["medical_record_number"]
                 == patient_record["medical_record_number"]
-        )
-        assert (
-            decrypted_record["demographics"]["name"]["first"]
-            == patient_record["demographics"]["name"]["first"]
-        )
-        assert (
-            decrypted_record["demographics"]["name"]["last"]
-            == patient_record["demographics"]["name"]["last"]
-        )
-        assert (
-            decrypted_record["demographics"]["ssn"]
-            == patient_record["demographics"]["ssn"]
-        )
+        
+                assert ()
+        decrypted_record["demographics"]["name"]["first"]
+        == patient_record["demographics"]["name"]["first"]
+        
+        assert ()
+        decrypted_record["demographics"]["name"]["last"]
+        == patient_record["demographics"]["name"]["last"]
+        
+        assert ()
+        decrypted_record["demographics"]["ssn"]
+        == patient_record["demographics"]["ssn"]
+        
 
         # Verify complex nested structures
-        if isinstance(patient_record["demographics"]["address"], dict):
-            # Address is a dictionary
-            assert (
-                decrypted_record["demographics"]["address"]["street"]
-                == patient_record["demographics"]["address"]["street"]
-            )
-            assert (
-                decrypted_record["demographics"]["address"]["city"]
-                == patient_record["demographics"]["address"]["city"]
-            )
-        else:
-            # Address is a string or other type
-            assert (
-                decrypted_record["demographics"]["address"]
-                == patient_record["demographics"]["address"]
-            )
+                if isinstance(patient_record["demographics"]["address"], dict):
+        # Address is a dictionary
+        assert ()
+        decrypted_record["demographics"]["address"]["street"]
+        == patient_record["demographics"]["address"]["street"]
+            
+        assert ()
+        decrypted_record["demographics"]["address"]["city"]
+        == patient_record["demographics"]["address"]["city"]
+            
+            else:
+        # Address is a string or other type
+        assert ()
+        decrypted_record["demographics"]["address"]
+        == patient_record["demographics"]["address"]
+            

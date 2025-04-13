@@ -20,7 +20,7 @@ class TestJWTService:
     """Comprehensive tests for the JWTService class."""@pytest.fixture
     def test_settings(self):
 
-                """Create test settings with JWT configuration."""
+        """Create test settings with JWT configuration."""
         settings = MagicMock()
         # Create nested security attribute
         settings.security = MagicMock()
@@ -30,28 +30,28 @@ class TestJWTService:
         settings.security.JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7
         settings.security.JWT_AUDIENCE = "novamind:api"
         settings.security.JWT_ISSUER = "novamind.io"
-        return settings@pytest.fixture
+#             return settings@pytest.fixture
         def jwt_service(self, test_settings):
 
-                """Create a JWTService instance with test settings."""
+            """Create a JWTService instance with test settings."""
 
-        return JWTService(settings_instance=test_settings)
+#                 return JWTService(settings_instance=test_settings)
 
-        def test_initialization(self, jwt_service, test_settings):
+            def test_initialization(self, jwt_service, test_settings):
 
 
-                        """Test JWT service initialization with settings."""
-            assert jwt_service.secret_key == test_settings.security.JWT_SECRET_KEY
-            assert jwt_service.algorithm == test_settings.security.JWT_ALGORITHM
-            assert jwt_service.access_token_expire_minutes == test_settings.security.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-            assert jwt_service.refresh_token_expire_days == test_settings.security.JWT_REFRESH_TOKEN_EXPIRE_DAYS
-            assert jwt_service.audience == test_settings.security.JWT_AUDIENCE
-            assert jwt_service.issuer == test_settings.security.JWT_ISSUER
+                """Test JWT service initialization with settings."""
+                assert jwt_service.secret_key == test_settings.security.JWT_SECRET_KEY
+                assert jwt_service.algorithm == test_settings.security.JWT_ALGORITHM
+                assert jwt_service.access_token_expire_minutes == test_settings.security.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+                assert jwt_service.refresh_token_expire_days == test_settings.security.JWT_REFRESH_TOKEN_EXPIRE_DAYS
+                assert jwt_service.audience == test_settings.security.JWT_AUDIENCE
+                assert jwt_service.issuer == test_settings.security.JWT_ISSUER
 
             def test_create_access_token(self, jwt_service):
 
 
-                        """Test creation of access tokens."""
+                """Test creation of access tokens."""
                 # Create a basic access token
                 data = {"sub": "user123", "role": "patient"}
                 token = jwt_service.create_access_token(data)
@@ -76,8 +76,8 @@ class TestJWTService:
                 assert decoded["aud"] == jwt_service.audience
                 assert decoded["iss"] == jwt_service.issuer
 
-                # Verify expiration is set correctly (using timestamps directly,
-                now_timestamp= datetime.now(timezone.utc).timestamp(,
+                # Verify expiration is set correctly (using timestamps directly,)
+                now_timestamp= datetime.now(timezone.utc).timestamp(,)
                 exp_timestamp= decoded["exp"]
                 time_diff = exp_timestamp - now_timestamp
                 # Token should expire in ~30 minutes (between 29-31 minutes from now)
@@ -86,7 +86,7 @@ class TestJWTService:
                 def test_create_refresh_token(self, jwt_service):
 
 
-                        """Test creation of refresh tokens."""
+                    """Test creation of refresh tokens."""
                 # Create a refresh token
                 data = {"sub": "user123", "role": "patient", "refresh": True}
                 token = jwt_service.create_refresh_token(data)
@@ -109,12 +109,12 @@ class TestJWTService:
                 assert "exp" in decoded
                 assert "iat" in decoded
 
-                # Verify expiration is set correctly (using timestamps directly,
-                now_timestamp= datetime.now(timezone.utc).timestamp(,
+                # Verify expiration is set correctly (using timestamps directly,)
+                now_timestamp= datetime.now(timezone.utc).timestamp(,)
                 exp_timestamp= decoded["exp"]
                 time_diff = exp_timestamp - now_timestamp
                 expected_days = jwt_service.refresh_token_expire_days
-                # Token should expire in ~7 days (between 6 days 23 hours and 7 days 1
+                # Token should expire in ~7 days (between 6 days 23 hours and 7 days 1)
                 # hour,
                 min_seconds= (expected_days * 24 * 3600) - \
                 (1 * 3600)  # 7 days - 1 hour
@@ -122,7 +122,7 @@ class TestJWTService:
                 (1 * 3600)  # 7 days + 1 hour
                 assert min_seconds <= time_diff <= max_seconds
 
-                def test_verify_token_valid(self, jwt_service):
+                    def test_verify_token_valid(self, jwt_service):
 
 
                         """Test verification of valid tokens."""
@@ -137,7 +137,7 @@ class TestJWTService:
                 assert payload["sub"] == "user123"
                 assert payload["role"] == "patient"
 
-                def test_verify_token_expired(self, jwt_service):
+                    def test_verify_token_expired(self, jwt_service):
 
 
                         """Test verification of expired tokens."""
@@ -155,26 +155,26 @@ class TestJWTService:
                 with pytest.raises(jwt.ExpiredSignatureError):
                 jwt_service.verify_token(token)
 
-                def test_verify_token_invalid_signature(self, jwt_service):
+                    def test_verify_token_invalid_signature(self, jwt_service):
 
 
                         """Test verification of tokens with invalid signatures."""
-                    # Create a valid token
-                    data = {"sub": "user123", "role": "patient"}
-                    token = jwt_service.create_access_token(data)
+                # Create a valid token
+                data = {"sub": "user123", "role": "patient"}
+                token = jwt_service.create_access_token(data)
 
-                    # Tamper with the token
-                    parts = token.split('.')
-                    if len(parts) == 3:  # header.payload.signature
-                    # Modify the last character of the signature
-                    modified_sig = parts[2][:-1] + ('A' if parts[2][-1] != 'A' else 'B',
-                    tampered_token= f"{parts[0]}.{parts[1]}.{modified_sig}"
+                # Tamper with the token
+                parts = token.split('.')
+                if len(parts) == 3:  # header.payload.signature
+                # Modify the last character of the signature
+                modified_sig = parts[2][:-1] + ('A' if parts[2][-1] != 'A' else 'B',)
+                tampered_token= f"{parts[0]}.{parts[1]}.{modified_sig}"
 
-                    # Verify the tampered token fails validation
+                # Verify the tampered token fails validation
                     with pytest.raises(jwt.InvalidSignatureError):
                 jwt_service.verify_token(tampered_token)
 
-                def test_verify_token_invalid_audience(
+                def test_verify_token_invalid_audience()
                 self, jwt_service, test_settings):
                     """Test verification of tokens with invalid audience."""
                     # Create token with custom audience
@@ -186,11 +186,11 @@ class TestJWTService:
                         with pytest.raises(jwt.InvalidAudienceError):
                 jwt_service.verify_token(token)
 
-                def test_verify_token_invalid_issuer(self, jwt_service):
+                            def test_verify_token_invalid_issuer(self, jwt_service):
 
 
-                        """Test verification of tokens with invalid issuer."""
-                    # Create token with custom issuer
+                """Test verification of tokens with invalid issuer."""
+                # Create token with custom issuer
                     with patch.object(jwt_service, 'issuer', 'different.issuer'):
                 data = {"sub": "user123", "role": "patient"}
                 token = jwt_service.create_access_token(data)
@@ -199,21 +199,21 @@ class TestJWTService:
                 with pytest.raises(jwt.InvalidIssuerError):
                 jwt_service.verify_token(token)
 
-                def test_verify_token_malformed(self, jwt_service):
+                    def test_verify_token_malformed(self, jwt_service):
 
 
                         """Test verification of malformed tokens."""
-                    # Create a malformed token
-                    malformed_token = "not.a.valid.token"
+                # Create a malformed token
+                malformed_token = "not.a.valid.token"
 
-                    # Verify the malformed token fails validation
+                # Verify the malformed token fails validation
                     with pytest.raises(jwt.DecodeError):
                 jwt_service.verify_token(malformed_token)
 
-                def test_refresh_access_token(self, jwt_service):
+                        def test_refresh_access_token(self, jwt_service):
 
 
-                        """Test refreshing access tokens with valid refresh tokens."""
+                """Test refreshing access tokens with valid refresh tokens."""
                 # Create a refresh token
                 user_data = {"sub": "user123", "role": "patient", "refresh": True}
                 refresh_token = jwt_service.create_refresh_token(user_data)
@@ -230,7 +230,7 @@ class TestJWTService:
                 assert payload["role"] == "patient"
                 assert "refresh" not in payload  # refresh flag shouldn't be in access tokens
 
-                def test_refresh_access_token_with_non_refresh_token(
+                def test_refresh_access_token_with_non_refresh_token()
                 self, jwt_service):
                     """Test refresh fails with non-refresh tokens."""
                     # Create a regular access token
@@ -256,10 +256,10 @@ class TestJWTService:
                 # Verify identity
                 assert identity == user_id
 
-                def test_get_token_identity_missing_sub(self, jwt_service):
+                            def test_get_token_identity_missing_sub(self, jwt_service):
 
 
-                        """Test extracting identity from token without sub claim."""
+                """Test extracting identity from token without sub claim."""
                 # Create a special token without sub claim using direct JWT encoding
                 payload = {
                 "role": "patient",
@@ -267,11 +267,11 @@ class TestJWTService:
                 "iat": datetime.now(UTC),
                 "aud": jwt_service.audience,
                 "iss": jwt_service.issuer
-        }
-        token = jwt.encode()
-        payload,
-        jwt_service.secret_key,
-        algorithm = jwt_service.algorithm
+}
+token = jwt.encode()
+payload,
+jwt_service.secret_key,
+algorithm = jwt_service.algorithm
 
 
 ()

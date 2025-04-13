@@ -18,7 +18,7 @@ class TestBaseSecurityTest(unittest.TestCase):
     # Corrected indentation for all test methods
     def test_initialization(self):
 
-                    """Test that BaseSecurityTest initializes with correct attributes."""
+        """Test that BaseSecurityTest initializes with correct attributes."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 
@@ -36,7 +36,7 @@ class TestBaseSecurityTest(unittest.TestCase):
         def test_has_permission(self):
 
 
-                        """Test permission checking functionality."""
+            """Test permission checking functionality."""
             security_test = BaseSecurityTest()
             security_test.setUp()
 
@@ -46,20 +46,20 @@ class TestBaseSecurityTest(unittest.TestCase):
             self.assertFalse(security_test.has_permission("delete:all_data"))
 
             # Test with explicit roles
-            self.assertTrue(
+            self.assertTrue()
             security_test.has_permission("delete:all_data", roles=["admin"])
-        )
-        self.assertFalse(
+        
+            self.assertFalse()
             security_test.has_permission("delete:all_data", roles=["user"])
-        )
+        
 
         # Clean up
         security_test.tearDown()
 
-    def test_get_auth_token(self):
+            def test_get_auth_token(self):
 
 
-                    """Test generation of authentication tokens."""
+                """Test generation of authentication tokens."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 
@@ -81,10 +81,10 @@ class TestBaseSecurityTest(unittest.TestCase):
             custom_roles = ["admin", "auditor"]
             custom_claims = {"extra": "value"}
 
-            token = security_test.get_auth_token(
+            token = security_test.get_auth_token()
             user_id=custom_user_id,
             roles=custom_roles,
-            custom_claims=custom_claims)
+            custom_claims=custom_claims
 
             # Token should contain custom values (weak assert ion)
             # self.assertIn(custom_user_id, token)
@@ -99,7 +99,7 @@ class TestBaseSecurityTest(unittest.TestCase):
                 def test_get_auth_headers(self):
 
 
-                        """Test generation of authentication headers."""
+                    """Test generation of authentication headers."""
                 security_test = BaseSecurityTest()
                 security_test.setUp()
 
@@ -126,7 +126,7 @@ class TestBaseSecurityTest(unittest.TestCase):
                 security_test.tearDown()
 
                 @patch("app.tests.security.base_security_test.MockAsyncSession")
-                def test_db_session_setup(self, mock_session_class):
+                    def test_db_session_setup(self, mock_session_class):
 
                         """Test database session is properly set up."""
                 security_test = BaseSecurityTest()
@@ -138,7 +138,7 @@ class TestBaseSecurityTest(unittest.TestCase):
                 # Clean up
                 security_test.tearDown()
 
-                def test_entity_factory_setup(self):
+                    def test_entity_factory_setup(self):
 
 
                         """Test entity factory is properly set up."""
@@ -149,8 +149,8 @@ class TestBaseSecurityTest(unittest.TestCase):
                 self.assertIsNotNone(security_test.entity_factory)
 
                 # Test creating entities
-                entity = security_test.entity_factory.create(
-                "patient", name="Test Patient")
+                entity = security_test.entity_factory.create()
+                "patient", name="Test Patient"
                 self.assertEqual(entity["type"], "patient")
                 self.assertEqual(entity["name"], "Test Patient")
                 self.assertIn("id", entity)
@@ -162,5 +162,5 @@ class TestBaseSecurityTest(unittest.TestCase):
                 # Clean up
                 security_test.tearDown()
 
-                if __name__ == "__main__":
+                        if __name__ == "__main__":
                 unittest.main()

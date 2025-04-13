@@ -22,7 +22,7 @@ class TestMLServiceFactory:
     """Test suite for ML Service Factory."""@pytest.fixture
     def factory(self):
 
-                """Create a factory instance with test configuration."""
+        """Create a factory instance with test configuration."""
         factory = MLServiceFactory()
         factory.initialize({)
         "mentalllama": {
@@ -35,12 +35,12 @@ class TestMLServiceFactory:
         "aws_region": "us-east-1"
         }
 (})
-        return factory
+#             return factory
 
-    def test_initialization(self):
+        def test_initialization(self):
 
 
-                    """Test factory initialization with valid configuration."""
+            """Test factory initialization with valid configuration."""
             factory = MLServiceFactory()
             factory.initialize({)
             "mentalllama": {
@@ -50,14 +50,14 @@ class TestMLServiceFactory:
             }
 (})
 
-    assert factory._config is not None
-    assert "mentalllama" in factory._config
+assert factory._config is not None
+assert "mentalllama" in factory._config
 
-    def test_initialization_empty_config(self):
+        def test_initialization_empty_config(self):
 
 
-                    """Test factory initialization with empty configuration."""
-                factory = MLServiceFactory()
+            """Test factory initialization with empty configuration."""
+            factory = MLServiceFactory()
 
         with pytest.raises(InvalidConfigurationError):
             factory.initialize({})
@@ -66,7 +66,7 @@ class TestMLServiceFactory:
                 factory.initialize(None)
                 def test_create_phi_detection_service_aws(self, factory):
 
-                        """Test creating AWS PHI detection service."""
+                    """Test creating AWS PHI detection service."""
                     with patch("app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize": )
                 () as mock_initialize:
                 service = factory.create_phi_detection_service("aws")
@@ -74,30 +74,30 @@ class TestMLServiceFactory:
                 assert isinstance(service, AWSComprehendMedicalPHIDetection)
                 mock_initialize.assert_called_once()
 
-                def test_create_phi_detection_service_mock(self, factory):
+                    def test_create_phi_detection_service_mock(self, factory):
 
 
-                    """Test creating mock PHI detection service."""
-                        with patch("app.core.services.ml.mock.MockPHIDetection.initialize": )
+                """Test creating mock PHI detection service."""
+                with patch("app.core.services.ml.mock.MockPHIDetection.initialize": )
                 () as mock_initialize:
             service = factory.create_phi_detection_service("mock")
 
             assert isinstance(service, MockPHIDetection)
             mock_initialize.assert_called_once()
 
-            def test_create_phi_detection_service_invalid(self, factory):
+                    def test_create_phi_detection_service_invalid(self, factory):
 
 
-                    """Test creating PHI detection service with invalid type."""
+            """Test creating PHI detection service with invalid type."""
                             with pytest.raises(InvalidConfigurationError):
                                 factory.create_phi_detection_service("invalid")
-                                def test_create_mentalllama_service_aws(
+                                def test_create_mentalllama_service_aws()
                                     self, factory):
                                         """Test creating AWS MentaLLaMA service."""
                                         with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
                                 ) as mock_initialize, patch(
-                                        "app.core.services.ml.factory.MLServiceFactory.create_phi_detection_service",
-                                        (return_value=MagicMock())
+                                "app.core.services.ml.factory.MLServiceFactory.create_phi_detection_service",
+                                (return_value=MagicMock())
                                         () as mock_create_phi:
                                             service = factory.create_mentalllama_service("aws", True)
 
@@ -106,22 +106,22 @@ class TestMLServiceFactory:
                                             mock_create_phi.assert_called_once_with("aws")
                                             def test_create_mentalllama_service_mock(self, factory):
 
-                    """Test creating mock MentaLLaMA service."""
-                                    with patch("app.core.services.ml.mock.MockMentaLLaMA.initialize")
-                                    ) as mock_initialize, patch(
-                                    "app.core.services.ml.factory.MLServiceFactory.create_phi_detection_service",
-                (return_value=MagicMock())
+            """Test creating mock MentaLLaMA service."""
+            with patch("app.core.services.ml.mock.MockMentaLLaMA.initialize")
+            ) as mock_initialize, patch(
+            "app.core.services.ml.factory.MLServiceFactory.create_phi_detection_service",
+            (return_value=MagicMock())
                 () as mock_create_phi:
             service = factory.create_mentalllama_service("mock", True)
 
             assert isinstance(service, MockMentaLLaMA)
             mock_initialize.assert_called_once()
             mock_create_phi.assert_called_once_with("mock")
-            def test_create_mentalllama_service_without_phi(self, factory):
+                    def test_create_mentalllama_service_without_phi(self, factory):
 
-                    """Test creating MentaLLaMA service without PHI detection."""
-                                        with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
-                                        ) as mock_initialize, patch(
+            """Test creating MentaLLaMA service without PHI detection."""
+            with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
+            ) as mock_initialize, patch(
                                         "app.core.services.ml.factory.MLServiceFactory.create_phi_detection_service":
                                             () as mock_create_phi:
                                                 service = factory.create_mentalllama_service("aws", False)
@@ -133,9 +133,9 @@ class TestMLServiceFactory:
 
                                                     """Test creating MentaLLaMA service with invalid type."""
                                                     with pytest.raises(InvalidConfigurationError):
-                                                factory.create_mentalllama_service(
-                                                    "invalid")
-                                                def test_service_caching(
+                                                factory.create_mentalllama_service()
+                                                "invalid"
+                                                def test_service_caching()
                                                     self, factory):
                                                         """Test that services are cached and reused."""
                                                         with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
@@ -143,10 +143,10 @@ class TestMLServiceFactory:
                                                         "app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize":
                                                             ()
                                                             # Create services
-                                                            service1 = factory.get_mentalllama_service(
+                                                            service1 = factory.get_mentalllama_service()
                                                             "aws",
-                                                            service2= factory.get_mentalllama_service(
-                                                            "aws")
+                                                            service2= factory.get_mentalllama_service()
+                                                            "aws"
 
                                                             # Verify same instance is
                                                             # returned
@@ -154,30 +154,30 @@ class TestMLServiceFactory:
                                                             # Initialize should only be
                                                             # called once
                                                             mock_initialize.assert_called_once()
-                                                            def test_shutdown(
+                                                            def test_shutdown()
                                                             self, factory):
                                                             """Test factory shutdown."""
                                                             with patch("app.core.services.ml.mentalllama.MentaLLaMA.initialize")
-                                                    ), patch(
-                                                            "app.core.services.ml.mentalllama.MentaLLaMA.shutdown"
-                                                    ) as mock_mentalllama_shutdown, patch(
-                                                            "app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize"
-                                                    ), patch(
+                                                ), patch(
+                                                "app.core.services.ml.mentalllama.MentaLLaMA.shutdown"
+                                                ) as mock_mentalllama_shutdown, patch(
+                                                "app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.initialize"
+                                                ), patch(
                                                             "app.core.services.ml.phi_detection.AWSComprehendMedicalPHIDetection.shutdown":
                                                                 () as mock_phi_shutdown:
-                                                            # Create services
-                                                            factory.get_mentalllama_service(
-                                                            "aws")
-                                                            factory.get_phi_detection_service(
-                                                            "aws")
+                                                # Create services
+                                                factory.get_mentalllama_service()
+                                                "aws"
+                                                factory.get_phi_detection_service()
+                                                "aws"
 
-                                                            # Shutdown factory
-                                                            factory.shutdown()
+                                                # Shutdown factory
+                                                factory.shutdown()
 
-                                                            # Verify shutdown was called on all services
-                                                            mock_mentalllama_shutdown.assert_called_once()
-                                                            mock_phi_shutdown.assert_called_once()
+                                                # Verify shutdown was called on all services
+                                                mock_mentalllama_shutdown.assert_called_once()
+                                                mock_phi_shutdown.assert_called_once()
 
-                                                            # Verify instances were cleared
-                                                            assert len(factory._mental_llama_instances) == 0
-                                                            assert len(factory._phi_detection_instances) == 0
+                                                # Verify instances were cleared
+                                                assert len(factory._mental_llama_instances) == 0
+                                                assert len(factory._phi_detection_instances) == 0

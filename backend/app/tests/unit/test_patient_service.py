@@ -21,13 +21,13 @@ class TestPatientService:
     def setup_method(self):
 
 
-                    """Set up test fixtures for each test method."""
+        """Set up test fixtures for each test method."""
         # Create mock repository
         self.mock_repository = AsyncMock()
         self.mock_logger = MagicMock()
 
         # Create service with mock dependencies
-        self.service = PatientService(,
+        self.service = PatientService(,)
         repository= self.mock_repository,
         logger = self.mock_logger
         ()
@@ -35,23 +35,23 @@ class TestPatientService:
         # Setup sample patient data
         self.patient_id = "test-patient-id"
         self.patient_data = {
-            "id": self.patient_id,
-            "name": "John Doe",
-            "date_of_birth": "1980-01-01",
-            "gender": "male",
-            "email": "john.doe@example.com",
-            "phone": "555-123-4567",
-            "address": "123 Main St",
-            "insurance_number": "INS12345",
-            "created_at": datetime.now().isoformat(),
-            "updated_at": datetime.now().isoformat()
+        "id": self.patient_id,
+        "name": "John Doe",
+        "date_of_birth": "1980-01-01",
+        "gender": "male",
+        "email": "john.doe@example.com",
+        "phone": "555-123-4567",
+        "address": "123 Main St",
+        "insurance_number": "INS12345",
+        "created_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
         }
 
         # Create a patient entity
-    self.patient = Patient(**self.patient_data)
+        self.patient = Patient(**self.patient_data)
 
     async def test_get_patient_by_id_success(self):
-                 """Test successfully retrieving a patient by ID."""
+        """Test successfully retrieving a patient by ID."""
         # Setup mock return value
         self.mock_repository.get_by_id.return_value = self.patient
 
@@ -63,7 +63,7 @@ class TestPatientService:
         self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
 
         async def test_get_patient_by_id_not_found(self):
-                 """Test retrieving a non-existent patient by ID."""
+            """Test retrieving a non-existent patient by ID."""
             # Setup mock to return None
             self.mock_repository.get_by_id.return_value = None
 
@@ -75,7 +75,7 @@ class TestPatientService:
                 self.mock_repository.get_by_id.assert_called_once_with(self.patient_id)
 
                 async def test_create_patient_success(self):
-                 """Test successfully creating a patient."""
+                """Test successfully creating a patient."""
                 # Setup mock to return the new patient
                 self.mock_repository.create.return_value = self.patient
 
@@ -90,7 +90,7 @@ class TestPatientService:
                 self.mock_logger.info.assert_called_once()
 
                 async def test_update_patient_success(self):
-                 """Test successfully updating a patient."""
+                """Test successfully updating a patient."""
                 # Setup mocks
                 self.mock_repository.get_by_id.return_value = self.patient
                 self.mock_repository.update.return_value = self.patient
@@ -107,7 +107,7 @@ class TestPatientService:
                 self.mock_repository.update.assert_called_once()
 
                 async def test_delete_patient_success(self):
-                 """Test successfully deleting a patient."""
+                """Test successfully deleting a patient."""
                 # Setup mocks
                 self.mock_repository.get_by_id.return_value = self.patient
                 self.mock_repository.delete.return_value = True

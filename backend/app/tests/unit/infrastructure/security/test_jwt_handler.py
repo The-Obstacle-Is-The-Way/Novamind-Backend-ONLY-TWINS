@@ -20,28 +20,28 @@ from app.domain.exceptions import AuthenticationError  # Corrected exception nam
 @pytest.fixture
 def jwt_handler():
 
-        """
+    """
     Create a JWT handler with test settings.
 
     Returns:
         JWTHandler instance with test configuration
         """
 
-        return JWTHandler(,
-        secret_key= "testkey12345678901234567890123456789",
-        algorithm = "HS256",
-        access_token_expire_minutes = 15
-        ()
+#         return JWTHandler(,)
+secret_key= "testkey12345678901234567890123456789",
+algorithm = "HS256",
+access_token_expire_minutes = 15
+()
 
-        @pytest.mark.db_required()
+@pytest.mark.db_required()
         class TestJWTHandler:
             """Test suite for JWT token handler."""
 
             def test_init_with_valid_settings(self):
 
 
-                    """Test initialization with valid settings."""
-                handler = JWTHandler(,
+                """Test initialization with valid settings."""
+                handler = JWTHandler(,)
                 secret_key= "testkey12345678901234567890123456789",
                 algorithm = "HS256",
                 access_token_expire_minutes = 15
@@ -54,14 +54,14 @@ def jwt_handler():
                 def test_init_with_invalid_secret_key(self):
 
 
-                        """Test initialization with invalid secret key."""
+                    """Test initialization with invalid secret key."""
             with pytest.raises(ValueError, match="JWT secret key is missing or too short"):
                 JWTHandler(secret_key="short", algorithm="HS256")
 
                 def test_create_access_token(self, jwt_handler):
 
 
-                            """Test creating an access token."""
+                    """Test creating an access token."""
                 # Arrange
                 user_id = "user123"
                 role = "patient"
@@ -69,7 +69,7 @@ def jwt_handler():
                 session_id = "session123"
 
                 # Act
-                token = jwt_handler.create_access_token(,
+                token = jwt_handler.create_access_token(,)
                 user_id= user_id,
                 role = role,
                 permissions = permissions,
@@ -90,38 +90,38 @@ def jwt_handler():
                 assert "exp" in decoded
                 assert "iat" in decoded
 
-                def test_create_access_token_with_custom_expiry(self, jwt_handler):
+                    def test_create_access_token_with_custom_expiry(self, jwt_handler):
 
 
                         """Test creating an access token with custom expiration."""
-                    # Arrange
-                    user_id = "user123"
-                    role = "doctor"
-                    permissions = ["read:patients", "update:patients"]
-                    session_id = "session456"
-                    expires_delta = timedelta(hours=1)
+                # Arrange
+                user_id = "user123"
+                role = "doctor"
+                permissions = ["read:patients", "update:patients"]
+                session_id = "session456"
+                expires_delta = timedelta(hours=1)
 
-                    # Act
-                    token = jwt_handler.create_access_token(,
-                    user_id= user_id,
-                    role = role,
-                    permissions = permissions,
-                    session_id = session_id,
-                    expires_delta = expires_delta
-                    ()
+                # Act
+                token = jwt_handler.create_access_token(,)
+                user_id= user_id,
+                role = role,
+                permissions = permissions,
+                session_id = session_id,
+                expires_delta = expires_delta
+                ()
 
-                    # Assert
-                    decoded = jwt.decode()
-                    token,
-                    jwt_handler.secret_key,
-                    algorithms = [jwt_handler.algorithm]
-                    ()
+                # Assert
+                decoded = jwt.decode()
+                token,
+                jwt_handler.secret_key,
+                algorithms = [jwt_handler.algorithm]
+                ()
 
-                    # Verify expiration is approximately 1 hour from now
-                    exp_time = datetime.fromtimestamp(decoded["exp"],
-                    now= datetime.now(UTC)
-                    assert abs((exp_time - now).total_seconds() -
-                    3600) < 10  # Within 10 seconds of 1 hour
+                # Verify expiration is approximately 1 hour from now
+                exp_time = datetime.fromtimestamp(decoded["exp"],)
+                now= datetime.now(UTC)
+                assert abs((exp_time - now).total_seconds() -)
+                3600) < 10  # Within 10 seconds of 1 hour
 
                     def test_verify_token_valid(self, jwt_handler):
 
@@ -133,7 +133,7 @@ def jwt_handler():
                 permissions = ["read:profile"]
                 session_id = "session123"
 
-                token = jwt_handler.create_access_token(,
+                token = jwt_handler.create_access_token(,)
                 user_id= user_id,
                 role = role,
                 permissions = permissions,
@@ -149,10 +149,10 @@ def jwt_handler():
                 assert token_data.permissions == permissions
                 assert token_data.session_id == session_id
 
-                def test_verify_token_expired(self, jwt_handler):
+                        def test_verify_token_expired(self, jwt_handler):
 
 
-                        """Test verifying an expired token."""
+                """Test verifying an expired token."""
                 # Arrange
                 # Create token that is already expired
                 user_id = "user123"
@@ -170,50 +170,50 @@ def jwt_handler():
                 "session_id": session_id
             }
 
-        # Create token
-    token = jwt.encode()
-    to_encode,
-    jwt_handler.secret_key,
-    algorithm = jwt_handler.algorithm
+# Create token
+token = jwt.encode()
+to_encode,
+jwt_handler.secret_key,
+algorithm = jwt_handler.algorithm
 
 
 ()
 
-       # Act & Assert
+# Act & Assert
    with pytest.raises(AuthenticationException, match="Token has expired"):
-        jwt_handler.verify_token(token)
+       jwt_handler.verify_token(token)
 
-        def test_verify_token_invalid_signature(self, jwt_handler):
+       def test_verify_token_invalid_signature(self, jwt_handler):
 
 
-                        """Test verifying a token with invalid signature."""
-            # Arrange
-            user_id = "user123"
-            role = "patient"
-            permissions = ["read:profile"]
-            session_id = "session123"
+           """Test verifying a token with invalid signature."""
+           # Arrange
+           user_id = "user123"
+           role = "patient"
+           permissions = ["read:profile"]
+           session_id = "session123"
 
-            # Create token with different secret key
-            wrong_key = "wrongkey123456789012345678901234567"
-            to_encode = {
-            "sub": user_id,
-            "exp": datetime.now(UTC) + timedelta(minutes=15),
-            "iat": datetime.now(UTC),
-            "role": role,
-            "permissions": permissions,
-            "session_id": session_id
-            }
+           # Create token with different secret key
+           wrong_key = "wrongkey123456789012345678901234567"
+           to_encode = {
+           "sub": user_id,
+           "exp": datetime.now(UTC) + timedelta(minutes=15),
+           "iat": datetime.now(UTC),
+           "role": role,
+           "permissions": permissions,
+           "session_id": session_id
+           }
 
-    token = jwt.encode(to_encode, wrong_key, algorithm="HS256")
+token = jwt.encode(to_encode, wrong_key, algorithm="HS256")
 
-       # Act & Assert
+# Act & Assert
     with pytest.raises(AuthenticationException, match="Invalid authentication token"):
         jwt_handler.verify_token(token)
 
         def test_verify_token_malformed(self, jwt_handler):
 
 
-                        """Test verifying a malformed token."""
+            """Test verifying a malformed token."""
             # Arrange
             token = "not.a.valid.token"
 
@@ -224,14 +224,14 @@ def jwt_handler():
                 def test_refresh_token(self, jwt_handler):
 
 
-                        """Test refreshing a token."""
+                    """Test refreshing a token."""
                 # Arrange
                 user_id = "user123"
                 role = "patient"
                 permissions = ["read:profile"]
                 session_id = "session123"
 
-                original_token = jwt_handler.create_access_token(,
+                original_token = jwt_handler.create_access_token(,)
                 user_id= user_id,
                 role = role,
                 permissions = permissions,
@@ -242,15 +242,15 @@ def jwt_handler():
                 time.sleep(1)
 
                 # Act
-                new_token = jwt_handler.refresh_token(
-                original_token, extend_minutes=30)
+                new_token = jwt_handler.refresh_token()
+                original_token, extend_minutes=30
 
                 # Decode both tokens
                 original_payload = jwt.decode()
                 original_token,
                 jwt_handler.secret_key,
                 algorithms = [jwt_handler.algorithm]
-                (,
+                (,)
 
                 new_payload= jwt.decode()
                 new_token,
@@ -270,7 +270,7 @@ def jwt_handler():
                 # New token should have newer issued-at time
                 assert new_payload["iat"] > original_payload["iat"]
 
-                def test_refresh_token_expired(self, jwt_handler):
+                    def test_refresh_token_expired(self, jwt_handler):
 
 
                         """Test refreshing an expired token."""
@@ -292,50 +292,50 @@ def jwt_handler():
             }
 
         # Create token
-    token = jwt.encode()
-    to_encode,
-    jwt_handler.secret_key,
-    algorithm = jwt_handler.algorithm
+token = jwt.encode()
+to_encode,
+jwt_handler.secret_key,
+algorithm = jwt_handler.algorithm
 ()
 
-       # Act & Assert
+# Act & Assert
    with pytest.raises(AuthenticationException, match="Token has expired"):
-        jwt_handler.refresh_token(token)
+       jwt_handler.refresh_token(token)
 
-        def test_get_user_id_from_token(self, jwt_handler):
+       def test_get_user_id_from_token(self, jwt_handler):
 
 
-                        """Test extracting user ID from token."""
-            # Arrange
-            user_id = "user123"
-            role = "patient"
-            permissions = ["read:profile"]
-            session_id = "session123"
+           """Test extracting user ID from token."""
+           # Arrange
+           user_id = "user123"
+           role = "patient"
+           permissions = ["read:profile"]
+           session_id = "session123"
 
-            token = jwt_handler.create_access_token(,
-            user_id= user_id,
-            role = role,
-            permissions = permissions,
-            session_id = session_id
-            ()
+           token = jwt_handler.create_access_token(,)
+           user_id= user_id,
+           role = role,
+           permissions = permissions,
+           session_id = session_id
+           ()
 
-            # Act
-            extracted_user_id = jwt_handler.get_user_id_from_token(token)
+           # Act
+           extracted_user_id = jwt_handler.get_user_id_from_token(token)
 
-            # Assert
-            assert extracted_user_id ==  user_id
+           # Assert
+           assert extracted_user_id ==  user_id
 
             def test_get_permissions_from_token(self, jwt_handler):
 
 
-                        """Test extracting permissions from token."""
+                """Test extracting permissions from token."""
                 # Arrange
                 user_id = "user123"
                 role = "doctor"
                 permissions = ["read:patients", "update:patients", "read:billing"]
                 session_id = "session123"
 
-                token = jwt_handler.create_access_token(,
+                token = jwt_handler.create_access_token(,)
                 user_id= user_id,
                 role = role,
                 permissions = permissions,
@@ -351,14 +351,14 @@ def jwt_handler():
                 def test_get_role_from_token(self, jwt_handler):
 
 
-                        """Test extracting role from token."""
+                    """Test extracting role from token."""
                 # Arrange
                 user_id = "user123"
                 role = "admin"
                 permissions = ["read:all", "update:all"]
                 session_id = "session123"
 
-                token = jwt_handler.create_access_token(,
+                token = jwt_handler.create_access_token(,)
                 user_id= user_id,
                 role = role,
                 permissions = permissions,
@@ -372,7 +372,7 @@ def jwt_handler():
                 assert extracted_role ==  role
 
                 @patch('app.infrastructure.security.jwt.token_handler.logger')
-                def test_logging_behavior(self, mock_logger, jwt_handler):
+                    def test_logging_behavior(self, mock_logger, jwt_handler):
 
                         """Test that sensitive information is not logged."""
                 # Arrange
@@ -382,7 +382,7 @@ def jwt_handler():
                 session_id = "session123"
 
                 # Act
-                token = jwt_handler.create_access_token(,
+                token = jwt_handler.create_access_token(,)
                 user_id= user_id,
                 role = role,
                 permissions = permissions,

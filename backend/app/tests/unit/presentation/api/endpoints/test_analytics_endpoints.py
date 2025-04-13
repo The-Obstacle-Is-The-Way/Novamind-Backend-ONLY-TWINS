@@ -21,7 +21,7 @@ from fastapi.testclient import TestClient
 from app.domain.services.analytics_service import AnalyticsService
 # Assuming RedisCache is used
 from app.infrastructure.cache.redis_cache import RedisCache
-from app.presentation.api.endpoints.analytics_endpoints import (
+from app.presentation.api.endpoints.analytics_endpoints import ()
 router,
 get_analytics_service,
 _process_treatment_outcomes,
@@ -32,65 +32,65 @@ AnalyticsEvent  # Import AnalyticsEvent
 # Assuming get_cache_service exists or is defined elsewhere
 # If not, the dependency override needs adjustment
 # get_cache_service
-)
+
 # Assuming BaseRepository exists for type hinting
 
 
 @pytest.fixture
 def mock_analytics_service():
 
-            """Create a mock AnalyticsService for testing."""
+    """Create a mock AnalyticsService for testing."""
     mock = AsyncMock(spec=AnalyticsService)
 
     # Setup mock responses for various methods
     mock.get_patient_treatment_outcomes.return_value = {
-        "patient_id": "123",
-        "analysis_period": {"start": "2025-01-01", "end": "2025-03-01"},
-        "outcome_summary": "Patient shows improvement",
+    "patient_id": "123",
+    "analysis_period": {"start": "2025-01-01", "end": "2025-03-01"},
+    "outcome_summary": "Patient shows improvement",
     }
 
     mock.get_practice_metrics.return_value = {
-        "time_period": {"start": "2025-01-01", "end": "2025-03-01"},
-        "appointment_metrics": {"total_appointments": 100},
+    "time_period": {"start": "2025-01-01", "end": "2025-03-01"},
+    "appointment_metrics": {"total_appointments": 100},
     }
 
-    mock.get_diagnosis_distribution.return_value = [
-        {"diagnosis_code": "F32.1", "patient_count": 28},
-        {"diagnosis_code": "F41.1", "patient_count": 35},
-    ]
+    mock.get_diagnosis_distribution.return_value = []
+    {"diagnosis_code": "F32.1", "patient_count": 28},
+    {"diagnosis_code": "F41.1", "patient_count": 35},
+    
 
     mock.get_medication_effectiveness.return_value = {
-        "medication_name": "Test Med",
-        "effectiveness_metrics": {"overall_effectiveness_score": 0.72},
+    "medication_name": "Test Med",
+    "effectiveness_metrics": {"overall_effectiveness_score": 0.72},
     }
 
     mock.get_treatment_comparison.return_value = {
-        "diagnosis_code": "F32.1",
-        "treatments": [{"treatment_name": "CBT", "effectiveness_score": 0.75}],
+    "diagnosis_code": "F32.1",
+    "treatments": [{"treatment_name": "CBT", "effectiveness_score": 0.75}],
     }
 
-    mock.get_patient_risk_stratification.return_value = [
-        {"risk_level": "High", "patient_count": 12},
-        {"risk_level": "Moderate", "patient_count": 35},
-        {"risk_level": "Low", "patient_count": 94},
-    ]
+    mock.get_patient_risk_stratification.return_value = []
+    {"risk_level": "High", "patient_count": 12},
+    {"risk_level": "Moderate", "patient_count": 35},
+    {"risk_level": "Low", "patient_count": 94},
+    
 
-    return mock
+#     return mock
 
 
 @pytest.fixture
 def mock_cache_service():
 
-            """Create a mock RedisCache for testing."""
+    """Create a mock RedisCache for testing."""
     mock = AsyncMock(spec=RedisCache)
     mock.get.return_value = None  # Default to cache miss
     mock.set = AsyncMock(return_value=True)  # Mock set as async
     mock.increment = AsyncMock(return_value=1)
     mock.expire = AsyncMock(return_value=True)
-    return mock@pytest.fixture
+#     return mock@pytest.fixture
     def app(mock_analytics_service, mock_cache_service):
 
-            """Create a FastAPI app with the analytics router for testing."""
+        """Create a FastAPI app with the analytics router for testing."""
         app_instance = FastAPI()
 
         # Override dependencies
@@ -108,34 +108,34 @@ def mock_cache_service():
             # Include the router
             app_instance.include_router(router)
 
-            return app_instance@pytest.fixture
+#             return app_instance@pytest.fixture
             def client(app):
 
                 """Create a TestClient for the app."""
 
-                return TestClient(app)@pytest.fixture
+#                 return TestClient(app)@pytest.fixture
                 def mock_background_tasks():
 
-            """Create a mock background tasks."""
-        mock = MagicMock(spec=BackgroundTasks)
-        mock.add_task = MagicMock()
-        return mock@pytest.fixture
+"""Create a mock background tasks."""
+mock = MagicMock(spec=BackgroundTasks)
+mock.add_task = MagicMock()
+#                     return mock@pytest.fixture
         def mock_user():
 
             """Create a mock user for testing."""
-        # Assuming user object has an 'id' attribute
-        user = MagicMock()
-        user.id = "test-user-123"  # Use string ID for consistency if needed
-        user.email = "test@example.com"
-        user.role = "provider"  # Assuming role attribute exists
-        return user
+# Assuming user object has an 'id' attribute
+user = MagicMock()
+user.id = "test-user-123"  # Use string ID for consistency if needed
+user.email = "test@example.com"
+user.role = "provider"  # Assuming role attribute exists
+#             return user
 
-        # Apply overrides automatically for all tests in module
-        @pytest.fixture(autouse=True)
-        def override_dependencies_auto(
-            app,
-            mock_analytics_service,
-            mock_cache_service,
+# Apply overrides automatically for all tests in module
+@pytest.fixture(autouse=True)
+def override_dependencies_auto()
+app,
+mock_analytics_service,
+mock_cache_service,
             mock_user):
                 """Override dependencies for the FastAPI app."""
                 app.dependency_overrides[get_analytics_service] = lambda: mock_analytics_service
@@ -168,7 +168,7 @@ def mock_cache_service():
                     """Tests for analytics endpoints."""
 
                     @pytest.mark.asyncio
-                    async def test_record_analytics_event(
+                    async def test_record_analytics_event()
                     self,
                     client,
                     mock_cache_service,
@@ -183,9 +183,9 @@ def mock_cache_service():
                     "user_id": None,  # Should be populated from authenticated user
                     "client_info": {"browser": "Chrome", "os": "Windows"},
                     "data": {"page": "/dashboard", "referrer": "/login"}
-        }
+}
 
-        # Mock phi detector to avoid real PHI detection logic
+# Mock phi detector to avoid real PHI detection logic
     with patch('app.infrastructure.ml.phi_detection.PHIDetectionService') as mock_phi_detector:
         # Configure mock PHI detector
         mock_instance = mock_phi_detector.return_value
@@ -216,16 +216,16 @@ def mock_cache_service():
             mock_cache_service.expire.assert_called_once()
 
             @pytest.mark.asyncio
-            async def test_record_analytics_batch(
-                self,
-                client,
-                mock_cache_service,
-                mock_background_tasks,
+            async def test_record_analytics_batch()
+            self,
+            client,
+            mock_cache_service,
+            mock_background_tasks,
                 mock_user):
                     """Test the record_analytics_batch endpoint."""
                     # Arrange
                     batch_data = {
-                    "events": [
+                    "events": []
                     {
                     "event_type": "page_view",
                     "timestamp": datetime.now(UTC).isoformat(),
@@ -233,16 +233,16 @@ def mock_cache_service():
                     "user_id": None,
                     "client_info": {"browser": "Chrome", "os": "Windows"},
                     "data": {"page": "/dashboard", "referrer": "/login"}
-                },
-                    {
-                    "event_type": "button_click",
-                    "timestamp": datetime.now(UTC).isoformat(),
-                    "session_id": "test-session",
-                    "user_id": None,
-                    "client_info": {"browser": "Chrome", "os": "Windows"},
-                    "data": {"button_id": "submit", "page": "/form"}
-                }
-            ]
+            },
+            {
+            "event_type": "button_click",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": "test-session",
+            "user_id": None,
+            "client_info": {"browser": "Chrome", "os": "Windows"},
+            "data": {"button_id": "submit", "page": "/form"}
+            }
+            
         }
 
         # Mock phi detector
@@ -278,7 +278,7 @@ def mock_cache_service():
                 assert mock_cache_service.expire.call_count == 1
 
                 @pytest.mark.asyncio
-                async def test_phi_detection_in_analytics_event(
+                async def test_phi_detection_in_analytics_event()
                 self, client, mock_cache_service, mock_background_tasks, mock_user):
                     """Test PHI detection in analytics events."""
                     # Arrange
@@ -304,10 +304,10 @@ def mock_cache_service():
         mock_instance.ensure_initialized = MagicMock(return_value=None)
         mock_instance.contains_phi = MagicMock(return_value=True)
         # Simulate redaction by replacing the name
-        redacted_data_str = json.dumps(
-            event_data["data"]).replace(
-            "John Doe",
-            "[REDACTED]")
+        redacted_data_str = json.dumps()
+        event_data["data"]).replace(
+        "John Doe",
+        "[REDACTED]"
         mock_instance.redact_phi = MagicMock(return_value=redacted_data_str)
 
         # Act
@@ -333,7 +333,7 @@ def mock_cache_service():
             assert "[REDACTED]" in event.data
 
             @pytest.mark.asyncio
-            async def test_get_analytics_dashboard(
+            async def test_get_analytics_dashboard()
                 self, client, mock_cache_service, mock_user):
                     """Test the get_analytics_dashboard endpoint."""
                     # Arrange
@@ -341,54 +341,54 @@ def mock_cache_service():
                     mock_dashboard_data = {
                     "event_count": 1250,
                     "unique_users": 120,
-                    "top_events": [
+                    "top_events": []
                     {"event_type": "page_view", "count": 800},
                     {"event_type": "button_click", "count": 350},
                     {"event_type": "form_submit", "count": 100}
                     ],
-                    "hourly_breakdown": [
+                    "hourly_breakdown": []
                     {"hour": 0, "count": 20},
                     {"hour": 1, "count": 15},
                     # ... (add more hours if needed)
                     {"hour": 23, "count": 45}
-                    ]
+                    
         }
 
         # Test cached response
-    mock_cache_service.get.return_value = json.dumps(
-        mock_dashboard_data)  # Cache stores JSON
+mock_cache_service.get.return_value = json.dumps()
+mock_dashboard_data)  # Cache stores JSON
 
-    # Act
-    response = client.get("/analytics/dashboard?timeframe=daily")
+# Act
+response = client.get("/analytics/dashboard?timeframe=daily")
 
-    # Assert
-    assert response.status_code == status.HTTP_200_OK
-    response_data = response.json()
-    assert response_data["status"] == "success"
-    assert response_data["data"] == mock_dashboard_data
+# Assert
+assert response.status_code == status.HTTP_200_OK
+response_data = response.json()
+assert response_data["status"] == "success"
+assert response_data["data"] == mock_dashboard_data
 
-    # Verify cache was checked
-    mock_cache_service.get.assert_called_once()
-    mock_cache_service.set.assert_not_called()
+# Verify cache was checked
+mock_cache_service.get.assert_called_once()
+mock_cache_service.set.assert_not_called()
 
-    # Test non-cached response
-    mock_cache_service.get.reset_mock()
-    mock_cache_service.set.reset_mock()  # Reset set mock as well
-    mock_cache_service.get.return_value = None
+# Test non-cached response
+mock_cache_service.get.reset_mock()
+mock_cache_service.set.reset_mock()  # Reset set mock as well
+mock_cache_service.get.return_value = None
 
-    # Act
-    response = client.get("/analytics/dashboard?timeframe=weekly")
+# Act
+response = client.get("/analytics/dashboard?timeframe=weekly")
 
-    # Assert
-    assert response.status_code == status.HTTP_200_OK
-    response_data = response.json()
-    assert response_data["status"] == "success"
-    # The endpoint generates default data if cache misses, check for expected
-    # keys
-    assert "event_count" in response_data["data"]
-    assert "unique_users" in response_data["data"]
-    assert "top_events" in response_data["data"]
+# Assert
+assert response.status_code == status.HTTP_200_OK
+response_data = response.json()
+assert response_data["status"] == "success"
+# The endpoint generates default data if cache misses, check for expected
+# keys
+assert "event_count" in response_data["data"]
+assert "unique_users" in response_data["data"]
+assert "top_events" in response_data["data"]
 
-    # Verify cache was checked and data was cached
-    mock_cache_service.get.assert_called_once()
-    mock_cache_service.set.assert_called_once()
+# Verify cache was checked and data was cached
+mock_cache_service.get.assert_called_once()
+mock_cache_service.set.assert_called_once()

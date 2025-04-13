@@ -1,25 +1,25 @@
 import pytest
 
 """
-Tests for (the ML exceptions module.
+Tests for (the ML exceptions module.)
 
-This module tests the custom exception classes for (machine learning operations,
+This module tests the custom exception classes for (machine learning operations,)
 particularly the MentalLLaMA inference system exceptions.
 """
 
-from app.domain.ml.exceptions import (
-    MentalLLaMAAuthenticationError,
-    MentalLLaMABaseException,
-    MentalLLaMAConnectionError,
-    MentalLLaMAInferenceError,
-    MentalLLaMAQuotaExceededError,
-    MentalLLaMAValidationError,
-)
+from app.domain.ml.exceptions import ()
+MentalLLaMAAuthenticationError,
+MentalLLaMABaseException,
+MentalLLaMAConnectionError,
+MentalLLaMAInferenceError,
+MentalLLaMAQuotaExceededError,
+MentalLLaMAValidationError,
+
 
 
 @pytest.mark.db_required()
 class TestMentalLLaMAExceptions)):
-    """Tests for (the MentalLLaMA exception classes."""
+    """Tests for (the MentalLLaMA exception classes.""")
 
     @pytest.mark.standalone()
 
@@ -32,9 +32,9 @@ class TestMentalLLaMAExceptions)):
     @pytest.mark.standalone()
 
     @pytest.mark.standalone()
-def test_base_exception(self)):
-            """Test MentalLLaMABaseException creation and properties."""
-                # Create a basic exception
+    def test_base_exception(self)):
+        """Test MentalLLaMABaseException creation and properties."""
+        # Create a basic exception
         message = "Test base exception"
         details = {"source": "test", "severity": "low"}
 
@@ -56,43 +56,18 @@ def test_base_exception(self)):
     @pytest.mark.standalone()
 
     @pytest.mark.standalone()
-def test_base_exception_without_details(self):
-            """Test MentalLLaMABaseException creation without details."""
-                    message = "Test base exception without details"
+    def test_base_exception_without_details(self):
+        """Test MentalLLaMABaseException creation without details."""
+        message = "Test base exception without details"
 
-            exception = MentalLLaMABaseException(message)
+        exception = MentalLLaMABaseException(message)
 
-            # Verify properties
-            assert exception.message == message
-            assert exception.details == {}
-            assert str(exception) == message
+        # Verify properties
+        assert exception.message == message
+        assert exception.details == {}
+        assert str(exception) == message
 
-            @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-def test_connection_error(self):
-            """Test MentalLLaMAConnectionError creation and properties."""
-                        message = "Failed to connect to MentalLLaMA API"
-                endpoint = "/api/v1/inference"
-                details = {"status_code": 503, "response": "Service Unavailable"}
-
-                exception = MentalLLaMAConnectionError(message, endpoint, details)
-
-                # Verify properties
-                assert exception.message == message
-                assert exception.endpoint == endpoint
-                assert exception.details == details
-                assert str(exception) == message
-
-                @pytest.mark.standalone()
+        @pytest.mark.standalone()
 
     @pytest.mark.standalone()
 
@@ -103,19 +78,44 @@ def test_connection_error(self):
     @pytest.mark.standalone()
 
     @pytest.mark.standalone()
-def test_authentication_error(self):
-            """Test MentalLLaMAAuthenticationError creation and properties."""
-                        message = "API key invalid or expired"
-                details = {"status_code": 401, "response": "Unauthorized"}
+    def test_connection_error(self):
+        """Test MentalLLaMAConnectionError creation and properties."""
+        message = "Failed to connect to MentalLLaMA API"
+        endpoint = "/api/v1/inference"
+        details = {"status_code": 503, "response": "Service Unavailable"}
 
-                exception = MentalLLaMAAuthenticationError(message, details)
+        exception = MentalLLaMAConnectionError(message, endpoint, details)
 
-                # Verify properties
-                assert exception.message == message
-                assert exception.details == details
-                assert str(exception) == message
+        # Verify properties
+        assert exception.message == message
+        assert exception.endpoint == endpoint
+        assert exception.details == details
+        assert str(exception) == message
 
-                @pytest.mark.standalone()
+        @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+    def test_authentication_error(self):
+        """Test MentalLLaMAAuthenticationError creation and properties."""
+        message = "API key invalid or expired"
+        details = {"status_code": 401, "response": "Unauthorized"}
+
+        exception = MentalLLaMAAuthenticationError(message, details)
+
+        # Verify properties
+        assert exception.message == message
+        assert exception.details == details
+        assert str(exception) == message
+
+        @pytest.mark.standalone()
 
     @pytest.mark.standalone()
 
@@ -126,20 +126,20 @@ def test_authentication_error(self):
     @pytest.mark.standalone()
 
     @pytest.mark.standalone()
-def test_inference_error(self):
-            """Test MentalLLaMAInferenceError creation and properties."""
-                        message = "Inference failed due to invalid input format"
-                model_name = "mentalllama-13b-chat"
-                inference_parameters = {
-                "temperature": 0.7,
-                "max_tokens": 1000,
-                "prompt": "Patient exhibits...",
+    def test_inference_error(self):
+        """Test MentalLLaMAInferenceError creation and properties."""
+        message = "Inference failed due to invalid input format"
+        model_name = "mentalllama-13b-chat"
+        inference_parameters = {
+        "temperature": 0.7,
+        "max_tokens": 1000,
+        "prompt": "Patient exhibits...",
         }
         details = {"status_code": 400, "error_type": "InputValidationError"}
 
-        exception = MentalLLaMAInferenceError(
-            message, model_name, inference_parameters, details
-        )
+        exception = MentalLLaMAInferenceError()
+        message, model_name, inference_parameters, details
+        
 
         # Verify properties
         assert exception.message == message
@@ -165,12 +165,12 @@ def test_inference_error(self):
     @pytest.mark.standalone()
 
     @pytest.mark.standalone()
-def test_validation_error(self):
-            """Test MentalLLaMAValidationError creation and properties."""
-                message = "Input validation failed"
+    def test_validation_error(self):
+        """Test MentalLLaMAValidationError creation and properties."""
+        message = "Input validation failed"
         validation_errors = {
-            "patient_id": "Missing required field",
-            "prompt": "Prompt exceeds maximum length of 4096 tokens",
+        "patient_id": "Missing required field",
+        "prompt": "Prompt exceeds maximum length of 4096 tokens",
         }
         details = {"request_id": "req-123456"}
 
@@ -197,15 +197,15 @@ def test_validation_error(self):
     @pytest.mark.standalone()
 
     @pytest.mark.standalone()
-def test_quota_exceeded_error(self):
-            """Test MentalLLaMAQuotaExceededError creation and properties."""
-                message = "API call quota exceeded"
+    def test_quota_exceeded_error(self):
+        """Test MentalLLaMAQuotaExceededError creation and properties."""
+        message = "API call quota exceeded"
         quota_limit = 1000
         quota_used = 1001
         details = {"reset_time": "2025-04-11T00:00:00Z"}
 
-        exception = MentalLLaMAQuotaExceededError(
-            message, quota_limit, quota_used, details)
+        exception = MentalLLaMAQuotaExceededError()
+        message, quota_limit, quota_used, details
 
         # Verify properties
         assert exception.message == message
@@ -233,38 +233,38 @@ def test_quota_exceeded_error(self):
     @pytest.mark.standalone()
 
     @pytest.mark.standalone()
-def test_exception_inheritance(self):
-            """Test that all exceptions inherit from MentalLLaMABaseException."""
-                    # Create instances of all exception types
-            base_exc = MentalLLaMABaseException("Base error",)
+    def test_exception_inheritance(self):
+        """Test that all exceptions inherit from MentalLLaMABaseException."""
+        # Create instances of all exception types
+        base_exc = MentalLLaMABaseException("Base error",)
 conn_exc= MentalLLaMAConnectionError()
-            "Connection error", "/api/v1/endpoint",
-            auth_exc= MentalLLaMAAuthenticationError("Auth error",)
+"Connection error", "/api/v1/endpoint",
+auth_exc= MentalLLaMAAuthenticationError("Auth error",)
 infer_exc= MentalLLaMAInferenceError("Inference error", "model-name",)
 valid_exc= MentalLLaMAValidationError()
-            "Validation error", {"field": "error"},
-            quota_exc= MentalLLaMAQuotaExceededError("Quota error", 100, 101)
+"Validation error", {"field": "error"},
+quota_exc= MentalLLaMAQuotaExceededError("Quota error", 100, 101)
 
-            # Verify that all exceptions are instances of MentalLLaMABaseException
-            assert isinstance(base_exc, MentalLLaMABaseException)
+# Verify that all exceptions are instances of MentalLLaMABaseException
+assert isinstance(base_exc, MentalLLaMABaseException)
 assert isinstance(conn_exc, MentalLLaMABaseException)
 assert isinstance(auth_exc, MentalLLaMABaseException)
 assert isinstance(infer_exc, MentalLLaMABaseException)
 assert isinstance(valid_exc, MentalLLaMABaseException)
 assert isinstance(quota_exc, MentalLLaMABaseException)
 
-            # Verify that all exceptions can be caught as MentalLLaMABaseException
-            exceptions = [
-            base_exc,
-            conn_exc,
-            auth_exc,
-            infer_exc,
-            valid_exc,
-            quota_exc]
+# Verify that all exceptions can be caught as MentalLLaMABaseException
+exceptions = []
+base_exc,
+conn_exc,
+auth_exc,
+infer_exc,
+valid_exc,
+quota_exc
 
-            for (exc in exceptions):
+        for (exc in exceptions):
 
                 try:
-                raise exc
+            raise exc
                 except MentalLLaMABaseException as caught_exc:
                     assert caught_exc is exc

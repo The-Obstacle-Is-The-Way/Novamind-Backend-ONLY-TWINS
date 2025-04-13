@@ -30,7 +30,7 @@ This test suite verifies that:
     @pytest.fixture
     @pytest.mark.db_required()
     async def test_patient() -> Patient:
-             """Create a test patient with PHI for testing."""
+        """Create a test patient with PHI for testing."""
         patient_id = uuid.uuid4()
         #     return Patient( # FIXME: return outside function)
         id=patient_id,
@@ -40,17 +40,17 @@ This test suite verifies that:
         email="integration.test@example.com",
         phone="555-987-6543",
         address=Address()
-            line1="123 Integration St",
-            line2="Suite 500",
-            city="Testville",
-            state="TS",
-            postal_code="12345",
-            country="Testland"
+        line1="123 Integration St",
+        line2="Suite 500",
+        city="Testville",
+        state="TS",
+        postal_code="12345",
+        country="Testland"
         (        ),
         emergency_contact=EmergencyContact()
-            name="Emergency Contact",
-            phone="555-123-4567",
-            relationship="Test Relative"
+        name="Emergency Contact",
+        phone="555-123-4567",
+        relationship="Test Relative"
         (        ),
         insurance=None,
         active=True,
@@ -59,7 +59,7 @@ This test suite verifies that:
         def log_capture() -> StringIO:
 
             """Capture logs for analysis."""
-            log_stream = StringIO(,
+            log_stream = StringIO(,)
             handler= logging.StreamHandler(log_stream)
             handler.setLevel(logging.DEBUG)
     
@@ -89,8 +89,8 @@ This test suite verifies that:
     
         @pytest.mark.asyncio()
         async def test_patient_phi_database_encryption(self, test_patient: Patient):
-                 """Test that PHI is encrypted in database and decrypted when retrieved."""
-            # Convert to model (encrypts PHI,
+            """Test that PHI is encrypted in database and decrypted when retrieved."""
+            # Convert to model (encrypts PHI,)
             patient_model= PatientModel.from_domain(test_patient)
         
             # Save to database
@@ -110,7 +110,7 @@ This test suite verifies that:
                 result = await new_session.execute(f""")
                 SELECT first_name, last_name, email, phone
                 FROM patients WHERE id = '{patient_id}'
-                (    """,
+                (    """,)
                 row= result.fetchone()
                 
                 # Verify PHI is stored encrypted (raw DB values)
@@ -119,7 +119,7 @@ This test suite verifies that:
                 assert row.phone  !=  test_patient.phone, "Phone not encrypted in database"
                 
                 # Retrieve through ORM and convert back to domain
-                db_patient_model = await new_session.get(PatientModel, patient_id,
+                db_patient_model = await new_session.get(PatientModel, patient_id,)
                 retrieved_patient= db_patient_model.to_domain()
                 
                 # Verify domain entity has decrypted PHI
@@ -133,7 +133,7 @@ This test suite verifies that:
     
                 @pytest.mark.asyncio()
                 async def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
-                 """Test that PHI is properly sanitized in logs."""
+                """Test that PHI is properly sanitized in logs."""
                 # Set up logger
                 logger = get_sanitized_logger("test.phi.integration") # Use correct function
         
@@ -148,20 +148,20 @@ This test suite verifies that:
     }
 (    )
         
-        # Get log content
-    log_content = log_capture.getvalue()
+# Get log content
+log_content = log_capture.getvalue()
         
-        # Verify PHI is not in logs
-    assert test_patient.email not in log_content, "Email found in logs"
-    assert test_patient.phone not in log_content, "Phone found in logs"
-    assert str(test_patient.date_of_birth) not in log_content, "Date of birth found in logs"
+# Verify PHI is not in logs
+assert test_patient.email not in log_content, "Email found in logs"
+assert test_patient.phone not in log_content, "Phone found in logs"
+assert str(test_patient.date_of_birth) not in log_content, "Date of birth found in logs"
         
-        # Verify patient ID (non-PHI) is in logs
-    assert str(test_patient.id) in log_content, "Patient ID should be in logs"
+# Verify patient ID (non-PHI) is in logs
+assert str(test_patient.id) in log_content, "Patient ID should be in logs"
     
-    @pytest.mark.asyncio()
+@pytest.mark.asyncio()
     async def test_phi_sanitization_during_errors(self, test_patient: Patient, log_capture: StringIO):
-                 """Test that PHI is sanitized even during error handling."""
+        """Test that PHI is sanitized even during error handling."""
         # Set up logger
         logger = get_sanitized_logger("test.phi.error") # Use correct function
         
@@ -179,33 +179,33 @@ This test suite verifies that:
                 {
                 "patient_id": str(test_patient.id),
                 "error_details": str(e)
-    }
+}
 (    )
         
-        # Get log content
-    log_content = log_capture.getvalue()
+# Get log content
+log_content = log_capture.getvalue()
         
-        # Verify PHI is not in logs
-    assert test_patient.email not in log_content, "Email found in logs during error"
-    assert test_patient.first_name not in log_content, "First name found in logs during error"
-    assert test_patient.last_name not in log_content, "Last name found in logs during error"
-    assert str(test_patient.date_of_birth) not in log_content, "DOB found in logs during error"
+# Verify PHI is not in logs
+assert test_patient.email not in log_content, "Email found in logs during error"
+assert test_patient.first_name not in log_content, "First name found in logs during error"
+assert test_patient.last_name not in log_content, "Last name found in logs during error"
+assert str(test_patient.date_of_birth) not in log_content, "DOB found in logs during error"
         
-        # Verify sanitized placeholders are in logs instead
-    assert "ANONYMIZED" in log_content or "REDACTED" in log_content, "No sanitization markers found"
+# Verify sanitized placeholders are in logs instead
+assert "ANONYMIZED" in log_content or "REDACTED" in log_content, "No sanitization markers found"
     
-    @pytest.mark.asyncio()
+@pytest.mark.asyncio()
     async def test_cross_module_phi_protection(self, test_patient: Patient, log_capture: StringIO):
-                 """Test PHI protection across module boundaries."""
+        """Test PHI protection across module boundaries."""
         # This test simulates a full pipeline that processes patient data
         
-        # Convert to model (simulating data access layer,
+        # Convert to model (simulating data access layer,)
         patient_model= PatientModel.from_domain(test_patient)
         
         # Simulate processing in service layer
         def process_patient_data(model: PatientModel) -> Dict[str, Any]:
 
-                        """Simulate processing in another module."""
+            """Simulate processing in another module."""
             logger = get_sanitized_logger("service.patient") # Use correct function
             
             # Log the processing (with PHI that should be sanitized)
@@ -220,24 +220,24 @@ This test suite verifies that:
             "contact_info": f"{model.email} / {model.phone}",
             "full_name": f"{model.first_name} {model.last_name}",
             "status": "processed"
-    }
+}
         
-        # Process the patient
-    processed_data = process_patient_data(patient_model)
+# Process the patient
+processed_data = process_patient_data(patient_model)
         
-        # Verify the processed data still contains PHI (no sanitization of actual data)
-    assert test_patient.email in processed_data["contact_info"], "Email missing from processed data"
-    assert test_patient.phone in processed_data["contact_info"], "Phone missing from processed data"
-    assert test_patient.first_name in processed_data["full_name"], "First name missing from processed data"
+# Verify the processed data still contains PHI (no sanitization of actual data)
+assert test_patient.email in processed_data["contact_info"], "Email missing from processed data"
+assert test_patient.phone in processed_data["contact_info"], "Phone missing from processed data"
+assert test_patient.first_name in processed_data["full_name"], "First name missing from processed data"
         
-        # Get log content
-    log_content = log_capture.getvalue()
+# Get log content
+log_content = log_capture.getvalue()
         
-        # Verify logs do not contain PHI
-    assert test_patient.email not in log_content, "Email found in logs during cross-module processing"
-    assert test_patient.phone not in log_content, "Phone found in logs during cross-module processing"
-    assert test_patient.first_name not in log_content, "First name found in logs during cross-module processing"
+# Verify logs do not contain PHI
+assert test_patient.email not in log_content, "Email found in logs during cross-module processing"
+assert test_patient.phone not in log_content, "Phone found in logs during cross-module processing"
+assert test_patient.first_name not in log_content, "First name found in logs during cross-module processing"
 
 
-if __name__ == "__main__":
-    pytest.main(["-xvs", __file__])
+                if __name__ == "__main__":
+pytest.main(["-xvs", __file__])

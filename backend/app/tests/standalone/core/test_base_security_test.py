@@ -41,20 +41,20 @@ class BaseSecurityTest(unittest.TestCase):
         self.mock_auth_service = self.create_mock_auth_service()
         self.test_user = self.create_test_user()
 
-    def create_mock_auth_service(self) -> MagicMock:
+        def create_mock_auth_service(self) -> MagicMock:
         """Create a mock authentication service for testing."""
         mock = MagicMock()
         mock.authenticate.return_value = True
         mock.get_user_by_id.return_value = self.create_test_user()
         return mock
 
-    def create_test_user(self) -> dict[str, Any]:
+        def create_test_user(self) -> dict[str, Any]:
         """Create a test user with the configured roles."""
         return {
-                "id": self.test_user_id,
-                "username": "test_user",
-                "email": "test_user@example.com",
-                "roles": self.test_roles,
+        "id": self.test_user_id,
+        "username": "test_user",
+        "email": "test_user@example.com",
+        "roles": self.test_roles,
         }
 
 
@@ -75,14 +75,14 @@ class TestBaseSecurityTest(BaseSecurityTest):
         self.assertEqual(self.test_user["roles"], self.test_roles)
 
     @pytest.mark.standalone()
-    def test_mock_auth_service(self):
-        """Test that the mock authentication service works as expected."""
-        # Verify authenticate method
-        self.assertTrue(self.mock_auth_service.authenticate())
+        def test_mock_auth_service(self):
+    """Test that the mock authentication service works as expected."""
+    # Verify authenticate method
+    self.assertTrue(self.mock_auth_service.authenticate())
 
-        # Verify get_user_by_id method
-        user = self.mock_auth_service.get_user_by_id(self.test_user_id)
-        self.assertEqual(user, self.test_user)
+    # Verify get_user_by_id method
+    user = self.mock_auth_service.get_user_by_id(self.test_user_id)
+    self.assertEqual(user, self.test_user)
 class AdminSecurityTest(BaseSecurityTest):
     """Test subclassing with different roles."""
 
@@ -107,5 +107,5 @@ class ClinicianSecurityTest(BaseSecurityTest):
         self.assertEqual(self.test_user["roles"], [Role.CLINICIAN, Role.USER])
 
 
-if __name__ == "__main__":
+            if __name__ == "__main__":
     unittest.main()

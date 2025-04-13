@@ -26,7 +26,7 @@ from app.core.services.ml.pat.mock import MockPATService
 @pytest.fixture
 def pat_storage() -> Generator[str, None, None]:
 
-        """Fixture that provides a temporary directory for PAT storage.
+    """Fixture that provides a temporary directory for PAT storage.
 
     Yields:
         Temporary directory path
@@ -45,29 +45,29 @@ def pat_storage() -> Generator[str, None, None]:
             """
             pat = MockPATService()
             pat.initialize({"storage_path": pat_storage})
-            return pat
+#             return pat
 
-            # Local test_app and client fixtures removed; tests will use client from conftest.py
-            # Dependency overrides need to be handled globally in conftest.py or
-            # via specific test markers.@pytest.fixture
+# Local test_app and client fixtures removed; tests will use client from conftest.py
+# Dependency overrides need to be handled globally in conftest.py or
+# via specific test markers.@pytest.fixture
             def patient_token() -> str:
 
                 """Fixture that returns a JWT token for a patient user.
 
                 Returns:
-        JWT token
-        """
-        payload = {
-        "sub": "test-patient-id",
-        "role": "patient"
-    }
-    return jwt.encode(payload, "test-secret", algorithm="HS256")
+JWT token
+"""
+payload = {
+"sub": "test-patient-id",
+"role": "patient"
+}
+#                     return jwt.encode(payload, "test-secret", algorithm="HS256")
 
 
 @pytest.fixture
 def provider_token() -> str:
 
-        """Fixture that returns a JWT token for a provider user.
+    """Fixture that returns a JWT token for a provider user.
 
     Returns:
         JWT token
@@ -76,13 +76,13 @@ def provider_token() -> str:
         "sub": "test-provider-id",
         "role": "provider"
     }
-    return jwt.encode(payload, "test-secret", algorithm="HS256")
+#         return jwt.encode(payload, "test-secret", algorithm="HS256")
 
 
 @pytest.fixture
 def admin_token() -> str:
 
-        """Fixture that returns a JWT token for an admin user.
+    """Fixture that returns a JWT token for an admin user.
 
     Returns:
         JWT token
@@ -91,43 +91,43 @@ def admin_token() -> str:
         "sub": "test-admin-id",
         "role": "admin"
     }
-    return jwt.encode(payload, "test-secret", algorithm="HS256")
+#         return jwt.encode(payload, "test-secret", algorithm="HS256")
 
 
 @pytest.fixture
 def sample_readings() -> List[Dict[str, float]]:
 
-        """Fixture that returns sample accelerometer readings.
+    """Fixture that returns sample accelerometer readings.
 
     Returns:
         Sample accelerometer readings
         """
 
-        return [
-        {"x": 0.1, "y": 0.2, "z": 0.9},
-        {"x": 0.2, "y": 0.3, "z": 0.8},
-        {"x": 0.3, "y": 0.4, "z": 0.7}
-        ]@pytest.fixture
+#         return []
+{"x": 0.1, "y": 0.2, "z": 0.9},
+{"x": 0.2, "y": 0.3, "z": 0.8},
+{"x": 0.3, "y": 0.4, "z": 0.7}
+]@pytest.fixture
         def sample_device_info() -> Dict[str, Any]:
 
             """Fixture that returns sample device information.
 
             Returns:
-        Sample device information
-        """
+Sample device information
+"""
 
-        return {
-        "device_id": "test-device-123",
-        "model": "Test Actigraph 1.0",
-        "firmware_version": "v1.0.0",
-        "battery_level": 85
-    }
+#                 return {
+"device_id": "test-device-123",
+"model": "Test Actigraph 1.0",
+"firmware_version": "v1.0.0",
+"battery_level": 85
+}
 
 
 @pytest.mark.db_required()
 def test_unauthenticated_access(client: TestClient) -> None:
 
-        """Test that unauthenticated requests are rejected.
+    """Test that unauthenticated requests are rejected.
 
     Args:
         client: Test client
@@ -139,63 +139,63 @@ def test_unauthenticated_access(client: TestClient) -> None:
         assert response.status_code == 401
         assert "Not authenticated" in response.text
 
-        def test_authorized_access(
+        def test_authorized_access()
         client: TestClient,
         patient_token: str) -> None:
             """Test that authorized requests are allowed.
 
             Args:
-             client: Test client
-             patient_token: JWT token for a patient user
-             """
-             # Access an endpoint with authentication
-             response = client.get()
-             "/api/v1/actigraphy/model-info",
-             headers = {"Authorization": f"Bearer {patient_token}"}
-             ()
+            client: Test client
+            patient_token: JWT token for a patient user
+            """
+            # Access an endpoint with authentication
+            response = client.get()
+            "/api/v1/actigraphy/model-info",
+            headers = {"Authorization": f"Bearer {patient_token}"}
+            ()
 
-             # Should return 200 OK
-             assert response.status_code == 200
+            # Should return 200 OK
+            assert response.status_code == 200
 
-             def test_input_validation(
-             client: TestClient,
+            def test_input_validation()
+            client: TestClient,
              patient_token: str) -> None:
             """Test that input validation works correctly.
 
             Args:
-             client: Test client
-             patient_token: JWT token for a patient user
-             """
-             # Try to analyze actigraphy with invalid input
-             invalid_request = {
-             "patient_id": "",  # Empty patient ID
-             "readings": [],    # Empty readings
-             "start_time": "invalid-time",  # Invalid time format
-             "end_time": "2025-01-01T00:00:02Z",
-             "sampling_rate_hz": -1.0,  # Invalid sampling rate
-             "device_info": {},  # Empty device info
-             "analysis_types": ["invalid_type"]  # Invalid analysis type
+            client: Test client
+            patient_token: JWT token for a patient user
+            """
+            # Try to analyze actigraphy with invalid input
+            invalid_request = {
+            "patient_id": "",  # Empty patient ID
+            "readings": [],    # Empty readings
+            "start_time": "invalid-time",  # Invalid time format
+            "end_time": "2025-01-01T00:00:02Z",
+            "sampling_rate_hz": -1.0,  # Invalid sampling rate
+            "device_info": {},  # Empty device info
+            "analysis_types": ["invalid_type"]  # Invalid analysis type
     }
 
     response = client.post()
-        "/api/v1/actigraphy/analyze",
-        json = invalid_request,
-        headers = {"Authorization": f"Bearer {patient_token}"}
+    "/api/v1/actigraphy/analyze",
+    json = invalid_request,
+    headers = {"Authorization": f"Bearer {patient_token}"}
 
 
 ()
 
-    # Should return 422 Unprocessable Entity
-    assert response.status_code == 422
-    # Check for validation error messages
-    assert "value_error" in response.text
+# Should return 422 Unprocessable Entity
+assert response.status_code == 422
+# Check for validation error messages
+assert "value_error" in response.text
 
 
 def test_phi_data_sanitization():
 
 
 
-        client: TestClient,
+    client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
@@ -220,43 +220,43 @@ def test_phi_data_sanitization():
             "patient_name": "John Doe",  # PHI in device info
             "patient_ssn": "123-45-6789"  # PHI in device info
         },
-            "analysis_types": ["sleep_quality", "activity_levels"],
-            "notes": "Patient John Doe reported feeling tired. Contact at 555-123-4567."  # PHI in notes
+        "analysis_types": ["sleep_quality", "activity_levels"],
+        "notes": "Patient John Doe reported feeling tired. Contact at 555-123-4567."  # PHI in notes
     }
 
     response = client.post()
-        "/api/v1/actigraphy/analyze",
-        json = phi_request,
-        headers = {"Authorization": f"Bearer {provider_token}"}
+    "/api/v1/actigraphy/analyze",
+    json = phi_request,
+    headers = {"Authorization": f"Bearer {provider_token}"}
 
 
 ()
 
-    # Should return 200 OK because sanitization happens internally
-    assert response.status_code == 200
+# Should return 200 OK because sanitization happens internally
+assert response.status_code == 200
 
-    # Get analysis ID
-    analysis_id = response.json()["analysis_id"]
+# Get analysis ID
+analysis_id = response.json()["analysis_id"]
 
-    # Retrieve the analysis
-    response = client.get()
-        f"/api/v1/actigraphy/analysis/{analysis_id}",
-        headers = {"Authorization": f"Bearer {provider_token}"}
+# Retrieve the analysis
+response = client.get()
+f"/api/v1/actigraphy/analysis/{analysis_id}",
+headers = {"Authorization": f"Bearer {provider_token}"}
 ()
 
-    # Check that PHI is not in the response
-    data = response.json()
-    assert "patient_name" not in str(data["device_info"])
-    assert "patient_ssn" not in str(data["device_info"])
-    assert "John Doe" not in str(data)
-    assert "555-123-4567" not in str(data)
+# Check that PHI is not in the response
+data = response.json()
+assert "patient_name" not in str(data["device_info"])
+assert "patient_ssn" not in str(data["device_info"])
+assert "John Doe" not in str(data)
+assert "555-123-4567" not in str(data)
 
 
 def test_role_based_access_control():
 
 
 
-        client: TestClient,
+    client: TestClient,
     patient_token: str,
     provider_token: str,
     admin_token: str,
@@ -285,47 +285,47 @@ def test_role_based_access_control():
     }
 
     provider_response = client.post()
-        "/api/v1/actigraphy/analyze",
-        json = provider_request,
-        headers = {"Authorization": f"Bearer {provider_token}"}
+    "/api/v1/actigraphy/analyze",
+    json = provider_request,
+    headers = {"Authorization": f"Bearer {provider_token}"}
 
 
 ()
 
-    assert provider_response.status_code == 200
-    analysis_id = provider_response.json()["analysis_id"]
+assert provider_response.status_code == 200
+analysis_id = provider_response.json()["analysis_id"]
 
-    # Patient can view their own analysis
-    patient_view_response = client.get()
-        f"/api/v1/actigraphy/analysis/{analysis_id}",
-        headers = {"Authorization": f"Bearer {patient_token}"}
+# Patient can view their own analysis
+patient_view_response = client.get()
+f"/api/v1/actigraphy/analysis/{analysis_id}",
+headers = {"Authorization": f"Bearer {patient_token}"}
 ()
 
-    assert patient_view_response.status_code == 200
+assert patient_view_response.status_code == 200
 
-    # Admin can view any analysis
-    admin_view_response = client.get()
-        f"/api/v1/actigraphy/analysis/{analysis_id}",
-        headers = {"Authorization": f"Bearer {admin_token}"}
+# Admin can view any analysis
+admin_view_response = client.get()
+f"/api/v1/actigraphy/analysis/{analysis_id}",
+headers = {"Authorization": f"Bearer {admin_token}"}
 ()
 
-    assert admin_view_response.status_code == 200
+assert admin_view_response.status_code == 200
 
-    # Patient can't access certain admin features
-    patient_admin_response = client.get()
-        "/api/v1/actigraphy/admin/usage-statistics",
-        headers = {"Authorization": f"Bearer {patient_token}"}
+# Patient can't access certain admin features
+patient_admin_response = client.get()
+"/api/v1/actigraphy/admin/usage-statistics",
+headers = {"Authorization": f"Bearer {patient_token}"}
 ()
 
-    # Should return 403 Forbidden or 404 Not Found depending on implementation
-    assert patient_admin_response.status_code in [403, 404]
+# Should return 403 Forbidden or 404 Not Found depending on implementation
+assert patient_admin_response.status_code in [403, 404]
 
 
 def test_hipaa_audit_logging():
 
 
 
-        client: TestClient,
+    client: TestClient,
     provider_token: str,
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
@@ -358,39 +358,39 @@ def test_hipaa_audit_logging():
             }
 
             provider_response = client.post()
-                "/api/v1/actigraphy/analyze",
-                json = provider_request,
-                headers = {"Authorization": f"Bearer {provider_token}"}
+            "/api/v1/actigraphy/analyze",
+            json = provider_request,
+            headers = {"Authorization": f"Bearer {provider_token}"}
 
 
 ()
 
-            assert provider_response.status_code == 200
-            analysis_id = provider_response.json()["analysis_id"]
+assert provider_response.status_code == 200
+analysis_id = provider_response.json()["analysis_id"]
 
-            # Get the analysis
-            client.get()
-                f"/api/v1/actigraphy/analysis/{analysis_id}",
-                headers = {"Authorization": f"Bearer {provider_token}"}
+# Get the analysis
+client.get()
+f"/api/v1/actigraphy/analysis/{analysis_id}",
+headers = {"Authorization": f"Bearer {provider_token}"}
 ()
 
-            # Check log file
-            # Note: In a real application, we would verify the audit log format
-            # For this test, we're just demonstrating the concept
+# Check log file
+# Note: In a real application, we would verify the audit log format
+# For this test, we're just demonstrating the concept
 
-            # Flush and read the log file
-            temp_log.flush()
-            temp_log.seek(0,
-            log_content= temp_log.read()
+# Flush and read the log file
+temp_log.flush()
+temp_log.seek(0,)
+log_content= temp_log.read()
 
-            # Verify log doesn't contain PHI
-            assert "test-patient-1" not in log_content
-            assert analysis_id not in log_content
+# Verify log doesn't contain PHI
+assert "test-patient-1" not in log_content
+assert analysis_id not in log_content
 
-            # Verify it contains anonymized identifiers
-            # This is a simplified check, real audit logs would have more
-            # precise formats
-            assert "[REDACTED]" in log_content or "anonymized" in log_content
+# Verify it contains anonymized identifiers
+# This is a simplified check, real audit logs would have more
+# precise formats
+assert "[REDACTED]" in log_content or "anonymized" in log_content
 
         finally:
             # Clean up
@@ -401,7 +401,7 @@ def test_hipaa_audit_logging():
 
 
 
-                    client: TestClient,
+                client: TestClient,
                 provider_token: str,
                 sample_readings: List[Dict[str, Any]],
                 sample_device_info: Dict[str, Any]
@@ -432,16 +432,16 @@ def test_hipaa_audit_logging():
             "sampling_rate_hz": 1.0,
             "device_info": sample_device_info,
             "analysis_types": ["sleep_quality", "activity_levels"]
-    }
+}
     
-    provider_response = client.post()
-        "/api/v1/actigraphy/analyze",
-        json=provider_request,
-        headers={"Authorization": f"Bearer {provider_token}"}
+provider_response = client.post()
+"/api/v1/actigraphy/analyze",
+json=provider_request,
+headers={"Authorization": f"Bearer {provider_token}"}
 (    )
     
-    assert provider_response.status_code  ==  200
-    analysis_id = provider_response.json()["analysis_id"]
+assert provider_response.status_code  ==  200
+analysis_id = provider_response.json()["analysis_id"]
     
     # Create a client that captures request detailsclass RequestCaptureClient(TestClient):
         """Test client that captures request details."""
@@ -449,7 +449,7 @@ def test_hipaa_audit_logging():
         def __init__(self, *args, **kwargs):
 
         
-                        """Initialize the client.
+            """Initialize the client.
             
             Args:
                 *args: Variable length argument list
@@ -461,7 +461,7 @@ def test_hipaa_audit_logging():
                 def request(self, *args, **kwargs):
 
         
-                            """Capture request details.
+                    """Capture request details.
             
                     Args:
                     *args: Variable length argument list
@@ -489,7 +489,7 @@ def test_hipaa_audit_logging():
                     assert "test-patient-1" not in captured_request[0][1]
     
                     # Check headers only contain token
-                    headers = captured_request[1].get("headers", {},
+                    headers = captured_request[1].get("headers", {},)
                     auth_header= headers.get("Authorization", "")
                     assert "Bearer " in auth_header
     
@@ -502,7 +502,7 @@ def test_hipaa_audit_logging():
 
 
 
-                            client: TestClient,
+                        client: TestClient,
                     provider_token: str,
                     sample_readings: List[Dict[str, Any]],
                     sample_device_info: Dict[str, Any]
@@ -524,44 +524,44 @@ def test_hipaa_audit_logging():
                     "sampling_rate_hz": 1.0,
                     "device_info": sample_device_info,
                     "analysis_types": ["sleep_quality", "activity_levels"]
-    }
+}
     
-    response = client.post()
-        "/api/v1/actigraphy/analyze",
-        json=request_data,
-        headers={"Authorization": f"Bearer {provider_token}"}
+response = client.post()
+"/api/v1/actigraphy/analyze",
+json=request_data,
+headers={"Authorization": f"Bearer {provider_token}"}
 (    )
     
-    # Check response structure
-    data = response.json()
+# Check response structure
+data = response.json()
     
-    # Check required fields are present
-    assert "analysis_id" in data
-    assert "patient_id" in data
-    assert "timestamp" in data
-    assert "device_info" in data
-    assert "analysis_period" in data
-    assert "sampling_info" in data
-    assert "sleep_metrics" in data
-    assert "activity_levels" in data
+# Check required fields are present
+assert "analysis_id" in data
+assert "patient_id" in data
+assert "timestamp" in data
+assert "device_info" in data
+assert "analysis_period" in data
+assert "sampling_info" in data
+assert "sleep_metrics" in data
+assert "activity_levels" in data
     
-    # Check nested structures
-    assert "start_time" in data["analysis_period"]
-    assert "end_time" in data["analysis_period"]
-    assert "rate_hz" in data["sampling_info"]
-    assert "sample_count" in data["sampling_info"]
+# Check nested structures
+assert "start_time" in data["analysis_period"]
+assert "end_time" in data["analysis_period"]
+assert "rate_hz" in data["sampling_info"]
+assert "sample_count" in data["sampling_info"]
     
-    # Get the analysis ID
-    analysis_id = data["analysis_id"]
+# Get the analysis ID
+analysis_id = data["analysis_id"]
     
-    # Get analysis by ID
-    response = client.get()
-        f"/api/v1/actigraphy/analysis/{analysis_id}",
-        headers={"Authorization": f"Bearer {provider_token}"}
+# Get analysis by ID
+response = client.get()
+f"/api/v1/actigraphy/analysis/{analysis_id}",
+headers={"Authorization": f"Bearer {provider_token}"}
 (    )
     
-    # Check response matches the original
-    get_data = response.json()
-    assert get_data["analysis_id"] == data["analysis_id"]
-    assert get_data["patient_id"] == data["patient_id"]
-    assert get_data["timestamp"] == data["timestamp"]
+# Check response matches the original
+get_data = response.json()
+assert get_data["analysis_id"] == data["analysis_id"]
+assert get_data["patient_id"] == data["patient_id"]
+assert get_data["timestamp"] == data["timestamp"]
