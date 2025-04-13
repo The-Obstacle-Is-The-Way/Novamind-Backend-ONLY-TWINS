@@ -6,14 +6,14 @@ particularly the MentalLLaMA inference system exceptions.
 """
 
 import pytest
-from app.domain.ml.exceptions import ()
-MentalLLaMAAuthenticationError,
-MentalLLaMABaseException,
-MentalLLaMAConnectionError,
-MentalLLaMAInferenceError,
-MentalLLaMAQuotaExceededError,
-MentalLLaMAValidationError,
-
+from app.domain.ml.exceptions import (
+    MentalLLaMAAuthenticationError,
+    MentalLLaMABaseException,
+    MentalLLaMAConnectionError,
+    MentalLLaMAInferenceError,
+    MentalLLaMAQuotaExceededError,
+    MentalLLaMAValidationError,
+)
 
 
 @pytest.mark.db_required()
@@ -33,7 +33,7 @@ class TestMentalLLaMAExceptions:
         assert exception.details == details
         assert str(exception) == message
 
-        def test_base_exception_without_details(self):
+    def test_base_exception_without_details(self):
         """Test MentalLLaMABaseException creation without details."""
         message = "Test base exception without details"
 
@@ -44,7 +44,7 @@ class TestMentalLLaMAExceptions:
         assert exception.details == {}
         assert str(exception) == message
 
-        def test_connection_error(self):
+    def test_connection_error(self):
         """Test MentalLLaMAConnectionError creation and properties."""
         message = "Failed to connect to MentalLLaMA API"
         endpoint = "/api/v1/inference"
@@ -59,7 +59,7 @@ class TestMentalLLaMAExceptions:
         assert str(exception).startswith(message)
         assert endpoint in str(exception)
 
-        def test_connection_error_without_details(self):
+    def test_connection_error_without_details(self):
         """Test MentalLLaMAConnectionError creation without details."""
         message = "Failed to connect to MentalLLaMA API"
         endpoint = "/api/v1/inference"
@@ -73,10 +73,10 @@ class TestMentalLLaMAExceptions:
         assert str(exception).startswith(message)
         assert endpoint in str(exception)
 
-        def test_authentication_error(self):
+    def test_authentication_error(self):
         """Test MentalLLaMAAuthenticationError creation and properties."""
-        message = "Authentication failed"
-        details = {"error_code": "invalid_token"}
+        message = "Invalid API key"
+        details = {"error_code": "invalid_api_key"}
 
         exception = MentalLLaMAAuthenticationError(message, details)
 
@@ -85,11 +85,22 @@ class TestMentalLLaMAExceptions:
         assert exception.details == details
         assert str(exception) == message
 
-        def test_inference_error(self):
+    def test_authentication_error_without_details(self):
+        """Test MentalLLaMAAuthenticationError creation without details."""
+        message = "Invalid API key"
+
+        exception = MentalLLaMAAuthenticationError(message)
+
+        # Verify properties
+        assert exception.message == message
+        assert exception.details == {}
+        assert str(exception) == message
+
+    def test_inference_error(self):
         """Test MentalLLaMAInferenceError creation and properties."""
-        message = "Inference failed"
-        model = "gpt-4-psychiatric"
-        details = {"error_type": "model_overloaded", "retry_after": 30}
+        message = "Model inference failed"
+        model = "gpt-4"
+        details = {"error_type": "timeout", "duration": 30.5}
 
         exception = MentalLLaMAInferenceError(message, model, details)
 
@@ -100,10 +111,10 @@ class TestMentalLLaMAExceptions:
         assert str(exception).startswith(message)
         assert model in str(exception)
 
-        def test_inference_error_without_details(self):
+    def test_inference_error_without_details(self):
         """Test MentalLLaMAInferenceError creation without details."""
-        message = "Inference failed"
-        model = "gpt-4-psychiatric"
+        message = "Model inference failed"
+        model = "gpt-4"
 
         exception = MentalLLaMAInferenceError(message, model)
 
@@ -114,12 +125,12 @@ class TestMentalLLaMAExceptions:
         assert str(exception).startswith(message)
         assert model in str(exception)
 
-        def test_validation_error(self):
+    def test_validation_error(self):
         """Test MentalLLaMAValidationError creation and properties."""
-        message = "Validation failed"
+        message = "Invalid request parameters"
         validation_errors = {
-        "prompt": "Prompt is too long (max 4096 tokens)",
-        "temperature": "Temperature must be between 0 and 1",
+            "prompt": "Prompt cannot be empty",
+            "temperature": "Temperature must be between 0 and 1",
         }
         details = {"request_id": "req-123456"}
 
@@ -131,16 +142,36 @@ class TestMentalLLaMAExceptions:
         assert exception.details == details
         assert str(exception).startswith(message)
         # Check that validation errors are included in string representation
-            for field, error in validation_errors.items():
-                assert field in str(exception)
-                assert error in str(exception)
+        for field, error in validation_errors.items():
+            assert field in str(exception)
+            assert error in str(exception)
 
-            def test_quota_exceeded_error(self):
+    def test_validation_error_without_details(self):
+        """Test MentalLLaMAValidationError creation without details."""
+        message = "Invalid request parameters"
+        validation_errors = {
+            "prompt": "Prompt cannot be empty",
+            "temperature": "Temperature must be between 0 and 1",
+        }
+
+        exception = MentalLLaMAValidationError(message, validation_errors)
+
+        # Verify properties
+        assert exception.message == message
+        assert exception.validation_errors == validation_errors
+        assert exception.details == {}
+        assert str(exception).startswith(message)
+        # Check that validation errors are included in string representation
+        for field, error in validation_errors.items():
+            assert field in str(exception)
+            assert error in str(exception)
+
+    def test_quota_exceeded_error(self):
         """Test MentalLLaMAQuotaExceededError creation and properties."""
         message = "API quota exceeded"
-        quota_limit = 1000
-        quota_used = 1001
-        details = {"user_id": "user-123", "plan": "basic"}
+        quota_limit = 100
+        quota_used = 101
+        details = {"reset_time": "2025-04-11T00:00:00Z"}
 
         exception = MentalLLaMAQuotaExceededError(message, quota_limit, quota_used, details)
 
@@ -148,8 +179,7 @@ class TestMentalLLaMAExceptions:
         assert exception.message == message
         assert exception.quota_limit == quota_limit
         assert exception.quota_used == quota_used
-        assert exception.details["user_id"] == "user-123"
-        assert exception.details["plan"] == "basic"
+        assert exception.quota_remaining == 0
         assert str(exception).startswith(message)
         assert str(quota_limit) in str(exception)
         assert str(quota_used) in str(exception)
@@ -164,7 +194,7 @@ class TestMentalLLaMAExceptions:
         assert "reset_time" in exception.details
         assert exception.details["reset_time"] == "2025-04-11T00:00:00Z"
 
-        def test_exception_inheritance(self):
+    def test_exception_inheritance(self):
         """Test that all exceptions inherit from MentalLLaMABaseException."""
         # Create instances of all exception types
         base_exc = MentalLLaMABaseException("Base error")
@@ -183,16 +213,16 @@ class TestMentalLLaMAExceptions:
         assert isinstance(quota_exc, MentalLLaMABaseException)
 
         # Verify that all exceptions can be caught as MentalLLaMABaseException
-        exceptions = []
-        base_exc,
-        conn_exc,
-        auth_exc,
-        infer_exc,
-        valid_exc,
-        quota_exc
-        
+        exceptions = [
+            base_exc,
+            conn_exc,
+            auth_exc,
+            infer_exc,
+            valid_exc,
+            quota_exc
+        ]
 
-            for exc in exceptions:
+        for exc in exceptions:
             try:
                 raise exc
             except MentalLLaMABaseException as caught_exc:

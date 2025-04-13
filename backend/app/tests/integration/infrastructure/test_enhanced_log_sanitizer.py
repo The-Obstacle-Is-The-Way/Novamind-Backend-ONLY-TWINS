@@ -1,3 +1,9 @@
+"""
+Tests for the enhanced log sanitizer functionality.
+
+These tests verify that the log sanitizer properly handles PHI data
+and applies appropriate redaction strategies.
+"""
 import pytest
 import re
 import json
@@ -5,29 +11,27 @@ import logging
 from typing import Dict, Any, List
 
 from unittest.mock import patch, MagicMock, Mock
-from app.infrastructure.security.log_sanitizer import ()
-LogSanitizer, SanitizerConfig, PatternType, RedactionMode,
-PHIPattern, PatternRepository, RedactionStrategy,
-FullRedactionStrategy, PartialRedactionStrategy, HashRedactionStrategy,
-RedactionStrategyFactory, PHIFormatter, PHIRedactionHandler,
-SanitizedLogger, sanitize_logs, get_sanitized_logger
+from app.infrastructure.security.log_sanitizer import (
+    LogSanitizer, SanitizerConfig, PatternType, RedactionMode,
+    PHIPattern, PatternRepository, RedactionStrategy,
+    FullRedactionStrategy, PartialRedactionStrategy, HashRedactionStrategy,
+    RedactionStrategyFactory, PHIFormatter, PHIRedactionHandler,
+    SanitizedLogger, sanitize_logs, get_sanitized_logger
+)
 
 
-
-@pytest.mark.db_required()
+@pytest.mark.db_required
 class TestPHIPattern:
     """Test suite for PHIPattern class."""
 
     def test_phi_pattern_matches_regex(self):
-
-
         """Test regex pattern matching."""
-        pattern = PHIPattern(,)
-        name= "SSN",
-        pattern = r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
-        type = PatternType.REGEX,
-        priority = 10
-        ()
+        pattern = PHIPattern(
+            name="SSN",
+            pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
+            type=PatternType.REGEX,
+            priority=10
+        )
 
         # Should match
         assert pattern.matches("SSN: 123-45-6789")
@@ -40,696 +44,576 @@ class TestPHIPattern:
         assert not pattern.matches("")
         assert not pattern.matches(None)
 
-        def test_phi_pattern_matches_exact(self):
-
-
-            """Test exact pattern matching."""
-            pattern = PHIPattern(,)
-            name= "Sensitive Key",
-            pattern = "patient_id",
-            type = PatternType.EXACT,
-            priority = 10
-            ()
-
-            # Should match
-            assert pattern.matches("patient_id")
-
-            # Should not match
-            assert not pattern.matches("patient_identifier")
-            assert not pattern.matches("id")
-            assert not pattern.matches("PATIENT_ID")  # Case sensitive
-            assert not pattern.matches("")
-            assert not pattern.matches(None)
-
-            def test_phi_pattern_matches_fuzzy(self):
-
-
-                """Test fuzzy pattern matching."""
-                pattern = PHIPattern(,)
-                name= "Medical Term",
-                pattern = "diagnosis",
-                type = PatternType.FUZZY,
-                priority = 5
-                ()
-
-                # Should match
-                assert pattern.matches("The diagnosis is...")
-                assert pattern.matches("diagnosis")
-                assert pattern.matches()
-                "Patient DIAGNOSIS information")  # Case insensitive
-
-                # Should not match
-                assert not pattern.matches("diag")
-                assert not pattern.matches("")
-                assert not pattern.matches(None)
-
-                def test_phi_pattern_matches_context(self):
-
-
-                    """Test context-based pattern matching."""
-                pattern = PHIPattern(,)
-                name= "SSN Context",
-                pattern = "",
-                type = PatternType.CONTEXT,
-                priority = 10,
-                context_words = ["social", "security", "ssn"]
-                ()
-
-                # Should match with context
-                assert pattern.matches("", context="social security number")
-                assert pattern.matches("", context="SSN: 123-45-6789")
-                assert pattern.matches("", context="The social security is...")
-
-                # Should not match
-                assert not pattern.matches("", context="No matching words here")
-                assert not pattern.matches("", context="")
-                assert not pattern.matches("", context=None)
-                assert not pattern.matches("", None)
-                class TestPatternRepository:
-            """Test suite for PatternRepository class."""
-
-                    def test_default_patterns(self):
-
-
-            """Test that default patterns are loaded."""
-            repo = PatternRepository(,)
-            patterns= repo.get_patterns()
-
-            # Check if default patterns are loaded
-            assert len(patterns) >= 4  # At least the 4 default patterns
-            pattern_names = [p.name for p in patterns]
-            assert "SSN" in pattern_names
-            assert "Email" in pattern_names
-            assert "Phone" in pattern_names
-            assert "PatientID" in pattern_names
-
-            @patch('app.infrastructure.security.log_sanitizer.yaml.safe_load')
-                def test_load_patterns_from_file(self, mock_yaml_load, tmp_path):
-
-                    """Test loading patterns from a YAML file."""
-            # Mock the yaml.safe_load to return our test data
-            mock_yaml_load.return_value = {
-            'patterns': []
-            {
-            'name': 'Test Pattern',
-            'pattern': r'test\d+',
-            'type': 'REGEX',
-            'priority': 8,
-            'context_words': ['test', 'example'],
-            'examples': ['test123', 'test456']
-            },
-            {
-            'name': 'Another Pattern',
-            'pattern': 'another',
-            'type': 'FUZZY',
-            'priority': 5
-            }
-            ],
-            'sensitive_keys': []
-            {
-            'name': 'API Keys',
-            'priority': 10,
-            'keys': ['api_key', 'secret_key', 'auth_token']
-            }
-            
-        }
-
-        # Create a temporary file path
-    patterns_file = tmp_path / "test_patterns.yaml"
-    patterns_file.write_text("dummy content")
-
-    # Load patterns from file
-    repo = PatternRepository(str(patterns_file),)
-    patterns= repo.get_patterns()
-
-    # Check if patterns from file are loaded
-    pattern_names = [p.name for p in patterns]
-    assert "Test Pattern" in pattern_names
-    assert "Another Pattern" in pattern_names
-    assert "API Keys" in pattern_names or "api_key" in pattern_names
-
-    # Verify pattern properties
-    test_pattern = next()
-    (p for p in patterns if p.name == "Test Pattern"), None
-    assert test_pattern is not None
-    assert test_pattern.type == PatternType.REGEX
-    assert test_pattern.priority == 8
-    assert "test" in test_pattern.context_words
-    assert "test123" in test_pattern.examples
-
-                    def test_add_pattern(self):
-
-
-    """Test adding a new pattern."""
-    repo = PatternRepository(,)
-    initial_count= len(repo.get_patterns())
-
-    # Add a new pattern
-    new_pattern = PHIPattern(,)
-    name= "Custom Pattern",
-    pattern = r"custom\d+",
-    type = PatternType.REGEX,
-    priority = 7
-    ()
-    repo.add_pattern(new_pattern)
-
-    # Check if pattern was added
-    patterns = repo.get_patterns()
-    assert len(patterns) == initial_count + 1
-    assert any(p.name == "Custom Pattern" for p in patterns)
-        class TestRedactionStrategies:
-            """Test suite for redaction strategies."""
-
-            def test_full_redaction_strategy(self):
-
-
-                """Test FullRedactionStrategy."""
-                strategy = FullRedactionStrategy(marker="[PHI REDACTED]")
-
-                # Test redaction
-                assert strategy.redact("123-45-6789") == "[PHI REDACTED]"
-                assert strategy.redact("john.doe@example.com") == "[PHI REDACTED]"
-                assert strategy.redact("Complex PHI data") == "[PHI REDACTED]"
-                assert strategy.redact("") == "[PHI REDACTED]"
-                assert strategy.redact(None) == "[PHI REDACTED]"
-
-                def test_partial_redaction_strategy_ssn(self):
-
-
-                    """Test PartialRedactionStrategy with SSN."""
-            strategy = PartialRedactionStrategy()
-            visible_length=4, marker="[REDACTED]"
-
-            # Test SSN redaction
-            ssn_pattern = PHIPattern(name="SSN", pattern=r"\d{3}-\d{2}-\d{4}")
-            assert strategy.redact("123-45-6789", ssn_pattern) == "xxx-xx-6789"
-
-            # For non-formatted SSN, we'll accept the current implementation's behavior
-            # which applies the SSN format to the output
-            result = strategy.redact("123456789", ssn_pattern)
-            assert result == "xxx-xx-6789" or result == "xxxxx6789"
-
-                    def test_partial_redaction_strategy_email(self):
-
-
-                        """Test PartialRedactionStrategy with email."""
-            strategy = PartialRedactionStrategy()
-            visible_length=4, marker="[REDACTED]"
-
-            # Test email redaction
-            email_pattern = PHIPattern(name="Email", pattern=r".*@.*\..*")
-            assert strategy.redact()
-            "john.doe@example.com",
-            email_pattern) == "xxxx@example.com"
-            assert strategy.redact()
-            "short@test.org",
-            email_pattern) == "xxxx@test.org"
-
-                def test_partial_redaction_strategy_phone(self):
-
-
-                    """Test PartialRedactionStrategy with phone number."""
-            strategy = PartialRedactionStrategy()
-            visible_length=4, marker="[REDACTED]"
-
-            # Test phone redaction
-            phone_pattern = PHIPattern(name="Phone", pattern=r"\d{3}-\d{3}-\d{4}")
-            assert strategy.redact("555-123-4567", phone_pattern) == "xxx-xxx-4567"
-            assert strategy.redact()
-            "(555) 123-4567",
-            phone_pattern) == "xxx-xxx-4567"
-
-                    def test_partial_redaction_strategy_patient_id(self):
-
-
-                        """Test PartialRedactionStrategy with patient ID."""
-            strategy = PartialRedactionStrategy()
-            visible_length=4, marker="[REDACTED]"
-
-            # Test patient ID redaction
-            id_pattern = PHIPattern(name="PatientID", pattern=r"PT\d+")
-            assert strategy.redact("PT123456", id_pattern) == "[ID ending in 3456]"
-            assert strategy.redact("PT12", id_pattern) == "[REDACTED]"  # Too short
-
-                    def test_partial_redaction_strategy_default(self):
-
-
-                        """Test PartialRedactionStrategy default behavior."""
-            strategy = PartialRedactionStrategy()
-            visible_length=4, marker="[REDACTED]"
-
-            # Test default redaction (no pattern,)
-            result= strategy.redact("abcdefghij")
-            assert result == "xxxxxxghij" or result == "xhort"
-
-            # For short strings, accept either behavior
-            result = strategy.redact("short")
-            assert result == "[REDACTED]" or result == "xhort"
-
-                    def test_hash_redaction_strategy(self):
-
-
-                        """Test HashRedactionStrategy."""
-            strategy = HashRedactionStrategy(salt="test-salt", hash_length=10)
-
-            # Test hash redaction
-            hash1 = strategy.redact("123-45-6789",)
-            hash2= strategy.redact("john.doe@example.com")
-
-            # Same input should produce same hash
-            assert strategy.redact("123-45-6789") == hash1
-
-            # Different inputs should produce different hashes
-            assert hash1 != hash2
-
-            # Verify hash length
-            assert len(hash1) == 10
-            assert len(hash2) == 10
-
-                    def test_redaction_strategy_factory(self):
-
-
-                        """Test RedactionStrategyFactory."""
-            config = SanitizerConfig(,)
-            redaction_marker= "[CUSTOM REDACTED]",
-            partial_redaction_length = 3,
-            identifier_hash_salt = "custom-salt"
-            ()
-
-            # Test creating different strategies
-            full_strategy = RedactionStrategyFactory.create_strategy()
-            RedactionMode.FULL, config,
-            partial_strategy= RedactionStrategyFactory.create_strategy()
-            RedactionMode.PARTIAL, config,
-            hash_strategy= RedactionStrategyFactory.create_strategy()
-            RedactionMode.HASH, config
-
-            # Verify strategy types
-            assert isinstance(full_strategy, FullRedactionStrategy)
-            assert isinstance(partial_strategy, PartialRedactionStrategy)
-            assert isinstance(hash_strategy, HashRedactionStrategy)
-
-            # Verify configuration was applied
-            assert full_strategy.marker == "[CUSTOM REDACTED]"
-            assert partial_strategy.visible_length == 3
-                        assert hash_strategy.salt == "custom-salt"class TestSanitizerConfig:
-            """Test suite for SanitizerConfig class."""
-
-                    def test_default_config(self):
-
-
-            """Test default configuration values."""
-            config = SanitizerConfig()
-
-            # Check default values
-            assert config.enabled is True
-            assert config.redaction_mode == RedactionMode.FULL
-            assert config.redaction_marker == "[REDACTED]"
-            assert config.sensitive_field_names is not None
-            assert "ssn" in config.sensitive_field_names
-            assert "patient_id" in config.sensitive_field_names
-            assert config.scan_nested_objects is True
-
-                    def test_custom_config(self):
-
-
-                        """Test custom configuration values."""
-            config = SanitizerConfig(,)
-            enabled= False,
-            redaction_mode = RedactionMode.PARTIAL,
-            redaction_marker = "[CUSTOM]",
-            partial_redaction_length = 2,
-            scan_nested_objects = False,
-            sensitive_field_names = ["custom_field"],
-            sensitive_keys_case_sensitive = True,
-            hash_identifiers = True
-            ()
-
-            # Check custom values
-            assert config.enabled is False
-            assert config.redaction_mode == RedactionMode.PARTIAL
-            assert config.redaction_marker == "[CUSTOM]"
-            assert config.partial_redaction_length == 2
-            assert config.scan_nested_objects is False
-            assert config.sensitive_field_names == ["custom_field"]
-            assert config.sensitive_keys_case_sensitive is True
-                        assert config.hash_identifiers is Trueclass TestLogSanitizer:
-            """Test suite for LogSanitizer class."""
-
-            @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-                def test_sanitize_simple_string(self, mock_sanitize_string):
-
-                    """Test sanitizing a simple string."""
-            # Setup the mock to return the input unchanged for "No PHI here"
-            mock_sanitize_string.side_effect = lambda x: x if x == "No PHI here" else "[REDACTED]"
-
-            sanitizer = LogSanitizer()
-
-            # Test with no PHI
-            assert sanitizer.sanitize("No PHI here") == "No PHI here"
-
-            # Test with SSN
-            assert "[REDACTED]" in sanitizer.sanitize("SSN: 123-45-6789")
-
-            # Test with email
-            assert "[REDACTED]" in sanitizer.sanitize()
-            "Email: john.doe@example.com"
-
-            # Test with phone
-            assert "[REDACTED]" in sanitizer.sanitize("Phone: (555) 123-4567")
-
-            # Test with patient ID
-            assert "[REDACTED]" in sanitizer.sanitize("Patient ID: PT123456")
-
-            @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-                    def test_sanitize_with_partial_redaction(self, mock_sanitize_string):
-
-                        """Test sanitizing with partial redaction mode."""
-            # Setup the mock to return partially redacted SSN
-            mock_sanitize_string.return_value = "SSN: xxx-xx-6789"
-
-            config = SanitizerConfig(redaction_mode=RedactionMode.PARTIAL,)
-            sanitizer= LogSanitizer(config=config)
-
-            # Test with SSN
-            result = sanitizer.sanitize("SSN: 123-45-6789")
-            assert "xxx-xx-6789" in result
-
-            @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-                    def test_sanitize_complex_string(self, mock_sanitize_string):
-
-                        """Test sanitizing a complex string with multiple PHI types."""
-            # Setup the mock to return a sanitized string that preserves "Patient
-            # record"
-            mock_sanitize_string.return_value = "Patient record - [REDACTED], [REDACTED], [REDACTED], Email: [REDACTED], [REDACTED], ID: [REDACTED]"
-
-            sanitizer = LogSanitizer(,)
-
-            complex_string= ()
-            "Patient record - Name: John Doe, "
-            "DOB: 01/01/1980, SSN: 123-45-6789, "
-            "Email: john.doe@example.com, "
-            "Phone: (555) 123-4567, "
-            "ID: PT123456"
-            (,)
-
-            result= sanitizer.sanitize(complex_string)
-
-            # Check that PHI is redacted
-            assert "123-45-6789" not in result
-            assert "john.doe@example.com" not in result
-            assert "(555) 123-4567" not in result
-            assert "PT123456" not in result
-
-            # Non-PHI should remain
-            assert "Patient record" in result
-
-                def test_sanitize_dict(self):
-
-
-                    """Test sanitizing a dictionary."""
-            sanitizer = LogSanitizer(,)
-
-            test_dict= {
-            "patient_id": "PT123456",
-            "name": "John Doe",
-            "dob": "01/01/1980",
-            "contact": {
-            "email": "john.doe@example.com",
-            "phone": "555-123-4567",
-            "address": "123 Main St"
-            },
-            "ssn": "123-45-6789",
-            "insurance": {
-            "provider": "HealthCare Inc",
-            "policy_number": "POLICY12345",
-            "group_number": "GROUP6789"
-            }
-    }
-
-    result = sanitizer.sanitize_dict(test_dict)
-
-    # Check that PHI fields are redacted
-    assert result["patient_id"] == "[REDACTED]"
-    assert result["name"] == "[REDACTED]"
-    assert result["ssn"] == "[REDACTED]"
-    assert result["contact"]["email"] == "[REDACTED]"
-    assert result["contact"]["phone"] == "[REDACTED]"
-    assert result["contact"]["address"] == "[REDACTED]"
-
-    # Non-PHI should remain
-    assert result["insurance"]["provider"] == "HealthCare Inc"
-
-                    def test_sanitize_list(self):
-
-
-    """Test sanitizing a list."""
-    sanitizer = LogSanitizer(,)
-
-    test_list= [{"patient_id": "PT123456",]
-    "name": "John Doe",
-    "email": "john.doe@example.com"},
-    {"patient_id": "PT654321",
-    "name": "Jane Smith",
-    "email": "jane.smith@example.com"}
-
-    result = sanitizer.sanitize_list(test_list)
-
-    # Check that PHI fields are redacted
-            for item in result:
-                assert item["patient_id"] == "[REDACTED]"
-                assert item["name"] == "[REDACTED]"
-                assert item["email"] == "[REDACTED]"
-
-            def test_sanitize_structured_log(self):
-
-
-                """Test sanitizing a structured log."""
-                sanitizer = LogSanitizer(,)
-
-                structured_log= {
-                "timestamp": "2023-01-01T12:00:00Z",
-                "level": "INFO",
-                "message": "Patient data accessed: PT123456",
-                "context": {
-                "user": "admin",
-                "patient": {
-                "id": "PT123456",
-                "name": "John Doe"
+    def test_phi_pattern_matches_exact(self):
+        """Test exact pattern matching."""
+        pattern = PHIPattern(
+            name="Sensitive Key",
+            pattern="patient_id",
+            type=PatternType.EXACT,
+            priority=10
+        )
+
+        # Should match
+        assert pattern.matches("patient_id")
+
+        # Should not match
+        assert not pattern.matches("patient_identifier")
+        assert not pattern.matches("id")
+        assert not pattern.matches("PATIENT_ID")  # Case sensitive
+        assert not pattern.matches("")
+        assert not pattern.matches(None)
+
+    def test_phi_pattern_matches_fuzzy(self):
+        """Test fuzzy pattern matching."""
+        pattern = PHIPattern(
+            name="Patient Name",
+            pattern="John Doe",
+            type=PatternType.FUZZY,
+            priority=10
+        )
+
+        # Should match
+        assert pattern.matches("John Doe")
+        assert pattern.matches("The patient's name is John Doe.")
+        
+        # Should not match
+        assert not pattern.matches("Jane Doe")
+        assert not pattern.matches("John Smith")
+        assert not pattern.matches("")
+        assert not pattern.matches(None)
+
+    def test_phi_pattern_priority(self):
+        """Test pattern priority handling."""
+        # Create patterns with different priorities
+        high_priority = PHIPattern(
+            name="High Priority",
+            pattern="test",
+            type=PatternType.EXACT,
+            priority=100
+        )
+        
+        medium_priority = PHIPattern(
+            name="Medium Priority",
+            pattern="test",
+            type=PatternType.EXACT,
+            priority=50
+        )
+        
+        low_priority = PHIPattern(
+            name="Low Priority",
+            pattern="test",
+            type=PatternType.EXACT,
+            priority=10
+        )
+        
+        # Verify priorities
+        assert high_priority.priority > medium_priority.priority
+        assert medium_priority.priority > low_priority.priority
+        
+        # Test sorting by priority
+        patterns = [low_priority, high_priority, medium_priority]
+        sorted_patterns = sorted(patterns, key=lambda p: p.priority, reverse=True)
+        
+        assert sorted_patterns[0] == high_priority
+        assert sorted_patterns[1] == medium_priority
+        assert sorted_patterns[2] == low_priority
+
+
+@pytest.mark.db_required
+class TestPatternRepository:
+    """Test suite for PatternRepository class."""
+
+    def test_pattern_repository_add_pattern(self):
+        """Test adding patterns to repository."""
+        repo = PatternRepository()
+        
+        # Add a pattern
+        pattern = PHIPattern(
+            name="SSN",
+            pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
+            type=PatternType.REGEX,
+            priority=10
+        )
+        
+        repo.add_pattern(pattern)
+        
+        # Verify pattern was added
+        assert len(repo.patterns) == 1
+        assert repo.patterns[0] == pattern
+        
+        # Add another pattern
+        pattern2 = PHIPattern(
+            name="Email",
+            pattern=r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+            type=PatternType.REGEX,
+            priority=20
+        )
+        
+        repo.add_pattern(pattern2)
+        
+        # Verify second pattern was added
+        assert len(repo.patterns) == 2
+        
+        # Verify patterns are sorted by priority
+        assert repo.patterns[0] == pattern2  # Higher priority
+        assert repo.patterns[1] == pattern
+
+    def test_pattern_repository_find_matches(self):
+        """Test finding matches in text."""
+        repo = PatternRepository()
+        
+        # Add patterns
+        ssn_pattern = PHIPattern(
+            name="SSN",
+            pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
+            type=PatternType.REGEX,
+            priority=10
+        )
+        
+        email_pattern = PHIPattern(
+            name="Email",
+            pattern=r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+            type=PatternType.REGEX,
+            priority=20
+        )
+        
+        repo.add_pattern(ssn_pattern)
+        repo.add_pattern(email_pattern)
+        
+        # Test with text containing both patterns
+        text = "Patient SSN: 123-45-6789, Email: john.doe@example.com"
+        matches = repo.find_matches(text)
+        
+        # Verify matches
+        assert len(matches) == 2
+        
+        # Check match details (order based on priority)
+        assert matches[0]["pattern"] == email_pattern
+        assert matches[0]["match"] == "john.doe@example.com"
+        
+        assert matches[1]["pattern"] == ssn_pattern
+        assert matches[1]["match"] == "123-45-6789"
+
+    def test_pattern_repository_load_default_patterns(self):
+        """Test loading default patterns."""
+        repo = PatternRepository()
+        repo.load_default_patterns()
+        
+        # Verify default patterns were loaded
+        assert len(repo.patterns) > 0
+        
+        # Check for common patterns
+        pattern_names = [p.name for p in repo.patterns]
+        assert "SSN" in pattern_names
+        assert "Email" in pattern_names
+        assert "Phone Number" in pattern_names
+
+
+@pytest.mark.db_required
+class TestRedactionStrategies:
+    """Test suite for redaction strategies."""
+
+    def test_full_redaction_strategy(self):
+        """Test full redaction strategy."""
+        strategy = FullRedactionStrategy()
+        
+        # Test redaction
+        assert strategy.redact("123-45-6789") == "[REDACTED]"
+        assert strategy.redact("john.doe@example.com") == "[REDACTED]"
+        assert strategy.redact("") == "[REDACTED]"
+        assert strategy.redact(None) == "[REDACTED]"
+
+    def test_partial_redaction_strategy(self):
+        """Test partial redaction strategy."""
+        strategy = PartialRedactionStrategy()
+        
+        # Test redaction
+        assert strategy.redact("123-45-6789") == "XXX-XX-6789"
+        assert strategy.redact("john.doe@example.com") == "j******@e******"
+        
+        # Edge cases
+        assert strategy.redact("a") == "X"
+        assert strategy.redact("") == ""
+        assert strategy.redact(None) == ""
+
+    def test_hash_redaction_strategy(self):
+        """Test hash redaction strategy."""
+        strategy = HashRedactionStrategy()
+        
+        # Test redaction
+        hash1 = strategy.redact("123-45-6789")
+        hash2 = strategy.redact("john.doe@example.com")
+        
+        # Verify hashes are not the original text
+        assert hash1 != "123-45-6789"
+        assert hash2 != "john.doe@example.com"
+        
+        # Verify consistent hashing
+        assert strategy.redact("123-45-6789") == hash1
+        assert strategy.redact("john.doe@example.com") == hash2
+        
+        # Edge cases
+        assert strategy.redact("") != ""
+        assert strategy.redact(None) == ""
+
+    def test_redaction_strategy_factory(self):
+        """Test redaction strategy factory."""
+        factory = RedactionStrategyFactory()
+        
+        # Test creating different strategies
+        full = factory.create_strategy(RedactionMode.FULL)
+        partial = factory.create_strategy(RedactionMode.PARTIAL)
+        hash_strategy = factory.create_strategy(RedactionMode.HASH)
+        
+        # Verify correct strategy types
+        assert isinstance(full, FullRedactionStrategy)
+        assert isinstance(partial, PartialRedactionStrategy)
+        assert isinstance(hash_strategy, HashRedactionStrategy)
+        
+        # Test with invalid mode
+        with pytest.raises(ValueError):
+            factory.create_strategy("invalid_mode")
+
+
+@pytest.mark.db_required
+class TestLogSanitizer:
+    """Test suite for LogSanitizer class."""
+
+    def test_sanitizer_config(self):
+        """Test sanitizer configuration."""
+        # Default config
+        default_config = SanitizerConfig()
+        assert default_config.redaction_mode == RedactionMode.FULL
+        assert default_config.include_pattern_name is False
+        
+        # Custom config
+        custom_config = SanitizerConfig(
+            redaction_mode=RedactionMode.PARTIAL,
+            include_pattern_name=True
+        )
+        assert custom_config.redaction_mode == RedactionMode.PARTIAL
+        assert custom_config.include_pattern_name is True
+
+    def test_log_sanitizer_initialization(self):
+        """Test log sanitizer initialization."""
+        # Default initialization
+        sanitizer = LogSanitizer()
+        assert sanitizer.config.redaction_mode == RedactionMode.FULL
+        assert isinstance(sanitizer.pattern_repo, PatternRepository)
+        assert len(sanitizer.pattern_repo.patterns) > 0  # Default patterns loaded
+        
+        # Custom initialization
+        custom_config = SanitizerConfig(redaction_mode=RedactionMode.PARTIAL)
+        custom_repo = PatternRepository()
+        custom_repo.add_pattern(PHIPattern(
+            name="Custom Pattern",
+            pattern="custom",
+            type=PatternType.EXACT,
+            priority=10
+        ))
+        
+        sanitizer = LogSanitizer(config=custom_config, pattern_repo=custom_repo)
+        assert sanitizer.config.redaction_mode == RedactionMode.PARTIAL
+        assert sanitizer.pattern_repo == custom_repo
+        assert len(sanitizer.pattern_repo.patterns) == 1
+
+    def test_log_sanitizer_sanitize_text(self):
+        """Test sanitizing text."""
+        # Create sanitizer with custom patterns for testing
+        repo = PatternRepository()
+        repo.add_pattern(PHIPattern(
+            name="SSN",
+            pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
+            type=PatternType.REGEX,
+            priority=10
+        ))
+        repo.add_pattern(PHIPattern(
+            name="Email",
+            pattern=r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+            type=PatternType.REGEX,
+            priority=20
+        ))
+        
+        # Test with full redaction
+        full_sanitizer = LogSanitizer(
+            config=SanitizerConfig(redaction_mode=RedactionMode.FULL),
+            pattern_repo=repo
+        )
+        
+        text = "Patient SSN: 123-45-6789, Email: john.doe@example.com"
+        sanitized = full_sanitizer.sanitize(text)
+        
+        assert "123-45-6789" not in sanitized
+        assert "john.doe@example.com" not in sanitized
+        assert "[REDACTED]" in sanitized
+        
+        # Test with partial redaction
+        partial_sanitizer = LogSanitizer(
+            config=SanitizerConfig(redaction_mode=RedactionMode.PARTIAL),
+            pattern_repo=repo
+        )
+        
+        sanitized = partial_sanitizer.sanitize(text)
+        assert "123-45-6789" not in sanitized
+        assert "john.doe@example.com" not in sanitized
+        assert "XXX-XX-6789" in sanitized
+        assert "@" in sanitized  # Email should be partially redacted
+
+    def test_log_sanitizer_sanitize_dict(self):
+        """Test sanitizing dictionary."""
+        # Create sanitizer with custom patterns for testing
+        repo = PatternRepository()
+        repo.add_pattern(PHIPattern(
+            name="SSN",
+            pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
+            type=PatternType.REGEX,
+            priority=10
+        ))
+        
+        sanitizer = LogSanitizer(pattern_repo=repo)
+        
+        # Test with nested dictionary
+        data = {
+            "patient": {
+                "name": "John Doe",
+                "ssn": "123-45-6789",
+                "contact": {
+                    "email": "john.doe@example.com",
+                    "phone": "555-123-4567"
                 }
-    },
-    "duration_ms": 150
-    }
+            },
+            "notes": "Patient SSN: 123-45-6789"
+        }
+        
+        sanitized = sanitizer.sanitize(data)
+        
+        # Convert to JSON for easier inspection
+        sanitized_json = json.dumps(sanitized)
+        
+        # Verify SSN was redacted
+        assert "123-45-6789" not in sanitized_json
+        assert "[REDACTED]" in sanitized_json
+        
+        # Verify structure was preserved
+        assert "patient" in sanitized
+        assert "name" in sanitized["patient"]
+        assert "contact" in sanitized["patient"]
+        assert "email" in sanitized["patient"]["contact"]
 
-    result = sanitizer.sanitize_structured_log(structured_log)
+    def test_log_sanitizer_sanitize_list(self):
+        """Test sanitizing list."""
+        # Create sanitizer with custom patterns for testing
+        repo = PatternRepository()
+        repo.add_pattern(PHIPattern(
+            name="SSN",
+            pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
+            type=PatternType.REGEX,
+            priority=10
+        ))
+        
+        sanitizer = LogSanitizer(pattern_repo=repo)
+        
+        # Test with list containing various types
+        data = [
+            "Patient SSN: 123-45-6789",
+            {"ssn": "987-65-4321"},
+            ["Another SSN: 111-22-3333"],
+            123,
+            None
+        ]
+        
+        sanitized = sanitizer.sanitize(data)
+        
+        # Convert to JSON for easier inspection
+        sanitized_json = json.dumps(sanitized)
+        
+        # Verify SSNs were redacted
+        assert "123-45-6789" not in sanitized_json
+        assert "987-65-4321" not in sanitized_json
+        assert "111-22-3333" not in sanitized_json
+        assert "[REDACTED]" in sanitized_json
+        
+        # Verify structure was preserved
+        assert len(sanitized) == 5
+        assert isinstance(sanitized[1], dict)
+        assert isinstance(sanitized[2], list)
+        assert sanitized[3] == 123
+        assert sanitized[4] is None
 
-    # Check preserved fields
-    assert result["timestamp"] == "2023-01-01T12:00:00Z"
-    assert result["level"] == "INFO"
-    assert result["duration_ms"] == 150
-
-    # Check redacted fields
-    assert "PT123456" not in result["message"]
-    assert result["context"]["patient"]["id"] == "[REDACTED]"
-    assert result["context"]["patient"]["name"] == "[REDACTED]"
-
-    # Non-PHI context should remain
-    assert result["context"]["user"] == "admin"
-
-                def test_is_sensitive_key(self):
-
-
-                    """Test sensitive key detection."""
-    sanitizer = LogSanitizer()
-
-    # Sensitive keys
-    assert sanitizer._is_sensitive_key("patient_id") is True
-    assert sanitizer._is_sensitive_key("ssn") is True
-    assert sanitizer._is_sensitive_key("email") is True
-    assert sanitizer._is_sensitive_key("patient_name") is True
-    assert sanitizer._is_sensitive_key("user_ssn") is True
-
-    # Non-sensitive keys
-    assert sanitizer._is_sensitive_key("timestamp") is False
-    assert sanitizer._is_sensitive_key("level") is False
-    assert sanitizer._is_sensitive_key("status") is False
-    assert sanitizer._is_sensitive_key("count") is False
-
-        def test_safe_system_message(self):
-
-
-            """Test safe system message detection."""
-            sanitizer = LogSanitizer()
-
-            # Safe messages
-            assert sanitizer._is_safe_system_message("User login: admin") is True
-            assert sanitizer._is_safe_system_message()
-            "Database connection established") is True
-            assert sanitizer._is_safe_system_message("System initialized") is True
-
-            # Unsafe messages
-            assert sanitizer._is_safe_system_message()
-            "User data: John Doe") is False
-            assert sanitizer._is_safe_system_message()
-            "Patient SSN: 123-45-6789") is False
-
-            def test_sanitization_hooks(self):
-
-
-                """Test custom sanitization hooks."""
-                sanitizer = LogSanitizer()
-
-                # Add a custom hook
-                def custom_hook(value, context):
-
-                        if isinstance(value, str) and "CUSTOM_PHI" in value:
-#                             return value.replace("CUSTOM_PHI", "[CUSTOM_REDACTED]")
-#                             return value
-
-sanitizer.add_sanitization_hook(custom_hook)
-
-# Test with custom PHI
-assert "[CUSTOM_REDACTED]" in sanitizer.sanitize()
-"This has CUSTOM_PHI in it"
-
-# Regular PHI should still be redacted
-assert "[REDACTED]" in sanitizer.sanitize("SSN: 123-45-6789")
-
-                        def test_disabled_sanitizer(self):
-
-
-                            """Test sanitizer when disabled."""
-                            config = SanitizerConfig(enabled=False,)
-                            sanitizer= LogSanitizer(config=config)
-
-                            # PHI should not be redacted when disabled
-                            text_with_phi = "SSN: 123-45-6789"
-                            assert sanitizer.sanitize(text_with_phi) == text_with_phi
-
-                            def test_max_log_size(self):
+    def test_phi_formatter(self):
+        """Test PHI formatter."""
+        # Create formatter
+        formatter = PHIFormatter()
+        
+        # Test formatting with pattern name
+        formatted = formatter.format_phi(
+            "123-45-6789",
+            PHIPattern(name="SSN", pattern="", type=PatternType.REGEX, priority=10),
+            "[REDACTED]",
+            include_pattern_name=True
+        )
+        assert formatted == "[REDACTED:SSN]"
+        
+        # Test formatting without pattern name
+        formatted = formatter.format_phi(
+            "123-45-6789",
+            PHIPattern(name="SSN", pattern="", type=PatternType.REGEX, priority=10),
+            "[REDACTED]",
+            include_pattern_name=False
+        )
+        assert formatted == "[REDACTED]"
 
 
-"""Test log size limiting."""
-config = SanitizerConfig(max_log_size_kb=1)  # 1KB limit
-sanitizer = LogSanitizer(config=config)
+@pytest.mark.db_required
+class TestPHIRedactionHandler:
+    """Test suite for PHIRedactionHandler class."""
 
-# Create a log message larger than 1KB
-large_message = "x" * 2000  # 2KB
-
-result = sanitizer.sanitize(large_message)
-assert len(result) < 2000
-                                    assert "... [Truncated]" in resultclass TestLoggingIntegration:
-"""Test suite for logging integration."""
-
-                        def test_phi_formatter(self):
-
-
-"""Test PHIFormatter."""
-sanitizer = LogSanitizer(,)
-formatter= PHIFormatter()
-fmt="%(levelname)s: %(message)s",
-sanitizer=sanitizer
-
-# Create a record with PHI
-record = logging.LogRecord(,)
-name= "test",
-level = logging.INFO,
-pathname = "",
-lineno = 0,
-msg = "SSN: 123-45-6789",
-args = (),
-exc_info = None
-(,)
-
-formatted= formatter.format(record)
-assert "INFO:" in formatted
-assert "123-45-6789" not in formatted
-assert "[REDACTED]" in formatted
-
-@patch('app.infrastructure.security.log_sanitizer.PHIRedactionHandler.emit')
-                    def test_phi_redaction_handler(self, mock_emit, caplog):
-
-                        """Test PHIRedactionHandler."""
-caplog.set_level(logging.INFO)
-
-# Create a memory handler to capture logs
-memory_handler = logging.StreamHandler()
-memory_handler.setLevel(logging.INFO)
-
-# Wrap with PHI redaction handler
-sanitizer = LogSanitizer(,)
-redaction_handler= PHIRedactionHandler()
-memory_handler, sanitizer=sanitizer
-
-# Create a logger and add the handler
-logger = logging.getLogger("test_phi_handler")
-logger.setLevel(logging.INFO)
-logger.addHandler(redaction_handler)
-
-# Log a message with PHI
-logger.info("Patient SSN: 123-45-6789")
-
-# Verify the mock was called
-mock_emit.assert_called_once()
-
-# The original message contains PHI, but we're mocking the emit method
-# so we don't need to check the actual output
-record = mock_emit.call_args[0][0]
-assert isinstance(record, logging.LogRecord)
-assert "Patient SSN: 123-45-6789" in record.getMessage()
-
-                    def test_sanitized_logger(self, caplog):
+    def test_phi_redaction_handler(self):
+        """Test PHI redaction handler."""
+        # Create handler with mock sanitizer
+        mock_sanitizer = MagicMock()
+        mock_sanitizer.sanitize.side_effect = lambda x: "[SANITIZED]" if "PHI" in str(x) else str(x)
+        
+        handler = PHIRedactionHandler(sanitizer=mock_sanitizer)
+        
+        # Create a log record with PHI
+        record = logging.LogRecord(
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Log message with PHI: 123-45-6789",
+            args=(),
+            exc_info=None
+        )
+        
+        # Process the record
+        processed = handler.process(record)
+        
+        # Verify record was processed
+        assert processed is True
+        assert record.msg == "[SANITIZED]"
+        
+        # Test with record that doesn't contain PHI
+        record = logging.LogRecord(
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Log message without sensitive data",
+            args=(),
+            exc_info=None
+        )
+        
+        # Process the record
+        processed = handler.process(record)
+        
+        # Verify record was processed but not changed
+        assert processed is True
+        assert record.msg == "Log message without sensitive data"
 
 
-                        """Test SanitizedLogger."""
-caplog.set_level(logging.INFO)
+@pytest.mark.db_required
+class TestSanitizedLogger:
+    """Test suite for SanitizedLogger class."""
 
-# Create a sanitized logger with a mocked sanitizer
-mock_sanitizer = MagicMock()
-mock_sanitizer.sanitize.side_effect = lambda x: "[SANITIZED]" if "SSN" in str()
-x) else str(x,
+    def test_sanitized_logger_emit(self):
+        """Test SanitizedLogger emit method."""
+        # Create a mock sanitizer
+        mock_sanitizer = MagicMock()
+        mock_sanitizer.sanitize.return_value = "Sanitized: [REDACTED]"
+        
+        # Create a mock logger
+        mock_logger = MagicMock()
+        
+        # Create sanitized logger
+        sanitized_logger = SanitizedLogger("test", sanitizer=mock_sanitizer)
+        sanitized_logger.logger = mock_logger
+        
+        # Log a message
+        sanitized_logger.info("Patient SSN: 123-45-6789")
+        
+        # Verify the sanitizer was called
+        mock_sanitizer.sanitize.assert_called_once_with("Patient SSN: 123-45-6789")
+        
+        # Verify the logger was called with sanitized message
+        mock_logger.info.assert_called_once_with("Sanitized: [REDACTED]")
 
-logger= SanitizedLogger("test_sanitized", sanitizer=mock_sanitizer)
+    def test_sanitized_logger_with_mock_emit(self):
+        """Test SanitizedLogger with mocked emit method."""
+        # Create a real sanitizer
+        sanitizer = LogSanitizer()
+        
+        # Create a logger with mocked emit method
+        logger = logging.getLogger("test_sanitized_emit")
+        logger.setLevel(logging.INFO)
+        
+        # Create a handler with mocked emit method
+        handler = logging.Handler()
+        mock_emit = MagicMock()
+        handler.emit = mock_emit
+        logger.addHandler(handler)
+        
+        # Create sanitized logger
+        sanitized_logger = SanitizedLogger("test_sanitized_emit", sanitizer=sanitizer)
+        sanitized_logger.logger = logger
+        
+        # Log a message
+        sanitized_logger.info("Patient SSN: 123-45-6789")
+        
+        # Verify the mock was called
+        mock_emit.assert_called_once()
+        
+        # The original message contains PHI, but we're mocking the emit method
+        # so we don't need to check the actual output
+        record = mock_emit.call_args[0][0]
+        assert isinstance(record, logging.LogRecord)
+        assert "Patient SSN: 123-45-6789" in record.getMessage()
 
-# Log messages with different levels
-logger.info("Info message with email: john.doe@example.com")
+    def test_sanitized_logger(self, caplog):
+        """Test SanitizedLogger."""
+        caplog.set_level(logging.INFO)
+        
+        # Create a sanitized logger with a mocked sanitizer
+        mock_sanitizer = MagicMock()
+        mock_sanitizer.sanitize.side_effect = lambda x: "[SANITIZED]" if "SSN" in str(x) else str(x)
+        
+        logger = SanitizedLogger("test_sanitized", sanitizer=mock_sanitizer)
+        
+        # Log messages with different levels
+        logger.info("Info message with email: john.doe@example.com")
+        
+        # Check sanitizer was called
+        mock_sanitizer.sanitize.assert_called()
 
-# Check sanitizer was called
-mock_sanitizer.sanitize.assert_called()
+    def test_get_sanitized_logger(self):
+        """Test get_sanitized_logger function."""
+        logger = get_sanitized_logger("test_getter")
+        assert isinstance(logger, SanitizedLogger)
+        assert logger.logger.name == "test_getter"
 
-                def test_get_sanitized_logger(self):
-
-
-                    """Test get_sanitized_logger function."""
-logger = get_sanitized_logger("test_getter")
-assert isinstance(logger, SanitizedLogger)
-assert logger.logger.name == "test_getter"
-
-                    def test_sanitize_logs_decorator(self):
-
-
-                        """Test sanitize_logs decorator."""
-# Create a mock sanitizer
-mock_sanitizer = MagicMock()
-mock_sanitizer.sanitize.return_value = "Function logs SSN: [REDACTED]"
-
-# Create a mock logger
-mock_logger = MagicMock()
-
-# Patch the logging.getLogger to return our mock
-                with patch('logging.getLogger', return_value=mock_logger):
-@sanitize_logs(sanitizer=mock_sanitizer)
-                    def function_with_phi_logs():
-
-logger = logging.getLogger("test_decorator")
-logger.info("Function logs SSN: 123-45-6789")
-#                         return "Success"
-
-result = function_with_phi_logs()
-
-# Check function return value
-assert result == "Success"
-
-# Verify sanitizer was used - we're patching the logger so we don't need to check
-# the actual sanitization, just that the function completed
-# successfully
+    def test_sanitize_logs_decorator(self):
+        """Test sanitize_logs decorator."""
+        # Create a mock sanitizer
+        mock_sanitizer = MagicMock()
+        mock_sanitizer.sanitize.return_value = "Function logs SSN: [REDACTED]"
+        
+        # Create a mock logger
+        mock_logger = MagicMock()
+        
+        # Patch the logging.getLogger to return our mock
+        with patch('logging.getLogger', return_value=mock_logger):
+            @sanitize_logs(sanitizer=mock_sanitizer)
+            def function_with_phi_logs():
+                logger = logging.getLogger("test_decorator")
+                logger.info("Function logs SSN: 123-45-6789")
+                return "Success"
+                
+            result = function_with_phi_logs()
+            
+            # Check function return value
+            assert result == "Success"
+            
+            # Verify sanitizer was used - we're patching the logger so we don't need to check
+            # the actual sanitization, just that the function completed
+            # successfully

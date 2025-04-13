@@ -11,22 +11,22 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 # Import directly from app.api.schemas to avoid routes import issues
-from app.api.schemas.xgboost import ()
-RiskPredictionRequest,
-RiskPredictionResponse,
-TreatmentResponseRequest,
-TreatmentResponseResponse,
-OutcomePredictionRequest,
-OutcomePredictionResponse,
-ModelInfoRequest,
-ModelInfoResponse,
-RiskType,
-TreatmentType,
-OutcomeType,
-TherapyDetails,
-MedicationDetails,
-TimeFrame,
-
+from app.api.schemas.xgboost import (
+    RiskPredictionRequest,
+    RiskPredictionResponse,
+    TreatmentResponseRequest,
+    TreatmentResponseResponse,
+    OutcomePredictionRequest,
+    OutcomePredictionResponse,
+    ModelInfoRequest,
+    ModelInfoResponse,
+    RiskType,
+    TreatmentType,
+    OutcomeType,
+    TherapyDetails,
+    MedicationDetails,
+    TimeFrame,
+)
 
 # Use mock router instead of direct import
 xgboost_router = MagicMock()
@@ -51,102 +51,103 @@ def client():
     # Define mock endpoints matching the real router
     @mock_router.post("/risk-prediction")
     async def mock_predict_risk():
-#         return mock_xgboost_service.predict_risk.return_value
+        return mock_xgboost_service.predict_risk.return_value
 
-@mock_router.post("/treatment-response")
+    @mock_router.post("/treatment-response")
     async def mock_predict_treatment_response():
-#         return mock_xgboost_service.predict_treatment_response.return_value
+        return mock_xgboost_service.predict_treatment_response.return_value
 
-@mock_router.post("/outcome-prediction")
+    @mock_router.post("/outcome-prediction")
     async def mock_predict_outcome():
-#         return mock_xgboost_service.predict_outcome.return_value
+        return mock_xgboost_service.predict_outcome.return_value
 
-@mock_router.post("/model-info")
+    @mock_router.post("/model-info")
     async def mock_get_model_info():
-#         return mock_xgboost_service.get_model_info.return_value
+        return mock_xgboost_service.get_model_info.return_value
 
-app.include_router(mock_router, prefix="/api/xgboost")
+    app.include_router(mock_router, prefix="/api/xgboost")
 
-#         return TestClient(app)
+    return TestClient(app)
 
 
-@pytest.mark.parametrize()
-"endpoint,request_model,response_model",
-[]
-()
-"/api/xgboost/risk-prediction",
-RiskPredictionRequest()
-patient_id="patient-123",
-risk_type=RiskType.RELAPSE,
-clinical_features={
-"age": 45,
-"previous_episodes": 2,
-"phq9_score": 15,
-"medication_adherence": 0.8,
-},
-),
-RiskPredictionResponse,
-),
-()
-"/api/xgboost/treatment-response",
-TreatmentResponseRequest()
-patient_id="patient-123",
-treatment_type=TreatmentType.MEDICATION,
-therapy_details=TherapyDetails()
-type="cbt",
-frequency_per_week=2,
-duration_weeks=12,
-),
-medication_details=MedicationDetails()
-name="fluoxetine",
-dose_mg=20,
-frequency="daily",
-),
-clinical_features={
-"age": 45,
-"previous_episodes": 2,
-"phq9_score": 15,
-},
-),
-TreatmentResponseResponse,
-),
-()
-"/api/xgboost/outcome-prediction",
-OutcomePredictionRequest()
-patient_id="patient-123",
-outcome_type=OutcomeType.REMISSION,
-timeframe=TimeFrame.THREE_MONTHS,
-clinical_features={
-"age": 45,
-"previous_episodes": 2,
-"phq9_score": 15,
-"anxiety_symptoms": ["panic", "gad", "social", "ptsd", "insomnia"],
-},
-treatment_plan={
-"medication": "fluoxetine",
-"therapy": "cbt",
-"duration_weeks": 12,
-},
-),
-OutcomePredictionResponse,
-),
-()
-"/api/xgboost/model-info",
-ModelInfoRequest()
-model_id="xgb-risk-v1",
-model_type="risk_prediction",
-include_metrics=True,
-),
-ModelInfoResponse,
-),
-],
-
+@pytest.mark.parametrize(
+    "endpoint,request_model,response_model",
+    [
+        (
+            "/api/xgboost/risk-prediction",
+            RiskPredictionRequest(
+                patient_id="patient-123",
+                risk_type=RiskType.RELAPSE,
+                clinical_features={
+                    "age": 45,
+                    "previous_episodes": 2,
+                    "phq9_score": 15,
+                    "anxiety_symptoms": ["panic", "gad", "social", "ptsd", "insomnia"],
+                },
+                timeframe=TimeFrame.SIX_MONTHS,
+            ),
+            RiskPredictionResponse,
+        ),
+        (
+            "/api/xgboost/treatment-response",
+            TreatmentResponseRequest(
+                patient_id="patient-123",
+                treatment_type=TreatmentType.MEDICATION,
+                therapy_details=TherapyDetails(
+                    type="cbt",
+                    frequency_per_week=2,
+                    duration_weeks=12,
+                ),
+                medication_details=MedicationDetails(
+                    name="fluoxetine",
+                    dose_mg=20,
+                    frequency="daily",
+                ),
+                clinical_features={
+                    "age": 45,
+                    "previous_episodes": 2,
+                    "phq9_score": 15,
+                },
+            ),
+            TreatmentResponseResponse,
+        ),
+        (
+            "/api/xgboost/outcome-prediction",
+            OutcomePredictionRequest(
+                patient_id="patient-123",
+                outcome_type=OutcomeType.REMISSION,
+                timeframe=TimeFrame.THREE_MONTHS,
+                clinical_features={
+                    "age": 45,
+                    "previous_episodes": 2,
+                    "phq9_score": 15,
+                    "anxiety_symptoms": ["panic", "gad", "social", "ptsd", "insomnia"],
+                },
+                treatment_plan={
+                    "medication": "fluoxetine",
+                    "therapy": "cbt",
+                    "duration_weeks": 12,
+                },
+            ),
+            OutcomePredictionResponse,
+        ),
+        (
+            "/api/xgboost/model-info",
+            ModelInfoRequest(
+                model_id="xgb-risk-v1",
+                model_type="risk_prediction",
+                include_metrics=True,
+            ),
+            ModelInfoResponse,
+        ),
+    ],
+)
 @pytest.mark.db_required
-def test_xgboost_endpoints_return_200()
-client,
-endpoint,
-request_model,
-response_model
+def test_xgboost_endpoints_return_200(
+    client,
+    endpoint,
+    request_model,
+    response_model
 ):
     """Test that XGBoost endpoints return 200 status code."""
     # Setup mock return value
@@ -157,9 +158,9 @@ response_model
     mock_xgboost_service.get_model_info.return_value = mock_response
 
     # Make request
-    response = client.post()
-    endpoint, json=json.loads(request_model.model_dump_json())
-    
+    response = client.post(
+        endpoint, json=json.loads(request_model.model_dump_json())
+    )
 
     # Check status code
     assert response.status_code == status.HTTP_200_OK

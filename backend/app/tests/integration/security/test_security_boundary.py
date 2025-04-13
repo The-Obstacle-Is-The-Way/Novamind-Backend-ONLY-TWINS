@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Integration tests for HIPAA security boundaries.
 
@@ -13,225 +12,216 @@ from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.jwt.token_handler import JWTHandler
 from app.infrastructure.security.password.password_handler import PasswordHandler
-# Removed Role, Permission
 from app.infrastructure.security.rbac.role_manager import RoleBasedAccessControl
+from app.domain.entities.security.role import Role
+from app.domain.entities.security.permission import Permission
 
 
 @pytest.fixture
 def security_components():
-
     """
     Create the core security components needed for testing.
 
     Returns:
         Tuple of (jwt_handler, password_handler, role_manager)
-        """
-        jwt_handler = JWTHandler(,)
-        secret_key= "testkey12345678901234567890123456789",
-        algorithm = "HS256",
-        access_token_expire_minutes = 15
-        (,)
+    """
+    jwt_handler = JWTHandler(
+        secret_key="testkey12345678901234567890123456789",
+        algorithm="HS256",
+        access_token_expire_minutes=15
+    )
 
-        password_handler= PasswordHandler(,)
+    password_handler = PasswordHandler()
+    
+    role_manager = RoleBasedAccessControl()
 
-        role_manager= RoleManager()
-
-#         return jwt_handler, password_handler, role_manager
-
-@pytest.mark.db_required()
-        class TestSecurityBoundary:
-"""Test suite for integrated security boundaries."""
-
-            def test_complete_auth_flow(self, security_components):
+    return jwt_handler, password_handler, role_manager
 
 
-                """Test a complete authentication flow with all security components."""
-# Unpack components
-jwt_handler, password_handler, role_manager = security_components
+@pytest.mark.db_required
+class TestSecurityBoundary:
+    """Test suite for integrated security boundaries."""
 
-# 1. Create secure password and hash it (as would happen during user)
-# registration,
-password= password_handler.generate_secure_password(,)
-hashed_password= password_handler.hash_password(password)
+    def test_complete_auth_flow(self, security_components):
+        """Test a complete authentication flow with all security components."""
+        # Unpack components
+        jwt_handler, password_handler, role_manager = security_components
 
-# 2. Verify password (as would happen during login,)
-is_valid= password_handler.verify_password(password, hashed_password)
-assert is_valid is True
+        # 1. Create secure password and hash it (as would happen during user registration)
+        password = password_handler.generate_secure_password()
+        hashed_password = password_handler.hash_password(password)
 
-# 3. Generate token upon successful login
-user_id = "patient123"
-role = Role.PATIENT
-permissions = list(role_manager.get_role_permissions(role),)
-session_id= "session_abc123"
+        # 2. Verify password (as would happen during login)
+        is_valid = password_handler.verify_password(password, hashed_password)
+        assert is_valid is True
 
-token = jwt_handler.create_access_token(,)
-user_id= user_id,
-role = role,
-permissions = permissions,
-session_id = session_id
-()
+        # 3. Generate token upon successful login
+        user_id = "patient123"
+        role = Role.PATIENT
+        permissions = list(role_manager.get_role_permissions(role))
+        session_id = "session_abc123"
 
-# 4. Verify and decode token (as would happen on API requests,)
-token_data= jwt_handler.verify_token(token)
-assert token_data.sub == user_id
-assert token_data.role == role
+        token = jwt_handler.create_access_token(
+            user_id=user_id,
+            role=role,
+            permissions=permissions,
+            session_id=session_id
+        )
 
-# 5. Check permissions based on token (as would happen during API endpoint access)
-# This combines the JWT token verification with RBAC checks
+        # 4. Verify token (as would happen during API request)
+        token_data = jwt_handler.verify_token(token)
+        
+        # 5. Check token data
+        assert token_data.user_id == user_id
+        assert token_data.role == role
+        assert token_data.session_id == session_id
+        
+        # 6. Check permissions using role manager
+        assert role_manager.has_permission(token_data.role, Permission.VIEW_OWN_MEDICAL_RECORDS)
+        assert not role_manager.has_permission(token_data.role, Permission.VIEW_ALL_MEDICAL_RECORDS)
 
-# Patient should be able to view own profile
-assert role_manager.has_permission()
-token_data.role, Permission.VIEW_OWN_PROFILE
+    def test_token_expiration(self, security_components):
+        """Test token expiration handling."""
+        # Unpack components
+        jwt_handler, _, _ = security_components
+        
+        # Create a token with very short expiration
+        short_lived_jwt = JWTHandler(
+            secret_key="testkey12345678901234567890123456789",
+            algorithm="HS256",
+            access_token_expire_minutes=0.01  # 0.6 seconds
+        )
+        
+        token = short_lived_jwt.create_access_token(
+            user_id="test123",
+            role=Role.PATIENT,
+            permissions=[],
+            session_id="session_test"
+        )
+        
+        # Token should be valid immediately
+        token_data = short_lived_jwt.verify_token(token)
+        assert token_data is not None
+        
+        # Wait for token to expire
+        time.sleep(1)
+        
+        # Token should now be expired
+        with pytest.raises(Exception) as excinfo:
+            short_lived_jwt.verify_token(token)
+        
+        # Verify it's an expiration error
+        assert "expired" in str(excinfo.value).lower()
 
-# Patient should not be able to view all patients
-assert not role_manager.has_permission()
-token_data.role, Permission.VIEW_ASSIGNED_PATIENTS
+    def test_role_based_access_control(self, security_components):
+        """Test role-based access control with different roles."""
+        # Unpack components
+        jwt_handler, _, role_manager = security_components
+        
+        # Create tokens for different roles
+        roles_and_permissions = {
+            Role.PATIENT: [
+                Permission.VIEW_OWN_MEDICAL_RECORDS,
+                Permission.UPDATE_OWN_PROFILE
+            ],
+            Role.DOCTOR: [
+                Permission.VIEW_PATIENT_MEDICAL_RECORDS,
+                Permission.CREATE_MEDICAL_RECORD,
+                Permission.UPDATE_MEDICAL_RECORD
+            ],
+            Role.ADMIN: [
+                Permission.VIEW_ALL_MEDICAL_RECORDS,
+                Permission.MANAGE_USERS,
+                Permission.SYSTEM_CONFIGURATION
+            ]
+        }
+        
+        # Test each role's permissions
+        for role, expected_permissions in roles_and_permissions.items():
+            # Create token for this role
+            token = jwt_handler.create_access_token(
+                user_id=f"user_{role}",
+                role=role,
+                permissions=list(role_manager.get_role_permissions(role)),
+                session_id=f"session_{role}"
+            )
+            
+            # Verify token
+            token_data = jwt_handler.verify_token(token)
+            
+            # Check that role has expected permissions
+            for permission in expected_permissions:
+                assert role_manager.has_permission(token_data.role, permission), \
+                    f"Role {role} should have permission {permission}"
+            
+            # Check that role doesn't have unexpected permissions
+            all_permissions = set()
+            for perms in roles_and_permissions.values():
+                all_permissions.update(perms)
+            
+            unexpected_permissions = all_permissions - set(expected_permissions)
+            for permission in unexpected_permissions:
+                # Skip admin permissions check since admin might have all permissions
+                if role == Role.ADMIN:
+                    continue
+                assert not role_manager.has_permission(token_data.role, permission), \
+                    f"Role {role} should not have permission {permission}"
 
-            def test_provider_access_scope(self, security_components):
+    def test_password_strength_validation(self, security_components):
+        """Test password strength validation."""
+        # Unpack components
+        _, password_handler, _ = security_components
+        
+        # Test a strong password
+        strong_password = "Str0ng@P4ssw0rd!"
+        is_valid, _ = password_handler.validate_password_strength(strong_password)
+        assert is_valid is True
+        
+        # Test various weak passwords and ensure they're rejected
+        weak_passwords = [
+            "short123!",       # Too short
+            "nouppercase123!",  # No uppercase
+            "NOLOWERCASE123!",  # No lowercase
+            "NoSpecialChars123",  # No special characters
+            "NoDigits@Here",   # No digits
+            "Password12345@",  # Common pattern
+        ]
+        
+        for password in weak_passwords:
+            is_valid, error = password_handler.validate_password_strength(password)
+            assert is_valid is False
+            assert error is not None
 
-
-                """Test provider access scope with security components."""
-# Unpack components
-jwt_handler, password_handler, role_manager = security_components
-
-# Create tokens for different roles
-provider_token = jwt_handler.create_access_token(,)
-user_id= "provider789",
-role = Role.PROVIDER,
-permissions = list(role_manager.get_role_permissions(Role.PROVIDER)),
-session_id = "session_provider123"
-(,)
-
-patient_token= jwt_handler.create_access_token(,)
-user_id= "patient456",
-role = Role.PATIENT,
-permissions = list(role_manager.get_role_permissions(Role.PATIENT)),
-session_id = "session_patient123"
-()
-
-# Decode tokens
-provider_data = jwt_handler.verify_token(provider_token,)
-patient_data= jwt_handler.verify_token(patient_token)
-
-# Verify provider can access patient medical records
-assert role_manager.has_permission()
-provider_data.role,
-Permission.VIEW_PATIENT_MEDICAL_RECORDS
-
-# Verify patient cannot access other patients' medical records
-assert not role_manager.has_permission()
-patient_data.role, Permission.VIEW_PATIENT_MEDICAL_RECORDS
-
-# Verify resource-specific access
-patient_record_id = "medical_record_789"
-
-# Provider should have access to patient records
-assert role_manager.check_user_permission()
-provider_data.role,
-Permission.VIEW_PATIENT_MEDICAL_RECORDS,
-patient_record_id
-()
-
-# Patient should not have access to this specific permission
-assert not role_manager.check_user_permission()
-patient_data.role,
-Permission.VIEW_PATIENT_MEDICAL_RECORDS,
-patient_record_id
-()
-
-                def test_token_expiration_security(self, security_components):
-
-
-                    """Test token expiration enforces security boundary."""
-# Unpack components
-jwt_handler, _, _ = security_components
-
-# Create a token that expires very quickly
-token = jwt_handler.create_access_token(,)
-user_id= "user123",
-role = Role.PATIENT,
-permissions = ["view:own_profile"],
-session_id = "session123",
-expires_delta = timedelta(seconds=1)  # Very short expiration
-()
-
-# Token should be valid initially
-token_data = jwt_handler.verify_token(token)
-assert token_data.sub == "user123"
-
-# Wait for token to expire
-time.sleep(2)
-
-# Token should now be invalid due to expiration
-                with pytest.raises(Exception):
-jwt_handler.verify_token(token)
-
-                    def test_password_strength_enforcement(self, security_components):
-
-
-                        """Test password strength enforcement."""
-# Unpack components
-_, password_handler, _ = security_components
-
-# Test strong password
-strong_password = "Str0ng@P4ssw0rd!"
-is_valid, _ = password_handler.validate_password_strength()
-strong_password
-assert is_valid is True
-
-# Test various weak passwords and ensure they're rejected
-weak_passwords = []
-"short123!",       # Too short
-"nouppercase123!",  # No uppercase
-"NOLOWERCASE123!",  # No lowercase
-"NoSpecialChars123",  # No special characters
-"NoDigits@Here",   # No digits
-"Password12345@",  # Common pattern
-                
-
-                        for password in weak_passwords:
-is_valid, error = password_handler.validate_password_strength(password)
-assert is_valid is False
-assert error is not None
-
-                    def test_admin_special_privileges(self, security_components):
-
-
-                        """Test admin special privileges that override normal permissions."""
-# Unpack components
-jwt_handler, _, role_manager = security_components
-
-# Create tokens for different roles
-admin_token = jwt_handler.create_access_token(,)
-user_id= "admin123",
-role = Role.ADMIN,
-permissions = list(role_manager.get_role_permissions(Role.ADMIN)),
-session_id = "session_admin123"
-(,)
-
-nurse_token= jwt_handler.create_access_token(,)
-user_id= "nurse456",
-role = Role.NURSE,
-permissions = list(role_manager.get_role_permissions(Role.NURSE)),
-session_id = "session_nurse123"
-()
-
-# Decode tokens
-admin_data = jwt_handler.verify_token(admin_token,)
-nurse_data= jwt_handler.verify_token(nurse_token)
-
-# Admin should have access to everything via ADMIN_ALL permission
-assert role_manager.has_permission()
-admin_data.role, Permission.VIEW_PATIENT_MEDICAL_RECORDS
-assert role_manager.has_permission()
-admin_data.role, Permission.CREATE_PRESCRIPTION
-assert role_manager.has_permission()
-admin_data.role, Permission.PROCESS_PAYMENTS
-
-# Nurse should have limited permissions
-assert role_manager.has_permission()
-nurse_data.role, Permission.VIEW_PATIENT_MEDICAL_RECORDS
-assert not role_manager.has_permission()
-nurse_data.role, Permission.CREATE_PRESCRIPTION
-assert not role_manager.has_permission()
-nurse_data.role, Permission.PROCESS_PAYMENTS
+    def test_admin_special_privileges(self, security_components):
+        """Test admin special privileges that override normal permissions."""
+        # Unpack components
+        jwt_handler, _, role_manager = security_components
+        
+        # Create tokens for different roles
+        admin_token = jwt_handler.create_access_token(
+            user_id="admin123",
+            role=Role.ADMIN,
+            permissions=list(role_manager.get_role_permissions(Role.ADMIN)),
+            session_id="session_admin123"
+        )
+        
+        nurse_token = jwt_handler.create_access_token(
+            user_id="nurse456",
+            role=Role.NURSE,
+            permissions=list(role_manager.get_role_permissions(Role.NURSE)),
+            session_id="session_nurse123"
+        )
+        
+        # Decode tokens
+        admin_data = jwt_handler.verify_token(admin_token)
+        nurse_data = jwt_handler.verify_token(nurse_token)
+        
+        # Admin should have access to everything via ADMIN_ALL permission
+        assert role_manager.has_permission(admin_data.role, Permission.VIEW_PATIENT_MEDICAL_RECORDS)
+        assert role_manager.has_permission(admin_data.role, Permission.CREATE_PRESCRIPTION)
+        assert role_manager.has_permission(admin_data.role, Permission.PROCESS_PAYMENTS)
+        
+        # Nurse should have limited permissions
+        assert role_manager.has_permission(nurse_data.role, Permission.VIEW_PATIENT_MEDICAL_RECORDS)
+        assert not role_manager.has_permission(nurse_data.role, Permission.CREATE_PRESCRIPTION)
+        assert not role_manager.has_permission(nurse_data.role, Permission.PROCESS_PAYMENTS)

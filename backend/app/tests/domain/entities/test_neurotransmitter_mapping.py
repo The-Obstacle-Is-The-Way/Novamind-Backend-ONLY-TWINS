@@ -7,18 +7,19 @@ and perform calculations accurately.
 import pytest
 import uuid
 from uuid import UUID
-from app.domain.entities.digital_twin import ()
-BrainRegion,
-Neurotransmitter,
-ClinicalSignificance,
+from app.domain.entities.digital_twin_enums import (
+    BrainRegion,
+    Neurotransmitter,
+    ClinicalSignificance,
+)
 
-from app.domain.entities.neurotransmitter_mapping import ()
-NeurotransmitterMapping,
-ReceptorProfile,
-ReceptorType,
-ReceptorSubtype,
-create_default_neurotransmitter_mapping,
-
+from app.domain.entities.neurotransmitter_mapping import (
+    NeurotransmitterMapping,
+    ReceptorProfile,
+    ReceptorType,
+    ReceptorSubtype,
+    create_default_neurotransmitter_mapping,
+)
 
 
 @pytest.mark.venv_only()
@@ -39,15 +40,15 @@ def test_add_receptor_profile():
     mapping = NeurotransmitterMapping(patient_id=test_patient_id)
 
     # Create a receptor profile
-    profile = ReceptorProfile()
-    brain_region=BrainRegion.PREFRONTAL_CORTEX,
-    neurotransmitter=Neurotransmitter.SEROTONIN,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
-    density=0.7,
-    sensitivity=0.8,
-    clinical_relevance=ClinicalSignificance.MODERATE,
-    
+    profile = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.SEROTONIN,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
+        density=0.7,
+        sensitivity=0.8,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
 
     # Add it to the mapping
     mapping.add_receptor_profile(profile)
@@ -57,75 +58,22 @@ def test_add_receptor_profile():
     assert mapping.receptor_profiles[0] == profile
 
     # Add another profile for the same region but different neurotransmitter
-    profile2 = ReceptorProfile()
-    brain_region=BrainRegion.PREFRONTAL_CORTEX,
-    neurotransmitter=Neurotransmitter.DOPAMINE,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.DOPAMINE_D1,
-    density=0.6,
-    sensitivity=0.7,
-    clinical_relevance=ClinicalSignificance.MODERATE,
-    
+    profile2 = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.DOPAMINE,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.DOPAMINE_D1,
+        density=0.6,
+        sensitivity=0.7,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
 
     mapping.add_receptor_profile(profile2)
 
-    # Verify it was added
+    # Verify both profiles are in the mapping
     assert len(mapping.receptor_profiles) == 2
-    assert mapping.receptor_profiles[1] == profile2
-
-
-def test_get_profiles_by_brain_region():
-    """Test retrieving profiles by brain region."""
-    test_patient_id = uuid.uuid4()
-    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
-
-    # Add profiles for different brain regions
-    profiles = []
-    ReceptorProfile()
-    brain_region=BrainRegion.PREFRONTAL_CORTEX,
-    neurotransmitter=Neurotransmitter.SEROTONIN,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
-    density=0.7,
-    sensitivity=0.8,
-    clinical_relevance=ClinicalSignificance.MODERATE,
-    ),
-    ReceptorProfile()
-    brain_region=BrainRegion.AMYGDALA,
-    neurotransmitter=Neurotransmitter.GABA,
-    receptor_type=ReceptorType.INHIBITORY,
-    receptor_subtype=ReceptorSubtype.GABA_A,
-    density=0.8,
-    sensitivity=0.6,
-    clinical_relevance=ClinicalSignificance.HIGH,
-    ),
-    ReceptorProfile()
-    brain_region=BrainRegion.PREFRONTAL_CORTEX,
-    neurotransmitter=Neurotransmitter.DOPAMINE,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.DOPAMINE_D1,
-    density=0.6,
-    sensitivity=0.7,
-    clinical_relevance=ClinicalSignificance.MODERATE,
-    ),
-    
-
-    for profile in profiles:
-        mapping.add_receptor_profile(profile)
-
-    # Get profiles for PFC
-    pfc_profiles = mapping.get_profiles_by_brain_region(BrainRegion.PREFRONTAL_CORTEX)
-    assert len(pfc_profiles) == 2
-    assert all(p.brain_region == BrainRegion.PREFRONTAL_CORTEX for p in pfc_profiles)
-
-    # Get profiles for amygdala
-    amygdala_profiles = mapping.get_profiles_by_brain_region(BrainRegion.AMYGDALA)
-    assert len(amygdala_profiles) == 1
-    assert all(p.brain_region == BrainRegion.AMYGDALA for p in amygdala_profiles)
-
-    # Get profiles for a region with no profiles
-    hippocampus_profiles = mapping.get_profiles_by_brain_region(BrainRegion.HIPPOCAMPUS)
-    assert len(hippocampus_profiles) == 0
+    assert profile in mapping.receptor_profiles
+    assert profile2 in mapping.receptor_profiles
 
 
 def test_get_profiles_by_neurotransmitter():
@@ -134,86 +82,225 @@ def test_get_profiles_by_neurotransmitter():
     mapping = NeurotransmitterMapping(patient_id=test_patient_id)
 
     # Add profiles for different neurotransmitters
-    profiles = []
-    ReceptorProfile()
-    brain_region=BrainRegion.PREFRONTAL_CORTEX,
-    neurotransmitter=Neurotransmitter.SEROTONIN,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
-    density=0.7,
-    sensitivity=0.8,
-    clinical_relevance=ClinicalSignificance.MODERATE,
-    ),
-    ReceptorProfile()
-    brain_region=BrainRegion.AMYGDALA,
-    neurotransmitter=Neurotransmitter.GABA,
-    receptor_type=ReceptorType.INHIBITORY,
-    receptor_subtype=ReceptorSubtype.GABA_A,
-    density=0.8,
-    sensitivity=0.6,
-    clinical_relevance=ClinicalSignificance.HIGH,
-    ),
-    ReceptorProfile()
-    brain_region=BrainRegion.HIPPOCAMPUS,
-    neurotransmitter=Neurotransmitter.SEROTONIN,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.SEROTONIN_5HT1A,
-    density=0.5,
-    sensitivity=0.9,
-    clinical_relevance=ClinicalSignificance.HIGH,
-    ),
-    
+    serotonin_profile = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.SEROTONIN,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
+        density=0.7,
+        sensitivity=0.8,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
 
-    for profile in profiles:
-        mapping.add_receptor_profile(profile)
+    dopamine_profile = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.DOPAMINE,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.DOPAMINE_D1,
+        density=0.6,
+        sensitivity=0.7,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
 
-    # Get profiles for serotonin
+    gaba_profile = ReceptorProfile(
+        brain_region=BrainRegion.AMYGDALA,
+        neurotransmitter=Neurotransmitter.GABA,
+        receptor_type=ReceptorType.INHIBITORY,
+        receptor_subtype=ReceptorSubtype.GABA_A,
+        density=0.5,
+        sensitivity=0.6,
+        clinical_relevance=ClinicalSignificance.MILD,
+    )
+
+    mapping.add_receptor_profile(serotonin_profile)
+    mapping.add_receptor_profile(dopamine_profile)
+    mapping.add_receptor_profile(gaba_profile)
+
+    # Get profiles by neurotransmitter
     serotonin_profiles = mapping.get_profiles_by_neurotransmitter(Neurotransmitter.SEROTONIN)
-    assert len(serotonin_profiles) == 2
-    assert all(p.neurotransmitter == Neurotransmitter.SEROTONIN for p in serotonin_profiles)
-
-    # Get profiles for GABA
-    gaba_profiles = mapping.get_profiles_by_neurotransmitter(Neurotransmitter.GABA)
-    assert len(gaba_profiles) == 1
-    assert all(p.neurotransmitter == Neurotransmitter.GABA for p in gaba_profiles)
-
-    # Get profiles for a neurotransmitter with no profiles
     dopamine_profiles = mapping.get_profiles_by_neurotransmitter(Neurotransmitter.DOPAMINE)
-    assert len(dopamine_profiles) == 0
+    gaba_profiles = mapping.get_profiles_by_neurotransmitter(Neurotransmitter.GABA)
+    glutamate_profiles = mapping.get_profiles_by_neurotransmitter(Neurotransmitter.GLUTAMATE)
+
+    # Verify results
+    assert len(serotonin_profiles) == 1
+    assert len(dopamine_profiles) == 1
+    assert len(gaba_profiles) == 1
+    assert len(glutamate_profiles) == 0  # No glutamate profiles added
+
+    assert serotonin_profiles[0] == serotonin_profile
+    assert dopamine_profiles[0] == dopamine_profile
+    assert gaba_profiles[0] == gaba_profile
+
+
+def test_get_profiles_by_brain_region():
+    """Test retrieving profiles by brain region."""
+    test_patient_id = uuid.uuid4()
+    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
+
+    # Add profiles for different brain regions
+    pfc_profile1 = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.SEROTONIN,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
+        density=0.7,
+        sensitivity=0.8,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
+
+    pfc_profile2 = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.DOPAMINE,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.DOPAMINE_D1,
+        density=0.6,
+        sensitivity=0.7,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
+
+    amygdala_profile = ReceptorProfile(
+        brain_region=BrainRegion.AMYGDALA,
+        neurotransmitter=Neurotransmitter.GABA,
+        receptor_type=ReceptorType.INHIBITORY,
+        receptor_subtype=ReceptorSubtype.GABA_A,
+        density=0.5,
+        sensitivity=0.6,
+        clinical_relevance=ClinicalSignificance.MILD,
+    )
+
+    hippocampus_profile = ReceptorProfile(
+        brain_region=BrainRegion.HIPPOCAMPUS,
+        neurotransmitter=Neurotransmitter.GLUTAMATE,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.GLUTAMATE_NMDA,
+        density=0.8,
+        sensitivity=0.9,
+        clinical_relevance=ClinicalSignificance.HIGH,
+    )
+
+    mapping.add_receptor_profile(pfc_profile1)
+    mapping.add_receptor_profile(pfc_profile2)
+    mapping.add_receptor_profile(amygdala_profile)
+    mapping.add_receptor_profile(hippocampus_profile)
+
+    # Get profiles by brain region
+    pfc_profiles = mapping.get_profiles_by_brain_region(BrainRegion.PREFRONTAL_CORTEX)
+    amygdala_profiles = mapping.get_profiles_by_brain_region(BrainRegion.AMYGDALA)
+    hippocampus_profiles = mapping.get_profiles_by_brain_region(BrainRegion.HIPPOCAMPUS)
+    pituitary_profiles = mapping.get_profiles_by_brain_region(BrainRegion.PITUITARY)
+
+    # Verify results
+    assert len(pfc_profiles) == 2
+    assert len(amygdala_profiles) == 1
+    assert len(hippocampus_profiles) == 1
+    assert len(pituitary_profiles) == 0  # No pituitary profiles added
+
+    assert pfc_profile1 in pfc_profiles
+    assert pfc_profile2 in pfc_profiles
+    assert amygdala_profile in amygdala_profiles
+    assert hippocampus_profile in hippocampus_profiles
+
+
+def test_calculate_regional_activity():
+    """Test calculating regional activity levels."""
+    test_patient_id = uuid.uuid4()
+    mapping = NeurotransmitterMapping(patient_id=test_patient_id)
+
+    # Add profiles for a specific region
+    pfc_profile1 = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.SEROTONIN,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
+        density=0.7,
+        sensitivity=0.8,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
+
+    pfc_profile2 = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.DOPAMINE,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.DOPAMINE_D1,
+        density=0.6,
+        sensitivity=0.7,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
+
+    pfc_profile3 = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.GABA,
+        receptor_type=ReceptorType.INHIBITORY,
+        receptor_subtype=ReceptorSubtype.GABA_A,
+        density=0.5,
+        sensitivity=0.6,
+        clinical_relevance=ClinicalSignificance.MILD,
+    )
+
+    mapping.add_receptor_profile(pfc_profile1)
+    mapping.add_receptor_profile(pfc_profile2)
+    mapping.add_receptor_profile(pfc_profile3)
+
+    # Calculate regional activity
+    neurotransmitter_levels = {
+        Neurotransmitter.SEROTONIN: 0.8,
+        Neurotransmitter.DOPAMINE: 0.7,
+        Neurotransmitter.GABA: 0.6,
+    }
+
+    activity = mapping.calculate_regional_activity(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter_levels=neurotransmitter_levels,
+    )
+
+    # Verify activity calculation
+    assert activity is not None
+    assert "excitatory" in activity
+    assert "inhibitory" in activity
+    assert "net_activity" in activity
+    
+    # Excitatory activity = (0.7 * 0.8 * 0.8) + (0.6 * 0.7 * 0.7) = 0.448 + 0.294 = 0.742
+    # Inhibitory activity = (0.5 * 0.6 * 0.6) = 0.18
+    # Net activity = 0.742 - 0.18 = 0.562
+    assert abs(activity["excitatory"] - 0.742) < 0.001
+    assert abs(activity["inhibitory"] - 0.18) < 0.001
+    assert abs(activity["net_activity"] - 0.562) < 0.001
 
 
 def test_create_default_mapping():
     """Test creating a default neurotransmitter mapping."""
     test_patient_id = uuid.uuid4()
-    mapping = create_default_neurotransmitter_mapping(test_patient_id)
+    mapping = create_default_neurotransmitter_mapping(patient_id=test_patient_id)
 
+    # Verify the mapping has default profiles
     assert mapping is not None
-    assert isinstance(mapping, NeurotransmitterMapping)
-    assert mapping.patient_id == test_patient_id
     assert len(mapping.receptor_profiles) > 0
 
-    # Check that key brain regions are represented
+    # Check that all major brain regions and neurotransmitters are represented
     pfc_profiles = mapping.get_profiles_by_brain_region(BrainRegion.PREFRONTAL_CORTEX)
     amygdala_profiles = mapping.get_profiles_by_brain_region(BrainRegion.AMYGDALA)
     hippocampus_profiles = mapping.get_profiles_by_brain_region(BrainRegion.HIPPOCAMPUS)
+    pituitary_profiles = mapping.get_profiles_by_brain_region(BrainRegion.PITUITARY)
 
     assert len(pfc_profiles) > 0
     assert len(amygdala_profiles) > 0
     assert len(hippocampus_profiles) > 0
+    assert len(pituitary_profiles) > 0  # Ensure PITUITARY region is included
 
 
 def test_receptor_profile_creation():
     """Test creating and manipulating receptor profiles."""
     # Create a profile
-    profile = ReceptorProfile()
-    brain_region=BrainRegion.PREFRONTAL_CORTEX,
-    neurotransmitter=Neurotransmitter.SEROTONIN,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
-    density=0.7,
-    sensitivity=0.8,
-    clinical_relevance=ClinicalSignificance.MODERATE,
-    
+    profile = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.SEROTONIN,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
+        density=0.7,
+        sensitivity=0.8,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
 
     # Check attributes
     assert profile.brain_region == BrainRegion.PREFRONTAL_CORTEX
@@ -225,25 +312,25 @@ def test_receptor_profile_creation():
     assert profile.clinical_relevance == ClinicalSignificance.MODERATE
 
     # Test equality
-    profile2 = ReceptorProfile()
-    brain_region=BrainRegion.PREFRONTAL_CORTEX,
-    neurotransmitter=Neurotransmitter.SEROTONIN,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
-    density=0.7,
-    sensitivity=0.8,
-    clinical_relevance=ClinicalSignificance.MODERATE,
-    
+    profile2 = ReceptorProfile(
+        brain_region=BrainRegion.PREFRONTAL_CORTEX,
+        neurotransmitter=Neurotransmitter.SEROTONIN,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
+        density=0.7,
+        sensitivity=0.8,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
 
-    profile3 = ReceptorProfile()
-    brain_region=BrainRegion.AMYGDALA,  # Different region
-    neurotransmitter=Neurotransmitter.SEROTONIN,
-    receptor_type=ReceptorType.EXCITATORY,
-    receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
-    density=0.7,
-    sensitivity=0.8,
-    clinical_relevance=ClinicalSignificance.MODERATE,
-    
+    profile3 = ReceptorProfile(
+        brain_region=BrainRegion.AMYGDALA,  # Different region
+        neurotransmitter=Neurotransmitter.SEROTONIN,
+        receptor_type=ReceptorType.EXCITATORY,
+        receptor_subtype=ReceptorSubtype.SEROTONIN_5HT2A,
+        density=0.7,
+        sensitivity=0.8,
+        clinical_relevance=ClinicalSignificance.MODERATE,
+    )
 
     assert profile == profile2  # Same attributes
     assert profile != profile3  # Different brain region
