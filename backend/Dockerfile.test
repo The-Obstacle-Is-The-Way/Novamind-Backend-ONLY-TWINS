@@ -36,15 +36,17 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # Create necessary directories for testing
 RUN mkdir -p /app/test-results /app/logs /app/backup
 
-# Copy the minimal necessary files first (dependency scanning)
+# Copy the neural pathway architecture files with mathematical precision
 COPY app/tests/setup.py ./app/tests/
-COPY scripts/test/runners/ ./scripts/test/runners/
-COPY scripts/run_tests_by_level.py ./scripts/
 
-# Set up proper permissions for test runners
-RUN chmod +x ./scripts/run_tests_by_level.py \
-    && chmod +x ./scripts/test/runners/legacy/run_tests_by_level.py \
-    && chmod +x ./scripts/test/runners/run_tests.py
+# Create the neural directory structure
+RUN mkdir -p /app/scripts/core /app/scripts/fixers /app/scripts/deploy /app/scripts/utils /app/scripts/neurotransmitters
+
+# Copy the quantum neural test runner file directly
+COPY scripts/core/quantum_runner.py ./scripts/core/
+
+# Set up proper permissions for neural pathways
+RUN chmod +x ./scripts/core/quantum_runner.py
 
 # Copy the rest of the application with proper file permissions
 COPY . .
