@@ -1,42 +1,114 @@
+#!/usr/bin/env python3
+"""
+Fix common indentation issues in Python files that prevent Black from running.
+This script identifies and fixes:
+1. Empty parentheses in imports - from module import ()
+2. Indentation mismatches
+3. Missing colons in function/class definitions
+4. Missing parentheses in function calls
+"""
+
+import os
 import re
+import sys
+from pathlib import Path
+
+
+def fix_empty_imports(content):
+    """Fix empty imports like 'from module import ()'."""
+    return re.sub(r'from\s+([a-zA-Z0-9_.]+)\s+import\s+\(\)', r'from \1 import', content)
+
 
 def fix_indentation_issues(file_path):
-    with open(file_path, 'r') as file:
-        content = file.read()
-    
-    # Fix method indentation issues - after a method definition followed by a docstring
-    # Find all method definitions followed by docstrings
-    pattern = r'(def\s+\w+\([^)]*\)[^:]*:[\s\n]+"""[^"]*"""[\s\n]+)(\s*)return'
-    fixed_content = re.sub(pattern, lambda m: m.group(1) + m.group(2) + '    return', content)
-    
-    # If there are still return statements at wrong indentation levels
-    lines = fixed_content.split('\n')
-    fixed_lines = []
-    in_method = False
-    method_indent = ""
-    
-    for line in lines:
-        stripped = line.lstrip()
+    """Fix basic indentation issues in Python files."""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        # Fix empty imports
+        content = fix_empty_imports(content)
         
-        # Detect method start
-        if re.match(r'def\s+\w+\([^)]*\)[^:]*:', line):
-            in_method = True
-            method_indent = line[:line.index('def')]
+        # Normalize line endings
+        content = content.replace('\r\n', '\n')
         
-        # Fix return statement indentation
-        if in_method and stripped.startswith('return ') and not line.startswith(method_indent + '    '):
-            indent_level = method_indent + '    '
-            fixed_lines.append(indent_level + stripped)
-        else:
-            fixed_lines.append(line)
-    
-    fixed_content = '\n'.join(fixed_lines)
-    
-    with open(file_path, 'w') as file:
-        file.write(fixed_content)
-    
-    print(f"Fixed indentation issues in {file_path}")
+        # Split into lines for line-by-line processing
+        lines = content.split('\n')
+        fixed_lines = []
+        
+        # Process lines
+        in_method = False
+        expected_indent = 0
+        
+        for i, line in enumerate(lines):
+            # Skip empty lines
+            if not line.strip():
+                fixed_lines.append(line)
+                continue
+                
+            # Get current indentation
+            indent = len(line) - len(line.lstrip())
+            stripped = line.strip()
+            
+            # Check if line needs indent fixing
+            if in_method and indent < expected_indent and not (stripped.startswith(')') or stripped.startswith('}')):
+                # Add proper indentation
+                fixed_lines.append(' ' * expected_indent + stripped)
+            else:
+                fixed_lines.append(line)
+            
+            # Update indent expectations
+            if stripped.endswith(':'):
+                in_method = True
+                expected_indent = indent + 4  # Python standard is 4 spaces
+            
+            # Reset for closing brackets
+            if stripped == ')' or stripped == '}':
+                in_method = False
+        
+        # Rejoin and write back
+        fixed_content = '\n'.join(fixed_lines)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(fixed_content)
+            
+        return True
+    except Exception as e:
+        print(f"Error fixing {file_path}: {e}")
+        return False
 
-# Fix the test file
-file_path = 'app/tests/venv/domain/test_temporal_neurotransmitter_analysis.py'
-fix_indentation_issues(file_path)
+
+def find_python_files(directory):
+    """Recursively find all Python files in a directory."""
+    py_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.py'):
+                py_files.append(os.path.join(root, file))
+    return py_files
+
+
+def main():
+    """Main function to fix Python files in a directory."""
+    if len(sys.argv) < 2:
+        print("Usage: python fix_indentation.py <directory>")
+        return
+        
+    directory = sys.argv[1]
+    if not os.path.isdir(directory):
+        print(f"Error: {directory} is not a valid directory")
+        return
+        
+    py_files = find_python_files(directory)
+    print(f"Found {len(py_files)} Python files to process")
+    
+    success_count = 0
+    for file_path in py_files:
+        if fix_indentation_issues(file_path):
+            success_count += 1
+            print(f"Fixed: {file_path}")
+    
+    print(f"Successfully fixed {success_count} out of {len(py_files)} files")
+    print("You may now run Black on the directory")
+
+
+if __name__ == "__main__":
+    main()

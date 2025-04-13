@@ -13,6 +13,7 @@ from unittest.mock import MagicMock
 
 # Mock Role class that would normally be in app/core/security/roles.py
 class Role(str, Enum):
+    
     """Mock user roles for testing."""
 
     USER = "user"
@@ -23,7 +24,7 @@ class Role(str, Enum):
 
 
     class BaseSecurityTest(unittest.TestCase):
-        """
+    """
         Base class for security and authorization testing.
 
         This class provides utilities and fixtures for testing security features
@@ -37,19 +38,19 @@ class Role(str, Enum):
         test_roles: list[Role] = [Role.USER]
 
         def setUp(self):
-            """Set up test fixtures before each test."""
+            """
             self.mock_auth_service = self.create_mock_auth_service()
             self.test_user = self.create_test_user()
 
             def create_mock_auth_service(self) -> MagicMock:
-            """Create a mock authentication service."""
+                """
             mock = MagicMock()
             mock.authenticate.return_value = True
             mock.get_user_by_id.return_value = self.create_test_user()
             return mock
 
             def create_test_user(self) -> dict[str, Any]:
-                """Create a test user with the configured ID and roles."""
+                """
                 return {
                 "id": self.test_user_id,
                 "username": "test_user",
@@ -62,8 +63,10 @@ class TestBaseSecurityTest(BaseSecurityTest):
     """Test the BaseSecurityTest class itself."""
 
     @pytest.mark.standalone()
+
+
     def test_default_attributes(self):
-        """Test that the default attributes are set correctly."""
+        """
         # Verify test_user_id attribute
         self.assertEqual(self.test_user_id, "test-user-id-12345")
 
@@ -75,8 +78,10 @@ class TestBaseSecurityTest(BaseSecurityTest):
         self.assertEqual(self.test_user["roles"], self.test_roles)
 
         @pytest.mark.standalone()
+
+
         def test_mock_auth_service(self):
-            """Test that the mock auth service is configured correctly."""
+            """
             # Verify authenticate method
             self.assertTrue(self.mock_auth_service.authenticate())
 
@@ -86,30 +91,37 @@ class TestBaseSecurityTest(BaseSecurityTest):
 
 
             class AdminSecurityTest(BaseSecurityTest):
-                """Test subclassing with different roles."""
+    """Test subclassing with different roles."""
 
                 # Override test_roles for admin testing
                 test_roles = [Role.ADMIN, Role.USER]
 
                 @pytest.mark.standalone()
+
+
                 def test_admin_roles(self):
-                """Test that the admin roles are set correctly."""
+    
+                    """
                 self.assertEqual(self.test_roles, [Role.ADMIN, Role.USER])
                 self.assertEqual(self.test_user["roles"], [Role.ADMIN, Role.USER])
 
 
                 class ClinicianSecurityTest(BaseSecurityTest):
-            """Test subclassing with clinician roles."""
+    """Test subclassing with clinician roles."""
 
             # Override test_roles for clinician testing
             test_roles = [Role.CLINICIAN, Role.USER]
 
             @pytest.mark.standalone()
+
+
             def test_clinician_roles(self):
-                """Test that the clinician roles are set correctly."""
+    
+                """
                 self.assertEqual(self.test_roles, [Role.CLINICIAN, Role.USER])
                 self.assertEqual(self.test_user["roles"], [Role.CLINICIAN, Role.USER])
 
 
                 if __name__ == "__main__":
+    
             unittest.main()

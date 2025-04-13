@@ -25,13 +25,14 @@ from app.tests.unit.base_test_unit import (
 
 @pytest.mark.db_required()
 class TestMockMentaLLaMA(BaseUnitTest):
+    
     """Test suite for MockMentaLLaMA class that provides psychiatric analysis."""
 
     def setUp(self) -> None:
 
 
                     """Set up test fixtures before each test method."""
-        super().setUp()
+                        super().setUp()
         self.service = MockMentaLLaMA()
         self.service.initialize({})
 
@@ -44,7 +45,8 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                     """Clean up after each test."""
-            if hasattr(self, "service") and self.service.is_healthy():
+                            if hasattr(self, "service") and self.service.is_healthy():
+    
                 self.service.shutdown()
                 super().tearDown()
 
@@ -52,7 +54,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                             """Test initialization with valid and invalid configurations."""
-                # Test default initialization
+                                # Test default initialization
                 service = MockMentaLLaMA()
                 service.initialize({})
                 self.assertTrue(service.is_healthy())
@@ -73,6 +75,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
                 # Test initialization failure
                 service = MockMentaLLaMA()
                 with self.assertRaises(InvalidConfigurationError):
+    
                     # Pass invalid config that would cause error during processing
                     service.initialize({"mock_responses": "not-a-dict"})
 
@@ -80,28 +83,32 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                             """Test process method with invalid inputs ensuring proper error handling."""
-                        # Test empty text
+                                        # Test empty text
                         with self.assertRaises(InvalidRequestError):
+    
                     self.service.process("")
 
                     # Test non-string text
                     with self.assertRaises(InvalidRequestError):
+    
                         self.service.process(123)  # type: ignore
 
                         # Test invalid model type
                         with self.assertRaises(ModelNotFoundError):
+    
                     self.service.process("Some text", "nonexistent_model_type")
 
                     # Test with uninitialized service
                     uninitialized_service = MockMentaLLaMA()
                     with self.assertRaises(ServiceUnavailableError):
+    
                         uninitialized_service.process("Some text")
 
                         def test_process_returns_expected_structure(self) -> None:
 
 
                             """Test that process returns the expected response structure with all required fields."""
-                        # Test general model (default,
+                                        # Test general model (default,
                         result= self.service.process(self.sample_text)
                         self.assertIsInstance(result, dict)
                         self.assertIn("model_type", result)
@@ -121,6 +128,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
                         "wellness_dimensions",
                         "digital_twin",
                         ]:
+    
                         result = self.service.process(self.sample_text, model_type)
                         self.assertEqual(result["model_type"], model_type)
 
@@ -128,7 +136,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                             """Test depression detection functionality ensuring clinical metrics are present."""
-                        result = self.service.detect_depression(self.sample_text)
+                                        result = self.service.detect_depression(self.sample_text)
                         self.assertIn("depression_signals", result)
                         self.assertIn("severity", result["depression_signals"])
                         self.assertIn("confidence", result["depression_signals"])
@@ -144,7 +152,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                         """Test risk assessment functionality for self-harm detection."""
-                    # Test without specific risk type
+                                    # Test without specific risk type
                     result = self.service.assess_risk(self.sample_text)
                     self.assertIn("risk_assessment", result)
                     self.assertIn("overall_risk_level", result["risk_assessment"])
@@ -155,6 +163,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
                     self.assertIn("risk_assessment", result)
                     # Check that only self-harm risks are included
                     for risk in result["risk_assessment"]["identified_risks"]:
+    
                         self.assertEqual(risk["risk_type"], "self-harm")
 
                         # Verify clinical recommendations exist
@@ -164,7 +173,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                             """Test sentiment analysis functionality for emotional valence detection."""
-                    result = self.service.analyze_sentiment(self.sample_text)
+                                    result = self.service.analyze_sentiment(self.sample_text)
                     self.assertIn("sentiment", result)
                     self.assertIn("emotions", result)
                     self.assertIn("overall_score", result["sentiment"])
@@ -179,7 +188,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                         """Test wellness dimensions analysis functionality with comprehensive measures."""
-                    # Test without specific dimensions
+                                    # Test without specific dimensions
                     result = self.service.analyze_wellness_dimensions(self.sample_text)
                     self.assertIn("wellness_dimensions", result)
                     self.assertIsInstance(result["wellness_dimensions"], list)
@@ -201,7 +210,7 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
 
                     """Test the complete digital twin session workflow from creation to insights."""
-        # Create a digital twin
+                        # Create a digital twin
         twin_result = self.service.generate_digital_twin(
             text_data=[self.sample_text],
             demographic_data={"age": 35, "gender": "female"},

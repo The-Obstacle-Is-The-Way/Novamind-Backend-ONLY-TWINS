@@ -17,13 +17,14 @@ from app.core.utils.phi_sanitizer import PHIType
 
 @pytest.mark.db_required()
 class TestEnhancedPHIDetector:
+    
     """Tests for the EnhancedPHIDetector class."""
 
     def test_contains_phi_with_standard_patterns(self):
 
 
                     """Test detection of PHI using standard patterns."""
-        # Test with email
+                        # Test with email
         assert EnhancedPHIDetector.contains_phi(
             "Contact me at john.doe@example.com")
 
@@ -44,7 +45,7 @@ class TestEnhancedPHIDetector:
 
 
                         """Test detection of PHI using enhanced patterns."""
-            # Test with more complex name format
+                            # Test with more complex name format
             assert EnhancedPHIDetector.contains_phi("Dr. Smith will see you now")
 
             # Test with address
@@ -65,7 +66,7 @@ class TestEnhancedPHIDetector:
 
 
                         """Test detection of PHI in medical context."""
-                # Test with medical context and potential identifiers
+                                # Test with medical context and potential identifiers
                 assert EnhancedPHIDetector.contains_phi(
                 "Patient Smith was diagnosed with anxiety and prescribed medication."
         )
@@ -79,7 +80,7 @@ class TestEnhancedPHIDetector:
 
 
                     """Test detection of specific PHI types."""
-        # Test with multiple PHI types
+                        # Test with multiple PHI types
         text = "Patient John Doe (DOB: 1980-01-01) with MRN: 12345678 lives at 123 Main St."
         results = EnhancedPHIDetector.detect_phi_types(text)
 
@@ -106,17 +107,17 @@ class TestEnhancedPHIDetector:
 
 
                         """Test that regular text without PHI is not flagged."""
-            assert not EnhancedPHIDetector.contains_phi(
+                            assert not EnhancedPHIDetector.contains_phi(
             "This is a regular message without any personal health information."
         )
 class TestEnhancedPHISanitizer:
-            """Tests for the EnhancedPHISanitizer class."""
+    """Tests for the EnhancedPHISanitizer class."""
 
             def test_sanitize_text(self):
 
 
                     """Test sanitization of text containing PHI."""
-                # Test with multiple PHI types
+                                # Test with multiple PHI types
                 text = "Patient John Doe (DOB: 1980-01-01) with MRN: 12345678 lives at 123 Main St."
                 sanitized = EnhancedPHISanitizer.sanitize_text(text)
 
@@ -135,7 +136,7 @@ class TestEnhancedPHISanitizer:
 
 
                         """Test creation of safe log messages."""
-                    # Test with format string and arguments
+                                    # Test with format string and arguments
                     message = "Patient {name} (DOB: {dob}) has appointment on {date}"
                     args = {"name": "John Doe", "dob": "1980-01-01", "date": "2025-04-01"}
 
@@ -154,7 +155,7 @@ class TestEnhancedPHISanitizer:
 
 
                         """Test sanitization of structured data."""
-                # Test with nested dictionary
+                                # Test with nested dictionary
                 data = {
                 "patient": {
                 "name": "John Doe",
@@ -181,13 +182,13 @@ class TestEnhancedPHISanitizer:
     # Non-PHI should be preserved
     assert sanitized["patient"]["medical_info"]["diagnosis"] == "Anxiety"
     assert sanitized["appointment_date"] == "2025-04-01"class TestEnhancedPHISecureLogger:
-        """Tests for the EnhancedPHISecureLogger class."""
+    """Tests for the EnhancedPHISecureLogger class."""
 
         @patch("logging.Logger.debug")
         def test_debug_log_sanitization(self, mock_debug):
 
                     """Test that debug logs are sanitized."""
-            logger = EnhancedPHISecureLogger("test_logger")
+                            logger = EnhancedPHISecureLogger("test_logger")
             logger.debug("Patient John Doe (SSN: 123-45-6789) has an appointment")
 
             # Verify the sanitized message was logged
@@ -204,7 +205,7 @@ class TestEnhancedPHISanitizer:
             def test_info_log_sanitization(self, mock_info):
 
                         """Test that info logs are sanitized."""
-                logger = EnhancedPHISecureLogger("test_logger")
+                                logger = EnhancedPHISecureLogger("test_logger")
                 logger.info("Email sent to {email}", email="patient@example.com")
 
                 # Verify the sanitized message was logged
@@ -219,7 +220,7 @@ class TestEnhancedPHISanitizer:
                 def test_error_log_sanitization(self, mock_error):
 
                         """Test that error logs are sanitized."""
-                logger = EnhancedPHISecureLogger("test_logger")
+                                logger = EnhancedPHISecureLogger("test_logger")
                 logger.error("Failed to process record for MRN: 12345678")
 
                 # Verify the sanitized message was logged
@@ -234,7 +235,7 @@ class TestEnhancedPHISanitizer:
                 def test_exception_log_sanitization(self, mock_exception):
 
                         """Test that exception logs are sanitized."""
-                    logger = EnhancedPHISecureLogger("test_logger")
+                                    logger = EnhancedPHISecureLogger("test_logger")
                     try:
                     raise ValueError("Error processing patient John Doe")
                     except ValueError:
@@ -247,9 +248,11 @@ class TestEnhancedPHISanitizer:
                     assert "Exception occurred" in mock_exception.call_args[0][0]
 
                     @pytest.mark.standalone()
+
+
                     def test_get_enhanced_phi_secure_logger():
 
                         """Test the factory function for getting a logger."""
-                    logger = get_enhanced_phi_secure_logger("test_module")
+                                    logger = get_enhanced_phi_secure_logger("test_module")
                     assert isinstance(logger, EnhancedPHISecureLogger)
                     assert logger.logger.name == "test_module"

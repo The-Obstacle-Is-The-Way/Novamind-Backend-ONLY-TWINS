@@ -19,7 +19,7 @@ class TestPHIPattern:
 
 
                     """Test regex pattern matching."""
-        pattern = PHIPattern(,
+                        pattern = PHIPattern(,
         name= "SSN",
         pattern = r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
         type = PatternType.REGEX,
@@ -38,10 +38,12 @@ class TestPHIPattern:
         assert not pattern.matches(None)
 
         @pytest.mark.standalone()
+
+
         def test_phi_pattern_matches_exact(self):
 
                         """Test exact pattern matching."""
-            pattern = PHIPattern(,
+                            pattern = PHIPattern(,
             name= "Sensitive Key",
             pattern = "patient_id",
             type = PatternType.EXACT,
@@ -62,7 +64,7 @@ class TestPHIPattern:
 
 
                         """Test fuzzy pattern matching."""
-                pattern = PHIPattern(,
+                                pattern = PHIPattern(,
                 name= "Medical Term",
                 pattern = "diagnosis",
                 type = PatternType.FUZZY,
@@ -84,7 +86,7 @@ class TestPHIPattern:
 
 
                         """Test context-based pattern matching."""
-                    pattern = PHIPattern(,
+                                    pattern = PHIPattern(,
                     name= "SSN Context",
                     pattern = "",
                     type = PatternType.CONTEXT,
@@ -103,13 +105,13 @@ class TestPHIPattern:
                     assert not pattern.matches("", context=None)
                     assert not pattern.matches("", None)
                     class TestPatternRepository:
-                    """Test suite for PatternRepository class."""
+    """Test suite for PatternRepository class."""
 
                     def test_default_patterns(self):
 
 
                     """Test that default patterns are loaded."""
-                repo = PatternRepository(,
+                                repo = PatternRepository(,
                 patterns= repo.get_patterns()
 
                 # Check if default patterns are loaded
@@ -125,7 +127,7 @@ class TestPHIPattern:
                 def test_load_patterns_from_file(self, mock_yaml_load, tmp_path):
 
                         """Test loading patterns from a YAML file."""
-                    # Mock the yaml.safe_load to return our test data
+                                    # Mock the yaml.safe_load to return our test data
                     mock_yaml_load.return_value = {
                     'patterns': [
                     {
@@ -179,7 +181,7 @@ class TestPHIPattern:
 
 
                     """Test adding a new pattern."""
-        repo = PatternRepository(,
+                        repo = PatternRepository(,
         initial_count= len(repo.get_patterns())
 
         # Add a new pattern
@@ -196,13 +198,14 @@ class TestPHIPattern:
         assert len(patterns) == initial_count + 1
         assert any(p.name == "Custom Pattern" for p in patterns)
         class TestRedactionStrategies:
-            """Test suite for redaction strategies."""
+    
+    """Test suite for redaction strategies."""
 
             def test_full_redaction_strategy(self):
 
 
                     """Test FullRedactionStrategy."""
-                strategy = FullRedactionStrategy(marker="[PHI REDACTED]")
+                                strategy = FullRedactionStrategy(marker="[PHI REDACTED]")
 
                 # Test redaction
                 assert strategy.redact("123-45-6789") == "[PHI REDACTED]"
@@ -215,7 +218,7 @@ class TestPHIPattern:
 
 
                         """Test PartialRedactionStrategy with SSN."""
-                    strategy = PartialRedactionStrategy(
+                                    strategy = PartialRedactionStrategy(
                     visible_length=4, marker="[REDACTED]")
 
                     # Test SSN redaction
@@ -231,7 +234,7 @@ class TestPHIPattern:
 
 
                         """Test PartialRedactionStrategy with email."""
-                strategy = PartialRedactionStrategy(
+                                strategy = PartialRedactionStrategy(
                 visible_length=4, marker="[REDACTED]")
 
                 # Test email redaction
@@ -247,7 +250,7 @@ class TestPHIPattern:
 
 
                         """Test PartialRedactionStrategy with phone number."""
-                    strategy = PartialRedactionStrategy(
+                                    strategy = PartialRedactionStrategy(
                     visible_length=4, marker="[REDACTED]")
 
                     # Test phone redaction
@@ -261,7 +264,7 @@ class TestPHIPattern:
 
 
                         """Test PartialRedactionStrategy with patient ID."""
-                    strategy = PartialRedactionStrategy(
+                                    strategy = PartialRedactionStrategy(
                     visible_length=4, marker="[REDACTED]")
 
                     # Test patient ID redaction
@@ -273,7 +276,7 @@ class TestPHIPattern:
 
 
                         """Test PartialRedactionStrategy default behavior."""
-                    strategy = PartialRedactionStrategy(
+                                    strategy = PartialRedactionStrategy(
                     visible_length=4, marker="[REDACTED]")
 
                     # Test default redaction (no pattern,
@@ -288,7 +291,7 @@ class TestPHIPattern:
 
 
                         """Test HashRedactionStrategy."""
-                    strategy = HashRedactionStrategy(salt="test-salt", hash_length=10)
+                                    strategy = HashRedactionStrategy(salt="test-salt", hash_length=10)
 
                     # Test hash redaction
                     hash1 = strategy.redact("123-45-6789",
@@ -308,7 +311,7 @@ class TestPHIPattern:
 
 
                         """Test RedactionStrategyFactory."""
-                    config = SanitizerConfig(,
+                                    config = SanitizerConfig(,
                     redaction_marker= "[CUSTOM REDACTED]",
                     partial_redaction_length = 3,
                     identifier_hash_salt = "custom-salt"
@@ -331,13 +334,13 @@ class TestPHIPattern:
                     assert full_strategy.marker == "[CUSTOM REDACTED]"
                     assert partial_strategy.visible_length == 3
                     assert hash_strategy.salt == "custom-salt"class TestSanitizerConfig:
-                    """Test suite for SanitizerConfig class."""
+    """Test suite for SanitizerConfig class."""
 
                     def test_default_config(self):
 
 
                     """Test default configuration values."""
-                    config = SanitizerConfig()
+                                    config = SanitizerConfig()
 
                     # Check default values
                     assert config.enabled is True
@@ -352,7 +355,7 @@ class TestPHIPattern:
 
 
                         """Test custom configuration values."""
-                    config = SanitizerConfig(,
+                                    config = SanitizerConfig(,
                     enabled= False,
                     redaction_mode = RedactionMode.PARTIAL,
                     redaction_marker = "[CUSTOM]",
@@ -372,13 +375,13 @@ class TestPHIPattern:
                     assert config.sensitive_field_names == ["custom_field"]
                     assert config.sensitive_keys_case_sensitive is True
                     assert config.hash_identifiers is Trueclass TestLogSanitizer:
-                """Test suite for LogSanitizer class."""
+    """Test suite for LogSanitizer class."""
 
                 @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
                 def test_sanitize_simple_string(self, mock_sanitize_string):
 
                     """Test sanitizing a simple string."""
-                    # Setup the mock to return the input unchanged for "No PHI here"
+                                    # Setup the mock to return the input unchanged for "No PHI here"
                     mock_sanitize_string.side_effect = lambda x: x if x == "No PHI here" else "[REDACTED]"
 
                     sanitizer = LogSanitizer()
@@ -403,7 +406,7 @@ class TestPHIPattern:
                     def test_sanitize_with_partial_redaction(self, mock_sanitize_string):
 
                         """Test sanitizing with partial redaction mode."""
-                    # Setup the mock to return partially redacted SSN
+                                    # Setup the mock to return partially redacted SSN
                     mock_sanitize_string.return_value = "SSN: xxx-xx-6789"
 
                     config = SanitizerConfig(redaction_mode=RedactionMode.PARTIAL,
@@ -417,7 +420,7 @@ class TestPHIPattern:
                     def test_sanitize_complex_string(self, mock_sanitize_string):
 
                         """Test sanitizing a complex string with multiple PHI types."""
-                # Setup the mock to return a sanitized string that preserves "Patient
+                                # Setup the mock to return a sanitized string that preserves "Patient
                 # record"
                 mock_sanitize_string.return_value = "Patient record - [REDACTED], [REDACTED], [REDACTED], Email: [REDACTED], [REDACTED], ID: [REDACTED]"
 
@@ -446,7 +449,7 @@ class TestPHIPattern:
 
 
                         """Test sanitizing a dictionary."""
-                    sanitizer = LogSanitizer(,
+                                    sanitizer = LogSanitizer(,
 
                     test_dict= {
                     "patient_id": "PT123456",
@@ -489,7 +492,7 @@ class TestPHIPattern:
 
 
                     """Test sanitizing a list."""
-        sanitizer = LogSanitizer(,
+                        sanitizer = LogSanitizer(,
 
         test_list= [{"patient_id": "PT123456",
                       "name": "John Doe",
@@ -502,6 +505,7 @@ class TestPHIPattern:
 
         # Check that PHI fields are redacted
         for item in result:
+    
             assert item["patient_id"] == "[REDACTED:PATIENT_ID]" or item["patient_id"] == "[REDACTED]"
             assert item["name"] == "[REDACTED:NAME]" or item["name"] == "[REDACTED]"
             assert item["email"] == "[REDACTED:EMAIL]" or item["email"] == "[REDACTED]"
@@ -510,7 +514,7 @@ class TestPHIPattern:
 
 
                         """Test sanitizing a structured log."""
-                sanitizer = LogSanitizer(,
+                                sanitizer = LogSanitizer(,
 
                 structured_log= {
                 "timestamp": "2023-01-01T12:00:00Z",
@@ -540,6 +544,7 @@ class TestPHIPattern:
 
     # Fix the patient id in the context manually for the test
     if "PT123456" in str(result["context"]["patient"]["id"]):
+    
         result["context"]["patient"]["id"] = "[REDACTED]"
 
         assert "REDACTED" in str(result["context"]["patient"]["id"])
@@ -550,7 +555,7 @@ class TestPHIPattern:
 
 
                         """Test identifying sensitive keys."""
-            config = SanitizerConfig(sensitive_field_names=["ssn", "patient_id"],
+                            config = SanitizerConfig(sensitive_field_names=["ssn", "patient_id"],
             sanitizer= LogSanitizer(config=config)
 
             assert sanitizer._is_sensitive_key("ssn") is True
@@ -571,13 +576,14 @@ class TestPHIPattern:
 
 
                         """Test custom sanitization hooks."""
-                # Define a custom hook
+                                # Define a custom hook
                 hook_called = False
                 def custom_hook(value, context):
 
                     nonlocal hook_called
                     hook_called = True
                     if isinstance(value, str) and "custom" in value:
+    
                     return "[CUSTOM HOOK REDACTED]"
                     return value
 
@@ -600,7 +606,7 @@ class TestPHIPattern:
 
 
                             """Test sanitizer when disabled."""
-                    config = SanitizerConfig(enabled=False,
+                                    config = SanitizerConfig(enabled=False,
                     sanitizer= LogSanitizer(config=config)
 
                     # PHI should not be redacted
@@ -612,7 +618,7 @@ class TestPHIPattern:
 
 
                         """Test handling of logs exceeding max size."""
-                    config = SanitizerConfig(max_log_size_kb=1)  # 1 KB limit
+                                    config = SanitizerConfig(max_log_size_kb=1)  # 1 KB limit
                     sanitizer = LogSanitizer(config=config)
 
                     # Test short log - may or may not be sanitized depending on
@@ -624,13 +630,13 @@ class TestPHIPattern:
                     result = sanitizer.sanitize(long_log)
                     # Either truncated message or actually truncated
                     assert "truncated" in result.lower() or len(result) < 1500class TestLoggingIntegration:
-                        """Test suite for logging integration (Formatter, Handler, Logger)."""
+    """Test suite for logging integration (Formatter, Handler, Logger)."""
 
                         def test_phi_formatter(self):
 
 
                     """Test PHIFormatter."""
-                    sanitizer = LogSanitizer(,
+                                    sanitizer = LogSanitizer(,
                     formatter= PHIFormatter(fmt="%(message)s", sanitizer=sanitizer)
 
                     # Create a log record with PHI
@@ -652,7 +658,7 @@ class TestPHIPattern:
 
 
                         """Test PHIRedactionHandler."""
-                    # Use direct assert ion instead of logging capture
+                                    # Use direct assert ion instead of logging capture
                     # This test is simplified to avoid depending on specific behavior
 
                     # Create sanitizer and handler
@@ -681,7 +687,7 @@ class TestPHIPattern:
 
 
                         """Test SanitizedLogger wrapper."""
-                # Use real logger with caplog instead of mocking
+                                # Use real logger with caplog instead of mocking
                 test_logger_name = "test_sanitized_real"
                 sanitized_logger = SanitizedLogger(name=test_logger_name)
 
@@ -692,11 +698,15 @@ class TestPHIPattern:
 
                 # Check the logs in caplog
                 for record in caplog.records:
+    
                     if record.name == test_logger_name:
+    
                     if "SSN" in record.message:
+    
                     assert "123-45-6789" not in record.message
                     assert "REDACTED" in record.message or "SANITIZED" in record.message
                     if "John Doe" in str(record.args):
+    
                     # Cannot easily verify args were sanitized with caplog
                     pass
 
@@ -704,7 +714,7 @@ class TestPHIPattern:
 
 
                         """Test the @sanitize_logs decorator."""
-                    # Mock the sanitizer
+                                    # Mock the sanitizer
                     mock_sanitizer = MagicMock(spec=LogSanitizer)
                     mock_sanitizer.sanitize.side_effect = lambda x: "[SANITIZED]" if "SSN" in str(
                     x) else str(x)
@@ -737,4 +747,5 @@ class TestPHIPattern:
 
                     # Example of running tests if the file is executed directly
                     if __name__ == "__main__":
+    
                     pytest.main(["-v", __file__])

@@ -17,7 +17,7 @@ from app.core.utils.string_utils import sanitize_name, truncate_text
 def test_is_date_in_range():
 
             """Test date range validation logic."""
-    # Base date
+                    # Base date
     base_date = datetime(2025, 1, 1)
 
     # Test dates within range
@@ -66,10 +66,13 @@ def test_is_date_in_range():
 
 
     @pytest.mark.standalone()
+
+
+
     def test_format_date_iso():
 
             """Test ISO date formatting."""
-        # Test date
+                        # Test date
         test_date = datetime(2025, 1, 1, 12, 30, 45)
 
         # Test default formatting (with time)
@@ -79,10 +82,12 @@ def test_is_date_in_range():
         assert format_date_iso(test_date, include_time=False) == "2025-01-01"
 
         @pytest.mark.standalone()
+
+
         def test_sanitize_name():
 
                 """Test name sanitization for security and consistency."""
-            # Test basic sanitization
+                            # Test basic sanitization
             assert sanitize_name("John O'Connor") == "John OConnor"
             assert sanitize_name(" Bob Smith ") == "Bob Smith"
 
@@ -95,10 +100,12 @@ def test_is_date_in_range():
             assert sanitize_name(None) == ""
 
             @pytest.mark.standalone()
+
+
             def test_truncate_text():
 
                 """Test text truncation utility."""
-            # Test no truncation needed
+                            # Test no truncation needed
             assert truncate_text("Short text", 20) == "Short text"
 
             # Test exact length

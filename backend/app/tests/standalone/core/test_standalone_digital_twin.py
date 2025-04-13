@@ -13,16 +13,17 @@ from typing import Any
 from uuid import uuid4
 
 # ================= Digital Twin Enums =================class TwinModelType(str, Enum):
+    
     """Types of digital twin models."""
-    PSYCHIATRIC = "psychiatric"
+                    PSYCHIATRIC = "psychiatric"
     NEUROTRANSMITTER = "neurotransmitter"
     MEDICATION_RESPONSE = "medication_response"
     SYMPTOM_PREDICTION = "symptom_prediction"
     BIOMETRIC = "biometric"
     KNOWLEDGE_GRAPH = "knowledge_graph"
     CUSTOM = "custom"class BiometricDataType(str, Enum):
-        """Types of biometric data."""
-        HEART_RATE = "heart_rate"
+    """Types of biometric data."""
+                        HEART_RATE = "heart_rate"
         BLOOD_PRESSURE = "blood_pressure"
         TEMPERATURE = "temperature"
         SLEEP = "sleep"
@@ -33,15 +34,16 @@ from uuid import uuid4
         WEIGHT = "weight"
         STRESS = "stress"
         CUSTOM = "custom"class PredictionInterval(str, Enum):
-            """Time intervals for predictions."""
-            HOURLY = "hourly"
+    """Time intervals for predictions."""
+                            HOURLY = "hourly"
             DAILY = "daily"
             WEEKLY = "weekly"
             MONTHLY = "monthly"
             CUSTOM = "custom"
 
             # ================= Digital Twin Models =================class TwinModel:
-                """Base class for all digital twin models."""
+    
+    """Base class for all digital twin models."""
 
                 def __init__():
 
@@ -103,7 +105,7 @@ from uuid import uuid4
                     "updated_at": self.updated_at.isoformat(),
                     "version": self.version
         }class TimeSeriesModel(TwinModel):
-            """Time series model for forecasting symptoms and biometrics."""
+    """Time series model for forecasting symptoms and biometrics."""
 
             def __init__():
 
@@ -141,6 +143,7 @@ from uuid import uuid4
 
                 # Convert string to enum if needed
                 if isinstance(data_type, str):
+    
                     try:
                 self.data_type = BiometricDataType(data_type)
                 except ValueError:
@@ -190,6 +193,7 @@ from uuid import uuid4
                                                                               Generate predictions for the forecast horizon.
 
                                                                               Args:
+    
                                                                                   current_data: Most recent data points (optional)
 
                                                                                   Returns:
@@ -204,14 +208,19 @@ from uuid import uuid4
 
                                                                                       # Generate predictions for each interval in the forecast horizon
                                                                                       for i in range(self.forecast_horizon):
+    
                     # Calculate the timestamp for this prediction
                     if self.prediction_interval == PredictionInterval.HOURLY:
+    
                     timestamp = start_time + timedelta(hours=i + 1)
                     elif self.prediction_interval == PredictionInterval.DAILY:
+    
                     timestamp = start_time + timedelta(days=i + 1)
                     elif self.prediction_interval == PredictionInterval.WEEKLY:
+    
                     timestamp = start_time + timedelta(weeks=i + 1)
                     elif self.prediction_interval == PredictionInterval.MONTHLY:
+    
                     timestamp = start_time + timedelta(days=(i + 1) * 30)  # Approximation
                     else:
                     timestamp = start_time + timedelta(days=i + 1)
@@ -234,7 +243,7 @@ from uuid import uuid4
 
 
                         """Convert to dictionary."""
-                    base_dict = super().to_dict(,
+                                    base_dict = super().to_dict(,
                     time_series_dict= {
                     "data_type": self.data_type.value,
                     "prediction_interval": self.prediction_interval.value,
@@ -243,7 +252,7 @@ from uuid import uuid4
                     "last_trained": self.last_trained.isoformat() if self.last_trained else None,
                     "performance_metrics": self.performance_metrics}
                     return {**base_dict, **time_series_dict}class BiometricTwinModel(TwinModel):
-                    """Model for biometric data analysis and alerting."""
+    """Model for biometric data analysis and alerting."""
 
                     def __init__():
 
@@ -284,6 +293,7 @@ from uuid import uuid4
                     Add an alert rule for a biometric type.
 
                     Args:
+    
                 rule: Alert rule definition
 
                 Returns:
@@ -308,7 +318,9 @@ from uuid import uuid4
                     True if the rule was removed, False otherwise
                     """
                     for i, rule in enumerate(self.alert_rules):
+    
                     if rule["id"] == rule_id:
+    
                     self.alert_rules.pop(i)
                     self.updated_at = datetime.now()
                     #     return True # FIXME: return outside function
@@ -320,6 +332,7 @@ from uuid import uuid4
                              Set a baseline value for a biometric type.
 
                              Args:
+    
                                  biometric_type: Type of biometric data
                                  value: Baseline value or range
                                  """
@@ -332,6 +345,7 @@ from uuid import uuid4
                                      Process a biometric data point and generate alerts if needed.
 
                                      Args:
+    
                         data_point: Biometric data point
 
                         Returns:
@@ -346,11 +360,14 @@ from uuid import uuid4
 
                             # Check if this biometric type is supported by this model
                             if not any(bt.value == biometric_type for bt in self.biometric_types):
+    
                     #     return [] # FIXME: return outside function
 
                     # Check against alert rules
                     for rule in self.alert_rules:
+    
                     if rule.get("biometric_type") != biometric_type:
+    
                     continue
 
                     # Check if the rule condition is met
@@ -358,21 +375,28 @@ from uuid import uuid4
                     threshold= rule.get("threshold")
 
                     if operator == ">" and value > threshold:
+    
                     triggered = True
                     elif operator == ">=" and value >= threshold:
+    
                     triggered = True
                     elif operator == "<" and value < threshold:
+    
                     triggered = True
                     elif operator == "<=" and value <= threshold:
+    
                     triggered = True
                     elif operator == "==" and value == threshold:
+    
                     triggered = True
                     elif operator == "!=" and value != threshold:
+    
                     triggered = True
                     else:
                     triggered = False
 
                     if triggered:
+    
                     alert = {
                     "id": str(uuid4()),
                     "rule_id": rule["id"],
@@ -393,14 +417,14 @@ from uuid import uuid4
 
 
                     """Convert to dictionary."""
-        base_dict = super().to_dict(,
+                        base_dict = super().to_dict(,
         biometric_dict= {
             "biometric_types": [bt.value for bt in self.biometric_types],
             "alert_rules": self.alert_rules,
             "baseline_values": self.baseline_values
         }
         return {**base_dict, **biometric_dict}class DigitalTwin:
-            """Complete digital twin for a patient."""
+    """Complete digital twin for a patient."""
 
             def __init__():
 
@@ -440,6 +464,7 @@ from uuid import uuid4
                 model: Model to add
                 """
                 if model.patient_id != self.patient_id:
+    
                     raise ValueError(
                     "Model patient ID does not match digital twin patient ID")
 
@@ -459,6 +484,7 @@ from uuid import uuid4
                     True if the model was removed, False otherwise
                     """
                     if model_id in self.models:
+    
                     del self.models[model_id]
                     self.updated_at = datetime.now()
                     #     return True # FIXME: return outside function
@@ -486,6 +512,7 @@ from uuid import uuid4
                     Generate alert rules for all biometric models.
 
                     Returns:
+    
                     Generated rules information
                     """
                     rules_info = {
@@ -497,14 +524,18 @@ from uuid import uuid4
     biometric_models = self.get_models_by_type(TwinModelType.BIOMETRIC)
 
     for model in biometric_models:
+    
         if not isinstance(model, BiometricTwinModel):
+    
             continue
 
             rules_added = 0
 
             for biometric_type in model.biometric_types:
+    
                 # Generate rules based on the biometric type
                 if biometric_type == BiometricDataType.HEART_RATE:
+    
                     # Example rule for high heart rate
                     high_hr_rule = {
                     "name": "High Heart Rate",
@@ -528,6 +559,7 @@ from uuid import uuid4
     rules_added += 2
 
     elif biometric_type == BiometricDataType.BLOOD_PRESSURE:
+    
         # Example rule for high blood pressure
         high_bp_rule = {
             "name": "High Blood Pressure",
@@ -545,9 +577,11 @@ from uuid import uuid4
     rules_info["generated_rules_count"] += rules_added
 
     if rules_added > 0:
+    
         rules_info["models_updated"] += 1
 
         if biometric_type.value not in rules_info["rules_by_type"]:
+    
             rules_info["rules_by_type"][biometric_type.value] = 0
             rules_info["rules_by_type"][biometric_type.value] += rules_added
 
@@ -560,6 +594,7 @@ from uuid import uuid4
                 Generate symptom predictions for all time series models.
 
                 Args:
+    
                     horizon_days: Number of days to predict
 
                     Returns:
@@ -571,12 +606,15 @@ from uuid import uuid4
                     TwinModelType.SYMPTOM_PREDICTION)
 
                     for model in symptom_models:
+    
                     if not isinstance(model, TimeSeriesModel):
+    
                     continue
 
                     # Adjust the model's forecast horizon if needed
                     original_horizon = model.forecast_horizon
                     if horizon_days != original_horizon:
+    
                     model.forecast_horizon = horizon_days
 
                     # Generate predictions
@@ -613,8 +651,11 @@ from uuid import uuid4
     biometric_models = self.get_models_by_type(TwinModelType.BIOMETRIC)
 
     for data_point in data_points:
+    
         for model in biometric_models:
+    
             if not isinstance(model, BiometricTwinModel):
+    
                 continue
 
                 # Process the data point with this model
@@ -646,20 +687,23 @@ from uuid import uuid4
 
 
                     # ================= Tests =================class TestDigitalTwin(unittest.TestCase):
-                    """Test the DigitalTwin class."""
+    
+    """Test the DigitalTwin class."""
 
                     def setUp(self):
 
 
                     """Set up for each test."""
-                    self.patient_id = "patient123"
+                                    self.patient_id = "patient123"
                     self.digital_twin = DigitalTwin(patient_id=self.patient_id)
 
                     @pytest.mark.standalone()
+
+
                     def test_creation(self):
 
                         """Test creating a DigitalTwin."""
-            # Check basic attributes
+                            # Check basic attributes
             self.assertEqual(self.digital_twin.patient_id, self.patient_id)
             self.assertTrue(self.digital_twin.name.startswith(
             "Digital Twin for Patient"))
@@ -680,10 +724,12 @@ from uuid import uuid4
             self.assertEqual(custom_twin.metadata["key"], "value")
 
             @pytest.mark.standalone()
+
+
             def test_add_model(self):
 
                         """Test adding a model to the DigitalTwin."""
-                # Create a model
+                                # Create a model
                 model = TwinModel(,
                 name= "Test Model",
                 model_type = TwinModelType.PSYCHIATRIC,
@@ -706,13 +752,16 @@ from uuid import uuid4
 
                 # Check that an error is raised
                 with self.assertRaises(ValueError):
+    
                     self.digital_twin.add_model(invalid_model)
 
                     @pytest.mark.standalone()
+
+
                     def test_remove_model(self):
 
                         """Test removing a model from the DigitalTwin."""
-                    # Create and add a model
+                                    # Create and add a model
                     model = TwinModel(,
                     name= "Test Model",
                     model_type = TwinModelType.PSYCHIATRIC,
@@ -734,10 +783,12 @@ from uuid import uuid4
                     self.assertFalse(result)
 
                     @pytest.mark.standalone()
+
+
                     def test_get_models_by_type(self):
 
                         """Test getting models by type."""
-                    # Create and add models of different types
+                                    # Create and add models of different types
                     model1 = TwinModel(,
                     name= "Psychiatric Model",
                     model_type = TwinModelType.PSYCHIATRIC,
@@ -776,10 +827,12 @@ from uuid import uuid4
                     self.assertIn(model2, biometric_models)
 
                     @pytest.mark.standalone()
+
+
                     def test_generate_biometric_alert_rules(self):
 
                         """Test generating biometric alert rules."""
-                    # Create and add a biometric model
+                                    # Create and add a biometric model
                     model = BiometricTwinModel(,
                     name= "Heart Rate Model",
                     patient_id = self.patient_id,
@@ -806,10 +859,12 @@ from uuid import uuid4
                     self.assertGreater(len(model.alert_rules), 0)
 
                     @pytest.mark.standalone()
+
+
                     def test_process_biometric_data(self):
 
                         """Test processing biometric data."""
-                    # Create and add a biometric model
+                                    # Create and add a biometric model
                     model = BiometricTwinModel(,
                     name= "Heart Rate Model",
                     patient_id = self.patient_id,
@@ -859,10 +914,12 @@ from uuid import uuid4
     self.assertEqual(alert["operator"], ">")
 
     @pytest.mark.standalone()
+
+
     def test_predict_symptoms(self):
 
                     """Test predicting symptoms."""
-        # Create and add a time series model
+                        # Create and add a time series model
         model = TimeSeriesModel(,
         name= "Heart Rate Prediction",
         patient_id = self.patient_id,
@@ -891,10 +948,12 @@ from uuid import uuid4
         self.assertEqual(model.forecast_horizon, 7)
 
         @pytest.mark.standalone()
+
+
         def test_to_dict(self):
 
                         """Test converting to dictionary."""
-            # Create and add a model
+                            # Create and add a model
             model = TwinModel(,
             name= "Test Model",
             model_type = TwinModelType.PSYCHIATRIC,
@@ -912,13 +971,13 @@ from uuid import uuid4
             self.assertIn(model.id, twin_dict["models"])
             self.assertEqual(twin_dict["models"][model.id]["name"], model.name)
             class TestTimeSeriesModel(unittest.TestCase):
-                """Test the TimeSeriesModel class."""
+    """Test the TimeSeriesModel class."""
 
                 def setUp(self):
 
 
                     """Set up for each test."""
-                self.patient_id = "patient123"
+                                self.patient_id = "patient123"
                 self.model = TimeSeriesModel(,
                 name= "Heart Rate Prediction",
                 patient_id = self.patient_id,
@@ -928,10 +987,12 @@ from uuid import uuid4
                 ()
 
                 @pytest.mark.standalone()
+
+
                 def test_creation(self):
 
                         """Test creating a TimeSeriesModel."""
-                    # Check basic attributes
+                                    # Check basic attributes
                     self.assertEqual(self.model.name, "Heart Rate Prediction")
                     self.assertEqual(self.model.patient_id, self.patient_id)
                     self.assertEqual(self.model.data_type, BiometricDataType.HEART_RATE)
@@ -956,10 +1017,12 @@ from uuid import uuid4
                     PredictionInterval.WEEKLY)
 
                     @pytest.mark.standalone()
+
+
                     def test_train(self):
 
                         """Test training the model."""
-                # Create sample data
+                                # Create sample data
                 data = [
                 {"timestamp": "2025-01-01T00:00:00", "value": 70},
                 {"timestamp": "2025-01-02T00:00:00", "value": 75},
@@ -979,10 +1042,12 @@ from uuid import uuid4
                 self.assertIn("r2", metrics)
 
                 @pytest.mark.standalone()
+
+
                 def test_predict(self):
 
                         """Test generating predictions."""
-                    # Generate predictions
+                                    # Generate predictions
                     predictions = self.model.predict()
 
                     # Check the results
@@ -1015,10 +1080,12 @@ from uuid import uuid4
                     self.assertEqual(len(hourly_predictions), 5)  # 5 hours of predictions
 
                     @pytest.mark.standalone()
+
+
                     def test_to_dict(self):
 
                         """Test converting to dictionary."""
-                    # Train the model to populate performance metrics
+                                    # Train the model to populate performance metrics
                     data = [
                     {"timestamp": "2025-01-01T00:00:00", "value": 70},
                     {"timestamp": "2025-01-02T00:00:00", "value": 75}
@@ -1045,13 +1112,13 @@ from uuid import uuid4
                     self.assertIsNotNone(model_dict["last_trained"])
                     self.assertIn("performance_metrics", model_dict)
                     class TestBiometricTwinModel(unittest.TestCase):
-                    """Test the BiometricTwinModel class."""
+    """Test the BiometricTwinModel class."""
 
                     def setUp(self):
 
 
                     """Set up for each test."""
-                self.patient_id = "patient123"
+                                self.patient_id = "patient123"
                 self.model = BiometricTwinModel(,
                 name= "Biometric Monitor",
                 patient_id = self.patient_id,
@@ -1061,10 +1128,12 @@ from uuid import uuid4
                 ()
 
                 @pytest.mark.standalone()
+
+
                 def test_creation(self):
 
                         """Test creating a BiometricTwinModel."""
-                    # Check basic attributes
+                                    # Check basic attributes
                     self.assertEqual(self.model.name, "Biometric Monitor")
                     self.assertEqual(self.model.patient_id, self.patient_id)
                     self.assertEqual(len(self.model.biometric_types), 2)
@@ -1078,10 +1147,12 @@ from uuid import uuid4
                     self.assertEqual(self.model.baseline_values, {})
 
                     @pytest.mark.standalone()
+
+
                     def test_add_alert_rule(self):
 
                         """Test adding an alert rule."""
-                # Create a rule
+                                # Create a rule
                 rule = {
                 "name": "High Heart Rate",
                 "biometric_type": BiometricDataType.HEART_RATE.value,
@@ -1099,10 +1170,12 @@ from uuid import uuid4
     self.assertEqual(self.model.alert_rules[0]["id"], rule_id)
 
     @pytest.mark.standalone()
+
+
     def test_remove_alert_rule(self):
 
                     """Test removing an alert rule."""
-        # Add a rule
+                        # Add a rule
         rule = {
             "name": "High Heart Rate",
             "biometric_type": BiometricDataType.HEART_RATE.value,
@@ -1125,10 +1198,12 @@ from uuid import uuid4
     self.assertFalse(result)
 
     @pytest.mark.standalone()
+
+
     def test_set_baseline(self):
 
                     """Test setting a baseline value."""
-        # Set a baseline
+                        # Set a baseline
         self.model.set_baseline(BiometricDataType.HEART_RATE, 70)
 
         # Check the result
@@ -1146,10 +1221,12 @@ from uuid import uuid4
             self.model.baseline_values[BiometricDataType.BLOOD_PRESSURE.value], range_baseline)
 
         @pytest.mark.standalone()
+
+
         def test_process_biometric_data(self):
 
                         """Test processing biometric data."""
-            # Add alert rules
+                            # Add alert rules
             high_hr_rule = {
             "name": "High Heart Rate",
             "biometric_type": BiometricDataType.HEART_RATE.value,
@@ -1228,10 +1305,12 @@ from uuid import uuid4
     self.assertEqual(low_alert["severity"], "high")
 
     @pytest.mark.standalone()
+
+
     def test_to_dict(self):
 
                     """Test converting to dictionary."""
-        # Add a rule and baseline
+                        # Add a rule and baseline
         rule = {
             "name": "High Heart Rate",
             "biometric_type": BiometricDataType.HEART_RATE.value,
@@ -1258,4 +1337,5 @@ from uuid import uuid4
 
 
 if __name__ == "__main__":
+    
     unittest.main()

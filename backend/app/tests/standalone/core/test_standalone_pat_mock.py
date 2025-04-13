@@ -26,7 +26,7 @@ def mock_pat():
     def initialized_mock_pat():
 
             """Create an initialized MockPATService instance for testing."""
-        service = MockPATService()
+                        service = MockPATService()
         service.initialize({"mock_delay_ms": 0})  # No delay for faster tests
         return service@pytest.fixture
         def valid_readings():
@@ -55,17 +55,19 @@ def valid_analysis_types():
             """Create a list of valid analysis types for testing."""
 
     return ["sleep", "activity"]class TestStandaloneMockPAT:
-        """Tests for MockPATService that can be run in isolation."""
+    
+    """Tests for MockPATService that can be run in isolation."""
 
         def test_initialization(self, mock_pat):
 
 
                     """Test initialization works properly."""
-            # Test uninitialized state
+                            # Test uninitialized state
             assert not mock_pat._initialized
 
             # Test initialization raising error
             with pytest.raises(InitializationError):
+    
                 mock_pat._check_initialized()
 
                 # Initialize and check state
@@ -80,12 +82,14 @@ def valid_analysis_types():
 
 
                         """Test validation of device info."""
-                # Empty device info
+                                # Empty device info
                 with pytest.raises(ValidationError):
+    
                     mock_pat._validate_device_info({})
 
                     # Missing required field
                     with pytest.raises(ValidationError):
+    
                     mock_pat._validate_device_info({"device_type": "Actigraph"})
 
                     # Valid device info should not raise
@@ -98,12 +102,14 @@ def valid_analysis_types():
 
 
                         """Test validation of analysis types."""
-                    # Empty analysis types
+                                    # Empty analysis types
                     with pytest.raises(ValidationError):
+    
                         mock_pat._validate_analysis_types([])
 
                         # Invalid analysis type
                         with pytest.raises(ValidationError):
+    
                     mock_pat._validate_analysis_types(["sleep", "invalid_type"])
 
                     # Valid analysis types should not raise
@@ -116,7 +122,7 @@ def valid_analysis_types():
                     valid_device_info,
                     valid_analysis_types):
                     """Test actigraphy analysis with valid data."""
-                    result = initialized_mock_pat.analyze_actigraphy(,
+                                    result = initialized_mock_pat.analyze_actigraphy(,
                     patient_id= "patient-123",
                     readings = valid_readings,
                     start_time = "2025-03-27T12:00:00Z",
@@ -135,6 +141,7 @@ def valid_analysis_types():
 
                     # Test with invalid inputs
                     with pytest.raises(ValidationError):
+    
                         initialized_mock_pat.analyze_actigraphy(,
                         patient_id= "patient-123",
                         readings = valid_readings,
@@ -146,6 +153,7 @@ def valid_analysis_types():
                         ()
 
                         with pytest.raises(ValidationError):
+    
                             initialized_mock_pat.analyze_actigraphy(,
                             patient_id= "patient-123",
                             readings = valid_readings,
@@ -163,7 +171,7 @@ def valid_analysis_types():
                             valid_device_info,
                             valid_analysis_types):
                     """Test getting analysis by ID."""
-                    # Create an analysis
+                                    # Create an analysis
                     analysis = initialized_mock_pat.analyze_actigraphy(,
                     patient_id= "patient-123",
                     readings = valid_readings,
@@ -182,4 +190,5 @@ def valid_analysis_types():
 
                     # Test not found case
                     with pytest.raises(ResourceNotFoundError):
+    
                         initialized_mock_pat.get_analysis_by_id("non-existent-id")
