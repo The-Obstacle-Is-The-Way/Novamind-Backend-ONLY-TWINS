@@ -13,14 +13,14 @@ The tests validate:
     3. Token expiration and refresh
     4. Authentication failure handling
     5. Session security
-    """
+"""
 
-    import json
-    import pytest
-    import time
-    import uuid
-    from datetime import datetime, timedelta
-    from typing import Dict, Any, Optional, Tuple
+import json
+import pytest
+import time
+import uuid
+from datetime import datetime, timedelta
+from typing import Dict, Any, Optional, Tuple
 
     # Mock data for testing
     TEST_USERS = {

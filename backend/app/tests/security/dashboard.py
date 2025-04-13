@@ -20,19 +20,19 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
     Args:
         results: Dictionary with test results
         output_path: Path to save the dashboard HTML
-        """
-        # Calculate overall metrics
-        total_tests = results['summary']['total']
-        passed_tests = results['summary']['passed']
-        failed_tests = results['summary']['failed']
-        error_tests = results['summary']['errors']
-        skipped_tests = results['summary']['skipped']
+    """
+    # Calculate overall metrics
+    total_tests = results['summary']['total']
+    passed_tests = results['summary']['passed']
+    failed_tests = results['summary']['failed']
+    error_tests = results['summary']['errors']
+    skipped_tests = results['summary']['skipped']
 
-        # Calculate success rate
-        if total_tests > 0:
-            success_rate = 100 * passed_tests / total_tests
-            else:
-            success_rate = 0
+    # Calculate success rate
+    if total_tests > 0:
+        success_rate = 100 * passed_tests / total_tests
+    else:
+        success_rate = 0
 
             # Generate timestamp
             timestamp = datetime.fromisoformat(results['timestamp'])
