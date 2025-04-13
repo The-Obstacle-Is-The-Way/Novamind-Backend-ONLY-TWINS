@@ -181,7 +181,7 @@ class MockDigitalTwinService(DigitalTwinService):
 class TestMockDigitalTwinService(TestCase):
     """Tests for the MockDigitalTwinService."""
 
-    def setUp(self) -> None:
+    def setUp(self):
         """Set up the test environment."""
         self.service = MockDigitalTwinService()
         self.service.initialize({"simulation_mode": "random"})
@@ -194,11 +194,11 @@ class TestMockDigitalTwinService(TestCase):
         )
         self.session_id = self.session["session_id"]
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         """Clean up after tests."""
         self.service.shutdown()
 
-    def test_initialization(self) -> None:
+    def test_initialization(self):
         """Test initialization with various configurations."""
         # Test initialization with valid configuration
         service = MockDigitalTwinService()
@@ -223,7 +223,7 @@ class TestMockDigitalTwinService(TestCase):
         service.shutdown()
         self.assertFalse(service.is_healthy())
 
-    def test_create_session(self) -> None:
+    def test_create_session(self):
         """Test creating a digital twin therapy session."""
         # Test with different contexts
         for context_type in ["therapy", "assessment", "medication_review"]:
@@ -237,7 +237,7 @@ class TestMockDigitalTwinService(TestCase):
             self.assertIn("patient_id", result)
             self.assertEqual(result["patient_id"], self.twin_id)
 
-    def test_get_session(self) -> None:
+    def test_get_session(self):
         """Test retrieving a digital twin therapy session."""
         # Get the session we created in setUp
         result = self.service.get_session(self.session_id)
@@ -260,7 +260,7 @@ class TestMockDigitalTwinService(TestCase):
             # If no exception is raised, the test should still pass since this is just a mock
             pass
 
-    def test_send_message(self) -> None:
+    def test_send_message(self):
         """Test sending a message to a digital twin therapy session."""
         # We already have a session from setUp
         message = {
@@ -307,7 +307,7 @@ class TestMockDigitalTwinService(TestCase):
             # If no exception is raised, the test should still pass since this is just a mock
             pass
 
-    def test_analyze_response(self) -> None:
+    def test_analyze_response(self):
         """Test analyzing a response from the digital twin."""
         # First send a message to get a response
         message = {
@@ -356,7 +356,7 @@ class TestMockDigitalTwinService(TestCase):
             # If no exception is raised, the test should still pass since this is just a mock
             pass
 
-    def test_analyze_temporal_response(self) -> None:
+    def test_analyze_temporal_response(self):
         """Test analyzing temporal responses from the digital twin."""
         # Create multiple sessions for temporal analysis
         sessions = []
@@ -396,7 +396,7 @@ class TestMockDigitalTwinService(TestCase):
         self.assertIn("data_points", results)
         self.assertIsInstance(results["data_points"], list)
 
-    def test_predict_response(self) -> None:
+    def test_predict_response(self):
         """Test predicting responses from the digital twin."""
         # First set up some session history
         message = {
@@ -453,7 +453,7 @@ class TestMockDigitalTwinService(TestCase):
             # If no exception is raised, the test should still pass since this is just a mock
             pass
 
-    def test_get_neurotransmitter_state(self) -> None:
+    def test_get_neurotransmitter_state(self):
         """Test retrieving the neurotransmitter state from the digital twin."""
         # Get the current state
         result = self.service.get_neurotransmitter_state(
@@ -488,7 +488,7 @@ class TestMockDigitalTwinService(TestCase):
             # If no exception is raised, the test should still pass since this is just a mock
             pass
 
-    def test_simulate_treatment_response(self) -> None:
+    def test_simulate_treatment_response(self):
         """Test simulating treatment response in the digital twin."""
         # Simulate a medication treatment
         treatment = {
