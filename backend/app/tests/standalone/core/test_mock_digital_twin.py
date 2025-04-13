@@ -22,7 +22,8 @@ from unittest import TestCase
 # Using TestCase directly since BaseUnitTest couldn't be found
 
 
-@pytest.mark.db_required()class TestMockDigitalTwinService(TestCase):
+@pytest.mark.db_required()
+class TestMockDigitalTwinService(TestCase):
     """
     Test suite for MockDigitalTwinService class.
 
@@ -31,9 +32,7 @@ from unittest import TestCase
     """
 
     def setUp(self) -> None:
-
-
-                    """Set up test fixtures before each test method."""
+        """Set up test fixtures before each test method."""
         super().setUp()
         self.service = MockDigitalTwinService()
         # Use a non-empty configuration dictionary to satisfy the service requirements
@@ -87,19 +86,15 @@ from unittest import TestCase
         self.sample_message = "I've been feeling anxious in social situations lately."
 
     def tearDown(self) -> None:
-
-
-                    """Clean up after each test."""
+        """Clean up after each test."""
         if hasattr(self, "service") and self.service.is_healthy():
             self.service.shutdown()
             super().tearDown()
 
     def test_initialization(self) -> None:
-
-
-                    """Test service initialization with various configurations."""
+        """Test service initialization with various configurations."""
         # Test minimal valid initialization
-        service = MockDigitalTwinService(,
+        service = MockDigitalTwinService()
         min_config= {"model_version": "1.0.0"}
         service.initialize(min_config)
         self.assertTrue(service.is_healthy())
@@ -123,9 +118,7 @@ from unittest import TestCase
         self.assertFalse(service.is_healthy())
 
     def test_create_session(self) -> None:
-
-
-                    """Test creating a digital twin therapy session."""
+        """Test creating a digital twin therapy session."""
         # Test with different contexts
         for context_type in ["therapy", "assessment", "medication_review"]:
             result = self.service.create_session(
@@ -148,9 +141,7 @@ from unittest import TestCase
                 (datetime.now(UTC) - created_time).total_seconds(), 10)
 
     def test_get_session(self) -> None:
-
-
-                    """Test retrieving a digital twin therapy session."""
+        """Test retrieving a digital twin therapy session."""
         # We already have a session from setUp
         session_id = self.session_id
 
@@ -176,9 +167,7 @@ from unittest import TestCase
             pass
 
     def test_send_message(self) -> None:
-
-
-                    """Test sending a message to a digital twin therapy session."""
+        """Test sending a message to a digital twin therapy session."""
         # We already have a session from setUp
         session_id = self.session_id
 
@@ -216,14 +205,12 @@ from unittest import TestCase
             pass
 
     def test_message_response_types(self) -> None:
-
-
-                    """Test different types of responses based on message content."""
+        """Test different types of responses based on message content."""
         # Create a session
         create_result = self.service.create_session(
             patient_id=self.twin_id
-        ,
-        session_id= create_result["session_id"]
+        )
+        session_id = create_result["session_id"]
 
         # Test different message types
         test_messages = {
@@ -237,8 +224,8 @@ from unittest import TestCase
         for topic, message in test_messages.items():
             result = self.service.send_message(
                 session_id=session_id, message=message)
-            self.assertIn("response", result,
-            response= result["response"]
+            self.assertIn("response", result)
+            response = result["response"]
 
             # For mock implementations, we just check that we get a response
             # rather than checking for specific topic matches which are implementation dependent
@@ -246,14 +233,12 @@ from unittest import TestCase
             self.assertGreater(len(response), 10)  # Ensure we get a non-trivial response
 
     def test_end_session(self) -> None:
-
-
-                    """Test ending a digital twin therapy session."""
+        """Test ending a digital twin therapy session."""
         # Create a session
         create_result = self.service.create_session(
             patient_id=self.twin_id
-        ,
-        session_id= create_result["session_id"]
+        )
+        session_id = create_result["session_id"]
 
         # Send a message to have some content
         self.service.send_message(
