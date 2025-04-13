@@ -11,6 +11,7 @@ import json
 import logging
 import uuid
 from typing import Any, Dict, List, Optional, Union
+from datetime import timezone
 
 from app.core.services.ml.interface import MentaLLaMAInterface
 from app.core.exceptions import (
@@ -196,7 +197,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "model_version": self._models[model_type]["version"],
             "text_length": len(text),
             "word_count": word_count,
-            "processed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "processed_at": datetime.datetime.now(timezone.utc).isoformat(),
             "sentiment": {
                 "score": sentiment_score,
                 "label": "positive" if sentiment_score > 0.2 else "negative" if sentiment_score < -0.2 else "neutral",
@@ -297,7 +298,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "model": "clinical-llm",
             "model_version": self._models["clinical"]["version"],
             "text_length": len(text),
-            "processed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "processed_at": datetime.datetime.now(timezone.utc).isoformat(),
             "depression": {
                 "score": depression_score,
                 "risk_level": risk_level,
@@ -430,7 +431,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "model": "clinical-llm",
             "model_version": self._models["clinical"]["version"],
             "text_length": len(text),
-            "processed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "processed_at": datetime.datetime.now(timezone.utc).isoformat(),
             "risk_type": risk_type,
             "risk_assessment": {
                 "score": risk_score,
@@ -539,7 +540,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "model_version": self._models["clinical"]["version"],
             "text_length": len(text),
             "word_count": len(words),
-            "processed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "processed_at": datetime.datetime.now(timezone.utc).isoformat(),
             "sentiment": {
                 "score": sentiment_score,
                 "label": "positive" if sentiment_score > 0.2 else "negative" if sentiment_score < -0.2 else "neutral",
@@ -696,7 +697,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "model": "clinical-llm",
             "model_version": self._models["clinical"]["version"],
             "text_length": len(text),
-            "processed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "processed_at": datetime.datetime.now(timezone.utc).isoformat(),
             "dimensions_analyzed": dimensions,
             "dimensions_results": dimension_results,
             "primary_dimensions": primary_dimensions,
@@ -744,7 +745,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "patient_id": patient_id,
             "model_id": str(uuid.uuid4()),
             "version": "1.0.0",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "demographics": {
                 "age_group": patient_data.get("age_group", "unknown"),
                 "gender": patient_data.get("gender", "unknown"),
@@ -803,7 +804,7 @@ class MentaLLaMA(MentaLLaMAInterface):
         return {
             "model": "diagnostic-llm",
             "model_version": self._models["diagnostic"]["version"],
-            "processed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "processed_at": datetime.datetime.now(timezone.utc).isoformat(),
             "patient_id": patient_id,
             "digital_twin": digital_twin,
             "metrics": {
@@ -860,8 +861,8 @@ class MentaLLaMA(MentaLLaMAInterface):
             "patient_id": patient_id,
             "type": session_type,
             "status": "active",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(timezone.utc).isoformat(),
             "messages": [],
             "params": session_params,
             "metrics": {
@@ -984,7 +985,7 @@ class MentaLLaMA(MentaLLaMAInterface):
         
         # Record message
         message_id = str(uuid.uuid4())
-        timestamp = datetime.datetime.now(datetime.UTC).isoformat()
+        timestamp = datetime.datetime.now(timezone.utc).isoformat()
         
         user_message = {
             "id": message_id,
@@ -1003,7 +1004,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "content": response_content,
             "sender_type": "digital_twin",
             "sender_id": "system",
-            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
             "params": {
                 "response_type": "automated",
                 "model": "conversational-llm"
@@ -1016,7 +1017,7 @@ class MentaLLaMA(MentaLLaMAInterface):
         
         # Update session metrics
         session["metrics"]["message_count"] = len(session["messages"])
-        session["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        session["updated_at"] = datetime.datetime.now(timezone.utc).isoformat()
         
         return {
             "model": "conversational-llm",
@@ -1071,7 +1072,7 @@ class MentaLLaMA(MentaLLaMAInterface):
         
         # Update session status
         session["status"] = "ended"
-        session["ended_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        session["ended_at"] = datetime.datetime.now(timezone.utc).isoformat()
         session["end_reason"] = end_reason
         
         # Calculate session duration
@@ -1143,7 +1144,7 @@ class MentaLLaMA(MentaLLaMAInterface):
                 "session_id": session_id,
                 "insight_type": insight_type,
                 "insights": {insight_type: all_insights[insight_type]},
-                "generated_at": datetime.datetime.now(datetime.UTC).isoformat()
+                "generated_at": datetime.datetime.now(timezone.utc).isoformat()
             }
         
         return {
@@ -1152,7 +1153,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "session_id": session_id,
             "insight_type": "all",
             "insights": all_insights,
-            "generated_at": datetime.datetime.now(datetime.UTC).isoformat()
+            "generated_at": datetime.datetime.now(timezone.utc).isoformat()
         }
     
     def _generate_digital_twin_response(self, message: str, session: Dict[str, Any]) -> str:
@@ -1266,7 +1267,7 @@ class MentaLLaMA(MentaLLaMAInterface):
         if "ended_at" in session:
             end_time = datetime.datetime.fromisoformat(session["ended_at"])
         else:
-            end_time = datetime.datetime.now(datetime.UTC)
+            end_time = datetime.datetime.now(timezone.utc)
             
         duration_seconds = (end_time - start_time).total_seconds()
         duration_minutes = duration_seconds / 60

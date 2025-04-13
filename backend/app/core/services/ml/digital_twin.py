@@ -11,6 +11,7 @@ import json
 import logging
 import uuid
 from typing import Any, Dict, List, Optional, Union
+from datetime import timezone
 
 from app.core.services.ml.interface import DigitalTwinInterface
 from app.core.exceptions import (
@@ -44,7 +45,7 @@ class DigitalTwinService(DigitalTwinInterface):
         self._model_info = {
             "name": "DigitalTwin Core",
             "version": "1.0.0",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "description": "Core Digital Twin model for psychiatric assessment and therapy",
             "capabilities": [
                 "session_management",
@@ -137,8 +138,8 @@ class DigitalTwinService(DigitalTwinInterface):
             "patient_id": patient_id,
             "type": session_type,
             "status": "active",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(timezone.utc).isoformat(),
             "messages": [],
             "params": session_params or {},
             "insights": {}
@@ -240,7 +241,7 @@ class DigitalTwinService(DigitalTwinInterface):
         
         # Create message
         message_id = str(uuid.uuid4())
-        timestamp = datetime.datetime.now(datetime.UTC).isoformat()
+        timestamp = datetime.datetime.now(timezone.utc).isoformat()
         
         # In a real implementation, this would process the message using a
         # real model and generate a genuine response
@@ -259,14 +260,14 @@ class DigitalTwinService(DigitalTwinInterface):
             "content": self._generate_response(message, session),
             "sender_type": "digital_twin",
             "sender_id": "digital_twin_system",
-            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
             "params": {"source": "automatic_response"}
         }
         
         # Add messages to session
         session["messages"].append(user_message)
         session["messages"].append(response_message)
-        session["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        session["updated_at"] = datetime.datetime.now(timezone.utc).isoformat()
         
         # Update insights based on message content
         self._update_insights(session, message)
@@ -320,7 +321,7 @@ class DigitalTwinService(DigitalTwinInterface):
         
         # End session
         session["status"] = "ended"
-        session["ended_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        session["ended_at"] = datetime.datetime.now(timezone.utc).isoformat()
         session["end_reason"] = end_reason or "user_requested"
         
         logger.info(
@@ -439,7 +440,7 @@ class DigitalTwinService(DigitalTwinInterface):
         # Initialize categories
         for category in ["mood", "anxiety", "sleep", "social", "risk"]:
             if category not in session["insights"]:
-                session["insights"][category] = {"score": 0, "factors": [], "last_updated": datetime.datetime.now(datetime.UTC).isoformat()}
+                session["insights"][category] = {"score": 0, "factors": [], "last_updated": datetime.datetime.now(timezone.utc).isoformat()}
         
         # Simple keyword-based updating (would be ML-based in production)
         mood_keywords = {
@@ -468,7 +469,7 @@ class DigitalTwinService(DigitalTwinInterface):
                 current = session["insights"]["mood"]["score"]
                 session["insights"]["mood"]["score"] = max(-5, min(5, current + score))
                 session["insights"]["mood"]["factors"].append(keyword)
-                session["insights"]["mood"]["last_updated"] = datetime.datetime.now(datetime.UTC).isoformat()
+                session["insights"]["mood"]["last_updated"] = datetime.datetime.now(timezone.utc).isoformat()
         
         # Update anxiety insights
         for keyword, score in anxiety_keywords.items():
@@ -476,7 +477,7 @@ class DigitalTwinService(DigitalTwinInterface):
                 current = session["insights"]["anxiety"]["score"]
                 session["insights"]["anxiety"]["score"] = max(-5, min(5, current + score))
                 session["insights"]["anxiety"]["factors"].append(keyword)
-                session["insights"]["anxiety"]["last_updated"] = datetime.datetime.now(datetime.UTC).isoformat()
+                session["insights"]["anxiety"]["last_updated"] = datetime.datetime.now(timezone.utc).isoformat()
         
         # Update sleep insights
         for keyword, score in sleep_keywords.items():
@@ -484,7 +485,7 @@ class DigitalTwinService(DigitalTwinInterface):
                 current = session["insights"]["sleep"]["score"]
                 session["insights"]["sleep"]["score"] = max(-5, min(5, current + score))
                 session["insights"]["sleep"]["factors"].append(keyword)
-                session["insights"]["sleep"]["last_updated"] = datetime.datetime.now(datetime.UTC).isoformat()
+                session["insights"]["sleep"]["last_updated"] = datetime.datetime.now(timezone.utc).isoformat()
         
         # Update social insights
         for keyword, score in social_keywords.items():
@@ -492,7 +493,7 @@ class DigitalTwinService(DigitalTwinInterface):
                 current = session["insights"]["social"]["score"]
                 session["insights"]["social"]["score"] = max(-5, min(5, current + score))
                 session["insights"]["social"]["factors"].append(keyword)
-                session["insights"]["social"]["last_updated"] = datetime.datetime.now(datetime.UTC).isoformat()
+                session["insights"]["social"]["last_updated"] = datetime.datetime.now(timezone.utc).isoformat()
         
         # Update risk insights
         for keyword, score in risk_keywords.items():
@@ -500,7 +501,7 @@ class DigitalTwinService(DigitalTwinInterface):
                 current = session["insights"]["risk"]["score"]
                 session["insights"]["risk"]["score"] = max(-5, min(5, current + score))
                 session["insights"]["risk"]["factors"].append(keyword)
-                session["insights"]["risk"]["last_updated"] = datetime.datetime.now(datetime.UTC).isoformat()
+                session["insights"]["risk"]["last_updated"] = datetime.datetime.now(timezone.utc).isoformat()
                 
                 # Flag high risk cases
                 if session["insights"]["risk"]["score"] >= 3:
@@ -542,7 +543,7 @@ class DigitalTwinService(DigitalTwinInterface):
             "sender_distribution": sender_counts,
             "duration": self._calculate_duration(session),
             "key_insights": key_insights,
-            "generated_at": datetime.datetime.now(datetime.UTC).isoformat()
+            "generated_at": datetime.datetime.now(timezone.utc).isoformat()
         }
     
     def _calculate_duration(self, session: Dict[str, Any]) -> str:
@@ -560,7 +561,7 @@ class DigitalTwinService(DigitalTwinInterface):
         if "ended_at" in session:
             end_time = datetime.datetime.fromisoformat(session["ended_at"])
         else:
-            end_time = datetime.datetime.now(datetime.UTC)
+            end_time = datetime.datetime.now(timezone.utc)
         
         duration = end_time - start_time
         minutes = duration.total_seconds() / 60
