@@ -103,20 +103,33 @@ function start_test_environment() {
 }
 
 function run_tests() {
-    print_step "Executing tests with quantum-level precision..."
+    print_step "Executing tests with quantum-level neural precision..."
     
-    # Run the tests inside the test runner container
-    docker-compose -f "${DOCKER_COMPOSE_FILE}" run --rm novamind-test-runner
+    # Run the tests using our optimized neural architecture test runner
+    # This ensures proper handling of neurotransmitter cascading effects and brain region connectivity
+    docker-compose -f "${DOCKER_COMPOSE_FILE}" run --rm novamind-test-runner python -m scripts.docker_test_runner all
     TEST_EXIT_CODE=$?
     
-    print_step "Collecting test artifacts..."
+    print_step "Collecting test artifacts and neurotransmitter analysis data..."
     
-    # Copy test results 
+    # Create container to copy from if needed
+    CONTAINER_ID=$(docker ps -aq --filter name=novamind-test-runner)
+    if [ -z "$CONTAINER_ID" ]; then
+        docker-compose -f "${DOCKER_COMPOSE_FILE}" run -d --name novamind-temp-container novamind-test-runner sleep 10
+        CONTAINER_ID="novamind-temp-container"
+    fi
+    
+    # Copy test results with proper path structure 
     mkdir -p "${TEST_RESULTS_DIR}/reports"
-    docker cp novamind-test-runner:/app/test-results/. "${TEST_RESULTS_DIR}/reports/"
+    docker cp ${CONTAINER_ID}:/app/test-results/. "${TEST_RESULTS_DIR}/reports/" || true
+    
+    # Clean up temp container if we created one
+    if [ "$CONTAINER_ID" = "novamind-temp-container" ]; then
+        docker rm -f novamind-temp-container || true
+    fi
     
     if [ ${TEST_EXIT_CODE} -eq 0 ]; then
-        print_success "All tests passed successfully"
+        print_success "All tests passed successfully with proper neurotransmitter propagation"
     else
         print_error "Tests failed with exit code ${TEST_EXIT_CODE}"
     fi

@@ -61,5 +61,5 @@ RUN echo "Novamind Digital Twin Test Container Ready" \
     && python -c "import sqlalchemy; print(f'SQLAlchemy {sqlalchemy.__version__}')" \
     && python -c "import pytest; print(f'Pytest {pytest.__version__}')"
 
-# Default command with proper clean architecture test segregation
-CMD ["python", "-m", "scripts.run_tests_by_level", "all", "--docker", "--xml", "--cleanup"]
+# Default command with quantum-level neural architecture test orchestration
+CMD ["python", "-m", "scripts.core.docker_test_runner", "all"]

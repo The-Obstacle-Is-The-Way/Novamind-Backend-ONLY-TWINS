@@ -1,38 +1,29 @@
-import pytest
-
 """
-Tests for (the ML exceptions module.)
+Tests for the ML exceptions module.
 
-This module tests the custom exception classes for (machine learning operations,)
+This module tests the custom exception classes for machine learning operations,
 particularly the MentalLLaMA inference system exceptions.
 """
 
-from app.domain.ml.exceptions import ()
-MentalLLaMAAuthenticationError,
-MentalLLaMABaseException,
-MentalLLaMAConnectionError,
-MentalLLaMAInferenceError,
-MentalLLaMAQuotaExceededError,
-MentalLLaMAValidationError,
+import pytest
+
+from app.domain.ml.exceptions import (
+    MentalLLaMAAuthenticationError,
+    MentalLLaMABaseException,
+    MentalLLaMAConnectionError,
+    MentalLLaMAInferenceError,
+    MentalLLaMAQuotaExceededError,
+    MentalLLaMAValidationError
+)
 
 
 
 @pytest.mark.db_required()
-class TestMentalLLaMAExceptions)):
-    """Tests for (the MentalLLaMA exception classes.""")
+class TestMentalLLaMAExceptions:
+    """Tests for the MentalLLaMA exception classes."""
 
     @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-    def test_base_exception(self)):
+    def test_base_exception(self):
         """Test MentalLLaMABaseException creation and properties."""
         # Create a basic exception
         message = "Test base exception"
@@ -45,16 +36,6 @@ class TestMentalLLaMAExceptions)):
         assert exception.details == details
         assert str(exception) == message
 
-        @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
     @pytest.mark.standalone()
     def test_base_exception_without_details(self):
         """Test MentalLLaMABaseException creation without details."""
@@ -66,16 +47,6 @@ class TestMentalLLaMAExceptions)):
         assert exception.message == message
         assert exception.details == {}
         assert str(exception) == message
-
-        @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
 
     @pytest.mark.standalone()
     def test_connection_error(self):
@@ -237,11 +208,17 @@ class TestMentalLLaMAExceptions)):
         """Test that all exceptions inherit from MentalLLaMABaseException."""
         # Create instances of all exception types
         base_exc = MentalLLaMABaseException("Base error",)
-conn_exc= MentalLLaMAConnectionError()
-"Connection error", "/api/v1/endpoint",
-auth_exc= MentalLLaMAAuthenticationError("Auth error",)
-infer_exc= MentalLLaMAInferenceError("Inference error", "model-name",)
-valid_exc= MentalLLaMAValidationError()
+        # Test creating exceptions
+        conn_exc = MentalLLaMAConnectionError("Connection error", "/api/v1/endpoint")
+        auth_exc = MentalLLaMAAuthenticationError("Auth error")
+        infer_exc = MentalLLaMAInferenceError("Inference error", "model-name")
+        valid_exc = MentalLLaMAValidationError("Validation error")
+        
+        # Assert properties
+        assert isinstance(conn_exc, MentalLLaMABaseException)
+        assert isinstance(auth_exc, MentalLLaMABaseException)
+        assert isinstance(infer_exc, MentalLLaMABaseException)
+        assert isinstance(valid_exc, MentalLLaMABaseException)
 "Validation error", {"field": "error"},
 quota_exc= MentalLLaMAQuotaExceededError("Quota error", 100, 101)
 

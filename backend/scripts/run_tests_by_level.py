@@ -11,9 +11,15 @@ from pathlib import Path
 import argparse
 
 # Get the actual module path
-current_dir = Path(__file__).parent
-legacy_module_path = current_dir / "test" / "runners" / "legacy"
-sys.path.insert(0, str(legacy_module_path.parent.parent))
+current_dir = Path(__file__).parent.resolve()
+project_root = current_dir.parent  # /backend directory
+
+# Make sure the script can find modules
+sys.path.insert(0, str(project_root))  # Add the backend directory to path first
+
+# Add scripts directory explicitly
+scripts_dir = project_root / "scripts"
+sys.path.insert(0, str(scripts_dir))
 
 # Configure Docker environment variables
 if any('--docker' in arg for arg in sys.argv):
@@ -34,7 +40,7 @@ if any('--docker' in arg for arg in sys.argv):
     os.environ['TEST_MODE'] = '1'
 
 # Import and customize run_tests_by_level for Docker
-from test.runners.legacy.run_tests_by_level import main as original_main, run_tests, TEST_LEVELS
+from scripts.test.runners.legacy.run_tests_by_level import main as original_main, run_tests, TEST_LEVELS
 
 def docker_enhanced_main():
     """Enhanced main function with Docker support."""
