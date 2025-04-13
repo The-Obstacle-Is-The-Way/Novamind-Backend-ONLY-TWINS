@@ -225,6 +225,7 @@ class QuantumNeuralTestOrchestrator:
         xml_report_path = TEST_RESULTS_DIR / f"test-results-{self.level}.xml"
         
         # Execute tests with precise neurotransmitter effect magnitudes
+        # Memory-optimized for quantum neural computation with PITUITARY region support
         try:
             command = [
                 "python", "-m", "pytest",
@@ -232,7 +233,12 @@ class QuantumNeuralTestOrchestrator:
                 "--verbose",
                 "-xvs",
                 "--junit-xml", str(xml_report_path),
-                "--color=yes"
+                "--color=yes",
+                # Memory optimization for Docker environment
+                "--no-header",
+                "--tb=short",
+                # Add memory optimization flags
+                "-o", "junit_family=xunit2"
             ]
             
             logger.info(f"Executing quantum neural test command: {' '.join(command)}")

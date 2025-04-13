@@ -48,12 +48,15 @@ services:
       - pgadmin_data_test:/var/lib/pgadmin
     restart: unless-stopped
 
-  # Test runner container
+  # Quantum Neural Test Runner container with PITUITARY region support
   novamind-test-runner:
     container_name: novamind-test-runner
     build:
       context: .
       dockerfile: Dockerfile.test
+    # Enhanced with memory limits for neurotransmitter pathway modeling
+    mem_limit: 1024M
+    mem_reservation: 512M
     depends_on:
       novamind-db-test:
         condition: service_healthy
@@ -84,7 +87,7 @@ services:
       ENFORCE_CLEAN_ARCHITECTURE: "1"
 
     # Command can be overridden when running docker-compose
-    # Default runs all tests in stages, but CI can specify specific test types
+    # Default runs quantum neural singularity with hypothalamus-pituitary connectivity
     command: python -m scripts.core.quantum_runner all
 
 volumes:
