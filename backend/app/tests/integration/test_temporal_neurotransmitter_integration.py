@@ -89,18 +89,25 @@ def xgboost_service():
 
 
 @pytest.fixture
+def visualization_preprocessor():
+    """Create a visualization preprocessor instance."""
+    return NeurotransmitterVisualizationPreprocessor()
+
+
+@pytest.fixture
 async def temporal_service(sequence_repository: TemporalSequenceRepository,
                          event_repository: EventRepository,
-                         xgboost_service: EnhancedXGBoostService):
-    """Create temporal neurotransmitter service with repositories and XGBoost."""
+                         xgboost_service: EnhancedXGBoostService,
+                         visualization_preprocessor: NeurotransmitterVisualizationPreprocessor):
+    """Create temporal neurotransmitter service with repositories, XGBoost, and visualization."""
     return TemporalNeurotransmitterService(
         sequence_repository=sequence_repository,
         event_repository=event_repository,
-        xgboost_service=xgboost_service
+        xgboost_service=xgboost_service,
+        visualization_preprocessor=visualization_preprocessor
     )
 
 
-# Local test_app and test_client fixtures removed; tests will use the client fixture from conftest.py
 @pytest.fixture
 def mock_current_user():
     """Mock current user dependency."""

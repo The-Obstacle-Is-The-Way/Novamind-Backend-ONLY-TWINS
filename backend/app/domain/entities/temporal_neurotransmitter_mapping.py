@@ -73,7 +73,7 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         Args:
             patient_id: Optional UUID of the associated patient
         """
-        super().__init__(patient_id=patient_id)
+        super().__init__()
         
         # Track temporal sequences
         
@@ -655,6 +655,85 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
             # Detect oscillations (simplified)
             # Count sign changes in first derivative
             if len(values) > 3:
+                # Simple linear regression to detect trend
+                x = np.arange(len(values))
+                A = np.vstack([x, np.ones(len(x))]).T
+                m, c = np.linalg.lstsq(A, values, rcond=None)[0]
+                
+                # Determine trend direction
+                if abs(m) < 0.01:
+                    trend = "stable"
+                elif m > 0:
+                    trend = "increasing"
+                else:
+                    trend = "decreasing"
+                    
+                # Calculate rate of change
+                rate_of_change = m
+            else:
+                trend = "unknown"
+                rate_of_change = 0.0
+                
+            # Store statistics
+            results["statistics"][feature] = {
+                "mean": mean_value,
+                "std_dev": std_dev,
+                "min": min_value,
+                "max": max_value,
+                "range": max_value - min_value
+            }
+            
+            # Store trend
+            results["trends"][feature] = {
+                "direction": trend,
+                "rate_of_change": rate_of_change
+            }
+            
+        # Calculate correlations between neurotransmitters
+        if len(feature_names) > 1:
+            # Create correlation matrix
+            corr_matrix = np.zeros((len(feature_names), len(feature_names)))
+            for i in range(len(feature_names)):
+                for j in range(len(feature_names)):
+                    if i == j:
+                        corr_matrix[i, j] = 1.0
+                    else:
+                        values_i = [row[i] for row in sequence.values]
+                        values_j = [row[j] for row in sequence.values]
+                        
+                        # Calculate correlation coefficient
+                        mean_i = sum(values_i) / len(values_i)
+                        mean_j = sum(values_j) / len(values_j)
+                        
+                        num = sum((values_i[k] - mean_i) * (values_j[k] - mean_j) for k in range(len(values_i)))
+                        denom_i = sum((values_i[k] - mean_i) ** 2 for k in range(len(values_i)))
+                        denom_j = sum((values_j[k] - mean_j) ** 2 for k in range(len(values_j)))
+                        
+                        if denom_i > 0 and denom_j > 0:
+                            corr = num / (math.sqrt(denom_i) * math.sqrt(denom_j))
+                            corr_matrix[i, j] = corr
+                        else:
+                            corr_matrix[i, j] = 0.0
+            
+            for i, feature1 in enumerate(feature_names):
+                for j, feature2 in enumerate(feature_names):
+                    if i != j:
+                        correlation = float(corr_matrix[i, j])
+                        
+                        # Skip weak correlations
+                        if abs(correlation) > 0.3:
+                            if feature1 not in results["correlations"]:
+                                results["correlations"][feature1] = {}
+                                
+                            results["correlations"][feature1][feature2] = correlation
+        
+        # Detect oscillations and patterns
+        for i, feature in enumerate(feature_names):
+            values = [row[i] for row in sequence.values]
+            
+            # Detect oscillations (simplified)
+            # Count sign changes in first derivative
+            if len(values) > 3:
                 diffs = [values[i+1] - values[i] for i in range(len(values)-1)]
                 sign_changes = sum(1 for i in range(len(diffs)-1) if diffs[i] * diffs[i+1] < 0)
                 
@@ -717,7 +796,6 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         time_series_data = [(timestamp, values[primary_idx]) for timestamp, values in zip(sequence.timestamps, sequence.values)]
             
         # Create NeurotransmitterEffect with the correct constructor parameters
-        from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
         effect = NeurotransmitterEffect(
             neurotransmitter=primary_nt,
             effect_size=effect_size,
