@@ -1,11 +1,11 @@
-# Dockerfile for Novamind Digital Twin Backend Testing
-# Following clean architecture principles with proper dependency isolation
+# Dockerfile for Novamind Digital Twin Quantum Neural Architecture
+# Following clean architecture principles with mathematical precision
 FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app
 
-# Set environment variables for testing and Python paths
+# Set environment variables for neural pathway testing 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \

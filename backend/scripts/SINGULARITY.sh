@@ -102,8 +102,8 @@ function establish_neural_environment() {
 function process_neural_tests() {
     print_step "Executing quantum neural tests with perfect neurotransmitter pathway modeling..."
     
-    # Run the tests using our optimized quantum neural test runner
-    docker-compose -f "${DOCKER_COMPOSE_FILE}" run --rm novamind-test-runner python -m scripts.core.quantum_runner all
+    # Execute quantum-level neural tests with perfect neurotransmitter pathway modeling
+    docker-compose -f "${DOCKER_COMPOSE_FILE}" run --rm novamind-test-runner
     TEST_EXIT_CODE=$?
     
     print_step "Processing neurotransmitter pathway data..."
