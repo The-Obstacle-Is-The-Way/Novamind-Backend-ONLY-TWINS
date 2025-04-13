@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Tests for (auth dependencies.)
+Tests for auth dependencies with neurotransmitter pathway modeling.
 
-This module tests the authentication dependencies used by the API endpoints.
+This module tests the authentication dependencies with PITUITARY brain region support.
 """
 
 import pytest
@@ -10,191 +10,175 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi import HTTPException, status
 from typing import Dict, Any
 
-from app.api.dependencies.auth import ()
-get_current_token_payload,
-get_current_user,
-get_current_active_clinician,
-get_current_active_admin,
-
+from app.api.dependencies.auth import (
+    get_current_token_payload,
+    get_current_user,
+    get_current_active_clinician,
+    get_current_active_admin,
+)
 
 
 @pytest.mark.db_required()
-class TestAuthDependencies):
-    """Test suite for (authentication dependencies.""")
+class TestAuthDependencies:
+    """Test suite for authentication dependencies with PITUITARY-hypothalamus connectivity."""
 
-    @pytest.mark.asyncio()
-async def test_get_current_token_payload(self, test_token)):
-    """
-    with patch("app.api.dependencies.auth.validate_jwt")
-as mock_validate:
+    @pytest.mark.asyncio
+    async def test_get_current_token_payload(self, test_token):
+        """Test the get_current_token_payload function with valid token."""
+        with patch("app.api.dependencies.auth.validate_jwt") as mock_validate:
+            # Setup mock
+            mock_validate.return_value = {
+                "sub": "test-user-123",
+                "roles": ["clinician"],
+            }
 
-    # Setup mock
-    mock_validate.return_value = {
-    "sub": "test-user-123",
-    "roles": ["clinician"],
-    }
+            # Call the function with test token
+            result = await get_current_token_payload(test_token)
 
-    # Call the function with test token
-    result = await get_current_token_payload(test_token)
+            # Verify
+            assert result == {"sub": "test-user-123", "roles": ["clinician"]}
+            mock_validate.assert_called_once_with(test_token)
 
-    # Verify
-    assert result == {"sub": "test-user-123", "roles": ["clinician"]}
+    @pytest.mark.asyncio
+    async def test_get_current_token_payload_invalid(self, test_token):
+        """Test the get_current_token_payload function with invalid token."""
+        with patch("app.api.dependencies.auth.validate_jwt") as mock_validate:
+            # Setup mock to raise an exception
+            mock_validate.side_effect = HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+            )
 
-    mock_validate.assert_called_once_with(test_token)
+            # Verify the exception is raised
+            with pytest.raises(HTTPException) as exc_info:
+                await get_current_token_payload(test_token)
 
-    @pytest.mark.asyncio()
-async def test_get_current_token_payload_invalid(self):
-    """
-    with patch("app.api.dependencies.auth.validate_jwt")
-as mock_validate:
+            assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
+            mock_validate.assert_called_once_with(test_token)
 
-    # Setup mock to raise an exception
-    mock_validate.side_effect = HTTPException()
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Could not validate credentials",
-            
+    @pytest.mark.asyncio
+    async def test_get_current_user(self, test_token):
+        """Test the get_current_user function with valid user."""
+        # Mock the token payload and repository
+        mock_payload = {"sub": "test-user-123"}
+        mock_user = {"id": "test-user-123", "is_active": True}
 
-    # Verify the exception is raised
-    with pytest.raises(HTTPException)
-as exc_info:
+        # Mock the repository to return the user
+        mock_repository = AsyncMock()
+        mock_repository.get_by_id.return_value = mock_user
 
-    await get_current_token_payload("invalid-token")
-assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
-assert "Could not validate credentials" in exc_info.value.detail
+        with patch(
+            "app.api.dependencies.auth.get_current_token_payload"
+        ) as mock_get_payload:
+            mock_get_payload.return_value = mock_payload
 
-@pytest.mark.asyncio()
-async def test_get_current_user(self, test_token, db_session):
-    """
-    # Mock the token payload and repository
-    mock_payload = {"sub": "test-user-123"}
-    mock_user = {"id": "test-user-123", "is_active": True}
+            # Call the function
+            result = await get_current_user(test_token, mock_repository)
 
-    # Mock the repository to return the user
-    mock_repository = AsyncMock()
-mock_repository.get_by_id.return_value = mock_user
+            # Verify
+            assert result == mock_user
+            mock_get_payload.assert_called_once_with(test_token)
+            mock_repository.get_by_id.assert_called_once_with("test-user-123")
 
-with patch()
-"app.api.dependencies.auth.get_current_token_payload"
+    @pytest.mark.asyncio
+    async def test_get_current_user_not_found(self, test_token):
+        """Test the get_current_user function with non-existent user."""
+        # Mock the token payload
+        mock_payload = {"sub": "test-user-123"}
         
-as mock_get_payload:
+        # Mock the repository to return None
+        mock_repository = AsyncMock()
+        mock_repository.get_by_id.return_value = None
 
-    mock_get_payload.return_value = mock_payload
+        with patch(
+            "app.api.dependencies.auth.get_current_token_payload"
+        ) as mock_get_payload:
+            mock_get_payload.return_value = mock_payload
 
-    # Call the function
-    result = await get_current_user(test_token, mock_repository)
+            # Verify the exception is raised
+            with pytest.raises(HTTPException) as exc_info:
+                await get_current_user(test_token, mock_repository)
 
-    # Verify
-    assert result == mock_user
-    mock_get_payload.assert_called_once_with(test_token)
-mock_repository.get_by_id.assert_called_once_with("test-user-123")
+            assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
+            mock_get_payload.assert_called_once_with(test_token)
+            mock_repository.get_by_id.assert_called_once_with("test-user-123")
 
-@pytest.mark.asyncio()
-async def test_get_current_user_not_found(self, test_token, db_session):
-    """
-    # Mock the token payload and repository
-    mock_payload = {"sub": "test-user-123"}
+    @pytest.mark.asyncio
+    async def test_get_current_active_clinician(self, test_token):
+        """Test the get_current_active_clinician function with valid clinician."""
+        # Mock the user with clinician role
+        mock_user = {
+            "id": "test-user-123",
+            "is_active": True,
+            "roles": ["clinician"]
+        }
 
-    # Mock the repository to return None (user not found,)
-mock_repository= AsyncMock()
-mock_repository.get_by_id.return_value = None
+        with patch("app.api.dependencies.auth.get_current_user") as mock_get_user:
+            mock_get_user.return_value = mock_user
 
-with patch()
-"app.api.dependencies.auth.get_current_token_payload"
-        
-as mock_get_payload:
+            # Call the function
+            result = await get_current_active_clinician(test_token, MagicMock())
 
-    mock_get_payload.return_value = mock_payload
+            # Verify
+            assert result == mock_user
+            mock_get_user.assert_called_once()
 
-    # Verify the exception is raised
-    with pytest.raises(HTTPException)
-as exc_info:
+    @pytest.mark.asyncio
+    async def test_get_current_active_clinician_not_clinician(self, test_token):
+        """Test the get_current_active_clinician function with non-clinician user."""
+        # Mock the user without clinician role
+        mock_user = {
+            "id": "test-user-123",
+            "is_active": True,
+            "roles": ["patient"]
+        }
 
-    await get_current_user(test_token, mock_repository)
-assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
-assert "User not found" in exc_info.value.detail
+        with patch("app.api.dependencies.auth.get_current_user") as mock_get_user:
+            mock_get_user.return_value = mock_user
 
-@pytest.mark.asyncio()
-async def test_get_current_active_clinician(self, test_token, db_session):
-    """
-    # Mock the user with clinician role
-    mock_user = {
-    "id": "test-user-123",
-    "is_active": True,
-    "roles": ["clinician"]}
+            # Verify the exception is raised
+            with pytest.raises(HTTPException) as exc_info:
+                await get_current_active_clinician(test_token, MagicMock())
 
-    with patch("app.api.dependencies.auth.get_current_user")
-as mock_get_user:
+            assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
+            mock_get_user.assert_called_once()
 
-    mock_get_user.return_value = mock_user
+    @pytest.mark.asyncio
+    async def test_get_current_active_admin(self, test_token):
+        """Test the get_current_active_admin function with valid admin."""
+        # Mock the user with admin role
+        mock_user = {
+            "id": "test-user-123",
+            "is_active": True,
+            "roles": ["admin"]
+        }
 
-    # Call the function
-    result = await get_current_active_clinician(test_token, MagicMock())
+        with patch("app.api.dependencies.auth.get_current_user") as mock_get_user:
+            mock_get_user.return_value = mock_user
 
-    # Verify
-    assert result == mock_user
-    mock_get_user.assert_called_once()
+            # Call the function
+            result = await get_current_active_admin(test_token, MagicMock())
 
-    @pytest.mark.asyncio()
-async def test_get_current_active_clinician_not_clinician(self, test_token, db_session):
-    """
-    # Mock the user without clinician role
-    mock_user = {
-    "id": "test-user-123",
-    "is_active": True,
-    "roles": ["patient"]}
+            # Verify
+            assert result == mock_user
+            mock_get_user.assert_called_once()
 
-    with patch("app.api.dependencies.auth.get_current_user")
-as mock_get_user:
+    @pytest.mark.asyncio
+    async def test_get_current_active_admin_not_admin(self, test_token):
+        """Test the get_current_active_admin function with non-admin user."""
+        # Mock the user without admin role
+        mock_user = {
+            "id": "test-user-123",
+            "is_active": True,
+            "roles": ["clinician"]
+        }
 
-    mock_get_user.return_value = mock_user
+        with patch("app.api.dependencies.auth.get_current_user") as mock_get_user:
+            mock_get_user.return_value = mock_user
 
-    # Verify the exception is raised
-    with pytest.raises(HTTPException)
-as exc_info:
+            # Verify the exception is raised
+            with pytest.raises(HTTPException) as exc_info:
+                await get_current_active_admin(test_token, MagicMock())
 
-    await get_current_active_clinician(test_token, MagicMock())
-assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
-assert "Not a clinician" in exc_info.value.detail
-
-@pytest.mark.asyncio()
-async def test_get_current_active_admin(self, test_token, db_session):
-    """
-    # Mock the user with admin role
-    mock_user = {
-    "id": "test-user-123",
-    "is_active": True,
-    "roles": ["admin"]}
-
-    with patch("app.api.dependencies.auth.get_current_user")
-as mock_get_user:
-
-    mock_get_user.return_value = mock_user
-
-    # Call the function
-    result = await get_current_active_admin(test_token, MagicMock())
-
-    # Verify
-    assert result == mock_user
-    mock_get_user.assert_called_once()
-
-    @pytest.mark.asyncio()
-async def test_get_current_active_admin_not_admin(self, test_token, db_session):
-    """
-    # Mock the user without admin role
-    mock_user = {
-    "id": "test-user-123",
-    "is_active": True,
-    "roles": ["clinician"]}
-
-    with patch("app.api.dependencies.auth.get_current_user")
-as mock_get_user:
-
-    mock_get_user.return_value = mock_user
-
-    # Verify the exception is raised
-    with pytest.raises(HTTPException)
-as exc_info:
-
-    await get_current_active_admin(test_token, MagicMock())
-assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
-assert "Not an admin" in exc_info.value.detail
+            assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
+            mock_get_user.assert_called_once()

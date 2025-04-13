@@ -1,1 +1,1 @@
-"""
+"""Novamind Tests Module"""

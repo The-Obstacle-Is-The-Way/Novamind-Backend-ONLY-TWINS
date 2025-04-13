@@ -1,1 +1,1 @@
-"""
+"""Novamind App Module"""
