@@ -948,73 +948,154 @@ class TestAlertRule(unittest.TestCase):
 
         AlertRule.__init__ = patched_init
 
-                        def tearDown(self):
-            """Tear down for (alert rule tests."""
-                                        # Restore original __init__ method
-                AlertRule.__init__ = self._original_init
-
-                @pytest.mark.standalone()
-
-
-                        @pytest.mark.standalone()
+    def tearDown(self):
+        """Tear down for alert rule tests."""
+        # Restore original __init__ method
+        AlertRule.__init__ = self._original_init
 
     @pytest.mark.standalone()
-
+    def test_create_alert_rule(self):
+        """Test creating an alert rule."""
+        rule = AlertRule(
+            name="High Heart Rate",
+            data_type=BiometricType.HEART_RATE,
+            operator=ComparisonOperator.GREATER_THAN,
+            threshold=100,
+            severity=AlertSeverity.HIGH
+        )
+        self.assertEqual(rule.name, "High Heart Rate")
+        self.assertEqual(rule.data_type, BiometricType.HEART_RATE)
+        self.assertEqual(rule.operator, ComparisonOperator.GREATER_THAN)
+        self.assertEqual(rule.threshold, 100)
+        self.assertEqual(rule.severity, AlertSeverity.HIGH)
+        
     @pytest.mark.standalone()
-
+    def test_evaluate_rule_match(self):
+        """Test evaluating a rule with a matching value."""
+        rule = AlertRule(
+            name="High Heart Rate",
+            data_type=BiometricType.HEART_RATE,
+            operator=ComparisonOperator.GREATER_THAN,
+            threshold=100,
+            severity=AlertSeverity.HIGH
+        )
+        data_point = BiometricDataPoint(
+            patient_id="patient1",
+            data_type=BiometricType.HEART_RATE,
+            value=110
+        )
+        result = rule.evaluate(data_point)
+        self.assertTrue(result)
+    
     @pytest.mark.standalone()
-
+    def test_evaluate_rule_no_match(self):
+        """Test evaluating a rule with a non-matching value."""
+        rule = AlertRule(
+            name="High Heart Rate",
+            data_type=BiometricType.HEART_RATE,
+            operator=ComparisonOperator.GREATER_THAN,
+            threshold=100,
+            severity=AlertSeverity.HIGH
+        )
+        data_point = BiometricDataPoint(
+            patient_id="patient1",
+            data_type=BiometricType.HEART_RATE,
+            value=90
+        )
+        result = rule.evaluate(data_point)
+        self.assertFalse(result)
+        
     @pytest.mark.standalone()
-
+    def test_evaluate_data_type_mismatch(self):
+        """Test evaluating a rule with a data type mismatch."""
+        # Create a rule for heart rate
+        rule = AlertRule(
+            name="High Heart Rate",
+            data_type=BiometricType.HEART_RATE,
+            operator=ComparisonOperator.GREATER_THAN,
+            threshold=100,
+            severity=AlertSeverity.HIGH
+        )
+        
+        # Create a blood pressure data point
+        data_point = BiometricDataPoint(
+            patient_id="patient1",
+            data_type=BiometricType.BLOOD_PRESSURE,
+            value=120
+        )
+        
+        # Evaluate the rule - should not match due to data type mismatch
+        result = rule.evaluate(data_point)
+        self.assertFalse(result)
+        
     @pytest.mark.standalone()
-def test_evaluate_data_type_mismatch(self)):
-            """Test evaluating a rule with a data type mismatch."""
-                                            # Create a rule for (heart rate
-                    rule = AlertRule(,)
-name= "High Heart Rate",
-                    data_type = BiometricType.HEART_RATE,
-                    operator = ComparisonOperator.GREATER_THAN,
-                    threshold = 100
-                    ()
+    def test_evaluate_rule_with_patient_specific(self):
+        """Test that a patient-specific rule only applies to the correct patient."""
+        # Create a patient-specific rule
+        rule = AlertRule(
+            name="High Heart Rate for Patient1",
+            data_type=BiometricType.HEART_RATE,
+            operator=ComparisonOperator.GREATER_THAN,
+            threshold=100,
+            severity=AlertSeverity.HIGH,
+            patient_id="patient1"
+        )
 
-                    # Create a blood pressure data point
-                    data_point = BiometricDataPoint(,)
-patient_id= "patient1",
-                    data_type = BiometricType.BLOOD_PRESSURE,
-                    value = 120
-                    ()
-
-                    # Evaluate the rule
-                    result = rule.evaluate(data_point)
-
-                    # Check that the result is False
-                    self.assertFalse(result)
-
-                    @pytest.mark.standalone()
-
-
-                        @pytest.mark.standalone()
-
+        # Create a matching data point for correct patient
+        matching_data_point = BiometricDataPoint(
+            patient_id="patient1",
+            data_type=BiometricType.HEART_RATE,
+            value=110
+        )
+        
+        # Create a matching data point for different patient
+        non_matching_data_point = BiometricDataPoint(
+            patient_id="patient2",
+            data_type=BiometricType.HEART_RATE,
+            value=110
+        )
+        
+        # Test rule matches for correct patient
+        self.assertTrue(rule.evaluate(matching_data_point))
+        
+        # Test rule doesn't match for different patient
+        self.assertFalse(rule.evaluate(non_matching_data_point))
+        
     @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-def test_evaluate_greater_than(self)):
-            """Test evaluating a rule with the greater than operator."""
-                                            # Create a rule
-                    rule = AlertRule(,)
-name= "High Heart Rate",
-                    data_type = BiometricType.HEART_RATE,
-                    operator = ComparisonOperator.GREATER_THAN,
-                    threshold = 100
-                    ()
-
-                    # Create a data point that exceeds the threshold
+    def test_evaluate_greater_than(self):
+        """Test evaluating a rule with the greater than operator."""
+        # Create a rule
+        rule = AlertRule(
+            name="High Heart Rate",
+            data_type=BiometricType.HEART_RATE,
+            operator=ComparisonOperator.GREATER_THAN,
+            threshold=100,
+            severity=AlertSeverity.HIGH
+        )
+        
+        # Create test data points
+        above_threshold = BiometricDataPoint(
+            patient_id="patient1",
+            data_type=BiometricType.HEART_RATE,
+            value=110
+        )
+        
+        at_threshold = BiometricDataPoint(
+            patient_id="patient1",
+            data_type=BiometricType.HEART_RATE,
+            value=100
+        )
+        
+        below_threshold = BiometricDataPoint(
+            patient_id="patient1",
+            data_type=BiometricType.HEART_RATE,
+            value=90
+        )
+        
+        # Test evaluation with values above, at, and below threshold
+        self.assertTrue(rule.evaluate(above_threshold))
+        self.assertFalse(rule.evaluate(at_threshold))
+        self.assertFalse(rule.evaluate(below_threshold))
                     data_point1 = BiometricDataPoint(,)
 patient_id= "patient1",
                     data_type = BiometricType.HEART_RATE,

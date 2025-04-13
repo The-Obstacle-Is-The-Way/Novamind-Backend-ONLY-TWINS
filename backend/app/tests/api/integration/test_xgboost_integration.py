@@ -12,7 +12,8 @@ import pytest
 # Import FastAPI and TestClient
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+from datetime import datetime
 
 # Router import remains the same
 from app.api.routes.xgboost import router
@@ -33,8 +34,7 @@ from app.core.services.ml.xgboost import (
 # Create a test client fixture
 @pytest.fixture
 def client():
-
-            """Create a FastAPI test client."""
+    """Create a FastAPI test client."""
     # Create a FastAPI app
     app = FastAPI()
 
@@ -58,8 +58,7 @@ def client():
 # Override dependencies for testing
 @pytest.fixture(autouse=True)
 def mock_auth_dependencies():
-
-            """Mock authentication dependencies for all tests."""
+    """Mock authentication dependencies for all tests."""
     with patch(
         "app.api.dependencies.auth.get_current_active_clinician"
     ) as mock_get_clinician, patch(
@@ -72,23 +71,21 @@ def mock_auth_dependencies():
 
         yield
 
-        @pytest.fixture(autouse=True)
-        def mock_service():
+@pytest.fixture
+def mock_service():
+    """Set up a real MockXGBoostService for integration testing."""
+    # Import necessary modules
+    from unittest.mock import MagicMock
+    from datetime import datetime
 
-                    """Set up a real MockXGBoostService for integration testing."""
-            # Import necessary modules
-            from unittest.mock import MagicMock
-            from datetime import datetime
+    # Create a real mock service (not a MagicMock)
+    mock_service = MockXGBoostService()
 
-            # Create a real mock service (not a MagicMock,
-            mock_service= MockXGBoostService()
-
-            # Configure the mock service
-            mock_service.initialize(
-            {
-            "log_level": "INFO",
-            "mock_delay_ms": 0,  # No delay for tests
-            "risk_level_distribution": {
+    # Configure the mock service
+    mock_service.initialize({
+        "log_level": "INFO",
+        "mock_delay_ms": 0,  # No delay for tests
+        "risk_level_distribution": {
                 "very_low": 5,
                 "low": 20,
                 "moderate": 50,  # Higher probability for moderate
@@ -301,8 +298,8 @@ def mock_auth_dependencies():
             "/api/v1/ml/xgboost/risk-prediction",
             json=risk_request)
         assert response.status_code == 200
-        assert "prediction_id" in response.json(,
-        prediction_id= response.json()["prediction_id"]
+        assert "prediction_id" in response.json()
+        prediction_id = response.json()["prediction_id"]
 
         # 2. Retrieve the prediction
         response = client.get(
