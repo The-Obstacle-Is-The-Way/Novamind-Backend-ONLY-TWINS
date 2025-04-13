@@ -15,27 +15,27 @@ from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
 
 
-@pytest.mark.asyncio()
-@pytest.mark.db_required()
-async def test_temporal_endpoints_integration()
+@pytest.mark.asyncio
+@pytest.mark.db_required
+async def test_temporal_endpoints_integration(
     client,
     mock_current_user,
     temporal_service: TemporalNeurotransmitterService,
     patient_id: UUID
-():
-        """
+):
+    """
     Test API integration with the neurotransmitter service.
 
     This test verifies that the API layer correctly integrates with the service layer
     without directly importing the router module.
     """
     # Setup - patch dependencies to use our service instance
-    with mock_current_user, patch(:)
+    with mock_current_user, patch(
         "app.api.dependencies.services.get_temporal_neurotransmitter_service",
-    (        return_value=AsyncMock(return_value=temporal_service))
-    ()
+        return_value=AsyncMock(return_value=temporal_service)
+    ):
         # Test 1: Generate time series
-        time_series_response = client.post()
+        time_series_response = client.post(
             "/api/v1/temporal-neurotransmitter/time-series",
             json={
                 "patient_id": str(patient_id),
@@ -44,14 +44,14 @@ async def test_temporal_endpoints_integration()
                 "time_range_days": 14,
                 "time_step_hours": 6
             }
-()
+        )
         
         # Verify response
-        assert time_series_response.status_code  ==  201
+        assert time_series_response.status_code == 201
         assert "sequence_id" in time_series_response.json()
         
         # Test 2: Simulate treatment
-        treatment_response = client.post()
+        treatment_response = client.post(
             "/api/v1/temporal-neurotransmitter/simulate-treatment",
             json={
                 "patient_id": str(patient_id),
@@ -60,25 +60,25 @@ async def test_temporal_endpoints_integration()
                 "treatment_effect": 0.5,
                 "simulation_days": 14
             }
-()
+        )
         
         # Verify response
-        assert treatment_response.status_code  ==  200
+        assert treatment_response.status_code == 200
         assert "sequence_ids" in treatment_response.json()
         
         # Extract a sequence ID for visualization test
         first_sequence_id = list(treatment_response.json()["sequence_ids"].values())[0]
         
         # Test 3: Get visualization data
-        viz_response = client.post()
+        viz_response = client.post(
             "/api/v1/temporal-neurotransmitter/visualization-data",
             json={
                 "sequence_id": first_sequence_id
             }
-()
+        )
         
         # Verify response
-        assert viz_response.status_code  ==  200
+        assert viz_response.status_code == 200
         assert "time_points" in viz_response.json()
-assert "features" in viz_response.json()
-assert "values" in viz_response.json()
+        assert "features" in viz_response.json()
+        assert "values" in viz_response.json()

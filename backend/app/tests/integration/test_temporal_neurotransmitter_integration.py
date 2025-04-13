@@ -35,9 +35,9 @@ from app.infrastructure.repositories.temporal_sequence_repository import SqlAlch
 # Create a test database engine
 TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(TEST_SQLALCHEMY_DATABASE_URL, echo=True)
-TestingSessionLocal = sessionmaker(,
-    autocommit= False, autoflush = False, bind = engine, class_ = AsyncSession
-()
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine, class_=AsyncSession
+)
 
 # Mock user for authentication
 test_user = {
@@ -351,7 +351,7 @@ async def db_session():
 ()
         
         # Verify response
-        assert viz_response.status_code  ==  200
+        assert viz_response.status_code == 200
         assert "time_points" in viz_response.json()
-assert "features" in viz_response.json()
-assert "values" in viz_response.json()
+        assert "features" in viz_response.json()
+        assert "values" in viz_response.json()

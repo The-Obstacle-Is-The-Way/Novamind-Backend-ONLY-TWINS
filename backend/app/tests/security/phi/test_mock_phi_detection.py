@@ -12,9 +12,9 @@ import pytest
 from typing import Dict, Any, List
 
 from app.core.exceptions import (
-InvalidConfigurationError,
-InvalidRequestError,
-ServiceUnavailableError,
+    InvalidConfigurationError,
+    InvalidRequestError,
+    ServiceUnavailableError,
 )
 
 
@@ -31,231 +31,214 @@ class TestMockPHIDetection(BaseSecurityTest):
     test_roles = ["user", "clinician", "researcher"]
 
     def setUp(self) -> None:
-
-
-                    """Set up test fixtures and service instance."""
+        """Set up test fixtures and service instance."""
         super().setUp()
         self.service = MockPHIDetection()
         self.service.initialize({})
 
-        self.sample_phi_text = ()
-        "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
-        "His email is john.smith@example.com and phone number is (555) 123-4567. "
-        "He resides at 123 Main Street, Springfield, IL 62701."
-        ()
+        self.sample_phi_text = (
+            "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "
+            "His email is john.smith@example.com and phone number is (555) 123-4567. "
+            "He resides at 123 Main Street, Springfield, IL 62701."
+        )
 
-        def tearDown(self) -> None:
+    def tearDown(self) -> None:
+        """Clean up resources after tests."""
+        if hasattr(self, 'service') and self.service.is_healthy():
+            self.service.shutdown()
+            self.audit_events.clear()
+            super().tearDown()
 
+    def test_initialization(self) -> None:
+        """Test initialization with valid and invalid configurations."""
+        # Test default initialization
+        service = MockPHIDetection()
+        service.initialize({})
+        self.assertTrue(service.is_healthy())
+        service.shutdown()
+        
+        # Test with custom configuration
+        service = MockPHIDetection()
+        service.initialize({"detection_threshold": 0.8})
+        self.assertTrue(service.is_healthy())
+        service.shutdown()
+        
+        # Test with invalid configuration
+        service = MockPHIDetection()
+        with self.assertRaises(InvalidConfigurationError):
+            service.initialize({"detection_threshold": "invalid"})
 
-                        """Clean up resources after tests."""
-            if hasattr(self, 'service') and self.service.is_healthy():
-                self.service.shutdown()
-                self.audit_events.clear()
-                super().tearDown()
+    def test_detect_phi_basic(self) -> None:
+        """Test basic PHI detection functionality."""
+        # Test with sample PHI text
+        result = self.service.detect_phi(self.sample_phi_text)
+        
+        # Verify result structure
+        self.assertIn("phi_instances", result)
+        self.assertIn("confidence_score", result)
+        
+        # Should detect PHI in the sample text
+        self.assertGreater(len(result["phi_instances"]), 0)
+        
+        # Confidence score should be between 0 and 1
+        self.assertGreaterEqual(result["confidence_score"], 0.0)
+        self.assertLessEqual(result["confidence_score"], 1.0)
 
-                def test_initialization(self) -> None:
+    def test_detect_phi_empty_text(self) -> None:
+        """Test PHI detection with empty text."""
+        result = self.service.detect_phi("")
+        
+        # Should return empty PHI instances for empty text
+        self.assertEqual(len(result["phi_instances"]), 0)
+        
+        # Confidence score should be 0 for empty text
+        self.assertEqual(result["confidence_score"], 0.0)
 
+    def test_detect_phi_non_phi_text(self) -> None:
+        """Test PHI detection with text containing no PHI."""
+        non_phi_text = "The weather is nice today. The hospital has new equipment."
+        result = self.service.detect_phi(non_phi_text)
+        
+        # Should not detect PHI in non-PHI text
+        self.assertEqual(len(result["phi_instances"]), 0)
+        
+        # Confidence score should be low for non-PHI text
+        self.assertLess(result["confidence_score"], 0.3)
 
-                            """Test initialization with valid and invalid configurations."""
-                # Test default initialization
-                service = MockPHIDetection()
-                service.initialize({})
-                self.assertTrue(service.is_healthy())
+    def test_detect_phi_with_threshold(self) -> None:
+        """Test PHI detection with different confidence thresholds."""
+        # Initialize service with high threshold
+        high_threshold_service = MockPHIDetection()
+        high_threshold_service.initialize({"detection_threshold": 0.9})
+        
+        # Initialize service with low threshold
+        low_threshold_service = MockPHIDetection()
+        low_threshold_service.initialize({"detection_threshold": 0.1})
+        
+        # Same text should produce different results based on threshold
+        text_with_subtle_phi = "Patient JS was seen on March 15th."
+        
+        high_result = high_threshold_service.detect_phi(text_with_subtle_phi)
+        low_result = low_threshold_service.detect_phi(text_with_subtle_phi)
+        
+        # Low threshold should detect more PHI instances
+        self.assertGreaterEqual(
+            len(low_result["phi_instances"]),
+            len(high_result["phi_instances"])
+        )
+        
+        # Clean up
+        high_threshold_service.shutdown()
+        low_threshold_service.shutdown()
 
-                # Test shutdown
-                service.shutdown()
-                self.assertFalse(service.is_healthy())
+    def test_detect_phi_types(self) -> None:
+        """Test detection of different PHI types."""
+        # Test with text containing multiple PHI types
+        result = self.service.detect_phi(self.sample_phi_text)
+        
+        # Extract PHI types from the result
+        phi_types = [instance["type"] for instance in result["phi_instances"]]
+        
+        # Should detect various PHI types
+        expected_types = ["NAME", "SSN", "EMAIL", "PHONE", "ADDRESS", "DATE"]
+        for expected_type in expected_types:
+            self.assertTrue(
+                any(expected_type in phi_type for phi_type in phi_types),
+                f"Failed to detect {expected_type} in the sample text"
+            )
 
-                # Test initialization with custom configuration
-                service = MockPHIDetection()
-                service.initialize({"detection_level": "aggressive"})
-                self.assertTrue(service.is_healthy())
+    def test_redact_phi_basic(self) -> None:
+        """Test basic PHI redaction functionality."""
+        # Test with sample PHI text
+        result = self.service.redact_phi(self.sample_phi_text)
+        
+        # Verify result structure
+        self.assertIn("redacted_text", result)
+        self.assertIn("redaction_count", result)
+        
+        # Should redact PHI in the sample text
+        self.assertNotEqual(result["redacted_text"], self.sample_phi_text)
+        
+        # Redaction count should be positive
+        self.assertGreater(result["redaction_count"], 0)
+        
+        # Specific PHI should be redacted
+        self.assertNotIn("John Smith", result["redacted_text"])
+        self.assertNotIn("123-45-6789", result["redacted_text"])
+        self.assertNotIn("john.smith@example.com", result["redacted_text"])
+        self.assertNotIn("(555) 123-4567", result["redacted_text"])
+        self.assertNotIn("123 Main Street", result["redacted_text"])
 
-                # Test initialization failure case
-                # Note: Mock implementation has been updated to handle invalid
-                # configurations more gracefully
-                service = MockPHIDetection()
-                try:
-                    service.initialize({"detection_level": 123})  # type: ignore
-                    # If we reach here, the initialization didn't fail as originally expected
-                    # but we can still verify the service is properly configured
-                    self.assertTrue(service.is_healthy())
-                    except InvalidConfigurationError:
-                # Original expected behavior, still valid
-                pass
+    def test_redact_phi_empty_text(self) -> None:
+        """Test PHI redaction with empty text."""
+        result = self.service.redact_phi("")
+        
+        # Should return empty text for empty input
+        self.assertEqual(result["redacted_text"], "")
+        
+        # Redaction count should be 0 for empty text
+        self.assertEqual(result["redaction_count"], 0)
 
-                def test_detect_phi_basic(self) -> None:
+    def test_redact_phi_non_phi_text(self) -> None:
+        """Test PHI redaction with text containing no PHI."""
+        non_phi_text = "The weather is nice today. The hospital has new equipment."
+        result = self.service.redact_phi(non_phi_text)
+        
+        # Should not modify non-PHI text
+        self.assertEqual(result["redacted_text"], non_phi_text)
+        
+        # Redaction count should be 0 for non-PHI text
+        self.assertEqual(result["redaction_count"], 0)
 
+    def test_redact_phi_with_detection_level(self) -> None:
+        """Test PHI redaction with different detection levels."""
+        # Test with minimal level
+        minimal_result = self.service.redact_phi(
+            self.sample_phi_text,
+            detection_level="minimal"
+        )
+        
+        # Then with aggressive level
+        aggressive_result = self.service.redact_phi(
+            self.sample_phi_text,
+            detection_level="aggressive"
+        )
+        
+        # Count redactions by counting marker occurrences
+        minimal_redactions = minimal_result["redacted_text"].count("[REDACTED]")
+        aggressive_redactions = aggressive_result["redacted_text"].count("[REDACTED]")
+        
+        # Aggressive should redact more
+        self.assertLessEqual(minimal_redactions, aggressive_redactions)
 
-                        """Test basic PHI detection functionality."""
-                result = self.service.detect_phi(self.sample_phi_text)
+    def test_redact_phi_edge_cases(self) -> None:
+        """Test PHI redaction with edge cases."""
+        # Test already redacted text
+        redacted_text = "Patient [REDACTED] with ID [REDACTED]"
+        result = self.service.redact_phi(redacted_text)
+        
+        # Should not double-redact
+        double_redacted = "[REDACTED][REDACTED]"
+        self.assertNotIn(double_redacted, result["redacted_text"])
 
-                # Check structure of result
-                self.assertIn("phi_instances", result)
-                self.assert IsInstance(result["phi_instances"], list)
-                self.assertGreater(len(result["phi_instances"]), 0)
-
-                # Check individual PHI instance structure
-                for instance in result["phi_instances"]:
-                self.assertIn("type", instance)
-                self.assertIn("text", instance)
-                self.assertIn("position", instance)
-                self.assertIn("confidence", instance)
-
-                def test_detect_phi_with_levels(self) -> None:
-
-
-                        """Test PHI detection with different sensitivity levels."""
-                # Test with each detection level
-                level_counts = {}
-
-                for level in ["minimal", "moderate", "aggressive"]:
-                result = self.service.detect_phi(
-                self.sample_phi_text, detection_level=level)
-                self.assertIn("phi_instances", result)
-                self.assertIn("detection_level", result)
-                self.assertEqual(result["detection_level"], level)
-                level_counts[level] = len(result["phi_instances"])
-
-                # Aggressive should find more PHI than minimal
-                self.assertLessEqual(
-                level_counts["minimal"],
-                level_counts["aggressive"])
-
-                def test_detect_phi_with_specific_types(self) -> None:
-
-
-                        """Test PHI detection with specific PHI types."""
-                # Note: Current implementation doesn't support phi_types filtering
-                # So we're just testing general detection capabilities
-                result = self.service.detect_phi(self.sample_phi_text)
-
-                # Check that PHI is detected
-                phi_instances = result["phi_instances"]
-                self.assertGreater(len(phi_instances), 0)
-
-                # Verify the common PHI types exist in the result
-                detected_types = set(instance["type"].lower()
-                             for instance in phi_instances)
-                self.assertTrue(any(t in detected_types for t in [
-                        "ssn", "email", "address", "name"]),)
-                (f"No expected PHI types found in {detected_types}")
-
-                def test_detect_phi_no_phi(self) -> None:
-
-
-                        """Test PHI detection with text that contains no PHI."""
-                no_phi_text = "This text contains no protected health information."
-                result = self.service.detect_phi(no_phi_text)
-
-                # Current implementation may detect false positives in non-PHI text
-                # So we just test that a result is returned, not necessarily zero PHI
-                self.assertIn("phi_instances", result)
-
-                def test_detect_phi_edge_cases(self) -> None:
-
-
-                        """Test PHI detection with edge cases and boundary conditions."""
-                # Test with minimal text
-                minimal_text = "Jane"
-                result = self.service.detect_phi(minimal_text)
-                self.assert IsInstance(result["phi_instances"], list)
-
-                # Test with very long text
-                long_text = "A " * 5000
-                result = self.service.detect_phi(long_text)
-                self.assert IsInstance(result["phi_instances"], list)
-
-                def test_redact_phi_basic(self) -> None:
-
-
-                        """Test basic PHI redaction functionality."""
-                result = self.service.redact_phi(self.sample_phi_text)
-
-                # Check structure of result
-                self.assertIn("redacted_text", result)
-                self.assertIn("phi_instances", result)
-                self.assert IsInstance(result["phi_instances"], list)
-
-                # Verify that common PHI is redacted
-                redacted_text = result["redacted_text"]
-                self.assertNotIn("123-45-6789", redacted_text)
-                self.assertNotIn("john.smith@example.com", redacted_text)
-
-                # Verify default redaction marker is present
-                self.assertIn("[REDACTED]", redacted_text)
-
-                def test_redact_phi_custom_replacement(self) -> None:
-
-
-                        """Test PHI redaction with custom replacement marker."""
-                marker = "[PHI]"
-                result = self.service.redact_phi()
-                self.sample_phi_text,
-                redaction_marker = marker
-                ()
-
-                # Verify custom marker is used
-                self.assertIn(marker, result["redacted_text"])
-
-                # Verify original PHI is gone
-                self.assertNotIn("123-45-6789", result["redacted_text"])
-
-                def test_redact_phi_levels(self) -> None:
-
-
-                        """Test PHI redaction with different sensitivity levels."""
-                # First with minimal level
-                minimal_result = self.service.redact_phi()
-                self.sample_phi_text,
-                detection_level = "minimal"
-                ()
-
-                # Then with aggressive level
-                aggressive_result = self.service.redact_phi()
-                self.sample_phi_text,
-                detection_level = "aggressive"
-                ()
-
-                # Count redactions by counting marker occurrences
-                minimal_redactions = minimal_result["redacted_text"].count(
-                "[REDACTED]",
-                aggressive_redactions= aggressive_result["redacted_text"].count(
-                "[REDACTED]")
-
-                # Aggressive should redact more
-                self.assertLessEqual(minimal_redactions, aggressive_redactions)
-
-                def test_redact_phi_edge_cases(self) -> None:
-
-
-                        """Test PHI redaction with edge cases."""
-                # Test already redacted text
-                redacted_text = "Patient [REDACTED] with ID [REDACTED]"
-                result = self.service.redact_phi(redacted_text)
-
-                # Should not double-redact
-                double_redacted = "[REDACTED][REDACTED]"
-                self.assertNotIn(double_redacted, result["redacted_text"])
-
-                def test_pattern_selection(self) -> None:
-
-
-                        """Test that PHI detection patterns properly match different PHI types."""
-                # Test patterns individually
-                test_cases = {
-                "ssn": "SSN: 123-45-6789",
-                "email": "Email: patient@example.com",
-                "phone": "Phone: (555) 123-4567",
-                "address": "123 Main St, Anytown, CA 12345",
-                "name": "John Smith",
-                "date": "01/15/2024"
+    def test_pattern_selection(self) -> None:
+        """Test that PHI detection patterns properly match different PHI types."""
+        # Test patterns individually
+        test_cases = {
+            "ssn": "SSN: 123-45-6789",
+            "email": "Email: patient@example.com",
+            "phone": "Phone: (555) 123-4567",
+            "address": "123 Main St, Anytown, CA 12345",
+            "name": "John Smith",
+            "date": "01/15/2024"
         }
 
-    for phi_type, test_text in test_cases.items():
-        # Test each text type individually
-        result = self.service.detect_phi(test_text)
-
-        # Should find at least one PHI in the text
-        self.assertGreater(len(result["phi_instances"]), 0,)
-        (f"Failed to detect PHI in '{test_text}'")
+        for phi_type, test_text in test_cases.items():
+            # Test each text type individually
+            result = self.service.detect_phi(test_text)
+            
+            # Should find at least one PHI in the text
+            self.assertGreater(
+                len(result["phi_instances"]), 0,
+                f"Failed to detect PHI in '{test_text}'"
+            )

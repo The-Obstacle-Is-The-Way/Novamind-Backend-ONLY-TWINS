@@ -1,4 +1,3 @@
-import pytest
 """
 Tests for PHI sanitization functionality.
 
@@ -7,6 +6,7 @@ and sanitization capabilities of the Novamind Digital Twin Platform,
 ensuring HIPAA compliance for all data handling processes.
 """
 
+import pytest
 from app.core.security.phi_sanitizer import PHISanitizer
 from app.tests.security.base_test import BaseSecurityTest
 
@@ -16,139 +16,166 @@ class TestPHISanitization(BaseSecurityTest):
     """Tests for PHI detection and sanitization functionality."""
 
     def setUp(self):
-
-
-                    """Set up test fixtures before each test method execution."""
+        """Set up test fixtures before each test method execution."""
         super().setUp()
         self.sanitizer = PHISanitizer()
 
-        def test_sanitize_text_with_names(self):
+    def test_sanitize_text_with_names(self):
+        """Test that patient names are properly sanitized."""
+        # Test text with common name patterns
+        text = "Patient John Smith reported symptoms."
+        sanitized = self.sanitizer.sanitize(text)
 
+        # Verify name is replaced with [REDACTED]
+        self.assertNotIn("John Smith", sanitized)
+        self.assertIn("[REDACTED NAME]", sanitized)
+        # The PHISanitizer is replacing the entire phrase including "Patient"
+        self.assertIn("reported symptoms", sanitized)
 
-                        """Test that patient names are properly sanitized."""
-            # Test text with common name patterns
-            text = "Patient John Smith reported symptoms."
+    def test_sanitize_text_with_phone_numbers(self):
+        """Test that phone numbers are properly sanitized."""
+        # Test various phone number formats
+        formats = [
+            "Phone: 555-123-4567",
+            "Call at (555) 123-4567",
+            "5551234567 is the contact number"
+        ]
+
+        for text in formats:
             sanitized = self.sanitizer.sanitize(text)
+            self.assertNotIn("555", sanitized)
+            self.assertNotIn("123", sanitized)
+            self.assertNotIn("4567", sanitized)
+            self.assertIn("[REDACTED PHONE]", sanitized)
 
-            # Verify name is replaced with [REDACTED]
-            self.assertNotIn("John Smith", sanitized)
-            self.assertIn("[REDACTED NAME]", sanitized)
-            # The PHISanitizer is replacing the entire phrase including "Patient"
-            self.assertIn("reported symptoms", sanitized)
+    def test_sanitize_text_with_dates(self):
+        """Test that dates of birth are properly sanitized."""
+        # Test various date formats
+        formats = [
+            "DOB: 01/15/1989",
+            "Born on January 15, 1989",
+            "Date of birth: 1989-01-15"
+        ]
 
-            def test_sanitize_text_with_phone_numbers(self):
+        for text in formats:
+            sanitized = self.sanitizer.sanitize(text)
+            self.assertNotIn("1989", sanitized)
+            self.assertNotIn("01/15", sanitized)
+            self.assertNotIn("January 15", sanitized)
+            self.assertIn("[REDACTED DATE]", sanitized)
 
+    def test_sanitize_text_with_addresses(self):
+        """Test that addresses are properly sanitized."""
+        # Test address formats
+        text = "Lives at 123 Main St, Springfield, IL 62701"
+        sanitized = self.sanitizer.sanitize(text)
 
-                        """Test that phone numbers are properly sanitized."""
-                # Test various phone number formats
-                formats = [
-                "Phone: 555-123-4567",
-                "Call at (555) 123-4567",
-                "5551234567 is the contact number"
-                ]
+        self.assertNotIn("123 Main St", sanitized)
+        self.assertNotIn("Springfield", sanitized)
+        self.assertNotIn("62701", sanitized)
+        self.assertIn("[REDACTED ADDRESS]", sanitized)
 
-                for text in formats:
-                sanitized = self.sanitizer.sanitize(text)
-                self.assertNotIn("555", sanitized)
-                self.assertNotIn("123", sanitized)
-                self.assertNotIn("4567", sanitized)
-                self.assertIn("[REDACTED PHONE]", sanitized)
+    def test_sanitize_text_with_emails(self):
+        """Test that email addresses are properly sanitized."""
+        # Test email formats
+        text = "Contact via john.smith@example.com for follow-up"
+        sanitized = self.sanitizer.sanitize(text)
 
-                def test_sanitize_text_with_dates(self):
+        self.assertNotIn("john.smith@example.com", sanitized)
+        self.assertIn("[REDACTED EMAIL]", sanitized)
+        self.assertIn("Contact via", sanitized)
+        self.assertIn("for follow-up", sanitized)
 
+    def test_sanitize_text_with_ssn(self):
+        """Test that social security numbers are properly sanitized."""
+        # Test SSN formats
+        formats = [
+            "SSN: 123-45-6789",
+            "Social Security Number: 123456789",
+            "ID: 123-45-6789"
+        ]
 
-                        """Test that dates are properly sanitized."""
-                # Test date format that is detected by the PHISanitizer
-                text = "DOB: 01/15/1980"
-                sanitized = self.sanitizer.sanitize(text)
+        for text in formats:
+            sanitized = self.sanitizer.sanitize(text)
+            self.assertNotIn("123-45-6789", sanitized)
+            self.assertNotIn("123456789", sanitized)
+            self.assertIn("[REDACTED SSN]", sanitized)
 
-                # Verify date is replaced with [REDACTED DOB]
-                self.assertNotIn("01/15/1980", sanitized)
-                self.assertIn("[REDACTED DOB]", sanitized)
+    def test_sanitize_text_with_mrn(self):
+        """Test that medical record numbers are properly sanitized."""
+        # Test MRN formats
+        formats = [
+            "MRN: 12345678",
+            "Medical Record Number: MRN12345678",
+            "Patient ID: 12345678"
+        ]
 
-                # Note: The current PHISanitizer implementation doesn't detect all date formats
-                # For example, it doesn't detect "1980-01-15" or "January 15, 1980"
+        for text in formats:
+            sanitized = self.sanitizer.sanitize(text)
+            self.assertNotIn("12345678", sanitized)
+            self.assertNotIn("MRN12345678", sanitized)
+            self.assertIn("[REDACTED MRN]", sanitized)
 
-                def test_sanitize_text_with_ssn(self):
+    def test_sanitize_text_with_multiple_phi(self):
+        """Test that text with multiple PHI types is properly sanitized."""
+        # Test text with multiple PHI types
+        text = """
+        Patient: John Smith
+        DOB: 01/15/1989
+        SSN: 123-45-6789
+        Phone: 555-123-4567
+        Email: john.smith@example.com
+        Address: 123 Main St, Springfield, IL 62701
+        MRN: 12345678
+        Notes: Patient reports symptoms
+        """
 
+        sanitized = self.sanitizer.sanitize(text)
 
-                        """Test that Social Security Numbers are properly sanitized."""
-                # Test various SSN formats
-                formats = [
-                "SSN: 123-45-6789",
-                "Social Security: 123456789",
-                "SSN 123-45-6789 is on file"
-                ]
+        # Check that all PHI is sanitized
+        self.assertNotIn("John Smith", sanitized)
+        self.assertNotIn("01/15/1989", sanitized)
+        self.assertNotIn("123-45-6789", sanitized)
+        self.assertNotIn("555-123-4567", sanitized)
+        self.assertNotIn("john.smith@example.com", sanitized)
+        self.assertNotIn("123 Main St", sanitized)
+        self.assertNotIn("12345678", sanitized)
 
-                for text in formats:
-                sanitized = self.sanitizer.sanitize(text)
-                self.assertNotIn("123-45-6789", sanitized)
-                self.assertNotIn("123456789", sanitized)
-                self.assertIn("[REDACTED SSN]", sanitized)
+        # Check that redacted markers are present
+        self.assertIn("[REDACTED NAME]", sanitized)
+        self.assertIn("[REDACTED DATE]", sanitized)
+        self.assertIn("[REDACTED SSN]", sanitized)
+        self.assertIn("[REDACTED PHONE]", sanitized)
+        self.assertIn("[REDACTED EMAIL]", sanitized)
+        self.assertIn("[REDACTED ADDRESS]", sanitized)
+        self.assertIn("[REDACTED MRN]", sanitized)
 
-                def test_sanitize_text_with_addresses(self):
+        # Check that non-PHI is preserved
+        self.assertIn("Notes: Patient reports symptoms", sanitized)
 
-
-                        """Test that addresses are properly sanitized."""
-                # Test address formats
-                text = "Lives at 123 Main St, Apt 4B, New York, NY 10001"
-                sanitized = self.sanitizer.sanitize(text)
-
-                # The current PHISanitizer implementation only detects the street address
-                # and city name, but not apartment numbers or zip codes
-                self.assertNotIn("123 Main St", sanitized)
-                self.assertNotIn("New York", sanitized)
-                # The city name is detected as a name
-                self.assertIn("[REDACTED NAME]", sanitized)
-
-                def test_sanitize_medical_record_numbers(self):
-
-
-                        """Test that medical record numbers are properly sanitized."""
-                # Test MRN format that is detected by the PHISanitizer
-                text = "MRN: MR12345"
-                sanitized = self.sanitizer.sanitize(text)
-
-                # Verify MRN is replaced with [REDACTED MRN]
-                self.assertNotIn("MR12345", sanitized)
-                self.assertIn("[REDACTED MRN]", sanitized)
-
-                def test_sanitize_nested_dictionary(self):
-
-
-                        """Test that PHI in nested dictionary structures is properly sanitized."""
-                # Test dictionary with nested PHI
-                data = {
-                "patient": {
-                "name": "John Smith",
-                "contact": {
-                    "phone": "555-123-4567",
-                    "email": "john.smith@example.com"
-                },
-                "notes": "Patient reports symptoms"
-            },
-                "visit": {
-                "date": "2023-05-15",
-                "provider": "Dr. Jane Doe",
-                "location": "Main Clinic"
-            }
+    def test_sanitize_dict_data(self):
+        """Test that PHI in dictionary structures is properly sanitized."""
+        # Test dictionary with PHI
+        data = {
+            "patient_name": "John Smith",
+            "phone": "555-123-4567",
+            "email": "john.smith@example.com",
+            "notes": "Patient reports symptoms"
         }
 
-    sanitized = self.sanitizer.sanitize(data)
+        sanitized = self.sanitizer.sanitize(data)
 
-    # Check that PHI is sanitized but other data is preserved
-    self.assertNotIn("John Smith", str(sanitized))
-    self.assertNotIn("555-123-4567", str(sanitized))
-    self.assertNotIn("john.smith@example.com", str(sanitized))
-    self.assertIn("[REDACTED NAME]", str(sanitized))
-    self.assertIn("[REDACTED PHONE]", str(sanitized))
-    self.assertIn("[REDACTED EMAIL]", str(sanitized))
-    self.assertIn("Patient reports symptoms", str(sanitized))
+        # Check that PHI is sanitized but other data is preserved
+        self.assertNotIn("John Smith", str(sanitized))
+        self.assertNotIn("555-123-4567", str(sanitized))
+        self.assertNotIn("john.smith@example.com", str(sanitized))
+        self.assertIn("[REDACTED NAME]", str(sanitized))
+        self.assertIn("[REDACTED PHONE]", str(sanitized))
+        self.assertIn("[REDACTED EMAIL]", str(sanitized))
+        self.assertIn("Patient reports symptoms", str(sanitized))
 
     def test_sanitize_list_data(self):
-
-
-                    """Test that PHI in list structures is properly sanitized."""
+        """Test that PHI in list structures is properly sanitized."""
         # Test list with PHI
         data = [
             "Patient: John Smith",
@@ -165,24 +192,19 @@ class TestPHISanitization(BaseSecurityTest):
         self.assertIn("[REDACTED PHONE]", str(sanitized))
         self.assertIn("Notes: Patient reports symptoms", str(sanitized))
 
-        def test_audit_logging_on_phi_detection(self):
+    def test_audit_logging_on_phi_detection(self):
+        """Test that PHI detection is properly audit logged."""
+        # Skip this test as the PHISanitizer doesn't have a logger attribute
+        # The PHISanitizer class uses class methods and doesn't have any instance attributes
+        # for logging. This test would need to be updated to match the actual
+        # implementation.
+        pytest.skip("PHISanitizer doesn't have a logger attribute")
 
+    def test_no_false_positives(self):
+        """Test that non-PHI text is not incorrectly sanitized."""
+        # Test text without PHI
+        text = "The patient reported feeling better after treatment. Follow-up in 2 weeks."
+        sanitized = self.sanitizer.sanitize(text)
 
-                        """Test that PHI detection is properly audit logged."""
-            # Skip this test as the PHISanitizer doesn't have a logger attribute
-            # The PHISanitizer class uses class methods and doesn't have any instance attributes
-            # for logging. This test would need to be updated to match the actual
-            # implementation.
-            import pytest
-            pytest.skip("PHISanitizer doesn't have a logger attribute")
-
-            def test_no_false_positives(self):
-
-
-                        """Test that non-PHI text is not incorrectly sanitized."""
-                # Test text without PHI
-                text = "The patient reported feeling better after treatment. Follow-up in 2 weeks."
-                sanitized = self.sanitizer.sanitize(text)
-
-                # The text should remain unchanged
-                self.assertEqual(text, sanitized)
+        # The text should remain unchanged
+        self.assertEqual(text, sanitized)
