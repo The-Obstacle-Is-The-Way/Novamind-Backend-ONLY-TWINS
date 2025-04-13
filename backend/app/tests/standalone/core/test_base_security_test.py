@@ -41,21 +41,40 @@ class BaseSecurityTest(unittest.TestCase):
         self.mock_auth_service = self.create_mock_auth_service()
         self.test_user = self.create_test_user()
 
-        def create_mock_auth_service(self) -> MagicMock:
+    def create_mock_auth_service(self) -> MagicMock:
         """Create a mock authentication service for testing."""
         mock = MagicMock()
         mock.authenticate.return_value = True
         mock.get_user_by_id.return_value = self.create_test_user()
         return mock
 
-        def create_test_user(self) -> dict[str, Any]:
+    def create_test_user(self) -> dict[str, Any]:
         """Create a test user with the configured roles."""
         return {
-        "id": self.test_user_id,
-        "username": "test_user",
-        "email": "test_user@example.com",
-        "roles": self.test_roles,
+            "id": self.test_user_id,
+            "username": "test_user",
+            "email": "test_user@example.com",
+            "roles": self.test_roles,
         }
+
+    @pytest.fixture(autouse=True)
+    def setup_security_context(self):
+        """Fixture to set up security context before each test."""
+        # Example setup: mock authentication, permissions, etc.
+        print("\nSetting up security context...")
+        self.mock_user = MagicMock()
+        self.mock_user.id = "test_user_id"
+        self.mock_user.roles = ["admin"]
+        # You might mock a security context manager or global state here
+        yield
+        # Teardown if needed
+        print("\nTearing down security context...")
+
+    def test_example_base_security_feature(self):
+        """An example test inheriting the setup."""
+        # Test logic that relies on the setup_security_context
+        assert self.mock_user.id == "test_user_id"
+        assert "admin" in self.mock_user.roles
 
 
 class TestBaseSecurityTest(BaseSecurityTest):
@@ -75,14 +94,16 @@ class TestBaseSecurityTest(BaseSecurityTest):
         self.assertEqual(self.test_user["roles"], self.test_roles)
 
     @pytest.mark.standalone()
-        def test_mock_auth_service(self):
-    """Test that the mock authentication service works as expected."""
-    # Verify authenticate method
-    self.assertTrue(self.mock_auth_service.authenticate())
+    def test_mock_auth_service(self):
+        """Test that the mock authentication service works as expected."""
+        # Verify authenticate method
+        self.assertTrue(self.mock_auth_service.authenticate())
 
-    # Verify get_user_by_id method
-    user = self.mock_auth_service.get_user_by_id(self.test_user_id)
-    self.assertEqual(user, self.test_user)
+        # Verify get_user_by_id method
+        user = self.mock_auth_service.get_user_by_id(self.test_user_id)
+        self.assertEqual(user, self.test_user)
+
+
 class AdminSecurityTest(BaseSecurityTest):
     """Test subclassing with different roles."""
 
@@ -94,6 +115,8 @@ class AdminSecurityTest(BaseSecurityTest):
         """Test that admin roles are correctly set up."""
         self.assertEqual(self.test_roles, [Role.ADMIN, Role.USER])
         self.assertEqual(self.test_user["roles"], [Role.ADMIN, Role.USER])
+
+
 class ClinicianSecurityTest(BaseSecurityTest):
     """Test subclassing with clinician roles."""
 
@@ -107,5 +130,5 @@ class ClinicianSecurityTest(BaseSecurityTest):
         self.assertEqual(self.test_user["roles"], [Role.CLINICIAN, Role.USER])
 
 
-            if __name__ == "__main__":
+if __name__ == "__main__":
     unittest.main()

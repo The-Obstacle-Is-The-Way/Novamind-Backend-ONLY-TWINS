@@ -52,14 +52,14 @@ class ComparisonOperator(str, Enum):
 class BiometricDataPoint:
     """Represents a single biometric data point."""
 
-    def __init__()
-    self,
-    patient_id: str,
-    data_type: Union[BiometricType, str],
-    value: Union[float, int, Dict, str],
-    timestamp: Optional[datetime] = None,
-    device_id: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None
+    def __init__(
+        self,
+        patient_id: str,
+        data_type: Union[BiometricType, str],
+        value: Union[float, int, Dict, str],
+        timestamp: Optional[datetime] = None,
+        device_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
     ):
         """
         Initialize a biometric data point.
@@ -76,64 +76,65 @@ class BiometricDataPoint:
         self.patient_id = patient_id
 
         # Convert string to enum if needed
-                if isinstance(data_type, str):
+        if isinstance(data_type, str):
             try:
                 self.data_type = BiometricType(data_type)
             except ValueError:
                 self.data_type = BiometricType.CUSTOM
-                    else:
-                self.data_type = data_type
+        else:
+            self.data_type = data_type
 
-                self.value = value
-                self.timestamp = timestamp or datetime.now()
-                self.device_id = device_id
-                self.metadata = metadata or {}
+        self.value = value
+        self.timestamp = timestamp or datetime.now()
+        self.device_id = device_id
+        self.metadata = metadata or {}
 
-            def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return {
-        "id": self.id,
-        "patient_id": self.patient_id,
-        "data_type": self.data_type.value if self.data_type else None,
-        "value": self.value,
-        "timestamp": self.timestamp.isoformat() if self.timestamp else None,
-        "device_id": self.device_id,
-        "metadata": self.metadata
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "data_type": self.data_type.value if self.data_type else None,
+            "value": self.value,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "device_id": self.device_id,
+            "metadata": self.metadata
         }
 
     @classmethod
-        def from_dict(cls, data: dict[str, Any]) -> 'BiometricDataPoint':
-    """Create from dictionary."""
-    # Parse timestamp if present
-    timestamp = None
-            if data.get("timestamp"):
+    def from_dict(cls, data: dict[str, Any]) -> 'BiometricDataPoint':
+        """Create from dictionary."""
+        # Parse timestamp if present
+        timestamp = None
+        if data.get("timestamp"):
             try:
                 timestamp = datetime.fromisoformat(data["timestamp"])
             except ValueError:
                 timestamp = datetime.now()
                 
-#                     return cls()
-patient_id=data.get("patient_id", ""),
-data_type=data.get("data_type", BiometricType.CUSTOM),
-value=data.get("value"),
-timestamp=timestamp,
-device_id=data.get("device_id"),
-metadata=data.get("metadata", {})
+        return cls(
+            patient_id=data.get("patient_id", ""),
+            data_type=data.get("data_type", BiometricType.CUSTOM),
+            value=data.get("value"),
+            timestamp=timestamp,
+            device_id=data.get("device_id"),
+            metadata=data.get("metadata", {})
+        )
         
 class AlertRule:
     """Rule for generating alerts based on biometric data."""
 
-    def __init__()
-    self,
-    name: str,
-    data_type: BiometricType,
-    operator: ComparisonOperator,
-    threshold: float | int,
-    patient_id: str | None = None,
-    severity: AlertSeverity = AlertSeverity.MEDIUM,
-    description: str | None = None,
-    active: bool = True,
-    cooldown_minutes: int = 60
+    def __init__(
+        self,
+        name: str,
+        data_type: BiometricType,
+        operator: ComparisonOperator,
+        threshold: float | int,
+        patient_id: str | None = None,
+        severity: AlertSeverity = AlertSeverity.MEDIUM,
+        description: str | None = None,
+        active: bool = True,
+        cooldown_minutes: int = 60
     ):
         """
         Initialize an alert rule.
@@ -162,7 +163,7 @@ class AlertRule:
         # patient_id -> last trigger time
         self.last_triggered: dict[str, datetime] = {}
 
-            def evaluate(self, data_point: BiometricDataPoint) -> bool:
+    def evaluate(self, data_point: BiometricDataPoint) -> bool:
         """
         Evaluate the rule against a data point.
 
@@ -173,32 +174,32 @@ class AlertRule:
             True if the rule condition is met, False otherwise
         """
         # Check if the rule is active
-                if not self.active:
-#                 return False
+        if not self.active:
+            return False
 
-# Check if the data type matches
-                if self.data_type != data_point.data_type:
-#                 return False
+        # Check if the data type matches
+        if self.data_type != data_point.data_type:
+            return False
 
-# Check if this is a patient-specific rule and if the patient matches
-                if self.patient_id and self.patient_id != data_point.patient_id:
-#                 return False
+        # Check if this is a patient-specific rule and if the patient matches
+        if self.patient_id and self.patient_id != data_point.patient_id:
+            return False
 
-# Get the value to compare
-value = data_point.value
-                if not isinstance(value, (int, float)):
+        # Get the value to compare
+        value = data_point.value
+        if not isinstance(value, (int, float)):
             try:
                 value = float(value)
             except (ValueError, TypeError):
-#                     return False
+                return False
 
-# Compare the value to the threshold
-result = False
+        # Compare the value to the threshold
+        result = False
 
-# Using the operator value for comparison
-                    if self.operator == ComparisonOperator.GREATER_THAN:
-result = value > self.threshold
-                elif self.operator == ComparisonOperator.GREATER_THAN_OR_EQUAL:
+        # Using the operator value for comparison
+        if self.operator == ComparisonOperator.GREATER_THAN:
+            result = value > self.threshold
+        elif self.operator == ComparisonOperator.GREATER_THAN_OR_EQUAL:
 result = value >= self.threshold
                 elif self.operator == ComparisonOperator.LESS_THAN:
 result = value < self.threshold

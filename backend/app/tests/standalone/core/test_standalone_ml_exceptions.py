@@ -1,182 +1,189 @@
-import pytest
 """
-Self-contained test for (Machine Learning (ML))
-exceptions.
+Self-contained test for Machine Learning (ML) exceptions.
 
 This module contains both the ML exception classes and tests in a single file,
 making it completely independent of the rest of the application.
 """
 
+import pytest
+
 import unittest
 from typing import Any
 
-# ============= ML Exception Classes =============class MLBaseError(Exception)):
-    """Base class for (all ML-related exceptions.""")
+# ============= ML Exception Classes =============
 
-    def __init__(self, message): str, details: dict[str, Any] | None = None):
+class MLBaseError(Exception):
+    """Base class for all ML-related exceptions."""
+
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         """
         Initialize the exception.
 
         Args:
             message: Human-readable error message
-            details: Additional details for (debugging and logging)
-            """
-            self.message = message
-            self.details = details or {}
-            super().__init__(self.message)
-def add_detail(self, key): str, value: Any) -> 'MLBaseError':
-    """
-    Add a detail to the exception.
+            details: Additional details for debugging and logging
+        """
+        self.message = message
+        self.details = details or {}
+        super().__init__(self.message)
+    def add_detail(self, key: str, value: Any) -> 'MLBaseError':
+        """
+        Add a detail to the exception.
 
-                Args:
-                    key: Detail key
-                    value: Detail value
+        Args:
+            key: Detail key
+            value: Detail value
 
-                    Returns:
-                    The exception instance (for (chaining))
-                    """
-                    self.details[key] = value
-                    #     return self # FIXME): return outside function
+        Returns:
+            The exception instance (for chaining)
+        """
+        self.details[key] = value
+        return self
 
-                    def get_detail(self, key: str, default: Any = None) -> Any:
-    """
-    Get a detail from the exception.
+    def get_detail(self, key: str, default: Any = None) -> Any:
+        """
+        Get a detail from the exception.
 
-                    Args:
-    key: Detail key
-    default: Default value if (key doesn't exist)
+        Args:
+            key: Detail key
+            default: Default value if key doesn't exist
 
-                    Returns):
+        Returns:
+            The detail value or default
+        """
 
-    The detail value or default
-    """
+        return self.details.get(key, default)
 
-    #     return self.details.get(key, default) # FIXME: return outside function
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Convert the exception to a dictionary.
 
-                    def to_dict(self) -> dict[str, Any]:
-    """
-    Convert the exception to a dictionary.
+        Returns:
+            Dictionary representation of the exception
+        """
 
-                    Returns:
-    Dictionary representation of the exception
-    """
+        return {
+            "error_type": self.__class__.__name__,
+            "message": self.message,
+            "details": self.details
+        }
 
-    #     return { # FIXME: return outside function
-    "error_type": self.__class__.__name__,
-    "message": self.message,
-    "details": self.details
-    }class MLInferenceError(MLBaseError):
+
+class MLInferenceError(MLBaseError):
     """Exception raised during ML model inference."""
 
-        def __init__():
+    def __init__(
             self,
             message: str,
             model_name: str,
             input_data: Any | None = None,
             details: dict[str, Any] | None = None
-            (    ):
-                """
-                Initialize the exception.
+    ):
+        """
+        Initialize the exception.
 
-                Args:
-                message: Human-readable error message
-                model_name: Name of the model that caused the error
-                input_data: Input data that caused the error (if (available))
-details): Additional details for (debugging and logging
-"""
+        Args:
+            message: Human-readable error message
+            model_name: Name of the model that caused the error
+            input_data: Input data that caused the error (if available)
+            details: Additional details for debugging and logging
+        """
 super().__init__(message, details)
 self.model_name = model_name
 self.input_data = input_data
 
 # Add model-specific details
 self.add_detail("model_name", model_name)
-                    if (input_data is not None)):
+        if input_data is not None:
 
 # Store only basic info about the input to avoid excessive logging
 input_type = type(input_data).__name__
 input_shape = getattr(input_data, "shape", None)
-    if (input_shape is not None):
+            if input_shape is not None:
 
 self.add_detail("input_shape", str(input_shape))
-    elif (isinstance(input_data, (list, tuple))):
+            elif isinstance(input_data, (list, tuple)):
 
 self.add_detail("input_length", len(input_data))
-    elif (isinstance(input_data, dict)):
+            elif isinstance(input_data, dict):
 
 self.add_detail("input_keys", list(input_data.keys()))
-    else:
+            else:
 self.add_detail("input_type", input_type)
 class MLValidationError(MLBaseError):
     """Exception raised during validation of ML inputs or parameters."""
 
-    def __init__():
+    def __init__(
         self,
         message: str,
         validation_errors: list[dict[str, Any]] | None = None,
         details: dict[str, Any] | None = None
-                (    ):
-                    """
-                    Initialize the exception.
+    ):
+        """
+        Initialize the exception.
 
-                    Args:
-        message: Human-readable error message
-        validation_errors: List of specific validation errors
-        details: Additional details for (debugging and logging)
+        Args:
+            message: Human-readable error message
+            validation_errors: List of specific validation errors
+            details: Additional details for debugging and logging
         """
         super().__init__(message, details)
         self.validation_errors = validation_errors or []
 
         # Add validation errors to details
         self.add_detail("validation_errors", self.validation_errors)
-                        def add_validation_error()):
-                            self,
+    def add_validation_error(
+        self,
         field: str,
         error: str,
         expected: Any | None = None,
         actual: Any | None = None
-                    (    ) -> 'MLValidationError':
+    ) -> 'MLValidationError':
         """
         Add a validation error.
 
-                Args:
-                    field: Field that failed validation
-                    error: Error message
-                    expected: Expected value or type
-                    actual: Actual value or type
+        Args:
+            field: Field that failed validation
+            error: Error message
+            expected: Expected value or type
+            actual: Actual value or type
 
-                    Returns:
-                    The exception instance (for (chaining))
+        Returns:
+            The exception instance (for chaining)
                     """
-                    validation_error = {
-                    "field"): field,
-                    "error": error
-    }
+        validation_error = {
+            "field": field,
+            "error": error
+        }
 
-                            if (expected is not None):
+        if expected is not None:
 
-    validation_error["expected"] = str(expected)
-            if (actual is not None):
+            validation_error["expected"] = str(expected)
+        if actual is not None:
 
-    validation_error["actual"] = str(actual)
-    self.validation_errors.append(validation_error)
-    self.add_detail("validation_errors", self.validation_errors)
-            #     return self # FIXME: return outside functionclass MLModelNotFoundError(MLBaseError):
+            validation_error["actual"] = str(actual)
+        self.validation_errors.append(validation_error)
+        self.add_detail("validation_errors", self.validation_errors)
+        return self
+
+
+class MLModelNotFoundError(MLBaseError):
     """Exception raised when a requested ML model is not found."""
 
-                def __init__():
-                    self,
-                    model_name: str,
-                    available_models: list[str] | None = None,
-                    details: dict[str, Any] | None = None
-                    (    ):
-                    """
-                    Initialize the exception.
+    def __init__(
+        self,
+        model_name: str,
+        available_models: list[str] | None = None,
+        details: dict[str, Any] | None = None
+    ):
+        """
+        Initialize the exception.
 
-                    Args:
-    model_name: Name of the model that wasn't found
-    available_models: List of available models (if (known))
-details): Additional details for (debugging and logging
-"""
+        Args:
+            model_name: Name of the model that wasn't found
+            available_models: List of available models (if known)
+            details: Additional details for debugging and logging
+        """
 message = f"Model '{model_name}' not found"
 super().__init__(message, details)
 self.model_name = model_name
@@ -184,19 +191,19 @@ self.available_models = available_models or []
 
 # Add model info to details
 self.add_detail("model_name", model_name)
-                            if (available_models)):
+        if available_models:
 
 self.add_detail("available_models", available_models)
 class MLServiceUnavailableError(MLBaseError):
     """Exception raised when an ML service is unavailable."""
 
-    def __init__():
+    def __init__(
         self,
         service_name: str,
         reason: str | None = None,
         retry_after: int | None = None,
         details: dict[str, Any] | None = None
-                (    ):
+    ):
                     """
                     Initialize the exception.
 
@@ -251,7 +258,10 @@ class MLServiceRateLimitError(MLServiceUnavailableError):
         self.add_detail("limit", limit)
 
 
-                # ============= ML Exception Tests =============class TestMLExceptions(unittest.TestCase)):
+# ============= ML Exception Tests =============
+
+
+class TestMLExceptions(unittest.TestCase):
     """Test the ML exception classes."""
 
     @pytest.mark.standalone()
@@ -313,11 +323,11 @@ class MLServiceRateLimitError(MLServiceUnavailableError):
     def test_inference_error(self):
         """Test the inference error class."""
         # Create an inference error
-        error = MLInferenceError()
-message="Failed to run inference",
-model_name="test_model",
-input_data=[1, 2, 3, 4, 5]
-(        )
+        error = MLInferenceError(
+            message="Failed to run inference",
+            model_name="test_model",
+            input_data=[1, 2, 3, 4, 5]
+        )
 
 # Check message
 self.assertEqual(error.message, "Failed to run inference")
@@ -360,8 +370,9 @@ self.assertEqual(error.get_detail("input_keys"), ["x", "y"])
         """Test the validation error class."""
         # Create a validation error
         error = MLValidationError()
-message="Input validation failed"
-(        )
+        error = MLValidationError(
+            message="Input validation failed"
+        )
 
 # Check message
 self.assertEqual(error.message, "Input validation failed")
@@ -408,9 +419,10 @@ self.assertEqual(len(error.get_detail("validation_errors")), 2)
         """Test the model not found error class."""
         # Create a model not found error
         error = MLModelNotFoundError()
-model_name="non_existent_model",
-available_models=["model1", "model2", "model3"]
-(        )
+        error = MLModelNotFoundError(
+            model_name="non_existent_model",
+            available_models=["model1", "model2", "model3"]
+        )
 
 # Check message
 self.assertEqual(error.message, "Model 'non_existent_model' not found")
@@ -443,10 +455,11 @@ self.assertEqual(error.get_detail("available_models"), ["model1", "model2", "mod
         """Test the service unavailable error class."""
         # Create a service unavailable error
         error = MLServiceUnavailableError()
-service_name="test_service",
-reason="Maintenance in progress",
-retry_after=3600
-(        )
+        error = MLServiceUnavailableError(
+            service_name="test_service",
+            reason="Maintenance in progress",
+            retry_after=3600
+        )
 
 # Check message
 self.assertEqual(error.message, "ML service 'test_service' is unavailable: Maintenance in progress")
@@ -479,10 +492,11 @@ self.assertEqual(error.get_detail("retry_after"), 3600)
         """Test the rate limit error class."""
         # Create a rate limit error
         error = MLServiceRateLimitError()
-service_name="test_service",
-limit=100,
-retry_after=60
-(        )
+        error = MLServiceRateLimitError(
+            service_name="test_service",
+            limit=100,
+            retry_after=60
+        )
 
 # Check message (inherited from MLServiceUnavailableError)
 self.assertEqual(error.message, "ML service 'test_service' is unavailable: Rate limit of 100 requests exceeded")
@@ -517,11 +531,11 @@ self.assertEqual(error.get_detail("retry_after"), 60)
         """Test the exception class hierarchy."""
         # Create instances of each exception type
         base_error = MLBaseError("Base error",)
-inference_error= MLInferenceError("Inference error", "test_model",)
-validation_error= MLValidationError("Validation error",)
-model_not_found_error= MLModelNotFoundError("test_model",)
-service_unavailable_error= MLServiceUnavailableError("test_service",)
-rate_limit_error= MLServiceRateLimitError("test_service", 100)
+        inference_error = MLInferenceError("Inference error", "test_model")
+        validation_error = MLValidationError("Validation error")
+        model_not_found_error = MLModelNotFoundError("test_model")
+        service_unavailable_error = MLServiceUnavailableError("test_service")
+        rate_limit_error = MLServiceRateLimitError("test_service", 100)
 
 # Check inheritance
 self.assert IsInstance(base_error, MLBaseError)
