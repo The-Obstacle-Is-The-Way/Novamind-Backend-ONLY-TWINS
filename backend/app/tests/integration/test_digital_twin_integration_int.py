@@ -4,15 +4,14 @@ Demonstrates the interaction between all components.
 """
 import asyncio
 import uuid
-from datetime import datetime, , timedelta
+from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 
 import pytest
 
 # Removed Gender, Diagnosis, Medication
 from app.domain.entities.patient import Patient
-from app.infrastructure.factories.mock_digital_twin_factory import ()
-MockDigitalTwinFactory,
+from app.infrastructure.factories.mock_digital_twin_factory import MockDigitalTwinFactory
 
 
 
