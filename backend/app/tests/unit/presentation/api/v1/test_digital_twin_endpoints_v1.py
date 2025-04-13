@@ -136,19 +136,19 @@ def sample_latest_biometrics():
             "metadata": {"position": "sitting"},
         },
     }class TestDigitalTwinEndpoints:
-    """Tests for the digital twin endpoints."""
+        """Tests for the digital twin endpoints."""
 
-    def test_create_digital_twin(
+        def test_create_digital_twin(
             self,
             mock_digital_twin_service,
             sample_twin_data):
-        """Test creating a digital twin."""
-        # Configure mock
-        mock_digital_twin_service.create_digital_twin.return_value = sample_twin_data
+                """Test creating a digital twin."""
+                # Configure mock
+                mock_digital_twin_service.create_digital_twin.return_value = sample_twin_data
 
-        # Make request
-        response = client.post(
-            "/api/v1/digital-twins", json={"patient_id": "patient-123"}
+                # Make request
+                response = client.post(
+                "/api/v1/digital-twins", json={"patient_id": "patient-123"}
         )
 
         # Check response
@@ -180,20 +180,20 @@ def sample_latest_biometrics():
             self,
             mock_digital_twin_service,
             sample_twin_data):
-        """Test getting a digital twin."""
-        # Configure mock
-        mock_digital_twin_service.get_digital_twin.return_value = sample_twin_data
+                """Test getting a digital twin."""
+                # Configure mock
+                mock_digital_twin_service.get_digital_twin.return_value = sample_twin_data
 
-        # Make request
-        response = client.get("/api/v1/digital-twins/patient/patient-123")
+                # Make request
+                response = client.get("/api/v1/digital-twins/patient/patient-123")
 
-        # Check response
-        assert response.status_code == 200
-        assert response.json() == sample_twin_data
+                # Check response
+                assert response.status_code == 200
+                assert response.json() == sample_twin_data
 
-        # Verify service called correctly
-        mock_digital_twin_service.get_digital_twin.assert_called_once_with(
-            "patient-123"
+                # Verify service called correctly
+                mock_digital_twin_service.get_digital_twin.assert_called_once_with(
+                "patient-123"
         )
 
     def test_get_digital_twin_not_found(self, mock_digital_twin_service):
@@ -215,11 +215,11 @@ def sample_latest_biometrics():
                 mock_digital_twin_service,
                 sample_twin_data,
                 sample_latest_biometrics):
-        """Test getting a digital twin summary."""
-        # Configure mocks
-        mock_digital_twin_service.get_digital_twin.return_value = sample_twin_data
-        mock_digital_twin_service.get_latest_biometrics.return_value = (
-            sample_latest_biometrics
+                    """Test getting a digital twin summary."""
+                    # Configure mocks
+                    mock_digital_twin_service.get_digital_twin.return_value = sample_twin_data
+                    mock_digital_twin_service.get_latest_biometrics.return_value = (
+                    sample_latest_biometrics
         )
 
         # Make request
@@ -244,14 +244,14 @@ def sample_latest_biometrics():
             self,
             mock_digital_twin_service,
             sample_biometric_data):
-        """Test adding biometric data."""
-        # Configure mock
-        mock_digital_twin_service.add_biometric_data.return_value = True
+                """Test adding biometric data."""
+                # Configure mock
+                mock_digital_twin_service.add_biometric_data.return_value = True
 
-        # Make request
-        response = client.post(
-            "/api/v1/digital-twins/patient/patient-123/biometrics",
-            json=sample_biometric_data,
+                # Make request
+                response = client.post(
+                "/api/v1/digital-twins/patient/patient-123/biometrics",
+                json=sample_biometric_data,
         )
 
         # Check response
@@ -328,10 +328,10 @@ def sample_latest_biometrics():
 
     def test_get_biometric_history_with_time_range(
             self, mock_digital_twin_service):
-        """Test getting biometric history with time range filters."""
-        # Sample history data
-        history_data = [
-            {
+                """Test getting biometric history with time range filters."""
+                # Sample history data
+                history_data = [
+                {
                 "timestamp": datetime.now().isoformat(),
                 "value": 72.5,
                 "source": "wearable",
@@ -424,9 +424,9 @@ def sample_latest_biometrics():
         def test_get_critical_values(
             self, mock_digital_twin_service, sample_critical_values
         ):
-        """Test getting critical values."""
-        # Configure mock
-        mock_digital_twin_service.detect_critical_values.return_value = (
+            """Test getting critical values."""
+            # Configure mock
+            mock_digital_twin_service.detect_critical_values.return_value = (
             sample_critical_values
         )
 

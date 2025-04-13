@@ -17,9 +17,10 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 
 
-@pytest.mark.db_required()class TestDigitalTwinIntegrationService:
+@pytest.mark.db_required()
+class TestDigitalTwinIntegrationService:
     """Tests for the DigitalTwinIntegrationService."""@pytest.fixture
-def mock_symptom_forecasting_service(self):
+    def mock_symptom_forecasting_service(self):
 
                 """Create a mock SymptomForecastingService."""
         service = AsyncMock()
@@ -178,36 +179,36 @@ def mock_patient_repository(self):
                                    "medications": ["fluoxetine"]
                                    (})
         return repo@pytest.fixture
-def integration_service(
+    def integration_service(
             self,
             mock_symptom_forecasting_service,
             mock_biometric_correlation_service,
         ):
-        (mock_medication_response_service, mock_patient_repository):
-        """Create a DigitalTwinIntegrationService with mock dependencies."""
+            (mock_medication_response_service, mock_patient_repository):
+                """Create a DigitalTwinIntegrationService with mock dependencies."""
 
-    return DigitalTwinIntegrationService(,
-    symptom_forecasting_service= mock_symptom_forecasting_service,
-    biometric_correlation_service = mock_biometric_correlation_service,
-    medication_response_service = mock_medication_response_service,
-    patient_repository = mock_patient_repository
-    ()@pytest.fixture
-def sample_patient_id(self):
+                return DigitalTwinIntegrationService(,
+                symptom_forecasting_service= mock_symptom_forecasting_service,
+                biometric_correlation_service = mock_biometric_correlation_service,
+                medication_response_service = mock_medication_response_service,
+                patient_repository = mock_patient_repository
+                ()@pytest.fixture
+                def sample_patient_id(self):
 
                 """Create a sample patient ID."""
 
-        return str(uuid4())
+                return str(uuid4())
 
-        async def test_generate_comprehensive_insights_all_services(
+                async def test_generate_comprehensive_insights_all_services(
                 self, integration_service, sample_patient_id):
-        """Test that generate_comprehensive_insights calls all services and combines results."""
-        # Setup
-        options = {
-            "include_symptom_forecast": True,
-            "include_biometric_correlations": True,
-            "include_medication_predictions": True,
-            "forecast_days": 14,
-            "biometric_lookback_days": 30
+                    """Test that generate_comprehensive_insights calls all services and combines results."""
+                    # Setup
+                    options = {
+                    "include_symptom_forecast": True,
+                    "include_biometric_correlations": True,
+                    "include_medication_predictions": True,
+                    "forecast_days": 14,
+                    "biometric_lookback_days": 30
         }
 
         # Execute
@@ -228,14 +229,14 @@ def sample_patient_id(self):
 
     async def test_generate_comprehensive_insights_partial_services(
             self, integration_service, sample_patient_id):
-        """Test that generate_comprehensive_insights only calls requested services."""
-        # Setup
-        options = {
-            "include_symptom_forecast": True,
-            "include_biometric_correlations": False,
-            "include_medication_predictions": True,
-            "forecast_days": 14,
-            "biometric_lookback_days": 30
+                """Test that generate_comprehensive_insights only calls requested services."""
+                # Setup
+                options = {
+                "include_symptom_forecast": True,
+                "include_biometric_correlations": False,
+                "include_medication_predictions": True,
+                "forecast_days": 14,
+                "biometric_lookback_days": 30
         }
 
         # Execute
@@ -256,15 +257,15 @@ def sample_patient_id(self):
 
     async def test_generate_comprehensive_insights_handles_service_errors(
             self, integration_service, sample_patient_id):
-        """Test that generate_comprehensive_insights handles service errors gracefully."""
-        # Setup
-        integration_service.symptom_forecasting_service.generate_forecast.side_effect = Exception(
-            "Service error",
+                """Test that generate_comprehensive_insights handles service errors gracefully."""
+                # Setup
+                integration_service.symptom_forecasting_service.generate_forecast.side_effect = Exception(
+                "Service error",
 
-        options= {
-            "include_symptom_forecast": True,
-            "include_biometric_correlations": True,
-            "include_medication_predictions": True
+                options= {
+                "include_symptom_forecast": True,
+                "include_biometric_correlations": True,
+                "include_medication_predictions": True
         }
 
         # Execute
@@ -282,11 +283,11 @@ def sample_patient_id(self):
 
     async def test_generate_integrated_recommendations(
             self, integration_service, sample_patient_id):
-        """Test that _generate_integrated_recommendations creates meaningful recommendations."""
-        # Setup
-        insights = {
-            "patient_id": sample_patient_id,
-            "symptom_forecast": {
+                """Test that _generate_integrated_recommendations creates meaningful recommendations."""
+                # Setup
+                insights = {
+                "patient_id": sample_patient_id,
+                "symptom_forecast": {
                 "reliability": "high",
                 "forecasts": {"anxiety": [4.2, 4.0, 3.8, 3.5]},
                 "confidence_intervals": {
@@ -361,23 +362,23 @@ def sample_patient_id(self):
                 integration_service,
                 sample_patient_id,
                 mock_patient_repository):
-        """Test that _get_patient_data retrieves patient data correctly."""
-        # Execute
-        patient_data = await integration_service._get_patient_data(sample_patient_id)
+                    """Test that _get_patient_data retrieves patient data correctly."""
+                    # Execute
+                    patient_data = await integration_service._get_patient_data(sample_patient_id)
 
-        # Verify
-        assert patient_data is not None
-        mock_patient_repository.get_by_id.assert_called_once_with(
-            sample_patient_id)
+                    # Verify
+                    assert patient_data is not None
+                    mock_patient_repository.get_by_id.assert_called_once_with(
+                    sample_patient_id)
 
-        async def test_get_patient_data_handles_missing_patient(
-                self, integration_service, sample_patient_id, mock_patient_repository):
-        """Test that _get_patient_data handles missing patient data gracefully."""
-        # Setup
-        mock_patient_repository.get_by_id.return_value = None
+                    async def test_get_patient_data_handles_missing_patient(
+                    self, integration_service, sample_patient_id, mock_patient_repository):
+                        """Test that _get_patient_data handles missing patient data gracefully."""
+                        # Setup
+                        mock_patient_repository.get_by_id.return_value = None
 
-        # Execute and verify exception is raised
-        with pytest.raises(ValueError) as excinfo:
-        await integration_service._get_patient_data(sample_patient_id)
+                        # Execute and verify exception is raised
+                        with pytest.raises(ValueError) as excinfo:
+                        await integration_service._get_patient_data(sample_patient_id)
 
-        assert "Patient not found" in str(excinfo.value)
+                        assert "Patient not found" in str(excinfo.value)

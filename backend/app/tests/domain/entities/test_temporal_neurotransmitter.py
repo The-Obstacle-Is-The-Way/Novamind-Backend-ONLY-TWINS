@@ -35,7 +35,8 @@ from app.domain.services.visualization_preprocessor import (
 )
 
 
-@pytest.mark.db_required()class TestTemporalEvents:
+@pytest.mark.db_required()
+class TestTemporalEvents:
     """Test suite for temporal event correlation tracking."""
 
     def test_correlated_event_creation(self):
@@ -124,28 +125,29 @@ from app.domain.services.visualization_preprocessor import (
         )
 
         with pytest.raises(ValueError):
-            chain.add_event(wrong_event)class TestTemporalSequence:
-    """Test suite for temporal sequences."""
+            chain.add_event(wrong_event)
+            class TestTemporalSequence:
+                """Test suite for temporal sequences."""
 
-    def test_temporal_sequence_creation(self):
+                def test_temporal_sequence_creation(self):
 
 
                     """Test creation of temporal sequences."""
-        # Create test data
-        now = datetime.datetime.now(,
-        timestamps= [now + datetime.timedelta(hours=i) for i in range(5)]
-        feature_names = ["feature1", "feature2"]
-        values = [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]
-        patient_id = uuid.uuid4()
+                    # Create test data
+                    now = datetime.datetime.now(,
+                    timestamps= [now + datetime.timedelta(hours=i) for i in range(5)]
+                    feature_names = ["feature1", "feature2"]
+                    values = [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]
+                    patient_id = uuid.uuid4()
 
-        # Create sequence
-        sequence = TemporalSequence(
-            sequence_id=uuid.uuid4(),
-            feature_names=feature_names,
-            timestamps=timestamps,
-            values=values,
-            patient_id=patient_id,
-            metadata={"source": "test"},
+                    # Create sequence
+                    sequence = TemporalSequence(
+                    sequence_id=uuid.uuid4(),
+                    feature_names=feature_names,
+                    timestamps=timestamps,
+                    values=values,
+                    patient_id=patient_id,
+                    metadata={"source": "test"},
         )
 
         # Verify properties
@@ -244,20 +246,20 @@ from app.domain.services.visualization_preprocessor import (
         assert seq_dict["feature_dimension"] == 2
         assert len(seq_dict["timestamps"]) == 10
         assert len(seq_dict["values"]) == 10class TestNeurotransmitterEffect:
-    """Test suite for neurotransmitter effect metrics."""
+            """Test suite for neurotransmitter effect metrics."""
 
-    def test_neurotransmitter_effect_creation(self):
+            def test_neurotransmitter_effect_creation(self):
 
 
                     """Test creation of neurotransmitter effects."""
-        # Create a basic effect
-        effect = NeurotransmitterEffect(
-            neurotransmitter=Neurotransmitter.DOPAMINE,
-            effect_size=0.75,
-            confidence_interval=(0.5, 1.0),
-            p_value=0.03,
-            sample_size=30,
-            clinical_significance=ClinicalSignificance.MODERATE,
+                # Create a basic effect
+                effect = NeurotransmitterEffect(
+                neurotransmitter=Neurotransmitter.DOPAMINE,
+                effect_size=0.75,
+                confidence_interval=(0.5, 1.0),
+                p_value=0.03,
+                sample_size=30,
+                clinical_significance=ClinicalSignificance.MODERATE,
         )
 
         # Verify properties
@@ -321,14 +323,14 @@ from app.domain.services.visualization_preprocessor import (
         assert viz_data["effect_size"] > 0
         assert viz_data["is_significant"] is True
         assert viz_data["clinical_significance"] == "moderate"class TestTemporalNeurotransmitterMapping:
-    """Test suite for temporal neurotransmitter mapping extensions."""@pytest.fixture
-def extended_mapping(self):
+            """Test suite for temporal neurotransmitter mapping extensions."""@pytest.fixture
+            def extended_mapping(self):
 
                 """Create an extended neurotransmitter mapping for tests."""
-        # Start with the default mapping
-        test_patient_id = uuid.uuid4(,
-        base_mapping= create_default_neurotransmitter_mapping(
-            patient_id=test_patient_id
+                # Start with the default mapping
+                test_patient_id = uuid.uuid4(,
+                base_mapping= create_default_neurotransmitter_mapping(
+                patient_id=test_patient_id
         )
 
         # Extend with temporal methods
@@ -391,24 +393,24 @@ def extended_mapping(self):
 
 
                                 """Test analysis of temporal response to neurotransmitter changes."""
-        # Create test data with increasing serotonin levels
-        now = datetime.datetime.now(,
-        baseline_end= now + datetime.timedelta(hours=5)
+                    # Create test data with increasing serotonin levels
+                    now = datetime.datetime.now(,
+                    baseline_end= now + datetime.timedelta(hours=5)
 
-        # 10 hours of data: first 5 at baseline, next 5 increasing
-        timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
-        # Increase after baseline
-        levels = [0.5] * 5 + [0.6, 0.7, 0.8, 0.9, 1.0]
+                    # 10 hours of data: first 5 at baseline, next 5 increasing
+                    timestamps = [now + datetime.timedelta(hours=i) for i in range(10)]
+                    # Increase after baseline
+                    levels = [0.5] * 5 + [0.6, 0.7, 0.8, 0.9, 1.0]
 
-        time_series_data = list(zip(timestamps, levels))
+                    time_series_data = list(zip(timestamps, levels))
 
-        # Analyze the temporal response
-        effect = extended_mapping.analyze_temporal_response(
-            patient_id=uuid.uuid4(),
-            brain_region=BrainRegion.PREFRONTAL_CORTEX,
-            neurotransmitter=Neurotransmitter.SEROTONIN,
-            time_series_data=time_series_data,
-            baseline_period=(timestamps[0], timestamps[4]),
+                    # Analyze the temporal response
+                    effect = extended_mapping.analyze_temporal_response(
+                    patient_id=uuid.uuid4(),
+                    brain_region=BrainRegion.PREFRONTAL_CORTEX,
+                    neurotransmitter=Neurotransmitter.SEROTONIN,
+                    time_series_data=time_series_data,
+                    baseline_period=(timestamps[0], timestamps[4]),
         )
 
         # Verify the analysis
@@ -461,20 +463,20 @@ def extended_mapping(self):
                     break
 
                 assert indirect_effects, "No indirect effects on other neurotransmitters"class TestVisualizationPreprocessor:
-    """Test suite for visualization preprocessors."""
+                    """Test suite for visualization preprocessors."""
 
-    def test_precompute_cascade_geometry(self):
+                    def test_precompute_cascade_geometry(self):
 
 
-                    """Test precomputation of geometry for cascade visualization."""
-        # Create test data
-        preprocessor = NeurotransmitterVisualizationPreprocessor()
+                        """Test precomputation of geometry for cascade visualization."""
+                        # Create test data
+                        preprocessor = NeurotransmitterVisualizationPreprocessor()
 
-        # Create a simple cascade simulation result
-        cascade_data = {
-            BrainRegion.AMYGDALA: [0.8, 0.7, 0.6, 0.5, 0.4],
-            BrainRegion.PREFRONTAL_CORTEX: [0.0, 0.3, 0.5, 0.7, 0.8],
-            BrainRegion.HIPPOCAMPUS: [0.0, 0.0, 0.2, 0.4, 0.6],
+                        # Create a simple cascade simulation result
+                        cascade_data = {
+                        BrainRegion.AMYGDALA: [0.8, 0.7, 0.6, 0.5, 0.4],
+                        BrainRegion.PREFRONTAL_CORTEX: [0.0, 0.3, 0.5, 0.7, 0.8],
+                        BrainRegion.HIPPOCAMPUS: [0.0, 0.0, 0.2, 0.4, 0.6],
         }
 
         # Precompute geometry

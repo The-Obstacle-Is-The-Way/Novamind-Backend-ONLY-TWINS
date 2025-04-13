@@ -176,12 +176,12 @@ async def test_preprocess_patient_data_with_missing_data(forecasting_service):
         @pytest.mark.asyncio()
         async def test_forecast_symptoms_with_ensemble(
                 forecasting_service, patient_data):
-    """Test symptom forecasting with ensemble approach."""
-    patient_id = uuid4()
+                    """Test symptom forecasting with ensemble approach."""
+                    patient_id = uuid4()
 
-    # Generate forecast
-    forecast = await forecasting_service.forecast_symptoms(
-        patient_id=patient_id, data=patient_data, horizon=5, use_ensemble=True
+                    # Generate forecast
+                    forecast = await forecasting_service.forecast_symptoms(
+                    patient_id=patient_id, data=patient_data, horizon=5, use_ensemble=True
     )
 
     # Verify forecast structure
@@ -207,12 +207,12 @@ async def test_preprocess_patient_data_with_missing_data(forecasting_service):
 @pytest.mark.asyncio()
 async def test_forecast_symptoms_without_ensemble(
         forecasting_service, patient_data):
-    """Test symptom forecasting without ensemble approach."""
-    patient_id = uuid4()
+            """Test symptom forecasting without ensemble approach."""
+            patient_id = uuid4()
 
-    # Generate forecast using only transformer model
-    forecast = await forecasting_service.forecast_symptoms(
-        patient_id=patient_id, data=patient_data, horizon=5, use_ensemble=False
+            # Generate forecast using only transformer model
+            forecast = await forecasting_service.forecast_symptoms(
+            patient_id=patient_id, data=patient_data, horizon=5, use_ensemble=False
     )
 
     # Verify forecast structure
@@ -297,30 +297,30 @@ async def test_identify_risk_periods(forecasting_service, patient_data):
         @pytest.mark.asyncio()
         async def test_get_model_performance_metrics(forecasting_service):
              """Test retrieval of model performance metrics."""
-    # Get performance metrics
-    metrics = await forecasting_service.get_model_performance_metrics()
+            # Get performance metrics
+            metrics = await forecasting_service.get_model_performance_metrics()
 
-    # Verify metrics structure
-    assert "transformer_model" in metrics
-    assert "xgboost_model" in metrics
-    assert "ensemble_model" in metrics
+            # Verify metrics structure
+            assert "transformer_model" in metrics
+            assert "xgboost_model" in metrics
+            assert "ensemble_model" in metrics
 
-    # Verify metric types
-    for model_type in ["transformer_model", "xgboost_model", "ensemble_model"]:
-        assert "rmse" in metrics[model_type]
-        assert "mae" in metrics[model_type]
-        assert "r2" in metrics[model_type]
-        assert "calibration_score" in metrics[model_type]
+            # Verify metric types
+            for model_type in ["transformer_model", "xgboost_model", "ensemble_model"]:
+                assert "rmse" in metrics[model_type]
+                assert "mae" in metrics[model_type]
+                assert "r2" in metrics[model_type]
+                assert "calibration_score" in metrics[model_type]
 
-        @pytest.mark.asyncio()
-        async def test_sanitize_patient_data(forecasting_service):
+                @pytest.mark.asyncio()
+                async def test_sanitize_patient_data(forecasting_service):
              """Test sanitization of patient data for HIPAA compliance."""
-    # Create patient data with PHI
-    patient_data_with_phi = {
-        "patient_name": "John Doe",
-        "email": "john.doe@example.com",
-        "ssn": "123-45-6789",
-        "time_series": [
+            # Create patient data with PHI
+            patient_data_with_phi = {
+            "patient_name": "John Doe",
+            "email": "john.doe@example.com",
+            "ssn": "123-45-6789",
+            "time_series": [
             {
                 "date": "2023-01-01",
                 "anxiety": 5,

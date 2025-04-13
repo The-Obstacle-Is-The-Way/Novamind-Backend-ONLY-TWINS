@@ -20,11 +20,7 @@ sys.path.insert(0, str(ROOT_DIR))
 # Import patch modules
 spec = importlib.util.spec_from_file_location(
     "standalone_clinical_rule_engine",
-    ROOT_DIR /
-    "app" /
-    "domain" /
-    "services" /
-    "standalone_clinical_rule_engine.py",
+    ROOT_DIR / "app" / "domain" / "services" / "standalone_clinical_rule_engine.py",
 )
 standalone_clinical_rule_engine = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(standalone_clinical_rule_engine)
@@ -51,9 +47,7 @@ patch(
     lambda self: {
         "models_updated": 1,
         "generated_rules_count": 3,
-        "rules_by_type": {
-            "heart_rate": 2,
-            "blood_pressure": 3},
+        "rules_by_type": {"heart_rate": 2, "blood_pressure": 3},
     },
 ).start()
 

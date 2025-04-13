@@ -33,7 +33,7 @@ for text, description in test_cases:
     ]
 
     for i, pattern in enumerate(patterns):
-    print(f"\nAlternative pattern {i + 1}: {pattern}")
-    for text, description in test_cases:
-        match = re.search(pattern, text)
-        print(f"  {description}: {match.group(0) if match else 'NO MATCH'}")
+        print(f"\nAlternative pattern {i + 1}: {pattern}")
+        for text, description in test_cases:
+            match = re.search(pattern, text)
+            print(f"  {description}: {match.group(0) if match else 'NO MATCH'}")

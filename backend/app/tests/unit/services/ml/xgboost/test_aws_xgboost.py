@@ -6,7 +6,7 @@ verifying its functionality and compliance with the XGBoostInterface
 while mocking all AWS services to avoid actual API calls.:
     """
 
-   import pytest
+    import pytest
     import json
     import boto3
     import uuid
@@ -23,10 +23,10 @@ while mocking all AWS services to avoid actual API calls.:
     ModelNotFoundError, PredictionError, ServiceConnectionError as ServiceUnavailableError,
     ThrottlingError, ConfigurationError
     )@pytest.fixture
-def mock_boto3_client():
+    def mock_boto3_client():
 
             """Create a mock boto3 client for testing."""
-    with patch('boto3.client') as mock_client:
+        with patch('boto3.client') as mock_client:
         # Create mock clients for each AWS service
         mock_sagemaker = MagicMock(,
         mock_s3= MagicMock(,
@@ -37,28 +37,29 @@ def mock_boto3_client():
         def get_mock_client(service_name, **kwargs):
 
                         if service_name == 'sagemaker-runtime':
-                return mock_sagemaker
-                elif service_name == 's3':
-                return mock_s3
-                elif service_name == 'comprehend':
-                return mock_comprehend
-                elif service_name == 'comprehendmedical':
-                return mock_comprehend_medical
-                return MagicMock()
+                            return mock_sagemaker
+                            elif service_name == 's3':
+                                return mock_s3
+                                elif service_name == 'comprehend':
+                        return mock_comprehend
+                        elif service_name == 'comprehendmedical':
+                        return mock_comprehend_medical
+                        return MagicMock()
 
-                mock_client.side_effect = get_mock_client
+                        mock_client.side_effect = get_mock_client
 
-                # Return all mocks so tests can configure them
-                yield {
-                    'client': mock_client,
-                    'sagemaker': mock_sagemaker,
-                    's3': mock_s3,
-                    'comprehend': mock_comprehend,
-                    'comprehend_medical': mock_comprehend_medical
+                        # Return all mocks so tests can configure them
+                        yield {
+                        'client': mock_client,
+                        'sagemaker': mock_sagemaker,
+                        's3': mock_s3,
+                        'comprehend': mock_comprehend,
+                        'comprehend_medical': mock_comprehend_medical
                     }
 
 
-@pytest.mark.db_required()class TestAWSPhiDetector:
+@pytest.mark.db_required()
+class TestAWSPhiDetector:
     """Tests for the AWSPhiDetector class."""
 
     def test_initialize(self, mock_boto3_client):
@@ -73,8 +74,8 @@ def mock_boto3_client():
 
 
                         """Test scanning text with PHI."""
-        # Configure mock response from Comprehend Medical
-        mock_boto3_client['comprehend_medical'].detect_phi.return_value = {
+            # Configure mock response from Comprehend Medical
+            mock_boto3_client['comprehend_medical'].detect_phi.return_value = {
             'Entities': [
                 {
                     'Type': 'NAME',
@@ -133,18 +134,18 @@ def mock_boto3_client():
         detector= AWSPhiDetector(privacy_level=2)
 
         with pytest.raises(ServiceUnavailableError):
-        detector.scan_for_phi("Test text")
+            detector.scan_for_phi("Test text")
 
-        def test_sanitize_prediction(self, mock_boto3_client):
+            def test_sanitize_prediction(self, mock_boto3_client):
 
 
                         """Test sanitizing a prediction with PHI."""
-        # Configure mock for PHI detection
-        def mock_detect_phi(Text):
+                # Configure mock for PHI detection
+                def mock_detect_phi(Text):
 
                     if "John Smith" in Text:
-            return {
-                'Entities': [
+                        return {
+                        'Entities': [
                         {
                             'Type': 'NAME',
                             'BeginOffset': Text.find("John Smith"),
@@ -176,19 +177,19 @@ def mock_boto3_client():
        # Non-PHI fields should be unchanged
     assert sanitized["risk_score"] == 0.75
     assert sanitized["factors"] == ["medication_adherence", "sleep_quality"]class TestAWSXGBoostService:
-    """Tests for the AWSXGBoostService class."""@pytest.fixture
-def aws_config(self):
+        """Tests for the AWSXGBoostService class."""@pytest.fixture
+        def aws_config(self):
 
                 """Create a configuration dictionary for AWS XGBoost service."""
 
-        return {
+            return {
             "aws_region": "us-east-1",
             "endpoint_prefix": "xgboost-psychiatric",
             "model_bucket": "novamind-models",
             "data_privacy_level": 2,
             "confidence_threshold": 0.7
             }@pytest.fixture
-def xgboost_service(self, mock_boto3_client, aws_config):
+            def xgboost_service(self, mock_boto3_client, aws_config):
 
                 """Create an AWSXGBoostService instance for testing."""
         # Configure mock S3 client to return model info
@@ -227,74 +228,74 @@ def xgboost_service(self, mock_boto3_client, aws_config):
 def test_observer(self):
 
                 """Create a test observer for prediction notifications."""class TestObserver:
-            def __init__(self):
+                    def __init__(self):
 
                                 self.last_notification = None
 
-                def notify_prediction(self, prediction):
+                        def notify_prediction(self, prediction):
 
 
                                     self.last_notification = prediction
 
-                return TestObserver()
+                    return TestObserver()
 
-                def test_initialize(self, xgboost_service, aws_config):
+                    def test_initialize(self, xgboost_service, aws_config):
 
 
                                         """Test initializing the service with configuration."""
-                assert xgboost_service.config["aws_region"] == aws_config["aws_region"]
-                assert xgboost_service.config["endpoint_prefix"] == aws_config["endpoint_prefix"]
-                assert "risk_relapse" in xgboost_service.endpoints
+                        assert xgboost_service.config["aws_region"] == aws_config["aws_region"]
+                        assert xgboost_service.config["endpoint_prefix"] == aws_config["endpoint_prefix"]
+                        assert "risk_relapse" in xgboost_service.endpoints
 
-                def test_initialize_missing_region(self, mock_boto3_client):
+                        def test_initialize_missing_region(self, mock_boto3_client):
 
 
                                         """Test initializing without AWS region."""
-                service = AWSXGBoostService()
+                        service = AWSXGBoostService()
 
-                with pytest.raises(ConfigurationError):
-            service.initialize({})
+                        with pytest.raises(ConfigurationError):
+                        service.initialize({})
 
-            def test_initialize_missing_endpoint_prefix(
-                self, mock_boto3_client):
-                """Test initializing without endpoint prefix."""
-                service = AWSXGBoostService()
+                        def test_initialize_missing_endpoint_prefix(
+                        self, mock_boto3_client):
+                        """Test initializing without endpoint prefix."""
+                        service = AWSXGBoostService()
 
-                with pytest.raises(ConfigurationError):
-            service.initialize({"aws_region": "us-east-1"})
+                        with pytest.raises(ConfigurationError):
+                        service.initialize({"aws_region": "us-east-1"})
 
-            def test_predict_risk_missing_patient_id(self, xgboost_service):
+                        def test_predict_risk_missing_patient_id(self, xgboost_service):
 
 
                                     """Test predict_risk with missing patient ID."""
-                with pytest.raises(ValidationError):
-            xgboost_service.predict_risk(,
-                patient_id= "",
-                risk_type = "relapse",
-                clinical_data = {"severity": "moderate"}
-            ()
+                        with pytest.raises(ValidationError):
+                    xgboost_service.predict_risk(,
+                    patient_id= "",
+                    risk_type = "relapse",
+                    clinical_data = {"severity": "moderate"}
+                    ()
 
-            def test_predict_risk_unsupported_risk_type(self, xgboost_service):
+                    def test_predict_risk_unsupported_risk_type(self, xgboost_service):
 
 
                                     """Test predict_risk with unsupported risk type."""
-                xgboost_service.endpoints = {}  # Clear endpoints
+                        xgboost_service.endpoints = {}  # Clear endpoints
 
-                with pytest.raises(ValidationError):
-            xgboost_service.predict_risk(,
-            patient_id= "patient123",
-            risk_type = "unsupported_type",
-            clinical_data = {"severity": "moderate"}
-            ()
+                        with pytest.raises(ValidationError):
+                    xgboost_service.predict_risk(,
+                    patient_id= "patient123",
+                    risk_type = "unsupported_type",
+                    clinical_data = {"severity": "moderate"}
+                    ()
 
-            def test_predict_risk_phi_detection(self, xgboost_service):
+                    def test_predict_risk_phi_detection(self, xgboost_service):
 
 
                                     """Test PHI detection during risk prediction."""
-                # Configure PHI detector to detect PHI
-                xgboost_service.phi_detector.scan_for_phi.return_value = {
-                    "has_phi": True,
-                    "matches": [{"type": "NAME"}]
+                        # Configure PHI detector to detect PHI
+                        xgboost_service.phi_detector.scan_for_phi.return_value = {
+                        "has_phi": True,
+                        "matches": [{"type": "NAME"}]
                     }
 
         with pytest.raises(DataPrivacyError):
@@ -305,7 +306,7 @@ def test_observer(self):
             ()
 
             def test_predict_risk_successful(
-    self, xgboost_service, mock_boto3_client):
+            self, xgboost_service, mock_boto3_client):
                 """Test successful risk prediction."""
                 # Configure SageMaker mock response
                 sagemaker_response = {
@@ -359,52 +360,52 @@ def test_observer(self):
             ()
 
             with pytest.raises(PredictionError):
-        xgboost_service.predict_risk(,
-        patient_id= "patient123",
-        risk_type = "relapse",
-        clinical_data = {"severity": "moderate"}
-        ()
+                xgboost_service.predict_risk(,
+                patient_id= "patient123",
+                risk_type = "relapse",
+                clinical_data = {"severity": "moderate"}
+                ()
 
-        def test_predict_risk_service_unavailable(
-            self, xgboost_service, mock_boto3_client):
-            """Test handling service unavailable errors."""
-            # Configure SageMaker to raise a service unavailable error
-            mock_boto3_client['sagemaker'].invoke_endpoint.side_effect = ClientError(
+                def test_predict_risk_service_unavailable(
+                self, xgboost_service, mock_boto3_client):
+                    """Test handling service unavailable errors."""
+                    # Configure SageMaker to raise a service unavailable error
+                    mock_boto3_client['sagemaker'].invoke_endpoint.side_effect = ClientError(
             )
             {'Error': {'Code': 'ServiceUnavailable', 'Message': 'Service unavailable'}},
             'invoke_endpoint'
             ()
 
             with pytest.raises(ServiceUnavailableError):
-        xgboost_service.predict_risk(,
-        patient_id= "patient123",
-        risk_type = "relapse",
-        clinical_data = {"severity": "moderate"}
-        ()
+                xgboost_service.predict_risk(,
+                patient_id= "patient123",
+                risk_type = "relapse",
+                clinical_data = {"severity": "moderate"}
+                ()
 
-        def test_predict_risk_throttling(
-    self, xgboost_service, mock_boto3_client):
-            """Test handling throttling errors."""
-            # Configure SageMaker to raise a throttling error
-            mock_boto3_client['sagemaker'].invoke_endpoint.side_effect = ClientError(
+                def test_predict_risk_throttling(
+                self, xgboost_service, mock_boto3_client):
+                    """Test handling throttling errors."""
+                    # Configure SageMaker to raise a throttling error
+                    mock_boto3_client['sagemaker'].invoke_endpoint.side_effect = ClientError(
             )
             {'Error': {'Code': 'ThrottlingException', 'Message': 'Throttled'}},
             'invoke_endpoint'
             ()
 
             with pytest.raises(ThrottlingError):
-        xgboost_service.predict_risk(,
-        patient_id= "patient123",
-        risk_type = "relapse",
-        clinical_data = {"severity": "moderate"}
-        ()
+                xgboost_service.predict_risk(,
+                patient_id= "patient123",
+                risk_type = "relapse",
+                clinical_data = {"severity": "moderate"}
+                ()
 
-        def test_predict_treatment_response_successful(
-            self, xgboost_service, mock_boto3_client):
-            """Test successful treatment response prediction."""
-            # Configure SageMaker mock response
-            sagemaker_response = {
-                'Body': MagicMock()
+                def test_predict_treatment_response_successful(
+                self, xgboost_service, mock_boto3_client):
+                    """Test successful treatment response prediction."""
+                    # Configure SageMaker mock response
+                    sagemaker_response = {
+                    'Body': MagicMock()
                 }
     sagemaker_response['Body'].read.return_value = json.dumps({)
                                                               "response_probability": 0.75,
@@ -460,17 +461,17 @@ def test_observer(self):
 
                            """Test getting info for a non-existent model."""
             with pytest.raises(ModelNotFoundError):
-        xgboost_service.get_model_info("non_existent_model")
+                xgboost_service.get_model_info("non_existent_model")
 
-        def test_get_feature_importance(
-    self, xgboost_service, mock_boto3_client):
-            """Test getting feature importance."""
-            # Add a prediction
-            prediction_id = "pred-12345678"
-            xgboost_service.predictions[prediction_id] = {
-                "prediction_id": prediction_id,
-                "patient_id": "patient123",
-                "risk_type": "relapse"
+                def test_get_feature_importance(
+                self, xgboost_service, mock_boto3_client):
+                    """Test getting feature importance."""
+                    # Add a prediction
+                    prediction_id = "pred-12345678"
+                    xgboost_service.predictions[prediction_id] = {
+                    "prediction_id": prediction_id,
+                    "patient_id": "patient123",
+                    "risk_type": "relapse"
                 }
 
     # Configure SageMaker mock response
@@ -514,22 +515,22 @@ def test_observer(self):
 
                            """Test getting feature importance for non-existent prediction."""
             with pytest.raises(ResourceNotFoundError):
-        xgboost_service.get_feature_importance(,
-            patient_id= "patient123",
-            model_type = "risk",
-            prediction_id = "non_existent"
-        ()
+                xgboost_service.get_feature_importance(,
+                patient_id= "patient123",
+                model_type = "risk",
+                prediction_id = "non_existent"
+                ()
 
-        def test_get_feature_importance_no_endpoint(self, xgboost_service):
+                def test_get_feature_importance_no_endpoint(self, xgboost_service):
 
 
                             """Test getting feature importance with no explanation endpoint."""
-            # Add a prediction
-            prediction_id = "pred-12345678"
-            xgboost_service.predictions[prediction_id] = {
-                "prediction_id": prediction_id,
-                "patient_id": "patient123",
-                "risk_type": "relapse"
+                    # Add a prediction
+                    prediction_id = "pred-12345678"
+                    xgboost_service.predictions[prediction_id] = {
+                    "prediction_id": prediction_id,
+                    "patient_id": "patient123",
+                    "risk_type": "relapse"
                 }
 
     # Clear endpoints
@@ -543,7 +544,7 @@ def test_observer(self):
         ()
 
         def test_integrate_with_digital_twin(
-    self, xgboost_service, mock_boto3_client):
+        self, xgboost_service, mock_boto3_client):
             """Test integrating prediction with digital twin."""
             # Add a prediction
             prediction_id = "pred-12345678"
@@ -609,10 +610,10 @@ def test_observer(self):
         ()
 
         def test_observer_notification(
-    self,
-    xgboost_service,
-    mock_boto3_client,
-     test_observer):
+        self,
+        xgboost_service,
+        mock_boto3_client,
+        test_observer):
             """Test observer notification on prediction."""
             # Register observer
             observer_id = xgboost_service.register_prediction_observer(

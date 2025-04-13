@@ -42,16 +42,16 @@ def enhanced_services() -> Tuple[EnhancedDigitalTwinCoreService, ...]:
     services = EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()
     # Only return the Digital Twin service for simplicity
     return (services[0],)@pytest.fixture
-def patient_id() -> UUID:
+    def patient_id() -> UUID:
 
             """Fixture to create a consistent patient ID for tests."""
 
-    return uuid.UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
-def initial_data() -> Dict:
+        return uuid.UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+        def initial_data() -> Dict:
 
             """Fixture to provide initial patient data for testing."""
 
-    return {
+        return {
         "diagnoses": ["Major Depressive Disorder", "Generalized Anxiety Disorder"],
         "symptoms": ["fatigue", "insomnia", "worry", "anhedonia"],
         "medications": [
@@ -110,15 +110,15 @@ async def test_initialize_neurotransmitter_mapping(
         async def test_custom_neurotransmitter_mapping(
             enhanced_services, patient_id, initialized_patient
         ):
-    """Test creating a custom neurotransmitter mapping for a patient."""
-    (digital_twin_service,) = enhanced_services
+            """Test creating a custom neurotransmitter mapping for a patient."""
+            (digital_twin_service,) = enhanced_services
 
-    # Create a custom mapping
-    custom_mapping = NeurotransmitterMapping(patient_id=patient_id)
+            # Create a custom mapping
+            custom_mapping = NeurotransmitterMapping(patient_id=patient_id)
 
-    # Add some receptor profiles
-    custom_mapping.add_receptor_profile(
-        ReceptorProfile(
+            # Add some receptor profiles
+            custom_mapping.add_receptor_profile(
+            ReceptorProfile(
             brain_region=BrainRegion.PREFRONTAL_CORTEX,
             neurotransmitter=Neurotransmitter.SEROTONIN,
             receptor_type=ReceptorType.EXCITATORY,
@@ -385,11 +385,11 @@ async def test_analyze_treatment_neurotransmitter_effects(
     time_points= [
         datetime.datetime.now() + datetime.timedelta(days=i * 7)
         for i in range(5)  # 0, 7, 14, 21, 28 days:
-    ]
+            ]
 
-    # Run analysis
-    analysis_results = (
-        await digital_twin_service.analyze_treatment_neurotransmitter_effects(
+            # Run analysis
+            analysis_results = (
+            await digital_twin_service.analyze_treatment_neurotransmitter_effects(
             patient_id=patient_id,
             treatment_id=treatment_id,
             time_points=time_points,

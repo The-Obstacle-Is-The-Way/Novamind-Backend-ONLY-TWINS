@@ -32,29 +32,29 @@ def pat_storage() -> Generator[str, None, None]:
         Temporary directory path
         """
         with tempfile.TemporaryDirectory() as temp_dir:
-        yield temp_dir@pytest.fixture
-def mock_pat(pat_storage: str) -> MockPATService:
+            yield temp_dir@pytest.fixture
+            def mock_pat(pat_storage: str) -> MockPATService:
 
-        """Fixture that returns a configured MockPATService instance.
+                """Fixture that returns a configured MockPATService instance.
 
-    Args:
+                Args:
         pat_storage: Temporary storage directory
 
         Returns:
-        Configured MockPATService instance
-        """
-        pat = MockPATService()
-        pat.initialize({"storage_path": pat_storage})
-        return pat
+            Configured MockPATService instance
+            """
+            pat = MockPATService()
+            pat.initialize({"storage_path": pat_storage})
+            return pat
 
-        # Local test_app and client fixtures removed; tests will use client from conftest.py
-        # Dependency overrides need to be handled globally in conftest.py or
-        # via specific test markers.@pytest.fixture
-def patient_token() -> str:
+            # Local test_app and client fixtures removed; tests will use client from conftest.py
+            # Dependency overrides need to be handled globally in conftest.py or
+            # via specific test markers.@pytest.fixture
+            def patient_token() -> str:
 
-        """Fixture that returns a JWT token for a patient user.
+                """Fixture that returns a JWT token for a patient user.
 
-    Returns:
+                Returns:
         JWT token
         """
         payload = {
@@ -108,11 +108,11 @@ def sample_readings() -> List[Dict[str, float]]:
         {"x": 0.2, "y": 0.3, "z": 0.8},
         {"x": 0.3, "y": 0.4, "z": 0.7}
         ]@pytest.fixture
-def sample_device_info() -> Dict[str, Any]:
+        def sample_device_info() -> Dict[str, Any]:
 
-        """Fixture that returns sample device information.
+            """Fixture that returns sample device information.
 
-    Returns:
+            Returns:
         Sample device information
         """
 
@@ -140,41 +140,41 @@ def test_unauthenticated_access(client: TestClient) -> None:
         assert "Not authenticated" in response.text
 
         def test_authorized_access(
-    client: TestClient,
-     patient_token: str) -> None:
-    """Test that authorized requests are allowed.
+        client: TestClient,
+        patient_token: str) -> None:
+            """Test that authorized requests are allowed.
 
-    Args:
-        client: Test client
-        patient_token: JWT token for a patient user
-        """
-        # Access an endpoint with authentication
-        response = client.get()
-        "/api/v1/actigraphy/model-info",
-        headers = {"Authorization": f"Bearer {patient_token}"}
-        ()
+            Args:
+             client: Test client
+             patient_token: JWT token for a patient user
+             """
+             # Access an endpoint with authentication
+             response = client.get()
+             "/api/v1/actigraphy/model-info",
+             headers = {"Authorization": f"Bearer {patient_token}"}
+             ()
 
-        # Should return 200 OK
-        assert response.status_code == 200
+             # Should return 200 OK
+             assert response.status_code == 200
 
-        def test_input_validation(
-    client: TestClient,
-     patient_token: str) -> None:
-    """Test that input validation works correctly.
+             def test_input_validation(
+             client: TestClient,
+             patient_token: str) -> None:
+            """Test that input validation works correctly.
 
-    Args:
-        client: Test client
-        patient_token: JWT token for a patient user
-        """
-        # Try to analyze actigraphy with invalid input
-        invalid_request = {
-        "patient_id": "",  # Empty patient ID
-        "readings": [],    # Empty readings
-        "start_time": "invalid-time",  # Invalid time format
-        "end_time": "2025-01-01T00:00:02Z",
-        "sampling_rate_hz": -1.0,  # Invalid sampling rate
-        "device_info": {},  # Empty device info
-        "analysis_types": ["invalid_type"]  # Invalid analysis type
+            Args:
+             client: Test client
+             patient_token: JWT token for a patient user
+             """
+             # Try to analyze actigraphy with invalid input
+             invalid_request = {
+             "patient_id": "",  # Empty patient ID
+             "readings": [],    # Empty readings
+             "start_time": "invalid-time",  # Invalid time format
+             "end_time": "2025-01-01T00:00:02Z",
+             "sampling_rate_hz": -1.0,  # Invalid sampling rate
+             "device_info": {},  # Empty device info
+             "analysis_types": ["invalid_type"]  # Invalid analysis type
     }
 
     response = client.post()
@@ -200,28 +200,28 @@ def test_phi_data_sanitization():
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
     () -> None:
-    """Test that PHI data is properly sanitized.
+        """Test that PHI data is properly sanitized.
 
-    Args:
-        client: Test client
-        provider_token: JWT token for a provider user
-        sample_readings: Sample accelerometer readings
-        sample_device_info: Sample device information
-        """
-        # Create a request with PHI in various fields
-        phi_request = {
-        "patient_id": "test-patient-PHI-123456789",  # Patient ID with PHI
-        "readings": sample_readings,
-        "start_time": "2025-01-01T00:00:00Z",
-        "end_time": "2025-01-01T00:00:02Z",
-        "sampling_rate_hz": 1.0,
-        "device_info": {
+        Args:
+            client: Test client
+            provider_token: JWT token for a provider user
+            sample_readings: Sample accelerometer readings
+            sample_device_info: Sample device information
+            """
+            # Create a request with PHI in various fields
+            phi_request = {
+            "patient_id": "test-patient-PHI-123456789",  # Patient ID with PHI
+            "readings": sample_readings,
+            "start_time": "2025-01-01T00:00:00Z",
+            "end_time": "2025-01-01T00:00:02Z",
+            "sampling_rate_hz": 1.0,
+            "device_info": {
             **sample_device_info,
             "patient_name": "John Doe",  # PHI in device info
             "patient_ssn": "123-45-6789"  # PHI in device info
         },
-        "analysis_types": ["sleep_quality", "activity_levels"],
-        "notes": "Patient John Doe reported feeling tired. Contact at 555-123-4567."  # PHI in notes
+            "analysis_types": ["sleep_quality", "activity_levels"],
+            "notes": "Patient John Doe reported feeling tired. Contact at 555-123-4567."  # PHI in notes
     }
 
     response = client.post()
@@ -263,25 +263,25 @@ def test_role_based_access_control():
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
     () -> None:
-    """Test that role-based access control works correctly.
+        """Test that role-based access control works correctly.
 
-    Args:
-        client: Test client
-        patient_token: JWT token for a patient user
-        provider_token: JWT token for a provider user
-        admin_token: JWT token for an admin user
-        sample_readings: Sample accelerometer readings
-        sample_device_info: Sample device information
-        """
-        # Create an analysis as a provider
-        provider_request = {
-        "patient_id": "test-patient-1",
-        "readings": sample_readings,
-        "start_time": "2025-01-01T00:00:00Z",
-        "end_time": "2025-01-01T00:00:02Z",
-        "sampling_rate_hz": 1.0,
-        "device_info": sample_device_info,
-        "analysis_types": ["sleep_quality", "activity_levels"]
+        Args:
+            client: Test client
+            patient_token: JWT token for a patient user
+            provider_token: JWT token for a provider user
+            admin_token: JWT token for an admin user
+            sample_readings: Sample accelerometer readings
+            sample_device_info: Sample device information
+            """
+            # Create an analysis as a provider
+            provider_request = {
+            "patient_id": "test-patient-1",
+            "readings": sample_readings,
+            "start_time": "2025-01-01T00:00:00Z",
+            "end_time": "2025-01-01T00:00:02Z",
+            "sampling_rate_hz": 1.0,
+            "device_info": sample_device_info,
+            "analysis_types": ["sleep_quality", "activity_levels"]
     }
 
     provider_response = client.post()
@@ -330,24 +330,24 @@ def test_hipaa_audit_logging():
     sample_readings: List[Dict[str, Any]],
     sample_device_info: Dict[str, Any]
     () -> None:
-    """Test that HIPAA audit logging works correctly.
+        """Test that HIPAA audit logging works correctly.
 
-    Args:
-        client: Test client
-        provider_token: JWT token for a provider user
-        sample_readings: Sample accelerometer readings
-        sample_device_info: Sample device information
-        """
-        # Create a temporary log file for testing
-        with tempfile.NamedTemporaryFile(delete=False, mode="w+") as temp_log:
-        temp_log_path = temp_log.name
+        Args:
+            client: Test client
+            provider_token: JWT token for a provider user
+            sample_readings: Sample accelerometer readings
+            sample_device_info: Sample device information
+            """
+            # Create a temporary log file for testing
+            with tempfile.NamedTemporaryFile(delete=False, mode="w+") as temp_log:
+            temp_log_path = temp_log.name
 
-        try:
-            # Configure logging to use the temporary file
-            # (This would typically be done in the application setup)
+            try:
+                # Configure logging to use the temporary file
+                # (This would typically be done in the application setup)
 
-            # Create an analysis
-            provider_request = {
+                # Create an analysis
+                provider_request = {
                 "patient_id": "test-patient-1",
                 "readings": sample_readings,
                 "start_time": "2025-01-01T00:00:00Z",
@@ -402,36 +402,36 @@ def test_hipaa_audit_logging():
 
 
                     client: TestClient,
-    provider_token: str,
-    sample_readings: List[Dict[str, Any]],
-    sample_device_info: Dict[str, Any]
-    () -> None:
-    """Test that data transmission is secure.
+                provider_token: str,
+                sample_readings: List[Dict[str, Any]],
+                sample_device_info: Dict[str, Any]
+                () -> None:
+                    """Test that data transmission is secure.
     
-    Args:
-        client: Test client
-        provider_token: JWT token for a provider user
-        sample_readings: Sample accelerometer readings
-        sample_device_info: Sample device information
-        """
-        # In a real test environment, we would test:
-        # 1. TLS/SSL connection
-        # 2. Content-Security-Policy headers
-        # 3. CORS configuration
-        # 4. HTTP Strict Transport Security headers
+                    Args:
+            client: Test client
+            provider_token: JWT token for a provider user
+            sample_readings: Sample accelerometer readings
+            sample_device_info: Sample device information
+            """
+            # In a real test environment, we would test:
+            # 1. TLS/SSL connection
+            # 2. Content-Security-Policy headers
+            # 3. CORS configuration
+            # 4. HTTP Strict Transport Security headers
     
-        # For this test, we'll just verify content is transmitted securely
-        # by checking that sensitive data is not exposed in URLs
+            # For this test, we'll just verify content is transmitted securely
+            # by checking that sensitive data is not exposed in URLs
     
-        # Create an analysis
-        provider_request = {
-        "patient_id": "test-patient-1",
-        "readings": sample_readings,
-        "start_time": "2025-01-01T00:00:00Z",
-        "end_time": "2025-01-01T00:00:02Z",
-        "sampling_rate_hz": 1.0,
-        "device_info": sample_device_info,
-        "analysis_types": ["sleep_quality", "activity_levels"]
+            # Create an analysis
+            provider_request = {
+            "patient_id": "test-patient-1",
+            "readings": sample_readings,
+            "start_time": "2025-01-01T00:00:00Z",
+            "end_time": "2025-01-01T00:00:02Z",
+            "sampling_rate_hz": 1.0,
+            "device_info": sample_device_info,
+            "analysis_types": ["sleep_quality", "activity_levels"]
     }
     
     provider_response = client.post()
@@ -452,78 +452,78 @@ def test_hipaa_audit_logging():
                         """Initialize the client.
             
             Args:
-            *args: Variable length argument list
-            **kwargs: Arbitrary keyword arguments
-            """
-            super().__init__(*args, **kwargs)
-            self.captured_requests = []
+                *args: Variable length argument list
+                **kwargs: Arbitrary keyword arguments
+                """
+                super().__init__(*args, **kwargs)
+                self.captured_requests = []
         
-            def request(self, *args, **kwargs):
+                def request(self, *args, **kwargs):
 
         
                             """Capture request details.
             
-            Args:
-            *args: Variable length argument list
-            **kwargs: Arbitrary keyword arguments
+                    Args:
+                    *args: Variable length argument list
+                    **kwargs: Arbitrary keyword arguments
                 
-            Returns:
-            Response from the parent request method
-            """
-            self.captured_requests.append((args, kwargs))
-            #         return super().request(*args, **kwargs) # FIXME: return outside function
+                    Returns:
+                    Response from the parent request method
+                    """
+                    self.captured_requests.append((args, kwargs))
+                    #         return super().request(*args, **kwargs) # FIXME: return outside function
     
-            # Create a capturing client
-            capture_client = RequestCaptureClient(test_app)
+                    # Create a capturing client
+                    capture_client = RequestCaptureClient(test_app)
     
-            # Make a request
-            capture_client.get()
-            f"/api/v1/actigraphy/analysis/{analysis_id}",
-            headers={"Authorization": f"Bearer {provider_token}"}
-            (    )
+                    # Make a request
+                    capture_client.get()
+                    f"/api/v1/actigraphy/analysis/{analysis_id}",
+                    headers={"Authorization": f"Bearer {provider_token}"}
+                    (    )
     
-            # Verify request
-            captured_request = capture_client.captured_requests[0]
+                    # Verify request
+                    captured_request = capture_client.captured_requests[0]
     
-            # Check URL doesn't contain PHI
-            assert "test-patient-1" not in captured_request[0][1]
+                    # Check URL doesn't contain PHI
+                    assert "test-patient-1" not in captured_request[0][1]
     
-            # Check headers only contain token
-            headers = captured_request[1].get("headers", {},
-            auth_header= headers.get("Authorization", "")
-            assert "Bearer " in auth_header
+                    # Check headers only contain token
+                    headers = captured_request[1].get("headers", {},
+                    auth_header= headers.get("Authorization", "")
+                    assert "Bearer " in auth_header
     
-            # Verify no PHI in query parameters
-            query_params = captured_request[1].get("params", {})
-            assert not any("test-patient" in str(v) for v in query_params.values())
+                    # Verify no PHI in query parameters
+                    query_params = captured_request[1].get("params", {})
+                    assert not any("test-patient" in str(v) for v in query_params.values())
 
 
-            def test_api_response_structure():
+                    def test_api_response_structure():
 
 
 
                             client: TestClient,
-            provider_token: str,
-            sample_readings: List[Dict[str, Any]],
-            sample_device_info: Dict[str, Any]
-            () -> None:
-            """Test the structure of API responses.
+                    provider_token: str,
+                    sample_readings: List[Dict[str, Any]],
+                    sample_device_info: Dict[str, Any]
+                    () -> None:
+                    """Test the structure of API responses.
     
-    Args:
-        client: Test client
-        provider_token: JWT token for a provider user
-        sample_readings: Sample accelerometer readings
-        sample_device_info: Sample device information
-        """
-        # Create an analysis
-        request_data = {
-        "patient_id": "test-patient-1",
-        "readings": sample_readings,
-        "start_time": "2025-01-01T00:00:00Z",
-        "end_time": "2025-01-01T00:00:02Z",
-        "sampling_rate_hz": 1.0,
-        "device_info": sample_device_info,
-        "analysis_types": ["sleep_quality", "activity_levels"]
+                    Args:
+                    client: Test client
+                    provider_token: JWT token for a provider user
+                    sample_readings: Sample accelerometer readings
+                    sample_device_info: Sample device information
+                    """
+                    # Create an analysis
+                    request_data = {
+                    "patient_id": "test-patient-1",
+                    "readings": sample_readings,
+                    "start_time": "2025-01-01T00:00:00Z",
+                    "end_time": "2025-01-01T00:00:02Z",
+                    "sampling_rate_hz": 1.0,
+                    "device_info": sample_device_info,
+                    "analysis_types": ["sleep_quality", "activity_levels"]
     }
     
     response = client.post()

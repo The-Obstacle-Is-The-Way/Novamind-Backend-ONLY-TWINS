@@ -3,7 +3,8 @@
 import pytest
 from typing import Dict
 
-from app.domain.value_objects.physiological_ranges import PhysiologicalRangeclass TestPhysiologicalRange:
+from app.domain.value_objects.physiological_ranges import PhysiologicalRange
+class TestPhysiologicalRange:
     """Tests for the PhysiologicalRange value object."""
 
     def test_init_with_valid_values(self):
@@ -167,11 +168,12 @@ from app.domain.value_objects.physiological_ranges import PhysiologicalRangeclas
         assert range_dict["critical_min"] == 40.0
         assert range_dict["critical_max"] == 140.0
 
-    def test_from_dict(self):
+        def test_from_dict(self):
 
 
-                    """Test from_dict class method."""
-        range_dict = {
+                    """Test from_dict 
+            class method."""
+            range_dict = {
             "min": 60.0,
             "max": 100.0,
             "critical_min": 40.0,
@@ -231,15 +233,15 @@ from app.domain.value_objects.physiological_ranges import PhysiologicalRangeclas
 
 
                         """Test all default ranges are valid."""
-        for biometric_type, range_data in PhysiologicalRange.DEFAULT_RANGES.items():
-            # Verify the range data has required keys
-            assert "min" in range_data
-            assert "max" in range_data
-            assert "critical_min" in range_data
-            assert "critical_max" in range_data
+            for biometric_type, range_data in PhysiologicalRange.DEFAULT_RANGES.items():
+                # Verify the range data has required keys
+                assert "min" in range_data
+                assert "max" in range_data
+                assert "critical_min" in range_data
+                assert "critical_max" in range_data
 
-            # Verify the range can be instantiated without errors
-            range_obj = PhysiologicalRange(
+                # Verify the range can be instantiated without errors
+                range_obj = PhysiologicalRange(
                 min=range_data["min"],
                 max=range_data["max"],
                 critical_min=range_data["critical_min"],

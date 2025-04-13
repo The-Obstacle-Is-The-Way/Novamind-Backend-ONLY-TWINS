@@ -58,22 +58,22 @@ def client():
         async def mock_predict_treatment_response():
              return mock_xgboost_service.predict_treatment_response.return_value
 
-        @mock_router.post("/outcome-prediction")
-        async def mock_predict_outcome():
-             return mock_xgboost_service.predict_outcome.return_value
+            @mock_router.post("/outcome-prediction")
+            async def mock_predict_outcome():
+                return mock_xgboost_service.predict_outcome.return_value
 
-        @mock_router.post("/model-info")
-        async def mock_get_model_info():
-             return mock_xgboost_service.get_model_info.return_value
+                @mock_router.post("/model-info")
+                async def mock_get_model_info():
+                return mock_xgboost_service.get_model_info.return_value
 
-        app.include_router(mock_router, prefix="/api/xgboost")
+                app.include_router(mock_router, prefix="/api/xgboost")
 
-        return TestClient(app)
+                return TestClient(app)
 
-        @pytest.mark.api()
-        @pytest.mark.parametrize(
-            "endpoint, request_model, response_model",
-            [
+                @pytest.mark.api()
+                @pytest.mark.parametrize(
+                "endpoint, request_model, response_model",
+                [
                 ("/api/xgboost/risk-prediction",
                  RiskPredictionRequest(
                      patient_id="123",
@@ -131,7 +131,7 @@ def client():
                  ),
                  ModelInfoResponse,
                  ),
-            ],
+                ],
         )
 @pytest.mark.db_required()
 def test_xgboost_endpoints_return_200(
@@ -139,28 +139,28 @@ def test_xgboost_endpoints_return_200(
         endpoint,
         request_model,
         response_model):
-    """Test that XGBoost endpoints return 200 status code."""
-    # Setup mock return value
-    mock_response = response_model(prediction=0.75, confidence=0.85)
-    mock_xgboost_service.predict_risk.return_value = mock_response
-    mock_xgboost_service.predict_treatment_response.return_value = mock_response
-    mock_xgboost_service.predict_outcome.return_value = mock_response
-    mock_xgboost_service.get_model_info.return_value = mock_response
+            """Test that XGBoost endpoints return 200 status code."""
+            # Setup mock return value
+            mock_response = response_model(prediction=0.75, confidence=0.85)
+            mock_xgboost_service.predict_risk.return_value = mock_response
+            mock_xgboost_service.predict_treatment_response.return_value = mock_response
+            mock_xgboost_service.predict_outcome.return_value = mock_response
+            mock_xgboost_service.get_model_info.return_value = mock_response
 
-    # Make request
-    response = client.post(
-        endpoint, json=json.loads(
+            # Make request
+            response = client.post(
+            endpoint, json=json.loads(
             request_model.model_dump_json()))
 
-    # Check status code
-    assert response.status_code == status.HTTP_200_OK
+            # Check status code
+            assert response.status_code == status.HTTP_200_OK
 
-    @pytest.mark.api()
-    def test_xgboost_risk_prediction_with_invalid_data(client):
+            @pytest.mark.api()
+            def test_xgboost_risk_prediction_with_invalid_data(client):
 
                 """Test that risk prediction endpoint validates input data."""
-    # Invalid request missing required fields
-    response = client.post("/api/xgboost/risk-prediction", json={})
+                # Invalid request missing required fields
+                response = client.post("/api/xgboost/risk-prediction", json={})
 
-    # Check status code (should be 422 Unprocessable Entity)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+                # Check status code (should be 422 Unprocessable Entity)
+                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

@@ -30,23 +30,23 @@ def run_quantum_security_tests():
     return test_runner.results
 
     class SecurityTestRunner:
-    """Quantum-grade test collector and runner for NovaMind security tests."""
+        """Quantum-grade test collector and runner for NovaMind security tests."""
 
-    def __init__(self, output_path: str = None):
-        """Initialize test runner with output path.
+        def __init__(self, output_path: str = None):
+            """Initialize test runner with output path.
 
-        Args:
+            Args:
             output_path: Path to save test reports
             """
-        self.base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.output_path = output_path or os.path.join(
+            self.base_dir = os.path.dirname(os.path.abspath(__file__))
+            self.output_path = output_path or os.path.join(
             self.base_dir, "test_results")
 
-        # Ensure output directory exists
-        os.makedirs(self.output_path, exist_ok=True)
+            # Ensure output directory exists
+            os.makedirs(self.output_path, exist_ok=True)
 
-        # Test categories in priority order
-        self.test_categories = [
+            # Test categories in priority order
+            self.test_categories = [
             {"name": "Core Encryption", "pattern": "test_ml_encryption.py"},
             {"name": "PHI Handling", "pattern": "test_address_helper.py"},
             {
@@ -59,10 +59,10 @@ def run_quantum_security_tests():
             {"name": "Security Patterns", "pattern": "test_*security*.py"},
             {"name": "Audit Logging", "pattern": "test_audit*.py"},
             {"name": "API Security", "pattern": "test_api*.py"},
-        ]
+            ]
 
-        # Test results collection
-        self.results = {
+            # Test results collection
+            self.results = {
             "timestamp": datetime.now().isoformat(),
             "summary": {
                 "total": 0,
@@ -81,49 +81,49 @@ def run_quantum_security_tests():
             pattern: Glob pattern to match test files
 
             Returns:
-            List of matching file paths
-            """
-        import glob
+                List of matching file paths
+                """
+                import glob
 
-        # Handle both relative and absolute patterns
-        if os.path.isabs(pattern):
-            search_pattern = pattern
-            else:
-            search_pattern = os.path.join(self.base_dir, pattern)
+                # Handle both relative and absolute patterns
+                if os.path.isabs(pattern):
+                    search_pattern = pattern
+                    else:
+                search_pattern = os.path.join(self.base_dir, pattern)
 
-            return glob.glob(search_pattern)
+                return glob.glob(search_pattern)
 
-            def run_pytest(self, test_file: str) -> Dict[str, Any]:
-        """Run pytest on a specific test file.
+                def run_pytest(self, test_file: str) -> Dict[str, Any]:
+                    """Run pytest on a specific test file.
 
-        Args:
-            test_file: Path to test file
+                    Args:
+                    test_file: Path to test file
 
-            Returns:
-            Dictionary with test results
-            """
-        # Determine the pytest command for JSON output
-        cmd = [
-            sys.executable,
-            "-m",
-            "pytest",
-            test_file,
-            "--json-report",
-            "--no-header",
-            "--no-summary",
-        ]
+                    Returns:
+                Dictionary with test results
+                """
+                # Determine the pytest command for JSON output
+                cmd = [
+                sys.executable,
+                "-m",
+                "pytest",
+                test_file,
+                "--json-report",
+                "--no-header",
+                "--no-summary",
+                ]
 
-        # Create a temporary directory for the JSON report
-        import tempfile
+                # Create a temporary directory for the JSON report
+                import tempfile
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Set the report path
-            json_path = os.path.join(tmpdir, "report.json")
-            cmd.extend(["--json-report-file", json_path])
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    # Set the report path
+                    json_path = os.path.join(tmpdir, "report.json")
+                    cmd.extend(["--json-report-file", json_path])
 
-            # Run pytest
-            print(f"Running: {' '.join(cmd)}")
-            try:
+                    # Run pytest
+                    print(f"Running: {' '.join(cmd)}")
+                    try:
                 subprocess.run(cmd, check=False, capture_output=True)
 
                 # Parse the JSON report
@@ -132,17 +132,17 @@ def run_quantum_security_tests():
 
                     return results
                     except Exception as e:
-                print(f"Error running test {test_file}: {str(e)}")
-                return {
-                    "summary": {
+                        print(f"Error running test {test_file}: {str(e)}")
+                        return {
+                        "summary": {
                         "total": 0,
                         "passed": 0,
                         "failed": 0,
                         "skipped": 0,
                         "errors": 1,
                     },
-                    "tests": [],
-                    "error": str(e),
+                        "tests": [],
+                        "error": str(e),
                 }
 
     def parse_test_results(self, results: Dict[str, Any]) -> Dict[str, Any]:
@@ -152,15 +152,15 @@ def run_quantum_security_tests():
             results: Pytest JSON report
 
             Returns:
-            Simplified test results
-            """
-        # Extract summary statistics
-        summary = {
-            "total": results.get("summary", {}).get("total", 0),
-            "passed": results.get("summary", {}).get("passed", 0),
-            "failed": results.get("summary", {}).get("failed", 0),
-            "skipped": results.get("summary", {}).get("skipped", 0),
-            "errors": results.get("summary", {}).get("errors", 0),
+                Simplified test results
+                """
+                # Extract summary statistics
+                summary = {
+                "total": results.get("summary", {}).get("total", 0),
+                "passed": results.get("summary", {}).get("passed", 0),
+                "failed": results.get("summary", {}).get("failed", 0),
+                "skipped": results.get("summary", {}).get("skipped", 0),
+                "errors": results.get("summary", {}).get("errors", 0),
         }
 
         # Extract individual test results
@@ -182,18 +182,18 @@ def run_quantum_security_tests():
         Args:
             category: Dictionary with category name and file pattern
             """
-        name = category["name"]
-        pattern = category["pattern"]
+            name = category["name"]
+            pattern = category["pattern"]
 
-        print("\n" + "=" * 60)
-        print(f"RUNNING TESTS: {name}")
-        print("=" * 60)
+            print("\n" + "=" * 60)
+            print(f"RUNNING TESTS: {name}")
+            print("=" * 60)
 
-        # Find test files for this category
-        test_files = self.find_test_files(pattern)
+            # Find test files for this category
+            test_files = self.find_test_files(pattern)
 
-        # Initialize category results
-        category_results = {
+            # Initialize category results
+            category_results = {
             "files_found": len(test_files),
             "files": [],
             "tests": {
@@ -232,33 +232,33 @@ def run_quantum_security_tests():
                     f"  Passed: {
                         parsed_results['summary']['passed']}/{
                         parsed_results['summary']['total']}")
-            print(f"  Failed: {parsed_results['summary']['failed']}")
-            print(f"  Errors: {parsed_results['summary']['errors']}")
+                print(f"  Failed: {parsed_results['summary']['failed']}")
+                print(f"  Errors: {parsed_results['summary']['errors']}")
 
-        # Update overall summary
-        for key in self.results["summary"]:
-            self.results["summary"][key] += category_results["tests"][key]
+                # Update overall summary
+                for key in self.results["summary"]:
+                    self.results["summary"][key] += category_results["tests"][key]
 
-            # Store category results
-            self.results["categories"][name] = category_results
+                    # Store category results
+                    self.results["categories"][name] = category_results
 
-            # Print category summary
-            print(f"\nSummary for {name}:")
-            print(f"Files found: {category_results['files_found']}")
-            print(
-                f"Tests passed: {
+                    # Print category summary
+                    print(f"\nSummary for {name}:")
+                    print(f"Files found: {category_results['files_found']}")
+                    print(
+                    f"Tests passed: {
                     category_results['tests']['passed']}/{
                     category_results['tests']['total']}")
-        print(f"Tests failed: {category_results['tests']['failed']}")
-        print(f"Tests with errors: {category_results['tests']['errors']}")
+                    print(f"Tests failed: {category_results['tests']['failed']}")
+                    print(f"Tests with errors: {category_results['tests']['errors']}")
 
-    def run_all_tests(self) -> None:
-        """Run all test categories."""
-        start_time = datetime.now()
-        self.results["start_time"] = start_time.isoformat()
+                    def run_all_tests(self) -> None:
+                """Run all test categories."""
+                start_time = datetime.now()
+                self.results["start_time"] = start_time.isoformat()
 
-        # Run tests by category
-        for category in self.test_categories:
+                # Run tests by category
+                for category in self.test_categories:
             self.run_category(category)
 
             end_time = datetime.now()
@@ -279,7 +279,7 @@ def run_quantum_security_tests():
 
             # Calculate success percentage
             if self.results["summary"]["total"] > 0:
-            success_rate = (
+                success_rate = (
                 100
                 * self.results["summary"]["passed"]
                 / self.results["summary"]["total"]
@@ -299,16 +299,16 @@ def run_quantum_security_tests():
 
             # Generate dashboard HTML if requested
             if os.environ.get("GENERATE_DASHBOARD", "true").lower() == "true":
-            try:
-                from app.tests.security.dashboard import generate_dashboard
+                try:
+                    from app.tests.security.dashboard import generate_dashboard
 
-                dashboard_path = os.path.join(
+                    dashboard_path = os.path.join(
                     self.output_path, f"dashboard_{
                         datetime.now().strftime('%Y%m%d_%H%M%S')}.html", )
-                generate_dashboard(self.results, dashboard_path)
-                print(f"Dashboard generated at: {dashboard_path}")
-            except ImportError:
-                print("Dashboard generation module not available.")
+                    generate_dashboard(self.results, dashboard_path)
+                    print(f"Dashboard generated at: {dashboard_path}")
+                    except ImportError:
+                    print("Dashboard generation module not available.")
 
-                if __name__ == "__main__":
-    run_quantum_security_tests()
+                    if __name__ == "__main__":
+                    run_quantum_security_tests()

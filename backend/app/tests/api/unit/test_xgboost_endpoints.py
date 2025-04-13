@@ -37,7 +37,8 @@ from app.api.schemas.xgboost import (
 
 
 # Mock user for authentication
-@pytest.mark.db_required()class MockUser:
+@pytest.mark.db_required()
+class MockUser:
     def __init__(self, id="test-user-id", role="clinician"):
 
                 self.id = id
@@ -46,23 +47,23 @@ from app.api.schemas.xgboost import (
 
         # Mock XGBoost serviceclass MockXGBoostService:
 
-    def __init__(self):
+            def __init__(self):
 
 
                 # Set up mock methods with MagicMock for all methods
-        self.predict_risk = MagicMock()
-        self.predict_treatment_response = MagicMock()
-        self.predict_outcome = MagicMock()
-        self.get_feature_importance = MagicMock()
-        self.simulate_digital_twin = MagicMock()
-        self.get_model_info = MagicMock()
+                self.predict_risk = MagicMock()
+                self.predict_treatment_response = MagicMock()
+                self.predict_outcome = MagicMock()
+                self.get_feature_importance = MagicMock()
+                self.simulate_digital_twin = MagicMock()
+                self.get_model_info = MagicMock()
 
-        def setup_success_responses(self):
+                def setup_success_responses(self):
 
 
                         """Set up mock responses for successful API calls."""
-        # Risk prediction response
-        self.predict_risk.return_value = {
+            # Risk prediction response
+            self.predict_risk.return_value = {
             "prediction_id": str(uuid.uuid4()),
             "patient_id": "patient-123",
             "model_type": ModelType.RISK_SUICIDE,
@@ -223,10 +224,10 @@ def mock_dependencies():
                 yield service
 
                 # Mock error dependency overrides@pytest.fixture
-def mock_error_dependencies():
+                def mock_error_dependencies():
 
-            """Set up dependency overrides for error cases."""
-    with patch("app.api.routes.xgboost.get_current_user", return_value=MockUser()):
+                    """Set up dependency overrides for error cases."""
+                    with patch("app.api.routes.xgboost.get_current_user", return_value=MockUser()):
         with patch("app.api.routes.xgboost._get_xgboost_service") as mock_get_service:
             service = MockXGBoostService()
             service.setup_error_responses()
@@ -242,17 +243,17 @@ def mock_error_dependencies():
 
                 def test_predict_risk_endpoint(
                         client: TestClient, mock_dependencies):
-    """Test the risk prediction endpoint with valid data."""
-    # Prepare request data
-    request_data = {
-        "patient_id": "patient-123",
-        "risk_type": "suicide",
-        "clinical_data": {
-            "phq9_score": 15,
-            "gad7_score": 12,
-            "medication_adherence": 0.8,
+                            """Test the risk prediction endpoint with valid data."""
+                            # Prepare request data
+                            request_data = {
+                            "patient_id": "patient-123",
+                            "risk_type": "suicide",
+                            "clinical_data": {
+                            "phq9_score": 15,
+                            "gad7_score": 12,
+                            "medication_adherence": 0.8,
         },
-        "demographic_data": {"age": 35, "gender": "female"},
+                            "demographic_data": {"age": 35, "gender": "female"},
     }
 
     # Make the request
@@ -268,18 +269,18 @@ def mock_error_dependencies():
 
 def test_predict_treatment_response_endpoint(
         client: TestClient, mock_dependencies):
-    """Test the treatment response prediction endpoint with valid data."""
-    # Prepare request data
-    request_data = {
-        "patient_id": "patient-123",
-        "treatment_type": "ssri",
-        "treatment_details": {
+            """Test the treatment response prediction endpoint with valid data."""
+            # Prepare request data
+            request_data = {
+            "patient_id": "patient-123",
+            "treatment_type": "ssri",
+            "treatment_details": {
             "medication": "Escitalopram",
             "dosage": "10mg daily"},
-        "clinical_data": {
+            "clinical_data": {
             "phq9_score": 15,
             "gad7_score": 12},
-        "genetic_data": [
+            "genetic_data": [
             "CYP2D6*1/*2",
             "SLC6A4 L/L"],
     }
@@ -328,12 +329,12 @@ def test_predict_outcome_endpoint(client: TestClient, mock_dependencies):
 
 def test_get_feature_importance_endpoint(
         client: TestClient, mock_dependencies):
-    """Test the feature importance endpoint."""
-    # Prepare request data
-    request_data = {
-        "patient_id": "patient-123",
-        "model_type": "risk-suicide",
-        "prediction_id": "pred-123",
+            """Test the feature importance endpoint."""
+            # Prepare request data
+            request_data = {
+            "patient_id": "patient-123",
+            "model_type": "risk-suicide",
+            "prediction_id": "pred-123",
     }
 
     # Make the request
@@ -349,12 +350,12 @@ def test_get_feature_importance_endpoint(
 
 def test_digital_twin_integration_endpoint(
         client: TestClient, mock_dependencies):
-    """Test the digital twin integration endpoint."""
-    # Prepare request data
-    request_data = {
-        "patient_id": "patient-123",
-        "profile_id": "profile-123",
-        "prediction_id": "pred-123",
+            """Test the digital twin integration endpoint."""
+            # Prepare request data
+            request_data = {
+            "patient_id": "patient-123",
+            "profile_id": "profile-123",
+            "prediction_id": "pred-123",
     }
 
     # Make the request
@@ -391,12 +392,12 @@ def test_model_info_endpoint(client: TestClient, mock_dependencies):
     def test_model_not_found_error(
             client: TestClient,
             mock_error_dependencies):
-    """Test handling of ModelNotFoundError."""
-    # Prepare request data
-    request_data = {
-        "patient_id": "patient-123",
-        "risk_type": "nonexistent",
-        "clinical_data": {"phq9_score": 15},
+                """Test handling of ModelNotFoundError."""
+                # Prepare request data
+                request_data = {
+                "patient_id": "patient-123",
+                "risk_type": "nonexistent",
+                "clinical_data": {"phq9_score": 15},
     }
 
     # Make the request

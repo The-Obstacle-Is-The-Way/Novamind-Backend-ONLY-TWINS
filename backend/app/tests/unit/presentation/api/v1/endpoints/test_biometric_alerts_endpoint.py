@@ -75,14 +75,14 @@ def mock_biometric_event_processor():
     processor.unregister_observer = MagicMock()
     processor.process_data_point = MagicMock()
     return processor@pytest.fixture
-def mock_clinical_rule_engine():
+    def mock_clinical_rule_engine():
 
             """Create a mock ClinicalRuleEngine."""
-    engine = AsyncMock(spec=ClinicalRuleEngine)
-    engine.register_rule_template = MagicMock()
-    engine.register_custom_condition = MagicMock()
-    engine.create_rule_from_template = MagicMock()
-    engine.rule_templates = {
+        engine = AsyncMock(spec=ClinicalRuleEngine)
+        engine.register_rule_template = MagicMock()
+        engine.register_custom_condition = MagicMock()
+        engine.create_rule_from_template = MagicMock()
+        engine.rule_templates = {
         "high_heart_rate": {
             "name": "High Heart Rate",
             "description": "Alert when heart rate exceeds {threshold}",
@@ -118,48 +118,48 @@ def mock_alert_repository():
     repository.update_alert = AsyncMock()
     repository.delete_alert = AsyncMock()
     return repository@pytest.fixture
-def mock_rule_repository():
+    def mock_rule_repository():
 
             """Create a mock rule repository."""
-    repository = AsyncMock(spec=BaseRepository)  # Use a base spec if available
-    repository.get_rules = AsyncMock()
-    repository.get_rule_by_id = AsyncMock()
-    repository.create_rule = AsyncMock()
-    repository.update_rule = AsyncMock()
-    repository.delete_rule = AsyncMock()
-    return repository@pytest.fixture
-def mock_current_user_id():
+        repository = AsyncMock(spec=BaseRepository)  # Use a base spec if available
+        repository.get_rules = AsyncMock()
+        repository.get_rule_by_id = AsyncMock()
+        repository.create_rule = AsyncMock()
+        repository.update_rule = AsyncMock()
+        repository.delete_rule = AsyncMock()
+        return repository@pytest.fixture
+        def mock_current_user_id():
 
             """Fixture for a mock user ID."""
 
-    return UUID("00000000-0000-0000-0000-000000000001")@pytest.fixture
-def app(
+        return UUID("00000000-0000-0000-0000-000000000001")@pytest.fixture
+        def app(
         mock_biometric_event_processor,
         mock_clinical_rule_engine,
         mock_alert_repository,
         mock_rule_repository,
         mock_current_user_id,
     ):
-    """Create a FastAPI test app with the biometric alerts router."""
-    app_instance = FastAPI()
+        """Create a FastAPI test app with the biometric alerts router."""
+        app_instance = FastAPI()
 
-    # Override dependencies
-    app_instance.dependency_overrides[
+        # Override dependencies
+        app_instance.dependency_overrides[
         get_biometric_event_processor
-    ] = lambda: mock_biometric_event_processor
-    app_instance.dependency_overrides[
+        ] = lambda: mock_biometric_event_processor
+        app_instance.dependency_overrides[
         get_clinical_rule_engine
-    ] = lambda: mock_clinical_rule_engine
-    app_instance.dependency_overrides[
+        ] = lambda: mock_clinical_rule_engine
+        app_instance.dependency_overrides[
         get_alert_repository
-    ] = lambda: mock_alert_repository
-    app_instance.dependency_overrides[
+        ] = lambda: mock_alert_repository
+        app_instance.dependency_overrides[
         get_rule_repository
-    ] = lambda: mock_rule_repository
-    # Assuming get_current_user_id is the correct dependency name
-    try:
-        # Attempt to import the actual dependency function if it exists
-        from app.presentation.api.dependencies.auth import (
+        ] = lambda: mock_rule_repository
+        # Assuming get_current_user_id is the correct dependency name
+        try:
+            # Attempt to import the actual dependency function if it exists
+            from app.presentation.api.dependencies.auth import (
             get_current_user_id as auth_get_user_id,
         )
 
@@ -189,16 +189,16 @@ def client(app):
             """Create a test client for the FastAPI app."""
 
     return TestClient(app)@pytest.fixture
-def sample_patient_id():
+    def sample_patient_id():
 
             """Create a sample patient ID."""
 
-    return UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
-def sample_rule(sample_patient_id):
+        return UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+        def sample_rule(sample_patient_id):
 
             """Create a sample alert rule."""
-    # Assuming AlertRule takes condition as a dict for simplicity in test setup
-    return AlertRule(
+        # Assuming AlertRule takes condition as a dict for simplicity in test setup
+        return AlertRule(
         rule_id="test-rule-1",
         name="High Heart Rate",
         description="Alert when heart rate exceeds 100 bpm",
@@ -285,13 +285,13 @@ def sample_alert(sample_rule, sample_data_point):
             mock_biometric_event_processor,
             sample_rule,
         ):
-        """Test that create_alert_rule creates a rule from a template."""
-        # Setup
-        mock_clinical_rule_engine.create_rule_from_template.return_value = sample_rule
-        # Assume create_rule returns the created rule or its ID
-        mock_rule_repository.create_rule = AsyncMock(return_value=sample_rule,
+            """Test that create_alert_rule creates a rule from a template."""
+            # Setup
+            mock_clinical_rule_engine.create_rule_from_template.return_value = sample_rule
+            # Assume create_rule returns the created rule or its ID
+            mock_rule_repository.create_rule = AsyncMock(return_value=sample_rule,
 
-        rule_data= {
+            rule_data= {
             # "rule_id": "test-rule-1", # ID should be generated by backend
             "name": "High Heart Rate",
             "description": "Alert when heart rate exceeds 100 bpm",
@@ -320,18 +320,18 @@ def sample_alert(sample_rule, sample_data_point):
             mock_rule_repository,
             mock_biometric_event_processor,
             sample_rule):
-        """Test that create_alert_rule creates a rule from a condition."""
-        # Setup
-        # Assume create_rule returns the created rule or its ID
-        mock_rule_repository.create_rule = AsyncMock(return_value=sample_rule,
+                """Test that create_alert_rule creates a rule from a condition."""
+                # Setup
+                # Assume create_rule returns the created rule or its ID
+                mock_rule_repository.create_rule = AsyncMock(return_value=sample_rule,
 
-        rule_data= {
-            # "rule_id": "test-rule-1", # ID should be generated
-            "name": "High Heart Rate",
-            "description": "Alert when heart rate exceeds 100 bpm",
-            "priority": "warning",
-            "condition": {"data_type": "heart_rate", "operator": ">", "threshold": 100.0},
-            "patient_id": str(sample_rule.patient_id),
+                rule_data= {
+                # "rule_id": "test-rule-1", # ID should be generated
+                "name": "High Heart Rate",
+                "description": "Alert when heart rate exceeds 100 bpm",
+                "priority": "warning",
+                "condition": {"data_type": "heart_rate", "operator": ">", "threshold": 100.0},
+                "patient_id": str(sample_rule.patient_id),
         }
 
     # Execute
@@ -355,7 +355,7 @@ def sample_alert(sample_rule, sample_data_point):
             ValidationError("Missing required parameter")
         ,
 
-    rule_data= {
+        rule_data= {
         "name": "High Heart Rate",
         "description": "Alert when heart rate exceeds 100 bpm",
         "priority": "warning",
@@ -396,34 +396,34 @@ def sample_alert(sample_rule, sample_data_point):
 
 
                         """Test that get_alert_rule handles not found errors."""
-        # Setup
-        rule_id = "nonexistent-rule"
-        mock_rule_repository.get_rule_by_id.return_value = None
+            # Setup
+            rule_id = "nonexistent-rule"
+            mock_rule_repository.get_rule_by_id.return_value = None
 
-        # Execute
+            # Execute
 
-        response = client.get(f"/biometric-alerts/rules/{rule_id}")
+            response = client.get(f"/biometric-alerts/rules/{rule_id}")
 
-        # Verify
-        assert response.status_code == 404
-        assert "not found" in response.json()["detail"]
-        mock_rule_repository.get_rule_by_id.assert_called_once_with(rule_id)
+            # Verify
+            assert response.status_code == 404
+            assert "not found" in response.json()["detail"]
+            mock_rule_repository.get_rule_by_id.assert_called_once_with(rule_id)
 
-        def test_update_alert_rule(
+            def test_update_alert_rule(
                 self,
                 client,
                 mock_rule_repository,
                 mock_biometric_event_processor,
                 sample_rule):
-        """Test that update_alert_rule updates a rule."""
-        # Setup
-        # Simulate the updated rule being returned or used
-        updated_rule = sample_rule.copy(
-            update={
-                "name": "Updated High Heart Rate",
-                "description": "Updated description",
-                "priority": AlertPriority.URGENT,
-                "is_active": False,
+                    """Test that update_alert_rule updates a rule."""
+                    # Setup
+                    # Simulate the updated rule being returned or used
+                    updated_rule = sample_rule.copy(
+                    update={
+                    "name": "Updated High Heart Rate",
+                    "description": "Updated description",
+                    "priority": AlertPriority.URGENT,
+                    "is_active": False,
             }
         )
         mock_rule_repository.get_rule_by_id.return_value = sample_rule
@@ -463,26 +463,26 @@ def sample_alert(sample_rule, sample_data_point):
             mock_rule_repository,
             mock_biometric_event_processor,
             sample_rule):
-        """Test that delete_alert_rule deletes a rule."""
-        # Setup
-        mock_rule_repository.get_rule_by_id.return_value = sample_rule
-        mock_rule_repository.delete_rule = AsyncMock(
-            return_value=True
+                """Test that delete_alert_rule deletes a rule."""
+                # Setup
+                mock_rule_repository.get_rule_by_id.return_value = sample_rule
+                mock_rule_repository.delete_rule = AsyncMock(
+                return_value=True
         )  # Assume delete returns success bool
 
-        # Execute
+                # Execute
 
-        response = client.delete(
-            f"/biometric-alerts/rules/{sample_rule.rule_id}")
+                response = client.delete(
+                f"/biometric-alerts/rules/{sample_rule.rule_id}")
 
-        # Verify
-        assert response.status_code == 204
-        mock_rule_repository.get_rule_by_id.assert_called_once_with(
-            sample_rule.rule_id)
-        mock_rule_repository.delete_rule.assert_called_once_with(
-            sample_rule.rule_id)
-        mock_biometric_event_processor.remove_rule.assert_called_once_with(
-            sample_rule.rule_id
+                # Verify
+                assert response.status_code == 204
+                mock_rule_repository.get_rule_by_id.assert_called_once_with(
+                sample_rule.rule_id)
+                mock_rule_repository.delete_rule.assert_called_once_with(
+                sample_rule.rule_id)
+                mock_biometric_event_processor.remove_rule.assert_called_once_with(
+                sample_rule.rule_id
         )
 
     def test_get_rule_templates(self, client, mock_clinical_rule_engine):
@@ -507,48 +507,48 @@ def sample_alert(sample_rule, sample_data_point):
 
 
                         """Test that get_alerts returns the correct response."""
-        # Setup
-        mock_alert_repository.get_alerts.return_value = (
+            # Setup
+            mock_alert_repository.get_alerts.return_value = (
             [sample_alert],
             1,
         )  # Return tuple (items, total)
 
-        # Execute
+            # Execute
 
-        response = client.get("/biometric-alerts/alerts")
+            response = client.get("/biometric-alerts/alerts")
 
-        # Verify
-        assert response.status_code == 200
-        data = response.json()
-        assert data["total"] == 1
-        assert len(data["alerts"]) == 1
-        assert data["alerts"][0]["alert_id"] == str(sample_alert.alert_id)
-        assert data["alerts"][0]["patient_id"] == str(sample_alert.patient_id)
-        assert data["alerts"][0]["rule_id"] == sample_alert.rule_id
-        assert data["alerts"][0]["priority"] == sample_alert.priority.value
-        mock_alert_repository.get_alerts.assert_called_once()
+            # Verify
+            assert response.status_code == 200
+            data = response.json()
+            assert data["total"] == 1
+            assert len(data["alerts"]) == 1
+            assert data["alerts"][0]["alert_id"] == str(sample_alert.alert_id)
+            assert data["alerts"][0]["patient_id"] == str(sample_alert.patient_id)
+            assert data["alerts"][0]["rule_id"] == sample_alert.rule_id
+            assert data["alerts"][0]["priority"] == sample_alert.priority.value
+            mock_alert_repository.get_alerts.assert_called_once()
 
-        def test_get_alerts_with_filters(
+            def test_get_alerts_with_filters(
                 self,
                 client,
                 mock_alert_repository,
                 sample_alert,
                 sample_patient_id):
-        """Test that get_alerts handles filters correctly."""
-        # Setup
-        sample_alert.acknowledged = False  # Ensure acknowledged status matches filter
-        mock_alert_repository.get_alerts.return_value = ([sample_alert], 1)
+                    """Test that get_alerts handles filters correctly."""
+                    # Setup
+                    sample_alert.acknowledged = False  # Ensure acknowledged status matches filter
+                    mock_alert_repository.get_alerts.return_value = ([sample_alert], 1)
 
-        # Execute
+                    # Execute
 
-        response = client.get(
-            "/biometric-alerts/alerts",
-            params={
-                "patient_id": str(sample_patient_id),
-                "priority": "warning",
-                "acknowledged": "false",
-                "start_time": "2025-01-01T00:00:00",
-                "end_time": "2025-12-31T23:59:59",
+                    response = client.get(
+                    "/biometric-alerts/alerts",
+                    params={
+                    "patient_id": str(sample_patient_id),
+                    "priority": "warning",
+                    "acknowledged": "false",
+                    "start_time": "2025-01-01T00:00:00",
+                    "end_time": "2025-12-31T23:59:59",
             },
         )
 

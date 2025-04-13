@@ -40,10 +40,10 @@ def mock_service():
     @pytest.mark.venv_only()
     async def test_patient_id(mock_service) -> UUID:
              """Create a test patient with an initialized digital twin."""
-    patient_id = uuid.uuid4()
+        patient_id = uuid.uuid4()
 
-    # Initialize the Digital Twin
-    await mock_service.initialize_digital_twin(
+        # Initialize the Digital Twin
+        await mock_service.initialize_digital_twin(
         patient_id=patient_id,
         initial_data={
             "diagnoses": ["Major Depressive Disorder"],
@@ -61,13 +61,13 @@ def mock_service():
 @pytest.mark.asyncio()
 async def test_initialize_neurotransmitter_mapping_patient_not_found(
         mock_service):
-    """Test that initialize_neurotransmitter_mapping raises an error for nonexistent patients."""
-    non_existent_id = uuid.uuid4()
+            """Test that initialize_neurotransmitter_mapping raises an error for nonexistent patients."""
+            non_existent_id = uuid.uuid4()
 
-    # This should raise a ValueError because the patient doesn't exist
-    with pytest.raises(ValueError, match=f"Patient {non_existent_id} not found"):
-        await mock_service.initialize_neurotransmitter_mapping(
-            patient_id=non_existent_id, use_default_mapping=True
+            # This should raise a ValueError because the patient doesn't exist
+            with pytest.raises(ValueError, match=f"Patient {non_existent_id} not found"):
+                await mock_service.initialize_neurotransmitter_mapping(
+                patient_id=non_existent_id, use_default_mapping=True
         )
 
 
@@ -248,10 +248,10 @@ async def test_get_neurotransmitter_effects_creates_mapping_if_needed(
 @pytest.mark.asyncio()
 async def test_get_neurotransmitter_effects_with_regions(
         mock_service, test_patient_id):
-    """Test getting neurotransmitter effects with specific brain regions."""
-    # Initialize mapping first
-    await mock_service.initialize_neurotransmitter_mapping(
-        patient_id=test_patient_id, use_default_mapping=True
+            """Test getting neurotransmitter effects with specific brain regions."""
+            # Initialize mapping first
+            await mock_service.initialize_neurotransmitter_mapping(
+            patient_id=test_patient_id, use_default_mapping=True
     )
 
     # Test with specific regions
@@ -283,10 +283,10 @@ async def test_get_neurotransmitter_effects_with_regions(
         async def test_get_neurotransmitter_effects_without_regions(
             mock_service, test_patient_id
         ):
-    """Test getting neurotransmitter effects for all brain regions."""
-    # Initialize mapping first
-    await mock_service.initialize_neurotransmitter_mapping(
-        patient_id=test_patient_id, use_default_mapping=True
+            """Test getting neurotransmitter effects for all brain regions."""
+            # Initialize mapping first
+            await mock_service.initialize_neurotransmitter_mapping(
+            patient_id=test_patient_id, use_default_mapping=True
     )
 
     # Test without specifying regions (should return all,
@@ -303,12 +303,12 @@ async def test_get_neurotransmitter_effects_with_regions(
 @pytest.mark.asyncio()
 async def test_get_brain_region_neurotransmitter_sensitivity_creates_mapping_if_needed(
         mock_service, test_patient_id):
-    """Test that get_brain_region_neurotransmitter_sensitivity creates a mapping if needed."""
-    # Call the method without initializing a mapping first
-    sensitivities = await mock_service.get_brain_region_neurotransmitter_sensitivity(
-        patient_id=test_patient_id,
-        brain_region=BrainRegion.PREFRONTAL_CORTEX,
-        neurotransmitters=[Neurotransmitter.SEROTONIN],
+            """Test that get_brain_region_neurotransmitter_sensitivity creates a mapping if needed."""
+            # Call the method without initializing a mapping first
+            sensitivities = await mock_service.get_brain_region_neurotransmitter_sensitivity(
+            patient_id=test_patient_id,
+            brain_region=BrainRegion.PREFRONTAL_CORTEX,
+            neurotransmitters=[Neurotransmitter.SEROTONIN],
     )
 
     # Verify a mapping was created
@@ -319,10 +319,10 @@ async def test_get_brain_region_neurotransmitter_sensitivity_creates_mapping_if_
 @pytest.mark.asyncio()
 async def test_get_brain_region_neurotransmitter_sensitivity_with_neurotransmitters(
         mock_service, test_patient_id):
-    """Test getting brain region sensitivity with specific neurotransmitters."""
-    # Initialize mapping first
-    await mock_service.initialize_neurotransmitter_mapping(
-        patient_id=test_patient_id, use_default_mapping=True
+            """Test getting brain region sensitivity with specific neurotransmitters."""
+            # Initialize mapping first
+            await mock_service.initialize_neurotransmitter_mapping(
+            patient_id=test_patient_id, use_default_mapping=True
     )
 
     # Test with specific neurotransmitters
@@ -355,10 +355,10 @@ async def test_get_brain_region_neurotransmitter_sensitivity_with_neurotransmitt
         @pytest.mark.asyncio()
         async def test_get_brain_region_neurotransmitter_sensitivity_without_neurotransmitters(
                 mock_service, test_patient_id):
-    """Test getting brain region sensitivity for all neurotransmitters."""
-    # Initialize mapping first
-    await mock_service.initialize_neurotransmitter_mapping(
-        patient_id=test_patient_id, use_default_mapping=True
+                    """Test getting brain region sensitivity for all neurotransmitters."""
+                    # Initialize mapping first
+                    await mock_service.initialize_neurotransmitter_mapping(
+                    patient_id=test_patient_id, use_default_mapping=True
     )
 
     # Test without specifying neurotransmitters (should return all,
@@ -442,17 +442,17 @@ async def test_simulate_neurotransmitter_cascade_with_parameters(
             @pytest.mark.asyncio()
             async def test_analyze_treatment_neurotransmitter_effects_creates_mapping_if_needed(
                     mock_service, test_patient_id):
-    """Test that analyze_treatment_neurotransmitter_effects creates a mapping if needed."""
-    # Define test parameters
-    treatment_id = uuid.uuid4(,
-    time_points= [datetime.now() + timedelta(days=i * 7) for i in range(3)]
+                        """Test that analyze_treatment_neurotransmitter_effects creates a mapping if needed."""
+                        # Define test parameters
+                        treatment_id = uuid.uuid4(,
+                        time_points= [datetime.now() + timedelta(days=i * 7) for i in range(3)]
 
-    # Call the method without initializing a mapping first
-    results = await mock_service.analyze_treatment_neurotransmitter_effects(
-        patient_id=test_patient_id,
-        treatment_id=treatment_id,
-        time_points=time_points,
-        neurotransmitters=[Neurotransmitter.SEROTONIN],
+                        # Call the method without initializing a mapping first
+                        results = await mock_service.analyze_treatment_neurotransmitter_effects(
+                        patient_id=test_patient_id,
+                        treatment_id=treatment_id,
+                        time_points=time_points,
+                        neurotransmitters=[Neurotransmitter.SEROTONIN],
     )
 
     # Verify a mapping was created
@@ -510,12 +510,12 @@ async def test_analyze_treatment_neurotransmitter_effects_with_parameters(
         @pytest.mark.asyncio()
         async def test_events_are_published(mock_service, test_patient_id):
              """Test that events are published when neurotransmitter mapping operations are performed."""
-    # Subscribe to events
-    events_received = []
+            # Subscribe to events
+            events_received = []
 
-    async def event_handler(event_type, event_data, source, patient_id):
-             events_received.append(
-            {
+            async def event_handler(event_type, event_data, source, patient_id):
+                events_received.append(
+                {
                 "event_type": event_type,
                 "event_data": event_data,
                 "source": source,

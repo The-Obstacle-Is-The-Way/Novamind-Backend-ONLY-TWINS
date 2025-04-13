@@ -76,16 +76,16 @@ def mock_auth_dependencies():
         def mock_service():
 
                     """Set up a real MockXGBoostService for integration testing."""
-    # Import necessary modules
-    from unittest.mock import MagicMock
-    from datetime import datetime
+            # Import necessary modules
+            from unittest.mock import MagicMock
+            from datetime import datetime
 
-    # Create a real mock service (not a MagicMock,
-    mock_service= MockXGBoostService()
+            # Create a real mock service (not a MagicMock,
+            mock_service= MockXGBoostService()
 
-    # Configure the mock service
-    mock_service.initialize(
-        {
+            # Configure the mock service
+            mock_service.initialize(
+            {
             "log_level": "INFO",
             "mock_delay_ms": 0,  # No delay for tests
             "risk_level_distribution": {
@@ -281,20 +281,21 @@ def mock_auth_dependencies():
 
         # Patch the _get_xgboost_service function in the router
         with patch("app.api.routes.xgboost._get_xgboost_service", mock_get_service):
-        yield mock_service
+            yield mock_service
 
-        @pytest.mark.db_required()class TestXGBoostIntegration:
-    """Integration tests for the XGBoost API."""
+            @pytest.mark.db_required()
+            class TestXGBoostIntegration:
+            """Integration tests for the XGBoost API."""
 
-    @pytest.mark.asyncio()
-    async def test_risk_prediction_flow(
+            @pytest.mark.asyncio()
+            async def test_risk_prediction_flow(
             self, client: TestClient, mock_service):
-        """Test the complete risk prediction workflow."""
-        # 1. Request risk prediction
-        risk_request = {
-            "patient_id": "patient-123",
-            "profile_id": "profile-456",  # Assume a profile exists
-            "features": {"age": 55, "bmi": 28.5, "genetic_marker_x": 0.8},
+                """Test the complete risk prediction workflow."""
+                # 1. Request risk prediction
+                risk_request = {
+                "patient_id": "patient-123",
+                "profile_id": "profile-456",  # Assume a profile exists
+                "features": {"age": 55, "bmi": 28.5, "genetic_marker_x": 0.8},
         }
         response = client.post(
             "/api/v1/ml/xgboost/risk-prediction",
@@ -349,16 +350,16 @@ def mock_auth_dependencies():
     @pytest.mark.asyncio()
     async def test_treatment_comparison_flow(
             self, client: TestClient, mock_service):
-        """Test the treatment comparison workflow."""
-        # 1. Request treatment comparison
-        comparison_request = {
-            "patient_id": "patient-789",
-            "profile_id": "profile-abc",
-            "features": {"age": 40, "prior_treatment_failures": 2, "severity_score": 7},
-            "treatment_options": [
+                """Test the treatment comparison workflow."""
+                # 1. Request treatment comparison
+                comparison_request = {
+                "patient_id": "patient-789",
+                "profile_id": "profile-abc",
+                "features": {"age": 40, "prior_treatment_failures": 2, "severity_score": 7},
+                "treatment_options": [
                 {"treatment_id": "ssri_a", "category": TreatmentCategory.SSRI},
                 {"treatment_id": "snri_b", "category": TreatmentCategory.SNRI},
-            ],
+                ],
         }
         response = client.post(
             "/api/v1/ml/xgboost/treatment-response", json=comparison_request
@@ -397,6 +398,6 @@ def mock_auth_dependencies():
         @pytest.mark.asyncio()
         async def test_healthcheck(self, client: TestClient, mock_service):
                  """Test the healthcheck endpoint."""
-        response = client.get("/api/v1/ml/xgboost/health")
-        assert response.status_code == 200
-        assert response.json() == {"status": "ok"}
+            response = client.get("/api/v1/ml/xgboost/health")
+            assert response.status_code == 200
+            assert response.json() == {"status": "ok"}

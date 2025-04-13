@@ -29,22 +29,22 @@ def get_test_key() -> bytes:
 
 
                 """Return a deterministic salt for tests."""
-    return TEST_SALT
+        return TEST_SALT
 
-    def setup_test_environment() -> Dict[str, str]:
+        def setup_test_environment() -> Dict[str, str]:
 
 
             """
-    Setup the test environment with deterministic encryption keys.
+            Setup the test environment with deterministic encryption keys.
 
-    Returns:
-        Dict of environment variables that were set
-        """
-    env_vars = {
-        "ENCRYPTION_KEY": TEST_KEY_BYTES.hex(),
-        "ENCRYPTION_SALT": TEST_SALT.hex(),
-        "PHI_AUDIT_ENABLED": "false",
-        "PYTEST_CURRENT_TEST": "True",
+            Returns:
+            Dict of environment variables that were set
+            """
+            env_vars = {
+            "ENCRYPTION_KEY": TEST_KEY_BYTES.hex(),
+            "ENCRYPTION_SALT": TEST_SALT.hex(),
+            "PHI_AUDIT_ENABLED": "false",
+            "PYTEST_CURRENT_TEST": "True",
     }
 
     # Set environment variables
@@ -57,59 +57,59 @@ def get_test_key() -> bytes:
 
 
                 """
-    Teardown the test environment, restoring original values.
+            Teardown the test environment, restoring original values.
 
-    Args:
-        env_vars: Dict of environment variables to restore
-        """
-    # Remove test environment variables
-    for key in env_vars:
-        if key in os.environ:
+            Args:
+                env_vars: Dict of environment variables to restore
+                """
+                # Remove test environment variables
+                for key in env_vars:
+            if key in os.environ:
             del os.environ[key]
 
             def get_test_phi_data() -> Dict[str, Any]:
 
 
                     """
-    Get a test PHI data dictionary with various nested fields.
+                Get a test PHI data dictionary with various nested fields.
 
-    Returns:
-        Dictionary with test PHI data
-        """
-    return {
-        "patient_id": "PT12345",
-        "name": "John Smith",
-        "date_of_birth": "1970-01-01",
-        "ssn": "123-45-6789",
-        "contact": {
-                "email": "john.smith@example.com",
-                "phone": "555-123-4567",
-                "address": {
+                Returns:
+                    Dictionary with test PHI data
+                    """
+                    return {
+                    "patient_id": "PT12345",
+                    "name": "John Smith",
+                    "date_of_birth": "1970-01-01",
+                    "ssn": "123-45-6789",
+                    "contact": {
+                    "email": "john.smith@example.com",
+                    "phone": "555-123-4567",
+                    "address": {
                     "street": "123 Main St",
                     "city": "Anytown",
                     "state": "CA",
                     "zip": "12345",
                 },
         },
-        "medical": {
-            "diagnosis": [
-                {"code": "F41.1", "description": "Generalized Anxiety Disorder"},
-                {
+                    "medical": {
+                    "diagnosis": [
+                    {"code": "F41.1", "description": "Generalized Anxiety Disorder"},
+                    {
                     "code": "F32.1",
                     "description": "Major Depressive Disorder, Recurrent",
                 },
-            ],
-            "medications": [
-                {"name": "Sertraline", "dosage": "50mg", "frequency": "Daily"},
-                {"name": "Lorazepam", "dosage": "1mg", "frequency": "As needed"},
-            ],
+                    ],
+                    "medications": [
+                    {"name": "Sertraline", "dosage": "50mg", "frequency": "Daily"},
+                    {"name": "Lorazepam", "dosage": "1mg", "frequency": "As needed"},
+                    ],
         },
-        "insurance": {
-            "provider": "Health Insurance Co",
-            "policy_number": "HI12345678",
-            "group_number": "G987654321",
+                    "insurance": {
+                    "provider": "Health Insurance Co",
+                    "policy_number": "HI12345678",
+                    "group_number": "G987654321",
         },
-        "notes": "Patient reports improved sleep but continued anxiety symptoms.",
+                    "notes": "Patient reports improved sleep but continued anxiety symptoms.",
     }
 
 
@@ -123,7 +123,7 @@ def get_test_client_data() -> Dict[str, Any]:
     Returns:
         Dictionary with test client data
         """
-    return {
+        return {
         "client_id": "CL67890",
         "source_system": "Electronic Health Record",
         "access_level": "provider",
@@ -144,11 +144,11 @@ def generate_test_key_pair() -> Tuple[bytes, bytes]:
     Returns:
         Tuple of (encryption_key, previous_encryption_key)
         """
-    # Generate current key from test bytes (ensure proper Fernet format,
-    current_key= Fernet.generate_key()
+        # Generate current key from test bytes (ensure proper Fernet format,
+        current_key= Fernet.generate_key()
 
-    # Generate previous key from rotated test bytes (ensure proper Fernet
-    # format,
-    previous_key= Fernet.generate_key()
+        # Generate previous key from rotated test bytes (ensure proper Fernet
+        # format,
+        previous_key= Fernet.generate_key()
 
-    return current_key, previous_key
+        return current_key, previous_key

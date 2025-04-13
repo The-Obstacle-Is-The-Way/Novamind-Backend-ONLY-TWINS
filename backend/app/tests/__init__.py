@@ -6,9 +6,9 @@ This package contains all tests for the Novamind Digital Twin Platform, organize
     2. Application layer (domain, application, infrastructure, api)
     3. Feature area (authentication, phi, digital twin, etc.)
 
-    All tests follow SOLID principles and Clean Architecture guidelines, with proper
-    separation of concerns and dependency injection for testability.
-    """
+All tests follow SOLID principles and Clean Architecture guidelines, with proper
+separation of concerns and dependency injection for testability.
+"""
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 import os
 

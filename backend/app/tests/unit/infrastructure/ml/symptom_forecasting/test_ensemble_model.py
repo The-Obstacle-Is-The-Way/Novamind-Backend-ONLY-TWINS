@@ -8,39 +8,40 @@ from unittest.mock import MagicMock, patch, AsyncMock
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
 from app.infrastructure.ml.symptom_forecasting.transformer_model import TransformerModel
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostModel
-from app.core.config.ml_settings import MLSettingsclass TestEnsembleModel:
+from app.core.config.ml_settings import MLSettings
+class TestEnsembleModel:
     """Test suite for the EnsembleModel class."""@pytest.fixture
-def ml_settings(self):
+    def ml_settings(self):
 
                 """Create ML settings for testing."""
         return MLSettings()@pytest.fixture
-def mock_transformer_model(self):
+        def mock_transformer_model(self):
 
                 """Create a mock transformer model."""
         model = MagicMock(spec=TransformerModel)
         model.predict = AsyncMock(
             return_value=np.array([4.2, 4.0, 3.8, 3.6, 3.4]))
         return model@pytest.fixture
-def mock_xgboost_model(self):
+        def mock_xgboost_model(self):
 
                 """Create a mock XGBoost model."""
         model = MagicMock(spec=XGBoostModel)
         model.predict = AsyncMock(
             return_value=np.array([4.0, 3.9, 3.7, 3.5, 3.3]))
         return model@pytest.fixture
-def ensemble_model(
+        def ensemble_model(
                 self,
                 ml_settings,
                 mock_transformer_model,
                 mock_xgboost_model):
-        """Create an ensemble model with mock component models."""
-        # Create an ensemble model with mock component models
-        ensemble = EnsembleModel(settings=ml_settings)
+                    """Create an ensemble model with mock component models."""
+                    # Create an ensemble model with mock component models
+                    ensemble = EnsembleModel(settings=ml_settings)
 
-        # Replace the actual model components with mocks
-        ensemble.models = {
-            "transformer": mock_transformer_model,
-            "xgboost": mock_xgboost_model,
+                    # Replace the actual model components with mocks
+                    ensemble.models = {
+                    "transformer": mock_transformer_model,
+                    "xgboost": mock_xgboost_model,
         }
 
         # Define ensemble weights
@@ -78,15 +79,15 @@ def sample_input_data(self):
             model.ensemble_weights["transformer"] +
             model.ensemble_weights["xgboost"] == 1.0)
 
-    @pytest.mark.asyncio
-    async def test_predict(self, ensemble_model, sample_input_data):
+        @pytest.mark.asyncio
+        async def test_predict(self, ensemble_model, sample_input_data):
                  """Test the predict method of the ensemble model."""
-        # Set up
-        forecast_days = 5
-        symptom_type = "anxiety"
+            # Set up
+            forecast_days = 5
+            symptom_type = "anxiety"
 
-        # Execute
-        result = await ensemble_model.predict(
+            # Execute
+            result = await ensemble_model.predict(
             patient_data=sample_input_data,
             symptom_type=symptom_type,
             forecast_days=forecast_days,
@@ -141,12 +142,12 @@ def sample_input_data(self):
     @pytest.mark.asyncio
     async def test_predict_with_interventions(
             self, ensemble_model, sample_input_data):
-        """Test prediction with interventions applied."""
-        # Set up
-        forecast_days = 5
-        symptom_type = "anxiety"
-        interventions = [
-            {
+                """Test prediction with interventions applied."""
+                # Set up
+                forecast_days = 5
+                symptom_type = "anxiety"
+                interventions = [
+                {
                 "type": "medication",
                 "name": "Fluoxetine",
                 "start_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"),

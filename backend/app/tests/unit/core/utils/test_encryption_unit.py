@@ -10,9 +10,10 @@ from unittest.mock import patch, MagicMock
 from app.core.utils.encryption import EncryptionService
 
 
-@pytest.mark.venv_only()class TestEncryptionService:
+@pytest.mark.venv_only()
+class TestEncryptionService:
     """Tests for the HIPAA-compliant encryption service."""@pytest.fixture
-def encryption_service(self):
+    def encryption_service(self):
 
                 """Create an encryption service with a test key."""
         with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_secret_key_for_encryption_service_tests"}):
@@ -22,79 +23,79 @@ def encryption_service(self):
 
 
                             """Test encryption service initialization."""
-        with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_key"}):
-            service = EncryptionService()
-            assert service.secret_key == "test_key"
-            assert service.salt is not None
-            assert service.key is not None
-            assert service.cipher is not None
+                with patch.dict(os.environ, {"ENCRYPTION_KEY": "test_key"}):
+                    service = EncryptionService()
+                    assert service.secret_key == "test_key"
+                    assert service.salt is not None
+                    assert service.key is not None
+                    assert service.cipher is not None
 
-            def test_initialization_with_missing_key(self):
+                    def test_initialization_with_missing_key(self):
 
 
                             """Test initialization with missing key raises error."""
-        with patch.dict(os.environ, {}, clear=True):
-            with pytest.raises(ValueError) as excinfo:
-            EncryptionService()
-            assert "Encryption key not provided" in str(excinfo.value)
+                with patch.dict(os.environ, {}, clear=True):
+                    with pytest.raises(ValueError) as excinfo:
+                EncryptionService()
+                assert "Encryption key not provided" in str(excinfo.value)
 
-            def test_encrypt_decrypt_string(self, encryption_service):
+                def test_encrypt_decrypt_string(self, encryption_service):
 
 
                             """Test encrypting and decrypting a string."""
-        plaintext = "This is sensitive patient information"
+                    plaintext = "This is sensitive patient information"
 
-        # Encrypt the string
-        encrypted = encryption_service.encrypt_string(plaintext)
+                    # Encrypt the string
+                    encrypted = encryption_service.encrypt_string(plaintext)
 
-        # Verify the encrypted text is different from plaintext
-        assert encrypted != plaintext
+                    # Verify the encrypted text is different from plaintext
+                    assert encrypted != plaintext
 
-        # Decrypt the string
-        decrypted = encryption_service.decrypt_string(encrypted)
+                    # Decrypt the string
+                    decrypted = encryption_service.decrypt_string(encrypted)
 
-        # Verify the decrypted text matches the original
-        assert decrypted == plaintext
+                    # Verify the decrypted text matches the original
+                    assert decrypted == plaintext
 
-        def test_encrypt_decrypt_empty_string(self, encryption_service):
+                    def test_encrypt_decrypt_empty_string(self, encryption_service):
 
 
                         """Test encrypting and decrypting an empty string."""
-        plaintext = ""
+                    plaintext = ""
 
-        # Encrypt the string
-        encrypted = encryption_service.encrypt_string(plaintext)
+                    # Encrypt the string
+                    encrypted = encryption_service.encrypt_string(plaintext)
 
-        # Verify the encrypted text is also empty
-        assert encrypted == ""
+                    # Verify the encrypted text is also empty
+                    assert encrypted == ""
 
-        # Decrypt the string
-        decrypted = encryption_service.decrypt_string(encrypted)
+                    # Decrypt the string
+                    decrypted = encryption_service.decrypt_string(encrypted)
 
-        # Verify the decrypted text is empty
-        assert decrypted == ""
+                    # Verify the decrypted text is empty
+                    assert decrypted == ""
 
-        def test_decrypt_invalid_string(self, encryption_service):
+                    def test_decrypt_invalid_string(self, encryption_service):
 
 
                         """Test decrypting an invalid string raises error."""
-        with pytest.raises(ValueError) as excinfo:
-            encryption_service.decrypt_string("invalid_encrypted_text")
-            assert "Failed to decrypt string" in str(excinfo.value)
+                with pytest.raises(ValueError) as excinfo:
+                encryption_service.decrypt_string("invalid_encrypted_text")
+                assert "Failed to decrypt string" in str(excinfo.value)
 
-            def test_encrypt_decrypt_dict(self, encryption_service):
+                def test_encrypt_decrypt_dict(self, encryption_service):
 
 
                             """Test encrypting and decrypting a dictionary."""
-        data = {
-            "patient_id": "12345",
-            "name": "John Doe",
-            "ssn": "123-45-6789",
-            "email": "john.doe@example.com",
-            "age": 45,
-            "is_active": True,
-            "notes": "Patient has a history of...",
-            "medications": ["med1", "med2"]
+                data = {
+                "patient_id": "12345",
+                "name": "John Doe",
+                "ssn": "123-45-6789",
+                "email": "john.doe@example.com",
+                "age": 45,
+                "is_active": True,
+                "notes": "Patient has a history of...",
+                "medications": ["med1", "med2"]
         }
 
         # Encrypt sensitive fields
@@ -186,18 +187,18 @@ def encryption_service(self):
 
 
                         """Test generating and verifying an HMAC."""
-        data = "data_to_verify_integrity"
+            data = "data_to_verify_integrity"
 
-        # Generate HMAC
-        hmac_value = encryption_service.generate_hmac(data)
+            # Generate HMAC
+            hmac_value = encryption_service.generate_hmac(data)
 
-        # Verify HMAC is a string
-        assert isinstance(hmac_value, str)
+            # Verify HMAC is a string
+            assert isinstance(hmac_value, str)
 
-        # Verify the HMAC
-        is_valid = encryption_service.verify_hmac(data, hmac_value)
-        assert is_valid is True
+            # Verify the HMAC
+            is_valid = encryption_service.verify_hmac(data, hmac_value)
+            assert is_valid is True
 
-        # Verify with incorrect data
-        is_valid = encryption_service.verify_hmac("wrong_data", hmac_value)
-        assert is_valid is False
+            # Verify with incorrect data
+            is_valid = encryption_service.verify_hmac("wrong_data", hmac_value)
+            assert is_valid is False

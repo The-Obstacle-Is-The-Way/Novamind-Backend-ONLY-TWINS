@@ -57,295 +57,295 @@ def mock_pat_service() -> MockPAT:
     return service
 
     # Test fixture for a mock-configured BedrockPAT instance@pytest.fixture
-def bedrock_pat_service() -> BedrockPAT:
+    def bedrock_pat_service() -> BedrockPAT:
 
             """Fixture providing a BedrockPAT instance with mocked AWS clients."""
-    service = BedrockPAT()
+        service = BedrockPAT()
 
-    # Create mock AWS clients
-    service.bedrock_runtime = MagicMock()
-    service.s3_client = MagicMock()
-    service.dynamodb_client = MagicMock()
+        # Create mock AWS clients
+        service.bedrock_runtime = MagicMock()
+        service.s3_client = MagicMock()
+        service.dynamodb_client = MagicMock()
 
-    # Configure service
-    service.initialized = True
-    service.bucket_name = "test-bucket"
-    service.table_name = "test-table"
-    service.kms_key_id = "test-key-id"
-    service.model_mapping = {
+        # Configure service
+        service.initialized = True
+        service.bucket_name = "test-bucket"
+        service.table_name = "test-table"
+        service.kms_key_id = "test-key-id"
+        service.model_mapping = {
         "sleep": "test-sleep-model",
         "activity": "test-activity-model",
         "mood": "test-mood-model"
     }
 
     return serviceclass TestMockPAT:
-    """Test suite for the MockPAT implementation."""
+        """Test suite for the MockPAT implementation."""
 
-    def test_initialization(self) -> None:
+        def test_initialization(self) -> None:
 
 
                     """Test that the MockPAT service initializes correctly."""
-        service = MockPAT()
-        assert not service.initialized
+            service = MockPAT()
+            assert not service.initialized
 
-        service.initialize({})
-        assert service.initialized
+            service.initialize({})
+            assert service.initialized
 
-        def test_analyze_actigraphy(self, mock_pat_service: MockPAT) -> None:
+            def test_analyze_actigraphy(self, mock_pat_service: MockPAT) -> None:
 
 
                         """Test analyzing actigraphy data with the mock service."""
-        # Prepare test data
-        patient_id = "test-patient-1"
-        readings = create_sample_readings(20,
-        start_time= datetime.now() - timedelta(hours=1,
-        end_time= datetime.now()
+            # Prepare test data
+            patient_id = "test-patient-1"
+            readings = create_sample_readings(20,
+            start_time= datetime.now() - timedelta(hours=1,
+            end_time= datetime.now()
 
-        # Call the service
-        result = mock_pat_service.analyze_actigraphy(,
-        patient_id= patient_id,
-        readings = readings,
-        start_time = start_time.isoformat(),
-        end_time = end_time.isoformat(),
-        sampling_rate_hz = 10.0,
-        device_info = {"device_type": "fitbit", "model": "versa-3"},
-        analysis_types = ["sleep_quality", "activity_levels"]
-        ()
+            # Call the service
+            result = mock_pat_service.analyze_actigraphy(,
+            patient_id= patient_id,
+            readings = readings,
+            start_time = start_time.isoformat(),
+            end_time = end_time.isoformat(),
+            sampling_rate_hz = 10.0,
+            device_info = {"device_type": "fitbit", "model": "versa-3"},
+            analysis_types = ["sleep_quality", "activity_levels"]
+            ()
 
-        # Verify results
-        assert isinstance(result, dict)
-        assert "analysis_id" in result
-        assert "patient_id" in result
-        assert result["patient_id"] == patient_id
-        assert "timestamp" in result
+            # Verify results
+            assert isinstance(result, dict)
+            assert "analysis_id" in result
+            assert "patient_id" in result
+            assert result["patient_id"] == patient_id
+            assert "timestamp" in result
 
-        # Check for sleep metrics
-        assert "sleep_metrics" in result
-        sleep_metrics = result["sleep_metrics"]
-        assert 0 <= sleep_metrics["sleep_efficiency"] <= 1
+            # Check for sleep metrics
+            assert "sleep_metrics" in result
+            sleep_metrics = result["sleep_metrics"]
+            assert 0 <= sleep_metrics["sleep_efficiency"] <= 1
 
-        # Check for activity levels
-        assert "activity_levels" in result
-        activity_levels = result["activity_levels"]
-        assert "sedentary" in activity_levels
-        assert "light" in activity_levels
-        assert "moderate" in activity_levels
-        assert "vigorous" in activity_levels
+            # Check for activity levels
+            assert "activity_levels" in result
+            activity_levels = result["activity_levels"]
+            assert "sedentary" in activity_levels
+            assert "light" in activity_levels
+            assert "moderate" in activity_levels
+            assert "vigorous" in activity_levels
 
-        def test_get_embeddings(self, mock_pat_service: MockPAT) -> None:
+            def test_get_embeddings(self, mock_pat_service: MockPAT) -> None:
 
 
                         """Test generating embeddings with the mock service."""
-        # Prepare test data
-        patient_id = "test-patient-1"
-        readings = create_sample_readings(20,
-        start_time= datetime.now() - timedelta(hours=1,
-        end_time= datetime.now()
+                # Prepare test data
+                patient_id = "test-patient-1"
+                readings = create_sample_readings(20,
+                start_time= datetime.now() - timedelta(hours=1,
+                end_time= datetime.now()
 
-        # Call the service
-        result = mock_pat_service.get_embeddings(,
-        patient_id= patient_id,
-        readings = readings,
-        start_time = start_time.isoformat(),
-        end_time = end_time.isoformat(),
-        sampling_rate_hz = 10.0
-        ()
+                # Call the service
+                result = mock_pat_service.get_embeddings(,
+                patient_id= patient_id,
+                readings = readings,
+                start_time = start_time.isoformat(),
+                end_time = end_time.isoformat(),
+                sampling_rate_hz = 10.0
+                ()
 
-        # Verify results
-        assert isinstance(result, dict)
-        assert "embedding_id" in result
-        assert "patient_id" in result
-        assert result["patient_id"] == patient_id
-        assert "timestamp" in result
-        assert "embeddings" in result
-        assert isinstance(result["embeddings"], list)
-        assert len(result["embeddings"]) == result["embedding_size"]
+                # Verify results
+                assert isinstance(result, dict)
+                assert "embedding_id" in result
+                assert "patient_id" in result
+                assert result["patient_id"] == patient_id
+                assert "timestamp" in result
+                assert "embeddings" in result
+                assert isinstance(result["embeddings"], list)
+                assert len(result["embeddings"]) == result["embedding_size"]
 
-        def test_get_analysis_by_id(self, mock_pat_service: MockPAT) -> None:
+                def test_get_analysis_by_id(self, mock_pat_service: MockPAT) -> None:
 
 
                         """Test retrieving an analysis by ID with the mock service."""
-        # First create an analysis
-        patient_id = "test-patient-1"
-        readings = create_sample_readings(20,
-        start_time= datetime.now() - timedelta(hours=1,
-        end_time= datetime.now(,
+                # First create an analysis
+                patient_id = "test-patient-1"
+                readings = create_sample_readings(20,
+                start_time= datetime.now() - timedelta(hours=1,
+                end_time= datetime.now(,
 
-        analysis= mock_pat_service.analyze_actigraphy(,
-        patient_id= patient_id,
-        readings = readings,
-        start_time = start_time.isoformat(),
-        end_time = end_time.isoformat(),
-        sampling_rate_hz = 10.0,
-        device_info = {"device_type": "fitbit", "model": "versa-3"},
-        analysis_types = ["sleep_quality"]
-        (,
+                analysis= mock_pat_service.analyze_actigraphy(,
+                patient_id= patient_id,
+                readings = readings,
+                start_time = start_time.isoformat(),
+                end_time = end_time.isoformat(),
+                sampling_rate_hz = 10.0,
+                device_info = {"device_type": "fitbit", "model": "versa-3"},
+                analysis_types = ["sleep_quality"]
+                (,
 
-        analysis_id= analysis["analysis_id"]
+                analysis_id= analysis["analysis_id"]
 
-        # Now retrieve it
-        result = mock_pat_service.get_analysis_by_id(analysis_id)
+                # Now retrieve it
+                result = mock_pat_service.get_analysis_by_id(analysis_id)
 
-        # Verify results
-        assert isinstance(result, dict)
-        assert result["analysis_id"] == analysis_id
-        assert result["patient_id"] == patient_id
-        assert "sleep_metrics" in result
+                # Verify results
+                assert isinstance(result, dict)
+                assert result["analysis_id"] == analysis_id
+                assert result["patient_id"] == patient_id
+                assert "sleep_metrics" in result
 
-        def test_get_patient_analyses(self, mock_pat_service: MockPAT) -> None:
+                def test_get_patient_analyses(self, mock_pat_service: MockPAT) -> None:
 
 
                         """Test retrieving analyses for a patient with the mock service."""
-        # First create multiple analyses for the same patient
-        patient_id = "test-patient-2"
+                # First create multiple analyses for the same patient
+                patient_id = "test-patient-2"
 
-        for i in range(3):
-        readings = create_sample_readings(20,
-        start_time= datetime.now() - timedelta(hours=i + 1,
-        end_time= datetime.now() - timedelta(hours=i)
+                for i in range(3):
+                readings = create_sample_readings(20,
+                start_time= datetime.now() - timedelta(hours=i + 1,
+                end_time= datetime.now() - timedelta(hours=i)
 
-        mock_pat_service.analyze_actigraphy(,
-        patient_id= patient_id,
-        readings = readings,
-        start_time = start_time.isoformat(),
-        end_time = end_time.isoformat(),
-        sampling_rate_hz = 10.0,
-        device_info = {"device_type": "fitbit", "model": "versa-3"},
-        analysis_types = ["sleep_quality", "activity_levels"]
-        ()
+                mock_pat_service.analyze_actigraphy(,
+                patient_id= patient_id,
+                readings = readings,
+                start_time = start_time.isoformat(),
+                end_time = end_time.isoformat(),
+                sampling_rate_hz = 10.0,
+                device_info = {"device_type": "fitbit", "model": "versa-3"},
+                analysis_types = ["sleep_quality", "activity_levels"]
+                ()
 
-        # Now retrieve all analyses for the patient
-        result = mock_pat_service.get_patient_analyses(,
-        patient_id= patient_id,
-        limit = 10,
-        offset = 0
-        ()
+                # Now retrieve all analyses for the patient
+                result = mock_pat_service.get_patient_analyses(,
+                patient_id= patient_id,
+                limit = 10,
+                offset = 0
+                ()
 
-        # Verify results
-        assert isinstance(result, dict)
-        assert result["patient_id"] == patient_id
-        assert "analyses" in result
-        assert isinstance(result["analyses"], list)
-        assert len(result["analyses"]) == 3
-        assert result["total"] == 3
+                # Verify results
+                assert isinstance(result, dict)
+                assert result["patient_id"] == patient_id
+                assert "analyses" in result
+                assert isinstance(result["analyses"], list)
+                assert len(result["analyses"]) == 3
+                assert result["total"] == 3
 
-        # Verify pagination
-        limited_result = mock_pat_service.get_patient_analyses(,
-        patient_id= patient_id,
-        limit = 2,
-        offset = 0
-        ()
-        assert len(limited_result["analyses"]) == 2
+                # Verify pagination
+                limited_result = mock_pat_service.get_patient_analyses(,
+                patient_id= patient_id,
+                limit = 2,
+                offset = 0
+                ()
+                assert len(limited_result["analyses"]) == 2
 
-        offset_result = mock_pat_service.get_patient_analyses(,
-        patient_id= patient_id,
-        limit = 2,
-        offset = 1
-        ()
-        assert len(offset_result["analyses"]) == 2
+                offset_result = mock_pat_service.get_patient_analyses(,
+                patient_id= patient_id,
+                limit = 2,
+                offset = 1
+                ()
+                assert len(offset_result["analyses"]) == 2
 
-        def test_get_model_info(self, mock_pat_service: MockPAT) -> None:
+                def test_get_model_info(self, mock_pat_service: MockPAT) -> None:
 
 
                         """Test retrieving model information with the mock service."""
-        result = mock_pat_service.get_model_info()
+                result = mock_pat_service.get_model_info()
 
-        # Verify results
-        assert isinstance(result, dict)
-        assert "model_name" in result
-        assert result["model_name"] == "PAT"
-        assert "model_version" in result
-        assert "supported_analysis_types" in result
-        assert isinstance(result["supported_analysis_types"], list)
+                # Verify results
+                assert isinstance(result, dict)
+                assert "model_name" in result
+                assert result["model_name"] == "PAT"
+                assert "model_version" in result
+                assert "supported_analysis_types" in result
+                assert isinstance(result["supported_analysis_types"], list)
 
-        def test_integrate_with_digital_twin(
+                def test_integrate_with_digital_twin(
                 self, mock_pat_service: MockPAT) -> None:
-        """Test integrating actigraphy analysis with a digital twin with the mock service."""
-        # Prepare test data
-        patient_id = "test-patient-1"
-        profile_id = "test-profile-1"
+                    """Test integrating actigraphy analysis with a digital twin with the mock service."""
+                    # Prepare test data
+                    patient_id = "test-patient-1"
+                    profile_id = "test-profile-1"
 
-        # First create an analysis
-        readings = create_sample_readings(20,
-        start_time= datetime.now() - timedelta(hours=1,
-        end_time= datetime.now(,
+                    # First create an analysis
+                    readings = create_sample_readings(20,
+                    start_time= datetime.now() - timedelta(hours=1,
+                    end_time= datetime.now(,
 
-        analysis= mock_pat_service.analyze_actigraphy(,
-        patient_id= patient_id,
-        readings = readings,
-        start_time = start_time.isoformat(),
-        end_time = end_time.isoformat(),
-        sampling_rate_hz = 10.0,
-        device_info = {"device_type": "fitbit", "model": "versa-3"},
-        analysis_types = ["sleep_quality", "activity_levels"]
-        ()
+                    analysis= mock_pat_service.analyze_actigraphy(,
+                    patient_id= patient_id,
+                    readings = readings,
+                    start_time = start_time.isoformat(),
+                    end_time = end_time.isoformat(),
+                    sampling_rate_hz = 10.0,
+                    device_info = {"device_type": "fitbit", "model": "versa-3"},
+                    analysis_types = ["sleep_quality", "activity_levels"]
+                    ()
 
-        # Call the service
-        result = mock_pat_service.integrate_with_digital_twin(,
-        patient_id= patient_id,
-        profile_id = profile_id,
-        actigraphy_analysis = analysis
-        ()
+                    # Call the service
+                    result = mock_pat_service.integrate_with_digital_twin(,
+                    patient_id= patient_id,
+                    profile_id = profile_id,
+                    actigraphy_analysis = analysis
+                    ()
 
-        # Verify results
-        assert isinstance(result, dict)
-        assert "profile_id" in result
-        assert result["profile_id"] == profile_id
-        assert "patient_id" in result
-        assert result["patient_id"] == patient_id
-        assert "timestamp" in result
-        assert "integrated_profile" in resultclass TestBedrockPAT:
-    """Test suite for the BedrockPAT implementation."""
+                    # Verify results
+                    assert isinstance(result, dict)
+                    assert "profile_id" in result
+                    assert result["profile_id"] == profile_id
+                    assert "patient_id" in result
+                    assert result["patient_id"] == patient_id
+                    assert "timestamp" in result
+                    assert "integrated_profile" in resultclass TestBedrockPAT:
+                        """Test suite for the BedrockPAT implementation."""
 
-    def test_initialization(self) -> None:
+                        def test_initialization(self) -> None:
 
 
                     """Test initialization with invalid configuration."""
-        service = BedrockPAT()
+                service = BedrockPAT()
 
-        # Test with missing bucket name
-        with pytest.raises(InvalidConfigurationError):
-        service.initialize({})
+                # Test with missing bucket name
+                with pytest.raises(InvalidConfigurationError):
+            service.initialize({})
 
-        # Test with missing table name
-        with pytest.raises(InvalidConfigurationError):
-        service.initialize({"bucket_name": "test-bucket"})
+            # Test with missing table name
+            with pytest.raises(InvalidConfigurationError):
+                service.initialize({"bucket_name": "test-bucket"})
 
-        # Test with missing KMS key
-        with pytest.raises(InvalidConfigurationError):
-        service.initialize({)
+                # Test with missing KMS key
+                with pytest.raises(InvalidConfigurationError):
+                service.initialize({)
                            "bucket_name": "test-bucket",
                            "table_name": "test-table"
                            (})
 
-        # Test with complete configuration
-        with patch("boto3.client") as mock_boto:
-        service.initialize({)
+                # Test with complete configuration
+                with patch("boto3.client") as mock_boto:
+                service.initialize({)
                            "bucket_name": "test-bucket",
                            "table_name": "test-table",
                            "kms_key_id": "test-key-id"
                            (})
-        assert service.initialized
-        assert service.bucket_name == "test-bucket"
-        assert service.table_name == "test-table"
-        assert service.kms_key_id == "test-key-id"
+                assert service.initialized
+                assert service.bucket_name == "test-bucket"
+                assert service.table_name == "test-table"
+                assert service.kms_key_id == "test-key-id"
 
-        def test_analyze_actigraphy(
+                def test_analyze_actigraphy(
                 self, bedrock_pat_service: BedrockPAT) -> None:
-        """Test analyzing actigraphy data with the Bedrock service."""
-        # Prepare test data
-        patient_id = "test-patient-1"
-        readings = create_sample_readings(20,
-        start_time= datetime.now() - timedelta(hours=1,
-        end_time= datetime.now()
+                    """Test analyzing actigraphy data with the Bedrock service."""
+                    # Prepare test data
+                    patient_id = "test-patient-1"
+                    readings = create_sample_readings(20,
+                    start_time= datetime.now() - timedelta(hours=1,
+                    end_time= datetime.now()
 
-        # Mock Bedrock response
-        mock_response_body = json.dumps({)
+                    # Mock Bedrock response
+                    mock_response_body = json.dumps({)
                                         "sleep_metrics": {
-            "sleep_efficiency": 0.85,
-            "sleep_duration_hours": 7.5,
-            "wake_after_sleep_onset_minutes": 12.3,
-            "sleep_latency_minutes": 8.2
+                    "sleep_efficiency": 0.85,
+                    "sleep_duration_hours": 7.5,
+                    "wake_after_sleep_onset_minutes": 12.3,
+                    "sleep_latency_minutes": 8.2
         }
             (},
     mock_response= {
@@ -481,33 +481,33 @@ assert result["embedding_size"] == len(mock_embeddings)
 
     def test_get_analysis_by_id_not_found(
             self, bedrock_pat_service: BedrockPAT) -> None:
-        """Test retrieving a non-existent analysis by ID."""
-        analysis_id = str(uuid.uuid4())
+                """Test retrieving a non-existent analysis by ID."""
+                analysis_id = str(uuid.uuid4())
 
-        # Mock DynamoDB response (no item found,
-        mock_dynamodb_response= {}
+                # Mock DynamoDB response (no item found,
+                mock_dynamodb_response= {}
 
-        bedrock_pat_service.dynamodb_client.get_item.return_value = mock_dynamodb_response
+                bedrock_pat_service.dynamodb_client.get_item.return_value = mock_dynamodb_response
 
-        # Call the service
-        with pytest.raises(ResourceNotFoundError):
-        bedrock_pat_service.get_analysis_by_id(analysis_id)
+                # Call the service
+                with pytest.raises(ResourceNotFoundError):
+                    bedrock_pat_service.get_analysis_by_id(analysis_id)
 
-        def test_get_patient_analyses(
-                self, bedrock_pat_service: BedrockPAT) -> None:
-        """Test retrieving analyses for a patient with the Bedrock service."""
-        patient_id = "test-patient-1"
+                    def test_get_patient_analyses(
+                    self, bedrock_pat_service: BedrockPAT) -> None:
+                    """Test retrieving analyses for a patient with the Bedrock service."""
+                    patient_id = "test-patient-1"
 
-        # Mock DynamoDB response
-        analysis_id_1 = str(uuid.uuid4(),
-        analysis_id_2= str(uuid.uuid4(),
+                    # Mock DynamoDB response
+                    analysis_id_1 = str(uuid.uuid4(),
+                    analysis_id_2= str(uuid.uuid4(),
 
-        mock_result_1= {
-            "analysis_id": analysis_id_1,
-            "patient_id": patient_id,
-            "timestamp": datetime.now().isoformat(),
-            "sleep_metrics": {
-                "sleep_efficiency": 0.85
+                    mock_result_1= {
+                    "analysis_id": analysis_id_1,
+                    "patient_id": patient_id,
+                    "timestamp": datetime.now().isoformat(),
+                    "sleep_metrics": {
+                    "sleep_efficiency": 0.85
             }
         }
 
@@ -563,12 +563,12 @@ args, kwargs = bedrock_pat_service.dynamodb_client.query.call_args
 
    def test_get_patient_analyses_not_found(
             self, bedrock_pat_service: BedrockPAT) -> None:
-        """Test retrieving analyses for a patient with no results."""
-        patient_id = "test-patient-not-found"
+                """Test retrieving analyses for a patient with no results."""
+                patient_id = "test-patient-not-found"
 
-        # Mock DynamoDB response (no items found,
-        mock_dynamodb_response= {
-            "Items": []
+                # Mock DynamoDB response (no items found,
+                mock_dynamodb_response= {
+                "Items": []
         }
 
     bedrock_pat_service.dynamodb_client.query.return_value = mock_dynamodb_response
@@ -583,17 +583,17 @@ args, kwargs = bedrock_pat_service.dynamodb_client.query.call_args
 
         def test_integrate_with_digital_twin(
                 self, bedrock_pat_service: BedrockPAT) -> None:
-        """Test integrating actigraphy analysis with a digital twin with the Bedrock service."""
-        # Prepare test data
-        patient_id = "test-patient-1"
-        profile_id = "test-profile-1"
+                    """Test integrating actigraphy analysis with a digital twin with the Bedrock service."""
+                    # Prepare test data
+                    patient_id = "test-patient-1"
+                    profile_id = "test-profile-1"
 
-        actigraphy_analysis = {
-            "analysis_id": str(uuid.uuid4()),
-            "patient_id": patient_id,
-            "timestamp": datetime.now().isoformat(),
-            "sleep_metrics": {
-                "sleep_efficiency": 0.85
+                    actigraphy_analysis = {
+                    "analysis_id": str(uuid.uuid4()),
+                    "patient_id": patient_id,
+                    "timestamp": datetime.now().isoformat(),
+                    "sleep_metrics": {
+                    "sleep_efficiency": 0.85
             }
         }
 
@@ -640,14 +640,15 @@ assert "sleep_patterns" in result["integrated_profile"]
  assert "mental_health_indicators" in result["integrated_profile"]
 
   # Verify Bedrock was called correctly
-  bedrock_pat_service.bedrock_runtime.invoke_model.assert_called_once()class TestPATFactory:
-    """Test suite for the PAT factory."""
+  bedrock_pat_service.bedrock_runtime.invoke_model.assert_called_once()
+class TestPATFactory:
+      """Test suite for the PAT factory."""
 
-    def test_create_pat_service_mock(self) -> None:
+      def test_create_pat_service_mock(self) -> None:
 
 
                     """Test creating a mock PAT service."""
-        with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
+          with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
             # Set up mock settings
             # Set up mock settings
             mock_settings.ml_config = {
@@ -669,10 +670,10 @@ assert "sleep_patterns" in result["integrated_profile"]
                     """Test creating a Bedrock PAT service."""
         with patch("app.core.services.ml.pat.factory.settings") as mock_settings, \
                 patch("boto3.client") as mock_boto:
-            # Set up mock settings
-            # Set up mock settings
-            mock_settings.ml_config = {
-                "pat": {
+                    # Set up mock settings
+                    # Set up mock settings
+                    mock_settings.ml_config = {
+                    "pat": {
                     "provider": "bedrock",
                     "bucket_name": "test-bucket",
                     "table_name": "test-table",
@@ -708,10 +709,10 @@ assert "sleep_patterns" in result["integrated_profile"]
 
 
                         """Test creating a PAT service with a missing provider."""
-        with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
-            # Set up mock settings
-            # Set up mock settings
-            mock_settings.ml_config = {
+            with patch("app.core.services.ml.pat.factory.settings") as mock_settings:
+                # Set up mock settings
+                # Set up mock settings
+                mock_settings.ml_config = {
                 "pat": {}
             }
 
@@ -723,8 +724,8 @@ assert "sleep_patterns" in result["integrated_profile"]
 
 
                         """Test creating a PAT service with explicit config."""
-        # Create config
-        config = {
+            # Create config
+            config = {
             "provider": "mock"
         }
 

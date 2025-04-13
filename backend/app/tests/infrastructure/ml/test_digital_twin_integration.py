@@ -400,16 +400,16 @@ async def test_generate_integrated_recommendations(integration_service):
         @pytest.mark.asyncio()
         async def test_handle_microservice_failure(
                 integration_service, patient_data):
-    """Test handling of microservice failures."""
-    patient_id = uuid4()
+                    """Test handling of microservice failures."""
+                    patient_id = uuid4()
 
-    # Make symptom forecasting service fail
-    integration_service.symptom_forecasting_service.forecast_symptoms.side_effect = (
-        ModelInferenceError("Test error"))
+                    # Make symptom forecasting service fail
+                    integration_service.symptom_forecasting_service.forecast_symptoms.side_effect = (
+                    ModelInferenceError("Test error"))
 
-    # Generate insights despite the failure
-    insights = await integration_service.generate_comprehensive_patient_insights(
-        patient_id=patient_id, patient_data=patient_data
+                    # Generate insights despite the failure
+                    insights = await integration_service.generate_comprehensive_patient_insights(
+                    patient_id=patient_id, patient_data=patient_data
     )
 
     # Verify that other services still produced results

@@ -14,7 +14,8 @@ import pytest
 from app.core.services.ml.pat.bedrock import BedrockPAT
 from app.core.services.ml.pat.factory import PATServiceFactory
 from app.core.services.ml.pat.interface import PATInterface
-from app.core.services.ml.pat.mock import MockPATServiceclass TestPATServiceFactory(unittest.TestCase):
+from app.core.services.ml.pat.mock import MockPATService
+class TestPATServiceFactory(unittest.TestCase):
     """Test cases for PATServiceFactory."""
 
     def setUp(self) -> None:
@@ -48,23 +49,23 @@ from app.core.services.ml.pat.mock import MockPATServiceclass TestPATServiceFact
 
                     """Clean up after tests.
 
-        This method runs after each test.
-        """
-        # Stop all patches
-        self.mock_pat_patcher.stop()
-        self.bedrock_pat_patcher.stop()
+            This method runs after each test.
+            """
+            # Stop all patches
+            self.mock_pat_patcher.stop()
+            self.bedrock_pat_patcher.stop()
 
-        # Clear the instance cache
-        PATServiceFactory._instance_cache = {}
+            # Clear the instance cache
+            PATServiceFactory._instance_cache = {}
 
-        def test_get_mock_pat(self) -> None:
+            def test_get_mock_pat(self) -> None:
 
 
                         """Test getting a MockPAT instance."""
-        # Arrange
-        config = {
-            "provider": "mock",
-            "storage_path": tempfile.mkdtemp()
+                # Arrange
+                config = {
+                "provider": "mock",
+                "storage_path": tempfile.mkdtemp()
         }
 
         # Act
@@ -132,8 +133,8 @@ from app.core.services.ml.pat.mock import MockPATServiceclass TestPATServiceFact
 
 
                         """Test that instances are cached."""
-        # Arrange
-        config = {
+            # Arrange
+            config = {
             "provider": "mock",
             "storage_path": tempfile.mkdtemp()
         }

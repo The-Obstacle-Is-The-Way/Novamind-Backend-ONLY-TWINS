@@ -52,14 +52,14 @@ def enhanced_services() -> (
 ):
     """Fixture to create enhanced mock services for testing."""
     return EnhancedMockDigitalTwinFactory.create_enhanced_mock_services()@pytest.fixture
-def patient_id() -> UUID:
+    def patient_id() -> UUID:
 
             """Fixture to create a consistent patient ID for tests."""
-    return uuid.UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
-def initial_data() -> Dict:
+        return uuid.UUID("12345678-1234-5678-1234-567812345678")@pytest.fixture
+        def initial_data() -> Dict:
 
             """Fixture to provide initial patient data for testing."""
-    return {
+        return {
         "diagnoses": ["Major Depressive Disorder", "Generalized Anxiety Disorder"],
         "symptoms": ["fatigue", "insomnia", "worry", "anhedonia"],
         "medications": [
@@ -89,19 +89,19 @@ async def test_factory_creates_services(enhanced_services):
     @pytest.mark.asyncio()
     async def test_initialize_digital_twin(
             enhanced_services, patient_id, initial_data):
-    """Test initializing a Digital Twin with knowledge graph and belief network."""
-    digital_twin_service, _, _, _ = enhanced_services
+                """Test initializing a Digital Twin with knowledge graph and belief network."""
+                digital_twin_service, _, _, _ = enhanced_services
 
-    # Initialize the Digital Twin
-    (
-        digital_twin_state,
-        knowledge_graph,
-        belief_network,
+                # Initialize the Digital Twin
+                (
+                digital_twin_state,
+                knowledge_graph,
+                belief_network,
     ) = await digital_twin_service.initialize_digital_twin(
-        patient_id=patient_id,
-        initial_data=initial_data,
-        enable_knowledge_graph=True,
-        enable_belief_network=True,
+                patient_id=patient_id,
+                initial_data=initial_data,
+                enable_knowledge_graph=True,
+                enable_belief_network=True,
     )
 
     # Check that all components were created
@@ -126,12 +126,12 @@ async def test_factory_creates_services(enhanced_services):
 @pytest.mark.asyncio()
 async def test_process_multimodal_data(
         enhanced_services, patient_id, initial_data):
-    """Test processing multimodal data through the Digital Twin."""
-    digital_twin_service, _, _, _ = enhanced_services
+            """Test processing multimodal data through the Digital Twin."""
+            digital_twin_service, _, _, _ = enhanced_services
 
-    # Initialize the Digital Twin first
-    await digital_twin_service.initialize_digital_twin(
-        patient_id=patient_id, initial_data=initial_data
+            # Initialize the Digital Twin first
+            await digital_twin_service.initialize_digital_twin(
+            patient_id=patient_id, initial_data=initial_data
     )
 
     # Prepare test data
@@ -170,15 +170,15 @@ async def test_process_multimodal_data(
 @pytest.mark.asyncio()
 async def test_knowledge_graph_operations(
         enhanced_services, patient_id, initial_data):
-    """Test operations on the knowledge graph."""
-    digital_twin_service, _, _, _ = enhanced_services
+            """Test operations on the knowledge graph."""
+            digital_twin_service, _, _, _ = enhanced_services
 
-    # Initialize the Digital Twin with knowledge graph
-    _, knowledge_graph, _ = await digital_twin_service.initialize_digital_twin(
-        patient_id=patient_id,
-        initial_data=initial_data,
-        enable_knowledge_graph=True,
-        enable_belief_network=False,
+            # Initialize the Digital Twin with knowledge graph
+            _, knowledge_graph, _ = await digital_twin_service.initialize_digital_twin(
+            patient_id=patient_id,
+            initial_data=initial_data,
+            enable_knowledge_graph=True,
+            enable_belief_network=False,
     )
 
     # Prepare new data to update the graph
@@ -251,15 +251,15 @@ async def test_knowledge_graph_operations(
 @pytest.mark.asyncio()
 async def test_belief_network_operations(
         enhanced_services, patient_id, initial_data):
-    """Test operations on the belief network."""
-    digital_twin_service, _, _, _ = enhanced_services
+            """Test operations on the belief network."""
+            digital_twin_service, _, _, _ = enhanced_services
 
-    # Initialize the Digital Twin with belief network
-    _, _, belief_network = await digital_twin_service.initialize_digital_twin(
-        patient_id=patient_id,
-        initial_data=initial_data,
-        enable_knowledge_graph=False,
-        enable_belief_network=True,
+            # Initialize the Digital Twin with belief network
+            _, _, belief_network = await digital_twin_service.initialize_digital_twin(
+            patient_id=patient_id,
+            initial_data=initial_data,
+            enable_knowledge_graph=False,
+            enable_belief_network=True,
     )
 
     # Prepare evidence to update the network
@@ -366,12 +366,12 @@ async def test_advanced_analyses(enhanced_services, patient_id, initial_data):
 @pytest.mark.asyncio()
 async def test_counterfactual_simulation(
         enhanced_services, patient_id, initial_data):
-    """Test counterfactual simulation of intervention scenarios."""
-    digital_twin_service, _, _, _ = enhanced_services
+            """Test counterfactual simulation of intervention scenarios."""
+            digital_twin_service, _, _, _ = enhanced_services
 
-    # Initialize the Digital Twin
-    await digital_twin_service.initialize_digital_twin(
-        patient_id=patient_id, initial_data=initial_data
+            # Initialize the Digital Twin
+            await digital_twin_service.initialize_digital_twin(
+            patient_id=patient_id, initial_data=initial_data
     )
 
     # Create a mock baseline state ID
@@ -435,12 +435,12 @@ async def test_counterfactual_simulation(
 @pytest.mark.asyncio()
 async def test_clinical_summary_generation(
         enhanced_services, patient_id, initial_data):
-    """Test generation of a comprehensive clinical summary."""
-    digital_twin_service, _, _, _ = enhanced_services
+            """Test generation of a comprehensive clinical summary."""
+            digital_twin_service, _, _, _ = enhanced_services
 
-    # Initialize the Digital Twin
-    await digital_twin_service.initialize_digital_twin(
-        patient_id=patient_id, initial_data=initial_data
+            # Initialize the Digital Twin
+            await digital_twin_service.initialize_digital_twin(
+            patient_id=patient_id, initial_data=initial_data
     )
 
     # Generate the summary

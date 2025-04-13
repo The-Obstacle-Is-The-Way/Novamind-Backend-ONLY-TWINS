@@ -28,7 +28,8 @@ from app.infrastructure.security.log_sanitizer import (
     SanitizedLogger,
     sanitize_logs,
     get_sanitized_logger,
-)class TestPHIPattern:
+)
+class TestPHIPattern:
     """Test suite for PHIPattern class."""
 
     def test_phi_pattern_matches_regex(self):
@@ -93,114 +94,116 @@ from app.infrastructure.security.log_sanitizer import (
         # Should not match
         assert not pattern.matches("dia")  # Too short/different
         assert not pattern.matches("")
-        assert not pattern.matches(None)class TestRedactionStrategies:
-    """Test suite for redaction strategies."""
+        assert not pattern.matches(None)
+class TestRedactionStrategies:
+            """Test suite for redaction strategies."""
 
-    def test_full_redaction(self):
+            def test_full_redaction(self):
 
 
                     """Test full redaction strategy."""
-        strategy = FullRedactionStrategy()
+                strategy = FullRedactionStrategy()
 
-        assert strategy.redact("123-45-6789") == "[REDACTED]"
-        assert strategy.redact("John Doe") == "[REDACTED]"
-        assert strategy.redact("") == "[REDACTED]"
-        assert strategy.redact(None) == "[REDACTED]"
+                assert strategy.redact("123-45-6789") == "[REDACTED]"
+                assert strategy.redact("John Doe") == "[REDACTED]"
+                assert strategy.redact("") == "[REDACTED]"
+                assert strategy.redact(None) == "[REDACTED]"
 
-        def test_partial_redaction(self):
+                def test_partial_redaction(self):
 
 
                         """Test partial redaction strategy."""
-        strategy = PartialRedactionStrategy()
+            strategy = PartialRedactionStrategy()
 
-        # Test with SSN-like pattern
-        ssn = "123-45-6789"
-        redacted_ssn = strategy.redact(ssn)
-        # First few and last few chars should be preserved
-        assert ssn[:2] in redacted_ssn
-        assert ssn[-2:] in redacted_ssn
-        assert "***" in redacted_ssn
+            # Test with SSN-like pattern
+            ssn = "123-45-6789"
+            redacted_ssn = strategy.redact(ssn)
+            # First few and last few chars should be preserved
+            assert ssn[:2] in redacted_ssn
+            assert ssn[-2:] in redacted_ssn
+            assert "***" in redacted_ssn
 
-        # Test with name
-        name = "John Doe"
-        redacted_name = strategy.redact(name)
-        assert name[0] in redacted_name  # First char preserved
-        assert name[-1] in redacted_name  # Last char preserved
-        assert "***" in redacted_name
+            # Test with name
+            name = "John Doe"
+            redacted_name = strategy.redact(name)
+            assert name[0] in redacted_name  # First char preserved
+            assert name[-1] in redacted_name  # Last char preserved
+            assert "***" in redacted_name
 
-        # Test with short string
-        assert strategy.redact("a") == "a"  # Too short to redact
+            # Test with short string
+            assert strategy.redact("a") == "a"  # Too short to redact
 
-        # Test with empty/None
-        assert strategy.redact("") == ""
-        assert strategy.redact(None) == ""
+            # Test with empty/None
+            assert strategy.redact("") == ""
+            assert strategy.redact(None) == ""
 
-        def test_hash_redaction(self):
+            def test_hash_redaction(self):
 
 
                         """Test hash redaction strategy."""
-        strategy = HashRedactionStrategy(,
+                strategy = HashRedactionStrategy(,
 
-        val1= "123-45-6789"
-        val2 = "123-45-6789"  # Same as val1
-        val3 = "987-65-4321"  # Different
+                val1= "123-45-6789"
+                val2 = "123-45-6789"  # Same as val1
+                val3 = "987-65-4321"  # Different
 
-        hash1 = strategy.redact(val1,
-        hash2= strategy.redact(val2,
-        hash3= strategy.redact(val3)
+                hash1 = strategy.redact(val1,
+                hash2= strategy.redact(val2,
+                hash3= strategy.redact(val3)
 
-        # Same input should produce same hash
-        assert hash1 == hash2
-        # Different input should produce different hash
-        assert hash1 != hash3
-        # Hash should be a hex string
-        assert re.match(r"^[0-9a-f]+$", hash1)
+                # Same input should produce same hash
+                assert hash1 == hash2
+                # Different input should produce different hash
+                assert hash1 != hash3
+                # Hash should be a hex string
+                assert re.match(r"^[0-9a-f]+$", hash1)
 
-        # Test with empty/None
-        assert strategy.redact("") == ""
-        assert strategy.redact(None) == ""class TestRedactionStrategyFactory:
-    """Test suite for redaction strategy factory."""
+                # Test with empty/None
+                assert strategy.redact("") == ""
+                assert strategy.redact(None) == ""class TestRedactionStrategyFactory:
+                """Test suite for redaction strategy factory."""
 
-    def test_strategy_factory(self):
+                def test_strategy_factory(self):
 
 
                     """Test RedactionStrategyFactory creates correct strategies."""
-        factory = RedactionStrategyFactory(,
+                factory = RedactionStrategyFactory(,
 
-        full= factory.get_strategy(RedactionMode.FULL,
-        partial= factory.get_strategy(RedactionMode.PARTIAL,
-        hash_strategy= factory.get_strategy(RedactionMode.HASH)
+                full= factory.get_strategy(RedactionMode.FULL,
+                partial= factory.get_strategy(RedactionMode.PARTIAL,
+                hash_strategy= factory.get_strategy(RedactionMode.HASH)
 
-        assert isinstance(full, FullRedactionStrategy)
-        assert isinstance(partial, PartialRedactionStrategy)
-        assert isinstance(hash_strategy, HashRedactionStrategy)
+                assert isinstance(full, FullRedactionStrategy)
+                assert isinstance(partial, PartialRedactionStrategy)
+                assert isinstance(hash_strategy, HashRedactionStrategy)
 
-        # Test with invalid mode should default to FULL
-        default = factory.get_strategy("INVALID")
-        assert isinstance(default, FullRedactionStrategy)class TestSanitizerConfig:
-    """Test suite for SanitizerConfig class."""
+                # Test with invalid mode should default to FULL
+                default = factory.get_strategy("INVALID")
+                assert isinstance(default, FullRedactionStrategy)
+                class TestSanitizerConfig:
+            """Test suite for SanitizerConfig class."""
 
-    def test_default_config(self):
+            def test_default_config(self):
 
 
                     """Test default sanitizer configuration."""
-        config = SanitizerConfig()
+                config = SanitizerConfig()
 
-        # Default modes should be set
-        assert config.default_mode == RedactionMode.FULL
-        # Should have some default patterns
-        assert len(config.patterns) > 0
+                # Default modes should be set
+                assert config.default_mode == RedactionMode.FULL
+                # Should have some default patterns
+                assert len(config.patterns) > 0
 
-        # Load built-in patterns
-        config.load_builtin_patterns()
-        # Should have more patterns now
-        assert len(config.patterns) > 0
+                # Load built-in patterns
+                config.load_builtin_patterns()
+                # Should have more patterns now
+                assert len(config.patterns) > 0
 
-        def test_custom_config(self):
+                def test_custom_config(self):
 
 
                         """Test custom sanitizer configuration."""
-        custom_patterns = [
+            custom_patterns = [
             PHIPattern(
                 name="SSN",
                 pattern=r"\d{3}-\d{2}-\d{4}",
@@ -213,9 +216,9 @@ from app.infrastructure.security.log_sanitizer import (
                 type=PatternType.REGEX,
                 priority=5,
             ),
-        ]
+            ]
 
-        config = SanitizerConfig(
+            config = SanitizerConfig(
             patterns=custom_patterns, default_mode=RedactionMode.PARTIAL
         )
 
@@ -224,20 +227,20 @@ from app.infrastructure.security.log_sanitizer import (
         # Patterns should be sorted by priority (highest first)
         assert config.patterns[0].name == "SSN"
         assert config.patterns[1].name == "Name"class TestPatternRepository:
-    """Test suite for PatternRepository class."""
+            """Test suite for PatternRepository class."""
 
-    def test_pattern_repository(self):
+            def test_pattern_repository(self):
 
 
                     """Test PatternRepository functionality."""
-        repo = PatternRepository()
+                repo = PatternRepository()
 
-        # Add a pattern
-        pattern1 = PHIPattern(
-            name="SSN",
-            pattern=r"\d{3}-\d{2}-\d{4}",
-            type=PatternType.REGEX,
-            priority=10,
+                # Add a pattern
+                pattern1 = PHIPattern(
+                name="SSN",
+                pattern=r"\d{3}-\d{2}-\d{4}",
+                type=PatternType.REGEX,
+                priority=10,
         )
         repo.add_pattern(pattern1)
 
@@ -262,15 +265,15 @@ from app.infrastructure.security.log_sanitizer import (
         repo.remove_pattern("SSN")
         assert len(repo.get_patterns()) == 1
         assert repo.get_pattern_by_name("SSN") is Noneclass TestLogSanitizer:
-    """Test suite for LogSanitizer class."""
+            """Test suite for LogSanitizer class."""
 
-    def test_sanitize_text(self):
+            def test_sanitize_text(self):
 
 
                     """Test sanitizing text with PHI."""
-        # Create a sanitizer with custom patterns
-        config = SanitizerConfig(
-            patterns=[
+                # Create a sanitizer with custom patterns
+                config = SanitizerConfig(
+                patterns=[
                 PHIPattern(
                     name="SSN",
                     pattern=r"\d{3}-\d{2}-\d{4}",
@@ -283,25 +286,25 @@ from app.infrastructure.security.log_sanitizer import (
                     type=PatternType.REGEX,
                     priority=5,
                 ),
-            ],
-            default_mode=RedactionMode.FULL,
-        ,
-        sanitizer= LogSanitizer(config)
+                ],
+                default_mode=RedactionMode.FULL,
+                ,
+                sanitizer= LogSanitizer(config)
 
-        # Test with PHI
-        text = "Patient John Doe with SSN 123-45-6789 has an appointment."
-        sanitized = sanitizer.sanitize(text)
+                # Test with PHI
+                text = "Patient John Doe with SSN 123-45-6789 has an appointment."
+                sanitized = sanitizer.sanitize(text)
 
-        assert "John Doe" not in sanitized
-        assert "123-45-6789" not in sanitized
-        assert "[REDACTED]" in sanitized
+                assert "John Doe" not in sanitized
+                assert "123-45-6789" not in sanitized
+                assert "[REDACTED]" in sanitized
 
-    def test_sanitize_object(self):
+                def test_sanitize_object(self):
 
 
                     """Test sanitizing objects with PHI."""
-        # Create a sanitizer with custom patterns
-        config = SanitizerConfig(
+            # Create a sanitizer with custom patterns
+            config = SanitizerConfig(
             patterns=[
                 PHIPattern(
                     name="SSN",
@@ -317,11 +320,11 @@ from app.infrastructure.security.log_sanitizer import (
                 ),
             ],
             default_mode=RedactionMode.FULL,
-        ,
-        sanitizer= LogSanitizer(config)
+            ,
+            sanitizer= LogSanitizer(config)
 
-        # Test with dictionary
-        obj = {
+            # Test with dictionary
+            obj = {
             "patient_id": "12345",
             "name": "John Doe",
             "ssn": "123-45-6789",
@@ -376,61 +379,62 @@ from app.infrastructure.security.log_sanitizer import (
         # Hash should be present (alphanumeric)
         assert re.search(r"[0-9a-f]+", sanitized)
         # Partial redaction should show some digits
-        assert re.search(r"\d{1,2}[-\s*]+\d{1,2}", sanitized)class TestPHIFormatter:
-    """Test suite for PHIFormatter class."""
+        assert re.search(r"\d{1,2}[-\s*]+\d{1,2}", sanitized)
+        class TestPHIFormatter:
+            """Test suite for PHIFormatter class."""
 
-    def test_format_with_sanitizer(self):
+            def test_format_with_sanitizer(self):
 
 
                     """Test formatting with sanitizer."""
-        # Create a mock sanitizer
-        mock_sanitizer = MagicMock(spec=LogSanitizer)
-        mock_sanitizer.sanitize.side_effect = (
-            lambda x: "[CLEANED]" if isinstance(x, str) and "PHI" in x else x
-        ,
+                # Create a mock sanitizer
+                mock_sanitizer = MagicMock(spec=LogSanitizer)
+                mock_sanitizer.sanitize.side_effect = (
+                lambda x: "[CLEANED]" if isinstance(x, str) and "PHI" in x else x
+                ,
 
-        formatter= PHIFormatter(sanitizer=mock_sanitizer)
+                formatter= PHIFormatter(sanitizer=mock_sanitizer)
 
-        # Test with PHI in message
-        record = logging.LogRecord(
-            name="test",
-            level=logging.INFO,
-            pathname="",
-            lineno=0,
-            msg="Message with PHI data",
-            args=(),
-            exc_info=None,
-        ,
+                # Test with PHI in message
+                record = logging.LogRecord(
+                name="test",
+                level=logging.INFO,
+                pathname="",
+                lineno=0,
+                msg="Message with PHI data",
+                args=(),
+                exc_info=None,
+                ,
 
-        formatted= formatter.format(record)
-        assert "Message with [CLEANED] data" in formatted
+                formatted= formatter.format(record)
+                assert "Message with [CLEANED] data" in formatted
 
-        # Test with PHI in args
-        record = logging.LogRecord(
-            name="test",
-            level=logging.INFO,
-            pathname="",
-            lineno=0,
-            msg="Message with %s",
-            args=("PHI data",),
-            exc_info=None,
-        ,
+                # Test with PHI in args
+                record = logging.LogRecord(
+                name="test",
+                level=logging.INFO,
+                pathname="",
+                lineno=0,
+                msg="Message with %s",
+                args=("PHI data",),
+                exc_info=None,
+                ,
 
-        formatted= formatter.format(record)
-        assert "Message with [CLEANED]" in formattedclass TestPHIRedactionHandler:
-    """Test suite for PHIRedactionHandler class."""
+                formatted= formatter.format(record)
+                assert "Message with [CLEANED]" in formattedclass TestPHIRedactionHandler:
+            """Test suite for PHIRedactionHandler class."""
 
-    def test_emit_with_sanitizer(self):
+            def test_emit_with_sanitizer(self):
 
 
                     """Test emit with sanitizer."""
-        # Create a mock handler
-        mock_handler = MagicMock(spec=logging.Handler)
+                # Create a mock handler
+                mock_handler = MagicMock(spec=logging.Handler)
 
-        # Create a mock sanitizer
-        mock_sanitizer = MagicMock(spec=LogSanitizer)
-        mock_sanitizer.sanitize.side_effect = (
-            lambda x: "[SANITIZED]" if "PHI" in str(x) else x
+                # Create a mock sanitizer
+                mock_sanitizer = MagicMock(spec=LogSanitizer)
+                mock_sanitizer.sanitize.side_effect = (
+                lambda x: "[SANITIZED]" if "PHI" in str(x) else x
         )
 
         # Create the PHI redaction handler
@@ -457,17 +461,17 @@ from app.infrastructure.security.log_sanitizer import (
         sanitized_record = mock_handler.emit.call_args[0][0]
         assert "PHI" not in sanitized_record.msg
         assert "[SANITIZED]" in sanitized_record.msgclass TestSanitizedLogger:
-    """Test suite for SanitizedLogger class."""
+            """Test suite for SanitizedLogger class."""
 
-    def test_sanitized_logger(self, caplog):
+            def test_sanitized_logger(self, caplog):
 
 
                     """Test sanitized logger sanitizes PHI in logs."""
-        caplog.set_level(logging.INFO)
+                caplog.set_level(logging.INFO)
 
-        # Create a sanitizer
-        config = SanitizerConfig(
-            patterns=[
+                # Create a sanitizer
+                config = SanitizerConfig(
+                patterns=[
                 PHIPattern(
                     name="SSN",
                     pattern=r"\d{3}-\d{2}-\d{4}",
@@ -494,18 +498,18 @@ from app.infrastructure.security.log_sanitizer import (
                     assert "123-45-6789" not in record.message
                     assert (
                         "[REDACTED]" in record.message or "SANITIZED" in record.message)
-                if "John Doe" in str(record.args):
-                    # Cannot easily verify args were sanitized with caplog
-                    pass
+                    if "John Doe" in str(record.args):
+                        # Cannot easily verify args were sanitized with caplog
+                        pass
 
-                    def test_sanitize_logs_decorator(self):
+                        def test_sanitize_logs_decorator(self):
 
 
                                     """Test the @sanitize_logs decorator."""
-        # Mock the sanitizer
-        mock_sanitizer = MagicMock(spec=LogSanitizer)
-        mock_sanitizer.sanitize.side_effect = (
-            lambda x: "[SANITIZED]" if "SSN" in str(x) else str(x)
+                        # Mock the sanitizer
+                        mock_sanitizer = MagicMock(spec=LogSanitizer)
+                        mock_sanitizer.sanitize.side_effect = (
+                        lambda x: "[SANITIZED]" if "SSN" in str(x) else str(x)
         )
 
         # Define a function with the decorator
@@ -536,4 +540,4 @@ from app.infrastructure.security.log_sanitizer import (
 
             # Example of running tests if the file is executed directly
             if __name__ == "__main__":
-    pytest.main(["-v", __file__])
+                pytest.main(["-v", __file__])

@@ -91,7 +91,8 @@ def aws_pat_service(mock_boto3, aws_config):
     return service
 
 
-@pytest.mark.db_required()class TestAWSPATService:
+@pytest.mark.db_required()
+class TestAWSPATService:
     """Test the AWS PAT service implementation."""
 
     def test_initialization(self, mock_boto3, aws_config):
@@ -112,23 +113,23 @@ def aws_pat_service(mock_boto3, aws_config):
 
 
                         """Test initialization failure."""
-        # Set up boto3 client to raise an exception
-        mock_boto3["sagemaker_runtime"].side_effect = ClientError()
-        {"Error": {"Code": "InvalidParameterValue", "Message": "Test error"}},
-        "CreateEndpoint"
-        (,
+            # Set up boto3 client to raise an exception
+            mock_boto3["sagemaker_runtime"].side_effect = ClientError()
+            {"Error": {"Code": "InvalidParameterValue", "Message": "Test error"}},
+            "CreateEndpoint"
+            (,
 
-        service= AWSPATService()
-        with pytest.raises(InitializationError):
-        service.initialize(aws_config)
+            service= AWSPATService()
+            with pytest.raises(InitializationError):
+                service.initialize(aws_config)
 
-        def test_sanitize_phi(self, aws_pat_service, mock_boto3):
+                def test_sanitize_phi(self, aws_pat_service, mock_boto3):
 
 
                         """Test PHI sanitization."""
-        # Configure mock to return PHI entities
-        mock_boto3["comprehend_medical"].detect_phi.return_value = {
-            "Entities": [
+                # Configure mock to return PHI entities
+                mock_boto3["comprehend_medical"].detect_phi.return_value = {
+                "Entities": [
                 {
                     "BeginOffset": 11,
                     "EndOffset": 22,
@@ -166,106 +167,106 @@ def aws_pat_service(mock_boto3, aws_config):
 
 
                         """Test actigraphy analysis."""
-        # Mock data
-        patient_id = "patient123"
-        readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
+            # Mock data
+            patient_id = "patient123"
+            readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
                      "timestamp": "2025-03-28T12:00:00Z"}]
-        start_time = "2025-03-28T12:00:00Z"
-        end_time = "2025-03-28T13:00:00Z"
-        sampling_rate_hz = 50.0
-        device_info = {"name": "ActiGraph GT9X", "firmware": "1.7.0"}
-        analysis_types = ["activity_levels", "sleep_analysis"]
+            start_time = "2025-03-28T12:00:00Z"
+            end_time = "2025-03-28T13:00:00Z"
+            sampling_rate_hz = 50.0
+            device_info = {"name": "ActiGraph GT9X", "firmware": "1.7.0"}
+            analysis_types = ["activity_levels", "sleep_analysis"]
 
-        # Call method (implementation is stubbed,
-        result= aws_pat_service.analyze_actigraphy(,
-        patient_id= patient_id,
-        readings = readings,
-        start_time = start_time,
-        end_time = end_time,
-        sampling_rate_hz = sampling_rate_hz,
-        device_info = device_info,
-        analysis_types = analysis_types
-        ()
+            # Call method (implementation is stubbed,
+            result= aws_pat_service.analyze_actigraphy(,
+            patient_id= patient_id,
+            readings = readings,
+            start_time = start_time,
+            end_time = end_time,
+            sampling_rate_hz = sampling_rate_hz,
+            device_info = device_info,
+            analysis_types = analysis_types
+            ()
 
-        # Basic validation of stub implementation
-        assert "analysis_id" in result
-        assert "patient_id" in result
-        assert "timestamp" in result
-        assert "analysis_types" in result
-        assert result["patient_id"] == patient_id
-        assert result["analysis_types"] == analysis_types
+            # Basic validation of stub implementation
+            assert "analysis_id" in result
+            assert "patient_id" in result
+            assert "timestamp" in result
+            assert "analysis_types" in result
+            assert result["patient_id"] == patient_id
+            assert result["analysis_types"] == analysis_types
 
-        def test_get_actigraphy_embeddings(self, aws_pat_service):
+            def test_get_actigraphy_embeddings(self, aws_pat_service):
 
 
                         """Test actigraphy embeddings generation."""
-        # Mock data
-        patient_id = "patient123"
-        readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
+                # Mock data
+                patient_id = "patient123"
+                readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
                      "timestamp": "2025-03-28T12:00:00Z"}]
-        start_time = "2025-03-28T12:00:00Z"
-        end_time = "2025-03-28T13:00:00Z"
-        sampling_rate_hz = 50.0
+                start_time = "2025-03-28T12:00:00Z"
+                end_time = "2025-03-28T13:00:00Z"
+                sampling_rate_hz = 50.0
 
-        # Call method (implementation is stubbed,
-        result= aws_pat_service.get_actigraphy_embeddings(,
-        patient_id= patient_id,
-        readings = readings,
-        start_time = start_time,
-        end_time = end_time,
-        sampling_rate_hz = sampling_rate_hz
-        ()
+                # Call method (implementation is stubbed,
+                result= aws_pat_service.get_actigraphy_embeddings(,
+                patient_id= patient_id,
+                readings = readings,
+                start_time = start_time,
+                end_time = end_time,
+                sampling_rate_hz = sampling_rate_hz
+                ()
 
-        # Basic validation of stub implementation
-        assert "embedding_id" in result
-        assert "patient_id" in result
-        assert "timestamp" in result
-        assert "embedding" in result
-        assert result["patient_id"] == patient_id
+                # Basic validation of stub implementation
+                assert "embedding_id" in result
+                assert "patient_id" in result
+                assert "timestamp" in result
+                assert "embedding" in result
+                assert result["patient_id"] == patient_id
 
-        def test_get_analysis_by_id(self, aws_pat_service):
+                def test_get_analysis_by_id(self, aws_pat_service):
 
 
                         """Test retrieving analysis by ID."""
-        # This will raise ResourceNotFoundError as the stub implementation
-        # doesn't actually store or retrieve real data
-        with pytest.raises(ResourceNotFoundError):
-            aws_pat_service.get_analysis_by_id("test-analysis-id")
+                # This will raise ResourceNotFoundError as the stub implementation
+                # doesn't actually store or retrieve real data
+                with pytest.raises(ResourceNotFoundError):
+                aws_pat_service.get_analysis_by_id("test-analysis-id")
 
-            def test_get_model_info(self, aws_pat_service, aws_config):
+                def test_get_model_info(self, aws_pat_service, aws_config):
 
 
                             """Test getting model information."""
-        model_info = aws_pat_service.get_model_info()
+                model_info = aws_pat_service.get_model_info()
 
-        assert model_info["name"] == "AWS-PAT"
-        assert "version" in model_info
-        assert "capabilities" in model_info
-        assert aws_config["endpoint_name"] == model_info["endpoint_name"]
-        assert model_info["active"] is True
+                assert model_info["name"] == "AWS-PAT"
+                assert "version" in model_info
+                assert "capabilities" in model_info
+                assert aws_config["endpoint_name"] == model_info["endpoint_name"]
+                assert model_info["active"] is True
 
-        def test_integrate_with_digital_twin(self, aws_pat_service):
+                def test_integrate_with_digital_twin(self, aws_pat_service):
 
 
                         """Test integrating analysis with digital twin."""
-        # Mock data
-        patient_id = "patient123"
-        profile_id = "profile456"
-        analysis_id = "analysis789"
+                    # Mock data
+                    patient_id = "patient123"
+                    profile_id = "profile456"
+                    analysis_id = "analysis789"
 
-        # Call method (implementation is stubbed,
-        result= aws_pat_service.integrate_with_digital_twin(,
-        patient_id= patient_id,
-        profile_id = profile_id,
-        analysis_id = analysis_id
-        ()
+                    # Call method (implementation is stubbed,
+                    result= aws_pat_service.integrate_with_digital_twin(,
+                    patient_id= patient_id,
+                    profile_id = profile_id,
+                    analysis_id = analysis_id
+                    ()
 
-        # Basic validation of stub implementation
-        assert "integration_id" in result
-        assert "patient_id" in result
-        assert "profile_id" in result
-        assert "analysis_id" in result
-        assert result["patient_id"] == patient_id
-        assert result["profile_id"] == profile_id
-        assert result["analysis_id"] == analysis_id
-        assert result["status"] == "success"
+                    # Basic validation of stub implementation
+                    assert "integration_id" in result
+                    assert "patient_id" in result
+                    assert "profile_id" in result
+                    assert "analysis_id" in result
+                    assert result["patient_id"] == patient_id
+                    assert result["profile_id"] == profile_id
+                    assert result["analysis_id"] == analysis_id
+                    assert result["status"] == "success"

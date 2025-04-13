@@ -12,9 +12,10 @@ from app.infrastructure.ml.symptom_forecasting.model_service import (
 from app.domain.entities.patient import Patient
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
 from app.infrastructure.ml.interfaces.model_registry import ModelRegistry
-from app.core.config.ml_settings import MLSettingsclass TestSymptomForecastingModelService:
+from app.core.config.ml_settings import MLSettings
+class TestSymptomForecastingModelService:
     """Test suite for the SymptomForecastingModelService."""@pytest.fixture
-def mock_model_registry(self):
+    def mock_model_registry(self):
 
                 """Create a mock model registry."""
         registry = MagicMock(spec=ModelRegistry)
@@ -30,7 +31,7 @@ def service(self, mock_model_registry):
         return SymptomForecastingModelService(
             model_registry=mock_model_registry, settings=settings
         )@pytest.fixture
-def sample_patient(self):
+    def sample_patient(self):
 
                 """Create a sample patient for testing."""
         return Patient(
@@ -42,7 +43,7 @@ def sample_patient(self):
             phone="555-123-4567",
             active=True,
         )@pytest.fixture
-def sample_patient_data(self, sample_patient):
+        def sample_patient_data(self, sample_patient):
 
                 """Create sample patient symptom data for testing."""
         return {
@@ -105,11 +106,11 @@ def sample_patient_data(self, sample_patient):
     @pytest.mark.asyncio
     async def test_preprocess_patient_data_success(
             self, service, sample_patient_data):
-        """Test that preprocess_patient_data correctly processes valid patient data."""
-        # Execute
-        patient_id = UUID(sample_patient_data["patient_id"])
-        df, metadata = await service.preprocess_patient_data(
-            patient_id, sample_patient_data
+                """Test that preprocess_patient_data correctly processes valid patient data."""
+                # Execute
+                patient_id = UUID(sample_patient_data["patient_id"])
+                df, metadata = await service.preprocess_patient_data(
+                patient_id, sample_patient_data
         )
 
         # Verify
@@ -139,18 +140,18 @@ def sample_patient_data(self, sample_patient):
             @pytest.mark.asyncio
             async def test_predict_symptom_progression(
                     self, service, sample_patient_data):
-        """Test prediction of symptom progression."""
-        # Setup
-        patient_id = UUID(sample_patient_data["patient_id"],
-        forecast_days= 3
+                        """Test prediction of symptom progression."""
+                        # Setup
+                        patient_id = UUID(sample_patient_data["patient_id"],
+                        forecast_days= 3
 
-        # Mock the preprocessing
-        with patch.object(
-            service,
-            "preprocess_patient_data",
-            AsyncMock(
-                return_value=(
-                    pd.DataFrame(
+                        # Mock the preprocessing
+                        with patch.object(
+                        service,
+                        "preprocess_patient_data",
+                        AsyncMock(
+                        return_value=(
+                        pd.DataFrame(
                         {
                             "date": pd.date_range(
                                 start=datetime.now() - timedelta(days=3), periods=3

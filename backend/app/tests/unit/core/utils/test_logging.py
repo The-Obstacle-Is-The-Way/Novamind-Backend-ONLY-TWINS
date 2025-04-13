@@ -9,7 +9,8 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 from app.core.constants import LogLevel
-from app.core.utils.logging import get_logger, log_execution_time, log_method_callsclass TestGetLogger:
+from app.core.utils.logging import get_logger, log_execution_time, log_method_calls
+class TestGetLogger:
     """Tests for the get_logger function."""
 
     def test_get_logger_returns_logger(self):
@@ -24,37 +25,38 @@ from app.core.utils.logging import get_logger, log_execution_time, log_method_ca
 
 
                         """Test that get_logger sets the log level."""
-        with patch.dict(os.environ, {"LOG_LEVEL": "DEBUG"}):
-            logger = get_logger("test_logger_debug")
-            assert logger.level == logging.DEBUG
+            with patch.dict(os.environ, {"LOG_LEVEL": "DEBUG"}):
+                logger = get_logger("test_logger_debug")
+                assert logger.level == logging.DEBUG
 
-            def test_get_logger_default_level(self):
+                def test_get_logger_default_level(self):
 
 
                             """Test that get_logger uses INFO as default level."""
-        # Remove LOG_LEVEL from env if it exists
-        with patch.dict(os.environ, clear=True):
-            logger = get_logger("test_logger_default")
-            assert logger.level == logging.INFO
+                # Remove LOG_LEVEL from env if it exists
+                with patch.dict(os.environ, clear=True):
+                    logger = get_logger("test_logger_default")
+                    assert logger.level == logging.INFO
 
-            def test_get_logger_adds_handler(self):
+                    def test_get_logger_adds_handler(self):
 
 
                             """Test that get_logger adds a handler."""
-        logger = get_logger("test_logger_handler")
-        assert len(logger.handlers) > 0
-        assert any(isinstance(h, logging.StreamHandler)
-                   for h in logger.handlers)class TestLogExecutionTime:
-    """Tests for the log_execution_time decorator."""
+                logger = get_logger("test_logger_handler")
+                assert len(logger.handlers) > 0
+                assert any(isinstance(h, logging.StreamHandler)
+                   for h in logger.handlers)
+                class TestLogExecutionTime:
+                       """Tests for the log_execution_time decorator."""
 
-    def test_log_execution_time_success(self):
+                       def test_log_execution_time_success(self):
 
 
-                    """Test log_execution_time decorator on successful function execution."""
-        mock_logger = MagicMock()
+                           """Test log_execution_time decorator on successful function execution."""
+                           mock_logger = MagicMock()
 
-        @log_execution_time(logger=mock_logger, level=LogLevel.INFO)
-        def test_function(a, b):
+                           @log_execution_time(logger=mock_logger, level=LogLevel.INFO)
+                           def test_function(a, b):
 
                         return a + b
 
@@ -68,40 +70,41 @@ from app.core.utils.logging import get_logger, log_execution_time, log_method_ca
 
 
                             """Test log_execution_time decorator on function that raises an exception."""
-        mock_logger = MagicMock()
+                mock_logger = MagicMock()
 
-        @log_execution_time(logger=mock_logger)
-        def failing_function():
+                @log_execution_time(logger=mock_logger)
+                def failing_function():
 
                         raise ValueError("Test error")
 
-            with pytest.raises(ValueError):
-        failing_function()
+                    with pytest.raises(ValueError):
+                failing_function()
 
-        mock_logger.exception.assert_called_once()
-        assert "Exception in 'failing_function'" in mock_logger.exception.call_args[0][0]
+                mock_logger.exception.assert_called_once()
+                assert "Exception in 'failing_function'" in mock_logger.exception.call_args[0][0]
 
-        def test_log_execution_time_creates_logger(self):
+                def test_log_execution_time_creates_logger(self):
 
 
                         """Test that log_execution_time creates a logger if none is provided."""
-        @log_execution_time()
-        def test_function(a, b):
+                    @log_execution_time()
+                    def test_function(a, b):
 
                         return a + b
 
-            # Should not raise an exception
-            result = test_function(1, 2)
-            assert result == 3class TestLogMethodCalls:
-    """Tests for the log_method_calls decorator."""
+                # Should not raise an exception
+                result = test_function(1, 2)
+                assert result == 3class TestLogMethodCalls:
+                """Tests for the log_method_calls decorator."""
 
-    def test_log_method_calls(self):
+                def test_log_method_calls(self):
 
 
                     """Test log_method_calls decorator on a class."""
-        mock_logger = MagicMock()
+                    mock_logger = MagicMock()
 
-        @log_method_calls(logger=mock_logger, level=LogLevel.INFO)class TestClass:
+                    @log_method_calls(logger=mock_logger, level=LogLevel.INFO)
+                    class TestClass:
             def test_method(self, a, b):
 
                                 return a + b
@@ -122,9 +125,10 @@ from app.core.utils.logging import get_logger, log_execution_time, log_method_ca
 
 
                                 """Test log_method_calls decorator without logging arguments."""
-        mock_logger = MagicMock()
+                    mock_logger = MagicMock()
 
-        @log_method_calls(logger=mock_logger, log_args=False)class TestClass:
+                    @log_method_calls(logger=mock_logger, log_args=False)
+                    class TestClass:
             def test_method(self, a, b):
 
                                 return a + b
@@ -144,9 +148,10 @@ from app.core.utils.logging import get_logger, log_execution_time, log_method_ca
 
 
                                 """Test log_method_calls decorator without logging results."""
-        mock_logger = MagicMock()
+                    mock_logger = MagicMock()
 
-        @log_method_calls(logger=mock_logger, log_results=False)class TestClass:
+                    @log_method_calls(logger=mock_logger, log_results=False)
+                    class TestClass:
             def test_method(self, a, b):
 
                                 return a + b
@@ -166,17 +171,18 @@ from app.core.utils.logging import get_logger, log_execution_time, log_method_ca
 
 
                                 """Test log_method_calls decorator with a method that raises an exception."""
-        mock_logger = MagicMock()
+                    mock_logger = MagicMock()
 
-        @log_method_calls(logger=mock_logger)class TestClass:
+                    @log_method_calls(logger=mock_logger)
+                    class TestClass:
             def failing_method(self):
 
                                 raise ValueError("Test error",
 
                 instance= TestClass()
                 with pytest.raises(ValueError):
-            instance.failing_method()
+                    instance.failing_method()
 
-            mock_logger.error.assert_called_once()
-            assert "Exception in TestClass.failing_method" in mock_logger.error.call_args[
-                0][0]
+                    mock_logger.error.assert_called_once()
+                    assert "Exception in TestClass.failing_method" in mock_logger.error.call_args[
+                    0][0]

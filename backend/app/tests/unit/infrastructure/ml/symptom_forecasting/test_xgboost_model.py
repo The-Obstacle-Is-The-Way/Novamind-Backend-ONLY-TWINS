@@ -16,9 +16,10 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel
 
 
-@pytest.mark.db_required()class TestXGBoostSymptomModel:
+@pytest.mark.db_required()
+class TestXGBoostSymptomModel:
     """Tests for the XGBoostSymptomModel."""@pytest.fixture
-def model(self):
+    def model(self):
 
                 """Create an XGBoostSymptomModel with mocked internals."""
         with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb', autospec=True):
@@ -39,14 +40,14 @@ def model(self):
 
 
                             """Test that the model loads correctly from a file."""
-        with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.joblib', autospec=True) as mock_joblib, \
+                with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.joblib', autospec=True) as mock_joblib, \
                 patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.os.path.exists', return_value=True):
-            # Setup
-            mock_joblib.load.return_value = {
-                "models": {"depression_score": MagicMock()},
-                "feature_names": ["f1", "f2", "f3"],
-                "target_names": ["t1"],
-                "params": {"n_estimators": 100}
+                    # Setup
+                    mock_joblib.load.return_value = {
+                    "models": {"depression_score": MagicMock()},
+                    "feature_names": ["f1", "f2", "f3"],
+                    "target_names": ["t1"],
+                    "params": {"n_estimators": 100}
             }
 
             # Execute
@@ -80,42 +81,42 @@ def model(self):
             @pytest.mark.asyncio()
             async def test_predict(self, model):
                  """Test that the model predicts correctly."""
-        # Setup
-        X = np.array([)
+                # Setup
+                X = np.array([)
                      [3.0, 4.0, 0.8, 0.6],
                      [2.0, 3.0, 0.9, 0.5],
                      [4.0, 5.0, 0.7, 0.8]
                      (],
-        horizon= 3
+                horizon= 3
 
-        # Mock the internal dmatrix and predict function
-        with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb.DMatrix', autospec=True) as mock_dmatrix:
-            # Setup the mock prediction
-        model.models["depression_score"].predict.return_value = np.array([
+                # Mock the internal dmatrix and predict function
+                with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb.DMatrix', autospec=True) as mock_dmatrix:
+                    # Setup the mock prediction
+                    model.models["depression_score"].predict.return_value = np.array([
                                                                          4.2, 3.8, 4.5])
 
-        # Execute
-        result = await model.predict(X, horizon)
+                    # Execute
+                    result = await model.predict(X, horizon)
 
-        # Verify
-        assert "values" in result
-        assert "feature_importance" in result
-        assert "model_type" in result
-        assert result["model_type"] == "xgboost"
-        # The result shape should be (n_samples, horizon, n_targets)
-        assert result["values"].shape == (3, 3, 1)
+                    # Verify
+                    assert "values" in result
+                    assert "feature_importance" in result
+                    assert "model_type" in result
+                    assert result["model_type"] == "xgboost"
+                    # The result shape should be (n_samples, horizon, n_targets)
+                    assert result["values"].shape == (3, 3, 1)
 
-        def test_get_feature_importance(self, model):
+                    def test_get_feature_importance(self, model):
 
 
                         """Test that feature importance is correctly calculated."""
-        # Setup
-        mock_model = model.models["depression_score"]
-        mock_model.get_score.return_value = {
-            "symptom_history_1": 15.5,
-            "symptom_history_2": 12.3,
-            "medication_adherence": 25.7,
-            "sleep_quality": 18.2
+                # Setup
+                mock_model = model.models["depression_score"]
+                mock_model.get_score.return_value = {
+                "symptom_history_1": 15.5,
+                "symptom_history_2": 12.3,
+                "medication_adherence": 25.7,
+                "sleep_quality": 18.2
         }
 
         # Execute
@@ -151,34 +152,34 @@ def model(self):
 
 
                         """Test that the model trains correctly."""
-        # Setup
-        X_train = np.array([)
+            # Setup
+            X_train = np.array([)
                            [3.0, 4.0, 0.8, 0.6],
                            [2.0, 3.0, 0.9, 0.5],
                            [4.0, 5.0, 0.7, 0.8]
                            (],
-        y_train= np.array([4.2, 3.8, 4.5])
+            y_train= np.array([4.2, 3.8, 4.5])
 
-        # Mock the internal training
-        with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb', autospec=True) as mock_xgb:
-        mock_xgb.DMatrix.return_value = MagicMock()
-        mock_xgb.train.return_value = MagicMock()
+            # Mock the internal training
+            with patch('app.infrastructure.ml.symptom_forecasting.xgboost_model.xgb', autospec=True) as mock_xgb:
+                mock_xgb.DMatrix.return_value = MagicMock()
+                mock_xgb.train.return_value = MagicMock()
 
-        # Set up the model to return feature importance
-        mock_model = mock_xgb.train.return_value = mock_model.get_score.return_value = {
-            "symptom_history_1": 15.5,
-            "symptom_history_2": 12.3,
-            "medication_adherence": 25.7,
-            "sleep_quality": 18.2}
+                # Set up the model to return feature importance
+                mock_model = mock_xgb.train.return_value = mock_model.get_score.return_value = {
+                "symptom_history_1": 15.5,
+                "symptom_history_2": 12.3,
+                "medication_adherence": 25.7,
+                "sleep_quality": 18.2}
 
-        # Execute
-    result = model.train(X_train, y_train, optimize=False)
+                # Execute
+                result = model.train(X_train, y_train, optimize=False)
 
-    # Verify
-    assert "training_results" in result
-    assert "feature_names" in result
-    assert "target_names" in result
-    assert "params" in result
-    assert "depression_score" in result["training_results"]
-    assert "feature_importance" in result["training_results"]["depression_score"]
-    assert "params" in result["training_results"]["depression_score"]
+                # Verify
+                assert "training_results" in result
+                assert "feature_names" in result
+                assert "target_names" in result
+                assert "params" in result
+                assert "depression_score" in result["training_results"]
+                assert "feature_importance" in result["training_results"]["depression_score"]
+                assert "params" in result["training_results"]["depression_score"]

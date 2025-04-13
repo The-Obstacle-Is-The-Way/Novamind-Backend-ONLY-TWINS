@@ -22,9 +22,9 @@ from typing import Any, List, Set, Dict, Optional, Union
     # Replace part of the data (e.g., last 4 digits visible,
     PARTIAL= "partial"
     HASH = "hash"  # Replace with a hash of the dataclass PHIPattern:
-    """Represents a pattern for detecting PHI."""
+        """Represents a pattern for detecting PHI."""
 
-    def __init__(
+        def __init__(
         self,
         name: str,
         regex: Optional[str] = None,
@@ -59,35 +59,35 @@ from typing import Any, List, Set, Dict, Optional, Union
 
             # Regex match
             if self._regex_pattern and self._regex_pattern.search(text):
-            return True
+                return True
 
-            # Exact match
-            if any(exact in text for exact in self._exact_matches):
-            return True
+                # Exact match
+                if any(exact in text for exact in self._exact_matches):
+                    return True
 
-            # Fuzzy match
-            if any(pattern.search(text) for pattern in self._fuzzy_patterns):
-            return True
+                    # Fuzzy match
+                    if any(pattern.search(text) for pattern in self._fuzzy_patterns):
+                    return True
 
-            # Context match
-            if any(pattern.search(text) for pattern in self._context_patterns):
-            return True
+                    # Context match
+                    if any(pattern.search(text) for pattern in self._context_patterns):
+                    return True
 
-            return Falseclass PatternRepository:
-    """Repository of PHI patterns."""
+                    return Falseclass PatternRepository:
+                    """Repository of PHI patterns."""
 
-    def __init__(self):
+                    def __init__(self):
 
 
-                self._patterns: List[PHIPattern] = []
-        self._initialize_default_patterns()
+                    self._patterns: List[PHIPattern] = []
+                    self._initialize_default_patterns()
 
-        def _initialize_default_patterns(self):
+                    def _initialize_default_patterns(self):
 
 
                         """Initialize default patterns for PHI detection."""
-        # SSN pattern
-        self.add_pattern(
+            # SSN pattern
+            self.add_pattern(
             PHIPattern(
                 name="SSN",
                 regex=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
@@ -128,110 +128,112 @@ from typing import Any, List, Set, Dict, Optional, Union
 
 
                         """Get all patterns in the repository."""
-        return self._patternsclass Redactor:
-    """Base class for redaction strategies."""
+            return self._patternsclass Redactor:
+                """Base class for redaction strategies."""
 
-    def redact(self, text: str) -> str:
+                def redact(self, text: str) -> str:
 
 
                     """Redact the given text."""
-        raise NotImplementedError("Subclasses must implement redact()")class FullRedactor(Redactor):
-    """Fully redact text."""
+                raise NotImplementedError("Subclasses must implement redact()")
+                class FullRedactor(Redactor):
+            """Fully redact text."""
 
-    def redact(self, text: str) -> str:
+            def redact(self, text: str) -> str:
 
 
                     """Replace text entirely with [REDACTED]."""
-        return "[REDACTED]"class PartialRedactor(Redactor):
-    """Partially redact text, preserving some information."""
+                return "[REDACTED]"class PartialRedactor(Redactor):
+            """Partially redact text, preserving some information."""
 
-    def redact(self, text: str) -> str:
+            def redact(self, text: str) -> str:
 
 
                     """Redact most of the text but preserve some information."""
-        if not text:
+                if not text:
             return ""
 
             # For short text, return as is
             if len(text) <= 2:
-            return text
+                return text
 
-            # Keep first and last character, replace the rest with asterisks
-            return text[0] + "*" * (len(text) - 2) + text[-1]class HashRedactor(Redactor):
-    """Redact by replacing with a hash."""
+                # Keep first and last character, replace the rest with asterisks
+                return text[0] + "*" * (len(text) - 2) + text[-1]class HashRedactor(Redactor):
+                    """Redact by replacing with a hash."""
 
-    def redact(self, text: str) -> str:
+                    def redact(self, text: str) -> str:
 
 
                     """Replace text with a hash value."""
-        if not text:
+                    if not text:
             return ""
 
             import hashlib
 
             hash_value = hashlib.md5(text.encode()).hexdigest()[:8]
             return f"[HASH:{hash_value}]"class RedactorFactory:
-    """Factory for creating redactors."""
+                """Factory for creating redactors."""
 
-    @staticmethod
-    def create_redactor(strategy: RedactionStrategy) -> Redactor:
+                @staticmethod
+                def create_redactor(strategy: RedactionStrategy) -> Redactor:
 
                     """Create a redactor for the given strategy."""
-        if strategy == RedactionStrategy.FULL:
+                    if strategy == RedactionStrategy.FULL:
             return FullRedactor()
             elif strategy == RedactionStrategy.PARTIAL:
-            return PartialRedactor()
-            elif strategy == RedactionStrategy.HASH:
-            return HashRedactor()
-            else:
-                # Default to full redaction
-            return FullRedactor()class PHISanitizer:
-    """Sanitizer for PHI in text."""
+                return PartialRedactor()
+                elif strategy == RedactionStrategy.HASH:
+                    return HashRedactor()
+                    else:
+                    # Default to full redaction
+                    return FullRedactor()
+                    class PHISanitizer:
+                """Sanitizer for PHI in text."""
 
-    def __init__(self, pattern_repository: Optional[PatternRepository] = None):
+                def __init__(self, pattern_repository: Optional[PatternRepository] = None):
 
 
-                self._pattern_repo = pattern_repository or PatternRepository()
-        self._redactor_factory = RedactorFactory()
+                    self._pattern_repo = pattern_repository or PatternRepository()
+                    self._redactor_factory = RedactorFactory()
 
-        def sanitize(self, data: Any) -> Any:
+                    def sanitize(self, data: Any) -> Any:
 
 
                         """Sanitize PHI in the given data."""
-        # Handle None
-        if data is None:
-            return None
+            # Handle None
+            if data is None:
+                return None
 
-            # Handle strings
-            if isinstance(data, str):
-            return self._sanitize_text(data)
+                # Handle strings
+                if isinstance(data, str):
+                return self._sanitize_text(data)
 
-            # Handle lists
-            if isinstance(data, list):
-            return [self.sanitize(item) for item in data]
+                # Handle lists
+                if isinstance(data, list):
+                    return [self.sanitize(item) for item in data]
 
-            # Handle dictionaries
-            if isinstance(data, dict):
-            return {key: self.sanitize(value) for key, value in data.items()}
+                    # Handle dictionaries
+                    if isinstance(data, dict):
+                    return {key: self.sanitize(value) for key, value in data.items()}
 
-            # Other types (int, bool, etc.) - return as is
-            return data
+                    # Other types (int, bool, etc.) - return as is
+                    return data
 
-            def _sanitize_text(self, text: str) -> str:
+                    def _sanitize_text(self, text: str) -> str:
 
 
                             """Sanitize PHI in the given text."""
-        if not text:
-            return text
+                    if not text:
+                    return text
 
-            result = text
-            patterns = self._pattern_repo.get_patterns()
+                    result = text
+                    patterns = self._pattern_repo.get_patterns()
 
-            for pattern in patterns:
-            if pattern.matches(result):
-                redactor = self._redactor_factory.create_redactor(
+                    for pattern in patterns:
+                if pattern.matches(result):
+                    redactor = self._redactor_factory.create_redactor(
                     pattern.strategy,
-                result= (
+                    result= (
                     pattern._regex_pattern.sub(
                         lambda m: redactor.redact(m.group(0)), result
                     )
@@ -255,55 +257,55 @@ from typing import Any, List, Set, Dict, Optional, Union
         def test_sanitize_ssn(self):
 
                         """Test sanitizing SSN."""
-        text = "Patient SSN: 123-45-6789"
-        sanitized = self.sanitizer.sanitize(text)
+            text = "Patient SSN: 123-45-6789"
+            sanitized = self.sanitizer.sanitize(text)
 
-        # SSN should be fully redacted
-        self.assertNotIn("123-45-6789", sanitized)
-        self.assertIn("[REDACTED]", sanitized)
+            # SSN should be fully redacted
+            self.assertNotIn("123-45-6789", sanitized)
+            self.assertIn("[REDACTED]", sanitized)
 
-        @pytest.mark.standalone()
-        def test_sanitize_phone(self):
+            @pytest.mark.standalone()
+            def test_sanitize_phone(self):
 
                         """Test sanitizing phone numbers."""
-        text = "Phone: (555) 123-4567"
-        sanitized = self.sanitizer.sanitize(text)
+                text = "Phone: (555) 123-4567"
+                sanitized = self.sanitizer.sanitize(text)
 
-        # Phone should be partially redacted
-        self.assertNotIn("(555) 123-4567", sanitized)
-        # First and last character should be preserved
-        self.assertIn("5", sanitized)
-        self.assertIn("7", sanitized)
-        # Should contain asterisks
-        self.assertIn("*", sanitized)
+                # Phone should be partially redacted
+                self.assertNotIn("(555) 123-4567", sanitized)
+                # First and last character should be preserved
+                self.assertIn("5", sanitized)
+                self.assertIn("7", sanitized)
+                # Should contain asterisks
+                self.assertIn("*", sanitized)
 
-        @pytest.mark.standalone()
-        def test_sanitize_email(self):
+                @pytest.mark.standalone()
+                def test_sanitize_email(self):
 
                         """Test sanitizing email addresses."""
-        text = "Email: john.doe@example.com"
-        sanitized = self.sanitizer.sanitize(text)
+                text = "Email: john.doe@example.com"
+                sanitized = self.sanitizer.sanitize(text)
 
-        # Email should be hash redacted
-        self.assertNotIn("john.doe@example.com", sanitized)
-        self.assertIn("[HASH:", sanitized)
+                # Email should be hash redacted
+                self.assertNotIn("john.doe@example.com", sanitized)
+                self.assertIn("[HASH:", sanitized)
 
-        @pytest.mark.standalone()
-        def test_sanitize_nested_structures(self):
+                @pytest.mark.standalone()
+                def test_sanitize_nested_structures(self):
 
                         """Test sanitizing nested structures."""
-        data = {
-            "patient": {
+                data = {
+                "patient": {
                 "name": "John Doe",
                 "ssn": "123-45-6789",
                 "contact": {
                     "phone": "(555) 123-4567",
                     "email": "john.doe@example.com"},
             },
-            "notes": [
+                "notes": [
                 "Patient provided SSN 123-45-6789",
                 "Called patient at (555) 123-4567",
-            ],
+                ],
         }
 
         sanitized = self.sanitizer.sanitize(data)
@@ -331,37 +333,37 @@ from typing import Any, List, Set, Dict, Optional, Union
         def test_sanitizer_edge_cases(self):
 
                         """Test sanitizer behavior with edge cases."""
-        # Empty string
-        self.assertEqual(self.sanitizer.sanitize(""), "")
+            # Empty string
+            self.assertEqual(self.sanitizer.sanitize(""), "")
 
-        # None value
-        self.assertIsNone(self.sanitizer.sanitize(None))
+            # None value
+            self.assertIsNone(self.sanitizer.sanitize(None))
 
-        # Empty list
-        self.assertEqual(self.sanitizer.sanitize([]), [])
+            # Empty list
+            self.assertEqual(self.sanitizer.sanitize([]), [])
 
-        # Empty dict
-        self.assertEqual(self.sanitizer.sanitize({}), {})
+            # Empty dict
+            self.assertEqual(self.sanitizer.sanitize({}), {})
 
-        # Non-string primitives
-        self.assertEqual(self.sanitizer.sanitize(123), 123)
-        self.assertEqual(self.sanitizer.sanitize(True), True)
+            # Non-string primitives
+            self.assertEqual(self.sanitizer.sanitize(123), 123)
+            self.assertEqual(self.sanitizer.sanitize(True), True)
 
-        @pytest.mark.standalone()
-        def test_redaction_format_consistency(self):
+            @pytest.mark.standalone()
+            def test_redaction_format_consistency(self):
 
                         """Test that redaction formats are consistent."""
-        # Full redaction
-        pattern_repo = PatternRepository()
-        pattern_repo.add_pattern(
-            PHIPattern(
+                # Full redaction
+                pattern_repo = PatternRepository()
+                pattern_repo.add_pattern(
+                PHIPattern(
                 name="test_full",
                 regex=r"FULL\d+",
                 strategy=RedactionStrategy.FULL))
 
-        # Partial redaction
-        pattern_repo.add_pattern(
-            PHIPattern(
+                # Partial redaction
+                pattern_repo.add_pattern(
+                PHIPattern(
                 name="test_partial",
                 regex=r"PARTIAL\d+",
                 strategy=RedactionStrategy.PARTIAL,

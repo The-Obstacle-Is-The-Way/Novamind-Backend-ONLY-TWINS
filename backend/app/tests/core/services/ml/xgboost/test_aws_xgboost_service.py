@@ -6,23 +6,23 @@ with AWS services and handles errors appropriately. All AWS services are mocked:
     to avoid external dependencies.
     """
 
-import json
-import uuid
-import pytest
-from unittest.mock import patch, MagicMock, ANY
-from datetime import datetime
-from botocore.exceptions import ClientError
+    import json
+    import uuid
+    import pytest
+    from unittest.mock import patch, MagicMock, ANY
+    from datetime import datetime
+    from botocore.exceptions import ClientError
 
-from app.core.services.ml.xgboost.aws import AWSXGBoostService
+    from app.core.services.ml.xgboost.aws import AWSXGBoostService
 
-# Import Enums from the correct schema location
-from app.api.schemas.xgboost import (
+    # Import Enums from the correct schema location
+    from app.api.schemas.xgboost import (
     RiskLevel,
     TreatmentType,
 )  # Renamed TreatmentCategory to TreatmentType, removed ValidationStatus
 
-# Import Exceptions from the service exception module
-from app.core.services.ml.xgboost.exceptions import (
+    # Import Exceptions from the service exception module
+    from app.core.services.ml.xgboost.exceptions import (
     ModelNotFoundError,
     # PredictionNotFoundError,   # Does not exist in exceptions module
     # InvalidFeatureError,   # Does not exist in exceptions module
@@ -57,22 +57,22 @@ def mock_aws_clients():
         def get_boto_client(service, **kwargs):
 
                         if service == "sagemaker":
-                return mock_sagemaker
-                elif service == "sagemaker-runtime":
-                return mock_sagemaker_runtime
-                elif service == "s3":
-                return mock_s3
-                return MagicMock()
+                            return mock_sagemaker
+                            elif service == "sagemaker-runtime":
+                                return mock_sagemaker_runtime
+                                elif service == "s3":
+                        return mock_s3
+                        return MagicMock()
 
-                mock_client.side_effect = get_boto_client
+                        mock_client.side_effect = get_boto_client
 
-                # Return all mocks
-                yield {
-                    "sagemaker": mock_sagemaker,
-                    "sagemaker_runtime": mock_sagemaker_runtime,
-                    "s3": mock_s3,
-                    "dynamodb": mock_dynamodb,
-                    "predictions_table": mock_predictions_table,
+                        # Return all mocks
+                        yield {
+                        "sagemaker": mock_sagemaker,
+                        "sagemaker_runtime": mock_sagemaker_runtime,
+                        "s3": mock_s3,
+                        "dynamodb": mock_dynamodb,
+                        "predictions_table": mock_predictions_table,
                 }
 
 
@@ -97,7 +97,8 @@ def aws_xgboost_service(mock_aws_clients):
     return service
 
 
-@pytest.mark.db_required()class TestAWSXGBoostServiceInitialization:
+@pytest.mark.db_required()
+class TestAWSXGBoostServiceInitialization:
     """Tests for AWSXGBoostService initialization."""
 
     def test_initialization_success(self, mock_aws_clients):
@@ -176,18 +177,19 @@ def aws_xgboost_service(mock_aws_clients):
                 log_level="INFO",
             )
 
-        assert "validation failed" in str(exc_info.value)class TestPredictRisk:
-    """Tests for the predict_risk method."""
+        assert "validation failed" in str(exc_info.value)
+class TestPredictRisk:
+            """Tests for the predict_risk method."""
 
-    def test_predict_risk_success(self, aws_xgboost_service, mock_aws_clients):
+            def test_predict_risk_success(self, aws_xgboost_service, mock_aws_clients):
 
 
                     """Test successful risk prediction."""
-        # Mock endpoint lookup
-        aws_xgboost_service.model_cache = {}  # Reset cache
-        mock_aws_clients["sagemaker"].describe_endpoint.return_value = {
-            "EndpointName": "xgboost-risk_relapse",
-            "EndpointStatus": "InService",
+                # Mock endpoint lookup
+                aws_xgboost_service.model_cache = {}  # Reset cache
+                mock_aws_clients["sagemaker"].describe_endpoint.return_value = {
+                "EndpointName": "xgboost-risk_relapse",
+                "EndpointStatus": "InService",
         }
 
         # Mock SageMaker runtime response
@@ -256,12 +258,12 @@ def aws_xgboost_service(mock_aws_clients):
 
     def test_predict_risk_model_not_found(
             self, aws_xgboost_service, mock_aws_clients):
-        """Test risk prediction with non-existent model."""
-        # Mock endpoint lookup failure
-        aws_xgboost_service.model_cache = {}  # Reset cache
-        mock_aws_clients["sagemaker"].describe_endpoint.side_effect = ClientError(
-            {"Error": {"Code": "ValidationException", "Message": "Endpoint not found"}},
-            "DescribeEndpoint",
+                """Test risk prediction with non-existent model."""
+                # Mock endpoint lookup failure
+                aws_xgboost_service.model_cache = {}  # Reset cache
+                mock_aws_clients["sagemaker"].describe_endpoint.side_effect = ClientError(
+                {"Error": {"Code": "ValidationException", "Message": "Endpoint not found"}},
+                "DescribeEndpoint",
         )
 
         # Test data
@@ -298,12 +300,12 @@ def aws_xgboost_service(mock_aws_clients):
 
     def test_predict_risk_invocation_error(
             self, aws_xgboost_service, mock_aws_clients):
-        """Test risk prediction with SageMaker invocation error."""
-        # Mock endpoint lookup success
-        aws_xgboost_service.model_cache = {}  # Reset cache
-        mock_aws_clients["sagemaker"].describe_endpoint.return_value = {
-            "EndpointName": "xgboost-risk_relapse",
-            "EndpointStatus": "InService",
+                """Test risk prediction with SageMaker invocation error."""
+                # Mock endpoint lookup success
+                aws_xgboost_service.model_cache = {}  # Reset cache
+                mock_aws_clients["sagemaker"].describe_endpoint.return_value = {
+                "EndpointName": "xgboost-risk_relapse",
+                "EndpointStatus": "InService",
         }
 
         # Mock SageMaker runtime error
@@ -323,17 +325,18 @@ def aws_xgboost_service(mock_aws_clients):
                 patient_id=patient_id, risk_type=risk_type, features=features
             )
 
-        assert "Failed to invoke endpoint" in str(exc_info.value)class TestGetPrediction:
-    """Tests for the get_prediction method."""
+        assert "Failed to invoke endpoint" in str(exc_info.value)
+class TestGetPrediction:
+            """Tests for the get_prediction method."""
 
-    def test_get_prediction_success(
+            def test_get_prediction_success(
             self,
             aws_xgboost_service,
             mock_aws_clients):
-        """Test successfully retrieving a prediction."""
-        # Mock DynamoDB response
-        mock_aws_clients["predictions_table"].get_item.return_value = {
-            "Item": {
+                """Test successfully retrieving a prediction."""
+                # Mock DynamoDB response
+                mock_aws_clients["predictions_table"].get_item.return_value = {
+                "Item": {
                 "prediction_id": "pred-123",
                 "patient_id": "patient-456",
                 "model_id": "model-789",
@@ -369,25 +372,25 @@ def aws_xgboost_service(mock_aws_clients):
 
     def test_get_prediction_not_found(
             self, aws_xgboost_service, mock_aws_clients):
-        """Test retrieving a non-existent prediction."""
-        # Mock DynamoDB response with no item
-        mock_aws_clients["predictions_table"].get_item.return_value = {}
+                """Test retrieving a non-existent prediction."""
+                # Mock DynamoDB response with no item
+                mock_aws_clients["predictions_table"].get_item.return_value = {}
 
-        # Call method and verify exception
-        with pytest.raises(
-            ResourceNotFoundError
+                # Call method and verify exception
+                with pytest.raises(
+                ResourceNotFoundError
         ) as exc_info:  # Use ResourceNotFoundError
-            aws_xgboost_service.get_prediction("pred-123")
+                aws_xgboost_service.get_prediction("pred-123")
 
-        assert "Prediction pred-123 not found" in str(exc_info.value)
+                assert "Prediction pred-123 not found" in str(exc_info.value)
 
-        def test_get_prediction_dynamodb_error(
+                def test_get_prediction_dynamodb_error(
                 self, aws_xgboost_service, mock_aws_clients):
-        """Test retrieving a prediction with DynamoDB error."""
-        # Mock DynamoDB error
-        mock_aws_clients["predictions_table"].get_item.side_effect = ClientError(
-            {
-                "Error": {
+                    """Test retrieving a prediction with DynamoDB error."""
+                    # Mock DynamoDB error
+                    mock_aws_clients["predictions_table"].get_item.side_effect = ClientError(
+                    {
+                    "Error": {
                     "Code": "InternalServerError",
                     "Message": "Internal server error",
                 }
@@ -401,21 +404,22 @@ def aws_xgboost_service(mock_aws_clients):
         ) as exc_info:  # Correct exception type
             aws_xgboost_service.get_prediction("pred-123")
 
-        assert "Failed to retrieve prediction" in str(exc_info.value)class TestValidatePrediction:
-    """Tests for the validate_prediction method."""
+        assert "Failed to retrieve prediction" in str(exc_info.value)
+class TestValidatePrediction:
+            """Tests for the validate_prediction method."""
 
-    def test_validate_prediction_success(
+            def test_validate_prediction_success(
             self, aws_xgboost_service, mock_aws_clients):
-        """Test successfully validating a prediction."""
-        # Mock get_prediction and update_prediction
-        with patch.object(aws_xgboost_service, "_update_prediction") as mock_update:
-            mock_update.return_value = None
+                """Test successfully validating a prediction."""
+                # Mock get_prediction and update_prediction
+                with patch.object(aws_xgboost_service, "_update_prediction") as mock_update:
+                    mock_update.return_value = None
 
-            # Call method
-            result = aws_xgboost_service.validate_prediction(
-                prediction_id="pred-123",
-                status="validated",  # Using string literal temporarily
-                validator_notes="Clinically confirmed",
+                    # Call method
+                    result = aws_xgboost_service.validate_prediction(
+                    prediction_id="pred-123",
+                    status="validated",  # Using string literal temporarily
+                    validator_notes="Clinically confirmed",
             )
 
             # Verify result
@@ -432,11 +436,11 @@ def aws_xgboost_service(mock_aws_clients):
 
     def test_validate_prediction_not_found(
             self, aws_xgboost_service, mock_aws_clients):
-        """Test validating a non-existent prediction."""
-        # Mock update_prediction with not found error
-        with patch.object(aws_xgboost_service, "_update_prediction") as mock_update:
-            mock_update.side_effect = PredictionNotFoundError(
-                "Prediction pred-123 not found"
+                """Test validating a non-existent prediction."""
+                # Mock update_prediction with not found error
+                with patch.object(aws_xgboost_service, "_update_prediction") as mock_update:
+                    mock_update.side_effect = PredictionNotFoundError(
+                    "Prediction pred-123 not found"
             )
 
             # Call method and verify exception
@@ -445,25 +449,26 @@ def aws_xgboost_service(mock_aws_clients):
                     prediction_id="pred-123", status=ValidationStatus.VALIDATED
                 )
 
-            assert "Prediction pred-123 not found" in str(exc_info.value)class TestHealthcheck:
-    """Tests for the healthcheck method."""
+            assert "Prediction pred-123 not found" in str(exc_info.value)
+class TestHealthcheck:
+                """Tests for the healthcheck method."""
 
-    def test_healthcheck_all_healthy(
-            self,
-            aws_xgboost_service,
-            mock_aws_clients):
-        """Test healthcheck with all components healthy."""
-        # Mock component checks
-        mock_aws_clients["predictions_table"].scan.return_value = {"Items": []}
-        mock_aws_clients["s3"].head_bucket.return_value = {}
-        mock_aws_clients["sagemaker"].list_endpoints.return_value = {
-            "Endpoints": [
-                {"EndpointName": "xgboost-risk_relapse", "EndpointStatus": "InService"},
-                {
+                def test_healthcheck_all_healthy(
+                self,
+                aws_xgboost_service,
+                mock_aws_clients):
+                    """Test healthcheck with all components healthy."""
+                    # Mock component checks
+                    mock_aws_clients["predictions_table"].scan.return_value = {"Items": []}
+                    mock_aws_clients["s3"].head_bucket.return_value = {}
+                    mock_aws_clients["sagemaker"].list_endpoints.return_value = {
+                    "Endpoints": [
+                    {"EndpointName": "xgboost-risk_relapse", "EndpointStatus": "InService"},
+                    {
                     "EndpointName": "xgboost-treatment_response_medication",
                     "EndpointStatus": "InService",
                 },
-            ]
+                    ]
         }
 
         # Call method

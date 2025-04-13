@@ -17,9 +17,10 @@ from app.infrastructure.ml.pharmacogenomics.model_service import Pharmacogenomic
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import (
     GeneMedicationModel,
 )
-from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModelclass TestPharmacogenomicsService:
+from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel
+class TestPharmacogenomicsService:
     """Tests for the PharmacogenomicsService."""@pytest.fixture
-def mock_gene_medication_model(self):
+    def mock_gene_medication_model(self):
 
                 """Create a mock GeneMedicationModel."""
         model = AsyncMock(spec=GeneMedicationModel)
@@ -116,7 +117,7 @@ def service(self, mock_gene_medication_model, mock_treatment_model):
             gene_medication_model=mock_gene_medication_model,
             treatment_model=mock_treatment_model,
         )@pytest.fixture
-def sample_genetic_data(self):
+    def sample_genetic_data(self):
 
                 """Create sample genetic data for testing."""
         return {
@@ -126,7 +127,7 @@ def sample_genetic_data(self):
                 {"gene": "CYP1A2", "variant": "*1F/*1F", "function": "rapid"},
             ]
         }@pytest.fixture
-def sample_patient_data(self):
+        def sample_patient_data(self):
 
                 """Create sample patient data for testing."""
         return {
@@ -152,7 +153,7 @@ def sample_patient_data(self):
                     "reason_for_discontinuation": "insufficient_efficacy",
                 }],
         }@pytest.fixture
-def sample_patient_id(self):
+        def sample_patient_id(self):
 
                 """Create a sample patient ID."""
         return str(uuid4())
@@ -166,12 +167,12 @@ def sample_patient_id(self):
             sample_patient_data,
             sample_patient_id,
         ):
-        """Test that predict_medication_response correctly processes data and returns predictions."""
-        # Setup
-        medications = ["fluoxetine", "sertraline", "bupropion"]
+            """Test that predict_medication_response correctly processes data and returns predictions."""
+            # Setup
+            medications = ["fluoxetine", "sertraline", "bupropion"]
 
-        # Execute
-        result = await service.predict_medication_response(
+            # Execute
+            result = await service.predict_medication_response(
             patient_id=sample_patient_id,
             genetic_data=sample_genetic_data,
             patient_data=sample_patient_data,
@@ -241,14 +242,14 @@ def sample_patient_id(self):
 
     async def test_predict_medication_response_no_medications(
             self, service, sample_genetic_data, sample_patient_data, sample_patient_id):
-        """Test that predict_medication_response handles empty medications list."""
-        # Execute/Assert
-        with pytest.raises(ValueError) as excinfo:
-            await service.predict_medication_response(
-                patient_id=sample_patient_id,
-                genetic_data=sample_genetic_data,
-                patient_data=sample_patient_data,
-                medications=[],
+                """Test that predict_medication_response handles empty medications list."""
+                # Execute/Assert
+                with pytest.raises(ValueError) as excinfo:
+                    await service.predict_medication_response(
+                    patient_id=sample_patient_id,
+                    genetic_data=sample_genetic_data,
+                    patient_data=sample_patient_data,
+                    medications=[],
             )
 
         assert "medications list cannot be empty" in str(excinfo.value).lower()
@@ -325,14 +326,14 @@ def sample_patient_id(self):
     async def test_analyze_medication_interactions_no_genetic_data(
             self,
             service):
-        """Test analyze_medication_interactions with no genetic data."""
-        # Setup
-        medications = ["fluoxetine", "sertraline"]
+                """Test analyze_medication_interactions with no genetic data."""
+                # Setup
+                medications = ["fluoxetine", "sertraline"]
 
-        # Execute/Assert
-        with pytest.raises(ValueError) as excinfo:
-            await service.analyze_medication_interactions(
-                genetic_data=None, medications=medications
+                # Execute/Assert
+                with pytest.raises(ValueError) as excinfo:
+                    await service.analyze_medication_interactions(
+                    genetic_data=None, medications=medications
             )
 
         assert "genetic data is required" in str(excinfo.value).lower()
@@ -360,29 +361,29 @@ def sample_patient_id(self):
         async def test_get_model_info(
             self, service, mock_gene_medication_model, mock_treatment_model
         ):
-        """Test the get_model_info method."""
-        # Setup mock responses
-        mock_gene_medication_model.get_model_info = AsyncMock(
+            """Test the get_model_info method."""
+            # Setup mock responses
+            mock_gene_medication_model.get_model_info = AsyncMock(
             return_value={
                 "name": "GeneMedicationModel",
                 "version": "1.0.0",
                 "description": "Predicts medication interactions based on genetic variants",
             })
 
-        mock_treatment_model.get_model_info = AsyncMock(
+            mock_treatment_model.get_model_info = AsyncMock(
             return_value={
                 "name": "PharmacogenomicsModel",
                 "version": "1.0.0",
                 "description": "Predicts treatment response based on genetic and patient data",
             })
 
-        # Execute
-        result = await service.get_model_info()
+            # Execute
+            result = await service.get_model_info()
 
-        # Verify
-        assert "service_info" in result
-        assert result["service_info"]["name"] == "PharmacogenomicsService"
-        assert "gene_medication_model" in result
-        assert "treatment_model" in result
-        assert result["gene_medication_model"]["name"] == "GeneMedicationModel"
-        assert result["treatment_model"]["name"] == "PharmacogenomicsModel"
+            # Verify
+            assert "service_info" in result
+            assert result["service_info"]["name"] == "PharmacogenomicsService"
+            assert "gene_medication_model" in result
+            assert "treatment_model" in result
+            assert result["gene_medication_model"]["name"] == "GeneMedicationModel"
+            assert result["treatment_model"]["name"] == "PharmacogenomicsModel"

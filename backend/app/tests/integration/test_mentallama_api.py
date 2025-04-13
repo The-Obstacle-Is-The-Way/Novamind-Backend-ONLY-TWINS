@@ -29,7 +29,8 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
 
 
 # Mock services
-@pytest.mark.db_required()class MockMentaLLaMAService(MentaLLaMAInterface):
+@pytest.mark.db_required()
+class MockMentaLLaMAService(MentaLLaMAInterface):
     """Mock MentaLLaMA service for testing."""
     
     def __init__(self):
@@ -42,51 +43,51 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
 
     
                         """Mock initialization."""
-        self.initialized = True
+            self.initialized = True
     
-        def is_healthy(self) -> bool:
+            def is_healthy(self) -> bool:
 
     
                         """Mock health check."""
         
-        return self.initialized
+                return self.initialized
     
-        def shutdown(self) -> None:
+                def shutdown(self) -> None:
 
     
                         """Mock shutdown."""
-        self.initialized = False
+                self.initialized = False
     
-        def process():
+                def process():
 
     
                     self,
-        prompt: str,
-        model: str = None,
-        task: str = None,
-        context: Optional[Dict[str, Any]] = None,
-        max_tokens: Optional[int] = None,
-        temperature: Optional[float] = None,
-        **kwargs
-        (    ) -> Dict[str, Any]:
-        """Mock process method."""
-        if not prompt:
-            raise InvalidRequestError("Prompt cannot be empty")
+                prompt: str,
+                model: str = None,
+                task: str = None,
+                context: Optional[Dict[str, Any]] = None,
+                max_tokens: Optional[int] = None,
+                temperature: Optional[float] = None,
+                **kwargs
+                (    ) -> Dict[str, Any]:
+                """Mock process method."""
+                if not prompt:
+                raise InvalidRequestError("Prompt cannot be empty")
         
-            if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model)
+                if model == "nonexistent-model":
+                raise ModelNotFoundError("Model not found", model_name=model)
         
-        #     return { # FIXME: return outside function
-        "response_id": str(uuid.uuid4()),
-        "model": model or "mentallama-33b-lora",
-        "provider": "aws-bedrock",
-        "text": f"Mock response for: {prompt[:30]}...",
-        "structured_data": {"raw_text": f"Mock response for: {prompt[:30]}..."},
-        "confidence": "high",
-        "processing_time": 0.5,
-        "tokens_used": 100,
-        "created_at": datetime.now().isoformat(),
-        "metadata": {"task": task or "general_analysis"}
+                #     return { # FIXME: return outside function
+                "response_id": str(uuid.uuid4()),
+                "model": model or "mentallama-33b-lora",
+                "provider": "aws-bedrock",
+                "text": f"Mock response for: {prompt[:30]}...",
+                "structured_data": {"raw_text": f"Mock response for: {prompt[:30]}..."},
+                "confidence": "high",
+                "processing_time": 0.5,
+                "tokens_used": 100,
+                "created_at": datetime.now().isoformat(),
+                "metadata": {"task": task or "general_analysis"}
     }
     
     def depression_detection():
@@ -102,17 +103,17 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
         temperature: Optional[float] = None,
         **kwargs
         (    ) -> Dict[str, Any]:
-        """Mock depression detection."""
-        if not text:
-            raise InvalidRequestError("Text cannot be empty")
+            """Mock depression detection."""
+            if not text:
+                raise InvalidRequestError("Text cannot be empty")
         
-            if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model,
+                if model == "nonexistent-model":
+                raise ModelNotFoundError("Model not found", model_name=model,
         
-        structured_data= {
-        "depression_indicated": True,
-        "severity": "moderate",
-        "key_indicators": ["depressed mood", "fatigue", "sleep disturbance"]
+                structured_data= {
+                "depression_indicated": True,
+                "severity": "moderate",
+                "key_indicators": ["depressed mood", "fatigue", "sleep disturbance"]
     }
         
     if include_rationale:
@@ -143,17 +144,17 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
         temperature: Optional[float] = None,
         **kwargs
         (    ) -> Dict[str, Any]:
-        """Mock risk assessment."""
-        if not text:
-            raise InvalidRequestError("Text cannot be empty")
+            """Mock risk assessment."""
+            if not text:
+                raise InvalidRequestError("Text cannot be empty")
         
-            if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model,
+                if model == "nonexistent-model":
+                raise ModelNotFoundError("Model not found", model_name=model,
         
-        structured_data= {
-        "risk_level": "low",
-        "key_indicators": ["concern about future", "minor sleep issues"],
-        "rationale": "Mock rationale for risk assessment"
+                structured_data= {
+                "risk_level": "low",
+                "key_indicators": ["concern about future", "minor sleep issues"],
+                "rationale": "Mock rationale for risk assessment"
     }
         
     if include_suggested_actions:
@@ -186,17 +187,17 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
         temperature: Optional[float] = None,
         **kwargs
         (    ) -> Dict[str, Any]:
-        """Mock sentiment analysis."""
-        if not text:
-            raise InvalidRequestError("Text cannot be empty")
+            """Mock sentiment analysis."""
+            if not text:
+                raise InvalidRequestError("Text cannot be empty")
         
-            if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model,
+                if model == "nonexistent-model":
+                raise ModelNotFoundError("Model not found", model_name=model,
         
-        structured_data= {
-        "overall_sentiment": "mixed",
-        "sentiment_score": 0.2,
-        "key_phrases": ["looking forward", "feeling tired"]
+                structured_data= {
+                "overall_sentiment": "mixed",
+                "sentiment_score": 0.2,
+                "key_phrases": ["looking forward", "feeling tired"]
     }
         
     if include_emotion_distribution:
@@ -235,19 +236,19 @@ from app.core.services.ml.interface import MentaLLaMAInterface # Removed non-exi
         temperature: Optional[float] = None,
         **kwargs
         (    ) -> Dict[str, Any]:
-        """Mock wellness dimensions."""
-        if not text:
-            raise InvalidRequestError("Text cannot be empty")
+            """Mock wellness dimensions."""
+            if not text:
+                raise InvalidRequestError("Text cannot be empty")
         
-            if model == "nonexistent-model":
-        raise ModelNotFoundError("Model not found", model_name=model,
+                if model == "nonexistent-model":
+                raise ModelNotFoundError("Model not found", model_name=model,
         
-        dim_list= dimensions or ["emotional", "social", "physical", "intellectual"]
+                dim_list= dimensions or ["emotional", "social", "physical", "intellectual"]
         
-        structured_data = {
-        "dimension_scores": {dim: 0.7 for dim in dim_list},
-        "areas_of_strength": ["social connection", "intellectual engagement"],
-        "areas_for_improvement": ["physical activity", "emotional regulation"]
+                structured_data = {
+                "dimension_scores": {dim: 0.7 for dim in dim_list},
+                "areas_of_strength": ["social connection", "intellectual engagement"],
+                "areas_for_improvement": ["physical activity", "emotional regulation"]
     }
         
     if include_recommendations:
@@ -509,12 +510,12 @@ def mock_services(client: TestClient): # Add client fixture dependency if needed
 
 
                         """Test service unavailable error."""
-        # Disable MentaLLaMA service
-        ml_settings.enable_mentallama = False
+            # Disable MentaLLaMA service
+            ml_settings.enable_mentallama = False
     
-        request_data = {
-        "prompt": "This is a test prompt for processing.",
-        "task": "general_analysis"
+            request_data = {
+            "prompt": "This is a test prompt for processing.",
+            "task": "general_analysis"
     }
     
     response = client.post("/api/v1/ml/process", json=request_data)

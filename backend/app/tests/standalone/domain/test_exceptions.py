@@ -17,7 +17,8 @@ from app.domain.ml.exceptions import (
 )
 
 
-@pytest.mark.db_required()class TestMentalLLaMAExceptions:
+@pytest.mark.db_required()
+class TestMentalLLaMAExceptions:
     """Tests for the MentalLLaMA exception classes."""
 
     def test_base_exception(self):
@@ -39,55 +40,55 @@ from app.domain.ml.exceptions import (
 
 
                         """Test MentalLLaMABaseException creation without details."""
-        message = "Test base exception without details"
+            message = "Test base exception without details"
 
-        exception = MentalLLaMABaseException(message)
+            exception = MentalLLaMABaseException(message)
 
-        # Verify properties
-        assert exception.message == message
-        assert exception.details == {}
-        assert str(exception) == message
+            # Verify properties
+            assert exception.message == message
+            assert exception.details == {}
+            assert str(exception) == message
 
-        def test_connection_error(self):
+            def test_connection_error(self):
 
 
                         """Test MentalLLaMAConnectionError creation and properties."""
-        message = "Failed to connect to MentalLLaMA API"
-        endpoint = "/api/v1/inference"
-        details = {"status_code": 503, "response": "Service Unavailable"}
+                message = "Failed to connect to MentalLLaMA API"
+                endpoint = "/api/v1/inference"
+                details = {"status_code": 503, "response": "Service Unavailable"}
 
-        exception = MentalLLaMAConnectionError(message, endpoint, details)
+                exception = MentalLLaMAConnectionError(message, endpoint, details)
 
-        # Verify properties
-        assert exception.message == message
-        assert exception.endpoint == endpoint
-        assert exception.details == details
-        assert str(exception) == message
+                # Verify properties
+                assert exception.message == message
+                assert exception.endpoint == endpoint
+                assert exception.details == details
+                assert str(exception) == message
 
-        def test_authentication_error(self):
+                def test_authentication_error(self):
 
 
                         """Test MentalLLaMAAuthenticationError creation and properties."""
-        message = "API key invalid or expired"
-        details = {"status_code": 401, "response": "Unauthorized"}
+                message = "API key invalid or expired"
+                details = {"status_code": 401, "response": "Unauthorized"}
 
-        exception = MentalLLaMAAuthenticationError(message, details)
+                exception = MentalLLaMAAuthenticationError(message, details)
 
-        # Verify properties
-        assert exception.message == message
-        assert exception.details == details
-        assert str(exception) == message
+                # Verify properties
+                assert exception.message == message
+                assert exception.details == details
+                assert str(exception) == message
 
-        def test_inference_error(self):
+                def test_inference_error(self):
 
 
                         """Test MentalLLaMAInferenceError creation and properties."""
-        message = "Inference failed due to invalid input format"
-        model_name = "mentalllama-13b-chat"
-        inference_parameters = {
-            "temperature": 0.7,
-            "max_tokens": 1000,
-            "prompt": "Patient exhibits...",
+                message = "Inference failed due to invalid input format"
+                model_name = "mentalllama-13b-chat"
+                inference_parameters = {
+                "temperature": 0.7,
+                "max_tokens": 1000,
+                "prompt": "Patient exhibits...",
         }
         details = {"status_code": 400, "error_type": "InputValidationError"}
 
@@ -162,26 +163,26 @@ from app.domain.ml.exceptions import (
 
 
                         """Test that all exceptions inherit from MentalLLaMABaseException."""
-        # Create instances of all exception types
-        base_exc = MentalLLaMABaseException("Base error",
-        conn_exc= MentalLLaMAConnectionError(
+            # Create instances of all exception types
+            base_exc = MentalLLaMABaseException("Base error",
+            conn_exc= MentalLLaMAConnectionError(
             "Connection error", "/api/v1/endpoint",
-        auth_exc= MentalLLaMAAuthenticationError("Auth error",
-        infer_exc= MentalLLaMAInferenceError("Inference error", "model-name",
-        valid_exc= MentalLLaMAValidationError(
+            auth_exc= MentalLLaMAAuthenticationError("Auth error",
+            infer_exc= MentalLLaMAInferenceError("Inference error", "model-name",
+            valid_exc= MentalLLaMAValidationError(
             "Validation error", {"field": "error"},
-        quota_exc= MentalLLaMAQuotaExceededError("Quota error", 100, 101)
+            quota_exc= MentalLLaMAQuotaExceededError("Quota error", 100, 101)
 
-        # Verify that all exceptions are instances of MentalLLaMABaseException
-        assert isinstance(base_exc, MentalLLaMABaseException)
-        assert isinstance(conn_exc, MentalLLaMABaseException)
-        assert isinstance(auth_exc, MentalLLaMABaseException)
-        assert isinstance(infer_exc, MentalLLaMABaseException)
-        assert isinstance(valid_exc, MentalLLaMABaseException)
-        assert isinstance(quota_exc, MentalLLaMABaseException)
+            # Verify that all exceptions are instances of MentalLLaMABaseException
+            assert isinstance(base_exc, MentalLLaMABaseException)
+            assert isinstance(conn_exc, MentalLLaMABaseException)
+            assert isinstance(auth_exc, MentalLLaMABaseException)
+            assert isinstance(infer_exc, MentalLLaMABaseException)
+            assert isinstance(valid_exc, MentalLLaMABaseException)
+            assert isinstance(quota_exc, MentalLLaMABaseException)
 
-        # Verify that all exceptions can be caught as MentalLLaMABaseException
-        exceptions = [
+            # Verify that all exceptions can be caught as MentalLLaMABaseException
+            exceptions = [
             base_exc,
             conn_exc,
             auth_exc,
@@ -189,8 +190,8 @@ from app.domain.ml.exceptions import (
             valid_exc,
             quota_exc]
 
-        for exc in exceptions:
-            try:
+            for exc in exceptions:
+                try:
                 raise exc
                 except MentalLLaMABaseException as caught_exc:
-                assert caught_exc is exc
+                    assert caught_exc is exc

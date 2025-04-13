@@ -13,19 +13,20 @@ It verifies:
     4. Security of the encryption implementation
     """
 
-import os
-import unittest
-import pytest
-import uuid
-from typing import Dict, Any, List, Optional
-import json
+    import os
+    import unittest
+    import pytest
+    import uuid
+    from typing import Dict, Any, List, Optional
+    import json
 
-# Import the encryption modules from infrastructure layer
-from app.infrastructure.security.encryption import (
+    # Import the encryption modules from infrastructure layer
+    from app.infrastructure.security.encryption import (
     PHIFieldEncryption,
     EncryptionKeyManager,
     EncryptionError,
-)class TestEncryptionKeyManager(unittest.TestCase):
+)
+class TestEncryptionKeyManager(unittest.TestCase):
     """Test suite for encryption key management."""
 
     def setUp(self):
@@ -38,48 +39,49 @@ from app.infrastructure.security.encryption import (
 
 
                         """Test getting the encryption key."""
-        key = self.key_manager.get_encryption_key()
-        self.assertIsNotNone(key)
-        self.assertIsInstance(key, bytes)
-        self.assertTrue(len(key) >= 32)  # Sufficient key length for security
+            key = self.key_manager.get_encryption_key()
+            self.assertIsNotNone(key)
+            self.assertIsInstance(key, bytes)
+            self.assertTrue(len(key) >= 32)  # Sufficient key length for security
 
-        def test_key_rotation(self):
+            def test_key_rotation(self):
 
 
                         """Test key rotation functionality."""
-        original_key = self.key_manager.get_encryption_key(,
-        new_key= self.key_manager.rotate_encryption_key()
+                original_key = self.key_manager.get_encryption_key(,
+                new_key= self.key_manager.rotate_encryption_key()
 
-        self.assertIsNotNone(new_key)
-        self.assertNotEqual(original_key, new_key)class TestPHIFieldEncryption(unittest.TestCase):
-    """Test suite for PHI field encryption."""
+                self.assertIsNotNone(new_key)
+                self.assertNotEqual(original_key, new_key)
+                class TestPHIFieldEncryption(unittest.TestCase):
+            """Test suite for PHI field encryption."""
 
-    def setUp(self):
+            def setUp(self):
 
 
                     """Set up test environment."""
-        self.key_manager = EncryptionKeyManager()
-        self.encryption = PHIFieldEncryption(self.key_manager)
+                self.key_manager = EncryptionKeyManager()
+                self.encryption = PHIFieldEncryption(self.key_manager)
 
-        # Define PHI fields for testing
-        self.phi_fields = [
-            "patient_id",
-            "name",
-            "address",
-            "demographics.ssn",
-            "demographics.address.street",
-            "demographics.address.city",
-            "contact_info.email",
-        ]
+                # Define PHI fields for testing
+                self.phi_fields = [
+                "patient_id",
+                "name",
+                "address",
+                "demographics.ssn",
+                "demographics.address.street",
+                "demographics.address.city",
+                "contact_info.email",
+                ]
 
-        # Test data with PHI
-        self.test_data = {
-            "patient_id": "12345",
-            "name": "John Smith",
-            "gender": "M",  # Not PHI
-            "address": "123 Main St, Anytown, USA",
-            "diagnosis": "F41.1",  # Not direct PHI
-            "demographics": {
+                # Test data with PHI
+                self.test_data = {
+                "patient_id": "12345",
+                "name": "John Smith",
+                "gender": "M",  # Not PHI
+                "address": "123 Main St, Anytown, USA",
+                "diagnosis": "F41.1",  # Not direct PHI
+                "demographics": {
                 "ssn": "123-45-6789",
                 "date_of_birth": "1980-01-01",
                 "address": {
@@ -89,7 +91,7 @@ from app.infrastructure.security.encryption import (
                     "zip": "12345",
                 },
             },
-            "contact_info": {
+                "contact_info": {
                 "email": "john.smith@example.com",
                 "phone": "555-123-4567",
             },
@@ -118,53 +120,53 @@ from app.infrastructure.security.encryption import (
 
 
                         """Test encryption and decryption of PHI fields in a dictionary."""
-        # Make a copy of the original data
-        original_data = json.loads(json.dumps(self.test_data))
+            # Make a copy of the original data
+            original_data = json.loads(json.dumps(self.test_data))
 
-        # Encrypt the PHI fields
-        encrypted_data = self.encryption.encrypt_dict(
+            # Encrypt the PHI fields
+            encrypted_data = self.encryption.encrypt_dict(
             self.test_data, self.phi_fields)
 
-        # PHI fields should be encrypted
-        self.assertNotEqual(
+            # PHI fields should be encrypted
+            self.assertNotEqual(
             original_data["patient_id"],
             encrypted_data["patient_id"])
-        self.assertNotEqual(original_data["name"], encrypted_data["name"])
-        self.assertNotEqual(
+            self.assertNotEqual(original_data["name"], encrypted_data["name"])
+            self.assertNotEqual(
             original_data["address"],
             encrypted_data["address"])
-        self.assertNotEqual(
+            self.assertNotEqual(
             original_data["demographics"]["ssn"],
             encrypted_data["demographics"]["ssn"])
 
-        # Non-PHI fields should remain unchanged
-        self.assertEqual(original_data["gender"], encrypted_data["gender"])
-        self.assertEqual(
+            # Non-PHI fields should remain unchanged
+            self.assertEqual(original_data["gender"], encrypted_data["gender"])
+            self.assertEqual(
             original_data["diagnosis"],
             encrypted_data["diagnosis"])
 
-        # Decrypt the data
-        decrypted_data = self.encryption.decrypt_dict(
+            # Decrypt the data
+            decrypted_data = self.encryption.decrypt_dict(
             encrypted_data, self.phi_fields)
 
-        # Decrypted data should match original
-        self.assertEqual(original_data, decrypted_data)
+            # Decrypted data should match original
+            self.assertEqual(original_data, decrypted_data)
 
-    def test_nested_field_encryption(self):
+            def test_nested_field_encryption(self):
 
 
                     """Test encryption of nested fields."""
-        # Make a copy of the original data
-        original_data = json.loads(json.dumps(self.test_data))
+                # Make a copy of the original data
+                original_data = json.loads(json.dumps(self.test_data))
 
-        # Encrypt the PHI fields
-        encrypted_data = self.encryption.encrypt_dict(
-            self.test_data, self.phi_fields)
+                # Encrypt the PHI fields
+                encrypted_data = self.encryption.encrypt_dict(
+                self.test_data, self.phi_fields)
 
-        # Nested PHI fields should be encrypted
-        self.assertNotEqual(
-            original_data["demographics"]["address"]["street"],
-            encrypted_data["demographics"]["address"]["street"],
+                # Nested PHI fields should be encrypted
+                self.assertNotEqual(
+                original_data["demographics"]["address"]["street"],
+                encrypted_data["demographics"]["address"]["street"],
         )
 
         # Decrypt the data
@@ -196,27 +198,27 @@ from app.infrastructure.security.encryption import (
 
 
                             """Test error handling during encryption/decryption."""
-        # Test handling of invalid encrypted data
-        invalid_encrypted = "ENC_INVALID"  # Missing proper format
+                # Test handling of invalid encrypted data
+                invalid_encrypted = "ENC_INVALID"  # Missing proper format
 
-        try:
-            result = self.encryption.decrypt(invalid_encrypted)
-            # If no exception is raised, the function should return the
-            # original value
-            self.assertEqual(invalid_encrypted, result)
-            except EncryptionError:
+                try:
+                    result = self.encryption.decrypt(invalid_encrypted)
+                    # If no exception is raised, the function should return the
+                    # original value
+                    self.assertEqual(invalid_encrypted, result)
+                    except EncryptionError:
                 # If an exception is raised, that's also acceptable
-            pass
+                pass
 
-            def test_hipaa_compliance(self):
+                def test_hipaa_compliance(self):
 
 
                             """Verify compliance with HIPAA requirements."""
-        # Generate some test data
-        test_data = {
-            "medical_record_number": "MRN12345",
-            "diagnosis_code": "F41.1",
-            "treatment_notes": "Patient exhibits symptoms of anxiety and depression.",
+                    # Generate some test data
+                    test_data = {
+                    "medical_record_number": "MRN12345",
+                    "diagnosis_code": "F41.1",
+                    "treatment_notes": "Patient exhibits symptoms of anxiety and depression.",
         }
 
         # Encrypt the data

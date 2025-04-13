@@ -63,14 +63,15 @@ def ml_settings(sample_ml_config):
         cache_ttl=sample_ml_config["cache_ttl"],
         version=sample_ml_config["version"],
         components=sample_ml_config["components"],
-    )class TestMLSettings:
-    """Test suite for MLSettings model."""
+    )
+class TestMLSettings:
+        """Test suite for MLSettings model."""
 
-    def test_init(self, sample_ml_config):
+        def test_init(self, sample_ml_config):
 
 
                     """Test initialization with valid settings."""
-        settings = MLSettings(
+            settings = MLSettings(
             model_path=sample_ml_config["model_path"],
             model_type=MLModelType(sample_ml_config["model_type"]),
             framework=MLFramework(sample_ml_config["framework"]),
@@ -144,53 +145,53 @@ def ml_settings(sample_ml_config):
 
 
                         """Test the MLFramework enum."""
-        # Check enum values
-        assert MLFramework.PYTORCH.value == "pytorch"
-        assert MLFramework.TENSORFLOW.value == "tensorflow"
-        assert MLFramework.ONNX.value == "onnx"
-        assert MLFramework.SCIKIT.value == "scikit-learn"
+            # Check enum values
+            assert MLFramework.PYTORCH.value == "pytorch"
+            assert MLFramework.TENSORFLOW.value == "tensorflow"
+            assert MLFramework.ONNX.value == "onnx"
+            assert MLFramework.SCIKIT.value == "scikit-learn"
 
-        # Check creating enum from string
-        assert MLFramework("pytorch") == MLFramework.PYTORCH
-        assert MLFramework("tensorflow") == MLFramework.TENSORFLOW
+            # Check creating enum from string
+            assert MLFramework("pytorch") == MLFramework.PYTORCH
+            assert MLFramework("tensorflow") == MLFramework.TENSORFLOW
 
-        def test_to_dict(self, ml_settings, sample_ml_config):
+            def test_to_dict(self, ml_settings, sample_ml_config):
 
 
                         """Test conversion to dictionary."""
-        # Convert to dict
-        settings_dict = ml_settings.to_dict()
+                # Convert to dict
+                settings_dict = ml_settings.to_dict()
 
-        # Verify dict matches original config (with enum string values)
-        assert settings_dict["model_path"] == sample_ml_config["model_path"]
-        assert settings_dict["model_type"] == sample_ml_config["model_type"]
-        assert settings_dict["framework"] == sample_ml_config["framework"]
-        assert settings_dict["batch_size"] == sample_ml_config["batch_size"]
-        assert settings_dict["use_gpu"] == sample_ml_config["use_gpu"]
-        assert settings_dict["components"] == sample_ml_config["components"]
+                # Verify dict matches original config (with enum string values)
+                assert settings_dict["model_path"] == sample_ml_config["model_path"]
+                assert settings_dict["model_type"] == sample_ml_config["model_type"]
+                assert settings_dict["framework"] == sample_ml_config["framework"]
+                assert settings_dict["batch_size"] == sample_ml_config["batch_size"]
+                assert settings_dict["use_gpu"] == sample_ml_config["use_gpu"]
+                assert settings_dict["components"] == sample_ml_config["components"]
 
-        def test_from_dict(self, sample_ml_config):
+                def test_from_dict(self, sample_ml_config):
 
 
                         """Test creation from dictionary."""
-        # Create from dict
-        settings = MLSettings.from_dict(sample_ml_config)
+                # Create from dict
+                settings = MLSettings.from_dict(sample_ml_config)
 
-        # Verify properties match input config
-        assert settings.model_path == sample_ml_config["model_path"]
-        assert settings.model_type == MLModelType(
-            sample_ml_config["model_type"])
-        assert settings.framework == MLFramework(sample_ml_config["framework"])
-        assert settings.batch_size == sample_ml_config["batch_size"]
-        assert settings.components == sample_ml_config["components"]
+                # Verify properties match input config
+                assert settings.model_path == sample_ml_config["model_path"]
+                assert settings.model_type == MLModelType(
+                sample_ml_config["model_type"])
+                assert settings.framework == MLFramework(sample_ml_config["framework"])
+                assert settings.batch_size == sample_ml_config["batch_size"]
+                assert settings.components == sample_ml_config["components"]
 
-        def test_validation(self):
+                def test_validation(self):
 
 
                         """Test validation of MLSettings."""
-        # Test invalid batch size
-        with pytest.raises(ValueError):
-            MLSettings(
+                # Test invalid batch size
+                with pytest.raises(ValueError):
+                MLSettings(
                 model_path="/models/test/",
                 model_type=MLModelType.TRANSFORMER,
                 framework=MLFramework.PYTORCH,
@@ -214,20 +215,21 @@ def ml_settings(sample_ml_config):
                 framework=MLFramework.PYTORCH,
                 cache_results=True,
                 cache_ttl=-10,  # Invalid - should be positive
-            )class TestMLSettingsConfig:
-    """Test suite for ML settings configuration functions."""
+            )
+class TestMLSettingsConfig:
+                """Test suite for ML settings configuration functions."""
 
-    @patch("app.core.config.ml_settings.get_settings")
-    def test_get_ml_settings(self, mock_get_settings):
+                @patch("app.core.config.ml_settings.get_settings")
+                def test_get_ml_settings(self, mock_get_settings):
 
                     """Test getting ML settings from general settings."""
-        # Mock settings to return ML path
-        mock_settings = MagicMock()
-        mock_settings.ML_CONFIG_PATH = "/config/ml/"
-        mock_get_settings.return_value = mock_settings
+                    # Mock settings to return ML path
+                    mock_settings = MagicMock()
+                    mock_settings.ML_CONFIG_PATH = "/config/ml/"
+                    mock_get_settings.return_value = mock_settings
 
-        # Mock load function to return test settings
-        with patch("app.core.config.ml_settings.load_model_config") as mock_load:
+                    # Mock load function to return test settings
+                    with patch("app.core.config.ml_settings.load_model_config") as mock_load:
             mock_load.return_value = {
                 "model_path": "/models/test/",
                 "model_type": "transformer",
@@ -280,10 +282,10 @@ def ml_settings(sample_ml_config):
             @patch("app.core.config.ml_settings.json.load")
             def test_load_model_config_invalid_json(
                     self, mock_json_load, mock_open):
-        """Test handling of invalid JSON configuration file."""
-        # Mock JSON parsing error
-        mock_json_load.side_effect = ValueError("Invalid JSON")
+                        """Test handling of invalid JSON configuration file."""
+                        # Mock JSON parsing error
+                        mock_json_load.side_effect = ValueError("Invalid JSON")
 
-        # Should raise ValueError
-        with pytest.raises(ValueError):
-            load_model_config("/config/ml/invalid.json")
+                        # Should raise ValueError
+                        with pytest.raises(ValueError):
+                            load_model_config("/config/ml/invalid.json")

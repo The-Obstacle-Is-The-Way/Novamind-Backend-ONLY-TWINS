@@ -39,10 +39,10 @@ def sample_data_points():
             metadata={"device": "fitbit"},
         ),
     ]@pytest.fixture
-def sample_physiological_range():
+    def sample_physiological_range():
 
             """Create a sample physiological range for testing."""
-    return PhysiologicalRange(
+        return PhysiologicalRange(
         min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
     )
 
@@ -68,14 +68,14 @@ def sample_biometric_twin(sample_timeseries):
         timeseries_data={BiometricType.HEART_RATE: sample_timeseries},
     )
     return twinclass TestBiometricDataPoint:
-    """Tests for the BiometricDataPoint class."""
+        """Tests for the BiometricDataPoint class."""
 
-    def test_init(self):
+        def test_init(self):
 
 
                     """Test initialization of BiometricDataPoint."""
-        timestamp = datetime.now(,
-        point= BiometricDataPoint(
+            timestamp = datetime.now(,
+            point= BiometricDataPoint(
             timestamp=timestamp,
             value=72.5,
             source=BiometricSource.WEARABLE,
@@ -106,12 +106,12 @@ def sample_biometric_twin(sample_timeseries):
         assert result["source"] == "wearable"
         assert result["metadata"] == {"device": "fitbit"}
 
-    def test_from_dict(self):
+        def test_from_dict(self):
 
 
                     """Test creating a data point from a dictionary."""
-        timestamp = datetime.now(,
-        data= {
+            timestamp = datetime.now(,
+            data= {
             "timestamp": timestamp.isoformat(),
             "value": 72.5,
             "source": "wearable",
@@ -123,17 +123,17 @@ def sample_biometric_twin(sample_timeseries):
         assert point.value == 72.5
         assert point.source == BiometricSource.WEARABLE
         assert point.metadata == {"device": "fitbit"}class TestBiometricTimeseriesData:
-    """Tests for the BiometricTimeseriesData class."""
+            """Tests for the BiometricTimeseriesData class."""
 
-    def test_init(self, sample_data_points, sample_physiological_range):
+            def test_init(self, sample_data_points, sample_physiological_range):
 
 
                     """Test initialization of BiometricTimeseriesData."""
-        timeseries = BiometricTimeseriesData(
-            biometric_type=BiometricType.HEART_RATE,
-            unit="bpm",
-            data_points=sample_data_points,
-            physiological_range=sample_physiological_range,
+                timeseries = BiometricTimeseriesData(
+                biometric_type=BiometricType.HEART_RATE,
+                unit="bpm",
+                data_points=sample_data_points,
+                physiological_range=sample_physiological_range,
         )
 
         assert timeseries.biometric_type == BiometricType.HEART_RATE
@@ -158,35 +158,35 @@ def sample_biometric_twin(sample_timeseries):
         assert len(sample_timeseries.data_points) == initial_count + 1
         assert sample_timeseries.data_points[-1] == new_point
 
-    def test_get_latest_value(self, sample_timeseries):
+        def test_get_latest_value(self, sample_timeseries):
 
 
                     """Test getting the latest data point."""
-        latest = sample_timeseries.get_latest_value()
+            latest = sample_timeseries.get_latest_value()
 
-        assert latest.value == 70.5  # The latest value from the fixture
+            assert latest.value == 70.5  # The latest value from the fixture
 
-        def test_to_dict(self, sample_timeseries):
+            def test_to_dict(self, sample_timeseries):
 
 
                         """Test converting timeseries to dictionary."""
-        result = sample_timeseries.to_dict()
+            result = sample_timeseries.to_dict()
 
-        assert result["biometric_type"] == "heart_rate"
-        assert result["unit"] == "bpm"
-        assert len(result["data_points"]) == 3
-        assert "physiological_range" in result
-        assert result["physiological_range"]["min"] == 60.0
+            assert result["biometric_type"] == "heart_rate"
+            assert result["unit"] == "bpm"
+            assert len(result["data_points"]) == 3
+            assert "physiological_range" in result
+            assert result["physiological_range"]["min"] == 60.0
 
-        def test_from_dict(self):
+            def test_from_dict(self):
 
 
                         """Test creating timeseries from dictionary."""
-        now = datetime.now(,
-        data= {
-            "biometric_type": "heart_rate",
-            "unit": "bpm",
-            "data_points": [
+                now = datetime.now(,
+                data= {
+                "biometric_type": "heart_rate",
+                "unit": "bpm",
+                "data_points": [
                 {
                     "timestamp": now.isoformat(),
                     "value": 72.5,
@@ -209,16 +209,16 @@ def sample_biometric_twin(sample_timeseries):
         assert len(timeseries.data_points) == 1
         assert timeseries.data_points[0].value == 72.5
         assert timeseries.physiological_range.min == 60.0class TestBiometricTwin:
-    """Tests for the BiometricTwin class."""
+            """Tests for the BiometricTwin class."""
 
-    def test_init(self, sample_biometric_twin, sample_timeseries):
+            def test_init(self, sample_biometric_twin, sample_timeseries):
 
 
                     """Test initialization of BiometricTwin."""
-        assert sample_biometric_twin.patient_id == "patient-123"
-        assert (
-            sample_biometric_twin.timeseries_data[BiometricType.HEART_RATE]
-            == sample_timeseries
+                assert sample_biometric_twin.patient_id == "patient-123"
+                assert (
+                sample_biometric_twin.timeseries_data[BiometricType.HEART_RATE]
+                == sample_timeseries
         )
 
     def test_add_biometric_data(self, sample_biometric_twin):
@@ -305,23 +305,23 @@ def sample_biometric_twin(sample_timeseries):
             self,
             sample_biometric_twin,
             sample_timeseries):
-        """Test getting biometric data for a specific type."""
-        result = sample_biometric_twin.get_biometric_data(
-            BiometricType.HEART_RATE)
+                """Test getting biometric data for a specific type."""
+                result = sample_biometric_twin.get_biometric_data(
+                BiometricType.HEART_RATE)
 
-        assert result == sample_timeseries
-        assert result.get_latest_value().value == 70.5
+                assert result == sample_timeseries
+                assert result.get_latest_value().value == 70.5
 
-        def test_get_latest_values(self, sample_biometric_twin):
+                def test_get_latest_values(self, sample_biometric_twin):
 
 
                         """Test getting latest values for all biometric types."""
-        # Add another biometric type
-        bp_data_point = BiometricDataPoint(
-            timestamp=datetime.now(),
-            value={"systolic": 120, "diastolic": 80},
-            source=BiometricSource.CLINICAL,
-            metadata={"position": "sitting"},
+                    # Add another biometric type
+                    bp_data_point = BiometricDataPoint(
+                    timestamp=datetime.now(),
+                    value={"systolic": 120, "diastolic": 80},
+                    source=BiometricSource.CLINICAL,
+                    metadata={"position": "sitting"},
         )
         sample_biometric_twin.add_data_point(
             BiometricType.BLOOD_PRESSURE, bp_data_point, "mmHg"
@@ -354,10 +354,10 @@ def sample_biometric_twin(sample_timeseries):
 
 
                         """Test creating a biometric twin from dictionary."""
-        now = datetime.now(,
-        twin_id= str(uuid.uuid4(),
+            now = datetime.now(,
+            twin_id= str(uuid.uuid4(),
 
-        data= {
+            data= {
             "id": twin_id,
             "patient_id": "patient-456",
             "timeseries_data": {

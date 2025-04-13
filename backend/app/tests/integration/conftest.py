@@ -21,9 +21,9 @@ async def test_db_connection() -> AsyncGenerator[Any, None]:
     Yields:
         A database connection for testing.
         """
-    # This would typically use SQLAlchemy, Motor, or another database client
-    # Mock implementation for structure
-    db_config = {
+        # This would typically use SQLAlchemy, Motor, or another database client
+        # Mock implementation for structure
+        db_config = {
         "host": os.environ.get("TEST_DB_HOST", "localhost"),
         "port": int(os.environ.get("TEST_DB_PORT", "5432")),
         "user": os.environ.get("TEST_DB_USER", "test_user"),
@@ -36,21 +36,21 @@ async def test_db_connection() -> AsyncGenerator[Any, None]:
 
     try:
         yield connection
-    finally:
-        # Cleanup would happen here
-        pass
+        finally:
+            # Cleanup would happen here
+            pass
 
 
-@pytest.fixture
-def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
-    """
-    Provides mock database data for tests.
+            @pytest.fixture
+            def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
+            """
+            Provides mock database data for tests.
 
-    Returns:
+            Returns:
         Dictionary of mock collections/tables with test data.
         """
 
-    return {
+        return {
         "patients": [
             {
                 "id": "p-12345",
@@ -110,25 +110,25 @@ def test_client() -> Generator[Any, None, None]:
     Yields:
         A FastAPI TestClient instance.
         """
-    # This would typically use FastAPI's TestClient
-    # Mock implementation for structure
-    from unittest.mock import MagicMock
+        # This would typically use FastAPI's TestClient
+        # Mock implementation for structure
+        from unittest.mock import MagicMock
 
-    client = MagicMock()
-    client.base_url = "http://test-server"
+        client = MagicMock()
+        client.base_url = "http://test-server"
 
-    yield client
+        yield client
 
 
-@pytest.fixture
-def auth_headers() -> Dict[str, str]:
-    """
-    Provides authentication headers for authenticated API requests.
+        @pytest.fixture
+        def auth_headers() -> Dict[str, str]:
+            """
+            Provides authentication headers for authenticated API requests.
 
-    Returns:
+            Returns:
         Dictionary with Authorization header.
-    """
-    return {
+        """
+        return {
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXIiLCJpYXQiOjE2MTcxOTMxNDIsImV4cCI6MTYxNzI3OTU0Mn0.mock-token-signature"
     }
 
@@ -143,9 +143,9 @@ def mock_mentallama_api() -> Any:
         A mock MentaLLama API client.
         """
 
-    class MockMentaLLamaAPI:
+        class MockMentaLLamaAPI:
 
-        async def predict(
+            async def predict(
             self, patient_id: str, data: Dict[str, Any]
         ) -> Dict[str, Any]:
             return {
@@ -187,9 +187,9 @@ def mock_aws_service() -> Any:
         A mock AWS service client.
         """
 
-    class MockAWSService:
+        class MockAWSService:
 
-        def invoke_endpoint(
+            def invoke_endpoint(
             self, endpoint_name: str, data: Dict[str, Any]
         ) -> Dict[str, Any]:
             return {
@@ -205,7 +205,7 @@ def mock_aws_service() -> Any:
         def upload_file(self, file_path: str, bucket: str, key: str) -> bool:
             return True
 
-        def download_file(
+            def download_file(
             self,
             bucket: str,
             key: str,
@@ -214,13 +214,13 @@ def mock_aws_service() -> Any:
             # Simulate creating a file
             with open(local_path, "w") as f:
                 f.write('{"mock": "data"}')
-            return True
+                return True
 
-    return MockAWSService()
+                return MockAWSService()
 
 
-@pytest.fixture
-def integration_fixture():
-    """Basic fixture for integration tests."""
+                @pytest.fixture
+                def integration_fixture():
+                    """Basic fixture for integration tests."""
 
-    return "integration_fixture"
+                    return "integration_fixture"

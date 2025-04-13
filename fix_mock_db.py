@@ -1,4 +1,10 @@
+#!/usr/bin/env python3
 """
+Fix the mock_db_fixture.py file with proper indentation following clean architecture principles.
+"""
+
+def fix_mock_db_fixture():
+    content = '''"""
 Mock Database Fixtures for Testing
 
 This module provides Mock Database fixtures to allow tests to run without
@@ -139,3 +145,13 @@ class MockAsyncSession(MagicMock):
             results: Results to return (single object or list)
         """
         self.query_results[query] = results
+'''
+    
+    # Write the fixed content to the file
+    with open('./backend/app/tests/fixtures/mock_db_fixture.py', 'w') as f:
+        f.write(content)
+    
+    print("Successfully fixed mock_db_fixture.py with clean architecture principles")
+
+if __name__ == "__main__":
+    fix_mock_db_fixture()

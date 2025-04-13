@@ -9,12 +9,12 @@ These tests verify that repositories handling PHI/ePHI properly:
     4. Validate access permissions before operations
     5. Maintain audit trails for all operations
     """
-import pytest
-import json
-import uuid
-from unittest.mock import patch, MagicMock, ANY
+    import pytest
+    import json
+    import uuid
+    from unittest.mock import patch, MagicMock, ANY
 
-from app.infrastructure.persistence.sqlalchemy.patient_repository import (
+    from app.infrastructure.persistence.sqlalchemy.patient_repository import (
     PatientRepository,
 )
 from app.infrastructure.security.encryption_service import EncryptionService
@@ -34,29 +34,29 @@ def encryption_service():
         mock_load.return_value = test_key
         service._encryption_key = test_key
         yield service@pytest.fixture
-def db_session():
+        def db_session():
 
             """Create a mock database session."""
-    session = MagicMock()
-    session.add.return_value = None
-    session.commit.return_value = None
-    session.query.return_value = session
-    session.filter.return_value = session
-    session.first.return_value = None
-    return session@pytest.fixture
-def patient_repository(db_session, encryption_service):
+            session = MagicMock()
+            session.add.return_value = None
+            session.commit.return_value = None
+            session.query.return_value = session
+            session.filter.return_value = session
+            session.first.return_value = None
+            return session@pytest.fixture
+            def patient_repository(db_session, encryption_service):
 
             """Create a patient repository with mocked dependencies."""
 
-    return PatientRepository(db_session, encryption_service)
+        return PatientRepository(db_session, encryption_service)
 
-    @pytest.mark.db_required()
-    def test_patient_creation_encrypts_phi(
+        @pytest.mark.db_required()
+        def test_patient_creation_encrypts_phi(
             patient_repository, encryption_service):
-    """Test that patient creation encrypts PHI fields."""
-    # Spy on the encryption service
-    with patch.object(
-        encryption_service, "encrypt", wraps=encryption_service.encrypt
+                """Test that patient creation encrypts PHI fields."""
+                # Spy on the encryption service
+                with patch.object(
+                encryption_service, "encrypt", wraps=encryption_service.encrypt
     ) as mock_encrypt:
         # Create a test patient with PHI
         patient_id = str(uuid.uuid4(),
@@ -130,29 +130,29 @@ def test_patient_retrieval_decrypts_phi(
 
         def test_repository_filters_inactive_records(
                 patient_repository, db_session):
-    """Test that repository filters out inactive/deleted records by default."""
-    # Setup mock to verify filtering
-    db_session.filter = MagicMock(return_value=db_session)
+                    """Test that repository filters out inactive/deleted records by default."""
+                    # Setup mock to verify filtering
+                    db_session.filter = MagicMock(return_value=db_session)
 
-    # Call the get_all method
-    patient_repository.get_all()
+                    # Call the get_all method
+                    patient_repository.get_all()
 
-    # Verify filter was called with is_active=True
-    db_session.filter.assert_called_once()
-    # Extract the filter criteria (varies by ORM implementation,
-    filter_args= db_session.filter.call_args[0][0]
-    assert "is_active" in str(filter_args), "Should filter by is_active"
+                    # Verify filter was called with is_active=True
+                    db_session.filter.assert_called_once()
+                    # Extract the filter criteria (varies by ORM implementation,
+                    filter_args= db_session.filter.call_args[0][0]
+                    assert "is_active" in str(filter_args), "Should filter by is_active"
 
-    def test_audit_logging_on_patient_changes(
-            patient_repository, encryption_service):
-    """Test that all patient changes are audit logged."""
-    patient_id = str(uuid.uuid4(),
-    patient= Patient(
-        id=patient_id,
-        first_name="John",
-        last_name="Doe",
-        email="john.doe@example.com",
-        ssn="123-45-6789",
+                    def test_audit_logging_on_patient_changes(
+                    patient_repository, encryption_service):
+                        """Test that all patient changes are audit logged."""
+                        patient_id = str(uuid.uuid4(),
+                        patient= Patient(
+                        id=patient_id,
+                        first_name="John",
+                        last_name="Doe",
+                        email="john.doe@example.com",
+                        ssn="123-45-6789",
     )
 
     # Mock the audit logger
@@ -184,12 +184,12 @@ def test_patient_retrieval_decrypts_phi(
 
 
                         """Test that authorization is checked before sensitive operations."""
-    patient_id = str(uuid.uuid4(),
-    patient= Patient(id=patient_id, first_name="John", last_name="Doe")
+                patient_id = str(uuid.uuid4(),
+                patient= Patient(id=patient_id, first_name="John", last_name="Doe")
 
-    # Mock the authorization service
-    with patch(
-        "app.infrastructure.persistence.sqlalchemy.patient_repository.check_authorization"
+                # Mock the authorization service
+                with patch(
+                "app.infrastructure.persistence.sqlalchemy.patient_repository.check_authorization"
     ) as mock_auth:
         mock_auth.return_value = True
 
@@ -212,22 +212,22 @@ def test_patient_retrieval_decrypts_phi(
             patient_repository.create(patient)
 
             with pytest.raises(Exception, match="Unauthorized"):
-            patient_repository.update(patient)
+                patient_repository.update(patient)
 
-            with pytest.raises(Exception, match="Unauthorized"):
-            patient_repository.delete(patient_id)
+                with pytest.raises(Exception, match="Unauthorized"):
+                    patient_repository.delete(patient_id)
 
-            def test_phi_never_appears_in_exceptions(
+                    def test_phi_never_appears_in_exceptions(
                     patient_repository, db_session):
-    """Test that PHI never appears in exception messages."""
-    # Make DB session fail with an exception containing PHI
-    error_msg = "Error processing patient John Doe with SSN 123-45-6789"
-    db_session.commit.side_effect = Exception(error_msg)
+                        """Test that PHI never appears in exception messages."""
+                        # Make DB session fail with an exception containing PHI
+                        error_msg = "Error processing patient John Doe with SSN 123-45-6789"
+                        db_session.commit.side_effect = Exception(error_msg)
 
-    # Create a patient with PHI
-    patient_id = str(uuid.uuid4(),
-    patient= Patient(
-        id=patient_id, first_name="John", last_name="Doe", ssn="123-45-6789"
+                        # Create a patient with PHI
+                        patient_id = str(uuid.uuid4(),
+                        patient= Patient(
+                        id=patient_id, first_name="John", last_name="Doe", ssn="123-45-6789"
     )
 
     # Attempt to save the patient, which will fail
@@ -246,16 +246,16 @@ def test_patient_retrieval_decrypts_phi(
 
         def test_bulk_operations_maintain_encryption(
                 patient_repository, encryption_service):
-    """Test that bulk operations maintain encryption for all records."""
-    # Create multiple patients
-    patients = [
-        Patient(id=str(uuid.uuid4()), first_name=f"Patient-{i}", ssn=f"123-45-{1000 + i}")
-        for i in range(5)
-    ]
+                    """Test that bulk operations maintain encryption for all records."""
+                    # Create multiple patients
+                    patients = [
+                    Patient(id=str(uuid.uuid4()), first_name=f"Patient-{i}", ssn=f"123-45-{1000 + i}")
+                    for i in range(5)
+                    ]
 
-    # Spy on encryption
-    with patch.object(
-        encryption_service, "encrypt", wraps=encryption_service.encrypt
+                    # Spy on encryption
+                    with patch.object(
+                    encryption_service, "encrypt", wraps=encryption_service.encrypt
     ) as mock_encrypt:
         # Perform bulk create
         patient_repository.bulk_create(patients)
@@ -271,18 +271,18 @@ def test_patient_retrieval_decrypts_phi(
 
             def test_search_filters_without_exposing_phi(
                     patient_repository, db_session):
-    """Test that search operations filter records without exposing PHI."""
-    # Mock query builder
-    mock_query = MagicMock()
-    db_session.query.return_value = mock_query
-    mock_query.filter.return_value = mock_query
-    mock_query.all.return_value = []
+                        """Test that search operations filter records without exposing PHI."""
+                        # Mock query builder
+                        mock_query = MagicMock()
+                        db_session.query.return_value = mock_query
+                        mock_query.filter.return_value = mock_query
+                        mock_query.all.return_value = []
 
-    # Test search by various criteria
-    search_criteria = {
-        "first_name": "John",
-        "last_name": "Doe",
-        "date_of_birth": "1980-01-01",
+                        # Test search by various criteria
+                        search_criteria = {
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "date_of_birth": "1980-01-01",
     }
 
     # Execute search
@@ -306,56 +306,56 @@ def test_patient_retrieval_decrypts_phi(
 
 
                         """Test that encryption key rotation works correctly."""
-    # Encrypt data with the current key
-    original_text = "sensitive patient data"
-    encrypted = encryption_service.encrypt(original_text)
+                # Encrypt data with the current key
+                original_text = "sensitive patient data"
+                encrypted = encryption_service.encrypt(original_text)
 
-    # Simulate key rotation - create a new key
-    new_key = b"newtestkeyfortestingonly1234567890ab"
-    old_key = encryption_service._encryption_key
+                # Simulate key rotation - create a new key
+                new_key = b"newtestkeyfortestingonly1234567890ab"
+                old_key = encryption_service._encryption_key
 
-    # Setup re-encryption function
-    def reencrypt(old_encrypted_value, old_key, new_key):
+                # Setup re-encryption function
+                def reencrypt(old_encrypted_value, old_key, new_key):
 
-                # Decrypt with old key
-        temp_service = EncryptionService()
-        temp_service._encryption_key = old_key
-        decrypted = temp_service.decrypt(old_encrypted_value)
+                    # Decrypt with old key
+                    temp_service = EncryptionService()
+                    temp_service._encryption_key = old_key
+                    decrypted = temp_service.decrypt(old_encrypted_value)
 
-        # Encrypt with new key
-        temp_service._encryption_key = new_key
-        return temp_service.encrypt(decrypted)
+                    # Encrypt with new key
+                    temp_service._encryption_key = new_key
+                    return temp_service.encrypt(decrypted)
 
-        # Re-encrypt the value
-        new_encrypted = reencrypt(encrypted, old_key, new_key)
+                    # Re-encrypt the value
+                    new_encrypted = reencrypt(encrypted, old_key, new_key)
 
-        # Verify the new encrypted value is different
-        assert encrypted != new_encrypted
+                    # Verify the new encrypted value is different
+                    assert encrypted != new_encrypted
 
-        # Check that we can decrypt with the new key
-        encryption_service._encryption_key = new_key
-        decrypted = encryption_service.decrypt(new_encrypted)
-        assert decrypted == original_text
+                    # Check that we can decrypt with the new key
+                    encryption_service._encryption_key = new_key
+                    decrypted = encryption_service.decrypt(new_encrypted)
+                    assert decrypted == original_text
 
-        def test_field_level_encryption(encryption_service):
+                    def test_field_level_encryption(encryption_service):
 
 
                     """Test that encryption operates at the field level not record level."""
-    # Encrypt multiple fields
-    ssn = "123-45-6789"
-    email = "patient@example.com"
-    phone = "555-123-4567"
+            # Encrypt multiple fields
+            ssn = "123-45-6789"
+            email = "patient@example.com"
+            phone = "555-123-4567"
 
-    encrypted_ssn = encryption_service.encrypt(ssn,
-    encrypted_email= encryption_service.encrypt(email,
-    encrypted_phone= encryption_service.encrypt(phone)
+            encrypted_ssn = encryption_service.encrypt(ssn,
+            encrypted_email= encryption_service.encrypt(email,
+            encrypted_phone= encryption_service.encrypt(phone)
 
-    # Verify each field has different encryption
-    assert encrypted_ssn != encrypted_email
-    assert encrypted_email != encrypted_phone
-    assert encrypted_ssn != encrypted_phone
+            # Verify each field has different encryption
+            assert encrypted_ssn != encrypted_email
+            assert encrypted_email != encrypted_phone
+            assert encrypted_ssn != encrypted_phone
 
-    # Verify we can decrypt each independently
-    assert encryption_service.decrypt(encrypted_ssn) == ssn
-    assert encryption_service.decrypt(encrypted_email) == email
-    assert encryption_service.decrypt(encrypted_phone) == phone
+            # Verify we can decrypt each independently
+            assert encryption_service.decrypt(encrypted_ssn) == ssn
+            assert encryption_service.decrypt(encrypted_email) == email
+            assert encryption_service.decrypt(encrypted_phone) == phone

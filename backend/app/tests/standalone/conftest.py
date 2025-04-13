@@ -15,18 +15,20 @@ def standalone_fixture():
 
     return "standalone_fixture"
 
-@pytest.fixture
-def mock_patient_data() -> Dict[str, Any]:
-    """Provides mock patient data for tests."""
+    @pytest.fixture
+    def mock_patient_data() -> Dict[str, Any]:
+        """Provides mock patient data for tests."""
 
-    return {
-        "id": "p-12345",
-        "name": "Test Patient",
-        "age": 30,
-        "gender": "F",
-        "medical_history": ["Anxiety", "Depression"],
-        "medications": [{"name": "Fluoxetine", "dosage": "20mg", "frequency": "daily"}],
-    }
+        return {
+            "id": "p-12345",
+            "name": "Test Patient",
+            "age": 30,
+            "gender": "F",
+            "medical_history": ["Anxiety", "Depression"],
+            "medications": [
+                {"name": "Fluoxetine", "dosage": "20mg", "frequency": "daily"}
+            ],
+        }
 
 
 @pytest.fixture

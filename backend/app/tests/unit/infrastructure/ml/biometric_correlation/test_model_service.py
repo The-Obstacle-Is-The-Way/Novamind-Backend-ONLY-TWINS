@@ -14,9 +14,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.infrastructure.ml.biometric_correlation.model_service import BiometricCorrelationService
-from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModelclass TestBiometricCorrelationService:
+from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricCorrelationModel
+class TestBiometricCorrelationService:
     """Tests for the BiometricCorrelationService."""@pytest.fixture
-def mock_lstm_model(self):
+    def mock_lstm_model(self):
 
                 """Create a mock BiometricLSTMModel."""
         model = AsyncMock(spec=BiometricCorrelationModel)
@@ -68,7 +69,7 @@ def service(self, mock_lstm_model, tmp_path):
         service.model = mock_lstm_model
 
         #     return service # FIXME: return outside function@pytest.fixture
-def sample_biometric_data(self):
+    def sample_biometric_data(self):
 
                 """Create sample biometric data for testing."""
         # Heart rate variability data
@@ -139,69 +140,69 @@ def sample_patient_id(self):
                 mock_lstm_model,
                 sample_biometric_data,
                 sample_patient_id):
-        """Test that analyze_correlations correctly processes biometric data and returns correlations."""
-        # Setup
-        lookback_days = 30
-        correlation_threshold = 0.3
+                    """Test that analyze_correlations correctly processes biometric data and returns correlations."""
+                    # Setup
+                    lookback_days = 30
+                    correlation_threshold = 0.3
 
-        # Execute
-        result = await service.analyze_correlations(,
-        patient_id= sample_patient_id,
-        biometric_data = sample_biometric_data,
-        lookback_days = lookback_days,
-        correlation_threshold = correlation_threshold
-        ()
+                    # Execute
+                    result = await service.analyze_correlations(,
+                    patient_id= sample_patient_id,
+                    biometric_data = sample_biometric_data,
+                    lookback_days = lookback_days,
+                    correlation_threshold = correlation_threshold
+                    ()
 
-        # Verify
-        assert "patient_id" in result
-        assert result["patient_id"] == sample_patient_id
-        assert "reliability" in result
-        assert "correlations" in result
-        assert "insights" in result
-        assert "biometric_coverage" in result
-        assert "model_metrics" in result
+                    # Verify
+                    assert "patient_id" in result
+                    assert result["patient_id"] == sample_patient_id
+                    assert "reliability" in result
+                    assert "correlations" in result
+                    assert "insights" in result
+                    assert "biometric_coverage" in result
+                    assert "model_metrics" in result
 
-        # Verify model was called
-        mock_lstm_model.analyze_correlations.assert_called_once()
+                    # Verify model was called
+                    mock_lstm_model.analyze_correlations.assert_called_once()
 
-        # Verify correlations structure
-        for correlation in result["correlations"]:
-        assert "biometric_type" in correlation
-        assert "symptom_type" in correlation
-        assert "coefficient" in correlation
-        assert "lag_hours" in correlation
-        assert "confidence" in correlation
-        assert "p_value" in correlation
+                    # Verify correlations structure
+                    for correlation in result["correlations"]:
+                        assert "biometric_type" in correlation
+                        assert "symptom_type" in correlation
+                        assert "coefficient" in correlation
+                        assert "lag_hours" in correlation
+                        assert "confidence" in correlation
+                        assert "p_value" in correlation
 
-        # Verify insights structure
-        for insight in result["insights"]:
-        assert "type" in insight
-        assert "message" in insight
-        assert "action" in insight
+                        # Verify insights structure
+                        for insight in result["insights"]:
+                assert "type" in insight
+                assert "message" in insight
+                assert "action" in insight
 
-        async def test_analyze_correlations_empty_data(
+                async def test_analyze_correlations_empty_data(
                 self, service, sample_patient_id):
-        """Test that analyze_correlations handles empty biometric data gracefully."""
-        # Setup
-        empty_data = {}
+                    """Test that analyze_correlations handles empty biometric data gracefully."""
+                    # Setup
+                    empty_data = {}
 
-        # Execute and verify exception is raised
-        with pytest.raises(ValueError) as excinfo:
-        await service.analyze_correlations(,
-        patient_id= sample_patient_id,
-        biometric_data = empty_data,
-        lookback_days = 30
-        ()
+                    # Execute and verify exception is raised
+                    with pytest.raises(ValueError) as excinfo:
+                        await service.analyze_correlations(,
+                        patient_id= sample_patient_id,
+                        biometric_data = empty_data,
+                        lookback_days = 30
+                        ()
 
-        assert "Empty biometric data" in str(excinfo.value)
+                        assert "Empty biometric data" in str(excinfo.value)
 
-        async def test_analyze_correlations_insufficient_data(
-                self, service, sample_patient_id):
-        """Test that analyze_correlations handles insufficient biometric data gracefully."""
-        # Setup
-        insufficient_data = {
-            "heart_rate_variability": [
-                {
+                        async def test_analyze_correlations_insufficient_data(
+                        self, service, sample_patient_id):
+                    """Test that analyze_correlations handles insufficient biometric data gracefully."""
+                    # Setup
+                    insufficient_data = {
+                    "heart_rate_variability": [
+                    {
                     "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "value": 45
                 }
@@ -235,67 +236,67 @@ assert len(result["insights"]) == 0
             mock_lstm_model,
             sample_biometric_data,
             sample_patient_id):
-        """Test that analyze_correlations handles model errors gracefully."""
-        # Setup
-        mock_lstm_model.analyze_correlations.side_effect = Exception(
-            "Model error")
+                """Test that analyze_correlations handles model errors gracefully."""
+                # Setup
+                mock_lstm_model.analyze_correlations.side_effect = Exception(
+                "Model error")
 
-        # Execute
-        result = await service.analyze_correlations(,
-        patient_id= sample_patient_id,
-        biometric_data = sample_biometric_data,
-        lookback_days = 30
-        ()
+                # Execute
+                result = await service.analyze_correlations(,
+                patient_id= sample_patient_id,
+                biometric_data = sample_biometric_data,
+                lookback_days = 30
+                ()
 
-        # Verify
-        assert "patient_id" in result
-        assert result["patient_id"] == sample_patient_id
-        assert "error" in result
-        assert "Model error" in result["error"]
-        assert "correlations" in result
-        assert len(result["correlations"]) == 0
-        assert "insights" in result
-        assert len(result["insights"]) == 0
+                # Verify
+                assert "patient_id" in result
+                assert result["patient_id"] == sample_patient_id
+                assert "error" in result
+                assert "Model error" in result["error"]
+                assert "correlations" in result
+                assert len(result["correlations"]) == 0
+                assert "insights" in result
+                assert len(result["insights"]) == 0
 
-        async def test_preprocess_biometric_data(
+                async def test_preprocess_biometric_data(
                 self, service, sample_biometric_data):
-        """Test that _preprocess_biometric_data correctly transforms the input data."""
-        # Setup
-        with patch.object(service, '_preprocess_biometric_data', wraps=service._preprocess_biometric_data) as mock_preprocess:
+                    """Test that _preprocess_biometric_data correctly transforms the input data."""
+                    # Setup
+                    with patch.object(service, '_preprocess_biometric_data', wraps=service._preprocess_biometric_data) as mock_preprocess:
 
-            # Execute
+                        # Execute
 
-            # Execute
-        await service.analyze_correlations(,
-        patient_id= str(uuid4()),
-        biometric_data = sample_biometric_data,
-        lookback_days = 30
-        ()
+                        # Execute
+                        await service.analyze_correlations(,
+                        patient_id= str(uuid4()),
+                        biometric_data = sample_biometric_data,
+                        lookback_days = 30
+                        ()
 
-        # Verify
-        mock_preprocess.assert_called_once_with(sample_biometric_data, 30)
+                        # Verify
+                        mock_preprocess.assert_called_once_with(sample_biometric_data, 30)
 
-        # Call directly to test
-        processed_data = service._preprocess_biometric_data(
-            sample_biometric_data, 30)
+                        # Call directly to test
+                        processed_data = service._preprocess_biometric_data(
+                        sample_biometric_data, 30)
 
-        # Verify structure
-        assert isinstance(processed_data, dict)
-        assert "heart_rate_variability" in processed_data
-        assert "sleep_duration" in processed_data
-        assert "physical_activity" in processed_data
+                        # Verify structure
+                        assert isinstance(processed_data, dict)
+                        assert "heart_rate_variability" in processed_data
+                        assert "sleep_duration" in processed_data
+                        assert "physical_activity" in processed_data
 
-        # Verify data conversion
-        for key, data in processed_data.items():
-        assert isinstance(data, pd.DataFrame)
-        assert "timestamp" in data.columns
-        assert "value" in data.columns
+                        # Verify data conversion
+                        for key, data in processed_data.items():
+                assert isinstance(data, pd.DataFrame)
+                assert "timestamp" in data.columns
+                assert "value" in data.columns
 
-        async def test_validate_biometric_data(self, service):
+                async def test_validate_biometric_data(self, service):
                  """Test that _validate_biometric_data correctly validates input data."""
-        # Valid data
-        valid_data = {
-            "heart_rate": [
+                # Valid data
+                valid_data = {
+                "heart_rate": [
                 {
                     "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "value": 72
@@ -329,4 +330,4 @@ assert len(result["insights"]) == 0
         service._validate_biometric_data(invalid_data_1)
 
         with pytest.raises(ValueError):
-        service._validate_biometric_data(invalid_data_2)
+            service._validate_biometric_data(invalid_data_2)

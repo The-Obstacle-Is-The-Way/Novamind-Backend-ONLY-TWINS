@@ -5,7 +5,8 @@ import pytest
 import re
 from typing import Dict, List, Any, Union
 
-from app.core.security.phi_sanitizer import PHISanitizerclass TestPHISanitizer:
+from app.core.security.phi_sanitizer import PHISanitizer
+class TestPHISanitizer:
     """Test cases for the PHI sanitization utilities."""
 
     def setup_method(self):
@@ -85,45 +86,45 @@ from app.core.security.phi_sanitizer import PHISanitizerclass TestPHISanitizer:
 
 
                         """Test that dictionaries containing PHI are properly sanitized."""
-        sanitized = self.sanitizer.sanitize(self.dict_with_phi)
+            sanitized = self.sanitizer.sanitize(self.dict_with_phi)
 
-        # Check that PHI fields are sanitized
-        assert sanitized["name"] != self.patient_name
-        assert sanitized["contact"]["email"] != self.patient_email
-        assert sanitized["contact"]["phone"] != self.patient_phone
-        assert sanitized["demographics"]["dob"] != self.patient_dob
-        assert sanitized["demographics"]["ssn"] != self.patient_ssn
-        assert sanitized["demographics"]["address"] != self.patient_address
-        assert sanitized["medical_info"]["mrn"] != self.patient_mrn
+            # Check that PHI fields are sanitized
+            assert sanitized["name"] != self.patient_name
+            assert sanitized["contact"]["email"] != self.patient_email
+            assert sanitized["contact"]["phone"] != self.patient_phone
+            assert sanitized["demographics"]["dob"] != self.patient_dob
+            assert sanitized["demographics"]["ssn"] != self.patient_ssn
+            assert sanitized["demographics"]["address"] != self.patient_address
+            assert sanitized["medical_info"]["mrn"] != self.patient_mrn
 
-        # Non-PHI data should be preserved
-        assert sanitized["non_phi_data"]["appointment_type"] == "Follow-up"
-        assert sanitized["non_phi_data"]["duration_minutes"] == 30
-        assert sanitized["medical_info"]["diagnosis"] == "Depression"
-        assert sanitized["medical_info"]["severity"] == "Moderate"
+            # Non-PHI data should be preserved
+            assert sanitized["non_phi_data"]["appointment_type"] == "Follow-up"
+            assert sanitized["non_phi_data"]["duration_minutes"] == 30
+            assert sanitized["medical_info"]["diagnosis"] == "Depression"
+            assert sanitized["medical_info"]["severity"] == "Moderate"
 
-        def test_sanitize_list(self):
+            def test_sanitize_list(self):
 
 
                         """Test that lists containing PHI are properly sanitized."""
-        sanitized = self.sanitizer.sanitize(self.list_with_phi)
+                sanitized = self.sanitizer.sanitize(self.list_with_phi)
 
-        # Check that PHI entries are sanitized
-        for item in sanitized:
-            assert self.patient_name not in item
-            assert self.patient_email not in item
-            assert self.patient_dob not in item
-            assert self.patient_mrn not in item
+                # Check that PHI entries are sanitized
+                for item in sanitized:
+                assert self.patient_name not in item
+                assert self.patient_email not in item
+                assert self.patient_dob not in item
+                assert self.patient_mrn not in item
 
-            # Non-PHI entries should be preserved
-            assert "Notes: Patient reports improved mood" in sanitized
+                # Non-PHI entries should be preserved
+                assert "Notes: Patient reports improved mood" in sanitized
 
-            def test_sanitize_complex_nested_structure(self):
+                def test_sanitize_complex_nested_structure(self):
 
 
                             """Test sanitization of complex nested data structures with PHI."""
-        complex_structure = {
-            "patients": [
+                complex_structure = {
+                "patients": [
                 {
                     "details": self.dict_with_phi,
                     "notes": self.list_with_phi,
@@ -133,8 +134,8 @@ from app.core.security.phi_sanitizer import PHISanitizerclass TestPHISanitizer:
                     "details": {"name": "Another Patient", "id": "12345"},
                     "notes": ["General note"],
                 },
-            ],
-            "metadata": {
+                ],
+                "metadata": {
                 "generated_by": "Test System",
                 "timestamp": "2025-04-10T00:00:00Z",
             },
@@ -165,70 +166,71 @@ from app.core.security.phi_sanitizer import PHISanitizerclass TestPHISanitizer:
 
 
                             """Test sanitization with custom PHI patterns."""
-        # Create sanitizer with custom patterns
-        custom_sanitizer = PHISanitizer(
-            additional_patterns=[
+                # Create sanitizer with custom patterns
+                custom_sanitizer = PHISanitizer(
+                additional_patterns=[
                 r"Depression",  # Now treat "Depression" as PHI
                 r"Moderate",  # Now treat "Moderate" as PHI
-            ]
-        ,
+                ]
+                ,
 
-        sanitized= custom_sanitizer.sanitize(self.dict_with_phi)
+                sanitized= custom_sanitizer.sanitize(self.dict_with_phi)
 
-        # Standard PHI should be sanitized
-        assert sanitized["name"] != self.patient_name
+                # Standard PHI should be sanitized
+                assert sanitized["name"] != self.patient_name
 
-        # Custom patterns should also be sanitized
-        assert sanitized["medical_info"]["diagnosis"] != "Depression"
-        assert sanitized["medical_info"]["severity"] != "Moderate"
+                # Custom patterns should also be sanitized
+                assert sanitized["medical_info"]["diagnosis"] != "Depression"
+                assert sanitized["medical_info"]["severity"] != "Moderate"
 
-    def test_sanitization_preserves_structure(self):
+                def test_sanitization_preserves_structure(self):
 
 
                     """Test that sanitization preserves the structure of the input data."""
-        # Test with dictionary
-        dict_sanitized = self.sanitizer.sanitize(self.dict_with_phi)
-        assert isinstance(dict_sanitized, dict)
-        assert set(dict_sanitized.keys()) == set(self.dict_with_phi.keys())
+                    # Test with dictionary
+                    dict_sanitized = self.sanitizer.sanitize(self.dict_with_phi)
+                    assert isinstance(dict_sanitized, dict)
+                    assert set(dict_sanitized.keys()) == set(self.dict_with_phi.keys())
 
-        # Test with list
-        list_sanitized = self.sanitizer.sanitize(self.list_with_phi)
-        assert isinstance(list_sanitized, list)
-        assert len(list_sanitized) == len(self.list_with_phi)
+                    # Test with list
+                    list_sanitized = self.sanitizer.sanitize(self.list_with_phi)
+                    assert isinstance(list_sanitized, list)
+                    assert len(list_sanitized) == len(self.list_with_phi)
 
-        # Test with string
-        string_sanitized = self.sanitizer.sanitize(self.text_with_phi)
-        assert isinstance(string_sanitized, str)class TestCustomPHISanitizer:
-    """Test cases for PHI sanitization with custom patterns."""
+                    # Test with string
+                    string_sanitized = self.sanitizer.sanitize(self.text_with_phi)
+                    assert isinstance(string_sanitized, str)
+                    class TestCustomPHISanitizer:
+            """Test cases for PHI sanitization with custom patterns."""
 
-    # Define custom patterns using PHISanitizer's internal structure
-    CUSTOM_PATTERNS = [
-        (pattern, replacement) for pattern, replacement in PHISanitizer._PHI_PATTERNS
-    ] + [
-        (re.compile(r"\bEmployeeID:\s*\d+\b", re.IGNORECASE), "[REDACTED EMPLOYEE ID]"),
-        (re.compile(r"\bProjectCode:\s*[A-Z]{3}-\d{4}\b"), "[REDACTED PROJECT CODE]"),
-    ]
+            # Define custom patterns using PHISanitizer's internal structure
+            CUSTOM_PATTERNS = [
+            (pattern, replacement) for pattern, replacement in PHISanitizer._PHI_PATTERNS
+            ] + [
+            (re.compile(r"\bEmployeeID:\s*\d+\b", re.IGNORECASE), "[REDACTED EMPLOYEE ID]"),
+            (re.compile(r"\bProjectCode:\s*[A-Z]{3}-\d{4}\b"), "[REDACTED PROJECT CODE]"),
+            ]
 
-    def setup_method(self):
+            def setup_method(self):
 
 
                     """Set up test fixtures for custom sanitization."""
-        self.sanitizer = PHISanitizer(additional_patterns=self.CUSTOM_PATTERNS)
-        self.text_with_phi = "EmployeeID: 1234, ProjectCode: ABC-1234"
+                self.sanitizer = PHISanitizer(additional_patterns=self.CUSTOM_PATTERNS)
+                self.text_with_phi = "EmployeeID: 1234, ProjectCode: ABC-1234"
 
-        def test_custom_patterns_in_string(self):
+                def test_custom_patterns_in_string(self):
 
 
                         """Test custom patterns in string sanitization."""
-        sanitized_text = self.sanitizer.sanitize(self.text_with_phi)
-        assert "[REDACTED EMPLOYEE ID]" in sanitized_text
-        assert "[REDACTED PROJECT CODE]" in sanitized_text
+            sanitized_text = self.sanitizer.sanitize(self.text_with_phi)
+            assert "[REDACTED EMPLOYEE ID]" in sanitized_text
+            assert "[REDACTED PROJECT CODE]" in sanitized_text
 
-        def test_custom_patterns_in_dict(self):
+            def test_custom_patterns_in_dict(self):
 
 
                         """Test custom patterns in dictionary sanitization."""
-        dict_with_phi = {"employee_id": "1234", "project_code": "ABC-1234"}
-        sanitized_dict = self.sanitizer.sanitize(dict_with_phi)
-        assert sanitized_dict["employee_id"] == "[REDACTED EMPLOYEE ID]"
-        assert sanitized_dict["project_code"] == "[REDACTED PROJECT CODE]"
+                dict_with_phi = {"employee_id": "1234", "project_code": "ABC-1234"}
+                sanitized_dict = self.sanitizer.sanitize(dict_with_phi)
+                assert sanitized_dict["employee_id"] == "[REDACTED EMPLOYEE ID]"
+                assert sanitized_dict["project_code"] == "[REDACTED PROJECT CODE]"

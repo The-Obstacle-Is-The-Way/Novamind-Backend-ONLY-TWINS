@@ -14,19 +14,20 @@ from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 
 
-@pytest.mark.venv_only()class TestEnhancedXGBoostService:
+@pytest.mark.venv_only()
+class TestEnhancedXGBoostService:
     """Test suite for the EnhancedXGBoostService."""@pytest.fixture
-def xgboost_service(self):
+    def xgboost_service(self):
 
                 """Create an EnhancedXGBoostService instance for testing."""
 
         return EnhancedXGBoostService()@pytest.fixture
-def test_patient_id(self):
+        def test_patient_id(self):
 
                 """Generate a test patient ID."""
 
         return uuid.uuid4()@pytest.fixture
-def test_baseline_data(self):
+        def test_baseline_data(self):
 
                 """Create test baseline data."""
 
@@ -41,13 +42,13 @@ def test_baseline_data(self):
 
     def test_predict_treatment_response_basic(
             self, xgboost_service, test_patient_id):
-        """Test basic treatment response prediction."""
-        # Test prediction for increasing serotonin
-        prediction = xgboost_service.predict_treatment_response(
-            patient_id=test_patient_id,
-            brain_region=BrainRegion.PREFRONTAL_CORTEX,
-            neurotransmitter=Neurotransmitter.SEROTONIN,
-            treatment_effect=0.5,
+                """Test basic treatment response prediction."""
+                # Test prediction for increasing serotonin
+                prediction = xgboost_service.predict_treatment_response(
+                patient_id=test_patient_id,
+                brain_region=BrainRegion.PREFRONTAL_CORTEX,
+                neurotransmitter=Neurotransmitter.SEROTONIN,
+                treatment_effect=0.5,
         )
 
         # Verify prediction structure
@@ -86,23 +87,23 @@ def test_baseline_data(self):
 
     def test_prediction_different_brain_regions(
             self, xgboost_service, test_patient_id):
-        """Test predictions for different brain regions."""
-        # Test prediction for different brain regions
-        regions = [
-            BrainRegion.PREFRONTAL_CORTEX,
-            BrainRegion.AMYGDALA,
-            BrainRegion.HIPPOCAMPUS,
-            BrainRegion.RAPHE_NUCLEI,
-        ]
+                """Test predictions for different brain regions."""
+                # Test prediction for different brain regions
+                regions = [
+                BrainRegion.PREFRONTAL_CORTEX,
+                BrainRegion.AMYGDALA,
+                BrainRegion.HIPPOCAMPUS,
+                BrainRegion.RAPHE_NUCLEI,
+                ]
 
-        # Get predictions for each region
-        predictions = []
-        for region in regions:
-            prediction = xgboost_service.predict_treatment_response(
-                patient_id=test_patient_id,
-                brain_region=region,
-                neurotransmitter=Neurotransmitter.SEROTONIN,
-                treatment_effect=0.5,
+                # Get predictions for each region
+                predictions = []
+                for region in regions:
+                    prediction = xgboost_service.predict_treatment_response(
+                    patient_id=test_patient_id,
+                    brain_region=region,
+                    neurotransmitter=Neurotransmitter.SEROTONIN,
+                    treatment_effect=0.5,
             )
             predictions.append(prediction["predicted_response"])
 
@@ -229,20 +230,20 @@ def test_baseline_data(self):
 
     def test_consistency_of_predictions(
             self, xgboost_service, test_patient_id):
-        """Test that predictions are consistent for the same inputs."""
-        # Make prediction twice with same inputs
-        prediction1 = xgboost_service.predict_treatment_response(
-            patient_id=test_patient_id,
-            brain_region=BrainRegion.PREFRONTAL_CORTEX,
-            neurotransmitter=Neurotransmitter.SEROTONIN,
-            treatment_effect=0.5,
-        ,
+                """Test that predictions are consistent for the same inputs."""
+                # Make prediction twice with same inputs
+                prediction1 = xgboost_service.predict_treatment_response(
+                patient_id=test_patient_id,
+                brain_region=BrainRegion.PREFRONTAL_CORTEX,
+                neurotransmitter=Neurotransmitter.SEROTONIN,
+                treatment_effect=0.5,
+                ,
 
-        prediction2= xgboost_service.predict_treatment_response(
-            patient_id=test_patient_id,
-            brain_region=BrainRegion.PREFRONTAL_CORTEX,
-            neurotransmitter=Neurotransmitter.SEROTONIN,
-            treatment_effect=0.5,
+                prediction2= xgboost_service.predict_treatment_response(
+                patient_id=test_patient_id,
+                brain_region=BrainRegion.PREFRONTAL_CORTEX,
+                neurotransmitter=Neurotransmitter.SEROTONIN,
+                treatment_effect=0.5,
         )
 
         # Predictions should be identical for identical inputs

@@ -54,33 +54,34 @@ def mock_auth_dependencies():
         def mock_service():
 
                     """Set up a real MockXGBoostService for integration testing."""
-    # Create a real mock service (not a MagicMock,
-    mock_service= MockXGBoostService(
-        mock_risk_level=RiskLevel.MODERATE,
-        mock_risk_score=0.45,
-        mock_confidence=0.85)
+            # Create a real mock service (not a MagicMock,
+            mock_service= MockXGBoostService(
+            mock_risk_level=RiskLevel.MODERATE,
+            mock_risk_score=0.45,
+            mock_confidence=0.85)
 
-    # Patch the factory function to return our configured mock service
-    with patch("app.api.routes.xgboost.get_xgboost_service") as mock_get_service:
-        mock_get_service.return_value = mock_service
-        yield mock_service
+            # Patch the factory function to return our configured mock service
+            with patch("app.api.routes.xgboost.get_xgboost_service") as mock_get_service:
+                mock_get_service.return_value = mock_service
+                yield mock_service
 
-        @pytest.mark.db_required()class TestXGBoostIntegration:
-    """Integration tests for the XGBoost API."""
+                @pytest.mark.db_required()
+                class TestXGBoostIntegration:
+            """Integration tests for the XGBoost API."""
 
-    # Inject the client fixture
-    def test_risk_prediction_flow(self, client: TestClient, mock_service):
+            # Inject the client fixture
+            def test_risk_prediction_flow(self, client: TestClient, mock_service):
 
                     """Test the complete risk prediction workflow."""
-        # Step 1: Generate a risk prediction
-        risk_request = {
-            "patient_id": "patient-123",
-            "risk_type": "risk_relapse",
-            "features": {
+                # Step 1: Generate a risk prediction
+                risk_request = {
+                "patient_id": "patient-123",
+                "risk_type": "risk_relapse",
+                "features": {
                 "age": 45,
                 "phq9_score": 15,
                 "previous_hospitalizations": 1},
-            "time_frame_days": 90,
+                "time_frame_days": 90,
         }
 
     response = client.post("/api/v1/xgboost/predict/risk", json=risk_request)
@@ -198,9 +199,9 @@ def mock_auth_dependencies():
         def test_healthcheck(self, client: TestClient, mock_service):
 
                         """Test the healthcheck endpoint."""
-        response = client.get("/api/v1/xgboost/healthcheck")
+            response = client.get("/api/v1/xgboost/healthcheck")
 
-        assert response.status_code == 200
-        assert response.json()["status"] in [
+            assert response.status_code == 200
+            assert response.json()["status"] in [
             "healthy", "degraded", "unhealthy"]
-        assert "components" in response.json()
+            assert "components" in response.json()

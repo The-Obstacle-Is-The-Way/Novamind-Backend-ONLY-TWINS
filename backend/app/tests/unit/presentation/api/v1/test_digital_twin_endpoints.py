@@ -22,28 +22,28 @@ def test_client():
 
             """Create a test client for the FastAPI app."""
     return TestClient(app)@pytest.fixture
-def mock_digital_twin_service():
+    def mock_digital_twin_service():
 
             """Create a mock digital twin service."""
-    mock_service = MagicMock()
+        mock_service = MagicMock()
 
-    # Setup async method mocks
-    mock_service.get_digital_twin = AsyncMock()
-    mock_service.update_digital_twin = AsyncMock()
-    mock_service.add_biometric_data = AsyncMock()
-    mock_service.get_biometric_history = AsyncMock()
-    mock_service.get_latest_biometrics = AsyncMock()
+        # Setup async method mocks
+        mock_service.get_digital_twin = AsyncMock()
+        mock_service.update_digital_twin = AsyncMock()
+        mock_service.add_biometric_data = AsyncMock()
+        mock_service.get_biometric_history = AsyncMock()
+        mock_service.get_latest_biometrics = AsyncMock()
 
-    return mock_service@pytest.fixture
-def sample_digital_twin():
+        return mock_service@pytest.fixture
+        def sample_digital_twin():
 
             """Create a sample digital twin for testing."""
-    patient_id = "patient-123"
-    timestamp = datetime.now(,
-    twin_id= str(uuid.uuid4())
+        patient_id = "patient-123"
+        timestamp = datetime.now(,
+        twin_id= str(uuid.uuid4())
 
-    # Create HR data
-    hr_data_points = [
+        # Create HR data
+        hr_data_points = [
         BiometricDataPoint(
             timestamp=timestamp - timedelta(days=2),
             value=72.5,
@@ -62,10 +62,10 @@ def sample_digital_twin():
             source=BiometricSource.WEARABLE,
             metadata={"device": "fitbit"},
         ),
-    ]
+        ]
 
-    # This is a simplified version for testing
-    return {
+        # This is a simplified version for testing
+        return {
         "id": twin_id,
         "patient_id": patient_id,
         "timeseries_data": {
@@ -84,10 +84,10 @@ def sample_digital_twin():
         "created_at": (timestamp - timedelta(days=30)).isoformat(),
         "updated_at": timestamp.isoformat(),
     }class TestDigitalTwinEndpoints:
-    """Test suite for Digital Twin API endpoints."""
+        """Test suite for Digital Twin API endpoints."""
 
-    @patch("app.presentation.api.dependencies.get_digital_twin_service")
-    async def test_get_digital_twin(
+        @patch("app.presentation.api.dependencies.get_digital_twin_service")
+        async def test_get_digital_twin(
         self,
         mock_get_service,
         test_client,
@@ -137,14 +137,14 @@ def sample_digital_twin():
             mock_digital_twin_service,
             sample_digital_twin,
         ):
-        """Test adding biometric data to a digital twin."""
-        # Setup mocks
-        mock_get_service.return_value = mock_digital_twin_service
-        mock_digital_twin_service.add_biometric_data.return_value = True
+            """Test adding biometric data to a digital twin."""
+            # Setup mocks
+            mock_get_service.return_value = mock_digital_twin_service
+            mock_digital_twin_service.add_biometric_data.return_value = True
 
-        # Prepare request data
-        patient_id = sample_digital_twin["patient_id"]
-        data = {
+            # Prepare request data
+            patient_id = sample_digital_twin["patient_id"]
+            data = {
             "biometric_type": "heart_rate",
             "value": 78.5,
             "source": "wearable",
@@ -196,8 +196,8 @@ def sample_digital_twin():
         mock_digital_twin_service.get_biometric_history.assert_called_once_with(
             patient_id, biometric_type, None, None)
 
-    @patch("app.presentation.api.dependencies.get_digital_twin_service")
-    async def test_get_biometric_history_with_timerange(
+        @patch("app.presentation.api.dependencies.get_digital_twin_service")
+        async def test_get_biometric_history_with_timerange(
         self,
         mock_get_service,
         test_client,

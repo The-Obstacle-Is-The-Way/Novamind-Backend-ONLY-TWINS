@@ -3,7 +3,8 @@ import pytest
 from fastapi import HTTPException
 
 from app.core.security.encryption import EncryptionService
-from app.tests.security.base_test import BaseSecurityTestclass TestDatabaseSecurity(BaseSecurityTest):
+from app.tests.security.base_test import BaseSecurityTest
+class TestDatabaseSecurity(BaseSecurityTest):
     def setup_method(self):
 
                 super().setup_method()
@@ -13,9 +14,9 @@ from app.tests.security.base_test import BaseSecurityTestclass TestDatabaseSecur
 
 
                     """
-        Test that sensitive data is encrypted in the database.
-        """
-        with patch(
+            Test that sensitive data is encrypted in the database.
+            """
+            with patch(
             "app.infrastructure.persistence.sqlalchemy.models.patient.encryption_service",
             return_value=self.encryption_service,
         ):

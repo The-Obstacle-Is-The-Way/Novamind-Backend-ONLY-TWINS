@@ -31,11 +31,11 @@ def mock_pat_service():
     # Removed local client fixture; tests will use client from conftest.py
     # Dependency override logic needs to be handled globally in conftest.py if required for all tests,
     # or via specific test setup if only needed here.@pytest.fixture
-def auth_headers():
+    def auth_headers():
 
             """Authentication headers for API requests."""
 
-    return {
+        return {
         "Authorization": "Bearer test-token",
         "Content-Type": "application/json"
     }
@@ -76,7 +76,8 @@ def actigraphy_data():
     }
 
 
-@pytest.mark.db_required()class TestActigraphyAPI:
+@pytest.mark.db_required()
+class TestActigraphyAPI:
     """Integration tests for the Actigraphy API."""
 
     # Use client fixture
@@ -85,38 +86,38 @@ def actigraphy_data():
             client: TestClient,
             auth_headers,
             actigraphy_data):
-        """Test analyzing actigraphy data."""
-        response = client.post()
-        "/api/v1/actigraphy/analyze",
-        headers = auth_headers,
-        json = actigraphy_data
-    ()
+                """Test analyzing actigraphy data."""
+                response = client.post()
+                "/api/v1/actigraphy/analyze",
+                headers = auth_headers,
+                json = actigraphy_data
+                ()
 
-    assert response.status_code == 200
-    data = response.json()
-    assert "analysis_id" in data
-    assert "patient_id" in data
-    assert data["patient_id"] == actigraphy_data["patient_id"]
-    assert "timestamp" in data
-    assert "results" in data
-    assert "data_summary" in data
-    assert data["data_summary"]["readings_count"] == len(
-        actigraphy_data["readings"])
+                assert response.status_code == 200
+                data = response.json()
+                assert "analysis_id" in data
+                assert "patient_id" in data
+                assert data["patient_id"] == actigraphy_data["patient_id"]
+                assert "timestamp" in data
+                assert "results" in data
+                assert "data_summary" in data
+                assert data["data_summary"]["readings_count"] == len(
+                actigraphy_data["readings"])
 
-    # Use client fixture
-    def test_get_actigraphy_embeddings(
-            self,
-            client: TestClient,
-            auth_headers,
-            actigraphy_data):
-        """Test generating embeddings from actigraphy data."""
-        # Remove unnecessary fields for embedding generation
-        embedding_data = {
-            "patient_id": actigraphy_data["patient_id"],
-            "readings": actigraphy_data["readings"],
-            "start_time": actigraphy_data["start_time"],
-            "end_time": actigraphy_data["end_time"],
-            "sampling_rate_hz": actigraphy_data["sampling_rate_hz"]
+                # Use client fixture
+                def test_get_actigraphy_embeddings(
+                self,
+                client: TestClient,
+                auth_headers,
+                actigraphy_data):
+                    """Test generating embeddings from actigraphy data."""
+                    # Remove unnecessary fields for embedding generation
+                    embedding_data = {
+                    "patient_id": actigraphy_data["patient_id"],
+                    "readings": actigraphy_data["readings"],
+                    "start_time": actigraphy_data["start_time"],
+                    "end_time": actigraphy_data["end_time"],
+                    "sampling_rate_hz": actigraphy_data["sampling_rate_hz"]
         }
 
     response = client.post()
@@ -143,106 +144,106 @@ assert "patient_id" in data
             client: TestClient,
             auth_headers,
             mock_pat_service):
-        """Test retrieving an analysis by ID."""
-        # First create an analysis
-        analysis_data = mock_pat_service.analyze_actigraphy(,
-        patient_id= "test-patient-123",
-        readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
+                """Test retrieving an analysis by ID."""
+                # First create an analysis
+                analysis_data = mock_pat_service.analyze_actigraphy(,
+                patient_id= "test-patient-123",
+                readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
                      "timestamp": "2025-03-28T12:00:00Z"}],
-        start_time = "2025-03-28T12:00:00Z",
-         end_time = "2025-03-28T12:01:00Z",
-          sampling_rate_hz = 1.0,
-           device_info = {"name": "Test Device"},
-            analysis_types = ["activity_levels"]
-(,
+                start_time = "2025-03-28T12:00:00Z",
+                end_time = "2025-03-28T12:01:00Z",
+                sampling_rate_hz = 1.0,
+                device_info = {"name": "Test Device"},
+                analysis_types = ["activity_levels"]
+                (,
 
-analysis_id= analysis_data["analysis_id"]
+                analysis_id= analysis_data["analysis_id"]
 
-response = client.get()
-f"/api/v1/actigraphy/analyses/{analysis_id}",
-headers = auth_headers
-()
+                response = client.get()
+                f"/api/v1/actigraphy/analyses/{analysis_id}",
+                headers = auth_headers
+                ()
 
-assert response.status_code == 200
-data = response.json()
-assert "analysis_id" in data
-assert data["analysis_id"] == analysis_id
- assert "patient_id" in data
-  assert "timestamp" in data
+                assert response.status_code == 200
+                data = response.json()
+                assert "analysis_id" in data
+                assert data["analysis_id"] == analysis_id
+                assert "patient_id" in data
+                assert "timestamp" in data
 
-   # Use client fixture
-   def test_get_patient_analyses(
-            self,
-            client: TestClient,
-            auth_headers,
-            mock_pat_service):
-        """Test retrieving analyses for a patient."""
-        patient_id = "test-patient-123"
-
-        # Create a few analyses for the patient
-    for i in range(3):
-        mock_pat_service.analyze_actigraphy(,
-        patient_id= patient_id,
-        readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
-                     "timestamp": f"2025-03-28T12:0{i}:00Z"}],
-        start_time = f"2025-03-28T12:0{i}:00Z",
-        end_time = f"2025-03-28T12:0{i + 1}:00Z",
-        sampling_rate_hz = 1.0,
-        device_info = {"name": "Test Device"},
-        analysis_types = ["activity_levels"]
-        (,
-
-        response= client.get()
-        f"/api/v1/actigraphy/patient/{patient_id}/analyses",
-        headers = auth_headers
-        ()
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "analyses" in data
-        assert isinstance(data["analyses"], list)
-        assert len(data["analyses"]) > 0
-        assert "pagination" in data
-
-        # Use client fixture
-        def test_get_model_info(self, client: TestClient, auth_headers):
-
-                        """Test getting model information."""
-        response = client.get()
-        "/api/v1/actigraphy/model-info",
-        headers = auth_headers
-        ()
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "name" in data
-        assert "version" in data
-        assert "capabilities" in data
-        assert "description" in data
-
-        # Use client fixture
-        def test_integrate_with_digital_twin(
+                # Use client fixture
+                def test_get_patient_analyses(
                 self,
                 client: TestClient,
                 auth_headers,
                 mock_pat_service):
-        """Test integrating analysis with digital twin."""
-        # Create an analysis
-        analysis_data = mock_pat_service.analyze_actigraphy(,
-        patient_id= "test-patient-123",
-        readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
-                     "timestamp": "2025-03-28T12:00:00Z"}],
-        start_time = "2025-03-28T12:00:00Z",
-         end_time = "2025-03-28T12:01:00Z",
-          sampling_rate_hz = 1.0,
-           device_info = {"name": "Test Device"},
-            analysis_types = ["activity_levels"]
-        (,
+                    """Test retrieving analyses for a patient."""
+                    patient_id = "test-patient-123"
 
-        integration_data= {
-            "patient_id": "test-patient-123",
-            "profile_id": "test-profile-456",
-            "analysis_id": analysis_data["analysis_id"]
+                    # Create a few analyses for the patient
+                    for i in range(3):
+                    mock_pat_service.analyze_actigraphy(,
+                    patient_id= patient_id,
+                    readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
+                     "timestamp": f"2025-03-28T12:0{i}:00Z"}],
+                    start_time = f"2025-03-28T12:0{i}:00Z",
+                    end_time = f"2025-03-28T12:0{i + 1}:00Z",
+                    sampling_rate_hz = 1.0,
+                    device_info = {"name": "Test Device"},
+                    analysis_types = ["activity_levels"]
+                    (,
+
+                    response= client.get()
+                    f"/api/v1/actigraphy/patient/{patient_id}/analyses",
+                    headers = auth_headers
+                    ()
+
+                    assert response.status_code == 200
+                    data = response.json()
+                    assert "analyses" in data
+                    assert isinstance(data["analyses"], list)
+                    assert len(data["analyses"]) > 0
+                    assert "pagination" in data
+
+                    # Use client fixture
+                    def test_get_model_info(self, client: TestClient, auth_headers):
+
+                        """Test getting model information."""
+            response = client.get()
+            "/api/v1/actigraphy/model-info",
+            headers = auth_headers
+            ()
+
+            assert response.status_code == 200
+            data = response.json()
+            assert "name" in data
+            assert "version" in data
+            assert "capabilities" in data
+            assert "description" in data
+
+            # Use client fixture
+            def test_integrate_with_digital_twin(
+                self,
+                client: TestClient,
+                auth_headers,
+                mock_pat_service):
+                    """Test integrating analysis with digital twin."""
+                    # Create an analysis
+                    analysis_data = mock_pat_service.analyze_actigraphy(,
+                    patient_id= "test-patient-123",
+                    readings = [{"x": 0.1, "y": 0.2, "z": 0.3,
+                     "timestamp": "2025-03-28T12:00:00Z"}],
+                    start_time = "2025-03-28T12:00:00Z",
+                    end_time = "2025-03-28T12:01:00Z",
+                    sampling_rate_hz = 1.0,
+                    device_info = {"name": "Test Device"},
+                    analysis_types = ["activity_levels"]
+                    (,
+
+                    integration_data= {
+                    "patient_id": "test-patient-123",
+                    "profile_id": "test-profile-456",
+                    "analysis_id": analysis_data["analysis_id"]
         }
 
     response = client.post()
@@ -270,7 +271,7 @@ assert "patient_id" in data
         response = client.post()
         "/api/v1/actigraphy/analyze",
         json = actigraphy_data
-()
+        ()
 
- # Should fail with 401 Unauthorized
-assert response.status_code == 401
+        # Should fail with 401 Unauthorized
+        assert response.status_code == 401

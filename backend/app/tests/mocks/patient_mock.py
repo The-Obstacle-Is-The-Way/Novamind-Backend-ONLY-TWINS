@@ -7,7 +7,8 @@ expectations and the actual domain Patient model.
 
 from datetime import datetime, date
 from typing import Optional, List, Dict, Any, Union
-from dataclasses import dataclass, field
+from dataclasses import data
+class, field
 from uuid import uuid4, UUID
 from enum import Enum
 
@@ -23,100 +24,100 @@ class Gender(str, Enum):
     PREFER_NOT_TO_SAY = "prefer_not_to_say"
 
     class InsuranceStatus(str, Enum):
-    """Insurance verification status enum."""
+        """Insurance verification status enum."""
 
-    VERIFIED = "verified"
-    PENDING = "pending"
-    UNVERIFIED = "unverified"
-    EXPIRED = "expired"
+        VERIFIED = "verified"
+        PENDING = "pending"
+        UNVERIFIED = "unverified"
+        EXPIRED = "expired"
 
-    class PatientStatus(str, Enum):
-    """Patient status enum."""
+        class PatientStatus(str, Enum):
+            """Patient status enum."""
 
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    ARCHIVED = "archived"
+            ACTIVE = "active"
+            INACTIVE = "inactive"
+            ARCHIVED = "archived"
 
-    class ValidationException(Exception):
-    """Exception raised for validation errors."""
+            class ValidationException(Exception):
+            """Exception raised for validation errors."""
 
-    pass
+            pass
 
-    @dataclass
-    class Patient:
-    """
-    Mock Patient class for standalone testing.
-    This mock matches the interface expected by tests in test_patient.py
-    """
+            @dataclass
+            class Patient:
+            """
+            Mock Patient class for standalone testing.
+            This mock matches the interface expected by tests in test_patient.py
+            """
 
-    # Required fields - default to None for validation checks
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    date_of_birth: Optional[Union[date, str]] = None
-    gender: Optional[Union[Gender, str]] = None
+            # Required fields - default to None for validation checks
+            first_name: Optional[str] = None
+            last_name: Optional[str] = None
+            date_of_birth: Optional[Union[date, str]] = None
+            gender: Optional[Union[Gender, str]] = None
 
-    # Optional fields with defaults
-    id: Optional[Union[UUID, str]] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[Dict[str, str]] = None
-    emergency_contacts: List[Dict[str, str]] = field(default_factory=list)
-    insurance_info: Optional[Dict[str, str]] = None
-    insurance_status: Union[InsuranceStatus, str] = InsuranceStatus.UNVERIFIED
-    medical_history: List[Dict[str, Any]] = field(default_factory=list)
-    medications: List[Dict[str, Any]] = field(default_factory=list)
-    allergies: List[str] = field(default_factory=list)
-    notes: Optional[str] = None
-    status: Union[PatientStatus, str] = PatientStatus.ACTIVE
-    created_at: datetime = field(default_factory=datetime.now)
-    updated_at: datetime = field(default_factory=datetime.now)
+            # Optional fields with defaults
+            id: Optional[Union[UUID, str]] = None
+            email: Optional[str] = None
+            phone: Optional[str] = None
+            address: Optional[Dict[str, str]] = None
+            emergency_contacts: List[Dict[str, str]] = field(default_factory=list)
+            insurance_info: Optional[Dict[str, str]] = None
+            insurance_status: Union[InsuranceStatus, str] = InsuranceStatus.UNVERIFIED
+            medical_history: List[Dict[str, Any]] = field(default_factory=list)
+            medications: List[Dict[str, Any]] = field(default_factory=list)
+            allergies: List[str] = field(default_factory=list)
+            notes: Optional[str] = None
+            status: Union[PatientStatus, str] = PatientStatus.ACTIVE
+            created_at: datetime = field(default_factory=datetime.now)
+            updated_at: datetime = field(default_factory=datetime.now)
 
-    # Additional attributes for test compatibility
-    last_appointment: Optional[datetime] = None
-    next_appointment: Optional[datetime] = None
-    preferred_provider_id: Optional[str] = None
+            # Additional attributes for test compatibility
+            last_appointment: Optional[datetime] = None
+            next_appointment: Optional[datetime] = None
+            preferred_provider_id: Optional[str] = None
 
-    def __post_init__(self):
-        """Initialize and validate the instance after creation."""
-        # Generate ID if not provided
-        if self.id is None:
+            def __post_init__(self):
+            """Initialize and validate the instance after creation."""
+            # Generate ID if not provided
+            if self.id is None:
             self.id = uuid4()
 
             # Validate required fields
             if not self.first_name:
-            raise ValidationException("First name is required")
-            if not self.last_name:
-            raise ValidationException("Last name is required")
-            if not self.date_of_birth:
-            raise ValidationException("Date of birth is required")
-            if not self.gender:
-            raise ValidationException("Gender is required")
-            if not self.email and not self.phone:
-            raise ValidationException("Either email or phone is required")
+                raise ValidationException("First name is required")
+                if not self.last_name:
+                    raise ValidationException("Last name is required")
+                    if not self.date_of_birth:
+                    raise ValidationException("Date of birth is required")
+                    if not self.gender:
+                    raise ValidationException("Gender is required")
+                    if not self.email and not self.phone:
+                    raise ValidationException("Either email or phone is required")
 
-            # Convert string dates to date objects
-            if isinstance(self.date_of_birth, str):
-            try:
-                self.date_of_birth = datetime.strptime(
+                    # Convert string dates to date objects
+                    if isinstance(self.date_of_birth, str):
+                    try:
+                    self.date_of_birth = datetime.strptime(
                     self.date_of_birth, "%Y-%m-%d"
                 ).date()
-                except ValueError:
-                raise ValidationException(
+                    except ValueError:
+                    raise ValidationException(
                     f"Invalid date format: {
                         self.date_of_birth}")
 
-                # Convert string enums to enum values
-                if isinstance(self.gender, str):
-            try:
-                self.gender = Gender(self.gender)
-                except ValueError:
-                raise ValidationException(f"Invalid gender: {self.gender}")
+                    # Convert string enums to enum values
+                    if isinstance(self.gender, str):
+                        try:
+                        self.gender = Gender(self.gender)
+                        except ValueError:
+                    raise ValidationException(f"Invalid gender: {self.gender}")
 
-                if isinstance(self.insurance_status, str):
-            try:
-                self.insurance_status = InsuranceStatus(self.insurance_status)
-                except ValueError:
-                raise ValidationException(
+                    if isinstance(self.insurance_status, str):
+                        try:
+                        self.insurance_status = InsuranceStatus(self.insurance_status)
+                        except ValueError:
+                    raise ValidationException(
                     f"Invalid insurance status: {self.insurance_status}"
                 )
 
@@ -124,65 +125,65 @@ class Gender(str, Enum):
             try:
                 self.status = PatientStatus(self.status)
                 except ValueError:
-                raise ValidationException(
+                    raise ValidationException(
                     f"Invalid patient status: {
                         self.status}")
 
-                # Validate email format if provided
-                if self.email and not self._validate_email(self.email):
-            raise ValidationException(f"Invalid email format: {self.email}")
+                    # Validate email format if provided
+                    if self.email and not self._validate_email(self.email):
+                        raise ValidationException(f"Invalid email format: {self.email}")
 
-            # Validate phone format if provided
-            if self.phone and not self._validate_phone(self.phone):
-            raise ValidationException(f"Invalid phone format: {self.phone}")
+                        # Validate phone format if provided
+                        if self.phone and not self._validate_phone(self.phone):
+                        raise ValidationException(f"Invalid phone format: {self.phone}")
 
-            def _validate_email(self, email: str) -> bool:
-        """Validate email format."""
-        if "@" not in email or "." not in email:
-            return False
-            return True
+                        def _validate_email(self, email: str) -> bool:
+                    """Validate email format."""
+                    if "@" not in email or "." not in email:
+                    return False
+                    return True
 
-            def _validate_phone(self, phone: str) -> bool:
-        """Validate phone format."""
-        # Simple check for demonstration
-        if "@" in phone:  # Email character in phone number
-            return False
-        return True
+                    def _validate_phone(self, phone: str) -> bool:
+                """Validate phone format."""
+                # Simple check for demonstration
+                if "@" in phone:  # Email character in phone number
+                return False
+                return True
 
-        def update_personal_info(self, **kwargs):
-        """Update personal information."""
-        for key, value in kwargs.items():
-            if hasattr(self, key):
+                def update_personal_info(self, **kwargs):
+                    """Update personal information."""
+                    for key, value in kwargs.items():
+                if hasattr(self, key):
                 # Special handling for enum values
                 if key == "gender" and isinstance(value, str):
                     value = Gender(value)
                     # Special handling for date conversion
                     if key == "date_of_birth" and isinstance(value, str):
-                    try:
-                        value = datetime.strptime(value, "%Y-%m-%d").date()
-                        except ValueError:
-                        raise ValidationException(
+                        try:
+                            value = datetime.strptime(value, "%Y-%m-%d").date()
+                            except ValueError:
+                            raise ValidationException(
                             f"Invalid date format: {value}")
-                        setattr(self, key, value)
-                        self.updated_at = datetime.now()
+                            setattr(self, key, value)
+                            self.updated_at = datetime.now()
 
-                        def update_insurance_info(
+                            def update_insurance_info(
                                 self, insurance_info=None, insurance_status=None):
-        """Update insurance information."""
-        if insurance_info is not None:
-            self.insurance_info = insurance_info
-            if insurance_status is not None:
-            if isinstance(insurance_status, str):
-                insurance_status = InsuranceStatus(insurance_status)
-                self.insurance_status = insurance_status
-                self.updated_at = datetime.now()
+                                    """Update insurance information."""
+                                    if insurance_info is not None:
+                                        self.insurance_info = insurance_info
+                                        if insurance_status is not None:
+                if isinstance(insurance_status, str):
+                    insurance_status = InsuranceStatus(insurance_status)
+                    self.insurance_status = insurance_status
+                    self.updated_at = datetime.now()
 
-                def add_emergency_contact(self, contact):
-        """Add an emergency contact."""
-        if "name" not in contact:
-            raise ValidationException("Emergency contact must have a name")
-            if "phone" not in contact and "email" not in contact:
-            raise ValidationException(
+                    def add_emergency_contact(self, contact):
+                    """Add an emergency contact."""
+                    if "name" not in contact:
+                        raise ValidationException("Emergency contact must have a name")
+                        if "phone" not in contact and "email" not in contact:
+                raise ValidationException(
                 "Emergency contact must have either phone or email"
             )
         self.emergency_contacts.append(contact)
@@ -197,73 +198,73 @@ class Gender(str, Enum):
             self.updated_at = datetime.now()
 
             def add_medical_history_item(self, item):
-        """Add a medical history item."""
-        if "condition" not in item:
-            raise ValidationException(
-                "Medical history item must have a condition")
-            self.medical_history.append(item)
-            self.updated_at = datetime.now()
+                """Add a medical history item."""
+                if "condition" not in item:
+                    raise ValidationException(
+                    "Medical history item must have a condition")
+                    self.medical_history.append(item)
+                    self.updated_at = datetime.now()
 
-            def add_medication(self, medication):
-        """Add a medication."""
-        if "name" not in medication:
-            raise ValidationException("Medication must have a name")
-            if "dosage" not in medication:
-            raise ValidationException("Medication must have a dosage")
-            self.medications.append(medication)
-            self.updated_at = datetime.now()
+                    def add_medication(self, medication):
+                """Add a medication."""
+                if "name" not in medication:
+                    raise ValidationException("Medication must have a name")
+                    if "dosage" not in medication:
+                raise ValidationException("Medication must have a dosage")
+                self.medications.append(medication)
+                self.updated_at = datetime.now()
 
-            def remove_medication(self, index):
-        """Remove a medication by index."""
-        if index >= len(self.medications):
-            raise IndexError(f"Index {index} out of range for medications")
-            self.medications.pop(index)
-            self.updated_at = datetime.now()
+                def remove_medication(self, index):
+                    """Remove a medication by index."""
+                    if index >= len(self.medications):
+                    raise IndexError(f"Index {index} out of range for medications")
+                    self.medications.pop(index)
+                    self.updated_at = datetime.now()
 
-            def add_allergy(self, allergy):
-        """Add an allergy."""
-        if allergy and allergy not in self.allergies:
-            self.allergies.append(allergy)
-            self.updated_at = datetime.now()
+                    def add_allergy(self, allergy):
+                """Add an allergy."""
+                if allergy and allergy not in self.allergies:
+                    self.allergies.append(allergy)
+                    self.updated_at = datetime.now()
 
-            def remove_allergy(self, allergy):
-        """Remove an allergy."""
-        if allergy in self.allergies:
-            self.allergies.remove(allergy)
-            self.updated_at = datetime.now()
+                    def remove_allergy(self, allergy):
+                """Remove an allergy."""
+                if allergy in self.allergies:
+                    self.allergies.remove(allergy)
+                    self.updated_at = datetime.now()
 
-            def update_status(self, status):
-        """Update patient status."""
-        if isinstance(status, str):
-            status = PatientStatus(status)
-            self.status = status
-            self.updated_at = datetime.now()
+                    def update_status(self, status):
+                """Update patient status."""
+                if isinstance(status, str):
+                    status = PatientStatus(status)
+                    self.status = status
+                    self.updated_at = datetime.now()
 
-            def update_notes(self, notes):
-        """Update patient notes."""
-        self.notes = notes
-        self.updated_at = datetime.now()
+                    def update_notes(self, notes):
+                """Update patient notes."""
+                self.notes = notes
+                self.updated_at = datetime.now()
 
-        def update_appointment_times(
+                def update_appointment_times(
                 self,
                 last_appointment=None,
                 next_appointment=None):
-        """Update appointment times."""
-        self.last_appointment = (
-            last_appointment if last_appointment is not None else self.last_appointment)
-        self.next_appointment = (
-            next_appointment if next_appointment is not None else self.next_appointment)
-        self.updated_at = datetime.now()
+                    """Update appointment times."""
+                    self.last_appointment = (
+                    last_appointment if last_appointment is not None else self.last_appointment)
+                    self.next_appointment = (
+                    next_appointment if next_appointment is not None else self.next_appointment)
+                    self.updated_at = datetime.now()
 
-    def set_preferred_provider(self, provider_id):
-        """Set preferred provider."""
-        self.preferred_provider_id = provider_id
-        self.updated_at = datetime.now()
+                    def set_preferred_provider(self, provider_id):
+                        """Set preferred provider."""
+                        self.preferred_provider_id = provider_id
+                        self.updated_at = datetime.now()
 
-        def to_dict(self):
-        """Convert to dictionary."""
-        # Format the date as ISO string for serialization
-        dob = (
+                        def to_dict(self):
+            """Convert to dictionary."""
+            # Format the date as ISO string for serialization
+            dob = (
             self.date_of_birth.isoformat()
             if hasattr(self.date_of_birth, "isoformat")
             else self.date_of_birth
@@ -306,20 +307,20 @@ class Gender(str, Enum):
         return cls(**data)
 
         def __eq__(self, other):
-        """Check equality."""
-        if not isinstance(other, Patient):
-            return False
-            return str(self.id) == str(other.id)
+            """Check equality."""
+            if not isinstance(other, Patient):
+                return False
+                return str(self.id) == str(other.id)
 
-            def __hash__(self):
-        """Make the object hashable."""
+                def __hash__(self):
+                """Make the object hashable."""
 
-        return hash(str(self.id))
+                return hash(str(self.id))
 
-        def __str__(self):
-        """String representation."""
+                def __str__(self):
+                    """String representation."""
 
-        return f"Patient(id={
-            self.id}, name={
-            self.first_name} {
-            self.last_name})"
+                    return f"Patient(id={
+                    self.id}, name={
+                    self.first_name} {
+                    self.last_name})"

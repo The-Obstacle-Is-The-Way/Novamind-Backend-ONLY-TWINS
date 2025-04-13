@@ -40,18 +40,18 @@ def mock_token() -> str:
             """Create a mock JWT token."""
     # This is just a placeholder, actual token validation is mocked
     return "mock_jwt_token"@pytest.fixture
-def patient_id() -> str:
+    def patient_id() -> str:
 
             """Create a mock patient ID."""
 
-    return "patient123"@pytest.fixture
-def sample_readings() -> List[Dict[str, Any]]:
+        return "patient123"@pytest.fixture
+        def sample_readings() -> List[Dict[str, Any]]:
 
             """Create sample accelerometer readings."""
-    base_time = datetime.now(UTC)  # Use UTC
-    readings = []
+        base_time = datetime.now(UTC)  # Use UTC
+        readings = []
 
-    for i in range(10):
+        for i in range(10):
         timestamp = (base_time + timedelta(seconds=i / 10)).isoformat() + "Z"
         reading = {
             "timestamp": timestamp,
@@ -135,23 +135,23 @@ def integration_request(patient_id: str) -> Dict[str, Any]:
 @pytest.fixture
 def analysis_result(
         patient_id: str, device_info: Dict[str, Any]) -> Dict[str, Any]:
-    """Create an analysis result."""
-    now_iso = datetime.now(UTC).isoformat() + "Z"
-    end_iso = (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z"
-    return {
-        "analysis_id": "analysis123",
-        "patient_id": patient_id,
-        "timestamp": now_iso,
-        "analysis_types": [AnalysisType.ACTIVITY_LEVEL.value, AnalysisType.SLEEP.value],
-        "device_info": device_info,
-        "data_summary": {
+            """Create an analysis result."""
+            now_iso = datetime.now(UTC).isoformat() + "Z"
+            end_iso = (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z"
+            return {
+            "analysis_id": "analysis123",
+            "patient_id": patient_id,
+            "timestamp": now_iso,
+            "analysis_types": [AnalysisType.ACTIVITY_LEVEL.value, AnalysisType.SLEEP.value],
+            "device_info": device_info,
+            "data_summary": {
             "start_time": now_iso,
             "end_time": end_iso,
             "duration_seconds": 3600.0,
             "readings_count": 10,
             "sampling_rate_hz": 10.0,
         },
-        "results": {
+            "results": {
             AnalysisType.ACTIVITY_LEVEL.value: {
                 "activity_levels": {
                     "sedentary": {"percentage": 0.6, "duration_seconds": 2160.0},
@@ -350,54 +350,54 @@ def app(mock_pat_service):
     def mock_validate_jwt(token: Optional[str] = None):
 
                 if token != "mock_jwt_token":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token")
-        return {"sub": "patient123"}  # Return mock payload
+                    raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid token")
+                    return {"sub": "patient123"}  # Return mock payload
 
-    def mock_get_current_user_id(payload: dict = Depends(mock_validate_jwt)):
+                    def mock_get_current_user_id(payload: dict = Depends(mock_validate_jwt)):
 
 
-                return payload.get("sub")
+                        return payload.get("sub")
 
-        try:
-        from app.api.dependencies.auth import validate_jwt as actual_validate_jwt
-        from app.api.dependencies.auth import get_current_user_id as actual_get_user_id
+                        try:
+            from app.api.dependencies.auth import validate_jwt as actual_validate_jwt
+            from app.api.dependencies.auth import get_current_user_id as actual_get_user_id
 
-        app_instance.dependency_overrides[
+            app_instance.dependency_overrides[
             actual_validate_jwt
-        ] = lambda: mock_validate_jwt
-        app_instance.dependency_overrides[actual_get_user_id] = mock_get_current_user_id
-        except ImportError:
-        print("Warning: Auth dependencies not found for override.")
-        pass
+            ] = lambda: mock_validate_jwt
+            app_instance.dependency_overrides[actual_get_user_id] = mock_get_current_user_id
+            except ImportError:
+                print("Warning: Auth dependencies not found for override.")
+                pass
 
-        # Mock PAT service dependency
-        try:
-        from app.api.dependencies.ml import get_pat_service as actual_get_pat_service
+                # Mock PAT service dependency
+                try:
+                from app.api.dependencies.ml import get_pat_service as actual_get_pat_service
 
-        app_instance.dependency_overrides[
-            actual_get_pat_service
-        ] = lambda: mock_pat_service
-        except ImportError:
-        print("Warning: get_pat_service dependency not found for override.")
-        pass
+                app_instance.dependency_overrides[
+                actual_get_pat_service
+                ] = lambda: mock_pat_service
+                except ImportError:
+                print("Warning: get_pat_service dependency not found for override.")
+                pass
 
-        app_instance.include_router(
-            router, prefix="/api/v1/actigraphy"
+                app_instance.include_router(
+                router, prefix="/api/v1/actigraphy"
         )  # Add prefix if needed
 
-        #     return app_instance # FIXME: return outside function@pytest.fixture
-def client(app):
+                #     return app_instance # FIXME: return outside function@pytest.fixture
+                def client(app):
 
-            """Create TestClient."""
+                """Create TestClient."""
 
-    return TestClient(app)
+                return TestClient(app)
 
-    @pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestActigraphyRoutes:
-    """Tests for the actigraphy API routes."""
+                @pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestActigraphyRoutes:
+        """Tests for the actigraphy API routes."""
 
-    def test_analyze_actigraphy_success(
+        def test_analyze_actigraphy_success(
         self,
         client: TestClient,
         mock_token: str,
@@ -552,7 +552,7 @@ def client(app):
 
         # Make the request
 
-    response = client.post(
+        response = client.post(
         "/api/v1/actigraphy/embeddings",  # Added prefix
         json=embedding_request,
         headers={"Authorization": f"Bearer {mock_token}"},
@@ -576,7 +576,7 @@ def client(app):
 
         # Make the request
 
-    response = client.post(
+        response = client.post(
         "/api/v1/actigraphy/embeddings",  # Added prefix
         json=embedding_request,
         headers={"Authorization": f"Bearer {mock_token}"},
@@ -620,7 +620,7 @@ def client(app):
 
         # Make the request
 
-    response = client.get(
+        response = client.get(
         f"/api/v1/actigraphy/analyses/{analysis_id}",  # Added prefix
         headers={"Authorization": f"Bearer {mock_token}"},
     )
@@ -800,7 +800,7 @@ def client(app):
 
         # Make the request
 
-    response = client.post(
+        response = client.post(
         "/api/v1/actigraphy/integrate",  # Added prefix
         json=integration_request,
         headers={"Authorization": f"Bearer {mock_token}"},
@@ -824,7 +824,7 @@ def client(app):
 
         # Make the request
 
-    response = client.post(
+        response = client.post(
         "/api/v1/actigraphy/integrate",  # Added prefix
         json=integration_request,
         headers={"Authorization": f"Bearer {mock_token}"},

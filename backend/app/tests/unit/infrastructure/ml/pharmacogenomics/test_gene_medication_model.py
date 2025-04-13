@@ -16,9 +16,10 @@ from uuid import UUID, uuid4
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
 
 
-@pytest.mark.db_required()class TestGeneMedicationModel:
+@pytest.mark.db_required()
+class TestGeneMedicationModel:
     """Tests for the GeneMedicationModel."""@pytest.fixture
-def model(self):
+    def model(self):
 
                 """Create a GeneMedicationModel with mocked internals."""
         with patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.joblib', autospec=True):
@@ -125,21 +126,21 @@ def sample_genetic_data(self):
                 patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.open', autospec=True) as mock_open, \
                 patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.os.path.exists', return_value=True):
 
-            # Create model instance
-        model = GeneMedicationModel(,
-        model_path= "test_model_path",
-        knowledge_base_path = "test_kb_path"
-        ()
+                    # Create model instance
+                    model = GeneMedicationModel(,
+                    model_path= "test_model_path",
+                    knowledge_base_path = "test_kb_path"
+                    ()
 
-        # Mock joblib.load to return a mock model
-        mock_model = MagicMock()
-        mock_joblib.load.return_value = mock_model
+                    # Mock joblib.load to return a mock model
+                    mock_model = MagicMock()
+                    mock_joblib.load.return_value = mock_model
 
-        # Mock json.load to return a mock knowledge base
-        mock_kb = {
-            "gene_variants": {},
-            "medications": {},
-            "interactions": {}
+                    # Mock json.load to return a mock knowledge base
+                    mock_kb = {
+                    "gene_variants": {},
+                    "medications": {},
+                    "interactions": {}
         }
     mock_json.load.return_value = mock_kb
 
@@ -162,107 +163,107 @@ def sample_genetic_data(self):
                 patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.os.path.exists', return_value=False), \
                 patch('app.infrastructure.ml.pharmacogenomics.gene_medication_model.logging', autospec=True) as mock_logging:
 
-            # Create model instance
-        model = GeneMedicationModel(,
-        model_path= "nonexistent_path",
-        knowledge_base_path = "nonexistent_kb_path"
-        ()
+                    # Create model instance
+                    model = GeneMedicationModel(,
+                    model_path= "nonexistent_path",
+                    knowledge_base_path = "nonexistent_kb_path"
+                    ()
 
-        # Execute
-        await model.initialize()
+                    # Execute
+                    await model.initialize()
 
-        # Verify
-        mock_logging.warning.assert_called()
-        assert model.is_initialized
-        assert model._model is not None
-        assert model._knowledge_base is not None
+                    # Verify
+                    mock_logging.warning.assert_called()
+                    assert model.is_initialized
+                    assert model._model is not None
+                    assert model._knowledge_base is not None
 
-        async def test_predict_medication_interactions_success(
-                self, model, sample_genetic_data):
-        """Test that predict_medication_interactions correctly processes genetic data and returns interactions."""
-        # Setup
-        medications = ["fluoxetine", "sertraline", "bupropion"]
+                    async def test_predict_medication_interactions_success(
+                    self, model, sample_genetic_data):
+                        """Test that predict_medication_interactions correctly processes genetic data and returns interactions."""
+                        # Setup
+                        medications = ["fluoxetine", "sertraline", "bupropion"]
 
-        # Execute
-        result = await model.predict_medication_interactions(sample_genetic_data, medications)
+                        # Execute
+                        result = await model.predict_medication_interactions(sample_genetic_data, medications)
 
-        # Verify
-        assert "gene_medication_interactions" in result
-        assert "metabolizer_status" in result
+                        # Verify
+                        assert "gene_medication_interactions" in result
+                        assert "metabolizer_status" in result
 
-        # Verify gene interactions structure
-        interactions = result["gene_medication_interactions"]
-        assert len(interactions) > 0
-        for interaction in interactions:
-        assert "gene" in interaction
-        assert "variant" in interaction
-        assert "medication" in interaction
-        assert "interaction_type" in interaction
-        assert "effect" in interaction
-        assert "recommendation" in interaction
+                        # Verify gene interactions structure
+                        interactions = result["gene_medication_interactions"]
+                        assert len(interactions) > 0
+                        for interaction in interactions:
+                        assert "gene" in interaction
+                        assert "variant" in interaction
+                        assert "medication" in interaction
+                        assert "interaction_type" in interaction
+                        assert "effect" in interaction
+                        assert "recommendation" in interaction
 
-        # Verify metabolizer status
-        metabolizer_status = result["metabolizer_status"]
-        assert "CYP2D6" in metabolizer_status
-        assert "CYP2C19" in metabolizer_status
-        assert metabolizer_status["CYP2D6"] == "normal"
-        assert metabolizer_status["CYP2C19"] == "intermediate"
+                        # Verify metabolizer status
+                        metabolizer_status = result["metabolizer_status"]
+                        assert "CYP2D6" in metabolizer_status
+                        assert "CYP2C19" in metabolizer_status
+                        assert metabolizer_status["CYP2D6"] == "normal"
+                        assert metabolizer_status["CYP2C19"] == "intermediate"
 
-        async def test_predict_medication_interactions_empty_genetic_data(
-                self, model):
-        """Test that predict_medication_interactions handles empty genetic data gracefully."""
-        # Setup
-        empty_genetic_data = {"genes": []}
-        medications = ["fluoxetine", "sertraline"]
+                        async def test_predict_medication_interactions_empty_genetic_data(
+                        self, model):
+                    """Test that predict_medication_interactions handles empty genetic data gracefully."""
+                    # Setup
+                    empty_genetic_data = {"genes": []}
+                    medications = ["fluoxetine", "sertraline"]
 
-        # Execute and verify exception is raised
-        with pytest.raises(ValueError) as excinfo:
-        await model.predict_medication_interactions(empty_genetic_data, medications)
+                    # Execute and verify exception is raised
+                    with pytest.raises(ValueError) as excinfo:
+                        await model.predict_medication_interactions(empty_genetic_data, medications)
 
-        assert "Empty genetic data" in str(excinfo.value)
+                        assert "Empty genetic data" in str(excinfo.value)
 
-        async def test_predict_medication_interactions_empty_medications(
-                self, model, sample_genetic_data):
-        """Test that predict_medication_interactions handles empty medications list gracefully."""
-        # Setup
-        empty_medications = []
+                        async def test_predict_medication_interactions_empty_medications(
+                        self, model, sample_genetic_data):
+                    """Test that predict_medication_interactions handles empty medications list gracefully."""
+                    # Setup
+                    empty_medications = []
 
-        # Execute and verify exception is raised
-        with pytest.raises(ValueError) as excinfo:
-        await model.predict_medication_interactions(sample_genetic_data, empty_medications)
+                    # Execute and verify exception is raised
+                    with pytest.raises(ValueError) as excinfo:
+                        await model.predict_medication_interactions(sample_genetic_data, empty_medications)
 
-        assert "No medications specified" in str(excinfo.value)
+                        assert "No medications specified" in str(excinfo.value)
 
-        async def test_extract_gene_features(self, model, sample_genetic_data):
+                        async def test_extract_gene_features(self, model, sample_genetic_data):
                  """Test that _extract_gene_features correctly transforms genetic data into features."""
-        # Setup
-        with patch.object(model, '_extract_gene_features', wraps=model._extract_gene_features) as mock_extract:
+                # Setup
+                with patch.object(model, '_extract_gene_features', wraps=model._extract_gene_features) as mock_extract:
 
-            # Execute
-        await model.predict_medication_interactions(sample_genetic_data, ["fluoxetine"])
+                # Execute
+                await model.predict_medication_interactions(sample_genetic_data, ["fluoxetine"])
 
-        # Verify
-        mock_extract.assert_called_once_with(sample_genetic_data)
+                # Verify
+                mock_extract.assert_called_once_with(sample_genetic_data)
 
-        # Call directly to test
-        features = model._extract_gene_features(sample_genetic_data)
+                # Call directly to test
+                features = model._extract_gene_features(sample_genetic_data)
 
-        # Verify the features have the expected structure
-        assert isinstance(features, dict)
-        assert "CYP2D6" in features
-        assert "CYP2C19" in features
-        assert "CYP1A2" in features
-        assert features["CYP2D6"] == "*1/*1"
-        assert features["CYP2C19"] == "*1/*2"
-        assert features["CYP1A2"] == "*1F/*1F"
+                # Verify the features have the expected structure
+                assert isinstance(features, dict)
+                assert "CYP2D6" in features
+                assert "CYP2C19" in features
+                assert "CYP1A2" in features
+                assert features["CYP2D6"] == "*1/*1"
+                assert features["CYP2C19"] == "*1/*2"
+                assert features["CYP1A2"] == "*1F/*1F"
 
-        async def test_determine_metabolizer_status(self, model):
+                async def test_determine_metabolizer_status(self, model):
                  """Test that _determine_metabolizer_status correctly determines metabolizer status."""
-        # Setup
-        gene_variants = {
-            "CYP2D6": "*1/*1",
-            "CYP2C19": "*1/*2",
-            "CYP1A2": "*1F/*1F"
+                # Setup
+                gene_variants = {
+                "CYP2D6": "*1/*1",
+                "CYP2C19": "*1/*2",
+                "CYP1A2": "*1F/*1F"
         }
 
         # Execute

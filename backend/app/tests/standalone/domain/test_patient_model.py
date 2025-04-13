@@ -11,7 +11,8 @@ from app.domain.entities.patient import Patient
 from app.domain.value_objects import PatientId, MedicalRecordNumber
 
 
-@pytest.mark.standalone()class TestPatientModel:
+@pytest.mark.standalone()
+class TestPatientModel:
     """Tests for the Patient domain model."""
 
     def test_patient_creation_valid_data(self):
@@ -38,17 +39,17 @@ from app.domain.value_objects import PatientId, MedicalRecordNumber
         assert patient.date_of_birth == dob
         assert patient.age > 0
 
-    @pytest.mark.parametrize("invalid_name", ["", None, "   "])
-    def test_patient_creation_invalid_name(self, invalid_name):
+        @pytest.mark.parametrize("invalid_name", ["", None, "   "])
+        def test_patient_creation_invalid_name(self, invalid_name):
 
                     """Test that a patient cannot be created with an invalid name."""
-        # Arrange
-        patient_id = PatientId("P12345",
-        mrn= MedicalRecordNumber("MRN-678901",
-        dob= date(1980, 1, 15)
+            # Arrange
+            patient_id = PatientId("P12345",
+            mrn= MedicalRecordNumber("MRN-678901",
+            dob= date(1980, 1, 15)
 
-        # Act & Assert
-        with pytest.raises(ValueError) as exc_info:
+            # Act & Assert
+            with pytest.raises(ValueError) as exc_info:
             Patient(
                 id=patient_id,
                 medical_record_number=mrn,

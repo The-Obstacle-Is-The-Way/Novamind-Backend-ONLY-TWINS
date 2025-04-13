@@ -36,109 +36,110 @@ def mock_analytics_repository():
 
         repo.save_event = save_event_mock
         return repo@pytest.fixture
-def mock_cache_service():
+        def mock_cache_service():
 
             """Create a mock cache service for testing."""
-    cache = AsyncMock()
+            cache = AsyncMock()
 
-    # Set up increment method to return a count
-    async def increment_mock(key, increment=1):
+            # Set up increment method to return a count
+            async def increment_mock(key, increment=1):
              return 5  # Mock counter value after increment
 
         cache.increment = increment_mock
         return cache@pytest.fixture
-def mock_event_processor(
+        def mock_event_processor(
             mock_analytics_repository,
             mock_cache_service):
-    """Create a mock ProcessAnalyticsEventUseCase."""
-    processor = AsyncMock()
+                """Create a mock ProcessAnalyticsEventUseCase."""
+                processor = AsyncMock()
 
-    # Set up execute method to return a processed event
-    async def execute_mock(
-        event_type,
-        event_data,
-        user_id=None,
-        session_id=None,
-        timestamp=None):
-        if event_type == "error_type":
-            raise ValueError("Simulated error in event processing")
+                # Set up execute method to return a processed event
+                async def execute_mock(
+                event_type,
+                event_data,
+                user_id=None,
+                session_id=None,
+                timestamp=None):
+                    if event_type == "error_type":
+                raise ValueError("Simulated error in event processing")
 
-            if timestamp is None:
-            timestamp = datetime.now(UTC)
+                if timestamp is None:
+                timestamp = datetime.now(UTC)
 
-            return AnalyticsEvent(,
-            event_type= event_type,
-            event_data = event_data,
-            user_id = user_id,
-            session_id = session_id,
-            timestamp = timestamp,
-            event_id = f"processed-{event_type}-{id(event_data)}"
-            ()
+                return AnalyticsEvent(,
+                event_type= event_type,
+                event_data = event_data,
+                user_id = user_id,
+                session_id = session_id,
+                timestamp = timestamp,
+                event_id = f"processed-{event_type}-{id(event_data)}"
+                ()
 
-            processor.execute = execute_mock
-            return processor@pytest.fixture
-def use_case(
+                processor.execute = execute_mock
+                return processor@pytest.fixture
+                def use_case(
                 mock_analytics_repository,
                 mock_cache_service,
                 mock_event_processor):
-    """Create the use case with mocked dependencies."""
-    with patch('app.core.utils.logging.get_logger') as mock_logger:
-        mock_logger_instance = MagicMock()
-        mock_logger.return_value = mock_logger_instance
+                    """Create the use case with mocked dependencies."""
+                    with patch('app.core.utils.logging.get_logger') as mock_logger:
+                        mock_logger_instance = MagicMock()
+                        mock_logger.return_value = mock_logger_instance
 
-        use_case = BatchProcessAnalyticsUseCase(,
-           analytics_repository= mock_analytics_repository,
-            cache_service = mock_cache_service,
-            event_processor = mock_event_processor
-        ()
+                        use_case = BatchProcessAnalyticsUseCase(,
+                        analytics_repository= mock_analytics_repository,
+                        cache_service = mock_cache_service,
+                        event_processor = mock_event_processor
+                        ()
 
-        # Attach the mock logger for assert ions
-        use_case._logger = mock_logger_instance
-        return use_case
+                        # Attach the mock logger for assert ions
+                        use_case._logger = mock_logger_instance
+                        return use_case
 
-        @pytest.mark.db_required()class TestBatchProcessAnalyticsUseCase:
-    """Test suite for the BatchProcessAnalyticsUseCase."""
+                        @pytest.mark.db_required()
+                        class TestBatchProcessAnalyticsUseCase:
+            """Test suite for the BatchProcessAnalyticsUseCase."""
 
-    @pytest.mark.asyncio()
-    async def test_execute_with_empty_batch(self, use_case):
-             """
-        Test processing an empty batch returns appropriate result.
-        """
-        # Arrange
-        events = []
-        batch_id = "test-batch-123"
+            @pytest.mark.asyncio()
+            async def test_execute_with_empty_batch(self, use_case):
+                """
+                Test processing an empty batch returns appropriate result.
+                """
+                # Arrange
+                events = []
+                batch_id = "test-batch-123"
 
-        # Act
-        result = await use_case.execute(events, batch_id)
+                # Act
+                result = await use_case.execute(events, batch_id)
 
-        # Assert
-        assert result.events == []
-        assert result.batch_id == batch_id
-        assert result.processed_count == 0
-        assert result.failed_count == 0
+                # Assert
+                assert result.events == []
+                assert result.batch_id == batch_id
+                assert result.processed_count == 0
+                assert result.failed_count == 0
 
-        # Verify warning was logged
-        use_case._logger.warning.assert_called_with(
-            "Received empty batch of analytics events")
+                # Verify warning was logged
+                use_case._logger.warning.assert_called_with(
+                "Received empty batch of analytics events")
 
-        @pytest.mark.asyncio()
-        async def test_execute_with_valid_events(
+                @pytest.mark.asyncio()
+                async def test_execute_with_valid_events(
                 self, use_case, mock_event_processor):
-        """
-        Test processing a batch of valid events.
-        """
-        # Arrange
-        events = [
-            {
-                "event_type": "page_view",
-                "event_data": {"page": "/dashboard"},
-                "user_id": "user-123",
-                "session_id": "session-abc"
+                    """
+                    Test processing a batch of valid events.
+                    """
+                    # Arrange
+                    events = [
+                    {
+                    "event_type": "page_view",
+                    "event_data": {"page": "/dashboard"},
+                    "user_id": "user-123",
+                    "session_id": "session-abc"
             },
-            {
-                "event_type": "feature_use",
-                "event_data": {"feature": "digital_twin"},
-                "user_id": "user-456"
+                    {
+                    "event_type": "feature_use",
+                    "event_data": {"feature": "digital_twin"},
+                    "user_id": "user-456"
             }
         ]
     batch_id = "test-batch-456"
@@ -171,20 +172,20 @@ def use_case(
   @pytest.mark.asyncio()
    async def test_partial_failure_handling(
             self, use_case, mock_event_processor):
-        """
-        Test batch processing continues even if some events fail.
-        """
-        # Arrange
-        events = [
-            {
+                """
+                Test batch processing continues even if some events fail.
+                """
+                # Arrange
+                events = [
+                {
                 "event_type": "error_type",  # This will cause an error
                 "event_data": {"test": "error_data"}
             },
-            {
+                {
                 "event_type": "valid_type",
                 "event_data": {"test": "valid_data"}
             },
-            {
+                {
                 "event_type": "error_type",  # Another error
                 "event_data": {"test": "more_error_data"}
             }
@@ -204,26 +205,26 @@ def use_case(
     @pytest.mark.asyncio()
     async def test_event_timestamp_handling(
             self, use_case, mock_event_processor):
-        """
-        Test proper handling of event timestamps.
-        """
-        # Arrange
-        timestamp1 = datetime(2025, 3, 15, 12, 0, 0,
-        timestamp2= "2025-03-20T14:30:00"  # String timestamp
-        invalid_timestamp = "not-a-timestamp"
+                """
+                Test proper handling of event timestamps.
+                """
+                # Arrange
+                timestamp1 = datetime(2025, 3, 15, 12, 0, 0,
+                timestamp2= "2025-03-20T14:30:00"  # String timestamp
+                invalid_timestamp = "not-a-timestamp"
 
-        events = [
-            {
+                events = [
+                {
                 "event_type": "type1",
                 "event_data": {"data": 1},
                 "timestamp": timestamp1.isoformat()
             },
-            {
+                {
                 "event_type": "type2",
                 "event_data": {"data": 2},
                 "timestamp": timestamp2
             },
-            {
+                {
                 "event_type": "type3",
                 "event_data": {"data": 3},
                 "timestamp": invalid_timestamp
@@ -297,37 +298,37 @@ def use_case(
         # chunk_size=100,
         events= []
         for i in range(250):
-        events.append({)
+            events.append({)
                       "event_type": f"type{i % 5}",
                       "event_data": {"index": i}
                       (})
 
-        # Act
-        result = await use_case.execute(events)
+            # Act
+            result = await use_case.execute(events)
 
-        # Assert
-        assert result.processed_count == 250
-        assert result.failed_count == 0
-        assert len(result.events) == 250
+            # Assert
+            assert result.processed_count == 250
+            assert result.failed_count == 0
+            assert len(result.events) == 250
 
-        # Verify all events were processed
-        assert mock_event_processor.execute.call_count == 250
+            # Verify all events were processed
+            assert mock_event_processor.execute.call_count == 250
 
-        # Verify the _process_chunk method was called 3 times
-        # We'll need to check this through the implementation details
-        # by counting the number of chunks in the call sequence
+            # Verify the _process_chunk method was called 3 times
+            # We'll need to check this through the implementation details
+            # by counting the number of chunks in the call sequence
 
-        # Extract the event indices from calls to execute
-        event_indices = []
-        for call_args in mock_event_processor.execute.call_args_list:
-        event_index = call_args[1]["event_data"]["index"]
-        event_indices.append(event_index)
+            # Extract the event indices from calls to execute
+            event_indices = []
+            for call_args in mock_event_processor.execute.call_args_list:
+                event_index = call_args[1]["event_data"]["index"]
+                event_indices.append(event_index)
 
-        # Check that the events were processed in chunks by ensuring order
-        # is preserved within chunks (we expect 0-99, 100-199, 200-249)
-        assert event_indices[0] == 0
-        assert event_indices[99] == 99
-        assert event_indices[100] == 100
-        assert event_indices[199] == 199
-        assert event_indices[200] == 200
-        assert event_indices[249] == 249
+                # Check that the events were processed in chunks by ensuring order
+                # is preserved within chunks (we expect 0-99, 100-199, 200-249)
+                assert event_indices[0] == 0
+                assert event_indices[99] == 99
+                assert event_indices[100] == 100
+                assert event_indices[199] == 199
+                assert event_indices[200] == 200
+                assert event_indices[249] == 249

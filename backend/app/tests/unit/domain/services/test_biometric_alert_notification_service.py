@@ -17,15 +17,16 @@ from app.domain.services.biometric_alert_notification_service import (
 )
 
 
-@pytest.mark.db_required()class TestBiometricAlertNotificationService:
+@pytest.mark.db_required()
+class TestBiometricAlertNotificationService:
     """Tests for the BiometricAlertNotificationService."""@pytest.fixture
-def mock_alert_repository(self):
+    def mock_alert_repository(self):
 
                 """Create a mock BiometricAlertRepository."""
         repo = AsyncMock()
         repo.save = AsyncMock()
         return repo@pytest.fixture
-def mock_notification_service(self):
+        def mock_notification_service(self):
 
                 """Create a mock notification service provider."""
         service = AsyncMock()
@@ -34,32 +35,32 @@ def mock_notification_service(self):
         service.send_in_app_notification = AsyncMock()
         service.send_push_notification = AsyncMock()
         return service@pytest.fixture
-def notification_service(
+        def notification_service(
             self,
             mock_alert_repository,
             mock_notification_service):
-        """Create a BiometricAlertNotificationService with mock dependencies."""
+                """Create a BiometricAlertNotificationService with mock dependencies."""
 
-        return BiometricAlertNotificationService()
-        mock_alert_repository,
-        mock_notification_service
-        ()@pytest.fixture
-def sample_patient_id(self):
+                return BiometricAlertNotificationService()
+                mock_alert_repository,
+                mock_notification_service
+                ()@pytest.fixture
+                def sample_patient_id(self):
 
-                """Create a sample patient ID."""
+                    """Create a sample patient ID."""
 
-        return UUID('12345678-1234-5678-1234-567812345678')@pytest.fixture
-def sample_provider_id(self):
+                    return UUID('12345678-1234-5678-1234-567812345678')@pytest.fixture
+                    def sample_provider_id(self):
 
                 """Create a sample provider ID."""
 
         return UUID('87654321-8765-4321-8765-432187654321')@pytest.fixture
-def sample_rule_id(self):
+        def sample_rule_id(self):
 
                 """Create a sample rule ID."""
 
         return UUID('11111111-2222-3333-4444-555555555555')@pytest.fixture
-def sample_urgent_alert(self, sample_patient_id, sample_rule_id):
+        def sample_urgent_alert(self, sample_patient_id, sample_rule_id):
 
                 """Create a sample urgent BiometricAlert."""
 
@@ -142,114 +143,114 @@ def sample_info_alert(self, sample_patient_id, sample_rule_id):
     async def test_notify_alert_warning_priority()
     self, notification_service, mock_notification_service, sample_warning_alert
     ():
-    """Test that notify_alert sends notifications through appropriate channels for warning alerts."""
-      # Execute
-    await notification_service.notify_alert(sample_warning_alert)
-
-      # Verify
-    assert mock_notification_service.send_sms.call_count == 0  # SMS not used for warnings
-    assert mock_notification_service.send_email.call_count == 1
-    assert mock_notification_service.send_in_app_notification.call_count == 1
-    assert mock_notification_service.send_push_notification.call_count == 1
-
-    async def test_notify_alert_info_priority()
-    self, notification_service, mock_notification_service, sample_info_alert
-    ():
-    """Test that notify_alert sends notifications through in-app only for informational alerts."""
-      # Execute
-    await notification_service.notify_alert(sample_info_alert)
-
-      # Verify
-    assert mock_notification_service.send_sms.call_count == 0
-    assert mock_notification_service.send_email.call_count == 0
-    assert mock_notification_service.send_in_app_notification.call_count == 1
-    assert mock_notification_service.send_push_notification.call_count == 0
-
-    async def test_hipaa_compliant_message_creation()
-    self, notification_service, sample_urgent_alert
-    ():
-    """Test that HIPAA-compliant messages are created correctly."""
-      # Execute
-    sms_message = notification_service._create_hipaa_compliant_message()
-    sample_urgent_alert, NotificationChannel.SMS
-    (,
-    email_message= notification_service._create_hipaa_compliant_message()
-    sample_urgent_alert, NotificationChannel.EMAIL
-    ()
-
-      # Verify SMS message
-    assert "SECURE" in sms_message
-    assert "URGENT" in sms_message
-    assert "log in to the secure portal" in sms_message
-
-      # Verify email message
-    assert "SECURE" in email_message
-    assert "URGENT" in email_message
-    assert "Alert Type" in email_message
-    assert "Time" in email_message
-    assert "log in to the secure portal" in email_message
-
-      # Ensure no PHI is included in either message
-    patient_id_str = str(sample_urgent_alert.patient_id)
-    assert patient_id_str not in sms_message
-    assert patient_id_str not in email_message
-
-    async def test_get_channels_for_priority(self, notification_service):
-                 """Test that appropriate channels are selected based on alert priority."""
+        """Test that notify_alert sends notifications through appropriate channels for warning alerts."""
         # Execute
-        urgent_channels = notification_service._get_channels_for_priority(
+        await notification_service.notify_alert(sample_warning_alert)
+
+        # Verify
+        assert mock_notification_service.send_sms.call_count == 0  # SMS not used for warnings
+        assert mock_notification_service.send_email.call_count == 1
+        assert mock_notification_service.send_in_app_notification.call_count == 1
+        assert mock_notification_service.send_push_notification.call_count == 1
+
+        async def test_notify_alert_info_priority()
+        self, notification_service, mock_notification_service, sample_info_alert
+        ():
+            """Test that notify_alert sends notifications through in-app only for informational alerts."""
+            # Execute
+            await notification_service.notify_alert(sample_info_alert)
+
+            # Verify
+            assert mock_notification_service.send_sms.call_count == 0
+            assert mock_notification_service.send_email.call_count == 0
+            assert mock_notification_service.send_in_app_notification.call_count == 1
+            assert mock_notification_service.send_push_notification.call_count == 0
+
+            async def test_hipaa_compliant_message_creation()
+            self, notification_service, sample_urgent_alert
+            ():
+            """Test that HIPAA-compliant messages are created correctly."""
+            # Execute
+            sms_message = notification_service._create_hipaa_compliant_message()
+            sample_urgent_alert, NotificationChannel.SMS
+            (,
+            email_message= notification_service._create_hipaa_compliant_message()
+            sample_urgent_alert, NotificationChannel.EMAIL
+            ()
+
+            # Verify SMS message
+            assert "SECURE" in sms_message
+            assert "URGENT" in sms_message
+            assert "log in to the secure portal" in sms_message
+
+            # Verify email message
+            assert "SECURE" in email_message
+            assert "URGENT" in email_message
+            assert "Alert Type" in email_message
+            assert "Time" in email_message
+            assert "log in to the secure portal" in email_message
+
+            # Ensure no PHI is included in either message
+            patient_id_str = str(sample_urgent_alert.patient_id)
+            assert patient_id_str not in sms_message
+            assert patient_id_str not in email_message
+
+            async def test_get_channels_for_priority(self, notification_service):
+                 """Test that appropriate channels are selected based on alert priority."""
+            # Execute
+            urgent_channels = notification_service._get_channels_for_priority(
             AlertPriority.URGENT,
-        warning_channels= notification_service._get_channels_for_priority(
+            warning_channels= notification_service._get_channels_for_priority(
             AlertPriority.WARNING,
-        info_channels= notification_service._get_channels_for_priority(
+            info_channels= notification_service._get_channels_for_priority(
             AlertPriority.INFORMATIONAL)
 
-        # Verify
-        assert len(urgent_channels) == 4
-        assert NotificationChannel.SMS in urgent_channels
-        assert NotificationChannel.EMAIL in urgent_channels
-        assert NotificationChannel.IN_APP in urgent_channels
-        assert NotificationChannel.PUSH in urgent_channels
+            # Verify
+            assert len(urgent_channels) == 4
+            assert NotificationChannel.SMS in urgent_channels
+            assert NotificationChannel.EMAIL in urgent_channels
+            assert NotificationChannel.IN_APP in urgent_channels
+            assert NotificationChannel.PUSH in urgent_channels
 
-        assert len(warning_channels) == 3
-        assert NotificationChannel.SMS not in warning_channels
-        assert NotificationChannel.EMAIL in warning_channels
-        assert NotificationChannel.IN_APP in warning_channels
-        assert NotificationChannel.PUSH in warning_channels
+            assert len(warning_channels) == 3
+            assert NotificationChannel.SMS not in warning_channels
+            assert NotificationChannel.EMAIL in warning_channels
+            assert NotificationChannel.IN_APP in warning_channels
+            assert NotificationChannel.PUSH in warning_channels
 
-        assert len(info_channels) == 1
-        assert info_channels[0] == NotificationChannel.IN_APP
+            assert len(info_channels) == 1
+            assert info_channels[0] == NotificationChannel.IN_APP
 
-        async def test_get_alert_recipients(
+            async def test_get_alert_recipients(
             self, notification_service, sample_urgent_alert):
-        """Test that alert recipients are correctly determined."""
-        # Execute
-        recipients = await notification_service._get_alert_recipients(sample_urgent_alert)
+                """Test that alert recipients are correctly determined."""
+                # Execute
+                recipients = await notification_service._get_alert_recipients(sample_urgent_alert)
 
-        # Verify
-        assert len(recipients) == 1
-        assert "provider_id" in recipients[0]
-        assert "name" in recipients[0]
-        assert "email" in recipients[0]
-        assert "phone" in recipients[0]
-        assert "notification_preferences" in recipients[0]
+                # Verify
+                assert len(recipients) == 1
+                assert "provider_id" in recipients[0]
+                assert "name" in recipients[0]
+                assert "email" in recipients[0]
+                assert "phone" in recipients[0]
+                assert "notification_preferences" in recipients[0]
 
-        async def test_send_notification_filters_recipients()
-        self, notification_service, mock_notification_service, sample_urgent_alert
-        ():
-    """Test that send_notification filters recipients based on their preferences."""
-      # Setup
-    recipients = [
-        {
-            "provider_id": "00000000-0000-0000-0000-000000000001",
-            "name": "Provider 1",
-            "email": "provider1@example.com",
-            "phone": "+15555555551",
-            "notification_preferences": {
-            "sms": True,
-            "email": True,
-            "in_app": True,
-            "push": True
+                async def test_send_notification_filters_recipients()
+                self, notification_service, mock_notification_service, sample_urgent_alert
+                ():
+                    """Test that send_notification filters recipients based on their preferences."""
+                    # Setup
+                    recipients = [
+                    {
+                    "provider_id": "00000000-0000-0000-0000-000000000001",
+                    "name": "Provider 1",
+                    "email": "provider1@example.com",
+                    "phone": "+15555555551",
+                    "notification_preferences": {
+                    "sms": True,
+                    "email": True,
+                    "in_app": True,
+                    "push": True
             }
             },
         {

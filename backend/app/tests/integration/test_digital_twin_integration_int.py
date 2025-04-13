@@ -148,13 +148,13 @@ async def test_digital_twin_complete_workflow():
         if rec["type"] == "medication":
             has_medication = True
             elif rec["type"] == "therapy":
-            has_therapy = True
+                has_therapy = True
 
-            assert has_medication
-            assert has_therapy
+                assert has_medication
+                assert has_therapy
 
-            # 6. Get visualization data for the 3D brain model
-            visualization_data = await digital_twin_core.get_visualization_data(
+                # 6. Get visualization data for the 3D brain model
+                visualization_data = await digital_twin_core.get_visualization_data(
                 patient_id=patient_id, visualization_type="brain_model"
             )
 

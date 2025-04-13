@@ -37,11 +37,11 @@ def test_neurotransmitter_mapping_creation():
 
 
                 """Test adding receptor profiles to a mapping."""
-    test_patient_id = uuid.uuid4(,
-    mapping= NeurotransmitterMapping(patient_id=test_patient_id)
+        test_patient_id = uuid.uuid4(,
+        mapping= NeurotransmitterMapping(patient_id=test_patient_id)
 
-    # Create a receptor profile
-    profile = ReceptorProfile(
+        # Create a receptor profile
+        profile = ReceptorProfile(
         brain_region=BrainRegion.PREFRONTAL_CORTEX,
         neurotransmitter=Neurotransmitter.SEROTONIN,
         receptor_type=ReceptorType.EXCITATORY,
@@ -322,8 +322,8 @@ def test_default_mapping_creation():
 
 
                 """Test creating and manipulating receptor profiles."""
-    # Create a profile
-    profile = ReceptorProfile(
+        # Create a profile
+        profile = ReceptorProfile(
         brain_region=BrainRegion.PREFRONTAL_CORTEX,
         neurotransmitter=Neurotransmitter.SEROTONIN,
         receptor_type=ReceptorType.EXCITATORY,

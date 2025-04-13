@@ -54,49 +54,49 @@ Debugging test to check enum behavior issues.
 
 
                         """Simulate the rule evaluation with the enum."""
-        print("\nDEBUG: Simulating rule evaluation")
+            print("\nDEBUG: Simulating rule evaluation")
 
-        # Mimic the rule and data point
-        operator = ComparisonOperator.GREATER_THAN_OR_EQUAL
-        threshold = 100
-        value = 100
+            # Mimic the rule and data point
+            operator = ComparisonOperator.GREATER_THAN_OR_EQUAL
+            threshold = 100
+            value = 100
 
-        # Check different ways of comparing
-        print(
+            # Check different ways of comparing
+            print(
             f"Method 1 (direct ==): {
                 operator == ComparisonOperator.GREATER_THAN_OR_EQUAL}")
-        print(
+            print(
             f"Method 2 (is): {
                 operator is ComparisonOperator.GREATER_THAN_OR_EQUAL}")
-        print(
+            print(
             f"Method 3 (value comparison): {
                 operator.value == ComparisonOperator.GREATER_THAN_OR_EQUAL.value}")
 
-        # Test the actual comparison logic
-        print("\nTesting comparison logic:")
-        if operator == ComparisonOperator.GREATER_THAN_OR_EQUAL:
-        result = value >= threshold
-        print(
-            f"Using direct enum comparison: {result} ({value} >= {threshold})")
-        else:
-        print("Direct enum comparison FAILED")
+            # Test the actual comparison logic
+            print("\nTesting comparison logic:")
+            if operator == ComparisonOperator.GREATER_THAN_OR_EQUAL:
+                result = value >= threshold
+                print(
+                f"Using direct enum comparison: {result} ({value} >= {threshold})")
+                else:
+                print("Direct enum comparison FAILED")
 
-        if operator.value == ComparisonOperator.GREATER_THAN_OR_EQUAL.value:
-        result = value >= threshold
-        print(f"Using value comparison: {result} ({value} >= {threshold})")
-        else:
-        print("Value comparison FAILED")
+                if operator.value == ComparisonOperator.GREATER_THAN_OR_EQUAL.value:
+                result = value >= threshold
+                print(f"Using value comparison: {result} ({value} >= {threshold})")
+                else:
+                print("Value comparison FAILED")
 
-        # Return the actual result we want
-        #     return value >= threshold # FIXME: return outside function
+                # Return the actual result we want
+                #     return value >= threshold # FIXME: return outside function
 
-        if __name__ == "__main__":
-    print("\n=== Enum Behavior Debug ===")
-    test_enum_behavior()
+                if __name__ == "__main__":
+                print("\n=== Enum Behavior Debug ===")
+                test_enum_behavior()
 
-    print("\n=== Rule Evaluation Simulation ===",
-    result= simulate_rule_evaluation()
-    print(f"\nFinal result: {result}")
+                print("\n=== Rule Evaluation Simulation ===",
+                result= simulate_rule_evaluation()
+                print(f"\nFinal result: {result}")
 
-    print("\nAll debug tests passed!")
-    sys.exit(0)
+                print("\nAll debug tests passed!")
+                sys.exit(0)

@@ -46,13 +46,13 @@ def sanitizer_config():
     hash_identifiers = True,
     identifier_hash_salt = "novamind-phi-salt-key"
     ()@pytest.fixture
-def pattern_repository():
+    def pattern_repository():
 
             """Create a mock pattern repository with test data."""
-    mock_repo = MagicMock()
+        mock_repo = MagicMock()
 
-    # Mock the patterns with test data
-    mock_repo.get_patterns.return_value = [
+        # Mock the patterns with test data
+        mock_repo.get_patterns.return_value = [
         PHIPattern()
         name= "SSN",
         pattern= r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
@@ -85,39 +85,40 @@ def pattern_repository():
         context_words= ["patient", "id", "identifier", "record"],
         examples= ["PT123456", "MRN987654321"]
         ()
-    ]
+        ]
 
-    return mock_repo@pytest.fixture
-def log_sanitizer(sanitizer_config, pattern_repository):
+        return mock_repo@pytest.fixture
+        def log_sanitizer(sanitizer_config, pattern_repository):
 
             """Create a log sanitizer for testing."""
-    sanitizer = LogSanitizer(config=sanitizer_config)
-    sanitizer.pattern_repository = pattern_repository
-    return sanitizer
+        sanitizer = LogSanitizer(config=sanitizer_config)
+        sanitizer.pattern_repository = pattern_repository
+        return sanitizer
 
-    @pytest.mark.venv_only()class TestLogSanitizer:
-    """Test suite for the log sanitizer."""
+        @pytest.mark.venv_only()
+        class TestLogSanitizer:
+        """Test suite for the log sanitizer."""
 
-    def test_sanitize_simple_string(self, log_sanitizer):
+        def test_sanitize_simple_string(self, log_sanitizer):
 
 
                     """Test sanitization of a simple string with PHI."""
-        # String with SSN
-        input_string = "Patient record with SSN: 123-45-6789"
+            # String with SSN
+            input_string = "Patient record with SSN: 123-45-6789"
 
-        # Sanitize the string
-        sanitized = log_sanitizer.sanitize(input_string)
+            # Sanitize the string
+            sanitized = log_sanitizer.sanitize(input_string)
 
-        # Verify SSN was redacted
-        assert "123-45-6789" not in sanitized
-        assert "[REDACTED]" in sanitized
+            # Verify SSN was redacted
+            assert "123-45-6789" not in sanitized
+            assert "[REDACTED]" in sanitized
 
-        def test_sanitize_json_string(self, log_sanitizer):
+            def test_sanitize_json_string(self, log_sanitizer):
 
 
                         """Test sanitization of a JSON string with PHI."""
-        # JSON string with PHI
-        json_string = json.dumps({)
+            # JSON string with PHI
+            json_string = json.dumps({)
                                  "patient_id": "PT123456",
                                  "name": "John Smith",
                                  "contact": {
@@ -213,8 +214,8 @@ def log_sanitizer(sanitizer_config, pattern_repository):
 
 
                         """Test detection and sanitization based on sensitive key names."""
-        # Dictionary with sensitive keys
-        data = {
+            # Dictionary with sensitive keys
+            data = {
             "user_id": "user123",  # Not sensitive
             "first_name": "John",  # Not explicitly sensitive
             "ssn": "123-45-6789",  # Sensitive key
@@ -269,130 +270,130 @@ def log_sanitizer(sanitizer_config, pattern_repository):
 
 
                         """Test contextual detection of PHI."""
-        # Enable contextual detection
-        log_sanitizer.config.enable_contextual_detection = True
+            # Enable contextual detection
+            log_sanitizer.config.enable_contextual_detection = True
 
-        # String with potential PHI in context
-        log_message = """
-        Patient social: 987-65-4321
-        Email address is: contact@example.org
-        Random number: 123-45-6789 (not an SSN)
-        """
+            # String with potential PHI in context
+            log_message = """
+            Patient social: 987-65-4321
+            Email address is: contact@example.org
+            Random number: 123-45-6789 (not an SSN)
+            """
 
-        # Sanitize the message
-        sanitized = log_sanitizer.sanitize(log_message)
+            # Sanitize the message
+            sanitized = log_sanitizer.sanitize(log_message)
 
-        # Verify contextual PHI was sanitized
-        assert "987-65-4321" not in sanitized  # "social" provides context for SSN
-        assert "contact@example.org" not in sanitized  # "Email address" provides context
+            # Verify contextual PHI was sanitized
+            assert "987-65-4321" not in sanitized  # "social" provides context for SSN
+            assert "contact@example.org" not in sanitized  # "Email address" provides context
 
-        # When context detection is disabled, random numbers might not be
-        # detected
-        log_sanitizer.config.enable_contextual_detection = False
-        sanitized_no_context = log_sanitizer.sanitize(log_message)
+            # When context detection is disabled, random numbers might not be
+            # detected
+            log_sanitizer.config.enable_contextual_detection = False
+            sanitized_no_context = log_sanitizer.sanitize(log_message)
 
-        # With context disabled, the regex still detects SSN pattern
-        assert "987-65-4321" not in sanitized_no_context
-        # Email is still detected by pattern
-        assert "contact@example.org" not in sanitized_no_context
+            # With context disabled, the regex still detects SSN pattern
+            assert "987-65-4321" not in sanitized_no_context
+            # Email is still detected by pattern
+            assert "contact@example.org" not in sanitized_no_context
 
-        def test_partial_redaction(self, log_sanitizer):
+            def test_partial_redaction(self, log_sanitizer):
 
 
                         """Test partial redaction of PHI."""
-        # Configure partial redaction
-        log_sanitizer.config.redaction_mode = RedactionMode.PARTIAL
-        log_sanitizer.config.partial_redaction_length = 4
+                # Configure partial redaction
+                log_sanitizer.config.redaction_mode = RedactionMode.PARTIAL
+                log_sanitizer.config.partial_redaction_length = 4
 
-        # String with PHI
-        log_message = "Patient SSN: 123-45-6789, Email: john.doe@example.com"
+                # String with PHI
+                log_message = "Patient SSN: 123-45-6789, Email: john.doe@example.com"
 
-        # Sanitize with partial redaction
-        sanitized = log_sanitizer.sanitize(log_message)
+                # Sanitize with partial redaction
+                sanitized = log_sanitizer.sanitize(log_message)
 
-        # Verify partial redaction
-        assert "123-45-6789" not in sanitized
-        assert "john.doe@example.com" not in sanitized
+                # Verify partial redaction
+                assert "123-45-6789" not in sanitized
+                assert "john.doe@example.com" not in sanitized
 
-        # Depending on implementation, might show last 4 digits
-        if log_sanitizer.config.partial_redaction_length == 4:
-        assert "-6789" in sanitized or "xxx-xx-6789" in sanitized
-        assert "example.com" in sanitized or "xxxx.xxxx@example.com" in sanitized
+                # Depending on implementation, might show last 4 digits
+                if log_sanitizer.config.partial_redaction_length == 4:
+                assert "-6789" in sanitized or "xxx-xx-6789" in sanitized
+                assert "example.com" in sanitized or "xxxx.xxxx@example.com" in sanitized
 
-        def test_full_redaction(self, log_sanitizer):
+                def test_full_redaction(self, log_sanitizer):
 
 
                         """Test full redaction of PHI."""
-        # Configure full redaction
-        log_sanitizer.config.redaction_mode = RedactionMode.FULL
-        log_sanitizer.config.redaction_marker = "[REDACTED]"
+                # Configure full redaction
+                log_sanitizer.config.redaction_mode = RedactionMode.FULL
+                log_sanitizer.config.redaction_marker = "[REDACTED]"
 
-        # String with PHI
-        log_message = "Patient SSN: 123-45-6789, Email: john.doe@example.com"
+                # String with PHI
+                log_message = "Patient SSN: 123-45-6789, Email: john.doe@example.com"
 
-        # Sanitize with full redaction
-        sanitized = log_sanitizer.sanitize(log_message)
+                # Sanitize with full redaction
+                sanitized = log_sanitizer.sanitize(log_message)
 
-        # Verify full redaction
-        assert "123-45-6789" not in sanitized
-        assert "john.doe@example.com" not in sanitized
-        assert "[REDACTED]" in sanitized
-        assert "-6789" not in sanitized  # Last 4 should not be visible
-        assert "example.com" not in sanitized  # Domain should not be visible
+                # Verify full redaction
+                assert "123-45-6789" not in sanitized
+                assert "john.doe@example.com" not in sanitized
+                assert "[REDACTED]" in sanitized
+                assert "-6789" not in sanitized  # Last 4 should not be visible
+                assert "example.com" not in sanitized  # Domain should not be visible
 
-        def test_hash_redaction(self, log_sanitizer):
+                def test_hash_redaction(self, log_sanitizer):
 
 
                         """Test hash-based redaction of PHI."""
-        # Configure hash redaction
-        log_sanitizer.config.redaction_mode = RedactionMode.HASH
+                # Configure hash redaction
+                log_sanitizer.config.redaction_mode = RedactionMode.HASH
 
-        # String with PHI
-        log_message = "Patient ID: PT123456, SSN: 123-45-6789"
+                # String with PHI
+                log_message = "Patient ID: PT123456, SSN: 123-45-6789"
 
-        # Sanitize with hash redaction
-        sanitized = log_sanitizer.sanitize(log_message)
+                # Sanitize with hash redaction
+                sanitized = log_sanitizer.sanitize(log_message)
 
-        # Verify hash redaction
-        assert "PT123456" not in sanitized
-        assert "123-45-6789" not in sanitized
+                # Verify hash redaction
+                assert "PT123456" not in sanitized
+                assert "123-45-6789" not in sanitized
 
-        # Hash values should be consistent for the same input
-        sanitized2 = log_sanitizer.sanitize(log_message)
-        assert sanitized == sanitized2
+                # Hash values should be consistent for the same input
+                sanitized2 = log_sanitizer.sanitize(log_message)
+                assert sanitized == sanitized2
 
-        def test_log_message_sanitization(self, log_sanitizer):
+                def test_log_message_sanitization(self, log_sanitizer):
 
 
                         """Test sanitization of log messages."""
-        # Create a log message with PHI
-        log_record = logging.LogRecord(,
-        name= "test_logger",
-        level = logging.INFO,
-        pathname = "test_file.py",
-        lineno = 100,
-        msg = "Patient %s with SSN %s had appointment on %s",
-        args = ("John Smith", "123-45-6789", "2023-05-15"),
-        exc_info = None
-        ()
+                # Create a log message with PHI
+                log_record = logging.LogRecord(,
+                name= "test_logger",
+                level = logging.INFO,
+                pathname = "test_file.py",
+                lineno = 100,
+                msg = "Patient %s with SSN %s had appointment on %s",
+                args = ("John Smith", "123-45-6789", "2023-05-15"),
+                exc_info = None
+                ()
 
-        # Sanitize the log record
-        sanitized_record = log_sanitizer.sanitize_log_record(log_record)
+                # Sanitize the log record
+                sanitized_record = log_sanitizer.sanitize_log_record(log_record)
 
-        # Verify the message was sanitized
-        assert "John Smith" not in sanitized_record.getMessage()
-        assert "123-45-6789" not in sanitized_record.getMessage()
+                # Verify the message was sanitized
+                assert "John Smith" not in sanitized_record.getMessage()
+                assert "123-45-6789" not in sanitized_record.getMessage()
 
-        def test_structured_log_sanitization(self, log_sanitizer):
+                def test_structured_log_sanitization(self, log_sanitizer):
 
 
                         """Test sanitization of structured logs."""
-        # Structured log entry
-        structured_log = {
-            "timestamp": "2023-05-15T10:30:00Z",
-            "level": "INFO",
-            "message": "Patient data accessed",
-            "context": {
+                # Structured log entry
+                structured_log = {
+                "timestamp": "2023-05-15T10:30:00Z",
+                "level": "INFO",
+                "message": "Patient data accessed",
+                "context": {
                 "user": "doctor_smith",
                 "action": "view",
                 "patient": {
@@ -453,98 +454,98 @@ def log_sanitizer(sanitizer_config, pattern_repository):
 
 
                         """Test sanitizer's exception handling."""
-        # Configure to allow exceptions
-        log_sanitizer.config.exceptions_allowed = True
+            # Configure to allow exceptions
+            log_sanitizer.config.exceptions_allowed = True
 
-        # Create a scenario that would cause an exception
-        with patch.object(log_sanitizer, '_sanitize_value', side_effect=Exception("Test exception")):
-            # With exceptions allowed, it should return fallback
-        result = log_sanitizer.sanitize("Test message with PHI")
-        assert result == "[Sanitization Error]"
+            # Create a scenario that would cause an exception
+            with patch.object(log_sanitizer, '_sanitize_value', side_effect=Exception("Test exception")):
+                # With exceptions allowed, it should return fallback
+                result = log_sanitizer.sanitize("Test message with PHI")
+                assert result == "[Sanitization Error]"
 
-        # Configure to not allow exceptions
-        log_sanitizer.config.exceptions_allowed = False
+                # Configure to not allow exceptions
+                log_sanitizer.config.exceptions_allowed = False
 
-        # With exceptions not allowed, it should handle gracefully
-        with patch.object(log_sanitizer, '_sanitize_value', side_effect=Exception("Test exception")):
-        result = log_sanitizer.sanitize("Test message with PHI")
-        assert result == "Test message with PHI"  # Original returned on error
+                # With exceptions not allowed, it should handle gracefully
+                with patch.object(log_sanitizer, '_sanitize_value', side_effect=Exception("Test exception")):
+                result = log_sanitizer.sanitize("Test message with PHI")
+                assert result == "Test message with PHI"  # Original returned on error
 
-        def test_max_log_size(self, log_sanitizer):
+                def test_max_log_size(self, log_sanitizer):
 
 
                         """Test handling of large log messages."""
-        # Configure max log size
-        log_sanitizer.config.max_log_size_kb = 1  # 1KB
+                # Configure max log size
+                log_sanitizer.config.max_log_size_kb = 1  # 1KB
 
-        # Create a large log message (>1KB,
-        large_message= "A" * 1500
+                # Create a large log message (>1KB,
+                large_message= "A" * 1500
 
-        # Sanitize the large message
-        sanitized = log_sanitizer.sanitize(large_message)
+                # Sanitize the large message
+                sanitized = log_sanitizer.sanitize(large_message)
 
-        # Verify the message was truncated or handled appropriately
-        assert len(sanitized) < len(large_message)
-        assert "[Truncated]" in sanitized
+                # Verify the message was truncated or handled appropriately
+                assert len(sanitized) < len(large_message)
+                assert "[Truncated]" in sanitized
 
-        def test_sanitization_hook(self, log_sanitizer):
+                def test_sanitization_hook(self, log_sanitizer):
 
 
                         """Test custom sanitization hooks."""
-        # Define a custom sanitization hook
-        def custom_hook(value, context):
+                # Define a custom sanitization hook
+                def custom_hook(value, context):
 
                         if isinstance(value, str) and "CUSTOM_PHI" in value:
-                return value.replace("CUSTOM_PHI", "[CUSTOM_REDACTED]")
-                return value
+                            return value.replace("CUSTOM_PHI", "[CUSTOM_REDACTED]")
+                            return value
 
-                # Add the custom hook
-                log_sanitizer.add_sanitization_hook(custom_hook)
+                            # Add the custom hook
+                            log_sanitizer.add_sanitization_hook(custom_hook)
 
-                # Test with custom PHI
-                log_message = "This contains CUSTOM_PHI that should be redacted"
+                            # Test with custom PHI
+                            log_message = "This contains CUSTOM_PHI that should be redacted"
 
-                # Sanitize with custom hook
-                sanitized = log_sanitizer.sanitize(log_message)
+                            # Sanitize with custom hook
+                            sanitized = log_sanitizer.sanitize(log_message)
 
-                # Verify custom sanitization
-                assert "CUSTOM_PHI" not in sanitized
-                assert "[CUSTOM_REDACTED]" in sanitized
+                            # Verify custom sanitization
+                            assert "CUSTOM_PHI" not in sanitized
+                            assert "[CUSTOM_REDACTED]" in sanitized
 
-                def test_multiple_phi_instances(self, log_sanitizer):
+                            def test_multiple_phi_instances(self, log_sanitizer):
 
 
                                 """Test sanitization of multiple PHI instances in the same message."""
-        # Message with multiple PHI instances
-        log_message = """
-        Patient: John Smith
-        SSN: 123-45-6789
-        Contact: john.smith@example.com or (555) 123-4567
-        Secondary contact: jane.smith@example.com
-        Reference: Another patient with SSN 987-65-4321
-        """
+                                # Message with multiple PHI instances
+                                log_message = """
+                                Patient: John Smith
+                                SSN: 123-45-6789
+                                Contact: john.smith@example.com or (555) 123-4567
+                                Secondary contact: jane.smith@example.com
+                                Reference: Another patient with SSN 987-65-4321
+                                """
 
-        # Sanitize the message
-        sanitized = log_sanitizer.sanitize(log_message)
+                                # Sanitize the message
+                                sanitized = log_sanitizer.sanitize(log_message)
 
-        # Verify all PHI instances were sanitized
-        assert "John Smith" not in sanitized
-        assert "123-45-6789" not in sanitized
-        assert "john.smith@example.com" not in sanitized
-        assert "(555) 123-4567" not in sanitized
-        assert "jane.smith@example.com" not in sanitized
-        assert "987-65-4321" not in sanitized
+                                # Verify all PHI instances were sanitized
+                                assert "John Smith" not in sanitized
+                                assert "123-45-6789" not in sanitized
+                                assert "john.smith@example.com" not in sanitized
+                                assert "(555) 123-4567" not in sanitized
+                                assert "jane.smith@example.com" not in sanitized
+                                assert "987-65-4321" not in sanitized
 
-        def test_phi_at_boundaries(self, log_sanitizer):
+                                def test_phi_at_boundaries(self, log_sanitizer):
 
 
                         """Test sanitization of PHI at string boundaries."""
-        # PHI at start, middle, and end of string
-        log_message = "123-45-6789 is the SSN for patient and email is john@example.com"
+                        # PHI at start, middle, and end of string
+                        log_message = "123-45-6789 is the SSN for patient and email is john@example.com"
 
-        # Sanitize the message
-        sanitized = log_sanitizer.sanitize(log_message)
+                        # Sanitize the message
+                        sanitized = log_sanitizer.sanitize(log_message)
 
-        # Verify PHI was sanitized at all positions
-        assert "123-45-6789" not in sanitized
-        assert "john@example.com" not in sanitized
+                        # Verify PHI was sanitized at all positions
+                        assert "123-45-6789" not in sanitized
+                        assert "john@example.com" not in sanitized

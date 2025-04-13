@@ -31,8 +31,8 @@ This test suite verifies that:
     @pytest.mark.db_required()
     async def test_patient() -> Patient:
              """Create a test patient with PHI for testing."""
-    patient_id = uuid.uuid4()
-    #     return Patient( # FIXME: return outside function)
+        patient_id = uuid.uuid4()
+        #     return Patient( # FIXME: return outside function)
         id=patient_id,
         first_name="Integration",
         last_name="Test",
@@ -46,104 +46,105 @@ This test suite verifies that:
             state="TS",
             postal_code="12345",
             country="Testland"
-    (        ),
+        (        ),
         emergency_contact=EmergencyContact()
             name="Emergency Contact",
             phone="555-123-4567",
             relationship="Test Relative"
-    (        ),
+        (        ),
         insurance=None,
         active=True,
         created_by=None
-    (    )@pytest.fixture
-def log_capture() -> StringIO:
+        (    )@pytest.fixture
+        def log_capture() -> StringIO:
 
             """Capture logs for analysis."""
-    log_stream = StringIO(,
-    handler= logging.StreamHandler(log_stream)
-    handler.setLevel(logging.DEBUG)
+            log_stream = StringIO(,
+            handler= logging.StreamHandler(log_stream)
+            handler.setLevel(logging.DEBUG)
     
-    # Use basic formatter to be able to see actual log content
-    handler.setFormatter(logging.Formatter('%(message)s'))
+            # Use basic formatter to be able to see actual log content
+            handler.setFormatter(logging.Formatter('%(message)s'))
     
-    # Add handler to root logger
-    root_logger = logging.getLogger()
-    root_logger.addHandler(handler)
+            # Add handler to root logger
+            root_logger = logging.getLogger()
+            root_logger.addHandler(handler)
     
-    # Store original level and set to DEBUG
-    original_level = root_logger.level
-    root_logger.setLevel(logging.DEBUG)
+            # Store original level and set to DEBUG
+            original_level = root_logger.level
+            root_logger.setLevel(logging.DEBUG)
     
-    yield log_stream
+            yield log_stream
     
-    # Clean up
-    root_logger.removeHandler(handler)
-    root_logger.setLevel(original_level)class TestPHISanitizationIntegration:
-    """
-    Integration test suite for PHI sanitization across database and logs.
+            # Clean up
+            root_logger.removeHandler(handler)
+            root_logger.setLevel(original_level)
+            class TestPHISanitizationIntegration:
+        """
+        Integration test suite for PHI sanitization across database and logs.
     
-    These tests verify that PHI is properly protected throughout the system,
-    even when crossing module boundaries and during exception handling.
-    """
-    
-    @pytest.mark.asyncio()
-    async def test_patient_phi_database_encryption(self, test_patient: Patient):
-                 """Test that PHI is encrypted in database and decrypted when retrieved."""
-        # Convert to model (encrypts PHI,
-        patient_model= PatientModel.from_domain(test_patient)
-        
-        # Save to database
-        async with await get_db_session() as session:
-        session.add(patient_model)
-        await session.commit()
-            
-            # Get patient ID for later lookup
-        patient_id = patient_model.id
-            
-            # Close session to clear cache
-        await session.close()
-            
-            # Get a new session
-        async with await get_db_session() as new_session:
-                # Get raw data directly with SQL to verify encryption
-        result = await new_session.execute(f""")
-        SELECT first_name, last_name, email, phone
-        FROM patients WHERE id = '{patient_id}'
-        (    """,
-        row= result.fetchone()
-                
-                # Verify PHI is stored encrypted (raw DB values)
-        assert row.first_name  !=  test_patient.first_name, "First name not encrypted in database"
-        assert row.email  !=  test_patient.email, "Email not encrypted in database"
-        assert row.phone  !=  test_patient.phone, "Phone not encrypted in database"
-                
-                # Retrieve through ORM and convert back to domain
-        db_patient_model = await new_session.get(PatientModel, patient_id,
-        retrieved_patient= db_patient_model.to_domain()
-                
-                # Verify domain entity has decrypted PHI
-        assert retrieved_patient.first_name  ==  test_patient.first_name, "First name mismatch"
-        assert retrieved_patient.email  ==  test_patient.email, "Email mismatch"
-        assert retrieved_patient.phone  ==  test_patient.phone, "Phone mismatch"
-                
-                # Clean up test data
-        await new_session.delete(db_patient_model)
-        await new_session.commit()
+        These tests verify that PHI is properly protected throughout the system,
+        even when crossing module boundaries and during exception handling.
+        """
     
         @pytest.mark.asyncio()
-        async def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
-                 """Test that PHI is properly sanitized in logs."""
-        # Set up logger
-        logger = get_sanitized_logger("test.phi.integration") # Use correct function
+        async def test_patient_phi_database_encryption(self, test_patient: Patient):
+                 """Test that PHI is encrypted in database and decrypted when retrieved."""
+            # Convert to model (encrypts PHI,
+            patient_model= PatientModel.from_domain(test_patient)
         
-        # Log some PHI
-        logger.info()
-        f"Processing patient record",
-        {
-        "patient_id": str(test_patient.id),
-        "email": test_patient.email,
-        "phone": test_patient.phone,
-        "dob": str(test_patient.date_of_birth)
+            # Save to database
+            async with await get_db_session() as session:
+            session.add(patient_model)
+            await session.commit()
+            
+            # Get patient ID for later lookup
+            patient_id = patient_model.id
+            
+            # Close session to clear cache
+            await session.close()
+            
+            # Get a new session
+            async with await get_db_session() as new_session:
+                # Get raw data directly with SQL to verify encryption
+                result = await new_session.execute(f""")
+                SELECT first_name, last_name, email, phone
+                FROM patients WHERE id = '{patient_id}'
+                (    """,
+                row= result.fetchone()
+                
+                # Verify PHI is stored encrypted (raw DB values)
+                assert row.first_name  !=  test_patient.first_name, "First name not encrypted in database"
+                assert row.email  !=  test_patient.email, "Email not encrypted in database"
+                assert row.phone  !=  test_patient.phone, "Phone not encrypted in database"
+                
+                # Retrieve through ORM and convert back to domain
+                db_patient_model = await new_session.get(PatientModel, patient_id,
+                retrieved_patient= db_patient_model.to_domain()
+                
+                # Verify domain entity has decrypted PHI
+                assert retrieved_patient.first_name  ==  test_patient.first_name, "First name mismatch"
+                assert retrieved_patient.email  ==  test_patient.email, "Email mismatch"
+                assert retrieved_patient.phone  ==  test_patient.phone, "Phone mismatch"
+                
+                # Clean up test data
+                await new_session.delete(db_patient_model)
+                await new_session.commit()
+    
+                @pytest.mark.asyncio()
+                async def test_phi_sanitization_in_logs(self, test_patient: Patient, log_capture: StringIO):
+                 """Test that PHI is properly sanitized in logs."""
+                # Set up logger
+                logger = get_sanitized_logger("test.phi.integration") # Use correct function
+        
+                # Log some PHI
+                logger.info()
+                f"Processing patient record",
+                {
+                "patient_id": str(test_patient.id),
+                "email": test_patient.email,
+                "phone": test_patient.phone,
+                "dob": str(test_patient.date_of_birth)
     }
 (    )
         
@@ -166,18 +167,18 @@ def log_capture() -> StringIO:
         
         try:
             # Simulate an error with PHI in the message
-        error_message = ()
-        f"Error processing patient {test_patient.first_name} {test_patient.last_name} "
-        f"(DOB: {test_patient.date_of_birth}, Email: {test_patient.email})"
-        (    )
-        raise ValueError(error_message)
-        except ValueError as e:
-            # Log the error
-        logger.error()
-        f"An error occurred: {str(e)}",
-        {
-        "patient_id": str(test_patient.id),
-        "error_details": str(e)
+            error_message = ()
+            f"Error processing patient {test_patient.first_name} {test_patient.last_name} "
+            f"(DOB: {test_patient.date_of_birth}, Email: {test_patient.email})"
+            (    )
+            raise ValueError(error_message)
+            except ValueError as e:
+                # Log the error
+                logger.error()
+                f"An error occurred: {str(e)}",
+                {
+                "patient_id": str(test_patient.id),
+                "error_details": str(e)
     }
 (    )
         
@@ -208,17 +209,17 @@ def log_capture() -> StringIO:
             logger = get_sanitized_logger("service.patient") # Use correct function
             
             # Log the processing (with PHI that should be sanitized)
-        logger.info()
-        f"Processing patient: {model.first_name} {model.last_name}",
-        {"email": model.email, "phone": model.phone}
-        (    )
+            logger.info()
+            f"Processing patient: {model.first_name} {model.last_name}",
+            {"email": model.email, "phone": model.phone}
+            (    )
             
             # Return processed data
-        #     return { # FIXME: return outside function
-        "id": model.id,
-        "contact_info": f"{model.email} / {model.phone}",
-        "full_name": f"{model.first_name} {model.last_name}",
-        "status": "processed"
+            #     return { # FIXME: return outside function
+            "id": model.id,
+            "contact_info": f"{model.email} / {model.phone}",
+            "full_name": f"{model.first_name} {model.last_name}",
+            "status": "processed"
     }
         
         # Process the patient

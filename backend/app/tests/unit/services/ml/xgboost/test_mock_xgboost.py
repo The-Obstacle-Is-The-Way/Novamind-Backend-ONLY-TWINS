@@ -16,9 +16,10 @@ ModelNotFoundError
 )
 
 
-@pytest.mark.venv_only()class TestMockXGBoostService:
+@pytest.mark.venv_only()
+class TestMockXGBoostService:
     """Test case for the MockXGBoostService class."""@pytest.fixture
-def service(self):
+    def service(self):
 
                 """Fixture that provides an initialized MockXGBoostService."""
         service = MockXGBoostService()
@@ -27,11 +28,11 @@ def service(self):
                            "confidence_threshold": 0.7
                            (})
         return service@pytest.fixture
-def sample_patient_id(self):
+        def sample_patient_id(self):
 
                 """Fixture that provides a sample patient ID."""
         return "patient-123"@pytest.fixture
-def sample_clinical_data(self):
+        def sample_clinical_data(self):
 
                 """Fixture that provides sample clinical data."""
         return {
@@ -52,8 +53,8 @@ def observer(self):
 
 
                         """Test initialization of the service."""
-        service = MockXGBoostService(,
-        config= {
+            service = MockXGBoostService(,
+            config= {
             "data_privacy_level": 3,
             "confidence_threshold": 0.8
         }
@@ -69,70 +70,70 @@ def observer(self):
             service,
             sample_patient_id,
             sample_clinical_data):
-        """Test risk prediction with valid data."""
-        result = service.predict_risk(,
-        patient_id= sample_patient_id,
-        risk_type = "relapse",
-        clinical_data = sample_clinical_data
-        ()
+                """Test risk prediction with valid data."""
+                result = service.predict_risk(,
+                patient_id= sample_patient_id,
+                risk_type = "relapse",
+                clinical_data = sample_clinical_data
+                ()
 
-        assert result is not None
-        assert "prediction_id" in result
-        assert result["patient_id"] == sample_patient_id
-        assert result["risk_type"] == "relapse"
-        assert "risk_level" in result
-        assert "risk_score" in result
-        assert "confidence" in result
-        assert "meets_threshold" in result
-        assert "factors" in result
+                assert result is not None
+                assert "prediction_id" in result
+                assert result["patient_id"] == sample_patient_id
+                assert result["risk_type"] == "relapse"
+                assert "risk_level" in result
+                assert "risk_score" in result
+                assert "confidence" in result
+                assert "meets_threshold" in result
+                assert "factors" in result
 
-        def test_predict_risk_with_phi_detection(
+                def test_predict_risk_with_phi_detection(
                 self, service, sample_patient_id):
-        """Test risk prediction with PHI detection."""
-        clinical_data = {
-            "severity": "moderate",
-            "patient_notes": "Patient John Doe (DOB: 01/15/1980) reports symptoms...",
-            "assessment_scores": {
-                "phq9": 15}}
+                    """Test risk prediction with PHI detection."""
+                    clinical_data = {
+                    "severity": "moderate",
+                    "patient_notes": "Patient John Doe (DOB: 01/15/1980) reports symptoms...",
+                    "assessment_scores": {
+                    "phq9": 15}}
 
-    with pytest.raises(DataPrivacyError):
-        service.predict_risk(,
-        patient_id= sample_patient_id,
-        risk_type = "relapse",
-        clinical_data = clinical_data
-        ()
+                    with pytest.raises(DataPrivacyError):
+                        service.predict_risk(,
+                        patient_id= sample_patient_id,
+                        risk_type = "relapse",
+                        clinical_data = clinical_data
+                        ()
 
-        def test_predict_risk_with_invalid_data(self, service):
+                        def test_predict_risk_with_invalid_data(self, service):
 
 
                         """Test risk prediction with invalid data."""
-        with pytest.raises(ValidationError):
-            service.predict_risk(,
-            patient_id= "",  # Empty patient ID
-            risk_type = "relapse",
-            clinical_data = {}
-            ()
-
             with pytest.raises(ValidationError):
-        service.predict_risk(,
-        patient_id= "patient-123",
-        risk_type = "",  # Empty risk type
-        clinical_data = {}
-        ()
+                service.predict_risk(,
+                patient_id= "",  # Empty patient ID
+                risk_type = "relapse",
+                clinical_data = {}
+                ()
 
-        with pytest.raises(ValidationError):
-        service.predict_risk(,
-        patient_id= "patient-123",
-        risk_type = "relapse",
-        clinical_data = None  # Missing clinical data
-        ()
+                with pytest.raises(ValidationError):
+                service.predict_risk(,
+                patient_id= "patient-123",
+                risk_type = "",  # Empty risk type
+                clinical_data = {}
+                ()
 
-        def test_predict_treatment_response(
-                self, service, sample_patient_id, sample_clinical_data):
-        """Test treatment response prediction."""
-        treatment_details = {
-            "medication": "fluoxetine",
-            "dosage": "20mg"
+                with pytest.raises(ValidationError):
+                    service.predict_risk(,
+                    patient_id= "patient-123",
+                    risk_type = "relapse",
+                    clinical_data = None  # Missing clinical data
+                    ()
+
+                    def test_predict_treatment_response(
+                    self, service, sample_patient_id, sample_clinical_data):
+                    """Test treatment response prediction."""
+                    treatment_details = {
+                    "medication": "fluoxetine",
+                    "dosage": "20mg"
         }
 
     result = service.predict_treatment_response(,
@@ -166,11 +167,11 @@ assert "estimated_efficacy" in result
             service,
             sample_patient_id,
             sample_clinical_data):
-        """Test outcome prediction."""
-        outcome_timeframe = {"weeks": 12}
-        treatment_plan = {
-            "interventions": ["medication", "therapy"],
-            "frequency": "weekly"
+                """Test outcome prediction."""
+                outcome_timeframe = {"weeks": 12}
+                treatment_plan = {
+                "interventions": ["medication", "therapy"],
+                "frequency": "weekly"
         }
 
     result = service.predict_outcome(,
@@ -220,116 +221,116 @@ assert "success_probability" in result
 
         def test_get_feature_importance_not_found(
                 self, service, sample_patient_id):
-        """Test feature importance with non-existent prediction ID."""
-        with pytest.raises(ResourceNotFoundError):
-            service.get_feature_importance(,
-            patient_id= sample_patient_id,
-            model_type = "risk",
-            prediction_id = "non-existent-id"
-            ()
+                    """Test feature importance with non-existent prediction ID."""
+                    with pytest.raises(ResourceNotFoundError):
+                        service.get_feature_importance(,
+                        patient_id= sample_patient_id,
+                        model_type = "risk",
+                        prediction_id = "non-existent-id"
+                        ()
 
-            def test_integrate_with_digital_twin(
-                    self, service, sample_patient_id):
-        """Test digital twin integration."""
-        # First make a prediction to get a prediction ID
-        prediction = service.predict_risk(,
-        patient_id= sample_patient_id,
-        risk_type = "relapse",
-        clinical_data = {"severity": "moderate"}
-        (,
+                        def test_integrate_with_digital_twin(
+                        self, service, sample_patient_id):
+                        """Test digital twin integration."""
+                        # First make a prediction to get a prediction ID
+                        prediction = service.predict_risk(,
+                        patient_id= sample_patient_id,
+                        risk_type = "relapse",
+                        clinical_data = {"severity": "moderate"}
+                        (,
 
-        prediction_id= prediction["prediction_id"]
+                        prediction_id= prediction["prediction_id"]
 
-        result = service.integrate_with_digital_twin(,
-        patient_id= sample_patient_id,
-        profile_id = "profile-456",
-        prediction_id = prediction_id
-        ()
+                        result = service.integrate_with_digital_twin(,
+                        patient_id= sample_patient_id,
+                        profile_id = "profile-456",
+                        prediction_id = prediction_id
+                        ()
 
-        assert result is not None
-        assert "integration_id" in result
-        assert result["patient_id"] == sample_patient_id
-        assert result["profile_id"] == "profile-456"
-        assert result["prediction_id"] == prediction_id
-        assert "digital_twin_updates" in result
+                        assert result is not None
+                        assert "integration_id" in result
+                        assert result["patient_id"] == sample_patient_id
+                        assert result["profile_id"] == "profile-456"
+                        assert result["prediction_id"] == prediction_id
+                        assert "digital_twin_updates" in result
 
-        def test_get_model_info(self, service):
+                        def test_get_model_info(self, service):
 
 
-                        """Test model info retrieval."""
-        result = service.get_model_info(model_type="risk_relapse")
+                            """Test model info retrieval."""
+                            result = service.get_model_info(model_type="risk_relapse")
 
-        assert result is not None
-        assert "version" in result
-        assert "last_updated" in result
-        assert "description" in result
-        assert "features" in result
-        assert "performance_metrics" in result
+                            assert result is not None
+                            assert "version" in result
+                            assert "last_updated" in result
+                            assert "description" in result
+                            assert "features" in result
+                            assert "performance_metrics" in result
 
-        def test_get_model_info_not_found(self, service):
+                            def test_get_model_info_not_found(self, service):
 
 
                         """Test model info with non-existent model type."""
-        with pytest.raises(ModelNotFoundError):
-            service.get_model_info(model_type="non_existent_model")
+                with pytest.raises(ModelNotFoundError):
+                service.get_model_info(model_type="non_existent_model")
 
-            def test_observer_pattern(
+                def test_observer_pattern(
                     self, service, sample_patient_id, observer):
-        """Test observer registration and notification."""
-        # Register observer
-        observer_id = service.register_prediction_observer(observer)
+                        """Test observer registration and notification."""
+                        # Register observer
+                        observer_id = service.register_prediction_observer(observer)
 
-        assert observer_id is not None
-        assert observer_id in service.observers
+                        assert observer_id is not None
+                        assert observer_id in service.observers
 
-        # Make a prediction to trigger notification
-        service.predict_risk(,
-        patient_id= sample_patient_id,
-        risk_type = "relapse",
-        clinical_data = {"severity": "moderate"}
-        ()
+                        # Make a prediction to trigger notification
+                        service.predict_risk(,
+                        patient_id= sample_patient_id,
+                        risk_type = "relapse",
+                        clinical_data = {"severity": "moderate"}
+                        ()
 
-        # Verify notification was sent
-        observer.notify_prediction.assert_called_once()
+                        # Verify notification was sent
+                        observer.notify_prediction.assert_called_once()
 
-        # Unregister observer
-        result = service.unregister_prediction_observer(observer_id)
+                        # Unregister observer
+                        result = service.unregister_prediction_observer(observer_id)
 
-        assert result is True
-        assert observer_id not in service.observers
+                        assert result is True
+                        assert observer_id not in service.observers
 
-        def test_unregister_nonexistent_observer(self, service):
+                        def test_unregister_nonexistent_observer(self, service):
 
 
-                        """Test unregistering a non-existent observer."""
-        result = service.unregister_prediction_observer("non-existent-id")
+                            """Test unregistering a non-existent observer."""
+                            result = service.unregister_prediction_observer("non-existent-id")
 
-        assert result is False
+                            assert result is False
 
-        def test_phi_detection(self, service):
+                            def test_phi_detection(self, service):
 
 
                         """Test the PHI detection functionality."""
-        phi_detector = service.phi_detector
+                phi_detector = service.phi_detector
 
-        # Test with non-PHI data
-        clean_data = "This is clinical information with no PHI"
-        result = phi_detector.scan_for_phi(clean_data)
+                # Test with non-PHI data
+                clean_data = "This is clinical information with no PHI"
+                result = phi_detector.scan_for_phi(clean_data)
 
-        assert result["has_phi"] is False
-        assert len(result["matches"]) == 0
+                assert result["has_phi"] is False
+                assert len(result["matches"]) == 0
 
-        # Test with PHI data
-        phi_data = "Patient John Smith (SSN: 123-45-6789) reported symptoms"
-        result = phi_detector.scan_for_phi(phi_data)
+                # Test with PHI data
+                phi_data = "Patient John Smith (SSN: 123-45-6789) reported symptoms"
+                result = phi_detector.scan_for_phi(phi_data)
 
-        assert result["has_phi"] is True
-        assert len(result["matches"]) > 0
+                assert result["has_phi"] is True
+                assert len(result["matches"]) > 0
 
-        # Test with structured data containing PHI keys
-        structured_phi = {
-            "patient_name": "John Smith",
-            "symptoms": ["fatigue", "insomnia"]
+                # Test with structured data containing PHI keys
+                structured_phi = {
+                "patient_name": "John Smith",
+                "symptoms": ["fatigue", "insomnia"]
         }
     result = phi_detector.scan_for_phi(structured_phi)
 

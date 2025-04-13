@@ -21,10 +21,10 @@ def mock_encryption_key():
             """Mock encryption key for testing."""
     # Generate a valid Fernet key for testing
     return base64.urlsafe_b64encode(b"0" * 32)@pytest.fixture
-def patient_data():
+    def patient_data():
 
             """Sample patient data for testing."""
-    return {
+        return {
         "first_name": "John",
         "last_name": "Doe",
         "dob": "1980-01-01",
@@ -76,117 +76,117 @@ def patient_data():
             self._extra_data = encrypt_value(
                 json.dumps(kwargs.get("extra_data")))
             else:
-            self._extra_data = None
+                self._extra_data = None
 
-            @property
-            def first_name(self):
+                @property
+                def first_name(self):
 
                             """Get decrypted first name."""
-        return decrypt_value(self._first_name)
+                    return decrypt_value(self._first_name)
 
-        @first_name.setter
-        def first_name(self, value):
+                    @first_name.setter
+                    def first_name(self, value):
 
                         """Set encrypted first name."""
-        self._first_name = encrypt_value(value) if value else None
+                    self._first_name = encrypt_value(value) if value else None
 
-        @property
-        def last_name(self):
+                    @property
+                    def last_name(self):
 
                         """Get decrypted last name."""
-        return decrypt_value(self._last_name)
+                return decrypt_value(self._last_name)
 
-        @last_name.setter
-        def last_name(self, value):
+                @last_name.setter
+                def last_name(self, value):
 
                         """Set encrypted last name."""
-        self._last_name = encrypt_value(value) if value else None
+                self._last_name = encrypt_value(value) if value else None
 
-        @property
-        def dob(self):
+                @property
+                def dob(self):
 
                         """Get decrypted date of birth."""
-        return decrypt_value(self._dob)
+                return decrypt_value(self._dob)
 
-        @dob.setter
-        def dob(self, value):
+                @dob.setter
+                def dob(self, value):
 
                         """Set encrypted date of birth."""
-        self._dob = encrypt_value(value) if value else None
+                self._dob = encrypt_value(value) if value else None
 
-        @property
-        def email(self):
+                @property
+                def email(self):
 
                         """Get decrypted email."""
-        return decrypt_value(self._email)
+                return decrypt_value(self._email)
 
-        @email.setter
-        def email(self, value):
+                @email.setter
+                def email(self, value):
 
                         """Set encrypted email."""
-        self._email = encrypt_value(value) if value else None
+                self._email = encrypt_value(value) if value else None
 
-        @property
-        def phone(self):
+                @property
+                def phone(self):
 
                         """Get decrypted phone."""
-        return decrypt_value(self._phone)
+                return decrypt_value(self._phone)
 
-        @phone.setter
-        def phone(self, value):
+                @phone.setter
+                def phone(self, value):
 
                         """Set encrypted phone."""
-        self._phone = encrypt_value(value) if value else None
+                self._phone = encrypt_value(value) if value else None
 
-        @property
-        def address(self):
+                @property
+                def address(self):
 
                         """Get decrypted address."""
-        return decrypt_value(self._address)
+                return decrypt_value(self._address)
 
-        @address.setter
-        def address(self, value):
+                @address.setter
+                def address(self, value):
 
                         """Set encrypted address."""
-        self._address = encrypt_value(value) if value else None
+                self._address = encrypt_value(value) if value else None
 
-        @property
-        def medical_record_number(self):
+                @property
+                def medical_record_number(self):
 
                         """Get decrypted medical record number."""
-        return decrypt_value(self._medical_record_number)
+                return decrypt_value(self._medical_record_number)
 
-        @medical_record_number.setter
-        def medical_record_number(self, value):
+                @medical_record_number.setter
+                def medical_record_number(self, value):
 
                         """Set encrypted medical record number."""
-        self._medical_record_number = encrypt_value(value) if value else None
+                self._medical_record_number = encrypt_value(value) if value else None
 
-        @property
-        def extra_data(self):
+                @property
+                def extra_data(self):
 
                         """Get decrypted extra data."""
-        if self._extra_data:
-            import json
+                if self._extra_data:
+                import json
 
-            return json.loads(decrypt_value(self._extra_data))
-            return None
+                return json.loads(decrypt_value(self._extra_data))
+                return None
 
-            @extra_data.setter
-            def extra_data(self, value):
+                @extra_data.setter
+                def extra_data(self, value):
 
                             """Set encrypted extra data."""
-        if value:
-            import json
+                if value:
+                    import json
 
-            self._extra_data = encrypt_value(json.dumps(value))
-            else:
-            self._extra_data = Noneclass TestPatientEncryption:
-    """Tests for the Patient model encryption functionality."""
+                    self._extra_data = encrypt_value(json.dumps(value))
+                    else:
+                self._extra_data = Noneclass TestPatientEncryption:
+                    """Tests for the Patient model encryption functionality."""
 
-    @patch("app.infrastructure.security.encryption.get_encryption_key")
-    def test_patient_initialization(
-        self, mock_get_key, mock_encryption_key, patient_data
+                    @patch("app.infrastructure.security.encryption.get_encryption_key")
+                    def test_patient_initialization(
+                    self, mock_get_key, mock_encryption_key, patient_data
     ):
         """Test that patient fields are encrypted during initialization."""
         # Set up mock encryption key
@@ -219,55 +219,55 @@ def patient_data():
         def test_patient_property_updates(
             self, mock_get_key, mock_encryption_key, patient_data
         ):
-        """Test that updating patient properties properly encrypts new values."""
-        # Set up mock encryption key
-        mock_get_key.return_value = mock_encryption_key
+            """Test that updating patient properties properly encrypts new values."""
+            # Set up mock encryption key
+            mock_get_key.return_value = mock_encryption_key
 
-        # Create patient
-        patient = Patient(**patient_data)
+            # Create patient
+            patient = Patient(**patient_data)
 
-        # Update properties
-        patient.first_name = "Jane"
-        patient.last_name = "Smith"
-        patient.email = "jane.smith@example.com"
+            # Update properties
+            patient.first_name = "Jane"
+            patient.last_name = "Smith"
+            patient.email = "jane.smith@example.com"
 
-        # Check that new values are encrypted in storage
-        assert patient._first_name != "Jane"
-        assert patient._last_name != "Smith"
-        assert patient._email != "jane.smith@example.com"
+            # Check that new values are encrypted in storage
+            assert patient._first_name != "Jane"
+            assert patient._last_name != "Smith"
+            assert patient._email != "jane.smith@example.com"
 
-        # Check that accessing properties returns decrypted values
-        assert patient.first_name == "Jane"
-        assert patient.last_name == "Smith"
-        assert patient.email == "jane.smith@example.com"
+            # Check that accessing properties returns decrypted values
+            assert patient.first_name == "Jane"
+            assert patient.last_name == "Smith"
+            assert patient.email == "jane.smith@example.com"
 
-        @patch("app.infrastructure.security.encryption.get_encryption_key")
-        def test_patient_extra_data(
+            @patch("app.infrastructure.security.encryption.get_encryption_key")
+            def test_patient_extra_data(
                 self,
                 mock_get_key,
                 mock_encryption_key,
                 patient_data):
-        """Test encryption and decryption of extra_data JSON."""
-        # Set up mock encryption key
-        mock_get_key.return_value = mock_encryption_key
+                    """Test encryption and decryption of extra_data JSON."""
+                    # Set up mock encryption key
+                    mock_get_key.return_value = mock_encryption_key
 
-        # Create patient
-        patient = Patient(**patient_data)
+                    # Create patient
+                    patient = Patient(**patient_data)
 
-        # Check that extra_data is encrypted in storage
-        assert patient._extra_data != patient_data["extra_data"]
+                    # Check that extra_data is encrypted in storage
+                    assert patient._extra_data != patient_data["extra_data"]
 
-        # Check that accessing extra_data returns decrypted JSON
-        assert patient.extra_data == patient_data["extra_data"]
-        assert patient.extra_data["insurance"] == "Blue Cross"
-        assert patient.extra_data["emergency_contact"] == "Jane Doe"
-        assert patient.extra_data["allergies"] == ["Penicillin"]
+                    # Check that accessing extra_data returns decrypted JSON
+                    assert patient.extra_data == patient_data["extra_data"]
+                    assert patient.extra_data["insurance"] == "Blue Cross"
+                    assert patient.extra_data["emergency_contact"] == "Jane Doe"
+                    assert patient.extra_data["allergies"] == ["Penicillin"]
 
-        # Update extra_data
-        new_extra_data = {
-            "insurance": "Aetna",
-            "emergency_contact": "John Smith",
-            "allergies": ["Sulfa", "Latex"],
+                    # Update extra_data
+                    new_extra_data = {
+                    "insurance": "Aetna",
+                    "emergency_contact": "John Smith",
+                    "allergies": ["Sulfa", "Latex"],
         }
         patient.extra_data = new_extra_data
 
@@ -323,16 +323,16 @@ def patient_data():
         @patch("app.infrastructure.security.encryption.get_encryption_key")
         def test_encryption_error_handling(
                 self, mock_get_key, mock_encryption_key):
-        """Test encryption error handling."""
-        # Set up mock encryption key
-        mock_get_key.return_value = mock_encryption_key
+                    """Test encryption error handling."""
+                    # Set up mock encryption key
+                    mock_get_key.return_value = mock_encryption_key
 
-        # Create patient
-        patient = Patient(first_name="Test", last_name="Patient")
+                    # Create patient
+                    patient = Patient(first_name="Test", last_name="Patient")
 
-        # Modify _first_name to be invalid encrypted data
-        patient._first_name = "invalid_encrypted_data"
+                    # Modify _first_name to be invalid encrypted data
+                    patient._first_name = "invalid_encrypted_data"
 
-        # Test that the property gracefully handles decryption failures
-        # by returning None instead of raising an exception
-        assert patient.first_name is None
+                    # Test that the property gracefully handles decryption failures
+                    # by returning None instead of raising an exception
+                    assert patient.first_name is None

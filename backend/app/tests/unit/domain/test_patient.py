@@ -20,11 +20,11 @@ def mock_encryption_service():
     mock.encrypt.side_effect = lambda x: f"encrypted_{x}"
     mock.decrypt.side_effect = lambda x: x.replace("encrypted_", "")
     return mock@pytest.fixture
-def valid_patient_data(mock_encryption_service):
+    def valid_patient_data(mock_encryption_service):
 
             """Create valid patient test data."""
 
-    return {
+        return {
         "id": UUID("12345678-1234-5678-1234-567812345678"),
         "first_name": "John",
         "last_name": "Doe",
@@ -79,11 +79,11 @@ def test_create_patient(valid_patient_data, mock_encryption_service):
 
 
                 """Test patient update."""
-    # Create initial patient
-    patient = Patient(**valid_patient_data)
+        # Create initial patient
+        patient = Patient(**valid_patient_data)
 
-    # Update patient
-    patient.update(
+        # Update patient
+        patient.update(
         first_name="Jane",
         last_name="Smith",
         contact_info=ContactInfo(

@@ -14,7 +14,7 @@ app_dir = Path(__file__).parent.parent
 if str(app_dir) not in sys.path:
     sys.path.insert(0, str(app_dir))
 
-# Try to import our patching utility
+    # Try to import our patching utility
 try:
     from app.tests.helpers.patch_imports import patch_imports
 except ImportError:
@@ -48,7 +48,6 @@ def pytest_configure(config):
         pass
 
 
-# Register custom markers
 def pytest_sessionstart(session):
     """Set up the pytest session."""
     # Define custom markers
@@ -65,6 +64,7 @@ def pytest_sessionstart(session):
     config.addinivalue_line("markers", "api: Mark test as API test")
 
     # Define fixtures that can be shared across tests
+
 
 @pytest.fixture(scope="session")
 def test_environment():

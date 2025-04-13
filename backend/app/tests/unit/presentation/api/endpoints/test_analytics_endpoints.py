@@ -88,15 +88,15 @@ def mock_cache_service():
     mock.increment = AsyncMock(return_value=1)
     mock.expire = AsyncMock(return_value=True)
     return mock@pytest.fixture
-def app(mock_analytics_service, mock_cache_service):
+    def app(mock_analytics_service, mock_cache_service):
 
             """Create a FastAPI app with the analytics router for testing."""
-    app_instance = FastAPI()
+        app_instance = FastAPI()
 
-    # Override dependencies
-    app_instance.dependency_overrides[get_analytics_service] = lambda: mock_analytics_service
-    # Assuming the cache dependency is named get_cache_service
-    try:
+        # Override dependencies
+        app_instance.dependency_overrides[get_analytics_service] = lambda: mock_analytics_service
+        # Assuming the cache dependency is named get_cache_service
+        try:
         from app.infrastructure.cache.redis_cache import get_cache_service
         app_instance.dependency_overrides[get_cache_service] = lambda: mock_cache_service
         except ImportError:
@@ -105,84 +105,84 @@ def app(mock_analytics_service, mock_cache_service):
             # this override
             pass
 
-        # Include the router
-        app_instance.include_router(router)
+            # Include the router
+            app_instance.include_router(router)
 
-        return app_instance@pytest.fixture
-def client(app):
+            return app_instance@pytest.fixture
+            def client(app):
 
-            """Create a TestClient for the app."""
+                """Create a TestClient for the app."""
 
-    return TestClient(app)@pytest.fixture
-def mock_background_tasks():
+                return TestClient(app)@pytest.fixture
+                def mock_background_tasks():
 
             """Create a mock background tasks."""
-    mock = MagicMock(spec=BackgroundTasks)
-    mock.add_task = MagicMock()
-    return mock@pytest.fixture
-def mock_user():
+        mock = MagicMock(spec=BackgroundTasks)
+        mock.add_task = MagicMock()
+        return mock@pytest.fixture
+        def mock_user():
 
             """Create a mock user for testing."""
-    # Assuming user object has an 'id' attribute
-    user = MagicMock()
-    user.id = "test-user-123"  # Use string ID for consistency if needed
-    user.email = "test@example.com"
-    user.role = "provider"  # Assuming role attribute exists
-    return user
+        # Assuming user object has an 'id' attribute
+        user = MagicMock()
+        user.id = "test-user-123"  # Use string ID for consistency if needed
+        user.email = "test@example.com"
+        user.role = "provider"  # Assuming role attribute exists
+        return user
 
-    # Apply overrides automatically for all tests in module
-    @pytest.fixture(autouse=True)
-    def override_dependencies_auto(
+        # Apply overrides automatically for all tests in module
+        @pytest.fixture(autouse=True)
+        def override_dependencies_auto(
             app,
             mock_analytics_service,
             mock_cache_service,
             mock_user):
-        """Override dependencies for the FastAPI app."""
-        app.dependency_overrides[get_analytics_service] = lambda: mock_analytics_service
-        try:
-            from app.infrastructure.cache.redis_cache import get_cache_service
-            app.dependency_overrides[get_cache_service] = lambda: mock_cache_service
-            except ImportError:
-            pass  # Ignore if not found
+                """Override dependencies for the FastAPI app."""
+                app.dependency_overrides[get_analytics_service] = lambda: mock_analytics_service
+                try:
+                    from app.infrastructure.cache.redis_cache import get_cache_service
+                    app.dependency_overrides[get_cache_service] = lambda: mock_cache_service
+                    except ImportError:
+                pass  # Ignore if not found
 
-            # Override auth dependencies (assuming these exist)
-            try:
-            from app.presentation.api.dependencies.auth import get_current_user as auth_get_user
-            app.dependency_overrides[auth_get_user] = lambda: mock_user
-            except ImportError:
-            print("Warning: get_current_user dependency not found for override.")
-            pass  # Ignore if auth dependency doesn't exist
+                # Override auth dependencies (assuming these exist)
+                try:
+                    from app.presentation.api.dependencies.auth import get_current_user as auth_get_user
+                    app.dependency_overrides[auth_get_user] = lambda: mock_user
+                    except ImportError:
+                    print("Warning: get_current_user dependency not found for override.")
+                    pass  # Ignore if auth dependency doesn't exist
 
-            # Override rate limiter if needed (example)
-            try:
-            from app.presentation.api.dependencies.rate_limiter import RateLimitDependency
-            app.dependency_overrides[RateLimitDependency] = lambda *args, **kwargs: lambda: None
-            except ImportError:
-            pass
+                    # Override rate limiter if needed (example)
+                    try:
+                    from app.presentation.api.dependencies.rate_limiter import RateLimitDependency
+                    app.dependency_overrides[RateLimitDependency] = lambda *args, **kwargs: lambda: None
+                    except ImportError:
+                    pass
 
-            yield
+                    yield
 
-            app.dependency_overrides = {}
+                    app.dependency_overrides = {}
 
-            @pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestAnalyticsEndpoints:
-    """Tests for analytics endpoints."""
+                    @pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestAnalyticsEndpoints:
+                    """Tests for analytics endpoints."""
 
-    @pytest.mark.asyncio
-    async def test_record_analytics_event(
-            self,
-            client,
-            mock_cache_service,
-            mock_background_tasks,
-            mock_user):
-        """Test the record_analytics_event endpoint."""
-        # Arrange
-        event_data = {
-            "event_type": "page_view",
-            "timestamp": datetime.now(UTC).isoformat(),
-            "session_id": "test-session",
-            "user_id": None,  # Should be populated from authenticated user
-            "client_info": {"browser": "Chrome", "os": "Windows"},
-            "data": {"page": "/dashboard", "referrer": "/login"}
+                    @pytest.mark.asyncio
+                    async def test_record_analytics_event(
+                    self,
+                    client,
+                    mock_cache_service,
+                    mock_background_tasks,
+                    mock_user):
+                    """Test the record_analytics_event endpoint."""
+                    # Arrange
+                    event_data = {
+                    "event_type": "page_view",
+                    "timestamp": datetime.now(UTC).isoformat(),
+                    "session_id": "test-session",
+                    "user_id": None,  # Should be populated from authenticated user
+                    "client_info": {"browser": "Chrome", "os": "Windows"},
+                    "data": {"page": "/dashboard", "referrer": "/login"}
         }
 
         # Mock phi detector to avoid real PHI detection logic
@@ -196,37 +196,37 @@ def mock_user():
         # Patch BackgroundTasks directly where it's used in the endpoint
         # function
         with patch('app.presentation.api.endpoints.analytics_endpoints.BackgroundTasks', return_value=mock_background_tasks):
-        response = client.post("/analytics/events", json=event_data)
+            response = client.post("/analytics/events", json=event_data)
 
-        # Assert
-        assert response.status_code == status.HTTP_202_ACCEPTED
-        response_data = response.json()
-        assert response_data["status"] == "success"
-        assert "event_id" in response_data["data"]
+            # Assert
+            assert response.status_code == status.HTTP_202_ACCEPTED
+            response_data = response.json()
+            assert response_data["status"] == "success"
+            assert "event_id" in response_data["data"]
 
-        # Verify the event was enhanced with user info
-        mock_background_tasks.add_task.assert_called_once()
-        args, _ = mock_background_tasks.add_task.call_args
-        process_func, event, user_id = args  # Unpack arguments passed to add_task
-        assert isinstance(event, AnalyticsEvent)  # Check type
-        assert event.user_id == mock_user.id  # Check user ID from mock
+            # Verify the event was enhanced with user info
+            mock_background_tasks.add_task.assert_called_once()
+            args, _ = mock_background_tasks.add_task.call_args
+            process_func, event, user_id = args  # Unpack arguments passed to add_task
+            assert isinstance(event, AnalyticsEvent)  # Check type
+            assert event.user_id == mock_user.id  # Check user ID from mock
 
-        # Verify cache was updated
-        mock_cache_service.increment.assert_called_once()
-        mock_cache_service.expire.assert_called_once()
+            # Verify cache was updated
+            mock_cache_service.increment.assert_called_once()
+            mock_cache_service.expire.assert_called_once()
 
-        @pytest.mark.asyncio
-        async def test_record_analytics_batch(
+            @pytest.mark.asyncio
+            async def test_record_analytics_batch(
                 self,
                 client,
                 mock_cache_service,
                 mock_background_tasks,
                 mock_user):
-        """Test the record_analytics_batch endpoint."""
-        # Arrange
-        batch_data = {
-            "events": [
-                {
+                    """Test the record_analytics_batch endpoint."""
+                    # Arrange
+                    batch_data = {
+                    "events": [
+                    {
                     "event_type": "page_view",
                     "timestamp": datetime.now(UTC).isoformat(),
                     "session_id": "test-session",
@@ -234,7 +234,7 @@ def mock_user():
                     "client_info": {"browser": "Chrome", "os": "Windows"},
                     "data": {"page": "/dashboard", "referrer": "/login"}
                 },
-                {
+                    {
                     "event_type": "button_click",
                     "timestamp": datetime.now(UTC).isoformat(),
                     "session_id": "test-session",
@@ -253,44 +253,44 @@ def mock_user():
 
         # Act
         with patch('app.presentation.api.endpoints.analytics_endpoints.BackgroundTasks', return_value=mock_background_tasks):
-        response = client.post("/analytics/events/batch", json=batch_data)
+            response = client.post("/analytics/events/batch", json=batch_data)
 
-        # Assert
-        assert response.status_code == status.HTTP_202_ACCEPTED
-        response_data = response.json()
-        assert response_data["status"] == "success"
-        assert response_data["data"]["batch_size"] == 2
+            # Assert
+            assert response.status_code == status.HTTP_202_ACCEPTED
+            response_data = response.json()
+            assert response_data["status"] == "success"
+            assert response_data["data"]["batch_size"] == 2
 
-        # Verify background task was called with the batch
-        mock_background_tasks.add_task.assert_called_once()
-        args, _ = mock_background_tasks.add_task.call_args
-        process_func, events, user_id = args  # Unpack arguments
+            # Verify background task was called with the batch
+            mock_background_tasks.add_task.assert_called_once()
+            args, _ = mock_background_tasks.add_task.call_args
+            process_func, events, user_id = args  # Unpack arguments
 
-        # Verify events were enhanced with user info
-        assert isinstance(events, list)
-        for event in events:
-        assert isinstance(event, AnalyticsEvent)
-        assert event.user_id == mock_user.id
+            # Verify events were enhanced with user info
+            assert isinstance(events, list)
+            for event in events:
+                assert isinstance(event, AnalyticsEvent)
+                assert event.user_id == mock_user.id
 
-        # Verify cache was updated (called twice for 2 events)
-        assert mock_cache_service.increment.call_count == 2
-        # Expire called once for the batch key
-        assert mock_cache_service.expire.call_count == 1
+                # Verify cache was updated (called twice for 2 events)
+                assert mock_cache_service.increment.call_count == 2
+                # Expire called once for the batch key
+                assert mock_cache_service.expire.call_count == 1
 
-        @pytest.mark.asyncio
-        async def test_phi_detection_in_analytics_event(
+                @pytest.mark.asyncio
+                async def test_phi_detection_in_analytics_event(
                 self, client, mock_cache_service, mock_background_tasks, mock_user):
-        """Test PHI detection in analytics events."""
-        # Arrange
-        event_data = {
-            "event_type": "form_submit",
-            "timestamp": datetime.now(UTC).isoformat(),
-            "session_id": "test-session",
-            "user_id": None,
-            "client_info": {"browser": "Chrome", "os": "Windows"},
-            "data": {
-                "form_id": "patient_info",
-                "fields": {
+                    """Test PHI detection in analytics events."""
+                    # Arrange
+                    event_data = {
+                    "event_type": "form_submit",
+                    "timestamp": datetime.now(UTC).isoformat(),
+                    "session_id": "test-session",
+                    "user_id": None,
+                    "client_info": {"browser": "Chrome", "os": "Windows"},
+                    "data": {
+                    "form_id": "patient_info",
+                    "fields": {
                     "name": "John Doe",  # This should be detected as PHI
                     "age": 45
                 }
@@ -312,46 +312,46 @@ def mock_user():
 
         # Act
         with patch('app.presentation.api.endpoints.analytics_endpoints.BackgroundTasks', return_value=mock_background_tasks):
-        response = client.post("/analytics/events", json=event_data)
+            response = client.post("/analytics/events", json=event_data)
 
-        # Assert
-        assert response.status_code == status.HTTP_202_ACCEPTED
+            # Assert
+            assert response.status_code == status.HTTP_202_ACCEPTED
 
-        # Verify PHI detection was called
-        mock_instance.contains_phi.assert_called_once()
+            # Verify PHI detection was called
+            mock_instance.contains_phi.assert_called_once()
 
-        # Verify redaction was called because PHI was detected
-        mock_instance.redact_phi.assert_called_once()
+            # Verify redaction was called because PHI was detected
+            mock_instance.redact_phi.assert_called_once()
 
-        # Check that the background task received the redacted data
-        mock_background_tasks.add_task.assert_called_once()
-        args, _ = mock_background_tasks.add_task.call_args
-        _, event, _ = args
-        # Data should now be the redacted JSON string
-        assert isinstance(event.data, str)
-        assert "John Doe" not in event.data
-        assert "[REDACTED]" in event.data
+            # Check that the background task received the redacted data
+            mock_background_tasks.add_task.assert_called_once()
+            args, _ = mock_background_tasks.add_task.call_args
+            _, event, _ = args
+            # Data should now be the redacted JSON string
+            assert isinstance(event.data, str)
+            assert "John Doe" not in event.data
+            assert "[REDACTED]" in event.data
 
-        @pytest.mark.asyncio
-        async def test_get_analytics_dashboard(
+            @pytest.mark.asyncio
+            async def test_get_analytics_dashboard(
                 self, client, mock_cache_service, mock_user):
-        """Test the get_analytics_dashboard endpoint."""
-        # Arrange
-        # Mock dashboard data that would be cached
-        mock_dashboard_data = {
-            "event_count": 1250,
-            "unique_users": 120,
-            "top_events": [
-                {"event_type": "page_view", "count": 800},
-                {"event_type": "button_click", "count": 350},
-                {"event_type": "form_submit", "count": 100}
-            ],
-            "hourly_breakdown": [
-                {"hour": 0, "count": 20},
-                {"hour": 1, "count": 15},
-                # ... (add more hours if needed)
-                {"hour": 23, "count": 45}
-            ]
+                    """Test the get_analytics_dashboard endpoint."""
+                    # Arrange
+                    # Mock dashboard data that would be cached
+                    mock_dashboard_data = {
+                    "event_count": 1250,
+                    "unique_users": 120,
+                    "top_events": [
+                    {"event_type": "page_view", "count": 800},
+                    {"event_type": "button_click", "count": 350},
+                    {"event_type": "form_submit", "count": 100}
+                    ],
+                    "hourly_breakdown": [
+                    {"hour": 0, "count": 20},
+                    {"hour": 1, "count": 15},
+                    # ... (add more hours if needed)
+                    {"hour": 23, "count": 45}
+                    ]
         }
 
         # Test cached response

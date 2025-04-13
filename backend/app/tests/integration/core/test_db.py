@@ -25,79 +25,80 @@ async def test_engine_creation():
     if engine.dialect.name == "sqlite":
         assert "sqlite+aiosqlite" in str(engine.url)
         elif engine.dialect.name == "postgresql":
-        assert "postgresql+asyncpg" in str(engine.url)
+            assert "postgresql+asyncpg" in str(engine.url)
 
-        @pytest.mark.asyncio()
-        @pytest.mark.db_required()
-        async def test_init_db():
-             """Test database initialization."""
-    # Clear any existing tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+            @pytest.mark.asyncio()
+            @pytest.mark.db_required()
+            async def test_init_db():
+                """Test database initialization."""
+                # Clear any existing tables
+                async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.drop_all)
 
-        # Run initialization
-        await init_db()
+                # Run initialization
+                await init_db()
 
-        # Verify tables were created (check that metadata is bound)
-        assert Base.metadata.is_bound()
+                # Verify tables were created (check that metadata is bound)
+                assert Base.metadata.is_bound()
 
-        # Count tables (should be > 0 if initialization worked,
-        table_count= len(Base.metadata.tables)
-        assert table_count > 0
+                # Count tables (should be > 0 if initialization worked,
+                table_count= len(Base.metadata.tables)
+                assert table_count > 0
 
-        @pytest.mark.asyncio()
-        @pytest.mark.db_required()
-        async def test_get_session():
+                @pytest.mark.asyncio()
+                @pytest.mark.db_required()
+                async def test_get_session():
              """Test that get_session returns valid sessions."""
-    # Test that the session dependency yields an async session
-    session_generator = get_session(,
-    session= await anext(session_generator)
+            # Test that the session dependency yields an async session
+            session_generator = get_session(,
+            session= await anext(session_generator)
 
-    try:
-        # Verify session properties
-        assert isinstance(session, AsyncSession)
-        assert not session.expired_transaction
-
-        # Simple query to check session works
-        # Just ping the database with a simple SQL expression
-        result = await session.execute("SELECT 1",
-        row= result.scalar()
-        assert row == 1
-        finally:
-            # Clean up
-        try:
-            await session.close()
-            except Exception:
-            pass
-
-            # Exhaust the generator
             try:
-            await anext(session_generator, None)
-            except StopAsyncIteration:
-            passclass TestDatabaseBase:
-    """Test base class for database-related tests."""
+                # Verify session properties
+                assert isinstance(session, AsyncSession)
+                assert not session.expired_transaction
 
-    @pytest.mark.asyncio()
-    @pytest.mark.db_required()
-    async def test_base_class_table_creation(self):
-                 """Test that Base can create tables."""
-        # Model definition moved outside the test method
-        # Create just this table
-        async with engine.begin() as conn:
-        await conn.run_sync(lambda schema: TestModel.__table__.create(schema, checkfirst=True))
+                # Simple query to check session works
+                # Just ping the database with a simple SQL expression
+                result = await session.execute("SELECT 1",
+                row= result.scalar()
+                assert row == 1
+                finally:
+            # Clean up
+            try:
+                await session.close()
+                except Exception:
+                pass
 
-        # Verify the table exists by querying it
-        async with AsyncSession(engine) as session:
-        result = await session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='test_models_temp'",
-        table_exists= result.scalar() is not None
-        assert table_exists
+                # Exhaust the generator
+                try:
+                    await anext(session_generator, None)
+                    except StopAsyncIteration:
+                    passclass TestDatabaseBase:
+                    """Test base class for database-related tests."""
 
-        # Clean up - drop the table
-        async with engine.begin() as conn:
-        await conn.run_sync(lambda schema: TestModel.__table__.drop(schema, checkfirst=True))
+                    @pytest.mark.asyncio()
+                    @pytest.mark.db_required()
+                    async def test_base_class_table_creation(self):
+                    """Test that Base can create tables."""
+                    # Model definition moved outside the test method
+                    # Create just this table
+                    async with engine.begin() as conn:
+            await conn.run_sync(lambda schema: TestModel.__table__.create(schema, checkfirst=True))
 
-        # Define TestModel at module level
-        from sqlalchemy import Column, String, Integer  # Move import here tooclass TestModel(Base):
-    __tablename__ = "test_models_temp"
-    id = Column(Integer, primary_key=True,
-    name= Column(String, nullable=False)
+            # Verify the table exists by querying it
+            async with AsyncSession(engine) as session:
+                result = await session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='test_models_temp'",
+                table_exists= result.scalar() is not None
+                assert table_exists
+
+                # Clean up - drop the table
+                async with engine.begin() as conn:
+                await conn.run_sync(lambda schema: TestModel.__table__.drop(schema, checkfirst=True))
+
+                # Define TestModel at module level
+                from sqlalchemy import Column, String, Integer  # Move import here too
+                class TestModel(Base):
+            __tablename__ = "test_models_temp"
+            id = Column(Integer, primary_key=True,
+            name= Column(String, nullable=False)
