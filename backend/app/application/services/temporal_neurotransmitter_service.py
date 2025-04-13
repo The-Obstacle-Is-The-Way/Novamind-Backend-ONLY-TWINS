@@ -1,7 +1,8 @@
 """
 Application service for temporal neurotransmitter analysis.
 """
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, 
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Optional, Tuple, Any
 from uuid import UUID
 import logging

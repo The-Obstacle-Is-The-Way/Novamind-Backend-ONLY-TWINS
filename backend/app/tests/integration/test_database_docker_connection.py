@@ -10,7 +10,8 @@ import os
 import pytest
 import logging
 from typing import Dict, Any, Optional, Tuple, List
-from datetime import datetime, UTC
+from datetime import datetime
+from app.domain.utils.datetime_utils import UTC
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncConnection
 from sqlalchemy import text, MetaData, Table, Column, Integer, String, DateTime, insert, select
 from sqlalchemy.exc import SQLAlchemyError

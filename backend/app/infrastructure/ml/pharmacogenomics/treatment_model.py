@@ -9,7 +9,8 @@ the AI Models Core Implementation documentation and adhering to HIPAA compliance
 
 import logging
 import os
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 

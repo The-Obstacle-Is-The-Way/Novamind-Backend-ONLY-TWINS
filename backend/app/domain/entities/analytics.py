@@ -5,7 +5,8 @@ This module defines the core domain entities related to analytics
 within the Novamind Digital Twin platform.
 """
 
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from typing import Any
 
 

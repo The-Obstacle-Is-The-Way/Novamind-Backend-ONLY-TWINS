@@ -6,7 +6,8 @@ These tests verify that the repository correctly interacts with the database
 and properly maps between domain entities and database models.
 """
 
-from datetime import datetime, timedelta, UTC  # Added UTC
+from datetime import datetime, timedelta,   # Added UTC
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 from typing import List, Dict, Any, Optional  # Added Optional

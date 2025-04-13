@@ -9,7 +9,8 @@ import base64
 import json
 import time
 import uuid
-from datetime import datetime, UTC  # Use UTC directly
+from datetime import datetime,   # Use UTC directly
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import MagicMock, patch, AsyncMock  # Added AsyncMock
 from typing import Dict, Any, List, Optional  # Added Optional
 

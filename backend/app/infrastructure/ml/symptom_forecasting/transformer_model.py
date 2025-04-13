@@ -7,7 +7,8 @@ for psychiatric symptom forecasting, following the architecture described in
 the AI Models Core Implementation documentation.
 """
 
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np

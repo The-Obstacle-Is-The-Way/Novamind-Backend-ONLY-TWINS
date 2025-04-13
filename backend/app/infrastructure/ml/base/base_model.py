@@ -9,7 +9,8 @@ HIPAA compliance across all ML services.
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 

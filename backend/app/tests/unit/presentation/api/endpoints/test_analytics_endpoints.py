@@ -10,7 +10,8 @@ and process in a HIPAA-compliant manner.
 from app.domain.repositories.base_repository import BaseRepository
 import json
 import pytest
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 from typing import List, Dict, Any, Optional  # Added Optional

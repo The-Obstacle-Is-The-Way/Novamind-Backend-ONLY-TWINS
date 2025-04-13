@@ -8,7 +8,8 @@ analytics data for dashboards and reporting.
 
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, , UTC, timedelta
+from app.domain.utils.datetime_utils import UTC
 
 from app.domain.entities.analytics import AnalyticsAggregate
 from app.application.use_cases.analytics.retrieve_aggregated_analytics import RetrieveAggregatedAnalyticsUseCase

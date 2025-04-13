@@ -6,7 +6,8 @@ This module contains the use case for processing individual analytics events
 in real-time as they are received from the frontend or other sources.
 """
 
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, Any, Optional
 
 from app.core.utils.logging import get_logger

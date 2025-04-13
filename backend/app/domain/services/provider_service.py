@@ -5,7 +5,8 @@ This module contains the ProviderService, which encapsulates complex business lo
 related to provider management in the concierge psychiatry practice.
 """
 
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from uuid import UUID
 
 from app.domain.entities.provider import (

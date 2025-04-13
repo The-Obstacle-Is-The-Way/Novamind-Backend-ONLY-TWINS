@@ -8,7 +8,8 @@ provide consistent behavior for testing purposes.
 """
 
 import pytest
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, Any, List
 import json
 

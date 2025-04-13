@@ -8,7 +8,8 @@ coverage across all neurotransmitters and brain regions.
 import asyncio
 import logging
 import pytest
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4

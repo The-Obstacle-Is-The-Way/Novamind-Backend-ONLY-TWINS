@@ -4,7 +4,8 @@ SQLAlchemy models for temporal sequence persistence.
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime, UTC
+from datetime import datetime, 
+from app.domain.utils.datetime_utils import UTC
 from typing import List
 from app.infrastructure.persistence.sqlalchemy.types import JSONEncodedDict, StringListDecorator, FloatListDecorator
 

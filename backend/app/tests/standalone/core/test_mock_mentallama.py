@@ -8,7 +8,8 @@ and all core psychiatry analysis features.
 """
 
 import pytest
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, Any, List
 
 from app.core.exceptions import ()

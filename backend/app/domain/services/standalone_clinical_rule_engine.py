@@ -5,7 +5,8 @@ Used for standalone tests without database dependencies.
 """
 
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from typing import Any
 from uuid import UUID
 

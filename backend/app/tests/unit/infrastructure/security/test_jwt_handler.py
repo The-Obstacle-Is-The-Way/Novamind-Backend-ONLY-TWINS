@@ -8,7 +8,8 @@ meet HIPAA security requirements.
 
 import pytest
 import time
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, , UTC, timedelta
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import patch, MagicMock
 
 from jose import jwt, JWTError

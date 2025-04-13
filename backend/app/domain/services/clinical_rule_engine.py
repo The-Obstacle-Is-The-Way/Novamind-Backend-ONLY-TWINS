@@ -6,7 +6,8 @@ clinical rules for biometric data. It enables psychiatrists to create custom
 alert thresholds for their patients.
 """
 
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from typing import Any
 from uuid import UUID
 

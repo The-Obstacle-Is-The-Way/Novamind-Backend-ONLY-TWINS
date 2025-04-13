@@ -6,7 +6,8 @@ to represent and simulate a patient's psychiatric state.
 """
 import unittest
 import pytest
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, , UTC, timedelta
+from app.domain.utils.datetime_utils import UTC
 from uuid import UUID, uuid4
 from typing import Dict, List, Any
 

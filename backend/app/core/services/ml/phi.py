@@ -8,7 +8,8 @@ Protected Health Information (PHI) to ensure HIPAA compliance.
 
 import json
 import re
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Pattern, Set, Tuple, Union
 
 from app.core.exceptions import (

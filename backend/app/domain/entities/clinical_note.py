@@ -6,7 +6,8 @@ representing clinical documentation for patient care in the concierge psychiatry
 """
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from enum import Enum, auto
 from uuid import UUID, uuid4
 

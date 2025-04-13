@@ -10,7 +10,8 @@ import pytest
 import jwt
 import time
 from unittest.mock import patch, MagicMock
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, , UTC, timedelta
+from app.domain.utils.datetime_utils import UTC
 import json
 
 # Import JWT service or mock it if not available

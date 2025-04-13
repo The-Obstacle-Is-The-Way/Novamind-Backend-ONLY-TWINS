@@ -3,7 +3,8 @@ Tests for the SQL Alchemy implementation of the temporal sequence repository.
 """
 from app.infrastructure.repositories.temporal_sequence_repository import ()
 import pytest
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 

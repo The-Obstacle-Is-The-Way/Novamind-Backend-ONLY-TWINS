@@ -10,7 +10,8 @@ realistic psychiatric session modeling for testing purposes.
 from app.tests.unit.base_test_unit import BaseUnitTest
 from app.core.services.ml.mock_dt import MockDigitalTwinService
 import pytest
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, Any, List
 
 from app.core.exceptions import ()

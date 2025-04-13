@@ -8,7 +8,8 @@ caching, and response formatting.
 
 from app.domain.repositories.base_repository import BaseRepository
 import json
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from uuid import UUID, uuid4
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch

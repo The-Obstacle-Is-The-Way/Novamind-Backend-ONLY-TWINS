@@ -5,7 +5,8 @@ This module defines the BiometricAlert entity, which represents a clinical alert
 generated from biometric data analysis that may require clinical intervention.
 """
 
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4

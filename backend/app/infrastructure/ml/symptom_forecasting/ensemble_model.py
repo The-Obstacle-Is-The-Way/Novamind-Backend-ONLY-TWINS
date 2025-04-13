@@ -10,7 +10,8 @@ Clean Architecture principles and ensuring HIPAA compliance.
 import json
 import logging
 import os
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, , UTC, timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 

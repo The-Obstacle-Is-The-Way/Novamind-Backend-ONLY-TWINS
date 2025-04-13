@@ -10,7 +10,8 @@ from app.presentation.api.v1.endpoints.digital_twins import ()
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
 from app.presentation.api.v1.schemas.digital_twin_schemas import
 import json
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, 
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Any, Optional  # Added Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4

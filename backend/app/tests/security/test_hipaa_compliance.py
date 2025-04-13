@@ -18,7 +18,8 @@ with the HIPAA Security Rule.:
         import json
         import secrets
         import uuid
-        from datetime import datetime, UTC, timedelta
+        from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
         from unittest import mock
         import pytest
         from fastapi import HTTPException, status

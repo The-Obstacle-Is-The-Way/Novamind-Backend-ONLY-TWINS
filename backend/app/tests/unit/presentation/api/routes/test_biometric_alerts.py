@@ -7,7 +7,8 @@ requests and responses, including validation, error handling, and authentication
 """
 
 from app.domain.repositories.base_repository import BaseRepository
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 from typing import List, Dict, Any, Optional  # Added Optional

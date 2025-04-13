@@ -6,7 +6,8 @@ This module defines the database models for storing biometric twin data,
 including the core twin entity and its associated data points.
 """
 
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Optional, Any
 from sqlalchemy import Column, String, DateTime, Boolean, Float, ForeignKey, JSON, ARRAY
 from sqlalchemy.orm import relationship

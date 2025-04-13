@@ -5,7 +5,8 @@ These tests verify that the BiometricEventProcessor correctly processes
 biometric data points, evaluates rules, and notifies observers.
 """
 
-from datetime import datetime, UTC
+from datetime import datetime, 
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import MagicMock, patch
 from uuid import UUID
 

@@ -11,7 +11,8 @@ from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
 
-from datetime import UTC
+from datetime import 
+from app.domain.utils.datetime_utils import UTC
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 

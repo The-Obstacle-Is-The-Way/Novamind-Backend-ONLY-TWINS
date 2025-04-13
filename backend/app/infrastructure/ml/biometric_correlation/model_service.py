@@ -11,7 +11,8 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 

@@ -9,7 +9,8 @@ import pytest
 import uuid
 import random
 import math
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Optional
 from uuid import UUID
 

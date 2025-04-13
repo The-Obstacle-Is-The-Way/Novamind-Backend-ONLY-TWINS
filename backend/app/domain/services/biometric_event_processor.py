@@ -6,7 +6,8 @@ and trigger clinical interventions when concerning patterns emerge.
 """
 
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from enum import Enum
 from typing import Any
 from uuid import UUID  # Corrected import

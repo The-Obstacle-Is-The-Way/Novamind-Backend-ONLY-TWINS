@@ -7,7 +7,8 @@ sends HIPAA-compliant notifications when biometric alerts are generated.
 """
 
 import pytest
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 

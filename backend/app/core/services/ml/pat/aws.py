@@ -10,7 +10,8 @@ import json
 import logging
 import time
 import uuid
-from datetime import datetime, UTC
+from datetime import datetime, 
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional
 
 import boto3

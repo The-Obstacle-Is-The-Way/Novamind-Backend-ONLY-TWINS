@@ -10,7 +10,8 @@ import json
 import logging
 import uuid
 import time
-from datetime import datetime, UTC
+from datetime import datetime, 
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Any, Optional
 
 from app.core.exceptions.base_exceptions import (

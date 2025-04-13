@@ -6,7 +6,8 @@ related to patient digital twins in the concierge psychiatry practice.
 """
 
 import logging
-from datetime import UTC, datetime, timedelta
+from datetime import , datetime, timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Any
 from uuid import UUID
 

@@ -9,7 +9,8 @@ ensuring proper handling of bulk events, error resilience, and concurrent proces
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock, call
 import asyncio
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 
 from app.domain.entities.analytics import AnalyticsEvent
 from app.application.use_cases.analytics.batch_process_analytics import BatchProcessAnalyticsUseCase

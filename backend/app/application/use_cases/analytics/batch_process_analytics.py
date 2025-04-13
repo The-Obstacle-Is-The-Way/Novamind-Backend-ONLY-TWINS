@@ -8,7 +8,8 @@ asynchronously, providing efficient processing of large volumes of events.
 
 import asyncio
 from typing import List, Dict, Any, Optional
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 
 from app.core.utils.logging import get_logger
 from app.domain.entities.analytics import AnalyticsEvent, AnalyticsBatch

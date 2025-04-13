@@ -10,7 +10,8 @@ import hashlib
 import os
 import time
 import uuid
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, , UTC, timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import jwt

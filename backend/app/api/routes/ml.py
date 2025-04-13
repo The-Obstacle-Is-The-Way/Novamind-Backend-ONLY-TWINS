@@ -120,7 +120,8 @@ async def mentalllama_health_check(
     Returns:
         Health status
     """
-    from datetime import datetime, UTC, UTC
+    from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
     
     is_healthy = service.is_healthy()
     timestamp = datetime.now(UTC).isoformat() + "Z"
@@ -144,7 +145,8 @@ async def phi_health_check(
     Returns:
         Health status
     """
-    from datetime import datetime, UTC, UTC
+    from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
     
     is_healthy = service.is_healthy()
     timestamp = datetime.now(UTC).isoformat() + "Z"

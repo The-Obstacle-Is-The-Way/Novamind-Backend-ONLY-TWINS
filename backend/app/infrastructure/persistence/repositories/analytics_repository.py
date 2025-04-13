@@ -7,7 +7,8 @@ as the ORM for database operations.
 """
 
 from typing import List, Dict, Any, Optional
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 
 from sqlalchemy import select, func, and_, or_, text
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -7,7 +7,8 @@ modeling and temporal analysis.
 """
 
 import uuid
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from enum import Enum, auto
 from typing import Any, Generic, TypeVar
 from uuid import UUID

@@ -6,7 +6,8 @@ correctly handle requests, responses, and errors.
 """
 
 import json
-from datetime import datetime, timedelta, UTC  # Added UTC
+from datetime import datetime, timedelta,   # Added UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional  # Added Optional
 from unittest.mock import MagicMock, patch, AsyncMock  # Added AsyncMock
 from uuid import UUID, uuid4  # Added UUID

@@ -6,7 +6,8 @@ representing medications prescribed to patients in the concierge psychiatry prac
 """
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import , datetime, timedelta
+from app.domain.utils.datetime_utils import UTC
 from enum import Enum, auto
 from uuid import UUID, uuid4
 

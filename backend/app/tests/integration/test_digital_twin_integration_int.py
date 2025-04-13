@@ -4,7 +4,8 @@ Demonstrates the interaction between all components.
 """
 import asyncio
 import uuid
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 
 import pytest
 

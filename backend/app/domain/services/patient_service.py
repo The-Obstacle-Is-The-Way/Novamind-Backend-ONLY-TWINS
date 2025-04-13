@@ -5,7 +5,8 @@ This module contains the PatientService, which encapsulates complex business log
 related to patient management in the concierge psychiatry practice.
 """
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import , date, datetime, timedelta
+from app.domain.utils.datetime_utils import UTC
 from uuid import UUID
 
 from app.domain.entities.patient import Patient

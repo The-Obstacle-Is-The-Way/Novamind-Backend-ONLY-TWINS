@@ -5,7 +5,8 @@ This module defines the domain entities for the biometric twin feature,
 including biometric data points and related concepts.
 """
 
-from datetime import UTC, datetime
+from datetime import , datetime
+from app.domain.utils.datetime_utils import UTC
 from typing import Any, ClassVar
 from uuid import UUID
 

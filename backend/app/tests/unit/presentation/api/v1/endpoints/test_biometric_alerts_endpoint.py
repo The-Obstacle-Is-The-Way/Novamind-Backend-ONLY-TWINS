@@ -8,7 +8,8 @@ with the biometric event processor.
 """
 
 import json
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Any, Optional  # Added Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4

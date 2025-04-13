@@ -10,7 +10,8 @@ to comply with HIPAA regulations.
 import logging
 import os
 import json
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, Any, Optional
 
 

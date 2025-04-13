@@ -6,7 +6,8 @@ This module provides a concrete implementation of the BiometricAlertRepository
 interface using SQLAlchemy ORM for database operations.
 """
 
-from datetime import datetime, UTC, UTC
+from datetime import datetime, , UTC
+from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Optional, Any
 from uuid import UUID
 

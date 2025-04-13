@@ -8,7 +8,8 @@ validation, and management to ensure secure authentication within the platform.
 
 import pytest
 import jwt
-from datetime import datetime, UTC, UTC, timedelta, timezone
+from datetime import datetime, , UTC, timedelta, timezone
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import patch, MagicMock
 
 from app.infrastructure.security.jwt_service import JWTService

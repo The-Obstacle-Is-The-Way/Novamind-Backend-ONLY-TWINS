@@ -6,7 +6,8 @@ into the patient's digital twin, enabling advanced analysis and personalized
 treatment recommendations based on physiological and neurological patterns.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import , datetime, timedelta
+from app.domain.utils.datetime_utils import UTC
 from typing import Any
 from uuid import UUID
 

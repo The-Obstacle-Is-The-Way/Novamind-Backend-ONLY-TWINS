@@ -7,7 +7,8 @@ correctly integrates biometric data into patient digital twins.
 """
 
 import pytest
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, , timedelta
+from app.domain.utils.datetime_utils import UTC
 from unittest.mock import Mock, patch, MagicMock, AsyncMock  # Added AsyncMock
 from uuid import UUID, uuid4
 from typing import Any  # Added Any
