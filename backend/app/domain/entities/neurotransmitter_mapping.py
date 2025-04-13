@@ -321,19 +321,12 @@ class NeurotransmitterMapping:
             neurotransmitter: The neurotransmitter being produced
             brain_region: The brain region producing it
         """
-        # Add to brain region -> neurotransmitter mapping
+        # Ensure the brain region exists as a key, initialized with a set
         if brain_region not in self.production_map:
-            self.production_map[brain_region] = []
+            self.production_map[brain_region] = set()
             
-        if neurotransmitter not in self.production_map[brain_region]:
-            self.production_map[brain_region].append(neurotransmitter)
-        
-        # Also add to neurotransmitter -> brain_region mapping for test compatibility
-        if neurotransmitter not in self.production_map:
-            self.production_map[neurotransmitter] = []
-            
-        if brain_region not in self.production_map[neurotransmitter]:
-            self.production_map[neurotransmitter].append(brain_region)
+        # Add the neurotransmitter to the set for that brain region
+        self.production_map[brain_region].add(neurotransmitter)
     
     def get_producing_regions(self, neurotransmitter: Neurotransmitter) -> list[BrainRegion]:
         """
@@ -562,12 +555,6 @@ def create_default_neurotransmitter_mapping() -> NeurotransmitterMapping:
     for profile in profiles:
         mapping.add_receptor_profile(profile)
     
-    # Explicitly initialize connectivity map
-    mapping.brain_region_connectivity = defaultdict(lambda: defaultdict(float))
-    # Add some basic default connectivity if needed, e.g.:
-    # mapping.brain_region_connectivity[BrainRegion.PREFRONTAL_CORTEX][BrainRegion.AMYGDALA] = 0.5 
-    # mapping.brain_region_connectivity[BrainRegion.AMYGDALA][BrainRegion.PREFRONTAL_CORTEX] = 0.4
-
     # Build the lookup maps *after* adding defaults
     mapping._build_lookup_maps()
 

@@ -7,6 +7,7 @@ for the mental health platform.
 """
 
 import datetime
+from datetime import timezone
 import json
 import logging
 import uuid
@@ -366,8 +367,8 @@ class BedrockPAT(PATInterface):
             "clinician_id": clinician_id,
             "assessment_type": assessment_type,
             "status": "created",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(timezone.utc).isoformat(),
             "template": template,
             "data": initial_data.get("data", {}),
             "responses": initial_data.get("responses", {}),
@@ -498,7 +499,7 @@ class BedrockPAT(PATInterface):
                 assessment["data"][key] = value
         
         # Update timestamp
-        assessment["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        assessment["updated_at"] = datetime.datetime.now(timezone.utc).isoformat()
         
         logger.info("Updated assessment: %s", assessment_id)
         
@@ -559,7 +560,7 @@ class BedrockPAT(PATInterface):
         
         # Mark as completed
         assessment["status"] = "completed"
-        assessment["completed_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        assessment["completed_at"] = datetime.datetime.now(timezone.utc).isoformat()
         assessment["updated_at"] = assessment["completed_at"]
         
         # Calculate final metrics
@@ -644,7 +645,7 @@ class BedrockPAT(PATInterface):
             "assessment_id": assessment["id"],
             "patient_id": assessment["patient_id"],
             "analysis_type": analysis_type,
-            "analyzed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "analyzed_at": datetime.datetime.now(timezone.utc).isoformat(),
             "results": analysis_results
         }
     
@@ -772,8 +773,8 @@ class BedrockPAT(PATInterface):
             "name": name,
             "form_type": form_type,
             "fields": fields,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(timezone.utc).isoformat(),
             "scoring": metadata.get("scoring", {}),
             "description": metadata.get("description", ""),
             "instructions": metadata.get("instructions", ""),
@@ -916,3 +917,5 @@ class BedrockPAT(PATInterface):
         assessment = self._assessments.get(assessment_id)
         if not assessment:
             logger.error("Assessment not found: %s", assessment_id)
+
+        # ... rest of your code remains the same ...

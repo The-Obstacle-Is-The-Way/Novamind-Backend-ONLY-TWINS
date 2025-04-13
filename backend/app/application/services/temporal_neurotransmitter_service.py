@@ -66,16 +66,13 @@ class TemporalNeurotransmitterService:
              # This path should ideally not be reachable
              raise RuntimeError("NeurotransmitterMapping failed to initialize.")
         
-        # --- DEBUG: Check right before calling extend_neurotransmitter_mapping ---
-        print(f"--- [Service Init - Before Call] hasattr(self.base_mapping, 'brain_region_connectivity'): {hasattr(self.base_mapping, 'brain_region_connectivity')} ---")
-        # --- END DEBUG ---
-        
         # Create neurotransmitter mapping with temporal extensions
         self.nt_mapping = extend_neurotransmitter_mapping(self.base_mapping)
         
         # Initialize temporal profiles if needed
         if not hasattr(self.nt_mapping, 'temporal_profiles') or not self.nt_mapping.temporal_profiles:
-            self.nt_mapping._initialize_temporal_profiles()
+            # self.nt_mapping._initialize_temporal_profiles() # Method does not exist on TemporalNeurotransmitterMapping
+            pass
         
         # Create visualization preprocessor if not provided
         self.visualization_preprocessor = (

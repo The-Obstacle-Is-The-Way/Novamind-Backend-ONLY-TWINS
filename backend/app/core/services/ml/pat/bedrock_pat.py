@@ -11,6 +11,7 @@ import json
 import logging
 import uuid
 from typing import Any, Dict, List, Optional, Union
+from datetime import timezone
 
 from app.core.services.ml.pat.pat_interface import PATInterface
 from app.core.exceptions import (
@@ -110,7 +111,7 @@ class BedrockPAT(PATInterface):
             "name": "PHQ-9 Depression Assessment",
             "form_type": "questionnaire",
             "version": "1.0.0",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "fields": [
                 {
                     "id": "phq9_1",
@@ -242,7 +243,7 @@ class BedrockPAT(PATInterface):
             "name": "GAD-7 Anxiety Assessment",
             "form_type": "questionnaire",
             "version": "1.0.0",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "fields": [
                 {
                     "id": "gad7_1",
@@ -411,8 +412,8 @@ class BedrockPAT(PATInterface):
             "type": assessment_type,
             "template_id": template_id,
             "status": "in_progress",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(timezone.utc).isoformat(),
             "data": initial_data,
             "responses": {},
             "notes": [],
@@ -556,7 +557,7 @@ class BedrockPAT(PATInterface):
                         "id": str(uuid.uuid4()),
                         "text": note["text"],
                         "author_id": note.get("author_id"),
-                        "timestamp": datetime.datetime.now(datetime.UTC).isoformat()
+                        "timestamp": datetime.datetime.now(timezone.utc).isoformat()
                     }
                     assessment["notes"].append(note_with_timestamp)
         
@@ -564,7 +565,7 @@ class BedrockPAT(PATInterface):
             assessment["data"].update(data["data"])
         
         # Update timestamp
-        assessment["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        assessment["updated_at"] = datetime.datetime.now(timezone.utc).isoformat()
         
         # Return updated assessment info
         return self.get_assessment(assessment_id)
@@ -620,7 +621,7 @@ class BedrockPAT(PATInterface):
                             "id": str(uuid.uuid4()),
                             "text": note["text"],
                             "author_id": note.get("author_id"),
-                            "timestamp": datetime.datetime.now(datetime.UTC).isoformat()
+                            "timestamp": datetime.datetime.now(timezone.utc).isoformat()
                         }
                         assessment["notes"].append(note_with_timestamp)
             
@@ -633,8 +634,8 @@ class BedrockPAT(PATInterface):
         # Update assessment with results and mark as completed
         assessment["status"] = "completed"
         assessment["results"] = results
-        assessment["completed_at"] = datetime.datetime.now(datetime.UTC).isoformat()
-        assessment["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        assessment["completed_at"] = datetime.datetime.now(timezone.utc).isoformat()
+        assessment["updated_at"] = datetime.datetime.now(timezone.utc).isoformat()
         
         # Return assessment results
         return {
@@ -710,7 +711,7 @@ class BedrockPAT(PATInterface):
             "patient_id": assessment["patient_id"],
             "type": assessment["type"],
             "analysis_type": analysis_type,
-            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
             "results": analysis_results
         }
     
@@ -745,228 +746,20 @@ class BedrockPAT(PATInterface):
         
         options = options or {}
         
-                    "type": "scale",
-                    "question": "Feeling nervous, anxious, or on edge",
-                    "options": [
-                        {"value": 0, "label": "Not at all"},
-                        {"value": 1, "label": "Several days"},
-                        {"value": 2, "label": "More than half the days"},
-                        {"value": 3, "label": "Nearly every day"}
-                    ],
-                    "required": True
-                },
-                {
-                    "id": "gad7_2",
-                    "type": "scale",
-                    "question": "Not being able to stop or control worrying",
-                    "options": [
-                        {"value": 0, "label": "Not at all"},
-                        {"value": 1, "label": "Several days"},
-                        {"value": 2, "label": "More than half the days"},
-                        {"value": 3, "label": "Nearly every day"}
-                    ],
-                    "required": True
-                },
-                {
-                    "id": "gad7_3",
-                    "type": "scale",
-                    "question": "Worrying too much about different things",
-                    "options": [
-                        {"value": 0, "label": "Not at all"},
-                        {"value": 1, "label": "Several days"},
-                        {"value": 2, "label": "More than half the days"},
-                        {"value": 3, "label": "Nearly every day"}
-                    ],
-                    "required": True
-                },
-                {
-                    "id": "gad7_4",
-                    "type": "scale",
-                    "question": "Trouble relaxing",
-                    "options": [
-                        {"value": 0, "label": "Not at all"},
-                        {"value": 1, "label": "Several days"},
-                        {"value": 2, "label": "More than half the days"},
-                        {"value": 3, "label": "Nearly every day"}
-                    ],
-                    "required": True
-                },
-                {
-                    "id": "gad7_5",
-                    "type": "scale",
-                    "question": "Being so restless that it's hard to sit still",
-                    "options": [
-                        {"value": 0, "label": "Not at all"},
-                        {"value": 1, "label": "Several days"},
-                        {"value": 2, "label": "More than half the days"},
-                        {"value": 3, "label": "Nearly every day"}
-                    ],
-                    "required": True
-                },
-                {
-                    "id": "gad7_6",
-                    "type": "scale",
-                    "question": "Becoming easily annoyed or irritable",
-                    "options": [
-                        {"value": 0, "label": "Not at all"},
-                        {"value": 1, "label": "Several days"},
-                        {"value": 2, "label": "More than half the days"},
-                        {"value": 3, "label": "Nearly every day"}
-                    ],
-                    "required": True
-                },
-                {
-                    "id": "gad7_7",
-                    "type": "scale",
-                    "question": "Feeling afraid as if something awful might happen",
-                    "options": [
-                        {"value": 0, "label": "Not at all"},
-                        {"value": 1, "label": "Several days"},
-                        {"value": 2, "label": "More than half the days"},
-                        {"value": 3, "label": "Nearly every day"}
-                    ],
-                    "required": True
-                },
-                {
-                    "id": "gad7_difficulty",
-                    "type": "scale",
-                    "question": "If you checked off any problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?",
-                    "options": [
-                        {"value": 0, "label": "Not difficult at all"},
-                        {"value": 1, "label": "Somewhat difficult"},
-                        {"value": 2, "label": "Very difficult"},
-                        {"value": 3, "label": "Extremely difficult"}
-                    ],
-                    "required": True
-                }
-            ],
-            "metadata": {
-                "description": "The Generalized Anxiety Disorder-7 (GAD-7) is a 7-item anxiety scale used for screening, diagnosing, monitoring, and measuring the severity of anxiety.",
-                "scoring": {
-                    "ranges": [
-                        {"min": 0, "max": 4, "label": "Minimal anxiety"},
-                        {"min": 5, "max": 9, "label": "Mild anxiety"},
-                        {"min": 10, "max": 14, "label": "Moderate anxiety"},
-                        {"min": 15, "max": 21, "label": "Severe anxiety"}
-                    ]
-                }
-            }
-        }
+        # Filter assessments by patient ID and assessment type
+        assessments = [a for a in self._assessments.values() if a["patient_id"] == patient_id and (assessment_type is None or a["type"] == assessment_type)]
         
-        # Initial Psychiatric Assessment
-        initial_assessment_template = {
-            "id": "template-initial-assessment",
-            "name": "Initial Psychiatric Assessment",
-            "form_type": "initial_assessment",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "fields": [
-                {
-                    "id": "presenting_problem",
-                    "type": "text",
-                    "question": "Presenting Problem",
-                    "required": True
-                },
-                {
-                    "id": "history_of_present_illness",
-                    "type": "textarea",
-                    "question": "History of Present Illness",
-                    "required": True
-                },
-                {
-                    "id": "psychiatric_history",
-                    "type": "textarea",
-                    "question": "Psychiatric History",
-                    "required": True
-                },
-                {
-                    "id": "medical_history",
-                    "type": "textarea",
-                    "question": "Medical History",
-                    "required": True
-                },
-                {
-                    "id": "medications",
-                    "type": "textarea",
-                    "question": "Current Medications",
-                    "required": True
-                },
-                {
-                    "id": "allergies",
-                    "type": "text",
-                    "question": "Allergies",
-                    "required": True
-                },
-                {
-                    "id": "substance_use",
-                    "type": "textarea",
-                    "question": "Substance Use History",
-                    "required": True
-                },
-                {
-                    "id": "family_history",
-                    "type": "textarea",
-                    "question": "Family History",
-                    "required": True
-                },
-                {
-                    "id": "social_history",
-                    "type": "textarea",
-                    "question": "Social History",
-                    "required": True
-                },
-                {
-                    "id": "mental_status",
-                    "type": "checklist",
-                    "question": "Mental Status Examination",
-                    "options": [
-                        {"value": "alert", "label": "Alert"},
-                        {"value": "oriented", "label": "Oriented x3"},
-                        {"value": "cooperative", "label": "Cooperative"},
-                        {"value": "agitated", "label": "Agitated"},
-                        {"value": "disheveled", "label": "Disheveled"},
-                        {"value": "poor_eye_contact", "label": "Poor eye contact"},
-                        {"value": "normal_speech", "label": "Normal speech"},
-                        {"value": "pressured_speech", "label": "Pressured speech"},
-                        {"value": "tangential", "label": "Tangential"},
-                        {"value": "linear_thought", "label": "Linear thought process"},
-                        {"value": "si", "label": "Suicidal ideation"},
-                        {"value": "hi", "label": "Homicidal ideation"},
-                        {"value": "hallucinations", "label": "Hallucinations"},
-                        {"value": "delusions", "label": "Delusions"},
-                        {"value": "insight_good", "label": "Good insight"},
-                        {"value": "insight_fair", "label": "Fair insight"},
-                        {"value": "insight_poor", "label": "Poor insight"},
-                        {"value": "judgment_good", "label": "Good judgment"},
-                        {"value": "judgment_fair", "label": "Fair judgment"},
-                        {"value": "judgment_poor", "label": "Poor judgment"}
-                    ],
-                    "required": True
-                },
-                {
-                    "id": "diagnosis",
-                    "type": "text",
-                    "question": "Provisional Diagnosis",
-                    "required": True
-                },
-                {
-                    "id": "treatment_plan",
-                    "type": "textarea",
-                    "question": "Treatment Plan",
-                    "required": True
-                }
-            ],
-            "metadata": {
-                "description": "Comprehensive initial psychiatric assessment for new patients.",
-                "clinical_use": "Initial evaluation and treatment planning"
-            }
-        }
+        # Sort assessments by creation date
+        assessments.sort(key=lambda a: a["created_at"], reverse=True)
         
-        # Store templates
-        self._templates = {
-            "template-phq9": phq9_template,
-            "template-gad7": gad7_template,
-            "template-initial-assessment": initial_assessment_template
+        # Limit number of assessments if requested
+        if limit is not None:
+            assessments = assessments[:limit]
+        
+        # Return assessment history
+        return {
+            "patient_id": patient_id,
+            "assessments": assessments
         }
     
     def _calculate_completion_percentage(self, assessment: Dict[str, Any], template: Dict[str, Any]) -> float:
@@ -1057,3 +850,157 @@ class BedrockPAT(PATInterface):
         # Check suicide risk (item 9)
         suicide_risk = "none"
         if "phq9_9" in data:
+            if data["phq9_9"] == 3:
+                suicide_risk = "high"
+            elif data["phq9_9"] == 2:
+                suicide_risk = "moderate"
+            elif data["phq9_9"] == 1:
+                suicide_risk = "low"
+        
+        return {
+            "total_score": total_score,
+            "severity": severity,
+            "suicide_risk": suicide_risk
+        }
+    
+    def _calculate_gad7_scores(self, assessment: Dict[str, Any], template: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate GAD-7 anxiety scores.
+        
+        Args:
+            assessment: The assessment to score
+            template: The assessment template
+            
+        Returns:
+            Score results
+        """
+        data = assessment["data"]
+        
+        # Calculate total score (sum of first 7 items)
+        total_score = 0
+        for i in range(1, 8):
+            field_id = f"gad7_{i}"
+            if field_id in data and isinstance(data[field_id], (int, float)):
+                total_score += int(data[field_id])
+        
+        # Determine severity
+        severity = "minimal"
+        if total_score >= 15:
+            severity = "severe"
+        elif total_score >= 10:
+            severity = "moderate"
+        elif total_score >= 5:
+            severity = "mild"
+        
+        return {
+            "total_score": total_score,
+            "severity": severity
+        }
+    
+    def _calculate_generic_scores(self, assessment: Dict[str, Any], template: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate generic scores for an assessment.
+        
+        Args:
+            assessment: The assessment to score
+            template: The assessment template
+            
+        Returns:
+            Score results
+        """
+        data = assessment["data"]
+        
+        # Calculate total score (sum of all items)
+        total_score = 0
+        for field_id, value in data.items():
+            if isinstance(value, (int, float)):
+                total_score += int(value)
+        
+        return {
+            "total_score": total_score
+        }
+    
+    def _generate_standard_analysis(self, assessment: Dict[str, Any], template: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate standard analysis results for an assessment.
+        
+        Args:
+            assessment: The assessment to analyze
+            template: The assessment template
+            options: Additional analysis options
+            
+        Returns:
+            Analysis results
+        """
+        # Calculate completion percentage
+        completion_percentage = self._calculate_completion_percentage(assessment, template)
+        
+        # Calculate scores
+        scores = self._calculate_assessment_scores(assessment, template)
+        
+        return {
+            "completion_percentage": completion_percentage,
+            "scores": scores
+        }
+    
+    def _generate_detailed_analysis(self, assessment: Dict[str, Any], template: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate detailed analysis results for an assessment.
+        
+        Args:
+            assessment: The assessment to analyze
+            template: The assessment template
+            options: Additional analysis options
+            
+        Returns:
+            Analysis results
+        """
+        # Calculate completion percentage
+        completion_percentage = self._calculate_completion_percentage(assessment, template)
+        
+        # Calculate scores
+        scores = self._calculate_assessment_scores(assessment, template)
+        
+        # Generate detailed analysis results
+        detailed_results = {}
+        for field in template["fields"]:
+            field_id = field["id"]
+            if field_id in assessment["data"]:
+                detailed_results[field_id] = assessment["data"][field_id]
+        
+        return {
+            "completion_percentage": completion_percentage,
+            "scores": scores,
+            "detailed_results": detailed_results
+        }
+    
+    def _generate_nlp_analysis(self, assessment: Dict[str, Any], template: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate NLP-based analysis results for an assessment.
+        
+        Args:
+            assessment: The assessment to analyze
+            template: The assessment template
+            options: Additional analysis options
+            
+        Returns:
+            Analysis results
+        """
+        # Calculate completion percentage
+        completion_percentage = self._calculate_completion_percentage(assessment, template)
+        
+        # Calculate scores
+        scores = self._calculate_assessment_scores(assessment, template)
+        
+        # Generate NLP-based analysis results
+        nlp_results = {}
+        for field in template["fields"]:
+            field_id = field["id"]
+            if field_id in assessment["data"]:
+                nlp_results[field_id] = assessment["data"][field_id]
+        
+        return {
+            "completion_percentage": completion_percentage,
+            "scores": scores,
+            "nlp_results": nlp_results
+        }

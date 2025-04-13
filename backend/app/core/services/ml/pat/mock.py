@@ -9,6 +9,7 @@ import datetime
 import logging
 import uuid
 from typing import Any, Dict, List, Optional
+from datetime import timezone
 
 from app.core.services.ml.pat.exceptions import InitializationError, ValidationError, ResourceNotFoundError
 from app.core.services.ml.pat.pat_interface import PATInterface
@@ -112,8 +113,8 @@ class MockPATService(PATInterface):
             "assessment_type": assessment_type,
             "template_id": template_id,
             "status": "draft",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(timezone.utc).isoformat(),
             "data": initial_data or {},
             "score": None,
             "summary": None
@@ -162,7 +163,7 @@ class MockPATService(PATInterface):
         
         # Update data fields
         assessment["data"].update(data)
-        assessment["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        assessment["updated_at"] = datetime.datetime.now(timezone.utc).isoformat()
         
         # Complete assessment if requested
         if complete:
@@ -431,7 +432,7 @@ class MockPATService(PATInterface):
             "id": report_id,
             "patient_id": patient_id,
             "report_type": report_type,
-            "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "generated_at": datetime.datetime.now(timezone.utc).isoformat(),
             "start_date": start_date,
             "end_date": end_date,
             "assessments": [a["id"] for a in included_assessments],
@@ -557,7 +558,7 @@ class MockPATService(PATInterface):
         result = {
             "analysis_id": analysis_id,  # Changed from 'id' to 'analysis_id' to match test expectations
             "patient_id": patient_id,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),  # Changed from 'timestamp' to 'created_at'
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),  # Changed from 'timestamp' to 'created_at'
             "start_time": start_time,
             "end_time": end_time,
             "status": "completed",
@@ -708,7 +709,7 @@ class MockPATService(PATInterface):
         result = {
             "embedding_id": embedding_id,
             "patient_id": patient_id,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "embedding_type": "actigraphy",
             "embedding_dim": embedding_dim,
             "embedding": embedding,
@@ -861,7 +862,7 @@ class MockPATService(PATInterface):
         result = {
             "embedding_id": embedding_id,
             "patient_id": patient_id,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "embedding_type": "actigraphy",
             "embedding_dim": embedding_dim,
             "embedding": embedding,
@@ -913,7 +914,7 @@ class MockPATService(PATInterface):
                 "euclidean_distance": euclidean_distance
             },
             "dimension": len(embedding_a),
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat()
+            "created_at": datetime.datetime.now(timezone.utc).isoformat()
         }
         
         return result
@@ -975,7 +976,7 @@ class MockPATService(PATInterface):
         
         # Create mock integration result
         integration_id = str(uuid.uuid4())
-        now = datetime.datetime.now(datetime.UTC).isoformat()
+        now = datetime.datetime.now(timezone.utc).isoformat()
         
         # Create mock insights based on analysis types
         insights = []
@@ -1048,7 +1049,7 @@ class MockPATService(PATInterface):
         result = {
             "assessment_id": assessment_id,
             "analysis_type": analysis_type or "standard",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "results": {
                 "risk_level": "moderate",
                 "suggested_interventions": [
@@ -1080,7 +1081,7 @@ class MockPATService(PATInterface):
         result = {
             "assessment_id": assessment_id,
             "scoring_method": scoring_method or "standard",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "scores": {
                 "total_score": score,
                 "subscores": {
@@ -1154,7 +1155,7 @@ class MockPATService(PATInterface):
             "form_type": form_type,
             "fields": fields,
             "metadata": metadata or {},
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(timezone.utc).isoformat(),
             "version": "1.0"
         }
         

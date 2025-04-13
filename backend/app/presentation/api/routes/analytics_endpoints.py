@@ -6,7 +6,7 @@ This module provides API endpoints for accessing analytics data from the NOVAMIN
 These endpoints follow HIPAA compliance guidelines and implement caching and rate limiting.
 """
 
-from datetime import datetime, UTC, UTC, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -70,7 +70,7 @@ def get_analytics_service(
 @router.get("/patient/{patient_id}/treatment-outcomes", response_model=Dict[str, Any])
 async def get_patient_treatment_outcomes(
     patient_id: UUID,
-    start_date: datetime = Query(default=datetime.now(UTC) - timedelta(days=90)),
+    start_date: datetime = Query(default=datetime.now(timezone.utc) - timedelta(days=90)),
     end_date: Optional[datetime] = Query(default=None),
     analytics_service: AnalyticsService = Depends(get_analytics_service),
     cache_service: RedisCache = Depends(get_cache_service),
@@ -196,7 +196,7 @@ async def get_analytics_job_status(
 
 @router.get("/practice-metrics", response_model=Dict[str, Any])
 async def get_practice_metrics(
-    start_date: datetime = Query(default=datetime.now(UTC) - timedelta(days=30)),
+    start_date: datetime = Query(default=datetime.now(timezone.utc) - timedelta(days=30)),
     end_date: Optional[datetime] = Query(default=None),
     provider_id: Optional[UUID] = Query(default=None),
     analytics_service: AnalyticsService = Depends(get_analytics_service),

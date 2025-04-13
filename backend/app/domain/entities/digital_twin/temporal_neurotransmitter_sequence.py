@@ -4,7 +4,7 @@ in a specific brain region for a digital twin.
 """
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List
 from uuid import UUID
 
@@ -24,8 +24,8 @@ class TemporalNeurotransmitterSequence:
     timestamps: List[datetime] = field(default_factory=list)
     values: List[float] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=lambda: datetime.now(datetime.UTC))
-    updated_at: datetime = field(default_factory=lambda: datetime.now(datetime.UTC))
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self):
         if len(self.timestamps) != len(self.values):
@@ -36,7 +36,7 @@ class TemporalNeurotransmitterSequence:
         # TODO: Implement logic to handle duplicate timestamps or maintain order?
         self.timestamps.append(timestamp)
         self.values.append(value)
-        self.updated_at = datetime.now(datetime.UTC)
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_latest_value(self) -> float | None:
         """Returns the most recent value in the sequence."""

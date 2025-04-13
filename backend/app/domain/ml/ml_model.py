@@ -3,7 +3,7 @@ Domain entities related to Machine Learning Models.
 """
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Optional
 from uuid import UUID
@@ -37,8 +37,8 @@ class MLModel:
     artifact_path: Optional[str] = None  # Path to model file(s)
     parameters: Dict[str, Any] = field(default_factory=dict)  # Hyperparameters, config
     metrics: Dict[str, float] = field(default_factory=dict)  # Performance metrics
-    created_at: datetime = field(default_factory=lambda: datetime.now(datetime.UTC))
-    updated_at: datetime = field(default_factory=lambda: datetime.now(datetime.UTC))
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = field(default_factory=dict) # Other metadata
 
     def __post_init__(self):

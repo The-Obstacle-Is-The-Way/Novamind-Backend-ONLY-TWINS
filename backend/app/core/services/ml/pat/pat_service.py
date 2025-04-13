@@ -21,7 +21,6 @@ from app.core.exceptions import (
 
 logger = logging.getLogger(__name__)
 
-
 class PATService(PATInterface):
     """
     Implementation of the Patient Assessment Tool service.
@@ -111,8 +110,8 @@ class PATService(PATInterface):
             "assessment_type": assessment_type,
             "template_id": template_id,
             "status": "created",
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "completed_at": None,
             "data": initial_data,
             "scores": {},
@@ -198,7 +197,7 @@ class PATService(PATInterface):
         
         # Update assessment data
         assessment["data"].update(data)
-        assessment["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        assessment["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
         
         # Update status if all required fields are filled
         template = self._form_templates.get(assessment["template_id"])
@@ -251,7 +250,7 @@ class PATService(PATInterface):
         
         # Update assessment status
         assessment["status"] = "completed"
-        assessment["completed_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        assessment["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
         assessment["updated_at"] = assessment["completed_at"]
         
         # Calculate scores
@@ -326,7 +325,7 @@ class PATService(PATInterface):
             "assessment_type": assessment["assessment_type"],
             "analysis_type": analysis_type,
             "status": assessment["status"],
-            "analyzed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "analyzed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "result": analysis_result,
             "options_used": options
         }
@@ -389,7 +388,7 @@ class PATService(PATInterface):
             "assessment_type": assessment_type,
             "history": history,
             "count": len(history),
-            "retrieved_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "retrieved_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "options_used": options
         }
     
@@ -416,8 +415,8 @@ class PATService(PATInterface):
             "name": name,
             "form_type": form_type,
             "fields": fields,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "metadata": metadata
         }
         
@@ -494,7 +493,7 @@ class PATService(PATInterface):
             "templates": templates,
             "count": len(templates),
             "form_type": form_type,
-            "retrieved_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "retrieved_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "options_used": options
         }
     
@@ -532,7 +531,7 @@ class PATService(PATInterface):
         
         # Update assessment scores
         assessment["scores"] = scores
-        assessment["updated_at"] = datetime.datetime.now(datetime.UTC).isoformat()
+        assessment["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
         
         logger.info(
             "Calculated scores for assessment: %s, method: %s",
@@ -599,7 +598,7 @@ class PATService(PATInterface):
             "assessment_id": assessment["id"],
             "patient_id": assessment["patient_id"],
             "report_type": report_type,
-            "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "report": report_data,
             "options_used": options
         }
@@ -653,8 +652,8 @@ class PATService(PATInterface):
             "name": "PHQ-9 Depression Scale",
             "form_type": "depression",
             "fields": phq9_fields,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "metadata": {
                 "description": "Patient Health Questionnaire-9 for depression screening",
                 "scoring": {
@@ -691,8 +690,8 @@ class PATService(PATInterface):
             "name": "GAD-7 Anxiety Scale",
             "form_type": "anxiety",
             "fields": gad7_fields,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "updated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "metadata": {
                 "description": "Generalized Anxiety Disorder 7-item scale",
                 "scoring": {
@@ -750,7 +749,7 @@ class PATService(PATInterface):
                         "type": "suicide_risk",
                         "severity": "moderate" if value == 2 else "high",
                         "field": field["id"],
-                        "detected_at": datetime.datetime.now(datetime.UTC).isoformat()
+                        "detected_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
                     })
         
         # Check PHQ-9 total score if available
@@ -761,7 +760,7 @@ class PATService(PATInterface):
                     "type": "severe_depression",
                     "severity": "high",
                     "score": phq9_score,
-                    "detected_at": datetime.datetime.now(datetime.UTC).isoformat()
+                    "detected_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
                 })
         
         assessment["flags"] = flags
@@ -1081,7 +1080,7 @@ class PATService(PATInterface):
         report = {
             "title": "Treatment Progress Report",
             "patient_id": assessment["patient_id"],
-            "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "current_assessment": {
                 "assessment_id": assessment["id"],
                 "assessment_type": assessment["assessment_type"],
