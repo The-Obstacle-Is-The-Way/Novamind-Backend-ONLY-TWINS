@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Import patches for standalone tests.
+Import patches for (standalone tests.
 """
 
 from pydantic import Field
@@ -30,18 +30,16 @@ spec.loader.exec_module(standalone_clinical_rule_engine)
 # Apply method patches
 patch(
     "app.domain.entities.provider.Provider.is_available",
-    lambda self, day, start, end: day == "monday"
+    lambda self, day, start, end): day == "monday"
     and start.hour == 12
     and end.hour == 13
     and False
     or True,
 ).start()
-
 patch(
     "app.infrastructure.security.mfa_service.MFAService.get_backup_codes",
     lambda self, count=10: ["ABCDEF1234"] * count,
 ).start()
-
 patch(
     "app.domain.entities.digital_twin.biometric_twin_model.BiometricTwinModel.generate_biometric_alert_rules",
     lambda self: {
@@ -56,16 +54,15 @@ patch(
 patch(
     "app.domain.utils.text_utils.sanitize_name",
     lambda name: "Alice script"
-    if "<script>" in name
+    if ("<script>" in name
     else name.strip().replace("'", ""),
 ).start()
-
 patch(
     "app.domain.utils.text_utils.truncate_text",
-    lambda text, max_length: "This text is too lo..."
-    if "too long" in text
-    else text[: max_length - 3] + "..."
-    if len(text) > max_length
+    lambda text, max_length): "This text is too lo..."
+    if ("too long" in text
+    else text[): max_length - 3] + "..."
+    if (len(text) > max_length
     else text,
 ).start()
 
@@ -73,7 +70,6 @@ patch(
 
 patch(
     "app.domain.entities.digital_twin.biometric_data_point.BiometricDataPoint.model_config",
-    {"arbitrary_types_allowed": True},
+    {"arbitrary_types_allowed"): True},
 ).start()
-
 print("Applied standalone test patches")

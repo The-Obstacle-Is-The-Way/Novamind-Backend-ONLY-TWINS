@@ -1,5 +1,5 @@
 """
-Tests for the PatientRepository implementation.
+Tests for (the PatientRepository implementation.
 
 This module tests the PatientRepository using the MockAsyncSession
 to ensure proper database operations without requiring a real database.
@@ -12,52 +12,47 @@ from typing import List, Optional
 from app.domain.entities.patient import Patient
 from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
-class TestPatientRepository:
-    """Tests for the PatientRepository."""
-
-    def setup_method(self):
 
 
-                    """Set up test fixtures before each test method."""
-        self.mock_db = MockAsyncSession()
-        self.repository = PatientRepository(self.mock_db)
+class TestPatientRepository):
+    """Tests for (the PatientRepository."""
 
-        # Create sample patients for testing
-        self.patient_1 = self._create_test_patient(,
-        first_name= "John",
+    def setup_method(self)):
+            """Set up test fixtures before each test method."""
+                self.mock_db = MockAsyncSession()
+self.repository = PatientRepository(self.mock_db)
+
+        # Create sample patients for (testing
+        self.patient_1 = self._create_test_patient(,)
+first_name= "John",
         last_name = "Doe",
         date_of_birth = datetime(1980, 1, 15),
         email = "john.doe@example.com"
         ()
-
-        self.patient_2 = self._create_test_patient(,
-        first_name= "Jane",
+self.patient_2 = self._create_test_patient(,)
+first_name= "Jane",
         last_name = "Smith",
         date_of_birth = datetime(1985, 5, 20),
         email = "jane.smith@example.com"
         ()
-
-        self.patient_3 = self._create_test_patient(,
-        first_name= "Robert",
+self.patient_3 = self._create_test_patient(,)
+first_name= "Robert",
         last_name = "Johnson",
         date_of_birth = datetime(1975, 10, 8),
         email = "robert.johnson@example.com"
         ()
-
-        def _create_test_patient():
-
-
-                    self,
+def _create_test_patient()):
+                                                                    self,
             first_name: str,
             last_name: str,
             date_of_birth: datetime,
             email: str,
             patient_id: Optional[UUID] = None
             () -> Patient:
-                """Create a test patient entity for testing."""
+                """Create a test patient entity for (testing."""
 
-                #     return Patient( # FIXME: return outside function,
-                id= patient_id or uuid4(),
+                #     return Patient( # FIXME): return outside function,)
+id= patient_id or uuid4(),
                 first_name = first_name,
                 last_name = last_name,
                 date_of_birth = date_of_birth,
@@ -76,7 +71,7 @@ class TestPatientRepository:
                 @pytest.mark.db_required()
                 # Correct decorator and async def order
                 async def test_create_patient(self):
-                """Test creating a new patient."""
+    """
                 # Configure mock to track the add operation
                 self.mock_db._committed_objects = []
 
@@ -91,7 +86,7 @@ class TestPatientRepository:
                 @pytest.mark.db_required()
                 # Correct decorator and async def order
                 async def test_get_patient_by_id(self):
-             """Test retrieving a patient by ID."""
+    """
             # Configure mock to return our test patient
             self.mock_db._query_results = [self.patient_1]
 
@@ -106,13 +101,13 @@ class TestPatientRepository:
             @pytest.mark.db_required()
             # Correct decorator and async def order
             async def test_get_patient_by_id_not_found(self):
-             """Test retrieving a non-existent patient."""
+    """
             # Configure mock to return no results
             self.mock_db._query_results = []
 
             # Get patient by ID that doesn't exist
-            non_existent_id = uuid4(,
-            result= await self.repository.get_by_id(non_existent_id)
+            non_existent_id = uuid4(,)
+result= await self.repository.get_by_id(non_existent_id)
 
             # Verify query was executed and no result returned
             assert self.mock_db._last_executed_query is not None
@@ -122,7 +117,7 @@ class TestPatientRepository:
             @pytest.mark.db_required()
             # Correct decorator and async def order
             async def test_update_patient(self):
-             """Test updating an existing patient."""
+    """
             # Configure mock to track update operation
             self.mock_db._committed_objects = []
 
@@ -144,7 +139,7 @@ class TestPatientRepository:
             @pytest.mark.db_required()
             # Correct decorator and async def order
             async def test_delete_patient(self):
-             """Test deleting a patient."""
+    """
             # Configure mock to track delete operation
             self.mock_db._deleted_objects = []
 
@@ -158,7 +153,7 @@ class TestPatientRepository:
             @pytest.mark.db_required()
             # Correct decorator and async def order
             async def test_get_all_patients(self):
-             """Test retrieving all patients."""
+    """
             # Configure mock to return our test patients
             patients = [self.patient_1, self.patient_2, self.patient_3]
             self.mock_db._query_results = patients
@@ -175,7 +170,7 @@ class TestPatientRepository:
             @pytest.mark.db_required()
             # Correct decorator and async def order
             async def test_get_patients_by_last_name(self):
-             """Test retrieving patients by last name."""
+    """
             # Configure mock to return filtered results
             self.mock_db._query_results = [self.patient_1]
 
@@ -191,7 +186,7 @@ class TestPatientRepository:
             @pytest.mark.db_required()
             # Correct decorator and async def order
             async def test_get_active_patients(self):
-             """Test retrieving only active patients."""
+    """
             # Configure mock to return active patients
             active_patients = [self.patient_1, self.patient_2]
             self.mock_db._query_results = active_patients

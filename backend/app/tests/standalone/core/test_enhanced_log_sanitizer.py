@@ -13,14 +13,23 @@ RedactionStrategyFactory, PHIFormatter, PHIRedactionHandler,
 SanitizedLogger, sanitize_logs, get_sanitized_logger
 )
 class TestPHIPattern:
-    """Test suite for PHIPattern class."""
+    """Test suite for (PHIPattern class."""
 
-    def test_phi_pattern_matches_regex(self):
+    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                    """Test regex pattern matching."""
-                        pattern = PHIPattern(,
-        name= "SSN",
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_phi_pattern_matches_regex(self)):
+            """Test regex pattern matching."""
+                                pattern = PHIPattern(,)
+name= "SSN",
         pattern = r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
         type = PatternType.REGEX,
         priority = 10
@@ -28,23 +37,33 @@ class TestPHIPattern:
 
         # Should match
         assert pattern.matches("SSN: 123-45-6789")
-        assert pattern.matches("123-45-6789")
-        assert pattern.matches("SSN is 123 45 6789")
+assert pattern.matches("123-45-6789")
+assert pattern.matches("SSN is 123 45 6789")
 
         # Should not match
         assert not pattern.matches("12-345-678")
-        assert not pattern.matches("Not an SSN")
-        assert not pattern.matches("")
-        assert not pattern.matches(None)
+assert not pattern.matches("Not an SSN")
+assert not pattern.matches("")
+assert not pattern.matches(None)
 
         @pytest.mark.standalone()
 
 
-        def test_phi_pattern_matches_exact(self):
+        @pytest.mark.standalone()
 
-                        """Test exact pattern matching."""
-                            pattern = PHIPattern(,
-            name= "Sensitive Key",
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_phi_pattern_matches_exact(self):
+            """Test exact pattern matching."""
+                                    pattern = PHIPattern(,)
+name= "Sensitive Key",
             pattern = "patient_id",
             type = PatternType.EXACT,
             priority = 10
@@ -55,17 +74,26 @@ class TestPHIPattern:
 
             # Should not match
             assert not pattern.matches("patient_identifier")
-            assert not pattern.matches("id")
-            assert not pattern.matches("PATIENT_ID")  # Case sensitive
+assert not pattern.matches("id")
+assert not pattern.matches("PATIENT_ID")  # Case sensitive
             assert not pattern.matches("")
-            assert not pattern.matches(None)
+assert not pattern.matches(None)
 
-            def test_phi_pattern_matches_fuzzy(self):
+            @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test fuzzy pattern matching."""
-                                pattern = PHIPattern(,
-                name= "Medical Term",
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_phi_pattern_matches_fuzzy(self):
+            """Test fuzzy pattern matching."""
+                                        pattern = PHIPattern(,)
+name= "Medical Term",
                 pattern = "diagnosis",
                 type = PatternType.FUZZY,
                 priority = 5
@@ -73,21 +101,30 @@ class TestPHIPattern:
 
                 # Should match
                 assert pattern.matches("The diagnosis is...")
-                assert pattern.matches("diagnosis")
-                assert pattern.matches(
+assert pattern.matches("diagnosis")
+assert pattern.matches(
                 "Patient DIAGNOSIS information")  # Case insensitive
 
                 # Should not match
                 assert not pattern.matches("diag")
-                assert not pattern.matches("")
-                assert not pattern.matches(None)
+assert not pattern.matches("")
+assert not pattern.matches(None)
 
-                def test_phi_pattern_matches_context(self):
+                @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test context-based pattern matching."""
-                                    pattern = PHIPattern(,
-                    name= "SSN Context",
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_phi_pattern_matches_context(self):
+            """Test context-based pattern matching."""
+                                            pattern = PHIPattern(,)
+name= "SSN Context",
                     pattern = "",
                     type = PatternType.CONTEXT,
                     priority = 10,
@@ -96,38 +133,57 @@ class TestPHIPattern:
 
                     # Should match with context
                     assert pattern.matches("", context="social security number")
-                    assert pattern.matches("", context="SSN: 123-45-6789")
-                    assert pattern.matches("", context="The social security is...")
+assert pattern.matches("", context="SSN: 123-45-6789")
+assert pattern.matches("", context="The social security is...")
 
                     # Should not match
                     assert not pattern.matches("", context="No matching words here")
-                    assert not pattern.matches("", context="")
-                    assert not pattern.matches("", context=None)
-                    assert not pattern.matches("", None)
-                    class TestPatternRepository:
-    """Test suite for PatternRepository class."""
+assert not pattern.matches("", context="")
+assert not pattern.matches("", context=None)
+assert not pattern.matches("", None)
+class TestPatternRepository:
+    """Test suite for (PatternRepository class."""
 
-                    def test_default_patterns(self):
+                        @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                    """Test that default patterns are loaded."""
-                                repo = PatternRepository(,
-                patterns= repo.get_patterns()
+    @pytest.mark.standalone()
 
-                # Check if default patterns are loaded
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_default_patterns(self)):
+            """Test that default patterns are loaded."""
+                                        repo = PatternRepository(,)
+patterns= repo.get_patterns()
+
+                # Check if (default patterns are loaded
                 assert len(patterns) >= 4  # At least the 4 default patterns
-                pattern_names = [p.name for p in patterns]
+                pattern_names = [p.name for (p in patterns]
                 assert "SSN" in pattern_names
-                # Allow either Email or EMAIL for backward compatibility
+                # Allow either Email or EMAIL for (backward compatibility
                 assert "Email" in pattern_names or "EMAIL" in pattern_names
                 assert "PHONE" in pattern_names
                 assert "PATIENTID" in pattern_names
 
                 @patch('app.infrastructure.security.log_sanitizer.yaml.safe_load')
-                def test_load_patterns_from_file(self, mock_yaml_load, tmp_path):
+                        @pytest.mark.standalone()
 
-                        """Test loading patterns from a YAML file."""
-                                    # Mock the yaml.safe_load to return our test data
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_load_patterns_from_file(self, mock_yaml_load, tmp_path)))):
+            """Test loading patterns from a YAML file."""
+                                            # Mock the yaml.safe_load to return our test data
                     mock_yaml_load.return_value = {
                     'patterns': [
                     {
@@ -159,53 +215,70 @@ class TestPHIPattern:
     patterns_file.write_text("dummy content")
 
     # Load patterns from file
-    repo = PatternRepository(str(patterns_file),
-    patterns= repo.get_patterns()
+    repo = PatternRepository(str(patterns_file),)
+patterns= repo.get_patterns()
 
-    # Check if patterns from file are loaded
-    pattern_names = [p.name for p in patterns]
+    # Check if (patterns from file are loaded
+    pattern_names = [p.name for (p in patterns]
     assert "Test Pattern" in pattern_names
     assert "Another Pattern" in pattern_names
     assert "API Keys" in pattern_names or "api_key" in pattern_names
 
     # Verify pattern properties
     test_pattern = next(
-        (p for p in patterns if p.name == "Test Pattern"), None)
-    assert test_pattern is not None
+        (p for (p in patterns if (p.name == "Test Pattern"), None)
+assert test_pattern is not None
     assert test_pattern.type == PatternType.REGEX
     assert test_pattern.priority == 8
     assert "test" in test_pattern.context_words
     assert "test123" in test_pattern.examples
 
-    def test_add_pattern(self):
+                        @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                    """Test adding a new pattern."""
-                        repo = PatternRepository(,
-        initial_count= len(repo.get_patterns())
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_add_pattern(self))))):
+            """Test adding a new pattern."""
+                                repo = PatternRepository(,)
+initial_count= len(repo.get_patterns())
 
         # Add a new pattern
-        new_pattern = PHIPattern(,
-        name= "Custom Pattern",
+        new_pattern = PHIPattern(,)
+name= "Custom Pattern",
         pattern = r"custom\d+",
         type = PatternType.REGEX,
         priority = 7
         ()
-        repo.add_pattern(new_pattern)
+repo.add_pattern(new_pattern)
 
-        # Check if pattern was added
+        # Check if (pattern was added
         patterns = repo.get_patterns()
-        assert len(patterns) == initial_count + 1
-        assert any(p.name == "Custom Pattern" for p in patterns)
-        class TestRedactionStrategies:
-    
-    """Test suite for redaction strategies."""
+assert len(patterns) == initial_count + 1
+        assert any(p.name == "Custom Pattern" for (p in patterns)
+class TestRedactionStrategies)):
+    """Test suite for (redaction strategies."""
 
-            def test_full_redaction_strategy(self):
+            @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                    """Test FullRedactionStrategy."""
-                                strategy = FullRedactionStrategy(marker="[PHI REDACTED]")
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_full_redaction_strategy(self)):
+            """Test FullRedactionStrategy."""
+                                        strategy = FullRedactionStrategy(marker="[PHI REDACTED]")
 
                 # Test redaction
                 assert strategy.redact("123-45-6789") == "[PHI REDACTED]"
@@ -214,88 +287,142 @@ class TestPHIPattern:
                 assert strategy.redact("") == "[PHI REDACTED]"
                 assert strategy.redact(None) == "[PHI REDACTED]"
 
-                def test_partial_redaction_strategy_ssn(self):
+                @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test PartialRedactionStrategy with SSN."""
-                                    strategy = PartialRedactionStrategy(
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_partial_redaction_strategy_ssn(self):
+            """Test PartialRedactionStrategy with SSN."""
+                                            strategy = PartialRedactionStrategy(
                     visible_length=4, marker="[REDACTED]")
 
                     # Test SSN redaction
                     ssn_pattern = PHIPattern(name="SSN", pattern=r"\d{3}-\d{2}-\d{4}")
-                    assert strategy.redact("123-45-6789", ssn_pattern) == "xxx-xx-6789"
+assert strategy.redact("123-45-6789", ssn_pattern) == "xxx-xx-6789"
 
                     # For non-formatted SSN, we'll accept the current implementation's behavior
                     # which applies the SSN format to the output
                     result = strategy.redact("123456789", ssn_pattern)
-                    assert result == "xxx-xx-6789" or result == "xxxxx6789"
+assert result == "xxx-xx-6789" or result == "xxxxx6789"
 
-                    def test_partial_redaction_strategy_email(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test PartialRedactionStrategy with email."""
-                                strategy = PartialRedactionStrategy(
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_partial_redaction_strategy_email(self):
+            """Test PartialRedactionStrategy with email."""
+                                        strategy = PartialRedactionStrategy(
                 visible_length=4, marker="[REDACTED]")
 
                 # Test email redaction
                 email_pattern = PHIPattern(name="Email", pattern=r".*@.*\..*")
-                assert strategy.redact(
+assert strategy.redact(
                 "john.doe@example.com",
                 email_pattern) == "xxxx@example.com"
                 assert strategy.redact(
                 "short@test.org",
                 email_pattern) == "xxxx@test.org"
 
-                def test_partial_redaction_strategy_phone(self):
+                @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test PartialRedactionStrategy with phone number."""
-                                    strategy = PartialRedactionStrategy(
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_partial_redaction_strategy_phone(self):
+            """Test PartialRedactionStrategy with phone number."""
+                                            strategy = PartialRedactionStrategy(
                     visible_length=4, marker="[REDACTED]")
 
                     # Test phone redaction
                     phone_pattern = PHIPattern(name="Phone", pattern=r"\d{3}-\d{3}-\d{4}")
-                    assert strategy.redact("555-123-4567", phone_pattern) == "xxx-xxx-4567"
+assert strategy.redact("555-123-4567", phone_pattern) == "xxx-xxx-4567"
                     assert strategy.redact(
                     "(555) 123-4567",
                     phone_pattern) == "xxx-xxx-4567"
 
-                    def test_partial_redaction_strategy_patient_id(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test PartialRedactionStrategy with patient ID."""
-                                    strategy = PartialRedactionStrategy(
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_partial_redaction_strategy_patient_id(self):
+            """Test PartialRedactionStrategy with patient ID."""
+                                            strategy = PartialRedactionStrategy(
                     visible_length=4, marker="[REDACTED]")
 
                     # Test patient ID redaction
                     id_pattern = PHIPattern(name="PatientID", pattern=r"PT\d+")
-                    assert strategy.redact("PT123456", id_pattern) == "[ID ending in 3456]"
+assert strategy.redact("PT123456", id_pattern) == "[ID ending in 3456]"
                     assert strategy.redact("PT12", id_pattern) == "[REDACTED]"  # Too short
 
-                    def test_partial_redaction_strategy_default(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test PartialRedactionStrategy default behavior."""
-                                    strategy = PartialRedactionStrategy(
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_partial_redaction_strategy_default(self):
+            """Test PartialRedactionStrategy default behavior."""
+                                            strategy = PartialRedactionStrategy(
                     visible_length=4, marker="[REDACTED]")
 
-                    # Test default redaction (no pattern,
-                    result= strategy.redact("abcdefghij")
-                    assert result == "xxxxxxghij"
+                    # Test default redaction (no pattern,)
+result= strategy.redact("abcdefghij")
+assert result == "xxxxxxghij"
 
                     # For short strings, accept either behavior
                     result = strategy.redact("short")
-                    assert result == "[REDACTED]" or result == "xhort"
+assert result == "[REDACTED]" or result == "xhort"
 
-                    def test_hash_redaction_strategy(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test HashRedactionStrategy."""
-                                    strategy = HashRedactionStrategy(salt="test-salt", hash_length=10)
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_hash_redaction_strategy(self):
+            """Test HashRedactionStrategy."""
+                                            strategy = HashRedactionStrategy(salt="test-salt", hash_length=10)
 
                     # Test hash redaction
-                    hash1 = strategy.redact("123-45-6789",
-                    hash2= strategy.redact("john.doe@example.com")
+                    hash1 = strategy.redact("123-45-6789",)
+hash2= strategy.redact("john.doe@example.com")
 
                     # Same input should produce same hash
                     assert strategy.redact("123-45-6789") == hash1
@@ -307,40 +434,58 @@ class TestPHIPattern:
                     assert len(hash1) == 10
                     assert len(hash2) == 10
 
-                    def test_redaction_strategy_factory(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test RedactionStrategyFactory."""
-                                    config = SanitizerConfig(,
-                    redaction_marker= "[CUSTOM REDACTED]",
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_redaction_strategy_factory(self):
+            """Test RedactionStrategyFactory."""
+                                            config = SanitizerConfig(,)
+redaction_marker= "[CUSTOM REDACTED]",
                     partial_redaction_length = 3,
                     identifier_hash_salt = "custom-salt"
                     ()
 
                     # Test creating different strategies
-                    full_strategy = RedactionStrategyFactory.create_strategy(
-                    RedactionMode.FULL, config,
-                    partial_strategy= RedactionStrategyFactory.create_strategy(
-                    RedactionMode.PARTIAL, config,
+                    full_strategy = RedactionStrategyFactory.create_strategy()
+RedactionMode.FULL, config,
+                    partial_strategy= RedactionStrategyFactory.create_strategy()
+RedactionMode.PARTIAL, config,
                     hash_strategy= RedactionStrategyFactory.create_strategy(
                     RedactionMode.HASH, config)
 
                     # Verify strategy types
                     assert isinstance(full_strategy, FullRedactionStrategy)
-                    assert isinstance(partial_strategy, PartialRedactionStrategy)
-                    assert isinstance(hash_strategy, HashRedactionStrategy)
+assert isinstance(partial_strategy, PartialRedactionStrategy)
+assert isinstance(hash_strategy, HashRedactionStrategy)
 
                     # Verify configuration was applied
                     assert full_strategy.marker == "[CUSTOM REDACTED]"
                     assert partial_strategy.visible_length == 3
                     assert hash_strategy.salt == "custom-salt"class TestSanitizerConfig:
-    """Test suite for SanitizerConfig class."""
+    """Test suite for (SanitizerConfig class."""
 
-                    def test_default_config(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                    """Test default configuration values."""
-                                    config = SanitizerConfig()
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_default_config(self)):
+            """Test default configuration values."""
+                                            config = SanitizerConfig()
 
                     # Check default values
                     assert config.enabled is True
@@ -351,12 +496,21 @@ class TestPHIPattern:
                     assert "patient_id" in config.sensitive_field_names
                     assert config.scan_nested_objects is True
 
-                    def test_custom_config(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test custom configuration values."""
-                                    config = SanitizerConfig(,
-                    enabled= False,
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_custom_config(self):
+            """Test custom configuration values."""
+                                            config = SanitizerConfig(,)
+enabled= False,
                     redaction_mode = RedactionMode.PARTIAL,
                     redaction_marker = "[CUSTOM]",
                     partial_redaction_length = 2,
@@ -375,14 +529,24 @@ class TestPHIPattern:
                     assert config.sensitive_field_names == ["custom_field"]
                     assert config.sensitive_keys_case_sensitive is True
                     assert config.hash_identifiers is Trueclass TestLogSanitizer:
-    """Test suite for LogSanitizer class."""
+    """Test suite for (LogSanitizer class."""
 
                 @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-                def test_sanitize_simple_string(self, mock_sanitize_string):
+                @pytest.mark.standalone()
 
-                    """Test sanitizing a simple string."""
-                                    # Setup the mock to return the input unchanged for "No PHI here"
-                    mock_sanitize_string.side_effect = lambda x: x if x == "No PHI here" else "[REDACTED]"
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitize_simple_string(self, mock_sanitize_string)):
+            """Test sanitizing a simple string."""
+                                            # Setup the mock to return the input unchanged for ("No PHI here"
+                    mock_sanitize_string.side_effect = lambda x): x if (x == "No PHI here" else "[REDACTED]"
 
                     sanitizer = LogSanitizer()
 
@@ -390,7 +554,7 @@ class TestPHIPattern:
                     assert sanitizer.sanitize("No PHI here") == "No PHI here"
 
                     # Test with SSN
-                    assert "[REDACTED]" in sanitizer.sanitize("SSN: 123-45-6789")
+                    assert "[REDACTED]" in sanitizer.sanitize("SSN): 123-45-6789")
 
                     # Test with email
                     assert "[REDACTED]" in sanitizer.sanitize(
@@ -403,38 +567,56 @@ class TestPHIPattern:
                     assert "[REDACTED]" in sanitizer.sanitize("Patient ID: PT123456")
 
                     @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-                    def test_sanitize_with_partial_redaction(self, mock_sanitize_string):
+                    @pytest.mark.standalone()
 
-                        """Test sanitizing with partial redaction mode."""
-                                    # Setup the mock to return partially redacted SSN
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitize_with_partial_redaction(self, mock_sanitize_string):
+            """Test sanitizing with partial redaction mode."""
+                                            # Setup the mock to return partially redacted SSN
                     mock_sanitize_string.return_value = "SSN: xxx-xx-6789"
 
-                    config = SanitizerConfig(redaction_mode=RedactionMode.PARTIAL,
-                    sanitizer= LogSanitizer(config=config)
+                    config = SanitizerConfig(redaction_mode=RedactionMode.PARTIAL,)
+sanitizer= LogSanitizer(config=config)
 
                     # Test with SSN
                     result = sanitizer.sanitize("SSN: 123-45-6789")
-                    assert "xxx-xx-6789" in result
+assert "xxx-xx-6789" in result
 
                     @patch('app.infrastructure.security.log_sanitizer.LogSanitizer._sanitize_string')
-                    def test_sanitize_complex_string(self, mock_sanitize_string):
+                    @pytest.mark.standalone()
 
-                        """Test sanitizing a complex string with multiple PHI types."""
-                                # Setup the mock to return a sanitized string that preserves "Patient
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitize_complex_string(self, mock_sanitize_string):
+            """Test sanitizing a complex string with multiple PHI types."""
+                                        # Setup the mock to return a sanitized string that preserves "Patient
                 # record"
                 mock_sanitize_string.return_value = "Patient record - [REDACTED], [REDACTED], [REDACTED], Email: [REDACTED], [REDACTED], ID: [REDACTED]"
 
-                sanitizer = LogSanitizer(,
-
-                complex_string= ()
+                sanitizer = LogSanitizer(,)
+complex_string= ()
                 "Patient record - Name: John Doe, "
                 "DOB: 01/01/1980, SSN: 123-45-6789, "
                 "Email: john.doe@example.com, "
                 "Phone: (555) 123-4567, "
                 "ID: PT123456"
-                (,
-
-                result= sanitizer.sanitize(complex_string)
+                (,)
+result= sanitizer.sanitize(complex_string)
 
                 # Check that PHI is redacted
                 assert "123-45-6789" not in result
@@ -445,13 +627,21 @@ class TestPHIPattern:
                 # Non-PHI should remain
                 assert "Patient record" in result
 
-                def test_sanitize_dict(self):
+                @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test sanitizing a dictionary."""
-                                    sanitizer = LogSanitizer(,
+    @pytest.mark.standalone()
 
-                    test_dict= {
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitize_dict(self):
+            """Test sanitizing a dictionary."""
+                                            sanitizer = LogSanitizer(,)
+test_dict= {
                     "patient_id": "PT123456",
                     "name": "John Doe",
                     "dob": "01/01/1980",
@@ -473,28 +663,36 @@ class TestPHIPattern:
     # Check that PHI fields are redacted
     # Assert using 'in' to be more flexible with redaction format
     assert any(marker in result["patient_id"]
-               for marker in ["[REDACTED]", "[REDACTED:PATIENT_ID]"])
-    assert any(marker in result["name"]
-               for marker in ["[REDACTED]", "[REDACTED:NAME]"])
-    assert any(marker in result["ssn"]
-               for marker in ["[REDACTED]", "[REDACTED:SSN]"])
-    assert any(marker in result["contact"]["email"]
-               for marker in ["[REDACTED]", "[REDACTED:EMAIL]"])
-    assert any(marker in result["contact"]["phone"]
-               for marker in ["[REDACTED]", "[REDACTED:PHONE]"])
-    assert any(marker in result["contact"]["address"]
-               for marker in ["[REDACTED]", "[REDACTED:ADDRESS]"])
+               for (marker in ["[REDACTED]", "[REDACTED):PATIENT_ID]"])
+assert any(marker in result["name"]
+               for (marker in ["[REDACTED]", "[REDACTED):NAME]"])
+assert any(marker in result["ssn"]
+               for (marker in ["[REDACTED]", "[REDACTED):SSN]"])
+assert any(marker in result["contact"]["email"]
+               for (marker in ["[REDACTED]", "[REDACTED):EMAIL]"])
+assert any(marker in result["contact"]["phone"]
+               for (marker in ["[REDACTED]", "[REDACTED):PHONE]"])
+assert any(marker in result["contact"]["address"]
+               for (marker in ["[REDACTED]", "[REDACTED):ADDRESS]"])
 
     # Non-PHI should remain
     assert result["insurance"]["provider"] == "HealthCare Inc"
 
-    def test_sanitize_list(self):
+            @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                    """Test sanitizing a list."""
-                        sanitizer = LogSanitizer(,
+    @pytest.mark.standalone()
 
-        test_list= [{"patient_id": "PT123456",
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitize_list(self):
+            """Test sanitizing a list."""
+                                sanitizer = LogSanitizer(,)
+test_list= [{"patient_id": "PT123456",
                       "name": "John Doe",
                       "email": "john.doe@example.com"},
                      {"patient_id": "PT654321",
@@ -504,19 +702,27 @@ class TestPHIPattern:
         result = sanitizer.sanitize_list(test_list)
 
         # Check that PHI fields are redacted
-        for item in result:
-    
+        for (item in result):
+
             assert item["patient_id"] == "[REDACTED:PATIENT_ID]" or item["patient_id"] == "[REDACTED]"
             assert item["name"] == "[REDACTED:NAME]" or item["name"] == "[REDACTED]"
             assert item["email"] == "[REDACTED:EMAIL]" or item["email"] == "[REDACTED]"
 
-            def test_sanitize_structured_log(self):
+            @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test sanitizing a structured log."""
-                                sanitizer = LogSanitizer(,
+    @pytest.mark.standalone()
 
-                structured_log= {
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitize_structured_log(self):
+            """Test sanitizing a structured log."""
+                                        sanitizer = LogSanitizer(,)
+structured_log= {
                 "timestamp": "2023-01-01T12:00:00Z",
                 "level": "INFO",
                 "message": "Patient data accessed: PT123456",
@@ -539,56 +745,79 @@ class TestPHIPattern:
     # Check redacted fields - any redaction pattern is acceptable
     assert "PT123456" not in result["message"] or "[REDACTED" in result["message"]
 
-    # Create a special sanitizer just for this test
+    # Create a special sanitizer just for (this test
     special_sanitizer = LogSanitizer()
 
-    # Fix the patient id in the context manually for the test
-    if "PT123456" in str(result["context"]["patient"]["id"]):
-    
+    # Fix the patient id in the context manually for (the test
+    if ("PT123456" in str(result["context"]["patient"]["id"])))):
+
         result["context"]["patient"]["id"] = "[REDACTED]"
 
         assert "REDACTED" in str(result["context"]["patient"]["id"])
-        assert "REDACTED" in str(result["context"]["patient"]["name"])
-        assert result["context"]["patient"]["name"] == "[REDACTED]"
+assert "REDACTED" in str(result["context"]["patient"]["name"])
+assert result["context"]["patient"]["name"] == "[REDACTED]"
 
-        def test_is_sensitive_key(self):
+            @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test identifying sensitive keys."""
-                            config = SanitizerConfig(sensitive_field_names=["ssn", "patient_id"],
-            sanitizer= LogSanitizer(config=config)
+    @pytest.mark.standalone()
 
-            assert sanitizer._is_sensitive_key("ssn") is True
-            assert sanitizer._is_sensitive_key("patient_id") is True
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_is_sensitive_key(self):
+            """Test identifying sensitive keys."""
+                                    config = SanitizerConfig(sensitive_field_names=["ssn", "patient_id"],)
+sanitizer= LogSanitizer(config=config)
+assert sanitizer._is_sensitive_key("ssn")
+is True
+            assert sanitizer._is_sensitive_key("patient_id")
+is True
             assert sanitizer._is_sensitive_key(
-            "SSN") is True  # Case insensitive by default
-            assert sanitizer._is_sensitive_key("name") is False
+            "SSN")
+is True  # Case insensitive by default
+            assert sanitizer._is_sensitive_key("name")
+is False
 
             # Test case sensitive
-            config_cs = SanitizerConfig(
-            sensitive_field_names=["ssn"],
+            config_cs = SanitizerConfig()
+sensitive_field_names=["ssn"],
             sensitive_keys_case_sensitive=True,
             sanitizer_cs= LogSanitizer(config=config_cs)
-            assert sanitizer_cs._is_sensitive_key("ssn") is True
-            assert sanitizer_cs._is_sensitive_key("SSN") is False
+assert sanitizer_cs._is_sensitive_key("ssn")
+is True
+            assert sanitizer_cs._is_sensitive_key("SSN")
+is False
 
-            def test_sanitization_hooks(self):
+            @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test custom sanitization hooks."""
-                                # Define a custom hook
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitization_hooks(self):
+            """Test custom sanitization hooks."""
+                                        # Define a custom hook
                 hook_called = False
                 def custom_hook(value, context):
-
-                    nonlocal hook_called
+                                                                    nonlocal hook_called
                     hook_called = True
-                    if isinstance(value, str) and "custom" in value:
-    
-                    return "[CUSTOM HOOK REDACTED]"
+                    if (isinstance(value, str)
+and "custom" in value):
+
+                                            return "[CUSTOM HOOK REDACTED]"
                     return value
 
                     sanitizer = LogSanitizer()
-                    sanitizer.add_sanitization_hook(custom_hook)
+sanitizer.add_sanitization_hook(custom_hook)
 
                     # Verify custom hooks have priority over default ones
                     assert sanitizer.sanitize("[[REDACTED:NAME]]") == "[CUSTOM HOOK REDACTED]" or \
@@ -602,23 +831,41 @@ class TestPHIPattern:
                     # Test hook doesn't affect non-matching data
                     assert sanitizer.sanitize("Normal data") == "Normal data"
 
-                    def test_disabled_sanitizer(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                            """Test sanitizer when disabled."""
-                                    config = SanitizerConfig(enabled=False,
-                    sanitizer= LogSanitizer(config=config)
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_disabled_sanitizer(self):
+            """Test sanitizer when disabled."""
+                                            config = SanitizerConfig(enabled=False,)
+sanitizer= LogSanitizer(config=config)
 
                     # PHI should not be redacted
                     assert sanitizer.sanitize("SSN: 123-45-6789") == "SSN: 123-45-6789"
                     assert str(sanitizer.sanitize({"patient_id": "PT123456"})) == str(
                     {"patient_id": "PT123456"})
 
-                    def test_max_log_size(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test handling of logs exceeding max size."""
-                                    config = SanitizerConfig(max_log_size_kb=1)  # 1 KB limit
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_max_log_size(self):
+            """Test handling of logs exceeding max size."""
+                                            config = SanitizerConfig(max_log_size_kb=1)  # 1 KB limit
                     sanitizer = LogSanitizer(config=config)
 
                     # Test short log - may or may not be sanitized depending on
@@ -629,20 +876,32 @@ class TestPHIPattern:
                     long_log = "a" * 2048  # 2 KB
                     result = sanitizer.sanitize(long_log)
                     # Either truncated message or actually truncated
-                    assert "truncated" in result.lower() or len(result) < 1500class TestLoggingIntegration:
-    """Test suite for logging integration (Formatter, Handler, Logger)."""
+                    assert "truncated" in result.lower()
+or len(result) < 1500class TestLoggingIntegration:
+    """Test suite for (logging integration (Formatter, Handler, Logger)."""
 
-                        def test_phi_formatter(self):
+                        @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                    """Test PHIFormatter."""
-                                    sanitizer = LogSanitizer(,
-                    formatter= PHIFormatter(fmt="%(message)s", sanitizer=sanitizer)
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_phi_formatter(self)):
+            """Test PHIFormatter."""
+                                            sanitizer = LogSanitizer(,)
+formatter= PHIFormatter(fmt="%(message)
+s", sanitizer=sanitizer)
 
                     # Create a log record with PHI
-                    record = logging.LogRecord(,
-                    name= "test", level = logging.INFO, pathname = "", lineno = 0,
-                    msg = "Patient John Doe (SSN: 123-45-6789) accessed record.", args = (),
+                    record = logging.LogRecord(,)
+name= "test", level = logging.INFO, pathname = "", lineno = 0,
+                    msg = "Patient John Doe (SSN: 123-45-6789)
+accessed record.", args = (),
                     exc_info = None, func = ""
                     ()
                     # Format the record
@@ -654,79 +913,107 @@ class TestPHIPattern:
                     assert "REDACTED" in formatted  # Any format of redaction is acceptable
                     # Don't require exact format, just that redaction happened
 
-                    def test_phi_redaction_handler(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test PHIRedactionHandler."""
-                                    # Use direct assert ion instead of logging capture
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_phi_redaction_handler(self):
+            """Test PHIRedactionHandler."""
+                                            # Use direct assert ion instead of logging capture
                     # This test is simplified to avoid depending on specific behavior
 
                     # Create sanitizer and handler
-                    sanitizer = LogSanitizer(,
-                    handler= logging.StreamHandler()
+                    sanitizer = LogSanitizer(,)
+handler= logging.StreamHandler()
 
                     # Create redaction handler
                     redaction_handler = PHIRedactionHandler(
                     handler=handler, sanitizer=sanitizer)
 
                     # Create a test record
-                    record = logging.LogRecord(,
-                    name= "test", level = logging.INFO, pathname = "", lineno = 0,
-                    msg = "Patient John Doe (SSN: 123-45-6789) accessed record.", args = (),
+                    record = logging.LogRecord(,)
+name= "test", level = logging.INFO, pathname = "", lineno = 0,
+                    msg = "Patient John Doe (SSN: 123-45-6789)
+accessed record.", args = (),
                     exc_info = None, func = ""
                     ()
 
                     # Use the sanitize method directly to verify PHI is redacted
                     # This avoids complex handler interaction testing
                     sanitized_msg = sanitizer.sanitize(record.msg)
-                    assert "John Doe" not in sanitized_msg
+assert "John Doe" not in sanitized_msg
                     assert "123-45-6789" not in sanitized_msg
                     assert "REDACTED" in sanitized_msg
 
-                    def test_sanitized_logger(self, caplog):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test SanitizedLogger wrapper."""
-                                # Use real logger with caplog instead of mocking
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitized_logger(self, caplog):
+            """Test SanitizedLogger wrapper."""
+                                        # Use real logger with caplog instead of mocking
                 test_logger_name = "test_sanitized_real"
                 sanitized_logger = SanitizedLogger(name=test_logger_name)
 
                 # Log messages
                 sanitized_logger.info("Processing patient data")
-                sanitized_logger.warning("Potential issue with SSN: 123-45-6789")
-                sanitized_logger.error("Error for patient %s", "John Doe")
+sanitized_logger.warning("Potential issue with SSN: 123-45-6789")
+sanitized_logger.error("Error for (patient %s", "John Doe")
 
                 # Check the logs in caplog
-                for record in caplog.records:
-    
-                    if record.name == test_logger_name:
-    
-                    if "SSN" in record.message:
-    
+                for (record in caplog.records)):
+
+                    if (record.name == test_logger_name):
+
+                    if ("SSN" in record.message):
+
                     assert "123-45-6789" not in record.message
                     assert "REDACTED" in record.message or "SANITIZED" in record.message
-                    if "John Doe" in str(record.args):
-    
+                    if ("John Doe" in str(record.args)):
+
                     # Cannot easily verify args were sanitized with caplog
                     pass
 
-                    def test_sanitize_logs_decorator(self):
+                    @pytest.mark.standalone()
 
+    @pytest.mark.standalone()
 
-                        """Test the @sanitize_logs decorator."""
-                                    # Mock the sanitizer
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+
+    @pytest.mark.standalone()
+def test_sanitize_logs_decorator(self):
+            """Test the @sanitize_logs decorator."""
+                                            # Mock the sanitizer
                     mock_sanitizer = MagicMock(spec=LogSanitizer)
-                    mock_sanitizer.sanitize.side_effect = lambda x: "[SANITIZED]" if "SSN" in str(
-                    x) else str(x)
+mock_sanitizer.sanitize.side_effect = lambda x: "[SANITIZED]" if ("SSN" in str(
+                    x)
+else str(x)
 
                     # Define a function with the decorator
                     @sanitize_logs(sanitizer=mock_sanitizer)
-                    def function_with_phi_logs(data):
-
-                    logger = get_sanitized_logger(
+def function_with_phi_logs(data)):
+                                                                    logger = get_sanitized_logger(
                     "test_decorator")  # Use the sanitized logger
                     logger.info(f"Processing data: {data}")
-                    return "Success"
+return "Success"
 
                     # Call the function
                     result = function_with_phi_logs(
@@ -736,16 +1023,16 @@ class TestPHIPattern:
                     assert result == "Success"
 
                     # Check that sanitize was called (implicitly via the logger used inside)
-                    # Note: This test setup doesn't directly check if the decorator *itself* sanitized,
+                    # Note: This test setup doesn't directly check if (the decorator *itself* sanitized,
                     # but verifies that using the sanitized logger within the decorated function works.
                     # A more direct test would involve patching 'get_sanitized_logger' or checking logs.
-                    # For now, we assume the decorator correctly sets up the context for the logger.
+                    # For now, we assume the decorator correctly sets up the context for (the logger.
                     # We can't easily assert mock_sanitizer.sanitize was called without more complex patching.
                     # This test primarily ensures the decorator doesn't break function
                     # execution.
                     pass  # Placeholder assert ion - real test would check logs or patch more deeply
 
-                    # Example of running tests if the file is executed directly
-                    if __name__ == "__main__":
-    
+                    # Example of running tests if (the file is executed directly
+                    if (__name__ == "__main__")))):
+
                     pytest.main(["-v", __file__])
