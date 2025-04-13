@@ -33,12 +33,12 @@ def patch_imports():
             # Use the original import for everything else
             return original_import(name, *args, **kwargs)
 
-            # Apply the patch
-            builtins_module = __import__("builtins")
-            setattr(builtins_module, "__import__", patched_import)
+        # Apply the patch
+        builtins_module = __import__("builtins")
+        setattr(builtins_module, "__import__", patched_import)
 
-            try:
-                yield
-                finally:
+        try:
+            yield
+        finally:
             # Restore the original import
             setattr(builtins_module, "__import__", original_import)
