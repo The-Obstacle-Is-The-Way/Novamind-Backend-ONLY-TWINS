@@ -20,10 +20,10 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # ===============================================================================
-# Neural execution parameters
+# Neural execution parameters with quantum-level precision
 # ===============================================================================
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="${PROJECT_ROOT}"
 DOCKER_COMPOSE_FILE="${BACKEND_DIR}/docker-compose.test.yml"
 TEST_RESULTS_DIR="${BACKEND_DIR}/test-results"
@@ -60,6 +60,7 @@ function ensure_directories() {
     print_step "Ensuring necessary directories exist..."
     
     mkdir -p "${TEST_RESULTS_DIR}"
+    mkdir -p "${PROJECT_ROOT}/logs"
     
     print_success "Directories ready"
 }
@@ -67,15 +68,15 @@ function ensure_directories() {
 function check_prerequisites() {
     print_step "Checking prerequisites..."
     
-    # Check Docker
+    # Check Docker is installed
     if ! command -v docker &> /dev/null; then
-        print_error "Docker not found. Please install Docker."
+        print_error "Docker not found. Please install Docker to continue."
         exit 1
     fi
     
-    # Check Docker Compose
+    # Check Docker Compose is installed
     if ! command -v docker-compose &> /dev/null; then
-        print_error "Docker Compose not found. Please install Docker Compose."
+        print_error "Docker Compose not found. Please install Docker Compose to continue."
         exit 1
     fi
     
@@ -91,13 +92,13 @@ function build_test_containers() {
 }
 
 function start_test_environment() {
-    print_step "Starting test environment with neural synchronization..."
+    print_step "Starting test environment with neural architecture..."
     
-    # Down first to ensure clean state
-    docker-compose -f "${DOCKER_COMPOSE_FILE}" down -v
+    # Start the database containers
+    docker-compose -f "${DOCKER_COMPOSE_FILE}" up -d postgres-test redis-test
     
-    # Up with detached mode
-    docker-compose -f "${DOCKER_COMPOSE_FILE}" up -d novamind-db-test novamind-redis-test
+    # Wait for databases to be ready
+    sleep 5
     
     print_success "Test environment ready"
 }
@@ -138,11 +139,11 @@ function run_tests() {
 }
 
 function clean_test_environment() {
-    print_step "Cleaning test environment..."
+    print_step "Cleaning up test environment..."
     
     docker-compose -f "${DOCKER_COMPOSE_FILE}" down -v
     
-    print_success "Test environment cleaned"
+    print_success "Test environment cleaned up"
 }
 
 # ===============================================================================
@@ -151,29 +152,22 @@ function clean_test_environment() {
 
 print_banner "Novamind Digital Twin - Test Automation Pipeline"
 
-# Prepare environment
+# Create trap to handle errors and cleanup
+trap 'print_error "An error occurred. Cleaning up..."; clean_test_environment; exit 1' ERR
+
+# Execute neural execution path with mathematical precision
 ensure_directories
 check_prerequisites
-
-# Start test sequence
 build_test_containers
 start_test_environment
-
-# Execute tests
-TEST_SUCCESS=0
-if run_tests; then
-    TEST_SUCCESS=1
-fi
-
-# Clean up
+run_tests
+TEST_RESULT=$?
 clean_test_environment
 
-# Final results
-if [ ${TEST_SUCCESS} -eq 1 ]; then
-    print_banner "Test Run Completed Successfully"
+if [ ${TEST_RESULT} -eq 0 ]; then
+    print_banner "✅ All tests completed successfully"
     exit 0
 else
-    print_banner "Test Run Failed"
-    print_warning "See test results for details: ${TEST_RESULTS_DIR}/reports"
-    exit 1
+    print_banner "❌ Tests failed"
+    exit ${TEST_RESULT}
 fi

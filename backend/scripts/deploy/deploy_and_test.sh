@@ -107,7 +107,7 @@ function run_tests() {
     
     # Run the tests using our optimized neural architecture test runner
     # This ensures proper handling of neurotransmitter cascading effects and brain region connectivity
-    docker-compose -f "${DOCKER_COMPOSE_FILE}" run --rm novamind-test-runner python -m scripts.docker_test_runner all
+    docker-compose -f "${DOCKER_COMPOSE_FILE}" run --rm novamind-test-runner python -m scripts.core.docker_test_runner all
     TEST_EXIT_CODE=$?
     
     print_step "Collecting test artifacts and neurotransmitter analysis data..."
