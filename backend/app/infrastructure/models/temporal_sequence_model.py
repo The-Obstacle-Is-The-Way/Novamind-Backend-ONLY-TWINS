@@ -2,10 +2,11 @@
 SQLAlchemy models for temporal sequence persistence.
 """
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime, UTC, UTC
+from datetime import datetime, UTC
 from typing import List
+from app.infrastructure.persistence.sqlalchemy.types import JSONEncodedDict, StringListDecorator, FloatListDecorator
 
 Base = declarative_base()
 
@@ -24,8 +25,8 @@ class TemporalSequenceModel(Base):
     patient_id = sa.Column(UUID, nullable=False, index=True)
     
     # Sequence metadata
-    feature_names = sa.Column(ARRAY(sa.String), nullable=False)
-    sequence_metadata = sa.Column(JSONB, nullable=False, default={})
+    feature_names = sa.Column(StringListDecorator, nullable=False)
+    sequence_metadata = sa.Column(JSONEncodedDict, nullable=False, default={})
     
     # Audit fields
     created_at = sa.Column(sa.DateTime, default=datetime.utcnow, nullable=False)
@@ -64,7 +65,7 @@ class TemporalDataPointModel(Base):
     
     # Time point data
     timestamp = sa.Column(sa.DateTime, nullable=False)
-    values = sa.Column(ARRAY(sa.Float), nullable=False)
+    values = sa.Column(FloatListDecorator, nullable=False)
     
     # Allow indexing by timestamp for time-based queries
     __table_args__ = (
@@ -92,7 +93,7 @@ class EventModel(Base):
     # Event data
     event_type = sa.Column(sa.String, nullable=False, index=True)
     timestamp = sa.Column(sa.DateTime, nullable=False, index=True)
-    event_metadata = sa.Column(JSONB, nullable=False, default={}) # Renamed from metadata
+    event_metadata = sa.Column(JSONEncodedDict, nullable=False, default={})
     
     # Audit fields
     created_at = sa.Column(sa.DateTime, default=datetime.utcnow, nullable=False)

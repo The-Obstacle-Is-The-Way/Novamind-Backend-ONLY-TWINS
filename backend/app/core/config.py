@@ -23,9 +23,17 @@ class Settings(BaseSettings):
     
     # API Configuration
     API_V1_STR: str = "/api/v1"
-    API_V2_STR: str = "/api/v2"
+    API_V2_STR: str = "/api/v2" # Placeholder for future API version
     PROJECT_NAME: str = "NovaMind Digital Twin"
+    APP_DESCRIPTION: str = "NovaMind Digital Twin API - Powering the future of psychiatric digital twins."
+    VERSION: str = "0.1.0" # Default application version
     
+    # Optional Feature Flags
+    ENABLE_ANALYTICS: bool = Field(default=False, env="ENABLE_ANALYTICS")
+
+    # Optional Static File Serving
+    STATIC_DIR: Optional[str] = Field(default=None, env="STATIC_DIR")
+
     # Security settings
     SECRET_KEY: str = Field(
         default="novamind_development_secret_key_please_change_in_production", 
@@ -64,10 +72,10 @@ class Settings(BaseSettings):
             return v
         return PostgresDsn.build(
             scheme="postgresql",
-            user=values.get("POSTGRES_USER"),
+            username=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
-            port=values.get("POSTGRES_PORT"),
+            port=int(values.get("POSTGRES_PORT")), 
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
     

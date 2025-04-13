@@ -18,7 +18,6 @@ settings = get_settings()
 
 from typing import Optional, Dict, Any # Ensure Optional is imported
 from app.core.utils.logging import get_logger
-from app.domain.exceptions import DatabaseError
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance
 
 logger = get_logger(__name__)
@@ -45,5 +44,4 @@ async def get_db() -> dict:
             yield session
         finally:
             # The context manager from get_session_from_config handles closing.
-            pass
             pass

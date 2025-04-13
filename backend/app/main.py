@@ -29,6 +29,7 @@ except (ImportError, AttributeError):
             APP_DESCRIPTION: str = "Advanced psychiatric digital twin platform for mental health analytics and treatment optimization"
             VERSION: str = "1.0.0"
             API_PREFIX: str = "/api/v1"
+            API_V1_STR: str = "/api/v1"
             ENABLE_ANALYTICS: bool = False
             
         def get_settings():
@@ -116,7 +117,7 @@ def create_application() -> FastAPI:
     setup_routers()
     
     # Get API prefix and ensure it doesn't end with a slash
-    api_prefix = settings.API_PREFIX
+    api_prefix = settings.API_V1_STR # Use the defined API_V1_STR
     if api_prefix.endswith('/'):
         api_prefix = api_prefix[:-1]
     
