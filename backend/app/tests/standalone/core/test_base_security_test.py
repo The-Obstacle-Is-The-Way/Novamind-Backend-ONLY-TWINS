@@ -11,14 +11,18 @@ from typing import Any
 from unittest.mock import MagicMock
 
 
-# Mock Role class that would normally be in app/core/security/roles.pyclass Role(str, Enum):
+# Mock Role class that would normally be in app/core/security/roles.py
+class Role(str, Enum):
     """Mock user roles for testing."""
 
     USER = "user"
     ADMIN = "admin"
     CLINICIAN = "clinician"
     SUPERVISOR = "supervisor"
-    RESEARCHER = "researcher"class BaseSecurityTest(unittest.TestCase):
+    RESEARCHER = "researcher"
+
+
+class BaseSecurityTest(unittest.TestCase):
     """
     Base class for security and authorization testing.
 
@@ -33,16 +37,12 @@ from unittest.mock import MagicMock
     test_roles: list[Role] = [Role.USER]
 
     def setUp(self):
-
-
-                    """Set up test fixtures before each test."""
+        """Set up test fixtures before each test."""
         self.mock_auth_service = self.create_mock_auth_service()
         self.test_user = self.create_test_user()
 
     def create_mock_auth_service(self) -> MagicMock:
-
-
-                    """Create a mock authentication service."""
+        """Create a mock authentication service."""
         mock = MagicMock()
         mock.authenticate.return_value = True
         mock.get_user_by_id.return_value = self.create_test_user()
