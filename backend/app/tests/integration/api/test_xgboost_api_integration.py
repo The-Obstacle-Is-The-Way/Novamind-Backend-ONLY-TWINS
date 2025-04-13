@@ -13,11 +13,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from datetime import datetime, timezone
 
-from app.api.routes.xgboost import router, as xgboost_router
+from app.api.routes.xgboost import router as xgboost_router
 from app.core.services.ml.xgboost.interface import XGBoostInterface
-from app.core.services.ml.xgboost.exceptions import ()
-ValidationError, DataPrivacyError, ResourceNotFoundError,
-ModelNotFoundError, ServiceUnavailableError
+from app.core.services.ml.xgboost.exceptions import (
+    ValidationError, DataPrivacyError, ResourceNotFoundError,
+    ModelNotFoundError, ServiceUnavailableError
+)
 
 
 
@@ -26,29 +27,28 @@ ModelNotFoundError, ServiceUnavailableError
 
 @pytest.fixture
 def mock_xgboost_service() -> Generator[MagicMock, None, None]:
-
     """
     Create a mock XGBoost service.
 
     This patch replaces the get_xgboost_service dependency in the routes
-    with a mock implementation that can be controlled in tests.:
-        """
-        mock_service = MagicMock(spec=XGBoostInterface)
+    with a mock implementation that can be controlled in tests.
+    """
+    mock_service = MagicMock(spec=XGBoostInterface)
 
-        # Setup default successful responses
-        mock_service.predict_risk.return_value = {
+    # Setup default successful responses
+    mock_service.predict_risk.return_value = {
         "prediction_id": "risk-123",
         "patient_id": "test-patient-123",
         "risk_type": "relapse",
         "risk_level": "moderate",
         "risk_score": 0.45,
         "confidence": 0.8,
-        "factors": []
-        {"name": "phq9_score", "importance": 0.7, "value": 12},
-        {"name": "medication_adherence", "importance": 0.5, "value": 0.8}
+        "factors": [
+            {"name": "phq9_score", "importance": 0.7, "value": 12},
+            {"name": "medication_adherence", "importance": 0.5, "value": 0.8}
         ],
         "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+    }
 
     mock_service.predict_treatment_response.return_value = {
     "prediction_id": "treatment-123",
