@@ -30,7 +30,7 @@ def mock_xgboost_service():
     return service
 
 @pytest.fixture
-def test_app(mock_xgboost_service) -> FastAPI:
+def test_app(mock_xgboost_service) -> 'FastAPI':
     """Create a test app instance with overridden dependencies."""
     # Patch the settings object *before* creating the application
     # Create a simple test app instead of using the full application

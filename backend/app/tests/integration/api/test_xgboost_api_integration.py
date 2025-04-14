@@ -22,6 +22,8 @@ from app.core.services.ml.xgboost.exceptions import (
 
 # Local app and client fixtures removed; tests will use client from conftest.py
 
+from typing import Generator, Dict, Any
+
 @pytest.fixture
 def mock_xgboost_service() -> Generator[MagicMock, None, None]:
     """

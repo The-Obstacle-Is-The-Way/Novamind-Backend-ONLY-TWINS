@@ -10,7 +10,11 @@ import json
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.domain.models.patient import Patient  # Corrected import path for Patient entity
+try:
+    from app.domain.entities.patient import Patient
+except ImportError:
+    # If the above doesn't work, try another possible path
+    from app.domain.entities import Patient
 from app.infrastructure.database.models import PatientModel
 from app.infrastructure.database.session import get_session
 
