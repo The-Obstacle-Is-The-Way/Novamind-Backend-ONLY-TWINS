@@ -297,6 +297,7 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
                 <div class="card-body">
                 <table class="table table-bordered">
                 <thead>
+                <thead>
                 <tr>
                     <th>File</th>
                     <th>Passed</th>
@@ -448,23 +449,23 @@ def generate_dashboard(results: Dict[str, Any], output_path: str) -> None:
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     // Toggle test details on file row click
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {{
     const testDetails = document.querySelectorAll('.test-details');
-    testDetails.forEach(function(detail) {
+    testDetails.forEach(function(detail) {{
         detail.style.display = 'none';
-    });
+    }});
 
     const fileRows = document.querySelectorAll('tr:not(:has(td[colspan]))');
-    fileRows.forEach(function(row) {
-        row.addEventListener('click', function() {
+    fileRows.forEach(function(row) {{
+        row.addEventListener('click', function() {{
             const nextRow = this.nextElementSibling;
-            if (nextRow && nextRow.querySelector('.test-details')) {
+            if (nextRow && nextRow.querySelector('.test-details')) {{
                 const details = nextRow.querySelector('.test-details');
                 details.style.display = details.style.display === 'none' ? 'block' : 'none';
-            }
-        });
-    });
-});
+            }}
+        }});
+    }});
+}});
 </script>
 </body>
 </html>
