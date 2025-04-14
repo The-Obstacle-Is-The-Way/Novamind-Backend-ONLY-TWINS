@@ -3,391 +3,347 @@
 Tests for the Patient entity.
 """
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import uuid
 import pytest
 
-from app.domain.entities.patient import Patient  # Corrected import
+from app.domain.entities.patient import Patient, Gender, InsuranceStatus, PatientStatus  # Corrected imports
 from app.domain.exceptions import ValidationException
 
 
 @pytest.fixture
 def valid_patient_data():
-
     """Fixture for valid patient data."""
-
-#     return {
-"id": str(uuid.uuid4()),
-"first_name": "John",
-"last_name": "Doe",
-"date_of_birth": date(1980, 1, 1),
-"gender": Gender.MALE,
-"email": "john.doe@example.com",
-"phone": "555-123-4567",
-"address": {
-"street": "123 Main St",
-"city": "Anytown",
-"state": "CA",
-"zip": "12345"
-},
-"emergency_contacts": []
-{
-"name": "Jane Doe",
-"relationship": "Spouse",
-"phone": "555-987-6543"
-}
-],
-"insurance_info": {
-"provider": "Health Insurance Co",
-"policy_number": "ABC123456",
-"group_number": "XYZ789"
-},
-"insurance_status": InsuranceStatus.VERIFIED,
-"medical_history": []
-{
-"condition": "Anxiety",
-"diagnosed_date": "2020-01-15",
-"notes": "Mild to moderate"
-}
-],
-"medications": []
-{
-"name": "Sertraline",
-"dosage": "50mg",
-"frequency": "Daily",
-"start_date": "2020-02-01"
-}
-],
-"allergies": ["Penicillin"],
-"notes": "Patient notes here",
-"status": PatientStatus.ACTIVE,
-"created_at": datetime.now(),
-"updated_at": datetime.now()
-}
+    return {
+        "id": str(uuid.uuid4()),
+        "first_name": "John",
+        "last_name": "Doe",
+        "date_of_birth": date(1980, 1, 1),
+        "gender": Gender.MALE,
+        "email": "john.doe@example.com",
+        "phone": "555-123-4567",
+        "address": {
+            "street": "123 Main St",
+            "city": "Anytown",
+            "state": "CA",
+            "zip": "12345"
+        },
+        "emergency_contacts": [
+            {
+                "name": "Jane Doe",
+                "relationship": "Spouse",
+                "phone": "555-987-6543"
+            }
+        ],
+        "insurance_info": {
+            "provider": "Health Insurance Co",
+            "policy_number": "ABC123456",
+            "group_number": "XYZ789"
+        },
+        "insurance_status": InsuranceStatus.VERIFIED,
+        "medical_history": [
+            {
+                "condition": "Anxiety",
+                "diagnosed_date": "2020-01-15",
+                "notes": "Mild to moderate"
+            }
+        ],
+        "medications": [
+            {
+                "name": "Sertraline",
+                "dosage": "50mg",
+                "frequency": "Daily",
+                "start_date": "2020-02-01"
+            }
+        ],
+        "allergies": ["Penicillin"],
+        "notes": "Patient notes here",
+        "status": PatientStatus.ACTIVE,
+        "created_at": datetime.now(),
+        "updated_at": datetime.now()
+    }
 
 
 @pytest.fixture
 def valid_patient(valid_patient_data):
-
     """Fixture for a valid patient."""
-
-#     return Patient(**valid_patient_data)
+    return Patient(**valid_patient_data)
 
 @pytest.mark.venv_only()
-    class TestPatient:
-        """Tests for the Patient class."""
+class TestPatient:
+    """Tests for the Patient class."""
 
-        def test_create_patient(self, valid_patient_data):
+    def test_create_patient(self, valid_patient_data):
+        """Test creating a patient."""
+        patient = Patient(**valid_patient_data)
 
+        assert patient.id == valid_patient_data["id"]
+        assert patient.first_name == valid_patient_data["first_name"]
+        assert patient.last_name == valid_patient_data["last_name"]
+        assert patient.date_of_birth == valid_patient_data["date_of_birth"]
+        assert patient.gender == valid_patient_data["gender"]
+        assert patient.email == valid_patient_data["email"]
+        assert patient.phone == valid_patient_data["phone"]
+        assert patient.address == valid_patient_data["address"]
+        assert patient.emergency_contacts == valid_patient_data["emergency_contacts"]
+        assert patient.insurance_info == valid_patient_data["insurance_info"]
+        assert patient.insurance_status == valid_patient_data["insurance_status"]
+        assert patient.medical_history == valid_patient_data["medical_history"]
+        assert patient.medications == valid_patient_data["medications"]
+        assert patient.allergies == valid_patient_data["allergies"]
+        assert patient.notes == valid_patient_data["notes"]
+        assert patient.status == valid_patient_data["status"]
 
-            """Test creating a patient."""
-            patient = Patient(**valid_patient_data)
+    def test_create_patient_with_string_enums(self, valid_patient_data):
+        """Test creating a patient with string enums."""
+        # Convert enums to strings
+        data = valid_patient_data.copy()
+        data["gender"] = Gender.MALE.value
+        data["insurance_status"] = InsuranceStatus.VERIFIED.value
+        data["status"] = PatientStatus.ACTIVE.value
 
-            assert patient.id == valid_patient_data["id"]
-            assert patient.first_name == valid_patient_data["first_name"]
-            assert patient.last_name == valid_patient_data["last_name"]
-            assert patient.date_of_birth == valid_patient_data["date_of_birth"]
-            assert patient.gender == valid_patient_data["gender"]
-            assert patient.email == valid_patient_data["email"]
-            assert patient.phone == valid_patient_data["phone"]
-            assert patient.address == valid_patient_data["address"]
-            assert patient.emergency_contacts == valid_patient_data["emergency_contacts"]
-            assert patient.insurance_info == valid_patient_data["insurance_info"]
-            assert patient.insurance_status == valid_patient_data["insurance_status"]
-            assert patient.medical_history == valid_patient_data["medical_history"]
-            assert patient.medications == valid_patient_data["medications"]
-            assert patient.allergies == valid_patient_data["allergies"]
-            assert patient.notes == valid_patient_data["notes"]
-            assert patient.status == valid_patient_data["status"]
+        patient = Patient(**data)
 
-            def test_create_patient_with_string_enums(self, valid_patient_data):
+        assert patient.gender == Gender.MALE
+        assert patient.insurance_status == InsuranceStatus.VERIFIED
+        assert patient.status == PatientStatus.ACTIVE
 
+    def test_create_patient_with_string_date(self, valid_patient_data):
+        """Test creating a patient with string date."""
+        # Convert date to string
+        data = valid_patient_data.copy()
+        data["date_of_birth"] = "1980-01-01"
 
-                """Test creating a patient with string enums."""
-            # Convert enums to strings
-            data = valid_patient_data.copy()
-            data["gender"] = Gender.MALE.value
-            data["insurance_status"] = InsuranceStatus.VERIFIED.value
-            data["status"] = PatientStatus.ACTIVE.value
+        patient = Patient(**data)
 
-            patient = Patient(**data)
+        assert patient.date_of_birth == date(1980, 1, 1)
 
-            assert patient.gender == Gender.MALE
-            assert patient.insurance_status == InsuranceStatus.VERIFIED
-            assert patient.status == PatientStatus.ACTIVE
+    def test_create_patient_with_auto_id(self, valid_patient_data):
+        """Test creating a patient with auto-generated ID."""
+        data = valid_patient_data.copy()
+        data.pop("id")
 
-                def test_create_patient_with_string_date(self, valid_patient_data):
+        patient = Patient(**data)
 
+        assert patient.id is not None
+        assert isinstance(patient.id, uuid.UUID)
 
-                    """Test creating a patient with string date."""
-            # Convert date to string
-            data = valid_patient_data.copy()
-            data["date_of_birth"] = "1980-01-01"
+    def test_validate_required_fields(self):
+        """Test validation of required fields."""
+        # Missing first_name
+        with pytest.raises(ValidationException):
+            Patient(
+                last_name="Doe",
+                date_of_birth=date(1980, 1, 1),
+                gender=Gender.MALE,
+                email="john.doe@example.com"
+            )
 
-            patient = Patient(**data)
+        # Missing last_name
+        with pytest.raises(ValidationException):
+            Patient(
+                first_name="John",
+                date_of_birth=date(1980, 1, 1),
+                gender=Gender.MALE,
+                email="john.doe@example.com"
+            )
 
-            assert patient.date_of_birth == date(1980, 1, 1)
+        # Missing date_of_birth
+        with pytest.raises(ValidationException):
+            Patient(
+                first_name="John",
+                last_name="Doe",
+                gender=Gender.MALE,
+                email="john.doe@example.com"
+            )
 
-                def test_create_patient_with_auto_id(self, valid_patient_data):
+        # Missing gender
+        with pytest.raises(ValidationException):
+            Patient(
+                first_name="John",
+                last_name="Doe",
+                date_of_birth=date(1980, 1, 1),
+                email="john.doe@example.com"
+            )
 
+        # Missing both email and phone
+        with pytest.raises(ValidationException):
+            Patient(
+                first_name="John",
+                last_name="Doe",
+                date_of_birth=date(1980, 1, 1),
+                gender=Gender.MALE
+            )
 
-                    """Test creating a patient with auto-generated ID."""
-            data = valid_patient_data.copy()
-            data.pop("id",)
+    def test_validate_email_format(self, valid_patient_data):
+        """Test validation of email format."""
+        data = valid_patient_data.copy()
+        data["email"] = "invalid-email"
 
-            patient= Patient(**data)
-
-            assert patient.id is not None
-            assert isinstance(patient.id, uuid.UUID)
-
-                    def test_validate_required_fields(self):
-
-
-                        """Test validation of required fields."""
-            # Missing first_name
-                with pytest.raises(ValidationException):
-            Patient(,)
-            last_name= "Doe",
-            date_of_birth = date(1980, 1, 1),
-            gender = Gender.MALE,
-            email = "john.doe@example.com"
-            ()
-
-            # Missing last_name
-                with pytest.raises(ValidationException):
-            Patient(,)
-            first_name= "John",
-            date_of_birth = date(1980, 1, 1),
-            gender = Gender.MALE,
-            email = "john.doe@example.com"
-            ()
-
-            # Missing date_of_birth
-                with pytest.raises(ValidationException):
-                    Patient(,)
-                    first_name= "John",
-                    last_name = "Doe",
-                    gender = Gender.MALE,
-                    email = "john.doe@example.com"
-                    ()
-
-                    # Missing gender
-                    with pytest.raises(ValidationException):
-            Patient(,)
-            first_name= "John",
-            last_name = "Doe",
-            date_of_birth = date(1980, 1, 1),
-            email = "john.doe@example.com"
-            ()
-
-            # Missing both email and phone
-                with pytest.raises(ValidationException):
-            Patient(,)
-            first_name= "John",
-            last_name = "Doe",
-            date_of_birth = date(1980, 1, 1),
-            gender = Gender.MALE
-            ()
-
-                    def test_validate_email_format(self, valid_patient_data):
-
-
-                        """Test validation of email format."""
-            data = valid_patient_data.copy()
-            data["email"] = "invalid-email"
-
-                with pytest.raises(ValidationException):
+        with pytest.raises(ValidationException):
             Patient(**data)
 
-                    def test_validate_phone_format(self, valid_patient_data):
+    def test_validate_phone_format(self, valid_patient_data):
+        """Test validation of phone format."""
+        data = valid_patient_data.copy()
+        data["email"] = None  # Remove email to force phone validation
+        data["phone"] = "invalid@phone"
 
-
-                        """Test validation of phone format."""
-            data = valid_patient_data.copy()
-            data["email"] = None  # Remove email to force phone validation
-            data["phone"] = "invalid@phone"
-
-                with pytest.raises(ValidationException):
+        with pytest.raises(ValidationException):
             Patient(**data)
 
-                    def test_update_personal_info(self, valid_patient):
+    def test_update_personal_info(self, valid_patient):
+        """Test updating personal information."""
+        valid_patient.update_personal_info(
+            first_name="Jane",
+            last_name="Smith",
+            date_of_birth=date(1981, 2, 2),
+            gender=Gender.FEMALE,
+            email="jane.smith@example.com",
+            phone="555-987-6543",
+            address={
+                "street": "456 Oak St",
+                "city": "Othertown",
+                "state": "NY",
+                "zip": "67890"
+            }
+        )
 
-
-                        """Test updating personal information."""
-            valid_patient.update_personal_info(,)
-            first_name= "Jane",
-            last_name = "Smith",
-            date_of_birth = date(1981, 2, 2),
-            gender = Gender.FEMALE,
-            email = "jane.smith@example.com",
-            phone = "555-987-6543",
-            address = {
+        assert valid_patient.first_name == "Jane"
+        assert valid_patient.last_name == "Smith"
+        assert valid_patient.date_of_birth == date(1981, 2, 2)
+        assert valid_patient.gender == Gender.FEMALE
+        assert valid_patient.email == "jane.smith@example.com"
+        assert valid_patient.phone == "555-987-6543"
+        assert valid_patient.address == {
             "street": "456 Oak St",
             "city": "Othertown",
             "state": "NY",
             "zip": "67890"
-            }
+        }
+        assert valid_patient.updated_at > valid_patient.created_at
 
+    def test_update_personal_info_with_string_date(self, valid_patient):
+        """Test updating personal information with string date."""
+        valid_patient.update_personal_info(
+            date_of_birth="1981-02-02"
+        )
 
-()
+        assert valid_patient.date_of_birth == date(1981, 2, 2)
 
-assert valid_patient.first_name == "Jane"
-assert valid_patient.last_name == "Smith"
-assert valid_patient.date_of_birth == date(1981, 2, 2)
-assert valid_patient.gender == Gender.FEMALE
-assert valid_patient.email == "jane.smith@example.com"
-assert valid_patient.phone == "555-987-6543"
-assert valid_patient.address == {
-"street": "456 Oak St",
-"city": "Othertown",
-"state": "NY",
-"zip": "67890"
-}
-assert valid_patient.updated_at > valid_patient.created_at
+    def test_update_personal_info_with_string_gender(self, valid_patient):
+        """Test updating personal information with string gender."""
+        valid_patient.update_personal_info(
+            gender="female"
+        )
 
-                    def test_update_personal_info_with_string_date(self, valid_patient):
+        assert valid_patient.gender == Gender.FEMALE
 
+    def test_update_insurance_info(self, valid_patient):
+        """Test updating insurance information."""
+        new_insurance_info = {
+            "provider": "New Health Insurance Co",
+            "policy_number": "DEF789012",
+            "group_number": "UVW345"
+        }
 
-"""Test updating personal information with string date."""
-valid_patient.update_personal_info(,)
-date_of_birth= "1981-02-02"
-()
+        valid_patient.update_insurance_info(
+            insurance_info=new_insurance_info,
+            insurance_status=InsuranceStatus.PENDING
+        )
 
-assert valid_patient.date_of_birth == date(1981, 2, 2)
+        assert valid_patient.insurance_info == new_insurance_info
+        assert valid_patient.insurance_status == InsuranceStatus.PENDING
+        assert valid_patient.updated_at > valid_patient.created_at
 
-        def test_update_personal_info_with_string_gender(self, valid_patient):
+    def test_update_insurance_info_with_string_status(self, valid_patient):
+        """Test updating insurance information with string status."""
+        valid_patient.update_insurance_info(
+            insurance_info=valid_patient.insurance_info,
+            insurance_status="pending"
+        )
 
+        assert valid_patient.insurance_status == InsuranceStatus.PENDING
 
-            """Test updating personal information with string gender."""
-            valid_patient.update_personal_info(,)
-            gender= "female"
-            ()
-
-            assert valid_patient.gender == Gender.FEMALE
-
-            def test_update_insurance_info(self, valid_patient):
-
-
-                """Test updating insurance information."""
-                new_insurance_info = {
-                "provider": "New Health Insurance Co",
-                "policy_number": "DEF789012",
-                "group_number": "UVW345"
-}
-
-valid_patient.update_insurance_info(,)
-insurance_info= new_insurance_info,
-insurance_status = InsuranceStatus.PENDING
-()
-
-assert valid_patient.insurance_info == new_insurance_info
-assert valid_patient.insurance_status == InsuranceStatus.PENDING
-assert valid_patient.updated_at > valid_patient.created_at
-
-                def test_update_insurance_info_with_string_status(self, valid_patient):
-
-
-"""Test updating insurance information with string status."""
-valid_patient.update_insurance_info(,)
-insurance_info= valid_patient.insurance_info,
-insurance_status = "pending"
-()
-
-assert valid_patient.insurance_status == InsuranceStatus.PENDING
-
-       def test_add_emergency_contact(self, valid_patient):
-
-
-           """Test adding an emergency contact."""
-           new_contact = {
-           "name": "Robert Doe",
-           "relationship": "Father",
-           "phone": "555-555-5555"
-}
-
-valid_patient.add_emergency_contact(new_contact)
-
-assert len(valid_patient.emergency_contacts) == 2
-assert valid_patient.emergency_contacts[1] == new_contact
-assert valid_patient.updated_at > valid_patient.created_at
-
-            def test_add_emergency_contact_validation(self, valid_patient):
-
-
-                """Test validation when adding an emergency contact."""
-# Missing name
-        with pytest.raises(ValidationException):
-            valid_patient.add_emergency_contact({)
+    def test_add_emergency_contact(self, valid_patient):
+        """Test adding an emergency contact."""
+        new_contact = {
+            "name": "Robert Doe",
             "relationship": "Father",
             "phone": "555-555-5555"
-            (})
+        }
 
-            # Missing both phone and email
-            with pytest.raises(ValidationException):
-                valid_patient.add_emergency_contact({)
+        valid_patient.add_emergency_contact(new_contact)
+
+        assert len(valid_patient.emergency_contacts) == 2
+        assert valid_patient.emergency_contacts[1] == new_contact
+        assert valid_patient.updated_at > valid_patient.created_at
+
+    def test_add_emergency_contact_validation(self, valid_patient):
+        """Test validation when adding an emergency contact."""
+        # Missing name
+        with pytest.raises(ValidationException):
+            valid_patient.add_emergency_contact({
+                "relationship": "Father",
+                "phone": "555-555-5555"
+            })
+
+        # Missing both phone and email
+        with pytest.raises(ValidationException):
+            valid_patient.add_emergency_contact({
                 "name": "Robert Doe",
                 "relationship": "Father"
-                (})
+            })
 
-                def test_remove_emergency_contact(self, valid_patient):
+    def test_remove_emergency_contact(self, valid_patient):
+        """Test removing an emergency contact."""
+        valid_patient.remove_emergency_contact(0)
 
+        assert len(valid_patient.emergency_contacts) == 0
+        assert valid_patient.updated_at > valid_patient.created_at
 
-                    """Test removing an emergency contact."""
-                    valid_patient.remove_emergency_contact(0)
+    def test_remove_emergency_contact_invalid_index(self, valid_patient):
+        """Test removing an emergency contact with invalid index."""
+        with pytest.raises(IndexError):
+            valid_patient.remove_emergency_contact(1)
 
-                    assert len(valid_patient.emergency_contacts) == 0
-                    assert valid_patient.updated_at > valid_patient.created_at
-
-                    def test_remove_emergency_contact_invalid_index(self, valid_patient):
-
-
-                        """Test removing an emergency contact with invalid index."""
-                with pytest.raises(IndexError):
-                valid_patient.remove_emergency_contact(1)
-
-                    def test_add_medical_history_item(self, valid_patient):
-
-
-                        """Test adding a medical history item."""
-                new_item = {
-                "condition": "Depression",
-                "diagnosed_date": "2019-05-10",
-                "notes": "Moderate"
-}
-
-valid_patient.add_medical_history_item(new_item)
-
-assert len(valid_patient.medical_history) == 2
-assert valid_patient.medical_history[1] == new_item
-assert valid_patient.updated_at > valid_patient.created_at
-
-                    def test_add_medical_history_item_validation(self, valid_patient):
-
-
-"""Test validation when adding a medical history item."""
-# Missing condition
-        with pytest.raises(ValidationException):
-            valid_patient.add_medical_history_item({)
+    def test_add_medical_history_item(self, valid_patient):
+        """Test adding a medical history item."""
+        new_item = {
+            "condition": "Depression",
             "diagnosed_date": "2019-05-10",
             "notes": "Moderate"
-            (})
+        }
 
-            def test_add_medication(self, valid_patient):
+        valid_patient.add_medical_history_item(new_item)
 
+        assert len(valid_patient.medical_history) == 2
+        assert valid_patient.medical_history[1] == new_item
+        assert valid_patient.updated_at > valid_patient.created_at
 
-                """Test adding a medication."""
-                new_medication = {
-                "name": "Escitalopram",
-                "dosage": "10mg",
-                "frequency": "Daily",
-                "start_date": "2021-03-15"
-}
+    def test_add_medical_history_item_validation(self, valid_patient):
+        """Test validation when adding a medical history item."""
+        # Missing condition
+        with pytest.raises(ValidationException):
+            valid_patient.add_medical_history_item({
+                "diagnosed_date": "2019-05-10",
+                "notes": "Moderate"
+            })
 
-valid_patient.add_medication(new_medication)
+    def test_add_medication(self, valid_patient):
+        """Test adding a medication."""
+        new_medication = {
+            "name": "Escitalopram",
+            "dosage": "10mg",
+            "frequency": "Daily",
+            "start_date": "2021-03-15"
+        }
 
-assert len(valid_patient.medications) == 2
-assert valid_patient.medications[1] == new_medication
-assert valid_patient.updated_at > valid_patient.created_at
+        valid_patient.add_medication(new_medication)
+
+        assert len(valid_patient.medications) == 2
+        assert valid_patient.medications[1] == new_medication
+        assert valid_patient.updated_at > valid_patient.created_at
 
                 def test_add_medication_validation(self, valid_patient):
 

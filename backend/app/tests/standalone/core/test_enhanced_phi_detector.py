@@ -62,212 +62,243 @@ class TestEnhancedPHIDetector:
 
     @pytest.mark.standalone()
     def test_contains_phi_negative_cases(self):
-    """Test cases that should not be detected as PHI."""
-    # Test with general medical terms
-    text = "The treatment protocol includes medication and therapy"
-    assert EnhancedPHIDetector.contains_phi(text) is False
+        """Test cases that should not be detected as PHI."""
+        # Test with general medical terms
+        text = "The treatment protocol includes medication and therapy"
+        assert EnhancedPHIDetector.contains_phi(text) is False
 
-    # Test with non-specific dates
-    text = "Follow-up in 30 days"
-    assert EnhancedPHIDetector.contains_phi(text) is False
+        # Test with non-specific dates
+        text = "Follow-up in 30 days"
+        assert EnhancedPHIDetector.contains_phi(text) is False
 
-    # Test with anonymous references
-    text = "The patient reported improvement"
-    assert EnhancedPHIDetector.contains_phi(text) is False
+        # Test with anonymous references
+        text = "The patient reported improvement"
+        assert EnhancedPHIDetector.contains_phi(text) is False
 
     @pytest.mark.standalone()
     def test_detect_phi_types(self):
         """Test detection of specific PHI types."""
-    # Test with multiple PHI types
-    text = "Patient John Doe (SSN: 123-45-6789) lives at 123 Main St"
-    phi_types = EnhancedPHIDetector.detect_phi_types(text)
+        # Test with multiple PHI types
+        text = "Patient John Doe (SSN: 123-45-6789) lives at 123 Main St"
+        phi_types = EnhancedPHIDetector.detect_phi_types(text)
         
-    assert PHIType.NAME in phi_types
-    assert PHIType.SSN in phi_types
-    assert PHIType.ADDRESS in phi_types
+        assert PHIType.NAME in phi_types
+        assert PHIType.SSN in phi_types
+        assert PHIType.ADDRESS in phi_types
 
     @pytest.mark.standalone()
     def test_detect_phi_types_with_context(self):
-    """Test detection of PHI types with context."""
-    # Test with medical context
-    text = "Dr. Smith saw patient on 2025-04-01 for follow-up"
-    phi_types = EnhancedPHIDetector.detect_phi_types(text)
+        """Test detection of PHI types with context."""
+        # Test with medical context
+        text = "Dr. Smith saw patient on 2025-04-01 for follow-up"
+        phi_types = EnhancedPHIDetector.detect_phi_types(text)
         
-    assert PHIType.NAME in phi_types
-    assert PHIType.DATE in phi_types
+        assert PHIType.NAME in phi_types
+        assert PHIType.DATE in phi_types
 
     @pytest.mark.standalone()
     def test_detect_phi_locations(self):
-    """Test detection of PHI locations in text."""
-    text = "Patient John Doe (SSN: 123-45-6789)"
-    locations = EnhancedPHIDetector.detect_phi_locations(text)
+        """Test detection of PHI locations in text."""
+        # Test with multiple PHI instances
+        text = "Patient John Doe (DOB: 1980-01-01) contacted via john.doe@example.com"
+        locations = EnhancedPHIDetector.detect_phi_locations(text)
         
-    # Should have at least 2 locations (name and SSN)
-    assert len(locations) >= 2
+        assert len(locations) >= 3  # At least name, DOB, and email
         
-    # Check structure of location data
-        for location in locations:
-            assert "start" in location
-            assert "end" in location
-            assert "type" in location
-            assert "value" in location
+        # Check that locations contain expected PHI
+        detected_text = [text[loc[0]:loc[1]] for loc in locations]
+        assert any("John Doe" in dt for dt in detected_text)
+        assert any("1980-01-01" in dt for dt in detected_text)
+        assert any("john.doe@example.com" in dt for dt in detected_text)
+
+    @pytest.mark.standalone()
+    def test_sensitivity_levels(self):
+        """Test different sensitivity levels for PHI detection."""
+        # Low sensitivity test
+        text = "The patient's appointment is next week"
+        assert EnhancedPHIDetector.contains_phi(text, sensitivity_level="low") is False
+        
+        # Medium sensitivity test
+        text = "Follow up with the patient on Tuesday"
+        assert EnhancedPHIDetector.contains_phi(text, sensitivity_level="medium") is False
+        
+        # High sensitivity test (should detect more potential PHI)
+        text = "Follow up with the patient on Tuesday"
+        assert EnhancedPHIDetector.contains_phi(text, sensitivity_level="high") is True
+
+    @pytest.mark.standalone()
+    def test_contains_phi_with_custom_patterns(self):
+        """Test PHI detection with custom patterns."""
+        # Define custom patterns
+        custom_patterns = [
+            r"Custom ID: \d{4}-[A-Z]{2}",
+            r"Protocol: [A-Z]{3}-\d{5}"
+        ]
+        
+        # Test with custom pattern
+        text = "The patient is enrolled in Protocol: ABC-12345"
+        assert EnhancedPHIDetector.contains_phi(text, custom_patterns=custom_patterns) is True
+        
+        # Test with non-matching custom pattern
+        text = "Standard treatment applies"
+        assert EnhancedPHIDetector.contains_phi(text, custom_patterns=custom_patterns) is False
 
 
 class TestEnhancedPHISanitizer:
     """Tests for the EnhancedPHISanitizer class."""
 
     @pytest.mark.standalone()
-    def test_sanitize_text_with_standard_phi(self):
-        """Test sanitization of text with standard PHI."""
-        # Test with SSN
-        text = "Patient SSN: 123-45-6789"
+    def test_sanitize_text_standard(self):
+        """Test basic text sanitization."""
+        text = "Patient John Doe (SSN: 123-45-6789)"
         sanitized = EnhancedPHISanitizer.sanitize_text(text)
+        
+        assert "John Doe" not in sanitized
         assert "123-45-6789" not in sanitized
-        assert "SSN-" in sanitized
-
-        # Test with email
-        text = "Contact: patient@example.com"
-        sanitized = EnhancedPHISanitizer.sanitize_text(text)
-        assert "patient@example.com" not in sanitized
-        assert "anonymized.email" in sanitized
-
-    @pytest.mark.standalone()
-    def test_sanitize_text_with_enhanced_phi(self):
-    """Test sanitization of text with enhanced PHI patterns."""
-    # Test with MRN
-    text = "MRN: 12345678"
-    sanitized = EnhancedPHISanitizer.sanitize_text(text)
-    assert "12345678" not in sanitized
-    assert "MRN-" in sanitized
-
-    # Test with patient name
-    text = "Patient Name: John Doe"
-    sanitized = EnhancedPHISanitizer.sanitize_text(text)
-    assert "John Doe" not in sanitized
-    assert "[REDACTED NAME]" in sanitized
-
-    @pytest.mark.standalone()
-    def test_sanitize_text_with_medical_context(self):
-    """Test sanitization of text with medical context."""
-    # Test with medical record context
-    text = "Dr. Smith reviewed the chart for John Doe"
-    sanitized = EnhancedPHISanitizer.sanitize_text(text)
-    assert "Dr. Smith" not in sanitized
-    assert "John Doe" not in sanitized
-    assert "[REDACTED NAME]" in sanitized
-
-    @pytest.mark.standalone()
-    def test_sanitize_text_preserves_non_phi(self):
-    """Test that non-PHI content is preserved during sanitization."""
-    text = "The treatment includes 20mg of medication twice daily"
-    sanitized = EnhancedPHISanitizer.sanitize_text(text)
-    assert sanitized == text  # Should be unchanged
+        assert "[REDACTED]" in sanitized
 
     @pytest.mark.standalone()
     def test_sanitize_text_with_custom_replacement(self):
-    """Test sanitization with custom replacement patterns."""
-    text = "Patient SSN: 123-45-6789"
-    sanitized = EnhancedPHISanitizer.sanitize_text(
-        text, 
-        replacements={PHIType.SSN: "XXX-XX-XXXX"}
-    )
+        """Test text sanitization with custom replacement text."""
+        text = "Patient John Doe (SSN: 123-45-6789)"
+        sanitized = EnhancedPHISanitizer.sanitize_text(text, replacement="[PHI]")
         
-    assert "123-45-6789" not in sanitized
-    assert "XXX-XX-XXXX" in sanitized
+        assert "John Doe" not in sanitized
+        assert "123-45-6789" not in sanitized
+        assert "[PHI]" in sanitized
 
     @pytest.mark.standalone()
-    def test_sanitize_json_with_phi(self):
-    """Test sanitization of JSON data containing PHI."""
-    data = {
-        "patient": {
-            "name": "John Doe",
-            "contact": {
-                "email": "patient@example.com",
-                "phone": "123-456-7890"
+    def test_sanitize_text_by_type(self):
+        """Test sanitization of specific PHI types."""
+        text = "Patient John Doe (DOB: 1980-01-01, SSN: 123-45-6789)"
+        sanitized = EnhancedPHISanitizer.sanitize_text_by_type(text, phi_types=[PHIType.SSN])
+        
+        # SSN should be redacted
+        assert "123-45-6789" not in sanitized
+        # Name should still be present if not specified for redaction
+        assert "John Doe" in sanitized
+
+    @pytest.mark.standalone()
+    def test_sanitize_structured_data(self):
+        """Test sanitization of structured data (dict, list)."""
+        # Test with dictionary
+        data = {
+            "patient_name": "John Doe",
+            "medical_data": {
+                "record_id": "12345",
+                "ssn": "123-45-6789"
             },
-            "medical_info": {
-                "diagnosis": "Condition ABC",
-                "treatment": "Medication XYZ"
-            }
+            "contact": "john.doe@example.com"
         }
-    }
         
-    sanitized = EnhancedPHISanitizer.sanitize_json(data)
+        sanitized = EnhancedPHISanitizer.sanitize_structured_data(data)
         
-    # Check that PHI is sanitized
-    assert sanitized["patient"]["name"] != "John Doe"
-    assert sanitized["patient"]["contact"]["email"] != "patient@example.com"
-    assert sanitized["patient"]["contact"]["phone"] != "123-456-7890"
+        assert sanitized["patient_name"] != "John Doe"
+        assert sanitized["medical_data"]["ssn"] != "123-45-6789"
+        assert sanitized["contact"] != "john.doe@example.com"
         
-    # Check that non-PHI is preserved
-    assert sanitized["patient"]["medical_info"]["diagnosis"] == "Condition ABC"
-    assert sanitized["patient"]["medical_info"]["treatment"] == "Medication XYZ"
+        # Test with list
+        data_list = [
+            "Patient: John Doe",
+            "DOB: 1980-01-01",
+            "Phone: (123) 456-7890"
+        ]
+        
+        sanitized_list = EnhancedPHISanitizer.sanitize_structured_data(data_list)
+        
+        assert "John Doe" not in sanitized_list[0]
+        assert "1980-01-01" not in sanitized_list[1]
+        assert "(123) 456-7890" not in sanitized_list[2]
+
+    @pytest.mark.standalone()
+    def test_partial_sanitization(self):
+        """Test partial sanitization that preserves some information."""
+        # Test partial email sanitization
+        email = "john.doe@example.com"
+        sanitized = EnhancedPHISanitizer.partial_sanitize_email(email)
+        
+        assert "john.doe" not in sanitized
+        assert "example.com" in sanitized  # Domain should be preserved
+        
+        # Test partial phone sanitization
+        phone = "(123) 456-7890"
+        sanitized = EnhancedPHISanitizer.partial_sanitize_phone(phone)
+        
+        assert "456-7890" not in sanitized
+        assert sanitized.endswith("7890")  # Last 4 digits preserved
 
 
 class TestEnhancedPHISecureLogger:
     """Tests for the EnhancedPHISecureLogger class."""
 
-    @patch("logging.Logger.debug")
     @pytest.mark.standalone()
-    def test_debug_log_sanitization(self, mock_debug):
-        """Test that debug logs are sanitized."""
-        logger = EnhancedPHISecureLogger("test_logger")
-        logger.debug("Processing record for SSN: 123-45-6789")
-
-        # Verify the sanitized message was logged
-        mock_debug.assert_called_once()
-        logged_message = mock_debug.call_args[0][0]
-
-        assert "123-45-6789" not in logged_message
-        assert "SSN-" in logged_message
-
-    @patch("logging.Logger.info")
-    @pytest.mark.standalone()
-        def test_info_log_sanitization(self, mock_info):
-    """Test that info logs are sanitized."""
-    logger = EnhancedPHISecureLogger("test_logger")
-    logger.info("Email sent to {email}", email="patient@example.com")
-
-    # Verify the sanitized message was logged
-    mock_info.assert_called_once()
-    logged_message = mock_info.call_args[0][0]
-
-    assert "patient@example.com" not in logged_message
-    assert "anonymized.email" in logged_message
-
-    @patch("logging.Logger.error")
-    @pytest.mark.standalone()
-        def test_error_log_sanitization(self, mock_error):
-    """Test that error logs are sanitized."""
-    logger = EnhancedPHISecureLogger("test_logger")
-    logger.error("Failed to process record for MRN: 12345678")
-
-    # Verify the sanitized message was logged
-    mock_error.assert_called_once()
-    logged_message = mock_error.call_args[0][0]
-
-    assert "12345678" not in logged_message
-    assert "MRN-" in logged_message
-
-    @patch("logging.Logger.exception")
-    @pytest.mark.standalone()
-        def test_exception_log_sanitization(self, mock_exception):
-    """Test that exception logs are sanitized."""
-    logger = EnhancedPHISecureLogger("test_logger")
-        try:
-            raise ValueError("Error processing patient John Doe")
-        except ValueError:
-            logger.exception("Exception occurred")
-
-    # Verify the sanitized message was logged
-    mock_exception.assert_called_once()
-    # Exception message is handled separately by the logging module
-    # We're just checking that our message was sanitized
-    assert "Exception occurred" in mock_exception.call_args[0][0]
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.mock_logger = MagicMock()
+        self.phi_logger = EnhancedPHISecureLogger(self.mock_logger)
 
     @pytest.mark.standalone()
-            def test_get_enhanced_phi_secure_logger(self):
-    """Test the factory function for getting a logger."""
-    logger = get_enhanced_phi_secure_logger("test_module")
-    assert isinstance(logger, EnhancedPHISecureLogger)
-    assert logger.logger.name == "test_module"
+    def test_info_with_phi(self):
+        """Test logging info message containing PHI."""
+        message = "Patient John Doe (SSN: 123-45-6789) checked in"
+        
+        self.phi_logger.info(message)
+        
+        # Check that the underlying logger was called with sanitized message
+        args, _ = self.mock_logger.info.call_args
+        sanitized_message = args[0]
+        
+        assert "John Doe" not in sanitized_message
+        assert "123-45-6789" not in sanitized_message
+        assert "[REDACTED]" in sanitized_message
+
+    @pytest.mark.standalone()
+    def test_error_with_phi(self):
+        """Test logging error message containing PHI."""
+        message = "Error processing data for patient John Doe"
+        
+        self.phi_logger.error(message)
+        
+        # Check that the underlying logger was called with sanitized message
+        args, _ = self.mock_logger.error.call_args
+        sanitized_message = args[0]
+        
+        assert "John Doe" not in sanitized_message
+        assert "[REDACTED]" in sanitized_message
+
+    @pytest.mark.standalone()
+    def test_audit_logging(self):
+        """Test audit logging functionality."""
+        with patch.object(self.phi_logger, '_log_phi_access') as mock_audit:
+            message = "Accessed records for John Doe (MRN: 12345)"
+            self.phi_logger.info(message, audit=True)
+            
+            # Check that audit logging was triggered
+            mock_audit.assert_called_once()
+            
+            # The first argument should be the unsanitized message
+            args, _ = mock_audit.call_args
+            assert "John Doe" in args[0]
+
+    @pytest.mark.standalone()
+    def test_get_enhanced_phi_secure_logger(self):
+        """Test the factory function for creating a secure logger."""
+        with patch('logging.getLogger') as mock_get_logger:
+            mock_logger = MagicMock()
+            mock_get_logger.return_value = mock_logger
+            
+            # Get a secure logger
+            secure_logger = get_enhanced_phi_secure_logger("test.module")
+            
+            # Verify it's the right type
+            assert isinstance(secure_logger, EnhancedPHISecureLogger)
+            
+            # Test that it sanitizes messages
+            message = "Patient John Doe checked in"
+            secure_logger.info(message)
+            
+            # Check underlying logger was called with sanitized message
+            args, _ = mock_logger.info.call_args
+            sanitized_message = args[0]
+            
+            assert "John Doe" not in sanitized_message

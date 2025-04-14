@@ -9,7 +9,7 @@ and provide realistic responses for testing without requiring actual ML models.
 
 import json
 import random
-from datetime import datetime, , UTC, timedelta
+from datetime import datetime, UTC, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Union
 

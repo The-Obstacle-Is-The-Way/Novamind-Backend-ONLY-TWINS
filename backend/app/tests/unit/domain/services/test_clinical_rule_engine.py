@@ -14,35 +14,85 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.domain.entities.digital_twin.biometric_alert import AlertPriority
-from app.domain.entities.digital_twin.biometric_rule import ()
-BiometricRule, RuleCondition, RuleOperator, LogicalOperator
+from app.domain.entities.digital_twin.biometric_rule import (
+    BiometricRule, RuleCondition, RuleOperator, LogicalOperator
+)
 
 
-
-@pytest.mark.db_required()  # Assuming db_required is a valid markerclass TestClinicalRuleEngine:
-    """Tests for the ClinicalRuleEngine service."""@pytest.fixture
+@pytest.mark.db_required()  # Assuming db_required is a valid marker
+class TestClinicalRuleEngine:
+    """Tests for the ClinicalRuleEngine service."""
+    
+    @pytest.fixture
     def mock_rule_repository(self):
-
         """Create a mock BiometricRuleRepository."""
         repo = AsyncMock()
         repo.save = AsyncMock()
         repo.get_by_id = AsyncMock()
         repo.get_by_patient_id = AsyncMock()
         repo.get_all_active = AsyncMock()
-#         return repo@pytest.fixture
-        def rule_engine(self, mock_rule_repository):
+        repo.delete = AsyncMock()
+        repo.update = AsyncMock()
+        return repo
+        
+    @pytest.fixture
+    def engine(self, mock_rule_repository):
+        """Create a ClinicalRuleEngine with mocked dependencies."""
+        return ClinicalRuleEngine(rule_repository=mock_rule_repository)
+    @pytest.fixture
+    def sample_patient_id(self):
+        """Create a sample patient ID."""
+        return uuid4()
+        
+    @pytest.mark.asyncio
+    async def test_create_rule(self, engine, mock_rule_repository):
+        """Test creating a new clinical rule."""
+        # Arrange
+        patient_id = uuid4()
+        rule_data = {
+            "name": "High Heart Rate Alert",
+            "description": "Alert when heart rate exceeds 100 BPM",
+            "data_type": "heart_rate",
+            "conditions": [
+                {
+                    "operator": RuleOperator.GREATER_THAN,
+                    "value": 100
+                }
+            ],
+            "logical_operator": LogicalOperator.AND,
+            "alert_priority": AlertPriority.MEDIUM,
+            "is_active": True
+        }
+        
+        # Set up mocks
+        created_rule = BiometricRule(
+            id=uuid4(),
+            patient_id=patient_id,
+            name=rule_data["name"],
+            description=rule_data["description"],
+            data_type=rule_data["data_type"],
+            conditions=rule_data["conditions"],
+            logical_operator=rule_data["logical_operator"],
+            alert_priority=rule_data["alert_priority"],
+            is_active=rule_data["is_active"]
+        )
+        mock_rule_repository.save.return_value = created_rule
+        
+        # Act
+        result = await engine.create_rule(patient_id=patient_id, **rule_data)
+        
+        # Assert
+        assert result is not None
+        assert result.patient_id == patient_id
+        assert result.name == rule_data["name"]
+        assert result.data_type == rule_data["data_type"]
+        assert result.is_active == rule_data["is_active"]
+        mock_rule_repository.save.assert_called_once()
 
-            """Create a ClinicalRuleEngine with mock dependencies."""
-
-#             return ClinicalRuleEngine(mock_rule_repository)@pytest.fixture
-        def sample_patient_id(self):
-
-            """Create a sample patient ID."""
-
-#             return UUID('12345678-1234-5678-1234-567812345678')@pytest.fixture
-        def sample_provider_id(self):
-
-            """Create a sample provider ID."""
+    @pytest.fixture
+    def sample_provider_id(self):
+        """Create a sample provider ID."""
+        return uuid4()
 
 #             return UUID('87654321-8765-4321-8765-432187654321')@pytest.fixture
         def sample_rule_data(self):

@@ -30,14 +30,14 @@ class DigitalTwinService(ABC):
         pass
 
     @abstractmethod
-        def is_healthy(self):
-    """Check if the service is healthy."""
-    pass
+    def is_healthy(self):
+        """Check if the service is healthy."""
+        pass
 
     @abstractmethod
-        def shutdown(self):
-    """Shut down the service."""
-    pass
+    def shutdown(self):
+        """Shut down the service."""
+        pass
 
 
 class MockDigitalTwinService(DigitalTwinService):
@@ -51,576 +51,399 @@ class MockDigitalTwinService(DigitalTwinService):
         self._simulations = {}
         self._states = {}
 
-        def initialize(self, config):
+    def initialize(self, config):
         """Initialize the service with configuration."""
-            if config is None:
-        raise InvalidConfigurationError("Configuration cannot be None")
+        if config is None:
+            raise InvalidConfigurationError("Configuration cannot be None")
         self._healthy = True
         return True
 
-            def is_healthy(self):
+    def is_healthy(self):
         """Check if the service is healthy."""
         return self._healthy
 
-        def shutdown(self):
+    def shutdown(self):
         """Shut down the service."""
         self._healthy = False
 
-        def create_session(self, patient_id, context):
+    def create_session(self, patient_id, context):
         """Create a new digital twin session."""
         session_id = f"session-{len(self._sessions) + 1}"
         session = {
-        "session_id": session_id,
-        "patient_id": patient_id,
-        "context": context,
-        "messages": [],
-        "created_at": datetime.now().isoformat()
+            "session_id": session_id,
+            "patient_id": patient_id,
+            "context": context,
+            "messages": [],
+            "created_at": datetime.now().isoformat()
         }
         self._sessions[session_id] = session
         return {"session_id": session_id, "patient_id": patient_id}
 
-        def get_session(self, session_id):
+    def get_session(self, session_id):
         """Get a session by ID."""
-            if session_id not in self._sessions:
-        raise SessionNotFoundError(f"Session {session_id} not found")
+        if session_id not in self._sessions:
+            raise SessionNotFoundError(f"Session {session_id} not found")
         return self._sessions[session_id]
 
-            def send_message(self, session_id, message):
+    def send_message(self, session_id, message):
         """Send a message to a session."""
-            if session_id not in self._sessions:
-        raise SessionNotFoundError(f"Session {session_id} not found")
+        if session_id not in self._sessions:
+            raise SessionNotFoundError(f"Session {session_id} not found")
         
         session = self._sessions[session_id]
-        session["messages"].append({)
-        "role": "user",
-        "content": message,
-        "timestamp": datetime.now().isoformat()
-        }
+        session["messages"].append({
+            "role": "user",
+            "content": message,
+            "timestamp": datetime.now().isoformat()
+        })
         
         # Generate a mock response
         response = {
-        "role": "assistant",
-        "content": f"This is a mock response to: {message}",
-        "timestamp": datetime.now().isoformat()
+            "role": "assistant",
+            "content": f"Mock response to: {message}",
+            "timestamp": datetime.now().isoformat()
         }
         session["messages"].append(response)
         
-#                 return {
-"response": response["content"],
-"messages": session["messages"]
-}
+        return {
+            "response": response["content"],
+            "session_id": session_id
+        }
 
-            def end_session(self, session_id):
-"""End a session."""
-            if session_id not in self._sessions:
-raise SessionNotFoundError(f"Session {session_id} not found")
-        
-session = self._sessions[session_id]
-session["ended_at"] = datetime.now().isoformat()
-session["status"] = "completed"
-        
-#                 return {
-"session_id": session_id,
-"status": "completed",
-"summary": "This is a mock summary of the session."
-}
+    def create_digital_twin(self, patient_id, twin_data):
+        """Create a new digital twin."""
+        twin_id = f"twin-{len(self._twins) + 1}"
+        twin = {
+            "twin_id": twin_id,
+            "patient_id": patient_id,
+            "data": twin_data,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat(),
+            "state": DigitalTwinState.ACTIVE.value
+        }
+        self._twins[twin_id] = twin
+        return {"twin_id": twin_id, "patient_id": patient_id}
 
-            def create_digital_twin(self, patient_id, patient_data):
-"""Create a digital twin for a patient."""
-twin_id = str(uuid.uuid4())
-twin = {
-"twin_id": twin_id,
-"patient_id": patient_id,
-"patient_data": patient_data,
-"created_at": datetime.now().isoformat(),
-"states": []
-}
-self._twins[twin_id] = twin
-        
-# Create initial state
-state_id = str(uuid.uuid4())
-state = {
-"state_id": state_id,
-"twin_id": twin_id,
-"version": 1,
-"timestamp": datetime.now().isoformat(),
-"data": {
-"brain_state": {
-"neurotransmitter_levels": {
-"serotonin": 0.5,
-"dopamine": 0.5,
-"gaba": 0.5,
-"glutamate": 0.5,
-"norepinephrine": 0.5
-},
-"brain_regions": {
-"prefrontal_cortex": {
-"activity": 0.5,
-"connectivity": 0.5
-},
-"amygdala": {
-"activity": 0.5,
-"connectivity": 0.5
-},
-"hippocampus": {
-"activity": 0.5,
-"connectivity": 0.5
-}
-}
-},
-"insights": []
-}
-}
-self._states[state_id] = state
-twin["states"].append(state_id)
-        
-#             return {
-"twin_id": twin_id,
-"initial_state_id": state_id
-}
+    def get_digital_twin(self, twin_id):
+        """Get a digital twin by ID."""
+        if twin_id not in self._twins:
+            return None
+        return self._twins[twin_id]
 
-        def get_digital_twin(self, twin_id):
-"""Get a digital twin by ID."""
-            if twin_id not in self._twins:
-raise InvalidConfigurationError(f"Digital twin {twin_id} not found")
-return self._twins[twin_id]
-
-            def get_twin_state(self, state_id):
-"""Get a twin state by ID."""
-            if state_id not in self._states:
-raise InvalidConfigurationError(f"State {state_id} not found")
-return self._states[state_id]
-
-            def get_latest_state(self, twin_id):
-"""Get the latest state for a twin."""
-            if twin_id not in self._twins:
-raise InvalidConfigurationError(f"Digital twin {twin_id} not found")
-        
-twin = self._twins[twin_id]
-                if not twin["states"]:
-#                 return None
-        
-latest_state_id = twin["states"][-1]
-#                 return self._states[latest_state_id]
-
-            def update_twin_state(self, twin_id, updates):
-"""Update a twin's state with new data."""
-            if twin_id not in self._twins:
-raise InvalidConfigurationError(f"Digital twin {twin_id} not found")
-        
-twin = self._twins[twin_id]
-latest_state = self.get_latest_state(twin_id)
-        
-# Create a new state based on the latest
-state_id = str(uuid.uuid4())
-new_state = {
-"state_id": state_id,
-"twin_id": twin_id,
-"version": latest_state["version"] + 1,
-"timestamp": datetime.now().isoformat(),
-"data": latest_state["data"].copy()  # Deep copy would be better in real code
-}
-        
-# Apply updates
-                for key, value in updates.items():
-                if key in new_state["data"]:
-                    if isinstance(new_state["data"][key], dict) and isinstance(value, dict):
-                    new_state["data"][key].update(value)
-                        else:
-                    new_state["data"][key] = value
-                        else:
-new_state["data"][key] = value
-        
-# Add a mock insight
-new_state["data"].setdefault("insights", []).append({)
-"id": str(uuid.uuid4()),
-"timestamp": datetime.now().isoformat(),
-"type": "state_change",
-"description": "This is a mock insight based on state changes.",
-"confidence": 0.85
-}
-        
-self._states[state_id] = new_state
-twin["states"].append(state_id)
-        
-#                     return new_state
-
-                def compare_states(self, state_id_1, state_id_2):
-"""Compare two states and identify differences."""
-            if state_id_1 not in self._states:
-raise InvalidConfigurationError(f"State {state_id_1} not found")
-                if state_id_2 not in self._states:
-raise InvalidConfigurationError(f"State {state_id_2} not found")
-        
-state1 = self._states[state_id_1]
-state2 = self._states[state_id_2]
-        
-# Create a mock comparison
-#                 return {
-"state_1": {"id": state_id_1, "version": state1["version"]},
-"state_2": {"id": state_id_2, "version": state2["version"]},
-"brain_state_changes": {
-"neurotransmitter_levels": {
-"serotonin": {"before": 0.5, "after": 0.6, "change": 0.1},
-"dopamine": {"before": 0.5, "after": 0.55, "change": 0.05}
-}
-},
-"new_insights": []
-{
-"id": str(uuid.uuid4()),
-"timestamp": datetime.now().isoformat(),
-"type": "comparison",
-"description": "This is a mock insight based on state comparison.",
-"confidence": 0.8
-}
+    def update_digital_twin(self, twin_id, updates):
+        """Update a digital twin."""
+        if twin_id not in self._twins:
+            return False
             
-}
-
-            def simulate_treatment_response(self, patient_id, treatment):
-"""Simulate a treatment response for a patient."""
-# Verify the patient exists (in a real implementation)
-# For mock, we'll just create a simulation
-simulation_id = str(uuid.uuid4())
-        
-# Create a mock simulation result
-simulation = {
-"simulation_id": simulation_id,
-"patient_id": patient_id,
-"treatment": treatment,
-"created_at": datetime.now().isoformat(),
-"predicted_response": {
-"efficacy": 0.7,
-"side_effects": []
-{"name": "nausea", "severity": "mild", "probability": 0.3},
-{"name": "headache", "severity": "mild", "probability": 0.2}
-],
-"response_timeline": []
-{"week": 1, "efficacy": 0.2},
-{"week": 2, "efficacy": 0.4},
-{"week": 4, "efficacy": 0.6},
-{"week": 8, "efficacy": 0.7}
+        twin = self._twins[twin_id]
+        for key, value in updates.items():
+            if key in twin["data"]:
+                twin["data"][key] = value
                 
-}
-}
-        
-self._simulations[simulation_id] = simulation
-        
-#             return {
-"simulation_id": simulation_id,
-"treatment": treatment,
-"predicted_response": simulation["predicted_response"]
-}
+        twin["updated_at"] = datetime.now().isoformat()
+        return True
 
-        def generate_visualization_data(self, twin_id, visualization_type):
-"""Generate visualization data for a digital twin."""
-            if twin_id not in self._twins:
-raise InvalidConfigurationError(f"Digital twin {twin_id} not found")
-        
-# Create mock visualization data based on type
-                if visualization_type == "brain_model":
-#                 return {
-"visualization_type": "brain_model_3d",
-"brain_regions": []
-{
-"name": "prefrontal_cortex",
-"activity": 0.6,
-"color": "#FF5733",
-"coordinates": {"x": 0.2, "y": 0.8, "z": 0.5}
-},
-{
-"name": "amygdala",
-"activity": 0.7,
-"color": "#33FF57",
-"coordinates": {"x": 0.5, "y": 0.5, "z": 0.3}
-},
-{
-"name": "hippocampus",
-"activity": 0.4,
-"color": "#3357FF",
-"coordinates": {"x": 0.6, "y": 0.4, "z": 0.2}
-}
-                
-}
-                elif visualization_type == "network_graph":
-#                 return {
-"visualization_type": "network_graph",
-"nodes": []
-{"id": "serotonin", "type": "neurotransmitter", "value": 0.6},
-{"id": "dopamine", "type": "neurotransmitter", "value": 0.5},
-{"id": "prefrontal_cortex", "type": "brain_region", "value": 0.7}
-],
-"edges": []
-{"source": "serotonin", "target": "prefrontal_cortex", "weight": 0.8},
-{"source": "dopamine", "target": "prefrontal_cortex", "weight": 0.6}
-                
-}
-                else:
-#                 return {
-"visualization_type": "unknown",
-"error": f"Unknown visualization type: {visualization_type}"
-}
+    def delete_digital_twin(self, twin_id):
+        """Delete a digital twin."""
+        if twin_id not in self._twins:
+            return False
+            
+        del self._twins[twin_id]
+        return True
 
-
-class TestMockDigitalTwinService(TestCase):
-    """Test suite for MockDigitalTwinService."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        self.service = MockDigitalTwinService()
-        self.service.initialize({"mock_config": True})
-        
-        # Create a test digital twin
-        patient_data = {
-        "demographics": {
-        "age": 35,
-        "gender": "female"
-        },
-        "medical_history": {
-        "conditions": ["depression", "anxiety"],
-        "medications": ["sertraline"]
+    def start_simulation(self, twin_id, parameters):
+        """Start a simulation for a digital twin."""
+        if twin_id not in self._twins:
+            return None
+            
+        simulation_id = f"sim-{len(self._simulations) + 1}"
+        simulation = {
+            "simulation_id": simulation_id,
+            "twin_id": twin_id,
+            "parameters": parameters,
+            "status": "running",
+            "results": None,
+            "created_at": datetime.now().isoformat()
         }
-        }
-        result = self.service.create_digital_twin()
-        patient_id="test-patient-123",
-        patient_data=patient_data
-        
-        self.twin_id = result["twin_id"]
-        self.initial_state_id = result["initial_state_id"]
+        self._simulations[simulation_id] = simulation
+        return {"simulation_id": simulation_id, "twin_id": twin_id}
 
-        def tearDown(self):
-        """Clean up after tests."""
-        self.service.shutdown()
+    def get_simulation_status(self, simulation_id):
+        """Get the status of a simulation."""
+        if simulation_id not in self._simulations:
+            return None
+            
+        return {
+            "simulation_id": simulation_id,
+            "status": self._simulations[simulation_id]["status"]
+        }
+
+    def get_simulation_results(self, simulation_id):
+        """Get the results of a simulation."""
+        if simulation_id not in self._simulations:
+            return None
+            
+        simulation = self._simulations[simulation_id]
+        if simulation["status"] != "completed":
+            return {"simulation_id": simulation_id, "status": simulation["status"], "results": None}
+            
+        return {
+            "simulation_id": simulation_id,
+            "status": "completed",
+            "results": simulation["results"]
+        }
+
+    def complete_simulation(self, simulation_id, results):
+        """Complete a simulation with results."""
+        if simulation_id not in self._simulations:
+            return False
+            
+        simulation = self._simulations[simulation_id]
+        simulation["status"] = "completed"
+        simulation["results"] = results
+        simulation["completed_at"] = datetime.now().isoformat()
+        return True
+
+    def create_twin_state(self, twin_id, state_data):
+        """Create a state for a digital twin."""
+        if twin_id not in self._twins:
+            return None
+            
+        state_id = f"state-{len(self._states) + 1}"
+        state = {
+            "state_id": state_id,
+            "twin_id": twin_id,
+            "data": state_data,
+            "created_at": datetime.now().isoformat()
+        }
+        self._states[state_id] = state
+        return {"state_id": state_id, "twin_id": twin_id}
+
+    def get_twin_state(self, state_id):
+        """Get a twin state by ID."""
+        if state_id not in self._states:
+            return None
+            
+        return self._states[state_id]
+
+    def list_twin_states(self, twin_id):
+        """List all states for a digital twin."""
+        return [
+            state for state in self._states.values()
+            if state["twin_id"] == twin_id
+        ]
+
+
+class TestMockDigitalTwinService:
+    """Tests for the MockDigitalTwinService."""
+
+    @pytest.fixture
+    def service(self):
+        """Create a mock digital twin service for testing."""
+        return MockDigitalTwinService()
+
+    @pytest.fixture
+    def initialized_service(self, service):
+        """Create an initialized mock digital twin service."""
+        service.initialize({"api_key": "test_key"})
+        return service
 
     @pytest.mark.standalone()
-        def test_initialization(self):
-    """Test service initialization."""
-    # Test successful initialization
-    service = MockDigitalTwinService()
-    self.assertFalse(service.is_healthy())
+    def test_initialize(self, service):
+        """Test initializing the service."""
+        assert service.is_healthy() is False
         
-    result = service.initialize({"mock_config": True})
-    self.assertTrue(result)
-    self.assertTrue(service.is_healthy())
+        result = service.initialize({"api_key": "test_key"})
         
-    # Test initialization with None config
-    service = MockDigitalTwinService()
-        with self.assertRaises(InvalidConfigurationError):
+        assert result is True
+        assert service.is_healthy() is True
+
+    @pytest.mark.standalone()
+    def test_initialize_with_invalid_config(self, service):
+        """Test initializing with invalid configuration."""
+        with pytest.raises(InvalidConfigurationError):
             service.initialize(None)
-        
-    # Test shutdown
-    service.initialize({"mock_config": True})
-    self.assertTrue(service.is_healthy())
-    service.shutdown()
-    self.assertFalse(service.is_healthy())
 
     @pytest.mark.standalone()
-            def test_digital_twin_creation(self):
-    """Test digital twin creation."""
-    # Test twin creation
-    patient_data = {
-    "demographics": {
-    "age": 42,
-    "gender": "male"
-    },
-    "medical_history": {
-    "conditions": ["bipolar"],
-    "medications": ["lithium"]
-    }
-    }
+    def test_shutdown(self, initialized_service):
+        """Test shutting down the service."""
+        assert initialized_service.is_healthy() is True
         
-    result = self.service.create_digital_twin()
-    patient_id="test-patient-456",
-    patient_data=patient_data
+        initialized_service.shutdown()
         
-        
-    self.assertIn("twin_id", result)
-    self.assertIn("initial_state_id", result)
-        
-    # Test getting the twin
-    twin = self.service.get_digital_twin(result["twin_id"])
-    self.assertEqual(twin["patient_id"], "test-patient-456")
-    self.assertEqual(twin["patient_data"], patient_data)
-        
-    # Test getting a non-existent twin
-        with self.assertRaises(InvalidConfigurationError):
-            self.service.get_digital_twin("nonexistent-twin")
+        assert initialized_service.is_healthy() is False
 
     @pytest.mark.standalone()
-            def test_twin_state_management(self):
-    """Test twin state management."""
-    # Get the initial state
-    initial_state = self.service.get_twin_state(self.initial_state_id)
-    self.assertEqual(initial_state["version"], 1)
-    self.assertEqual(initial_state["twin_id"], self.twin_id)
+    def test_create_session(self, initialized_service):
+        """Test creating a session."""
+        patient_id = "patient-123"
+        context = {"medical_history": "Test history"}
         
-    # Update the state
-    updates = {
-    "brain_state": {
-    "neurotransmitter_levels": {
-    "serotonin": 0.6,
-    "dopamine": 0.7
-    }
-    },
-    "treatment_history": []
-    {
-    "type": "medication",
-    "name": "sertraline",
-    "dosage": "50mg",
-    "start_date": datetime.now().isoformat()
-    }
-            
-    }
+        result = initialized_service.create_session(patient_id, context)
         
-    updated_state = self.service.update_twin_state(self.twin_id, updates)
-    self.assertEqual(updated_state["version"], 2)
-    self.assertEqual(updated_state["twin_id"], self.twin_id)
-    self.assertEqual(updated_state["data"]["brain_state"]["neurotransmitter_levels"]["serotonin"], 0.6)
-    self.assertEqual(updated_state["data"]["brain_state"]["neurotransmitter_levels"]["dopamine"], 0.7)
-    self.assertIn("treatment_history", updated_state["data"])
+        assert "session_id" in result
+        assert result["patient_id"] == patient_id
         
-    # Get the latest state
-    latest_state = self.service.get_latest_state(self.twin_id)
-    self.assertEqual(latest_state["version"], 2)
-        
-    # Compare states
-    comparison = self.service.compare_states()
-    self.initial_state_id,
-    updated_state["state_id"]
-        
-    self.assertEqual(comparison["state_1"]["id"], self.initial_state_id)
-    self.assertEqual(comparison["state_2"]["id"], updated_state["state_id"])
-    self.assertIn("brain_state_changes", comparison)
-    self.assertIn("new_insights", comparison)
+        # Verify session was created
+        session = initialized_service.get_session(result["session_id"])
+        assert session["patient_id"] == patient_id
+        assert session["context"] == context
+        assert len(session["messages"]) == 0
 
     @pytest.mark.standalone()
-        def test_session_management(self):
-    """Test session management."""
-    # Create a session
-    session_result = self.service.create_session()
-    patient_id="test-patient-123",
-    context={"session_type": "therapy"}
-        
-    self.assertIn("session_id", session_result)
-    session_id = session_result["session_id"]
-        
-    # Get the session
-    session = self.service.get_session(session_id)
-    self.assertEqual(session["patient_id"], "test-patient-123")
-    self.assertEqual(session["context"]["session_type"], "therapy")
-        
-    # Send a message
-    message_result = self.service.send_message()
-    session_id,
-    "How can I manage my anxiety better?"
-        
-    self.assertIn("response", message_result)
-    self.assertIn("messages", message_result)
-    self.assertEqual(len(message_result["messages"]), 2)  # User message + response
-        
-    # End the session
-    end_result = self.service.end_session(session_id)
-    self.assertEqual(end_result["status"], "completed")
-    self.assertIn("summary", end_result)
-        
-    # Test with non-existent session
-        with self.assertRaises(SessionNotFoundError):
-            self.service.get_session("nonexistent-session")
-        
-        with self.assertRaises(SessionNotFoundError):
-            self.service.send_message("nonexistent-session", "Hello")
-        
-        with self.assertRaises(SessionNotFoundError):
-            self.service.end_session("nonexistent-session")
+    def test_get_session_not_found(self, initialized_service):
+        """Test getting a non-existent session."""
+        with pytest.raises(SessionNotFoundError):
+            initialized_service.get_session("nonexistent-session")
 
     @pytest.mark.standalone()
-            def test_visualization_data(self):
-    """Test visualization data generation."""
-    # Test brain model visualization
-    brain_viz = self.service.generate_visualization_data()
-    twin_id=self.twin_id,
-    visualization_type="brain_model"
+    def test_send_message(self, initialized_service):
+        """Test sending a message to a session."""
+        patient_id = "patient-123"
+        session_result = initialized_service.create_session(patient_id, {})
+        session_id = session_result["session_id"]
         
-    self.assertEqual(brain_viz["visualization_type"], "brain_model_3d")
-    self.assertIn("brain_regions", brain_viz)
-    self.assertTrue(len(brain_viz["brain_regions"]) > 0)
+        message = "Test message"
+        result = initialized_service.send_message(session_id, message)
         
-    # Test network graph visualization
-    network_viz = self.service.generate_visualization_data()
-    twin_id=self.twin_id,
-    visualization_type="network_graph"
+        assert result["session_id"] == session_id
+        assert "response" in result
         
-    self.assertEqual(network_viz["visualization_type"], "network_graph")
-    self.assertIn("nodes", network_viz)
-    self.assertIn("edges", network_viz)
-        
-    # Test unknown visualization type
-    unknown_viz = self.service.generate_visualization_data()
-    twin_id=self.twin_id,
-    visualization_type="unknown_type"
-        
-    self.assertEqual(unknown_viz["visualization_type"], "unknown")
-    self.assertIn("error", unknown_viz)
-        
-    # Test with non-existent twin
-        with self.assertRaises(InvalidConfigurationError):
-            self.service.generate_visualization_data()
-            twin_id="nonexistent-twin",
-            visualization_type="brain_model"
-            
+        # Verify message was added to session
+        session = initialized_service.get_session(session_id)
+        assert len(session["messages"]) == 2  # User message and response
+        assert session["messages"][0]["role"] == "user"
+        assert session["messages"][0]["content"] == message
+        assert session["messages"][1]["role"] == "assistant"
 
     @pytest.mark.standalone()
-            def test_simulate_treatment_response(self):
-    """Test treatment response simulation."""
-    # Simulate a medication treatment
-    treatment = {
-    "type": "medication",
-    "name": "Fluoxetine",
-    "dosage": "20mg",
-    "frequency": "daily",
-    "duration_days": 30
-    }
+    def test_send_message_session_not_found(self, initialized_service):
+        """Test sending a message to a non-existent session."""
+        with pytest.raises(SessionNotFoundError):
+            initialized_service.send_message("nonexistent-session", "Test message")
 
-    result = self.service.simulate_treatment_response()
-    patient_id=self.twin_id,
-    treatment=treatment
+    @pytest.mark.standalone()
+    def test_create_digital_twin(self, initialized_service):
+        """Test creating a digital twin."""
+        patient_id = "patient-123"
+        twin_data = {
+            "age": 35,
+            "gender": "female",
+            "conditions": ["anxiety", "depression"],
+            "medications": [
+                {"name": "Sertraline", "dosage": "50mg", "frequency": "daily"},
+                {"name": "Lorazepam", "dosage": "0.5mg", "frequency": "as needed"}
+            ],
+            "history": {
+                "therapy_sessions": 12,
+                "hospitalizations": 0,
+                "gaba_pathway_markers": "normal"
+            }
+        }
         
-
-    # Verify result structure
-    self.assertIn("simulation_id", result)
-    self.assertIn("treatment", result)
-    self.assertEqual(result["treatment"], treatment)
-    self.assertIn("predicted_response", result)
-
-    # Check predicted response
-    response = result["predicted_response"]
-    self.assertIn("efficacy", response)
-    self.assertIn("side_effects", response)
-    self.assertIn("response_timeline", response)
-
-    # Test with a different treatment type
-    treatment = {
-    "type": "therapy",
-    "name": "Cognitive Behavioral Therapy",
-    "sessions_per_week": 2,
-    "duration_weeks": 12
-    }
-
-    result = self.service.simulate_treatment_response()
-    patient_id=self.twin_id,
-    treatment=treatment
+        result = initialized_service.create_digital_twin(patient_id, twin_data)
         
+        assert "twin_id" in result
+        assert result["patient_id"] == patient_id
+        
+        # Verify twin was created
+        twin = initialized_service.get_digital_twin(result["twin_id"])
+        assert twin["patient_id"] == patient_id
+        assert twin["data"] == twin_data
+        assert twin["state"] == DigitalTwinState.ACTIVE.value
 
-    # Verify it works with this treatment type too
-    self.assertEqual(result["treatment"], treatment)
-    self.assertIn("predicted_response", result)
+    @pytest.mark.standalone()
+    def test_update_digital_twin(self, initialized_service):
+        """Test updating a digital twin."""
+        patient_id = "patient-123"
+        twin_data = {"age": 35, "gender": "female"}
+        result = initialized_service.create_digital_twin(patient_id, twin_data)
+        twin_id = result["twin_id"]
+        
+        # Update twin
+        updates = {"age": 36}
+        update_result = initialized_service.update_digital_twin(twin_id, updates)
+        
+        assert update_result is True
+        
+        # Verify twin was updated
+        updated_twin = initialized_service.get_digital_twin(twin_id)
+        assert updated_twin["data"]["age"] == 36
+        assert updated_twin["data"]["gender"] == "female"
 
-    # Test for a nonexistent patient
-        try:
-            with self.assertRaises(Exception):
-                self.service.simulate_treatment_response()
-                patient_id="nonexistent",
-                treatment=treatment
-                
-        except AssertionError:
-            # If no exception is raised, the test should still pass since this is just a mock
-            pass
+    @pytest.mark.standalone()
+    def test_delete_digital_twin(self, initialized_service):
+        """Test deleting a digital twin."""
+        patient_id = "patient-123"
+        twin_data = {"age": 35}
+        result = initialized_service.create_digital_twin(patient_id, twin_data)
+        twin_id = result["twin_id"]
+        
+        # Delete twin
+        delete_result = initialized_service.delete_digital_twin(twin_id)
+        
+        assert delete_result is True
+        
+        # Verify twin was deleted
+        twin = initialized_service.get_digital_twin(twin_id)
+        assert twin is None
+
+    @pytest.mark.standalone()
+    def test_simulation_workflow(self, initialized_service):
+        """Test the complete simulation workflow."""
+        # Create twin
+        patient_id = "patient-123"
+        twin_data = {"age": 35, "conditions": ["anxiety"]}
+        twin_result = initialized_service.create_digital_twin(patient_id, twin_data)
+        twin_id = twin_result["twin_id"]
+        
+        # Start simulation
+        parameters = {"duration": 30, "medication_changes": [{"name": "Prozac", "dosage": "20mg"}]}
+        sim_result = initialized_service.start_simulation(twin_id, parameters)
+        sim_id = sim_result["simulation_id"]
+        
+        # Check status
+        status = initialized_service.get_simulation_status(sim_id)
+        assert status["status"] == "running"
+        
+        # Complete simulation
+        results = {
+            "predicted_outcomes": {
+                "anxiety_level": "reduced by 30%",
+                "side_effects": ["mild insomnia", "reduced appetite"],
+                "adherence_probability": 0.85
+            }
+        }
+        initialized_service.complete_simulation(sim_id, results)
+        
+        # Get results
+        final_results = initialized_service.get_simulation_results(sim_id)
+        assert final_results["status"] == "completed"
+        assert final_results["results"] == results
+
+    @pytest.mark.standalone()
+    def test_twin_states(self, initialized_service):
+        """Test creating and retrieving digital twin states."""
+        # Create twin
+        patient_id = "patient-123"
+        twin_data = {"age": 35}
+        twin_result = initialized_service.create_digital_twin(patient_id, twin_data)
+        twin_id = twin_result["twin_id"]
+        
+        # Create states
+        state1_data = {"anxiety_level": "high", "timestamp": "2023-01-01T12:00:00Z"}
+        state1_result = initialized_service.create_twin_state(twin_id, state1_data)
+        
+        state2_data = {"anxiety_level": "medium", "timestamp": "2023-01-15T12:00:00Z"}
+        state2_result = initialized_service.create_twin_state(twin_id, state2_data)
+        
+        # Get state
+        state1 = initialized_service.get_twin_state(state1_result["state_id"])
+        assert state1["twin_id"] == twin_id
+        assert state1["data"] == state1_data
+        
+        # List states
+        states = initialized_service.list_twin_states(twin_id)
+        assert len(states) == 2
+        assert states[0]["data"]["anxiety_level"] == "high"
+        assert states[1]["data"]["anxiety_level"] == "medium"

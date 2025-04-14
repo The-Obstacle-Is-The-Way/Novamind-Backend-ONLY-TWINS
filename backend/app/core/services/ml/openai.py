@@ -7,7 +7,7 @@ This module provides OpenAI-based implementation of MentaLLaMA services.
 
 import json
 import os
-from datetime import datetime, , UTC
+from datetime import datetime, UTC
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Tuple, Union
 

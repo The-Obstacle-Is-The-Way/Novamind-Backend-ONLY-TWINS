@@ -372,7 +372,7 @@ class TestClinicalRuleEngine:
             "default_threshold": 100.0
         }
 
-    engine.register_rule_template(template, template_id)
+        engine.register_rule_template(template, template_id)
 
         # Create a rule from the template
         parameters = {"threshold": 120.0}
@@ -384,15 +384,14 @@ class TestClinicalRuleEngine:
             created_by=sample_clinician_id
         )
         
-
-    # Verify the rule was created correctly
-    assert rule.name == template["name"]
-    assert rule.description == template["description"]
-    assert rule.priority == template["priority"]
-    assert rule.condition["data_type"] == template["condition"]["data_type"]
-    assert rule.condition["operator"] == template["condition"]["operator"]
-    assert rule.condition["threshold"] == parameters["threshold"]  # Overridden
-    assert rule.created_by == sample_clinician_id
+        # Verify the rule was created correctly
+        assert rule.name == template["name"]
+        assert rule.description == template["description"]
+        assert rule.priority == template["priority"]
+        assert rule.condition["data_type"] == template["condition"]["data_type"]
+        assert rule.condition["operator"] == template["condition"]["operator"]
+        assert rule.condition["threshold"] == parameters["threshold"]  # Overridden
+        assert rule.created_by == sample_clinician_id
 
     @pytest.mark.standalone()
     def test_create_rule_from_nonexistent_template(self, sample_clinician_id):

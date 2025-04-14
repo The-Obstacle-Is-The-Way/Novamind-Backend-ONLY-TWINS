@@ -30,7 +30,7 @@ spec.loader.exec_module(standalone_clinical_rule_engine)
 # Apply method patches
 patch(
     "app.domain.entities.provider.Provider.is_available",
-    lambda self, day, start, end): day == "monday"
+    lambda self, day, start, end: day == "monday"
     and start.hour == 12
     and end.hour == 13
     and False

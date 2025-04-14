@@ -10,7 +10,7 @@ import json
 import random
 import time
 import uuid
-from datetime import datetime, , UTC, timedelta
+from datetime import datetime, UTC, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Set, Tuple
 
