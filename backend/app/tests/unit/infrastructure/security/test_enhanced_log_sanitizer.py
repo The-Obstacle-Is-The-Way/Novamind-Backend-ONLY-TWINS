@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock, Mock, call # Import call
 import os # Import os if needed
 
 # Correctly import necessary components
-from app.infrastructure.security.log_sanitizer import (
+from app.infrastructure.security.log_sanitizer import ( # Removed extra parenthesis
     LogSanitizer, SanitizerConfig, PatternType, RedactionMode,
     PHIPattern, PatternRepository, RedactionStrategy,
     FullRedactionStrategy, PartialRedactionStrategy, HashRedactionStrategy,

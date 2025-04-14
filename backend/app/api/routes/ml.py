@@ -52,14 +52,14 @@ from app.core.exceptions import (
 from app.core.services.ml.factory import MLServiceCache # Import the correct cache
 from app.core.services.ml.interface import MentaLLaMAInterface, PHIDetectionInterface
 from app.core.utils.logging import get_logger
-
+from datetime import datetime
+from app.domain.utils.datetime_utils import UTC
 
 # Create logger (no PHI logging)
 logger = get_logger(__name__)
 
 # Create router
 router = APIRouter(prefix="/ml", tags=["ML"])
-
 
 # ---- Service Dependencies ----
 
@@ -120,9 +120,6 @@ async def mentalllama_health_check(
     Returns:
         Health status
     """
-    from datetime import datetime, , UTC
-from app.domain.utils.datetime_utils import UTC
-    
     is_healthy = service.is_healthy()
     timestamp = datetime.now(UTC).isoformat() + "Z"
     
@@ -145,9 +142,6 @@ async def phi_health_check(
     Returns:
         Health status
     """
-    from datetime import datetime, , UTC
-from app.domain.utils.datetime_utils import UTC
-    
     is_healthy = service.is_healthy()
     timestamp = datetime.now(UTC).isoformat() + "Z"
     

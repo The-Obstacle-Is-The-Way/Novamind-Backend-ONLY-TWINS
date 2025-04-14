@@ -9,8 +9,7 @@ import base64
 import json
 import time
 import uuid
-from datetime import datetime, UTC # Removed extra comma
-from unittest.mock import MagicMock, patch, AsyncMock
+from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 import pytest
