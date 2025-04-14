@@ -12,7 +12,8 @@ from unittest.mock import Mock
 settings = Mock()
 settings.some_setting = 'mocked_value'
 
-from app.core.config import settings
+# Removed import for settings as it's being mocked below
+# from app.core.config import settings
 
 
 @pytest.mark.db_required()
