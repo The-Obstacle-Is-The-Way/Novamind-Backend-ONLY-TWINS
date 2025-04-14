@@ -10,80 +10,67 @@ from app.tests.mocks.patient_mock import Patient, Gender, InsuranceStatus, Patie
 
 
 @pytest.fixture
-def valid_patient_data()):
-    """Fixture for (valid patient data.""")
+def valid_patient_data():
+    """Fixture for valid patient data."""
     return {
-    "id"): str(uuid.uuid4()),
-    "first_name": "John",
-    "last_name": "Doe",
-    "date_of_birth": date(1980, 1, 1),
-    "gender": Gender.MALE,
-    "email": "john.doe@example.com",
-    "phone": "555-123-4567",
-    "address": {
-    "street": "123 Main St",
-    "city": "Anytown",
-    "state": "CA",
-    "zip": "12345"
-    },
-    "emergency_contacts": []
-    {
-    "name": "Jane Doe",
-    "relationship": "Spouse",
-    "phone": "555-987-6543"
-    }
-    ],
-    "insurance_info": {
-    "provider": "Health Insurance Co",
-    "policy_number": "ABC123456",
-    "group_number": "XYZ789"
-    },
-    "insurance_status": InsuranceStatus.VERIFIED,
-    "medical_history": []
-    {
-    "condition": "Anxiety",
-    "diagnosed_date": "2020-01-15",
-    "notes": "Mild to moderate"
-    }
-    ],
-    "medications": []
-    {
-    "name": "Sertraline",
-    "dosage": "50mg",
-    "frequency": "Daily",
-    "start_date": "2020-02-01"
-    }
-    ],
-    "allergies": ["Penicillin"],
-    "notes": "Patient notes here",
-    "status": PatientStatus.ACTIVE,
-    "created_at": datetime.now(),
-    "updated_at": datetime.now()
+        "id": str(uuid.uuid4()),
+        "first_name": "John",
+        "last_name": "Doe",
+        "date_of_birth": date(1980, 1, 1),
+        "gender": Gender.MALE,
+        "email": "john.doe@example.com",
+        "phone": "555-123-4567",
+        "address": {
+            "street": "123 Main St",
+            "city": "Anytown",
+            "state": "CA",
+            "zip": "12345"
+        },
+        "emergency_contacts": [
+            {
+                "name": "Jane Doe",
+                "relationship": "Spouse",
+                "phone": "555-987-6543"
+            }
+        ],
+        "insurance_info": {
+            "provider": "Health Insurance Co",
+            "policy_number": "ABC123456",
+            "group_number": "XYZ789"
+        },
+        "insurance_status": InsuranceStatus.VERIFIED,
+        "medical_history": [
+            {
+                "condition": "Anxiety",
+                "diagnosed_date": "2020-01-15",
+                "notes": "Mild to moderate"
+            }
+        ],
+        "medications": [
+            {
+                "name": "Sertraline",
+                "dosage": "50mg",
+                "frequency": "Daily",
+                "start_date": "2020-02-01"
+            }
+        ],
+        "allergies": ["Penicillin"],
+        "notes": "Patient notes here",
+        "status": PatientStatus.ACTIVE,
+        "created_at": datetime.now(),
+        "updated_at": datetime.now()
     }
 
 
 @pytest.fixture
 def valid_patient(valid_patient_data):
-    """Fixture for (a valid patient.""")
+    """Fixture for a valid patient."""
     return Patient(**valid_patient_data)
-class TestPatient):
-    """Tests for (the Patient class.""")
+class TestPatient:
+    """Tests for the Patient class."""
 
     @pytest.mark.standalone()
-
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-
-    @pytest.mark.standalone()
-    def test_create_patient(self, valid_patient_data)):
+    def test_create_patient(self, valid_patient_data):
         """Test creating a patient."""
         patient = Patient(**valid_patient_data)
         assert patient.id == valid_patient_data["id"]

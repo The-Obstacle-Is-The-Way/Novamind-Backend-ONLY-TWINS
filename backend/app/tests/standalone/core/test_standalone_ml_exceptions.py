@@ -88,28 +88,24 @@ class MLInferenceError(MLBaseError):
             input_data: Input data that caused the error (if available)
             details: Additional details for debugging and logging
         """
-super().__init__(message, details)
-self.model_name = model_name
-self.input_data = input_data
+        super().__init__(message, details)
+        self.model_name = model_name
+        self.input_data = input_data
 
-# Add model-specific details
-self.add_detail("model_name", model_name)
+        # Add model-specific details
+        self.add_detail("model_name", model_name)
         if input_data is not None:
-
-# Store only basic info about the input to avoid excessive logging
-input_type = type(input_data).__name__
-input_shape = getattr(input_data, "shape", None)
+            # Store only basic info about the input to avoid excessive logging
+            input_type = type(input_data).__name__
+            input_shape = getattr(input_data, "shape", None)
             if input_shape is not None:
-
-self.add_detail("input_shape", str(input_shape))
+                self.add_detail("input_shape", str(input_shape))
             elif isinstance(input_data, (list, tuple)):
-
-self.add_detail("input_length", len(input_data))
+                self.add_detail("input_length", len(input_data))
             elif isinstance(input_data, dict):
-
-self.add_detail("input_keys", list(input_data.keys()))
+                self.add_detail("input_keys", list(input_data.keys()))
             else:
-self.add_detail("input_type", input_type)
+                self.add_detail("input_type", input_type)
 class MLValidationError(MLBaseError):
     """Exception raised during validation of ML inputs or parameters."""
 
@@ -184,16 +180,15 @@ class MLModelNotFoundError(MLBaseError):
             available_models: List of available models (if known)
             details: Additional details for debugging and logging
         """
-message = f"Model '{model_name}' not found"
-super().__init__(message, details)
-self.model_name = model_name
-self.available_models = available_models or []
+        message = f"Model '{model_name}' not found"
+        super().__init__(message, details)
+        self.model_name = model_name
+        self.available_models = available_models or []
 
-# Add model info to details
-self.add_detail("model_name", model_name)
+        # Add model info to details
+        self.add_detail("model_name", model_name)
         if available_models:
-
-self.add_detail("available_models", available_models)
+            self.add_detail("available_models", available_models)
 class MLServiceUnavailableError(MLBaseError):
     """Exception raised when an ML service is unavailable."""
 
@@ -204,19 +199,18 @@ class MLServiceUnavailableError(MLBaseError):
         retry_after: int | None = None,
         details: dict[str, Any] | None = None
     ):
-                    """
-                    Initialize the exception.
+        """
+        Initialize the exception.
 
-                    Args:
-        service_name: Name of the unavailable service
-        reason: Reason for (the service being unavailable)
-        retry_after): Suggested retry time in seconds
-        details: Additional details for (debugging and logging)
+        Args:
+            service_name: Name of the unavailable service
+            reason: Reason for the service being unavailable
+            retry_after: Suggested retry time in seconds
+            details: Additional details for debugging and logging
         """
         message = f"ML service '{service_name}' is unavailable"
-                            if (reason)):
-
-        message += f": {reason}"
+        if reason:
+            message += f": {reason}"
 
         super().__init__(message, details)
         self.service_name = service_name
@@ -234,21 +228,21 @@ class MLServiceUnavailableError(MLBaseError):
 class MLServiceRateLimitError(MLServiceUnavailableError):
     """Exception raised when an ML service rate limit is exceeded."""
 
-    def __init__():
+    def __init__(
         self,
         service_name: str,
         limit: int,
         retry_after: int | None = None,
         details: dict[str, Any] | None = None
-                (    ):
-                    """
-                    Initialize the exception.
+    ):
+        """
+        Initialize the exception.
 
-                    Args:
-        service_name: Name of the rate-limited service
-        limit: Rate limit that was exceeded
-        retry_after: Suggested retry time in seconds
-        details: Additional details for (debugging and logging)
+        Args:
+            service_name: Name of the rate-limited service
+            limit: Rate limit that was exceeded
+            retry_after: Suggested retry time in seconds
+            details: Additional details for debugging and logging
         """
         reason = f"Rate limit of {limit} requests exceeded"
         super().__init__(service_name, reason, retry_after, details)
@@ -402,19 +396,6 @@ self.assertEqual(error.validation_errors[0]["actual"], "(batch_size, 5)")
 self.assertEqual(len(error.get_detail("validation_errors")), 2)
 
 @pytest.mark.standalone()
-
-
-@pytest.mark.standalone()
-
-@pytest.mark.standalone()
-
-@pytest.mark.standalone()
-
-@pytest.mark.standalone()
-
-@pytest.mark.standalone()
-
-@pytest.mark.standalone()
     def test_model_not_found_error(self):
         """Test the model not found error class."""
         # Create a model not found error
@@ -538,17 +519,17 @@ self.assertEqual(error.get_detail("retry_after"), 60)
         rate_limit_error = MLServiceRateLimitError("test_service", 100)
 
 # Check inheritance
-self.assert IsInstance(base_error, MLBaseError)
-self.assert IsInstance(inference_error, MLBaseError)
-self.assert IsInstance(validation_error, MLBaseError)
-self.assert IsInstance(model_not_found_error, MLBaseError)
-self.assert IsInstance(service_unavailable_error, MLBaseError)
-self.assert IsInstance(rate_limit_error, MLBaseError)
-self.assert IsInstance(rate_limit_error, MLServiceUnavailableError)
+        self.assertIsInstance(base_error, MLBaseError)
+        self.assertIsInstance(inference_error, MLBaseError)
+        self.assertIsInstance(validation_error, MLBaseError)
+        self.assertIsInstance(model_not_found_error, MLBaseError)
+        self.assertIsInstance(service_unavailable_error, MLBaseError)
+        self.assertIsInstance(rate_limit_error, MLBaseError)
+        self.assertIsInstance(rate_limit_error, MLServiceUnavailableError)
 
-# Check specific types
-self.assert IsInstance(inference_error, MLInferenceError)
-self.assert IsInstance(validation_error, MLValidationError)
-self.assert IsInstance(model_not_found_error, MLModelNotFoundError)
-self.assert IsInstance(service_unavailable_error, MLServiceUnavailableError)
-self.assert IsInstance(rate_limit_error, MLServiceRateLimitError)
+        # Check specific types
+        self.assertIsInstance(inference_error, MLInferenceError)
+        self.assertIsInstance(validation_error, MLValidationError)
+        self.assertIsInstance(model_not_found_error, MLModelNotFoundError)
+        self.assertIsInstance(service_unavailable_error, MLServiceUnavailableError)
+        self.assertIsInstance(rate_limit_error, MLServiceRateLimitError)

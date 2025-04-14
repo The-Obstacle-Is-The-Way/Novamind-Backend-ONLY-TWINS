@@ -31,11 +31,11 @@ def test_patient_creation_with_valid_data_succeeds():
     )
     
 
-# Assert
-assert patient.id == patient_id
-assert patient.name == name
-assert patient.date_of_birth == date_of_birth
-assert patient.medical_record_number == "MRN12345"
+    # Assert
+    assert patient.id == patient_id
+    assert patient.name == name
+    assert patient.date_of_birth == date_of_birth
+    assert patient.medical_record_number == "MRN12345"
 
 
 @pytest.mark.standalone()
@@ -49,13 +49,12 @@ def test_patient_age_calculation_is_correct():
         medical_record_number="MRN12345"
     )
     
-
-    # Act - Use a mock for (today's date to make the test deterministic)
+    # Act - Use a mock for today's date to make the test deterministic
     today_mock = Mock(return_value=date(2023, 1, 1))
-patient._get_today = today_mock
+    patient._get_today = today_mock
 
-# Assert
-assert patient.age == 33
+    # Assert
+    assert patient.age == 33
 
 
 @pytest.mark.standalone()
@@ -84,9 +83,8 @@ def test_patient_equality_based_on_id():
         medical_record_number="MRN12345"  # Same MRN
     )
     
-
-# Assert
-assert patient1 == patient2  # Same ID, different attributes
-assert patient1 != patient3  # Different ID, same attributes
-assert hash(patient1) == hash(patient2)  # Same hash for same ID
-assert hash(patient1) != hash(patient3)  # Different hash for different ID
+    # Assert
+    assert patient1 == patient2  # Same ID, different attributes
+    assert patient1 != patient3  # Different ID, same attributes
+    assert hash(patient1) == hash(patient2)  # Same hash for same ID
+    assert hash(patient1) != hash(patient3)  # Different hash for different ID

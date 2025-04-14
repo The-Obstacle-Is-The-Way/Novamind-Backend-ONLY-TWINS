@@ -6,11 +6,12 @@ Tests for the enhanced PHI detector utility.
 import pytest
 from unittest.mock import patch, MagicMock
 
-from app.core.utils.enhanced_phi_detector import ()
-EnhancedPHIDetector,
-EnhancedPHISanitizer,
-EnhancedPHISecureLogger,
-get_enhanced_phi_secure_logger,
+from app.core.utils.enhanced_phi_detector import (
+    EnhancedPHIDetector,
+    EnhancedPHISanitizer,
+    EnhancedPHISecureLogger,
+    get_enhanced_phi_secure_logger,
+)
 
 from app.core.utils.phi_sanitizer import PHIType
 
@@ -34,7 +35,7 @@ class TestEnhancedPHIDetector:
         assert EnhancedPHIDetector.contains_phi(text) is True
 
     @pytest.mark.standalone()
-        def test_contains_phi_with_enhanced_patterns(self):
+    def test_contains_phi_with_enhanced_patterns(self):
     """Test detection of PHI using enhanced patterns."""
     # Test with MRN
     text = "MRN: 12345678"
@@ -49,7 +50,7 @@ class TestEnhancedPHIDetector:
     assert EnhancedPHIDetector.contains_phi(text) is True
 
     @pytest.mark.standalone()
-        def test_contains_phi_with_medical_context(self):
+    def test_contains_phi_with_medical_context(self):
     """Test detection of PHI in medical context."""
     # Test with medical record context
     text = "Dr. Smith reviewed the chart for John Doe"
@@ -60,7 +61,7 @@ class TestEnhancedPHIDetector:
     assert EnhancedPHIDetector.contains_phi(text) is True
 
     @pytest.mark.standalone()
-        def test_contains_phi_negative_cases(self):
+    def test_contains_phi_negative_cases(self):
     """Test cases that should not be detected as PHI."""
     # Test with general medical terms
     text = "The treatment protocol includes medication and therapy"
@@ -75,7 +76,7 @@ class TestEnhancedPHIDetector:
     assert EnhancedPHIDetector.contains_phi(text) is False
 
     @pytest.mark.standalone()
-        def test_detect_phi_types(self):
+    def test_detect_phi_types(self):
     """Test detection of specific PHI types."""
     # Test with multiple PHI types
     text = "Patient John Doe (SSN: 123-45-6789) lives at 123 Main St"
@@ -86,7 +87,7 @@ class TestEnhancedPHIDetector:
     assert PHIType.ADDRESS in phi_types
 
     @pytest.mark.standalone()
-        def test_detect_phi_types_with_context(self):
+    def test_detect_phi_types_with_context(self):
     """Test detection of PHI types with context."""
     # Test with medical context
     text = "Dr. Smith saw patient on 2025-04-01 for follow-up"
@@ -96,7 +97,7 @@ class TestEnhancedPHIDetector:
     assert PHIType.DATE in phi_types
 
     @pytest.mark.standalone()
-        def test_detect_phi_locations(self):
+    def test_detect_phi_locations(self):
     """Test detection of PHI locations in text."""
     text = "Patient John Doe (SSN: 123-45-6789)"
     locations = EnhancedPHIDetector.detect_phi_locations(text)
@@ -105,11 +106,11 @@ class TestEnhancedPHIDetector:
     assert len(locations) >= 2
         
     # Check structure of location data
-            for location in locations:
-                assert "start" in location
-                assert "end" in location
-                assert "type" in location
-                assert "value" in location
+        for location in locations:
+            assert "start" in location
+            assert "end" in location
+            assert "type" in location
+            assert "value" in location
 
 
 class TestEnhancedPHISanitizer:
@@ -131,7 +132,7 @@ class TestEnhancedPHISanitizer:
         assert "anonymized.email" in sanitized
 
     @pytest.mark.standalone()
-        def test_sanitize_text_with_enhanced_phi(self):
+    def test_sanitize_text_with_enhanced_phi(self):
     """Test sanitization of text with enhanced PHI patterns."""
     # Test with MRN
     text = "MRN: 12345678"
@@ -146,7 +147,7 @@ class TestEnhancedPHISanitizer:
     assert "[REDACTED NAME]" in sanitized
 
     @pytest.mark.standalone()
-        def test_sanitize_text_with_medical_context(self):
+    def test_sanitize_text_with_medical_context(self):
     """Test sanitization of text with medical context."""
     # Test with medical record context
     text = "Dr. Smith reviewed the chart for John Doe"
@@ -156,38 +157,39 @@ class TestEnhancedPHISanitizer:
     assert "[REDACTED NAME]" in sanitized
 
     @pytest.mark.standalone()
-        def test_sanitize_text_preserves_non_phi(self):
+    def test_sanitize_text_preserves_non_phi(self):
     """Test that non-PHI content is preserved during sanitization."""
     text = "The treatment includes 20mg of medication twice daily"
     sanitized = EnhancedPHISanitizer.sanitize_text(text)
     assert sanitized == text  # Should be unchanged
 
     @pytest.mark.standalone()
-        def test_sanitize_text_with_custom_replacement(self):
+    def test_sanitize_text_with_custom_replacement(self):
     """Test sanitization with custom replacement patterns."""
     text = "Patient SSN: 123-45-6789"
-    sanitized = EnhancedPHISanitizer.sanitize_text()
-    text, 
-    replacements={PHIType.SSN: "XXX-XX-XXXX"}
+    sanitized = EnhancedPHISanitizer.sanitize_text(
+        text, 
+        replacements={PHIType.SSN: "XXX-XX-XXXX"}
+    )
         
     assert "123-45-6789" not in sanitized
     assert "XXX-XX-XXXX" in sanitized
 
     @pytest.mark.standalone()
-        def test_sanitize_json_with_phi(self):
+    def test_sanitize_json_with_phi(self):
     """Test sanitization of JSON data containing PHI."""
     data = {
-    "patient": {
-    "name": "John Doe",
-    "contact": {
-    "email": "patient@example.com",
-    "phone": "123-456-7890"
-    },
-    "medical_info": {
-    "diagnosis": "Condition ABC",
-    "treatment": "Medication XYZ"
-    }
-    }
+        "patient": {
+            "name": "John Doe",
+            "contact": {
+                "email": "patient@example.com",
+                "phone": "123-456-7890"
+            },
+            "medical_info": {
+                "diagnosis": "Condition ABC",
+                "treatment": "Medication XYZ"
+            }
+        }
     }
         
     sanitized = EnhancedPHISanitizer.sanitize_json(data)
