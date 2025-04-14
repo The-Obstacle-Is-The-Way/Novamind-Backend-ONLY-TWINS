@@ -201,26 +201,27 @@ class TestPHISanitizingFilter:
 
             # Check PHI was redacted
             assert phi not in record.msg
-            assert "[REDACTED]" in record.msgclass TestStructuredJsonFormatter:
-                """Test suite for structured JSON formatter."""
-
-                def test_format_basic_record(self):
+            assert "[REDACTED]" in record.msg
 
 
-                    """Test formatting a basic log record."""
-                    # Create formatter
-                    formatter = StructuredJsonFormatter()
+class TestStructuredJsonFormatter:
+    """Test suite for structured JSON formatter."""
 
-                    # Create a simple log record
-                    record = logging.LogRecord()
-                    name="test_logger",
-                    level=logging.INFO,
-                    pathname="/app/main.py",
-                    lineno=42,
-                    msg="Test message",
-                    args=(),
-                    exc_info=None,
-        
+    def test_format_basic_record(self):
+        """Test formatting a basic log record."""
+        # Create formatter
+        formatter = StructuredJsonFormatter()
+
+        # Create a simple log record
+        record = logging.LogRecord(
+            name="test_logger",
+            level=logging.INFO,
+            pathname="/app/main.py",
+            lineno=42,
+            msg="Test message",
+            args=(),
+            exc_info=None
+        )
 
         # Format the record
         formatted = formatter.format(record)
@@ -247,22 +248,22 @@ class TestPHISanitizingFilter:
         # Create exception info
         try:
             raise ValueError("Test exception")
-            except ValueError:
-                exc_info = pytest.importorskip("sys").exc_info()
+        except ValueError:
+            exc_info = pytest.importorskip("sys").exc_info()
 
-                # Create log record with exception
-                record = logging.LogRecord()
+            # Create log record with exception
+            record = logging.LogRecord(
                 name="test_logger",
                 level=logging.ERROR,
                 pathname="/app/main.py",
                 lineno=42,
                 msg="Exception occurred",
                 args=(),
-                exc_info=exc_info,
-            
+                exc_info=exc_info
+            )
 
-        # Format the record
-        formatted = formatter.format(record)
+            # Format the record
+            formatted = formatter.format(record)
 
         # Parse the JSON
         log_entry = json.loads(formatted)
@@ -305,67 +306,70 @@ class TestPHISanitizingFilter:
         # Check extra fields
         assert log_entry["correlation_id"] == "abc-123"
         assert log_entry["user_id"] == "user-456"
-        assert log_entry["request_path"] == "/api/resource"class TestCorrelationId:
-            """Test suite for correlation ID functionality."""
-
-            def test_get_correlation_id_default(self):
+        assert log_entry["request_path"] == "/api/resource"
 
 
-                """Test getting correlation ID when none set."""
-                # Clear any existing correlation ID
-                clear_correlation_id()
+class TestCorrelationId:
+    """Test suite for correlation ID functionality."""
 
-                # Get correlation ID
-                correlation_id = get_correlation_id()
+    def test_get_correlation_id_default(self):
+        """Test getting correlation ID when none set."""
+        # Clear any existing correlation ID
+        clear_correlation_id()
 
-                # Should generate a new one
-                assert correlation_id is not None
-                assert isinstance(correlation_id, str)
-                assert len(correlation_id) > 0
+        # Get correlation ID
+        correlation_id = get_correlation_id()
 
-                def test_set_and_get_correlation_id(self):
+        # Should generate a new one
+        assert correlation_id is not None
+        assert isinstance(correlation_id, str)
+        assert len(correlation_id) > 0
+
+    def test_set_and_get_correlation_id(self):
+        """Test setting and getting a correlation ID."""
+        # Set a specific correlation ID
+        test_id = "test-correlation-123"
+        set_correlation_id(test_id)
+
+        # Get it back
+        correlation_id = get_correlation_id()
+
+        # Should match what we set
+        assert correlation_id == test_id
+
+    def test_clear_correlation_id(self):
 
 
-                    """Test setting and getting a correlation ID."""
-            # Set a specific correlation ID
-            test_id = "test-correlation-123"
-            set_correlation_id(test_id)
+        """Test clearing correlation ID."""
+        # Set a correlation ID
+        set_correlation_id("test-correlation-123")
 
-            # Get it back
-            correlation_id = get_correlation_id()
+        # Clear it
+        clear_correlation_id()
 
-            # Should match what we set
-            assert correlation_id == test_id
-
-            def test_clear_correlation_id(self):
+        # Get a new one - should be different
+        new_id = get_correlation_id()
+        assert new_id != "test-correlation-123"
 
 
-                """Test clearing correlation ID."""
-                # Set a correlation ID
-                set_correlation_id("test-correlation-123")
+class TestAuditLogging:
+    """Test suite for audit logging functionality."""
 
-                # Clear it
-                clear_correlation_id()
+    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    def test_audit_log(self, mock_get_logger):
 
-                # Get a new one - should be different
-                new_id = get_correlation_id()
-                assert new_id != "test-correlation-123"class TestAuditLogging:
-                """Test suite for audit logging functionality."""
+        """Test audit logging function."""
+        # Setup mock logger
+        mock_audit_logger = MagicMock()
+        mock_get_logger.return_value = mock_audit_logger
 
-                @patch("app.core.utils.logging_enhanced.logging.getLogger")
-                def test_audit_log(self, mock_get_logger):
-
-                    """Test audit logging function."""
-                # Setup mock logger
-                mock_audit_logger = MagicMock()
-                mock_get_logger.return_value = mock_audit_logger
-
-                # Call audit log
-                audit_log()
-                action="viewed_patient_record",
-                resource_id="patient-123",
-                user_id="doctor-456",
-                details={"access_reason": "scheduled_appointment"},
+        # Call audit log
+        audit_log(
+            action="viewed_patient_record",
+            resource_id="patient-123",
+            user_id="doctor-456",
+            details={"access_reason": "scheduled_appointment"}
+        )
         
 
         # Verify logger was called
@@ -378,9 +382,8 @@ class TestPHISanitizingFilter:
         assert "patient-123" in log_call
         assert "doctor-456" in log_call
 
-@patch("app.core.utils.logging_enhanced.logging.getLogger")
+    @patch("app.core.utils.logging_enhanced.logging.getLogger")
     def test_log_phi_detection(self, mock_get_logger):
-
         """Test PHI detection logging function."""
         # Setup mock logger
         mock_phi_logger = MagicMock()
@@ -404,40 +407,42 @@ class TestPHISanitizingFilter:
         log_call = mock_phi_logger.warning.call_args[0][0]
         assert "PHI detected" in log_call
         assert "api_request" in log_call
-        assert "0.85" in log_callclass TestGetLogger:
-            """Test suite for the get_logger function."""
+        assert "0.85" in log_call
 
-            @patch("app.core.utils.logging_enhanced.logging.getLogger")
-            def test_get_logger_basic(self, mock_get_logger):
 
-                """Test getting a basic logger."""
-                # Setup mock
-                mock_logger = MagicMock()
-                mock_get_logger.return_value = mock_logger
+class TestGetLogger:
+    """Test suite for the get_logger function."""
 
-                # Get logger
-                logger = get_logger("test_module")
+    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    def test_get_logger_basic(self, mock_get_logger):
 
-                # Verify correct logger was requested
-                mock_get_logger.assert_called_once_with("app.test_module")
+        """Test getting a basic logger."""
+        # Setup mock
+        mock_logger = MagicMock()
+        mock_get_logger.return_value = mock_logger
 
-                # Should return the logger from getLogger
-                assert logger == mock_logger
+        # Get logger
+        logger = get_logger("test_module")
 
-                @patch("app.core.utils.logging_enhanced.logging.getLogger")
-                def test_get_logger_with_correlation(self, mock_get_logger):
+        # Verify correct logger was requested
+        mock_get_logger.assert_called_once_with("app.test_module")
 
-                    """Test that logger adds correlation ID filter."""
-            # Setup mocks
-            mock_logger = MagicMock()
-            mock_get_logger.return_value = mock_logger
+        # Should return the logger from getLogger
+        assert logger == mock_logger
 
-            # Set a correlation ID
-            test_id = "test-correlation-456"
-            set_correlation_id(test_id)
+    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    def test_get_logger_with_correlation(self, mock_get_logger):
+        """Test that logger adds correlation ID filter."""
+        # Setup mocks
+        mock_logger = MagicMock()
+        mock_get_logger.return_value = mock_logger
 
-            # Get logger
-            logger = get_logger("test_module")
+        # Set a correlation ID
+        test_id = "test-correlation-456"
+        set_correlation_id(test_id)
 
-            # Verify logger was configured with the context filter
-            assert mock_logger.addFilter.called
+        # Get logger
+        logger = get_logger("test_module")
+
+        # Verify logger was configured with the context filter
+        assert mock_logger.addFilter.called

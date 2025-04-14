@@ -243,12 +243,12 @@ class TestMockDigitalTwinService:
         # Test with default parameters
         result = mock_service.get_insights(sample_patient_id)
         assert result["patient_id"] == sample_patient_id
-assert result["insight_type"] == "all"
-assert result["time_period"] == "last_30_days"
-assert "generated_at" in result
-assert "insights" in result
-assert "processing_time" in result
-assert "metadata" in result
+        assert result["insight_type"] == "all"
+        assert result["time_period"] == "last_30_days"
+        assert "generated_at" in result
+        assert "insights" in result
+        assert "processing_time" in result
+        assert "metadata" in result
 
         # Verify structure of all insights
         insights = result["insights"]

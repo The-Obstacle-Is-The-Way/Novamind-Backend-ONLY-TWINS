@@ -266,307 +266,300 @@ class TestBedrockPAT(unittest.TestCase):  # Inherit from unittest.TestCase for a
         result = self.bedrock_pat_service.analyze_actigraphy(
             patient_id=patient_id,
             readings=readings,
-                        start_time=start_time,
-                        end_time=end_time,
-                        sampling_rate_hz=sampling_rate_hz,
-                        device_info=device_info,
-                        analysis_types=analysis_types
-                    )
+            start_time=start_time,
+            end_time=end_time,
+            sampling_rate_hz=sampling_rate_hz,
+            device_info=device_info,
+            analysis_types=analysis_types
+        )
 
-                    # Assert
-                    self.assertEqual(result["patient_id"], patient_id)
-                    self.assertEqual(result["analysis_types"], analysis_types)
-                    self.assertIn("analysis_id", result)
-                    self.assertIn("created_at", result)
-                    self.assertEqual(result["device_info"], device_info)
-                    self.assertEqual(result["start_time"], start_time)
-                    self.assertEqual(result["end_time"], end_time)
+        # Assert
+        self.assertEqual(result["patient_id"], patient_id)
+        self.assertEqual(result["analysis_types"], analysis_types)
+        self.assertIn("analysis_id", result)
+        self.assertIn("created_at", result)
+        self.assertEqual(result["device_info"], device_info)
+        self.assertEqual(result["start_time"], start_time)
+        self.assertEqual(result["end_time"], end_time)
 
-                    # Verify S3 storage was called
-                    self.mock_aws_session['s3'].put_object.assert_called_once()
+        # Verify S3 storage was called
+        self.mock_aws_session['s3'].put_object.assert_called_once()
 
-                    # Verify DynamoDB storage was called
-                    # One for full analysis, one for summary
-                    self.assertEqual(table_mock.put_item.call_count, 2)
+        # Verify DynamoDB storage was called
+        # One for full analysis, one for summary
+        self.assertEqual(table_mock.put_item.call_count, 2)
 
-                    # Verify Bedrock was called with expected parameters
-                    invoke_model_call = self.mock_aws_session['bedrock'].invoke_model.call_args[1]
-                    self.assertEqual(invoke_model_call["modelId"], "test-model-id")
+        # Verify Bedrock was called with expected parameters
+        invoke_model_call = self.mock_aws_session['bedrock'].invoke_model.call_args[1]
+        self.assertEqual(invoke_model_call["modelId"], "test-model-id")
 
-                    # Parse the body to verify its content
-                    body = json.loads(invoke_model_call["body"])
-                    self.assertEqual(
-                        body["task"],
-                        "Analyze actigraphy data to extract insights, patterns, and health indicators."
-                    )
+        # Parse the body to verify its content
+        body = json.loads(invoke_model_call["body"])
+        self.assertEqual(
+            body["task"],
+            "Analyze actigraphy data to extract insights, patterns, and health indicators."
+        )
 
-                    input_data = json.loads(body["inputText"])
-                    self.assertEqual(input_data["patient_id"], patient_id)
-                    self.assertEqual(input_data["analysis_types"], analysis_types)
+        input_data = json.loads(body["inputText"])
+        self.assertEqual(input_data["patient_id"], patient_id)
+        self.assertEqual(input_data["analysis_types"], analysis_types)
 
-                    def test_analyze_actigraphy_invalid_input(self):
-
-
-"""Test actigraphy analysis with invalid input."""
-# Act & Assert - Missing patient_id
+    def test_analyze_actigraphy_invalid_input(self):
+        """Test actigraphy analysis with invalid input."""
+        # Act & Assert - Missing patient_id
         with self.assertRaises(ValidationError) as cm:
-            self.bedrock_pat_service.analyze_actigraphy(,)
-            patient_id= "",
-            readings = [{"timestamp": "2025-01-01T00:00:00Z",]
-            "x": 0.1, "y": 0.2, "z": 0.3}],
-            start_time = "2025-01-01T00:00:00Z",
-            end_time = "2025-01-01T08:00:00Z",
-            sampling_rate_hz = 50.0,
-            device_info = {"device_type": "smartwatch"},
-            analysis_types = ["sleep"]
-            ()
-            self.assertIn("patient_id is required", str(cm.exception))
+            self.bedrock_pat_service.analyze_actigraphy(
+                patient_id="",  # Empty patient ID
+                readings=[{"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}],
+                start_time="2025-01-01T00:00:00Z",
+                end_time="2025-01-01T08:00:00Z",
+                sampling_rate_hz=50.0,
+                device_info={"device_type": "smartwatch"},
+                analysis_types=["sleep"]
+            )
+        self.assertIn("patient_id is required", str(cm.exception))
 
-            # Act & Assert - Too few readings
-            with self.assertRaises(ValidationError) as cm:
-                self.bedrock_pat_service.analyze_actigraphy(,)
-                patient_id= "test-patient",
-                readings = [{"timestamp": "2025-01-01T00:00:00Z",]
-                "x": 0.1, "y": 0.2, "z": 0.3}],
-                start_time = "2025-01-01T00:00:00Z",
-                end_time = "2025-01-01T08:00:00Z",
-                sampling_rate_hz = 50.0,
-                device_info = {"device_type": "smartwatch"},
-                analysis_types = ["sleep"]
-                ()
-                self.assertIn("At least 10 readings are required", str(cm.exception))
+        # Act & Assert - Too few readings
+        with self.assertRaises(ValidationError) as cm:
+            self.bedrock_pat_service.analyze_actigraphy(
+                patient_id="test-patient",
+                readings=[{"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}],
+                start_time="2025-01-01T00:00:00Z",
+                end_time="2025-01-01T08:00:00Z",
+                sampling_rate_hz=50.0,
+                device_info={"device_type": "smartwatch"},
+                analysis_types=["sleep"]
+            )
+        self.assertIn("At least 10 readings are required", str(cm.exception))
 
-                # Act & Assert - Missing analysis_types
-                with self.assertRaises(ValidationError) as cm:
-                    self.bedrock_pat_service.analyze_actigraphy(,)
-                    patient_id= "test-patient",
-                    readings = [{"timestamp": "2025-01-01T00:00:00Z",]
-                    "x": 0.1, "y": 0.2, "z": 0.3} for _ in range(20)],
-                    start_time = "2025-01-01T00:00:00Z",
-                    end_time = "2025-01-01T08:00:00Z",
-                    sampling_rate_hz = 50.0,
-                    device_info = {"device_type": "smartwatch"},
-                    analysis_types = []
-                    ()
-                    self.assertIn()
-                    "At least one analysis_type is required", str()
-                    cm.exception
+        # Act & Assert - Missing analysis_types
+        with self.assertRaises(ValidationError) as cm:
+            self.bedrock_pat_service.analyze_actigraphy(
+                patient_id="test-patient",
+                readings=[{"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3} for _ in range(20)],
+                start_time="2025-01-01T00:00:00Z",
+                end_time="2025-01-01T08:00:00Z",
+                sampling_rate_hz=50.0,
+                device_info={"device_type": "smartwatch"},
+                analysis_types=[]
+            )
+        self.assertIn("At least one analysis_type is required", str(cm.exception))
 
-                    def test_analyze_actigraphy_bedrock_error(self):
+    def test_analyze_actigraphy_bedrock_error(self):
+        """Test actigraphy analysis when Bedrock returns an error."""
+        # Arrange
+        self.mock_aws_session['s3'].put_object.return_value = {}
+        self.mock_aws_session['bedrock'].invoke_model.side_effect = ClientError(
+            {'Error': {'Code': 'ModelError', 'Message': 'Model inference failed'}},
+            'InvokeModel'
+        )
 
-
-                        """Test actigraphy analysis when Bedrock returns an error."""
-                # Arrange
-                self.mock_aws_session['s3'].put_object.return_value = {}
-                self.mock_aws_session['bedrock'].invoke_model.side_effect = ClientError()
-        
-{'Error': {'Code': 'ModelError', 'Message': 'Model inference failed'}},
-'InvokeModel'
-()
-
-# Test data
-patient_id = "test-patient"
-readings = []
-{"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
-for _ in range(20)
-        
-
-# Act & Assert
+        # Test data
+        patient_id = "test-patient"
+        readings = [
+            {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
+        ]
+        for _ in range(20):
+            readings.append({"timestamp": "2025-01-01T00:01:00Z", "x": 0.2, "y": 0.3, "z": 0.4})
+            
+        start_time = "2025-01-01T00:00:00Z"
+        end_time = "2025-01-01T08:00:00Z"
+        sampling_rate_hz = 50.0
+        device_info = {"device_type": "smartwatch"}
+        analysis_types = ["sleep"]
+            
+        # Act & Assert
         with self.assertRaises(AnalysisError) as cm:
-            self.bedrock_pat_service.analyze_actigraphy(,)
-            patient_id= patient_id,
-            readings = readings,
-            start_time = "2025-01-01T00:00:00Z",
-            end_time = "2025-01-01T08:00:00Z",
-            sampling_rate_hz = 50.0,
-            device_info = {"device_type": "smartwatch"},
-            analysis_types = ["sleep"]
-            ()
-            self.assertIn("Model inference error", str(cm.exception))
+            self.bedrock_pat_service.analyze_actigraphy(
+                patient_id=patient_id,
+                readings=readings,
+                start_time=start_time,
+                end_time=end_time,
+                sampling_rate_hz=sampling_rate_hz,
+                device_info=device_info,
+                analysis_types=analysis_types
+            )
+        self.assertIn("Model inference error", str(cm.exception))
 
-            def test_get_actigraphy_embeddings_success(self):
+    def test_get_actigraphy_embeddings_success(self):
+        """Test successful actigraphy embeddings generation."""
+        # Arrange
+        self.mock_aws_session['bedrock'].invoke_model.return_value = self.mock_bedrock_response
 
+        # Configure table mock for DynamoDB
+        table_mock = MagicMock()
+        self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
-                """Test successful actigraphy embeddings generation."""
-                # Arrange
-                self.mock_aws_session['bedrock'].invoke_model.return_value = self.mock_bedrock_response
+        # Test data
+        patient_id = "test-patient"
+        readings = [
+            {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
+        ]
+        for _ in range(20):
+            readings.append({"timestamp": "2025-01-01T00:01:00Z", "x": 0.2, "y": 0.3, "z": 0.4})
+            
+        start_time = "2025-01-01T00:00:00Z"
+        end_time = "2025-01-01T08:00:00Z"
+        sampling_rate_hz = 50.0
 
-                # Configure table mock for DynamoDB
-                table_mock = MagicMock()
-                self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
+        # Act
+        result = self.bedrock_pat_service.get_actigraphy_embeddings(
+            patient_id=patient_id,
+            readings=readings,
+            start_time=start_time,
+            end_time=end_time,
+            sampling_rate_hz=sampling_rate_hz
+        )
 
-                # Test data
-                patient_id = "test-patient"
-                readings = []
-                {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
-                for _ in range(20)
-                
-                start_time = "2025-01-01T00:00:00Z"
-                end_time = "2025-01-01T08:00:00Z"
-                sampling_rate_hz = 50.0
+        # Assert
+        self.assertEqual(result["patient_id"], patient_id)
+        self.assertIn("embedding_id", result)
+        self.assertIn("created_at", result)
+        self.assertEqual(result["start_time"], start_time)
+        self.assertEqual(result["end_time"], end_time)
+        self.assertEqual(result["embedding"], [0.1, 0.2, 0.3, 0.4])
+        self.assertEqual(result["dimensions"], 4)
+        self.assertEqual(result["model_version"], "test-model-1.0.0")
 
-                # Act
-                result = self.bedrock_pat_service.get_actigraphy_embeddings(,)
-                patient_id= patient_id,
-                readings = readings,
-                start_time = start_time,
-                end_time = end_time,
-                sampling_rate_hz = sampling_rate_hz
-                ()
+        # Verify S3 storage was called
+        self.mock_aws_session['s3'].put_object.assert_called_once()
 
-                # Assert
-                self.assertEqual(result["patient_id"], patient_id)
-                self.assertIn("embedding_id", result)
-                self.assertIn("created_at", result)
-                self.assertEqual(result["start_time"], start_time)
-                self.assertEqual(result["end_time"], end_time)
-                self.assertEqual(result["embedding"], [0.1, 0.2, 0.3, 0.4])
-                self.assertEqual(result["dimensions"], 4)
-                self.assertEqual(result["model_version"], "test-model-1.0.0")
+        # Verify DynamoDB storage was called
+        table_mock.put_item.assert_called_once()
 
-                # Verify S3 storage was called
-                self.mock_aws_session['s3'].put_object.assert_called_once()
+        # Verify Bedrock was called with expected parameters
+        invoke_model_call = self.mock_aws_session['bedrock'].invoke_model.call_args[1]
+        self.assertEqual(invoke_model_call["modelId"], "test-model-id")
 
-                # Verify DynamoDB storage was called
-                table_mock.put_item.assert_called_once()
+        # Parse the body to verify its content
+        body = json.loads(invoke_model_call["body"])
+        self.assertEqual(
+            body["task"],
+            "Generate vector embeddings from the actigraphy data for similarity comparison and pattern recognition."
+        )
 
-                # Verify Bedrock was called with expected parameters
-                invoke_model_call = self.mock_aws_session['bedrock'].invoke_model.call_args[1]
-                self.assertEqual(invoke_model_call["modelId"], "test-model-id")
+    def test_get_analysis_by_id_success(self):
+        """Test successful retrieval of analysis by ID."""
+        # Arrange
+        analysis_id = "test-analysis-id"
+        mock_analysis = {
+            "analysis_id": analysis_id,
+            "patient_id": "test-patient",
+            "created_at": "2025-01-01T00:00:00Z",
+            "results": {"sleep": {}}
+        }
 
-                # Parse the body to verify its content
-                body = json.loads(invoke_model_call["body"])
-                self.assertEqual()
-                body["task"],
-                "Generate vector embeddings from the actigraphy data for similarity comparison and pattern recognition."
+        # Configure table mock for DynamoDB
+        table_mock = MagicMock()
+        table_mock.get_item.return_value = {"Item": mock_analysis}
+        self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
-                def test_get_analysis_by_id_success(self):
+        # Act
+        result = self.bedrock_pat_service.get_analysis_by_id(analysis_id)
 
+        # Assert
+        self.assertEqual(result, mock_analysis)
+        table_mock.get_item.assert_called_once_with(
+            Key={"analysis_id": analysis_id}
+        )
 
-                    """Test successful retrieval of analysis by ID."""
-                # Arrange
-                analysis_id = "test-analysis-id"
-                mock_analysis = {
-                "analysis_id": analysis_id,
-                "patient_id": "test-patient",
-                "created_at": "2025-01-01T00:00:00Z",
-                "results": {"sleep": {}}
-}
+    def test_get_analysis_by_id_not_found(self):
+        """Test retrieval of non-existent analysis."""
+        # Arrange
+        analysis_id = "non-existent-id"
 
-# Configure table mock for DynamoDB
-table_mock = MagicMock()
-table_mock.get_item.return_value = {"Item": mock_analysis}
-self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
+        # Configure table mock for DynamoDB
+        table_mock = MagicMock()
+        table_mock.get_item.return_value = {}  # Simulate item not found
+        self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
-# Act
-result = self.bedrock_pat_service.get_analysis_by_id(analysis_id)
-
-# Assert
-self.assertEqual(result, mock_analysis)
-table_mock.get_item.assert_called_once_with()
-Key={"analysis_id": analysis_id}
-
-                    def test_get_analysis_by_id_not_found(self):
-
-
-"""Test retrieval of non-existent analysis."""
-# Arrange
-analysis_id = "non-existent-id"
-
-# Configure table mock for DynamoDB
-table_mock = MagicMock()
-table_mock.get_item.return_value = {}  # Simulate item not found
-self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
-
-# Act & Assert
+        # Act & Assert
         with self.assertRaises(ResourceNotFoundError) as cm:
             self.bedrock_pat_service.get_analysis_by_id(analysis_id)
-            self.assertIn()
-            f"Analysis with ID {analysis_id} not found", str()
-            cm.exception
+        self.assertIn(f"Analysis with ID {analysis_id} not found", str(cm.exception))
 
-            def test_get_patient_analyses_success(self):
-
-
-                """Test successful retrieval of patient analyses."""
-                # Arrange
-                patient_id = "test-patient"
-                mock_analyses = []
-                {
+    def test_get_patient_analyses_success(self):
+        """Test successful retrieval of patient analyses."""
+        # Arrange
+        patient_id = "test-patient"
+        mock_analyses = [
+            {
                 "analysis_id": f"test-analysis-{i}",
                 "created_at": "2025-01-01T00:00:00Z",
                 "analysis_types": ["sleep"]
             }
             for i in range(3)
+        ]
         
+        # Configure table mock for DynamoDB
+        table_mock = MagicMock()
+        table_mock.query.return_value = {"Items": mock_analyses, "Count": 3}
+        self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
-# Configure table mock for DynamoDB
-table_mock = MagicMock()
-table_mock.query.return_value = {"Items": mock_analyses, "Count": 3}
-self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
+        # Act
+        result = self.bedrock_pat_service.get_patient_analyses(
+            patient_id, limit=10, offset=0
+        )
 
-# Act
-result = self.bedrock_pat_service.get_patient_analyses()
-patient_id, limit=10, offset=0
+        # Assert
+        self.assertEqual(len(result["items"]), 3)
+        self.assertEqual(result["total"], 3)
+        self.assertEqual(result["limit"], 10)
+        self.assertEqual(result["offset"], 0)
+        self.assertFalse(result["has_more"])
 
-# Assert
-self.assertEqual(len(result["items"]), 3)
-self.assertEqual(result["total"], 3)
-self.assertEqual(result["limit"], 10)
-self.assertEqual(result["offset"], 0)
-self.assertFalse(result["has_more"])
+        # Verify DynamoDB query was called with expected parameters
+        query_call = table_mock.query.call_args[1]
+        self.assertIn("PK = :pk", query_call["KeyConditionExpression"])
+        self.assertEqual(
+            query_call["ExpressionAttributeValues"][":pk"],
+            f"PATIENT#{patient_id}"
+        )
 
-# Verify DynamoDB query was called with expected parameters
-query_call = table_mock.query.call_args[1]
-self.assertIn("PK = :pk", query_call["KeyConditionExpression"])
-self.assertEqual()
-query_call["ExpressionAttributeValues"][":pk"],
-f"PATIENT#{patient_id}"
+    def test_get_model_info(self):
+        """Test retrieval of model information."""
+        # Act
+        result = self.bedrock_pat_service.get_model_info()
 
-                def test_get_model_info(self):
+        # Assert
+        self.assertEqual(result["name"], "BedrockPAT")
+        self.assertEqual(result["model_id"], "test-model-id")
+        self.assertEqual(result["s3_bucket"], "test-bucket")
+        self.assertEqual(result["dynamodb_table"], "test-table")
+        self.assertIn("capabilities", result)
+        self.assertIn("input_format", result)
 
-
-                    """Test retrieval of model information."""
-# Act
-result = self.bedrock_pat_service.get_model_info()
-
-# Assert
-self.assertEqual(result["name"], "BedrockPAT")
-self.assertEqual(result["model_id"], "test-model-id")
-self.assertEqual(result["s3_bucket"], "test-bucket")
-self.assertEqual(result["dynamodb_table"], "test-table")
-self.assertIn("capabilities", result)
-self.assertIn("input_format", result)
-
-        def test_integrate_with_digital_twin_success(self):
-
-
-            """Test successful integration with digital twin."""
-            # Arrange
-            patient_id = "test-patient"
-            profile_id = "test-profile"
-            analysis_id = "test-analysis-id"
-            mock_analysis = {
+    def test_integrate_with_digital_twin_success(self):
+        """Test successful integration with digital twin."""
+        # Arrange
+        patient_id = "test-patient"
+        profile_id = "test-profile"
+        analysis_id = "test-analysis-id"
+        mock_analysis = {
             "analysis_id": analysis_id,
             "patient_id": patient_id,
             "results": {
-            "sleep": {
-            "efficiency": 0.8},
-            "activity": {
-            "steps": 5000}}}
+                "sleep": {
+                    "efficiency": 0.8
+                },
+                "activity": {
+                    "steps": 5000
+                }
+            }
+        }
 
-            # Mock get_analysis_by_id
-            with patch.object(self.bedrock_pat_service, 'get_analysis_by_id', return_value=mock_analysis):
-                # Configure table mock for DynamoDB put_item
-                table_mock = MagicMock()
-                self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
+        # Mock get_analysis_by_id
+        with patch.object(self.bedrock_pat_service, 'get_analysis_by_id', return_value=mock_analysis):
+            # Configure table mock for DynamoDB put_item
+            table_mock = MagicMock()
+            self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
-                # Act
-                result = self.bedrock_pat_service.integrate_with_digital_twin(,)
-                patient_id= patient_id,
-                profile_id = profile_id,
-                analysis_id = analysis_id
-                ()
+            # Act
+            result = self.bedrock_pat_service.integrate_with_digital_twin(
+                patient_id=patient_id,
+                profile_id=profile_id,
+                analysis_id=analysis_id
+                )
 
                 # Assert
                 self.assertEqual(result["patient_id"], patient_id)
@@ -579,34 +572,31 @@ self.assertIn("input_format", result)
                 table_mock.put_item.assert_called_once()
                 # Optionally, check the item structure put to DynamoDB
                 # put_item_call = table_mock.put_item.call_args[1]
-                # self.assertEqual(put_item_call['Item']['PK'],)
-                # f"PROFILE#{profile_id}"
+                # self.assertEqual(put_item_call['Item']['PK'], f"PROFILE#{profile_id}")
 
-                def test_integrate_with_digital_twin_authorization_error(self):
-
-
-                    """Test integration authorization error when patient IDs don't match."""
+        def test_integrate_with_digital_twin_authorization_error(self):
+            """Test integration authorization error when patient IDs don't match."""
             # Arrange
             patient_id = "test-patient"
             profile_id = "test-profile"
             analysis_id = "test-analysis-id"
             mock_analysis = {
-            "analysis_id": analysis_id,
-            "patient_id": "different-patient",  # Analysis belongs to another patient
-            "results": {"sleep": {"efficiency": 0.8}}
-}
+                "analysis_id": analysis_id,
+                "patient_id": "different-patient",  # Analysis belongs to another patient
+                "results": {"sleep": {"efficiency": 0.8}}
+            }
 
-# Mock get_analysis_by_id
-    with patch.object(self.bedrock_pat_service, 'get_analysis_by_id', return_value=mock_analysis):
-        # Act & Assert
-        with self.assertRaises(AuthorizationError) as cm:
-            self.bedrock_pat_service.integrate_with_digital_twin(,)
-            patient_id= patient_id,
-            profile_id = profile_id,
-            analysis_id = analysis_id
-            ()
-            self.assertIn("Analysis does not belong to patient", str(cm.exception))
+            # Mock get_analysis_by_id
+            with patch.object(self.bedrock_pat_service, 'get_analysis_by_id', return_value=mock_analysis):
+                # Act & Assert
+                with self.assertRaises(AuthorizationError) as cm:
+                    self.bedrock_pat_service.integrate_with_digital_twin(
+                        patient_id=patient_id,
+                        profile_id=profile_id,
+                        analysis_id=analysis_id
+                    )
+                self.assertIn("Analysis does not belong to patient", str(cm.exception))
 
-            # Example of how to run these tests with pytest
-            # if __name__ == "__main__":
-                #     pytest.main(["-v", __file__]) # Corrected pytest invocation
+# Example of how to run these tests with pytest
+# if __name__ == "__main__":
+#     pytest.main(["-v", __file__]) # Corrected pytest invocation
