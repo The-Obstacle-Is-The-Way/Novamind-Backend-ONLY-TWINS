@@ -16,10 +16,11 @@ from unittest.mock import patch, MagicMock
 from pathlib import Path
 
 from scripts.run_hipaa_phi_audit import PHIAuditor, PHIAuditResult
+from app.tests.security.utils.base_security_test import BaseSecurityTest
 
 
 @pytest.mark.db_required()
-class TestPHIAuditLogic:
+class TestPHIAuditLogic(BaseSecurityTest):
     """Test suite for PHI audit decision-making logic."""
 
     @pytest.fixture

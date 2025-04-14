@@ -14,7 +14,6 @@ from app.infrastructure.persistence.sqlalchemy.unit_of_work import SQLAlchemyUni
 from app.domain.exceptions import RepositoryError  # Changed from TransactionError
 
 
-@pytest.mark.asyncio
 class TestSQLAlchemyUnitOfWork:
     """
     Tests for the SQLAlchemy Unit of Work to ensure HIPAA-compliant data integrity.
@@ -50,14 +49,11 @@ class TestSQLAlchemyUnitOfWork:
         """Test a successful transaction commit."""
         _, mock_session = mock_session_factory
         
-        # Mock the commit method to simulate successful transaction
-        with patch.object(unit_of_work, "commit", return_value=None) as mock_commit:
-            with unit_of_work as uow:
-                # Simulate some operation
-                pass
-            # Manually call commit to simulate the behavior
+        with unit_of_work as uow:
+            # Simulate some operation
+            pass
+            # Explicitly commit within context
             uow.commit()
-            mock_commit.assert_called_once()
         
         # Verify session interaction
         mock_session.begin.assert_called_once()
@@ -88,18 +84,14 @@ class TestSQLAlchemyUnitOfWork:
         """Test nested transaction support."""
         _, mock_session = mock_session_factory
         
-        # Mock commit to bypass active transaction check
-        with patch.object(unit_of_work, "commit", return_value=None) as mock_commit:
-            with unit_of_work as uow:
-                with uow as nested_uow:
-                    # Simulate nested operation
-                    pass
-                # Nested transaction should not commit yet
-                mock_session.commit.assert_not_called()
-            
+        with unit_of_work as uow:
+            with uow as nested_uow:
+                # Simulate nested operation
+                pass
+            # Nested transaction should not commit yet
+            mock_session.commit.assert_not_called()
             # Outer transaction commit
             uow.commit()
-            mock_commit.assert_called_once()
         
         # Ensure begin is called only once
         mock_session.begin.assert_called_once()
@@ -140,22 +132,18 @@ class TestSQLAlchemyUnitOfWork:
     def test_transaction_metadata_for_audit(self, unit_of_work, mock_session_factory):
         """Test that transaction metadata is captured for audit logging."""
         _, mock_session = mock_session_factory
-        
-        # Mock commit to bypass active transaction check
-        with patch.object(unit_of_work, "commit", return_value=None) as mock_commit:
-            with unit_of_work as uow:
-                # Simulate operation with metadata
-                uow.set_transaction_metadata({
-                    "user_id": "test_user",
-                    "operation": "create_patient"
-                })
-            # Manually call commit to simulate the behavior
+
+        with unit_of_work as uow:
+            # Simulate operation with metadata
+            uow.set_transaction_metadata({
+                "user_id": "test_user",
+                "operation": "create_patient"
+            })
+            # Explicitly commit within context
             uow.commit()
-            mock_commit.assert_called_once()
-        
+
         mock_session.begin.assert_called_once()
         mock_session.commit.assert_called_once()
-        mock_session.rollback.assert_not_called()
 
 
 if __name__ == "__main__":

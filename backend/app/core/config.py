@@ -9,47 +9,42 @@ import os
 from functools import lru_cache
 from typing import Optional, Dict, Any, List
 
-from pydantic_settings import BaseSettings
-from pydantic import (
-    Field,
-    PostgresDsn,
-    validator,
-    SecretStr
-)
+from pydantic import BaseSettings, Field, field_validator, PostgresDsn, SecretStr
 
 
 class Settings(BaseSettings):
     """Application settings with environment variable support."""
     
     # API Configuration
-    API_V1_STR: str = "/api/v1"
-    API_V2_STR: str = "/api/v2" # Placeholder for future API version
-    PROJECT_NAME: str = "NovaMind Digital Twin"
-    APP_DESCRIPTION: str = "NovaMind Digital Twin API - Powering the future of psychiatric digital twins."
-    VERSION: str = "0.1.0" # Default application version
+    API_V1_STR: str = Field(default="/api/v1", json_schema_extra={"env": "API_V1_STR"})
+    API_V2_STR: str = Field(default="/api/v2", json_schema_extra={"env": "API_V2_STR"}) # Placeholder for future API version
+    PROJECT_NAME: str = Field(default="NovaMind Digital Twin", json_schema_extra={"env": "PROJECT_NAME"})
+    APP_DESCRIPTION: str = Field(default="NovaMind Digital Twin API - Powering the future of psychiatric digital twins.", json_schema_extra={"env": "APP_DESCRIPTION"})
+    VERSION: str = Field(default="0.1.0", json_schema_extra={"env": "VERSION"}) # Default application version
     
     # Optional Feature Flags
-    ENABLE_ANALYTICS: bool = Field(default=False, env="ENABLE_ANALYTICS")
+    ENABLE_ANALYTICS: bool = Field(default=False, json_schema_extra={"env": "ENABLE_ANALYTICS"})
 
     # Optional Static File Serving
-    STATIC_DIR: Optional[str] = Field(default=None, env="STATIC_DIR")
+    STATIC_DIR: Optional[str] = Field(default=None, json_schema_extra={"env": "STATIC_DIR"})
 
     # Security settings
     SECRET_KEY: str = Field(
         default="novamind_development_secret_key_please_change_in_production", 
-        env="SECRET_KEY"
+        json_schema_extra={"env": "SECRET_KEY"}
     )
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
-    ALGORITHM: str = Field(default="HS256", env="ALGORITHM")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, json_schema_extra={"env": "ACCESS_TOKEN_EXPIRE_MINUTES"})
+    ALGORITHM: str = Field(default="HS256", json_schema_extra={"env": "ALGORITHM"})
     
     # CORS Configuration
-    BACKEND_CORS_ORIGINS: List[str] = Field(
+    BACKEND_CORS_ORIGINS: list[str] = Field(
         default=["http://localhost:3000", "http://localhost:8000"],
-        env="BACKEND_CORS_ORIGINS"
+        json_schema_extra={"env": "BACKEND_CORS_ORIGINS"}
     )
     
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Any) -> List[str]:
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str]:
         """Parse CORS origins from environment variable."""
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
@@ -58,15 +53,16 @@ class Settings(BaseSettings):
         raise ValueError(v)
     
     # Database
-    POSTGRES_SERVER: str = Field(default="localhost", env="POSTGRES_SERVER")
-    POSTGRES_USER: str = Field(default="postgres", env="POSTGRES_USER")
-    POSTGRES_PASSWORD: str = Field(default="postgres", env="POSTGRES_PASSWORD")
-    POSTGRES_DB: str = Field(default="novamind", env="POSTGRES_DB")
-    POSTGRES_PORT: str = Field(default="5432", env="POSTGRES_PORT")
+    POSTGRES_SERVER: str = Field(default="localhost", json_schema_extra={"env": "POSTGRES_SERVER"})
+    POSTGRES_USER: str = Field(default="postgres", json_schema_extra={"env": "POSTGRES_USER"})
+    POSTGRES_PASSWORD: str = Field(default="postgres", json_schema_extra={"env": "POSTGRES_PASSWORD"})
+    POSTGRES_DB: str = Field(default="novamind", json_schema_extra={"env": "POSTGRES_DB"})
+    POSTGRES_PORT: str = Field(default="5432", json_schema_extra={"env": "POSTGRES_PORT"})
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
     
-    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+    @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v: str | None, values: dict[str, Any]) -> PostgresDsn:
         """Assemble database connection string from components."""
         if isinstance(v, str):
             return v
@@ -80,12 +76,12 @@ class Settings(BaseSettings):
         )
     
     # Encryption Settings
-    ENCRYPTION_KEY: Optional[str] = Field(default=None, env="ENCRYPTION_KEY")
-    PREVIOUS_ENCRYPTION_KEY: Optional[str] = Field(default=None, env="PREVIOUS_ENCRYPTION_KEY")
-    ENCRYPTION_SALT: str = Field(default="novamind-salt", env="ENCRYPTION_SALT")
+    ENCRYPTION_KEY: Optional[str] = Field(default=None, json_schema_extra={"env": "ENCRYPTION_KEY"})
+    PREVIOUS_ENCRYPTION_KEY: Optional[str] = Field(default=None, json_schema_extra={"env": "PREVIOUS_ENCRYPTION_KEY"})
+    ENCRYPTION_SALT: str = Field(default="novamind-salt", json_schema_extra={"env": "ENCRYPTION_SALT"})
     
     # Other settings
-    ENVIRONMENT: str = Field(default="development", env="ENVIRONMENT")
+    ENVIRONMENT: str = Field(default="development", json_schema_extra={"env": "ENVIRONMENT"})
     
     class Config:
         """Pydantic configuration."""

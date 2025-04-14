@@ -11,7 +11,7 @@ from typing import Dict, Any, List
 
 # Import SanitizerConfig
 from app.infrastructure.security.log_sanitizer import LogSanitizer, SanitizerConfig
-from app.tests.security.base_test import BaseSecurityTest
+from app.tests.security.utils.base_security_test import BaseSecurityTest
 from app.core.security.roles import Role
 
 

@@ -6,7 +6,7 @@ identifies and redacts Protected Health Information (PHI) in text.
 These tests are security-critical as they validate HIPAA compliance mechanisms.
 """
 
-from app.tests.security.base_security_test import BaseSecurityTest
+from app.tests.security.utils.base_security_test import BaseSecurityTest
 from app.core.services.ml.mock import MockPHIDetection
 import pytest
 from typing import Dict, Any, List

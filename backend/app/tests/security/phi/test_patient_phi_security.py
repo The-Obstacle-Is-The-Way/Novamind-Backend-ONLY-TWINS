@@ -24,9 +24,10 @@ from app.domain.value_objects.emergency_contact import EmergencyContact
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
 from app.infrastructure.security.encryption import EncryptionService
 from app.core.utils.logging import get_logger
+from app.tests.security.utils.base_security_test import BaseSecurityTest
 
 @pytest.mark.db_required
-class TestPatientPHISecurity:
+class TestPatientPHISecurity(BaseSecurityTest):
     """Test suite for HIPAA security compliance of Patient PHI."""
 
     @pytest.fixture

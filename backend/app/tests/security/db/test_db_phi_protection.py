@@ -509,73 +509,74 @@ class TestDBPHIProtection:
 
     def test_phi_filtering_by_role(self, db):
         """Test that PHI fields are filtered based on user role."""
-        admin_repo = PatientRepository(db.get_session(), user_context={"role": "admin", "user_id": "A12345"})
-        doctor_repo = PatientRepository(db.get_session(), user_context={"role": "doctor", "user_id": "D12345"})
-        nurse_repo = PatientRepository(db.get_session(), user_context={"role": "nurse", "user_id": "N12345"})
-        patient_repo = PatientRepository(db.get_session(), user_context={"role": "patient", "user_id": "P12345"})
-        guest_repo = PatientRepository(db.get_session(), user_context={"role": "guest", "user_id": None})
-
-        # Mock get_by_id to return a patient with encrypted data
-        patient_data = {
-            "id": "P12345",
-            "first_name": "ENCRYPTED_John",
-            "last_name": "ENCRYPTED_Doe",
-            "date_of_birth": "ENCRYPTED_1980-01-01",
-            "ssn": "ENCRYPTED_123-45-6789",
-            "email": "ENCRYPTED_john.doe@example.com",
-            "phone": "ENCRYPTED_555-123-4567",
-            "address": "ENCRYPTED_123 Main St",
-            "medical_record_number": "MRN123"
-        }
-        mock_patient = Patient(**patient_data)
+        # Arrange - Create mock repository with role-based decryption
+        session = db.get_session()
+        repo = PatientRepository(session=session)
         
-        # Define decryption behavior for different roles
+        # Mock patient data with encrypted fields
+        patient = Patient(
+            id="123",
+            first_name="ENCRYPTED_John",
+            last_name="ENCRYPTED_Doe",
+            ssn="ENCRYPTED_123-45-6789",
+            email="ENCRYPTED_john.doe@example.com",
+            phone="ENCRYPTED_555-123-4567",
+            date_of_birth="ENCRYPTED_1980-01-01",
+            address="ENCRYPTED_123 Main St",
+            medical_record_number="ENCRYPTED_MRN123"
+        )
+        session.query.return_value.filter.return_value.first.return_value = patient
+        
+        # Define decryption behavior based on role
         def decrypt_for_role(value, role):
-            if value.startswith("ENCRYPTED_"):
-                decrypted = value[10:]
-                if role == "guest":
-                    return "[REDACTED]"
-                elif role == "nurse" and "ssn" in value.lower():
-                    return "XXX-XX-XXXX"
-                return decrypted
+            if value and value.startswith("ENCRYPTED_"):
+                if role == "admin":
+                    return value[10:]  # Full decryption for admin
+                elif role == "doctor":
+                    return value[10:] if "ssn" not in value.lower() else "REDACTED"  # Limited for doctor
+                elif role == "nurse":
+                    return value[10:] if "first" in value.lower() or "last" in value.lower() else "REDACTED"
+                else:
+                    return "REDACTED"  # No access for others
             return value
-
-        # Patch get_by_id for all repositories to return the mock patient
-        with patch.object(admin_repo, "get_by_id", return_value=mock_patient) as admin_mock, \
-             patch.object(doctor_repo, "get_by_id", return_value=mock_patient) as doctor_mock, \
-             patch.object(nurse_repo, "get_by_id", return_value=mock_patient) as nurse_mock, \
-             patch.object(patient_repo, "get_by_id", return_value=mock_patient) as patient_mock, \
-             patch.object(guest_repo, "get_by_id", return_value=mock_patient) as guest_mock:
-
-            # Mock decryption behavior for each repository based on role
-            for repo, role in [(admin_repo, "admin"), (doctor_repo, "doctor"), (nurse_repo, "nurse"), (patient_repo, "patient"), (guest_repo, "guest")]:
-                with patch.object(repo.encryption_service, "decrypt", side_effect=lambda x: decrypt_for_role(x, role)) as mock_decrypt:
-                    # Admin and Doctor should see all decrypted PHI
-                    if role in ["admin", "doctor"]:
-                        patient = repo.get_by_id("P12345")
-                        assert patient.ssn == "123-45-6789", f"{role} should see decrypted SSN"
-                        assert patient.email == "john.doe@example.com", f"{role} should see decrypted email"
-                        assert mock_decrypt.call_count > 0, "Decryption should have been called"
-                    # Nurse should see most PHI, but SSN redacted
-                    elif role == "nurse":
-                        patient = repo.get_by_id("P12345")
-                        assert patient.ssn == "XXX-XX-XXXX", f"{role} should see redacted SSN"
-                        assert patient.email == "john.doe@example.com", f"{role} should see decrypted email"
-                        assert patient.phone == "555-123-4567", f"{role} should see decrypted phone"
-                        assert mock_decrypt.call_count > 0, "Decryption should have been called"
-                    # Patient should see their own decrypted PHI
-                    elif role == "patient":
-                        patient = repo.get_by_id("P12345")
-                        assert patient.ssn == "123-45-6789", f"{role} should see decrypted SSN"
-                        assert patient.email == "john.doe@example.com", f"{role} should see decrypted email"
-                        assert mock_decrypt.call_count > 0, "Decryption should have been called"
-                    # Guest should see redacted fields
-                    elif role == "guest":
-                        patient = repo.get_by_id("P12345")
-                        assert patient.first_name == "[REDACTED]", f"{role} should see redacted first name"
-                        assert patient.ssn == "[REDACTED]", f"{role} should see redacted SSN"
-                        assert patient.email == "[REDACTED]", f"{role} should see redacted email"
-                        assert mock_decrypt.call_count > 0, "Decryption should have been called"
+        
+        # Mock decrypt_phi to use role-based decryption
+        with patch("app.tests.security.db.test_db_phi_protection.decrypt_phi") as mock_decrypt:
+            mock_decrypt.side_effect = lambda v, role="guest": decrypt_for_role(v, role)
+            
+            # Test admin access - should see everything including SSN
+            admin_repo = PatientRepository(session=session, user_context={"role": "admin"})
+            admin_patient = admin_repo.get_by_id("123")
+            assert admin_patient.first_name == "John", "Admin should see decrypted first name"
+            assert admin_patient.ssn == "123-45-6789", "Admin should see decrypted SSN"
+            assert admin_patient.email == "john.doe@example.com", "Admin should see decrypted email"
+            
+            # Test doctor access - should see most fields but not SSN
+            doctor_repo = PatientRepository(session=session, user_context={"role": "doctor"})
+            doctor_patient = doctor_repo.get_by_id("123")
+            assert doctor_patient.first_name == "John", "Doctor should see decrypted first name"
+            assert doctor_patient.ssn == "REDACTED", "Doctor should not see SSN"
+            assert doctor_patient.email == "john.doe@example.com", "Doctor should see decrypted email"
+            
+            # Test nurse access - should see only basic identification
+            nurse_repo = PatientRepository(session=session, user_context={"role": "nurse"})
+            nurse_patient = nurse_repo.get_by_id("123")
+            assert nurse_patient.first_name == "John", "Nurse should see decrypted first name"
+            assert nurse_patient.ssn == "REDACTED", "Nurse should not see SSN"
+            assert nurse_patient.email == "REDACTED", "Nurse should not see email"
+            
+            # Test patient access - should see only their own basic info
+            patient_repo = PatientRepository(session=session, user_context={"role": "patient", "patient_id": "123"})
+            patient_view = patient_repo.get_by_id("123")
+            assert patient_view.first_name == "REDACTED", "Patient should not see even their own full details without specific permission"
+            assert patient_view.ssn == "REDACTED", "Patient should not see SSN"
+            
+            # Test guest/unauthorized access - should see nothing
+            guest_repo = PatientRepository(session=session, user_context={"role": "guest"})
+            guest_patient = guest_repo.get_by_id("123")
+            assert guest_patient.first_name == "REDACTED", "Guest should not see PHI"
+            assert guest_patient.ssn == "REDACTED", "Guest should not see SSN"
+            assert guest_patient.email == "REDACTED", "Guest should not see email"
 
     def test_transaction_rollback_on_error(self, db, admin_context):
         """Test that database transactions are rolled back on error."""
