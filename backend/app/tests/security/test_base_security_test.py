@@ -33,33 +33,30 @@ class TestBaseSecurityTest(unittest.TestCase):
         # Clean up
         security_test.tearDown()
 
-        def test_has_permission(self):
+    def test_has_permission(self):
+        """Test permission checking functionality."""
+        security_test = BaseSecurityTest()
+        security_test.setUp()
 
+        # Test permissions with default roles
+        self.assertTrue(security_test.has_permission("read:own_data"))
+        self.assertTrue(security_test.has_permission("read:patient_data"))
+        self.assertFalse(security_test.has_permission("delete:all_data"))
 
-            """Test permission checking functionality."""
-            security_test = BaseSecurityTest()
-            security_test.setUp()
-
-            # Test permissions with default roles
-            self.assertTrue(security_test.has_permission("read:own_data"))
-            self.assertTrue(security_test.has_permission("read:patient_data"))
-            self.assertFalse(security_test.has_permission("delete:all_data"))
-
-            # Test with explicit roles
-            self.assertTrue()
+        # Test with explicit roles
+        # Correct assertion syntax
+        self.assertTrue(
             security_test.has_permission("delete:all_data", roles=["admin"])
-        
-            self.assertFalse()
+        )
+        self.assertFalse(
             security_test.has_permission("delete:all_data", roles=["user"])
-        
+        )
 
         # Clean up
         security_test.tearDown()
 
-            def test_get_auth_token(self):
-
-
-                """Test generation of authentication tokens."""
+    def test_get_auth_token(self):
+        """Test generation of authentication tokens."""
         security_test = BaseSecurityTest()
         security_test.setUp()
 
@@ -70,97 +67,98 @@ class TestBaseSecurityTest(unittest.TestCase):
         self.assertIsInstance(token, str)
 
         # Token should contain user ID and roles
-        # Note: This assert ion is weak as it just checks substring presence.
+        # Note: This assertion is weak as it just checks substring presence.
         # A better test would decode the token and check claims.
         # self.assertIn(security_test.test_user_id, token)
         # for role in security_test.test_roles:
-            #     self.assertIn(role, token)
+        #     self.assertIn(role, token)
 
-            # Test with custom values
-            custom_user_id = "custom_user_123"
-            custom_roles = ["admin", "auditor"]
-            custom_claims = {"extra": "value"}
+        # Test with custom values
+        custom_user_id = "custom_user_123"
+        custom_roles = ["admin", "auditor"]
+        custom_claims = {"extra": "value"}
 
-            token = security_test.get_auth_token()
+        # Correct function call syntax
+        token = security_test.get_auth_token(
             user_id=custom_user_id,
             roles=custom_roles,
             custom_claims=custom_claims
+        )
 
-            # Token should contain custom values (weak assert ion)
-            # self.assertIn(custom_user_id, token)
-            # for role in custom_roles:
-                #     self.assertIn(role, token)
-                # self.assertIn("extra", token)
-                # self.assertIn("value", token)
+        # Token should contain custom values (weak assertion)
+        # self.assertIn(custom_user_id, token)
+        # for role in custom_roles:
+        #     self.assertIn(role, token)
+        # self.assertIn("extra", token)
+        # self.assertIn("value", token)
 
-                # Clean up
-                security_test.tearDown()
+        # Clean up
+        security_test.tearDown()
 
-                def test_get_auth_headers(self):
+    def test_get_auth_headers(self):
+        """Test generation of authentication headers."""
+        security_test = BaseSecurityTest()
+        security_test.setUp()
 
+        # Get headers with default token
+        headers = security_test.get_auth_headers()
 
-                    """Test generation of authentication headers."""
-                security_test = BaseSecurityTest()
-                security_test.setUp()
+        # Headers should be a dict with Authorization key
+        self.assertIsInstance(headers, dict)
+        self.assertIn("Authorization", headers)
 
-                # Get headers with default token
-                headers = security_test.get_auth_headers()
+        # Authorization should have Bearer prefix
+        self.assertTrue(headers["Authorization"].startswith("Bearer "))
 
-                # Headers should be a dict with Authorization key
-                self.assertIsInstance(headers, dict)
-                self.assertIn("Authorization", headers)
+        # Token should be included in Authorization
+        token = security_test.get_auth_token()
+        self.assertIn(token, headers["Authorization"])
 
-                # Authorization should have Bearer prefix
-                self.assertTrue(headers["Authorization"].startswith("Bearer "))
+        # Test with custom token
+        custom_token = "custom.test.token"
+        headers = security_test.get_auth_headers(token=custom_token)
+        self.assertEqual(headers["Authorization"], f"Bearer {custom_token}")
 
-                # Token should be included in Authorization
-                token = security_test.get_auth_token()
-                self.assertIn(token, headers["Authorization"])
+        # Clean up
+        security_test.tearDown()
 
-                # Test with custom token
-                custom_token = "custom.test.token"
-                headers = security_test.get_auth_headers(token=custom_token)
-                self.assertEqual(headers["Authorization"], f"Bearer {custom_token}")
+    # Correct indentation for decorator and method
+    @patch("app.tests.security.base_security_test.MockAsyncSession")
+    def test_db_session_setup(self, mock_session_class):
+        """Test database session is properly set up."""
+        security_test = BaseSecurityTest()
+        security_test.setUp()
 
-                # Clean up
-                security_test.tearDown()
+        # Verify session is initialized
+        self.assertIsNotNone(security_test.db_session)
 
-                @patch("app.tests.security.base_security_test.MockAsyncSession")
-                    def test_db_session_setup(self, mock_session_class):
+        # Clean up
+        security_test.tearDown()
 
-                        """Test database session is properly set up."""
-                security_test = BaseSecurityTest()
-                security_test.setUp()
+    def test_entity_factory_setup(self):
+        """Test entity factory is properly set up."""
+        security_test = BaseSecurityTest()
+        security_test.setUp()
 
-                # Verify session is initialized
-                self.assertIsNotNone(security_test.db_session)
+        # Verify entity factory is initialized
+        self.assertIsNotNone(security_test.entity_factory)
 
-                # Clean up
-                security_test.tearDown()
+        # Test creating entities
+        # Correct function call syntax
+        entity = security_test.entity_factory.create(
+            "patient", name="Test Patient"
+        )
+        self.assertEqual(entity["type"], "patient")
+        self.assertEqual(entity["name"], "Test Patient")
+        self.assertIn("id", entity)
 
-                    def test_entity_factory_setup(self):
+        # Test retrieving entities
+        retrieved = security_test.entity_factory.get(entity["id"])
+        self.assertEqual(retrieved, entity)
 
+        # Clean up
+        security_test.tearDown()
 
-                        """Test entity factory is properly set up."""
-                security_test = BaseSecurityTest()
-                security_test.setUp()
-
-                # Verify entity factory is initialized
-                self.assertIsNotNone(security_test.entity_factory)
-
-                # Test creating entities
-                entity = security_test.entity_factory.create()
-                "patient", name="Test Patient"
-                self.assertEqual(entity["type"], "patient")
-                self.assertEqual(entity["name"], "Test Patient")
-                self.assertIn("id", entity)
-
-                # Test retrieving entities
-                retrieved = security_test.entity_factory.get(entity["id"])
-                self.assertEqual(retrieved, entity)
-
-                # Clean up
-                security_test.tearDown()
-
-                        if __name__ == "__main__":
-                unittest.main()
+# Correct indentation for main execution block
+if __name__ == "__main__":
+    unittest.main()
