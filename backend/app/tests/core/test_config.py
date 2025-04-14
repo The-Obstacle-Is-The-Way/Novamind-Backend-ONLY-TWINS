@@ -6,6 +6,11 @@ and handles environment variables properly.
 """
 import os
 import pytest
+from unittest.mock import Mock
+
+# Mock settings if actual settings are not available
+settings = Mock()
+settings.some_setting = 'mocked_value'
 
 from app.core.config import settings
 

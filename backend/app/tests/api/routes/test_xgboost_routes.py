@@ -30,6 +30,12 @@ from app.api.schemas.xgboost import (
     ResponseLikelihood,
     ExpectedOutcome,
     SideEffectRisk,
+    OutcomeTrajectory,
+    OutcomeTrajectoryPoint,
+    OutcomeDetails,
+    OutcomeDomain,
+    VisualizationType,
+    PerformanceMetrics,
 )
 
 # Use mock router instead of direct import
@@ -164,34 +170,68 @@ def client():
         (
             '/xgboost/outcome-prediction',
             OutcomePredictionRequest(
+                patient_id='test-patient-456',
                 outcome_type=OutcomeType.SYMPTOM,
-                time_frame=TimeFrame(weeks=12),
-                patient_data={
+                outcome_timeframe=TimeFrame(weeks=12),
+                clinical_data={
                     'age': 40,
                     'gender': 'male',
-                    'diagnosis': 'bipolar',
+                    'diagnosis': 'anxiety',
+                    'baseline_severity': 7.0,
                     'recent_crisis': True
+                },
+                treatment_plan={
+                    'treatment_type': 'therapy_cbt',
+                    'frequency': 'weekly',
+                    'duration_weeks': 12
                 }
             ),
-            OutcomePredictionResponse(outcome_probability=0.4, outcome_likelihood='moderate', confidence=0.75)
+            OutcomePredictionResponse(
+                prediction_id='test-prediction-789',
+                patient_id='test-patient-456',
+                outcome_type=OutcomeType.SYMPTOM,
+                outcome_score=0.4,
+                time_frame_days=84,
+                confidence=0.75,
+                trajectory=OutcomeTrajectory(
+                    points=[
+                        OutcomeTrajectoryPoint(time_point='Week 2', days_from_start=14, improvement_percentage=10),
+                        OutcomeTrajectoryPoint(time_point='Week 4', days_from_start=28, improvement_percentage=25),
+                        OutcomeTrajectoryPoint(time_point='Week 8', days_from_start=56, improvement_percentage=40)
+                    ],
+                    final_improvement=40,
+                    time_frame_days=84,
+                    visualization_type=VisualizationType.LINE_CHART
+                ),
+                outcome_details=OutcomeDetails(
+                    overall_improvement='moderate',
+                    domains=[
+                        OutcomeDomain(name='Mood', improvement='moderate', notes='Improved stability'),
+                        OutcomeDomain(name='Anxiety', improvement='mild', notes='Some reduction in symptoms')
+                    ],
+                    recommendations=['Continue current treatment', 'Monitor for side effects']
+                ),
+                timestamp=datetime.now()
+            )
         ),
         (
             '/xgboost/model-info',
             ModelInfoRequest(model_type='risk_suicide'),
             ModelInfoResponse(
                 model_type='risk_suicide',
-                version='1.0.0',
-                features=[
-                    'age',
-                    'gender',
-                    'symptom_severity',
-                    'previous_attempts'
-                ],
-                performance_metrics={
-                    'accuracy': 0.88,
-                    'auc_roc': 0.92
-                },
-                last_updated='2023-05-15T10:30:00Z'
+                version='1.2.3',
+                last_updated=datetime.fromisoformat('2023-05-15T10:30:00Z'),
+                description='Suicide risk prediction model',
+                features=['age', 'gender', 'diagnosis', 'previous_attempts'],
+                performance_metrics=PerformanceMetrics(
+                    accuracy=0.88,
+                    precision=0.85,
+                    recall=0.82,
+                    f1_score=0.83,
+                    auc_roc=0.92
+                ),
+                hyperparameters={'max_depth': 5, 'learning_rate': 0.1},
+                status='active'
             )
         )
     ]
