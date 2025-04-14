@@ -24,9 +24,8 @@ from app.api.schemas.xgboost import (
 from app.core.services.ml.xgboost.exceptions import (
     ModelNotFoundError,
     ResourceNotFoundError,  # Added for resource not found errors
-    PredictionNotFoundError,
-    # InvalidFeatureError,   # Does not exist in exceptions module
     PredictionError,
+    # InvalidFeatureError,   # Does not exist in exceptions module
     ServiceConfigurationError,
     ServiceConnectionError,
     ValidationError,  # Added for input validation errors
@@ -410,10 +409,10 @@ class TestValidatePrediction:
         """Test validating a non-existent prediction."""
         # Mock update_prediction with not found error
         with patch.object(aws_xgboost_service, "_update_prediction") as mock_update:
-            mock_update.side_effect = PredictionNotFoundError("Prediction pred-123 not found")
+            mock_update.side_effect = ResourceNotFoundError("Prediction pred-123 not found", resource_type="prediction", resource_id="pred-123")
             
             # Call method and verify exception
-            with pytest.raises(PredictionNotFoundError) as exc_info:
+            with pytest.raises(ResourceNotFoundError) as exc_info:
                 aws_xgboost_service.validate_prediction(
                     prediction_id="pred-123", status="validated"  # Using string literal
                 )

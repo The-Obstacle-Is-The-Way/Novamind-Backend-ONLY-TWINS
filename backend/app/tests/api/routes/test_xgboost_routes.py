@@ -9,6 +9,7 @@ import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 from fastapi import status
 from fastapi.testclient import TestClient
+from datetime import datetime
 
 # Import directly from app.api.schemas to avoid routes import issues
 from app.api.schemas.xgboost import (
@@ -26,6 +27,9 @@ from app.api.schemas.xgboost import (
     TherapyDetails,
     MedicationDetails,
     TimeFrame,
+    ResponseLikelihood,
+    ExpectedOutcome,
+    SideEffectRisk,
 )
 
 # Use mock router instead of direct import
@@ -105,13 +109,15 @@ def client():
         (
             '/xgboost/treatment-response',
             TreatmentResponseRequest(
-                treatment_type=TreatmentType.THERAPY,
+                patient_id='test-patient-123',
+                treatment_type=TreatmentType.THERAPY_CBT,
                 treatment_details=TherapyDetails(
                     therapy_type='CBT',
+                    frequency='weekly',
                     frequency_per_week=1,
                     duration_weeks=12
                 ),
-                patient_data={
+                clinical_data={
                     'age': 25,
                     'gender': 'female',
                     'diagnosis': 'depression',
@@ -119,17 +125,47 @@ def client():
                 }
             ),
             TreatmentResponseResponse(
-                response_probability=0.65,
-                response_level='moderate',
-                confidence=0.8,
-                predicted_improvement=2.5
-            )
+                prediction_id='pred-123',
+                patient_id='test-patient-123',
+                treatment_type=TreatmentType.THERAPY_CBT,
+                treatment_details={
+                    'therapy_type': 'CBT',
+                    'frequency': 'weekly',
+                    'frequency_per_week': 1,
+                    'duration_weeks': 12
+                },
+                response_likelihood=ResponseLikelihood.MODERATE,
+                efficacy_score=0.75,
+                confidence=0.85,
+                expected_outcome=ExpectedOutcome(
+                    symptom_improvement='moderate',
+                    time_to_response='4-6 weeks',
+                    sustained_response_likelihood=ResponseLikelihood.MODERATE,
+                    functional_improvement='moderate'
+                ),
+                side_effect_risk=SideEffectRisk(
+                    common=[],
+                    rare=[]
+                ),
+                features={
+                    'age': 25,
+                    'gender': 'female',
+                    'diagnosis': 'depression',
+                    'baseline_severity': 8.0
+                },
+                treatment_features={
+                    'therapy_type': 'CBT',
+                    'frequency': 'weekly'
+                },
+                timestamp=datetime.now(),
+                prediction_horizon='12 weeks'
+            ),
         ),
         (
             '/xgboost/outcome-prediction',
             OutcomePredictionRequest(
-                outcome_type=OutcomeType.HOSPITALIZATION,
-                time_frame=TimeFrame.MONTHS_3,
+                outcome_type=OutcomeType.SYMPTOM,
+                time_frame=TimeFrame(weeks=12),
                 patient_data={
                     'age': 40,
                     'gender': 'male',

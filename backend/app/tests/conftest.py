@@ -8,13 +8,14 @@ import os
 import sys
 import pytest
 from pathlib import Path
+from unittest.mock import MagicMock
 
 # Add the app directory to the path
 app_dir = Path(__file__).parent.parent
 if str(app_dir) not in sys.path:
     sys.path.insert(0, str(app_dir))
 
-    # Try to import our patching utility
+# Try to import our patching utility
 try:
     from app.tests.helpers.patch_imports import patch_imports
 except ImportError:
@@ -24,6 +25,54 @@ except ImportError:
     @contextmanager
     def patch_imports():
         yield
+
+# Mock the settings object
+class MockSettings:
+    def __init__(self):
+        self.APP_NAME = "Novamind Test"
+        self.APP_VERSION = "test-1.0.0"
+        self.ENVIRONMENT = "test"
+        self.DEBUG = True
+        self.PROJECT_NAME = "Novamind Test"
+        self.APP_DESCRIPTION = "Test environment for Novamind"
+        self.VERSION = "test-1.0.0"
+        self.BACKEND_CORS_ORIGINS = ["*"]
+        self.API_V1_STR = "/api/v1"
+        self.STATIC_DIR = app_dir / "static"
+        self.TEMPLATES_DIR = app_dir / "templates"
+        self.SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///./test.db"
+        self.LOG_LEVEL = "DEBUG"
+        self.ENABLE_ANALYTICS = False
+        # API settings
+        self.api = MagicMock(
+            CORS_ORIGINS=["*"],
+            ALLOWED_HOSTS=["*"],
+            HOST="localhost",
+            PORT=8000,
+            API_V1_PREFIX="/api/v1"
+        )
+        # Security settings
+        self.security = MagicMock(
+            JWT_SECRET_KEY="test-secret-key",
+            ENFORCE_HTTPS=False,
+            SSL_KEY_PATH=None,
+            SSL_CERT_PATH=None
+        )
+        # Logging settings
+        self.logging = MagicMock(
+            LOG_LEVEL="DEBUG"
+        )
+
+    def is_production(self):
+        return False
+
+# Provide mocked settings as a fixture
+@pytest.fixture(scope="session", autouse=True)
+def mock_settings():
+    settings = MockSettings()
+    # Mock get_settings to return our mock object
+    sys.modules['app.core.config'] = MagicMock(get_settings=lambda: settings, settings=settings)
+    return settings
 
 # Use the patch_imports context manager during collection
 def pytest_collection_modifyitems(config, items):
