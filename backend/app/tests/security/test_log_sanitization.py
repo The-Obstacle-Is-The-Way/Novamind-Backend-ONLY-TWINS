@@ -13,7 +13,7 @@ import tempfile
 from unittest.mock import patch, MagicMock
 
 # Path to the log sanitizer module
-from app.infrastructure.security.log_sanitizer import PHISanitizer
+from app.core.security.phi_sanitizer import PHISanitizer
 
 class TestLogSanitization:
     """Test PHI sanitization in logs to ensure HIPAA compliance."""
@@ -113,7 +113,7 @@ class TestLogSanitization:
         mock_sanitizer.sanitize.return_value = "SANITIZED LOG MESSAGE"
 
         # Patch the sanitizer in the logging system
-        with patch('app.infrastructure.security.log_sanitizer.PHISanitizer', return_value=mock_sanitizer):
+        with patch('app.core.security.phi_sanitizer.PHISanitizer', return_value=mock_sanitizer):
             # Create a log message with PHI
             logger.info("Patient John Doe with SSN 123-45-6789 has updated their contact info to john.doe@example.com")
 
@@ -132,7 +132,7 @@ class TestLogSanitization:
 
         # Patch the system to use our real sanitizer
         monkeypatch.setattr(
-            'app.infrastructure.security.log_sanitizer.get_sanitizer',
+            'app.core.security.phi_sanitizer.get_sanitizer',
             lambda: real_sanitizer
         )
 

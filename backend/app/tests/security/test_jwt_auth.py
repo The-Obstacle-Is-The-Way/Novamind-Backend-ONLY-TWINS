@@ -21,7 +21,7 @@ import time
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Tuple
-from app.infrastructure.security.auth import (
+from app.infrastructure.security.jwt_auth import (
     JWTAuthService,
     AuthenticationError,
     TokenValidationError,

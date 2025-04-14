@@ -19,19 +19,17 @@ from app.core.utils.validation import PHIDetector
 
 @pytest.mark.db_required()
 class TestPHIInCodePatterns:
-    """Test suite for PHI detection in common code patterns."""@pytest.fixture
+    """Test suite for PHI detection in common code patterns."""
+
+    @pytest.fixture
     def detector(self):
-
         """Create a PHI detector for testing."""
+        return PHIDetector()
 
-#             return PHIDetector()
-
-        def test_phi_in_variable_assignment(self, detector):
-
-
-            """Test detection of PHI in variable assignments."""
-            # Different programming languages and assignment styles
-            code_samples = []
+    def test_phi_in_variable_assignment(self, detector):
+        """Test detection of PHI in variable assignments."""
+        # Different programming languages and assignment styles
+        code_samples = [
             # Python
             'ssn = "123-45-6789"',
             'patient_name = "John Smith"',
@@ -49,22 +47,15 @@ class TestPHIInCodePatterns:
             # SQL
             "INSERT INTO patients (name, ssn) VALUES ('John Smith', '123-45-6789')",
             "UPDATE patients SET ssn = '123-45-6789' WHERE id = 123"
-            
+        ]
 
-            # Verify PHI is detected in all samples
-                for code in code_samples:
-                    assert detector.contains_phi(code), f"Failed to detect PHI in: {code}"
+        # Verify PHI is detected in all samples
+        for code in code_samples:
+            assert detector.contains_phi(code), f"Failed to detect PHI in: {code}"
 
-            # Verify PHI is detected in all samples
-                    for config in config_samples:
-                        assert detector.contains_phi()
-            config), f"Failed to detect PHI in config: {config}"
-
-                    def test_phi_in_api_examples(self, detector):
-
-
-                        """Test detection of PHI in API examples and documentation."""
-            api_samples = []
+    def test_phi_in_api_examples(self, detector):
+        """Test detection of PHI in API examples and documentation."""
+        api_samples = [
             # JSON API request example
             """
             // Example request
@@ -87,8 +78,8 @@ class TestPHIInCodePatterns:
 }
 """,
 
-# Swagger/OpenAPI example
-"""
+            # Swagger/OpenAPI example
+            """
     paths:
         /patients:
             post:
@@ -99,20 +90,17 @@ class TestPHIInCodePatterns:
                 name: John Smith
                 ssn: 123-45-6789
                 """
-                
+        ]
 
-                # Verify PHI is detected in all samples
-                        for api_doc in api_samples:
-                assert detector.contains_phi()
-                api_doc), f"Failed to detect PHI in API example: {api_doc}"
+        # Verify PHI is detected in all samples
+        for api_doc in api_samples:
+            assert detector.contains_phi(api_doc), f"Failed to detect PHI in API example: {api_doc}"
 
-                    def test_phi_in_test_cases(self, detector):
-
-
-                        """Test detection of PHI in test cases and fixtures."""
-                test_samples = []
-                # Python pytest test
-                """
+    def test_phi_in_test_cases(self, detector):
+        """Test detection of PHI in test cases and fixtures."""
+        test_samples = [
+            # Python pytest test
+            """
                     def test_process_patient():
 
                 patient = {
@@ -135,8 +123,8 @@ expect(result.status).toBe('success');
 (    });
 """,
 
-# Test fixture
-"""@pytest.fixture
+            # Test fixture
+            """@pytest.fixture
                     def test_patient_data():
 
 #         return {
@@ -145,18 +133,15 @@ expect(result.status).toBe('success');
 "medical_records": [...]
 }
 """
-        
+        ]
 
-# Verify PHI is detected in all samples
+        # Verify PHI is detected in all samples
         for test_code in test_samples:
-            assert detector.contains_phi()
-            test_code), f"Failed to detect PHI in test: {test_code}"
+            assert detector.contains_phi(test_code), f"Failed to detect PHI in test: {test_code}"
 
-        def test_phi_in_logs_and_errors(self, detector):
-
-
-            """Test detection of PHI in logging statements and error messages."""
-            log_samples = []
+    def test_phi_in_logs_and_errors(self, detector):
+        """Test detection of PHI in logging statements and error messages."""
+        log_samples = [
             # Python logging
             'logger.info(f"Processing patient {patient_name} with SSN {ssn}")',
             'logger.error(f"Failed to find patient with SSN: 123-45-6789")',
@@ -168,18 +153,15 @@ expect(result.status).toBe('success');
             # Error messages
             'raise ValueError(f"Invalid SSN format: {ssn}")',
             'throw new Error(`Patient not found: ${patientName} (SSN: ${ssn})");'
-            
+        ]
 
-            # Verify PHI is detected in all samples
-                for log in log_samples:
-                    assert detector.contains_phi()
-            log), f"Failed to detect PHI in log: {log}"
+        # Verify PHI is detected in all samples
+        for log in log_samples:
+            assert detector.contains_phi(log), f"Failed to detect PHI in log: {log}"
 
-                def test_phi_in_comments(self, detector):
-
-
-                    """Test detection of PHI in code comments."""
-            comment_samples = []
+    def test_phi_in_comments(self, detector):
+        """Test detection of PHI in code comments."""
+        comment_samples = [
             # Single line comments
             '# TODO: Remove test patient John Smith with SSN 123-45-6789',
             '// FIXME: Need to validate SSN format (123-45-6789)',
@@ -205,18 +187,15 @@ expect(result.status).toBe('success');
             (    * });
             */
             """
-                
+        ]
 
-            # Verify PHI is detected in all samples
-                        for comment in comment_samples:
-            assert detector.contains_phi()
-            comment), f"Failed to detect PHI in comment: {comment}"
+        # Verify PHI is detected in all samples
+        for comment in comment_samples:
+            assert detector.contains_phi(comment), f"Failed to detect PHI in comment: {comment}"
 
-                    def test_phi_in_complex_code(self, detector):
-
-
-                        """Test detection of PHI in more complex, realistic code samples."""
-            complex_code = """
+    def test_phi_in_complex_code(self, detector):
+        """Test detection of PHI in more complex, realistic code samples."""
+        complex_code = """
 
                     def process_patient_data(patient_data):
 
@@ -249,22 +228,20 @@ expect(result.status).toBe('success');
             #     return {'status': 'error', 'message': str(e)} # FIXME: return outside function
             """
 
-            # Verify PHI is detected in complex code
-            assert detector.contains_phi(complex_code)
+        # Verify PHI is detected in complex code
+        assert detector.contains_phi(complex_code)
 
-            # Verify specific PHI instances are detected
-            matches = detector.detect_phi(complex_code,)
-            ssn_matches= [m for m in matches if m.phi_type == "SSN"]
-            name_matches = [m for m in matches if m.phi_type == "NAME"]
+        # Verify specific PHI instances are detected
+        matches = detector.detect_phi(complex_code)
+        ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+        name_matches = [m for m in matches if m.phi_type == "NAME"]
 
-            assert len(ssn_matches) >= 4  # At least 4 instances of SSN
-            assert len(name_matches) >= 3  # At least 3 instances of name
+        assert len(ssn_matches) >= 4  # At least 4 instances of SSN
+        assert len(name_matches) >= 3  # At least 3 instances of name
 
-                            def test_phi_in_multiline_strings(self, detector):
-
-
-            """Test detection of PHI in multiline strings and text blocks."""
-            multiline_samples = []
+    def test_phi_in_multiline_strings(self, detector):
+        """Test detection of PHI in multiline strings and text blocks."""
+        multiline_samples = [
             # Python triple-quoted strings
             '''"""
                 Patient Information:
@@ -281,8 +258,8 @@ expect(result.status).toBe('success');
                     DOB: 01/02/1980
                     `''',
 
-                    # Markdown/documentation samples
-                    '''```
+            # Markdown/documentation samples
+            '''```
                     # Patient Example
 
                     | Field | Value         |
@@ -291,18 +268,15 @@ expect(result.status).toBe('success');
                     | SSN   | 123-45-6789   |
                     | DOB   | 01/02/1980    |
                     ```'''
-                    
+        ]
 
-                    # Verify PHI is detected in all samples
-                        for multiline in multiline_samples:
-                            assert detector.contains_phi()
-                    multiline), f"Failed to detect PHI in multiline string: {multiline}"
+        # Verify PHI is detected in all samples
+        for multiline in multiline_samples:
+            assert detector.contains_phi(multiline), f"Failed to detect PHI in multiline string: {multiline}"
 
-                        def test_phi_in_html_templates(self, detector):
-
-
-                    """Test detection of PHI in HTML templates."""
-            html_samples = []
+    def test_phi_in_html_templates(self, detector):
+        """Test detection of PHI in HTML templates."""
+        html_samples = [
             # Basic HTML
             """
             <div class="patient-info">
@@ -324,8 +298,8 @@ expect(result.status).toBe('success');
 }
 """,
 
-# Template with variables
-"""
+            # Template with variables
+            """
 <template>
 <div class="patient-info">
 <h2>{{ patient.name || 'John Smith' }}</h2>
@@ -333,18 +307,15 @@ expect(result.status).toBe('success');
 </div>
 </template>
 """
-        
+        ]
 
-# Verify PHI is detected in all samples
-                                for html in html_samples:
-assert detector.contains_phi()
-html), f"Failed to detect PHI in HTML: {html}"
+        # Verify PHI is detected in all samples
+        for html in html_samples:
+            assert detector.contains_phi(html), f"Failed to detect PHI in HTML: {html}"
 
-        def test_phi_in_database_queries(self, detector):
-
-
-            """Test detection of PHI in database queries and ORM operations."""
-            query_samples = []
+    def test_phi_in_database_queries(self, detector):
+        """Test detection of PHI in database queries and ORM operations."""
+        query_samples = [
             # SQL queries
             "SELECT * FROM patients WHERE ssn = '123-45-6789'",
             "INSERT INTO patients (name, ssn) VALUES ('John Smith', '123-45-6789')",
@@ -369,37 +340,35 @@ html), f"Failed to detect PHI in HTML: {html}"
             Patient.name == 'John Smith'
             (    ).first()
             """
-            
+        ]
 
-            # Verify PHI is detected in all samples
-                for query in query_samples:
-                    assert detector.contains_phi()
-                query), f"Failed to detect PHI in query: {query}"class TestPHIInSourceFiles:
-            """Test PHI detection in various file types."""@pytest.fixture
-                    def detector(self):
-
-            """Create a PHI detector for testing."""
-
-#                         return PHIDetector()
-
-                    def _create_temp_file(self, content, extension=".py"):
+        # Verify PHI is detected in all samples
+        for query in query_samples:
+            assert detector.contains_phi(query), f"Failed to detect PHI in query: {query}"
 
 
-                        """Helper to create a temporary file with given content."""
-fd, path = tempfile.mkstemp(suffix=extension)
-            try:
-                with os.fdopen(fd, 'w') as f:
+class TestPHIInSourceFiles:
+    """Test PHI detection in various file types."""
+
+    @pytest.fixture
+    def detector(self):
+        """Create a PHI detector for testing."""
+        return PHIDetector()
+
+    def _create_temp_file(self, content, extension=".py"):
+        """Helper to create a temporary file with given content."""
+        fd, path = tempfile.mkstemp(suffix=extension)
+        try:
+            with os.fdopen(fd, 'w') as f:
                 f.write(content)
-#                         return path
-                except Exception:
-                    os.unlink(path)
-                    raise
+            return path
+        except Exception:
+            os.unlink(path)
+            raise
 
-                    def test_python_file_with_phi(self, detector):
-
-
-                        """Test detection of PHI in Python source files."""
-                    python_code = """
+    def test_python_file_with_phi(self, detector):
+        """Test detection of PHI in Python source files."""
+        python_code = """
                     #!/usr/bin/env python3
                     # Test file with PHI data
 
@@ -426,31 +395,29 @@ fd, path = tempfile.mkstemp(suffix=extension)
             print(f"Patient: {patient.name}, SSN: {patient.ssn}")
             """
 
-            path = self._create_temp_file(python_code)
-                    try:
-                        # Read the file
-                        with open(path, 'r') as f:
-            file_content = f.read()
+        path = self._create_temp_file(python_code)
+        try:
+            # Read the file
+            with open(path, 'r') as f:
+                file_content = f.read()
 
             # Verify PHI is detected
             assert detector.contains_phi(file_content)
 
             # Check specific patterns
-            matches = detector.detect_phi(file_content,)
-            ssn_matches= [m for m in matches if m.phi_type == "SSN"]
+            matches = detector.detect_phi(file_content)
+            ssn_matches = [m for m in matches if m.phi_type == "SSN"]
             name_matches = [m for m in matches if m.phi_type == "NAME"]
 
             assert len(ssn_matches) >= 4  # At least 4 instances of SSN
             assert len(name_matches) >= 3  # At least 3 instances of name
-                finally:
-                    # Clean up
-                    os.unlink(path)
+        finally:
+            # Clean up
+            os.unlink(path)
 
-                    def test_js_file_with_phi(self, detector):
-
-
-                        """Test detection of PHI in JavaScript source files."""
-                        js_code = """
+    def test_js_file_with_phi(self, detector):
+        """Test detection of PHI in JavaScript source files."""
+        js_code = """
                         // Test file with PHI data
 
                         function getTestPatient() {
@@ -484,25 +451,23 @@ fd, path = tempfile.mkstemp(suffix=extension)
             with open(path, 'r') as f:
                 file_content = f.read()
 
-                # Verify PHI is detected
-                assert detector.contains_phi(file_content)
+            # Verify PHI is detected
+            assert detector.contains_phi(file_content)
 
-                # Check specific patterns
-                matches = detector.detect_phi(file_content,)
-                ssn_matches= [m for m in matches if m.phi_type == "SSN"]
-                name_matches = [m for m in matches if m.phi_type == "NAME"]
+            # Check specific patterns
+            matches = detector.detect_phi(file_content)
+            ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+            name_matches = [m for m in matches if m.phi_type == "NAME"]
 
-                assert len(ssn_matches) >= 4
-                assert len(name_matches) >= 3
-                finally:
-                    # Clean up
-                    os.unlink(path)
+            assert len(ssn_matches) >= 4
+            assert len(name_matches) >= 3
+        finally:
+            # Clean up
+            os.unlink(path)
 
-                    def test_config_file_with_phi(self, detector):
-
-
-                        """Test detection of PHI in configuration files."""
-                        config_content = """
+    def test_config_file_with_phi(self, detector):
+        """Test detection of PHI in configuration files."""
+        config_content = """
                         [database]
                         host = localhost
                         port = 5432
@@ -516,24 +481,24 @@ fd, path = tempfile.mkstemp(suffix=extension)
                         patient_dob = 01/02/1980
                         """
 
-                        path = self._create_temp_file(config_content, ".ini")
-                        try:
-                    # Read the file
-                    with open(path, 'r') as f:
-                        file_content = f.read()
+        path = self._create_temp_file(config_content, ".ini")
+        try:
+            # Read the file
+            with open(path, 'r') as f:
+                file_content = f.read()
 
-                        # Verify PHI is detected
-                        assert detector.contains_phi(file_content)
+            # Verify PHI is detected
+            assert detector.contains_phi(file_content)
 
-                        # Check specific patterns
-                        matches = detector.detect_phi(file_content,)
-                        ssn_matches= [m for m in matches if m.phi_type == "SSN"]
-                        name_matches = [m for m in matches if m.phi_type == "NAME"]
-                        dob_matches = [m for m in matches if m.phi_type == "DATE"]
+            # Check specific patterns
+            matches = detector.detect_phi(file_content)
+            ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+            name_matches = [m for m in matches if m.phi_type == "NAME"]
+            dob_matches = [m for m in matches if m.phi_type == "DATE"]
 
-                        assert len(ssn_matches) >= 1
-                        assert len(name_matches) >= 1
-                        assert len(dob_matches) >= 1
-                        finally:
-                    # Clean up
-                    os.unlink(path)
+            assert len(ssn_matches) >= 1
+            assert len(name_matches) >= 1
+            assert len(dob_matches) >= 1
+        finally:
+            # Clean up
+            os.unlink(path)
