@@ -11,20 +11,22 @@ import os
 from unittest.mock import patch, MagicMock, mock_open
 import base64
 import hashlib
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 
-from app.infrastructure.security.encryption import ()
-EncryptionService,
-derive_key,
-encrypt_data,
-decrypt_data,
-hash_data,
-secure_compare,
-
-from app.core.config.settings import Settings
+# Correctly import the necessary components
+from app.infrastructure.security.encryption import (
+    EncryptionService,
+    derive_key,
+    encrypt_data,
+    decrypt_data,
+    hash_data,
+    secure_compare,
+)
+# Assuming Settings might be needed for context, though not directly used here
+# from app.core.config.settings import Settings
 
 
 @pytest.mark.unit()
@@ -32,12 +34,10 @@ class TestEncryptionUtils:
     """Tests for the encryption utility functions."""
 
     def test_derive_key(self):
-
-
         """Test key derivation from password and salt."""
         # Test with known inputs
         password = b"test_password"
-        salt = b"test_salt"
+        salt = b"test_salt_16bytes" # Ensure salt is appropriate length if needed
 
         # Derive the key
         key = derive_key(password, salt)
@@ -47,259 +47,280 @@ class TestEncryptionUtils:
         # Base64-encoded keys are 44 bytes (32 bytes encoded to base64)
         assert len(base64.urlsafe_b64decode(key)) == 32
 
-        # Verify deterministic output (same inputs yield same key,)
-        key2= derive_key(password, salt)
+        # Verify deterministic output (same inputs yield same key)
+        key2 = derive_key(password, salt)
         assert key == key2
 
         # Verify different inputs yield different keys
         key3 = derive_key(b"different_password", salt)
         assert key != key3
 
-        key4 = derive_key(password, b"different_salt")
+        key4 = derive_key(password, b"different_salt16b") # Different salt
         assert key != key4
 
-        def test_encrypt_decrypt_data(self):
+    def test_encrypt_decrypt_data(self):
+        """Test encryption and decryption of data."""
+        # Test data and key
+        data = "Sensitive patient information"
+        key = Fernet.generate_key()
 
+        # Encrypt the data
+        encrypted = encrypt_data(data, key)
 
-            """Test encryption and decryption of data."""
-            # Test data and key
-            data = "Sensitive patient information"
-            key = Fernet.generate_key()
+        # Verify encrypted data is different from original and in bytes
+        assert encrypted != data.encode() # Compare bytes with encoded string
+        assert isinstance(encrypted, bytes)
 
-            # Encrypt the data
-            encrypted = encrypt_data(data, key)
+        # Decrypt the data
+        decrypted = decrypt_data(encrypted, key)
 
-            # Verify encrypted data is different from original and in bytes
-            assert encrypted != data
-            assert isinstance(encrypted, bytes)
+        # Verify decrypted data matches original
+        assert decrypted == data
 
-            # Decrypt the data
-            decrypted = decrypt_data(encrypted, key)
+    def test_hash_data(self):
+        """Test hashing of data."""
+        # Test data
+        data = "password123"
 
-            # Verify decrypted data matches original
-            assert decrypted == data
+        # Hash the data
+        hashed, salt = hash_data(data)
 
-            def test_hash_data(self):
+        # Verify hashed data is different from original
+        assert hashed != data
+        assert salt is not None
+        assert isinstance(hashed, str) # Assuming hash_data returns hex string
+        assert isinstance(salt, str)   # Assuming hash_data returns hex string
 
+        # Verify same data + salt produces same hash
+        hashed2, _ = hash_data(data, salt)
+        assert hashed == hashed2
 
-                """Test hashing of data."""
-                # Test data
-                data = "password123"
+        # Verify different data produces different hash
+        hashed3, _ = hash_data("different_password", salt)
+        assert hashed != hashed3
 
-                # Hash the data
-                hashed, salt = hash_data(data)
+    def test_secure_compare(self):
+        """Test secure comparison of strings."""
+        # Test data
+        data = "password123"
+        hashed, salt = hash_data(data)
 
-                # Verify hashed data is different from original
-                assert hashed != data
-                assert salt is not None
+        # Test true comparison
+        assert secure_compare(data, hashed, salt) is True
 
-                # Verify same data + salt produces same hash
-                hashed2, _ = hash_data(data, salt)
-                assert hashed == hashed2
+        # Test false comparison
+        assert secure_compare("wrong_password", hashed, salt) is False
 
-                # Verify different data produces different hash
-                hashed3, _ = hash_data("different_password", salt)
-                assert hashed != hashed3
-
-                def test_secure_compare(self):
-
-
-                    """Test secure comparison of strings."""
-                # Test data
-                data = "password123"
-                hashed, salt = hash_data(data)
-
-                # Test true comparison
-                assert secure_compare(data, hashed, salt) is True
-
-                # Test false comparison
-                assert secure_compare("wrong_password", hashed, salt) is False@pytest.fixture
-                    def encryption_service():
-
-                """Create an EncryptionService instance for testing."""
-                # Mock environment variables
-                env_vars = {
-                "ENCRYPTION_KEY": "test_key_12345678901234567890123456789012",
-                "ENCRYPTION_SALT": "test_salt_12345678901234567890123456789012",
-                "PYTEST_CURRENT_TEST": "True",
+@pytest.fixture
+def encryption_service():
+    """Create an EncryptionService instance for testing."""
+    # Mock environment variables using a valid Fernet key format
+    test_key = Fernet.generate_key().decode() # Generate a valid key for the test
+    test_salt = os.urandom(16).hex() # Generate a valid salt
+    env_vars = {
+        "ENCRYPTION_KEY": test_key,
+        "ENCRYPTION_SALT": test_salt,
+        "PYTEST_CURRENT_TEST": "True", # Keep if needed by service logic
     }
 
+    # Patch os.environ for the duration of the fixture setup
     with patch.dict(os.environ, env_vars):
-#             return EncryptionService()
+        # Patch get_settings if EncryptionService uses it internally
+        with patch("app.infrastructure.security.encryption.get_settings", return_value=MagicMock(ENCRYPTION_KEY=test_key, ENCRYPTION_SALT=test_salt)):
+             # Ensure the service is initialized within the patched context
+             service = EncryptionService()
+             # Manually set the cipher if initialization logic depends on env vars directly
+             # service.cipher = Fernet(derive_key(test_key.encode(), bytes.fromhex(test_salt)))
+             yield service # Yield the service instance
 
 @pytest.mark.unit()
-        class TestEncryptionService:
-            """Tests for the EncryptionService class."""
+class TestEncryptionService:
+    """Tests for the EncryptionService class."""
 
-            def test_initialization(self, encryption_service):
+    def test_initialization(self, encryption_service: EncryptionService):
+        """Test initialization of EncryptionService."""
+        # Verify the service is initialized
+        assert encryption_service is not None
+        assert encryption_service.cipher is not None
+        assert isinstance(encryption_service.cipher, Fernet) # Check type
 
+    def test_encrypt_decrypt(self, encryption_service: EncryptionService):
+        """Test encryption and decryption of data."""
+        # Test data
+        data = "Sensitive patient information"
 
-                """Test initialization of EncryptionService."""
-                # Verify the service is initialized
-                assert encryption_service is not None
-                assert encryption_service.cipher is not None
+        # Encrypt the data
+        encrypted = encryption_service.encrypt(data)
 
-                def test_encrypt_decrypt(self, encryption_service):
+        # Verify encrypted data is different from original
+        assert encrypted != data
+        assert isinstance(encrypted, str) # Assuming encrypt returns string
+        assert encrypted.startswith("v1:") # Check for version prefix
 
+        # Decrypt the data
+        decrypted = encryption_service.decrypt(encrypted)
 
-                    """Test encryption and decryption of data."""
-            # Test data
-            data = "Sensitive patient information"
+        # Verify decrypted data matches original
+        assert decrypted == data
 
-            # Encrypt the data
-            encrypted = encryption_service.encrypt(data)
-
-            # Verify encrypted data is different from original
-            assert encrypted != data
-            assert encrypted.startswith("v1:")
-
-            # Decrypt the data
-            decrypted = encryption_service.decrypt(encrypted)
-
-            # Verify decrypted data matches original
-            assert decrypted == data
-
-                    def test_encrypt_decrypt_dict(self, encryption_service):
-
-
-                        """Test encryption and decryption of dictionaries."""
-            # Test data
-            data = {
+    def test_encrypt_decrypt_dict(self, encryption_service: EncryptionService):
+        """Test encryption and decryption of dictionaries."""
+        # Test data
+        data = {
             "patient_id": "12345",
             "name": "John Smith",
-            "diagnosis": "F41.1",
+            "diagnosis": "F41.1", # Non-sensitive example
             "ssn": "123-45-6789",
             "address": {
-            "street": "123 Main St",
-            "city": "Anytown",
-            "state": "CA",
-            "zip": "12345",
+                "street": "123 Main St",
+                "city": "Anytown", # Non-sensitive example
+                "state": "CA",     # Non-sensitive example
+                "zip": "12345",    # Non-sensitive example
             },
-            "medications": []
-            {"name": "Med1", "dosage": "10mg"},
-            {"name": "Med2", "dosage": "20mg"},
+            "medications": [ # Example of list handling
+                {"name": "Med1", "dosage": "10mg"},
+                {"name": "Med2", "dosage": "20mg"},
             ],
-}
+            "notes": None, # Test None value
+            "age": 42 # Test integer value
+        }
 
-# Encrypt the data
-encrypted = encryption_service.encrypt_dict(data)
+        # Encrypt the data (assuming encrypt_dict handles structure)
+        encrypted = encryption_service.encrypt_dict(data)
 
-# Verify sensitive fields are encrypted
-assert encrypted["patient_id"].startswith("v1:")
-assert encrypted["name"].startswith("v1:")
-assert encrypted["ssn"].startswith("v1:")
-assert encrypted["address"]["street"].startswith("v1:")
+        # Verify sensitive fields are encrypted (check format)
+        assert isinstance(encrypted["patient_id"], str) and encrypted["patient_id"].startswith("v1:")
+        assert isinstance(encrypted["name"], str) and encrypted["name"].startswith("v1:")
+        assert isinstance(encrypted["ssn"], str) and encrypted["ssn"].startswith("v1:")
+        assert isinstance(encrypted["address"], dict) # Address itself isn't encrypted, only fields within
+        assert isinstance(encrypted["address"]["street"], str) and encrypted["address"]["street"].startswith("v1:")
+        # Non-sensitive fields should remain unchanged
+        assert encrypted["diagnosis"] == data["diagnosis"]
+        assert encrypted["address"]["city"] == data["address"]["city"]
+        assert encrypted["age"] == data["age"]
+        assert encrypted["notes"] is None # None values should be preserved
 
-# Decrypt the data
-decrypted = encryption_service.decrypt_dict(encrypted)
-
-# Verify decrypted data matches original
-assert decrypted["patient_id"] == data["patient_id"]
-assert decrypted["name"] == data["name"]
-assert decrypted["ssn"] == data["ssn"]
-assert decrypted["address"]["street"] == data["address"]["street"]
-assert decrypted["medications"][0]["name"] == data["medications"][0]["name"]
-
-                def test_key_rotation(self):
+        # Verify list structure and encrypted content within lists
+        assert isinstance(encrypted["medications"], list)
+        assert len(encrypted["medications"]) == 2
+        assert isinstance(encrypted["medications"][0], dict)
+        assert isinstance(encrypted["medications"][0]["name"], str) and encrypted["medications"][0]["name"].startswith("v1:")
+        assert isinstance(encrypted["medications"][0]["dosage"], str) and encrypted["medications"][0]["dosage"].startswith("v1:")
 
 
-                    """Test encryption key rotation."""
-# Initialize with original key
-env_vars = {
-"ENCRYPTION_KEY": "original_key_123456789012345678901234567890",
-"ENCRYPTION_SALT": "test_salt_12345678901234567890123456789012",
-"PYTEST_CURRENT_TEST": "True",
-}
+        # Decrypt the data
+        decrypted = encryption_service.decrypt_dict(encrypted)
 
-        with patch.dict(os.environ, env_vars):
-            service = EncryptionService()
+        # Verify decrypted data matches original (deep comparison might be needed)
+        assert decrypted == data # Simple comparison works if structure and values match
 
-            # Encrypt data with original key
-            data = "Sensitive patient information"
-            encrypted = service.encrypt(data)
 
-            # Rotate the key
-            new_env_vars = {
-            "PREVIOUS_ENCRYPTION_KEY": env_vars["ENCRYPTION_KEY"],
-            "ENCRYPTION_KEY": "new_key_1234567890123456789012345678901",
-            "ENCRYPTION_SALT": env_vars["ENCRYPTION_SALT"],
+    def test_key_rotation(self):
+        """Test encryption key rotation."""
+        # Initialize with original key
+        original_key = Fernet.generate_key()
+        original_salt = os.urandom(16)
+        env_vars_orig = {
+            "ENCRYPTION_KEY": original_key.decode(),
+            "ENCRYPTION_SALT": original_salt.hex(),
             "PYTEST_CURRENT_TEST": "True",
-            }
+        }
 
-            with patch.dict(os.environ, new_env_vars):
-                # Create new service with rotated keys
+        with patch.dict(os.environ, env_vars_orig):
+             with patch("app.infrastructure.security.encryption.get_settings", return_value=MagicMock(ENCRYPTION_KEY=original_key.decode(), ENCRYPTION_SALT=original_salt.hex())):
+                service_orig = EncryptionService()
+
+        # Encrypt data with original key
+        data = "Sensitive patient information"
+        encrypted_v1 = service_orig.encrypt(data)
+        assert encrypted_v1.startswith("v1:")
+
+        # Rotate the key
+        new_key = Fernet.generate_key()
+        env_vars_new = {
+            "PREVIOUS_ENCRYPTION_KEY": original_key.decode(), # Provide previous key
+            "ENCRYPTION_KEY": new_key.decode(),
+            "ENCRYPTION_SALT": original_salt.hex(), # Salt might stay the same or change
+            "PYTEST_CURRENT_TEST": "True",
+        }
+
+        with patch.dict(os.environ, env_vars_new):
+            with patch("app.infrastructure.security.encryption.get_settings", return_value=MagicMock(ENCRYPTION_KEY=new_key.decode(), PREVIOUS_ENCRYPTION_KEY=original_key.decode(), ENCRYPTION_SALT=original_salt.hex())):
                 service_new = EncryptionService()
 
-                # Should be able to decrypt with previous key
-                decrypted = service_new.decrypt(encrypted)
-                assert decrypted == data
+            # Should be able to decrypt data encrypted with the *previous* key
+            decrypted_from_v1 = service_new.decrypt(encrypted_v1)
+            assert decrypted_from_v1 == data
 
-                # Encrypt with new key
-                new_encrypted = service_new.encrypt(data)
+            # Encrypt with new key
+            encrypted_v2 = service_new.encrypt(data)
+            assert encrypted_v2.startswith("v1:") # Prefix might stay the same
+            assert encrypted_v2 != encrypted_v1 # Ciphertext should differ
 
-                # Verify new encryption is different
-                assert new_encrypted != encrypted
+            # Verify can decrypt with new service (using the new key)
+            assert service_new.decrypt(encrypted_v2) == data
 
-                # Verify can decrypt with new service
-                assert service_new.decrypt(new_encrypted) == data
-
-                def test_file_encryption(self, encryption_service, tmp_path):
-
-
-                    """Test encryption and decryption of files."""
-                    # Create test file paths
-                    test_file = tmp_path / "test.txt"
-                    encrypted_file = tmp_path / "encrypted.bin"
-                    decrypted_file = tmp_path / "decrypted.txt"
-
-                    # Test content
-                    test_content = "Sensitive patient information"
-
-                    # Mock file operations
-                    with patch("builtins.open", mock_open(read_data=test_content)):
-                        with patch("os.path.exists", return_value=True):
-                # Encrypt the file
-                encryption_service.encrypt_file()
-                str(test_file), str(encrypted_file
-
-                # Get encrypted content for mock
-                encrypted_content = encryption_service.encrypt(test_content)
-
-                # Setup mock for reading encrypted content
-                with patch("builtins.open", mock_open(read_data=encrypted_content)):
-                    # Decrypt the file
-                    encryption_service.decrypt_file()
-                    str(encrypted_file), str(decrypted_file)
-                    
-
-# Verify write calls (can't easily verify content with mock_open)
-assert os.path.exists(test_file.parent)
-
-                    def test_encrypt_file_nonexistent(self, encryption_service, tmp_path):
+            # Verify original service CANNOT decrypt data encrypted with the new key
+            with pytest.raises(InvalidToken): # Or appropriate exception
+                 service_orig.decrypt(encrypted_v2)
 
 
-"""Test encryption of nonexistent file."""
-# Nonexistent input file
-nonexistent_file = tmp_path / "nonexistent.txt"
-output_file = tmp_path / "output.bin"
+    def test_file_encryption(self, encryption_service: EncryptionService, tmp_path):
+        """Test encryption and decryption of files."""
+        # Create test file paths
+        test_file = tmp_path / "test.txt"
+        encrypted_file = tmp_path / "encrypted.bin"
+        decrypted_file = tmp_path / "decrypted.txt"
 
-# Mock file existence check
-        with patch("os.path.exists", return_value=False):
-            # Attempt to encrypt nonexistent file
-            with pytest.raises(FileNotFoundError):
-                encryption_service.encrypt_file()
-                str(nonexistent_file), str(output_file
+        # Test content
+        test_content = "Sensitive patient information\nLine 2\nLine3"
+        test_file.write_text(test_content)
 
-                def test_decrypt_file_nonexistent()
-                        self, encryption_service, tmp_path):
-                            """Test decryption of nonexistent file."""
-                            # Nonexistent input file
-                            nonexistent_file = tmp_path / "nonexistent.bin"
-                            output_file = tmp_path / "output.txt"
+        # Encrypt the file
+        encryption_service.encrypt_file(str(test_file), str(encrypted_file))
 
-                            # Mock file existence check
-                            with patch("os.path.exists", return_value=False):
-                                # Attempt to decrypt nonexistent file
-                                with pytest.raises(FileNotFoundError):
-                encryption_service.decrypt_file()
-                str(nonexistent_file), str(output_file
+        # Verify encrypted file exists and content is different
+        assert encrypted_file.exists()
+        encrypted_content_bytes = encrypted_file.read_bytes()
+        assert encrypted_content_bytes != test_content.encode()
+
+        # Decrypt the file
+        encryption_service.decrypt_file(str(encrypted_file), str(decrypted_file))
+
+        # Verify decrypted file exists and content matches original
+        assert decrypted_file.exists()
+        decrypted_content = decrypted_file.read_text()
+        assert decrypted_content == test_content
+
+
+    def test_encrypt_file_nonexistent(self, encryption_service: EncryptionService, tmp_path):
+        """Test encryption of nonexistent file."""
+        # Nonexistent input file
+        nonexistent_file = tmp_path / "nonexistent.txt"
+        output_file = tmp_path / "output.bin"
+
+        # Attempt to encrypt nonexistent file
+        with pytest.raises(FileNotFoundError):
+            encryption_service.encrypt_file(str(nonexistent_file), str(output_file))
+
+    def test_decrypt_file_nonexistent(self, encryption_service: EncryptionService, tmp_path):
+        """Test decryption of nonexistent file."""
+        # Nonexistent input file
+        nonexistent_file = tmp_path / "nonexistent.bin"
+        output_file = tmp_path / "output.txt"
+
+        # Attempt to decrypt nonexistent file
+        with pytest.raises(FileNotFoundError):
+            encryption_service.decrypt_file(str(nonexistent_file), str(output_file))
+
+    def test_decrypt_invalid_file_content(self, encryption_service: EncryptionService, tmp_path):
+        """Test decryption of a file with invalid encrypted content."""
+        invalid_encrypted_file = tmp_path / "invalid.bin"
+        output_file = tmp_path / "output.txt"
+
+        # Write invalid data to the file
+        invalid_encrypted_file.write_bytes(b"this is not valid fernet data")
+
+        # Attempt to decrypt the invalid file
+        with pytest.raises(InvalidToken): # Fernet raises InvalidToken
+            encryption_service.decrypt_file(str(invalid_encrypted_file), str(output_file))
