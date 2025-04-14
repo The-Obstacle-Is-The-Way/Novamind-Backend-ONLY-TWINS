@@ -25,12 +25,9 @@ def encryption_service():
     # Use a test key, never use in production
     test_key = b"testkeyfortestingonly1234567890abcdef"
     service = EncryptionService()
-
-    # Mock the key loading to use our test key
-    with patch.object(service, "_load_encryption_key") as mock_load:
-        mock_load.return_value = test_key
-        service._encryption_key = test_key
-        yield service
+    # Set the key directly to avoid loading from environment or generating a new one
+    service._encryption_key = test_key
+    return service
 
 @pytest.fixture
 def db_session():
