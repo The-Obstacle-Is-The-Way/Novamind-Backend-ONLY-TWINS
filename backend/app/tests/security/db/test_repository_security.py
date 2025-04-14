@@ -9,14 +9,14 @@ These tests verify that repositories handling PHI/ePHI properly:
     4. Validate access permissions before operations
     5. Maintain audit trails for all operations
     """
-    import pytest
-    import json
-    import uuid
-    from unittest.mock import patch, MagicMock, ANY
+import pytest
+import json
+import uuid
+from unittest.mock import patch, MagicMock, ANY
 
-    from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
-    from app.infrastructure.security.encryption_service import EncryptionService
-    from app.domain.entities.patient import Patient
+from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
+from app.infrastructure.security.encryption_service import EncryptionService
+from app.domain.entities.patient import Patient
 
 
 @pytest.fixture
