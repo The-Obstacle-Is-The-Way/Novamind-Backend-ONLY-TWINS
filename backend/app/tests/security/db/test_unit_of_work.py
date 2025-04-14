@@ -36,7 +36,11 @@ class TestSQLAlchemyUnitOfWork:
     @pytest.fixture
     def unit_of_work(self, mock_session_factory):
         """Create a Unit of Work instance for testing."""
-        factory, _ = mock_session_factory
+        factory, mock_session = mock_session_factory
+        # Simulate an active transaction for testing
+        mock_session.begin.return_value = mock_session
+        mock_session.commit.return_value = None
+        mock_session.rollback.return_value = None
         return SQLAlchemyUnitOfWork(session_factory=factory)
 
     def test_successful_transaction(self, unit_of_work, mock_session_factory):
