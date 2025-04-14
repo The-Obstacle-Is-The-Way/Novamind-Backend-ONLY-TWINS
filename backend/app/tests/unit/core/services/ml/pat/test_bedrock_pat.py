@@ -242,28 +242,30 @@ class TestBedrockPAT(unittest.TestCase):  # Inherit from unittest.TestCase for a
 
         # Configure table mock for DynamoDB
         table_mock = MagicMock()
-                self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
+        self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
-                # Test data
-                patient_id = "test-patient"
-                readings = []
-                {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
-                for _ in range(20):  # Added missing colon here
-                    
-                    start_time = "2025-01-01T00:00:00Z"
-                    end_time = "2025-01-01T08:00:00Z"
-                    sampling_rate_hz = 50.0
-                    device_info = {
-                        "device_type": "smartwatch",
-                        "manufacturer": "Test Manufacturer",
-                        "model": "Test Model"
-                    }
-                    analysis_types = ["sleep"]
+        # Test data
+        patient_id = "test-patient"
+        readings = [
+            {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
+        ]
+        for _ in range(20):
+            readings.append({"timestamp": "2025-01-01T00:01:00Z", "x": 0.2, "y": 0.3, "z": 0.4})
+            
+        start_time = "2025-01-01T00:00:00Z"
+        end_time = "2025-01-01T08:00:00Z"
+        sampling_rate_hz = 50.0
+        device_info = {
+            "device_type": "smartwatch",
+            "manufacturer": "Test Manufacturer",
+            "model": "Test Model"
+        }
+        analysis_types = ["sleep"]
 
-                    # Act
-                    result = self.bedrock_pat_service.analyze_actigraphy(
-                        patient_id=patient_id,
-                        readings=readings,
+        # Act
+        result = self.bedrock_pat_service.analyze_actigraphy(
+            patient_id=patient_id,
+            readings=readings,
                         start_time=start_time,
                         end_time=end_time,
                         sampling_rate_hz=sampling_rate_hz,
