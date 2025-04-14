@@ -540,7 +540,7 @@ class TestDBPHIProtection:
                 return decrypted
             return value
 
-        # Patch get_by_id for all repositories to return the mock patient with role-based decryption
+        # Patch get_by_id for all repositories to return the mock patient
         with patch.object(admin_repo, "get_by_id", return_value=mock_patient) as admin_mock, \
              patch.object(doctor_repo, "get_by_id", return_value=mock_patient) as doctor_mock, \
              patch.object(nurse_repo, "get_by_id", return_value=mock_patient) as nurse_mock, \
@@ -549,29 +549,33 @@ class TestDBPHIProtection:
 
             # Mock decryption behavior for each repository based on role
             for repo, role in [(admin_repo, "admin"), (doctor_repo, "doctor"), (nurse_repo, "nurse"), (patient_repo, "patient"), (guest_repo, "guest")]:
-                with patch.object(repo.encryption_service, "decrypt", side_effect=lambda x: decrypt_for_role(x, role)):
+                with patch.object(repo.encryption_service, "decrypt", side_effect=lambda x: decrypt_for_role(x, role)) as mock_decrypt:
                     # Admin and Doctor should see all decrypted PHI
                     if role in ["admin", "doctor"]:
                         patient = repo.get_by_id("P12345")
-                        assert patient.ssn == "123-45-6789"
-                        assert patient.email == "john.doe@example.com"
+                        assert patient.ssn == "123-45-6789", f"{role} should see decrypted SSN"
+                        assert patient.email == "john.doe@example.com", f"{role} should see decrypted email"
+                        assert mock_decrypt.call_count > 0, "Decryption should have been called"
                     # Nurse should see most PHI, but SSN redacted
                     elif role == "nurse":
                         patient = repo.get_by_id("P12345")
-                        assert patient.ssn == "XXX-XX-XXXX"
-                        assert patient.email == "john.doe@example.com"
-                        assert patient.phone == "555-123-4567"
+                        assert patient.ssn == "XXX-XX-XXXX", f"{role} should see redacted SSN"
+                        assert patient.email == "john.doe@example.com", f"{role} should see decrypted email"
+                        assert patient.phone == "555-123-4567", f"{role} should see decrypted phone"
+                        assert mock_decrypt.call_count > 0, "Decryption should have been called"
                     # Patient should see their own decrypted PHI
                     elif role == "patient":
                         patient = repo.get_by_id("P12345")
-                        assert patient.ssn == "123-45-6789"
-                        assert patient.email == "john.doe@example.com"
+                        assert patient.ssn == "123-45-6789", f"{role} should see decrypted SSN"
+                        assert patient.email == "john.doe@example.com", f"{role} should see decrypted email"
+                        assert mock_decrypt.call_count > 0, "Decryption should have been called"
                     # Guest should see redacted fields
                     elif role == "guest":
                         patient = repo.get_by_id("P12345")
-                        assert patient.first_name == "[REDACTED]"
-                        assert patient.ssn == "[REDACTED]"
-                        assert patient.email == "[REDACTED]"
+                        assert patient.first_name == "[REDACTED]", f"{role} should see redacted first name"
+                        assert patient.ssn == "[REDACTED]", f"{role} should see redacted SSN"
+                        assert patient.email == "[REDACTED]", f"{role} should see redacted email"
+                        assert mock_decrypt.call_count > 0, "Decryption should have been called"
 
     def test_transaction_rollback_on_error(self, db, admin_context):
         """Test that database transactions are rolled back on error."""
