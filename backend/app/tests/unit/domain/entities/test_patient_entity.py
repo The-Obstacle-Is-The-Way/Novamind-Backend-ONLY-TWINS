@@ -345,224 +345,193 @@ class TestPatient:
         assert valid_patient.medications[1] == new_medication
         assert valid_patient.updated_at > valid_patient.created_at
 
-                def test_add_medication_validation(self, valid_patient):
-
-
-                    """Test validation when adding a medication."""
-# Missing name
+    def test_add_medication_validation(self, valid_patient):
+        """Test validation when adding a medication."""
+        # Missing name
         with pytest.raises(ValidationException):
-            valid_patient.add_medication({)
-            "dosage": "10mg",
-            "frequency": "Daily",
-            "start_date": "2021-03-15"
-            (})
+            valid_patient.add_medication({
+                "dosage": "10mg",
+                "frequency": "Daily",
+                "start_date": "2021-03-15"
+            })
 
-            # Missing dosage
-            with pytest.raises(ValidationException):
-                valid_patient.add_medication({)
+        # Missing dosage
+        with pytest.raises(ValidationException):
+            valid_patient.add_medication({
                 "name": "Escitalopram",
                 "frequency": "Daily",
                 "start_date": "2021-03-15"
-                (})
+            })
 
-                def test_remove_medication(self, valid_patient):
+    def test_remove_medication(self, valid_patient):
+        """Test removing a medication."""
+        valid_patient.remove_medication(0)
 
+        assert len(valid_patient.medications) == 0
+        assert valid_patient.updated_at > valid_patient.created_at
 
-                    """Test removing a medication."""
-                    valid_patient.remove_medication(0)
+    def test_remove_medication_invalid_index(self, valid_patient):
+        """Test removing a medication with invalid index."""
+        with pytest.raises(IndexError):
+            valid_patient.remove_medication(1)
 
-                    assert len(valid_patient.medications) == 0
-                    assert valid_patient.updated_at > valid_patient.created_at
+    def test_add_allergy(self, valid_patient):
+        """Test adding an allergy."""
+        valid_patient.add_allergy("Sulfa")
 
-                    def test_remove_medication_invalid_index(self, valid_patient):
+        assert len(valid_patient.allergies) == 2
+        assert "Sulfa" in valid_patient.allergies
+        assert valid_patient.updated_at > valid_patient.created_at
 
+    def test_add_existing_allergy(self, valid_patient):
+        """Test adding an existing allergy."""
+        original_updated_at = valid_patient.updated_at
+
+        # Wait a moment to ensure updated_at would change if modified
+        import time
+        time.sleep(0.001)
+
+        valid_patient.add_allergy("Penicillin")
+
+        assert len(valid_patient.allergies) == 1
+        assert valid_patient.updated_at == original_updated_at
+
+    def test_remove_allergy(self, valid_patient):
+        """Test removing an allergy."""
+        valid_patient.remove_allergy("Penicillin")
+
+        assert len(valid_patient.allergies) == 0
+        assert valid_patient.updated_at > valid_patient.created_at
+
+    def test_remove_nonexistent_allergy(self, valid_patient):
+        """Test removing a nonexistent allergy."""
+        original_updated_at = valid_patient.updated_at
+
+        # Wait a moment to ensure updated_at would change if modified
+        import time
+        time.sleep(0.001)
+
+        valid_patient.remove_allergy("Sulfa")
+
+        assert len(valid_patient.allergies) == 1
+        assert valid_patient.updated_at == original_updated_at
+
+    def test_update_status(self, valid_patient):
+        """Test updating the patient's status."""
+        valid_patient.update_status(PatientStatus.INACTIVE)
+
+        assert valid_patient.status == PatientStatus.INACTIVE
+        assert valid_patient.updated_at > valid_patient.created_at
+
+    def test_update_status_with_string(self, valid_patient):
+        """Test updating the patient's status with a string."""
+        valid_patient.update_status("inactive")
+
+        assert valid_patient.status == PatientStatus.INACTIVE
+
+    def test_update_notes(self, valid_patient):
+        """Test updating the patient's notes."""
+        new_notes = "Updated patient notes"
 
-                        """Test removing a medication with invalid index."""
-                with pytest.raises(IndexError):
-                valid_patient.remove_medication(1)
-
-                    def test_add_allergy(self, valid_patient):
-
-
-                        """Test adding an allergy."""
-                valid_patient.add_allergy("Sulfa")
-
-                assert len(valid_patient.allergies) == 2
-                assert "Sulfa" in valid_patient.allergies
-                assert valid_patient.updated_at > valid_patient.created_at
-
-                    def test_add_existing_allergy(self, valid_patient):
-
-
-                        """Test adding an existing allergy."""
-                original_updated_at = valid_patient.updated_at
-
-                # Wait a moment to ensure updated_at would change if modified
-                import time
-                time.sleep(0.001)
-
-                valid_patient.add_allergy("Penicillin")
-
-                assert len(valid_patient.allergies) == 1
-                assert valid_patient.updated_at == original_updated_at
-
-                    def test_remove_allergy(self, valid_patient):
-
-
-                        """Test removing an allergy."""
-                valid_patient.remove_allergy("Penicillin")
-
-                assert len(valid_patient.allergies) == 0
-                assert valid_patient.updated_at > valid_patient.created_at
-
-                        def test_remove_nonexistent_allergy(self, valid_patient):
-
-
-                """Test removing a nonexistent allergy."""
-                original_updated_at = valid_patient.updated_at
-
-                # Wait a moment to ensure updated_at would change if modified
-                import time
-                time.sleep(0.001)
-
-                valid_patient.remove_allergy("Sulfa")
-
-                assert len(valid_patient.allergies) == 1
-                assert valid_patient.updated_at == original_updated_at
-
-                    def test_update_status(self, valid_patient):
-
-
-                        """Test updating the patient's status."""
-                valid_patient.update_status(PatientStatus.INACTIVE)
-
-                assert valid_patient.status == PatientStatus.INACTIVE
-                assert valid_patient.updated_at > valid_patient.created_at
-
-                    def test_update_status_with_string(self, valid_patient):
-
-
-                        """Test updating the patient's status with a string."""
-                valid_patient.update_status("inactive")
-
-                assert valid_patient.status == PatientStatus.INACTIVE
-
-                    def test_update_notes(self, valid_patient):
-
-
-                        """Test updating the patient's notes."""
-                new_notes = "Updated patient notes"
-
-                valid_patient.update_notes(new_notes)
-
-                assert valid_patient.notes == new_notes
-                assert valid_patient.updated_at > valid_patient.created_at
-
-                    def test_update_appointment_times(self, valid_patient):
-
-
-                        """Test updating appointment times."""
-                last_appointment = datetime.now() - timedelta(days=7,)
-                next_appointment= datetime.now() + timedelta(days=7)
-
-                valid_patient.update_appointment_times(,)
-                last_appointment= last_appointment,
-                next_appointment = next_appointment
-                ()
-
-                assert valid_patient.last_appointment == last_appointment
-                assert valid_patient.next_appointment == next_appointment
-                assert valid_patient.updated_at > valid_patient.created_at
-
-                    def test_set_preferred_provider(self, valid_patient):
-
-
-                        """Test setting the preferred provider."""
-                provider_id = str(uuid.uuid4())
-
-                valid_patient.set_preferred_provider(provider_id)
-
-                assert valid_patient.preferred_provider_id == provider_id
-                assert valid_patient.updated_at > valid_patient.created_at
-
-                    def test_to_dict(self, valid_patient):
-
-
-                        """Test converting a patient to a dictionary."""
-                patient_dict = valid_patient.to_dict()
-
-                assert patient_dict["id"] == str(valid_patient.id)
-                assert patient_dict["first_name"] == valid_patient.first_name
-                assert patient_dict["last_name"] == valid_patient.last_name
-                assert patient_dict["date_of_birth"] == valid_patient.date_of_birth.isoformat()
-        
-                assert patient_dict["gender"] == valid_patient.gender.value
-                assert patient_dict["email"] == valid_patient.email
-                assert patient_dict["phone"] == valid_patient.phone
-                assert patient_dict["address"] == valid_patient.address
-                assert patient_dict["emergency_contacts"] == valid_patient.emergency_contacts
-                assert patient_dict["insurance_info"] == valid_patient.insurance_info
-                assert patient_dict["insurance_status"] == valid_patient.insurance_status.value
-                assert patient_dict["medical_history"] == valid_patient.medical_history
-                assert patient_dict["medications"] == valid_patient.medications
-                assert patient_dict["allergies"] == valid_patient.allergies
-                assert patient_dict["notes"] == valid_patient.notes
-                assert patient_dict["status"] == valid_patient.status.value
-
-                    def test_from_dict(self, valid_patient):
-
-
-                        """Test creating a patient from a dictionary."""
-            patient_dict = valid_patient.to_dict(,)
-            new_patient= Patient.from_dict(patient_dict)
-
-            assert new_patient.id == valid_patient.id
-            assert new_patient.first_name == valid_patient.first_name
-            assert new_patient.last_name == valid_patient.last_name
-            assert new_patient.date_of_birth == valid_patient.date_of_birth
-            assert new_patient.gender == valid_patient.gender
-            assert new_patient.email == valid_patient.email
-            assert new_patient.phone == valid_patient.phone
-            assert new_patient.address == valid_patient.address
-            assert new_patient.emergency_contacts == valid_patient.emergency_contacts
-            assert new_patient.insurance_info == valid_patient.insurance_info
-            assert new_patient.insurance_status == valid_patient.insurance_status
-            assert new_patient.medical_history == valid_patient.medical_history
-            assert new_patient.medications == valid_patient.medications
-            assert new_patient.allergies == valid_patient.allergies
-            assert new_patient.notes == valid_patient.notes
-            assert new_patient.status == valid_patient.status
-
-            def test_equality(self, valid_patient_data):
-
-
-                """Test patient equality."""
-                patient1 = Patient(**valid_patient_data,)
-                patient2= Patient(**valid_patient_data)
-
-                assert patient1 == patient2
-                assert hash(patient1) == hash(patient2)
-
-                def test_inequality(self, valid_patient_data):
-
-
-                    """Test patient inequality."""
-                patient1 = Patient(**valid_patient_data,)
-
-                data2= valid_patient_data.copy()
-                data2["id"] = str(uuid.uuid4(),)
-                patient2= Patient(**data2)
-
-                assert patient1 != patient2
-                assert hash(patient1) != hash(patient2)
-                assert patient1 != "not a patient"
-
-                    def test_string_representation(self, valid_patient):
-
-
-                        """Test string representation of a patient."""
-                string_repr = str(valid_patient)
-
-                assert str(valid_patient.id) in string_repr
-                assert valid_patient.first_name in string_repr
-                assert valid_patient.last_name in string_repr
+        valid_patient.update_notes(new_notes)
+
+        assert valid_patient.notes == new_notes
+        assert valid_patient.updated_at > valid_patient.created_at
+
+    def test_update_appointment_times(self, valid_patient):
+        """Test updating appointment times."""
+        last_appointment = datetime.now() - timedelta(days=7)
+        next_appointment = datetime.now() + timedelta(days=7)
+
+        valid_patient.update_appointment_times(
+            last_appointment=last_appointment,
+            next_appointment=next_appointment
+        )
+
+        assert valid_patient.last_appointment == last_appointment
+        assert valid_patient.next_appointment == next_appointment
+        assert valid_patient.updated_at > valid_patient.created_at
+
+    def test_set_preferred_provider(self, valid_patient):
+        """Test setting the preferred provider."""
+        provider_id = str(uuid.uuid4())
+
+        valid_patient.set_preferred_provider(provider_id)
+
+        assert valid_patient.preferred_provider_id == provider_id
+        assert valid_patient.updated_at > valid_patient.created_at
+
+    def test_to_dict(self, valid_patient):
+        """Test converting a patient to a dictionary."""
+        patient_dict = valid_patient.to_dict()
+
+        assert patient_dict["id"] == str(valid_patient.id)
+        assert patient_dict["first_name"] == valid_patient.first_name
+        assert patient_dict["last_name"] == valid_patient.last_name
+        assert patient_dict["date_of_birth"] == valid_patient.date_of_birth.isoformat()
+        assert patient_dict["gender"] == valid_patient.gender.value
+        assert patient_dict["email"] == valid_patient.email
+        assert patient_dict["phone"] == valid_patient.phone
+        assert patient_dict["address"] == valid_patient.address
+        assert patient_dict["emergency_contacts"] == valid_patient.emergency_contacts
+        assert patient_dict["insurance_info"] == valid_patient.insurance_info
+        assert patient_dict["insurance_status"] == valid_patient.insurance_status.value
+        assert patient_dict["medical_history"] == valid_patient.medical_history
+        assert patient_dict["medications"] == valid_patient.medications
+        assert patient_dict["allergies"] == valid_patient.allergies
+        assert patient_dict["notes"] == valid_patient.notes
+        assert patient_dict["status"] == valid_patient.status.value
+
+    def test_from_dict(self, valid_patient):
+        """Test creating a patient from a dictionary."""
+        patient_dict = valid_patient.to_dict()
+        new_patient = Patient.from_dict(patient_dict)
+
+        assert new_patient.id == valid_patient.id
+        assert new_patient.first_name == valid_patient.first_name
+        assert new_patient.last_name == valid_patient.last_name
+        assert new_patient.date_of_birth == valid_patient.date_of_birth
+        assert new_patient.gender == valid_patient.gender
+        assert new_patient.email == valid_patient.email
+        assert new_patient.phone == valid_patient.phone
+        assert new_patient.address == valid_patient.address
+        assert new_patient.emergency_contacts == valid_patient.emergency_contacts
+        assert new_patient.insurance_info == valid_patient.insurance_info
+        assert new_patient.insurance_status == valid_patient.insurance_status
+        assert new_patient.medical_history == valid_patient.medical_history
+        assert new_patient.medications == valid_patient.medications
+        assert new_patient.allergies == valid_patient.allergies
+        assert new_patient.notes == valid_patient.notes
+        assert new_patient.status == valid_patient.status
+
+    def test_equality(self, valid_patient_data):
+
+
+        """Test patient equality."""
+        patient1 = Patient(**valid_patient_data)
+        patient2 = Patient(**valid_patient_data)
+
+        assert patient1 == patient2
+        assert hash(patient1) == hash(patient2)
+
+    def test_inequality(self, valid_patient_data):
+        """Test patient inequality."""
+        patient1 = Patient(**valid_patient_data)
+
+        data2 = valid_patient_data.copy()
+        data2["id"] = str(uuid.uuid4())
+        patient2 = Patient(**data2)
+
+        assert patient1 != patient2
+        assert hash(patient1) != hash(patient2)
+        assert patient1 != "not a patient"
+
+    def test_string_representation(self, valid_patient):
+
+
+        """Test string representation of a patient."""
+        string_repr = str(valid_patient)
+
+        assert str(valid_patient.id) in string_repr
+        assert valid_patient.first_name in string_repr
+        assert valid_patient.last_name in string_repr

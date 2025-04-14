@@ -7,7 +7,7 @@ analytics data for dashboards and reporting.
 """
 
 from typing import Dict, Any, List, Optional, Union
-from datetime import datetime, , UTC, timedelta
+from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 
 from app.core.utils.logging import get_logger

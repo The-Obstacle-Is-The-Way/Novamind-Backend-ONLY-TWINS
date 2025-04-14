@@ -8,131 +8,128 @@ import time
 from datetime import datetime
 import tempfile
 
-from app.core.utils.logging_enhanced import ()
-setup_logging,
-PHISanitizingFilter,
-StructuredJsonFormatter,
-get_logger,
-audit_log,
-log_phi_detection,
-get_correlation_id,
-set_correlation_id,
-clear_correlation_id,
-
+from app.core.utils.logging_enhanced import (
+    setup_logging,
+    PHISanitizingFilter,
+    StructuredJsonFormatter,
+    get_logger,
+    audit_log,
+    log_phi_detection,
+    get_correlation_id,
+    set_correlation_id,
+    clear_correlation_id,
+)
 
 
 @pytest.fixture
 def mock_logger():
-
     """Create a mock logger."""
     logger = MagicMock(spec=logging.Logger)
-#     return logger@pytest.fixture
-    def temp_log_file():
+    return logger
 
-        """Create a temporary log file for testing."""
-        fd, path = tempfile.mkstemp(suffix=".log")
-        os.close(fd)
-        yield path
-        # Cleanup
-        try:
+@pytest.fixture
+def temp_log_file():
+    """Create a temporary log file for testing."""
+    fd, path = tempfile.mkstemp(suffix=".log")
+    os.close(fd)
+    yield path
+    # Cleanup
+    try:
         os.remove(path)
-        except OSError:
-            passclass TestLoggingSetup:
-                """Test suite for logging setup."""
+    except OSError:
+        pass
 
-                @patch("app.core.utils.logging_enhanced.logging")
-                def test_setup_logging_basic(self, mock_logging):
 
-                    """Test basic logging setup."""
-                # Setup
-                mock_dict_config = mock_logging.config.dictConfig
+class TestLoggingSetup:
+    """Test suite for logging setup."""
 
-                # Call function
-                setup_logging(level="INFO")
+    @patch("app.core.utils.logging_enhanced.logging")
+    def test_setup_logging_basic(self, mock_logging):
+        """Test basic logging setup."""
+        # Setup
+        mock_dict_config = mock_logging.config.dictConfig
 
-                # Verify logging was configured
-                mock_dict_config.assert_called_once()
+        # Call function
+        setup_logging(level="INFO")
 
-                # Get the config passed to dictConfig
-                config = mock_dict_config.call_args[0][0]
+        # Verify logging was configured
+        mock_dict_config.assert_called_once()
 
-                # Check basic configs
-                assert config["version"] == 1
-                assert config["disable_existing_loggers"] is False
-                assert "handlers" in config
-                assert "loggers" in config
-                assert "root" in config
-                assert config["root"]["level"] == "INFO"
+        # Get the config passed to dictConfig
+        config = mock_dict_config.call_args[0][0]
 
-                @patch("app.core.utils.logging_enhanced.logging")
-                def test_setup_logging_with_file(self, mock_logging, temp_log_file):
+        # Check basic configs
+        assert config["version"] == 1
+        assert config["disable_existing_loggers"] is False
+        assert "handlers" in config
+        assert "loggers" in config
+        assert "root" in config
+        assert config["root"]["level"] == "INFO"
 
-                    """Test logging setup with file output."""
-            # Setup
-            mock_dict_config = mock_logging.config.dictConfig
+    @patch("app.core.utils.logging_enhanced.logging")
+    def test_setup_logging_with_file(self, mock_logging, temp_log_file):
+        """Test logging setup with file output."""
+        # Setup
+        mock_dict_config = mock_logging.config.dictConfig
 
-            # Call function with file
-            setup_logging(level="DEBUG", log_file=temp_log_file)
+        # Call function with file
+        setup_logging(level="DEBUG", log_file=temp_log_file)
 
-            # Verify logging was configured
-            mock_dict_config.assert_called_once()
+        # Verify logging was configured
+        mock_dict_config.assert_called_once()
 
-            # Get the config passed to dictConfig
-            config = mock_dict_config.call_args[0][0]
+        # Get the config passed to dictConfig
+        config = mock_dict_config.call_args[0][0]
 
-            # Check file handler configuration
-            assert "file" in config["handlers"]
-            assert config["handlers"]["file"]["filename"] == temp_log_file
+        # Check file handler configuration
+        assert "file" in config["handlers"]
+        assert config["handlers"]["file"]["filename"] == temp_log_file
 
-            @patch("app.core.utils.logging_enhanced.logging")
-            def test_setup_logging_with_phi_filter(self, mock_logging):
+    @patch("app.core.utils.logging_enhanced.logging")
+    def test_setup_logging_with_phi_filter(self, mock_logging):
+        """Test logging setup with PHI filtering enabled."""
+        # Setup
+        mock_dict_config = mock_logging.config.dictConfig
 
-                """Test logging setup with PHI filtering enabled."""
-                # Setup
-                mock_dict_config = mock_logging.config.dictConfig
+        # Call function with PHI filtering
+        setup_logging(level="INFO", use_phi_filter=True)
 
-                # Call function with PHI filtering
-                setup_logging(level="INFO", use_phi_filter=True)
+        # Verify logging was configured
+        mock_dict_config.assert_called_once()
 
-                # Verify logging was configured
-                mock_dict_config.assert_called_once()
+        # Get the config passed to dictConfig
+        config = mock_dict_config.call_args[0][0]
 
-                # Get the config passed to dictConfig
-                config = mock_dict_config.call_args[0][0]
-
-                # Check PHI filter configuration
-                assert "filters" in config
-                assert "phi_filter" in config["filters"]
-                assert "()" in config["filters"]["phi_filter"]
-                assert ()
-                config["filters"]["phi_filter"]["()"]
-                == "app.core.utils.logging_enhanced.PHISanitizingFilter"
+        # Check PHI filter configuration
+        assert "filters" in config
+        assert "phi_filter" in config["filters"]
+        assert "()" in config["filters"]["phi_filter"]
+        assert config["filters"]["phi_filter"]["()"] == "app.core.utils.logging_enhanced.PHISanitizingFilter"
         
-
         # Check filter is applied to handlers
-                for handler_name, handler_config in config["handlers"].items():
+        for handler_name, handler_config in config["handlers"].items():
             if "filters" in handler_config:
-                assert "phi_filter" in handler_config["filters"]class TestPHISanitizingFilter:
-                    """Test suite for PHI sanitizing filter."""
+                assert "phi_filter" in handler_config["filters"]
 
-                    def test_filter_with_phi(self):
+class TestPHISanitizingFilter:
+    """Test suite for PHI sanitizing filter."""
 
+    def test_filter_with_phi(self):
+        """Test that the filter sanitizes PHI in log records."""
+        # Create a filter
+        phi_filter = PHISanitizingFilter()
 
-                        """Test that the filter sanitizes PHI in log records."""
-                        # Create a filter
-                        phi_filter = PHISanitizingFilter()
-
-                        # Create a log record with potential PHI
-                        record = logging.LogRecord()
-                        name="test",
-                        level=logging.INFO,
-                        pathname="",
-                        lineno=0,
-                        msg="Patient John Doe (DOB: 01/15/1980) with SSN 123-45-6789",
-                        args=(),
-                        exc_info=None,
+        # Create a log record with potential PHI
+        record = logging.LogRecord(
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Patient John Doe (DOB: 01/15/1980) with SSN 123-45-6789",
+            args=(),
+            exc_info=None
+        )
         
-
         # Apply filter
         result = phi_filter.filter(record)
 
@@ -146,24 +143,22 @@ def mock_logger():
         assert "123-45-6789" not in record.msg
 
     def test_filter_without_phi(self):
-
-
         """Test that the filter doesn't modify messages without PHI."""
         # Create a filter
         phi_filter = PHISanitizingFilter()
 
         # Create a log record without PHI
         original_msg = "Application started successfully"
-        record = logging.LogRecord()
-        name="test",
-        level=logging.INFO,
-        pathname="",
-        lineno=0,
-        msg=original_msg,
-        args=(),
-        exc_info=None,
+        record = logging.LogRecord(
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg=original_msg,
+            args=(),
+            exc_info=None
+        )
         
-
         # Apply filter
         result = phi_filter.filter(record)
 
@@ -174,32 +169,31 @@ def mock_logger():
         assert record.msg == original_msg
 
     def test_filter_with_phi_patterns(self):
-
-
         """Test that the filter detects specific PHI patterns."""
         # Create a filter
         phi_filter = PHISanitizingFilter()
 
         # Test with various PHI patterns
-        test_cases = []
-        ("Email: john.doe@example.com", "john.doe@example.com"),  # Email
-        ("Phone: 555-123-4567", "555-123-4567"),  # Phone number
-        ("DOB: 01/15/1980", "01/15/1980"),  # Date of birth
-        ("SSN: 123-45-6789", "123-45-6789"),  # SSN
-        ("Address: 123 Main St, Anytown, US 12345", "123 Main St"),  # Address
-        ("MRN: MRN12345678", "MRN12345678"),  # Medical record number
-        ("ID: ABC-12345-XYZ", "ABC-12345-XYZ"),  # ID number
+        test_cases = [
+            ("Email: john.doe@example.com", "john.doe@example.com"),  # Email
+            ("Phone: 555-123-4567", "555-123-4567"),  # Phone number
+            ("DOB: 01/15/1980", "01/15/1980"),  # Date of birth
+            ("SSN: 123-45-6789", "123-45-6789"),  # SSN
+            ("Address: 123 Main St, Anytown, US 12345", "123 Main St"),  # Address
+            ("MRN: MRN12345678", "MRN12345678"),  # Medical record number
+            ("ID: ABC-12345-XYZ", "ABC-12345-XYZ"),  # ID number
+        ]
         
-
         for message, phi in test_cases:
-            record = logging.LogRecord()
-            name="test",
-            level=logging.INFO,
-            pathname="",
-            lineno=0,
-            msg=message,
-            args=(),
-            exc_info=None,
+            record = logging.LogRecord(
+                name="test",
+                level=logging.INFO,
+                pathname="",
+                lineno=0,
+                msg=message,
+                args=(),
+                exc_info=None
+            )
             
 
             # Apply filter

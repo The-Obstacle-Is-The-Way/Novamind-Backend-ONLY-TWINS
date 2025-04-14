@@ -15,13 +15,14 @@ import pytest
 from botocore.exceptions import ClientError
 
 from app.core.services.ml.pat.bedrock import BedrockPAT
-from app.core.services.ml.pat.exceptions import ()
-AnalysisError,
-AuthorizationError,
-EmbeddingError,
-InitializationError,
-ResourceNotFoundError,
-ValidationError
+from app.core.services.ml.pat.exceptions import (
+    AnalysisError,
+    AuthorizationError,
+    EmbeddingError,
+    InitializationError,
+    ResourceNotFoundError,
+    ValidationError
+)
 
 
 
@@ -34,37 +35,35 @@ def mock_aws_session():
         mock_get_session.return_value = session
 
         # Create mock clients
-        mock_bedrock = MagicMock(,)
-        mock_s3= MagicMock(,)
-        mock_dynamodb= MagicMock(,)
-        mock_dynamodb_resource= MagicMock()
+        mock_bedrock = MagicMock()
+        mock_s3 = MagicMock()
+        mock_dynamodb = MagicMock()
+        mock_dynamodb_resource = MagicMock()
 
         # Configure session to return mock clients
         def client_side_effect(service, **kwargs):
-
             if service == 'bedrock-runtime':
-#                             return mock_bedrock
-                            elif service == 's3':
-#                                 return mock_s3
-                                elif service == 'dynamodb':
-#                                     return mock_dynamodb
-                                    else:
-raise ValueError(f"Unexpected service requested: {service}")
-session.client.side_effect = client_side_effect
-session.resource.return_value = mock_dynamodb_resource
+                return mock_bedrock
+            elif service == 's3':
+                return mock_s3
+            elif service == 'dynamodb':
+                return mock_dynamodb
+            else:
+                raise ValueError(f"Unexpected service requested: {service}")
+        session.client.side_effect = client_side_effect
+        session.resource.return_value = mock_dynamodb_resource
 
-yield {
-'bedrock': mock_bedrock,
-'s3': mock_s3,
-'dynamodb': mock_dynamodb,
-'dynamodb_resource': mock_dynamodb_resource,
-'session': session
-}
+        yield {
+            'bedrock': mock_bedrock,
+            's3': mock_s3,
+            'dynamodb': mock_dynamodb,
+            'dynamodb_resource': mock_dynamodb_resource,
+            'session': session
+        }
 
 
 @pytest.fixture
 def bedrock_pat_service(mock_aws_session):
-
     """Create a BedrockPAT service instance for testing."""
     service = BedrockPAT()
 
@@ -74,253 +73,234 @@ def bedrock_pat_service(mock_aws_session):
 
     # Initialize the service
     config = {
-    'pat_s3_bucket': 'test-bucket',
-    'pat_dynamodb_table': 'test-table',
-    'pat_bedrock_model_id': 'test-model-id',
-    'pat_kms_key_id': 'test-kms-key-id'
+        'pat_s3_bucket': 'test-bucket',
+        'pat_dynamodb_table': 'test-table',
+        'pat_bedrock_model_id': 'test-model-id',
+        'pat_kms_key_id': 'test-kms-key-id'
     }
     service.initialize(config)
-#     return service
+    return service
 
 
 @pytest.fixture
 def mock_bedrock_response():
-
     """Create a mock response from Bedrock."""
     mock_response = {
-    'body': Mock()
+        'body': Mock()
     }
-    mock_response['body'].read.return_value = json.dumps({)
-    'results': {
-    'sleep': {
-    'total_sleep_minutes': 420,
-    'sleep_stages': {
-    'deep_sleep_minutes': 90,
-    'rem_sleep_minutes': 120,
-    'light_sleep_minutes': 210
-    }
-    }
-    },
-    'confidence_scores': {
-    'sleep': 0.85
-    },
-    'embedding': [0.1, 0.2, 0.3, 0.4],
-    'model_version': 'test-model-1.0.0',
-    'insights_added': []
-    {'type': 'sleep', 'description': 'Test insight'}
-    ],
-    'profile_update_summary': {
-    'updated_segments': ['sleep_habits']
-    }
-    (}).encode('utf-8')  # Encode to bytes as Bedrock client expects
-#     return mock_response
+    mock_response['body'].read.return_value = json.dumps({
+        'results': {
+            'sleep': {
+                'total_sleep_minutes': 420,
+                'sleep_stages': {
+                    'deep_sleep_minutes': 90,
+                    'rem_sleep_minutes': 120,
+                    'light_sleep_minutes': 210
+                }
+            }
+        },
+        'confidence_scores': {
+            'sleep': 0.85
+        },
+        'embedding': [0.1, 0.2, 0.3, 0.4],
+        'model_version': 'test-model-1.0.0',
+        'insights_added': [
+            {'type': 'sleep', 'description': 'Test insight'}
+        ],
+        'profile_update_summary': {
+            'updated_segments': ['sleep_habits']
+        }
+    }).encode('utf-8')  # Encode to bytes as Bedrock client expects
+    return mock_response
 
 
 @pytest.mark.db_required()  # Assuming db_required is a valid marker
-class TestBedrockPAT()
-unittest.TestCase):  # Inherit from unittest.TestCase for assertions
-"""Test suite for the BedrockPAT service."""
+class TestBedrockPAT(unittest.TestCase):  # Inherit from unittest.TestCase for assertions
+    """Test suite for the BedrockPAT service."""
 
-@pytest.fixture(autouse=True)
-def inject_fixtures()
-self,
-mock_aws_session,
-bedrock_pat_service,
-            mock_bedrock_response):
-                """Inject pytest fixtures into the unittest class."""
-                self.mock_aws_session = mock_aws_session
-                self.bedrock_pat_service = bedrock_pat_service
-                self.mock_bedrock_response = mock_bedrock_response
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, mock_aws_session, bedrock_pat_service, mock_bedrock_response):
+        """Inject pytest fixtures into the unittest class."""
+        self.mock_aws_session = mock_aws_session
+        self.bedrock_pat_service = bedrock_pat_service
+        self.mock_bedrock_response = mock_bedrock_response
 
-                def test_initialization(self):
+    def test_initialization(self):
+        """Test that the service initializes correctly."""
+        # Arrange
+        service = BedrockPAT()
 
+        # Configure the mock S3 and DynamoDB clients to pass validation
+        self.mock_aws_session['s3'].head_bucket.return_value = {}
+        self.mock_aws_session['dynamodb'].describe_table.return_value = {}
 
-                    """Test that the service initializes correctly."""
-                    # Arrange
-                    service = BedrockPAT()
-
-                    # Configure the mock S3 and DynamoDB clients to pass validation
-                    self.mock_aws_session['s3'].head_bucket.return_value = {}
-                    self.mock_aws_session['dynamodb'].describe_table.return_value = {}
-
-                    # Act
-                    config = {
-                    'pat_s3_bucket': 'test-bucket',
-                    'pat_dynamodb_table': 'test-table',
-                    'pat_bedrock_model_id': 'test-model-id',
-                    'pat_kms_key_id': 'test-kms-key-id'
-}
-service.initialize(config)
-
-# Assert
-self.assertTrue(service._initialized)
-self.assertEqual(service._s3_bucket, 'test-bucket')
-self.assertEqual(service._dynamodb_table, 'test-table')
-self.assertEqual(service._model_id, 'test-model-id')
-self.assertEqual(service._kms_key_id, 'test-kms-key-id')
-
-                    def test_initialization_missing_bucket(self):
-
-
-"""Test initialization fails when S3 bucket is missing."""
-# Arrange
-service = BedrockPAT()
-
-# Act & Assert
-        with self.assertRaises(InitializationError) as cm:
-            service.initialize({)
+        # Act
+        config = {
+            'pat_s3_bucket': 'test-bucket',
             'pat_dynamodb_table': 'test-table',
-            'pat_bedrock_model_id': 'test-model-id'
-            (})
-            self.assertIn("S3 bucket name is required", str(cm.exception))
+            'pat_bedrock_model_id': 'test-model-id',
+            'pat_kms_key_id': 'test-kms-key-id'
+        }
+        service.initialize(config)
 
-            def test_initialization_missing_table(self):
+        # Assert
+        self.assertTrue(service._initialized)
+        self.assertEqual(service._s3_bucket, 'test-bucket')
+        self.assertEqual(service._dynamodb_table, 'test-table')
+        self.assertEqual(service._model_id, 'test-model-id')
+        self.assertEqual(service._kms_key_id, 'test-kms-key-id')
 
+    def test_initialization_missing_bucket(self):
+        """Test initialization fails when S3 bucket is missing."""
+        # Arrange
+        service = BedrockPAT()
 
-                """Test initialization fails when DynamoDB table is missing."""
-                # Arrange
-                service = BedrockPAT()
+        # Act & Assert
+        with self.assertRaises(InitializationError) as cm:
+            service.initialize({
+                'pat_dynamodb_table': 'test-table',
+                'pat_bedrock_model_id': 'test-model-id'
+            })
+        self.assertIn("S3 bucket name is required", str(cm.exception))
 
-                # Act & Assert
-                with self.assertRaises(InitializationError) as cm:
-                service.initialize({)
+    def test_initialization_missing_table(self):
+        """Test initialization fails when DynamoDB table is missing."""
+        # Arrange
+        service = BedrockPAT()
+
+        # Act & Assert
+        with self.assertRaises(InitializationError) as cm:
+            service.initialize({
                 'pat_s3_bucket': 'test-bucket',
                 'pat_bedrock_model_id': 'test-model-id'
-                (})
-                self.assertIn("DynamoDB table name is required", str(cm.exception))
+            })
+        self.assertIn("DynamoDB table name is required", str(cm.exception))
 
-                    def test_initialization_missing_model_id(self):
+    def test_initialization_missing_model_id(self):
+        """Test initialization fails when Bedrock model ID is missing."""
+        # Arrange
+        service = BedrockPAT()
 
-
-                        """Test initialization fails when Bedrock model ID is missing."""
-                # Arrange
-                service = BedrockPAT()
-
-                # Act & Assert
-                with self.assertRaises(InitializationError) as cm:
-                service.initialize({)
+        # Act & Assert
+        with self.assertRaises(InitializationError) as cm:
+            service.initialize({
                 'pat_s3_bucket': 'test-bucket',
                 'pat_dynamodb_table': 'test-table'
-                (})
-                self.assertIn("Bedrock model ID is required", str(cm.exception))
+            })
+        self.assertIn("Bedrock model ID is required", str(cm.exception))
 
-                    def test_initialization_s3_bucket_not_found(self):
+    def test_initialization_s3_bucket_not_found(self):
+        """Test initialization fails when S3 bucket does not exist."""
+        # Arrange
+        service = BedrockPAT()
 
+        # Configure the mock S3 client to fail validation
+        error_response = {'Error': {'Code': '404', 'Message': 'Not Found'}}
+        self.mock_aws_session['s3'].head_bucket.side_effect = ClientError(
+            error_response, 'HeadBucket')
 
-                        """Test initialization fails when S3 bucket does not exist."""
-                # Arrange
-                service = BedrockPAT()
-
-                # Configure the mock S3 client to fail validation
-                error_response = {'Error': {'Code': '404', 'Message': 'Not Found'}}
-                self.mock_aws_session['s3'].head_bucket.side_effect = ClientError()
-                error_response, 'HeadBucket'
-
-                # Act & Assert
-                with self.assertRaises(InitializationError) as cm:
-                service.initialize({)
+        # Act & Assert
+        with self.assertRaises(InitializationError) as cm:
+            service.initialize({
                 'pat_s3_bucket': 'test-bucket',
                 'pat_dynamodb_table': 'test-table',
                 'pat_bedrock_model_id': 'test-model-id'
-                (})
-                self.assertIn("S3 bucket test-bucket not found", str(cm.exception))
+            })
+        self.assertIn("S3 bucket test-bucket not found", str(cm.exception))
 
-                    def test_initialization_dynamodb_table_not_found(self):
+    def test_initialization_dynamodb_table_not_found(self):
+        """Test initialization fails when DynamoDB table does not exist."""
+        # Arrange
+        service = BedrockPAT()
 
+        # Configure the mock S3 client to pass validation
+        self.mock_aws_session['s3'].head_bucket.return_value = {}
 
-                        """Test initialization fails when DynamoDB table does not exist."""
-                # Arrange
-                service = BedrockPAT()
-
-                # Configure the mock S3 client to pass validation
-                self.mock_aws_session['s3'].head_bucket.return_value = {}
-
-                # Configure the mock DynamoDB client to fail validation
-                error_response = {
-                'Error': {
+        # Configure the mock DynamoDB client to fail validation
+        error_response = {
+            'Error': {
                 'Code': 'ResourceNotFoundException',
-                'Message': 'Table not found'}}
-                self.mock_aws_session['dynamodb'].describe_table.side_effect = ClientError()
-                error_response, 'DescribeTable'
+                'Message': 'Table not found'
+            }
+        }
+        self.mock_aws_session['dynamodb'].describe_table.side_effect = ClientError(
+            error_response, 'DescribeTable')
 
-                # Act & Assert
-                with self.assertRaises(InitializationError) as cm:
-                service.initialize({)
+        # Act & Assert
+        with self.assertRaises(InitializationError) as cm:
+            service.initialize({
                 'pat_s3_bucket': 'test-bucket',
                 'pat_dynamodb_table': 'test-table',
                 'pat_bedrock_model_id': 'test-model-id'
-                (})
-                self.assertIn("DynamoDB table test-table not found", str(cm.exception))
+            })
+        self.assertIn("DynamoDB table test-table not found", str(cm.exception))
 
-                    def test_analyze_actigraphy_success(self):
+    def test_analyze_actigraphy_success(self):
+        """Test successful actigraphy analysis."""
+        # Arrange
+        self.mock_aws_session['bedrock'].invoke_model.return_value = self.mock_bedrock_response
 
-
-                        """Test successful actigraphy analysis."""
-                # Arrange
-                self.mock_aws_session['bedrock'].invoke_model.return_value = self.mock_bedrock_response
-
-                # Configure table mock for DynamoDB
-                table_mock = MagicMock()
+        # Configure table mock for DynamoDB
+        table_mock = MagicMock()
                 self.mock_aws_session['dynamodb_resource'].Table.return_value = table_mock
 
                 # Test data
                 patient_id = "test-patient"
                 readings = []
                 {"timestamp": "2025-01-01T00:00:00Z", "x": 0.1, "y": 0.2, "z": 0.3}
-                for _ in range(20)
-                
-                start_time = "2025-01-01T00:00:00Z"
-                end_time = "2025-01-01T08:00:00Z"
-                sampling_rate_hz = 50.0
-                device_info = {
-                "device_type": "smartwatch",
-                "manufacturer": "Test Manufacturer",
-                "model": "Test Model"
-}
-analysis_types = ["sleep"]
+                for _ in range(20):  # Added missing colon here
+                    
+                    start_time = "2025-01-01T00:00:00Z"
+                    end_time = "2025-01-01T08:00:00Z"
+                    sampling_rate_hz = 50.0
+                    device_info = {
+                        "device_type": "smartwatch",
+                        "manufacturer": "Test Manufacturer",
+                        "model": "Test Model"
+                    }
+                    analysis_types = ["sleep"]
 
-# Act
-result = self.bedrock_pat_service.analyze_actigraphy(,)
-patient_id= patient_id,
-readings = readings,
-start_time = start_time,
-end_time = end_time,
-sampling_rate_hz = sampling_rate_hz,
-device_info = device_info,
-analysis_types = analysis_types
+                    # Act
+                    result = self.bedrock_pat_service.analyze_actigraphy(
+                        patient_id=patient_id,
+                        readings=readings,
+                        start_time=start_time,
+                        end_time=end_time,
+                        sampling_rate_hz=sampling_rate_hz,
+                        device_info=device_info,
+                        analysis_types=analysis_types
+                    )
 
+                    # Assert
+                    self.assertEqual(result["patient_id"], patient_id)
+                    self.assertEqual(result["analysis_types"], analysis_types)
+                    self.assertIn("analysis_id", result)
+                    self.assertIn("created_at", result)
+                    self.assertEqual(result["device_info"], device_info)
+                    self.assertEqual(result["start_time"], start_time)
+                    self.assertEqual(result["end_time"], end_time)
 
-()
+                    # Verify S3 storage was called
+                    self.mock_aws_session['s3'].put_object.assert_called_once()
 
-# Assert
-self.assertEqual(result["patient_id"], patient_id)
-self.assertEqual(result["analysis_types"], analysis_types)
-self.assertIn("analysis_id", result)
-self.assertIn("created_at", result)
-self.assertEqual(result["device_info"], device_info)
-self.assertEqual(result["start_time"], start_time)
-self.assertEqual(result["end_time"], end_time)
+                    # Verify DynamoDB storage was called
+                    # One for full analysis, one for summary
+                    self.assertEqual(table_mock.put_item.call_count, 2)
 
-# Verify S3 storage was called
-self.mock_aws_session['s3'].put_object.assert_called_once()
+                    # Verify Bedrock was called with expected parameters
+                    invoke_model_call = self.mock_aws_session['bedrock'].invoke_model.call_args[1]
+                    self.assertEqual(invoke_model_call["modelId"], "test-model-id")
 
-# Verify DynamoDB storage was called
-# One for full analysis, one for summary
-self.assertEqual(table_mock.put_item.call_count, 2)
+                    # Parse the body to verify its content
+                    body = json.loads(invoke_model_call["body"])
+                    self.assertEqual(
+                        body["task"],
+                        "Analyze actigraphy data to extract insights, patterns, and health indicators."
+                    )
 
-# Verify Bedrock was called with expected parameters
-invoke_model_call = self.mock_aws_session['bedrock'].invoke_model.call_args[1]
-self.assertEqual(invoke_model_call["modelId"], "test-model-id")
-
-# Parse the body to verify its content
-body = json.loads(invoke_model_call["body"])
-self.assertEqual()
-body["task"],
-"Analyze actigraphy data to extract insights, patterns, and health indicators.",
-
-input_data= json.loads(body["inputText"])
-self.assertEqual(input_data["patient_id"], patient_id)
-self.assertEqual(input_data["analysis_types"], analysis_types)
+                    input_data = json.loads(body["inputText"])
+                    self.assertEqual(input_data["patient_id"], patient_id)
+                    self.assertEqual(input_data["analysis_types"], analysis_types)
 
                     def test_analyze_actigraphy_invalid_input(self):
 
