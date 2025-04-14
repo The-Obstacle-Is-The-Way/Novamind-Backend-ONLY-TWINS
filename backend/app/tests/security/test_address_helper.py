@@ -40,14 +40,16 @@ def test_address_field_encryption():
     assert encrypted["demographics"]["address"]["zip"].startswith("v1:")
 
     # Decrypt and verify original values
-    decrypted = field_encryptor.decrypt_fields()
-    encrypted, ["demographics.address"]
+    # Correct the call to decrypt_fields
+    decrypted = field_encryptor.decrypt_fields(
+        encrypted, ["demographics.address"]) # Add closing parenthesis
     assert decrypted["demographics"]["address"]["street"] == "123 Main St"
     assert decrypted["demographics"]["address"]["city"] == "Anytown"
     assert decrypted["demographics"]["address"]["state"] == "CA"
     assert decrypted["demographics"]["address"]["zip"] == "12345"
 
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
+    # Indent the code block
     test_address_field_encryption()
     print("Address field encryption test passed!")
