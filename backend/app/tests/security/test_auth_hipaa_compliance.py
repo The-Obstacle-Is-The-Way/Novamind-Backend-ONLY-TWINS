@@ -10,20 +10,29 @@ import pytest
 import jwt
 import time
 from unittest.mock import patch, MagicMock
-from datetime import datetime, , UTC, timedelta
+from datetime import datetime, UTC, timedelta
 from app.domain.utils.datetime_utils import UTC
 import json
 
 # Import JWT service or mock it if not available
 try:
     from app.infrastructure.security.jwt_service import JWTService
+except ImportError:
+    JWTService = MagicMock()
     from app.infrastructure.security.auth_middleware import AuthMiddleware
-    from app.infrastructure.security.rbac.role_manager import RoleManager
-    , except ImportError:
-        # Mock classes for testing auth functionality
+from app.infrastructure.security.rbac.role_manager import RoleManager
+except ImportError:
+    # Mock classes for testing auth functionality
+    AuthMiddleware = MagicMock()
+    RoleManager = MagicMock()
 
-        @pytest.mark.db_required()
-        class JWTService:
+        # @pytest.mark.db_required()
+# class JWTService:
+#     """Mock JWT service for testing."""
+#     def encode(self, payload, secret, algorithm):
+#         return "mock.jwt.token"
+#     def decode(self, token, secret, algorithms):
+#         return {"sub": "mockuser"}
         """Mock JWT service for testing."""
 
         def __init__()

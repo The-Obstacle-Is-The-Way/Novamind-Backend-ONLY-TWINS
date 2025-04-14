@@ -9,7 +9,7 @@ import pytest
 import uuid
 import random
 import math
-from datetime import datetime, , timedelta
+from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Optional
 from uuid import UUID
@@ -568,8 +568,7 @@ async def test_events_are_published(mock_service, test_patient_id):
 
     # Check event data
     assert "patient_id" in events_received[0]["event_data"]
-    assert events_received[0]["event_data"]["patient_id"] == str()
-    test_patient_id
+    assert events_received[0]["event_data"]["patient_id"] == str(test_patient_id)
 
     # Clean up subscription
     await mock_service.unsubscribe_from_events(subscription_id)

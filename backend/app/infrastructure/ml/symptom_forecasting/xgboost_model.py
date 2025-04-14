@@ -9,7 +9,7 @@ the AI Models Core Implementation documentation.
 
 import logging
 import os
-from datetime import datetime, , UTC
+from datetime import datetime
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -18,8 +18,7 @@ import numpy as np
 import optuna
 import xgboost as xgb
 from optuna.samplers import TPESampler
-
-from app.domain.exceptions import ModelInferenceError, ValidationError
+from app.core.services.ml.xgboost.exceptions import PredictionError, ValidationError
 
 
 class XGBoostSymptomModel:
@@ -95,7 +94,7 @@ class XGBoostSymptomModel:
             logging.info(f"Loaded XGBoost model from {model_path}")
         except Exception as e:
             logging.error(f"Error loading XGBoost model: {str(e)}")
-            raise ModelInferenceError(f"Failed to load XGBoost model: {str(e)}")
+            raise Exception(f"Failed to load XGBoost model: {str(e)}")
 
     def save_model(self, model_path: str) -> None:
         """
@@ -203,7 +202,7 @@ class XGBoostSymptomModel:
             Dictionary containing training results
         """
         if X_train.shape[0] != y_train.shape[0]:
-            raise ValidationError(
+            raise Exception(
                 f"X_train and y_train must have the same number of samples, got {X_train.shape[0]} and {y_train.shape[0]}"
             )
 
@@ -278,12 +277,12 @@ class XGBoostSymptomModel:
             Dictionary containing prediction results
         """
         if not self.models:
-            raise ModelInferenceError("Model has not been trained or loaded")
+            raise Exception("Model has not been trained or loaded")
 
         try:
             # Check if feature names match
             if self.feature_names and X.shape[1] != len(self.feature_names):
-                raise ValidationError(
+                raise Exception(
                     f"Input has {X.shape[1]} features, but model expects {len(self.feature_names)}"
                 )
 
@@ -346,7 +345,7 @@ class XGBoostSymptomModel:
             }
 
         except Exception as e:
-            raise ModelInferenceError(f"Error during XGBoost model inference: {str(e)}")
+            raise PredictionError(f"Error during XGBoost model inference: {str(e)}")
 
     def get_feature_importance(self) -> Dict[str, Dict[str, float]]:
         """
@@ -356,7 +355,7 @@ class XGBoostSymptomModel:
             Dictionary mapping target names to feature importance dictionaries
         """
         if not self.models:
-            raise ModelInferenceError("Model has not been trained or loaded")
+            raise Exception("Model has not been trained or loaded")
 
         feature_importance = {}
 

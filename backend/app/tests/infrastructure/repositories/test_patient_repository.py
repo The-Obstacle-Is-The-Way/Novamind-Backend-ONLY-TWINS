@@ -191,7 +191,18 @@ class TestPatientRepository:
         assert len(result) == 2
         assert set(result) == set(active_patients)
 
-            # Verify query was executed and correct results returned
-            assert self.mock_db._last_executed_query is not None
-            assert len(result) == 2
-            assert set(result) == set(active_patients)
+    @pytest.mark.asyncio
+    @pytest.mark.db_required
+    async def test_get_active_patients(self):
+        """Test retrieving only active patients."""
+        # Configure mock to return active patients
+        active_patients = [self.patient_1, self.patient_2]
+        self.mock_db._query_results = active_patients
+
+        # Get active patients
+        result = await self.repository.get_active_patients()
+        
+        # Verify query was executed and correct results returned
+        assert self.mock_db._last_executed_query is not None
+        assert len(result) == 2
+        assert set(result) == set(active_patients)

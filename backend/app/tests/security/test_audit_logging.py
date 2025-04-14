@@ -33,9 +33,9 @@ class TestAuditLogging:
         """Return the audit logger to test"""
         try:
             from app.infrastructure.security.audit_logger import AuditLogger
-            , return AuditLogger()
-            except ImportError:
-                pytest.skip("Audit logger not implemented yet")
+            return AuditLogger()
+        except ImportError:
+            pytest.skip("Audit logger not implemented yet")
 
                 def test_log_phi_access(self, audit_logger):
 

@@ -33,13 +33,15 @@ def mock_token():
 
         """Sample user data for testing."""    
 #         return {
-"id": str(uuid.uuid4()),
-"username": "test_user",
-"role": "patient",
-"full_name": "Test User"
-}
+#     "id": str(uuid.uuid4()),
+#     "username": "test_user",
+#     "role": "patient",
+#     "full_name": "Test User"
+# }
 @pytest.fixture
 def mock_admin_user():
+    # TODO: Implement mock_admin_user fixture
+    pass
 
     """Sample admin user data for testing."""    
 #     return {

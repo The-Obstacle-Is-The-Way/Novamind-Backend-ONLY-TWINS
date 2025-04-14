@@ -5,7 +5,7 @@ This module defines the SQLAlchemy ORM model for users, which maps to a
 database table and provides the data access layer for user operations.
 """
 import uuid
-from datetime import datetime, , UTC
+from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import List
 

@@ -7,7 +7,7 @@ PAT service implementation.
 
 import json
 import uuid
-from datetime import datetime, , timedelta
+from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Dict, Any
 

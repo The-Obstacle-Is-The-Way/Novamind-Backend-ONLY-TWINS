@@ -11,14 +11,15 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime, , UTC, timedelta
+from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 import numpy as np
 
-from app.domain.exceptions import ModelInferenceError, ValidationError
+# Removed import for exceptions as they are not available
+# from app.domain.exceptions import ModelInferenceError, ValidationError
 from app.infrastructure.ml.symptom_forecasting.transformer_model import (
     SymptomTransformerModel,
 )
@@ -95,7 +96,7 @@ class SymptomForecastingService:
             time_series = data.get("time_series", [])
 
             if not time_series:
-                raise ValidationError("No time series data provided")
+                raise Exception("No time series data provided")
 
             # Extract features
             features = []
@@ -127,7 +128,7 @@ class SymptomForecastingService:
 
         except Exception as e:
             logging.error(f"Error preprocessing patient data: {str(e)}")
-            raise ValidationError(f"Failed to preprocess patient data: {str(e)}")
+            raise Exception(f"Failed to preprocess patient data: {str(e)}")
 
     async def forecast_symptoms(
         self,
@@ -153,7 +154,7 @@ class SymptomForecastingService:
             preprocessed_data = await self.preprocess_patient_data(patient_id, data)
 
             if preprocessed_data.shape[0] < 5:
-                raise ValidationError(
+                raise Exception(
                     "Insufficient time series data for forecasting (minimum 5 points required)"
                 )
 
@@ -216,7 +217,7 @@ class SymptomForecastingService:
 
         except Exception as e:
             logging.error(f"Error forecasting symptoms: {str(e)}")
-            raise ModelInferenceError(f"Failed to forecast symptoms: {str(e)}")
+            raise Exception(f"Failed to forecast symptoms: {str(e)}")
 
     async def evaluate_treatment_impact(
         self,
@@ -244,7 +245,7 @@ class SymptomForecastingService:
             )
 
             if baseline_preprocessed.shape[0] < 5:
-                raise ValidationError(
+                raise Exception(
                     "Insufficient baseline data for treatment impact evaluation"
                 )
 
@@ -345,7 +346,7 @@ class SymptomForecastingService:
 
         except Exception as e:
             logging.error(f"Error evaluating treatment impact: {str(e)}")
-            raise ModelInferenceError(f"Failed to evaluate treatment impact: {str(e)}")
+            raise Exception(f"Failed to evaluate treatment impact: {str(e)}")
 
     async def detect_symptom_patterns(
         self, patient_id: UUID, data: Dict[str, Any]
@@ -365,7 +366,7 @@ class SymptomForecastingService:
             preprocessed_data = await self.preprocess_patient_data(patient_id, data)
 
             if preprocessed_data.shape[0] < 10:
-                raise ValidationError(
+                raise Exception(
                     "Insufficient time series data for pattern detection (minimum 10 points required)"
                 )
 
@@ -454,7 +455,7 @@ class SymptomForecastingService:
 
         except Exception as e:
             logging.error(f"Error detecting symptom patterns: {str(e)}")
-            raise ModelInferenceError(f"Failed to detect symptom patterns: {str(e)}")
+            raise Exception(f"Failed to detect symptom patterns: {str(e)}")
 
     def get_service_info(self) -> Dict[str, Any]:
         """

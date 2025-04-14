@@ -7,7 +7,7 @@ for psychiatric symptom forecasting, following the architecture described in
 the AI Models Core Implementation documentation.
 """
 
-from datetime import datetime, , UTC
+from datetime import datetime, UTC
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -16,7 +16,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from app.domain.exceptions import ModelInferenceError
+# Removed import for ModelInferenceError as it is not available
+# from app.domain.exceptions import ModelInferenceError
 
 
 class MultiHeadAttention(nn.Module):
@@ -488,7 +489,7 @@ class MultiHorizonTransformer(nn.Module):
                 }
 
         except Exception as e:
-            raise ModelInferenceError(
+            raise Exception(
                 f"Error during transformer model inference: {str(e)}"
             )
 

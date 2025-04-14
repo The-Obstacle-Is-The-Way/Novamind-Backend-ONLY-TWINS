@@ -31,63 +31,63 @@ class BaseSecurityTest(TestCase):
     """
 
     # Default user ID for testing:
-        test_user_id: str = "test-user-id-12345"
+    test_user_id: str = "test-user-id-12345"
 
-        # Default roles for testing, to be overridden by subclasses as needed
-        test_roles: list[Role] = [Role.USER]
+    # Default roles for testing, to be overridden by subclasses as needed
+    test_roles: list[Role] = [Role.USER]
 
-        def setUp(self):
-            """Set up security test fixtures.
+    def setUp(self):
+        """Set up security test fixtures.
 
-            This method sets up the following:
-            1. Mocked authentication context
-            2. Mocked authorization service
-            3. Mocked audit logger
-            4. Test user with configured roles
-            """
-            # Create mocked components
-            self.mock_auth_service = MagicMock()
-            self.mock_audit_logger = MagicMock()
+        This method sets up the following:
+        1. Mocked authentication context
+        2. Mocked authorization service
+        3. Mocked audit logger
+        4. Test user with configured roles
+        """
+        # Create mocked components
+        self.mock_auth_service = MagicMock()
+        self.mock_audit_logger = MagicMock()
 
-            # Create test user
-            self.user = self._create_test_user()
+        # Create test user
+        self.user = self._create_test_user()
 
-            # Set up patches
-            self._setup_auth_patches()
-            self._setup_audit_patches()
+        # Set up patches
+        self._setup_auth_patches()
+        self._setup_audit_patches()
 
-            # Start all patches
-            for patcher in self.patchers:
-                patcher.start()
+        # Start all patches
+        for patcher in self.patchers:
+            patcher.start()
 
-                # Set environment for testing
-                os.environ["TESTING"] = "1"
-                os.environ["ENVIRONMENT"] = "testing"
+        # Set environment for testing
+        os.environ["TESTING"] = "1"
+        os.environ["ENVIRONMENT"] = "testing"
 
-                def tearDown(self):
-                """Tear down security test fixtures.
+    def tearDown(self):
+        """Tear down security test fixtures.
 
-                This method cleans up all patches and mocks created during setup.
-                """
-                # Stop all patches
-                for patcher in self.patchers:
-                    patcher.stop()
+        This method cleans up all patches and mocks created during setup.
+        """
+        # Stop all patches
+        for patcher in self.patchers:
+            patcher.stop()
 
-                    # Clear environment variables
-                    os.environ.pop("TESTING", None)
-                    os.environ.pop("ENVIRONMENT", None)
+        # Clear environment variables
+        os.environ.pop("TESTING", None)
+        os.environ.pop("ENVIRONMENT", None)
 
-                    def _create_test_user(self) -> dict[str, Any]:
-                """Create a test user with the configured roles.
+    def _create_test_user(self) -> dict[str, Any]:
+        """Create a test user with the configured roles.
 
-                Returns:
-                    Dict[str, Any]: A dictionary representing the test user
-                    """
-                    return {
-                    "id": self.test_user_id,
-                    "username": "test_user",
-                    "email": "test_user@example.com",
-                    "roles": self.test_roles,
+        Returns:
+            Dict[str, Any]: A dictionary representing the test user
+        """
+        return {
+            "id": self.test_user_id,
+            "username": "test_user",
+            "email": "test_user@example.com",
+            "roles": self.test_roles,
         }
 
     def _setup_auth_patches(self):
@@ -103,16 +103,17 @@ class BaseSecurityTest(TestCase):
         # Patch get_current_user_id to return our test user ID
         current_user_id_patcher = patch(
             "app.core.security.auth.get_current_user_id",
-            return_value=self.test_user_id)
+            return_value=self.test_user_id
+        )
         self.patchers.append(current_user_id_patcher)
 
         # Patch has_role to check against our test roles
         def mock_has_role(role):
             return role in self.test_roles
 
-            has_role_patcher = patch(
-                "app.core.security.auth.has_role", side_effect=mock_has_role
-            )
+        has_role_patcher = patch(
+            "app.core.security.auth.has_role", side_effect=mock_has_role
+        )
         self.patchers.append(has_role_patcher)
 
     def _setup_audit_patches(self):
@@ -134,15 +135,15 @@ class BaseSecurityTest(TestCase):
             resource_id (str): The ID of the resource accessed
             action (str): The action performed (e.g., 'view', 'update')
 
-            Raises:
-                AssertionError: If PHI access was not properly logged
-                """
-                self.mock_audit_logger.log_phi_access.assert_called_with(
-                user_id=self.test_user_id,
-                action=action,
-                resource_type=resource_type,
-                resource_id=resource_id,
-                details=pytest.ANY,
+        Raises:
+            AssertionError: If PHI access was not properly logged
+        """
+        self.mock_audit_logger.log_phi_access.assert_called_with(
+            user_id=self.test_user_id,
+            action=action,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=pytest.ANY,
         )
 
     def assert_has_required_role(self, required_role: Role):
@@ -151,11 +152,11 @@ class BaseSecurityTest(TestCase):
         Args:
             required_role (Role): The role that should be required
 
-            Raises:
-                AssertionError: If the test user doesn't have the required role
-                """
-                self.assertIn(
-                required_role,
-                self.test_roles,
-                f"Test user doesn't have the required role: {required_role}",
+        Raises:
+            AssertionError: If the test user doesn't have the required role
+        """
+        self.assertIn(
+            required_role,
+            self.test_roles,
+            f"Test user doesn't have the required role: {required_role}",
         )
