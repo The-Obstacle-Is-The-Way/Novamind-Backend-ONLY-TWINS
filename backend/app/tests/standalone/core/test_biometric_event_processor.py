@@ -355,9 +355,9 @@ class TestClinicalRuleEngine:
 
     @pytest.mark.standalone()
     def test_create_rule_from_template(self, sample_clinician_id):
-    """
-    Test creating a rule from a template.
-    """
+        """
+        Test creating a rule from a template.
+        """
         engine = ClinicalRuleEngine()
         template_id = "high-heart-rate"
         template = {
@@ -396,11 +396,11 @@ class TestClinicalRuleEngine:
 
     @pytest.mark.standalone()
     def test_create_rule_from_nonexistent_template(self, sample_clinician_id):
-    """
-    Test creating a rule from a nonexistent template.
-    """
-    engine = ClinicalRuleEngine()
-    # The implementation actually raises ValueError, not ValidationError
+        """
+        Test creating a rule from a nonexistent template.
+        """
+        engine = ClinicalRuleEngine()
+        # The implementation actually raises ValueError, not ValidationError
         with pytest.raises(ValueError):
             engine.create_rule_from_template(
                 template_id="nonexistent",

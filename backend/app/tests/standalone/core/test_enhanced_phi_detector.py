@@ -36,29 +36,29 @@ class TestEnhancedPHIDetector:
 
     @pytest.mark.standalone()
     def test_contains_phi_with_enhanced_patterns(self):
-    """Test detection of PHI using enhanced patterns."""
-    # Test with MRN
-    text = "MRN: 12345678"
-    assert EnhancedPHIDetector.contains_phi(text) is True
+        """Test detection of PHI using enhanced patterns."""
+        # Test with MRN
+        text = "MRN: 12345678"
+        assert EnhancedPHIDetector.contains_phi(text) is True
 
-    # Test with patient name
-    text = "Patient Name: John Doe"
-    assert EnhancedPHIDetector.contains_phi(text) is True
+        # Test with patient name
+        text = "Patient Name: John Doe"
+        assert EnhancedPHIDetector.contains_phi(text) is True
 
-    # Test with address
-    text = "123 Main St, Apt 4, Springfield, IL 62701"
-    assert EnhancedPHIDetector.contains_phi(text) is True
+        # Test with address
+        text = "123 Main St, Apt 4, Springfield, IL 62701"
+        assert EnhancedPHIDetector.contains_phi(text) is True
 
     @pytest.mark.standalone()
     def test_contains_phi_with_medical_context(self):
-    """Test detection of PHI in medical context."""
-    # Test with medical record context
-    text = "Dr. Smith reviewed the chart for John Doe"
-    assert EnhancedPHIDetector.contains_phi(text) is True
+        """Test detection of PHI in medical context."""
+        # Test with medical record context
+        text = "Dr. Smith reviewed the chart for John Doe"
+        assert EnhancedPHIDetector.contains_phi(text) is True
 
-    # Test with diagnosis context
-    text = "Patient diagnosed with condition ABC on 2025-04-01"
-    assert EnhancedPHIDetector.contains_phi(text) is True
+        # Test with diagnosis context
+        text = "Patient diagnosed with condition ABC on 2025-04-01"
+        assert EnhancedPHIDetector.contains_phi(text) is True
 
     @pytest.mark.standalone()
     def test_contains_phi_negative_cases(self):
@@ -77,7 +77,7 @@ class TestEnhancedPHIDetector:
 
     @pytest.mark.standalone()
     def test_detect_phi_types(self):
-    """Test detection of specific PHI types."""
+        """Test detection of specific PHI types."""
     # Test with multiple PHI types
     text = "Patient John Doe (SSN: 123-45-6789) lives at 123 Main St"
     phi_types = EnhancedPHIDetector.detect_phi_types(text)
