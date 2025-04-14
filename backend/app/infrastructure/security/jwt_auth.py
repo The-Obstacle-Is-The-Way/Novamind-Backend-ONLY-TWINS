@@ -27,6 +27,16 @@ from fastapi.responses import JSONResponse
 from app.infrastructure.security.jwt_service import JWTService
 
 
+class AuthenticationError(Exception):
+    """Exception raised for authentication-related errors."""
+    pass
+
+
+class TokenValidationError(Exception):
+    """Exception raised for token validation errors."""
+    pass
+
+
 class JWTAuthService:
     """
     HIPAA-compliant JWT authentication service adapter.

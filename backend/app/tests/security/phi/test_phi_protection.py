@@ -11,12 +11,12 @@ from typing import Dict, Any, List
 
 # Import SanitizerConfig
 from app.infrastructure.security.log_sanitizer import LogSanitizer, SanitizerConfig
-from app.tests.security.utils.base_security_test import BaseSecurityTest
+from app.tests.security.utils import base_security_test
 from app.core.security.roles import Role
 
 
 @pytest.mark.venv_only()
-class TestPHIProtection(BaseSecurityTest):
+class TestPHIProtection(base_security_test.BaseSecurityTest):
     """Tests for PHI protection mechanisms."""
 
     # Add required auth attributes that BaseSecurityTest expects

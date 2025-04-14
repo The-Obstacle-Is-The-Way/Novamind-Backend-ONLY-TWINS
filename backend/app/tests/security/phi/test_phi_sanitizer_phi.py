@@ -8,11 +8,11 @@ ensuring HIPAA compliance for all data handling processes.
 
 import pytest
 from app.core.security.phi_sanitizer import PHISanitizer
-from app.tests.security.base_test import BaseSecurityTest
+from app.tests.security.utils.base_security_test import BaseSecurityTest
 
 
 @pytest.mark.venv_only()
-class TestPHISanitization(BaseSecurityTest):
+class TestPHISanitization(base_security_test.BaseSecurityTest):
     """Tests for PHI detection and sanitization functionality."""
 
     def setUp(self):

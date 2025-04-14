@@ -14,7 +14,7 @@ import os
 from unittest.mock import MagicMock, patch
 
 # Import mocks for testing
-from app.tests.security.test_mocks import (
+from app.tests.security.utils.test_mocks import (
     MockAsyncSession,
     RoleBasedAccessControl,
     MockEntityFactory,

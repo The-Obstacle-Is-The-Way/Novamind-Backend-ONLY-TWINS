@@ -9,7 +9,8 @@ import os
 from functools import lru_cache
 from typing import Optional, Dict, Any, List
 
-from pydantic import BaseSettings, Field, field_validator, PostgresDsn, SecretStr
+from pydantic_settings import BaseSettings
+from pydantic import Field, field_validator, PostgresDsn, SecretStr
 
 
 class Settings(BaseSettings):
@@ -62,17 +63,18 @@ class Settings(BaseSettings):
     
     @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: str | None, values: dict[str, Any]) -> PostgresDsn:
+    def assemble_db_connection(cls, v: str | None, info: Any) -> PostgresDsn:
         """Assemble database connection string from components."""
         if isinstance(v, str):
             return v
+        values = info.data
         return PostgresDsn.build(
-            scheme="postgresql+asyncpg",
-            username=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            port=int(values.get("POSTGRES_PORT")), 
-            path=values.get('POSTGRES_DB')
+            scheme="postgresql",
+            username=values["POSTGRES_USER"],
+            password=values["POSTGRES_PASSWORD"],
+            host=values["POSTGRES_SERVER"],
+            port=int(values["POSTGRES_PORT"]),
+            path=f"{values['POSTGRES_DB'] or ''}",
         )
     
     # Encryption Settings
