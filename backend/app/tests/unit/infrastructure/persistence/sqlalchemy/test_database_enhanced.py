@@ -266,7 +266,8 @@ class TestDatabaseFactory:
         # Mock the database instance returned by get_database
         mock_db_instance = MagicMock(spec=EnhancedDatabase)
         mock_session = MagicMock(spec=Session)
-        mock_db_instance.get_session.return_value = mock_session
+        # Mock the session_scope context manager
+        mock_db_instance.session_scope.return_value.__enter__.return_value = mock_session
         mock_get_database.return_value = mock_db_instance
 
         # Create a generator from the function
@@ -275,9 +276,10 @@ class TestDatabaseFactory:
         # Get the session from the generator
         retrieved_session = next(session_gen)
         assert retrieved_session is mock_session # Should be the mocked session
-        mock_db_instance.get_session.assert_called_once() # Verify get_session was called
+        mock_db_instance.session_scope.assert_called_once() # Verify session_scope was entered
 
         # Simulate closing the session by exhausting the generator
         with pytest.raises(StopIteration):
             next(session_gen)
-        mock_session.close.assert_called_once() # Verify session.close() was called
+        # Verify the context manager exit was called (which should close the session)
+        mock_db_instance.session_scope.return_value.__exit__.assert_called_once()
