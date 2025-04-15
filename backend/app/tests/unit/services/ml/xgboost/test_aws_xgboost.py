@@ -1,62 +1,69 @@
+# -*- coding: utf-8 -*-
 """
-Unit tests for the AWS XGBoost service implementation.
+Unit tests for the AWSXGBoostService integration.
 
-This module contains unit tests for the AWSXGBoostService class,
-verifying its functionality and compliance with the XGBoostInterface
-while mocking all AWS services to avoid actual API calls.:
-    """
+These tests verify the interaction with AWS SageMaker for XGBoost model predictions.
+"""
 
-    import pytest
-    import json
-    import boto3
-    import uuid
-    from typing import Dict, Any
-    from unittest.mock import MagicMock, patch
-    from datetime import datetime
-    from botocore.exceptions import ClientError
+import pytest
+import json
+import boto3
+import uuid
+from typing import Dict, Any
+from unittest.mock import MagicMock, patch
+from datetime import datetime
+from botocore.exceptions import ClientError
 
-    # Removed AWSPhiDetector import
-    from app.core.services.ml.xgboost.aws import AWSXGBoostService
-    from app.core.services.ml.xgboost.exceptions import ()
+# Removed AWSPhiDetector import
+from app.core.services.ml.xgboost.aws import AWSXGBoostService
+# Corrected exception import
+from app.core.services.ml.xgboost.exceptions import (
     ValidationError, DataPrivacyError, ResourceNotFoundError,
-    # Correct name,   alias for compatibility
     ModelNotFoundError, PredictionError, ServiceConnectionError as ServiceUnavailableError,
     ThrottlingError, ConfigurationError
-    )@pytest.fixture
-    def mock_boto3_client():
+)
 
-        """Create a mock boto3 client for testing."""
-        with patch('boto3.client') as mock_client:
+@pytest.fixture
+def mock_boto3_client():
+    """Create a mock boto3 client for testing."""
+    with patch('boto3.client') as mock_client:
         # Create mock clients for each AWS service
-        mock_sagemaker = MagicMock(,)
-        mock_s3= MagicMock(,)
-        mock_comprehend= MagicMock(,)
-        mock_comprehend_medical= MagicMock()
+        mock_sagemaker = MagicMock()
+        # Add other mocks if needed (e.g., mock_s3 = MagicMock())
+
+        # Configure default successful responses (can be overridden in tests)
+        mock_sagemaker.invoke_endpoint.return_value = {
+            'Body': MagicMock(read=lambda: json.dumps({'prediction': 0.75}).encode('utf-8')),
+            'ContentType': 'application/json'
+        }
 
         # Configure boto3.client to return our mocks based on service name
         def get_mock_client(service_name, **kwargs):
-
             if service_name == 'sagemaker-runtime':
-#                             return mock_sagemaker
-                            elif service_name == 's3':
-#                                 return mock_s3
-                                elif service_name == 'comprehend':
-#                                     return mock_comprehend
-                                    elif service_name == 'comprehendmedical':
-#                             return mock_comprehend_medical
-#                             return MagicMock()
+                return mock_sagemaker
+            # Add elif conditions for other services if mocked
+            else:
+                # Return a default MagicMock for unhandled services
+                return MagicMock()
+        
+        mock_client.side_effect = get_mock_client
+        yield mock_client # Yield the patched 'boto3.client' mock
 
-mock_client.side_effect = get_mock_client
-
-# Return all mocks so tests can configure them
-yield {
-'client': mock_client,
-'sagemaker': mock_sagemaker,
-'s3': mock_s3,
-'comprehend': mock_comprehend,
-'comprehend_medical': mock_comprehend_medical
-}
-
+@pytest.fixture
+def aws_xgboost_service(mock_boto3_client): # Depends on the client mock
+    """Fixture to provide an instance of AWSXGBoostService with mocked boto3."""
+    # Use a dictionary for settings or mock the settings object as needed
+    mock_settings = {
+        'XGBOOST_SAGEMAKER_ENDPOINT_NAME': 'test-endpoint',
+        'AWS_REGION_NAME': 'us-east-1' # Example region
+    }
+    
+    # Mock get_settings if the service uses it directly
+    with patch('app.core.services.ml.xgboost.aws.get_settings', return_value=MagicMock(**mock_settings)):
+        service = AWSXGBoostService()
+        # Optionally initialize if the service requires it
+        # service.initialize()
+        return service
 
 @pytest.mark.db_required()
 class TestAWSPhiDetector:

@@ -27,11 +27,17 @@ from app.core.exceptions import (
 # Import the correct interface
 
 
-@pytest.mark.db_required()
+@pytest.mark.unit()
 class TestMockDigitalTwinService:
-    """Test suite for MockDigitalTwinService class."""@pytest.fixture
-    def mock_service(self) -> MockDigitalTwinService:
+    """Test suite for MockDigitalTwinService class."""
+    
+    @pytest.fixture
+    def service(self) -> MockDigitalTwinService:
+        """Fixture to provide an instance of the MockDigitalTwinService."""
+        return MockDigitalTwinService()
 
+    @pytest.fixture
+    def mock_service(self) -> MockDigitalTwinService:
         """Create and initialize a MockDigitalTwinService instance."""
         service = MockDigitalTwinService()
         service.initialize({"mock_config": True})

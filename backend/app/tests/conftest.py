@@ -350,10 +350,11 @@ def client(
     logger.info("[Client Fixture] Database dependency overridden.")
 
     # --- Override Auth Dependencies ---
-    app_instance.dependency_overrides[get_jwt_service] = lambda: mock_jwt_service_for_client
+    # Remove override for non-existent get_jwt_service
+    # app_instance.dependency_overrides[get_jwt_service] = lambda: mock_jwt_service_for_client
     # Remove override for non-existent get_auth_service
     # app_instance.dependency_overrides[get_auth_service] = lambda: mock_auth_service_for_client
-    logger.info("[Client Fixture] JWT dependency overridden.")
+    # logger.info("[Client Fixture] JWT dependency overridden.") # Comment out log as well
     # --- End Auth Dependencies ---
 
 
