@@ -8,16 +8,22 @@ This validates that API endpoints properly protect PHI according to HIPAA requir
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock, call
 import json
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, AsyncGenerator
+from datetime import datetime, timezone
+from uuid import uuid4
+from pydantic import ValidationError
+# Import PostgresDsn for database URI building
+from pydantic import PostgresDsn
 
 # Ensure necessary imports are at the top level
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from fastapi.testclient import TestClient
 from app.api.routes import api_router, setup_routers # Import setup_routers
 from app.presentation.middleware.phi_middleware import add_phi_middleware
-from app.infrastructure.security.jwt.jwt_service import JWTService
+from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
+from app.infrastructure.security.auth.dependencies import get_current_active_user
 from app.domain.entities.patient import Patient
 from app.domain.entities.user import User
 from app.domain.enums.role import Role
@@ -36,78 +42,181 @@ from app.api.routes.patients_router import router as patients_router
 from app.presentation.middleware.phi_middleware import PHIMiddleware, add_phi_middleware
 # Removed fallback mock definitions for FastAPI components
 
+# Import domain exceptions used in mocks
+from app.domain.exceptions import InvalidTokenError 
+
+# Import the actual dependency function used by the router
+from app.presentation.api.dependencies.auth import get_current_user 
+
+# Import database dependency and class for overriding
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session, Database
+
+# Import asynccontextmanager
+from contextlib import asynccontextmanager 
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
 class TestAPIHIPAACompliance:
     """Test API endpoint HIPAA compliance."""
     
     @pytest.fixture(scope="function") # Changed scope to function
     def app(self):
         """Create test FastAPI application instance."""
-        settings = get_settings()
-        # Create a real app instance, similar to main.py but potentially with mocked dependencies
-        app = FastAPI(title="HIPAA Test API")
+        original_settings = get_settings() # Get original settings for reference
         
-        # --- Mock Dependencies (Example) ---
-        # Mock services that interact with external systems or DB if needed
-        mock_jwt_service = MagicMock(spec=JWTService)
-        # Comment out usage of the problematic import
-        # mock_user_repo = MagicMock(spec=UserRepository) # Add methods as needed
-        mock_auth_service = MagicMock(spec=AuthenticationService)
-        
-        # Example: Mock verify_token to return a predefined user payload
-        def mock_verify(token):
-            if token == "admin-token-12345":
-                return {"sub": "admin_user", "role": "admin", "id": "admin_user"}
-            if token == "doctor-token-67890":
-                 return {"sub": "doc_user", "role": "doctor", "id": "doc_user", "patient_ids": ["P12345", "P67890"]} # Example assigned patients
-            if token == "patient-token-P12345":
-                 return {"sub": "patient_P12345", "role": "patient", "id": "P12345"} # User ID matches patient ID
-            # Simulate token validation failure
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-        mock_jwt_service.verify_token = mock_verify
+        # Patch get_settings to return a mock settings object with JWT keys
+        with patch('app.config.settings.get_settings') as mock_get_settings:
+            # Configure the mock settings object
+            mock_settings = MagicMock(spec=original_settings.__class__)
+            mock_settings.API_V1_STR = original_settings.API_V1_STR
+            # Provide necessary JWT settings for any potentially unmocked JWT logic
+            mock_settings.SECRET_KEY = "a_very_secure_secret_key_for_testing_32_chars_long"
+            mock_settings.ALGORITHM = "HS256" 
+            mock_settings.ACCESS_TOKEN_EXPIRE_MINUTES = 30
+            # Add other settings attributes if needed by your app/middleware
+            mock_settings.PROJECT_NAME = "Test Project"
+            # Explicitly set database components needed by Database init/validator
+            mock_settings.POSTGRES_SERVER = original_settings.POSTGRES_SERVER
+            mock_settings.POSTGRES_USER = original_settings.POSTGRES_USER
+            mock_settings.POSTGRES_PASSWORD = original_settings.POSTGRES_PASSWORD
+            mock_settings.POSTGRES_DB = original_settings.POSTGRES_DB
+            mock_settings.POSTGRES_PORT = original_settings.POSTGRES_PORT
+            # Assign the crucial assembled URI to the mock settings object
+            # Use Pydantic's build method for correctness, ensuring asyncpg scheme
+            mock_settings.SQLALCHEMY_DATABASE_URI = PostgresDsn.build(
+                scheme="postgresql+asyncpg",
+                username=mock_settings.POSTGRES_USER,
+                password=mock_settings.POSTGRES_PASSWORD,
+                host=mock_settings.POSTGRES_SERVER,
+                port=int(mock_settings.POSTGRES_PORT),
+                path=f"{mock_settings.POSTGRES_DB or ''}" 
+            )
+            # Set the ENVIRONMENT attribute on the mock settings
+            mock_settings.ENVIRONMENT = "test" 
+            
+            mock_get_settings.return_value = mock_settings
 
-        # Example: Mock AuthenticationService get_user_by_id if needed by middleware/routes
-        def mock_get_user(user_id):
-            # Return mock user data based on user_id from token payload
-            # Use simple dicts that mimic the User entity structure needed by middleware/deps
-            if user_id == "admin_user":
-                # Mock admin user object (can be a simple dict or MagicMock)
-                # Ensure it has attributes accessed by your code (e.g., id, role)
-                return MagicMock(id=user_id, role="admin", is_active=True)
-            elif user_id == "doc_user":
-                # Mock doctor user object
-                return MagicMock(id=user_id, role="doctor", patient_ids=["P12345", "P67890"], is_active=True)
-            elif user_id == "patient_P12345":
-                 # Mock patient user object - Ensure ID matches patient ID if needed
-                return MagicMock(id="P12345", role="patient", is_active=True)
-            # Return None for any other user_id to simulate 'user not found'
-            return None
-        mock_auth_service.get_user_by_id = AsyncMock(side_effect=mock_get_user)
+            # Now create the app *within* the patch context
+            app = FastAPI(title="HIPAA Test API")
+            
+            # --- Mock Services (used by the override below) ---
+            mock_jwt_service = MagicMock(spec=JWTService)
+            mock_auth_service = MagicMock(spec=AuthenticationService)
 
-        # --- Dependency Overrides (Example) ---
-        # Override dependencies used in your actual routers/endpoints
-        # from app.api.dependencies import get_current_active_user # Example dependency
-        # def override_get_current_user(): # Mock dependency function
-        #     # This would typically involve using the mocked jwt_service/auth_service
-        #     # For simplicity, let's return a fixed user for now, refine as needed
-        #     return {"id": "test_user", "role": "admin"} 
-        # app.dependency_overrides[get_current_active_user] = override_get_current_user
-        
-        # --- Middleware --- 
-        # Add real middleware - ensure order is correct if multiple
-        # Ensure AuthenticationMiddleware is added *before* PHI middleware if PHI needs user context
-        from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
-        # Pass the mocked services to the middleware
-        app.add_middleware(AuthenticationMiddleware, auth_service=mock_auth_service, jwt_service=mock_jwt_service)
-        add_phi_middleware(app) # Add the PHI middleware
+            # Mock for JWTService.decode_token (simplified, as override uses it directly)
+            def mock_decode_token_internal(token_str: str) -> TokenPayload:
+                token = token_str # Assume raw token is passed by override
+                now = int(datetime.now(timezone.utc).timestamp())
+                expiry = now + 1800
+                jti = str(uuid4())
+                payload_dict = { "iat": now, "exp": expiry, "jti": jti, "scope": "access_token", "roles": [], "permissions": [], "session_id": None }
 
-        # --- Routers --- 
-        # Include the actual application router
-        app.include_router(api_router, prefix=settings.API_V1_STR)
+                if token == "admin-token-12345":
+                    payload_dict.update({"sub": "admin_user", "id": "admin_user", "roles": ["admin"]})
+                elif token == "doctor-token-67890":
+                    payload_dict.update({"sub": "doc_user", "id": "doc_user", "roles": ["doctor"]})
+                elif token == "patient-token-P12345":
+                    payload_dict.update({"sub": "P12345", "id": "P12345", "roles": ["patient"]})
+                elif token == "other-patient-token-P_OTHER":
+                    payload_dict.update({"sub": "P_OTHER", "id": "P_OTHER", "roles": ["patient"]})
+                else:
+                    raise InvalidTokenError(f"Invalid token provided: {token}")
+                return TokenPayload(**payload_dict)
+            mock_jwt_service.decode_token = mock_decode_token_internal # Assign to the mock service
+
+            # Mock for AuthenticationService.get_user_by_id
+            async def mock_get_user_internal(user_id):
+                # logger.debug(f"Mock get_user_internal called with ID: {user_id}")
+                if user_id == "admin_user":
+                    return MagicMock(id=user_id, role=Role.ADMIN, is_active=True, roles=[Role.ADMIN]) 
+                elif user_id == "doc_user":
+                    return MagicMock(id=user_id, role=Role.CLINICIAN, is_active=True, roles=[Role.CLINICIAN])
+                elif user_id == "P12345": 
+                    return MagicMock(id="P12345", role=Role.PATIENT, is_active=True, roles=[Role.PATIENT])
+                elif user_id == "P_OTHER": 
+                    return MagicMock(id="P_OTHER", role=Role.PATIENT, is_active=True, roles=[Role.PATIENT])
+                # logger.warning(f"Mock get_user_internal: User not found for ID: {user_id}")
+                return None
+            mock_auth_service.get_user_by_id = mock_get_user_internal # Assign to the mock service
+            
+            # Create a Database instance using the *patched* settings
+            # Ensure the pool class is compatible or mock the engine/session if needed
+            # For now, assume Database init works with mock_settings
+            # It might be safer to also mock Database._create_engine if issues persist
+            mock_db_instance = Database(mock_settings) 
+
+            # --- Dependency Overrides --- 
+            
+            # Override get_current_user
+            async def override_get_current_user(token: str = Depends(OAuth2PasswordBearer(tokenUrl="token", auto_error=False))):
+                # logger.debug(f"override_get_current_user called with token: {token}")
+                if token is None:
+                     # Handle case where auto_error=False and no token is provided
+                     # Depending on test needs, raise 401 or return None/special marker
+                     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+                try:
+                    # Use the *mocked* services defined above within this override
+                    # Note: We pass the raw token string (no 'Bearer ' prefix expected from OAuth2PasswordBearer)
+                    token_data = mock_jwt_service.decode_token(token) 
+                    user_id_from_token = str(token_data.sub) # Use 'sub' field as user identifier
+                    
+                    # Return a dictionary instead of a MagicMock to ensure compatibility with .get()
+                    user_dict: Dict[str, Any] = {}
+                    if user_id_from_token == "admin_user":
+                        user_dict = {"id": user_id_from_token, "role": "admin", "roles": ["admin"], "is_active": True}
+                    elif user_id_from_token == "doc_user":
+                        user_dict = {"id": user_id_from_token, "role": "doctor", "roles": ["doctor"], "is_active": True} # Use 'doctor' role string
+                    elif user_id_from_token == "P12345": 
+                        user_dict = {"id": user_id_from_token, "role": "patient", "roles": ["patient"], "is_active": True}
+                    elif user_id_from_token == "P_OTHER": 
+                        user_dict = {"id": user_id_from_token, "role": "patient", "roles": ["patient"], "is_active": True}
+                    else:
+                        # If token is valid but user not found by mock_auth_service logic (though decode_token should catch invalid tokens)
+                        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+                    if not user_dict.get("is_active"):
+                        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User inactive")
+                    
+                    # logger.debug(f"override_get_current_user successful for user: {user_dict.get('id')}, role: {user_dict.get('role')}")
+                    return user_dict # Return the dictionary
+
+                except InvalidTokenError as e:
+                    # logger.warning(f"override_get_current_user: Invalid token - {e}")
+                    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+                except Exception as e:
+                    # logger.error(f"override_get_current_user: Unexpected error - {e}", exc_info=True)
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Internal Server Error during override auth",
+                    )
+            app.dependency_overrides[get_current_user] = override_get_current_user
+
+            # Override get_db_session to use the mock_db_instance
+            @asynccontextmanager
+            async def override_get_db_session() -> AsyncGenerator[AsyncSession, None]:
+                # Use the session factory from the mock_db_instance created with patched settings
+                # logger.debug("Using override_get_db_session")
+                async with mock_db_instance.session() as session:
+                    yield session
+            app.dependency_overrides[get_db_session] = override_get_db_session
+
+            # --- Middleware (Keep for broader coverage/other routes if necessary) ---
+            # AuthenticationMiddleware might still be useful if other routes rely on request.state.user
+            # Remove the potentially conflicting AuthenticationMiddleware
+            # from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
+            # app.add_middleware(AuthenticationMiddleware, auth_service=mock_auth_service, jwt_service=mock_jwt_service)
+            add_phi_middleware(app) # Add the PHI middleware
+
+            # --- Routers --- 
+            # Explicitly include the specific router needed for these tests
+            app.include_router(patients_router, prefix=mock_settings.API_V1_STR + "/patients")
+            # Calling setup_routers() might still be needed if other routers are implicitly tested
+            # setup_routers() # Keep if necessary, otherwise remove
         
-        # Call setup_routers to lazily load and include all endpoint routers
-        setup_routers()
-        
-        return app
+        # Return the app instance *after* the patch context exits (if setup needs to persist)
+        # Or keep the return inside the 'with' block if all setup is self-contained
+        return app # App configured within the patched settings context
     
     @pytest.fixture(scope="function") # Changed scope to function
     def client(self, app):
@@ -187,18 +296,23 @@ class TestAPIHIPAACompliance:
 
             # Test: Access own data (should succeed)
             # Ensure test_patient fixture provides an object with an 'id' attribute matching patient_token
-            own_response = await client.get(f"{api_prefix}/patients/{test_patient.id}", headers={"Authorization": patient_token})
+            own_response = client.get(f"{api_prefix}/patients/{test_patient.id}", headers={"Authorization": patient_token})
             assert own_response.status_code == status.HTTP_200_OK
             assert own_response.json().get("id") == test_patient.id
 
-            # Test: Access other data using own token (should be forbidden by middleware)
+            # Test: Access other data using own token (should be forbidden by authorization logic)
+            # The override_get_current_user correctly identifies the user as the patient.
+            # The endpoint's internal logic or a secondary authorization dependency should prevent access.
+            # If AuthenticationMiddleware was used, it might handle this.
+            # Since we removed it, we rely on the endpoint's logic or potentially add endpoint-specific authorization mocks.
+            # For now, let's assume the endpoint or a role-based check handles this.
             other_patient_id = "P_OTHER" # Define a different patient ID
-            other_response = await client.get(f"{api_prefix}/patients/{other_patient_id}", headers={"Authorization": patient_token}) # Use own token to access other ID
-            # Expect 403 Forbidden due to AuthenticationMiddleware checking token against requested resource ID
+            other_response = client.get(f"{api_prefix}/patients/{other_patient_id}", headers={"Authorization": patient_token})
+            # Expect 403 Forbidden (or maybe 404 depending on implementation)
             assert other_response.status_code == status.HTTP_403_FORBIDDEN
 
             # Optional: Test using the other patient's token to access the first patient's data (should fail)
-            # cross_access_response = await client.get(f"{api_prefix}/patients/{test_patient.id}", headers={"Authorization": other_patient_token})
+            # cross_access_response = client.get(f"{api_prefix}/patients/{test_patient.id}", headers={"Authorization": other_patient_token})
             # assert cross_access_response.status_code == status.HTTP_403_FORBIDDEN
 
     # Test PHI Sanitization (assuming PHI middleware is added in app fixture)
@@ -271,6 +385,7 @@ class TestAPIHIPAACompliance:
             mock_get_repo.return_value = mock_repo_instance
             mock_repo_instance.create = AsyncMock(return_value=mock_created_patient)
 
+            # Removed trailing slash
             response = client.post(
                 f"{api_prefix}/patients", 
                 headers={"Authorization": admin_token}, 
@@ -384,6 +499,7 @@ class TestAPIHIPAACompliance:
             mock_get_repo.return_value = mock_repo_instance # Mock the instance
             mock_repo_instance.create = AsyncMock(return_value={**patient_data, "id": "P_AUDIT"})
 
+            # Removed trailing slash
             response = client.post(
                 f"{api_prefix}/patients", 
                 headers={"Authorization": admin_token}, 

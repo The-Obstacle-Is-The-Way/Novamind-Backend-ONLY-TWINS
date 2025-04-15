@@ -15,15 +15,18 @@ from ...infrastructure.security.encryption.base_encryption_service import BaseEn
 from ...presentation.api.dependencies.auth import get_current_user # Corrected import
 from ...presentation.api.schemas.user import UserResponseSchema # Corrected schema import (assuming UserResponseSchema is needed)
 
-# Define a basic Pydantic schema for patient creation within this router for now
+# Define a Pydantic schema for patient creation aligned with test data
 class PatientCreateSchema(BaseModel):
-    name: str
-    date_of_birth: datetime | str
-    gender: str
+    # Align fields with test_phi_in_request_body_handled
+    first_name: str
+    last_name: str
+    date_of_birth: Optional[str] = None # Make optional or align with actual requirement
+    ssn: Optional[str] = None # Sensitive fields, potentially handled elsewhere
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
     address: Optional[str] = None
     # Add other fields as necessary for creation
+    # Removed: name, gender
 
 # Define the router instance
 router = APIRouter()

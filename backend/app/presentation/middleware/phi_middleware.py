@@ -11,9 +11,11 @@ import json
 import logging
 from typing import Any, Callable, Dict, List, Optional, Set, Union, Awaitable
 
-from fastapi import FastAPI, Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import ASGIApp, Scope, Receive, Send
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import Response, StreamingResponse
+from starlette.requests import Request
+from starlette.types import ASGIApp
+from fastapi import FastAPI, HTTPException
 
 # Import the canonical PHIService instead of PHIDetector
 # from app.infrastructure.security.phi.detector import PHIDetector
@@ -175,31 +177,64 @@ class PHIMiddleware(BaseHTTPMiddleware):
     
     async def _sanitize_response(self, response: Response, path: str) -> Response:
         """
-        Sanitize the response body for PHI.
+        Sanitize the response body if it contains potential PHI and matches criteria.
         
         Args:
-            response: The response to sanitize
+            response: The Response object
             path: The request path
             
         Returns:
-            The sanitized response
+            Sanitized Response object
         """
+        # Skip sanitization for excluded paths
+        if self._should_exclude_path(path):
+            return response
+
+        # Get whitelisted patterns for the current path
+        whitelist = self._get_whitelisted_patterns(path)
+
         try:
-            # Get the content type
-            content_type = response.headers.get('content-type', '')
-            
-            # Only process JSON responses
-            if 'application/json' in content_type:
-                # Get the response body
-                body = response.body
-                body_str = body.decode('utf-8', errors='replace')
+            # Check if response has a body and is JSON
+            # Note: response.media_type might be None
+            if response.media_type and "application/json" in response.media_type:
                 
-                # Get whitelist patterns for this path
-                whitelist = self._get_whitelisted_patterns(path)
-                
-                # Parse JSON
-                data = json.loads(body_str)
-                
+                # Handle StreamingResponse differently
+                if isinstance(response, StreamingResponse):
+                    # Buffer the streaming response body
+                    body_bytes = b""
+                    async for chunk in response.body_iterator:
+                        body_bytes += chunk
+                    body_str = body_bytes.decode('utf-8')
+                else:
+                     # Read standard response body
+                    response_body = await response.body()
+                    # Ensure body is decoded correctly
+                    try:
+                        body_str = response_body.decode('utf-8')
+                    except UnicodeDecodeError:
+                         logger.warning(f"Could not decode response body as UTF-8 for path {path}. Skipping sanitization.")
+                         return response # Cannot sanitize if not valid UTF-8
+
+                # If body is empty, no need to sanitize
+                if not body_str:
+                    return response
+
+                try:
+                    # Parse JSON
+                    data = json.loads(body_str)
+                except json.JSONDecodeError:
+                    logger.warning(f"Could not parse JSON response body for path {path}. Skipping sanitization.")
+                    # If we buffered a stream, we need to return the original content in a new response
+                    if isinstance(response, StreamingResponse):
+                         return Response(
+                             content=body_bytes, # Use original bytes
+                             status_code=response.status_code,
+                             headers=dict(response.headers),
+                             media_type=response.media_type
+                         )
+                    return response # Return original response if it wasn't a stream
+
+
                 # Sanitize JSON data
                 sanitized_data = self._sanitize_json_data(data, whitelist)
                 
@@ -207,6 +242,8 @@ class PHIMiddleware(BaseHTTPMiddleware):
                 sanitized_body = json.dumps(sanitized_data).encode('utf-8')
                 
                 # Create a new response with sanitized body
+                # Important: Always create a new standard Response after sanitizing
+                # This handles both original standard responses and buffered streaming responses
                 new_response = Response(
                     content=sanitized_body,
                     status_code=response.status_code,
@@ -217,7 +254,9 @@ class PHIMiddleware(BaseHTTPMiddleware):
                 return new_response
                 
         except Exception as e:
-            logger.error(f"Error sanitizing response: {str(e)}")
+            # Log the error and the type of response for better debugging
+            response_type = type(response).__name__
+            logger.exception(f"Error sanitizing {response_type} response for path {path}: {str(e)}") # Use logger.exception for stack trace
         
         # If we couldn't sanitize or don't need to, return original response
         return response
