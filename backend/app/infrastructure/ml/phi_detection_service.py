@@ -20,14 +20,17 @@ from app.infrastructure.persistence.sqlalchemy.models import Patient, User
 from app.presentation.api.schemas.ml_schemas import (
     PHIContextEnum, PHIRequest, PHIDetectionRequest, TextProcessingRequest
 )
-from app.core.config.settings import settings
-from app.core.config.ml_settings import PHIDetectionSettings
+from app.config.settings import settings
+from app.config.ml_settings import PHIDetectionSettings
 from app.core.exceptions.ml_exceptions import (
     PHIDetectionException,
     PHIConfigurationError,
     PHIPatternError
 )
 from app.core.utils.logging import get_logger
+from presidio_analyzer import AnalyzerEngine
+from presidio_anonymizer import AnonymizerEngine
+from app.core.services.ml.interface import PHIDetectionInterface
 
 
 # Setup logger

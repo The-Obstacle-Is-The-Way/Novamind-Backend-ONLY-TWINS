@@ -16,7 +16,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.core.config.ml_settings import ml_settings
+from app.config.ml_settings import ml_settings
 from app.core.exceptions import (
     InvalidRequestError,
     ModelNotFoundError,

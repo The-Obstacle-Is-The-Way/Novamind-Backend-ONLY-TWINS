@@ -17,12 +17,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
+import sagemaker
+from sagemaker.predictor import Predictor
 
-from app.core.config.ml_settings import ml_settings
-from app.core.exceptions.ml_exceptions import (
+from app.config.ml_settings import ml_settings
+from app.core.exceptions import (
     ModelNotFoundError,
     InferenceError,
-    DataPreprocessingError
+    DataPreprocessingError,
+    ServiceUnavailableError
 )
 
 

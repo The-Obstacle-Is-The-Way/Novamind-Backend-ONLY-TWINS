@@ -6,11 +6,11 @@ import numpy as np
 from uuid import UUID
 from datetime import datetime, timedelta, date
 
+from app.config.ml_settings import MLSettings
 from app.infrastructure.ml.symptom_forecasting.model_service import SymptomForecastingModelService
 from app.domain.entities.patient import Patient
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
 from app.infrastructure.ml.interfaces.model_registry import ModelRegistry
-from app.core.config.ml_settings import MLSettings
 
 class TestSymptomForecastingModelService:
     """Test suite for the SymptomForecastingModelService."""

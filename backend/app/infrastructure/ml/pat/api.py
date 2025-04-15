@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.auth.jwt_handler import verify_jwt_token
-from app.core.config.ml_settings import ml_settings
+from app.config.ml_settings import ml_settings
 from app.infrastructure.ml.pat.models import (
     AccelerometerDataRequest,
     AnalysisResult,
@@ -23,6 +23,11 @@ from app.infrastructure.ml.pat.models import (
     PATModelSizeEnum
 )
 from app.infrastructure.ml.pat.service import PATService, AnalysisType
+import boto3
+from botocore.exceptions import ClientError
+from app.core.exceptions import (
+    AnalysisError,
+)
 
 
 logger = logging.getLogger(__name__)

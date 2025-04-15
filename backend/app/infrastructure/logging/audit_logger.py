@@ -10,11 +10,15 @@ import logging
 import os
 import datetime
 import tempfile
+import uuid
 from typing import Any, Dict, Optional
+
+# Corrected import path
+from app.config.settings import settings
+from app.domain.interfaces.audit_service import AuditService
 
 # Import settings with fallback for tests
 try:
-    from app.core.config.settings import settings
     AUDIT_ENABLED = getattr(settings, "PHI_AUDIT_ENABLED", True)
     AUDIT_LOG_DIR = getattr(settings, "AUDIT_LOG_DIR", os.path.join(tempfile.gettempdir(), "novamind_audit"))
 except (ImportError, AttributeError):

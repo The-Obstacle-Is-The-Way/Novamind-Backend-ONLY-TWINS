@@ -8,8 +8,10 @@ import os
 from typing import Generator, AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
+import logging
 
-from app.core.config.settings import settings
+# Import settings from the canonical location
+from app.config.settings import settings
 
 
 # Check if we're in test mode
@@ -42,6 +44,8 @@ AsyncSessionLocal = sessionmaker(
     autoflush=False,
 )
 
+
+logger = logging.getLogger(__name__)
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """

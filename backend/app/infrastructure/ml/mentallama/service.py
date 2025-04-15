@@ -25,6 +25,7 @@ from tenacity import (
     wait_exponential,
     retry_if_exception_type
 )
+import boto3
 
 from app.presentation.api.schemas.ml_schemas import (
     ModelType,
@@ -32,8 +33,9 @@ from app.presentation.api.schemas.ml_schemas import (
     MentaLLaMARequest,
     MentaLLaMAResponse
 )
-from app.core.config.ml_settings import MentaLLaMASettings
-from app.core.exceptions.ml_exceptions import (
+from app.config.settings import get_settings
+from app.core.exceptions import (
+    ConfigurationError,
     MentaLLaMAException,
     MentaLLaMAConnectionError,
     MentaLLaMATimeoutError,
@@ -63,15 +65,12 @@ class MentaLLaMAProvider(str, Enum):
 class MentaLLaMAService:
     """Service for interacting with MentaLLaMA models."""
     
-    def __init__(self, settings: MentaLLaMASettings):
+    def __init__(self):
         """
-        Initialize MentaLLaMA service.
-        
-        Args:
-            settings: MentaLLaMA settings
+        Initialize MentaLLaMA service using global settings.
         """
-        self.settings = settings
-        self.provider = settings.provider
+        self.settings = get_settings().ml.mentallama # Get nested settings
+        self.provider = self.settings.provider
         self.clients: Dict[str, Any] = {}
         
         # Initialize clients

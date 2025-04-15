@@ -13,7 +13,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from app.core.config.ml_settings import ml_settings
+import boto3
+from botocore.exceptions import ClientError
+
+from app.config.ml_settings import ml_settings
 from app.core.exceptions.ml_exceptions import RepositoryError
 from app.infrastructure.ml.pat.models import AnalysisResult, AnalysisTypeEnum
 

@@ -34,7 +34,7 @@ from app.infrastructure.repositories.temporal_sequence_repository import SqlAlch
 from app.domain.enums.role import Role
 from app.domain.entities.patient import Patient
 from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
-from app.infrastructure.persistence.sqlalchemy.database import SessionLocal, engine, Base
+from app.infrastructure.persistence.sqlalchemy.database import Base
 
 # Initialize settings using the getter function
 settings = get_settings()

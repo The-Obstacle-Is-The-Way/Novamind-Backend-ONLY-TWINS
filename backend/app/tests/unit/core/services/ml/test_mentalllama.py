@@ -2,11 +2,12 @@ import json
 import os
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from typing import Dict, Any
 
 import pytest
 from botocore.exceptions import BotoCoreError
 
-from app.core.config.settings import get_settings
+from app.config.settings import get_settings
 from app.core.exceptions import InitializationError, ModelNotFoundError, ServiceUnavailableError
 from app.core.services.ml.mentallama.bedrock_service import BedrockMentalLamaService
 
@@ -49,6 +50,9 @@ def mock_error_response():
     mock = Mock()
     mock.side_effect = BotoCoreError()
     return mock
+
+# Mock settings to avoid dependency on actual environment/config files
+@pytest.fixture(scope="module", autouse=True)
 
 class TestBedrockMentalLamaService:
     """Test cases for the BedrockMentalLamaService."""
