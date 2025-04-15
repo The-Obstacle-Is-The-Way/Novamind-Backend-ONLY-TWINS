@@ -31,6 +31,11 @@ from app.infrastructure.security.jwt.jwt_service import JWTService
 from app.infrastructure.persistence.sqlalchemy.repositories.user_repository import UserRepository
 from app.presentation.middleware.phi_middleware import add_phi_middleware # Updated import path
 
+# Import necessary types for middleware
+from starlette.requests import Request
+from starlette.responses import Response
+from typing import Callable, Awaitable
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -137,6 +142,22 @@ def create_application() -> FastAPI:
 
     # 4. Rate Limiting Middleware (Applies limits after auth & PHI handling)
     setup_rate_limiting(app)
+
+    # 5. Security Headers Middleware (Adds headers to the final response using decorator style)
+    @app.middleware("http")
+    async def security_headers_middleware(
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        """Add basic security headers to all responses."""
+        logger.info(f"---> SecurityHeadersMiddleware: Executing for path: {request.url.path}") # DEBUG log
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        logger.info(f"---> SecurityHeadersMiddleware: Set X-Content-Type-Options header for path: {request.url.path}") # DEBUG log
+        # Add other security headers here if needed, e.g.:
+        # response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        # response.headers["X-Frame-Options"] = "DENY"
+        return response
     
     # --- Setup Routers ---
     setup_routers() # Initialize API routers

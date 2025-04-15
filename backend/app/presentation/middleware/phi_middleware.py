@@ -191,7 +191,7 @@ class PHIMiddleware(BaseHTTPMiddleware):
             return response
 
         # Get whitelisted patterns for the current path
-        whitelist = self._get_whitelisted_patterns(path)
+        whitelist = self.whitelist_patterns.get(path, set())
 
         try:
             # Check if response has a body and is JSON
@@ -234,9 +234,17 @@ class PHIMiddleware(BaseHTTPMiddleware):
                          )
                     return response # Return original response if it wasn't a stream
 
+                # DEBUG: Log data structure before sanitization
+                logger.info(f"---> PHIMiddleware: Data before sanitize (type {type(data)}): {str(data)[:500]}...") 
 
-                # Sanitize JSON data
-                sanitized_data = self._sanitize_json_data(data, whitelist)
+                # Sanitize JSON data using the PHI Service
+                # The PHIService.sanitize method should handle the recursive logic.
+                # Use default sensitivity from the service for now -> Changed to high
+                # sanitized_data = self.phi_service.sanitize(data)
+                sanitized_data = self.phi_service.sanitize(data, sensitivity="high")
+
+                # DEBUG: Log data structure after sanitization
+                logger.info(f"---> PHIMiddleware: Data after sanitize (type {type(sanitized_data)}): {str(sanitized_data)[:500]}...")
                 
                 # Replace response body with sanitized data
                 sanitized_body = json.dumps(sanitized_data).encode('utf-8')
@@ -260,77 +268,6 @@ class PHIMiddleware(BaseHTTPMiddleware):
         
         # If we couldn't sanitize or don't need to, return original response
         return response
-    
-    def _get_whitelisted_patterns(self, path: str) -> Set[str]:
-        """
-        Get the whitelisted patterns for a path.
-        
-        Args:
-            path: The request path
-            
-        Returns:
-            Set of whitelisted patterns
-        """
-        # Check for exact path match
-        if path in self.whitelist_patterns:
-            return set(self.whitelist_patterns[path])
-        
-        # Check for path prefix matches
-        whitelist = set()
-        for whitelist_path, patterns in self.whitelist_patterns.items():
-            if whitelist_path.endswith('*') and path.startswith(whitelist_path[:-1]):
-                whitelist.update(patterns)
-        
-        return whitelist
-    
-    def _sanitize_json_data(
-        self, data: Union[Dict[str, Any], List[Any], Any], whitelist: Set[str]
-    ) -> Any:
-        """
-        Recursively sanitize JSON data.
-        
-        Args:
-            data: The JSON data to sanitize
-            whitelist: Set of whitelisted patterns to allow
-            
-        Returns:
-            Sanitized JSON data
-        """
-        if isinstance(data, dict):
-            # Process dictionary
-            result = {}
-            for key, value in data.items():
-                # Skip sanitization for sensitive fields that already contain redacted content
-                if key in ['password', 'token', 'secret']:
-                    result[key] = value
-                    continue
-                
-                # Skip sanitization for whitelisted patterns
-                if key in whitelist:
-                    result[key] = value
-                    continue
-                
-                # Recursively sanitize nested values
-                result[key] = self._sanitize_json_data(value, whitelist)
-            return result
-            
-        elif isinstance(data, list):
-            # Process list
-            return [self._sanitize_json_data(item, whitelist) for item in data]
-            
-        elif isinstance(data, str) and self.phi_service.contains_phi(data):
-            # Sanitize string with PHI
-            if self.audit_mode:
-                # In audit mode, just log but don't redact
-                logger.warning(f"Potential PHI detected in response field", extra={"sanitized": True})
-                return data
-            else:
-                # Sanitize the PHI
-                return self.phi_service.sanitize_text(data)
-                
-        else:
-            # No PHI or not a string, return as is
-            return data
 
 
 def add_phi_middleware(

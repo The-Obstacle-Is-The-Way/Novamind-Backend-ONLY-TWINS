@@ -367,6 +367,11 @@ class PHIService:
         if not detected_phi:
             return text
 
+        # DEBUG: Log detected emails
+        emails_detected = [(t, s, e) for typ, t, s, e in detected_phi if typ == PHIType.EMAIL]
+        if emails_detected:
+            logger.info(f"---> Sanitize_text: Detected EMAIL(s) in text: '{text[:100]}...' - Matches: {emails_detected}")
+
         # Sort matches by start index in reverse to avoid index shifting during replacement
         # detect_phi already returns resolved, sorted matches - re-sorting might be redundant if detect_phi guarantees order
         detected_phi.sort(key=lambda x: x[2], reverse=True)
@@ -377,9 +382,12 @@ class PHIService:
         if "{phi_type}" not in template:
              template = self.DEFAULT_REPLACEMENT_TEMPLATE
 
-        for phi_type, _, start, end in detected_phi:
+        for phi_type, matched_str, start, end in detected_phi:
             # Use the helper to get the formatted replacement value
             replacement_value = self._get_replacement_value(phi_type, template)
+            # DEBUG: Log replacement action for emails
+            if phi_type == PHIType.EMAIL:
+                logger.info(f"---> Sanitize_text: Replacing email '{matched_str}' at [{start}:{end}] with '{replacement_value}'")
             sanitized_text[start:end] = list(replacement_value)
 
         final_sanitized = "".join(sanitized_text)
