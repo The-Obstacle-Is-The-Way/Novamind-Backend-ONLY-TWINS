@@ -61,15 +61,6 @@ def mock_admin_user():
 class TestAuthentication(BaseSecurityTest):
     """Test authentication mechanisms."""
 
-    def setUp(self):
-        """Set up test fixtures before each test method."""
-        super().setUp()
-        self.auth_service = MockAuthService()
-        self.rbac_service = MockRBACService()
-        self.audit_logger = MockAuditLogger()
-        self.request = MagicMock()
-        self.credentials = MagicMock()
-
     def test_missing_token(self, client: TestClient):
         """Test that requests without tokens are rejected."""
         response = client.get("/api/v1/patients/me")
@@ -85,7 +76,7 @@ class TestAuthentication(BaseSecurityTest):
         # Create an expired token (exp in the past)
         expired_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJyb2xlIjoicGF0aWVudCIsImV4cCI6MTU4MzI2MTIzNH0.signature"
 
-        with patch('app.api.dependencies.auth.get_current_user', side_effect=HTTPException(status_code=401, detail="Token expired")):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', side_effect=HTTPException(status_code=401, detail="Token expired")):
             response = client.get("/api/v1/patients/me", headers={"Authorization": f"Bearer {expired_token}"})
             assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -94,13 +85,13 @@ class TestAuthentication(BaseSecurityTest):
         # Token with modified payload
         tampered_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJoYWNrZXIiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjk5OTk5OTk5OTl9.invalid_signature"
 
-        with patch('app.api.dependencies.auth.get_current_user', side_effect=HTTPException(status_code=401, detail="Invalid token")):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', side_effect=HTTPException(status_code=401, detail="Invalid token")):
             response = client.get("/api/v1/patients/me", headers={"Authorization": f"Bearer {tampered_token}"})
             assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_valid_token(self, client: TestClient, mock_token, mock_user):
         """Test that valid tokens are accepted."""
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_user):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_user):
             response = client.get("/api/v1/patients/me", headers={"Authorization": f"Bearer {mock_token}"})
             assert response.status_code == status.HTTP_200_OK
 
@@ -108,20 +99,11 @@ class TestAuthentication(BaseSecurityTest):
 class TestAuthorization(BaseSecurityTest):
     """Test authorization and access control."""
 
-    def setUp(self):
-        """Set up test fixtures before each test method."""
-        super().setUp()
-        self.auth_service = MockAuthService()
-        self.rbac_service = MockRBACService()
-        self.audit_logger = MockAuditLogger()
-        self.request = MagicMock()
-        self.credentials = MagicMock()
-
     def test_patient_accessing_own_data(self, client: TestClient, mock_token, mock_user):
         """Test that patients can access their own data."""
         user_id = mock_user["id"]
 
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_user):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_user):
             response = client.get(f"/api/v1/patients/{user_id}", headers={"Authorization": f"Bearer {mock_token}"})
             assert response.status_code == status.HTTP_200_OK
 
@@ -129,8 +111,8 @@ class TestAuthorization(BaseSecurityTest):
         """Test that patients cannot access other patients' data."""
         other_user_id = str(uuid.uuid4())  # Different from mock_user["id"]
 
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_user), \
-             patch('app.api.endpoints.patients.verify_patient_access', side_effect=HTTPException(status_code=403, detail="Access denied")):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_user), \
+             patch('app.presentation.api.routes.patient_routes.verify_patient_access', side_effect=HTTPException(status_code=403, detail="Access denied")):
             response = client.get(f"/api/v1/patients/{other_user_id}", headers={"Authorization": f"Bearer {mock_token}"})
             assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -138,20 +120,20 @@ class TestAuthorization(BaseSecurityTest):
         """Test that admins/psychiatrists can access patient data."""
         patient_id = str(uuid.uuid4())
 
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_admin_user):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_admin_user):
             response = client.get(f"/api/v1/patients/{patient_id}", headers={"Authorization": f"Bearer {mock_token}"})
             assert response.status_code == status.HTTP_200_OK
 
     def test_role_specific_endpoint(self, client: TestClient, mock_token, mock_user, mock_admin_user):
         """Test that role-specific endpoints enforce proper access control."""
         # Admin-only endpoint - Test with non-admin user
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_user), \
-             patch('app.api.endpoints.admin.verify_admin_access', side_effect=HTTPException(status_code=403, detail="Admin access required")):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_user), \
+             patch('app.presentation.api.routes.admin_routes.verify_admin_access', side_effect=HTTPException(status_code=403, detail="Admin access required")):
             response = client.get("/api/v1/admin/dashboard", headers={"Authorization": f"Bearer {mock_token}"})
             assert response.status_code == status.HTTP_403_FORBIDDEN
 
         # Admin accessing admin endpoint
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_admin_user):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_admin_user):
             response = client.get("/api/v1/admin/dashboard", headers={"Authorization": f"Bearer {mock_token}"})
             assert response.status_code == status.HTTP_200_OK
 
@@ -162,18 +144,9 @@ class TestAuthorization(BaseSecurityTest):
 class TestInputValidation(BaseSecurityTest):
     """Test input validation for security."""
 
-    def setUp(self):
-        """Set up test fixtures before each test method."""
-        super().setUp()
-        self.auth_service = MockAuthService()
-        self.rbac_service = MockRBACService()
-        self.audit_logger = MockAuditLogger()
-        self.request = MagicMock()
-        self.credentials = MagicMock()
-
     def test_invalid_input_format(self, client: TestClient, mock_token, mock_user):
         """Test that invalid input format is rejected."""
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_user):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_user):
             response = client.post("/api/v1/patients",
                                    headers={"Authorization": f"Bearer {mock_token}"},
                                    json={"name": "Test Patient"})  # Missing required fields
@@ -187,8 +160,8 @@ class TestInputValidation(BaseSecurityTest):
             "notes": "Normal notes; DROP TABLE patients;"
         }
 
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_user), \
-             patch('app.api.endpoints.patients.sanitize_input') as mock_sanitize:
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_user), \
+             patch('app.presentation.api.routes.patients.sanitize_input') as mock_sanitize:
 
             mock_sanitize.return_value = {
                 "name": "Test Patient",
@@ -215,7 +188,7 @@ class TestInputValidation(BaseSecurityTest):
             "notes": overly_long_text
         }
 
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_user):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_user):
             response = client.post("/api/v1/patients",
                                    headers={"Authorization": f"Bearer {mock_token}"},
                                    json=input_data)
@@ -226,15 +199,6 @@ class TestInputValidation(BaseSecurityTest):
 
 class TestSecureHeaders(BaseSecurityTest):
     """Test secure headers for HTTP responses."""
-
-    def setUp(self):
-        """Set up test fixtures before each test method."""
-        super().setUp()
-        self.auth_service = MockAuthService()
-        self.rbac_service = MockRBACService()
-        self.audit_logger = MockAuditLogger()
-        self.request = MagicMock()
-        self.credentials = MagicMock()
 
     def test_security_headers(self, client: TestClient):
         """Test that security headers are present in responses."""
@@ -270,15 +234,6 @@ class TestSecureHeaders(BaseSecurityTest):
 class TestErrorHandling(BaseSecurityTest):
     """Test secure error handling."""
 
-    def setUp(self):
-        """Set up test fixtures before each test method."""
-        super().setUp()
-        self.auth_service = MockAuthService()
-        self.rbac_service = MockRBACService()
-        self.audit_logger = MockAuditLogger()
-        self.request = MagicMock()
-        self.credentials = MagicMock()
-
     def test_error_messages_do_not_leak_info(self, client: TestClient):
         """Test that error messages don't leak sensitive information."""
         # Test with a non-existent endpoint
@@ -292,8 +247,8 @@ class TestErrorHandling(BaseSecurityTest):
 
     def test_database_error_handling(self, client: TestClient, mock_token, mock_user):
         """Test that database errors don't leak sensitive information."""
-        with patch('app.api.dependencies.auth.get_current_user', return_value=mock_user), \
-             patch('app.api.endpoints.patients.PatientService.get_patient', side_effect=Exception("SQL error: table patients has no column named ssn")):
+        with patch('app.presentation.api.dependencies.auth.get_current_user', return_value=mock_user), \
+             patch('app.presentation.api.endpoints.patients.PatientService.get_patient', side_effect=Exception("SQL error: table patients has no column named ssn")):
             response = client.get(f"/api/v1/patients/{mock_user['id']}", headers={"Authorization": f"Bearer {mock_token}"})
 
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -304,3 +259,6 @@ class TestErrorHandling(BaseSecurityTest):
         assert "table" not in error_data["detail"]
         assert "column" not in error_data["detail"]
         assert "ssn" not in error_data["detail"]
+
+# Add any additional security tests relevant to your application context
+# e.g., HIPAA compliance checks, specific data exposure tests, etc.

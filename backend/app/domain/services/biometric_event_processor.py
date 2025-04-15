@@ -6,11 +6,12 @@ and trigger clinical interventions when concerning patterns emerge.
 """
 
 from collections.abc import Callable
-from datetime import , datetime
+from datetime import datetime
 from app.domain.utils.datetime_utils import UTC
 from enum import Enum
-from typing import Any
+from typing import Any, List, Optional, Dict
 from uuid import UUID  # Corrected import
+from abc import ABC, abstractmethod
 
 from app.domain.entities.biometric_twin import BiometricDataPoint
 from app.domain.exceptions import ValidationError

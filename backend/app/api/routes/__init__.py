@@ -50,6 +50,13 @@ def setup_routers() -> None:
     #     tags=["XGBoost ML Services"]
     # )
     
+    # Include Patient router
+    api_router.include_router(
+        get_router("patients_router"), # Corrected: Use simple module name
+        prefix="/patients",
+        tags=["Patients"]
+    )
+    
     # Additional routers would be included here
     # Example:
     # api_router.include_router(

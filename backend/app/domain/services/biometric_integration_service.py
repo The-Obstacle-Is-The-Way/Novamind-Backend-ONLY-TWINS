@@ -6,9 +6,10 @@ into the patient's digital twin, enabling advanced analysis and personalized
 treatment recommendations based on physiological and neurological patterns.
 """
 
-from datetime import , datetime, timedelta
+from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
-from typing import Any
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from app.domain.entities.digital_twin.biometric_twin import BiometricDataPoint, BiometricTwin

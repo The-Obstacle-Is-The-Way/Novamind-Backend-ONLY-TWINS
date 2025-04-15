@@ -163,10 +163,9 @@ class TestTreatmentResponseModel:
             assert model._efficacy_model is mock_efficacy_model
             assert model._side_effect_model is mock_side_effect_model
             assert model._medication_data == mock_medication_data
-    finally:
-        # Clean up all patches
-        # Clean up all patches
-        patch.stopall()
+        finally:
+            # Clean up all patches
+            patch.stopall()
 
     async def test_initialize_handles_missing_files(self): # No model fixture needed here
         """Test that initialize handles missing model and medication data files gracefully."""

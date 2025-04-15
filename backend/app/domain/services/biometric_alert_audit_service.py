@@ -6,9 +6,10 @@ comprehensive records are maintained for regulatory compliance and
 clinical oversight.
 """
 
-from datetime import , datetime
+from abc import ABC, abstractmethod
+from datetime import datetime
 from app.domain.utils.datetime_utils import UTC
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 
 from app.domain.entities.digital_twin.biometric_alert import AlertStatus, BiometricAlert

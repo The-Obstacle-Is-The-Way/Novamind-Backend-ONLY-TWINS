@@ -5,7 +5,9 @@ This module contains the ClinicalDocumentationService, which encapsulates comple
 related to clinical notes and documentation in the concierge psychiatry practice.
 """
 
-from datetime import , datetime
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 from app.domain.utils.datetime_utils import UTC
 from uuid import UUID
 
