@@ -15,7 +15,6 @@ import os # Import os for environment variable patching if needed
 from app.infrastructure.security.auth.mfa_service import (
     MFAService,
     MFAType,
-    MFAStatus,
     MFAException,
     MFASetupException,
     MFAVerificationException,

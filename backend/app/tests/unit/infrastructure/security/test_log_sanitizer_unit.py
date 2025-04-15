@@ -18,8 +18,10 @@ from app.infrastructure.security.phi.log_sanitizer import (
     PHIPattern,
     SanitizationStrategy,
     PatternType,
-    RedactionMode
+    RedactionMode,
+    LogSanitizerConfig
 )
+from app.infrastructure.security.phi.phi_service import PHIService, PHIType
 
 @pytest.fixture
 def sanitizer_config():

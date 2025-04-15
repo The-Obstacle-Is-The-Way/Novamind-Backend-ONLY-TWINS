@@ -19,7 +19,7 @@ import logging
 from fastapi import FastAPI
 import uuid
 import time
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, Generator
 from app.infrastructure.security.jwt.jwt_service import JWTService
 from dotenv import load_dotenv
 from app.domain.entities.patient import Patient
@@ -52,7 +52,15 @@ class MockSettings:
         self.SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///./test.db"
         self.LOG_LEVEL = "DEBUG"
         self.ENABLE_ANALYTICS = False
-        # API settings
+
+        # --- Directly add JWT settings expected by JWTService --- 
+        self.SECRET_KEY = "test-secret-key-longer-than-32-chars-for-sure" # Direct access
+        self.ALGORITHM = "HS256" # Direct access
+        self.ACCESS_TOKEN_EXPIRE_MINUTES = 30 # Direct access
+        self.JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7 # Direct access
+        # --- End Direct JWT Settings --- 
+
+        # API settings (can remain nested if only used elsewhere)
         self.api = MagicMock(
             CORS_ORIGINS=["*"],
             ALLOWED_HOSTS=["*"],
@@ -60,9 +68,9 @@ class MockSettings:
             PORT=8000,
             API_V1_PREFIX="/api/v1"
         )
-        # Security settings
+        # Security settings (can remain nested, JWT keys duplicated above)
         self.security = MagicMock(
-            JWT_SECRET_KEY="test-secret-key",
+            JWT_SECRET_KEY=self.SECRET_KEY, # Keep nested consistent if needed
             ENFORCE_HTTPS=False,
             SSL_KEY_PATH=None,
             SSL_CERT_PATH=None
@@ -164,7 +172,7 @@ def test_environment(load_test_env): # Depends on env vars being loaded
 
 # Add/Replace the client fixture
 @pytest.fixture(scope="function") # Use function scope for isolation
-def client(mock_settings, test_environment) -> TestClient:
+def client(mock_settings, test_environment) -> Generator[TestClient, None, None]:
     """
     Create a TestClient instance for testing API endpoints.
 
@@ -267,12 +275,29 @@ def client(mock_settings, test_environment) -> TestClient:
 # JWT Service Fixture
 @pytest.fixture(scope="session")
 def jwt_service(mock_settings: MockSettings) -> JWTService:
-    """Provides a JWTService instance configured with the test secret key."""
-    # Access the key correctly from the nested structure
-    secret_key = mock_settings.security.JWT_SECRET_KEY
-    if not secret_key:
-        raise ValueError("Test JWT_SECRET_KEY is not set in MockSettings")
-    return JWTService(secret_key=secret_key)
+    """Provides a JWTService instance configured via injected mock settings."""
+    # Pass the mock_settings object directly to the constructor
+    try:
+        # Ensure the mock has the necessary attributes JWTService expects
+        if not hasattr(mock_settings, 'SECRET_KEY') and not hasattr(mock_settings, 'security'):
+             # If MockSettings structure doesn't directly match Settings, adjust access
+             # Assuming MockSettings uses mock_settings.security.JWT_SECRET_KEY
+             if not getattr(getattr(mock_settings, 'security', None), 'JWT_SECRET_KEY', None):
+                  raise ValueError("MockSettings is missing JWT_SECRET_KEY in security attribute")
+             # Also need ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, JWT_REFRESH_TOKEN_EXPIRE_DAYS
+             if not getattr(mock_settings, 'ALGORITHM', None):
+                  mock_settings.ALGORITHM = 'HS256' # Provide default if missing in mock
+             if not getattr(mock_settings, 'ACCESS_TOKEN_EXPIRE_MINUTES', None):
+                  mock_settings.ACCESS_TOKEN_EXPIRE_MINUTES = 30 # Provide default
+             if not getattr(mock_settings, 'JWT_REFRESH_TOKEN_EXPIRE_DAYS', None):
+                   mock_settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7 # Provide default
+
+        service = JWTService(settings=mock_settings)
+        # Verify the injected settings are used
+        assert service.settings is mock_settings 
+        return service
+    except ValueError as e:
+        pytest.fail(f"Failed to initialize JWTService in fixture: {e}")
 
 # Token Generation Fixture
 @pytest.fixture(scope="function")

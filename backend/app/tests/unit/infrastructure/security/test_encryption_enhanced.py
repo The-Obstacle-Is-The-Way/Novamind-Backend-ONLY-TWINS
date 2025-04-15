@@ -15,16 +15,11 @@ from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
+import json
+from typing import Dict, Any, Optional
 
 # Correctly import the necessary components
-from app.infrastructure.security.encryption import (
-    EncryptionService,
-    derive_key,
-    encrypt_data,
-    decrypt_data,
-    hash_data,
-    secure_compare,
-)
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
 # Assuming Settings might be needed for context, though not directly used here
 # from app.core.config.settings import Settings
 
@@ -111,40 +106,26 @@ class TestEncryptionUtils:
         # Test false comparison
         assert secure_compare("wrong_password", hashed, salt) is False
 
-@pytest.fixture
-def encryption_service():
-    """Create an EncryptionService instance for testing."""
-    # Mock environment variables using a valid Fernet key format
-    test_key = Fernet.generate_key().decode() # Generate a valid key for the test
-    test_salt = os.urandom(16).hex() # Generate a valid salt
-    env_vars = {
-        "ENCRYPTION_KEY": test_key,
-        "ENCRYPTION_SALT": test_salt,
-        "PYTEST_CURRENT_TEST": "True", # Keep if needed by service logic
-    }
-
-    # Patch os.environ for the duration of the fixture setup
-    with patch.dict(os.environ, env_vars):
-        # Patch get_settings if EncryptionService uses it internally
-        with patch("app.infrastructure.security.encryption.get_settings", return_value=MagicMock(ENCRYPTION_KEY=test_key, ENCRYPTION_SALT=test_salt)):
-             # Ensure the service is initialized within the patched context
-             service = EncryptionService()
-             # Manually set the cipher if initialization logic depends on env vars directly
-             # service.cipher = Fernet(derive_key(test_key.encode(), bytes.fromhex(test_salt)))
-             yield service # Yield the service instance
+@pytest.fixture(scope="module")
+def encryption_service() -> BaseEncryptionService:
+    """Provide a BaseEncryptionService instance with default test keys."""
+    # Use sufficiently long keys for testing
+    test_key = "test_encryption_key_longer_than_32_chars"
+    test_prev_key = "previous_test_key_also_longer_than_32"
+    return BaseEncryptionService(direct_key=test_key, previous_key=test_prev_key)
 
 @pytest.mark.unit()
-class TestEncryptionService:
+class TestEnhancedEncryptionService:
     """Tests for the EncryptionService class."""
 
-    def test_initialization(self, encryption_service: EncryptionService):
+    def test_initialization(self, encryption_service: BaseEncryptionService):
         """Test initialization of EncryptionService."""
         # Verify the service is initialized
         assert encryption_service is not None
         assert encryption_service.cipher is not None
         assert isinstance(encryption_service.cipher, Fernet) # Check type
 
-    def test_encrypt_decrypt(self, encryption_service: EncryptionService):
+    def test_encrypt_decrypt(self, encryption_service: BaseEncryptionService):
         """Test encryption and decryption of data."""
         # Test data
         data = "Sensitive patient information"
@@ -163,7 +144,7 @@ class TestEncryptionService:
         # Verify decrypted data matches original
         assert decrypted == data
 
-    def test_encrypt_decrypt_dict(self, encryption_service: EncryptionService):
+    def test_encrypt_decrypt_dict(self, encryption_service: BaseEncryptionService):
         """Test encryption and decryption of dictionaries."""
         # Test data
         data = {
@@ -228,7 +209,7 @@ class TestEncryptionService:
 
         with patch.dict(os.environ, env_vars_orig):
              with patch("app.infrastructure.security.encryption.get_settings", return_value=MagicMock(ENCRYPTION_KEY=original_key.decode(), ENCRYPTION_SALT=original_salt.hex())):
-                service_orig = EncryptionService()
+                service_orig = BaseEncryptionService()
 
         # Encrypt data with original key
         data = "Sensitive patient information"
@@ -246,7 +227,7 @@ class TestEncryptionService:
 
         with patch.dict(os.environ, env_vars_new):
             with patch("app.infrastructure.security.encryption.get_settings", return_value=MagicMock(ENCRYPTION_KEY=new_key.decode(), PREVIOUS_ENCRYPTION_KEY=original_key.decode(), ENCRYPTION_SALT=original_salt.hex())):
-                service_new = EncryptionService()
+                service_new = BaseEncryptionService()
 
             # Should be able to decrypt data encrypted with the *previous* key
             decrypted_from_v1 = service_new.decrypt(encrypted_v1)
@@ -265,7 +246,7 @@ class TestEncryptionService:
                  service_orig.decrypt(encrypted_v2)
 
 
-    def test_file_encryption(self, encryption_service: EncryptionService, tmp_path):
+    def test_file_encryption(self, encryption_service: BaseEncryptionService, tmp_path):
         """Test encryption and decryption of files."""
         # Create test file paths
         test_file = tmp_path / "test.txt"
@@ -293,7 +274,7 @@ class TestEncryptionService:
         assert decrypted_content == test_content
 
 
-    def test_encrypt_file_nonexistent(self, encryption_service: EncryptionService, tmp_path):
+    def test_encrypt_file_nonexistent(self, encryption_service: BaseEncryptionService, tmp_path):
         """Test encryption of nonexistent file."""
         # Nonexistent input file
         nonexistent_file = tmp_path / "nonexistent.txt"
@@ -303,7 +284,7 @@ class TestEncryptionService:
         with pytest.raises(FileNotFoundError):
             encryption_service.encrypt_file(str(nonexistent_file), str(output_file))
 
-    def test_decrypt_file_nonexistent(self, encryption_service: EncryptionService, tmp_path):
+    def test_decrypt_file_nonexistent(self, encryption_service: BaseEncryptionService, tmp_path):
         """Test decryption of nonexistent file."""
         # Nonexistent input file
         nonexistent_file = tmp_path / "nonexistent.bin"
@@ -313,7 +294,7 @@ class TestEncryptionService:
         with pytest.raises(FileNotFoundError):
             encryption_service.decrypt_file(str(nonexistent_file), str(output_file))
 
-    def test_decrypt_invalid_file_content(self, encryption_service: EncryptionService, tmp_path):
+    def test_decrypt_invalid_file_content(self, encryption_service: BaseEncryptionService, tmp_path):
         """Test decryption of a file with invalid encrypted content."""
         invalid_encrypted_file = tmp_path / "invalid.bin"
         output_file = tmp_path / "output.txt"

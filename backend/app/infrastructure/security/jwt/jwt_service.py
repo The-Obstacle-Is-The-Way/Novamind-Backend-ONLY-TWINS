@@ -41,9 +41,11 @@ class JWTService:
     
     Handles both access and refresh tokens using PyJWT and standardized exceptions.
     """
-    def __init__(self):
-        """Initialize JWTService, loading settings."""
-        self.settings = get_settings()
+    def __init__(self, settings: Optional[Any] = None):
+        """Initialize JWTService, optionally injecting settings (for testing)."""
+        # Use injected settings if provided, otherwise load normally
+        self.settings = settings or get_settings() 
+        # Now expects direct attributes like SECRET_KEY on self.settings
         if not self.settings.SECRET_KEY or len(self.settings.SECRET_KEY) < 32:
             raise ValueError("JWT secret key is missing or too short (min 32 chars)")
 

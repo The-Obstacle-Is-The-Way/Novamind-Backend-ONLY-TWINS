@@ -6,17 +6,21 @@ from unittest.mock import Mock, patch, MagicMock, call, AsyncMock # Added call a
 import redis # Import redis for mocking RedisRateLimiter if needed
 import logging
 import os # Import os if needed for env vars, though not used in this version
+import asyncio
 
 # Updated import path
 # from app.infrastructure.security.rate_limiter_enhanced import (
-from app.infrastructure.security.rate_limiting.limiter import (
+from app.infrastructure.security.rate_limiting.rate_limiter import (
     RateLimiter,
     RateLimitExceeded,
     RateLimitConfig,
     InMemoryRateLimiter,
     RedisRateLimiter,
     RateLimiterFactory,
+    DistributedRateLimiter,
+    RateLimitType,
 )
+from app.infrastructure.cache.redis_cache import RedisCache # Import for mocking
 
 # Define UTC if not imported elsewhere (Python 3.11+)
 try:
@@ -332,3 +336,13 @@ class TestRateLimiterFactory:
         """Test creating an invalid limiter type."""
         with pytest.raises(ValueError, match="Unsupported rate limiter type"):
             RateLimiterFactory.create_rate_limiter("invalid_type")
+
+# Mock Request object
+class MockRequest:
+    def __init__(self, client_host="127.0.0.1", headers=None, api_key=None):
+        self.client = MagicMock()
+        self.client.host = client_host
+        _headers = headers if headers is not None else {}
+        if api_key:
+            _headers["X-API-Key"] = api_key
+        self.headers = _headers

@@ -9,9 +9,9 @@ import pytest
 import json
 from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi import FastAPI, Request, Response, HTTPException, status
-from starlette.middleware.base import RequestResponseCall
-from starlette.datastructures import Headers
+from starlette.datastructures import Headers, State
 from starlette.responses import JSONResponse
+from starlette.types import Scope, Receive, Send, ASGIApp
 from typing import Dict, Any, Awaitable, Callable
 
 # Assuming these exceptions are correctly defined in the domain layer
@@ -35,7 +35,7 @@ except ImportError:
             return True
 
 # Import the middleware being tested
-from app.infrastructure.security.auth_middleware import JWTAuthMiddleware as AuthMiddleware
+from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware as AuthMiddleware
 
 # Mock TokenAuthorizationError if it's a custom exception used internally
 # class TokenAuthorizationError(Exception):

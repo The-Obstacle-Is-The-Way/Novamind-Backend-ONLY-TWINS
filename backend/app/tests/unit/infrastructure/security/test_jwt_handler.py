@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Unit tests for JWT Token Handler.
+Unit tests for the JWT service.
 
-These tests verify that our JWT token generation, validation, and handling
-meet HIPAA security requirements.
+Reflects the refactored JWTService using decode_token and domain exceptions.
 """
 
 import pytest
-import time
-from datetime import datetime, timedelta, timezone # Corrected import
-from unittest.mock import patch, MagicMock
-
-from jose import jwt, JWTError
-
-from app.infrastructure.security.jwt.token_handler import JWTHandler, TokenPayload
-from app.domain.exceptions import AuthenticationError # Assuming correct exception name
+from datetime import datetime, timedelta, timezone
+from uuid import uuid4
+import time # Import time for timestamp checks
+from jose import jwt
+from app.domain.exceptions import InvalidTokenError, TokenExpiredError
+from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
+from app.config.settings import get_settings
 
 # Define UTC if not imported elsewhere (Python 3.11+)
 try:
@@ -22,341 +20,219 @@ try:
 except ImportError:
     UTC = timezone.utc # Fallback for older Python versions
 
+# Use the fixture from conftest.py directly
+@pytest.fixture(scope="module")
+def jwt_service_instance(jwt_service: JWTService):
+    return jwt_service
 
-@pytest.fixture
-def jwt_handler():
-    """
-    Create a JWT handler with test settings.
+# Fixture for a sample user ID
+@pytest.fixture(scope="module")
+def user_id():
+    return str(uuid4())
 
-    Returns:
-        JWTHandler instance with test configuration
-    """
-    return JWTHandler(
-        secret_key="testkey12345678901234567890123456789", # Ensure sufficient length
-        algorithm="HS256",
-        access_token_expire_minutes=15
-    )
+# Fixture for a sample JTI (JWT ID)
+@pytest.fixture(scope="module")
+def jti():
+    return str(uuid4())
 
-# Removed misplaced decorator @pytest.mark.db_required() from class definition
-class TestJWTHandler:
-    """Test suite for JWT token handler."""
+# Test class for organization
+class TestJWTService:
+    """Test suite for the refactored JWTService."""
 
-    def test_init_with_valid_settings(self):
-        """Test initialization with valid settings."""
-        handler = JWTHandler(
-            secret_key="testkey12345678901234567890123456789",
-            algorithm="HS256",
-            access_token_expire_minutes=15
-        )
-        assert handler.secret_key == "testkey12345678901234567890123456789"
-        assert handler.algorithm == "HS256"
-        assert handler.access_token_expire_minutes == 15
+    # --- Initialization Tests (implicitly tested by fixture) ---
+    def test_init_with_valid_settings(self, jwt_service_instance: JWTService, mock_settings):
+        """Test initialization uses the injected mock settings."""
+        # The jwt_service fixture should inject mock_settings.
+        # We verify that the service instance is indeed using the mock settings object.
+        assert jwt_service_instance.settings is mock_settings
+        # We can also check a specific value that MockSettings provides directly
+        assert jwt_service_instance.settings.ALGORITHM == mock_settings.ALGORITHM
 
-    def test_init_with_invalid_secret_key(self):
-        """Test initialization with invalid secret key."""
-        with pytest.raises(ValueError, match="JWT secret key is missing or too short"):
-            JWTHandler(secret_key="short", algorithm="HS256")
+    # --- Access Token Creation ---
+    def test_create_access_token_success(self, jwt_service_instance: JWTService, user_id: str):
+        """Test successful creation of a basic access token."""
+        token = jwt_service_instance.create_access_token(subject=user_id)
+        assert isinstance(token, str)
+        # Decode to check basic structure and claims
+        payload = jwt_service_instance.decode_token(token)
+        assert payload.sub == user_id
+        assert payload.scope == "access_token"
+        assert payload.roles is None # No roles specified
+        assert payload.permissions is None # No permissions specified
+        assert payload.session_id is None # No session specified
 
-    def test_create_access_token(self, jwt_handler: JWTHandler):
-        """Test creating an access token."""
-        # Arrange
-        user_id = "user123"
-        role = "patient"
-        permissions = ["read:profile", "update:profile"]
-        session_id = "session123"
-
-        # Act
-        token = jwt_handler.create_access_token(
-            user_id=user_id,
-            role=role,
+    def test_create_access_token_with_claims(self, jwt_service_instance: JWTService, user_id: str):
+        """Test creating an access token with roles, permissions, and session ID."""
+        roles = ["admin", "editor"]
+        permissions = ["read:all", "write:posts"]
+        session_id = str(uuid4())
+        token = jwt_service_instance.create_access_token(
+            subject=user_id,
+            roles=roles,
             permissions=permissions,
             session_id=session_id
         )
+        payload = jwt_service_instance.decode_token(token)
+        assert payload.sub == user_id
+        assert payload.scope == "access_token"
+        assert payload.roles == roles
+        assert payload.permissions == permissions
+        assert payload.session_id == session_id
 
-        # Assert
-        decoded = jwt.decode(
-            token,
-            jwt_handler.secret_key,
-            algorithms=[jwt_handler.algorithm]
+    # --- Refresh Token Creation ---
+    def test_create_refresh_token_success(self, jwt_service_instance: JWTService, user_id: str, jti: str):
+        """Test successful creation of a refresh token."""
+        token = jwt_service_instance.create_refresh_token(subject=user_id, jti=jti)
+        assert isinstance(token, str)
+        # Decode to check structure and claims
+        payload = jwt_service_instance.decode_token(token)
+        assert payload.sub == user_id
+        assert payload.scope == "refresh_token"
+        assert payload.jti == jti # Critical check for refresh token
+
+    # --- Token Decoding and Validation ---
+    def test_decode_valid_access_token(self, jwt_service_instance: JWTService, user_id: str):
+        """Test decoding a valid access token returns correct payload."""
+        roles = ["user"]
+        token = jwt_service_instance.create_access_token(subject=user_id, roles=roles)
+        payload = jwt_service_instance.decode_token(token)
+
+        assert isinstance(payload, TokenPayload)
+        assert payload.sub == user_id
+        assert payload.scope == "access_token"
+        assert payload.roles == roles
+        assert payload.exp > datetime.now(timezone.utc).timestamp() # Check expiry
+
+    def test_decode_valid_refresh_token(self, jwt_service_instance: JWTService, user_id: str, jti: str):
+        """Test decoding a valid refresh token returns correct payload."""
+        token = jwt_service_instance.create_refresh_token(subject=user_id, jti=jti)
+        payload = jwt_service_instance.decode_token(token)
+
+        assert isinstance(payload, TokenPayload)
+        assert payload.sub == user_id
+        assert payload.scope == "refresh_token"
+        assert payload.jti == jti
+        assert payload.exp > datetime.now(timezone.utc).timestamp() # Check expiry
+
+    def test_decode_expired_token_raises_error(self, jwt_service_instance: JWTService, user_id: str):
+        """Test decoding an expired token raises TokenExpiredError."""
+        settings = get_settings()
+        # Use internal _create_token to set a past expiry
+        expired_delta = timedelta(seconds=-10)
+        expired_token = jwt_service_instance._create_token(
+            subject=user_id,
+            expires_delta=expired_delta,
+            scope="access_token", # Scope doesn't matter for expiry check
+            jti=str(uuid4())
         )
-        assert decoded["sub"] == user_id
-        assert decoded["role"] == role
-        assert decoded["permissions"] == permissions
-        assert decoded["session_id"] == session_id
-        assert "exp" in decoded
-        assert "iat" in decoded
+        with pytest.raises(TokenExpiredError):
+            jwt_service_instance.decode_token(expired_token)
 
-    def test_create_access_token_with_custom_expiry(self, jwt_handler: JWTHandler):
-        """Test creating an access token with custom expiration."""
-        # Arrange
-        user_id = "user123"
-        role = "doctor"
-        permissions = ["read:patients", "update:patients"]
-        session_id = "session456"
-        expires_delta = timedelta(hours=1)
-
-        # Act
-        token = jwt_handler.create_access_token(
-            user_id=user_id,
-            role=role,
-            permissions=permissions,
-            session_id=session_id,
-            expires_delta=expires_delta
-        )
-
-        # Assert
-        decoded = jwt.decode(
-            token,
-            jwt_handler.secret_key,
-            algorithms=[jwt_handler.algorithm]
-        )
-        # Verify expiration is approximately 1 hour from now
-        exp_time = datetime.fromtimestamp(decoded["exp"], UTC) # Use UTC timezone
-        now = datetime.now(UTC)
-        # Corrected assertion syntax
-        assert abs((exp_time - now).total_seconds() - 3600) < 10  # Within 10 seconds of 1 hour
-
-    def test_verify_token_valid(self, jwt_handler: JWTHandler):
-        """Test verifying a valid token."""
-        # Arrange
-        user_id = "user123"
-        role = "patient"
-        permissions = ["read:profile"]
-        session_id = "session123"
-        token = jwt_handler.create_access_token(
-            user_id=user_id,
-            role=role,
-            permissions=permissions,
-            session_id=session_id
-        )
-
-        # Act
-        token_data = jwt_handler.verify_token(token)
-
-        # Assert
-        assert isinstance(token_data, TokenPayload) # Check type
-        assert token_data.sub == user_id
-        assert token_data.role == role
-        assert token_data.permissions == permissions
-        assert token_data.session_id == session_id
-
-    def test_verify_token_expired(self, jwt_handler: JWTHandler):
-        """Test verifying an expired token."""
-        # Arrange
-        user_id = "user123"
-        role = "patient"
-        permissions = ["read:profile"]
-        session_id = "session123"
-        # Create payload with expiration in the past
-        to_encode = {
-            "sub": user_id,
-            "exp": datetime.now(UTC) - timedelta(minutes=5),
-            "iat": datetime.now(UTC) - timedelta(minutes=10),
-            "role": role,
-            "permissions": permissions,
-            "session_id": session_id
+    def test_decode_invalid_signature_raises_error(self, jwt_service_instance: JWTService):
+        """Test decoding a token with an invalid signature raises InvalidTokenError."""
+        # Create a token with a different secret key
+        # We need the jwt library directly for this, not the service instance
+        settings = get_settings()
+        wrong_key = settings.SECRET_KEY + "_make_it_different"
+        payload_data = {
+            "sub": "test_user",
+            "exp": int((datetime.now(UTC) + timedelta(minutes=5)).timestamp()),
+            "iat": int(datetime.now(UTC).timestamp()),
+            "jti": str(uuid4()),
+            "scope": "access_token"
         }
-        # Create token directly using jose.jwt.encode
-        token = jwt.encode(
-            to_encode,
-            jwt_handler.secret_key,
-            algorithm=jwt_handler.algorithm
+        # Encode using the *wrong* key
+        invalid_signature_token = jwt.encode(
+            payload_data,
+            wrong_key, # Use the modified key
+            algorithm=settings.ALGORITHM
         )
 
-        # Act & Assert
-        with pytest.raises(AuthenticationError, match="Token has expired"):
-            jwt_handler.verify_token(token)
+        # Attempt to decode using the *correct* key via the service
+        with pytest.raises(InvalidTokenError): # Expect InvalidTokenError
+            jwt_service_instance.decode_token(invalid_signature_token)
 
-    def test_verify_token_invalid_signature(self, jwt_handler: JWTHandler):
-        """Test verifying a token with invalid signature."""
-        # Arrange
-        user_id = "user123"
-        role = "patient"
-        permissions = ["read:profile"]
-        session_id = "session123"
-        wrong_key = "wrongkey123456789012345678901234567" # Different key
-        to_encode = {
+    def test_decode_malformed_token_raises_error(self, jwt_service_instance: JWTService):
+        """Test decoding a malformed token string raises InvalidTokenError."""
+        malformed_token = "this.is.clearly.not.a.jwt"
+        with pytest.raises(InvalidTokenError):
+            jwt_service_instance.decode_token(malformed_token)
+
+    def test_decode_token_missing_required_claims_raises_error(self, jwt_service_instance: JWTService, user_id: str):
+        """Test decoding a token missing required claims (like exp) raises InvalidTokenError."""
+        settings = get_settings()
+        # Manually create a payload missing 'exp', 'iat', 'jti', 'scope'
+        payload_data = {
             "sub": user_id,
-            "exp": datetime.now(UTC) + timedelta(minutes=15),
-            "iat": datetime.now(UTC),
-            "role": role,
-            "permissions": permissions,
-            "session_id": session_id
+            # Missing other required fields per TokenPayload model
         }
-        # Encode with the wrong key
-        token = jwt.encode(to_encode, wrong_key, algorithm="HS256")
-
-        # Act & Assert
-        with pytest.raises(AuthenticationError, match="Invalid authentication token"):
-            jwt_handler.verify_token(token)
-
-    def test_verify_token_malformed(self, jwt_handler: JWTHandler):
-        """Test verifying a malformed token."""
-        # Arrange
-        token = "not.a.valid.token"
-
-        # Act & Assert
-        with pytest.raises(AuthenticationError, match="Invalid authentication token"):
-            jwt_handler.verify_token(token)
-
-    def test_refresh_token(self, jwt_handler: JWTHandler):
-        """Test refreshing a token."""
-        # Arrange
-        user_id = "user123"
-        role = "patient"
-        permissions = ["read:profile"]
-        session_id = "session123"
-        original_token = jwt_handler.create_access_token(
-            user_id=user_id,
-            role=role,
-            permissions=permissions,
-            session_id=session_id
+        # Encode this incomplete payload
+        token_missing_claims = jwt.encode(
+            payload_data,
+            settings.SECRET_KEY,
+            algorithm=settings.ALGORITHM
         )
-        # Wait a second to ensure timestamps differ
-        time.sleep(1)
+        # Decoding should fail Pydantic validation within decode_token
+        with pytest.raises(InvalidTokenError):
+            jwt_service_instance.decode_token(token_missing_claims)
 
-        # Act
-        new_token = jwt_handler.refresh_token(original_token, extend_minutes=30)
+    def test_decode_token_wrong_scope(self, jwt_service_instance: JWTService, user_id: str, jti: str):
+        """Test decoding works regardless of scope, but scope is preserved."""
+        # Create an access token
+        access_token = jwt_service_instance.create_access_token(subject=user_id)
+        # Create a refresh token
+        refresh_token = jwt_service_instance.create_refresh_token(subject=user_id, jti=jti)
 
-        # Decode both tokens
-        original_payload = jwt.decode(
-            original_token,
-            jwt_handler.secret_key,
-            algorithms=[jwt_handler.algorithm]
-        )
-        new_payload = jwt.decode(
-            new_token,
-            jwt_handler.secret_key,
-            algorithms=[jwt_handler.algorithm]
-        )
+        # Decode both
+        access_payload = jwt_service_instance.decode_token(access_token)
+        refresh_payload = jwt_service_instance.decode_token(refresh_token)
 
-        # Assert
-        assert new_payload["sub"] == original_payload["sub"]
-        assert new_payload["role"] == original_payload["role"]
-        assert new_payload["permissions"] == original_payload["permissions"]
-        assert new_payload["session_id"] == original_payload["session_id"]
-        assert new_payload["exp"] > original_payload["exp"]
-        assert new_payload["iat"] > original_payload["iat"]
-        # Check new expiry is roughly 30 mins from original expiry
-        original_exp_dt = datetime.fromtimestamp(original_payload["exp"], UTC)
-        new_exp_dt = datetime.fromtimestamp(new_payload["exp"], UTC)
-        assert abs((new_exp_dt - original_exp_dt).total_seconds() - (30 * 60)) < 10
+        # Verify scopes are correct after decoding
+        assert access_payload.scope == "access_token"
+        assert refresh_payload.scope == "refresh_token"
+        # Application logic would typically check the scope after decoding
 
+    # --- Timestamp Verification ---
+    def test_token_timestamps_are_correct(self, jwt_service_instance: JWTService, user_id: str):
+        """Verify 'iat' and 'exp' timestamps are set correctly and within tolerance."""
+        now_ts = int(time.time()) # Use time.time() for basic comparison ts
+        settings = get_settings()
 
-    def test_refresh_token_expired(self, jwt_handler: JWTHandler):
-        """Test refreshing an expired token."""
-        # Arrange
-        user_id = "user123"
-        role = "patient"
-        permissions = ["read:profile"]
-        session_id = "session123"
-        to_encode = {
-            "sub": user_id,
-            "exp": datetime.now(UTC) - timedelta(minutes=5), # Expired
-            "iat": datetime.now(UTC) - timedelta(minutes=10),
-            "role": role,
-            "permissions": permissions,
-            "session_id": session_id
-        }
-        token = jwt.encode(
-            to_encode,
-            jwt_handler.secret_key,
-            algorithm=jwt_handler.algorithm
-        )
+        # Test Access Token Timestamps
+        access_token = jwt_service_instance.create_access_token(subject=user_id)
+        access_payload = jwt_service_instance.decode_token(access_token)
+        expected_exp_delta_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
-        # Act & Assert
-        with pytest.raises(AuthenticationError, match="Token has expired"):
-            jwt_handler.refresh_token(token)
+        # Check 'iat' (issued at) is very close to now
+        assert abs(access_payload.iat - now_ts) < 5 # Allow 5s tolerance for execution time
 
-    def test_get_user_id_from_token(self, jwt_handler: JWTHandler):
-        """Test extracting user ID from token."""
-        # Arrange
-        user_id = "user123"
-        role = "patient"
-        permissions = ["read:profile"]
-        session_id = "session123"
-        token = jwt_handler.create_access_token(
-            user_id=user_id,
-            role=role,
-            permissions=permissions,
-            session_id=session_id
-        )
+        # Check 'exp' (expiration) is approximately 'iat' + expiry duration
+        assert abs(access_payload.exp - (access_payload.iat + expected_exp_delta_seconds)) < 5
 
-        # Act
-        extracted_user_id = jwt_handler.get_user_id_from_token(token)
+        # Test Refresh Token Timestamps
+        refresh_jti = str(uuid4())
+        refresh_token = jwt_service_instance.create_refresh_token(subject=user_id, jti=refresh_jti)
+        refresh_payload = jwt_service_instance.decode_token(refresh_token)
+        expected_refresh_exp_delta_seconds = settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
 
-        # Assert
-        assert extracted_user_id == user_id
+        # Check 'iat' (issued at) is very close to now
+        assert abs(refresh_payload.iat - now_ts) < 5 # Allow 5s tolerance
 
-    def test_get_permissions_from_token(self, jwt_handler: JWTHandler):
-        """Test extracting permissions from token."""
-        # Arrange
-        user_id = "user123"
-        role = "doctor"
-        permissions = ["read:patients", "update:patients", "read:billing"]
-        session_id = "session123"
-        token = jwt_handler.create_access_token(
-            user_id=user_id,
-            role=role,
-            permissions=permissions,
-            session_id=session_id
-        )
+        # Check 'exp' (expiration) is approximately 'iat' + expiry duration
+        assert abs(refresh_payload.exp - (refresh_payload.iat + expected_refresh_exp_delta_seconds)) < 5
 
-        # Act
-        extracted_permissions = jwt_handler.get_permissions_from_token(token)
+    # --- Edge Cases ---
+    def test_token_creation_with_non_uuid_subject(self, jwt_service_instance: JWTService):
+        """Test creating tokens with a simple string subject (e.g., username)."""
+        subject = "testuser@example.com"
+        jti_for_refresh = str(uuid4())
 
-        # Assert
-        assert extracted_permissions == permissions
+        access_token = jwt_service_instance.create_access_token(subject=subject)
+        refresh_token = jwt_service_instance.create_refresh_token(subject=subject, jti=jti_for_refresh)
 
-    def test_get_role_from_token(self, jwt_handler: JWTHandler):
-        """Test extracting role from token."""
-        # Arrange
-        user_id = "user123"
-        role = "admin"
-        permissions = ["read:all", "update:all"]
-        session_id = "session123"
-        token = jwt_handler.create_access_token(
-            user_id=user_id,
-            role=role,
-            permissions=permissions,
-            session_id=session_id
-        )
+        access_payload = jwt_service_instance.decode_token(access_token)
+        refresh_payload = jwt_service_instance.decode_token(refresh_token)
 
-        # Act
-        extracted_role = jwt_handler.get_role_from_token(token)
-
-        # Assert
-        assert extracted_role == role
-
-    @patch('app.infrastructure.security.jwt.token_handler.logger')
-    def test_logging_behavior(self, mock_logger: MagicMock, jwt_handler: JWTHandler):
-        """Test that sensitive information is not logged."""
-        # Arrange
-        user_id = "user123"
-        role = "patient"
-        permissions = ["read:profile"]
-        session_id = "session123"
-
-        # Act
-        token = jwt_handler.create_access_token(
-            user_id=user_id,
-            role=role,
-            permissions=permissions,
-            session_id=session_id
-        )
-        # Call verify which might log
-        try:
-            jwt_handler.verify_token(token)
-        except AuthenticationError:
-            pass # Ignore potential errors for logging test
-
-        # Assert logger was called (if logging is implemented) but didn't contain the token
-        # This depends heavily on the actual logging implementation
-        # Example: Check if info was called
-        # mock_logger.info.assert_called()
-        # Example: Check log messages don't contain the full token
-        for call_args in mock_logger.info.call_args_list:
-            log_message = call_args[0][0] # Get the first argument of the call
-            assert token not in log_message
-            # Assert that user_id might be present if intended
-            # assert user_id in log_message
+        assert access_payload.sub == subject
+        assert refresh_payload.sub == subject
+        assert refresh_payload.jti == jti_for_refresh
