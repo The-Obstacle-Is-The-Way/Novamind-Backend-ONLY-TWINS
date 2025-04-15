@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 from typing import Any
 
-from app.infrastructure.security.jwt_service import JWTService
+from app.infrastructure.security.jwt.jwt_service import JWTService
 from app.core.config import get_settings
 settings = get_settings()
 from app.domain.exceptions import AuthenticationError, TokenExpiredError

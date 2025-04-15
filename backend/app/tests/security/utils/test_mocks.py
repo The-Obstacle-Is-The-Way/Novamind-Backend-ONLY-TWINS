@@ -6,6 +6,7 @@ to be used in unit tests, ensuring isolation from real security services.
 """
 
 from unittest.mock import MagicMock
+import uuid
 
 # Mock Encryption Service
 class MockEncryptionService:
@@ -24,7 +25,11 @@ class MockAuthService:
 # Mock RBAC Service
 class MockRBACService:
     def __init__(self):
-        self.check_permission = MagicMock(return_value=True)
+        def check_permission_logic(permission, roles=None):
+            if roles is None:
+                return permission in ["read:own_data", "read:patient_data"]
+            return True
+        self.check_permission = MagicMock(side_effect=check_permission_logic)
         self.add_role_permission = MagicMock()
 
 # Mock Audit Logger
@@ -99,8 +104,18 @@ class RoleBasedAccessControl:
 # Mock Entity Factory
 class MockEntityFactory:
     def __init__(self):
+        self._entities = {}
         self.create_patient = MagicMock(return_value=MockPatient())
         self.create_user = MagicMock(return_value={'id': 'test_user', 'roles': ['user']})
+
+    def create(self, entity_type, **kwargs):
+        entity_id = str(uuid.uuid4())
+        entity = {"id": entity_id, "type": entity_type, **kwargs}
+        self._entities[entity_id] = entity
+        return entity
+
+    def get(self, entity_id):
+        return self._entities.get(entity_id)
 
 # Mock PHI Auditor
 class MockPHIAuditor:

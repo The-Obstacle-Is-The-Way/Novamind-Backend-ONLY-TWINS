@@ -9,6 +9,7 @@ and provide realistic responses for testing without requiring actual ML models.
 
 import json
 import random
+import re
 from datetime import datetime, UTC, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Union
@@ -1230,6 +1231,14 @@ class MockPHIDetection(PHIDetectionInterface):
         """Initialize MockPHIDetection instance."""
         self._initialized = False
         self._config = None
+        self.PHI_PATTERNS = [
+            ("NAME", re.compile(r"\b[A-Z][a-z]+ [A-Z][a-z]+\b")),
+            ("SSN", re.compile(r"\b\d{3}-\d{2}-\d{4}\b")),
+            ("EMAIL", re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b")),
+            ("PHONE", re.compile(r"\(\d{3}\) \d{3}-\d{4}\b|\b\d{3}-\d{3}-\d{4}\b")),
+            ("ADDRESS", re.compile(r"\b\d+ [A-Z][a-z]+ (Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Court|Ct|Way|Place|Pl)\b")),
+            ("DATE", re.compile(r"\b\d{1,2}/\d{1,2}/\d{2,4}\b|\b\d{1,2}-\d{1,2}-\d{2,4}\b|\b[A-Z][a-z]{2,8} \d{1,2}, \d{4}\b")),
+        ]
     
     def initialize(self, config: Dict[str, Any]) -> None:
         """
@@ -1287,96 +1296,41 @@ class MockPHIDetection(PHIDetectionInterface):
         """
         if not self._initialized:
             raise ServiceUnavailableError("Mock PHI detection service is not initialized")
-        
         if not text or not isinstance(text, str):
-            raise InvalidRequestError("Text must be a non-empty string")
-        
-        # Use a more strict detection level by default
-        detection_level = detection_level or "strict"
-        
-        # Create mock PHI instances based on detection level
-        phi_instances = self._create_mock_phi_instances(detection_level)
-        
-        # Create a mock detection result
-        result = {
-            "has_phi": True,
-            "confidence": 0.95,
-            "detection_level": detection_level,
+            return {
+                "phi_instances": [],
+                "confidence_score": 0.0,
+                "has_phi": False,
+                "detection_level": detection_level or "strict",
+                "model": "mock-phi-detection",
+                "analysis_time_ms": 1,
+                "timestamp": datetime.now(UTC).isoformat() + "Z"
+            }
+        phi_instances = []
+        for phi_type, pattern in self.PHI_PATTERNS:
+            for match in pattern.finditer(text):
+                phi_instances.append({
+                    "type": phi_type,
+                    "text": match.group(0),
+                    "start_pos": match.start(),
+                    "end_pos": match.end(),
+                    "confidence": 0.99 if phi_type != "DATE" else 0.98
+                })
+        has_phi = len(phi_instances) > 0
+        confidence_score = 0.0
+        if has_phi:
+            confidence_score = 0.95
+        elif text.strip():
+            confidence_score = 0.1
+        return {
             "phi_instances": phi_instances,
+            "confidence_score": confidence_score,
+            "has_phi": has_phi,
+            "detection_level": detection_level or "strict",
             "model": "mock-phi-detection",
-            "analysis_time_ms": 42,
+            "analysis_time_ms": 1,
             "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
-        
-        return result
-    
-    def _create_mock_phi_instances(self, detection_level: str) -> List[Dict[str, Any]]:
-        """
-        Create mock PHI instances based on detection level.
-        
-        Args:
-            detection_level: Detection level (strict, moderate, relaxed)
-            
-        Returns:
-            List of mock PHI instances
-        """
-        # Default PHI instances (comprehensive set)
-        phi_instances = [
-            {
-                "type": "NAME",
-                "subtype": "PATIENT",
-                "text": "John Smith",
-                "start_pos": 10,
-                "end_pos": 20,
-                "confidence": 0.99
-            },
-            {
-                "type": "DATE",
-                "subtype": "BIRTH_DATE",
-                "text": "01/15/1980",
-                "start_pos": 45,
-                "end_pos": 55,
-                "confidence": 0.98
-            },
-            {
-                "type": "ID",
-                "subtype": "SSN",
-                "text": "123-45-6789",
-                "start_pos": 80,
-                "end_pos": 91,
-                "confidence": 0.99
-            },
-            {
-                "type": "LOCATION",
-                "subtype": "ADDRESS",
-                "text": "123 Main St, Anytown, NY 12345",
-                "start_pos": 110,
-                "end_pos": 141,
-                "confidence": 0.97
-            },
-            {
-                "type": "CONTACT",
-                "subtype": "PHONE",
-                "text": "(555) 123-4567",
-                "start_pos": 160,
-                "end_pos": 174,
-                "confidence": 0.98
-            }
-        ]
-        
-        # Adjust instances based on detection level
-        if detection_level == "relaxed":
-            # For relaxed detection, only include high-confidence or sensitive types
-            return [instance for instance in phi_instances 
-                   if instance["confidence"] > 0.98 or 
-                   instance["type"] in ["NAME", "ID"]]
-        
-        elif detection_level == "moderate":
-            # For moderate detection, include all but reduce confidence threshold
-            return phi_instances
-        
-        # For strict detection, include all and potentially add more thorough detection
-        return phi_instances
     
     def redact_phi(
         self,
@@ -1401,39 +1355,35 @@ class MockPHIDetection(PHIDetectionInterface):
         """
         if not self._initialized:
             raise ServiceUnavailableError("Mock PHI detection service is not initialized")
-        
         if not text or not isinstance(text, str):
-            raise InvalidRequestError("Text must be a non-empty string")
-        
-        # Detect PHI first
+            return {
+                "original_length": 0,
+                "redacted_length": 0,
+                "redacted_text": "",
+                "redaction_count": 0,
+                "redacted_types": [],
+                "detection_level": detection_level or "strict",
+                "replacement_used": replacement,
+                "timestamp": datetime.now(UTC).isoformat() + "Z"
+            }
         detection_result = self.detect_phi(text, detection_level)
-        
-        # Create a mock redacted text
-        # In real implementation, we would use the detection result to redact the text
-        redacted_text = """Patient: [REDACTED] was seen on [REDACTED] for follow-up.
-        
-Medical Record #: [REDACTED]
-Address: [REDACTED]
-Phone: [REDACTED]
-        
-Assessment:
-The patient continues to show improvement in mood and anxiety symptoms. They report better sleep quality and reduced rumination. No suicidal ideation or intent. Blood pressure is within normal range at [REDACTED].
-        
-Plan:
-1. Continue current medication regimen
-2. Follow-up in 4 weeks
-3. Refer to weekly therapy sessions with Dr. [REDACTED]"""
-        
-        # Create result
-        result = {
+        redacted_text = text
+        redaction_count = 0
+        redacted_types = set()
+        # Sort matches by start_pos descending to avoid offset issues
+        matches = sorted(detection_result["phi_instances"], key=lambda m: m["start_pos"], reverse=True)
+        for match in matches:
+            start, end = match["start_pos"], match["end_pos"]
+            redacted_text = redacted_text[:start] + replacement + redacted_text[end:]
+            redaction_count += 1
+            redacted_types.add(match["type"])
+        return {
             "original_length": len(text),
             "redacted_length": len(redacted_text),
             "redacted_text": redacted_text,
-            "redaction_count": len(detection_result["phi_instances"]),
-            "redacted_types": list({instance["type"] for instance in detection_result["phi_instances"]}),
+            "redaction_count": redaction_count,
+            "redacted_types": list(redacted_types),
             "detection_level": detection_result["detection_level"],
             "replacement_used": replacement,
             "timestamp": datetime.now(UTC).isoformat() + "Z"
         }
-        
-        return result

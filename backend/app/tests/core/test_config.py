@@ -6,7 +6,10 @@ and handles environment variables properly.
 """
 import os
 import pytest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+from pydantic import ValidationError
+
+from app.config.settings import Settings, get_settings
 
 # Mock settings if actual settings are not available
 settings = Mock()
@@ -97,3 +100,10 @@ class TestSettings:
         assert len(settings.CORS_ORIGINS) == 2
         assert "http://localhost:8000" in settings.CORS_ORIGINS
         assert "https://api.example.com" in settings.CORS_ORIGINS
+
+# Fixture to reset the lru_cache for get_settings before each test
+@pytest.fixture(scope="function")
+def reset_get_settings():
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()

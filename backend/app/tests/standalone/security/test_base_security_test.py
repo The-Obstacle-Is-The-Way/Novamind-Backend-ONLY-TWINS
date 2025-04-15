@@ -10,7 +10,7 @@ import pytest
 import json
 from unittest.mock import patch
 
-from app.tests.security.base_security_test import BaseSecurityTest
+from app.tests.security.utils.base_security_test import BaseSecurityTest
 
 
 class TestBaseSecurityTest(unittest.TestCase):

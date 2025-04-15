@@ -52,6 +52,11 @@ class BaseSecurityTest(TestCase):
 
     def _configure_test_rbac(self) -> None:
         """Configure role-based access control with test permissions."""
+        # Add roles first
+        self.rbac.add_role("user")
+        self.rbac.add_role("clinician")
+        self.rbac.add_role("admin")
+
         # Default role configuration for tests
         self.rbac.add_role_permission("user", "read:own_data")
         self.rbac.add_role_permission("user", "update:own_data")

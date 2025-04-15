@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 from unittest.mock import patch, mock_open
 
-from app.core.utils.validation import PHIDetector
+from app.infrastructure.security.phi.detector import PHIDetector
 
 
 @pytest.mark.db_required()

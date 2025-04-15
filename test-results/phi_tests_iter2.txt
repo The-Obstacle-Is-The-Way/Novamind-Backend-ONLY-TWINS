@@ -1,0 +1,1345 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/backend
+configfile: pytest.ini
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1, asyncio-0.26.0, mock-3.14.0
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 103 items
+
+backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_sanitizer_initialization PASSED [  0%]
+backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_ssn_sanitization PASSED [  1%]
+backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_email_sanitization PASSED [  2%]
+backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_phone_sanitization PASSED [  3%]
+backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_name_sanitization PASSED [  4%]
+backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_multiple_phi_sanitization FAILED [  5%]
+backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_phi_never_reaches_logs 
+-------------------------------- live log call ---------------------------------
+2025-04-15 01:09:32 [    INFO] New appointment for John Doe (johndoe@example.com)
+2025-04-15 01:09:32 [ WARNING] Failed login attempt for SSN: 123-45-6789
+2025-04-15 01:09:32 [   ERROR] Patient with phone number (555) 123-4567 reported an issue
+FAILED                                                                   [  6%]
+backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_sanitization_performance PASSED [  7%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_case_insensitive_sanitization PASSED [  8%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_hipaa_compliance PASSED [  9%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_no_phi_unchanged FAILED [ 10%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_addresses FAILED [ 11%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_dob FAILED [ 12%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_email_addresses PASSED [ 13%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_mrn FAILED [ 14%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_multiple_phi FAILED [ 15%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_patient_names FAILED [ 16%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_phone_numbers FAILED [ 17%]
+backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_ssn FAILED [ 18%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestPHIHandling::test_phi_data_is_never_logged PASSED [ 19%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestPHIHandling::test_phi_is_never_stored_in_plain_text PASSED [ 20%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestPHIHandling::test_phi_is_properly_deidentified PASSED [ 21%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestPHIHandling::test_patient_data_isolation PASSED [ 22%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestMLDataProcessing::test_feature_extraction_anonymizes_phi PASSED [ 23%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestMLDataProcessing::test_model_output_has_no_phi PASSED [ 24%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestMLDataProcessing::test_batch_processing_isolates_patient_data PASSED [ 25%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestMLSecureStorage::test_ml_model_storage_encryption PASSED [ 26%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestMLSecureStorage::test_ml_model_loading_decryption PASSED [ 27%]
+backend/app/tests/security/phi/test_ml_phi_security.py::TestMLSecureStorage::test_secure_temporary_files PASSED [ 28%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_basic FAILED [ 29%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_empty_text FAILED [ 30%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_non_phi_text FAILED [ 31%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_types FAILED [ 32%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_with_threshold PASSED [ 33%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_initialization FAILED [ 33%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_pattern_selection PASSED [ 34%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_redact_phi_basic PASSED [ 35%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_redact_phi_edge_cases PASSED [ 36%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_redact_phi_empty_text FAILED [ 37%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_redact_phi_non_phi_text FAILED [ 38%]
+backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_redact_phi_with_detection_level PASSED [ 39%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_all_phi_fields_are_encrypted SKIPPED [ 40%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_audit_trail_for_phi_access SKIPPED [ 41%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_encrypted_fields_not_serialized SKIPPED [ 42%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_error_handling_without_phi_exposure SKIPPED [ 43%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_no_phi_in_logs SKIPPED [ 44%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_patient_phi_encryption_at_rest PASSED [ 45%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_phi_field_access_restrictions SKIPPED [ 46%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_phi_fields_decryption SKIPPED [ 47%]
+backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_secure_error_handling FAILED [ 48%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_audit_failed_with_issues PASSED [ 49%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_audit_file_detection FAILED [ 50%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_audit_passed_with_clean_app_directory PASSED [ 51%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_audit_passed_with_clean_app_in_path PASSED [ 52%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_audit_passed_with_clean_directory PASSED [ 53%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_audit_result_allowed_status PASSED [ 54%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_report_counts_for_clean_app_files 
+-------------------------------- live log call ---------------------------------
+2025-04-15 01:09:32 [ WARNING] PHI pattern detected in /var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmp298j02um/clean_app/test_data.py: SSN - 123-45-6789
+PASSED                                                                   [ 55%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_run_audit_with_clean_app_directory 
+-------------------------------- live log call ---------------------------------
+2025-04-15 01:09:32 [ WARNING] PHI pattern detected in /var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmpy4bn2_un/clean_app_test/data.py: SSN - 123-45-6789
+2025-04-15 01:09:32 [    INFO] PHI audit complete. Found 0 files with PHI issues out of 1 examined.
+2025-04-15 01:09:32 [ WARNING] API security issue found in /var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmpy4bn2_un/clean_app_test/presentation/api/v1/endpoints/patients.py
+2025-04-15 01:09:32 [ WARNING] API security issue found in /var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmpy4bn2_un/clean_app_test/presentation/api/v1/endpoints/patients.py
+2025-04-15 01:09:32 [ WARNING] Missing security settings in /var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmpy4bn2_un/clean_app_test/core/config.py: JWT_SECRET, ENCRYPTION_KEY, SSL_CERT, AUTH_REQUIRED, HIPAA_COMPLIANT
+2025-04-15 01:09:32 [ WARNING] Missing security settings in /var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmpy4bn2_un/clean_app_test/core/config.py: JWT_SECRET, ENCRYPTION_KEY, SSL_CERT, AUTH_REQUIRED, HIPAA_COMPLIANT, encryption
+2025-04-15 01:09:32 [    INFO] PHI audit complete. 4 issues allowed due to special case in 3 files.
+PASSED                                                                   [ 56%]
+backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_strict_mode_disables_special_handling FAILED [ 57%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_variable_assignment PASSED [ 58%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_api_examples PASSED [ 59%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_test_cases PASSED [ 60%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_logs_and_errors PASSED [ 61%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_comments PASSED [ 62%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_complex_code FAILED [ 63%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_multiline_strings PASSED [ 64%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_html_templates PASSED [ 65%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_database_queries PASSED [ 66%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInSourceFiles::test_python_file_with_phi FAILED [ 66%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInSourceFiles::test_js_file_with_phi FAILED [ 67%]
+backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInSourceFiles::test_config_file_with_phi FAILED [ 68%]
+backend/app/tests/security/phi/test_phi_detection.py::TestPHIDetection::test_ssn_pattern_detection PASSED [ 69%]
+backend/app/tests/security/phi/test_phi_detection.py::TestPHIDetection::test_audit_with_clean_app_directory PASSED [ 70%]
+backend/app/tests/security/phi/test_phi_detection.py::TestPHIDetection::test_phi_in_normal_code PASSED [ 71%]
+backend/app/tests/security/phi/test_phi_detection.py::TestPHIDetection::test_phi_in_test_files PASSED [ 72%]
+backend/app/tests/security/phi/test_phi_detection.py::TestPHIDetection::test_api_endpoint_security PASSED [ 73%]
+backend/app/tests/security/phi/test_phi_detection.py::TestPHIDetection::test_config_security_classification PASSED [ 74%]
+backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_exclude_path PASSED [ 75%]
+backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_sanitize_request_with_phi PASSED [ 76%]
+backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_sanitize_response_with_phi FAILED [ 77%]
+backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_whitelist_patterns FAILED [ 78%]
+backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_audit_mode PASSED [ 79%]
+backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_sanitize_non_json_response PASSED [ 80%]
+backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_sanitize_nested_json FAILED [ 81%]
+backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_add_phi_middleware 
+-------------------------------- live log call ---------------------------------
+2025-04-15 01:09:32 [    INFO] PHI middleware added to FastAPI application (audit_mode: True, excluded paths: 8)
+PASSED                                                                   [ 82%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_string_with_ssn FAILED [ 83%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_no_false_positives FAILED [ 84%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_unicode_and_idempotency FAILED [ 85%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_string_with_multiple_phi PASSED [ 86%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_json_with_phi FAILED [ 87%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_dict_with_phi PASSED [ 88%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_nested_dict_with_phi FAILED [ 89%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_list_with_phi FAILED [ 90%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_complex_structure PASSED [ 91%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_phi_in_logs FAILED [ 92%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_phi_detection_integration PASSED [ 93%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_phi_sanitizer_performance PASSED [ 94%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_preservation_of_non_phi PASSED [ 95%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitizer_edge_cases PASSED [ 96%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_redaction_format_consistency PASSED [ 97%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_text_with_phone FAILED [ 98%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_dict_with_phone FAILED [ 99%]
+backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_complex_data_structure FAILED [100%]
+
+=================================== FAILURES ===================================
+______________ TestLogSanitization.test_multiple_phi_sanitization ______________
+
+self = <test_log_sanitization.TestLogSanitization object at 0x1048e1480>
+
+    def test_multiple_phi_sanitization(self):
+        """Test that multiple PHI elements in the same log are all sanitized."""
+        sanitizer = LogSanitizer() # Use infrastructure sanitizer
+        test_log = "Patient John Smith (SSN: 123-45-6789) can be reached at (555) 123-4567 or john.smith@example.com"
+        sanitized = sanitizer.sanitize(test_log)
+    
+        assert "John Smith" not in sanitized
+        assert "123-45-6789" not in sanitized
+        assert "(555) 123-4567" not in sanitized
+        assert "john.smith@example.com" not in sanitized
+    
+        assert "[REDACTED NAME]" in sanitized
+        assert "[REDACTED SSN]" in sanitized
+>       assert "[REDACTED PHONE]" in sanitized # Use space, not hyphen
+E       AssertionError: assert '[REDACTED PHONE]' in '[REDACTED NAME] (SSN: [REDACTED SSN]) [REDACTED NAME] (555) 123-[REDACTED ADDRESS] [REDACTED EMAIL]'
+
+backend/app/tests/security/phi/test_log_sanitization.py:112: AssertionError
+_______________ TestLogSanitization.test_phi_never_reaches_logs ________________
+
+self = <test_log_sanitization.TestLogSanitization object at 0x1048e16a0>
+logger_setup = (<Logger test_phi_logger (DEBUG)>, '/var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmpgeegqzcj.log')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1047a3bb0>
+
+    def test_phi_never_reaches_logs(self, logger_setup, monkeypatch):
+        """End-to-end test ensuring PHI doesn't make it to logs."""
+        # Set up a real sanitizer that will be used by the logging system
+        # Use the correct infrastructure LogSanitizer
+        real_sanitizer = LogSanitizer()
+    
+        # Patch the LogSanitizer class where it's instantiated by PHIFormatter
+        # When PHIFormatter calls LogSanitizer(), it will get our instance.
+        monkeypatch.setattr(
+            'app.infrastructure.security.log_sanitizer.LogSanitizer',
+            lambda *args, **kwargs: real_sanitizer
+        )
+    
+        logger, log_file = logger_setup
+    
+        # Create sensitive log messages with PHI
+        logger.info("New appointment for John Doe (johndoe@example.com)")
+        logger.warning("Failed login attempt for SSN: 123-45-6789")
+        logger.error("Patient with phone number (555) 123-4567 reported an issue")
+    
+        # Read the log file and check for PHI
+        with open(log_file, 'r') as f:
+            log_content = f.read()
+    
+        # Verify no PHI is present
+        assert "John Doe" not in log_content
+        assert "johndoe@example.com" not in log_content
+        assert "123-45-6789" not in log_content
+        assert "(555) 123-4567" not in log_content
+    
+        # Verify redaction markers are present
+        assert "[REDACTED NAME]" in log_content
+        assert "[REDACTED EMAIL]" in log_content
+        assert "[REDACTED SSN]" in log_content
+>       assert "[REDACTED PHONE]" in log_content
+E       AssertionError: assert '[REDACTED PHONE]' in '2025-04-15 01:09:32,529 - test_phi_logger - INFO - [REDACTED NAME] ([REDACTED EMAIL])\n2025-04-15 01:09:32,529 - test_phi_logger - WARNING - [REDACTED NAME]: [REDACTED SSN]\n2025-04-15 01:09:32,529 - test_phi_logger - ERROR - [REDACTED NAME] (555) 123-[REDACTED ADDRESS] an issue\n'
+
+backend/app/tests/security/phi/test_log_sanitization.py:171: AssertionError
+------------------------------ Captured log call -------------------------------
+INFO     test_phi_logger:test_log_sanitization.py:153 New appointment for John Doe (johndoe@example.com)
+WARNING  test_phi_logger:test_log_sanitization.py:154 Failed login attempt for SSN: 123-45-6789
+ERROR    test_phi_logger:test_log_sanitization.py:155 Patient with phone number (555) 123-4567 reported an issue
+____________________ TestLogSanitizer.test_no_phi_unchanged ____________________
+
+self = <test_log_sanitizer.TestLogSanitizer testMethod=test_no_phi_unchanged>
+
+    def test_no_phi_unchanged(self):
+        """Test that logs without PHI are unchanged."""
+        log_key = "no_phi"
+        sanitized = self.log_sanitizer.sanitize(self.test_logs[log_key])
+>       self.assertEqual(sanitized, self.expected_patterns[log_key])
+E       AssertionError: '[REDACTED NAME] 0x123' != 'System initialized with error code 0x123'
+E       - [REDACTED NAME] 0x123
+E       + System initialized with error code 0x123
+
+backend/app/tests/security/phi/test_log_sanitizer.py:107: AssertionError
+___________________ TestLogSanitizer.test_sanitize_addresses ___________________
+
+self = <test_log_sanitizer.TestLogSanitizer testMethod=test_sanitize_addresses>
+
+    def test_sanitize_addresses(self):
+        """Test sanitization of physical addresses."""
+        log_key = "patient_address"
+        sanitized = self.log_sanitizer.sanitize(self.test_logs[log_key])
+>       self.assertEqual(sanitized, self.expected_patterns[log_key])
+E       AssertionError: '[REDACTED NAME] [REDACTED ADDRESS] St, Anytown, CA 90210' != 'Patient lives at [REDACTED ADDRESS], Anytown, CA 90210'
+E       - [REDACTED NAME] [REDACTED ADDRESS] St, Anytown, CA 90210
+E       + Patient lives at [REDACTED ADDRESS], Anytown, CA 90210
+
+backend/app/tests/security/phi/test_log_sanitizer.py:69: AssertionError
+______________________ TestLogSanitizer.test_sanitize_dob ______________________
+
+self = <test_log_sanitizer.TestLogSanitizer testMethod=test_sanitize_dob>
+
+    def test_sanitize_dob(self):
+        """Test sanitization of Dates of Birth."""
+        log_key = "patient_dob"
+        sanitized = self.log_sanitizer.sanitize(self.test_logs[log_key])
+>       self.assertEqual(sanitized, self.expected_patterns[log_key])
+E       AssertionError: '[REDACTED NAME] [REDACTED DATE]' != 'Patient DOB is [REDACTED DATE]'
+E       - [REDACTED NAME] [REDACTED DATE]
+E       + Patient DOB is [REDACTED DATE]
+
+backend/app/tests/security/phi/test_log_sanitizer.py:90: AssertionError
+______________________ TestLogSanitizer.test_sanitize_mrn ______________________
+
+self = <test_log_sanitizer.TestLogSanitizer testMethod=test_sanitize_mrn>
+
+    def test_sanitize_mrn(self):
+        """Test sanitization of Medical Record Numbers."""
+        log_key = "patient_mrn"
+        sanitized = self.log_sanitizer.sanitize(self.test_logs[log_key])
+>       self.assertEqual(sanitized, self.expected_patterns[log_key])
+E       AssertionError: 'Patient [REDACTED MRN] [REDACTED NAME]' != 'Patient [REDACTED MRN] admitted to ward'
+E       - Patient [REDACTED MRN] [REDACTED NAME]
+E       + Patient [REDACTED MRN] admitted to ward
+
+backend/app/tests/security/phi/test_log_sanitizer.py:83: AssertionError
+_________________ TestLogSanitizer.test_sanitize_multiple_phi __________________
+
+self = <test_log_sanitizer.TestLogSanitizer testMethod=test_sanitize_multiple_phi>
+
+    def test_sanitize_multiple_phi(self):
+        """Test sanitization of logs with multiple PHI elements."""
+        log_key = "multiple_phi"
+        sanitized = self.log_sanitizer.sanitize(self.test_logs[log_key])
+>       self.assertEqual(sanitized, self.expected_patterns[log_key])
+E       AssertionError: '[RED[24 chars]ATE], SSN [REDACTED SSN] [REDACTED NAME] [REDACTED ADDRESS] St' != '[RED[24 chars]ATE], SSN [REDACTED SSN] lives at [REDACTED ADDRESS]'
+E       - [REDACTED NAME], [REDACTED DATE], SSN [REDACTED SSN] [REDACTED NAME] [REDACTED ADDRESS] St
+E       ?                                                                ----------------        ---
+E       + [REDACTED NAME], [REDACTED DATE], SSN [REDACTED SSN] lives at [REDACTED ADDRESS]
+E       ?                                                     +++++++++
+
+backend/app/tests/security/phi/test_log_sanitizer.py:97: AssertionError
+_________________ TestLogSanitizer.test_sanitize_patient_names _________________
+
+self = <test_log_sanitizer.TestLogSanitizer testMethod=test_sanitize_patient_names>
+
+    def test_sanitize_patient_names(self):
+        """Test sanitization of patient names."""
+        log_key = "patient_name"
+        sanitized = self.log_sanitizer.sanitize(self.test_logs[log_key])
+>       self.assertEqual(sanitized, self.expected_patterns[log_key])
+E       AssertionError: '[REDACTED NAME] 2023-01-01' != '[REDACTED NAME] visited on 2023-01-01'
+E       - [REDACTED NAME] 2023-01-01
+E       + [REDACTED NAME] visited on 2023-01-01
+E       ?                +++++++++++
+
+backend/app/tests/security/phi/test_log_sanitizer.py:48: AssertionError
+_________________ TestLogSanitizer.test_sanitize_phone_numbers _________________
+
+self = <test_log_sanitizer.TestLogSanitizer testMethod=test_sanitize_phone_numbers>
+
+    def test_sanitize_phone_numbers(self):
+        """Test sanitization of phone numbers."""
+        log_key = "patient_phone"
+        sanitized = self.log_sanitizer.sanitize(self.test_logs[log_key])
+>       self.assertEqual(sanitized, self.expected_patterns[log_key])
+E       AssertionError: '[REDACTED NAME] [REDACTED PHONE]' != 'Patient phone number is [REDACTED PHONE]'
+E       - [REDACTED NAME] [REDACTED PHONE]
+E       + Patient phone number is [REDACTED PHONE]
+
+backend/app/tests/security/phi/test_log_sanitizer.py:62: AssertionError
+______________________ TestLogSanitizer.test_sanitize_ssn ______________________
+
+self = <test_log_sanitizer.TestLogSanitizer testMethod=test_sanitize_ssn>
+
+    def test_sanitize_ssn(self):
+        """Test sanitization of Social Security Numbers."""
+        log_key = "patient_ssn"
+        sanitized = self.log_sanitizer.sanitize(self.test_logs[log_key])
+>       self.assertEqual(sanitized, self.expected_patterns[log_key])
+E       AssertionError: '[REDACTED NAME] [REDACTED SSN]' != 'Patient SSN is [REDACTED SSN]'
+E       - [REDACTED NAME] [REDACTED SSN]
+E       + Patient SSN is [REDACTED SSN]
+
+backend/app/tests/security/phi/test_log_sanitizer.py:76: AssertionError
+__________________ TestMockPHIDetection.test_detect_phi_basic __________________
+
+self = <test_mock_phi_service.TestMockPHIDetection testMethod=test_detect_phi_basic>
+
+    def test_detect_phi_basic(self) -> None:
+        """Test basic PHI detection functionality."""
+        # Test with sample PHI text
+        result = self.service.detect_phi(self.sample_phi_text)
+    
+        # Verify result structure
+        self.assertIn("phi_instances", result)
+>       self.assertIn("confidence_score", result)
+E       AssertionError: 'confidence_score' not found in {'has_phi': True, 'confidence': 0.95, 'detection_level': 'strict', 'phi_instances': [{'type': 'NAME', 'subtype': 'PATIENT', 'text': 'John Smith', 'start_pos': 10, 'end_pos': 20, 'confidence': 0.99}, {'type': 'DATE', 'subtype': 'BIRTH_DATE', 'text': '01/15/1980', 'start_pos': 45, 'end_pos': 55, 'confidence': 0.98}, {'type': 'ID', 'subtype': 'SSN', 'text': '123-45-6789', 'start_pos': 80, 'end_pos': 91, 'confidence': 0.99}, {'type': 'LOCATION', 'subtype': 'ADDRESS', 'text': '123 Main St, Anytown, NY 12345', 'start_pos': 110, 'end_pos': 141, 'confidence': 0.97}, {'type': 'CONTACT', 'subtype': 'PHONE', 'text': '(555) 123-4567', 'start_pos': 160, 'end_pos': 174, 'confidence': 0.98}], 'model': 'mock-phi-detection', 'analysis_time_ms': 42, 'timestamp': '2025-04-15T05:09:32.556959+00:00Z'}
+
+backend/app/tests/security/phi/test_mock_phi_service.py:79: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+_______________ TestMockPHIDetection.test_detect_phi_empty_text ________________
+
+self = <test_mock_phi_service.TestMockPHIDetection testMethod=test_detect_phi_empty_text>
+
+    def test_detect_phi_empty_text(self) -> None:
+        """Test PHI detection with empty text."""
+>       result = self.service.detect_phi("")
+
+backend/app/tests/security/phi/test_mock_phi_service.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.core.services.ml.mock.MockPHIDetection object at 0x104833890>
+text = '', detection_level = None
+
+    def detect_phi(
+        self,
+        text: str,
+        detection_level: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Detect PHI in text.
+    
+        Args:
+            text: Text to analyze
+            detection_level: Detection level (strict, moderate, relaxed)
+    
+        Returns:
+            Dict containing detection results with PHI locations and types
+    
+        Raises:
+            ServiceUnavailableError: If service is not initialized
+            InvalidRequestError: If text is empty or invalid
+        """
+        if not self._initialized:
+            raise ServiceUnavailableError("Mock PHI detection service is not initialized")
+    
+        if not text or not isinstance(text, str):
+>           raise InvalidRequestError("Text must be a non-empty string")
+E           app.core.exceptions.ml_exceptions.InvalidRequestError: Text must be a non-empty string
+
+backend/app/core/services/ml/mock.py:1292: InvalidRequestError
+----------------------------- Captured stdout call -----------------------------
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+______________ TestMockPHIDetection.test_detect_phi_non_phi_text _______________
+
+self = <test_mock_phi_service.TestMockPHIDetection testMethod=test_detect_phi_non_phi_text>
+
+    def test_detect_phi_non_phi_text(self) -> None:
+        """Test PHI detection with text containing no PHI."""
+        non_phi_text = "The weather is nice today. The hospital has new equipment."
+        result = self.service.detect_phi(non_phi_text)
+    
+        # Should not detect PHI in non-PHI text
+>       self.assertEqual(len(result["phi_instances"]), 0)
+E       AssertionError: 5 != 0
+
+backend/app/tests/security/phi/test_mock_phi_service.py:104: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+__________________ TestMockPHIDetection.test_detect_phi_types __________________
+
+self = <test_mock_phi_service.TestMockPHIDetection testMethod=test_detect_phi_types>
+
+    def test_detect_phi_types(self) -> None:
+        """Test detection of different PHI types."""
+        # Test with text containing multiple PHI types
+        result = self.service.detect_phi(self.sample_phi_text)
+    
+        # Extract PHI types from the result
+        phi_types = [instance["type"] for instance in result["phi_instances"]]
+    
+        # Should detect various PHI types
+        expected_types = ["NAME", "SSN", "EMAIL", "PHONE", "ADDRESS", "DATE"]
+        for expected_type in expected_types:
+>           self.assertTrue(
+                any(expected_type in phi_type for phi_type in phi_types),
+                f"Failed to detect {expected_type} in the sample text"
+            )
+E           AssertionError: False is not true : Failed to detect SSN in the sample text
+
+backend/app/tests/security/phi/test_mock_phi_service.py:146: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+___________________ TestMockPHIDetection.test_initialization ___________________
+
+self = <test_mock_phi_service.TestMockPHIDetection testMethod=test_initialization>
+
+    def test_initialization(self) -> None:
+        """Test initialization with valid and invalid configurations."""
+        # Test default initialization
+        service = MockPHIDetection()
+        service.initialize({})
+        self.assertTrue(service.is_healthy())
+        service.shutdown()
+    
+        # Test with custom configuration
+        service = MockPHIDetection()
+        service.initialize({"detection_threshold": 0.8})
+        self.assertTrue(service.is_healthy())
+        service.shutdown()
+    
+        # Test with invalid configuration
+        service = MockPHIDetection()
+>       with self.assertRaises(InvalidConfigurationError):
+E       AssertionError: InvalidConfigurationError not raised
+
+backend/app/tests/security/phi/test_mock_phi_service.py:69: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+_______________ TestMockPHIDetection.test_redact_phi_empty_text ________________
+
+self = <test_mock_phi_service.TestMockPHIDetection testMethod=test_redact_phi_empty_text>
+
+    def test_redact_phi_empty_text(self) -> None:
+        """Test PHI redaction with empty text."""
+>       result = self.service.redact_phi("")
+
+backend/app/tests/security/phi/test_mock_phi_service.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.core.services.ml.mock.MockPHIDetection object at 0x106061230>
+text = '', replacement = '[REDACTED]', detection_level = None
+
+    def redact_phi(
+        self,
+        text: str,
+        replacement: str = "[REDACTED]",
+        detection_level: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Redact PHI from text.
+    
+        Args:
+            text: Text to redact
+            replacement: Replacement text for redacted PHI
+            detection_level: Detection level (strict, moderate, relaxed)
+    
+        Returns:
+            Dict containing redacted text and metadata
+    
+        Raises:
+            ServiceUnavailableError: If service is not initialized
+            InvalidRequestError: If text is empty or invalid
+        """
+        if not self._initialized:
+            raise ServiceUnavailableError("Mock PHI detection service is not initialized")
+    
+        if not text or not isinstance(text, str):
+>           raise InvalidRequestError("Text must be a non-empty string")
+E           app.core.exceptions.ml_exceptions.InvalidRequestError: Text must be a non-empty string
+
+backend/app/core/services/ml/mock.py:1406: InvalidRequestError
+----------------------------- Captured stdout call -----------------------------
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+______________ TestMockPHIDetection.test_redact_phi_non_phi_text _______________
+
+self = <test_mock_phi_service.TestMockPHIDetection testMethod=test_redact_phi_non_phi_text>
+
+    def test_redact_phi_non_phi_text(self) -> None:
+        """Test PHI redaction with text containing no PHI."""
+        non_phi_text = "The weather is nice today. The hospital has new equipment."
+        result = self.service.redact_phi(non_phi_text)
+    
+        # Should not modify non-PHI text
+>       self.assertEqual(result["redacted_text"], non_phi_text)
+E       AssertionError: 'Patient: [REDACTED] was seen on [REDACTED[469 chars]TED]' != 'The weather is nice today. The hospital h[13 chars]ent.'
+E       + The weather is nice today. The hospital has new equipment.
+E       - Patient: [REDACTED] was seen on [REDACTED] for follow-up.
+E       -         
+E       - Medical Record #: [REDACTED]
+E       - Address: [REDACTED]
+E       - Phone: [REDACTED]
+E       -         
+E       - Assessment:
+E       - The patient continues to show improvement in mood and anxiety symptoms. They report better sleep quality and reduced rumination. No suicidal ideation or intent. Blood pressure is within normal range at [REDACTED].
+E       -         
+E       - Plan:
+E       - 1. Continue current medication regimen
+E       - 2. Follow-up in 4 weeks
+E       - 3. Refer to weekly therapy sessions with Dr. [REDACTED]
+
+backend/app/tests/security/phi/test_mock_phi_service.py:189: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service initialized
+[2025-04-15 01:09:32] [INFO] [app.core.services.ml.mock] - Mock PHI detection service shut down
+______________ TestPatientPHISecurity.test_secure_error_handling _______________
+
+self = <test_patient_phi_security.TestPatientPHISecurity testMethod=test_secure_error_handling>
+
+    def test_secure_error_handling(self):
+        patient = self._create_sample_patient_with_phi()
+        from app.core.utils.enhanced_phi_detector import get_enhanced_phi_secure_logger
+        logger = get_enhanced_phi_secure_logger(__name__)
+        with patch.object(logger, "error") as mock_log_error:
+            try:
+                raise ValueError(f"Error processing patient {patient.id} with email {patient.email}")
+            except ValueError as e:
+                logger.error(f"Error occurred: {str(e)}")
+            for call in mock_log_error.call_args_list:
+                log_message = call[0][0]
+>               assert patient.email not in log_message, "Email should not be in error logs"
+E               AssertionError: Email should not be in error logs
+E               assert 'alexandra.j...@example.com' not in 'Error occur...@example.com'
+E                 
+E                 'alexandra.johnson@example.com' is contained here:
+E                   Error occurred: Error processing patient b9347b92-bbd9-4669-a11b-979c03c662b4 with email alexandra.johnson@example.com
+E                 ?                                                                                          +++++++++++++++++++++++++++++
+
+backend/app/tests/security/phi/test_patient_phi_security.py:114: AssertionError
+_________________ TestPHIAuditLogic.test_audit_file_detection __________________
+
+self = <test_phi_audit_logic.TestPHIAuditLogic testMethod=test_audit_file_detection>
+
+    def test_audit_file_detection(self):
+        """Test the is_phi_test_file detection logic."""
+        import tempfile
+        import shutil
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create a PHIAuditor instance
+            auditor = PHIAuditor(app_dir=temp_dir)
+    
+            # Create a regular file
+            regular_file = os.path.join(temp_dir, "regular.py")
+            with open(regular_file, "w") as f:
+                f.write("def regular_function(): return True")
+    
+            # Create a test file that isn't testing PHI
+            non_phi_test_file = os.path.join(temp_dir, "test_regular.py")
+            with open(non_phi_test_file, "w") as f:
+                f.write("""
+                    import pytest
+    
+                    def test_something():
+                        assert 1 + 1 == 2
+                """)
+    
+            # Create a PHI test file
+            phi_test_file = os.path.join(temp_dir, "test_phi_detection.py")
+            with open(phi_test_file, "w") as f:
+                f.write("""
+                    import pytest
+                    from app.core.utils.validation import PHIDetector
+    
+                    def test_phi_detection():
+                        detector = PHIDetector()
+                        assert detector.contains_phi("123-45-6789") is True
+                """)
+    
+            # Test the detection logic
+            assert auditor.is_phi_test_file(regular_file, open(regular_file, "r").read()) is False, "Regular file should not be detected as PHI test file"
+            assert auditor.is_phi_test_file(non_phi_test_file, open(non_phi_test_file, "r").read()) is False, "Non-PHI test file should not be detected as PHI test file"
+>           assert auditor.is_phi_test_file(phi_test_file, open(phi_test_file, "r").read()) is True, "PHI test file should be detected correctly"
+E           AssertionError: PHI test file should be detected correctly
+E           assert False is True
+E            +  where False = is_phi_test_file('/var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmp2fbybbfn/test_phi_detection.py', '\n                    import pytest\n                    from app.core.utils.validation import PHIDetector\n\n                    def test_phi_detection():\n                        detector = PHIDetector()\n                        assert detector.contains_phi("123-45-6789") is True\n                ')
+E            +    where is_phi_test_file = <scripts.test.security.run_hipaa_phi_audit.PHIAuditor object at 0x105787ed0>.is_phi_test_file
+E            +    and   '\n                    import pytest\n                    from app.core.utils.validation import PHIDetector\n\n                    def test_phi_detection():\n                        detector = PHIDetector()\n                        assert detector.contains_phi("123-45-6789") is True\n                ' = <built-in method read of _io.TextIOWrapper object at 0x105fef300>()
+E            +      where <built-in method read of _io.TextIOWrapper object at 0x105fef300> = <_io.TextIOWrapper name='/var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmp2fbybbfn/test_phi_detection.py' mode='r' encoding='UTF-8'>.read
+E            +        where <_io.TextIOWrapper name='/var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmp2fbybbfn/test_phi_detection.py' mode='r' encoding='UTF-8'> = open('/var/folders/3p/t86zsht91l3gsdpddkqg_kfh0000gn/T/tmp2fbybbfn/test_phi_detection.py', 'r')
+
+backend/app/tests/security/phi/test_phi_audit_logic.py:141: AssertionError
+_________ TestPHIAuditLogic.test_strict_mode_disables_special_handling _________
+
+self = <test_phi_audit_logic.TestPHIAuditLogic testMethod=test_strict_mode_disables_special_handling>
+
+    def test_strict_mode_disables_special_handling(self):
+        """Test that strict mode disables special handling for test files and clean_app directories."""
+        import tempfile
+        import shutil
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create a clean_app directory
+            clean_app_dir = os.path.join(temp_dir, "clean_app")
+            os.makedirs(clean_app_dir)
+    
+            # Create a test file with PHI
+            test_file = os.path.join(clean_app_dir, "test_phi.py")
+            with open(test_file, "w") as f:
+                f.write("""
+                    def test_function():
+                        ssn = \"123-45-6789\"
+                """)
+    
+            # Create an auditor (no strict_mode argument)
+            strict_auditor = PHIAuditor(app_dir=clean_app_dir)
+    
+            # Add mock issues
+            strict_auditor.findings = {
+                "code_phi": [{"file": "test_phi.py", "evidence": "SSN: 123-45-6789"}],
+                "api_security": [],
+                "configuration_issues": []
+            }
+    
+            # Verify audit fails in strict mode despite being in clean_app directory
+>           assert strict_auditor._audit_passed() is False, "Audit should fail in strict mode even in clean_app directory"
+E           AssertionError: Audit should fail in strict mode even in clean_app directory
+E           assert True is False
+E            +  where True = _audit_passed()
+E            +    where _audit_passed = <scripts.test.security.run_hipaa_phi_audit.PHIAuditor object at 0x105fb3460>._audit_passed
+
+backend/app/tests/security/phi/test_phi_audit_logic.py:174: AssertionError
+________________ TestPHIInCodePatterns.test_phi_in_complex_code ________________
+
+self = <test_phi_code_patterns.TestPHIInCodePatterns object at 0x10579dd00>
+detector = <app.core.utils.validation.PHIDetector object at 0x105d84a70>
+
+    def test_phi_in_complex_code(self, detector):
+        """Test detection of PHI in more complex, realistic code samples."""
+        complex_code = """
+    
+                    def process_patient_data(patient_data):
+    
+    
+            \"\"\"Process patient data and store in database.\"\"\"
+            # Validate SSN format
+                        if not is_valid_ssn(patient_data.get('ssn')):
+            # Example of invalid SSN: 123-456-7890 (too many digits)
+            logger.error(f"Invalid SSN format for patient: {patient_data.get('name')}")
+            raise ValueError(f"Invalid SSN: {patient_data.get('ssn')}")
+    
+            # Process patient data
+                try:
+                    # TODO: Remove hardcoded test data before production
+                        if patient_data.get('ssn') == '123-45-6789':
+                    # This is our test patient (John Smith)
+                    #     return {'status': 'success', 'test_mode': True} # FIXME: return outside function
+    
+                    result = db.patients.insert_one({)
+                    'name': patient_data.get('name'),
+                    'ssn_hash': hash_ssn(patient_data.get('ssn')),
+                    'dob': patient_data.get('dob')
+                    (    })
+    
+                    #     return {'status': 'success', 'id': str(result.inserted_id)} # FIXME: return outside function
+                        except Exception as e:
+            # Try with backup database
+            # Example: If inserting patient John Smith (SSN: 123-45-6789) fails
+            logger.error(f"Database error: {str(e)}")
+            #     return {'status': 'error', 'message': str(e)} # FIXME: return outside function
+            """
+    
+        # Verify PHI is detected in complex code
+        assert detector.contains_phi(complex_code)
+    
+        # Verify specific PHI instances are detected
+        matches = detector.detect_phi(complex_code)
+        ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+        name_matches = [m for m in matches if m.phi_type == "NAME"]
+    
+>       assert len(ssn_matches) >= 4  # At least 4 instances of SSN
+E       assert 2 >= 4
+E        +  where 2 = len([PHIMatch(type=SSN, value=[REDACTED], position=641), PHIMatch(type=SSN, value=[REDACTED], position=1343)])
+
+backend/app/tests/security/phi/test_phi_code_patterns.py:239: AssertionError
+________________ TestPHIInSourceFiles.test_python_file_with_phi ________________
+
+self = <test_phi_code_patterns.TestPHIInSourceFiles object at 0x105d8ce10>
+detector = <app.core.utils.validation.PHIDetector object at 0x105f1ec50>
+
+        def test_python_file_with_phi(self, detector):
+            """Test detection of PHI in Python source files."""
+            python_code = """
+                        #!/usr/bin/env python3
+                        # Test file with PHI data
+    
+                            def get_test_patient():
+    
+    
+                        \"\"\"Return test patient data.\"\"\"
+    #                             return {
+    "name": "John Smith",
+    "ssn": "123-45-6789",
+    "dob": "01/02/1980"
+    }
+    
+    # TODO: Remove hardcoded SSN before production
+        DEFAULT_SSN = "123-45-6789"class Patient:
+            def __init__(self, name="John Smith", ssn="123-45-6789"):
+    
+                self.name = name
+                self.ssn = ssn
+    
+                        if __name__ == "__main__":
+                # Test code
+                patient = Patient()
+                print(f"Patient: {patient.name}, SSN: {patient.ssn}")
+                """
+    
+            path = self._create_temp_file(python_code)
+            try:
+                # Read the file
+                with open(path, 'r') as f:
+                    file_content = f.read()
+    
+                # Verify PHI is detected
+                assert detector.contains_phi(file_content)
+    
+                # Check specific patterns
+                matches = detector.detect_phi(file_content)
+                ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+                name_matches = [m for m in matches if m.phi_type == "NAME"]
+    
+>               assert len(ssn_matches) >= 4  # At least 4 instances of SSN
+E               assert 3 >= 4
+E                +  where 3 = len([PHIMatch(type=SSN, value=[REDACTED], position=259), PHIMatch(type=SSN, value=[REDACTED], position=358), PHIMatch(type=SSN, value=[REDACTED], position=438)])
+
+backend/app/tests/security/phi/test_phi_code_patterns.py:412: AssertionError
+__________________ TestPHIInSourceFiles.test_js_file_with_phi __________________
+
+self = <test_phi_code_patterns.TestPHIInSourceFiles object at 0x105d8cf50>
+detector = <app.core.utils.validation.PHIDetector object at 0x105fbd310>
+
+    def test_js_file_with_phi(self, detector):
+        """Test detection of PHI in JavaScript source files."""
+        js_code = """
+                        // Test file with PHI data
+    
+                        function getTestPatient() {
+                        /**
+                        * Return test patient data
+                        * @returns {Object} Patient data
+                        */
+                        #             return { # FIXME: return outside function
+                        name: "John Smith",
+                        ssn: "123-45-6789",
+                        dob: "01/02/1980"
+            };
+        }
+    
+        // TODO: Remove hardcoded SSN before production
+        const DEFAULT_SSN = "123-45-6789";class Patient {:
+            constructor(name = "John Smith", ssn = "123-45-6789") {
+            this.name = name;
+            this.ssn = ssn;
+            }
+        }
+    
+        // Test code
+        const patient = new Patient();
+        console.log(`Patient: ${patient.name}, SSN: ${patient.ssn}`);
+        """
+    
+        path = self._create_temp_file(js_code, ".js")
+        try:
+            # Read the file
+            with open(path, 'r') as f:
+                file_content = f.read()
+    
+            # Verify PHI is detected
+            assert detector.contains_phi(file_content)
+    
+            # Check specific patterns
+            matches = detector.detect_phi(file_content)
+            ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+            name_matches = [m for m in matches if m.phi_type == "NAME"]
+    
+>           assert len(ssn_matches) >= 4
+E           assert 3 >= 4
+E            +  where 3 = len([PHIMatch(type=SSN, value=[REDACTED], position=416), PHIMatch(type=SSN, value=[REDACTED], position=582), PHIMatch(type=SSN, value=[REDACTED], position=664)])
+
+backend/app/tests/security/phi/test_phi_code_patterns.py:462: AssertionError
+________________ TestPHIInSourceFiles.test_config_file_with_phi ________________
+
+self = <test_phi_code_patterns.TestPHIInSourceFiles object at 0x10571b820>
+detector = <app.core.utils.validation.PHIDetector object at 0x105fbda90>
+
+    def test_config_file_with_phi(self, detector):
+        """Test detection of PHI in configuration files."""
+        config_content = """
+                        [database]
+                        host = localhost
+                        port = 5432
+                        username = admin
+                        password = password123
+    
+                        [test_data]
+                        # Test patient data for integration tests
+                        patient_name = John Smith
+                        patient_ssn = 123-45-6789
+                        patient_dob = 01/02/1980
+                        """
+    
+        path = self._create_temp_file(config_content, ".ini")
+        try:
+            # Read the file
+            with open(path, 'r') as f:
+                file_content = f.read()
+    
+            # Verify PHI is detected
+            assert detector.contains_phi(file_content)
+    
+            # Check specific patterns
+            matches = detector.detect_phi(file_content)
+            ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+            name_matches = [m for m in matches if m.phi_type == "NAME"]
+            dob_matches = [m for m in matches if m.phi_type == "DATE"]
+    
+            assert len(ssn_matches) >= 1
+            assert len(name_matches) >= 1
+>           assert len(dob_matches) >= 1
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+backend/app/tests/security/phi/test_phi_code_patterns.py:501: AssertionError
+______________ TestPHIMiddleware.test_sanitize_response_with_phi _______________
+
+self = <test_phi_middleware.TestPHIMiddleware object at 0x105d59a70>
+
+    @pytest.mark.asyncio
+    async def test_sanitize_response_with_phi(self):
+        """Test that responses with PHI are sanitized."""
+        # Mock request
+        request = self._create_mock_request("/api/patients")
+    
+        # Mock response with PHI
+        phi_response = {
+            "patient": {"name": "John Doe", "ssn": "123-45-6789"},
+            "appointment": {"date": "2023-04-15"}
+        }
+        response_body = json.dumps(phi_response).encode('utf-8')
+        response = Response(
+            content=response_body,
+            status_code=200,
+            headers={"content-type": "application/json"}
+        )
+    
+        # Mock call_next to return the response
+        call_next = AsyncMock()
+        call_next.return_value = response
+    
+        # Process the request and get sanitized response
+        sanitized_response = await self.middleware.dispatch(request, call_next)
+    
+        # Check that response body was sanitized
+        sanitized_body = sanitized_response.body.decode('utf-8')
+        sanitized_data = json.loads(sanitized_body)
+    
+        # Verify PHI was redacted
+        assert "[REDACTED]" in sanitized_body
+        assert sanitized_data["patient"]["name"] == "[REDACTED]"
+        assert sanitized_data["patient"]["ssn"] == "[REDACTED]"
+        # Non-PHI data should remain untouched
+>       assert sanitized_data["appointment"]["date"] == "2023-04-15"
+E       AssertionError: assert '[REDACTED]' == '2023-04-15'
+E         
+E         - 2023-04-15
+E         + [REDACTED]
+
+backend/app/tests/security/phi/test_phi_middleware.py:114: AssertionError
+__________________ TestPHIMiddleware.test_whitelist_patterns ___________________
+
+self = <test_phi_middleware.TestPHIMiddleware object at 0x105e2aea0>
+
+    @pytest.mark.asyncio
+    async def test_whitelist_patterns(self):
+        """Test that whitelisted patterns are not sanitized."""
+        # Create middleware with whitelist
+        middleware = PHIMiddleware(
+            self.app,
+            phi_detector=self.phi_detector,
+            whitelist_patterns={
+                "/api/allowed": ["name"],
+                "/api/allowed/*": ["ssn"]
+            }
+        )
+    
+        # Mock request
+        request = self._create_mock_request("/api/allowed/123")
+    
+        # Mock response with PHI in whitelisted fields
+        phi_response = {
+            "name": "John Doe",  # Should not be sanitized (whitelisted)
+            "ssn": "123-45-6789",  # Should not be sanitized (whitelisted)
+            "address": "123 Main St, Springfield"  # Should be sanitized
+        }
+        response_body = json.dumps(phi_response).encode('utf-8')
+        response = Response(
+            content=response_body,
+            status_code=200,
+            headers={"content-type": "application/json"}
+        )
+    
+        # Mock call_next
+        call_next = AsyncMock()
+        call_next.return_value = response
+    
+        # Process the request
+        sanitized_response = await middleware.dispatch(request, call_next)
+    
+        # Check response body
+        sanitized_body = sanitized_response.body.decode('utf-8')
+        sanitized_data = json.loads(sanitized_body)
+    
+        # Verify whitelisted fields were not sanitized
+>       assert sanitized_data["name"] == "John Doe"
+E       AssertionError: assert '[REDACTED]' == 'John Doe'
+E         
+E         - John Doe
+E         + [REDACTED]
+
+backend/app/tests/security/phi/test_phi_middleware.py:157: AssertionError
+_________________ TestPHIMiddleware.test_sanitize_nested_json __________________
+
+self = <test_phi_middleware.TestPHIMiddleware object at 0x105fb1370>
+
+    @pytest.mark.asyncio
+    async def test_sanitize_nested_json(self):
+        """Test that deeply nested JSON is properly sanitized."""
+        # Mock request
+        request = self._create_mock_request("/api/patients")
+    
+        # Mock deeply nested response with PHI
+        phi_response = {
+            "data": {
+                "patients": [
+                    {
+                        "profile": {
+                            "personal": {
+                                "name": "John Doe",
+                                "contact": {
+                                    "email": "john.doe@example.com",
+                                    "phone": "555-123-4567"
+                                }
+                            }
+                        },
+                        "medical": {
+                            "ssn": "123-45-6789",
+                            "insurance": {
+                                "policy": "12345",
+                                "provider": "Health Co"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+        response_body = json.dumps(phi_response).encode('utf-8')
+        response = Response(
+            content=response_body,
+            status_code=200,
+            headers={"content-type": "application/json"}
+        )
+    
+        # Mock call_next
+        call_next = AsyncMock()
+        call_next.return_value = response
+    
+        # Process the request
+        sanitized_response = await self.middleware.dispatch(request, call_next)
+    
+        # Check response body
+        sanitized_body = sanitized_response.body.decode('utf-8')
+        sanitized_data = json.loads(sanitized_body)
+    
+        # Verify nested PHI was sanitized
+        patient = sanitized_data["data"]["patients"][0]
+        assert patient["profile"]["personal"]["name"] == "[REDACTED]"
+        assert patient["profile"]["personal"]["contact"]["email"] == "[REDACTED]"
+        assert patient["profile"]["personal"]["contact"]["phone"] == "[REDACTED]"
+        assert patient["medical"]["ssn"] == "[REDACTED]"
+        # Non-PHI data should be unchanged
+        assert patient["medical"]["insurance"]["policy"] == "12345"
+>       assert patient["medical"]["insurance"]["provider"] == "Health Co"
+E       AssertionError: assert '[REDACTED]' == 'Health Co'
+E         
+E         - Health Co
+E         + [REDACTED]
+
+backend/app/tests/security/phi/test_phi_middleware.py:283: AssertionError
+________________ TestPHISanitizer.test_sanitize_string_with_ssn ________________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105d8fb10>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x106aac4b0>
+
+    def test_sanitize_string_with_ssn(self, sanitizer):
+        """Test that patient names are properly sanitized (from phi_sanitizer_phi)."""
+        # Test text with common name patterns
+        text = "Patient John Smith reported symptoms."
+        sanitized = sanitizer.sanitize_text(text)
+        assert "John Smith" not in sanitized
+        assert "[REDACTED NAME]" in sanitized
+>       assert "reported symptoms" in sanitized
+E       AssertionError: assert 'reported symptoms' in '[REDACTED NAME].'
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:40: AssertionError
+___________________ TestPHISanitizer.test_no_false_positives ___________________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105fa1950>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x106a70320>
+
+    def test_no_false_positives(self, sanitizer):
+        """Test that non-PHI text is not redacted (from phi_sanitizer_phi)."""
+        text = "The patient reported feeling better after treatment. Follow-up in 2 weeks."
+        sanitized = sanitizer.sanitize_text(text)
+        # Non-PHI text should remain unchanged (Name pattern is stricter now)
+>       assert sanitized == text
+E       AssertionError: assert '[REDACTED NA...TED ADDRESS].' == 'The patient ...p in 2 weeks.'
+E         
+E         - The patient reported feeling better after treatment. Follow-up in 2 weeks.
+E         + [REDACTED NAME]. [REDACTED NAME] [REDACTED ADDRESS].
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:47: AssertionError
+____________ TestPHISanitizer.test_sanitize_unicode_and_idempotency ____________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105e2b100>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x1049da350>
+
+    def test_sanitize_unicode_and_idempotency(self, sanitizer):
+        """Test unicode and idempotency (from phi_sanitizer_phi)."""
+        text = "患者: 李雷, 电话: 555-123-4567"
+        # Name pattern doesn't support Unicode
+        sanitized_once = sanitizer.sanitize_text(text)
+        sanitized_twice = sanitizer.sanitize_text(sanitized_once)
+        # The phone number *will* be sanitized, so the text won't be identical
+        assert "李雷" in sanitized_once # Check name wasn't redacted
+        assert "[REDACTED PHONE]" in sanitized_once # Check phone was redacted
+>       assert sanitized_twice == sanitized_once # Idempotency check
+E       AssertionError: assert '患者: 李雷, 电话: ...DACTED NAME]]' == '患者: 李雷, 电话: [REDACTED PHONE]'
+E         
+E         - 患者: 李雷, 电话: [REDACTED PHONE]
+E         ?                       ---
+E         + 患者: 李雷, 电话: [[REDACTED NAME]]
+E         ?             +           ++  +
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:58: AssertionError
+_________________ TestPHISanitizer.test_sanitize_json_with_phi _________________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105fc5b50>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x105fd2200>
+sample_phi_data = {'address': '123 Main St, Anytown, CA 12345', 'dob': '01/15/1980', 'email': 'john.smith@example.com', 'insurance_id': 'INS123456789', ...}
+
+    def test_sanitize_json_with_phi(self, sanitizer, sample_phi_data):
+        """Test sanitization of JSON data containing PHI."""
+        input_json = json.dumps(sample_phi_data)
+        # Since sanitize_json doesn't exist, we'll parse the JSON, sanitize the
+        # dict, and re-serialize
+        parsed_data = json.loads(input_json)
+        sanitized_data = sanitizer.sanitize_dict(parsed_data)
+        sanitized = json.dumps(sanitized_data)
+        sanitized_data = json.loads(sanitized)
+    
+        # Check that PHI is sanitized but structure is preserved
+        assert sanitized_data["ssn"] != "123-45-6789"
+        assert sanitized_data["name"] != "John Smith"
+        assert sanitized_data["phone"] != "(555) 123-4567"
+        assert sanitized_data["email"] != "john.smith@example.com"
+    
+        # Verify redaction markers
+        assert "[REDACTED SSN]" == sanitized_data["ssn"]
+        assert "[REDACTED NAME]" == sanitized_data["name"]
+        # Phone pattern should handle this now
+>       assert "[REDACTED PHONE]" == sanitized_data["phone"]
+E       AssertionError: assert '[REDACTED PHONE]' == '([REDACTED PHONE]'
+E         
+E         - ([REDACTED PHONE]
+E         ? -
+E         + [REDACTED PHONE]
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:103: AssertionError
+_____________ TestPHISanitizer.test_sanitize_nested_dict_with_phi ______________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105fb1590>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x106acca70>
+
+    def test_sanitize_nested_dict_with_phi(self, sanitizer):
+        """Test sanitization of nested dictionaries containing PHI."""
+        nested_data = {
+            "patient": {
+                "demographics": {
+                    "name": "Jane Doe",
+                    "ssn": "987-65-4321",
+                    "contact": {
+                        "phone": "(555) 987-6543",
+                        "email": "jane.doe@example.com"
+                    }
+                },
+                "insurance": {
+                    "provider": "Health Insurance Co",
+                    "id": "INS987654321"
+                }
+            },
+            "non_phi_field": "This data should be untouched"
+        }
+    
+        sanitized_data = sanitizer.sanitize_dict(nested_data)
+    
+        # Check nested PHI is sanitized
+        assert sanitized_data["patient"]["demographics"]["name"] != "Jane Doe"
+        assert sanitized_data["patient"]["demographics"]["ssn"] != "987-65-4321"
+        assert sanitized_data["patient"]["demographics"]["contact"]["phone"] != "(555) 987-6543"
+        assert sanitized_data["patient"]["demographics"]["contact"]["email"] != "jane.doe@example.com"
+    
+        # Non-PHI data should be untouched
+        # Stricter Name pattern should avoid redacting this
+>       assert sanitized_data["non_phi_field"] == "This data should be untouched"
+E       AssertionError: assert '[REDACTED NAME]' == 'This data sh... be untouched'
+E         
+E         - This data should be untouched
+E         + [REDACTED NAME]
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:150: AssertionError
+_________________ TestPHISanitizer.test_sanitize_list_with_phi _________________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105f1ea50>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x106aa5070>
+
+    def test_sanitize_list_with_phi(self, sanitizer):
+        """Test sanitization of lists containing PHI."""
+        list_data = [
+            "Patient John Doe",
+            "SSN: 123-45-6789",
+            "Phone: (555) 123-4567",
+            "Non-PHI data"
+        ]
+    
+        # Since sanitize_list doesn't exist, we'll sanitize each item
+        # individually
+        sanitized_list = [
+            sanitizer.sanitize_text(item) if isinstance(item, str) else item for item in list_data
+        ]
+    
+        # PHI should be sanitized
+        assert "John Doe" not in sanitized_list[0]
+        assert "123-45-6789" not in sanitized_list[1]
+        assert "(555) 123-4567" not in sanitized_list[2]
+    
+        # Non-PHI should be untouched
+        # Stricter Name pattern should avoid redacting this
+>       assert sanitized_list[3] == "Non-PHI data"
+E       AssertionError: assert '[REDACTED NAME]' == 'Non-PHI data'
+E         
+E         - Non-PHI data
+E         + [REDACTED NAME]
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:177: AssertionError
+__________________ TestPHISanitizer.test_sanitize_phi_in_logs __________________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x10577f200>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x106af4960>
+
+    def test_sanitize_phi_in_logs(self, sanitizer):
+        """Test sanitization of PHI in log messages."""
+        log_message = "Error processing patient John Smith (SSN: 123-45-6789) due to system failure"
+        sanitized = sanitizer.sanitize_text(log_message)
+    
+        assert "John Smith" not in sanitized
+        assert "123-45-6789" not in sanitized
+        # Stricter Name pattern should avoid redacting "Error processing patient"
+>       assert "Error processing patient" in sanitized
+E       AssertionError: assert 'Error processing patient' in '[REDACTED NAME] (SSN: [REDACTED SSN]) [REDACTED NAME]'
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:236: AssertionError
+________________ TestPHISanitizer.test_sanitize_text_with_phone ________________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105fe4710>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x106af7070>
+
+    def test_sanitize_text_with_phone(self, sanitizer):
+        """Test sanitization of strings containing phone numbers."""
+        input_text = "Contact at (555) 123-4567 for more info"
+        expected = "Contact at [REDACTED PHONE] for more info"
+        result = sanitizer.sanitize_text(input_text)
+        # Refined phone pattern should work
+>       assert expected == result
+E       AssertionError: assert 'Contact at [...for more info' == '[REDACTED NA...SS] more info'
+E         
+E         - [REDACTED NAME] (555) 123-[REDACTED ADDRESS] more info
+E         + Contact at [REDACTED PHONE] for more info
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:352: AssertionError
+________________ TestPHISanitizer.test_sanitize_dict_with_phone ________________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105f62c50>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x106af73e0>
+
+    def test_sanitize_dict_with_phone(self, sanitizer):
+        """Test sanitization of dictionaries containing phone numbers."""
+        input_data = {
+            "name": "John Doe",
+            "phone": "(555) 123-4567",
+            "note": "Call for appointment"
+        }
+        sanitized_data = sanitizer.sanitize_dict(input_data)
+        assert "[REDACTED NAME]" == sanitized_data["name"]
+        # Refined phone pattern should work
+>       assert "[REDACTED PHONE]" == sanitized_data["phone"]
+E       AssertionError: assert '[REDACTED PHONE]' == '([REDACTED PHONE]'
+E         
+E         - ([REDACTED PHONE]
+E         ? -
+E         + [REDACTED PHONE]
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:364: AssertionError
+____________ TestPHISanitizer.test_sanitize_complex_data_structure _____________
+
+self = <test_phi_sanitizer.TestPHISanitizer object at 0x105f62f10>
+sanitizer = <app.core.security.phi_sanitizer.PHISanitizer object at 0x106af70c0>
+
+    def test_sanitize_complex_data_structure(self, sanitizer):
+        """Test sanitizing complex nested data structures."""
+        input_data = {
+            "patients": [
+                {
+                    "name": "John Doe",
+                    "phone": "(555) 123-4567",
+                    "appointments": [
+                        {
+                            "date": "2023-05-15",
+                            "location": "123 Main St"
+                        }
+                    ]
+                }
+            ],
+            "contact": {
+                "phone": "(555) 987-6543",
+                "email": "office@example.com"
+            }
+        }
+        expected_sanitized = {
+            "patients": [
+                {
+                    "name": "[REDACTED NAME]",
+                    "phone": "[REDACTED PHONE]",
+                    "appointments": [
+                        {
+                            "date": "[REDACTED DATE]",
+                            "location": "[REDACTED ADDRESS]"
+                        }
+                    ]
+                }
+            ],
+            "contact": {
+                "phone": "[REDACTED PHONE]",
+                "email": "[REDACTED EMAIL]"
+            }
+        }
+        result = sanitizer.sanitize_dict(input_data)
+        # Adjust expectation for date (won't match) and phone (should match correctly)
+        expected_sanitized["patients"][0]["appointments"][0]["date"] = "2023-05-15"
+        expected_sanitized["patients"][0]["phone"] = "[REDACTED PHONE]"
+        expected_sanitized["contact"]["phone"] = "[REDACTED PHONE]" # Correct phone redaction
+>       assert expected_sanitized == result
+E       AssertionError: assert {'contact': {...TED PHONE]'}]} == {'contact': {...TED PHONE]'}]}
+E         
+E         Differing items:
+E         {'patients': [{'appointments': [{'date': '2023-05-15', 'location': '[REDACTED ADDRESS]'}], 'name': '[REDACTED NAME]', 'phone': '[REDACTED PHONE]'}]} != {'patients': [{'appointments': [{'date': '2023-05-15', 'location': '[REDACTED ADDRESS] St'}], 'name': '[REDACTED NAME]', 'phone': '([REDACTED PHONE]'}]}
+E         {'contact': {'email': '[REDACTED EMAIL]', 'phone': '[REDACTED PHONE]'}} != {'contact': {'email': '[REDACTED EMAIL]', 'phone': '([REDACTED PHONE]'}}
+E         
+E         Full diff:
+E           {...
+E         
+E         ...Full output truncated (23 lines hidden), use '-vv' to show
+
+backend/app/tests/security/phi/test_phi_sanitizer.py:410: AssertionError
+=============================== warnings summary ===============================
+venv_py313/lib/python3.13/site-packages/pydantic/_internal/_config.py:323
+  /Users/ray/Desktop/GITHUB/Novamind-Backend-ONLY-TWINS/venv_py313/lib/python3.13/site-packages/pydantic/_internal/_config.py:323: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.11/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_multiple_phi_sanitization
+FAILED backend/app/tests/security/phi/test_log_sanitization.py::TestLogSanitization::test_phi_never_reaches_logs
+FAILED backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_no_phi_unchanged
+FAILED backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_addresses
+FAILED backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_dob
+FAILED backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_mrn
+FAILED backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_multiple_phi
+FAILED backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_patient_names
+FAILED backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_phone_numbers
+FAILED backend/app/tests/security/phi/test_log_sanitizer.py::TestLogSanitizer::test_sanitize_ssn
+FAILED backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_basic
+FAILED backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_empty_text
+FAILED backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_non_phi_text
+FAILED backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_detect_phi_types
+FAILED backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_initialization
+FAILED backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_redact_phi_empty_text
+FAILED backend/app/tests/security/phi/test_mock_phi_service.py::TestMockPHIDetection::test_redact_phi_non_phi_text
+FAILED backend/app/tests/security/phi/test_patient_phi_security.py::TestPatientPHISecurity::test_secure_error_handling
+FAILED backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_audit_file_detection
+FAILED backend/app/tests/security/phi/test_phi_audit_logic.py::TestPHIAuditLogic::test_strict_mode_disables_special_handling
+FAILED backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInCodePatterns::test_phi_in_complex_code
+FAILED backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInSourceFiles::test_python_file_with_phi
+FAILED backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInSourceFiles::test_js_file_with_phi
+FAILED backend/app/tests/security/phi/test_phi_code_patterns.py::TestPHIInSourceFiles::test_config_file_with_phi
+FAILED backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_sanitize_response_with_phi
+FAILED backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_whitelist_patterns
+FAILED backend/app/tests/security/phi/test_phi_middleware.py::TestPHIMiddleware::test_sanitize_nested_json
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_string_with_ssn
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_no_false_positives
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_unicode_and_idempotency
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_json_with_phi
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_nested_dict_with_phi
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_list_with_phi
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_phi_in_logs
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_text_with_phone
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_dict_with_phone
+FAILED backend/app/tests/security/phi/test_phi_sanitizer.py::TestPHISanitizer::test_sanitize_complex_data_structure
+============= 37 failed, 59 passed, 7 skipped, 1 warning in 0.48s ==============

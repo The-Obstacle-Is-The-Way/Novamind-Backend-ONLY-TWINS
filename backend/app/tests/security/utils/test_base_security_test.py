@@ -10,10 +10,12 @@ import pytest
 import unittest
 import json
 from unittest.mock import patch
+import uuid  # Import uuid module
 
 from app.tests.security.utils.base_security_test import BaseSecurityTest
 from app.tests.security.utils.test_mocks import MockAuthService, MockRBACService, MockAuditLogger, MockEncryptionService, MockEntityFactory
 from app.domain.entities.user import User
+from app.domain.enums.role import Role # Import Role enum
 
 class TestBaseSecurityTest(unittest.TestCase):
     """Test suite for BaseSecurityTest functionality."""
@@ -25,7 +27,14 @@ class TestBaseSecurityTest(unittest.TestCase):
         self.audit_logger = MockAuditLogger()
         self.encryption_service = MockEncryptionService()
         self.entity_factory = MockEntityFactory()
-        self.user = User(id="test_user", username="test_user", email="test@example.com", password_hash="hashed_password", roles=["user"])
+        # Use a valid UUID and the Role enum
+        self.user = User(
+            id=uuid.uuid4(), # Generate a valid UUID
+            username="test_user",
+            email="test@example.com",
+            password_hash="hashed_password", # Note: Password should ideally be handled securely
+            roles=[Role.USER] # Use Role enum
+        )
 
     def test_initialization(self):
 
@@ -134,7 +143,7 @@ class TestBaseSecurityTest(unittest.TestCase):
         security_test.tearDown()
 
     # Correct indentation for decorator and method
-    @patch("app.tests.security.base_security_test.MockAsyncSession")
+    @patch("app.tests.security.utils.test_mocks.MockAsyncSession")
     def test_db_session_setup(self, mock_session_class):
         """Test database session is properly set up."""
         security_test = BaseSecurityTest()

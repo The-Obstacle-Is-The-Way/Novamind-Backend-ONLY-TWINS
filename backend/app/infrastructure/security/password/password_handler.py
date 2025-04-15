@@ -11,7 +11,7 @@ import string
 from typing import Optional, Tuple
 
 from passlib.context import CryptContext
-from passlib.exc import UnknownHashError, MissingSaltError
+from passlib.exc import UnknownHashError
 
 from app.core.config import get_settings
 settings = get_settings()

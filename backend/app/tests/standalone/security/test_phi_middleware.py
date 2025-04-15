@@ -17,8 +17,8 @@ from fastapi import FastAPI, Request, Response
 from starlette.datastructures import Headers
 from starlette.types import Scope
 
-from app.core.utils.validation import PHIDetector
-from app.infrastructure.security.phi_middleware import PHIMiddleware, add_phi_middleware
+from app.presentation.middleware.phi_middleware import PHIMiddleware
+from app.infrastructure.security.phi.detector import PHIDetector
 
 
 @pytest.mark.db_required()

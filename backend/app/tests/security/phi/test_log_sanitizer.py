@@ -29,16 +29,16 @@ class TestLogSanitizer(unittest.TestCase):
 
         # Expected patterns after sanitization
         self.expected_patterns = {
-            "patient_name": "[REDACTED NAME] visited on 2023-01-01", # Name pattern redacts "Patient John Smith"
+            "patient_name": "[REDACTED NAME] visited on 2023-01-01", # Name pattern is now case-insensitive
             "patient_email": "Contact patient at [REDACTED EMAIL] for follow-up",
-            "patient_phone": "Patient phone number is [REDACTED PHONE]",
-            "patient_address": "Patient lives at [REDACTED ADDRESS], Anytown, CA 90210", # Expect city/state/zip to remain
+            "patient_phone": "Patient phone number is [REDACTED PHONE]", # Phone pattern updated
+            "patient_address": "Patient lives at [REDACTED ADDRESS], Anytown, CA 90210", # Address pattern updated
             "patient_ssn": "Patient SSN is [REDACTED SSN]",
-            "patient_mrn": "Patient [REDACTED MRN] admitted to ward", # Pattern consumes the #
-            "patient_dob": "Patient DOB is [REDACTED DATE]",
-            "multiple_phi": "[REDACTED NAME], [REDACTED DATE], SSN [REDACTED SSN] lives at [REDACTED ADDRESS]", # Removed "DOB" prefix as pattern consumes it
-            "no_phi": "System initialized with error code 0x123",
-            "mixed_case": "PATIENT JOHN SMITH has email [REDACTED EMAIL]", # Case-sensitive Name pattern won't match JOHN SMITH
+            "patient_mrn": "Patient [REDACTED MRN] admitted to ward",
+            "patient_dob": "Patient DOB is [REDACTED DATE]", # Date pattern updated
+            "multiple_phi": "[REDACTED NAME], [REDACTED DATE], SSN [REDACTED SSN] lives at [REDACTED ADDRESS]", # Updated patterns
+            "no_phi": "System initialized with error code 0x123", # Should remain unchanged
+            "mixed_case": "PATIENT JOHN SMITH has email [REDACTED EMAIL]", # Name pattern is now case-sensitive
         }
 
     def test_sanitize_patient_names(self):

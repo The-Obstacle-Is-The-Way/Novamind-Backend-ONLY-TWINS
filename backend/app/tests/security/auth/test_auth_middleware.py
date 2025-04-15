@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
-from app.infrastructure.security.jwt_service import JWTService
+from app.infrastructure.security.jwt.jwt_service import JWTService
 from app.tests.security.utils.test_mocks import MockAuthService
 from app.tests.security.utils.base_security_test import BaseSecurityTest
 import pytest
@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
 # Correct the import statement
-from app.infrastructure.security.auth_middleware import (
+from app.infrastructure.security.auth.auth_middleware import (
     JWTAuthMiddleware,
     verify_token,
     verify_patient_access,
@@ -104,7 +104,7 @@ class TestAuthMiddleware(BaseSecurityTest):
         app = FastAPI()
 
         # Create auth middleware with mocked jwt_service for testing
-        with patch("app.infrastructure.security.auth_middleware.get_jwt_service", return_value=mock_jwt_service):
+        with patch("app.infrastructure.security.auth.auth_middleware.get_jwt_service", return_value=mock_jwt_service):
             app.add_middleware(JWTAuthMiddleware)
 
         # Add test routes
@@ -377,7 +377,7 @@ class TestAuthMiddleware(BaseSecurityTest):
         # Arrange
         mock_logger = MagicMock()
 
-        with patch("app.infrastructure.security.auth_middleware.audit_logger", mock_logger):
+        with patch("app.infrastructure.security.auth.auth_middleware.audit_logger", mock_logger):
             # Act - Successful access
             # Correct test_client call
             test_client.get(
