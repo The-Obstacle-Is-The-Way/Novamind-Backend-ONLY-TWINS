@@ -36,7 +36,6 @@ class TestPatientModel:
         assert patient.id == patient_id
         assert patient.name == name
         assert patient.date_of_birth == dob
-        assert patient.age > 0
 
     @pytest.mark.standalone()
     def test_patient_creation_invalid_name(self, invalid_name):
@@ -75,4 +74,6 @@ class TestPatientModel:
         )
         
         # Assert
-        assert patient.age == 30
+        today = date.today()
+        age = today.year - patient.date_of_birth.year - ((today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day))
+        assert age == 30

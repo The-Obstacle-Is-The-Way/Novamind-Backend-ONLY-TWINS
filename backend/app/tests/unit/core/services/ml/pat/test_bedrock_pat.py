@@ -559,43 +559,43 @@ class TestBedrockPAT(unittest.TestCase):  # Inherit from unittest.TestCase for a
                 patient_id=patient_id,
                 profile_id=profile_id,
                 analysis_id=analysis_id
+            )
+
+            # Assert
+            self.assertEqual(result["patient_id"], patient_id)
+            self.assertEqual(result["profile_id"], profile_id)
+            self.assertEqual(result["integration_status"], "success")
+            self.assertIn("timestamp", result)
+            self.assertIn("integrated_profile", result)
+
+            # Verify DynamoDB storage was called
+            table_mock.put_item.assert_called_once()
+            # Optionally, check the item structure put to DynamoDB
+            # put_item_call = table_mock.put_item.call_args[1]
+            # self.assertEqual(put_item_call['Item']['PK'], f"PROFILE#{profile_id}")
+
+    def test_integrate_with_digital_twin_authorization_error(self):
+        """Test integration authorization error when patient IDs don't match."""
+        # Arrange
+        patient_id = "test-patient"
+        profile_id = "test-profile"
+        analysis_id = "test-analysis-id"
+        mock_analysis = {
+            "analysis_id": analysis_id,
+            "patient_id": "different-patient",  # Analysis belongs to another patient
+            "results": {"sleep": {"efficiency": 0.8}}
+        }
+
+        # Mock get_analysis_by_id
+        with patch.object(self.bedrock_pat_service, 'get_analysis_by_id', return_value=mock_analysis):
+            # Act & Assert
+            with self.assertRaises(AuthorizationError) as cm:
+                self.bedrock_pat_service.integrate_with_digital_twin(
+                    patient_id=patient_id,
+                    profile_id=profile_id,
+                    analysis_id=analysis_id
                 )
-
-                # Assert
-                self.assertEqual(result["patient_id"], patient_id)
-                self.assertEqual(result["profile_id"], profile_id)
-                self.assertEqual(result["integration_status"], "success")
-                self.assertIn("timestamp", result)
-                self.assertIn("integrated_profile", result)
-
-                # Verify DynamoDB storage was called
-                table_mock.put_item.assert_called_once()
-                # Optionally, check the item structure put to DynamoDB
-                # put_item_call = table_mock.put_item.call_args[1]
-                # self.assertEqual(put_item_call['Item']['PK'], f"PROFILE#{profile_id}")
-
-        def test_integrate_with_digital_twin_authorization_error(self):
-            """Test integration authorization error when patient IDs don't match."""
-            # Arrange
-            patient_id = "test-patient"
-            profile_id = "test-profile"
-            analysis_id = "test-analysis-id"
-            mock_analysis = {
-                "analysis_id": analysis_id,
-                "patient_id": "different-patient",  # Analysis belongs to another patient
-                "results": {"sleep": {"efficiency": 0.8}}
-            }
-
-            # Mock get_analysis_by_id
-            with patch.object(self.bedrock_pat_service, 'get_analysis_by_id', return_value=mock_analysis):
-                # Act & Assert
-                with self.assertRaises(AuthorizationError) as cm:
-                    self.bedrock_pat_service.integrate_with_digital_twin(
-                        patient_id=patient_id,
-                        profile_id=profile_id,
-                        analysis_id=analysis_id
-                    )
-                self.assertIn("Analysis does not belong to patient", str(cm.exception))
+            self.assertIn("Analysis does not belong to patient", str(cm.exception))
 
 # Example of how to run these tests with pytest
 # if __name__ == "__main__":
