@@ -32,6 +32,9 @@ except ImportError:
     # Fallback for test environment
     from app.tests.security.utils.test_mocks import MockPatient as Patient
 
+# Import the canonical function for getting a sanitized logger
+from app.infrastructure.security.phi.log_sanitizer import get_sanitized_logger
+
 # Import BaseSecurityTest for test base class
 @pytest.mark.db_required
 class TestPatientPHISecurity(BaseSecurityTest):
@@ -102,8 +105,8 @@ class TestPatientPHISecurity(BaseSecurityTest):
 
     def test_secure_error_handling(self):
         patient = self._create_sample_patient_with_phi()
-        from app.core.utils.enhanced_phi_detector import get_enhanced_phi_secure_logger
-        logger = get_enhanced_phi_secure_logger(__name__)
+        # Use the canonical function
+        logger = get_sanitized_logger(__name__)
         with patch.object(logger, "error") as mock_log_error:
             try:
                 raise ValueError(f"Error processing patient {patient.id} with email {patient.email}")

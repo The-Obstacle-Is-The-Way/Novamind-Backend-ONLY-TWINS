@@ -15,8 +15,8 @@ try:
     from fastapi import FastAPI, Depends, HTTPException, status
     from fastapi.security import OAuth2PasswordBearer
     from fastapi.testclient import TestClient
-    from app.presentation.api.v1.endpoints.patients import router as patients_router
-    from app.presentation.api.v1.middleware.logging_middleware import PHISanitizingMiddleware
+    from app.presentation.api.routes.endpoints.patients import router as patients_router
+    from app.presentation.middleware.phi_middleware import PHISanitizingMiddleware, PHIAuditMiddleware, add_phi_middleware
 except ImportError:
     # Mock FastAPI components for testing
     class HTTPException(Exception):
@@ -207,16 +207,6 @@ async def create_patient(patient: dict, token: str = Depends(OAuth2PasswordBeare
     new_patient["id"] = "P" + str(hash(patient.get("first_name", "") + patient.get("last_name", "")))[:5]
     return new_patient
 
-class PHISanitizingMiddleware:
-    """Mock PHI sanitizing middleware."""
-    def __init__(self, app):
-        self.app = app
-    
-    async def __call__(self, scope, receive, send):
-        """Process the request."""
-        # In a real middleware, this would sanitize PHI in responses
-        await self.app(scope, receive, send)
-
 class TestAPIHIPAACompliance:
     """Test API endpoint HIPAA compliance."""
     
@@ -225,7 +215,7 @@ class TestAPIHIPAACompliance:
         """Create test FastAPI application."""
         app = FastAPI(title="HIPAA Test API")
         app.include_router(patients_router, prefix="/api/v1")
-        app.add_middleware(PHISanitizingMiddleware)
+        add_phi_middleware(app)
         return app
     
     @pytest.fixture

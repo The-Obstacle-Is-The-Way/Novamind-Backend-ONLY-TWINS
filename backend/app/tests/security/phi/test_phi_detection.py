@@ -5,28 +5,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from app.core.utils.enhanced_phi_detector import EnhancedPHIDetector
-
-# Implement a real PHIDetector instead of using MagicMock
-class PHIDetector:
-    """PHI detector that uses EnhancedPHIDetector for SSN detection."""
-    
-    def detect_phi(self, content):
-        """Detect PHI in content and return matches."""
-        matches = []
-        
-        # Use our enhanced detector for SSN detection
-        phi_types = EnhancedPHIDetector.detect_phi_types(content)
-        
-        for phi_type, match_text in phi_types:
-            # Add to matches in the format expected by the test
-            matches.append({
-                "type": phi_type.name,
-                "match": match_text,
-                "line": content.split('\n').index(next(line for line in content.split('\n') if match_text in line)) + 1 if match_text in content else 1
-            })
-            
-        return matches
+# Import the canonical PHIService
+from app.infrastructure.security.phi.phi_service import PHIService, PHIType
 
 # Mock PHIAuditor
 PHIAuditor = MagicMock()
@@ -44,7 +24,8 @@ class TestPHIDetection:
         """Set up test environment."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.base_dir = Path(self.temp_dir.name)
-        self.detector = PHIDetector()
+        # Instantiate the canonical PHIService
+        self.phi_service = PHIService() 
         
         # Configure PHIAuditor mock for specific test scenarios
         PHIAuditor.return_value.findings = {"code_phi": [], "api_security": [], "configuration_issues": []}
@@ -73,11 +54,12 @@ class TestPHIDetection:
         """
         filepath = self.create_test_file("test_ssn.py", content)
 
-        # Detect PHI in the file
-        matches = self.detector.detect_phi(content)
+        # Detect PHI in the file using the PHIService
+        # The detect_phi method returns List[Tuple[PHIType, str, int, int]]
+        detected_phi = self.phi_service.detect_phi(content)
 
         # Verify SSN patterns are detected
-        ssn_matches = [m for m in matches if m["type"] == "SSN"]
+        ssn_matches = [m for m in detected_phi if m[0] == PHIType.SSN]
         assert len(ssn_matches) >= 4, "Should detect at least 4 SSN patterns"
 
     def test_audit_with_clean_app_directory(self):
