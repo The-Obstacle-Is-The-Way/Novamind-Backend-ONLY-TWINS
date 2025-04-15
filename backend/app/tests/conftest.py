@@ -21,11 +21,7 @@ import uuid
 import time
 from typing import Dict, Any, Callable
 from app.infrastructure.security.jwt.jwt_service import JWTService
-
-# Add the app directory to the path
-app_dir = Path(__file__).parent.parent
-if str(app_dir) not in sys.path:
-    sys.path.insert(0, str(app_dir))
+from dotenv import load_dotenv
 
 # Try to import our patching utility
 try:
@@ -50,8 +46,8 @@ class MockSettings:
         self.VERSION = "test-1.0.0"
         self.BACKEND_CORS_ORIGINS = ["*"]
         self.API_V1_STR = "/api/v1"
-        self.STATIC_DIR = app_dir / "static"
-        self.TEMPLATES_DIR = app_dir / "templates"
+        self.STATIC_DIR = Path(__file__).parent.parent / "static" # Adjust static/template paths relative to conftest location
+        self.TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
         self.SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///./test.db"
         self.LOG_LEVEL = "DEBUG"
         self.ENABLE_ANALYTICS = False
@@ -102,43 +98,68 @@ def pytest_collection_modifyitems(config, items):
 def pytest_configure(config):
     """
     Pytest hook that runs before test collection.
-
-    We use this hook to patch problematic imports before any tests are imported.
+    Handles sys.path adjustment and marker registration.
     """
-    # Apply the import patch
+    # --- Add backend directory to sys.path --- 
+    conftest_path = Path(__file__).resolve()
+    backend_dir = conftest_path.parent.parent.parent 
+    if str(backend_dir) not in sys.path:
+        sys.path.insert(0, str(backend_dir))
+        # Use print to stderr for reliable logging during early configuration
+        print(f"[pytest_configure] Added to sys.path: {str(backend_dir)}", file=sys.stderr)
+    # --- End sys.path modification ---
+
+    # --- Register custom markers --- 
+    # Core dependency markers
+    config.addinivalue_line("markers", "standalone: Tests that have no external dependencies")
+    config.addinivalue_line("markers", "venv_only: Tests that require Python packages but no external services")
+    config.addinivalue_line("markers", "db_required: Tests that require database connections")
+    
+    # Additional classification markers
+    config.addinivalue_line("markers", "network_required: Tests that require network connections")
+    config.addinivalue_line("markers", "slow: Tests that take a long time to run")
+    config.addinivalue_line("markers", "security: Security-related tests")
+    config.addinivalue_line("markers", "integration: Integration tests")
+    config.addinivalue_line("markers", "unit: Unit tests")
+    config.addinivalue_line("markers", "e2e: End-to-end tests")
+    
+    # Domain-specific markers
+    config.addinivalue_line("markers", "ml: Machine learning related tests")
+    config.addinivalue_line("markers", "phi: Protected Health Information related tests")
+    # --- End marker registration ---
+
+    # Apply the import patch (if still needed)
     with patch_imports():
-        # This context manager will be active during the configure phase
-        # which happens before collection
         pass
 
+# --- Session Setup Fixtures ---
 
-def pytest_sessionstart(session):
-    """Set up the pytest session."""
-    # Define custom markers
-    config = session.config
-    config.addinivalue_line(
-        "markers",
-        "ml: Mark test as a machine learning test")
-    config.addinivalue_line("markers", "phi: Mark test as a PHI-related test")
-    config.addinivalue_line(
-        "markers",
-        "integration: Mark test as integration test")
-    config.addinivalue_line("markers", "unit: Mark test as unit test")
-    config.addinivalue_line("markers", "security: Mark test as security test")
-    config.addinivalue_line("markers", "api: Mark test as API test")
+@pytest.fixture(scope="session", autouse=True)
+def load_test_env():
+    """Load environment variables from .env.test before the test session starts."""
+    # Assume .env.test is in the backend directory (parent of app/tests/)
+    backend_dir = Path(__file__).parent.parent.parent
+    dotenv_path = backend_dir / '.env.test'
+    if dotenv_path.exists():
+        # Load .env.test, overriding existing environment variables
+        load_dotenv(dotenv_path=dotenv_path, override=True)
+        logger = logging.getLogger(__name__)
+        logger.info(f"[Session Setup] Loaded test environment variables from: {dotenv_path}")
+    else:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"[Session Setup] .env.test file not found at: {dotenv_path}")
 
-    # Define fixtures that can be shared across tests
-
-
-@pytest.fixture(scope="session")
-def test_environment():
-    """Set up the test environment variables."""
+@pytest.fixture(scope="session") # Removed autouse=True, handled by client fixture dependency
+def test_environment(load_test_env): # Depends on env vars being loaded
+    """Set specific test environment variables (can override .env.test)."""
+    # These are set explicitly *after* .env.test is loaded
     os.environ["TESTING"] = "1"
     os.environ["ENVIRONMENT"] = "test"
+    logger = logging.getLogger(__name__)
+    logger.info("[Session Setup] TESTING=1 and ENVIRONMENT=test set.")
     yield
-    os.environ.pop("TESTING", None)
-    # Don't remove ENVIRONMENT as it might be set by the system
-
+    # Teardown (optional, usually not needed for these vars)
+    # os.environ.pop("TESTING", None)
 
 # Add/Replace the client fixture
 @pytest.fixture(scope="function") # Use function scope for isolation

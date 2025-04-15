@@ -8,14 +8,8 @@ and adherence to SOLID design patterns.
 
 import os
 import sys
-from pathlib import Path
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-
-# Add the backend directory to the Python path
-backend_dir = Path(__file__).parent.parent.parent
-if str(backend_dir) not in sys.path:
-    sys.path.insert(0, str(backend_dir))
 
 # Configure test environment variables if not already set
 if not os.environ.get("TESTING"):
