@@ -359,9 +359,12 @@ class TestAPIHIPAACompliance:
         }
         
         # Adjust patch target if needed
-        # Patch the dependency function
-        with patch("app.api.routes.patients_router.get_patient_repository") as mock_get_repo:
+        # Patch the PatientRepository class where it's imported in the router module
+        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo:
+            # Note: mock_get_repo is now mocking the CLASS, not a 'get' function.
+            # We might need to adjust how the mock instance is configured below.
             mock_repo_instance = MagicMock(spec=PatientRepository)
+            # Configure the *return value* of the mocked class constructor
             mock_get_repo.return_value = mock_repo_instance
             mock_repo_instance.get_by_id = AsyncMock(return_value=raw_phi_data)
 
@@ -401,8 +404,8 @@ class TestAPIHIPAACompliance:
         # Mock the underlying create method/use case
         mock_created_patient = {**request_body_with_phi, "id": "P_POST_123"}
         # Adjust patch target if needed
-        # Patch the dependency function
-        with patch("app.api.routes.patients_router.get_patient_repository") as mock_get_repo:
+        # Patch the PatientRepository class where it's imported in the router module
+        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo:
             mock_repo_instance = MagicMock(spec=PatientRepository)
             mock_get_repo.return_value = mock_repo_instance
             mock_repo_instance.create = AsyncMock(return_value=mock_created_patient)
@@ -447,7 +450,7 @@ class TestAPIHIPAACompliance:
         # Mock underlying service
         mock_patient_data = {"id": "mock_id", "first_name": "Mock Name"}
         # Adjust patch target
-        with patch("app.api.routes.patients_router.get_patient_repository") as mock_get_repo:
+        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo:
              mock_repo_instance = MagicMock(spec=PatientRepository)
              mock_get_repo.return_value = mock_repo_instance
              
@@ -487,8 +490,8 @@ class TestAPIHIPAACompliance:
         api_prefix = settings.API_V1_STR
         # Basic check: Ensure endpoint works and potentially check for one common header
         # Adjust patch target
-        # Patch the dependency function
-        with patch("app.api.routes.patients_router.get_patient_repository") as mock_get_repo:
+        # Patch the PatientRepository class where it's imported
+        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo:
              mock_repo_instance = MagicMock(spec=PatientRepository)
              mock_get_repo.return_value = mock_repo_instance
              mock_repo_instance.get_by_id = AsyncMock(return_value={"id": "P12345"})
@@ -512,12 +515,12 @@ class TestAPIHIPAACompliance:
 
         # Mock the use case and the specific logger used for auditing
         # Adjust patch targets as needed
-        # Patch the dependency function and the logger
-        with patch("app.api.routes.patients_router.get_patient_repository") as mock_get_repo, \
+        # Patch the PatientRepository class and the logger
+        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo, \
              patch("app.presentation.middleware.phi_middleware.logger") as mock_audit_logger: # Example patch target
             
             mock_repo_instance = MagicMock(spec=PatientRepository)
-            mock_get_repo.return_value = mock_repo_instance
+            mock_get_repo.return_value = mock_repo_instance # Mock the instance
             mock_repo_instance.create = AsyncMock(return_value={**patient_data, "id": "P_AUDIT"})
 
             response = client.post(
