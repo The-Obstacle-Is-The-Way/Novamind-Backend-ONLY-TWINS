@@ -13,7 +13,7 @@ from typing import Callable, Optional
 from fastapi import Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
-from app.infrastructure.security.rate_limiter import (
+from app.infrastructure.security.rate_limiting.rate_limiter import (
     DistributedRateLimiter,
     RateLimitType,
     get_rate_limiter,

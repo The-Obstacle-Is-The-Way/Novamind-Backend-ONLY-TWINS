@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Base Security Test Case
 
@@ -7,7 +8,8 @@ proper authentication setup and user role management.
 
 import uuid
 from typing import Any, Dict, List, Optional, Union
-from unittest import TestCase
+# Remove unittest import
+# from unittest import TestCase
 
 import pytest
 import os
@@ -23,63 +25,75 @@ from app.tests.security.utils.test_mocks import (
 
 # We're now using the MockEntityFactory from test_mocks.py
 
-
-class BaseSecurityTest(TestCase):
+# Remove inheritance from TestCase
+class BaseSecurityTest:
     """
-    Base test case for security and authentication tests.
+    Base class structure for security and authentication tests (using pytest fixtures).
 
-    This class provides common functionality for security tests including:
-        - Authentication setup with test user ID and roles
-        - Mock database session management
-        - Authorization and role-based access control testing
+    Provides common attributes and fixtures for security tests including:
+        - Test user ID and roles
+        - Mock database session
+        - Mock entity factory
+        - Mock RBAC setup
         """
 
-    def setUp(self) -> None:
-        """Set up the test environment with authentication details and mocks."""
-        super().setUp()
-
+    @pytest.fixture(autouse=True)
+    def setup_security_test(self, mock_db_session, mock_entity_factory, mock_rbac):
+        """Auto-use fixture to set up common attributes for each test method."""
         # Initialize authentication attributes
         self.test_user_id = str(uuid.uuid4())
         self.test_roles = ["user", "clinician"]
 
-        # Set up mock database and entities
-        self.db_session = MockAsyncSession()
-        self.entity_factory = MockEntityFactory()
+        # Assign mocked fixtures to instance attributes
+        self.db_session = mock_db_session
+        self.entity_factory = mock_entity_factory
+        self.rbac = mock_rbac
 
-        # Set up role-based access control for testing
-        self.rbac = RoleBasedAccessControl()
-        self._configure_test_rbac()
+    # Convert setUp logic into fixtures
+    @pytest.fixture(scope="function") # Scope per test function
+    def mock_db_session(self):
+        """Provides a mock database session."""
+        return MockAsyncSession()
 
-    def _configure_test_rbac(self) -> None:
-        """Configure role-based access control with test permissions."""
+    @pytest.fixture(scope="function")
+    def mock_entity_factory(self):
+        """Provides a mock entity factory."""
+        return MockEntityFactory()
+
+    @pytest.fixture(scope="function")
+    def mock_rbac(self):
+        """Provides a mock RBAC service configured with test permissions."""
+        rbac = RoleBasedAccessControl()
         # Add roles first
-        self.rbac.add_role("user")
-        self.rbac.add_role("clinician")
-        self.rbac.add_role("admin")
+        rbac.add_role("user")
+        rbac.add_role("clinician")
+        rbac.add_role("admin")
 
         # Default role configuration for tests
-        self.rbac.add_role_permission("user", "read:own_data")
-        self.rbac.add_role_permission("user", "update:own_data")
+        rbac.add_role_permission("user", "read:own_data")
+        rbac.add_role_permission("user", "update:own_data")
 
-        self.rbac.add_role_permission("clinician", "read:patient_data")
-        self.rbac.add_role_permission("clinician", "update:patient_data")
-        self.rbac.add_role_permission("clinician", "read:clinical_notes")
+        rbac.add_role_permission("clinician", "read:patient_data")
+        rbac.add_role_permission("clinician", "update:patient_data")
+        rbac.add_role_permission("clinician", "read:clinical_notes")
 
-        self.rbac.add_role_permission("admin", "read:all_data")
-        self.rbac.add_role_permission("admin", "update:all_data")
-        self.rbac.add_role_permission("admin", "delete:all_data")
+        rbac.add_role_permission("admin", "read:all_data")
+        rbac.add_role_permission("admin", "update:all_data")
+        rbac.add_role_permission("admin", "delete:all_data")
+        return rbac
 
+    # Helper methods remain as regular methods
     def has_permission(
         self,
         permission: str,
         roles: List[str] | None = None
     ) -> bool:
         """
-        Check if the specified roles have the given permission.
+        Check if the specified roles have the given permission using the instance's rbac.
 
         Args:
             permission: The permission to check
-            roles: The roles to check. If None, uses the test_roles
+            roles: The roles to check. If None, uses the instance's test_roles
 
         Returns:
             bool: True if any of the roles have the permission, False otherwise
@@ -88,6 +102,7 @@ class BaseSecurityTest(TestCase):
 
         # Check if any role has the permission
         for role in check_roles:
+            # Use self.rbac which is set up by the fixture
             if self.rbac.has_permission(role, permission):
                 return True
 
@@ -103,16 +118,16 @@ class BaseSecurityTest(TestCase):
         Generate a mock authentication token for testing.
 
         Args:
-            user_id: The user ID to include in the token. Default is test_user_id.
-            roles: The roles to include in the token. Default is test_roles.
+            user_id: The user ID to include in the token. Default uses instance's test_user_id.
+            roles: The roles to include in the token. Default uses instance's test_roles.
             custom_claims: Additional claims to include in the token.
 
         Returns:
             str: A mock authentication token
         """
         claims = {
-            "sub": user_id or self.test_user_id,
-            "roles": roles or self.test_roles,
+            "sub": user_id or self.test_user_id, # Use instance attribute
+            "roles": roles or self.test_roles,   # Use instance attribute
             **(custom_claims or {}),
         }
         # Mock token is just the string representation of the claims for
@@ -133,31 +148,25 @@ class BaseSecurityTest(TestCase):
         auth_token = token or self.get_auth_token()
         return {"Authorization": f"Bearer {auth_token}"}
 
-    def tearDown(self) -> None:
-        """Clean up resources after each test."""
-        super().tearDown()
-
-        # Clean up mock database resources
-        self.db_session = None
-        self.entity_factory = None
-        self.rbac = None
-
+    # Remove tearDown method, pytest handles fixture cleanup automatically
+    # Remove standalone pytest fixtures defined within the class if they are not needed or move them outside
     # Define a pytest fixture for easy reuse in pytest-based tests
-    @pytest.fixture
-    def security_test_base(self):
-        """Pytest fixture that provides a configured security test base."""
-        test_base = BaseSecurityTest()
-        test_base.setUp()
-        yield test_base
-        test_base.tearDown()
+    # @pytest.fixture
+    # def security_test_base(self):
+    #     """Pytest fixture that provides a configured security test base."""
+    #     test_base = BaseSecurityTest()
+    #     test_base.setUp() # This setUp is gone now
+    #     yield test_base
+    #     # tearDown is also gone
 
-    @pytest.fixture
-    def mock_auth_headers(self, security_test_base):
-        """Pytest fixture that provides mock authentication headers."""
-        return security_test_base.get_auth_headers()
+    # @pytest.fixture
+    # def mock_auth_headers(self, security_test_base):
+    #     """Pytest fixture that provides mock authentication headers."""
+    #     return security_test_base.get_auth_headers()
 
-    @pytest.fixture
-    def mock_db_session(self):
-        """Pytest fixture that provides a mock database session."""
-        session = MockAsyncSession()
-        yield session
+    # Keep mock_db_session fixture defined above
+    # @pytest.fixture
+    # def mock_db_session(self):
+    #     """Pytest fixture that provides a mock database session."""
+    #     session = MockAsyncSession()
+    #     yield session

@@ -28,7 +28,7 @@ from app.presentation.middleware.authentication_middleware import Authentication
 from app.presentation.middleware.rate_limiting_middleware import setup_rate_limiting
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
 from app.infrastructure.security.jwt.jwt_service import JWTService
-from app.infrastructure.persistence.sqlalchemy.repositories.user_repository import UserRepository
+from app.domain.repositories.user_repository import UserRepository
 from app.presentation.middleware.phi_middleware import add_phi_middleware # Updated import path
 
 # Import necessary types for middleware
@@ -110,7 +110,7 @@ def create_application() -> FastAPI:
     # or we adjust its get_user_by_id to accept a session.
     # TEMP: Instantiate Auth Service - REVISIT DEPENDENCY INJECTION
     # Assuming AuthenticationService can get a session itself or is adapted
-    auth_service = AuthenticationService(user_repository=UserRepository()) # Simplified, needs review
+    auth_service = AuthenticationService() # Removed unnecessary repository instantiation
 
     # --- Add Middleware (Order Matters!) ---
     

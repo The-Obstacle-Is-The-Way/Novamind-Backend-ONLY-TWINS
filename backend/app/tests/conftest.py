@@ -9,6 +9,14 @@ import sys
 import pytest
 from pathlib import Path
 from unittest.mock import MagicMock
+from fastapi.testclient import TestClient
+from app.main import create_application
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_dependency, Base, Database
+from app.config.settings import get_settings
+from contextlib import asynccontextmanager
+import asyncio
+import logging
+from fastapi import FastAPI
 
 # Add the app directory to the path
 app_dir = Path(__file__).parent.parent
@@ -123,3 +131,106 @@ def test_environment():
     yield
     os.environ.pop("TESTING", None)
     # Don't remove ENVIRONMENT as it might be set by the system
+
+
+# Add/Replace the client fixture
+@pytest.fixture(scope="function") # Use function scope for isolation
+def client(mock_settings, test_environment) -> TestClient:
+    """
+    Create a TestClient instance for testing API endpoints.
+
+    This fixture ensures the application is created *after* settings are mocked
+    and uses an isolated in-memory SQLite database for each test function.
+    Dependencies:
+        - mock_settings: Ensures settings are mocked.
+        - test_environment: Ensures ENVIRONMENT=test is set.
+    """
+    # settings = get_settings() # Already mocked via mock_settings fixture dependency
+    settings = mock_settings # Use the fixture directly for clarity
+
+    # --- DIAGNOSTIC LOGGING ---
+    logger = logging.getLogger(__name__)
+    logger.info("--- [Client Fixture Start] ---")
+    logger.info(f"[Client Fixture] ENVIRONMENT: {os.getenv('ENVIRONMENT')}")
+    logger.info(f"[Client Fixture] Using settings object: {settings}")
+    logger.info(f"[Client Fixture] Settings URI: {settings.SQLALCHEMY_DATABASE_URI}")
+    env_uri_override = os.getenv("SQLALCHEMY_DATABASE_URI")
+    logger.info(f"[Client Fixture] Env Var Override URI: {env_uri_override}")
+    logger.info("[Client Fixture] Instantiating Database...")
+    # --- END DIAGNOSTIC LOGGING ---
+
+    # Create a *new* Database instance using the mocked settings for isolation
+    # Ensure the URI from settings is used
+    test_db = Database(settings=settings)
+
+    # Define an async function to handle DB setup
+    async def setup_db():
+        async with test_db.engine.begin() as conn:
+            # Using run_sync for synchronous execution needed by create_all/drop_all
+            await conn.run_sync(Base.metadata.drop_all) # Ensure clean state
+            await conn.run_sync(Base.metadata.create_all) # Create tables for this test
+
+    # Run the async setup function synchronously
+    asyncio.run(setup_db())
+
+    # Create the app instance *inside* the fixture AFTER settings mock
+    # DO NOT assign the lifespan here yet
+    app_without_lifespan = create_application()
+
+    # --- Define Custom Test Lifespan ---
+    @asynccontextmanager
+    async def test_lifespan(app: FastAPI):
+        # Startup: Use the pre-configured test_db for setup
+        logger.info("--- [Test Lifespan Start] ---")
+        logger.info(f"[Test Lifespan] Using engine: {test_db.engine}")
+        async with test_db.engine.begin() as conn:
+             await conn.run_sync(Base.metadata.drop_all) 
+             await conn.run_sync(Base.metadata.create_all)
+        logger.info("--- [Test Lifespan] Database tables created ---")
+        yield
+        # Shutdown: Use the pre-configured test_db for teardown
+        logger.info("--- [Test Lifespan Shutdown] ---")
+        await test_db.dispose()
+        logger.info("--- [Test Lifespan] Engine disposed ---")
+
+    # Assign the custom lifespan to the app instance *before* TestClient uses it
+    app_without_lifespan.router.lifespan_context = test_lifespan
+    app = app_without_lifespan # Assign the app with the custom lifespan
+
+    # Override the database session dependency (still useful for tests)
+    @asynccontextmanager
+    async def override_get_db():
+        async with test_db.session() as session:
+            yield session
+
+    app.dependency_overrides[get_db_dependency()] = override_get_db
+
+    # --- Prevent asyncpg from using ambient PG vars ---
+    pg_vars = ["PGHOST", "PGUSER", "PGPASSWORD", "PGDATABASE", "DATABASE_URL"]
+    original_pg_vars = {var: os.environ.get(var) for var in pg_vars}
+    for var in pg_vars:
+        if var in os.environ:
+            del os.environ[var]
+            logger.info(f"[Client Fixture] Unset environment variable: {var}")
+    # --- End PG var prevention ---
+
+    # Create and yield the TestClient
+    try:
+        with TestClient(app) as test_client:
+            yield test_client
+    finally:
+        # --- Restore original PG vars ---
+        for var, value in original_pg_vars.items():
+            if value is not None:
+                os.environ[var] = value
+                logger.info(f"[Client Fixture] Restored environment variable: {var}")
+            elif var in os.environ:
+                # If it wasn't set originally, ensure it remains unset
+                del os.environ[var]
+        # --- End PG var restoration ---
+
+        # Clean up: Dispose the engine after the test function completes
+        # This is now handled by the test_lifespan, so remove the explicit dispose call here.
+        # async def dispose_db():
+        #     await test_db.dispose()
+        # asyncio.run(dispose_db())

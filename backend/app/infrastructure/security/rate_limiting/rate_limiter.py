@@ -14,7 +14,7 @@ from typing import Dict, Optional, Tuple, Union
 
 from fastapi import Request, Response, status
 
-from app.infrastructure.cache.redis_cache import RedisCache
+from app.infrastructure.cache.redis_cache import RedisCache, InMemoryFallback
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -132,13 +132,20 @@ class DistributedRateLimiter:
                 - is_limited: True if request should be limited
                 - rate_limit_info: Information about rate limit status
         """
-        if not self.cache.redis_client:
-            # If Redis is unavailable, log warning and don't rate limit
-            logger.warning(
-                "Redis unavailable for rate limiting, allowing request"
-            )
-            return False, {"allowed": True, "reason": "Redis unavailable"}
-        
+        # Check if the cache client has been initialized
+        # Use the private attribute _client which is set by RedisCache.initialize()
+        if not hasattr(self.cache, '_client') or not self.cache._client:
+            # Attempt to initialize if not already done (or if fallback occurred)
+            await self.cache.initialize()
+            
+            # Check again after attempting initialization
+            if not hasattr(self.cache, '_client') or not self.cache._client or isinstance(self.cache._client, InMemoryFallback):
+                # If still no client or it's the fallback, log warning and don't rate limit
+                logger.warning(
+                    "Cache service unavailable or using in-memory fallback for rate limiting, allowing request"
+                )
+                return False, {"allowed": True, "reason": "Cache unavailable or in-memory fallback"}
+
         # Get the appropriate configuration
         config = self.configs.get(limit_type, self.configs[RateLimitType.DEFAULT])
         
@@ -169,7 +176,7 @@ class DistributedRateLimiter:
                         "reset_at": window_start_time + config.period_seconds,
                         "last_request": now,
                     },
-                    ttl=config.period_seconds * 2,  # Ensure it expires
+                    expiration=config.period_seconds * 2,  # Use expiration instead of ttl
                 )
                 
                 # Not rate limited
@@ -195,7 +202,7 @@ class DistributedRateLimiter:
                         "reset_at": window_start_time + config.period_seconds,
                         "last_request": now,
                     },
-                    ttl=config.period_seconds * 2,
+                    expiration=config.period_seconds * 2,
                 )
                 
                 rate_limit_info = {
@@ -218,7 +225,7 @@ class DistributedRateLimiter:
                         "reset_at": window_start_time + config.period_seconds,
                         "last_request": now,
                     },
-                    ttl=config.period_seconds * 2,
+                    expiration=config.period_seconds * 2,
                 )
                 
                 rate_limit_info = {
@@ -258,7 +265,7 @@ class DistributedRateLimiter:
                     "reset_at": bucket["reset_at"],
                     "last_request": now,
                 },
-                ttl=config.period_seconds * 2,
+                expiration=config.period_seconds * 2,
             )
             
             # Not rate limited

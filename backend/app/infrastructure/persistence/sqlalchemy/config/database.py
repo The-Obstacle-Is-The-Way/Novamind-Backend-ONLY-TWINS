@@ -48,19 +48,32 @@ class Database:
         Returns:
             SQLAlchemy async engine
         """
+        # DIAGNOSTIC LOGGING
+        env_uri_override = os.getenv("SQLALCHEMY_DATABASE_URI")
+        logger.info(f"[DB._create_engine] ENTERING. ENVIRONMENT={self.settings.ENVIRONMENT}")
+        logger.info(f"[DB._create_engine] Settings URI: {self.settings.SQLALCHEMY_DATABASE_URI}")
+        logger.info(f"[DB._create_engine] Env Var Override URI: {env_uri_override}")
+
         # Use the assembled connection string directly from main settings
         connection_url = str(self.settings.SQLALCHEMY_DATABASE_URI)
-        
-        # Pooling configuration (using example defaults, ideally read from settings)
-        # TODO: Consider adding POOL_SIZE, POOL_MAX_OVERFLOW etc. to main Settings
-        pooling_args = {
-            "poolclass": FallbackAsyncAdaptedQueuePool,
-            "pool_size": 5, 
-            "max_overflow": 10,
-            "pool_timeout": 30,
-            "pool_recycle": 1800,
-            "pool_pre_ping": True
-        }
+        logger.info(f"[DB._create_engine] Final Connection URL for create_async_engine: {connection_url}")
+
+        # --- Pooling configuration --- 
+        # Use NullPool for SQLite in test environment to avoid potential issues
+        if connection_url.startswith("sqlite"):
+            pooling_args = {"poolclass": NullPool}
+            logger.info("[DB._create_engine] Using NullPool for SQLite.")
+        else:
+            # Default pooling for other DBs (e.g., PostgreSQL)
+            pooling_args = {
+                "poolclass": FallbackAsyncAdaptedQueuePool,
+                "pool_size": 5, 
+                "max_overflow": 10,
+                "pool_timeout": 30,
+                "pool_recycle": 1800,
+                "pool_pre_ping": True
+            }
+            logger.info(f"[DB._create_engine] Using {pooling_args.get('poolclass')} pool.")
             
         # Create engine
         return create_async_engine(
@@ -129,27 +142,30 @@ def get_db_instance() -> Database:
     """
     global _db_instance
 
-    # Check if running in the test environment
+    # Check if running in the test environment *first* and handle it separately
     if os.getenv("ENVIRONMENT") == "test":
-        # Clear settings cache to force re-reading env vars loaded by conftest.py
-        get_settings.cache_clear()
-        test_settings = Settings()
-        # Log the constructed URI for debugging
-        logger.info(f"Test Environment SQLALCHEMY_DATABASE_URI: {test_settings.SQLALCHEMY_DATABASE_URI}")
-        # Create a new, separate Database instance for testing
-        # Do not assign to global _db_instance to avoid interfering with other tests
-        test_db_instance = Database(test_settings)
-        logger.info("Created dedicated database instance for test environment")
-        return test_db_instance
+        # ALWAYS use get_settings() in test env, assuming it's mocked
+        test_settings = get_settings()
+        logger.info(
+            f"Test Environment: Creating NEW Database instance using settings from get_settings(). URI: {test_settings.SQLALCHEMY_DATABASE_URI}"
+        )
+        # Return a new instance directly, DO NOT assign to _db_instance
+        return Database(test_settings)
 
-    # Original logic for non-test environments
+    # --- Logic for non-test environments --- 
+    # Use a lock or thread-safe mechanism if concurrent initialization is possible, 
+    # but for typical web app startup, this might be sufficient.
     if _db_instance is None:
         # Get the main application settings instance (potentially cached)
         main_settings = get_settings()
-
+        logger.info(
+            f"Non-Test Environment: Initializing global Database instance. URI: {main_settings.SQLALCHEMY_DATABASE_URI}"
+        )
         # Initialize Database with the main settings object
         _db_instance = Database(main_settings)
-        logger.info("Database instance initialized using main application settings")
+        logger.info("Global database instance initialized.")
+    else:
+        logger.debug("Returning existing global database instance.")
 
     return _db_instance
 
