@@ -8,7 +8,8 @@ the application, ensuring proper type safety and domain logic encapsulation.
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, UUID4, Field
+# Import ConfigDict for V2 style config
+from pydantic import BaseModel, UUID4, Field, ConfigDict
 
 
 class UserRole(str, Enum):
@@ -30,6 +31,5 @@ class User(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
 
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
+    # V2 Config
+    model_config = ConfigDict(from_attributes=True)
