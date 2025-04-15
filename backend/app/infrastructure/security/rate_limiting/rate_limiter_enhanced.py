@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Set, Tuple, Any, cast
 import redis
 from pydantic import BaseModel
 
-from app.core.config import get_settings
+from app.config.settings import get_settings
 settings = get_settings()
 
 logger = logging.getLogger(__name__)

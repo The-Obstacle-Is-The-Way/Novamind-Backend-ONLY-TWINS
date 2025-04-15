@@ -5,8 +5,13 @@ This module ensures proper encryption of address data structures
 while maintaining HIPAA compliance.
 """
 
-from app.core.security.encryption import EncryptionService
-from app.core.security.field_encryption import FieldEncryptor
+import pytest
+
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
+from app.infrastructure.security.encryption.field_encryptor import FieldEncryptor
+# TEMP: Comment out missing AddressHelper import
+# from app.infrastructure.utils.address_helper import AddressHelper 
+from app.domain.entities.address import Address
 
 
 def test_address_field_encryption():
@@ -15,7 +20,7 @@ def test_address_field_encryption():
 
     """Test address field handling in the field encryptor."""
     # Setup
-    encryption_service = EncryptionService(direct_key="test_address",)
+    encryption_service = BaseEncryptionService(direct_key="test_address",)
     field_encryptor= FieldEncryptor(encryption_service)
 
     # Sample nested address

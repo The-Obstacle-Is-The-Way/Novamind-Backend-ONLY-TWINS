@@ -7,7 +7,7 @@ related to biometric data in the digital twin system.
 
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict
 
 
 class BiometricDataInput(BaseModel):
@@ -57,21 +57,18 @@ class BiometricDataInput(BaseModel):
             raise ValueError("Source must be a non-empty string")
         return value.lower()
     
-    class Config:
-        """Pydantic model configuration."""
-        
-        schema_extra = {
-            "example": {
-                "biometric_type": "heart_rate",
-                "value": 72.5,
-                "source": "wearable",
-                "timestamp": "2025-04-10T14:30:00",
-                "metadata": {
-                    "device": "fitbit",
-                    "activity": "resting"
-                }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "biometric_type": "heart_rate",
+            "value": 72.5,
+            "source": "wearable",
+            "timestamp": "2025-04-10T14:30:00",
+            "metadata": {
+                "device": "fitbit",
+                "activity": "resting"
             }
         }
+    })
 
 
 class BiometricDataOutput(BaseModel):
@@ -101,20 +98,17 @@ class BiometricDataOutput(BaseModel):
         example={"device": "fitbit", "activity": "resting"}
     )
     
-    class Config:
-        """Pydantic model configuration."""
-        
-        schema_extra = {
-            "example": {
-                "timestamp": "2025-04-10T14:30:00",
-                "value": 72.5,
-                "source": "wearable",
-                "metadata": {
-                    "device": "fitbit",
-                    "activity": "resting"
-                }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "timestamp": "2025-04-10T14:30:00",
+            "value": 72.5,
+            "source": "wearable",
+            "metadata": {
+                "device": "fitbit",
+                "activity": "resting"
             }
         }
+    })
 
 
 class BiometricHistoryParams(BaseModel):
@@ -140,15 +134,12 @@ class BiometricHistoryParams(BaseModel):
             raise ValueError("End time must be after start time")
         return end_time
     
-    class Config:
-        """Pydantic model configuration."""
-        
-        schema_extra = {
-            "example": {
-                "start_time": "2025-04-01T00:00:00",
-                "end_time": "2025-04-11T00:00:00"
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "start_time": "2025-04-01T00:00:00",
+            "end_time": "2025-04-11T00:00:00"
         }
+    })
 
 
 class PhysiologicalRangeModel(BaseModel):
@@ -202,14 +193,11 @@ class PhysiologicalRangeModel(BaseModel):
             raise ValueError("Critical max value must be greater than or equal to max value")
         return critical_max
     
-    class Config:
-        """Pydantic model configuration."""
-        
-        schema_extra = {
-            "example": {
-                "min": 60.0,
-                "max": 100.0,
-                "critical_min": 40.0,
-                "critical_max": 140.0
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "min": 60.0,
+            "max": 100.0,
+            "critical_min": 40.0,
+            "critical_max": 140.0
         }
+    })

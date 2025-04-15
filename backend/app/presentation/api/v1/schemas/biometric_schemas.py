@@ -6,12 +6,13 @@ This module defines the request and response schemas for the biometric data
 API endpoints, ensuring proper validation and serialization of data.
 """
 
-from datetime import datetime, , UTC
+from datetime import datetime, UTC
 from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Optional, Union, Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator
+# Import ConfigDict for V2 style config
+from pydantic import BaseModel, Field, validator, ConfigDict
 
 
 class BiometricDataPointCreate(BaseModel):
@@ -98,13 +99,11 @@ class BiometricDataPointResponse(BaseModel):
         description="Confidence level in the measurement (0.0-1.0)"
     )
     
-    class Config:
-        """Pydantic configuration."""
-        
-        json_encoders = {
-            datetime: lambda dt: dt.isoformat(),
-            UUID: lambda uuid: str(uuid)
-        }
+    # V2 Config
+    model_config = ConfigDict(json_encoders={
+        datetime: lambda dt: dt.isoformat(),
+        UUID: lambda uuid: str(uuid)
+    })
 
 
 class BiometricDataPointListResponse(BaseModel):
@@ -152,13 +151,11 @@ class BiometricTwinResponse(BaseModel):
         description="Number of data points associated with this twin"
     )
     
-    class Config:
-        """Pydantic configuration."""
-        
-        json_encoders = {
-            datetime: lambda dt: dt.isoformat(),
-            UUID: lambda uuid: str(uuid)
-        }
+    # V2 Config
+    model_config = ConfigDict(json_encoders={
+        datetime: lambda dt: dt.isoformat(),
+        UUID: lambda uuid: str(uuid)
+    })
 
 
 class DeviceConnectionRequest(BaseModel):

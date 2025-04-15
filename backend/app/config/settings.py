@@ -12,6 +12,7 @@ import json # Ensure json is imported for the validator
 
 from pydantic_settings import BaseSettings
 from pydantic import Field, field_validator, PostgresDsn, SecretStr
+from pydantic import ConfigDict
 
 
 class Settings(BaseSettings):
@@ -119,11 +120,18 @@ class Settings(BaseSettings):
     # Other settings
     ENVIRONMENT: str = Field(default="development", json_schema_extra={"env": "ENVIRONMENT"})
     
-    class Config:
-        """Pydantic configuration."""
-        case_sensitive = True
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    # Audit Log Settings
+    AUDIT_LOG_LEVEL: str = Field(default="INFO", json_schema_extra={"env": "AUDIT_LOG_LEVEL"})
+    AUDIT_LOG_TO_FILE: bool = Field(default=False, json_schema_extra={"env": "AUDIT_LOG_TO_FILE"})
+    AUDIT_LOG_FILE: str = Field(default="audit.log", json_schema_extra={"env": "AUDIT_LOG_FILE"})
+    EXTERNAL_AUDIT_ENABLED: bool = Field(default=False, json_schema_extra={"env": "EXTERNAL_AUDIT_ENABLED"})
+    
+    # Use ConfigDict for Pydantic V2 configuration
+    model_config = ConfigDict(
+        case_sensitive=True,
+        env_file=".env",
+        env_file_encoding="utf-8"
+    )
 
 
 @lru_cache()

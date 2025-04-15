@@ -3,13 +3,12 @@ import os
 import jwt
 import time
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 from typing import Any
 
+from app.config.settings import get_settings
 from app.infrastructure.security.jwt.jwt_service import JWTService
-from app.core.config import get_settings
-settings = get_settings()
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 
 

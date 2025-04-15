@@ -11,7 +11,8 @@ from enum import Enum
 from typing import Dict, List, Optional, Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+# Import ConfigDict for V2 style config
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class AlertPriorityEnum(str, Enum):
@@ -73,9 +74,8 @@ class BiometricAlertResponseSchema(BaseModel):
     # Additional data
     metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional contextual information")
     
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
+    # V2 Config
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AlertStatusUpdateSchema(BaseModel):
@@ -91,6 +91,5 @@ class AlertListResponseSchema(BaseModel):
     page: int = Field(..., description="Current page number")
     page_size: int = Field(..., description="Number of items per page")
     
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
+    # V2 Config
+    model_config = ConfigDict(from_attributes=True)

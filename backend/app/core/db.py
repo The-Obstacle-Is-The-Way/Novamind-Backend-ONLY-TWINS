@@ -7,7 +7,8 @@ and connection utilities for the application.
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from app.core.config import get_settings
+# Use the new canonical config location
+from app.config.settings import get_settings
 settings = get_settings()
 import os
 

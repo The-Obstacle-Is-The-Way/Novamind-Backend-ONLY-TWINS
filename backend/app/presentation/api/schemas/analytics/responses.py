@@ -8,7 +8,7 @@ the analytics endpoints in the Novamind Digital Twin platform.
 
 from typing import Dict, List, Any, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class AnalyticsEventResponse(BaseModel):
@@ -61,19 +61,17 @@ class AnalyticsEventResponse(BaseModel):
         examples=["2025-03-30T12:00:01Z"]
     )
     
-    class Config:
-        """Pydantic configuration for this schema."""
-        json_schema_extra = {
-            "example": {
-                "event_id": "evt-1234-abcd-5678-efgh",
-                "event_type": "page_view",
-                "event_data": {"page": "/dashboard", "time_on_page": 45},
-                "user_id": "provider-123",
-                "session_id": "session-789-xyz",
-                "timestamp": "2025-03-30T12:00:00Z",
-                "processed_at": "2025-03-30T12:00:01Z"
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "event_id": "evt-1234-abcd-5678-efgh",
+            "event_type": "page_view",
+            "event_data": {"page": "/dashboard", "time_on_page": 45},
+            "user_id": "provider-123",
+            "session_id": "session-789-xyz",
+            "timestamp": "2025-03-30T12:00:00Z",
+            "processed_at": "2025-03-30T12:00:01Z"
         }
+    })
 
 
 class AnalyticsEventsBatchResponse(BaseModel):
@@ -118,28 +116,26 @@ class AnalyticsEventsBatchResponse(BaseModel):
         description="When the batch was processed"
     )
     
-    class Config:
-        """Pydantic configuration for this schema."""
-        json_schema_extra = {
-            "example": {
-                "batch_id": "batch-2345-bcde",
-                "processed_count": 95,
-                "failed_count": 5,
-                "total_count": 100,
-                "events": [
-                    {
-                        "event_id": "evt-1234-abcd-5678-efgh",
-                        "event_type": "page_view",
-                        "event_data": {"page": "/dashboard"},
-                        "user_id": "provider-123",
-                        "session_id": "session-789-xyz",
-                        "timestamp": "2025-03-30T12:00:00Z",
-                        "processed_at": "2025-03-30T12:00:01Z"
-                    }
-                ],
-                "timestamp": "2025-03-30T12:01:00Z"
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "batch_id": "batch-2345-bcde",
+            "processed_count": 95,
+            "failed_count": 5,
+            "total_count": 100,
+            "events": [
+                {
+                    "event_id": "evt-1234-abcd-5678-efgh",
+                    "event_type": "page_view",
+                    "event_data": {"page": "/dashboard"},
+                    "user_id": "provider-123",
+                    "session_id": "session-789-xyz",
+                    "timestamp": "2025-03-30T12:00:00Z",
+                    "processed_at": "2025-03-30T12:00:01Z"
+                }
+            ],
+            "timestamp": "2025-03-30T12:01:00Z"
         }
+    })
 
 
 class MetricValue(BaseModel):
@@ -255,59 +251,31 @@ class AnalyticsAggregatesListResponse(BaseModel):
         description="When this result was generated"
     )
     
-    class Config:
-        """Pydantic configuration for this schema."""
-        json_schema_extra = {
-            "example": {
-                "aggregates": [
-                    {
-                        "dimensions": {"event_type": "page_view"},
-                        "metrics": {
-                            "count": {
-                                "value": 125,
-                                "type": "integer"
-                            },
-                            "avg_duration": {
-                                "value": 45.3,
-                                "type": "float",
-                                "format": "duration:seconds"
-                            }
-                        },
-                        "time_period": {
-                            "start": "2025-03-29T00:00:00Z",
-                            "end": "2025-03-30T00:00:00Z"
-                        }
-                    },
-                    {
-                        "dimensions": {"event_type": "feature_usage"},
-                        "metrics": {
-                            "count": {
-                                "value": 83,
-                                "type": "integer"
-                            },
-                            "avg_duration": {
-                                "value": 120.7,
-                                "type": "float",
-                                "format": "duration:seconds"
-                            }
-                        },
-                        "time_period": {
-                            "start": "2025-03-29T00:00:00Z",
-                            "end": "2025-03-30T00:00:00Z"
-                        }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "aggregates": [
+                {
+                    "dimensions": {"event_type": "page_view"},
+                    "metrics": {
+                        "count": {"value": 125, "type": "integer"},
+                        "avg_duration": {"value": 45.3, "type": "float", "format": "duration:seconds"}
                     }
-                ],
-                "total_count": 2,
-                "query_info": {
-                    "aggregate_type": "count",
-                    "dimensions": ["event_type"],
-                    "time_range": {
-                        "start": "2025-03-29T00:00:00Z",
-                        "end": "2025-03-30T00:00:00Z"
-                    },
-                    "filters_applied": {"platform": "web"}
                 },
-                "cached": False,
-                "generated_at": "2025-03-30T12:05:00Z"
-            }
+                {
+                    "dimensions": {"event_type": "feature_usage"},
+                    "metrics": {
+                        "count": {"value": 80, "type": "integer"}
+                    }
+                }
+            ],
+            "total_count": 2,
+            "query_info": {
+                "aggregate_type": "count",
+                "dimensions": ["event_type"],
+                "time_range": {"start": "2025-03-29T00:00:00Z", "end": "2025-03-30T00:00:00Z"},
+                "filters_applied": {"platform": "web"}
+            },
+            "cached": False,
+            "generated_at": "2025-03-30T12:05:00Z"
         }
+    })

@@ -7,7 +7,7 @@ related to the digital twin system.
 
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.presentation.models.biometric_data import BiometricDataOutput, PhysiologicalRangeModel
 
@@ -49,35 +49,32 @@ class BiometricTimeseriesOutput(BaseModel):
         }
     )
     
-    class Config:
-        """Pydantic model configuration."""
-        
-        schema_extra = {
-            "example": {
-                "biometric_type": "heart_rate",
-                "unit": "bpm",
-                "data_points": [
-                    {
-                        "timestamp": "2025-04-10T14:30:00",
-                        "value": 72.5,
-                        "source": "wearable",
-                        "metadata": {"device": "fitbit"}
-                    },
-                    {
-                        "timestamp": "2025-04-10T15:30:00",
-                        "value": 75.0,
-                        "source": "wearable",
-                        "metadata": {"device": "fitbit"}
-                    }
-                ],
-                "physiological_range": {
-                    "min": 60.0,
-                    "max": 100.0,
-                    "critical_min": 40.0,
-                    "critical_max": 140.0
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "biometric_type": "heart_rate",
+            "unit": "bpm",
+            "data_points": [
+                {
+                    "timestamp": "2025-04-10T14:30:00",
+                    "value": 72.5,
+                    "source": "wearable",
+                    "metadata": {"device": "fitbit"}
+                },
+                {
+                    "timestamp": "2025-04-10T15:30:00",
+                    "value": 75.0,
+                    "source": "wearable",
+                    "metadata": {"device": "fitbit"}
                 }
+            ],
+            "physiological_range": {
+                "min": 60.0,
+                "max": 100.0,
+                "critical_min": 40.0,
+                "critical_max": 140.0
             }
         }
+    })
 
 
 class DigitalTwinOutput(BaseModel):
@@ -132,55 +129,52 @@ class DigitalTwinOutput(BaseModel):
         example="2025-04-10T14:30:00"
     )
     
-    class Config:
-        """Pydantic model configuration."""
-        
-        schema_extra = {
-            "example": {
-                "id": "550e8400-e29b-41d4-a716-446655440000",
-                "patient_id": "patient-123",
-                "timeseries_data": {
-                    "heart_rate": {
-                        "biometric_type": "heart_rate",
-                        "unit": "bpm",
-                        "data_points": [
-                            {
-                                "timestamp": "2025-04-10T14:30:00",
-                                "value": 72.5,
-                                "source": "wearable",
-                                "metadata": {"device": "fitbit"}
-                            }
-                        ],
-                        "physiological_range": {
-                            "min": 60.0,
-                            "max": 100.0,
-                            "critical_min": 40.0,
-                            "critical_max": 140.0
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "patient_id": "patient-123",
+            "timeseries_data": {
+                "heart_rate": {
+                    "biometric_type": "heart_rate",
+                    "unit": "bpm",
+                    "data_points": [
+                        {
+                            "timestamp": "2025-04-10T14:30:00",
+                            "value": 72.5,
+                            "source": "wearable",
+                            "metadata": {"device": "fitbit"}
                         }
-                    },
-                    "blood_pressure": {
-                        "biometric_type": "blood_pressure",
-                        "unit": "mmHg",
-                        "data_points": [
-                            {
-                                "timestamp": "2025-04-10T15:00:00",
-                                "value": {"systolic": 120, "diastolic": 80},
-                                "source": "clinical",
-                                "metadata": {"position": "sitting"}
-                            }
-                        ],
-                        "physiological_range": {
-                            "min": 90.0,
-                            "max": 120.0,
-                            "critical_min": 70.0,
-                            "critical_max": 180.0
-                        }
+                    ],
+                    "physiological_range": {
+                        "min": 60.0,
+                        "max": 100.0,
+                        "critical_min": 40.0,
+                        "critical_max": 140.0
                     }
                 },
-                "created_at": "2025-03-15T00:00:00",
-                "updated_at": "2025-04-10T15:00:00"
-            }
+                "blood_pressure": {
+                    "biometric_type": "blood_pressure",
+                    "unit": "mmHg",
+                    "data_points": [
+                        {
+                            "timestamp": "2025-04-10T15:00:00",
+                            "value": {"systolic": 120, "diastolic": 80},
+                            "source": "clinical",
+                            "metadata": {"position": "sitting"}
+                        }
+                    ],
+                    "physiological_range": {
+                        "min": 90.0,
+                        "max": 120.0,
+                        "critical_min": 70.0,
+                        "critical_max": 180.0
+                    }
+                }
+            },
+            "created_at": "2025-03-15T00:00:00",
+            "updated_at": "2025-04-10T15:00:00"
         }
+    })
 
 
 class DigitalTwinCreate(BaseModel):
@@ -192,14 +186,11 @@ class DigitalTwinCreate(BaseModel):
         example="patient-123"
     )
     
-    class Config:
-        """Pydantic model configuration."""
-        
-        schema_extra = {
-            "example": {
-                "patient_id": "patient-123"
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "patient_id": "patient-123"
         }
+    })
 
 
 class DigitalTwinSummary(BaseModel):
@@ -242,27 +233,24 @@ class DigitalTwinSummary(BaseModel):
         example="2025-04-10T15:00:00"
     )
     
-    class Config:
-        """Pydantic model configuration."""
-        
-        schema_extra = {
-            "example": {
-                "id": "550e8400-e29b-41d4-a716-446655440000",
-                "patient_id": "patient-123",
-                "latest_readings": {
-                    "heart_rate": {
-                        "timestamp": "2025-04-10T14:30:00",
-                        "value": 72.5,
-                        "source": "wearable",
-                        "metadata": {"device": "fitbit"}
-                    },
-                    "blood_pressure": {
-                        "timestamp": "2025-04-10T15:00:00",
-                        "value": {"systolic": 120, "diastolic": 80},
-                        "source": "clinical",
-                        "metadata": {"position": "sitting"}
-                    }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "patient_id": "patient-123",
+            "latest_readings": {
+                "heart_rate": {
+                    "timestamp": "2025-04-10T14:30:00",
+                    "value": 72.5,
+                    "source": "wearable",
+                    "metadata": {"device": "fitbit"}
                 },
-                "updated_at": "2025-04-10T15:00:00"
-            }
+                "blood_pressure": {
+                    "timestamp": "2025-04-10T15:00:00",
+                    "value": {"systolic": 120, "diastolic": 80},
+                    "source": "clinical",
+                    "metadata": {"position": "sitting"}
+                }
+            },
+            "updated_at": "2025-04-10T15:00:00"
         }
+    })

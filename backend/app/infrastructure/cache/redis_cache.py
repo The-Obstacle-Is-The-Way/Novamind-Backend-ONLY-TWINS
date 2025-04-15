@@ -13,7 +13,7 @@ import redis.asyncio as aioredis # Use redis.asyncio instead of aioredis
 
 from app.application.interfaces.services.cache_service import CacheService
 from app.core.utils.logging import get_logger
-from app.core.config import get_settings
+from app.config.settings import get_settings
 settings = get_settings()
 
 logger = get_logger(__name__)

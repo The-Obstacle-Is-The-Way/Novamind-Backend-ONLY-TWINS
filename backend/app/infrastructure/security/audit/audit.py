@@ -21,7 +21,7 @@ import logging
 import uuid
 from typing import Any, Dict, List, Optional, Union
 
-from app.core.config import get_settings
+from app.config.settings import get_settings
 settings = get_settings()
 
 

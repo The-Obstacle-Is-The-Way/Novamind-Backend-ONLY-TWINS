@@ -38,13 +38,15 @@ from app.infrastructure.security.encryption import BaseEncryptionService
 from app.infrastructure.security.password import PasswordHandler, get_password_hash, verify_password
 
 # RBAC Components
-from app.infrastructure.security.rbac import RoleBasedAccessControl, RoleAccessManager, RoleManager
+# Only import RBACService as Action and Resource are not exported from rbac/__init__
+from app.infrastructure.security.rbac import RBACService
 
 # Rate Limiting Components
-from app.infrastructure.security.rate_limiting import RateLimiter, EnhancedRateLimiter
+# from app.infrastructure.security.rate_limiting import RateLimiter, EnhancedRateLimiter # Incorrect imports
+from app.infrastructure.security.rate_limiting import DistributedRateLimiter # Import the correct class
 
 # Audit Components  
-from app.infrastructure.security.audit import AuditService
+from app.infrastructure.security.audit import AuditLogger
 
 from .auth.authentication_service import AuthenticationService
 from .auth.password_service import PasswordService

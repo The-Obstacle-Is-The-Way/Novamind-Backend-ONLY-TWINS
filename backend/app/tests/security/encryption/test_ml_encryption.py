@@ -9,9 +9,10 @@ import json
 import os
 import pytest
 from typing import Dict, Any
+import pandas as pd
 
-from app.core.security.encryption import EncryptionService
-from app.core.security.field_encryption import FieldEncryptor
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
+from app.infrastructure.security.encryption.field_encryptor import FieldEncryptor
 
 
 @pytest.fixture
@@ -31,9 +32,9 @@ def sensitive_data() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def encryption_service() -> EncryptionService:
+def encryption_service() -> BaseEncryptionService:
     """Test fixture for encryption service with test key."""
-    result = EncryptionService(direct_key="test_key_for_unit_tests_only_12345678")
+    result = BaseEncryptionService(direct_key="test_key_for_unit_tests_only_12345678")
     return result
 
 
@@ -125,8 +126,8 @@ class TestEncryptionService:
     def test_different_keys(self):
         """Test that different encryption keys produce different outputs."""
         # Create two services with different keys using direct key injection
-        service1 = EncryptionService(direct_key="test_key_for_unit_tests_only_12345678")
-        service2 = EncryptionService(direct_key="different_test_key_for_unit_tests_456")
+        service1 = BaseEncryptionService(direct_key="test_key_for_unit_tests_only_12345678")
+        service2 = BaseEncryptionService(direct_key="different_test_key_for_unit_tests_456")
 
         # Create test data
         test_value = "HIPAA_PHI_TEST_DATA_123"
@@ -179,8 +180,8 @@ class TestEncryptionService:
     def test_key_rotation(self, sensitive_data):
         """Test that key rotation works properly."""
         # Arrange - Create service with current and previous keys
-        service_old = EncryptionService(direct_key="rotation_old_key_12345678901234567890")
-        service_new = EncryptionService(
+        service_old = BaseEncryptionService(direct_key="rotation_old_key_12345678901234567890")
+        service_new = BaseEncryptionService(
             direct_key="rotation_new_key_12345678901234567890",
             previous_key="rotation_old_key_12345678901234567890",
         )

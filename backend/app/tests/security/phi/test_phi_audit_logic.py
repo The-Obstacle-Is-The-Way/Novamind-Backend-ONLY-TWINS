@@ -26,7 +26,13 @@ except ImportError:
 # Import BaseSecurityTest for test base class
 from app.tests.security.utils.base_security_test import BaseSecurityTest
 
-from app.infrastructure.security.audit import AuditService
+# Uncomment AuditLog import now that the model exists
+from app.infrastructure.persistence.sqlalchemy.models.audit_log import AuditLog
+# TEMP: Keep UserModel commented until user.py is verified/completed
+# from app.infrastructure.persistence.sqlalchemy.models.user import User as UserModel 
+from app.infrastructure.security.audit import AuditLogger
+from app.infrastructure.security.encryption import BaseEncryptionService
+from app.infrastructure.security.encryption.field_encryptor import FieldEncryptor
 from app.infrastructure.security.phi import PHIAuditMiddleware, PHIAuditHandler
 from app.infrastructure.security.phi.detector import PHIDetector
 

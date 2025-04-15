@@ -21,11 +21,8 @@ import time
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Tuple
-from app.infrastructure.security.jwt_auth import (
-    JWTAuthService,
-    AuthenticationError,
-    TokenValidationError,
-)
+from app.infrastructure.security.jwt.jwt_service import JWTService
+from app.domain.exceptions import InvalidTokenError, TokenExpiredError
 from app.domain.models.user import User, UserRole
 
 # Mock data for testing
@@ -89,7 +86,7 @@ class MockResponse:
 @pytest.fixture
 def auth_service():
     """Fixture for JWTAuthService with test configuration."""
-    return JWTAuthService(
+    return JWTService(
         secret_key="test-secret-key-1234567890-abcdef",
         token_expiry_minutes=60,
         refresh_token_expiry_days=30

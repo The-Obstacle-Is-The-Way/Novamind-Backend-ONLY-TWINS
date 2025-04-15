@@ -6,7 +6,8 @@ with attributes and behaviors.
 """
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+# Import ConfigDict for V2 style config
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 from app.domain.enums.role import Role
 
@@ -25,9 +26,8 @@ class User(BaseModel):
     is_active: bool = Field(default=True, description="Whether the user account is active")
     full_name: str | None = Field(None, description="Full name of the user")
     
-    class Config:
-        """Pydantic model configuration."""
-        frozen = True  # Make instances immutable
+    # V2 Config
+    model_config = ConfigDict(frozen=True)
         
     def has_role(self, role: Role) -> bool:
         """

@@ -1,12 +1,14 @@
 from unittest.mock import patch, MagicMock
 import pytest
 from fastapi import HTTPException
+from sqlalchemy import create_engine
 
-from app.core.security.encryption import EncryptionService
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
+from app.infrastructure.persistence.sqlalchemy.config.database import Base
 
 class TestDatabaseSecurity:
     def setup_method(self):
-        self.encryption_service = EncryptionService()
+        self.encryption_service = BaseEncryptionService(direct_key="test_key_for_db_sec")
 
     def test_database_encryption(self):
         """

@@ -22,10 +22,13 @@ import json
 
 # Import the encryption modules from infrastructure layer
 from app.infrastructure.security.encryption import (
-    PHIFieldEncryption,
     EncryptionKeyManager,
     EncryptionError,
 )
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
+from app.infrastructure.security.encryption.mock_encryption_service import MockEncryptionService
+# Correct import for FieldEncryptor
+from app.infrastructure.security.encryption.field_encryptor import FieldEncryptor
 
 class TestEncryptionKeyManager(unittest.TestCase):
     """Test suite for encryption key management."""
@@ -54,8 +57,9 @@ class TestPHIFieldEncryption(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.key_manager = EncryptionKeyManager()
-        self.encryption = PHIFieldEncryption(self.key_manager)
+        # Instantiate BaseEncryptionService (using Mock for testing)
+        self.encryption_service = MockEncryptionService() 
+        self.encryption = FieldEncryptor(self.encryption_service) # Instantiate FieldEncryptor
 
         # Define PHI fields for testing
         self.phi_fields = [
@@ -95,26 +99,26 @@ class TestPHIFieldEncryption(unittest.TestCase):
         """Test encryption and decryption of a single value."""
         # Test with a regular string
         original = "This is sensitive PHI data"
-        encrypted = self.encryption.encrypt(original)
+        encrypted = self.encryption_service.encrypt(original) # Use service directly
 
         # Encrypted value should be different from original
         self.assertNotEqual(original, encrypted)
 
         # Decrypted value should match original
-        decrypted = self.encryption.decrypt(encrypted)
+        decrypted = self.encryption_service.decrypt(encrypted) # Use service directly
         self.assertEqual(original, decrypted)
 
         # Test with None or empty string
-        self.assertEqual("", self.encryption.encrypt(""))
-        self.assertEqual(None, self.encryption.encrypt(None))
+        self.assertEqual("", self.encryption_service.encrypt(""))
+        self.assertEqual(None, self.encryption_service.encrypt(None))
 
     def test_encrypt_decrypt_dict(self):
         """Test encryption and decryption of PHI fields in a dictionary."""
         # Make a copy of the original data
         original_data = json.loads(json.dumps(self.test_data))
 
-        # Encrypt the PHI fields
-        encrypted_data = self.encryption.encrypt_dict(self.test_data, self.phi_fields)
+        # Encrypt the PHI fields using FieldEncryptor
+        encrypted_data = self.encryption.encrypt_fields(self.test_data, self.phi_fields)
 
         # PHI fields should be encrypted
         self.assertNotEqual(original_data["patient_id"], encrypted_data["patient_id"])
@@ -126,8 +130,8 @@ class TestPHIFieldEncryption(unittest.TestCase):
         self.assertEqual(original_data["gender"], encrypted_data["gender"])
         self.assertEqual(original_data["diagnosis"], encrypted_data["diagnosis"])
 
-        # Decrypt the data
-        decrypted_data = self.encryption.decrypt_dict(encrypted_data, self.phi_fields)
+        # Decrypt the data using FieldEncryptor
+        decrypted_data = self.encryption.decrypt_fields(encrypted_data, self.phi_fields)
 
         # Decrypted data should match original
         self.assertEqual(original_data, decrypted_data)
@@ -137,14 +141,14 @@ class TestPHIFieldEncryption(unittest.TestCase):
         # Make a copy of the original data
         original_data = json.loads(json.dumps(self.test_data))
 
-        # Encrypt the PHI fields
-        encrypted_data = self.encryption.encrypt_dict(self.test_data, self.phi_fields)
+        # Encrypt the PHI fields using FieldEncryptor
+        encrypted_data = self.encryption.encrypt_fields(self.test_data, self.phi_fields)
 
         # Nested PHI fields should be encrypted
         self.assertNotEqual(original_data["demographics"]["address"]["street"], encrypted_data["demographics"]["address"]["street"])
 
-        # Decrypt the data
-        decrypted_data = self.encryption.decrypt_dict(encrypted_data, self.phi_fields)
+        # Decrypt the data using FieldEncryptor
+        decrypted_data = self.encryption.decrypt_fields(encrypted_data, self.phi_fields)
 
         # Original and decrypted data should match
         self.assertEqual(original_data["demographics"]["address"]["street"], decrypted_data["demographics"]["address"]["street"])
@@ -154,10 +158,10 @@ class TestPHIFieldEncryption(unittest.TestCase):
         data = json.loads(json.dumps(self.test_data))
         original_data = json.loads(json.dumps(self.test_data))
 
-        # Perform multiple encrypt/decrypt operations
+        # Perform multiple encrypt/decrypt operations using FieldEncryptor
         for _ in range(5):
-            data = self.encryption.encrypt_dict(data, self.phi_fields)
-            data = self.encryption.decrypt_dict(data, self.phi_fields)
+            data = self.encryption.encrypt_fields(data, self.phi_fields)
+            data = self.encryption.decrypt_fields(data, self.phi_fields)
 
         # Data should remain unchanged
         self.assertEqual(original_data, data)
@@ -168,7 +172,7 @@ class TestPHIFieldEncryption(unittest.TestCase):
         invalid_encrypted = "ENC_INVALID"  # Missing proper format
 
         try:
-            result = self.encryption.decrypt(invalid_encrypted)
+            result = self.encryption_service.decrypt(invalid_encrypted) # Use service directly
             # If no exception is raised, the function should return the original value
             self.assertEqual(invalid_encrypted, result)
         except EncryptionError:
@@ -184,8 +188,8 @@ class TestPHIFieldEncryption(unittest.TestCase):
             "treatment_notes": "Patient exhibits symptoms of anxiety and depression.",
         }
 
-        # Encrypt the data
-        encrypted_data = self.encryption.encrypt_dict(test_data, ["medical_record_number", "treatment_notes"])
+        # Encrypt the data using FieldEncryptor
+        encrypted_data = self.encryption.encrypt_fields(test_data, ["medical_record_number", "treatment_notes"])
 
         # HIPAA requires that PHI is not visible in storage
         self.assertNotEqual(test_data["medical_record_number"], encrypted_data["medical_record_number"])
@@ -194,8 +198,8 @@ class TestPHIFieldEncryption(unittest.TestCase):
         # Diagnosis code (not considered direct PHI) should remain unchanged
         self.assertEqual(test_data["diagnosis_code"], encrypted_data["diagnosis_code"])
 
-        # Verify data can be correctly decrypted
-        decrypted_data = self.encryption.decrypt_dict(encrypted_data, ["medical_record_number", "treatment_notes"])
+        # Verify data can be correctly decrypted using FieldEncryptor
+        decrypted_data = self.encryption.decrypt_fields(encrypted_data, ["medical_record_number", "treatment_notes"])
         
         self.assertEqual(test_data, decrypted_data)
 

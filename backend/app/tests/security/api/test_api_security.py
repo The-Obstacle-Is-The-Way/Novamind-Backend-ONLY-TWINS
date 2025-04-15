@@ -11,14 +11,18 @@ import json
 import uuid
 import pytest
 from unittest.mock import patch, MagicMock
+from httpx import AsyncClient
 
 from fastapi import status, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.testclient import TestClient
 
-# Removed direct app import
-# Corrected path, removed AuthHandler
+# Use the new canonical config location
+from app.config.settings import get_settings
+
 from app.api.dependencies.auth import get_current_user
+from app.infrastructure.security.jwt.jwt_service import JWTService
+from app.infrastructure.security.auth.authentication_service import AuthenticationService
 # from app.infrastructure.security.rate_limiting import RateLimiter #
 # RateLimiter removed or refactored
 

@@ -7,15 +7,12 @@ import pytest
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
+from starlette.responses import Response
+from starlette.testclient import TestClient
 
-# Correct the import statement
-from app.infrastructure.security.auth.auth_middleware import (
-    JWTAuthMiddleware,
-    verify_token,
-    verify_patient_access,
-    verify_provider_access,
-    verify_admin_access,
-    get_current_user
+# Update import path for AuthenticationMiddleware
+from app.presentation.middleware.authentication_middleware import (
+    AuthenticationMiddleware,
 )
 
 

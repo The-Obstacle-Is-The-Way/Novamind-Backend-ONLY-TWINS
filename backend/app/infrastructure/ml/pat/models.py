@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict
 
 
 class AccelerometerReading(BaseModel):
@@ -84,8 +84,7 @@ class AccelerometerDataRequest(BaseModel):
 class AnalysisMetrics(BaseModel):
     """Base model for analysis metrics."""
     
-    class Config:
-        extra = "allow"  # Allow extra fields for different analysis types
+    model_config = ConfigDict(extra="allow")
 
 
 class SleepQualityMetrics(AnalysisMetrics):
@@ -209,7 +208,7 @@ class HistoricalAnalysisRequest(BaseModel):
 class ModelInfoResponse(BaseModel):
     """Response model for PAT model information."""
     
-    model_config = {"protected_namespaces": ()}
+    model_config = ConfigDict(protected_namespaces=())
     
     model_name: str = Field(..., description="Name of the PAT model")
     model_size: PATModelSizeEnum = Field(..., description="Size of the PAT model")
