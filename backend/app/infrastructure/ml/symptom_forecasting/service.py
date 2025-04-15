@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 from prophet import Prophet
 from app.core.utils.logging import get_logger
-from app.config.settings import settings
+from app.config.settings import get_settings
 from app.domain.interfaces.symptom_forecasting_interface import SymptomForecastingInterface
 from app.domain.exceptions.ml_exceptions import MLModelException
 

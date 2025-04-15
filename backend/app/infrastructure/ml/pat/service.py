@@ -74,18 +74,20 @@ class PATService:
         
         Args:
             model_size: Size of the PAT model to use
-            model_path: Custom path to model weights
-            cache_dir: Directory for caching model outputs
-            use_gpu: Whether to use GPU acceleration
+            model_path: Custom path to model weights (overrides settings)
+            cache_dir: Directory for caching model outputs (overrides settings)
+            use_gpu: Whether to use GPU acceleration (overrides settings)
         """
+        settings = get_settings() # Get settings object
         self.model_size = model_size
+        # Use provided path, otherwise use path from settings based on model_size
         self.model_path = model_path or os.path.join(
-            ml_settings.ML_MODELS_PATH, f"pat-{model_size.value}"
-        )
-        self.cache_dir = cache_dir or os.path.join(
-            ml_settings.ML_CACHE_PATH, "pat"
-        )
-        self.use_gpu = use_gpu
+            settings.ml.models_path, f"pat-{model_size.value}"
+        ) 
+        # Use provided cache_dir, otherwise use default PAT cache from settings
+        self.cache_dir = cache_dir or settings.ml.pat.cache_dir 
+        # Use provided GPU flag, otherwise use flag from settings
+        self.use_gpu = use_gpu if use_gpu is not None else settings.ml.pat.use_gpu 
         self.model = None
         self.initialized = False
         
