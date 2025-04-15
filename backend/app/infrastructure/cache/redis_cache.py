@@ -8,6 +8,7 @@ interface for efficient caching in a distributed environment.
 
 import json
 from typing import Any, Dict, Optional
+import time
 
 import redis.asyncio as aioredis # Use redis.asyncio instead of aioredis
 
@@ -47,12 +48,19 @@ class RedisCache(CacheService):
             redis_url = getattr(self._settings, "REDIS_URL", "redis://localhost:6379/0")
             redis_ssl = getattr(self._settings, "REDIS_SSL", False)
             
-            # Connect to Redis
+            # Prepare connection options
+            redis_connection_options = {
+                "encoding": "utf-8",
+                "decode_responses": True
+            }
+            # Only add the 'ssl' argument if redis_ssl is explicitly True
+            if redis_ssl:
+                 redis_connection_options["ssl"] = True
+
+            # Connect to Redis using the prepared options
             self._client = await aioredis.from_url(
                 redis_url,
-                ssl=redis_ssl,
-                encoding="utf-8",
-                decode_responses=True
+                **redis_connection_options
             )
             
             logger.info(f"Connected to Redis at {redis_url}")
@@ -255,54 +263,111 @@ class InMemoryFallback:
     
     def __init__(self):
         """Initialize the in-memory cache."""
-        self.data = {}
-        self.expiry = {}
-        
+        self._cache: Dict[str, Any] = {}
+        self._expirations: Dict[str, float] = {} # Store expiration timestamps
+
+    async def _check_expired(self, key: str):
+        """Check if a key has expired and remove it if so."""
+        if key in self._expirations and self._expirations[key] < time.time():
+            if key in self._cache:
+                del self._cache[key]
+            del self._expirations[key]
+            return True
+        return False
+
     async def get(self, key: str) -> Any:
-        """Get a value from the cache."""
-        return self.data.get(key)
+        if self._check_expired(key):
+            return None
+        return self._cache.get(key)
         
     async def set(self, key: str, value: Any, ex: Optional[int] = None) -> bool:
         """Set a value in the cache."""
-        self.data[key] = value
+        self._cache[key] = value
         if ex is not None:
-            self.expiry[key] = ex
+            self._expirations[key] = time.time() + ex
+        elif key in self._expirations: # Remove expiration if ex is None
+             del self._expirations[key]
         return True
         
     async def delete(self, key: str) -> int:
         """Delete a value from the cache."""
-        if key in self.data:
-            del self.data[key]
-            if key in self.expiry:
-                del self.expiry[key]
-            return 1
-        return 0
+        deleted = 0
+        if key in self._cache:
+            del self._cache[key]
+            deleted = 1
+        if key in self._expirations:
+            del self._expirations[key]
+        return deleted
         
-    async def exists(self, key: str) -> int:
+    async def exists(self, key: str) -> bool:
         """Check if a key exists in the cache."""
-        return 1 if key in self.data else 0
+        if self._check_expired(key):
+            return False
+        return key in self._cache
         
     async def incr(self, key: str) -> int:
         """Increment a counter in the cache."""
-        if key not in self.data:
-            self.data[key] = 0
-        self.data[key] = int(self.data[key]) + 1
-        return self.data[key]
+        if self._check_expired(key):
+             self._cache[key] = 0 # Initialize if expired and accessed by incr
         
-    async def expire(self, key: str, seconds: int) -> int:
+        current_value = self._cache.get(key, 0)
+        if not isinstance(current_value, int):
+             # Attempt conversion or handle error
+             try:
+                 current_value = int(current_value)
+             except (ValueError, TypeError):
+                 # Cannot increment non-integer value that isn't convertible
+                 # Redis behavior is to raise an error. We'll simulate by returning 0
+                 # and logging an error. A more strict simulation could raise ValueError.
+                 logger.error(f"InMemoryFallback: Cannot increment non-integer value for key '{key}'")
+                 return 0 # Or raise ValueError("value is not an integer or out of range")
+
+        new_value = current_value + 1
+        self._cache[key] = new_value
+        # Incrementing removes TTL in Redis, simulate this
+        if key in self._expirations:
+            del self._expirations[key]
+        return new_value
+        
+    async def expire(self, key: str, seconds: int) -> bool:
         """Set expiration on a key."""
-        if key in self.data:
-            self.expiry[key] = seconds
-            return 1
-        return 0
+        if not await self.exists(key): # Check existence and expiration
+            return False
+        self._expirations[key] = time.time() + seconds
+        return True
         
     async def ttl(self, key: str) -> int:
         """Get the TTL for a key."""
-        if key not in self.data:
-            return -2
-        return self.expiry.get(key, -1)
+        if self._check_expired(key):
+            return -2 # Key doesn't exist (because it expired)
+        if key not in self._cache:
+            return -2 # Key doesn't exist
+        if key not in self._expirations:
+            return -1 # Key exists but has no associated expiration
+        
+        remaining_ttl = int(self._expirations[key] - time.time())
+        return max(0, remaining_ttl) # Return 0 if expired but not yet cleaned up
         
     async def close(self) -> None:
         """Close the cache connection."""
-        self.data = {}
-        self.expiry = {}
+        self._cache = {}
+        self._expirations = {}
+        logger.debug("InMemoryFallback closed (cleared).")
+
+# Optional: Add a utility function to get the cache instance if needed elsewhere
+_cache_instance: Optional[RedisCache] = None
+
+def get_cache_service() -> CacheService:
+    """
+    Get the global cache service instance.
+    
+    Initializes the service if it hasn't been already.
+    
+    Returns:
+        CacheService: The initialized cache service instance (Redis or fallback).
+    """
+    global _cache_instance
+    if _cache_instance is None:
+        _cache_instance = RedisCache()
+        # Note: Initialization (connection) happens lazily on first operation
+    return _cache_instance

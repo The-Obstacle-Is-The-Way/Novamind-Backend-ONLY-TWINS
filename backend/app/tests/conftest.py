@@ -17,6 +17,10 @@ from contextlib import asynccontextmanager
 import asyncio
 import logging
 from fastapi import FastAPI
+import uuid
+import time
+from typing import Dict, Any, Callable
+from app.infrastructure.security.jwt.jwt_service import JWTService
 
 # Add the app directory to the path
 app_dir = Path(__file__).parent.parent
@@ -79,6 +83,9 @@ class MockSettings:
 def mock_settings():
     settings = MockSettings()
     # Mock get_settings to return our mock object
+    # Ensure app.config.settings is also mocked if it exists and is used directly
+    sys.modules['app.config.settings'] = MagicMock(get_settings=lambda: settings, settings=settings)
+    # Also mock app.core.config if that path is used
     sys.modules['app.core.config'] = MagicMock(get_settings=lambda: settings, settings=settings)
     return settings
 
@@ -234,3 +241,69 @@ def client(mock_settings, test_environment) -> TestClient:
         # async def dispose_db():
         #     await test_db.dispose()
         # asyncio.run(dispose_db())
+
+# JWT Service Fixture
+@pytest.fixture(scope="session")
+def jwt_service(mock_settings: MockSettings) -> JWTService:
+    """Provides a JWTService instance configured with the test secret key."""
+    # Access the key correctly from the nested structure
+    secret_key = mock_settings.security.JWT_SECRET_KEY
+    if not secret_key:
+        raise ValueError("Test JWT_SECRET_KEY is not set in MockSettings")
+    return JWTService(secret_key=secret_key)
+
+# Token Generation Fixture
+@pytest.fixture(scope="function")
+def generate_token(jwt_service: JWTService) -> Callable[[Dict[str, Any]], str]:
+    """Provides an async function to generate JWT tokens for given payloads."""
+    async def _generate(payload: Dict[str, Any]) -> str:
+        # Ensure payload has essential claims like 'sub' and 'exp'
+        if 'sub' not in payload:
+            payload['sub'] = payload.get('id') or payload.get('username', str(uuid.uuid4()))
+        if 'exp' not in payload:
+            # Set a default expiration (e.g., 1 hour) for tests
+            payload['exp'] = int(time.time()) + 3600
+            
+        token = await jwt_service.create_token(payload)
+        return token
+    return _generate
+
+# User Payload Fixtures
+@pytest.fixture(scope="function")
+def mock_patient_payload() -> Dict[str, Any]:
+    """Provides a sample patient user payload."""
+    user_id = str(uuid.uuid4())
+    return {
+        "id": user_id,
+        "username": f"test_patient_{user_id[:8]}",
+        "role": "patient",
+        "full_name": "Test Patient User"
+        # 'sub' and 'exp' will be added by generate_token if missing
+    }
+
+@pytest.fixture(scope="function")
+def mock_provider_payload() -> Dict[str, Any]:
+    """Provides a sample provider user payload."""
+    user_id = str(uuid.uuid4())
+    return {
+        "id": user_id,
+        "username": f"test_provider_{user_id[:8]}",
+        "role": "provider", # Use 'provider' based on auth checks
+        "full_name": "Test Provider User"
+        # 'sub' and 'exp' will be added by generate_token if missing
+    }
+
+# Token Header Fixtures (Using asyncio.run)
+@pytest.fixture(scope="function")
+def patient_token_headers(generate_token: Callable[[Dict[str, Any]], str], mock_patient_payload: Dict[str, Any]) -> Dict[str, str]:
+    """Generates valid Authorization headers for a mock patient."""
+    # Fixtures are synchronous, but generate_token returns an async function
+    # We need to run the async function to get the token
+    token = asyncio.run(generate_token(mock_patient_payload))
+    return {"Authorization": f"Bearer {token}"}
+
+@pytest.fixture(scope="function")
+def provider_token_headers(generate_token: Callable[[Dict[str, Any]], str], mock_provider_payload: Dict[str, Any]) -> Dict[str, str]:
+    """Generates valid Authorization headers for a mock provider."""
+    token = asyncio.run(generate_token(mock_provider_payload))
+    return {"Authorization": f"Bearer {token}"}
