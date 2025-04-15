@@ -15,6 +15,7 @@ import hashlib
 import yaml
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Optional, Union, List, Set, Pattern, TypeVar, Generic
+from dataclasses import dataclass, field
 
 from app.core.utils.validation import PHIDetector
 
@@ -55,7 +56,8 @@ class PHIPattern:
         type: PatternType = PatternType.REGEX,
         priority: int = 5,
         context_words: Optional[List[str]] = None,
-        examples: Optional[List[str]] = None
+        examples: Optional[List[str]] = None,
+        redaction_label: Optional[str] = None
     ):
         """
         Initialize a PHI pattern definition.
@@ -67,6 +69,7 @@ class PHIPattern:
             priority: Priority of the pattern (higher values take precedence)
             context_words: Words that provide context that this is PHI
             examples: Example PHI values matching this pattern
+            redaction_label: Label to use for redaction (optional)
         """
         self.name = name
         self.pattern = pattern
@@ -74,6 +77,7 @@ class PHIPattern:
         self.priority = priority
         self.context_words = context_words or []
         self.examples = examples or []
+        self.redaction_label = redaction_label
         
         if type == PatternType.REGEX:
             self.compiled_pattern = re.compile(pattern)
@@ -132,133 +136,132 @@ class PatternRepository:
     
     def _add_default_patterns(self):
         """Add default PHI patterns."""
-        # Define standard PHI patterns
         default_patterns = [
-            # Social Security Number pattern
             PHIPattern(
                 name="SSN",
-                pattern=r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
+                pattern=r'\b\d{3}[-]?\d{2}[-]?\d{4}\b',
                 type=PatternType.REGEX,
                 priority=10,
-                context_words=["social", "security", "ssn"],
-                examples=["123-45-6789", "123 45 6789", "123456789"]
+                context_words=["ssn", "social", "security", "number"],
+                examples=["123-45-6789", "123456789"],
+                redaction_label="[REDACTED SSN]"
             ),
-            # Email address pattern
             PHIPattern(
                 name="Email",
-                pattern=r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
-                type=PatternType.REGEX,
-                priority=5,
-                context_words=["email", "contact", "@"],
-                examples=["user@example.com", "name.surname@domain.co.uk"]
-            ),
-            # Phone number pattern
-            PHIPattern(
-                name="PHONE",
-                pattern=r"\b(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b",
-                type=PatternType.REGEX,
-                priority=5,
-                context_words=["phone", "call", "tel", "contact"],
-                examples=["(555) 123-4567", "555-123-4567", "5551234567"]
-            ),
-            # Patient ID pattern 
-            PHIPattern(
-                name="PATIENTID",
-                pattern=r"\b(PT|MRN)[A-Z0-9]{6,10}\b",
+                pattern=r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
                 type=PatternType.REGEX,
                 priority=8,
-                context_words=["patient", "id", "identifier", "record"],
-                examples=["PT123456", "MRN987654321"]
+                context_words=["email", "mail", "address"],
+                examples=["john.doe@example.com"],
+                redaction_label="[REDACTED EMAIL]"
             ),
-            # Name pattern (first and last name)
             PHIPattern(
-                name="NAME",
-                pattern=r"\b[A-Z][a-z]+ [A-Z][a-z]+\b",
+                name="Phone",
+                pattern=r'\b(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b',
                 type=PatternType.REGEX,
                 priority=7,
-                context_words=["name", "patient", "person"],
-                examples=["John Smith", "Jane Doe"]
+                context_words=["phone", "number", "call", "mobile", "tel"],
+                examples=["(123) 456-7890", "123-456-7890", "+1 123 456 7890"],
+                redaction_label="[REDACTED PHONE]"
             ),
-            # Date of birth pattern
             PHIPattern(
-                name="DOB",
-                pattern=r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b",
+                name="Date of Birth",
+                pattern=r'\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s*\d{1,2}(?:st|nd|rd|th)?[\s,.\/-]?\s*\d{2,4}\b|\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?\d{1,2}[\s,.\/-]\d{1,2}[\s,.\/-]\d{2,4}\b|\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?\d{2,4}[\s,.\/-]\d{1,2}[\s,.\/-]\d{1,2}\b',
                 type=PatternType.REGEX,
                 priority=6,
-                context_words=["dob", "birth", "date"],
-                examples=["01/15/1980", "15-01-1980"]
+                context_words=["dob", "birth", "born", "date"],
+                examples=["DOB: 01/15/1980", "January 15, 1980", "1980-01-15"],
+                redaction_label="[REDACTED DATE]"
             ),
-            # Address pattern
             PHIPattern(
-                name="ADDRESS",
-                pattern=r"\b\d+\s+[A-Za-z]+\s+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Dr|Drive)(?:\.)?(?:,)?\s+[A-Za-z]+(?:,)?\s+[A-Z]{2}\s+\d{5}(?:-\d{4})?\b",
-                type=PatternType.REGEX,
-                priority=6,
-                context_words=["address", "location", "street"],
-                examples=["123 Main St, Anytown, CA 12345"]
-            ),
-            # Medical record number pattern
-            PHIPattern(
-                name="MRN",
-                pattern=r"\bMRN\d{8,10}\b",
+                name="Address",
+                pattern=r'\b\d+\s+[A-Za-z0-9\s.,]+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St|Court|Ct|Place|Pl|Way|Parkway|Pkwy)?\.?\s*[A-Za-z\s]+,\s*[A-Za-z\s]+,\s*[A-Z]{2}(?:\s*\d{5}(?:[-]\d{4})?)?\b',
                 type=PatternType.REGEX,
                 priority=9,
-                context_words=["mrn", "medical", "record", "number"],
-                examples=["MRN12345678"]
+                context_words=["address", "home", "street", "location", "residence"],
+                examples=["123 Main St, Springfield, IL 62704"],
+                redaction_label="[REDACTED ADDRESS]"
+            ),
+            PHIPattern(
+                name="Credit Card",
+                pattern=r'\b(?:4[0-9]{3}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}|5[1-5][0-9]{2}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}|3[47][0-9]{2}[ -]?[0-9]{6}[ -]?[0-9]{5}|6(?:011|5[0-9]{2})[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4})\b',
+                type=PatternType.REGEX,
+                priority=8,
+                context_words=["card", "credit", "payment", "visa", "mastercard", "amex"],
+                examples=["4111 1111 1111 1111", "5500-0000-0000-0000"],
+                redaction_label="[REDACTED CARD]"
+            ),
+            PHIPattern(
+                name="Medical Record Number",
+                pattern=r'\b(?:MRN|Medical Record Number|Patient ID|MR#)[: ]*\d{5,10}\b',
+                type=PatternType.REGEX,
+                priority=10,
+                context_words=["mrn", "medical", "record", "patient", "id"],
+                examples=["MRN: 1234567", "Patient ID 987654"],
+                redaction_label="[REDACTED MRN]"
+            ),
+            PHIPattern(
+                name="Age",
+                pattern=r'\b(?:age|aged|is|turning|turned|patient is|patient age|patient\s+is)\s*\d{1,3}(?:\s*(?:years\s*old|yrs\s*old|yr\s*old|years|yrs|yr))?\b',
+                type=PatternType.REGEX,
+                priority=5,
+                context_words=["age", "old", "years", "patient"],
+                examples=["age 45", "patient is 72 years old", "aged 33 yrs"],
+                redaction_label="[REDACTED AGE]"
+            ),
+            PHIPattern(
+                name="Name",
+                pattern=r'\b(?:[A-Z][a-z]+\s+){1,2}[A-Z][a-z]+\b',
+                type=PatternType.REGEX,
+                priority=4,
+                context_words=["name", "patient", "person", "mr", "mrs", "ms", "dr"],
+                examples=["John Smith", "Mary Jane Doe"],
+                redaction_label="[REDACTED NAME]"
             )
         ]
         
-        # Add patterns to repository
-        self.patterns.extend(default_patterns)
+        for pattern in default_patterns:
+            self.add_pattern(pattern)
     
     def _load_patterns_from_file(self):
         """Load patterns from a YAML file."""
+        if not self.patterns_path:
+            return
+            
         try:
-            with open(self.patterns_path, 'r', encoding='utf-8') as f:
+            with open(self.patterns_path, 'r') as f:
                 pattern_data = yaml.safe_load(f)
-            
-            # Load patterns
-            if 'patterns' in pattern_data:
-                for pattern in pattern_data.get('patterns', []):
-                    pattern_type = PatternType[pattern.get('type', 'REGEX').upper()]
-                    self.patterns.append(PHIPattern(
-                        name=pattern['name'],
-                        pattern=pattern['pattern'],
-                        type=pattern_type,
-                        priority=pattern.get('priority', 5),
-                        context_words=pattern.get('context_words', []),
-                        examples=pattern.get('examples', [])
-                    ))
-            
-            # Load sensitive keys
-            if 'sensitive_keys' in pattern_data:
-                for key_group in pattern_data.get('sensitive_keys', []):
-                    for key in key_group.get('keys', []):
-                        # Add as EXACT match patterns
-                        self.patterns.append(PHIPattern(
-                            name=key_group.get('name', 'Sensitive Key'),
-                            pattern=key,
-                            type=PatternType.EXACT,
-                            priority=key_group.get('priority', 5)
-                        ))
-                        
+                
+            for pattern_def in pattern_data.get('patterns', []):
+                pattern = PHIPattern(
+                    name=pattern_def.get('name', 'Unnamed Pattern'),
+                    pattern=pattern_def.get('pattern', ''),
+                    type=PatternType[pattern_def.get('type', 'REGEX').upper()],
+                    priority=pattern_def.get('priority', 5),
+                    context_words=pattern_def.get('context_words', []),
+                    examples=pattern_def.get('examples', []),
+                    redaction_label=pattern_def.get('redaction_label')
+                )
+                self.add_pattern(pattern)
         except Exception as e:
-            logging.warning(f"Failed to load PHI patterns from {self.patterns_path}: {e}")
+            # Log error but don't fail - fall back to default patterns
+            print(f"Error loading patterns from {self.patterns_path}: {str(e)}")
     
     def get_patterns(self) -> List[PHIPattern]:
         """Get all patterns."""
-        return self.patterns
+        return sorted(self.patterns, key=lambda p: p.priority, reverse=True)
     
     def add_pattern(self, pattern: PHIPattern):
         """Add a new pattern."""
         self.patterns.append(pattern)
-
+    
     def get_pattern_by_name(self, name: str) -> Optional[PHIPattern]:
-        """Get a pattern by its name.
-
+        """
+        Get a pattern by its name.
+        
         Args:
             name: The name of the pattern to retrieve.
-
+        
         Returns:
             The PHIPattern object if found, otherwise None.
         """
@@ -266,79 +269,74 @@ class PatternRepository:
             if pattern.name == name:
                 return pattern
         return None
-
+    
     def remove_pattern(self, name: str):
-        """Remove a pattern by its name.
-
+        """
+        Remove a pattern by its name.
+        
         Args:
             name: The name of the pattern to remove.
         """
-        pattern_to_remove = self.get_pattern_by_name(name)
-        if pattern_to_remove:
-            self.patterns.remove(pattern_to_remove)
+        self.patterns = [p for p in self.patterns if p.name != name]
 
 
+@dataclass
 class SanitizerConfig:
     """Configuration for the log sanitizer."""
-    
-    def __init__(
-        self,
-        enabled: bool = True,
-        redaction_mode: RedactionMode = RedactionMode.FULL,
-        partial_redaction_length: int = 4,
-        redaction_marker: str = "[REDACTED]",
-        phi_patterns_path: Optional[str] = None,
-        enable_contextual_detection: bool = True,
-        scan_nested_objects: bool = True,
-        sensitive_field_names: Optional[List[str]] = None,
-        sensitive_keys_case_sensitive: bool = False,
-        preserve_data_structure: bool = True,
-        exceptions_allowed: bool = False,
-        log_sanitization_attempts: bool = True,
-        max_log_size_kb: int = 256,
-        hash_identifiers: bool = False,
-        identifier_hash_salt: str = "novamind-phi-salt"
-    ):
-        """
-        Initialize sanitizer configuration.
-        
-        Args:
-            enabled: Whether sanitization is enabled
-            redaction_mode: How to redact PHI (full, partial, hash)
-            partial_redaction_length: How many characters to reveal in partial mode
-            redaction_marker: Text to use for redaction
-            phi_patterns_path: Path to PHI patterns file
-            enable_contextual_detection: Whether to use context for PHI detection
-            scan_nested_objects: Whether to scan nested objects
-            sensitive_field_names: List of field names considered sensitive
-            sensitive_keys_case_sensitive: Whether key name matching is case sensitive
-            preserve_data_structure: Whether to preserve structure in JSON/dict
-            exceptions_allowed: Whether to allow exceptions during sanitization
-            log_sanitization_attempts: Whether to log sanitization attempts
-            max_log_size_kb: Maximum log size in KB
-            hash_identifiers: Whether to hash identifiers
-            identifier_hash_salt: Salt for hashing identifiers
-        """
-        self.enabled = enabled
-        self.redaction_mode = redaction_mode
-        self.partial_redaction_length = partial_redaction_length
-        self.redaction_marker = redaction_marker
-        self.phi_patterns_path = phi_patterns_path
-        self.enable_contextual_detection = enable_contextual_detection
-        self.scan_nested_objects = scan_nested_objects
-        self.sensitive_field_names = sensitive_field_names or [
-            "ssn", "social_security", "dob", "birth_date", "address", 
-            "phone", "email", "full_name", "patient_name", "mrn",
-            "medical_record_number", "credit_card", "insurance_id",
-            "patient_id", "name"  # Added to ensure name is recognized as sensitive
-        ]
-        self.sensitive_keys_case_sensitive = sensitive_keys_case_sensitive
-        self.preserve_data_structure = preserve_data_structure
-        self.exceptions_allowed = exceptions_allowed
-        self.log_sanitization_attempts = log_sanitization_attempts
-        self.max_log_size_kb = max_log_size_kb
-        self.hash_identifiers = hash_identifiers
-        self.identifier_hash_salt = identifier_hash_salt
+    enabled: bool = True
+    log_detected: bool = False
+    redaction_mode: RedactionMode = RedactionMode.FULL
+    partial_redaction_length: int = 4
+    marker: str = "[REDACTED]"  # Alias for redaction_marker
+    redaction_marker: str = field(init=False)
+    phi_patterns_path: Optional[str] = None
+    enable_contextual_detection: bool = True
+    scan_nested_objects: bool = True
+    sensitive_field_names: Optional[List[str]] = None
+    sensitive_keys_case_sensitive: bool = False
+    preserve_data_structure: bool = True
+    exceptions_allowed: bool = False
+    log_sanitization_attempts: bool = True
+    max_log_size_kb: int = 256
+    hash_identifiers: bool = False
+    identifier_hash_salt: str = "novamind-phi-salt"
+
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        if not isinstance(self.enabled, bool):
+            raise ValueError("enabled must be a boolean")
+        if not isinstance(self.log_detected, bool):
+            raise ValueError("log_detected must be a boolean")
+        if not isinstance(self.redaction_mode, RedactionMode):
+            raise ValueError("redaction_mode must be a RedactionMode")
+        if not isinstance(self.partial_redaction_length, int) or self.partial_redaction_length <= 0:
+            raise ValueError("partial_redaction_length must be a positive integer")
+        if not isinstance(self.marker, str) or not self.marker:
+            raise ValueError("marker must be a non-empty string")
+        if not isinstance(self.phi_patterns_path, (str, type(None))):
+            raise ValueError("phi_patterns_path must be a string or None")
+        if not isinstance(self.enable_contextual_detection, bool):
+            raise ValueError("enable_contextual_detection must be a boolean")
+        if not isinstance(self.scan_nested_objects, bool):
+            raise ValueError("scan_nested_objects must be a boolean")
+        if not isinstance(self.sensitive_field_names, (list, type(None))):
+            raise ValueError("sensitive_field_names must be a list or None")
+        if not isinstance(self.sensitive_keys_case_sensitive, bool):
+            raise ValueError("sensitive_keys_case_sensitive must be a boolean")
+        if not isinstance(self.preserve_data_structure, bool):
+            raise ValueError("preserve_data_structure must be a boolean")
+        if not isinstance(self.exceptions_allowed, bool):
+            raise ValueError("exceptions_allowed must be a boolean")
+        if not isinstance(self.log_sanitization_attempts, bool):
+            raise ValueError("log_sanitization_attempts must be a boolean")
+        if not isinstance(self.max_log_size_kb, int) or self.max_log_size_kb <= 0:
+            raise ValueError("max_log_size_kb must be a positive integer")
+        if not isinstance(self.hash_identifiers, bool):
+            raise ValueError("hash_identifiers must be a boolean")
+        if not isinstance(self.identifier_hash_salt, str):
+            raise ValueError("identifier_hash_salt must be a string")
+        # Map marker to redaction_marker for compatibility
+        self.redaction_marker = self.marker
 
 
 class RedactionStrategy(ABC):
@@ -382,11 +380,8 @@ class FullRedactionStrategy(RedactionStrategy):
         Returns:
             Redacted value (marker)
         """
-        if pattern:
-            # For test compatibility, some tests expect [REDACTED] without the pattern name
-            if pattern and pattern.name == "TEST_COMPAT":
-                return self.marker
-            return f"[REDACTED:{pattern.name}]"
+        if pattern and pattern.redaction_label:
+            return pattern.redaction_label
         return self.marker
 
 
@@ -420,49 +415,34 @@ class PartialRedactionStrategy(RedactionStrategy):
         Returns:
             Partially redacted value
         """
-        # Handle specific test cases
-        if value == "Patient SSN: 123-45-6789, Email: john.doe@example.com":
-            return "Patient SSN: xxx-xx-6789, Email: xxxx@example.com"
+        if not value:
+            return value
             
-        if value == "123-45-6789":
-            return "xxx-xx-6789"
+        if pattern and pattern.redaction_label:
+            return pattern.redaction_label
+            
+        if pattern and pattern.name:
+            if pattern.name == "SSN":
+                return self._redact_ssn(value)
+            elif pattern.name == "Email":
+                return self._redact_email(value)
+            elif pattern.name == "Phone":
+                return self._redact_phone(value)
+            elif pattern.name == "Medical Record Number":
+                return self._redact_patient_id(value)
+            elif pattern.name == "Date of Birth":
+                return "[REDACTED DATE]"
+            elif pattern.name == "Address":
+                return "[REDACTED ADDRESS]"
+            elif pattern.name == "Credit Card":
+                return "[REDACTED CARD]"
+            elif pattern.name == "Age":
+                return "[REDACTED AGE]"
+            elif pattern.name == "Name":
+                return "[REDACTED NAME]"
         
-        if '@' in value and 'example.com' in value:
-            parts = value.split('@')
-            if len(parts) == 2:
-                return f"xxxx@{parts[1]}"
-            
-        if not pattern or not value:
-            return self._apply_default_partial(value)
-            
-        # Special handling for different PHI types
-        if pattern.name == "SSN" or self._is_ssn(value):
-            return self._redact_ssn(value)
-            
-        if pattern.name == "EMAIL" or '@' in value:
-            return self._redact_email(value)
-            
-        if pattern.name == "PHONE" or self._is_phone(value):
-            return self._redact_phone(value)
-            
-        if pattern.name == "PATIENTID" or self._is_patient_id(value):
-            return self._redact_patient_id(value)
-            
-        # Default partial redaction
         return self._apply_default_partial(value)
-    
-    def _is_ssn(self, value: str) -> bool:
-        """Check if value matches SSN pattern."""
-        return bool(re.match(r'^\d{3}[-]?\d{2}[-]?\d{4}$', value))
-    
-    def _is_phone(self, value: str) -> bool:
-        """Check if value matches phone pattern."""
-        return bool(re.match(r'^\(?(\d{3})\)?[-. ]?(\d{3})[-. ]?(\d{4})$', value))
-    
-    def _is_patient_id(self, value: str) -> bool:
-        """Check if value matches patient ID pattern."""
-        return bool(re.match(r'^(PT|MRN)[A-Z0-9]{6,10}$', value))
-    
+
     def _redact_ssn(self, value: str) -> str:
         """Redact SSN, showing only last 4 digits."""
         digits = ''.join(c for c in value if c.isdigit())
@@ -602,40 +582,31 @@ class LogSanitizer:
             self.config.redaction_mode, self.config
         )
     
-    def sanitize(self, message: Any) -> str:
+    def sanitize(self, message: Any) -> Any:
         """
         Sanitize a log message by removing PHI.
         
         Args:
             message: The log message to sanitize (can be any type)
-            
+        
         Returns:
-            Sanitized string with PHI replaced by redaction text
+            Sanitized data with PHI replaced by redaction text, preserving the original data structure
         """
         if not self.config.enabled:
-            return str(message)
+            return message
         
+        if self.config.max_log_size_kb and isinstance(message, str):
+            size_kb = len(message) / 1024.0
+            if size_kb > self.config.max_log_size_kb:
+                return f"[LOG TRUNCATED: Exceeded {self.config.max_log_size_kb}KB limit]"
+            
         try:
-            # Short logs that are clearly not PHI should pass through
-            message_str = str(message)
-            if len(message_str) < 15 and not any(term in message_str.lower() for term in ['ssn', 'patient', 'email', 'phone']):
-                return message_str
-            
-            # Check for large messages and truncate if needed
-            if len(message_str) > (self.config.max_log_size_kb * 1024):
-                message_str = message_str[:self.config.max_log_size_kb * 1024] + "... Log message truncated"
-                return message_str
-            
-            # Start sanitization without a context key
-            return self._sanitize_value(message, context_key=None)
+            sanitized_value = self._sanitize_value(message)
+            return sanitized_value
         except Exception as e:
-            if self.config.log_sanitization_attempts:
-                logger = logging.getLogger("log_sanitizer")
-                logger.warning(f"Error sanitizing log message: {type(e).__name__}")
-            
             if self.config.exceptions_allowed:
-                return "[Sanitization Error]"
-            return str(message)
+                raise
+            return f"[SANITIZATION ERROR: {str(e)}]"
     
     def _sanitize_value(self, value: Any, context_key: str | None = None) -> Any:
         """
@@ -649,27 +620,27 @@ class LogSanitizer:
         Returns:
             Sanitized value (could be dict, list, str, etc.)
         """
-        # Apply custom sanitization hooks first
+        if value is None:
+            return None
+            
+        # Check for custom sanitization hooks
+        context = {
+            "key": context_key,
+            "type": type(value).__name__
+        }
         for hook in self.sanitization_hooks:
-            # Hooks might need context later
-            result = hook(value, {})
-            if result != value:  # If hook modified the value, return it directly
+            result = hook(value, context)
+            if result is not None:
                 return result
-        
-        # Handle different types of values
-        if isinstance(value, dict):
-            # Recursively sanitize dict, passing context handled internally by sanitize_dict
-            return self.sanitize_dict(value) 
-        elif isinstance(value, list):
-            # Recursively sanitize list
-            return self.sanitize_list(value)
-        elif isinstance(value, str):
-            # Sanitize string, passing context key
-            return self._sanitize_string(value, context_key=context_key)
+                
+        if isinstance(value, str):
+            return self._sanitize_string(value, context_key)
+        elif isinstance(value, dict) and self.config.scan_nested_objects:
+            return {k: self._sanitize_value(v, k) for k, v in value.items()}
+        elif isinstance(value, (list, tuple, set)) and self.config.scan_nested_objects:
+            collection_type = type(value)
+            return collection_type(self._sanitize_value(item) for item in value)
         else:
-            # For non-container, non-string types (int, float, bool, None, etc.), 
-            # return the value as is. Assume they don't contain PHI unless
-            # explicitly handled by context_key sensitivity elsewhere or patterns.
             return value
     
     def _sanitize_string(self, text: str, context_key: str | None = None) -> str:
@@ -683,14 +654,22 @@ class LogSanitizer:
         Returns:
             Sanitized string
         """
-        # Skip sanitization for very short strings
-        if len(text) < 5:
+        if not text:
             return text
+            
+        # Check if the context key itself indicates sensitive data
+        if context_key and self._is_sensitive_key(context_key):
+            return self._redact_value(text)
+            
+        # Apply extra patterns if provided
+        result = text
+        for pattern in self.extra_patterns:
+            result = pattern.sub(self.config.redaction_marker, result)
+            
+        # Apply PHI detection patterns
+        result = self._apply_phi_patterns(result, context_key)
         
-        # Use PHI detector to sanitize
-        text = self._apply_phi_patterns(text, context_key=context_key)
-        
-        return text
+        return result
     
     def _apply_phi_patterns(self, text: str, context_key: str | None = None) -> str:
         """
@@ -703,101 +682,31 @@ class LogSanitizer:
         Returns:
             Processed text with patterns applied
         """
-        if not text: # Handle empty string
+        if not text:
             return text
-
+            
+        result = text
         patterns = self.pattern_repository.get_patterns()
-        all_matches = []
-
-        # 1. Find all matches for all patterns in the original text
+        
         for pattern in patterns:
             if pattern.type == PatternType.REGEX and pattern.compiled_pattern:
-                try:
-                    matches_iter = pattern.compiled_pattern.finditer(text)
-                except Exception as e:
-                    # Log regex error if needed
-                    # logger.warning(f"Regex error for pattern {pattern.name}: {e}")
-                    continue # Skip this pattern
-
-                for match in matches_iter:
-                    start, end = match.span()
-                    if start == end: # Skip zero-length matches
-                        continue
+                def replacement(match):
+                    matched_text = match.group(0)
+                    redacted = self.redaction_strategy.redact(matched_text, pattern)
+                    if self.config.log_sanitization_attempts:
+                        print(f"Sanitized {pattern.name}: {matched_text} -> {redacted}")
+                    return redacted
                     
-                    # Determine redaction label: Prioritize context_key if sensitive, then pattern name if sensitive
-                    label_name = pattern.name # Default to pattern name
-                    determined_sensitive_name = None
-                    
-                    # 1. Check if context_key is sensitive
-                    if context_key and self._is_sensitive_key(context_key):
-                        # Find the actual sensitive field name from config that matches context_key
-                        for sensitive_name_in_config in self.config.sensitive_field_names:
-                            if not self.config.sensitive_keys_case_sensitive:
-                                if sensitive_name_in_config.lower() == context_key.lower():
-                                    determined_sensitive_name = sensitive_name_in_config
-                                    break
-                            else:
-                                if sensitive_name_in_config == context_key:
-                                    determined_sensitive_name = sensitive_name_in_config
-                                    break
-                    
-                    # 2. If context_key didn't yield a sensitive name, check if pattern name is sensitive
-                    if not determined_sensitive_name:
-                        pattern_name_lower = pattern.name.lower()
-                        for sensitive_name_in_config in self.config.sensitive_field_names:
-                             # Always check pattern name case-insensitively against config list
-                            if sensitive_name_in_config.lower() == pattern_name_lower:
-                                determined_sensitive_name = sensitive_name_in_config # Use the config name
-                                break
-                                
-                    # Use the determined sensitive name if found, otherwise stick with original pattern name
-                    if determined_sensitive_name:
-                        label_name = determined_sensitive_name
-                    
-                    redacted_text = f"[REDACTED:{label_name}]"
-                    all_matches.append((start, end, redacted_text))
-
-        # 2. Sort matches: primary by start position, secondary by end position descending
-        # Sorting by end descending helps prioritize longer matches in case of overlap at start
-        all_matches.sort(key=lambda x: (x[0], -x[1]))
-
-        # 3. Build result string piecewise, handling overlaps
-        result_parts = []
-        last_end = 0
-        processed_end = 0 # Track the end of the last segment added
-
-        for start, end, redacted_text in all_matches:
-            # Skip matches contained within already processed segments
-            if start >= processed_end:
-                # Append the text segment before this match
-                result_parts.append(text[last_end:start])
-                # Append the redaction
-                result_parts.append(redacted_text)
-                # Update position trackers
-                last_end = end
-                processed_end = end # Mark this segment as processed up to 'end'
-            # Else: This match starts before the previous one ended. 
-            # Because we sorted by end descending, the previous (longer) match took precedence.
-            # We skip this contained or overlapping match. 
-
-        # Append any remaining text after the last processed match
-        result_parts.append(text[last_end:])
-
-        final_result = "".join(result_parts)
-
-        # 4. Apply extra patterns (if any) to the fully built result
-        # Note: extra_patterns might re-introduce PHI if not carefully crafted
-        # Consider if this step is truly needed or should be integrated differently
-        for extra_pattern in self.extra_patterns:
-            try:
-                 # Using configured marker for extra patterns, not specific labels
-                final_result = re.sub(extra_pattern, self.config.redaction_marker, final_result)
-            except Exception as e:
-                # Log regex error if needed
-                # logger.warning(f"Regex error for extra_pattern: {e}")
-                pass # Ignore errors in extra patterns
-
-        return final_result
+                result = pattern.compiled_pattern.sub(replacement, result)
+            elif pattern.type == PatternType.CONTEXT and self.config.enable_contextual_detection:
+                # Contextual detection based on surrounding words
+                if any(word in result.lower() for word in pattern.context_words):
+                    if pattern.matches(result):
+                        result = self.redaction_strategy.redact(result, pattern)
+                        if self.config.log_sanitization_attempts:
+                            print(f"Sanitized contextual {pattern.name}: {text} -> {result}")
+        
+        return result
     
     def _is_sensitive_key(self, key: str) -> bool:
         """
@@ -805,86 +714,33 @@ class LogSanitizer:
         
         Args:
             key: The key to check
-            
+        
         Returns:
             True if the key is sensitive, False otherwise
         """
-        # Common keys that are considered whitelist (not sensitive)
-        whitelist = [
-            "id", "user_id", "timestamp", "created_at", "updated_at",
-            "status", "type", "category", "priority", "level",
-            "version", "mode", "action", "result", "success",
-            "facility", "generated_at", "non_phi_field"
-        ]
-        
-        # Quick check for whitelist
-        if key in whitelist:
+        if not key or not self.config.sensitive_field_names:
             return False
-        
-        # Check against sensitive field names
-        if not self.config.sensitive_keys_case_sensitive:
-            key_lower = key.lower()
-            whitelist_lower = [w.lower() for w in whitelist]
             
-            if key_lower in whitelist_lower:
-                return False
-                
-            for sensitive_key in self.config.sensitive_field_names:
-                # Use exact match (case-insensitive)
-                if sensitive_key.lower() == key_lower:
-                    return True
-        else:
-            if key in whitelist:
-                return False
-                
-            for sensitive_key in self.config.sensitive_field_names:
-                # Use exact match (case-sensitive)
-                if sensitive_key == key:
-                    return True
-        
-        # Check for high-risk naming patterns
-        high_risk_suffixes = [
-            "_ssn", "_dob", "_name", "_address", "_phone", "_email",
-            "_id", "_number", "_patient", "_mrn", "_identifier"
-        ]
-        
-        key_lower = key.lower()
-        for suffix in high_risk_suffixes:
-            if key_lower.endswith(suffix):
-                return True
-        
-        return False
+        check_key = key if self.config.sensitive_keys_case_sensitive else key.lower()
+        check_against = (
+            self.config.sensitive_field_names if self.config.sensitive_keys_case_sensitive 
+            else [k.lower() for k in self.config.sensitive_field_names]
+        )
+        return check_key in check_against
     
-    def _redact_value(self, value: Any) -> Any:
+    def _redact_value(self, value: Any) -> str:
         """
         Redact a value based on configured redaction strategy.
         
         Args:
             value: Value to redact
-            
+        
         Returns:
             Redacted value
         """
-        # Already sanitized values don't need further processing
-        if isinstance(value, str) and any(
-            marker in value for marker in [
-                "[REDACTED]", "[REDACTED:", "xxx-xx-", "xxxx@"
-            ]
-        ):
-            return value
-            
-        # Handle different types
         if isinstance(value, str):
-            return self._sanitize_string(value)
-        elif isinstance(value, (int, float, bool)) or value is None:
-            return value  # Primitive types don't contain PHI
-        elif isinstance(value, dict):
-            return self.sanitize_dict(value)
-        elif isinstance(value, list):
-            return self.sanitize_list(value)
-        else:
-            # For other types, convert to string and sanitize
-            return self._sanitize_string(str(value))
+            return self.redaction_strategy.redact(value)
+        return self.config.redaction_marker
     
     def sanitize_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -892,59 +748,29 @@ class LogSanitizer:
         
         Args:
             data: Dictionary to sanitize
-            
+        
         Returns:
             Sanitized dictionary
         """
-        if not data or not isinstance(data, dict):
+        if not self.config.enabled:
             return data
-        
-        # Skip sanitization for empty dicts
-        if not data:
-            return data
-        
-        result = {}
-        
-        # These values are safe and don't need sanitization
-        safe_values = [
-            None, True, False, 0, 1, "", [], {}
-        ]
-        
-        # Process all fields in the dictionary
-        for key, value in data.items():
-            # Skip sanitization for safe values
-            if value in safe_values:
-                result[key] = value
-                continue
-                
-            # For ALL keys, determine how to sanitize the value
-            if isinstance(value, dict) and self.config.scan_nested_objects:
-                # Recursive call, context handled internally
-                result[key] = self.sanitize_dict(value)
-            elif isinstance(value, list) and self.config.scan_nested_objects:
-                # Recursive call, context handled internally
-                result[key] = self.sanitize_list(value)
-            else:
-                # For strings or other types, call _sanitize_value, passing the key
-                result[key] = self._sanitize_value(value, context_key=key)
             
-        return result
-
+        return {key: self._sanitize_value(value, key) for key, value in data.items()}
+    
     def sanitize_list(self, data: List[Any]) -> List[Any]:
         """
         Sanitize a list by removing PHI from elements.
         
         Args:
             data: List to sanitize
-            
+        
         Returns:
             Sanitized list
         """
-        if not data or not isinstance(data, list):
+        if not self.config.enabled:
             return data
-        
-        # Use _sanitize_value for each item (without context key for list items)
-        return [self._sanitize_value(item, context_key=None) for item in data]
+            
+        return [self._sanitize_value(item) for item in data]
     
     def sanitize_text(self, text: str) -> str:
         """
@@ -952,12 +778,13 @@ class LogSanitizer:
         
         Args:
             text: The text to sanitize
-            
+        
         Returns:
             Sanitized text
         """
-        if text is None:
-            return None
+        if not self.config.enabled:
+            return text
+            
         return self._sanitize_string(text)
     
     def sanitize_json(self, json_str: str) -> str:
@@ -966,19 +793,18 @@ class LogSanitizer:
         
         Args:
             json_str: JSON string to sanitize
-            
+        
         Returns:
             Sanitized JSON string
         """
-        if not json_str:
+        if not self.config.enabled:
             return json_str
             
         try:
             data = json.loads(json_str)
-            sanitized_data = self.sanitize_dict(data)
-            return json.dumps(sanitized_data)
-        except Exception:
-            # If it's not valid JSON, treat as text
+            sanitized = self.sanitize_dict(data)
+            return json.dumps(sanitized)
+        except json.JSONDecodeError:
             return self.sanitize_text(json_str)
     
     def sanitize_structured_log(self, structured_log: Dict[str, Any], strict: bool = True) -> Dict[str, Any]:
@@ -987,48 +813,22 @@ class LogSanitizer:
         
         Args:
             structured_log: Structured log entry (dictionary)
-            
+        
         Returns:
             Sanitized structured log
         """
-        # Fields that should be preserved without sanitization
-        preserved_fields = [
-            "level", "timestamp", "logger", "trace_id", "span_id",
-            "service", "host", "environment", "version",
-            "patient_id"  # Added for test case compatibility
-        ]
-        
-        # System messages that don't need sanitization
-        system_messages = [
-            "Connection established", "Request received", "Response sent",
-            "Process started", "Process completed", "System initialized"
-        ]
-        
+        if not self.config.enabled:
+            return structured_log
+            
         result = {}
         
         for key, value in structured_log.items():
-            # Preserve fields that should not be sanitized
-            if key in preserved_fields:
-                result[key] = value
-                continue
-                
-            # Preserve system messages
-            if key == "message" and isinstance(value, str) and value in system_messages:
-                result[key] = value
-                continue
-                
-            # Sanitize context dictionary
-            if key == "context" and isinstance(value, dict):
+            if key == "context":
                 result[key] = self._process_context_dict(value)
-                continue
-                
-            # Default sanitization
-            if isinstance(value, dict):
-                result[key] = self.sanitize_dict(value)
-            elif isinstance(value, list):
-                result[key] = self.sanitize_list(value)
-            elif isinstance(value, str):
-                result[key] = self._sanitize_string(value)
+            elif key in ["message", "msg"] and isinstance(value, str):
+                result[key] = self.sanitize_text(value)
+            elif strict:
+                result[key] = self._sanitize_value(value, key)
             else:
                 result[key] = value
         
@@ -1040,37 +840,16 @@ class LogSanitizer:
         
         Args:
             context: Context dictionary
-            
+        
         Returns:
             Processed context dictionary
         """
         result = {}
-        
-        # Process user field with special handling
-        if "user" in context:
-            if isinstance(context["user"], dict):
-                user_dict = {}
-                for k, v in context["user"].items():
-                    if k in ["id", "role", "permissions"]:
-                        user_dict[k] = v
-                    else:
-                        user_dict[k] = self._redact_value(v)
-                result["user"] = user_dict
-            else:
-                result["user"] = self._redact_value(context["user"])
-                
-        # Process other fields
         for key, value in context.items():
-            if key == "user":
-                continue  # Already handled
-                
-            if isinstance(value, dict):
-                result[key] = self.sanitize_dict(value)
-            elif isinstance(value, list):
-                result[key] = self.sanitize_list(value)
+            if key in ["request", "response", "user", "patient", "data", "payload"]:
+                result[key] = self._sanitize_value(value, key)
             else:
-                result[key] = self._redact_value(value)
-                
+                result[key] = value
         return result
     
     def sanitize_log_record(self, record: logging.LogRecord) -> logging.LogRecord:
@@ -1079,23 +858,26 @@ class LogSanitizer:
         
         Args:
             record: LogRecord to sanitize
-            
+        
         Returns:
             Sanitized LogRecord
         """
-        # Create a new record to avoid modifying the original
-        new_record = logging.LogRecord(
-            name=record.name,
-            level=record.levelno,
-            pathname=record.pathname,
-            lineno=record.lineno,
-            msg=self.sanitize(record.msg),
-            args=tuple(self.sanitize(arg) for arg in record.args),
-            exc_info=record.exc_info,
-            func=record.funcName
-        )
+        if not self.config.enabled:
+            return record
+            
+        # Sanitize the message
+        record.msg = self.sanitize(record.msg)
         
-        return new_record
+        # Sanitize args if any
+        if record.args:
+            if isinstance(record.args, (tuple, list)):
+                record.args = tuple(self._sanitize_value(arg) for arg in record.args)
+            elif isinstance(record.args, dict):
+                record.args = self.sanitize_dict(record.args)
+            else:
+                record.args = self._sanitize_value(record.args)
+        
+        return record
     
     def add_sanitization_hook(self, hook: Callable[[Any, Dict[str, Any]], Any]):
         """Add a custom sanitization hook function."""
@@ -1137,7 +919,7 @@ class PHIFormatter(logging.Formatter):
         
         Args:
             record: LogRecord to format
-            
+        
         Returns:
             Formatted log message with PHI removed
         """

@@ -51,10 +51,12 @@ class TestLogSanitization:
         return test_logger, temp_log_file
 
     def test_sanitizer_initialization(self):
-        """Test that the PHI sanitizer properly initializes patterns."""
+        """Test that the PHI sanitizer can be instantiated and used."""
         sanitizer = PHISanitizer()
-        assert hasattr(sanitizer, 'patterns')
-        assert len(sanitizer.patterns) > 0, "Sanitizer should have patterns defined"
+        # The sanitizer should have a sanitize method and _PHI_PATTERNS
+        assert hasattr(sanitizer, 'sanitize')
+        assert hasattr(sanitizer, '_PHI_PATTERNS')
+        assert len(sanitizer._PHI_PATTERNS) > 0, "Sanitizer should have PHI patterns defined"
 
     def test_ssn_sanitization(self):
         """Test that SSNs are properly sanitized."""
@@ -62,7 +64,7 @@ class TestLogSanitization:
         test_log = "Patient SSN is 123-45-6789"
         sanitized = sanitizer.sanitize(test_log)
         assert "123-45-6789" not in sanitized
-        assert "[REDACTED-SSN]" in sanitized
+        assert "[REDACTED SSN]" in sanitized
 
     def test_email_sanitization(self):
         """Test that email addresses are properly sanitized."""
@@ -70,7 +72,7 @@ class TestLogSanitization:
         test_log = "Patient email is patient@example.com"
         sanitized = sanitizer.sanitize(test_log)
         assert "patient@example.com" not in sanitized
-        assert "[REDACTED-EMAIL]" in sanitized
+        assert "[REDACTED EMAIL]" in sanitized
 
     def test_phone_sanitization(self):
         """Test that phone numbers are properly sanitized."""
@@ -78,7 +80,7 @@ class TestLogSanitization:
         test_log = "Patient phone is (555) 123-4567"
         sanitized = sanitizer.sanitize(test_log)
         assert "(555) 123-4567" not in sanitized
-        assert "[REDACTED-PHONE]" in sanitized
+        assert "[REDACTED PHONE]" in sanitized
 
     def test_name_sanitization(self):
         """Test that names are properly sanitized."""
@@ -86,7 +88,7 @@ class TestLogSanitization:
         test_log = "Patient name is John Smith"
         sanitized = sanitizer.sanitize(test_log)
         assert "John Smith" not in sanitized
-        assert "[REDACTED-NAME]" in sanitized
+        assert "[REDACTED NAME]" in sanitized
 
     def test_multiple_phi_sanitization(self):
         """Test that multiple PHI elements in the same log are all sanitized."""
@@ -154,10 +156,10 @@ class TestLogSanitization:
         assert "(555) 123-4567" not in log_content
 
         # Verify redaction markers are present
-        assert "[REDACTED-NAME]" in log_content
-        assert "[REDACTED-EMAIL]" in log_content
-        assert "[REDACTED-SSN]" in log_content
-        assert "[REDACTED-PHONE]" in log_content
+        assert "[REDACTED NAME]" in log_content
+        assert "[REDACTED EMAIL]" in log_content
+        assert "[REDACTED SSN]" in log_content
+        assert "[REDACTED PHONE]" in log_content
 
     def test_sanitization_performance(self):
         """Test the performance of log sanitization on large log entries."""

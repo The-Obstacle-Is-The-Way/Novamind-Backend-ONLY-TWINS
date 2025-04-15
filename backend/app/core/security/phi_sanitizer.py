@@ -20,21 +20,25 @@ class PHISanitizer:
     # PHI detection patterns
     _NAME_PATTERN: Pattern = re.compile(r'\b(?:[A-Z][a-z]+\s+){1,2}[A-Z][a-z]+\b')
     _EMAIL_PATTERN: Pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
-    _PHONE_PATTERN: Pattern = re.compile(r'\b(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b')
-    _SSN_PATTERN: Pattern = re.compile(r'\b\d{3}[-]?\d{2}[-]?\d{4}\b')
-    _DOB_PATTERN: Pattern = re.compile(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b')
-    _MRN_PATTERN: Pattern = re.compile(r'\b(?:MRN|Medical Record Number|Patient ID)[: ]+[A-Za-z0-9-]+\b', re.IGNORECASE)
-    _ADDRESS_PATTERN: Pattern = re.compile(r'\b\d+\s+[A-Za-z0-9\s.,]+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St)\.?\s*,?\s*[A-Za-z\s]+,\s*[A-Z]{2}\s*\d{5}\b', re.IGNORECASE)
+    _PHONE_PATTERN: Pattern = re.compile(r'(\+\d{1,2}\s*)?(\()?\d{3}(\))?[\s.-]?\d{3}[\s.-]?\d{4}')
+    _SSN_PATTERN: Pattern = re.compile(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b|"\d{3}-\d{2}-\d{4}"|\d{3} \d{2} \d{4}|SSN\s*[:=]\s*"?\d{3}-\d{2}-\d{4}"?')
+    _MRN_PATTERN: Pattern = re.compile(r'\b(?:MRN|Medical Record Number|Patient ID|MR#)[: ]*\d{5,10}\b', re.IGNORECASE)
+    _DOB_PATTERN: Pattern = re.compile(r'\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s*\d{1,2}(?:st|nd|rd|th)?[\s,.\/-]?\s*\d{2,4}\b|\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?\d{1,2}[\s,.\/-]\d{1,2}[\s,.\/-]\d{2,4}\b|\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?\d{2,4}[\s,.\/-]\d{1,2}[\s,.\/-]\d{1,2}\b', re.IGNORECASE)
+    _ADDRESS_PATTERN: Pattern = re.compile(r'\b\d+\s+[A-Za-z0-9\s.,]+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St|Court|Ct|Place|Pl|Way|Parkway|Pkwy)?\.?\s*[A-Za-z\s]+,\s*[A-Za-z\s]+,\s*[A-Z]{2}(?:\s*\d{5}(?:[-]\d{4})?)?\b', re.IGNORECASE)
+    _CREDIT_CARD_PATTERN: Pattern = re.compile(r'\b(?:4[0-9]{3}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}|5[1-5][0-9]{2}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}|3[47][0-9]{2}[ -]?[0-9]{6}[ -]?[0-9]{5}|6(?:011|5[0-9]{2})[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4})\b')
+    _AGE_PATTERN: Pattern = re.compile(r'\b(?:age|aged|is|turning|turned|patient is|patient age|patient\s+is)\s*\d{1,3}(?:\s*(?:years\s*old|yrs\s*old|yr\s*old|years|yrs|yr))?\b', re.IGNORECASE)
     
-    # Collection of all PHI patterns
+    # Collection of all PHI patterns - order matters, more specific first
     _PHI_PATTERNS: List[Tuple[Pattern, str]] = [
-        (_NAME_PATTERN, "[REDACTED NAME]"),
-        (_EMAIL_PATTERN, "[REDACTED EMAIL]"),
-        (_PHONE_PATTERN, "[REDACTED PHONE]"),
-        (_SSN_PATTERN, "[REDACTED SSN]"),
-        (_DOB_PATTERN, "[REDACTED DATE]"),
         (_MRN_PATTERN, "[REDACTED MRN]"),
-        (_ADDRESS_PATTERN, "[REDACTED ADDRESS]")
+        (_ADDRESS_PATTERN, "[REDACTED ADDRESS]"),
+        (_SSN_PATTERN, "[REDACTED SSN]"),
+        (_PHONE_PATTERN, "[REDACTED PHONE]"),
+        (_CREDIT_CARD_PATTERN, "[REDACTED CARD]"),
+        (_DOB_PATTERN, "[REDACTED DATE]"),
+        (_EMAIL_PATTERN, "[REDACTED EMAIL]"),
+        (_AGE_PATTERN, "[REDACTED AGE]"),
+        (_NAME_PATTERN, "[REDACTED NAME]")
     ]
     
     @classmethod
@@ -80,7 +84,8 @@ class PHISanitizer:
         sanitized = text
         for pattern, replacement in cls._PHI_PATTERNS:
             sanitized = pattern.sub(replacement, sanitized)
-            
+        # Remove leftover parens/brackets around redacted fields, e.g. ([REDACTED PHONE]) -> [REDACTED PHONE]
+        sanitized = re.sub(r'[\(\[]+\s*\[REDACTED ([A-Z ]+)\]\s*[\)\]]+', r'[REDACTED \1]', sanitized)
         return sanitized
     
     @classmethod

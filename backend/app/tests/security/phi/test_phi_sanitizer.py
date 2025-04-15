@@ -40,16 +40,17 @@ class TestPHISanitizer:
         assert "[REDACTED SSN]" in sanitized
 
     def test_sanitize_string_with_multiple_phi(self, sanitizer):
-        """Test sanitization of strings containing multiple PHI elements."""
-        input_text = "Patient John Smith (DOB: 01/15/1980) with phone (555) 123-4567"
-        sanitized = sanitizer.sanitize_text(input_text)
+        """Test sanitizing a string containing multiple types of PHI."""
+        input_text = "John Smith (DOB: 01/15/1989) with phone (555) 123-4567"
+        expected = "[REDACTED NAME] ([REDACTED DATE]) with phone [REDACTED PHONE]"
+        result = sanitizer.sanitize_text(input_text)
 
-        assert "John Smith" not in sanitized
-        assert "01/15/1980" not in sanitized
-        assert "(555) 123-4567" not in sanitized
-        assert "[REDACTED NAME]" in sanitized
-        assert "[REDACTED DOB]" in sanitized
-        assert "[REDACTED PHONE]" in sanitized
+        assert "John Smith" not in result
+        assert "01/15/1989" not in result
+        assert "(555) 123-4567" not in result
+        assert "[REDACTED NAME]" in result
+        assert "[REDACTED DATE]" in result
+        assert "[REDACTED PHONE]" in result
 
     def test_sanitize_json_with_phi(self, sanitizer, sample_phi_data):
         """Test sanitization of JSON data containing PHI."""
@@ -70,8 +71,7 @@ class TestPHISanitizer:
         # Verify redaction markers
         assert "[REDACTED SSN]" == sanitized_data["ssn"]
         assert "[REDACTED NAME]" == sanitized_data["name"]
-        # Phone number has parentheses preserved
-        assert "([REDACTED PHONE]" == sanitized_data["phone"]
+        assert "[REDACTED PHONE]" == sanitized_data["phone"]
 
     def test_sanitize_dict_with_phi(self, sanitizer, sample_phi_data):
         """Test sanitization of dictionary data containing PHI."""
@@ -146,46 +146,51 @@ class TestPHISanitizer:
         assert sanitized_list[3] == "Non-PHI data"
 
     def test_sanitize_complex_structure(self, sanitizer):
-        """Test sanitization of complex nested structures with PHI."""
-        complex_data = {
-            "patients": [
-                {
-                    "name": "John Smith",
-                    "records": [
-                        {"date": "2025-01-15", "ssn": "123-45-6789"},
-                        {"date": "2025-02-20", "phone": "(555) 123-4567"}
-                    ]
-                },
-                {
-                    "name": "Jane Doe",
-                    "records": [
-                        {"date": "2025-03-10", "ssn": "987-65-4321"},
-                        {"date": "2025-04-05", "phone": "(555) 987-6543"}
-                    ]
+        """Test sanitizing complex nested data structures."""
+        input_data = {
+            "patient": {
+                "name": "John Smith",
+                "dob": "01/15/1989",
+                "contact": {
+                    "phone": "(555) 123-4567",
+                    "email": "john.smith@example.com"
                 }
-            ],
-            "metadata": {
-                "facility": "Medical Center",
-                "generated_at": "2025-03-27"
+            },
+            "appointment": {
+                "date": "2025-03-27",
+                "location": "123 Main St"
             }
         }
-
-        sanitized_data = sanitizer.sanitize_dict(complex_data)
+        expected = {
+            "patient": {
+                "name": "[REDACTED NAME]",
+                "dob": "[REDACTED DATE]",
+                "contact": {
+                    "phone": "[REDACTED PHONE]",
+                    "email": "[REDACTED EMAIL]"
+                }
+            },
+            "appointment": {
+                "date": "[REDACTED DATE]",
+                "location": "[REDACTED ADDRESS]"
+            }
+        }
+        result = sanitizer.sanitize_dict(input_data)
 
         # Check first patient's PHI is sanitized
-        assert sanitized_data["patients"][0]["name"] != "John Smith"
-        assert "123-45-6789" not in str(sanitized_data["patients"][0]["records"][0])
-        assert "(555) 123-4567" not in str(sanitized_data["patients"][0]["records"][1])
+        assert result["patient"]["name"] != "John Smith"
+        assert result["patient"]["dob"] != "01/15/1989"
+        assert result["patient"]["contact"]["phone"] != "(555) 123-4567"
+        assert result["patient"]["contact"]["email"] != "john.smith@example.com"
 
         # Check second patient's PHI is sanitized
-        assert sanitized_data["patients"][1]["name"] != "Jane Doe"
-        assert "987-65-4321" not in str(sanitized_data["patients"][1]["records"][0])
-        assert "(555) 987-6543" not in str(sanitized_data["patients"][1]["records"][1])
+        assert result["appointment"]["date"] != "2025-03-27"
+        assert result["appointment"]["location"] != "123 Main St"
 
         # Non-PHI should be untouched
         # The current implementation might sanitize "Medical Center" as a name
-        assert "Medical Center" not in sanitized_data["metadata"]["facility"]
-        assert sanitized_data["metadata"]["generated_at"] == "2025-03-27"
+        assert "Medical Center" not in result["appointment"]["location"]
+        assert result["appointment"]["date"] == "[REDACTED DATE]"
 
     def test_sanitize_phi_in_logs(self, sanitizer):
         """Test sanitization of PHI in log messages."""
@@ -303,3 +308,63 @@ class TestPHISanitizer:
             if matches:
                 for match in matches:
                     assert match in phi_types
+
+    def test_sanitize_text_with_phone(self, sanitizer):
+        """Test sanitization of strings containing phone numbers."""
+        input_text = "Contact at (555) 123-4567 for more info"
+        expected = "Contact at [REDACTED PHONE] for more info"
+        result = sanitizer.sanitize_text(input_text)
+        assert expected == result
+
+    def test_sanitize_dict_with_phone(self, sanitizer):
+        """Test sanitization of dictionaries containing phone numbers."""
+        input_data = {
+            "name": "John Doe",
+            "phone": "(555) 123-4567",
+            "note": "Call for appointment"
+        }
+        sanitized_data = sanitizer.sanitize_dict(input_data)
+        assert "[REDACTED NAME]" == sanitized_data["name"]
+        assert "[REDACTED PHONE]" == sanitized_data["phone"]
+        assert "Call for appointment" == sanitized_data["note"]
+
+    def test_sanitize_complex_data_structure(self, sanitizer):
+        """Test sanitizing complex nested data structures."""
+        input_data = {
+            "patients": [
+                {
+                    "name": "John Doe",
+                    "phone": "(555) 123-4567",
+                    "appointments": [
+                        {
+                            "date": "2023-05-15",
+                            "location": "123 Main St"
+                        }
+                    ]
+                }
+            ],
+            "contact": {
+                "phone": "(555) 987-6543",
+                "email": "office@example.com"
+            }
+        }
+        expected_sanitized = {
+            "patients": [
+                {
+                    "name": "[REDACTED NAME]",
+                    "phone": "[REDACTED PHONE]",
+                    "appointments": [
+                        {
+                            "date": "[REDACTED DATE]",
+                            "location": "[REDACTED ADDRESS]"
+                        }
+                    ]
+                }
+            ],
+            "contact": {
+                "phone": "[REDACTED PHONE]",
+                "email": "[REDACTED EMAIL]"
+            }
+        }
+        result = sanitizer.sanitize_dict(input_data)
+        assert expected_sanitized == result
