@@ -14,7 +14,7 @@ from typing import Dict, List, Any, Optional
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.testclient import TestClient
-from app.api.routes import api_router # Assuming api_router aggregates all routes
+from app.api.routes import api_router, setup_routers # Import setup_routers
 from app.presentation.middleware.phi_middleware import add_phi_middleware
 from app.infrastructure.security.jwt.jwt_service import JWTService
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
@@ -28,207 +28,18 @@ from app.presentation.middleware.phi_middleware import PHIMiddleware
 # If not, import specific routers needed
 from app.config.settings import get_settings # To get API prefix, etc.
 
-# Try to import FastAPI components, or create mocks if unavailable
-try:
-    from fastapi import FastAPI, Depends, HTTPException, status
-    from fastapi.security import OAuth2PasswordBearer
-    from fastapi.testclient import TestClient
-    from app.presentation.api.routes.endpoints.patients import router as patients_router
-    from app.presentation.middleware.phi_middleware import PHISanitizingMiddleware, PHIAuditMiddleware, add_phi_middleware
-except ImportError:
-    # Mock FastAPI components for testing
-    class HTTPException(Exception):
-        """Mock HTTPException."""
-        def __init__(self, status_code, detail=None, headers=None):
-            self.status_code = status_code
-            self.detail = detail
-            self.headers = headers
-
-    class status:
-        """Mock status codes."""
-        HTTP_200_OK = 200
-        HTTP_201_CREATED = 201
-        HTTP_400_BAD_REQUEST = 400
-        HTTP_401_UNAUTHORIZED = 401
-        HTTP_403_FORBIDDEN = 403
-        HTTP_404_NOT_FOUND = 404
-        HTTP_422_UNPROCESSABLE_ENTITY = 422
-        HTTP_500_INTERNAL_SERVER_ERROR = 500
-
-    class OAuth2PasswordBearer:
-        """Mock OAuth2PasswordBearer."""
-        def __init__(self, tokenUrl):
-            self.tokenUrl = tokenUrl
-        
-        async def __call__(self, request=None):
-            if not request or "Authorization" not in request.headers:
-                raise HTTPException(status_code=401, detail="Not authenticated")
-            auth = request.headers["Authorization"]
-            if not auth.startswith("Bearer "):
-                raise HTTPException(status_code=401, detail="Invalid token type")
-            return auth.replace("Bearer ", "")
-
-    class Depends:
-        """Mock Depends."""
-        def __init__(self, dependency=None):
-            self.dependency = dependency
-
-    class FastAPI:
-        """Mock FastAPI."""
-        def __init__(self, title=None, description=None, version=None):
-            self.title = title
-            self.description = description
-            self.version = version
-            self.routes = []
-            self.middleware = []
-        
-        def include_router(self, router, prefix=None, tags=None):
-            """Include a router."""
-            self.routes.append((router, prefix, tags))
-        
-        def add_middleware(self, middleware_class, **options):
-            """Add middleware."""
-            self.middleware.append((middleware_class, options))
-
-    class APIRouter:
-        """Mock APIRouter."""
-        def __init__(self, prefix=None, tags=None):
-            self.prefix = prefix
-            self.tags = tags
-            self.routes = []
-        
-        def get(self, path, **kwargs):
-            """Register a GET endpoint."""
-            def decorator(func):
-                self.routes.append(("GET", path, func, kwargs))
-                return func
-            return decorator
-        
-        def post(self, path, **kwargs):
-            """Register a POST endpoint."""
-            def decorator(func):
-                self.routes.append(("POST", path, func, kwargs))
-                return func
-            return decorator
-        
-        def put(self, path, **kwargs):
-            """Register a PUT endpoint."""
-            def decorator(func):
-                self.routes.append(("PUT", path, func, kwargs))
-                return func
-            return decorator
-        
-        def delete(self, path, **kwargs):
-            """Register a DELETE endpoint."""
-            def decorator(func):
-                self.routes.append(("DELETE", path, func, kwargs))
-                return func
-            return decorator
-
-    class TestClient:
-        """Mock TestClient."""
-        def __init__(self, app):
-            self.app = app
-            self.base_url = "http://test"
-            self.headers = {}
-        
-        def get(self, url, headers=None, params=None):
-            """Simulate a GET request."""
-            return self._make_request("GET", url, headers, params=params)
-        
-        def post(self, url, headers=None, json=None, data=None):
-            """Simulate a POST request."""
-            return self._make_request("POST", url, headers, json=json, data=data)
-        
-        def put(self, url, headers=None, json=None, data=None):
-            """Simulate a PUT request."""
-            return self._make_request("PUT", url, headers, json=json, data=data)
-        
-        def delete(self, url, headers=None):
-            """Simulate a DELETE request."""
-            return self._make_request("DELETE", url, headers)
-        
-        def _make_request(self, method, url, headers=None, **kwargs):
-            """Make a request and return a mock response."""
-            response = MagicMock()
-            response.status_code = 200
-            
-            # Simulate authentication check
-            auth_header = headers.get("Authorization") if headers else None
-            if "/patients/" in url and not auth_header:
-                response.status_code = 401
-                response.json.return_value = {"detail": "Not authenticated"}
-                return response
-            
-            # Simulate role-based access control
-            if auth_header and "patient-token" in auth_header and "/patients/" in url:
-                # Extract patient ID from URL
-                try:
-                    url_parts = url.split("/")
-                    patient_id = url_parts[url_parts.index("patients") + 1]
-                    token_patient_id = "P12345"  # Simulated patient ID from token
-                    
-                    # Patient can only access their own data
-                    if patient_id != token_patient_id:
-                        response.status_code = 403
-                        response.json.return_value = {"detail": "Not authorized to access this resource"}
-                        return response
-                except (ValueError, IndexError):
-                    pass
-            
-            # Simulate successful responses with appropriate data
-            if method == "GET" and "/patients/" in url:
-                patient_data = {
-                    "id": "P12345",
-                    "first_name": "John",
-                    "last_name": "Doe",
-                    "date_of_birth": "1980-01-01",
-                    # PHI fields should be protected
-                    "ssn": "[REDACTED]",
-                    "email": "j***@example.com",
-                    "phone": "(555) ***-**67",
-                    "address": "123 *** St, ***town, ** 12345",
-                }
-                response.json.return_value = patient_data
-                return response
-            
-            if method == "POST" and "/patients" in url:
-                # Simulate patient creation
-                response.status_code = 201
-                created_data = kwargs.get("json", {}).copy()
-                created_data["id"] = "P98765"
-                # Sensitive fields should be sanitized in the response
-                if "ssn" in created_data:
-                    created_data["ssn"] = "[REDACTED]"
-                response.json.return_value = created_data
-                return response
-            
-            return response
-
-# Create a mock patients router
-patients_router = APIRouter(prefix="/patients", tags=["patients"])
-    
-@patients_router.get("/{patient_id}")
-async def get_patient(patient_id: str, token: str = Depends(OAuth2PasswordBearer(tokenUrl="token"))):
-    """Get a patient by ID."""
-    return {
-        "id": patient_id,
-        "first_name": "John",
-        "last_name": "Doe",
-        "email": "j***@example.com",  # Redacted
-    }
-    
-@patients_router.post("/")
-async def create_patient(patient: dict, token: str = Depends(OAuth2PasswordBearer(tokenUrl="token"))):
-    """Create a new patient."""
-    new_patient = patient.copy()
-    new_patient["id"] = "P" + str(hash(patient.get("first_name", "") + patient.get("last_name", "")))[:5]
-    return new_patient
+# Import necessary FastAPI components
+from fastapi import FastAPI, Depends, HTTPException, status # Removed try block
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.testclient import TestClient
+from app.api.routes.patients_router import router as patients_router
+from app.presentation.middleware.phi_middleware import PHIMiddleware, add_phi_middleware
+# Removed fallback mock definitions for FastAPI components
 
 class TestAPIHIPAACompliance:
     """Test API endpoint HIPAA compliance."""
     
-    @pytest.fixture(scope="module") # Scope to module for efficiency
+    @pytest.fixture(scope="function") # Changed scope to function
     def app(self):
         """Create test FastAPI application instance."""
         settings = get_settings()
@@ -256,9 +67,20 @@ class TestAPIHIPAACompliance:
 
         # Example: Mock AuthenticationService get_user_by_id if needed by middleware/routes
         def mock_get_user(user_id):
-             if user_id == "admin_user": return {"id": user_id, "role": "admin"} 
-             # Add other users as needed for tests
-             return None
+            # Return mock user data based on user_id from token payload
+            # Use simple dicts that mimic the User entity structure needed by middleware/deps
+            if user_id == "admin_user":
+                # Mock admin user object (can be a simple dict or MagicMock)
+                # Ensure it has attributes accessed by your code (e.g., id, role)
+                return MagicMock(id=user_id, role="admin", is_active=True)
+            elif user_id == "doc_user":
+                # Mock doctor user object
+                return MagicMock(id=user_id, role="doctor", patient_ids=["P12345", "P67890"], is_active=True)
+            elif user_id == "patient_P12345":
+                 # Mock patient user object - Ensure ID matches patient ID if needed
+                return MagicMock(id="P12345", role="patient", is_active=True)
+            # Return None for any other user_id to simulate 'user not found'
+            return None
         mock_auth_service.get_user_by_id = AsyncMock(side_effect=mock_get_user)
 
         # --- Dependency Overrides (Example) ---
@@ -282,14 +104,18 @@ class TestAPIHIPAACompliance:
         # Include the actual application router
         app.include_router(api_router, prefix=settings.API_V1_STR)
         
+        # Call setup_routers to lazily load and include all endpoint routers
+        setup_routers()
+        
         return app
     
-    @pytest.fixture(scope="module")
+    @pytest.fixture(scope="function") # Changed scope to function
     def client(self, app):
         """Create test client using the real TestClient."""
-        # Use the real TestClient - remove the 'with' statement
+        # The 'app' fixture already provides the configured FastAPI instance.
+        # No need to re-import or create it here.
         client = TestClient(app)
-        yield client # Use yield to allow for cleanup if needed, though TestClient doesn't require it
+        yield client
     
     @pytest.fixture
     def admin_token(self):
@@ -305,7 +131,24 @@ class TestAPIHIPAACompliance:
     def patient_token(self):
         """Create patient token."""
         return "Bearer patient-token-P12345"
-    
+
+    @pytest.fixture
+    def other_patient_token(self):
+        """Create a token for a different patient."""
+        return "Bearer other-patient-token-P_OTHER" # Represents a different patient
+
+    @pytest.fixture
+    def test_patient(self):
+        """Provides a mock patient object for testing."""
+        # Using a simple dict or MagicMock is often sufficient for testing interactions
+        # Ensure the ID matches the one expected by patient_token
+        mock_patient = MagicMock()
+        mock_patient.id = "P12345"
+        mock_patient.first_name = "Test"
+        mock_patient.last_name = "Patient"
+        # Add other attributes if needed by the test logic
+        return mock_patient
+
     # --- Test Cases ---
 
     def test_unauthenticated_request_rejected(self, client):
@@ -318,27 +161,45 @@ class TestAPIHIPAACompliance:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED 
         
     @pytest.mark.asyncio
-    async def test_patient_data_isolation(self, client: TestClient, patient_user_token, other_patient_user_token, test_patient):
+    async def test_patient_data_isolation(self, client: TestClient, patient_token, other_patient_token, test_patient): # Use correct fixtures
         """Test: Patient can only access their own data, not others."""
         # Setup: Mock repository to control data access
         mock_repo = MagicMock(spec=PatientRepository)
         # Define behavior for get_by_id
         def mock_get_by_id(patient_id):
-            if str(patient_id) == test_patient.id:
-                return test_patient # Allow access to own data
+            # Simulate finding the patient if the ID matches the one associated with patient_token
+            if str(patient_id) == test_patient.id: # Assuming test_patient.id is 'P12345'
+                 # Return a mock object that can be serialized, not necessarily the full Pydantic model
+                 return {"id": test_patient.id, "first_name": "Test", "last_name": "Patient"}
             else:
-                return None # Deny access to other data
-        mock_repo.get_by_id.side_effect = mock_get_by_id
+                 # Simulate not finding other patients or returning minimal data
+                 # The authorization middleware should prevent access anyway
+                 return None # Or raise HTTPException(status_code=404) if appropriate
+        mock_repo.get_by_id = AsyncMock(side_effect=mock_get_by_id) # Use AsyncMock for async repo methods
 
-        with patch("app.presentation.api.routes.patient_routes.get_patient_repository", return_value=mock_repo) as mock_get_repo: # Corrected patch path
+        # Patch the *actual* repository dependency used by the router
+        with patch("app.infrastructure.persistence.sqlalchemy.patient_repository.PatientRepository") as mock_repo_class:
+            # Configure the mock class to return our instance when instantiated
+            mock_repo_class.return_value = mock_repo
+
+            settings = get_settings()
+            api_prefix = settings.API_V1_STR
+
             # Test: Access own data (should succeed)
-            own_response = await client.get(f"/api/v1/patients/{test_patient.id}", headers=patient_user_token)
+            # Ensure test_patient fixture provides an object with an 'id' attribute matching patient_token
+            own_response = await client.get(f"{api_prefix}/patients/{test_patient.id}", headers={"Authorization": patient_token})
             assert own_response.status_code == status.HTTP_200_OK
             assert own_response.json().get("id") == test_patient.id
 
-            # Test: Access other data (should be forbidden)
-            other_response = await client.get(f"/api/v1/patients/{other_patient_user_token}", headers=other_patient_user_token)
+            # Test: Access other data using own token (should be forbidden by middleware)
+            other_patient_id = "P_OTHER" # Define a different patient ID
+            other_response = await client.get(f"{api_prefix}/patients/{other_patient_id}", headers={"Authorization": patient_token}) # Use own token to access other ID
+            # Expect 403 Forbidden due to AuthenticationMiddleware checking token against requested resource ID
             assert other_response.status_code == status.HTTP_403_FORBIDDEN
+
+            # Optional: Test using the other patient's token to access the first patient's data (should fail)
+            # cross_access_response = await client.get(f"{api_prefix}/patients/{test_patient.id}", headers={"Authorization": other_patient_token})
+            # assert cross_access_response.status_code == status.HTTP_403_FORBIDDEN
 
     # Test PHI Sanitization (assuming PHI middleware is added in app fixture)
     def test_phi_sanitization_in_response(self, client, admin_token):
@@ -360,7 +221,7 @@ class TestAPIHIPAACompliance:
         
         # Adjust patch target if needed
         # Patch the PatientRepository class where it's imported in the router module
-        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo:
+        with patch("app.infrastructure.persistence.sqlalchemy.patient_repository.PatientRepository") as mock_get_repo:
             # Note: mock_get_repo is now mocking the CLASS, not a 'get' function.
             # We might need to adjust how the mock instance is configured below.
             mock_repo_instance = MagicMock(spec=PatientRepository)
@@ -405,7 +266,7 @@ class TestAPIHIPAACompliance:
         mock_created_patient = {**request_body_with_phi, "id": "P_POST_123"}
         # Adjust patch target if needed
         # Patch the PatientRepository class where it's imported in the router module
-        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo:
+        with patch("app.infrastructure.persistence.sqlalchemy.patient_repository.PatientRepository") as mock_get_repo:
             mock_repo_instance = MagicMock(spec=PatientRepository)
             mock_get_repo.return_value = mock_repo_instance
             mock_repo_instance.create = AsyncMock(return_value=mock_created_patient)
@@ -450,7 +311,7 @@ class TestAPIHIPAACompliance:
         # Mock underlying service
         mock_patient_data = {"id": "mock_id", "first_name": "Mock Name"}
         # Adjust patch target
-        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo:
+        with patch("app.infrastructure.persistence.sqlalchemy.patient_repository.PatientRepository") as mock_get_repo:
              mock_repo_instance = MagicMock(spec=PatientRepository)
              mock_get_repo.return_value = mock_repo_instance
              
@@ -491,7 +352,7 @@ class TestAPIHIPAACompliance:
         # Basic check: Ensure endpoint works and potentially check for one common header
         # Adjust patch target
         # Patch the PatientRepository class where it's imported
-        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo:
+        with patch("app.infrastructure.persistence.sqlalchemy.patient_repository.PatientRepository") as mock_get_repo:
              mock_repo_instance = MagicMock(spec=PatientRepository)
              mock_get_repo.return_value = mock_repo_instance
              mock_repo_instance.get_by_id = AsyncMock(return_value={"id": "P12345"})
@@ -516,7 +377,7 @@ class TestAPIHIPAACompliance:
         # Mock the use case and the specific logger used for auditing
         # Adjust patch targets as needed
         # Patch the PatientRepository class and the logger
-        with patch("app.api.routes.patients_router.PatientRepository") as mock_get_repo, \
+        with patch("app.infrastructure.persistence.sqlalchemy.patient_repository.PatientRepository") as mock_get_repo, \
              patch("app.presentation.middleware.phi_middleware.logger") as mock_audit_logger: # Example patch target
             
             mock_repo_instance = MagicMock(spec=PatientRepository)

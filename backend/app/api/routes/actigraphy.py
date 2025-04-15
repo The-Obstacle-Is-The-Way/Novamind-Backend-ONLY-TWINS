@@ -20,7 +20,12 @@ from app.api.schemas.actigraphy import (
     IntegrateWithDigitalTwinRequest,
     IntegrationResult,
 )
-from app.core.auth.jwt import get_current_user_id, validate_jwt
+# Removed incorrect import: from app.core.auth.jwt import get_current_user_id, validate_jwt
+# Assuming standard dependency injection setup
+from app.presentation.api.dependencies.auth import get_current_user # Corrected import
+# Removed incorrect User schema import: from app.presentation.api.schemas.user import User
+from typing import Dict, Any # Import Dict and Any for type hinting
+
 from app.core.services.ml.pat import (
     AnalysisError,
     AuthorizationError,
@@ -86,7 +91,8 @@ async def get_pat_service() -> PATInterface:
 )
 async def analyze_actigraphy(
     request: AnalyzeActigraphyRequest,
-    token: HTTPAuthorizationCredentials = Depends(security),
+    # Replace token dependency with user dependency
+    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> AnalysisResult:
     """Analyze actigraphy data endpoint.
@@ -107,11 +113,9 @@ async def analyze_actigraphy(
         HTTPException: If analysis fails or validation errors occur
     """
     try:
-        # Validate token
-        validate_jwt(token.credentials)
-        
-        # Get user ID from token
-        user_id = get_current_user_id(token.credentials)
+        # Token validation and user retrieval are handled by get_current_active_user dependency
+        # Assuming the payload from get_current_user is a dict as per its type hint
+        user_id = current_user.get("id") # Get user ID from the injected user dict
         
         # Ensure the user is authorized to access this patient's data
         # This would typically check if the user is the patient, their provider,
@@ -191,7 +195,8 @@ async def analyze_actigraphy(
 )
 async def get_actigraphy_embeddings(
     request: GetActigraphyEmbeddingsRequest,
-    token: HTTPAuthorizationCredentials = Depends(security),
+    # Replace token dependency with user dependency
+    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> EmbeddingResult:
     """Generate embeddings from actigraphy data endpoint.
@@ -212,11 +217,8 @@ async def get_actigraphy_embeddings(
         HTTPException: If embedding generation fails or validation errors occur
     """
     try:
-        # Validate token
-        validate_jwt(token.credentials)
-        
-        # Get user ID from token
-        user_id = get_current_user_id(token.credentials)
+        # Token validation and user retrieval are handled by get_current_active_user dependency
+        user_id = current_user.get("id") # Get user ID from the injected user dict
         
         # Ensure the user is authorized to access this patient's data
         if user_id != request.patient_id:
@@ -289,7 +291,8 @@ async def get_actigraphy_embeddings(
 )
 async def get_analysis_by_id(
     analysis_id: str,
-    token: HTTPAuthorizationCredentials = Depends(security),
+    # Replace token dependency with user dependency
+    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> AnalysisResult:
     """Get an analysis by ID endpoint.
@@ -309,17 +312,14 @@ async def get_analysis_by_id(
         HTTPException: If the analysis is not found or access is denied
     """
     try:
-        # Validate token
-        validate_jwt(token.credentials)
-        
+        # Token validation handled by dependency
         # Log request
         logger.info(f"Retrieving analysis: analysis_id={analysis_id}")
         
         # Get the analysis
         result = pat_service.get_analysis_by_id(analysis_id)
         
-        # Get user ID from token
-        user_id = get_current_user_id(token.credentials)
+        user_id = current_user.get("id") # Get user ID from the injected user dict
         
         # Ensure the user is authorized to access this analysis
         if user_id != result["patient_id"]:
@@ -366,7 +366,8 @@ async def get_patient_analyses(
     patient_id: str,
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    token: HTTPAuthorizationCredentials = Depends(security),
+    # Replace token dependency with user dependency
+    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> AnalysesList:
     """Get analyses for a patient endpoint.
@@ -388,11 +389,8 @@ async def get_patient_analyses(
         HTTPException: If access is denied or an error occurs
     """
     try:
-        # Validate token
-        validate_jwt(token.credentials)
-        
-        # Get user ID from token
-        user_id = get_current_user_id(token.credentials)
+        # Token validation and user retrieval are handled by get_current_active_user dependency
+        user_id = current_user.get("id") # Get user ID from the injected user dict
         
         # Ensure the user is authorized to access this patient's data
         if user_id != patient_id:
@@ -445,7 +443,8 @@ async def get_patient_analyses(
     description="Retrieve information about the PAT model being used."
 )
 async def get_model_info(
-    token: HTTPAuthorizationCredentials = Depends(security),
+    # Replace token dependency with user dependency
+    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> dict:
     """Get PAT model information endpoint.
@@ -464,9 +463,7 @@ async def get_model_info(
         HTTPException: If an error occurs
     """
     try:
-        # Validate token
-        validate_jwt(token.credentials)
-        
+        # Token validation handled by dependency
         # Log request
         logger.info("Retrieving PAT model information")
         
@@ -495,7 +492,8 @@ async def get_model_info(
 )
 async def integrate_with_digital_twin(
     request: IntegrateWithDigitalTwinRequest,
-    token: HTTPAuthorizationCredentials = Depends(security),
+    # Replace token dependency with user dependency
+    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> IntegrationResult:
     """Integrate with digital twin endpoint.
@@ -516,11 +514,8 @@ async def integrate_with_digital_twin(
         HTTPException: If integration fails or validation errors occur
     """
     try:
-        # Validate token
-        validate_jwt(token.credentials)
-        
-        # Get user ID from token
-        user_id = get_current_user_id(token.credentials)
+        # Token validation and user retrieval are handled by get_current_active_user dependency
+        user_id = current_user.get("id") # Get user ID from the injected user dict
         
         # Ensure the user is authorized to access this patient's data
         if user_id != request.patient_id:

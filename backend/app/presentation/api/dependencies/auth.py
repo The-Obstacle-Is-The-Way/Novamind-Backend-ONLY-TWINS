@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.settings import get_settings
 settings = get_settings()
-from app.infrastructure.security.jwt_service import JWTService
+from app.infrastructure.security.jwt.jwt_service import JWTService # Corrected path
 from app.core.utils.logging import get_logger
 
 
@@ -116,3 +116,51 @@ async def get_optional_user(
     except Exception as e:
         logger.debug(f"Optional authentication failed: {str(e)}")
         return None
+
+
+async def verify_provider_access(
+    user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """
+    Verify that the user has provider access level.
+    
+    Args:
+        user: User data from JWT token
+        
+    Returns:
+        User data if the user has provider or admin access
+        
+    Raises:
+        HTTPException: If the user does not have required access level
+    """
+    role = user.get('role', '').lower()
+    if role not in ['provider', 'admin']:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Provider or Admin access required"
+        )
+    return user
+
+
+async def verify_admin_access(
+    user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """
+    Verify that the user has admin access level.
+    
+    Args:
+        user: User data from JWT token
+        
+    Returns:
+        User data if the user has admin access
+        
+    Raises:
+        HTTPException: If the user does not have admin access
+    """
+    role = user.get('role', '').lower()
+    if role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return user

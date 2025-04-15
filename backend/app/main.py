@@ -12,14 +12,14 @@ from contextlib import asynccontextmanager
 import asyncio
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 # Use the new canonical config location
 from app.config.settings import get_settings
             
-from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance, AsyncSessionLocal
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance, get_db_session
 from app.api.routes import api_router, setup_routers  # Import the setup_routers function
 from app.presentation.api.routes.analytics_endpoints import router as analytics_router
 
@@ -55,20 +55,17 @@ async def lifespan(app: FastAPI):
     
     # Initialize database
     db_instance = get_db_instance()
-    # Ensure create_all is awaited if it's async
-    if hasattr(db_instance, 'create_all') and asyncio.iscoroutinefunction(db_instance.create_all):
+    # Ensure create_all is awaited if it's an async operation
+    if hasattr(db_instance, 'create_all') and callable(getattr(db_instance, 'create_all')):
         await db_instance.create_all()
-    elif hasattr(db_instance, 'create_all'):
-        db_instance.create_all() # Assuming synchronous if not async
-        
-    logger.info("Application startup complete")
     
+    # Yield control to the application
     yield
     
     # Shutdown events
     logger.info("Shutting down NOVAMIND application")
-    
-    # Any cleanup code goes here
+    # Close database connections
+    await db_instance.dispose()
     
     logger.info("Application shutdown complete")
 
@@ -96,7 +93,7 @@ def create_application() -> FastAPI:
     # --- Instantiate Services ---
     # Note: Ideally, use dependency injection framework for cleaner service management
     async def get_db_session():
-        async with AsyncSessionLocal() as session:
+        async with get_db_session() as session:
             yield session
             
     # Instantiate necessary services here, potentially using a DI container later

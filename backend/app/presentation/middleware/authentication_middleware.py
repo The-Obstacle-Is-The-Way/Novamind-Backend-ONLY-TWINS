@@ -15,6 +15,7 @@ from starlette.responses import Response, JSONResponse
 
 # Domain Exceptions
 from app.domain.exceptions import InvalidTokenError, TokenExpiredError, MissingTokenError
+from app.core.exceptions.auth_exceptions import AuthenticationError # Import the missing exception
 
 # Consolidated services
 from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
