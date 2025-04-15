@@ -84,7 +84,7 @@ class PHISanitizer:
             
         sanitized = text
         for pattern, replacement in cls._PHI_PATTERNS:
-            sanitized = pattern.sub(replacement, sanitized)
+            sanitized = pattern.sub(lambda match: replacement, sanitized)
         # Remove leftover parens/brackets around redacted fields, e.g. ([REDACTED PHONE]) -> [REDACTED PHONE]
         sanitized = re.sub(r'[\(\[]+\s*\[REDACTED ([A-Z ]+)\]\s*[\)\]]+', r'[REDACTED \1]', sanitized)
         return sanitized
