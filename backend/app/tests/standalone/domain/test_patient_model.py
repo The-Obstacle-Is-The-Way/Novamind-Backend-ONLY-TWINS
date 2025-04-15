@@ -28,7 +28,8 @@ class TestPatientModel:
         patient = Patient(
             id=patient_id,
             name=name,
-            date_of_birth=dob
+            date_of_birth=dob,
+            gender="male"
         )
 
         # Assert
@@ -49,7 +50,8 @@ class TestPatientModel:
             Patient(
                 id=patient_id,
                 name=invalid_name,
-                date_of_birth=dob
+                date_of_birth=dob,
+                gender="male"
             )
             
         assert "name" in str(exc_info.value).lower()
@@ -68,7 +70,8 @@ class TestPatientModel:
         patient = Patient(
             id=patient_id,
             name=name,
-            date_of_birth=thirty_years_ago
+            date_of_birth=thirty_years_ago,
+            gender="male"
         )
         
         # Assert
