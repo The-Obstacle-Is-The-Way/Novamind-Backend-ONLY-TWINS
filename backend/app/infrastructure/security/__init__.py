@@ -9,7 +9,9 @@ providing seamless integration with the clean architecture pattern.
 from app.infrastructure.security.phi import LogSanitizer, PHIFormatter, PHIRedactionHandler
 
 # Authentication Components
-from app.infrastructure.security.auth import TokenAuthorizationError, PermissionType, RolePermission, JWTAuthMiddleware, MFAService
+# Only import what's directly exported from auth/__init__.py
+# from app.infrastructure.security.auth import TokenAuthorizationError, PermissionType, RolePermission, JWTAuthMiddleware, MFAService
+from app.infrastructure.security.auth import MFAService 
 
 # JWT Components
 from app.infrastructure.security.jwt import (

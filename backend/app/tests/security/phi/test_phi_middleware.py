@@ -18,7 +18,7 @@ from starlette.datastructures import Headers
 from starlette.types import Scope
 
 from app.presentation.middleware.phi_middleware import PHIMiddleware, add_phi_middleware
-from app.infrastructure.security.phi.detector import PHIDetector
+from app.infrastructure.security.phi.phi_service import PHIService, PHIType
 
 
 @pytest.mark.db_required()
@@ -28,11 +28,11 @@ class TestPHIMiddleware:
     def setup_method(self):
         """Set up test fixtures."""
         self.app = MagicMock()
-        self.phi_detector = PHIDetector()
+        self.phi_service = PHIService()
         self.middleware = PHIMiddleware(
             self.app,
-            phi_detector=self.phi_detector,
-            redaction_text="[REDACTED]",
+            phi_service=self.phi_service,
+            redaction_text="[REDACTED {phi_type}]",
             exclude_paths=["/static/", "/health"],
             whitelist_patterns={"/api/allowed/*": ["allowed_field"]}
         )
@@ -107,9 +107,9 @@ class TestPHIMiddleware:
         sanitized_data = json.loads(sanitized_body)
 
         # Verify PHI was redacted
-        assert "[REDACTED]" in sanitized_body
-        assert sanitized_data["patient"]["name"] == "[REDACTED]"
-        assert sanitized_data["patient"]["ssn"] == "[REDACTED]"
+        assert "[REDACTED {phi_type}]" in sanitized_body
+        assert sanitized_data["patient"]["name"] == "[REDACTED {phi_type}]"
+        assert sanitized_data["patient"]["ssn"] == "[REDACTED {phi_type}]"
         # Non-PHI data should remain untouched
         assert sanitized_data["appointment"]["date"] == "2023-04-15"
 
@@ -119,7 +119,7 @@ class TestPHIMiddleware:
         # Create middleware with whitelist
         middleware = PHIMiddleware(
             self.app,
-            phi_detector=self.phi_detector,
+            phi_service=self.phi_service,
             whitelist_patterns={
                 "/api/allowed": ["name"],
                 "/api/allowed/*": ["ssn"]
@@ -157,7 +157,7 @@ class TestPHIMiddleware:
         assert sanitized_data["name"] == "John Doe"
         assert sanitized_data["ssn"] == "123-45-6789"
         # Non-whitelisted field with PHI should be sanitized
-        assert sanitized_data["address"] == "[REDACTED]"
+        assert sanitized_data["address"] == "[REDACTED {phi_type}]"
 
     @pytest.mark.asyncio
     async def test_audit_mode(self):
@@ -165,7 +165,7 @@ class TestPHIMiddleware:
         # Create middleware in audit mode
         middleware = PHIMiddleware(
             self.app,
-            phi_detector=self.phi_detector,
+            phi_service=self.phi_service,
             audit_mode=True
         )
 
@@ -274,10 +274,10 @@ class TestPHIMiddleware:
 
         # Verify nested PHI was sanitized
         patient = sanitized_data["data"]["patients"][0]
-        assert patient["profile"]["personal"]["name"] == "[REDACTED]"
-        assert patient["profile"]["personal"]["contact"]["email"] == "[REDACTED]"
-        assert patient["profile"]["personal"]["contact"]["phone"] == "[REDACTED]"
-        assert patient["medical"]["ssn"] == "[REDACTED]"
+        assert patient["profile"]["personal"]["name"] == "[REDACTED {phi_type}]"
+        assert patient["profile"]["personal"]["contact"]["email"] == "[REDACTED {phi_type}]"
+        assert patient["profile"]["personal"]["contact"]["phone"] == "[REDACTED {phi_type}]"
+        assert patient["medical"]["ssn"] == "[REDACTED {phi_type}]"
         # Non-PHI data should be unchanged
         assert patient["medical"]["insurance"]["policy"] == "12345"
         assert patient["medical"]["insurance"]["provider"] == "Health Co"

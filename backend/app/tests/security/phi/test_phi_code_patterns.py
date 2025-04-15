@@ -14,7 +14,9 @@ import re
 from pathlib import Path
 from unittest.mock import patch, mock_open
 
-from app.infrastructure.security.phi.detector import PHIDetector
+# Import the canonical PHIService
+# from app.infrastructure.security.phi.detector import PHIDetector
+from app.infrastructure.security.phi.phi_service import PHIService, PHIType
 
 
 @pytest.mark.db_required()
@@ -24,7 +26,8 @@ class TestPHIInCodePatterns:
     @pytest.fixture
     def detector(self):
         """Create a PHI detector for testing."""
-        return PHIDetector()
+        # return PHIDetector()
+        return PHIService() # Use the service instead
 
     def test_phi_in_variable_assignment(self, detector):
         """Test detection of PHI in variable assignments."""
@@ -233,8 +236,11 @@ expect(result.status).toBe('success');
 
         # Verify specific PHI instances are detected
         matches = detector.detect_phi(complex_code)
-        ssn_matches = [m for m in matches if m.phi_type == "SSN"]
-        name_matches = [m for m in matches if m.phi_type == "NAME"]
+        # PHIService detect_phi returns List[Tuple[PHIType, str, int, int]]
+        # ssn_matches = [m for m in matches if m.phi_type == "SSN"]
+        # name_matches = [m for m in matches if m.phi_type == "NAME"]
+        ssn_matches = [m for m in matches if m[0] == PHIType.SSN]
+        name_matches = [m for m in matches if m[0] == PHIType.NAME]
 
         assert len(ssn_matches) >= 4  # At least 4 instances of SSN
         assert len(name_matches) >= 3  # At least 3 instances of name
@@ -353,7 +359,7 @@ class TestPHIInSourceFiles:
     @pytest.fixture
     def detector(self):
         """Create a PHI detector for testing."""
-        return PHIDetector()
+        return PHIService()
 
     def _create_temp_file(self, content, extension=".py"):
         """Helper to create a temporary file with given content."""
@@ -406,8 +412,8 @@ class TestPHIInSourceFiles:
 
             # Check specific patterns
             matches = detector.detect_phi(file_content)
-            ssn_matches = [m for m in matches if m.phi_type == "SSN"]
-            name_matches = [m for m in matches if m.phi_type == "NAME"]
+            ssn_matches = [m for m in matches if m[0] == PHIType.SSN]
+            name_matches = [m for m in matches if m[0] == PHIType.NAME]
 
             assert len(ssn_matches) >= 4  # At least 4 instances of SSN
             assert len(name_matches) >= 3  # At least 3 instances of name
@@ -456,8 +462,8 @@ class TestPHIInSourceFiles:
 
             # Check specific patterns
             matches = detector.detect_phi(file_content)
-            ssn_matches = [m for m in matches if m.phi_type == "SSN"]
-            name_matches = [m for m in matches if m.phi_type == "NAME"]
+            ssn_matches = [m for m in matches if m[0] == PHIType.SSN]
+            name_matches = [m for m in matches if m[0] == PHIType.NAME]
 
             assert len(ssn_matches) >= 4
             assert len(name_matches) >= 3
@@ -492,9 +498,9 @@ class TestPHIInSourceFiles:
 
             # Check specific patterns
             matches = detector.detect_phi(file_content)
-            ssn_matches = [m for m in matches if m.phi_type == "SSN"]
-            name_matches = [m for m in matches if m.phi_type == "NAME"]
-            dob_matches = [m for m in matches if m.phi_type == "DATE"]
+            ssn_matches = [m for m in matches if m[0] == PHIType.SSN]
+            name_matches = [m for m in matches if m[0] == PHIType.NAME]
+            dob_matches = [m for m in matches if m[0] == PHIType.DATE]
 
             assert len(ssn_matches) >= 1
             assert len(name_matches) >= 1

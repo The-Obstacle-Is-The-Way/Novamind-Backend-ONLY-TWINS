@@ -19,9 +19,11 @@ import pyotp
 import qrcode
 from io import BytesIO
 
-from app.core.config import get_settings
+# Use canonical config import
+# from app.core.config import get_settings
+from app.config.settings import get_settings
 settings = get_settings()
-from app.core.utils.enhanced_phi_detector import enhanced_phi_secure_logger as logger
+logger = logging.getLogger(__name__) # Use standard logger
 
 
 class MFAType(Enum):

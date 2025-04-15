@@ -15,7 +15,9 @@ from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp, Scope, Receive, Send
 
-from app.infrastructure.security.phi.detector import PHIDetector
+# Import the canonical PHIService instead of PHIDetector
+# from app.infrastructure.security.phi.detector import PHIDetector
+from app.infrastructure.security.phi.phi_service import PHIService, PHIType
 
 
 logger = logging.getLogger(__name__)
@@ -32,8 +34,10 @@ class PHIMiddleware(BaseHTTPMiddleware):
     def __init__(
         self,
         app: ASGIApp,
-        phi_detector: Optional[PHIDetector] = None,
-        redaction_text: str = "[REDACTED]",
+        # Replace detector dependency with service dependency
+        # phi_detector: Optional[PHIDetector] = None,
+        phi_service: Optional[PHIService] = None,
+        redaction_text: str = "[REDACTED {phi_type}]", # Update default redaction
         exclude_paths: Optional[List[str]] = None,
         whitelist_patterns: Optional[Dict[str, List[str]]] = None,
         audit_mode: bool = False,
@@ -43,14 +47,17 @@ class PHIMiddleware(BaseHTTPMiddleware):
         
         Args:
             app: The ASGI application
-            phi_detector: Custom PHI detector to use
-            redaction_text: Text to use when redacting PHI
+            # phi_detector: Custom PHI detector to use
+            phi_service: Custom PHI service to use
+            redaction_text: Text to use when redacting PHI (can use {phi_type})
             exclude_paths: List of path prefixes to exclude from PHI scanning
             whitelist_patterns: Dict mapping paths to patterns that are allowed
             audit_mode: If True, only log potential PHI without redacting
         """
         super().__init__(app)
-        self.phi_detector = phi_detector or PHIDetector()
+        # Use PHIService instance
+        # self.phi_detector = phi_detector or PHIDetector()
+        self.phi_service = phi_service or PHIService() # Instantiate service
         self.redaction_text = redaction_text
         self.exclude_paths = set(exclude_paths or [])
         self.whitelist_patterns = whitelist_patterns or {}
@@ -115,8 +122,10 @@ class PHIMiddleware(BaseHTTPMiddleware):
             body = await request.body()
             if body:
                 body_str = body.decode('utf-8', errors='replace')
-                # Check if body contains PHI
-                if self.phi_detector.contains_phi(body_str):
+                # Check if body contains PHI using the service
+                # if self.phi_detector.contains_phi(body_str):
+                detected_phi_in_body = self.phi_service.detect_phi(body_str)
+                if detected_phi_in_body:
                     if self.audit_mode:
                         # In audit mode, just log the potential PHI
                         logger.warning(
@@ -125,15 +134,21 @@ class PHIMiddleware(BaseHTTPMiddleware):
                         )
                     else:
                         # Log warning about PHI in request
-                        sanitized_body = self.phi_detector.sanitize_phi(body_str)
+                        # Sanitize using the service
+                        # sanitized_body = self.phi_detector.sanitize_phi(body_str)
+                        # Note: The middleware typically shouldn't modify the incoming request body.
+                        # It should log/audit, and rely on response sanitization.
+                        # We log the types found for better info.
+                        phi_types_found = ", ".join(sorted(list(set([p[0].name for p in detected_phi_in_body]))))
                         logger.warning(
-                            f"PHI detected and sanitized in request to {request.url.path}",
-                            extra={"sanitized": True}
+                            f"PHI ({phi_types_found}) detected in request to {request.url.path}",
+                            extra={"sanitized": False} # Indicate request body was not sanitized
                         )
             
             # Check query parameters
             for key, value in request.query_params.items():
-                if self.phi_detector.contains_phi(value):
+                # if self.phi_detector.contains_phi(value):
+                if self.phi_service.contains_phi(value):
                     logger.warning(
                         f"Potential PHI detected in query parameter '{key}' "
                         f"for request to {request.url.path}",
@@ -144,7 +159,8 @@ class PHIMiddleware(BaseHTTPMiddleware):
             safe_headers = {'accept', 'accept-encoding', 'accept-language', 'connection', 
                           'content-length', 'content-type', 'host', 'user-agent'}
             for key, value in request.headers.items():
-                if key.lower() not in safe_headers and self.phi_detector.contains_phi(value):
+                # if key.lower() not in safe_headers and self.phi_detector.contains_phi(value):
+                if key.lower() not in safe_headers and self.phi_service.contains_phi(value):
                     logger.warning(
                         f"Potential PHI detected in header '{key}' "
                         f"for request to {request.url.path}",
@@ -263,7 +279,7 @@ class PHIMiddleware(BaseHTTPMiddleware):
             # Process list
             return [self._sanitize_json_data(item, whitelist) for item in data]
             
-        elif isinstance(data, str) and self.phi_detector.contains_phi(data):
+        elif isinstance(data, str) and self.phi_service.contains_phi(data):
             # Sanitize string with PHI
             if self.audit_mode:
                 # In audit mode, just log but don't redact
@@ -271,7 +287,7 @@ class PHIMiddleware(BaseHTTPMiddleware):
                 return data
             else:
                 # Sanitize the PHI
-                return self.phi_detector.sanitize_phi(data)
+                return self.phi_service.sanitize_phi(data)
                 
         else:
             # No PHI or not a string, return as is
@@ -285,36 +301,23 @@ def add_phi_middleware(
     audit_mode: bool = False,
 ) -> None:
     """
-    Add PHI middleware to a FastAPI application.
-    
+    Adds the PHIMiddleware to the FastAPI application.
+
     Args:
-        app: The FastAPI application
-        exclude_paths: List of path prefixes to exclude from PHI scanning
-        whitelist_patterns: Dict mapping paths to patterns that are allowed
-        audit_mode: If True, only log potential PHI without redacting
+        app: The FastAPI application instance.
+        exclude_paths: List of path prefixes to exclude from PHI scanning.
+        whitelist_patterns: Dict mapping paths to patterns that are allowed.
+        audit_mode: If True, only log potential PHI without redacting.
     """
-    # Default excluded paths (static assets, health checks, docs)
-    default_exclude = [
-        "/static/", 
-        "/assets/", 
-        "/health", 
-        "/status", 
-        "/docs", 
-        "/openapi.json",
-        "/redoc"
-    ]
+    # Instantiate the PHI service (could eventually use dependency injection)
+    phi_service = PHIService()
     
-    all_exclude_paths = list(set(default_exclude + (exclude_paths or [])))
-    
-    # Add PHI middleware to the application
+    # Add the PHIMiddleware to the application
     app.add_middleware(
         PHIMiddleware,
-        exclude_paths=all_exclude_paths,
-        whitelist_patterns=whitelist_patterns or {},
-        audit_mode=audit_mode
+        phi_service=phi_service,
+        exclude_paths=exclude_paths,
+        whitelist_patterns=whitelist_patterns,
+        audit_mode=audit_mode,
     )
-    
-    logger.info(
-        f"PHI middleware added to FastAPI application "
-        f"(audit_mode: {audit_mode}, excluded paths: {len(all_exclude_paths)})"
-    )
+    logger.info("PHI Middleware added.")
