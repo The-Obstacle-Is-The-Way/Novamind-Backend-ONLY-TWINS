@@ -7,7 +7,6 @@ providing seamless integration with the clean architecture pattern.
 
 # PHI Security Components
 from app.infrastructure.security.phi import LogSanitizer, PHIFormatter, PHIRedactionHandler
-from app.infrastructure.security.phi.enhanced_phi_middleware import EnhancedPHIMiddleware
 
 # Authentication Components
 from app.infrastructure.security.auth import TokenAuthorizationError, PermissionType, RolePermission, JWTAuthMiddleware, MFAService

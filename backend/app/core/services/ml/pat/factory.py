@@ -9,7 +9,10 @@ based on configuration.
 import logging
 from typing import Any, Dict, Optional
 
-from app.core.config import get_settings
+# Use the canonical config location
+# from app.core.config import get_settings
+from app.config.settings import get_settings
+
 settings = get_settings()
 from app.core.services.ml.pat.exceptions import InitializationError
 from app.core.services.ml.pat.pat_interface import PATInterface
