@@ -1,30 +1,39 @@
+import os
+from dotenv import load_dotenv, find_dotenv
+
+# Load test environment variables BEFORE application imports
+# Construct the path relative to this conftest.py file
+dotenv_path = os.path.join(os.path.dirname(__file__), '../../.env.test')
+found = load_dotenv(dotenv_path=dotenv_path)
+if not found:
+    print(f"Warning: .env.test file not found at {dotenv_path}. Ensure it exists.")
+
 """
 Global pytest configuration and fixtures.
 
 This module sets up global fixtures and configuration for all tests.
 It also handles patching of problematic imports during test collection.
 """
-import os
 import sys
 import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi.testclient import TestClient
 from app.main import create_application # Restore import
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_dependency, Base, Database
-from app.config.settings import get_settings
+from app.config.settings import get_settings, Settings
 from contextlib import asynccontextmanager
 import asyncio
 import logging
 from fastapi import FastAPI, Request
 import uuid
 import time
-from typing import Dict, Any, Callable, Generator, Coroutine, List, Optional
+from typing import Dict, Any, Callable, Generator, Coroutine, List, Optional, AsyncGenerator
 from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
-from dotenv import load_dotenv
 from app.domain.entities.patient import Patient
+from app.domain.entities.base_entity import BaseEntity  # Assuming BaseEntity exists
 
 # Try to import our patching utility
 try:
@@ -464,5 +473,27 @@ def test_patient() -> Patient:
         # insurance_number="INS-TEST-123", # Example if needed
         # medical_history=["Tested Positive"], # Example if needed
     )
+
+@pytest.fixture(scope="session")
+async def test_app() -> AsyncGenerator[FastAPI, None]:
+    """
+    Create a test application instance with potentially overridden settings.
+    """
+    # Ensure a valid SECRET_KEY for testing by patching get_settings
+    test_secret_key = "a_very_secure_and_long_test_secret_key_for_pytest_runs_12345"
+    
+    # Create a test settings instance with the valid key
+    # Load other settings from the default mechanism (.env.test or .env)
+    base_settings = get_settings() # Load base settings first
+    # Override the secret key
+    base_settings.SECRET_KEY = test_secret_key 
+    
+    # Patch get_settings to return our modified settings during app creation
+    with patch('app.config.settings.get_settings', return_value=base_settings):
+        app_instance = create_application()
+    
+    # Apply other overrides if necessary (e.g., for database session)
+    # app_instance.dependency_overrides[get_db] = override_get_db
+    yield app_instance
 
 # ... potentially other global fixtures ...

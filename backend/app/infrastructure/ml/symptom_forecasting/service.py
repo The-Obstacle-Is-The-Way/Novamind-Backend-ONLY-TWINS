@@ -32,6 +32,7 @@ class SymptomForecastingService:
     def __init__(self):
         """Initialize the Symptom Forecasting Service."""
         self.logger = get_logger(__name__)
+        self.settings = get_settings()
         self.models = {}
 
         # In a production implementation, we would initialize the ML models here

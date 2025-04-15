@@ -20,8 +20,7 @@ from app.infrastructure.persistence.sqlalchemy.models import Patient, User
 from app.presentation.api.schemas.ml_schemas import (
     PHIContextEnum, PHIRequest, PHIDetectionRequest, TextProcessingRequest
 )
-from app.config.settings import settings
-from app.config.ml_settings import PHIDetectionSettings
+from app.config.settings import get_settings
 from app.core.exceptions.ml_exceptions import (
     PHIDetectionException,
     PHIConfigurationError,
@@ -127,14 +126,11 @@ class PHIPattern:
 class PHIDetectionService:
     """Service for detecting and redacting PHI from text."""
     
-    def __init__(self, settings: PHIDetectionSettings):
+    def __init__(self):
         """
-        Initialize PHI detection service.
-        
-        Args:
-            settings: PHI detection settings
+        Initialize PHI detection service using global settings.
         """
-        self.settings = settings
+        self.settings = get_settings().ml.phi_detection # Get nested settings
         self.patterns: Dict[str, List[PHIPattern]] = {}
         self.categories: List[str] = []
         

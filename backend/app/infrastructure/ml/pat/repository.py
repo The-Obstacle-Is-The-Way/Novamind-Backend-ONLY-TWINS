@@ -16,7 +16,9 @@ from typing import Any, Dict, List, Optional, Union
 import boto3
 from botocore.exceptions import ClientError
 
-from app.config.ml_settings import ml_settings
+# Removed ml_settings import, will use get_settings
+# from app.config.ml_settings import ml_settings 
+from app.config.settings import get_settings
 from app.core.exceptions.ml_exceptions import RepositoryError
 from app.infrastructure.ml.pat.models import AnalysisResult, AnalysisTypeEnum
 
@@ -32,16 +34,19 @@ class PATRepository:
     in a HIPAA-compliant manner, ensuring proper data segregation and access control.
     """
     
-    def __init__(self, storage_path: Optional[str] = None):
+    def __init__(
+        self,
+        storage_path: Optional[str] = None
+    ):
         """
         Initialize the PAT repository.
         
         Args:
-            storage_path: Path for storing analysis results
+            storage_path: Path for storing analysis results (overrides settings)
         """
-        self.storage_path = storage_path or os.path.join(
-            ml_settings.ML_STORAGE_PATH, "pat_results"
-        )
+        settings = get_settings() # Get settings object
+        # Use provided path or default from settings
+        self.storage_path = storage_path or settings.ml.pat.results_storage_path
         
         # Create storage directory if it doesn't exist
         os.makedirs(self.storage_path, exist_ok=True)

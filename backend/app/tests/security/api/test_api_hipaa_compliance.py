@@ -8,7 +8,7 @@ This validates that API endpoints properly protect PHI according to HIPAA requir
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock, call
 import json
-from typing import Dict, List, Any, Optional, AsyncGenerator
+from typing import Dict, List, Any, Optional, AsyncGenerator, Generator
 from datetime import datetime, timezone, timedelta
 from uuid import uuid4
 from pydantic import ValidationError
@@ -62,6 +62,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # Import MockSettings from global conftest
 from app.tests.conftest import MockSettings
+
+# Added import for PatientService
+from app.application.services.patient_service import PatientServiceInterface as PatientService
 
 # Global settings for these tests
 # Note: Using fixtures might be cleaner than global variables
@@ -288,7 +291,7 @@ class TestAPIHIPAACompliance:
         yield client
     
     @pytest.fixture(scope="function")
-    def mock_patient_repo(self, app: FastAPI) -> MagicMock:
+    def mock_patient_repo(self, app: FastAPI) -> Generator[MagicMock, None, None]:
         """Provides the central mock PatientRepository instance from app state and resets it."""
         repo_mock = app.state.mock_patient_repo
         repo_mock.reset_mock() # Reset mock before yielding to test
@@ -335,6 +338,14 @@ class TestAPIHIPAACompliance:
         mock_patient.last_name = "Patient"
         # Add other attributes if needed by the test logic
         return mock_patient
+
+    @pytest.fixture
+    def mock_patient_service() -> Generator[MagicMock, None, None]:
+        """Fixture for a mock patient service."""
+        mock_service = AsyncMock(spec=PatientService)
+        # Setup mock responses
+        # Example: mock_service.get_patient_details.return_value = ...
+        yield mock_service # Yielding the mock directly
 
     # --- Test Cases ---
 

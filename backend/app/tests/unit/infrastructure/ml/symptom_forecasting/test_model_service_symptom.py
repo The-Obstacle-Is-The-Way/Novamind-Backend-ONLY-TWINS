@@ -6,7 +6,7 @@ import numpy as np
 from uuid import UUID
 from datetime import datetime, timedelta, date
 
-from app.config.ml_settings import MLSettings
+# from app.config.ml_settings import MLSettings # Remove unused import
 from app.infrastructure.ml.symptom_forecasting.model_service import SymptomForecastingModelService
 from app.domain.entities.patient import Patient
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
@@ -24,11 +24,10 @@ class TestSymptomForecastingModelService:
     @pytest.fixture
     def service(self, mock_model_registry):
         """Create a SymptomForecastingModelService instance for testing."""
-        settings = MLSettings()
         # Correct instantiation
         return SymptomForecastingModelService(
             model_registry=mock_model_registry, 
-            settings=settings
+            # Correct instantiation
         )
 
     @pytest.fixture

@@ -107,7 +107,7 @@ class Settings(BaseSettings):
 
     # Security settings
     SECRET_KEY: SecretStr = Field(
-        default="dev_secret", 
+        ..., # Remove default, force loading from env/.env
         json_schema_extra={"env": "SECRET_KEY"}
     )
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, json_schema_extra={"env": "ACCESS_TOKEN_EXPIRE_MINUTES"})
@@ -232,6 +232,7 @@ class Settings(BaseSettings):
     # Other settings
     ENVIRONMENT: str = Field(default="development", json_schema_extra={"env": "ENVIRONMENT"})
     DEBUG: bool = Field(default=False, json_schema_extra={"env": "DEBUG"}) # General debug flag moved here
+    TESTING: bool = Field(default=False, json_schema_extra={"env": "TESTING"}) # Add TESTING flag
     
     # Audit Log Settings
     AUDIT_LOG_LEVEL: str = Field(default="INFO", json_schema_extra={"env": "AUDIT_LOG_LEVEL"})
@@ -252,9 +253,30 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Get cached application settings.
-    
-    Returns:
-        Settings instance with values loaded from environment.
-    """
-    return Settings()
+    """Return the singleton Settings instance, loading from .env if specified."""
+    env_file = os.getenv("ENV_FILE", ".env") # Allow overriding .env file via ENV_FILE env var
+    # Check if the file exists, otherwise load without it (and rely on environment variables)
+    if not os.path.exists(env_file):
+        print(f"Warning: Environment file '{env_file}' not found. Loading settings from environment variables only.")
+        return Settings()
+    else:
+        # Ensure .env.test is used if TESTING=1 is set *before* this runs
+        # This check is a bit redundant now with the conftest explicit load, but harmless.
+        if os.getenv('TESTING') == '1' and env_file == '.env':
+            test_env_path = '.env.test'
+            if os.path.exists(test_env_path):
+                print(f"Detected TESTING=1, using '{test_env_path}' for settings.")
+                env_file = test_env_path
+            else:
+                print(f"Warning: TESTING=1 detected, but '{test_env_path}' not found. Using '{env_file}'.")
+        # Load settings, explicitly passing the determined env_file path
+        # This ensures pydantic-settings uses the correct file (e.g., .env.test)
+        print(f"Loading settings from: {env_file}")
+        return Settings(_env_file=env_file)
+
+# Optional: Add a main block to print settings for verification during development
+# if __name__ == "__main__":
+#     settings = get_settings()
+#     print("Loaded Settings:")
+#     # Use model_dump for Pydantic V2, exclude sensitive fields if needed
+#     print(settings.model_dump_json(indent=2))

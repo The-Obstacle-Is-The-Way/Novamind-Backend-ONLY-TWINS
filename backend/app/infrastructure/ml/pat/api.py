@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.auth.jwt_handler import verify_jwt_token
-from app.config.ml_settings import ml_settings
+from app.config.settings import get_settings
 from app.infrastructure.ml.pat.models import (
     AccelerometerDataRequest,
     AnalysisResult,
@@ -42,11 +42,12 @@ async def get_pat_service() -> PATService:
     Returns:
         Initialized PAT service
     """
+    settings = get_settings()
     service = PATService(
-        model_size=PATModelSizeEnum.MEDIUM,
-        model_path=ml_settings.PAT_MODEL_PATH,
-        cache_dir=ml_settings.PAT_CACHE_DIR,
-        use_gpu=ml_settings.PAT_USE_GPU
+        model_size=PATModelSizeEnum(settings.ml.pat.model_path.split('-')[-1]) if 'pat-' in settings.ml.pat.model_path else PATModelSizeEnum.MEDIUM, # Infer size from path or default
+        model_path=settings.ml.pat.model_path, # Use nested settings
+        cache_dir=settings.ml.pat.cache_dir,
+        use_gpu=settings.ml.pat.use_gpu
     )
     await service.initialize()
     return service

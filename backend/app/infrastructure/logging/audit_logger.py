@@ -14,13 +14,17 @@ import uuid
 from typing import Any, Dict, Optional
 
 # Corrected import path
-from app.config.settings import settings
+# from app.config.settings import settings # Keep only get_settings
+from app.config.settings import get_settings
 from app.domain.interfaces.audit_service import AuditService
+
+# Load settings once
+settings = get_settings()
 
 # Import settings with fallback for tests
 try:
-    AUDIT_ENABLED = getattr(settings, "PHI_AUDIT_ENABLED", True)
-    AUDIT_LOG_DIR = getattr(settings, "AUDIT_LOG_DIR", os.path.join(tempfile.gettempdir(), "novamind_audit"))
+    AUDIT_ENABLED = settings.DATABASE_AUDIT_ENABLED # Use loaded settings
+    AUDIT_LOG_DIR = settings.AUDIT_LOG_FILE # Use main AUDIT_LOG_FILE setting
 except (ImportError, AttributeError):
     # Fallback for tests
     AUDIT_ENABLED = True

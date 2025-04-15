@@ -8,7 +8,7 @@ handle authentication, and pass data to and from the service layer.
 import pytest
 import json
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from fastapi import FastAPI
 from datetime import datetime, timezone
 from fastapi import status

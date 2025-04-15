@@ -5,7 +5,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch, AsyncMock
 
-from app.config.ml_settings import MLSettings
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
 from app.infrastructure.ml.symptom_forecasting.transformer_model import TransformerModel
 from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostModel
