@@ -17,30 +17,61 @@ class PHISanitizer:
     HIPAA compliance in logging, error messages, and other outputs.
     """
     
-    # PHI detection patterns
-    _NAME_PATTERN: Pattern = re.compile(r'\b(?:[A-Z][a-z]+\s+){1,2}[A-Z][a-z]+\b', re.IGNORECASE)
-    _EMAIL_PATTERN: Pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
-    _PHONE_PATTERN: Pattern = re.compile(r'(\+\d{1,2}\s*)?(\()?\d{3}(\))?[\s.-]?\d{3}[\s.-]?\d{4}')
-    _SSN_PATTERN: Pattern = re.compile(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b|"\d{3}-\d{2}-\d{4}"|\d{3} \d{2} \d{4}|SSN\s*[:=]\s*"?\d{3}-\d{2}-\d{4}"?')
-    _MRN_PATTERN: Pattern = re.compile(r'\b(?:MRN|Medical Record Number|Patient ID|MR#)[: ]*\d{5,10}\b', re.IGNORECASE)
-    _DOB_PATTERN: Pattern = re.compile(r'\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s*\d{1,2}(?:st|nd|rd|th)?[\s,.\/-]?\s*\d{2,4}\b|\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?\d{1,2}[\s,.\/-]\d{1,2}[\s,.\/-]\d{2,4}\b|\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]*)?\d{2,4}[\s,.\/-]\d{1,2}[\s,.\/-]\d{1,2}\b', re.IGNORECASE)
-    _ADDRESS_PATTERN: Pattern = re.compile(r'\b\d+\s+[A-Za-z0-9\s.,]+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St|Court|Ct|Place|Pl|Way|Parkway|Pkwy)?\.?\s*[A-Za-z\s]+,\s*[A-Za-z\s]+,\s*[A-Z]{2}(?:\s*\d{5}(?:[-]\d{4})?)?\b', re.IGNORECASE)
-    _CREDIT_CARD_PATTERN: Pattern = re.compile(r'\b(?:4[0-9]{3}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}|5[1-5][0-9]{2}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}|3[47][0-9]{2}[ -]?[0-9]{6}[ -]?[0-9]{5}|6(?:011|5[0-9]{2})[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4})\b')
-    _AGE_PATTERN: Pattern = re.compile(r'\b(?:age|aged|is|turning|turned|patient is|patient age|patient\s+is)\s*\d{1,3}(?:\s*(?:years\s*old|yrs\s*old|yr\s*old|years|yrs|yr))?\b', re.IGNORECASE)
-    
-    # Collection of all PHI patterns - order matters, more specific first
-    _PHI_PATTERNS: List[Tuple[Pattern, str]] = [
-        (_MRN_PATTERN, "[REDACTED MRN]"),
-        (_ADDRESS_PATTERN, "[REDACTED ADDRESS]"),
-        (_SSN_PATTERN, "[REDACTED SSN]"),
-        (_PHONE_PATTERN, "[REDACTED PHONE]"),
-        (_CREDIT_CARD_PATTERN, "[REDACTED CARD]"),
-        (_DOB_PATTERN, "[REDACTED DATE]"),
-        (_EMAIL_PATTERN, "[REDACTED EMAIL]"),
-        (_AGE_PATTERN, "[REDACTED AGE]"),
-        # NAME pattern MUST be last to avoid overmatching
-        (_NAME_PATTERN, "[REDACTED NAME]")
+    # Refined PHI detection patterns with priorities
+    # Priority: Higher number = higher priority (matched first in overlaps)
+    _PHI_PATTERNS_DEFINITIONS: List[Dict[str, Any]] = [
+        {
+            "name": "Medical Record Number", "priority": 10, "label": "[REDACTED MRN]",
+            "pattern": r'\b(?:MRN#?|Medical Record Number|Patient ID|MR#?)[: ]*\d{5,10}\b', "flags": re.IGNORECASE
+        },
+        {
+            "name": "SSN", "priority": 10, "label": "[REDACTED SSN]",
+            "pattern": r'\b\d{3}[-]?\d{2}[-]?\d{4}\b'
+        },
+        {
+            "name": "Address", "priority": 9, "label": "[REDACTED ADDRESS]",
+            "pattern": r'\b\d+\s+[A-Z0-9][a-zA-Z0-9\s.,]+(?:St|Street|Ave|Avenue|Rd|Road|Ln|Lane|Dr|Drive|Ct|Court|Pl|Place|Blvd|Boulevard)\b', "flags": re.IGNORECASE
+        },
+        {
+            "name": "Credit Card", "priority": 8, "label": "[REDACTED CARD]",
+            "pattern": r'\b(?:4[0-9]{3}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}|5[1-5][0-9]{2}[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4}|3[47][0-9]{2}[ -]?[0-9]{6}[ -]?[0-9]{5}|6(?:011|5[0-9]{2})[ -]?[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4})\b'
+        },
+        {
+            "name": "Email", "priority": 8, "label": "[REDACTED EMAIL]",
+            "pattern": r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        },
+        {
+            "name": "Phone", "priority": 7, "label": "[REDACTED PHONE]",
+            "pattern": r'\b(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b'
+        },
+        {
+            "name": "Date of Birth", "priority": 6, "label": "[REDACTED DATE]",
+            "pattern": r'\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]+)?(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?[\s,.\/-]+\d{2,4})\b|\b(?:(?:DOB|Date of Birth|Born|Birthdate)[: ]+)?\d{1,2}[\s.\/-]\d{1,2}[\s.\/-]\d{2,4}\b', "flags": re.IGNORECASE
+        },
+        {
+            "name": "Age", "priority": 5, "label": "[REDACTED AGE]",
+            "pattern": r'\b(?:age|aged)\s+\d{1,3}\b|\b\d{1,3}\s+years?(?:\s+old)?\b', "flags": re.IGNORECASE
+        },
+        {
+            "name": "Name", "priority": 4, "label": "[REDACTED NAME]",
+            "pattern": r'\b(?:Mr\.|Mrs\.|Ms\.|Dr\.)?\s*[A-Z][a-z\'-]+(?:\s+[A-Z][a-z\'-]+){1,2}\b' # Case-sensitive
+        }
     ]
+
+    # Compiled patterns stored for efficiency
+    _COMPILED_PHI_PATTERNS: List[Dict[str, Any]] = []
+
+    def __init__(self):
+        """Initialize the sanitizer and compile patterns."""
+        if not PHISanitizer._COMPILED_PHI_PATTERNS: # Compile only once
+            for p_def in PHISanitizer._PHI_PATTERNS_DEFINITIONS:
+                flags = p_def.get("flags", 0)
+                PHISanitizer._COMPILED_PHI_PATTERNS.append({
+                    **p_def,
+                    "compiled": re.compile(p_def["pattern"], flags)
+                })
+            # Sort compiled patterns by priority (desc) for processing order
+            PHISanitizer._COMPILED_PHI_PATTERNS.sort(key=lambda p: p["priority"], reverse=True)
     
     @classmethod
     def sanitize(cls, data: Any) -> Any:
@@ -68,25 +99,68 @@ class PHISanitizer:
             # For other types (int, float, bool, etc.), return as is
             return data
     
+    # Keep sanitize method as the main entry point
+    
     @classmethod
     def sanitize_text(cls, text: str) -> str:
         """
-        Sanitize PHI from a text string.
-        
+        Sanitize PHI from a text string using robust overlap handling.
+
         Args:
             text: The text to sanitize
-            
+
         Returns:
             Sanitized text with PHI removed
         """
-        if not text:
+        if not text or not isinstance(text, str):
             return text
-            
-        sanitized = text
-        for pattern, replacement in cls._PHI_PATTERNS:
-            sanitized = pattern.sub(lambda match: replacement, sanitized)
-        # Remove leftover parens/brackets around redacted fields, e.g. ([REDACTED PHONE]) -> [REDACTED PHONE]
-        sanitized = re.sub(r'[\(\[]+\s*\[REDACTED ([A-Z ]+)\]\s*[\)\]]+', r'[REDACTED \1]', sanitized)
+
+        matches_found = []
+        text_length = len(text)
+
+        # 1. Find all potential matches for all compiled patterns
+        for pattern_info in cls._COMPILED_PHI_PATTERNS:
+            pattern = pattern_info["compiled"]
+            for match in pattern.finditer(text):
+                start, end = max(0, match.start()), min(text_length, match.end())
+                if start < end:
+                    matches_found.append({
+                        "start": start, "end": end, "pattern_info": pattern_info,
+                        "matched_text": match.group(0), "priority": pattern_info["priority"],
+                        "length": end - start
+                    })
+
+        if not matches_found:
+            return text
+
+        # 2. Resolve overlaps based on priority using a coverage tracker
+        matches_found.sort(key=lambda m: (m["priority"], m["length"], -m["start"]), reverse=True)
+
+        covered = [False] * text_length
+        final_matches = []
+
+        for match in matches_found:
+            start, end = match["start"], match["end"]
+            is_overlapped = any(covered[i] for i in range(start, end))
+            if not is_overlapped:
+                for i in range(start, end):
+                    covered[i] = True
+                final_matches.append(match)
+
+        # 3. Apply replacements in reverse order
+        result = list(text)
+        final_matches.sort(key=lambda m: m["start"], reverse=True)
+
+        for match in final_matches:
+            start, end = match["start"], match["end"]
+            replacement_label = match["pattern_info"]["label"]
+            # Simple replacement with the label for now
+            # TODO: Integrate redaction strategies if needed later
+            result[start:end] = list(replacement_label)
+
+        sanitized = "".join(result)
+        # Optional: Remove leftover parens/brackets (consider if needed with new logic)
+        # sanitized = re.sub(r'[\(\[]+\s*\[REDACTED ([A-Z ]+)\]\s*[\)\]]+', r'[REDACTED \1]', sanitized)
         return sanitized
     
     @classmethod

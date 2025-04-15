@@ -35,6 +35,7 @@ class TestMockPHIDetection(BaseSecurityTest):
         super().setUp()
         self.service = MockPHIDetection()
         self.service.initialize({})
+        self.audit_events = [] # Initialize audit_events list
 
         self.sample_phi_text = (
             "Patient John Smith (SSN: 123-45-6789) was admitted on 03/15/2024. "

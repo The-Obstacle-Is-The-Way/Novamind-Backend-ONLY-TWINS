@@ -58,8 +58,11 @@ class TestLogSanitization:
         sanitizer = PHISanitizer()
         # The sanitizer should have a sanitize method and _PHI_PATTERNS
         assert hasattr(sanitizer, 'sanitize')
-        assert hasattr(sanitizer, '_PHI_PATTERNS')
-        assert len(sanitizer._PHI_PATTERNS) > 0, "Sanitizer should have PHI patterns defined"
+        # Check for the new compiled patterns attribute used after refactoring
+        assert hasattr(sanitizer, '_COMPILED_PHI_PATTERNS')
+        # Ensure patterns are compiled during init or first use
+        sanitizer._ensure_patterns_compiled()
+        assert len(sanitizer._COMPILED_PHI_PATTERNS) > 0, "Sanitizer should have compiled PHI patterns"
 
     def test_ssn_sanitization(self):
         """Test that SSNs are properly sanitized."""
