@@ -197,3 +197,25 @@ class InvalidConfigurationError(BaseException):
         code: str = "INVALID_CONFIGURATION",
     ):
         super().__init__(message=message, detail=detail, code=code)
+
+
+# --- Exceptions moved from standalone exceptions.py --- 
+
+class HIPAAComplianceError(BusinessRuleException):
+    """Exception raised for HIPAA compliance violations."""
+
+    def __init__(
+        self, 
+        message: str = "HIPAA compliance violation",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        violation_type: Optional[str] = None,
+        code: str = "HIPAA_COMPLIANCE_ERROR",
+        **kwargs # Added to capture potential extra args from old definition
+    ):
+        # Pass relevant info to base, handle potential extra args if needed
+        super().__init__(message=message, detail=detail, code=code)
+        self.violation_type = violation_type # Store specific info
+
+# Note: MentalLLaMAInferenceError was in exceptions.py but seems ML-specific.
+# It likely belongs in ml_exceptions.py rather than base_exceptions.py.
+# We will handle that separately if import errors for it persist.

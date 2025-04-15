@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 import os
 from typing import Dict, Any
 
-from app.core.config.ml_settings import (
+from app.config.ml_settings import (
     MLSettings,
     MLModelType,
     MLFramework,

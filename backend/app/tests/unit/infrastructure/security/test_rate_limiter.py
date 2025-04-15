@@ -2,14 +2,16 @@
 import pytest
 from datetime import datetime, timedelta, timezone # Added timezone
 import time
-from unittest.mock import Mock, patch, MagicMock, call # Added call
+from unittest.mock import Mock, patch, MagicMock, call, AsyncMock # Added call and AsyncMock
 import redis # Import redis for mocking RedisRateLimiter if needed
 import logging
 import os # Import os if needed for env vars, though not used in this version
 
-# Correctly import necessary components
-from app.infrastructure.security.rate_limiter_enhanced import (
+# Updated import path
+# from app.infrastructure.security.rate_limiter_enhanced import (
+from app.infrastructure.security.rate_limiting.limiter import (
     RateLimiter,
+    RateLimitExceeded,
     RateLimitConfig,
     InMemoryRateLimiter,
     RedisRateLimiter,

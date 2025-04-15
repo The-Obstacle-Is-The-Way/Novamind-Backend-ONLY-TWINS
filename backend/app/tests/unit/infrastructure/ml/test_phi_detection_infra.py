@@ -13,8 +13,9 @@ from unittest.mock import patch, mock_open, MagicMock
 
 from app.infrastructure.ml.phi_detection import PHIDetectionService
 from app.core.exceptions.ml_exceptions import PHIDetectionError
-# Corrected import: Import PHIPattern directly
-from app.infrastructure.security.log_sanitizer import PHIPattern
+# Updated import path
+# from app.infrastructure.security.log_sanitizer import PHIPattern
+from app.infrastructure.security.phi.log_sanitizer import PHIPattern
 
 
 @pytest.fixture
@@ -256,3 +257,7 @@ class TestPHIDetectionService:
             # Anonymize might depend on detect_phi, so it should also raise
             with pytest.raises(PHIDetectionError):
                 phi_detection_service.anonymize_phi("Test text")
+
+# Mock classes
+class MockPHIPattern(PHIPattern):
+    pass # Added pass to fix indentation error

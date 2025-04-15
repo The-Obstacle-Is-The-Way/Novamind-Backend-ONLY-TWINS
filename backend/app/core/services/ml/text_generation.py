@@ -13,11 +13,14 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 from app.core.services.ml.interface import TextGenerationInterface
-from app.core.exceptions import ServiceUnavailableError, ModelNotFoundError
-from app.core.utils.phi_sanitizer import sanitize_text
+from app.core.exceptions import ServiceUnavailableError, ModelNotFoundError, ExternalServiceException, InvalidRequestError
+from app.infrastructure.security.phi.phi_service import PHIService
+from app.core.services.ml.base import BaseMLService
 
 logger = logging.getLogger(__name__)
 
+# Instantiate sanitizer for use
+sanitizer = PHIService()
 
 class TextGenerationService(TextGenerationInterface):
     """
@@ -172,8 +175,8 @@ class TextGenerationService(TextGenerationInterface):
         model_config = self._model_configs[model_type]
         
         # Sanitize inputs for PHI
-        sanitized_prompt = sanitize_text(prompt)
-        sanitized_context = sanitize_text(context) if context else None
+        sanitized_prompt = sanitizer.sanitize(prompt, sensitivity="high")
+        sanitized_context = sanitizer.sanitize(context) if context else None
         
         # Prepare MentaLLaMA context
         llama_context = self._prepare_context(

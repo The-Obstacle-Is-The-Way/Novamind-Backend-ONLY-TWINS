@@ -6,179 +6,125 @@ proper functionality of the security test infrastructure.
 """
 
 import pytest
-
-import unittest
-import json
+import uuid
 from unittest.mock import patch
-import uuid  # Import uuid module
 
 from app.tests.security.utils.base_security_test import BaseSecurityTest
-from app.tests.security.utils.test_mocks import MockAuthService, MockRBACService, MockAuditLogger, MockEncryptionService, MockEntityFactory
-from app.domain.entities.user import User
-from app.domain.enums.role import Role # Import Role enum
+# Mocks are likely not needed directly in this test file anymore
+# from app.tests.security.utils.test_mocks import MockAuthService, MockRBACService, MockAuditLogger, MockEncryptionService, MockEntityFactory
+# User and Role might not be needed if BaseSecurityTest handles setup
+# from app.domain.entities.user import User
+# from app.domain.enums.role import Role # Import Role enum
 
-class TestBaseSecurityTest(unittest.TestCase):
-    """Test suite for BaseSecurityTest functionality."""
+# Inherit directly from BaseSecurityTest if it provides the necessary fixtures via autouse
+# If BaseSecurityTest is just a utility container, don't inherit.
+# Assuming inheritance makes sense to get access to fixtures on self.
+class TestBaseSecurityTest(BaseSecurityTest):
+    """Test suite for BaseSecurityTest functionality (using pytest)."""
 
-    def setUp(self):
-        """Set up test fixtures before each test method."""
-        self.auth_service = MockAuthService()
-        self.rbac_service = MockRBACService()
-        self.audit_logger = MockAuditLogger()
-        self.encryption_service = MockEncryptionService()
-        self.entity_factory = MockEntityFactory()
-        # Use a valid UUID and the Role enum
-        self.user = User(
-            id=uuid.uuid4(), # Generate a valid UUID
-            username="test_user",
-            email="test@example.com",
-            password_hash="hashed_password", # Note: Password should ideally be handled securely
-            roles=[Role.USER] # Use Role enum
-        )
+    # Remove setUp method, rely on autouse fixture from BaseSecurityTest
 
     def test_initialization(self):
-
-        """Test that BaseSecurityTest initializes with correct attributes."""
-        security_test = BaseSecurityTest()
-        security_test.setUp()
-
-        # Check required attributes are present
-        self.assertIsNotNone(security_test.test_user_id)
-        self.assertIsNotNone(security_test.test_roles)
-
-        # Check that roles are set correctly
-        self.assertIn("user", security_test.test_roles)
-        self.assertIn("clinician", security_test.test_roles)
-
-        # Clean up
-        security_test.tearDown()
+        """Test that BaseSecurityTest initializes via its autouse fixture."""
+        # Access attributes set by the autouse fixture in BaseSecurityTest
+        assert self.test_user_id is not None
+        assert isinstance(self.test_user_id, str)
+        assert self.test_roles is not None
+        assert "user" in self.test_roles
+        assert "clinician" in self.test_roles
+        # Check fixtures assigned to self
+        assert self.db_session is not None # Instance of MockAsyncSession from fixture
+        assert self.entity_factory is not None # Instance of MockEntityFactory from fixture
+        assert self.rbac is not None # Instance of RoleBasedAccessControl from fixture
 
     def test_has_permission(self):
-        """Test permission checking functionality."""
-        security_test = BaseSecurityTest()
-        security_test.setUp()
+        """Test permission checking functionality using instance attributes."""
+        # Access self.rbac and self.test_roles set by the autouse fixture
 
-        # Test permissions with default roles
-        self.assertTrue(security_test.has_permission("read:own_data"))
-        self.assertTrue(security_test.has_permission("read:patient_data"))
-        self.assertFalse(security_test.has_permission("delete:all_data"))
+        # Test permissions with default roles (self.test_roles)
+        assert self.has_permission("read:own_data")
+        assert self.has_permission("read:patient_data")
+        assert not self.has_permission("delete:all_data")
 
         # Test with explicit roles
-        # Correct assertion syntax
-        self.assertTrue(
-            security_test.has_permission("delete:all_data", roles=["admin"])
-        )
-        self.assertFalse(
-            security_test.has_permission("delete:all_data", roles=["user"])
-        )
-
-        # Clean up
-        security_test.tearDown()
+        assert self.has_permission("delete:all_data", roles=["admin"])
+        assert not self.has_permission("delete:all_data", roles=["user"])
 
     def test_get_auth_token(self):
-        """Test generation of authentication tokens."""
-        security_test = BaseSecurityTest()
-        security_test.setUp()
+        """Test generation of authentication tokens using instance attributes."""
+        # Access self.test_user_id and self.test_roles set by the autouse fixture
 
         # Get token with default values
-        token = security_test.get_auth_token()
-
-        # Token should be a string
-        self.assertIsInstance(token, str)
-
-        # Token should contain user ID and roles
-        # Note: This assertion is weak as it just checks substring presence.
-        # A better test would decode the token and check claims.
-        # self.assertIn(security_test.test_user_id, token)
-        # for role in security_test.test_roles:
-        #     self.assertIn(role, token)
+        token = self.get_auth_token()
+        assert isinstance(token, str)
+        # Basic check for mock token structure
+        assert token.startswith("mock_token.{")
+        assert f"'sub': '{self.test_user_id}'" in token
+        assert "'roles': ['user', 'clinician']" in token # Based on BaseSecurityTest defaults
 
         # Test with custom values
         custom_user_id = "custom_user_123"
         custom_roles = ["admin", "auditor"]
         custom_claims = {"extra": "value"}
 
-        # Correct function call syntax
-        token = security_test.get_auth_token(
+        token = self.get_auth_token(
             user_id=custom_user_id,
             roles=custom_roles,
             custom_claims=custom_claims
         )
-
-        # Token should contain custom values (weak assertion)
-        # self.assertIn(custom_user_id, token)
-        # for role in custom_roles:
-        #     self.assertIn(role, token)
-        # self.assertIn("extra", token)
-        # self.assertIn("value", token)
-
-        # Clean up
-        security_test.tearDown()
+        assert f"'sub': '{custom_user_id}'" in token
+        assert f"'roles': {custom_roles!r}" in token # Use repr for list comparison
+        assert "'extra': 'value'" in token
 
     def test_get_auth_headers(self):
-        """Test generation of authentication headers."""
-        security_test = BaseSecurityTest()
-        security_test.setUp()
+        """Test generation of authentication headers using instance methods."""
+        # Access get_auth_token set by the autouse fixture
 
         # Get headers with default token
-        headers = security_test.get_auth_headers()
+        headers = self.get_auth_headers()
+        assert isinstance(headers, dict)
+        assert "Authorization" in headers
+        assert headers["Authorization"].startswith("Bearer mock_token.{")
 
-        # Headers should be a dict with Authorization key
-        self.assertIsInstance(headers, dict)
-        self.assertIn("Authorization", headers)
-
-        # Authorization should have Bearer prefix
-        self.assertTrue(headers["Authorization"].startswith("Bearer "))
-
-        # Token should be included in Authorization
-        token = security_test.get_auth_token()
-        self.assertIn(token, headers["Authorization"])
+        # Get the expected default token content
+        default_token = self.get_auth_token()
+        assert headers["Authorization"] == f"Bearer {default_token}"
 
         # Test with custom token
         custom_token = "custom.test.token"
-        headers = security_test.get_auth_headers(token=custom_token)
-        self.assertEqual(headers["Authorization"], f"Bearer {custom_token}")
+        headers = self.get_auth_headers(token=custom_token)
+        assert headers["Authorization"] == f"Bearer {custom_token}"
 
-        # Clean up
-        security_test.tearDown()
-
-    # Correct indentation for decorator and method
-    @patch("app.tests.security.utils.test_mocks.MockAsyncSession")
-    def test_db_session_setup(self, mock_session_class):
-        """Test database session is properly set up."""
-        security_test = BaseSecurityTest()
-        security_test.setUp()
-
-        # Verify session is initialized
-        self.assertIsNotNone(security_test.db_session)
-
-        # Clean up
-        security_test.tearDown()
+    # Patching should still work if the mock is correctly provided/used
+    # The test method just needs access to the instance's db_session
+    # No mock_session_class argument needed if we check self.db_session
+    def test_db_session_setup(self):
+        """Test database session fixture provides a mock session."""
+        # Verify session is initialized by the autouse fixture
+        assert self.db_session is not None
+        # Optionally check if it's the correct mock type if needed
+        # from app.tests.security.utils.test_mocks import MockAsyncSession
+        # assert isinstance(self.db_session, MockAsyncSession)
 
     def test_entity_factory_setup(self):
-        """Test entity factory is properly set up."""
-        security_test = BaseSecurityTest()
-        security_test.setUp()
+        """Test entity factory fixture provides a mock factory."""
+        # Verify entity factory is initialized by the autouse fixture
+        assert self.entity_factory is not None
+        # from app.tests.security.utils.test_mocks import MockEntityFactory
+        # assert isinstance(self.entity_factory, MockEntityFactory)
 
-        # Verify entity factory is initialized
-        self.assertIsNotNone(security_test.entity_factory)
-
-        # Test creating entities
-        # Correct function call syntax
-        entity = security_test.entity_factory.create(
+        # Test creating entities using the instance's factory
+        entity = self.entity_factory.create(
             "patient", name="Test Patient"
         )
-        self.assertEqual(entity["type"], "patient")
-        self.assertEqual(entity["name"], "Test Patient")
-        self.assertIn("id", entity)
+        assert entity["type"] == "patient"
+        assert entity["name"] == "Test Patient"
+        assert "id" in entity
 
         # Test retrieving entities
-        retrieved = security_test.entity_factory.get(entity["id"])
-        self.assertEqual(retrieved, entity)
+        retrieved = self.entity_factory.get(entity["id"])
+        assert retrieved == entity
 
-        # Clean up
-        security_test.tearDown()
-
-# Correct indentation for main execution block
-if __name__ == "__main__":
-    unittest.main()
+# Remove unittest execution block
+# if __name__ == "__main__":
+#     unittest.main()

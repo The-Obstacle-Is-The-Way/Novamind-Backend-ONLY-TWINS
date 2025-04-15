@@ -7,7 +7,7 @@ wearable devices, neuroimaging data, and other biometric sources to create a
 comprehensive digital model of the patient's biological state.
 """
 
-from datetime import , datetime
+from datetime import datetime
 from app.domain.utils.datetime_utils import UTC
 from uuid import UUID, uuid4
 

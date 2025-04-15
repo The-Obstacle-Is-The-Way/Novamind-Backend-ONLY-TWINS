@@ -7,7 +7,7 @@ import os
 import pytest
 from unittest.mock import patch, MagicMock
 
-from app.core.utils.encryption import EncryptionService
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService as EncryptionService
 
 
 @pytest.mark.venv_only()

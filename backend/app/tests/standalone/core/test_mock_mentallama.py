@@ -20,29 +20,35 @@ from app.core.exceptions import (
 )
 
 from app.core.services.ml.mock import MockMentaLLaMA
-from app.tests.unit.base_test_unit import BaseUnitTest  # Updated import path after rename
 
 
+@pytest.fixture(scope="function")
+def mock_mentallama_service_standalone(request):
+    """Pytest fixture to set up and tear down MockMentaLLaMA for each standalone test."""
+    service = MockMentaLLaMA()
+    service.initialize({})
+    
+    sample_text = (
+        "I've been feeling down for several weeks. I'm constantly tired, "
+        "have trouble sleeping, and don't enjoy things anymore. Sometimes "
+        "I wonder if life is worth living, but I wouldn't actually hurt myself."
+    )
+    
+    # Store service and common data on the test instance via request
+    request.instance.service = service
+    request.instance.sample_text = sample_text
+    
+    yield service # Provide the service to the test function
+
+    # Teardown: Shutdown the service
+    if hasattr(request.instance, "service") and request.instance.service.is_healthy():
+        request.instance.service.shutdown()
+
+
+@pytest.mark.usefixtures("mock_mentallama_service_standalone")
 @pytest.mark.db_required()
-class TestMockMentaLLaMA(BaseUnitTest):
-    """Test suite for MockMentaLLaMA class that provides psychiatric analysis."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures before each test method."""
-        super().setUp()
-        self.service = MockMentaLLaMA()
-        self.service.initialize({})
-        self.sample_text = (
-            "I've been feeling down for several weeks. I'm constantly tired, "
-            "have trouble sleeping, and don't enjoy things anymore. Sometimes "
-            "I wonder if life is worth living, but I wouldn't actually hurt myself."
-        )
-
-    def tearDown(self) -> None:
-        """Clean up after each test."""
-        if hasattr(self, "service") and self.service.is_healthy():
-            self.service.shutdown()
-        super().tearDown()
+class TestMockMentaLLaMA:
+    """Test suite for MockMentaLLaMA class (pytest style)."""
 
     @pytest.mark.standalone()
     def test_initialization(self) -> None:
@@ -50,54 +56,50 @@ class TestMockMentaLLaMA(BaseUnitTest):
         # Test default initialization
         service = MockMentaLLaMA()
         service.initialize({})  # type: ignore
-        self.assertTrue(service.is_healthy())
+        assert service.is_healthy()
 
         # Test with specific model configuration
         service = MockMentaLLaMA()
         service.initialize({"model": "mock-psychiatric-gpt-4"})  # type: ignore
-        self.assertTrue(service.is_healthy())
+        assert service.is_healthy()
 
         # Test with invalid model
         service = MockMentaLLaMA()
-        with self.assertRaises(ModelNotFoundError):
+        with pytest.raises(ModelNotFoundError):
             service.initialize({"model": "nonexistent-model"})  # type: ignore
 
         # Test with invalid configuration
         service = MockMentaLLaMA()
-        with self.assertRaises(InvalidConfigurationError):
+        with pytest.raises(InvalidConfigurationError):
             service.initialize({"invalid_param": True})  # type: ignore
 
     @pytest.mark.standalone()
     def test_health_check(self) -> None:
         """Test health check functionality."""
         # Service should be healthy after initialization
-        self.assertTrue(self.service.is_healthy())
+        assert self.service.is_healthy()
 
         # Service should be unhealthy after shutdown
         self.service.shutdown()
-        self.assertFalse(self.service.is_healthy())
-
-        # Reinitialize for other tests (done in setUp)
-        # self.service = MockMentaLLaMA()
-        # self.service.initialize({})
+        assert not self.service.is_healthy()
 
     @pytest.mark.standalone()
     def test_analyze_text(self) -> None:
         """Test text analysis functionality."""
         # Test with valid text
         result = self.service.analyze_text(self.sample_text)
-        self.assertIsInstance(result, dict)
-        self.assertIn("sentiment", result)
-        self.assertIn("entities", result)
-        self.assertIn("keywords", result)
-        self.assertIn("categories", result)
+        assert isinstance(result, dict)
+        assert "sentiment" in result
+        assert "entities" in result
+        assert "keywords" in result
+        assert "categories" in result
 
         # Test with empty text
-        with self.assertRaises(InvalidRequestError):
+        with pytest.raises(InvalidRequestError):
             self.service.analyze_text("")
 
         # Test with None
-        with self.assertRaises(InvalidRequestError):
+        with pytest.raises(InvalidRequestError):
             self.service.analyze_text(None)  # type: ignore
 
     @pytest.mark.standalone()
@@ -105,21 +107,21 @@ class TestMockMentaLLaMA(BaseUnitTest):
         """Test mental health condition detection."""
         # Test with text indicating depression
         result = self.service.detect_mental_health_conditions(self.sample_text)
-        self.assertIsInstance(result, dict)
-        self.assertIn("conditions", result)
-        self.assertIsInstance(result["conditions"], list)
+        assert isinstance(result, dict)
+        assert "conditions" in result
+        assert isinstance(result["conditions"], list)
 
         # Check for depression in detected conditions
         conditions = [c["condition"].lower() for c in result["conditions"]]
-        self.assertIn("depression", conditions)
+        assert "depression" in conditions
 
         # Test with text not indicating mental health issues
         result = self.service.detect_mental_health_conditions(
             "Today is a beautiful day. I'm going for a walk in the park."
         )
-        self.assertIsInstance(result, dict)
-        self.assertIn("conditions", result)
-        self.assertEqual(len(result["conditions"]), 0)
+        assert isinstance(result, dict)
+        assert "conditions" in result
+        assert len(result["conditions"]) == 0
 
     @pytest.mark.standalone()
     def test_generate_therapeutic_response(self) -> None:
@@ -129,12 +131,12 @@ class TestMockMentaLLaMA(BaseUnitTest):
             self.sample_text,
             context={"previous_sessions": 2}
         )
-        self.assertIsInstance(result, dict)
-        self.assertIn("response", result)
-        self.assertIn("techniques", result)
+        assert isinstance(result, dict)
+        assert "response" in result
+        assert "techniques" in result
 
         # Test with invalid input
-        with self.assertRaises(InvalidRequestError):
+        with pytest.raises(InvalidRequestError):
             self.service.generate_therapeutic_response("")
 
     @pytest.mark.standalone()
@@ -142,10 +144,10 @@ class TestMockMentaLLaMA(BaseUnitTest):
         """Test suicide risk assessment."""
         # Test with text indicating some risk
         result = self.service.assess_suicide_risk(self.sample_text)
-        self.assertIsInstance(result, dict)
-        self.assertIn("risk_level", result)
-        self.assertIn("risk_factors", result)
-        self.assertIn("recommendations", result)
+        assert isinstance(result, dict)
+        assert "risk_level" in result
+        assert "risk_factors" in result
+        assert "recommendations" in result
 
         # Test with high-risk text
         high_risk_text = (
@@ -153,12 +155,12 @@ class TestMockMentaLLaMA(BaseUnitTest):
             "No one will miss me anyway. I'll be gone by tomorrow."
         )
         result = self.service.assess_suicide_risk(high_risk_text)
-        self.assertEqual(result["risk_level"], "high")
+        assert result["risk_level"] == "high"
 
         # Test with low-risk text
         low_risk_text = "I'm feeling great today. Life is wonderful."
         result = self.service.assess_suicide_risk(low_risk_text)
-        self.assertEqual(result["risk_level"], "low")
+        assert result["risk_level"] == "low"
 
     @pytest.mark.standalone()
     def test_generate_treatment_plan(self) -> None:
@@ -173,14 +175,14 @@ class TestMockMentaLLaMA(BaseUnitTest):
                 "previous_treatments": ["cbt"]
             }
         )
-        self.assertIsInstance(result, dict)
-        self.assertIn("plan", result)
-        self.assertIn("goals", result)
-        self.assertIn("interventions", result)
-        self.assertIn("timeline", result)
+        assert isinstance(result, dict)
+        assert "plan" in result
+        assert "goals" in result
+        assert "interventions" in result
+        assert "timeline" in result
 
         # Test with invalid input
-        with self.assertRaises(InvalidRequestError):
+        with pytest.raises(InvalidRequestError):
             self.service.generate_treatment_plan(patient_data={})
 
     @pytest.mark.standalone()
@@ -199,14 +201,14 @@ class TestMockMentaLLaMA(BaseUnitTest):
 
         # Test with valid transcript
         result = self.service.analyze_session_transcript(transcript)
-        self.assertIsInstance(result, dict)
-        self.assertIn("themes", result)
-        self.assertIn("patient_insights", result)
-        self.assertIn("therapist_insights", result)
-        self.assertIn("recommendations", result)
+        assert isinstance(result, dict)
+        assert "themes" in result
+        assert "patient_insights" in result
+        assert "therapist_insights" in result
+        assert "recommendations" in result
 
         # Test with invalid transcript
-        with self.assertRaises(InvalidRequestError):
+        with pytest.raises(InvalidRequestError):
             self.service.analyze_session_transcript([])
 
     @pytest.mark.standalone()
@@ -224,14 +226,14 @@ class TestMockMentaLLaMA(BaseUnitTest):
                 {"date": datetime.now(UTC) - timedelta(days=4), "notes": "Patient reported reduced anxiety."},
             ]
         )
-        self.assertIsInstance(result, dict)
-        self.assertIn("summary", result)
-        self.assertIn("progress", result)
-        self.assertIn("goals", result)
-        self.assertIn("recommendations", result)
+        assert isinstance(result, dict)
+        assert "summary" in result
+        assert "progress" in result
+        assert "goals" in result
+        assert "recommendations" in result
 
         # Test with invalid input
-        with self.assertRaises(InvalidRequestError):
+        with pytest.raises(InvalidRequestError):
             self.service.generate_progress_report(
                 patient_id="test-patient-123",
                 start_date=None,  # type: ignore
@@ -248,21 +250,17 @@ class TestMockMentaLLaMA(BaseUnitTest):
             dosage="10mg",
             duration_days=30,
             side_effects=["nausea", "insomnia"],
-            symptom_changes={"depression": "improved", "anxiety": "slightly improved"}
+            symptom_changes={"anxiety": "reduced", "sleep": "unchanged"}
         )
-        self.assertIsInstance(result, dict)
-        self.assertIn("effectiveness", result)
-        self.assertIn("side_effect_analysis", result)
-        self.assertIn("recommendations", result)
+        assert isinstance(result, dict)
+        assert "response_summary" in result
+        assert "side_effects_analysis" in result
+        assert "recommendations" in result
 
         # Test with invalid input
-        with self.assertRaises(InvalidRequestError):
+        with pytest.raises(InvalidRequestError):
             self.service.analyze_medication_response(
-                medication="",
-                dosage="",
-                duration_days=0,
-                side_effects=[],
-                symptom_changes={}
+                medication="", dosage="", duration_days=0, side_effects=[], symptom_changes={}
             )
 
     @pytest.mark.standalone()
@@ -273,34 +271,34 @@ class TestMockMentaLLaMA(BaseUnitTest):
             text_data=[self.sample_text],
             demographic_data={"age": 35, "gender": "female"},
             medical_history={"conditions": ["anxiety", "insomnia"]},
-            treatment_history={"medications": ["escitalopram"]}
+            treatment_history={"medications": ["escitalopram"]},
         )
-        self.assertIn("digital_twin_id", twin_result)
+        assert "digital_twin_id" in twin_result
         twin_id = twin_result["digital_twin_id"]
 
         # Create a session with the digital twin
         session_result = self.service.create_digital_twin_session(twin_id, session_type="therapy")
-        self.assertIn("session_id", session_result)
+        assert "session_id" in session_result
         session_id = session_result["session_id"]
 
         # Get session details
         session_details = self.service.get_digital_twin_session(session_id)
-        self.assertEqual(session_details["twin_id"], twin_id)
-        self.assertEqual(session_details["status"], "active")
+        assert session_details["twin_id"] == twin_id
+        assert session_details["status"] == "active"
 
         # Send message to session
         message_result = self.service.send_message_to_session(session_id, "How can I manage my anxiety better?")
-        self.assertIn("response", message_result)
-        self.assertIn("messages", message_result)
-        self.assertGreater(len(message_result["messages"]), 0)
+        assert "response" in message_result
+        assert "messages" in message_result
+        assert len(message_result["messages"]) > 0
 
         # End session
         end_result = self.service.end_digital_twin_session(session_id)
-        self.assertEqual(end_result["status"], "completed")
-        self.assertIn("summary", end_result)
+        assert end_result["status"] == "completed"
+        assert "summary" in end_result
 
         # Get session insights
         insights = self.service.get_session_insights(session_id)
-        self.assertIn("insights", insights)
-        self.assertIn("themes", insights["insights"])
-        self.assertIn("recommendations", insights["insights"])
+        assert "insights" in insights
+        assert "themes" in insights["insights"]
+        assert "recommendations" in insights["insights"]

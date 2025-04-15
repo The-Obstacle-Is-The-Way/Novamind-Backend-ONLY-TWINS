@@ -11,10 +11,11 @@ import qrcode # Import for mocking
 import uuid # Import for mocking
 import os # Import os for environment variable patching if needed
 
-# Correctly import the necessary components
-from app.infrastructure.security.mfa_service import (
+# Updated import path
+from app.infrastructure.security.auth.mfa_service import (
     MFAService,
     MFAType,
+    MFAStatus,
     MFAException,
     MFASetupException,
     MFAVerificationException,

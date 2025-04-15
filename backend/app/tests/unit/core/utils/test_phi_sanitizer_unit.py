@@ -9,8 +9,9 @@ detected and sanitized in various data formats to maintain HIPAA compliance.
 import pytest
 import logging
 from unittest.mock import patch, MagicMock
+import re
 
-from app.core.utils.phi_sanitizer import PHIType, PHIDetector, PHISanitizer
+from app.infrastructure.security.phi.phi_service import PHIType, PHIService as PHISanitizer
 
 
 @pytest.fixture

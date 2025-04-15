@@ -9,9 +9,10 @@ from starlette.routing import Route
 from starlette.testclient import TestClient
 from fastapi import status
 
-from app.infrastructure.security.rate_limiter import (
+from app.infrastructure.security.rate_limiting.limiter import (
     RateLimiter,
     RateLimitConfig,
+    RateLimitExceeded,
     InMemoryRateLimiter,
 )
 

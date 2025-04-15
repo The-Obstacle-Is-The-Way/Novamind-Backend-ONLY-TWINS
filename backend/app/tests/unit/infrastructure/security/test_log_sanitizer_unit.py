@@ -10,7 +10,9 @@ import json
 import logging
 from unittest.mock import patch, MagicMock, call
 
-from app.infrastructure.security.log_sanitizer import (
+# Updated import path
+# from app.infrastructure.security.log_sanitizer import (
+from app.infrastructure.security.phi.log_sanitizer import (
     LogSanitizer,
     SanitizerConfig,
     PHIPattern,

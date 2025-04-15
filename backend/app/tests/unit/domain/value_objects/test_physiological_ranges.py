@@ -11,8 +11,9 @@ class TestPhysiologicalRange:
 
 
         """Test initialization with valid values."""
-        range_obj = PhysiologicalRange()
-        min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
+        range_obj = PhysiologicalRange(
+            min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
+        )
         
 
         assert range_obj.min == 60.0
@@ -25,8 +26,9 @@ class TestPhysiologicalRange:
 
             """Test initialization with min > max raises error."""
         with pytest.raises(ValueError) as excinfo:
-            PhysiologicalRange()
-            min=100.0, max=60.0, critical_min=40.0, critical_max=140.0
+            PhysiologicalRange(
+                min=100.0, max=60.0, critical_min=40.0, critical_max=140.0
+            )
             
 
             assert "Minimum value must be less than maximum value" in str()
@@ -37,8 +39,9 @@ class TestPhysiologicalRange:
 
                 """Test initialization with critical_min > min raises error."""
         with pytest.raises(ValueError) as excinfo:
-            PhysiologicalRange()
-            min=60.0, max=100.0, critical_min=70.0, critical_max=140.0
+            PhysiologicalRange(
+                min=60.0, max=100.0, critical_min=70.0, critical_max=140.0
+            )
             
 
             assert "Critical minimum must be <= minimum" in str(excinfo.value)
@@ -48,8 +51,9 @@ class TestPhysiologicalRange:
 
                 """Test initialization with critical_max < max raises error."""
         with pytest.raises(ValueError) as excinfo:
-            PhysiologicalRange()
-            min=60.0, max=100.0, critical_min=40.0, critical_max=90.0
+            PhysiologicalRange(
+                min=60.0, max=100.0, critical_min=40.0, critical_max=90.0
+            )
             
 
             assert "Critical maximum must be >= maximum" in str(excinfo.value)
@@ -58,8 +62,9 @@ class TestPhysiologicalRange:
 
 
                 """Test is_normal method."""
-        range_obj = PhysiologicalRange()
-        min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
+        range_obj = PhysiologicalRange(
+            min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
+        )
         
 
         # Normal values
@@ -79,8 +84,9 @@ class TestPhysiologicalRange:
 
 
             """Test is_abnormal method."""
-        range_obj = PhysiologicalRange()
-        min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
+        range_obj = PhysiologicalRange(
+            min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
+        )
         
 
         # Normal values
@@ -100,8 +106,9 @@ class TestPhysiologicalRange:
 
 
             """Test is_critical method."""
-        range_obj = PhysiologicalRange()
-        min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
+        range_obj = PhysiologicalRange(
+            min=60.0, max=100.0, critical_min=40.0, critical_max=140.0
+        )
         
 
         # Normal values

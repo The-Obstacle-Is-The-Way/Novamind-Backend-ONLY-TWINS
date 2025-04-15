@@ -3,8 +3,9 @@ import re
 from unittest.mock import MagicMock, patch
 
 import pytest
+import logging
 
-from app.infrastructure.security.log_sanitizer import LogSanitizer, PHIDetector
+from app.infrastructure.security.phi.log_sanitizer import LogSanitizer, PHIDetector
 
 
 class TestPHISanitizer:
@@ -213,7 +214,6 @@ class TestPHISanitizer:
     def test_log_sanitizer_integration(self, caplog):
         """Test integration with logging system."""
         # Setup logger with sanitizer
-        import logging
         from app.infrastructure.security.log_sanitizer import SanitizedLogger
         
         logger = SanitizedLogger("test_logger")

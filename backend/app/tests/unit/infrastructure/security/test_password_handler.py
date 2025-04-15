@@ -5,8 +5,12 @@ import secrets
 import time
 import os # Import os for urandom mocking
 
-# Correctly import necessary components
-from app.infrastructure.security.password_handler import (
+# Updated import path
+# from app.infrastructure.security.password_handler import (
+from app.infrastructure.security.password.password_handler import (
+    PasswordHandler,
+    PasswordPolicy,
+    PasswordComplexityError,
     get_password_hash,
     verify_password,
     validate_password_strength,
@@ -129,7 +133,7 @@ class TestPasswordStrengthValidation:
         personal_info = ["bob", "robert"] # Example info
         # Assuming validate_password_strength accepts personal_info
         # If not, mock _contains_personal_info
-        with patch("app.infrastructure.security.password_handler._contains_personal_info", return_value=True):
+        with patch("app.infrastructure.security.password.password_handler._contains_personal_info", return_value=True):
              result = validate_password_strength(password) # Pass personal_info if needed
              # Check feedback, validity might depend on other factors
              assert any("personal" in feedback.lower() for feedback in result.feedback)
@@ -198,7 +202,7 @@ class TestRandomPasswordGeneration:
         # All passwords should be different with high probability
         assert len(set(passwords)) == num_passwords
 
-    @patch("app.infrastructure.security.password_handler.secrets.choice")
+    @patch("app.infrastructure.security.password.password_handler.secrets.choice")
     def test_uses_cryptographically_secure_rng(self, mock_choice: MagicMock):
         """Test that password generation uses cryptographically secure RNG."""
         # Mock the choice function to track calls

@@ -7,8 +7,9 @@ import yaml # Import yaml for mocking
 from unittest.mock import patch, MagicMock, Mock, call # Import call
 import os # Import os if needed
 
-# Correctly import necessary components
-from app.infrastructure.security.log_sanitizer import ( # Removed extra parenthesis
+# Updated import path
+# from app.infrastructure.security.log_sanitizer import ( # Removed extra parenthesis
+from app.infrastructure.security.phi.log_sanitizer import (
     LogSanitizer, SanitizerConfig, PatternType, RedactionMode,
     PHIPattern, PatternRepository, RedactionStrategy,
     FullRedactionStrategy, PartialRedactionStrategy, HashRedactionStrategy,

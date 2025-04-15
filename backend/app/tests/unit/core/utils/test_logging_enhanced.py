@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 import tempfile
 
-from app.core.utils.logging_enhanced import (
+from app.core.utils.logging import (
     setup_logging,
     PHISanitizingFilter,
     StructuredJsonFormatter,
@@ -43,7 +43,7 @@ def temp_log_file():
 class TestLoggingSetup:
     """Test suite for logging setup."""
 
-    @patch("app.core.utils.logging_enhanced.logging")
+    @patch("app.core.utils.logging.logging")
     def test_setup_logging_basic(self, mock_logging):
         """Test basic logging setup."""
         # Setup
@@ -66,7 +66,7 @@ class TestLoggingSetup:
         assert "root" in config
         assert config["root"]["level"] == "INFO"
 
-    @patch("app.core.utils.logging_enhanced.logging")
+    @patch("app.core.utils.logging.logging")
     def test_setup_logging_with_file(self, mock_logging, temp_log_file):
         """Test logging setup with file output."""
         # Setup
@@ -85,7 +85,7 @@ class TestLoggingSetup:
         assert "file" in config["handlers"]
         assert config["handlers"]["file"]["filename"] == temp_log_file
 
-    @patch("app.core.utils.logging_enhanced.logging")
+    @patch("app.core.utils.logging.logging")
     def test_setup_logging_with_phi_filter(self, mock_logging):
         """Test logging setup with PHI filtering enabled."""
         # Setup
@@ -104,7 +104,7 @@ class TestLoggingSetup:
         assert "filters" in config
         assert "phi_filter" in config["filters"]
         assert "()" in config["filters"]["phi_filter"]
-        assert config["filters"]["phi_filter"]["()"] == "app.core.utils.logging_enhanced.PHISanitizingFilter"
+        assert config["filters"]["phi_filter"]["()"] == "app.core.utils.logging.PHISanitizingFilter"
         
         # Check filter is applied to handlers
         for handler_name, handler_config in config["handlers"].items():
@@ -355,7 +355,7 @@ class TestCorrelationId:
 class TestAuditLogging:
     """Test suite for audit logging functionality."""
 
-    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    @patch("app.core.utils.logging.logging.getLogger")
     def test_audit_log(self, mock_get_logger):
 
         """Test audit logging function."""
@@ -382,7 +382,7 @@ class TestAuditLogging:
         assert "patient-123" in log_call
         assert "doctor-456" in log_call
 
-    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    @patch("app.core.utils.logging.logging.getLogger")
     def test_log_phi_detection(self, mock_get_logger):
         """Test PHI detection logging function."""
         # Setup mock logger
@@ -413,7 +413,7 @@ class TestAuditLogging:
 class TestGetLogger:
     """Test suite for the get_logger function."""
 
-    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    @patch("app.core.utils.logging.logging.getLogger")
     def test_get_logger_basic(self, mock_get_logger):
 
         """Test getting a basic logger."""
@@ -430,7 +430,7 @@ class TestGetLogger:
         # Should return the logger from getLogger
         assert logger == mock_logger
 
-    @patch("app.core.utils.logging_enhanced.logging.getLogger")
+    @patch("app.core.utils.logging.logging.getLogger")
     def test_get_logger_with_correlation(self, mock_get_logger):
         """Test that logger adds correlation ID filter."""
         # Setup mocks

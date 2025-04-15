@@ -20,6 +20,7 @@ from app.core.exceptions.base_exceptions import (
     ResourceNotFoundError,
     SecurityException,
     ValidationException,
+    HIPAAComplianceError,
 )
 
 from app.core.exceptions.ml_exceptions import (
@@ -58,4 +59,5 @@ __all__ = [
     "ServiceUnavailableError",
     "ValidationException",
     "XGBoostServiceError",
+    "HIPAAComplianceError",
 ]

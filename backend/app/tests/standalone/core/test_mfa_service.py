@@ -7,7 +7,7 @@ which includes TOTP (Time-based One-Time Password), SMS, and Email authenticatio
 
 import pytest
 from unittest.mock import MagicMock, patch
-from app.infrastructure.security.mfa_service import MFAService, MFAType
+from app.infrastructure.security.auth.mfa_service import MFAService, MFAType
 from app.infrastructure.security.mfa_strategies import MFAStrategyFactory, TOTPStrategy, SMSStrategy, EmailStrategy
 
 class BaseSecurityTest:

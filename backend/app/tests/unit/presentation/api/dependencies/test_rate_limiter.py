@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from fastapi.responses import JSONResponse
 from starlette import status
 
-from app.infrastructure.security.rate_limiter import RateLimiter, RateLimitConfig
+from app.infrastructure.security.rate_limiting.limiter import RateLimiter, RateLimitConfig
 from app.presentation.api.dependencies.rate_limiter import (
     RateLimitDependency,
     rate_limit,

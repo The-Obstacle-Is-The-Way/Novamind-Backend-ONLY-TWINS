@@ -22,6 +22,7 @@ import time
 from typing import Dict, Any, Callable
 from app.infrastructure.security.jwt.jwt_service import JWTService
 from dotenv import load_dotenv
+from app.domain.entities.patient import Patient
 
 # Try to import our patching utility
 try:
@@ -328,3 +329,25 @@ def provider_token_headers(generate_token: Callable[[Dict[str, Any]], str], mock
     """Generates valid Authorization headers for a mock provider."""
     token = asyncio.run(generate_token(mock_provider_payload))
     return {"Authorization": f"Bearer {token}"}
+
+# Add test_patient fixture
+@pytest.fixture
+def test_patient() -> Patient:
+    """Provides a sample Patient domain object for testing."""
+    # Make sure necessary fields are included based on Patient entity definition
+    return Patient(
+        id=str(uuid.uuid4()),
+        first_name="TestPHI",
+        last_name="Patient",
+        date_of_birth="1990-01-01", # Example DOB
+        gender="Other", # Example Gender
+        # Add other required fields from Patient entity with valid test values
+        # email="test.phi.patient@example.com", 
+        # phone_number="555-0199",
+        # address={ # Example address dict
+        #     "street": "123 PHI Lane", 
+        #     "city": "Testville", 
+        #     "state": "TS", 
+        #     "zip_code": "98765"
+        # }
+    )
