@@ -16,8 +16,9 @@ from unittest.mock import patch, MagicMock
 # from app.infrastructure.ml.data_processing import PHIProcessor #
 # PHIProcessor removed or refactored
 from app.infrastructure.security.encryption import EncryptionService
-
 # Import necessary modules for testing ML PHI security
+# NOTE: PHIRedactionService is currently defined in test_mocks.py, which is unusual.
+# Consider refactoring it to a proper service or utility module if it represents real logic.
 from app.tests.security.utils.test_mocks import PHIRedactionService
 from app.tests.security.utils.base_security_test import BaseSecurityTest
 
@@ -37,7 +38,7 @@ def mock_encryption_service():
 def mock_phi_redaction_service():
     """Mock PHI redaction service for testing."""
     mock_service = MagicMock(spec=PHIRedactionService)
-    mock_service.redact.return_value = {"data": "redacted_data"}
+    mock_service.redact_phi.return_value = {"data": "redacted_data"} # Align with mock class attribute
     return mock_service
 
 @pytest.fixture

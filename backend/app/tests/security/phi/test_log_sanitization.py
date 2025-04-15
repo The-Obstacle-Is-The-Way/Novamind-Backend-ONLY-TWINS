@@ -12,8 +12,9 @@ import os
 import tempfile
 from unittest.mock import patch, MagicMock
 
-# Path to the log sanitizer module
-from app.core.security.phi_sanitizer import PHISanitizer
+# Import necessary sanitizers and formatter
+from app.infrastructure.security.log_sanitizer import LogSanitizer, PHIFormatter
+from app.core.security.phi_sanitizer import PHISanitizer # Keep for tests explicitly using it
 
 class TestLogSanitization:
     """Test PHI sanitization in logs to ensure HIPAA compliance."""
@@ -39,9 +40,11 @@ class TestLogSanitization:
         file_handler = logging.FileHandler(temp_log_file)
         file_handler.setLevel(logging.DEBUG)
 
-        # Create formatter
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        # Create PHIFormatter to ensure sanitization happens
+        formatter = PHIFormatter(
+            fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            # The PHIFormatter will instantiate its own LogSanitizer by default,
+            # which will be intercepted by the monkeypatch in test_phi_never_reaches_logs
         )
         file_handler.setFormatter(formatter)
 
@@ -60,7 +63,7 @@ class TestLogSanitization:
 
     def test_ssn_sanitization(self):
         """Test that SSNs are properly sanitized."""
-        sanitizer = PHISanitizer()
+        sanitizer = LogSanitizer() # Use infrastructure sanitizer
         test_log = "Patient SSN is 123-45-6789"
         sanitized = sanitizer.sanitize(test_log)
         assert "123-45-6789" not in sanitized
@@ -68,7 +71,7 @@ class TestLogSanitization:
 
     def test_email_sanitization(self):
         """Test that email addresses are properly sanitized."""
-        sanitizer = PHISanitizer()
+        sanitizer = LogSanitizer() # Use infrastructure sanitizer
         test_log = "Patient email is patient@example.com"
         sanitized = sanitizer.sanitize(test_log)
         assert "patient@example.com" not in sanitized
@@ -76,7 +79,7 @@ class TestLogSanitization:
 
     def test_phone_sanitization(self):
         """Test that phone numbers are properly sanitized."""
-        sanitizer = PHISanitizer()
+        sanitizer = LogSanitizer() # Use infrastructure sanitizer
         test_log = "Patient phone is (555) 123-4567"
         sanitized = sanitizer.sanitize(test_log)
         assert "(555) 123-4567" not in sanitized
@@ -84,7 +87,7 @@ class TestLogSanitization:
 
     def test_name_sanitization(self):
         """Test that names are properly sanitized."""
-        sanitizer = PHISanitizer()
+        sanitizer = LogSanitizer() # Use infrastructure sanitizer
         test_log = "Patient name is John Smith"
         sanitized = sanitizer.sanitize(test_log)
         assert "John Smith" not in sanitized
@@ -92,7 +95,7 @@ class TestLogSanitization:
 
     def test_multiple_phi_sanitization(self):
         """Test that multiple PHI elements in the same log are all sanitized."""
-        sanitizer = PHISanitizer()
+        sanitizer = LogSanitizer() # Use infrastructure sanitizer
         test_log = "Patient John Smith (SSN: 123-45-6789) can be reached at (555) 123-4567 or john.smith@example.com"
         sanitized = sanitizer.sanitize(test_log)
 
@@ -102,9 +105,9 @@ class TestLogSanitization:
         assert "john.smith@example.com" not in sanitized
 
         assert "[REDACTED NAME]" in sanitized
-        assert "[REDACTED-SSN]" in sanitized
-        assert "[REDACTED-PHONE]" in sanitized
-        assert "[REDACTED-EMAIL]" in sanitized
+        assert "[REDACTED SSN]" in sanitized
+        assert "[REDACTED PHONE]" in sanitized # Use space, not hyphen
+        assert "[REDACTED EMAIL]" in sanitized # Use space, not hyphen
 
     # Skipping sanitizer integration with logger test due to unreliable patching and logger caching.
     # def test_sanitizer_integration_with_logger(self, logger_setup):
@@ -123,20 +126,22 @@ class TestLogSanitization:
     #         # Check that the sanitizer was called
     #         assert mock_sanitizer.sanitize.called
 
-            # Verify the log file content
-            with open(log_file, 'r') as f:
-                log_content = f.read()
-                assert "SANITIZED LOG MESSAGE" in log_content
+            #         # Verify the log file content
+            #         with open(log_file, 'r') as f:
+            #             log_content = f.read()
+            #             assert "SANITIZED LOG MESSAGE" in log_content
 
     def test_phi_never_reaches_logs(self, logger_setup, monkeypatch):
         """End-to-end test ensuring PHI doesn't make it to logs."""
         # Set up a real sanitizer that will be used by the logging system
-        real_sanitizer = PHISanitizer()
+        # Use the correct infrastructure LogSanitizer
+        real_sanitizer = LogSanitizer()
 
-        # Patch the system to use our real sanitizer
+        # Patch the LogSanitizer class where it's instantiated by PHIFormatter
+        # When PHIFormatter calls LogSanitizer(), it will get our instance.
         monkeypatch.setattr(
-            'app.core.security.phi_sanitizer.get_sanitizer',
-            lambda: real_sanitizer
+            'app.infrastructure.security.log_sanitizer.LogSanitizer',
+            lambda *args, **kwargs: real_sanitizer
         )
 
         logger, log_file = logger_setup
@@ -164,7 +169,7 @@ class TestLogSanitization:
 
     def test_sanitization_performance(self):
         """Test the performance of log sanitization on large log entries."""
-        sanitizer = PHISanitizer()
+        sanitizer = LogSanitizer() # Use infrastructure sanitizer
 
         # Create a large log message with some PHI scattered throughout
         log_parts = []

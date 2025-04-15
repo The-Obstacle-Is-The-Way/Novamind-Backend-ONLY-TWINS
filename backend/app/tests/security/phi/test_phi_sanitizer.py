@@ -31,6 +31,29 @@ class TestPHISanitizer:
         }
 
     def test_sanitize_string_with_ssn(self, sanitizer):
+        """Test that patient names are properly sanitized (from phi_sanitizer_phi)."""
+        # Test text with common name patterns
+        text = "Patient John Smith reported symptoms."
+        sanitized = sanitizer.sanitize_text(text)
+        assert "John Smith" not in sanitized
+        assert "[REDACTED NAME]" in sanitized
+        assert "reported symptoms" in sanitized
+
+    def test_no_false_positives(self, sanitizer):
+        """Test that non-PHI text is not redacted (from phi_sanitizer_phi)."""
+        text = "The patient reported feeling better after treatment. Follow-up in 2 weeks."
+        sanitized = sanitizer.sanitize_text(text)
+        assert sanitized == text
+
+    def test_sanitize_unicode_and_idempotency(self, sanitizer):
+        """Test unicode and idempotency (from phi_sanitizer_phi)."""
+        text = "患者: 李雷, 电话: 555-123-4567"
+        sanitized_once = sanitizer.sanitize_text(text)
+        sanitized_twice = sanitizer.sanitize_text(sanitized_once)
+        assert "李雷" not in sanitized_once
+        assert "555-123-4567" not in sanitized_once
+        assert sanitized_once == sanitized_twice
+
         """Test sanitization of strings containing SSNs."""
         input_text = "Patient SSN: 123-45-6789"
         sanitized = sanitizer.sanitize_text(input_text)
