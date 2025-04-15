@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 from datetime import datetime
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseEntity:
     """Base entity providing common fields like ID."""
     id: UUID = field(default_factory=uuid4)

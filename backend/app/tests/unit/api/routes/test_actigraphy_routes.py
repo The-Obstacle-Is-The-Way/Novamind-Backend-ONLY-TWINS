@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch, AsyncMock  # Added AsyncMock
 from uuid import UUID, uuid4  # Added UUID
 
 import pytest
-from fastapi import HTTPException, status, FastAPI  # Added FastAPI
+from fastapi import HTTPException, status, FastAPI, Depends
 from fastapi.testclient import TestClient
 
 from app.presentation.api.v1.endpoints.actigraphy import router
@@ -360,7 +360,7 @@ def app(mock_pat_service):
         
     # Mock PAT service dependency
     try:
-        from app.presentation.api.dependencies.ml import get_pat_service as actual_get_pat_service
+        from app.presentation.api.dependencies.services import get_pat_service as actual_get_pat_service
         
         app_instance.dependency_overrides[actual_get_pat_service] = lambda: mock_pat_service
     except ImportError:

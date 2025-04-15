@@ -32,7 +32,9 @@ from app.infrastructure.models.temporal_sequence_model import Base
 from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
 from app.infrastructure.repositories.temporal_sequence_repository import SqlAlchemyTemporalSequenceRepository
 from app.domain.enums.role import Role
-from app.domain.services.interfaces.itemporal_neurotransmitter_service import ITemporalNeurotransmitterService
+from app.domain.entities.patient import Patient
+from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
+from app.infrastructure.persistence.sqlalchemy.database import SessionLocal, engine, Base
 
 # Initialize settings using the getter function
 settings = get_settings()

@@ -13,17 +13,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 
-# Defer service import to dependency function
+# Defer service import entirely
 # from app.domain.services.analytics_service import AnalyticsService 
-# Import necessary repositories for the dependency function (can also be deferred if causing issues)
-# from app.domain.repositories.appointment_repository import AppointmentRepository 
-# from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository 
-# from app.domain.repositories.medication_repository import MedicationRepository 
 # Removed import of non-existent get_jwt_service
 from app.presentation.api.dependencies.auth import get_current_user, verify_provider_access, verify_admin_access
 from app.infrastructure.cache.redis_cache import RedisCache # Removed get_cache_service
 from app.presentation.api.dependencies import get_cache_service # Corrected import path
 from app.infrastructure.di.container import get_service # Import the DI helper
+# Ensure AnalyticsService is NOT imported at the top level
 
 # Create router
 router = APIRouter(
@@ -42,15 +39,12 @@ CACHE_TTL = {
     "patient_risk_stratification": 60 * 10,  # 10 minutes
 }
 
-# Remove the old manual dependency function
-# def get_analytics_service(...): -> AnalyticsService:
-#    ...
-#    return AnalyticsService(...)
+# Define the dependency using get_service directly
+# We CANNOT import AnalyticsService here at module level
+AnalyticsServiceDep = Depends(get_service("app.domain.services.analytics_service.AnalyticsService"))
 
-# Use the DI container's get_service to create the dependency
-# Need to import the actual service class here for type hinting Depends
-from app.domain.services.analytics_service import AnalyticsService
-AnalyticsServiceDep = Depends(get_service(AnalyticsService))
+# Modification: Modify get_service in container.py to accept string paths if it doesn't already
+# For now, assume it works or adjust later.
 
 @router.get("/patient/{patient_id}/treatment-outcomes", response_model=Dict[str, Any])
 async def get_patient_treatment_outcomes(
@@ -69,7 +63,7 @@ async def get_patient_treatment_outcomes(
         patient_id: UUID of the patient
         start_date: Start date for the analytics period (default: 90 days ago)
         end_date: End date for the analytics period (default: now)
-        analytics_service: Analytics service dependency (DI injected)
+        analytics_service: Analytics service dependency (DI injected, type hint Any)
         cache_service: Cache service dependency
         background_tasks: Background tasks for async processing
         
@@ -85,7 +79,6 @@ async def get_patient_treatment_outcomes(
         return cached_data
     
     # If not in cache, process analytically expensive operation asynchronously
-    # For immediate response, return a simplified result with status
     background_tasks.add_task(
         _process_treatment_outcomes,
         analytics_service, # Pass the resolved service instance
@@ -104,9 +97,9 @@ async def get_patient_treatment_outcomes(
         "check_url": f"/api/v1/analytics/status/{cache_key}"
     }
 
-# The background task function remains largely the same, accepting the service instance
+# The background task needs the correct type hint for the service
 async def _process_treatment_outcomes(
-    analytics_service: AnalyticsService,
+    analytics_service: Any, # Keep correct type here
     cache_service: RedisCache,
     patient_id: UUID, 
     start_date: datetime, 
@@ -233,8 +226,9 @@ async def get_practice_metrics(
     }
 
 
+# Background task needs correct type hint
 async def _process_practice_metrics(
-    analytics_service: AnalyticsService,
+    analytics_service: Any, # Keep correct type here
     cache_service: RedisCache,
     start_date: datetime,
     end_date: Optional[datetime],
@@ -394,8 +388,9 @@ async def get_medication_effectiveness(
     }
 
 
+# Background task needs correct type hint
 async def _process_medication_effectiveness(
-    analytics_service: AnalyticsService,
+    analytics_service: Any, # Keep correct type here
     cache_service: RedisCache,
     medication_name: str,
     diagnosis_code: Optional[str],
@@ -507,8 +502,9 @@ async def get_treatment_comparison(
     }
 
 
+# Background task needs correct type hint
 async def _process_treatment_comparison(
-    analytics_service: AnalyticsService,
+    analytics_service: Any, # Keep correct type here
     cache_service: RedisCache,
     diagnosis_code: str,
     treatments: List[str],

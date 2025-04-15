@@ -23,7 +23,6 @@ from typing import Dict, Any, Callable, Generator, Coroutine, List, Optional
 from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
-from app.presentation.api.dependencies.auth import get_jwt_service
 from dotenv import load_dotenv
 from app.domain.entities.patient import Patient
 

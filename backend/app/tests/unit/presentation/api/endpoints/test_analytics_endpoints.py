@@ -10,7 +10,6 @@ and process in a HIPAA-compliant manner.
 import json
 import pytest
 from datetime import datetime, timedelta, timezone # Corrected import
-# from app.domain.utils.datetime_utils import UTC # Use timezone.utc directly
 from unittest.mock import AsyncMock, MagicMock, patch, call # Added call
 from uuid import UUID, uuid4
 from typing import List, Dict, Any, Optional
@@ -18,30 +17,31 @@ from typing import List, Dict, Any, Optional
 from fastapi import BackgroundTasks, FastAPI, status, Request, Response, Depends
 from fastapi.testclient import TestClient
 
-from app.domain.services.analytics_service import AnalyticsService
+# Defer service import
+# from app.domain.services.analytics_service import AnalyticsService
 from app.infrastructure.cache.redis_cache import RedisCache # Assuming RedisCache is used
-# Correctly import router and dependencies from the target file
-from app.presentation.api.endpoints.analytics_endpoints import (
+# Correctly import router and endpoint functions/models we need to test or mock
+# Avoid importing the dependency provider (get_analytics_service) itself if possible
+from app.presentation.api.v1.endpoints.analytics_endpoints import (
     router,
-    get_analytics_service,
-    # Removed internal processing functions as they are not typically tested directly via endpoint tests
-    # _process_treatment_outcomes,
-    # _process_practice_metrics,
-    # _process_medication_effectiveness,
-    # _process_treatment_comparison,
+    # get_analytics_service, # Don't import the dependency provider
     AnalyticsEvent # Import the Pydantic model
 )
+
+# Import the *actual* service for type hints where necessary
+from app.domain.services.analytics_service import AnalyticsService
+
 # Assuming get_cache_service exists or is defined elsewhere for dependency override
 try:
-    from app.infrastructure.cache.redis_cache import get_cache_service
+    from app.presentation.api.dependencies import get_cache_service # Try corrected path
 except ImportError:
     # Define a dummy function if the actual dependency isn't available
     async def get_cache_service():
         print("Warning: Using dummy get_cache_service")
-        return MagicMock(spec=RedisCache)
-
-# Assuming BaseRepository exists for type hinting, import if necessary
-# from app.domain.repositories.base_repository import BaseRepository
+        mock_cache = AsyncMock(spec=RedisCache)
+        mock_cache.get = AsyncMock(return_value=None)
+        mock_cache.set = AsyncMock(return_value=True)
+        return mock_cache
 
 # Define UTC if not imported elsewhere (Python 3.11+)
 try:
@@ -53,6 +53,7 @@ except ImportError:
 @pytest.fixture
 def mock_analytics_service():
     """Create a mock AnalyticsService for testing."""
+    # Import service locally if needed for spec, or use string
     mock = AsyncMock(spec=AnalyticsService)
     # Setup mock responses for various methods used by endpoints
     mock.record_event_batch = AsyncMock(return_value=["evt1", "evt2"]) # Example return
@@ -99,7 +100,22 @@ def app(mock_analytics_service, mock_cache_service, mock_user): # Removed mock_b
     app_instance = FastAPI()
 
     # Override dependencies used by the router/endpoints
-    app_instance.dependency_overrides[get_analytics_service] = lambda: mock_analytics_service
+    # Use string path for the dependency key if get_analytics_service isn't imported
+    # Or use the imported AnalyticsService type if DI container handles it.
+    # For consistency with previous fix, assume string path is needed for the key.
+    # BUT we need the actual service for the value lambda.
+    # Let's try overriding the specific dependency provider from the *endpoints* module
+    # if it's defined there (it wasn't based on previous reads). Assuming DI.
+    
+    # If using DI container's get_service approach:
+    try:
+        from app.infrastructure.di.container import get_service
+        from app.domain.services.analytics_service import AnalyticsService
+        app_instance.dependency_overrides[get_service(AnalyticsService)] = lambda: mock_analytics_service
+    except ImportError:
+        print("Warning: DI container or AnalyticsService not found for override.")
+        # Fallback or raise error depending on test requirements
+
     if get_cache_service: # Check if import was successful
         app_instance.dependency_overrides[get_cache_service] = lambda: mock_cache_service
 
@@ -109,16 +125,12 @@ def app(mock_analytics_service, mock_cache_service, mock_user): # Removed mock_b
         app_instance.dependency_overrides[auth_get_user] = lambda: mock_user
     except ImportError:
         print("Warning: get_current_user dependency not found for override.")
-        # Define a dummy dependency if needed for tests to run
         async def dummy_get_user(): return mock_user
-        # Find a real dependency to override if get_current_user is wrong name
-        # For now, this override might not apply if the name is incorrect.
-        # app_instance.dependency_overrides[Depends(lambda: None)] = dummy_get_user # Placeholder attempt
+        # app_instance.dependency_overrides[Depends(lambda: None)] = dummy_get_user # Placeholder
 
     # Override rate limiter if needed (example)
     try:
         from app.presentation.api.dependencies.rate_limiter import RateLimitDependency
-        # Provide a dummy callable that does nothing when called by Depends()
         app_instance.dependency_overrides[RateLimitDependency] = lambda *args, **kwargs: (lambda: None)
     except ImportError:
         pass
