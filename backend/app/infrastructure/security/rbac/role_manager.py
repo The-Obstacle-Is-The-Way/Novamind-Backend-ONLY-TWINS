@@ -146,6 +146,22 @@ class RoleBasedAccessControl:
 
         self._roles[role_name].discard(permission)
 
+    def add_role_permission(self, role: str, permission: str) -> bool:
+        """
+        Add a permission to a role. This method is for compatibility with tests.
+        
+        Args:
+            role: The role to add permission to
+            permission: The permission to add
+            
+        Returns:
+            bool: True if added successfully
+        """
+        if role not in self._roles:
+            self._roles[role] = set()
+        self._roles[role].add(permission)
+        return True
+
     def check_permission(self, role_name: str, permission: str) -> bool:
         """
         Check if a role has a specific permission.

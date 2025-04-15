@@ -12,10 +12,21 @@ import json
 from unittest.mock import patch
 
 from app.tests.security.utils.base_security_test import BaseSecurityTest
+from app.tests.security.utils.test_mocks import MockAuthService, MockRBACService, MockAuditLogger, MockEncryptionService, MockEntityFactory
+from app.domain.entities.user import User
+
 class TestBaseSecurityTest(unittest.TestCase):
     """Test suite for BaseSecurityTest functionality."""
 
-    # Corrected indentation for all test methods
+    def setUp(self):
+        """Set up test fixtures before each test method."""
+        self.auth_service = MockAuthService()
+        self.rbac_service = MockRBACService()
+        self.audit_logger = MockAuditLogger()
+        self.encryption_service = MockEncryptionService()
+        self.entity_factory = MockEntityFactory()
+        self.user = User(id="test_user", username="test_user", email="test@example.com", password_hash="hashed_password", roles=["user"])
+
     def test_initialization(self):
 
         """Test that BaseSecurityTest initializes with correct attributes."""

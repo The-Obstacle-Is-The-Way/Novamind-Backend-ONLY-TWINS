@@ -25,6 +25,10 @@ import pytest
 from fastapi import HTTPException, status
 from jose import jwt
 
+# Import necessary modules for testing HIPAA compliance
+from app.tests.security.utils.test_mocks import MockRBACService, MockAuditLogger
+from app.tests.security.utils.base_security_test import BaseSecurityTest
+
 # Import application code
 try:
     from app.core.config import get_settings
@@ -174,8 +178,14 @@ except ImportError as e:
             yield mock_check
 
     # PHI Encryption Tests
-    class TestPHIEncryption:
+    class TestPHIEncryption(BaseSecurityTest):
         """Test PHI encryption and decryption functionality."""
+
+        def setUp(self):
+            """Set up test fixtures before each test method."""
+            super().setUp()
+            self.rbac_service = MockRBACService()
+            self.audit_logger = MockAuditLogger()
 
         def test_encrypt_decrypt_phi(self, test_phi_data):
             """Test that PHI can be encrypted and decrypted correctly."""
@@ -217,8 +227,14 @@ except ImportError as e:
             assert len(key) >= 32, "Encryption key must be at least 32 characters"
 
     # Authentication Tests
-    class TestAuthentication:
+    class TestAuthentication(BaseSecurityTest):
         """Test authentication mechanisms for HIPAA compliance."""
+
+        def setUp(self):
+            """Set up test fixtures before each test method."""
+            super().setUp()
+            self.rbac_service = MockRBACService()
+            self.audit_logger = MockAuditLogger()
 
         def test_create_access_token(self, test_user):
             """Test that access tokens can be created correctly."""
@@ -259,8 +275,14 @@ except ImportError as e:
                 decode_token(invalid_token)
 
     # Authorization Tests
-    class TestAuthorization:
+    class TestAuthorization(BaseSecurityTest):
         """Test authorization mechanisms for HIPAA compliance."""
+
+        def setUp(self):
+            """Set up test fixtures before each test method."""
+            super().setUp()
+            self.rbac_service = MockRBACService()
+            self.audit_logger = MockAuditLogger()
 
         def test_rbac_permission_check(self, test_user, mock_rbac):
             """Test that RBAC permission checks work correctly."""
@@ -303,8 +325,14 @@ except ImportError as e:
                 raise AuthorizationError("Access denied")
 
     # Audit Logging Tests
-    class TestAuditLogging:
+    class TestAuditLogging(BaseSecurityTest):
         """Test audit logging for HIPAA compliance."""
+
+        def setUp(self):
+            """Set up test fixtures before each test method."""
+            super().setUp()
+            self.rbac_service = MockRBACService()
+            self.audit_logger = MockAuditLogger()
 
         def test_phi_access_logging(self, test_user, test_phi_data, mock_audit_logger):
             """Test that PHI access is properly logged."""
@@ -332,8 +360,14 @@ except ImportError as e:
             assert "[REDACTED]" in sanitized
 
     # Security Boundaries Tests
-    class TestSecurityBoundaries:
+    class TestSecurityBoundaries(BaseSecurityTest):
         """Test security boundaries for HIPAA compliance."""
+
+        def setUp(self):
+            """Set up test fixtures before each test method."""
+            super().setUp()
+            self.rbac_service = MockRBACService()
+            self.audit_logger = MockAuditLogger()
 
         def test_unauthorized_request_rejection(self):
             """Test that unauthorized requests are rejected."""
@@ -358,8 +392,14 @@ except ImportError as e:
                 assert "123-45-6789" not in error_str
 
     # HIPAA Compliance Requirements Tests
-    class TestHIPAACompliance:
+    class TestHIPAACompliance(BaseSecurityTest):
         """Test overall HIPAA compliance requirements."""
+
+        def setUp(self):
+            """Set up test fixtures before each test method."""
+            super().setUp()
+            self.rbac_service = MockRBACService()
+            self.audit_logger = MockAuditLogger()
 
         def test_field_level_encryption(self, test_phi_data):
             """Test that field-level encryption is available for PHI."""

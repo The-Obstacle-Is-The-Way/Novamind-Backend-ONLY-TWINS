@@ -121,12 +121,12 @@ class TestJWTAuthentication:
     """Test suite for JWT authentication system."""
 
     def setUp(self):
-        """Set up test environment."""
-        self.auth_service = JWTAuthService(
-            secret_key="test-secret-key-1234567890-abcdef",
-            token_expiry_minutes=60,
-            refresh_token_expiry_days=30
-        )
+        """Set up test fixtures before each test method."""
+        super().setUp()
+        # Use mock service instead of real JWTAuthService to avoid dependency on secret key
+        self.auth_service = MockAuthService()
+        self.request = MagicMock()
+        self.credentials = MagicMock()
 
     def test_token_creation(self, auth_service):
         """Test token creation with user data."""

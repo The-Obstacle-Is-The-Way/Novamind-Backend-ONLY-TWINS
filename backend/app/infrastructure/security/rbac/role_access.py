@@ -116,3 +116,16 @@ class RoleBasedAccessControl:
             return True
             
         return False
+        
+    def add_role_permission(self, role: str, permission: str) -> bool:
+        """
+        Add a permission to a role. Alias for add_permission_to_role for test compatibility.
+        
+        Args:
+            role: The role to add permission to
+            permission: The permission to add
+            
+        Returns:
+            bool: True if added successfully
+        """
+        return self.add_permission_to_role(role, permission)

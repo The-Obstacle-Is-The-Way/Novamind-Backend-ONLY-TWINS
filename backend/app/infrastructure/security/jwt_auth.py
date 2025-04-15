@@ -45,9 +45,11 @@ class JWTAuthService:
     It delegates most operations to the underlying JWTService.
     """
 
-    def __init__(self):
-        """Initialize the JWT auth service."""
-        self.jwt_service = JWTService()
+    def __init__(self, secret_key: str = 'your-secret-key-here', algorithm: str = 'HS256', token_expiry_minutes: int = 30, refresh_token_expiry_days: int = 30):
+        """Initialize the JWT auth service with a secret key, algorithm, token expiry, and refresh token expiry."""
+        self.jwt_service = JWTService(secret_key=secret_key, algorithm=algorithm)
+        self.token_expiry_minutes = token_expiry_minutes
+        self.refresh_token_expiry_days = refresh_token_expiry_days
 
     def create_token(self, payload: Dict[str, Any]) -> str:
         """

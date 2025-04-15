@@ -22,6 +22,9 @@ from app.api.dependencies.auth import get_current_user
 # from app.infrastructure.security.rate_limiting import RateLimiter #
 # RateLimiter removed or refactored
 
+# Import necessary modules for testing API security
+from app.tests.security.utils.test_mocks import MockAuthService, MockRBACService, MockAuditLogger
+from app.tests.security.utils.base_security_test import BaseSecurityTest
 
 # Removed local test_client fixture; tests will use client from conftest.py
 @pytest.fixture
@@ -51,8 +54,17 @@ def mock_admin_user():
 
 
 @pytest.mark.db_required()
-class TestAuthentication:
+class TestAuthentication(BaseSecurityTest):
     """Test authentication mechanisms."""
+
+    def setUp(self):
+        """Set up test fixtures before each test method."""
+        super().setUp()
+        self.auth_service = MockAuthService()
+        self.rbac_service = MockRBACService()
+        self.audit_logger = MockAuditLogger()
+        self.request = MagicMock()
+        self.credentials = MagicMock()
 
     def test_missing_token(self, client: TestClient):
         """Test that requests without tokens are rejected."""
@@ -89,8 +101,17 @@ class TestAuthentication:
             assert response.status_code == status.HTTP_200_OK
 
 
-class TestAuthorization:
+class TestAuthorization(BaseSecurityTest):
     """Test authorization and access control."""
+
+    def setUp(self):
+        """Set up test fixtures before each test method."""
+        super().setUp()
+        self.auth_service = MockAuthService()
+        self.rbac_service = MockRBACService()
+        self.audit_logger = MockAuditLogger()
+        self.request = MagicMock()
+        self.credentials = MagicMock()
 
     def test_patient_accessing_own_data(self, client: TestClient, mock_token, mock_user):
         """Test that patients can access their own data."""
@@ -134,8 +155,17 @@ class TestAuthorization:
 # Removed TestRateLimiting class as RateLimiter component seems removed/refactored
 
 
-class TestInputValidation:
+class TestInputValidation(BaseSecurityTest):
     """Test input validation for security."""
+
+    def setUp(self):
+        """Set up test fixtures before each test method."""
+        super().setUp()
+        self.auth_service = MockAuthService()
+        self.rbac_service = MockRBACService()
+        self.audit_logger = MockAuditLogger()
+        self.request = MagicMock()
+        self.credentials = MagicMock()
 
     def test_invalid_input_format(self, client: TestClient, mock_token, mock_user):
         """Test that invalid input format is rejected."""
@@ -190,8 +220,17 @@ class TestInputValidation:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-class TestSecureHeaders:
+class TestSecureHeaders(BaseSecurityTest):
     """Test secure headers for HTTP responses."""
+
+    def setUp(self):
+        """Set up test fixtures before each test method."""
+        super().setUp()
+        self.auth_service = MockAuthService()
+        self.rbac_service = MockRBACService()
+        self.audit_logger = MockAuditLogger()
+        self.request = MagicMock()
+        self.credentials = MagicMock()
 
     def test_security_headers(self, client: TestClient):
         """Test that security headers are present in responses."""
@@ -224,8 +263,17 @@ class TestSecureHeaders:
         assert response.headers["Access-Control-Allow-Origin"] != "*"
 
 
-class TestErrorHandling:
+class TestErrorHandling(BaseSecurityTest):
     """Test secure error handling."""
+
+    def setUp(self):
+        """Set up test fixtures before each test method."""
+        super().setUp()
+        self.auth_service = MockAuthService()
+        self.rbac_service = MockRBACService()
+        self.audit_logger = MockAuditLogger()
+        self.request = MagicMock()
+        self.credentials = MagicMock()
 
     def test_error_messages_do_not_leak_info(self, client: TestClient):
         """Test that error messages don't leak sensitive information."""

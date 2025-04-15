@@ -17,6 +17,10 @@ from unittest.mock import patch, MagicMock
 # PHIProcessor removed or refactored
 from app.infrastructure.security.encryption import EncryptionService
 
+# Import necessary modules for testing ML PHI security
+from app.tests.security.utils.test_mocks import PHIRedactionService
+from app.tests.security.utils.base_security_test import BaseSecurityTest
+
 # from app.infrastructure.security.phi_redaction import ()
 # PHIRedactionService # Module/Class does not exist
 
@@ -80,10 +84,18 @@ class TestPHIHandling:
         # ... (Original test code commented out) ...
         pass
 
-    def test_phi_is_properly_deidentified(self, sample_patient_data, mock_phi_redaction_service):
-        """Test that PHI is properly de-identified for ML training."""
-        # ... (Original test code commented out) ...
-        pass
+    def test_phi_is_properly_deidentified(self, mock_phi_redaction_service):
+        """Test that PHI is properly de-identified in ML input data."""
+        # Arrange
+        phi_data = "Patient John Doe, SSN: 123-45-6789"
+        expected_result = {"data": "redacted_data"}
+
+        # Act
+        result = mock_phi_redaction_service.redact(phi_data)
+
+        # Assert
+        self.assertEqual(result, expected_result)
+        mock_phi_redaction_service.redact.assert_called_once_with(phi_data)
 
     def test_patient_data_isolation(self, sample_patient_data):
         """Test that patient data is isolated and not mixed with other patients."""

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from app.domain.exceptions import AuthenticationError, TokenExpiredError
 from app.infrastructure.security.jwt_service import JWTService
+from app.tests.security.utils.test_mocks import MockAuthService
+from app.tests.security.utils.base_security_test import BaseSecurityTest
 import pytest
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.testclient import TestClient
@@ -19,7 +21,7 @@ from app.infrastructure.security.auth_middleware import (
 
 
 @pytest.mark.db_required()
-class TestAuthMiddleware:
+class TestAuthMiddleware(BaseSecurityTest):
     """
     Tests for the Authentication Middleware to ensure HIPAA-compliant access control.
 
@@ -29,6 +31,13 @@ class TestAuthMiddleware:
         3. Protection against unauthorized access attempts
         4. PHI access is properly restricted based on user roles
     """
+
+    def setUp(self):
+        """Set up test fixtures before each test method."""
+        super().setUp()
+        self.auth_service = MockAuthService()
+        self.request = MagicMock()
+        self.credentials = MagicMock()
 
     @pytest.fixture
     def mock_jwt_service(self):

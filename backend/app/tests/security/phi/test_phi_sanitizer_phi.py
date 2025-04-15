@@ -7,17 +7,23 @@ ensuring HIPAA compliance for all data handling processes.
 """
 
 import pytest
-from app.core.security.phi_sanitizer import PHISanitizer
+from app.tests.security.utils.test_mocks import MockAuthService, MockRBACService, MockAuditLogger, MockEncryptionService, PHIRedactionService
 from app.tests.security.utils.base_security_test import BaseSecurityTest
+from app.core.security.phi_sanitizer import PHISanitizer
 
 
 @pytest.mark.venv_only()
-class TestPHISanitization(base_security_test.BaseSecurityTest):
+class TestPHISanitization(BaseSecurityTest):
     """Tests for PHI detection and sanitization functionality."""
 
     def setUp(self):
-        """Set up test fixtures before each test method execution."""
+        """Set up test fixtures before each test method."""
         super().setUp()
+        self.auth_service = MockAuthService()
+        self.rbac_service = MockRBACService()
+        self.audit_logger = MockAuditLogger()
+        self.encryption_service = MockEncryptionService()
+        self.phi_redaction_service = PHIRedactionService()
         self.sanitizer = PHISanitizer()
 
     def test_sanitize_text_with_names(self):

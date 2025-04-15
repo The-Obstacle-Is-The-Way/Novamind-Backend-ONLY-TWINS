@@ -24,7 +24,7 @@ class PHISanitizer:
     _SSN_PATTERN: Pattern = re.compile(r'\b\d{3}[-]?\d{2}[-]?\d{4}\b')
     _DOB_PATTERN: Pattern = re.compile(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b')
     _MRN_PATTERN: Pattern = re.compile(r'\b(?:MRN|Medical Record Number|Patient ID)[: ]+[A-Za-z0-9-]+\b', re.IGNORECASE)
-    _ADDRESS_PATTERN: Pattern = re.compile(r'\b\d+\s+[A-Za-z0-9\s.,]+\b(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St)\.?\b', re.IGNORECASE)
+    _ADDRESS_PATTERN: Pattern = re.compile(r'\b\d+\s+[A-Za-z0-9\s.,]+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Ln|Rd|Blvd|Dr|St)\.?\s*,?\s*[A-Za-z\s]+,\s*[A-Z]{2}\s*\d{5}\b', re.IGNORECASE)
     
     # Collection of all PHI patterns
     _PHI_PATTERNS: List[Tuple[Pattern, str]] = [
@@ -32,7 +32,7 @@ class PHISanitizer:
         (_EMAIL_PATTERN, "[REDACTED EMAIL]"),
         (_PHONE_PATTERN, "[REDACTED PHONE]"),
         (_SSN_PATTERN, "[REDACTED SSN]"),
-        (_DOB_PATTERN, "[REDACTED DOB]"),
+        (_DOB_PATTERN, "[REDACTED DATE]"),
         (_MRN_PATTERN, "[REDACTED MRN]"),
         (_ADDRESS_PATTERN, "[REDACTED ADDRESS]")
     ]

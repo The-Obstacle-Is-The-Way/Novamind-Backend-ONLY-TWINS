@@ -21,6 +21,46 @@ from app.core.config import get_settings
 logger = logging.getLogger(__name__)
 
 
+def encrypt_value(value: str, key: str = None) -> str:
+    """Encrypt a single value using the encryption service.
+    
+    Args:
+        value: The value to encrypt
+        key: Optional key to use for encryption
+    
+    Returns:
+        str: Encrypted value as base64 string
+    """
+    if not value:
+        return value
+    service = EncryptionService(direct_key=key)
+    return service.encrypt(value)
+
+def decrypt_value(encrypted_value: str, key: str = None) -> str:
+    """Decrypt a single value using the encryption service.
+    
+    Args:
+        encrypted_value: The encrypted value to decrypt
+        key: Optional key to use for decryption
+    
+    Returns:
+        str: Decrypted value
+    """
+    if not encrypted_value:
+        return encrypted_value
+    service = EncryptionService(direct_key=key)
+    return service.decrypt(encrypted_value)
+
+def get_encryption_key() -> str:
+    """Get the current encryption key from settings.
+    
+    Returns:
+        str: Current encryption key
+    """
+    settings = get_settings()
+    return settings.ENCRYPTION_KEY
+
+
 class EncryptionService:
     """HIPAA-compliant encryption service for sensitive patient data.
     
