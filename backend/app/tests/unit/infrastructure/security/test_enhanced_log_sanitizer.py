@@ -145,9 +145,9 @@ class TestLogSanitizer:
         original_message = "Log message with SSN: %s"
         original_args = ("123-45-6789",)
         record = logging.LogRecord(
-            name='test', level=logging.INFO, pathname='', lineno=0, 
+            name='test', level=logging.INFO, pathname='', lineno=0,
             msg=original_message, args=original_args, exc_info=None, func='')
-        
+
         # Manually format message like logging would before sanitize_log_record
         formatted_message = record.getMessage()
 
@@ -164,62 +164,78 @@ class TestLogSanitizer:
         """Test sanitize_log_record sanitizes exception info."""
         # Let sanitize return different values based on input
         def sanitize_side_effect(data):
-            if "Original exception" in str(data):
-                return "[SANITIZED EXCEPTION]"
-            elif "Traceback" in str(data):
+            data_str = str(data)
+            if "Traceback:" in data_str: # Check for traceback marker first
                 return "[SANITIZED TRACEBACK]"
-            else:
+            elif "Original exception" in data_str: # Then check for exception content
+                return "[SANITIZED EXCEPTION]"
+            else: # Fallback for the regular message
                 return "[SANITIZED MSG]"
         mock_sanitize.side_effect = sanitize_side_effect
 
         sanitizer = LogSanitizer()
+        exception_text = "Original exception with SSN 123-45-6789"
+        traceback_text = "Traceback:\\n...\\nValueError: Original exception with SSN 123-45-6789"
+        original_msg = "Error occurred"
         try:
-            raise ValueError("Original exception with SSN 123-45-6789")
+            raise ValueError(exception_text)
         except ValueError as e:
             exc_info = (type(e), e, e.__traceback__)
             # Simulate pre-formatted exc_text (might contain PHI)
             record = logging.LogRecord(
-                name='test', level=logging.ERROR, pathname='', lineno=0, 
-                msg="Error occurred", args=(), exc_info=exc_info, func='')
-            record.exc_text = "Traceback:\n...\nValueError: Original exception with SSN 123-45-6789"
+                name='test', level=logging.ERROR, pathname='', lineno=0,
+                msg=original_msg, args=(), exc_info=exc_info, func='')
+            record.exc_text = traceback_text # Assign the pre-defined traceback text
 
         sanitized_record = sanitizer.sanitize_log_record(record)
 
-        # Check sanitize calls
+        # Check sanitize calls with the actual data passed
         expected_calls = [
-            call(record.getMessage()), # Sanitize original message
-            call("Original exception with SSN 123-45-6789"), # Sanitize str(exc_value)
-            call(record.exc_text) # Sanitize exc_text
+            call(original_msg), # Sanitize original message
+            call(exception_text), # Sanitize str(exc_value)
+            call(traceback_text) # Sanitize exc_text
         ]
         mock_sanitize.assert_has_calls(expected_calls, any_order=True)
 
         # Check the sanitized exception info
         assert isinstance(sanitized_record.exc_info[1], ValueError)
+        # The actual exception object's string representation should be replaced
         assert str(sanitized_record.exc_info[1]) == "[SANITIZED EXCEPTION]"
         assert sanitized_record.exc_text == "[SANITIZED TRACEBACK]"
+        # The record's message should also be sanitized (using the fallback in side_effect)
         assert sanitized_record.getMessage() == "[SANITIZED MSG]"
         assert sanitized_record.args == []
 
-    @patch.object(LogSanitizer, 'sanitize', return_value="[SANITIZED STACK]")
+    @patch.object(LogSanitizer, 'sanitize') # Keep simple side effect for stack test
     def test_sanitize_log_record_with_stack_info(self, mock_sanitize: MagicMock):
         """Test sanitize_log_record sanitizes stack info."""
+        # Simulate sanitize returning different things for message vs stack
+        def sanitize_side_effect(data):
+            if "Stack:" in data:
+                return "[SANITIZED STACK]"
+            else:
+                return "[SANITIZED MSG]"
+        mock_sanitize.side_effect = sanitize_side_effect
+
         sanitizer = LogSanitizer()
+        original_msg = "Message"
+        stack_text = "Stack:\\n Frame 1: SSN 123-45-6789\\n Frame 2"
         record = logging.LogRecord(
-            name='test', level=logging.INFO, pathname='', lineno=0, 
-            msg="Message", args=(), exc_info=None, func='')
-        record.stack_info = "Stack:\n Frame 1: SSN 123-45-6789\n Frame 2"
+            name='test', level=logging.INFO, pathname='', lineno=0,
+            msg=original_msg, args=(), exc_info=None, func='')
+        record.stack_info = stack_text
 
         sanitized_record = sanitizer.sanitize_log_record(record)
 
-        # Check sanitize calls (once for message, once for stack_info)
+        # Check sanitize calls with the actual data passed
         expected_calls = [
-            call(record.getMessage()),
-            call(record.stack_info)
+            call(original_msg),
+            call(stack_text)
         ]
         mock_sanitize.assert_has_calls(expected_calls, any_order=True)
 
         assert sanitized_record.stack_info == "[SANITIZED STACK]"
-        assert sanitized_record.getMessage() == "[SANITIZED STACK]" # Because side effect is simple
+        assert sanitized_record.getMessage() == "[SANITIZED MSG]" # Message sanitized separately
         assert sanitized_record.args == []
 
     @patch.object(LogSanitizer, 'sanitize')

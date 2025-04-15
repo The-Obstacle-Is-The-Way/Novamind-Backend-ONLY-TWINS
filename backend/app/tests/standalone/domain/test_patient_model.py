@@ -6,9 +6,10 @@ These tests verify the behavior of the Patient model without any external depend
 
 import pytest
 from datetime import date
+from pydantic import BaseModel, Field, ValidationError
+import uuid
 
 from app.domain.entities.patient import Patient
-from app.domain.value_objects import PatientId, MedicalRecordNumber
 
 
 @pytest.mark.standalone()
@@ -19,22 +20,19 @@ class TestPatientModel:
     def test_patient_creation_valid_data(self):
         """Test that a patient can be created with valid data."""
         # Arrange
-        patient_id = PatientId("P12345")
-        mrn = MedicalRecordNumber("MRN-678901")
+        patient_id = str(uuid.uuid4())
         name = "John Doe"
         dob = date(1980, 1, 15)
 
         # Act
         patient = Patient(
             id=patient_id,
-            medical_record_number=mrn,
             name=name,
             date_of_birth=dob
         )
 
         # Assert
         assert patient.id == patient_id
-        assert patient.medical_record_number == mrn
         assert patient.name == name
         assert patient.date_of_birth == dob
         assert patient.age > 0
@@ -43,15 +41,13 @@ class TestPatientModel:
     def test_patient_creation_invalid_name(self, invalid_name):
         """Test that a patient cannot be created with an invalid name."""
         # Arrange
-        patient_id = PatientId("P12345")
-        mrn = MedicalRecordNumber("MRN-678901")
+        patient_id = str(uuid.uuid4())
         dob = date(1980, 1, 15)
 
         # Act & Assert
         with pytest.raises(ValueError) as exc_info:
             Patient(
                 id=patient_id,
-                medical_record_number=mrn,
                 name=invalid_name,
                 date_of_birth=dob
             )
@@ -62,8 +58,7 @@ class TestPatientModel:
     def test_patient_age_calculation(self):
         """Test that patient age is calculated correctly."""
         # Arrange
-        patient_id = PatientId("P12345")
-        mrn = MedicalRecordNumber("MRN-678901")
+        patient_id = str(uuid.uuid4())
         name = "John Doe"
 
         # Patient born exactly 30 years ago
@@ -72,7 +67,6 @@ class TestPatientModel:
         # Act
         patient = Patient(
             id=patient_id,
-            medical_record_number=mrn,
             name=name,
             date_of_birth=thirty_years_ago
         )

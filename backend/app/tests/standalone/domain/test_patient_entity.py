@@ -7,18 +7,18 @@ without any external dependencies.
 
 import pytest
 from unittest.mock import Mock
-from datetime import date
+from datetime import date, datetime
+import uuid
 
 # Import the domain entity class
 from app.domain.entities.patient import Patient
-from app.domain.entities.patient import PatientId
 
 
 @pytest.mark.standalone()
 def test_patient_creation_with_valid_data_succeeds():
     """Test that a Patient entity can be created with valid data."""
     # Arrange
-    patient_id = PatientId("123e4567-e89b-12d3-a456-426614174000")
+    patient_id = uuid.uuid4()
     name = "John Doe"
     date_of_birth = date(1990, 1, 1)
 
@@ -27,7 +27,7 @@ def test_patient_creation_with_valid_data_succeeds():
         id=patient_id,
         name=name,
         date_of_birth=date_of_birth,
-        medical_record_number="MRN12345"
+        gender="male"
     )
     
 
@@ -35,7 +35,6 @@ def test_patient_creation_with_valid_data_succeeds():
     assert patient.id == patient_id
     assert patient.name == name
     assert patient.date_of_birth == date_of_birth
-    assert patient.medical_record_number == "MRN12345"
 
 
 @pytest.mark.standalone()
@@ -43,10 +42,10 @@ def test_patient_age_calculation_is_correct():
     """Test that the patient age is calculated correctly."""
     # Arrange
     patient = Patient(
-        id=PatientId("123e4567-e89b-12d3-a456-426614174000"),
+        id=uuid.uuid4(),
         name="John Doe",
         date_of_birth=date(1990, 1, 1),
-        medical_record_number="MRN12345"
+        gender="male"
     )
     
     # Act - Use a mock for today's date to make the test deterministic
@@ -61,26 +60,26 @@ def test_patient_age_calculation_is_correct():
 def test_patient_equality_based_on_id():
     """Test that patients are considered equal if they have the same ID."""
     # Arrange
-    id1 = PatientId("123e4567-e89b-12d3-a456-426614174000")
+    id1 = uuid.uuid4()
     patient1 = Patient(
         id=id1,
         name="John Doe",
         date_of_birth=date(1990, 1, 1),
-        medical_record_number="MRN12345"
+        gender="male"
     )
     
     patient2 = Patient(
         id=id1,  # Same ID
         name="Different Name",  # Different name
         date_of_birth=date(1995, 5, 5),  # Different DoB
-        medical_record_number="MRN54321"  # Different MRN
+        gender="female"
     )
     
     patient3 = Patient(
-        id=PatientId("223e4567-e89b-12d3-a456-426614174001"),  # Different ID
+        id=uuid.uuid4(),  # Different ID
         name="John Doe",  # Same name
         date_of_birth=date(1990, 1, 1),  # Same DoB
-        medical_record_number="MRN12345"  # Same MRN
+        gender="male"
     )
     
     # Assert

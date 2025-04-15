@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
 
-from app.domain.exceptions import ValidationException
+from app.domain.exceptions import ValidationError
 
 
 class ProviderType(Enum):
@@ -138,32 +138,32 @@ class Provider:
         """
         # Check required fields
         if not self.first_name:
-            raise ValidationException("First name is required")
+            raise ValidationError("First name is required")
         
         if not self.last_name:
-            raise ValidationException("Last name is required")
+            raise ValidationError("Last name is required")
         
         if not self.provider_type:
-            raise ValidationException("Provider type is required")
+            raise ValidationError("Provider type is required")
         
         # Check that at least one contact method is provided
         if not self.email and not self.phone:
-            raise ValidationException("At least one contact method (email or phone) is required")
+            raise ValidationError("At least one contact method (email or phone) is required")
         
         # Validate email format if provided
         if self.email and not self._is_valid_email(self.email):
-            raise ValidationException(f"Invalid email format: {self.email}")
+            raise ValidationError(f"Invalid email format: {self.email}")
         
         # Validate phone format if provided
         if self.phone and not self._is_valid_phone(self.phone):
-            raise ValidationException(f"Invalid phone format: {self.phone}")
+            raise ValidationError(f"Invalid phone format: {self.phone}")
         
         # Validate license number if provider is a psychiatrist
         if (
             self.provider_type == ProviderType.PSYCHIATRIST and
             not self.license_number
         ):
-            raise ValidationException("License number is required for psychiatrists")
+            raise ValidationError("License number is required for psychiatrists")
     
     def _is_valid_email(self, email: str) -> bool:
         """
@@ -374,10 +374,10 @@ class Provider:
         """
         # Validate education entry
         if not education.get("institution"):
-            raise ValidationException("Education institution is required")
+            raise ValidationError("Education institution is required")
         
         if not education.get("degree"):
-            raise ValidationException("Education degree is required")
+            raise ValidationError("Education degree is required")
         
         # Add education entry
         self.education.append(education)
@@ -397,7 +397,7 @@ class Provider:
         """
         # Validate certification
         if not certification.get("name"):
-            raise ValidationException("Certification name is required")
+            raise ValidationError("Certification name is required")
         
         # Add certification
         self.certifications.append(certification)
@@ -419,7 +419,7 @@ class Provider:
         for day, slots in availability.items():
             for slot in slots:
                 if "start" not in slot or "end" not in slot:
-                    raise ValidationException(f"Invalid availability slot for {day}: {slot}")
+                    raise ValidationError(f"Invalid availability slot for {day}: {slot}")
         
         self.availability = availability
         
@@ -454,7 +454,7 @@ class Provider:
         
         # Validate slot
         if start >= end:
-            raise ValidationException("Start time must be before end time")
+            raise ValidationError("Start time must be before end time")
         
         # Initialize day if not present
         if day not in self.availability:
@@ -552,7 +552,7 @@ class Provider:
             ValidationException: If the count is negative
         """
         if count < 0:
-            raise ValidationException("Patient count cannot be negative")
+            raise ValidationError("Patient count cannot be negative")
         
         self.current_patient_count = count
         
@@ -570,7 +570,7 @@ class Provider:
             self.max_patients is not None and
             self.current_patient_count >= self.max_patients
         ):
-            raise ValidationException("Maximum patient count reached")
+            raise ValidationError("Maximum patient count reached")
         
         self.current_patient_count += 1
         
@@ -585,7 +585,7 @@ class Provider:
             ValidationException: If the count is already zero
         """
         if self.current_patient_count <= 0:
-            raise ValidationException("Patient count is already zero")
+            raise ValidationError("Patient count is already zero")
         
         self.current_patient_count -= 1
         

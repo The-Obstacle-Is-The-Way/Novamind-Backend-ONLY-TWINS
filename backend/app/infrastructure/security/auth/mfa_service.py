@@ -80,8 +80,8 @@ class MFAService:
             email_code_length: Length of email verification codes
             verification_timeout_seconds: Timeout for verification codes
         """
-        self.secret_key = secret_key or settings.security.MFA_SECRET_KEY
-        self.issuer_name = issuer_name or settings.security.MFA_ISSUER_NAME
+        self.secret_key = secret_key or settings.MFA_SECRET_KEY
+        self.issuer_name = issuer_name or settings.MFA_ISSUER_NAME
         self.totp_digits = totp_digits
         self.totp_interval = totp_interval
         self.sms_code_length = sms_code_length

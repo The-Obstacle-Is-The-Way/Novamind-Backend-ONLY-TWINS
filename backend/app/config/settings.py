@@ -40,6 +40,13 @@ class Settings(BaseSettings):
     ALGORITHM: str = Field(default="HS256", json_schema_extra={"env": "ALGORITHM"})
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=7, json_schema_extra={"env": "JWT_REFRESH_TOKEN_EXPIRE_DAYS"})
     
+    # MFA Settings
+    MFA_SECRET_KEY: str = Field(
+        default="novamind_development_mfa_secret_key_change_in_prod", 
+        json_schema_extra={"env": "MFA_SECRET_KEY"}
+    )
+    MFA_ISSUER_NAME: str = Field(default="NovaMind Psychiatry", json_schema_extra={"env": "MFA_ISSUER_NAME"})
+    
     # CORS Configuration
     BACKEND_CORS_ORIGINS: list[str] = Field(
         default=["http://localhost:3000", "http://localhost:8000"],
