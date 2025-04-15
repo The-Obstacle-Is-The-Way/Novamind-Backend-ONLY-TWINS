@@ -101,32 +101,33 @@ class TestAPIHIPAACompliance:
             app.state.mock_patient_repo = MagicMock(spec=PatientRepository)
 
             # --- Mock Services & Dependencies (Define internal mocks) ---
-            # Simplified user data for testing roles
+            # Simplified user data for testing roles - KEYS MUST MATCH SUB FROM TOKEN DECODE
             MOCK_USERS = {
                 "admin-user-id": {"id": "admin-user-id", "username": "admin", "role": "admin", "patient_ids": []}, 
                 "doctor-user-id": {"id": "doctor-user-id", "username": "doctor", "role": "doctor", "patient_ids": ["P67890"]}, 
-                "patient-user-id": {"id": "P12345", "username": "patient", "role": "patient", "patient_ids": ["P12345"]},
-                "other-patient-user-id": {"id": "P_OTHER", "username": "other_patient", "role": "patient", "patient_ids": ["P_OTHER"]}
+                "P12345": {"id": "P12345", "username": "patient", "role": "patient", "patient_ids": ["P12345"]}, # Key matches patient token sub
+                "P_OTHER": {"id": "P_OTHER", "username": "other_patient", "role": "patient", "patient_ids": ["P_OTHER"]} # Key matches other patient token sub
             }
             
             # Mock token decoding
             def mock_decode_token_internal(token_str: str) -> TokenPayload:
-                logger.debug(f"mock_decode_token_internal called with token: {token_str[:10]}...") # Log token start
+                # OAuth2PasswordBearer dependency strips "Bearer ", so token_str here is just the credential part.
+                logger.debug(f"mock_decode_token_internal called with token credential: {token_str[:10]}...") # Log token start
                 user_id = None
                 roles = []
 
-                # Extract user ID and roles based on the dummy token string
-                if token_str == "Bearer valid-admin-token":
-                    user_id = "admin_user_id"
+                # Extract user ID and roles based on the dummy token string (NO "Bearer " prefix here)
+                if token_str == "valid-admin-token": # Check against credential only
+                    user_id = "admin-user-id" # Use MOCK_USERS key
                     roles = ["admin"]
-                elif token_str == "Bearer valid-doctor-token-assigned":
-                    user_id = "doctor_user_id_assigned"
+                elif token_str == "valid-doctor-token": # Check against credential only
+                    user_id = "doctor-user-id" # Use MOCK_USERS key
                     roles = ["doctor"]
-                elif token_str == "Bearer valid-doctor-token-unassigned":
-                    user_id = "doctor_user_id_unassigned"
-                    roles = ["doctor"]
-                elif token_str == "Bearer valid-patient-token":
-                    user_id = "patient_user_id"
+                elif token_str == "valid-patient-token": # Check against credential only
+                    user_id = "P12345" # Use MOCK_USERS key
+                    roles = ["patient"]
+                elif token_str == "valid-other-patient-token": # Check against credential only
+                    user_id = "P_OTHER" # Use MOCK_USERS key
                     roles = ["patient"]
                 
                 if user_id:
@@ -305,23 +306,23 @@ class TestAPIHIPAACompliance:
     
     @pytest.fixture
     def admin_token(self):
-        """Create admin token."""
-        return "Bearer admin-token-12345"
-    
+        """Return a dummy admin token string."""
+        return "Bearer valid-admin-token" # Correct format
+
     @pytest.fixture
     def doctor_token(self):
-        """Create doctor token."""
-        return "Bearer doctor-token-67890"
-    
+        """Return a dummy doctor token string."""
+        return "Bearer valid-doctor-token" # Correct format, simplified
+
     @pytest.fixture
     def patient_token(self):
-        """Create patient token."""
-        return "Bearer patient-token-P12345"
+        """Return a dummy patient token string."""
+        return "Bearer valid-patient-token" # Correct format
 
     @pytest.fixture
     def other_patient_token(self):
-        """Create a token for a different patient."""
-        return "Bearer other-patient-token-P_OTHER" # Represents a different patient
+        """Return a dummy token string for a different patient."""
+        return "Bearer valid-other-patient-token" # Correct format
 
     @pytest.fixture
     def test_patient(self):

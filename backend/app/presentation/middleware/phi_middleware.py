@@ -78,8 +78,12 @@ class PHIMiddleware(BaseHTTPMiddleware):
         Returns:
             The processed response
         """
+        # Explicitly log entry into dispatch to confirm execution
+        # logger.critical(f"[PHIMiddleware.dispatch] ENTERED for path: {request.url.path}")
+
         # Check if the path should be excluded from PHI scanning
         if self._should_exclude_path(request.url.path):
+            # logger.debug(f"[PHIMiddleware.dispatch] Path {request.url.path} excluded.")
             return await call_next(request)
         
         # Create a copy of the request with sanitized content
@@ -178,6 +182,7 @@ class PHIMiddleware(BaseHTTPMiddleware):
     async def _sanitize_response(self, response: Response, path: str) -> Response:
         """
         Sanitize the response body if it contains potential PHI and matches criteria.
+        Handles both standard and streaming responses by reading the body once.
         
         Args:
             response: The Response object
@@ -186,88 +191,96 @@ class PHIMiddleware(BaseHTTPMiddleware):
         Returns:
             Sanitized Response object
         """
-        # Skip sanitization for excluded paths
-        if self._should_exclude_path(path):
+        # Skip sanitization for excluded paths or non-success status codes
+        if self._should_exclude_path(path) or not (200 <= response.status_code < 300):
+            # logger.debug(f"[PHIMiddleware._sanitize_response] Skipping sanitization for path {path} or status {response.status_code}")
             return response
 
-        # Get whitelisted patterns for the current path
-        whitelist = self.whitelist_patterns.get(path, set())
+        # Get whitelisted patterns for the current path (currently unused but kept for future)
+        # whitelist = self.whitelist_patterns.get(path, set())
+
+        original_body_bytes: bytes = b""
+        sanitized_body_bytes: bytes
+        is_json_response = False
+        original_media_type = response.media_type
 
         try:
-            # Check if response has a body and is JSON
-            # Note: response.media_type might be None
-            if response.media_type and "application/json" in response.media_type:
-                
-                # Handle StreamingResponse differently
-                if isinstance(response, StreamingResponse):
-                    # Buffer the streaming response body
-                    body_bytes = b""
-                    async for chunk in response.body_iterator:
-                        body_bytes += chunk
-                    body_str = body_bytes.decode('utf-8')
-                else:
-                     # Read standard response body
-                    response_body = await response.body()
-                    # Ensure body is decoded correctly
-                    try:
-                        body_str = response_body.decode('utf-8')
-                    except UnicodeDecodeError:
-                         logger.warning(f"Could not decode response body as UTF-8 for path {path}. Skipping sanitization.")
-                         return response # Cannot sanitize if not valid UTF-8
-
-                # If body is empty, no need to sanitize
-                if not body_str:
-                    return response
-
+            # --- Step 1: Read the entire response body once --- 
+            # Primarily assume a streaming response from TestClient/Starlette
+            # logger.debug(f"[PHIMiddleware._sanitize_response] Attempting to read response body via iterator for path: {path} (Type: {type(response).__name__})")
+            try:
+                body_chunks = [chunk async for chunk in response.body_iterator]
+                original_body_bytes = b"".join(body_chunks)
+                # logger.debug(f"[PHIMiddleware._sanitize_response] Read {len(original_body_bytes)} bytes via iterator.")
+            except AttributeError:
+                # Fallback for non-streaming responses (e.g., standard Response)
+                # logger.warning(f"[PHIMiddleware._sanitize_response] Response type {type(response).__name__} lacks body_iterator. Attempting await response.body().")
                 try:
-                    # Parse JSON
+                     original_body_bytes = await response.body() # type: ignore
+                     # logger.debug(f"[PHIMiddleware._sanitize_response] Read {len(original_body_bytes)} bytes via await body().")
+                except Exception as fallback_err:
+                     logger.error(f"Could not read body using iterator or await body(): {fallback_err}")
+                     original_body_bytes = b""
+            except Exception as stream_err:
+                logger.error(f"Error reading response body stream: {stream_err}")
+                original_body_bytes = b""
+
+            # Try to guess media type if it was None (often the case for StreamingResponse)
+            if original_media_type is None and original_body_bytes:
+                if original_body_bytes.strip().startswith(b'{') and original_body_bytes.strip().endswith(b'}'):
+                    original_media_type = "application/json"
+                    # logger.debug(f"[PHIMiddleware._sanitize_response] Guessed media type as application/json")
+                # Add other guesses if needed (e.g., for HTML, XML)
+
+            # Ensure original_body_bytes is assigned before proceeding
+            sanitized_body_bytes = original_body_bytes 
+            # logger.debug(f"[PHIMiddleware._sanitize_response] Original body read ({len(original_body_bytes)} bytes), Media Type: {original_media_type}")
+
+            # --- Step 2: Attempt JSON sanitization if applicable --- 
+            if original_media_type and "application/json" in original_media_type and original_body_bytes:
+                is_json_response = True
+                # logger.debug(f"[PHIMiddleware._sanitize_response] Attempting JSON sanitization for path: {path}")
+                try:
+                    body_str = original_body_bytes.decode('utf-8')
                     data = json.loads(body_str)
-                except json.JSONDecodeError:
-                    logger.warning(f"Could not parse JSON response body for path {path}. Skipping sanitization.")
-                    # If we buffered a stream, we need to return the original content in a new response
-                    if isinstance(response, StreamingResponse):
-                         return Response(
-                             content=body_bytes, # Use original bytes
-                             status_code=response.status_code,
-                             headers=dict(response.headers),
-                             media_type=response.media_type
-                         )
-                    return response # Return original response if it wasn't a stream
+                    
+                    # logger.info(f"---> PHIMiddleware: Data before sanitize (type {type(data)}): {str(data)[:500]}...")
+                    sanitized_data = self.phi_service.sanitize(data, sensitivity="high")
+                    # logger.info(f"---> PHIMiddleware: Data after sanitize (type {type(sanitized_data)}): {str(sanitized_data)[:500]}...")
+                    
+                    sanitized_body_bytes = json.dumps(sanitized_data).encode('utf-8')
+                    # logger.debug(f"[PHIMiddleware._sanitize_response] JSON sanitization successful for path: {path}")
+                except (UnicodeDecodeError, json.JSONDecodeError) as json_err:
+                    logger.warning(f"Could not decode/parse JSON response for path {path}. Skipping sanitization. Error: {json_err}")
+                    # Keep original_body_bytes in sanitized_body_bytes
+                except Exception as sanitize_err:
+                    logger.exception(f"Unexpected error during JSON sanitization for path {path}: {sanitize_err}")
+                    # Keep original_body_bytes in sanitized_body_bytes
+            else:
+                 # logger.debug(f"[PHIMiddleware._sanitize_response] Skipping JSON sanitization for path: {path} (Not JSON or empty body)")
+                 pass # No longer needed with pass
 
-                # DEBUG: Log data structure before sanitization
-                logger.info(f"---> PHIMiddleware: Data before sanitize (type {type(data)}): {str(data)[:500]}...") 
+            # --- Step 3: Create a new standard Response --- 
+            # Always create a new Response to ensure correct headers and content length.
+            new_response = Response(
+                content=sanitized_body_bytes,
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                media_type=original_media_type # Use the original/guessed media type
+            )
+            # Ensure content-length is updated if body changed
+            if "content-length" in new_response.headers:
+                 new_response.headers["content-length"] = str(len(sanitized_body_bytes))
+                 
+            # logger.debug(f"[PHIMiddleware._sanitize_response] Returning new Response for path: {path}")
+            return new_response
 
-                # Sanitize JSON data using the PHI Service
-                # The PHIService.sanitize method should handle the recursive logic.
-                # Use default sensitivity from the service for now -> Changed to high
-                # sanitized_data = self.phi_service.sanitize(data)
-                sanitized_data = self.phi_service.sanitize(data, sensitivity="high")
-
-                # DEBUG: Log data structure after sanitization
-                logger.info(f"---> PHIMiddleware: Data after sanitize (type {type(sanitized_data)}): {str(sanitized_data)[:500]}...")
-                
-                # Replace response body with sanitized data
-                sanitized_body = json.dumps(sanitized_data).encode('utf-8')
-                
-                # Create a new response with sanitized body
-                # Important: Always create a new standard Response after sanitizing
-                # This handles both original standard responses and buffered streaming responses
-                new_response = Response(
-                    content=sanitized_body,
-                    status_code=response.status_code,
-                    headers=dict(response.headers),
-                    media_type=response.media_type
-                )
-                
-                return new_response
-                
         except Exception as e:
-            # Log the error and the type of response for better debugging
             response_type = type(response).__name__
-            logger.exception(f"Error sanitizing {response_type} response for path {path}: {str(e)}") # Use logger.exception for stack trace
-        
-        # If we couldn't sanitize or don't need to, return original response
-        return response
+            logger.exception(f"Critical error in _sanitize_response for {response_type} at path {path}: {str(e)}")
+            # Fallback: return original response if critical error occurs
+            # This might leak PHI in edge cases but prevents total failure.
+            return response
 
 
 def add_phi_middleware(
