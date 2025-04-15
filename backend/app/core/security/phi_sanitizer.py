@@ -18,7 +18,7 @@ class PHISanitizer:
     """
     
     # PHI detection patterns
-    _NAME_PATTERN: Pattern = re.compile(r'\b(?:[A-Z][a-z]+\s+){1,2}[A-Z][a-z]+\b')
+    _NAME_PATTERN: Pattern = re.compile(r'\b(?:[A-Z][a-z]+\s+){1,2}[A-Z][a-z]+\b', re.IGNORECASE)
     _EMAIL_PATTERN: Pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
     _PHONE_PATTERN: Pattern = re.compile(r'(\+\d{1,2}\s*)?(\()?\d{3}(\))?[\s.-]?\d{3}[\s.-]?\d{4}')
     _SSN_PATTERN: Pattern = re.compile(r'\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b|"\d{3}-\d{2}-\d{4}"|\d{3} \d{2} \d{4}|SSN\s*[:=]\s*"?\d{3}-\d{2}-\d{4}"?')
@@ -38,6 +38,7 @@ class PHISanitizer:
         (_DOB_PATTERN, "[REDACTED DATE]"),
         (_EMAIL_PATTERN, "[REDACTED EMAIL]"),
         (_AGE_PATTERN, "[REDACTED AGE]"),
+        # NAME pattern MUST be last to avoid overmatching
         (_NAME_PATTERN, "[REDACTED NAME]")
     ]
     
