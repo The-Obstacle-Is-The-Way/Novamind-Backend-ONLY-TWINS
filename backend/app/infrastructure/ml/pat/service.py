@@ -27,6 +27,8 @@ from app.core.exceptions import (
     DataPreprocessingError,
     ServiceUnavailableError
 )
+from app.core.utils.logging import get_logger
+from app.config.settings import get_settings # Import main settings
 
 
 logger = logging.getLogger(__name__)
