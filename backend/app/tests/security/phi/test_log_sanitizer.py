@@ -2,8 +2,10 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import time
+import pytest
 
-from app.infrastructure.security.log_sanitizer import LogSanitizer
+from app.infrastructure.security.phi.log_sanitizer import LogSanitizer
+# from app.core.utils.patterns import PHI_PATTERNS # REMOVED as unused and incorrect path
 
 
 class TestLogSanitizer(unittest.TestCase):

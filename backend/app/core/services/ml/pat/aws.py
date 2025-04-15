@@ -17,7 +17,8 @@ from typing import Any, Dict, List, Optional
 import boto3
 from botocore.exceptions import ClientError
 
-from app.core.config import get_settings
+# Use canonical config path
+from app.config.settings import get_settings
 settings = get_settings()
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,

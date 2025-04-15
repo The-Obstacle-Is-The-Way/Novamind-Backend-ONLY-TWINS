@@ -14,7 +14,8 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.pool import NullPool, QueuePool, FallbackAsyncAdaptedQueuePool
 from fastapi import Depends
 
-from app.core.config import Settings, get_settings
+# Use canonical config path
+from app.config.settings import Settings, get_settings
 from app.core.utils.logging import get_logger
 from app.infrastructure.persistence.sqlalchemy.config.base import Base
 

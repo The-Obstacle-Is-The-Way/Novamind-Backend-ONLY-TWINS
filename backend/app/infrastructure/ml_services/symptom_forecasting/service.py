@@ -13,9 +13,10 @@ from uuid import UUID
 
 import numpy as np
 from pydantic import BaseModel, Field
+import asyncio
 
-from app.core.config import get_settings
-settings = get_settings()
+# Use canonical config path
+from app.config.settings import get_settings
 from app.domain.interfaces.ml_services import SymptomForecastingService
 from app.infrastructure.ml.symptom_forecasting.ensemble_model import (
     SymptomEnsembleModel,
@@ -29,6 +30,8 @@ from app.infrastructure.ml.utils.serialization import (
     deserialize_model,
     serialize_prediction,
 )
+from app.infrastructure.ml_services.base import BaseMLService
+from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
 
 logger = logging.getLogger(__name__)
 

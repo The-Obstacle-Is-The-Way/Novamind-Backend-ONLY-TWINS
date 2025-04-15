@@ -10,7 +10,7 @@ import datetime
 import logging
 import os
 from typing import Any, Dict, Optional, Union
-from app.core.config import get_settings
+from app.config.settings import get_settings
 settings = get_settings()
 from app.infrastructure.security.log_sanitizer import PHIFormatter, LogSanitizer # Import LogSanitizer
 

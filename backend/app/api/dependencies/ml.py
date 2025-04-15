@@ -9,14 +9,14 @@ and other ML-based services.
 from functools import lru_cache
 from typing import Dict, Any
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 
-from app.core.config import get_settings
+from app.config.settings import get_settings
 settings = get_settings()
 from app.core.services.ml.pat.factory import PATServiceFactory
 from app.core.services.ml.pat.interface import PATInterface
 from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService
-from app.domain.services.mentalllama_service import MentalLLaMAService
+from app.core.services.ml import MentalLLaMAService
 
 
 @lru_cache()

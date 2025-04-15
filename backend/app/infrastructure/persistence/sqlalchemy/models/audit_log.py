@@ -42,7 +42,8 @@ class AuditLog(Base):
     
     # Link to user table (nullable for system events without a specific user context)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True, index=True)
-    user = relationship("User") # Assuming a User model exists with __tablename__ = 'users'
+    # TEMP: Comment out relationship until User model is implemented
+    # user = relationship("User") 
 
     ip_address = Column(String(50), nullable=True) # Source IP of the request
     action = Column(String(255), nullable=False) # e.g., 'login', 'view_record', 'update_settings', 'create_user'

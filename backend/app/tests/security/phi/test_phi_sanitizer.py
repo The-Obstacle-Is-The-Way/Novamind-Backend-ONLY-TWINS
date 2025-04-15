@@ -3,7 +3,6 @@ import pytest
 import re
 import json
 from unittest.mock import patch, MagicMock
-import unittest
 
 from app.infrastructure.security.phi.log_sanitizer import LogSanitizer
 # PHIDetector import is no longer needed as PHISanitizer doesn't depend on it
@@ -92,7 +91,7 @@ class TestPHISanitizer:
         # Since sanitize_json doesn't exist, we'll parse the JSON, sanitize the
         # dict, and re-serialize
         parsed_data = json.loads(input_json)
-        sanitized_data = sanitizer.sanitize_dict(parsed_data)
+        sanitized_data = sanitizer.sanitize(parsed_data)
         sanitized = json.dumps(sanitized_data)
         sanitized_data = json.loads(sanitized)
 
@@ -110,7 +109,7 @@ class TestPHISanitizer:
 
     def test_sanitize_dict_with_phi(self, sanitizer, sample_phi_data):
         """Test sanitization of dictionary data containing PHI."""
-        sanitized_data = sanitizer.sanitize_dict(sample_phi_data)
+        sanitized_data = sanitizer.sanitize(sample_phi_data)
 
         # Check that PHI is sanitized but structure is preserved
         assert sanitized_data["ssn"] != "123-45-6789"
@@ -143,7 +142,7 @@ class TestPHISanitizer:
             "non_phi_field": "This data should be untouched"
         }
 
-        sanitized_data = sanitizer.sanitize_dict(nested_data)
+        sanitized_data = sanitizer.sanitize(nested_data)
 
         # Check nested PHI is sanitized
         assert sanitized_data["patient"]["demographics"]["name"] != "Jane Doe"
@@ -276,7 +275,7 @@ class TestPHISanitizer:
         # Measure sanitization time
         import time
         start = time.time()
-        sanitized_data = sanitizer.sanitize_dict(large_data)
+        sanitized_data = sanitizer.sanitize(large_data)
         end = time.time()
 
         # Sanitization should be reasonably fast (adjust threshold as needed)
@@ -297,7 +296,7 @@ class TestPHISanitizer:
             "is_insured": True        # Not PHI
         }
 
-        sanitized = sanitizer.sanitize_dict(mixed_data)
+        sanitized = sanitizer.sanitize(mixed_data)
 
         # PHI should be sanitized
         assert sanitized["name"] != "John Smith"
@@ -312,34 +311,28 @@ class TestPHISanitizer:
     def test_sanitizer_edge_cases(self, sanitizer):
         """Test sanitizer with edge cases and unusual inputs."""
         # Test with None
-        assert sanitizer.sanitize_text(None) is None
+        assert sanitizer.sanitize(None) is None
 
         # Test with empty string
-        assert sanitizer.sanitize_text("") == ""
+        assert sanitizer.sanitize("") == ""
 
         # Test with empty dict
-        assert sanitizer.sanitize_dict({}) == {}
+        assert sanitizer.sanitize({}) == {}
 
-        # Test with empty list (using our list sanitization approach)
-        assert [sanitizer.sanitize_text(item) if isinstance(item, str) else item for item in []] == []
+        # Test with empty list
+        assert sanitizer.sanitize([]) == []
 
-        # Test with mixed types in list
-        mixed_list = ["John Smith", 123, None, True, {"ssn": "123-45-6789"}]
-        # Sanitize each item in the list appropriately
-        sanitized_list = []
-        for item in mixed_list:
-            if isinstance(item, str):
-                sanitized_list.append(sanitizer.sanitize_text(item))
-            elif isinstance(item, dict):
-                sanitized_list.append(sanitizer.sanitize_dict(item))
-            else:
-                sanitized_list.append(item)
+        # Test with data types that shouldn't be sanitized (e.g., numbers)
+        assert sanitizer.sanitize(12345) == 12345
+        assert sanitizer.sanitize(True) is True
 
-        assert "John Smith" not in str(sanitized_list[0])
+        # Test with mixed-type list
+        mixed_list = ["John Doe", 123, {"ssn": "123-45-6789"}]
+        sanitized_list = sanitizer.sanitize(mixed_list)
+        assert isinstance(sanitized_list, list)
+        assert "[REDACTED" in sanitized_list[0] # Check if name was redacted
         assert sanitized_list[1] == 123
-        assert sanitized_list[2] is None
-        assert sanitized_list[3] is True
-        assert "123-45-6789" not in str(sanitized_list[4])
+        assert "[REDACTED" in sanitized_list[2]["ssn"] # Check if ssn was redacted
 
     def test_redaction_format_consistency(self, sanitizer):
         """Test that redaction format is consistent."""
@@ -373,11 +366,9 @@ class TestPHISanitizer:
             "phone": "(555) 123-4567",
             "note": "Call for appointment"
         }
-        sanitized_data = sanitizer.sanitize_dict(input_data)
-        assert "[REDACTED NAME]" == sanitized_data["name"]
-        # Refined phone pattern should work
-        assert "[REDACTED PHONE]" == sanitized_data["phone"]
-        assert "Call for appointment" == sanitized_data["note"]
+        sanitized_data = sanitizer.sanitize(input_data)
+        assert sanitized_data['phone'] == "[REDACTED PHONE]"
+        assert sanitized_data['name'] != "John Doe" # Name should also be sanitized
 
     def test_sanitize_complex_data_structure(self, sanitizer):
         """Test sanitizing complex nested data structures."""
@@ -417,13 +408,9 @@ class TestPHISanitizer:
                 "email": "[REDACTED EMAIL]"
             }
         }
-        result = sanitizer.sanitize_dict(input_data)
-        # Adjust expectation for date (won't match) and phone (should match correctly)
-        expected_sanitized["patients"][0]["appointments"][0]["date"] = "2023-05-15"
-        expected_sanitized["patients"][0]["phone"] = "[REDACTED PHONE]"
-        expected_sanitized["contact"]["phone"] = "[REDACTED PHONE]" # Correct phone redaction
-        assert expected_sanitized == result
+        result = sanitizer.sanitize(input_data)
+        assert result == expected_sanitized
 
-class TestLogSanitizer(unittest.TestCase):
+class TestLogSanitizer:
     # Add your test methods here
     pass

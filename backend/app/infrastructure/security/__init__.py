@@ -49,7 +49,8 @@ from app.infrastructure.security.rate_limiting import DistributedRateLimiter # I
 from app.infrastructure.security.audit import AuditLogger
 
 from .auth.authentication_service import AuthenticationService
-from .auth.password_service import PasswordService
+# Remove incorrect PasswordService import
+# from .auth.password_service import PasswordService 
 from .encryption.base_encryption_service import BaseEncryptionService
 from .jwt.jwt_service import JWTService
 
@@ -58,7 +59,8 @@ from .jwt.jwt_service import JWTService
 
 __all__ = [
     "AuthenticationService",
-    "PasswordService",
+    # Remove PasswordService from export
+    # "PasswordService", 
     "BaseEncryptionService",
     "JWTService",
 #    "PHIMiddleware",

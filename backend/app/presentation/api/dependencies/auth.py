@@ -8,9 +8,10 @@ for FastAPI routes, including JWT validation and user resolution.
 
 from typing import Dict, Any, Optional
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
+from app.config.settings import get_settings
 settings = get_settings()
 from app.infrastructure.security.jwt_service import JWTService
 from app.core.utils.logging import get_logger

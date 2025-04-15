@@ -11,8 +11,11 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
-from app.core.config import get_settings
-settings = get_settings()
+from pydantic import BaseModel, Field
+import asyncio
+
+# Use canonical config path
+from app.config.settings import get_settings
 from app.domain.entities.digital_twin.digital_twin import DigitalTwin
 from app.domain.interfaces.ml_services import (
     BiometricCorrelationService,
@@ -20,6 +23,7 @@ from app.domain.interfaces.ml_services import (
     PharmacogenomicsService,
     SymptomForecastingService,
 )
+from app.infrastructure.ml_services.base import BaseMLService
 
 logger = logging.getLogger(__name__)
 

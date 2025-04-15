@@ -21,7 +21,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.api.routes.temporal_neurotransmitter import router as temporal_router
 from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
-from app.core.config import get_settings
+from app.config.settings import get_settings
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, ClinicalSignificance
 from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
 from app.domain.entities.temporal_events import CorrelatedEvent, EventChain
@@ -32,6 +32,7 @@ from app.domain.services.visualization_preprocessor import NeurotransmitterVisua
 from app.infrastructure.models.temporal_sequence_model import Base
 from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
 from app.infrastructure.repositories.temporal_sequence_repository import SqlAlchemyTemporalSequenceRepository
+from app.domain.enums.role import Role
 
 # Initialize settings using the getter function
 settings = get_settings()

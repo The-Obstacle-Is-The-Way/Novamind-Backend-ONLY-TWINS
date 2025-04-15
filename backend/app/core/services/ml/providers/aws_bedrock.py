@@ -12,13 +12,15 @@ from typing import Any, Dict, List, Optional, Union
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
-from app.core.config import get_settings
-settings = get_settings()
+# Use canonical config path
+from app.config.settings import get_settings
 from app.core.exceptions import (
     InvalidConfigurationError, 
     InvalidRequestError,
     ModelNotFoundError,
     ServiceUnavailableError,
+    ServiceProviderError,
+    ConfigurationError,
 )
 from app.core.services.ml.mentalllama import MentaLLaMA as BaseMentaLLaMA # Import correct class, alias for compatibility if needed
 from app.core.utils.logging import get_logger

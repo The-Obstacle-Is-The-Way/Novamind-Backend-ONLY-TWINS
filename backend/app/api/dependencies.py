@@ -7,12 +7,13 @@ FastAPI's dependency injection system. These functions create and provide
 various services and dependencies to API endpoints.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import Depends, HTTPException, status
 
-from app.core.config import get_settings
-settings = get_settings()
+from app.config.settings import get_settings
+from app.infrastructure.persistence.sqlalchemy.database import get_session
 from app.core.exceptions import InvalidConfigurationError
 from app.core.services.ml.pat.factory import PATFactory
 from app.core.services.ml.pat.interface import PATInterface
@@ -34,7 +35,7 @@ def get_pat_service() -> PATInterface:
     """
     try:
         # Get PAT configuration from settings
-        pat_config = settings.ml_config.get("pat", {})
+        pat_config = get_settings().ml_config.get("pat", {})
         
         # Create PAT service using factory
         service = PATFactory.create_pat_service(pat_config)

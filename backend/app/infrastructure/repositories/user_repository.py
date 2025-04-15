@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Corrected import for password hashing function
-from app.infrastructure.security.encryption import hash_data as get_password_hash
+from app.infrastructure.security.password.hashing import get_password_hash
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.models.user_model import UserModel

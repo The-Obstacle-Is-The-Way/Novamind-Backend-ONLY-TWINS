@@ -24,7 +24,7 @@ from sqlalchemy.pool import NullPool
 from sqlalchemy import text
 
 from app.infrastructure.persistence.sqlalchemy.models.base import Base
-from app.core.config import get_test_settings
+from app.config.settings import get_settings
 from app.core.db import get_session
 
 
@@ -232,3 +232,11 @@ def transactional_test(db_session: AsyncSession) -> Callable:
         return TransactionalTestContext(db_session)
 
     return _transactional_test
+
+# Define a local get_test_settings if the original is removed
+def get_test_settings():
+    """Provide test-specific settings, potentially overriding defaults."""
+    # Example: Use a test database URL
+    test_settings = get_settings().copy()
+    test_settings.SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///./test_db.sqlite3" # Example
+    return test_settings

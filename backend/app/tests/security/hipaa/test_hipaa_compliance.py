@@ -31,7 +31,7 @@ from app.tests.security.utils.base_security_test import BaseSecurityTest
 
 # Import application code
 try:
-    from app.core.config import get_settings
+    from app.config.settings import get_settings
     settings = get_settings()
     from app.domain.exceptions import (
         AuthenticationError,
@@ -65,6 +65,7 @@ try:
         sanitize_phi,
     )
     
+    from app.infrastructure.security.phi import PHIAuditHandler
 except ImportError as e:
     # Create placeholder for these modules if they don't exist yet
     # This allows the tests to be defined even before implementation

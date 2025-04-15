@@ -10,10 +10,12 @@ import pytest
 import jwt
 from datetime import datetime, timedelta, timezone # Corrected import
 # from app.domain.utils.datetime_utils import UTC # Use timezone.utc directly
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 
-from app.infrastructure.security.jwt_service import JWTService
-from app.core.config import Settings # Assuming Settings is needed for context
+# Use canonical config path
+from app.config.settings import Settings
+from app.domain.models.user import User
+from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 
 # Define UTC if not imported elsewhere (Python 3.11+)
 try:

@@ -9,6 +9,8 @@ and adherence to SOLID design patterns.
 import os
 import sys
 from pathlib import Path
+import pytest
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 # Add the backend directory to the Python path
 backend_dir = Path(__file__).parent.parent.parent
@@ -24,8 +26,8 @@ if not os.environ.get("ENVIRONMENT"):
 
 # Import app modules to verify setup
 try:
-    from app.core.config import Settings
-    from app.infrastructure.persistence.sqlalchemy.config.database import Database
+    from app.config.settings import Settings
+    from app.infrastructure.persistence.sqlalchemy.config.database import Base
 
     # Create settings instance to validate configuration
     settings = Settings()

@@ -5,6 +5,7 @@ import logging
 from sqlalchemy import Column, Integer, String, create_engine, text
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Assuming Base is correctly defined elsewhere or use declarative_base
 Base = declarative_base()
@@ -17,7 +18,7 @@ from app.infrastructure.persistence.sqlalchemy.database import (
     get_db_session,
     _database_instance # Import for resetting in tests if necessary
 )
-from app.core.config import get_settings # Assuming get_settings is here
+from app.config.settings import get_settings
 
 
 # Define a test model for database operations

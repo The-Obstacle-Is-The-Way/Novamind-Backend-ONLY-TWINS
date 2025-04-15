@@ -33,8 +33,11 @@ from app.infrastructure.persistence.sqlalchemy.models.audit_log import AuditLog
 from app.infrastructure.security.audit import AuditLogger
 from app.infrastructure.security.encryption import BaseEncryptionService
 from app.infrastructure.security.encryption.field_encryptor import FieldEncryptor
-from app.infrastructure.security.phi import PHIAuditMiddleware, PHIAuditHandler
-from app.infrastructure.security.phi.detector import PHIDetector
+# Import PHIAuditMiddleware from presentation layer - REMOVED as it's unused
+# from app.presentation.middleware.phi_middleware import PHIAuditMiddleware
+# PHIAuditHandler might also be in presentation or removed, leaving commented for now
+# from app.infrastructure.security.phi import PHIAuditHandler 
+# from app.infrastructure.security.phi.detector import PHIDetector # REMOVED as unused
 
 
 @pytest.mark.db_required()

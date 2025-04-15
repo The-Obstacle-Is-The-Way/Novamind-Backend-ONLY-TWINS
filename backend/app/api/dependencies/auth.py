@@ -13,14 +13,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.settings import get_settings
 settings = get_settings()
-from app.core.db import get_session # Import get_session for AsyncSession dependency
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session as get_session
 # Remove incorrect import of oauth2_scheme
-from app.core.auth import (
-    validate_jwt,
-    get_current_user_id,
-    get_has_patient_access,
-    get_admin_access
-)
+# from app.core.auth import (
+#     validate_jwt,
+#     get_current_user_id,
+#     get_has_patient_access,
+#     get_admin_access
+# )
+from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
+from app.domain.exceptions import InvalidTokenError, TokenExpiredError
+
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.repositories.user_repository import get_user_repository
@@ -28,12 +31,20 @@ from app.infrastructure.repositories.user_repository import get_user_repository
 # Instantiate oauth2_scheme here
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # Assuming tokenUrl is correct
 
-async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> Dict[str, Any]:
+# Dependency to get JWTService instance (could use a more robust DI approach later)
+async def get_jwt_service() -> JWTService:
+    return JWTService()
+
+async def get_current_token_payload(
+    token: str = Depends(oauth2_scheme),
+    jwt_service: JWTService = Depends(get_jwt_service)
+) -> TokenPayload:
     """
-    Validate and decode the JWT token.
+    Validate and decode the JWT token using JWTService.
     
     Args:
         token: JWT token from the Authorization header
+        jwt_service: JWTService instance for decoding the token
         
     Returns:
         Decoded token payload
@@ -41,19 +52,27 @@ async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> Dict
     Raises:
         HTTPException: If token is invalid or expired
     """
-    return validate_jwt(token)
+    try:
+        payload = jwt_service.decode_token(token)
+        return payload
+    except TokenExpiredError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
+    except InvalidTokenError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {e}")
 
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    session: AsyncSession = Depends(get_session), # Depend directly on the session
+    session: AsyncSession = Depends(get_session),
+    jwt_service: JWTService = Depends(get_jwt_service)
 ) -> User:
     """
     Get the current authenticated user.
     
     Args:
         token: JWT token from the Authorization header
-        user_repository: User repository for fetching user data
+        session: Database session
+        jwt_service: JWTService instance for decoding the token
         
     Returns:
         Current authenticated user
@@ -61,14 +80,10 @@ async def get_current_user(
     Raises:
         HTTPException: If user not found or inactive
     """
-    # Use our new JWT validation
-    payload = validate_jwt(token)
-    
-    # Get user ID from payload
-    user_id = get_current_user_id(payload)
+    payload = await get_current_token_payload(token, jwt_service)
+    user_id = payload.sub # Access user ID from payload subject
     
     # Fetch user from repository
-    # Manually get the repository using the injected session
     user_repository = await get_user_repository(session=session)
     user = await user_repository.get_by_id(user_id)
     
@@ -89,14 +104,16 @@ async def get_current_user(
 
 async def get_current_active_clinician(
     token: str = Depends(oauth2_scheme),
-    session: AsyncSession = Depends(get_session), # Depend directly on the session
+    session: AsyncSession = Depends(get_session),
+    jwt_service: JWTService = Depends(get_jwt_service)
 ) -> User:
     """
     Get the current authenticated clinician user.
     
     Args:
         token: JWT token from the Authorization header
-        user_repository: User repository for fetching user data
+        session: Database session
+        jwt_service: JWTService instance for decoding the token
         
     Returns:
         Current authenticated clinician user
@@ -104,31 +121,32 @@ async def get_current_active_clinician(
     Raises:
         HTTPException: If user doesn't have clinician role
     """
-    payload = validate_jwt(token)
+    payload = await get_current_token_payload(token, jwt_service)
     
-    # Check if user has clinician access
-    if not get_has_patient_access(payload):
+    # Check roles from payload
+    if not payload.roles or "clinician" not in payload.roles: # Example role check
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions",
         )
     
     # Get the user
-    # Pass the session to get_current_user
-    user = await get_current_user(token=token, session=session)
+    user = await get_current_user(token=token, session=session, jwt_service=jwt_service)
     return user
 
 
 async def get_current_active_admin(
     token: str = Depends(oauth2_scheme),
-    session: AsyncSession = Depends(get_session), # Depend directly on the session
+    session: AsyncSession = Depends(get_session),
+    jwt_service: JWTService = Depends(get_jwt_service)
 ) -> User:
     """
     Get the current authenticated admin user.
     
     Args:
         token: JWT token from the Authorization header
-        user_repository: User repository for fetching user data
+        session: Database session
+        jwt_service: JWTService instance for decoding the token
         
     Returns:
         Current authenticated admin user
@@ -136,24 +154,24 @@ async def get_current_active_admin(
     Raises:
         HTTPException: If user doesn't have admin role
     """
-    payload = validate_jwt(token)
+    payload = await get_current_token_payload(token, jwt_service)
     
-    # Check if user has admin access
-    if not get_admin_access(payload):
+    # Check roles from payload
+    if not payload.roles or "admin" not in payload.roles: # Example role check
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions",
         )
     
     # Get the user
-    # Pass the session to get_current_user
-    user = await get_current_user(token=token, session=session)
+    user = await get_current_user(token=token, session=session, jwt_service=jwt_service)
     return user
 
 
 async def get_current_user_dict(
     token: str = Depends(oauth2_scheme),
-    session: AsyncSession = Depends(get_session) # Depend directly on the session
+    session: AsyncSession = Depends(get_session),
+    jwt_service: JWTService = Depends(get_jwt_service)
 ) -> Dict[str, Any]:
     """
     Get the current authenticated user as a dictionary.
@@ -162,14 +180,13 @@ async def get_current_user_dict(
     
     Args:
         token: JWT token from the Authorization header
-        user_repository: User repository for fetching user data
+        session: Database session
+        jwt_service: JWTService instance for decoding the token
         
     Returns:
         User information as a dictionary
     """
-    # Get the user
-    # Pass the session to get_current_user
-    user = await get_current_user(token=token, session=session)
+    user = await get_current_user(token=token, session=session, jwt_service=jwt_service)
     
     # Return just the essential information as a dictionary
     return {
@@ -185,6 +202,7 @@ async def get_current_user_dict(
 async def get_optional_user(
     token: Optional[str] = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
+    jwt_service: JWTService = Depends(get_jwt_service)
 ) -> Optional[User]:
     """
     Get the current user if authenticated, or None if not.
@@ -194,6 +212,7 @@ async def get_optional_user(
     Args:
         token: JWT token from the Authorization header (optional)
         session: Database session
+        jwt_service: JWTService instance for decoding the token
         
     Returns:
         Current authenticated user, or None if not authenticated
@@ -202,15 +221,9 @@ async def get_optional_user(
         return None
         
     try:
-        # Validate the token
-        payload = validate_jwt(token, raise_exception=False)
-        if not payload:
-            return None
-            
-        # Get user ID from payload
-        user_id = get_current_user_id(payload)
-        if not user_id:
-            return None
+        # Use JWTService to decode
+        payload = jwt_service.decode_token(token)
+        user_id = payload.sub
         
         # Use get_user_repository directly to avoid circular dependencies
         user_repository = await get_user_repository(session=session)
@@ -218,8 +231,12 @@ async def get_optional_user(
         
         if user and user.is_active:
             return user
+    except (TokenExpiredError, InvalidTokenError):
+        # Silently return None on token errors for optional user
+        return None
     except Exception:
-        # Silently return None on any error
+        # Log other potential errors
+        # logger.exception("Error fetching optional user") 
         pass
         
     return None

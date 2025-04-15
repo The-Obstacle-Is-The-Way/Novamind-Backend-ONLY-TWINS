@@ -11,7 +11,8 @@ from app.infrastructure.security.encryption.base_encryption_service import BaseE
 from app.infrastructure.security.encryption.field_encryptor import FieldEncryptor
 # TEMP: Comment out missing AddressHelper import
 # from app.infrastructure.utils.address_helper import AddressHelper 
-from app.domain.entities.address import Address
+# TEMP: Comment out missing Address entity import
+# from app.domain.entities.address import Address
 
 
 def test_address_field_encryption():

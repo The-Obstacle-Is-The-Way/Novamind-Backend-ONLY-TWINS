@@ -13,9 +13,11 @@ from uuid import UUID
 
 import numpy as np
 from pydantic import BaseModel, Field
+import pandas as pd
+import asyncio
 
-from app.core.config import get_settings
-settings = get_settings()
+# Use canonical config path
+from app.config.settings import get_settings
 from app.domain.interfaces.ml_services import PharmacogenomicsService
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import (
     GeneMedicationModel,
@@ -31,6 +33,7 @@ from app.infrastructure.ml.utils.serialization import (
     deserialize_model,
     serialize_prediction,
 )
+from app.infrastructure.ml_services.base import BaseMLService
 
 logger = logging.getLogger(__name__)
 

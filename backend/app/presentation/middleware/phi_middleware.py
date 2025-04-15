@@ -287,7 +287,7 @@ class PHIMiddleware(BaseHTTPMiddleware):
                 return data
             else:
                 # Sanitize the PHI
-                return self.phi_service.sanitize_phi(data)
+                return self.phi_service.sanitize_text(data)
                 
         else:
             # No PHI or not a string, return as is

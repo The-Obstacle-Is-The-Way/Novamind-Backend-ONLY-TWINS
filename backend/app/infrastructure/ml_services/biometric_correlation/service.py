@@ -13,9 +13,10 @@ from uuid import UUID
 
 import numpy as np
 from pydantic import BaseModel, Field
+import asyncio
 
-from app.core.config import get_settings
-settings = get_settings()
+# Use canonical config path
+from app.config.settings import get_settings
 from app.domain.interfaces.ml_services import BiometricCorrelationService
 from app.infrastructure.ml.biometric_correlation.lstm_model import BiometricLSTMModel
 from app.infrastructure.ml.utils.preprocessing import preprocess_biometric_data

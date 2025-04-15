@@ -16,8 +16,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.engine import Engine, Connection
 from sqlalchemy.pool import QueuePool
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-from app.core.config import get_settings
+# Use canonical config path
+from app.config.settings import get_settings
+settings = get_settings()
+import os
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -61,8 +66,6 @@ class Database:
             ssl_ca: SSL certificate authority path
             ssl_verify: Whether to verify SSL certificates
         """
-        settings = get_settings()
-        
         self.db_url = db_url or settings.DATABASE_URL
         self.echo = echo if echo is not None else settings.DATABASE_ECHO
         self.pool_size = pool_size or settings.DATABASE_POOL_SIZE
@@ -206,7 +209,6 @@ class EnhancedDatabase(Database):
             ssl_verify=ssl_verify
         )
         
-        settings = get_settings()
         self.enable_encryption = enable_encryption if enable_encryption is not None else settings.DATABASE_ENCRYPTION_ENABLED
         self.enable_audit = enable_audit if enable_audit is not None else settings.DATABASE_AUDIT_ENABLED
         

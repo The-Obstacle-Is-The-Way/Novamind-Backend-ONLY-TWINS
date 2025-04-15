@@ -3,6 +3,7 @@
 
 # -*- coding: utf-8 -*-
 """SQLAlchemy models for database tables."""
-from .user import User
+# TEMP: Comment out User import until model is implemented
+# from .user import User 
 from .audit_log import AuditLog # Add AuditLog export
 # Add other model imports as needed

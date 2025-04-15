@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # Corrected import: Use get_db_session from the config module
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session as get_session_from_config
-from app.core.config import get_settings
+from app.config.settings import get_settings
 settings = get_settings()
 
 from typing import Optional, Dict, Any # Ensure Optional is imported

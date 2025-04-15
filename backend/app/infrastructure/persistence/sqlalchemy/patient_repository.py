@@ -9,9 +9,9 @@ with field-level encryption and strict access controls.
 import logging
 from typing import Any, Dict, List, Optional, Union
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
-from app.infrastructure.security.encryption_service import EncryptionService
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
 
 # Configure logger without PHI
 logger = logging.getLogger("patient_repository")
@@ -28,7 +28,7 @@ class PatientRepository:
     - Audit logging (sanitized of PHI)
     """
 
-    def __init__(self, db_session: Session, encryption_service: EncryptionService):
+    def __init__(self, db_session: Session, encryption_service: BaseEncryptionService):
         """
         Initialize the patient repository.
 
