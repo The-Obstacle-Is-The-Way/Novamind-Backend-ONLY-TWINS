@@ -82,7 +82,7 @@ class JWTService:
             algorithm=self.settings.ALGORITHM
         )
 
-    def create_access_token(
+    async def create_access_token(
         self,
         subject: Union[str, UUID],
         roles: Optional[List[str]] = None,
@@ -108,7 +108,7 @@ class JWTService:
             additional_claims=additional_claims
         )
 
-    def create_refresh_token(self, subject: Union[str, UUID], jti: str) -> str:
+    async def create_refresh_token(self, subject: Union[str, UUID], jti: str) -> str:
         """Create a refresh token."""
         expires_delta = timedelta(days=self.settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
         # Refresh tokens typically have minimal additional claims
@@ -119,7 +119,7 @@ class JWTService:
             jti=jti
         )
 
-    def decode_token(self, token: str) -> TokenPayload:
+    async def decode_token(self, token: str) -> TokenPayload:
         """
         Decode and validate a JWT token.
 

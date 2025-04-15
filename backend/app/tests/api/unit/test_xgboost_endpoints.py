@@ -16,7 +16,20 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from app.api.routes.xgboost import router
+# Import the specific router from its new location
+from app.presentation.api.v1.endpoints.xgboost import router
+# Update dependency import path (assuming these are now in presentation.api.dependencies)
+from app.presentation.api.dependencies.auth import get_current_user
+# Update schema import path
+from app.presentation.api.schemas.xgboost import (
+    RiskPredictionRequest,
+    TreatmentResponseRequest,
+    OutcomePredictionRequest,
+    RiskPredictionResponse,
+)
+# Update dependency import path for service getter
+from app.presentation.api.dependencies.services import get_xgboost_service
+
 from app.core.services.ml.xgboost.interface import ModelType
 from app.core.services.ml.xgboost.enums import RiskLevel, ResponseLevel
 from app.core.services.ml.xgboost.exceptions import (
@@ -25,13 +38,6 @@ from app.core.services.ml.xgboost.exceptions import (
     ModelNotFoundError,
     PredictionError,
     ServiceConnectionError,
-)
-
-from app.api.routes.xgboost import get_current_user
-from app.api.schemas.xgboost import (
-    RiskPredictionRequest,
-    TreatmentResponseRequest,
-    OutcomePredictionRequest,
 )
 
 
@@ -226,7 +232,6 @@ def mock_dependencies(app, mock_user, mock_xgboost_service):
     """Override dependencies for testing."""
     app.dependency_overrides[get_current_user] = lambda: mock_user
     # Override the XGBoost service dependency
-    from app.api.routes.xgboost import get_xgboost_service
     app.dependency_overrides[get_xgboost_service] = lambda: mock_xgboost_service
     return {"user": mock_user, "service": mock_xgboost_service}
 
@@ -237,7 +242,6 @@ def mock_error_dependencies(app, mock_user, mock_xgboost_service):
     app.dependency_overrides[get_current_user] = lambda: mock_user
     mock_xgboost_service.setup_error_responses()
     # Override the XGBoost service dependency
-    from app.api.routes.xgboost import get_xgboost_service
     app.dependency_overrides[get_xgboost_service] = lambda: mock_xgboost_service
     return {"user": mock_user, "service": mock_xgboost_service}
 

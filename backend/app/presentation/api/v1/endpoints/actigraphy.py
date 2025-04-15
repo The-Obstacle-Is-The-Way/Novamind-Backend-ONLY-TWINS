@@ -11,7 +11,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from app.api.schemas.actigraphy import (
+# Adjust imports based on new location under presentation/
+from app.presentation.api.schemas.actigraphy import (
     AnalysesList,
     AnalysisResult,
     AnalyzeActigraphyRequest,
@@ -20,12 +21,11 @@ from app.api.schemas.actigraphy import (
     IntegrateWithDigitalTwinRequest,
     IntegrationResult,
 )
-# Removed incorrect import: from app.core.auth.jwt import get_current_user_id, validate_jwt
-# Assuming standard dependency injection setup
+# Assuming standard dependency injection setup within presentation layer
 from app.presentation.api.dependencies.auth import get_current_user # Corrected import
-# Removed incorrect User schema import: from app.presentation.api.schemas.user import User
 from typing import Dict, Any # Import Dict and Any for type hinting
 
+# Assuming core/services paths remain stable or adjust if moved
 from app.core.services.ml.pat import (
     AnalysisError,
     AuthorizationError,
@@ -42,10 +42,10 @@ from app.core.services.ml.pat import (
 logger = logging.getLogger(__name__)
 
 # Set up router
-router = APIRouter(prefix="/actigraphy", tags=["actigraphy"])
+router = APIRouter() # Prefix is usually added when including the router
 
-# Set up security
-security = HTTPBearer()
+# Security might be handled by middleware or dependencies now, review if needed
+# security = HTTPBearer()
 
 
 async def get_pat_service() -> PATInterface:
@@ -64,13 +64,17 @@ async def get_pat_service() -> PATInterface:
         # Create a PAT service using the factory
         # In production, the service type would be determined by configuration
         factory = PATServiceFactory()
-        service = factory.create_service("mock")
+        # Configuration for service type should come from settings
+        # settings = get_settings() # Inject settings if needed
+        # service_type = settings.PAT_SERVICE_TYPE
+        service_type = "mock" # Keep mock for now, make configurable later
+        service = factory.create_service(service_type)
         
         # Initialize the service
         # In production, configuration would be loaded from env vars or settings
-        service.initialize({
-            "mock_delay_ms": 100,  # Small delay for realistic behavior
-        })
+        # config = settings.PAT_SERVICE_CONFIG if hasattr(settings, 'PAT_SERVICE_CONFIG') else {}
+        config = {"mock_delay_ms": 100} # Keep mock config for now
+        service.initialize(config)
         
         return service
     
@@ -91,8 +95,8 @@ async def get_pat_service() -> PATInterface:
 )
 async def analyze_actigraphy(
     request: AnalyzeActigraphyRequest,
-    # Replace token dependency with user dependency
-    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
+    # Use the standard user dependency
+    current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> AnalysisResult:
     """Analyze actigraphy data endpoint.
@@ -103,7 +107,7 @@ async def analyze_actigraphy(
     
     Args:
         request: The analysis request containing the data to analyze
-        token: JWT token for authentication
+        current_user: The authenticated user dictionary/object.
         pat_service: PAT service for analysis
         
     Returns:
@@ -113,15 +117,12 @@ async def analyze_actigraphy(
         HTTPException: If analysis fails or validation errors occur
     """
     try:
-        # Token validation and user retrieval are handled by get_current_active_user dependency
-        # Assuming the payload from get_current_user is a dict as per its type hint
-        user_id = current_user.get("id") # Get user ID from the injected user dict
+        # User retrieval is handled by the dependency
+        user_id = current_user.get("id") 
+        user_roles = current_user.get("roles", [])
         
-        # Ensure the user is authorized to access this patient's data
-        # This would typically check if the user is the patient, their provider,
-        # or has appropriate access rights
-        # Here we simply check if the patient_id matches the authenticated user_id
-        if user_id != request.patient_id:
+        # Authorization Check (Example: User must match patient_id or be admin/doctor)
+        if not (user_id == request.patient_id or "admin" in user_roles or "doctor" in user_roles):
             logger.warning(
                 f"Unauthorized attempt to access patient data: "
                 f"user_id={user_id}, patient_id={request.patient_id}"
@@ -158,7 +159,8 @@ async def analyze_actigraphy(
             f"analysis_id={result['analysis_id']}"
         )
         
-        return result
+        # Ensure result matches the AnalysisResult schema
+        return AnalysisResult(**result)
     
     except ValidationError as e:
         logger.warning(f"Validation error in analyze_actigraphy: {str(e)}")
@@ -195,8 +197,7 @@ async def analyze_actigraphy(
 )
 async def get_actigraphy_embeddings(
     request: GetActigraphyEmbeddingsRequest,
-    # Replace token dependency with user dependency
-    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
+    current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> EmbeddingResult:
     """Generate embeddings from actigraphy data endpoint.
@@ -207,7 +208,7 @@ async def get_actigraphy_embeddings(
     
     Args:
         request: The embedding request containing the data
-        token: JWT token for authentication
+        current_user: The authenticated user dictionary/object.
         pat_service: PAT service for embedding generation
         
     Returns:
@@ -217,11 +218,11 @@ async def get_actigraphy_embeddings(
         HTTPException: If embedding generation fails or validation errors occur
     """
     try:
-        # Token validation and user retrieval are handled by get_current_active_user dependency
-        user_id = current_user.get("id") # Get user ID from the injected user dict
+        user_id = current_user.get("id")
+        user_roles = current_user.get("roles", [])
         
-        # Ensure the user is authorized to access this patient's data
-        if user_id != request.patient_id:
+        # Authorization Check
+        if not (user_id == request.patient_id or "admin" in user_roles or "doctor" in user_roles):
             logger.warning(
                 f"Unauthorized attempt to access patient data: "
                 f"user_id={user_id}, patient_id={request.patient_id}"
@@ -255,7 +256,8 @@ async def get_actigraphy_embeddings(
             f"embedding_id={result['embedding_id']}"
         )
         
-        return result
+        # Ensure result matches EmbeddingResult schema
+        return EmbeddingResult(**result)
     
     except ValidationError as e:
         logger.warning(f"Validation error in get_actigraphy_embeddings: {str(e)}")
@@ -272,7 +274,6 @@ async def get_actigraphy_embeddings(
         )
     
     except HTTPException:
-        # Re-raise HTTP exceptions
         raise
     
     except Exception as e:
@@ -291,8 +292,7 @@ async def get_actigraphy_embeddings(
 )
 async def get_analysis_by_id(
     analysis_id: str,
-    # Replace token dependency with user dependency
-    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
+    current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> AnalysisResult:
     """Get an analysis by ID endpoint.
@@ -302,7 +302,7 @@ async def get_analysis_by_id(
     
     Args:
         analysis_id: The unique identifier of the analysis
-        token: JWT token for authentication
+        current_user: The authenticated user dictionary/object.
         pat_service: PAT service
         
     Returns:
@@ -312,30 +312,29 @@ async def get_analysis_by_id(
         HTTPException: If the analysis is not found or access is denied
     """
     try:
-        # Token validation handled by dependency
-        # Log request
         logger.info(f"Retrieving analysis: analysis_id={analysis_id}")
         
         # Get the analysis
         result = pat_service.get_analysis_by_id(analysis_id)
         
-        user_id = current_user.get("id") # Get user ID from the injected user dict
+        user_id = current_user.get("id")
+        user_roles = current_user.get("roles", [])
         
-        # Ensure the user is authorized to access this analysis
-        if user_id != result["patient_id"]:
+        # Authorization Check
+        if not (user_id == result.get("patient_id") or "admin" in user_roles or "doctor" in user_roles):
             logger.warning(
                 f"Unauthorized attempt to access analysis: "
-                f"user_id={user_id}, patient_id={result['patient_id']}"
+                f"user_id={user_id}, patient_id={result.get('patient_id')}"
             )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorized to access this analysis"
             )
         
-        # Log success (without PHI)
         logger.info(f"Successfully retrieved analysis: analysis_id={analysis_id}")
         
-        return result
+        # Ensure result matches AnalysisResult schema
+        return AnalysisResult(**result)
     
     except ResourceNotFoundError as e:
         logger.warning(f"Analysis not found: {str(e)}")
@@ -345,7 +344,6 @@ async def get_analysis_by_id(
         )
     
     except HTTPException:
-        # Re-raise HTTP exceptions
         raise
     
     except Exception as e:
@@ -366,8 +364,7 @@ async def get_patient_analyses(
     patient_id: str,
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    # Replace token dependency with user dependency
-    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
+    current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> AnalysesList:
     """Get analyses for a patient endpoint.
@@ -379,7 +376,7 @@ async def get_patient_analyses(
         patient_id: The patient's unique identifier
         limit: Maximum number of analyses to return
         offset: Offset for pagination
-        token: JWT token for authentication
+        current_user: The authenticated user dictionary/object.
         pat_service: PAT service
         
     Returns:
@@ -389,11 +386,11 @@ async def get_patient_analyses(
         HTTPException: If access is denied or an error occurs
     """
     try:
-        # Token validation and user retrieval are handled by get_current_active_user dependency
-        user_id = current_user.get("id") # Get user ID from the injected user dict
+        user_id = current_user.get("id")
+        user_roles = current_user.get("roles", [])
         
-        # Ensure the user is authorized to access this patient's data
-        if user_id != patient_id:
+        # Authorization Check
+        if not (user_id == patient_id or "admin" in user_roles or "doctor" in user_roles):
             logger.warning(
                 f"Unauthorized attempt to access patient analyses: "
                 f"user_id={user_id}, patient_id={patient_id}"
@@ -403,10 +400,9 @@ async def get_patient_analyses(
                 detail="Not authorized to access this patient's analyses"
             )
         
-        # Log request (without PHI)
         logger.info(
             f"Retrieving patient analyses: "
-            f"limit={limit}, offset={offset}"
+            f"patient_id={patient_id}, limit={limit}, offset={offset}"
         )
         
         # Get the analyses
@@ -416,16 +412,15 @@ async def get_patient_analyses(
             offset=offset
         )
         
-        # Log success (without PHI)
         logger.info(
             f"Successfully retrieved patient analyses: "
             f"count={len(result['analyses'])}"
         )
         
-        return result
+        # Ensure result matches AnalysesList schema
+        return AnalysesList(**result)
     
     except HTTPException:
-        # Re-raise HTTP exceptions
         raise
     
     except Exception as e:
@@ -443,8 +438,7 @@ async def get_patient_analyses(
     description="Retrieve information about the PAT model being used."
 )
 async def get_model_info(
-    # Replace token dependency with user dependency
-    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
+    current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> dict:
     """Get PAT model information endpoint.
@@ -453,7 +447,7 @@ async def get_model_info(
     including its capabilities, version, and other metadata.
     
     Args:
-        token: JWT token for authentication
+        current_user: The authenticated user dictionary/object.
         pat_service: PAT service
         
     Returns:
@@ -463,14 +457,12 @@ async def get_model_info(
         HTTPException: If an error occurs
     """
     try:
-        # Token validation handled by dependency
-        # Log request
+        # User is authenticated via dependency
         logger.info("Retrieving PAT model information")
         
         # Get model info
         result = pat_service.get_model_info()
         
-        # Log success
         logger.info("Successfully retrieved PAT model information")
         
         return result
@@ -492,8 +484,7 @@ async def get_model_info(
 )
 async def integrate_with_digital_twin(
     request: IntegrateWithDigitalTwinRequest,
-    # Replace token dependency with user dependency
-    current_user: Dict[str, Any] = Depends(get_current_user), # Corrected type hint
+    current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> IntegrationResult:
     """Integrate with digital twin endpoint.
@@ -504,7 +495,7 @@ async def integrate_with_digital_twin(
     
     Args:
         request: The integration request
-        token: JWT token for authentication
+        current_user: The authenticated user dictionary/object.
         pat_service: PAT service
         
     Returns:
@@ -514,11 +505,11 @@ async def integrate_with_digital_twin(
         HTTPException: If integration fails or validation errors occur
     """
     try:
-        # Token validation and user retrieval are handled by get_current_active_user dependency
-        user_id = current_user.get("id") # Get user ID from the injected user dict
+        user_id = current_user.get("id")
+        user_roles = current_user.get("roles", [])
         
-        # Ensure the user is authorized to access this patient's data
-        if user_id != request.patient_id:
+        # Authorization Check
+        if not (user_id == request.patient_id or "admin" in user_roles or "doctor" in user_roles):
             logger.warning(
                 f"Unauthorized attempt to integrate with digital twin: "
                 f"user_id={user_id}, patient_id={request.patient_id}"
@@ -528,10 +519,9 @@ async def integrate_with_digital_twin(
                 detail="Not authorized to integrate with this patient's digital twin"
             )
         
-        # Log integration request (without PHI)
         logger.info(
             f"Integrating with Digital Twin: "
-            f"profile_id={request.profile_id}, "
+            f"patient_id={request.patient_id}, profile_id={request.profile_id}, "
             f"analysis_id={request.analysis_id}"
         )
         
@@ -542,13 +532,13 @@ async def integrate_with_digital_twin(
             analysis_id=request.analysis_id
         )
         
-        # Log success (without PHI)
         logger.info(
             f"Successfully integrated with Digital Twin: "
             f"integration_id={result['integration_id']}"
         )
         
-        return result
+        # Ensure result matches IntegrationResult schema
+        return IntegrationResult(**result)
     
     except ValidationError as e:
         logger.warning(f"Validation error in integrate_with_digital_twin: {str(e)}")
@@ -579,7 +569,6 @@ async def integrate_with_digital_twin(
         )
     
     except HTTPException:
-        # Re-raise HTTP exceptions
         raise
     
     except Exception as e:

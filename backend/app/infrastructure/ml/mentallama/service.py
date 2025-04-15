@@ -26,7 +26,7 @@ from tenacity import (
     retry_if_exception_type
 )
 
-from app.api.schemas.ml_schemas import (
+from app.presentation.api.schemas.ml_schemas import (
     ModelType,
     TaskType,
     MentaLLaMARequest,
@@ -42,6 +42,9 @@ from app.core.exceptions.ml_exceptions import (
     MentaLLaMAQuotaExceededError
 )
 from app.core.utils.logging import get_logger
+from app.infrastructure.ml.mentallama.model import MentalLlamaModel
+from app.infrastructure.ml.mentallama.utils import preprocess_input, postprocess_output
+from app.domain.entities.ml_model import MLModelInfo, MLModelStatus
 
 
 # Setup logger

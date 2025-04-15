@@ -11,7 +11,6 @@ import pytest
 from datetime import datetime, timedelta
 from fastapi.testclient import TestClient
 from unittest.mock import patch
-from app.api.routes.xgboost import router
 from app.core.services.ml.xgboost import (
     get_xgboost_service,
     MockXGBoostService,
@@ -19,6 +18,7 @@ from app.core.services.ml.xgboost import (
     TreatmentCategory,
     RiskLevel,
 )
+from fastapi import status
 
 # Override dependencies for testing
 @pytest.fixture

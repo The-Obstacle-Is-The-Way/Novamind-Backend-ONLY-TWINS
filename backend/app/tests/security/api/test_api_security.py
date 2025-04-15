@@ -56,12 +56,11 @@ class TestAuthentication(BaseSecurityTest):
         response = client.get("/api/v1/patients/me", headers=headers)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_expired_token(self, client: TestClient, jwt_service: JWTService):
+    def test_expired_token(self, client: TestClient, jwt_service: JWTService, mock_patient_payload: Dict[str, Any]):
         """Test that expired tokens are rejected by the JWTService validation."""
-        # Create an expired token using the test JWT service
-        expired_payload = {"sub": "expired_user", "role": "patient", "exp": int(time.time()) - 3600}
-        # Need asyncio.run as jwt_service methods are async, but fixture is sync
-        expired_token = asyncio.run(jwt_service.create_token(expired_payload)) 
+        # Create an already expired token
+        expired_payload = {**mock_patient_payload, "exp": int(time.time()) - 3600}
+        expired_token = asyncio.run(jwt_service.create_access_token(subject=expired_payload['sub'])) # Use correct method
         headers = {"Authorization": f"Bearer {expired_token}"}
         
         response = client.get("/api/v1/patients/me", headers=headers)

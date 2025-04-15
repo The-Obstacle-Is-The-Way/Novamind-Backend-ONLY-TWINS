@@ -1,312 +1,251 @@
 # -*- coding: utf-8 -*-
 """
-ML API Schemas.
+ML Service API Schemas.
 
-This module provides pydantic schemas for machine learning endpoints,
-including clinical text analysis and digital twin functionality.
+This module defines the Pydantic schemas for the ML service APIs.
 """
 
-from datetime import datetime
-from enum import Enum
 from typing import Any, Dict, List, Optional, Union
+from pydantic import BaseModel, Field, ConfigDict
 
-from pydantic import BaseModel, UUID4, Field, field_validator
 
-
-class AnalysisType(str, Enum):
-    """Types of clinical analysis available."""
+class MentaLLaMABaseRequest(BaseModel):
+    """Base request model for MentaLLaMA APIs."""
     
-    DIAGNOSTIC_IMPRESSION = "diagnostic_impression"
-    RISK_ASSESSMENT = "risk_assessment"
-    TREATMENT_RECOMMENDATION = "treatment_recommendation"
-    OUTCOME_PREDICTION = "outcome_prediction"
-    CLINICAL_SUMMARY = "clinical_summary"
-    MEDICATION_ANALYSIS = "medication_analysis"
-    SYMPTOM_EXTRACTION = "symptom_extraction"
+    model: Optional[str] = Field(
+        None,
+        description="Model ID to use for processing"
+    )
+    max_tokens: Optional[int] = Field(
+        None,
+        description="Maximum tokens to generate",
+        ge=1,
+        le=4000
+    )
+    temperature: Optional[float] = Field(
+        None,
+        description="Sampling temperature",
+        ge=0.0,
+        le=1.0
+    )
+    
 
+class ProcessTextRequest(MentaLLaMABaseRequest):
+    """Request model for processing text with MentaLLaMA."""
+    
+    prompt: str = Field(
+        ...,
+        description="Text prompt to process",
+        min_length=1
+    )
+    task: Optional[str] = Field(
+        None,
+        description="Task to perform (e.g., depression_detection, risk_assessment)"
+    )
+    context: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional context for processing"
+    )
+    
 
-class ClinicalAnalysisRequest(BaseModel):
-    """Request model for clinical text analysis."""
+class DepressionDetectionRequest(MentaLLaMABaseRequest):
+    """Request model for depression detection."""
     
     text: str = Field(
         ...,
-        description="Clinical text to analyze",
-        min_length=10
+        description="Text to analyze for depression indicators",
+        min_length=1
     )
-    
-    analysis_type: AnalysisType = Field(
-        ..., 
-        description="Type of analysis to perform"
+    include_rationale: bool = Field(
+        True,
+        description="Whether to include rationale in the response"
     )
-    
-    patient_context: Optional[Dict[str, Any]] = Field(
+    severity_assessment: bool = Field(
+        True,
+        description="Whether to include severity assessment in the response"
+    )
+    context: Optional[Dict[str, Any]] = Field(
         None,
-        description="Optional context about the patient (e.g., age, gender, history)"
-    )
-    
-    @field_validator("text")
-    def text_not_empty(cls, v: str, info) -> str:
-        """Validate text is not empty or just whitespace."""
-        if v.strip() == "":
-            raise ValueError("Text cannot be empty or just whitespace")
-        return v
-
-
-class ClinicalAnalysisResponse(BaseModel):
-    """Response model for clinical text analysis."""
-    
-    analysis_type: str = Field(
-        ...,
-        description="Type of analysis performed"
-    )
-    
-    result: Dict[str, Any] = Field(
-        ...,
-        description="Analysis results"
-    )
-    
-    confidence_score: float = Field(
-        ...,
-        description="Confidence score (0.0-1.0)",
-        ge=0.0,
-        le=1.0
-    )
-    
-    analysis_id: str = Field(
-        ...,
-        description="Unique identifier for this analysis"
-    )
-    
-    processed_at: datetime = Field(
-        ...,
-        description="Timestamp when analysis was processed"
+        description="Optional context for analysis"
     )
 
 
-class PHIEntity(BaseModel):
-    """Detected PHI entity information."""
+class RiskAssessmentRequest(MentaLLaMABaseRequest):
+    """Request model for risk assessment."""
     
-    entity_type: str = Field(
+    text: str = Field(
         ...,
-        description="Type of PHI entity (e.g., NAME, ADDRESS, SSN)"
+        description="Text to analyze for risk indicators",
+        min_length=1
     )
-    
-    text: Optional[str] = Field(
+    include_key_phrases: bool = Field(
+        True,
+        description="Whether to include key phrases in the response"
+    )
+    include_suggested_actions: bool = Field(
+        True,
+        description="Whether to include suggested actions in the response"
+    )
+    context: Optional[Dict[str, Any]] = Field(
         None,
-        description="Original text (only included if not anonymized)"
+        description="Optional context for analysis"
     )
+
+
+class SentimentAnalysisRequest(MentaLLaMABaseRequest):
+    """Request model for sentiment analysis."""
     
-    position: Dict[str, int] = Field(
+    text: str = Field(
         ...,
-        description="Position of entity in text (start and end indices)"
+        description="Text to analyze for sentiment",
+        min_length=1
     )
-    
-    confidence: float = Field(
-        ...,
-        description="Confidence score (0.0-1.0)",
-        ge=0.0,
-        le=1.0
+    include_emotion_distribution: bool = Field(
+        True,
+        description="Whether to include emotion distribution in the response"
     )
-    
-    replacement: Optional[str] = Field(
+    context: Optional[Dict[str, Any]] = Field(
         None,
-        description="Replacement text (if anonymized)"
+        description="Optional context for analysis"
     )
 
 
-class PHIDetectionResponse(BaseModel):
-    """Response model for PHI detection."""
+class WellnessDimensionsRequest(MentaLLaMABaseRequest):
+    """Request model for wellness dimensions analysis."""
     
-    anonymized_text: Optional[str] = Field(
+    text: str = Field(
+        ...,
+        description="Text to analyze for wellness dimensions",
+        min_length=1
+    )
+    dimensions: Optional[List[str]] = Field(
         None,
-        description="Anonymized text with PHI replaced (if anonymization requested)"
+        description="Optional list of dimensions to analyze"
     )
-    
-    entities: List[PHIEntity] = Field(
-        default_factory=list,
-        description="List of detected PHI entities"
+    include_recommendations: bool = Field(
+        True,
+        description="Whether to include recommendations in the response"
     )
-    
-    detection_id: str = Field(
-        ...,
-        description="Unique identifier for this detection operation"
-    )
-    
-    processed_at: datetime = Field(
-        ...,
-        description="Timestamp when detection was processed"
-    )
-    
-    phi_count: int = Field(
-        ...,
-        description="Total number of PHI entities detected"
+    context: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional context for analysis"
     )
 
 
-class DigitalTwinCreateRequest(BaseModel):
-    """Request model for creating a digital twin."""
+class DigitalTwinConversationRequest(MentaLLaMABaseRequest):
+    """Request model for digital twin conversation."""
+    
+    prompt: str = Field(
+        ...,
+        description="Text prompt for the conversation",
+        min_length=1
+    )
+    patient_id: str = Field(
+        ...,
+        description="Patient ID"
+    )
+    session_id: Optional[str] = Field(
+        None,
+        description="Optional session ID for continued conversations"
+    )
+    context: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional context for the conversation"
+    )
+
+
+class PHIDetectionRequest(BaseModel):
+    """Request model for PHI detection."""
+    
+    text: str = Field(
+        ...,
+        description="Text to analyze for PHI",
+        min_length=1
+    )
+    detection_level: Optional[str] = Field(
+        None,
+        description="Detection level (strict, moderate, relaxed)"
+    )
+
+
+class PHIRedactionRequest(BaseModel):
+    """Request model for PHI redaction."""
+    
+    text: str = Field(
+        ...,
+        description="Text to redact PHI from",
+        min_length=1
+    )
+    replacement: str = Field(
+        "[REDACTED]",
+        description="Replacement text for redacted PHI"
+    )
+    detection_level: Optional[str] = Field(
+        None,
+        description="Detection level (strict, moderate, relaxed)"
+    )
+
+
+class DigitalTwinSessionCreateRequest(BaseModel):
+    """Request model for creating a digital twin session."""
     
     patient_id: str = Field(
         ...,
-        description="Patient ID to create the digital twin for"
+        description="Patient ID"
     )
-    
-    clinical_data: Dict[str, Any] = Field(
-        ...,
-        description="Clinical data for twin creation (e.g., diagnoses, medications, assessments)"
-    )
-    
-    demographic_data: Dict[str, Any] = Field(
-        ...,
-        description="Demographic data for twin creation (e.g., age, gender)"
-    )
-    
-    parameters: Optional[Dict[str, Any]] = Field(
+    context: Optional[Dict[str, Any]] = Field(
         None,
-        description="Optional parameters for twin creation"
+        description="Optional context for the session"
     )
 
 
-class DigitalTwinUpdateRequest(BaseModel):
-    """Request model for updating a digital twin."""
+class DigitalTwinMessageRequest(BaseModel):
+    """Request model for sending a message to a digital twin."""
     
-    clinical_data: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Updated clinical data"
-    )
-    
-    parameters: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Updated parameters"
-    )
-    
-    @field_validator("clinical_data", "parameters")
-    def at_least_one_field(cls, v: Optional[Dict[str, Any]], info) -> Optional[Dict[str, Any]]:
-        """Validate at least one field is provided."""
-        if not v and not any(info.data.values()):
-            raise ValueError("At least one of clinical_data or parameters must be provided")
-        return v
-
-
-class DigitalTwinResponse(BaseModel):
-    """Response model for digital twin operations."""
-    
-    twin_id: UUID4 = Field(
+    message: str = Field(
         ...,
-        description="Unique ID of the digital twin"
+        description="Message to send",
+        min_length=1
     )
+
+
+class DigitalTwinInsightsRequest(BaseModel):
+    """Request model for getting digital twin insights."""
     
     patient_id: str = Field(
         ...,
-        description="ID of the patient this twin represents"
+        description="Patient ID"
     )
-    
-    created_at: datetime = Field(
-        ...,
-        description="Timestamp when the twin was created"
-    )
-    
-    updated_at: datetime = Field(
-        ...,
-        description="Timestamp when the twin was last updated"
-    )
-    
-    state: Dict[str, Any] = Field(
-        ...,
-        description="Current state of the digital twin"
-    )
-    
-    parameters: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Parameters of the digital twin"
-    )
-    
-    version: int = Field(
-        ...,
-        description="Version number of the digital twin"
-    )
-
-
-class SimulationRequest(BaseModel):
-    """Request model for running a simulation on a digital twin."""
-    
-    scenario: str = Field(
-        ...,
-        description="Simulation scenario (e.g., 'medication_change', 'therapy_response')"
-    )
-    
-    parameters: Dict[str, Any] = Field(
-        ...,
-        description="Simulation parameters"
-    )
-    
-    duration: Optional[int] = Field(
+    insight_type: Optional[str] = Field(
         None,
-        description="Simulation duration in days",
-        gt=0
+        description="Type of insights to retrieve"
+    )
+    time_period: Optional[str] = Field(
+        None,
+        description="Time period for insights"
     )
 
 
-class SimulationTimepoint(BaseModel):
-    """Data for a single timepoint in a simulation."""
+class APIResponse(BaseModel):
+    """Generic API response model."""
     
-    day: int = Field(
-        ...,
-        description="Day of simulation"
+    model_config = ConfigDict(
+        extra="allow"
     )
     
-    state: Dict[str, Any] = Field(
+    success: bool = Field(
         ...,
-        description="State of the digital twin at this timepoint"
+        description="Whether the request was successful"
     )
-    
-    metrics: Dict[str, float] = Field(
-        ...,
-        description="Metrics at this timepoint"
+    message: Optional[str] = Field(
+        None,
+        description="Message describing the result"
     )
-
-
-class SimulationResponse(BaseModel):
-    """Response model for simulation results."""
-    
-    simulation_id: UUID4 = Field(
-        ...,
-        description="Unique ID of the simulation"
+    data: Optional[Any] = Field(
+        None,
+        description="Response data"
     )
-    
-    twin_id: UUID4 = Field(
-        ...,
-        description="ID of the digital twin that was simulated"
-    )
-    
-    scenario: str = Field(
-        ...,
-        description="Simulation scenario that was run"
-    )
-    
-    start_time: datetime = Field(
-        ...,
-        description="When the simulation started"
-    )
-    
-    duration: int = Field(
-        ...,
-        description="Duration of the simulation in days"
-    )
-    
-    timepoints: List[SimulationTimepoint] = Field(
-        ...,
-        description="Data for each timepoint in the simulation"
-    )
-    
-    summary: Dict[str, Any] = Field(
-        ...,
-        description="Summary of simulation results"
-    )
-    
-    confidence_score: float = Field(
-        ...,
-        description="Overall confidence score for the simulation",
-        ge=0.0,
-        le=1.0
+    error: Optional[str] = Field(
+        None,
+        description="Error message if request failed"
     )

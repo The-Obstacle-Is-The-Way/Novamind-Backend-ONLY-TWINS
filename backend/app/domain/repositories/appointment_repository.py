@@ -1,156 +1,66 @@
 """
-Appointment Repository Interface
-
-This module defines the interface for appointment repositories.
+Interface for the Appointment Repository.
 """
-
 from abc import ABC, abstractmethod
-from datetime import datetime
+from typing import Optional, List
 from uuid import UUID
+from datetime import datetime
 
 from app.domain.entities.appointment import Appointment, AppointmentStatus
 
+class IAppointmentRepository(ABC):
+    """Abstract base class defining the appointment repository interface."""
 
-class AppointmentRepository(ABC):
-    """
-    Interface for appointment repositories.
-    
-    This abstract class defines the contract that all appointment repositories
-    must implement, ensuring consistent access to appointment data regardless
-    of the underlying storage mechanism.
-    """
-    
     @abstractmethod
-    def get_by_id(self, appointment_id: UUID | str) -> Appointment | None:
-        """
-        Get an appointment by ID.
-        
-        Args:
-            appointment_id: ID of the appointment
-            
-        Returns:
-            Appointment if found, None otherwise
-        """
+    async def get_by_id(self, appointment_id: UUID) -> Optional[Appointment]:
+        """Retrieve an appointment by its ID."""
         pass
-    
+
     @abstractmethod
-    def get_by_patient_id(
+    async def create(self, appointment: Appointment) -> Appointment:
+        """Create a new appointment."""
+        pass
+
+    @abstractmethod
+    async def update(self, appointment: Appointment) -> Optional[Appointment]:
+        """Update an existing appointment."""
+        pass
+
+    @abstractmethod
+    async def delete(self, appointment_id: UUID) -> bool:
+        """Delete an appointment by its ID."""
+        pass
+
+    @abstractmethod
+    async def list_by_patient_id(
         self,
-        patient_id: UUID | str,
-        start_date: datetime | None = None,
-        end_date: datetime | None = None,
-        status: AppointmentStatus | None = None
-    ) -> list[Appointment]:
-        """
-        Get appointments for a patient.
-        
-        Args:
-            patient_id: ID of the patient
-            start_date: Optional start date for filtering
-            end_date: Optional end date for filtering
-            status: Optional status for filtering
-            
-        Returns:
-            List of appointments
-        """
+        patient_id: UUID,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        status: Optional[AppointmentStatus] = None
+    ) -> List[Appointment]:
+        """List appointments for a specific patient, optionally filtered by date range and status."""
         pass
-    
+
     @abstractmethod
-    def get_by_provider_id(
+    async def list_by_provider_id(
         self,
-        provider_id: UUID | str,
-        start_date: datetime | None = None,
-        end_date: datetime | None = None,
-        status: AppointmentStatus | None = None
-    ) -> list[Appointment]:
-        """
-        Get appointments for a provider.
-        
-        Args:
-            provider_id: ID of the provider
-            start_date: Optional start date for filtering
-            end_date: Optional end date for filtering
-            status: Optional status for filtering
-            
-        Returns:
-            List of appointments
-        """
+        provider_id: UUID,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        status: Optional[AppointmentStatus] = None
+    ) -> List[Appointment]:
+        """List appointments for a specific provider, optionally filtered by date range and status."""
         pass
-    
+
     @abstractmethod
-    def save(self, appointment: Appointment) -> Appointment:
-        """
-        Save an appointment.
-        
-        Args:
-            appointment: Appointment to save
-            
-        Returns:
-            Saved appointment
-        """
-        pass
-    
-    @abstractmethod
-    def delete(self, appointment_id: UUID | str) -> bool:
-        """
-        Delete an appointment.
-        
-        Args:
-            appointment_id: ID of the appointment to delete
-            
-        Returns:
-            True if deleted, False otherwise
-        """
-        pass
-    
-    @abstractmethod
-    def get_upcoming_appointments(
+    async def find_overlapping_appointments(
         self,
-        days: int = 7,
-        status: AppointmentStatus | None = None
-    ) -> list[Appointment]:
-        """
-        Get upcoming appointments.
-        
-        Args:
-            days: Number of days to look ahead
-            status: Optional status for filtering
-            
-        Returns:
-            List of upcoming appointments
-        """
+        provider_id: UUID,
+        start_time: datetime,
+        end_time: datetime,
+        exclude_appointment_id: Optional[UUID] = None
+    ) -> List[Appointment]:
+        """Find appointments for a provider that overlap with a given time slot, excluding a specific appointment."""
         pass
-    
-    @abstractmethod
-    def get_appointments_by_date_range(
-        self,
-        start_date: datetime,
-        end_date: datetime,
-        provider_id: UUID | str | None = None,
-        patient_id: UUID | str | None = None,
-        status: AppointmentStatus | None = None
-    ) -> list[Appointment]:
-        """
-        Get appointments within a date range.
-        
-        Args:
-            start_date: Start date
-            end_date: End date
-            provider_id: Optional provider ID for filtering
-            patient_id: Optional patient ID for filtering
-            status: Optional status for filtering
-            
-        Returns:
-            List of appointments
-        """
-        pass
-    
-    @abstractmethod
-    def get_appointments_needing_reminder(self) -> list[Appointment]:
-        """
-        Get appointments that need reminders.
-        
-        Returns:
-            List of appointments needing reminders
-        """
-        pass
+

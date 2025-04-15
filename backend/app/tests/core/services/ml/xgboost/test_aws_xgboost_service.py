@@ -15,9 +15,11 @@ from botocore.exceptions import ClientError
 from app.core.services.ml.xgboost.aws import AWSXGBoostService
 
 # Import Enums from the correct schema location
-from app.api.schemas.xgboost import (
+from app.presentation.api.schemas.xgboost import (
     RiskLevel,
     TreatmentType,
+    RiskPredictionRequest,
+    TreatmentResponseRequest,
 )  # Renamed TreatmentCategory to TreatmentType, removed ValidationStatus
 
 # Import Exceptions from the service exception module
@@ -35,6 +37,9 @@ from app.core.services.ml.xgboost.exceptions import (
 from app.core.services.ml.xgboost import (
     ModelType,
 )  # Assuming ModelType is correctly here for now
+
+from app.domain.services.interfaces.ixgboost_service import IXGBoostService
+from app.domain.entities.patient import PatientRecord
 
 
 @pytest.fixture

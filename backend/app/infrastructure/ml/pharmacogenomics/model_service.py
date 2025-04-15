@@ -12,12 +12,13 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime, , UTC, timedelta
+from datetime import datetime, UTC, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 import numpy as np
+import pandas as pd
 
 from app.domain.exceptions import ModelInferenceError, ValidationError
 from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel

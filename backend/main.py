@@ -24,9 +24,9 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config.settings import settings
-from app.core.utils.logging import HIPAACompliantLogger
+from app.core.utils.logging import get_logger
 # Updated imports to match new structure
-from app.api.routes import patients, appointments, digital_twins, auth, biometric_alerts, biometric_alert_system, temporal_neurotransmitter
+from app.presentation.api.routes import api_router, setup_routers
 from app.infrastructure.di.container import get_container
 from app.domain.exceptions import (
     NovaBaseException, 
@@ -35,9 +35,12 @@ from app.domain.exceptions import (
     AuthenticationException,
     AuthorizationException
 )
+from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance, get_db_session
+# Ensure this import is correct and remove any old, direct router imports below
+# from app.presentation.api.routes.analytics_endpoints import router as analytics_router
 
-# Initialize logger
-logger = HIPAACompliantLogger(__name__)
+# Initialize logger using the utility function
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
@@ -243,17 +246,18 @@ app.add_middleware(
 # Add GZip middleware for compression
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# Include API routers
-api_router = APIRouter(prefix=settings.api.API_V1_PREFIX)
-api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
-api_router.include_router(patients.router, prefix="/patients", tags=["Patients"])
-api_router.include_router(appointments.router, prefix="/appointments", tags=["Appointments"])
-api_router.include_router(digital_twins.router, prefix="/digital-twins", tags=["Digital Twins"])
-api_router.include_router(biometric_alerts.router, prefix="/biometric-alerts", tags=["Biometric Alerts"])
-api_router.include_router(biometric_alert_system.router, prefix="/biometric-alert-system", tags=["Biometric Alert System"])
-api_router.include_router(temporal_neurotransmitter.router, prefix="/temporal-neurotransmitter", tags=["Temporal Neurotransmitter"])
+# --- Setup and Include API Routers ---
+# Call the setup function to dynamically load and include all routers
+setup_routers()
 
-app.include_router(api_router)
+# Include the main aggregated router with the configured prefix
+# Ensure the prefix logic matches settings
+api_prefix = settings.api.API_V1_PREFIX # Assuming settings structure
+if api_prefix.endswith('/'): # Normalize prefix
+    api_prefix = api_prefix[:-1]
+app.include_router(api_router, prefix=api_prefix)
+# --- End Router Setup ---
+
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")

@@ -7,16 +7,14 @@ related to patient digital twins in the concierge psychiatry practice.
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-from app.domain.utils.datetime_utils import UTC
+from datetime import datetime, timedelta, timezone, UTC
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from app.domain.entities.digital_twin.digital_twin import DigitalTwin
-from app.domain.entities.digital_twin.time_series_model import TimeSeriesModel
-from app.domain.entities.digital_twin.twin_model import TwinModel
+from app.domain.entities.digital_twin import DigitalTwin, DigitalTwinConfiguration, DigitalTwinState
+from app.domain.entities.patient import Patient
 from app.domain.exceptions import (
-    ServiceError,
+    DomainError,
     ValidationError,
 )
 from app.domain.interfaces.ml_service_interface import (
@@ -79,7 +77,7 @@ class DigitalTwinService:
             The created digital twin entity
 
         Raises:
-            ValidationError: If the patient doesn't exist
+            ValidationError: If the patient doesn't exist or twin already exists
         """
         # Verify patient exists
         patient = await self._patient_repo.get_by_id(patient_id)
@@ -93,31 +91,23 @@ class DigitalTwinService:
                 f"Digital twin already exists for patient with ID {patient_id}"
             )
 
-        # Create time series model
-        time_series_model = TimeSeriesModel(
-            patient_id=patient_id,
-            creation_date=datetime.now(UTC),
-            data_points={},
-            model_parameters={},
-        )
+        # Prepare initial configuration and state
+        config_data = initial_data.get("configuration", {}) if initial_data else {}
+        state_data = initial_data.get("state", {}) if initial_data else {}
+        metadata_data = initial_data.get("metadata", {}) if initial_data else {}
 
-        # Create twin model
-        twin_model = TwinModel(
-            patient_id=patient_id,
-            creation_date=datetime.now(UTC),
-            model_type="Initial",
-            model_parameters={},
-            version=1,
-        )
+        configuration = DigitalTwinConfiguration(**config_data)
+        state = DigitalTwinState(**state_data)
+        current_time = datetime.now(UTC) # Use UTC explicitly
 
         # Create digital twin
         digital_twin = DigitalTwin(
             patient_id=patient_id,
-            time_series_model=time_series_model,
-            twin_model=twin_model,
-            creation_date=datetime.now(UTC),
-            last_updated=datetime.now(UTC),
-            metadata=initial_data or {},
+            configuration=configuration,
+            state=state,
+            creation_date=current_time,
+            last_updated=current_time,
+            metadata=metadata_data
         )
 
         # Save to repository
@@ -151,14 +141,15 @@ class DigitalTwinService:
                 f"Digital twin does not exist for patient with ID {patient_id}"
             )
 
-        # Update time series model with new data points
-        for key, value in new_data_points.items():
-            if key not in digital_twin.time_series_model.data_points:
-                digital_twin.time_series_model.data_points[key] = []
-
-            digital_twin.time_series_model.data_points[key].append(
-                {"timestamp": datetime.now(UTC), "value": value}
-            )
+        # TODO: Re-implement based on actual DigitalTwin entity structure
+        # # Update time series model with new data points
+        # for key, value in new_data_points.items():
+        #     if key not in digital_twin.time_series_model.data_points:
+        #         digital_twin.time_series_model.data_points[key] = []
+        #
+        #     digital_twin.time_series_model.data_points[key].append(
+        #         {"timestamp": datetime.now(UTC), "value": value}
+        #     )
 
         # Update last updated timestamp
         digital_twin.last_updated = datetime.now(UTC)
@@ -195,21 +186,23 @@ class DigitalTwinService:
                 f"Digital twin does not exist for patient with ID {patient_id}"
             )
 
-        # Create new twin model
-        new_model = TwinModel(
-            patient_id=patient_id,
-            creation_date=datetime.now(UTC),
-            model_type=model_type,
-            model_parameters=model_parameters,
-            version=digital_twin.twin_model.version + 1,
-        )
+        # TODO: Re-implement based on actual DigitalTwin entity structure
+        # # Create new twin model
+        # new_model = TwinModel(
+        #     patient_id=patient_id,
+        #     creation_date=datetime.now(UTC),
+        #     model_type=model_type,
+        #     model_parameters=model_parameters,
+        #     version=digital_twin.twin_model.version + 1,
+        # )
+        #
+        # # Update digital twin with new model
+        # digital_twin.twin_model = new_model
+        # digital_twin.last_updated = datetime.now(UTC)
 
-        # Update digital twin with new model
-        digital_twin.twin_model = new_model
-        digital_twin.last_updated = datetime.now(UTC)
-
-        # Save to repository
-        return await self._digital_twin_repo.update(digital_twin)
+        # # Save to repository
+        # return await self._digital_twin_repo.update(digital_twin)
+        raise NotImplementedError("TwinModel functionality needs re-implementation based on entity definition.")
 
     async def get_digital_twin(self, patient_id: UUID) -> DigitalTwin | None:
         """
@@ -232,26 +225,28 @@ class DigitalTwinService:
         # Get digital twin
         return await self._digital_twin_repo.get_by_patient_id(patient_id)
 
-    async def get_twin_model_history(self, patient_id: UUID) -> list[TwinModel]:
-        """
-        Get the history of twin models for a patient
-
-        Args:
-            patient_id: UUID of the patient
-
-        Returns:
-            List of twin model entities
-
-        Raises:
-            ValidationError: If the patient doesn't exist
-        """
-        # Verify patient exists
-        patient = await self._patient_repo.get_by_id(patient_id)
-        if not patient:
-            raise ValidationError(f"Patient with ID {patient_id} does not exist")
-
-        # Get twin model history
-        return await self._digital_twin_repo.get_twin_model_history(patient_id)
+    # TODO: Re-implement based on actual DigitalTwin entity structure
+    # async def get_twin_model_history(self, patient_id: UUID) -> list[TwinModel]:
+    #     """
+    #     Get the history of twin models for a patient
+    #
+    #     Args:
+    #         patient_id: UUID of the patient
+    #
+    #     Returns:
+    #         List of twin model entities
+    #
+    #     Raises:
+    #         ValidationError: If the patient doesn't exist
+    #     """
+    #     # Verify patient exists
+    #     patient = await self._patient_repo.get_by_id(patient_id)
+    #     if not patient:
+    #         raise ValidationError(f"Patient with ID {patient_id} does not exist")
+    #
+    #     # Get twin model history
+    #     # return await self._digital_twin_repo.get_twin_model_history(patient_id)
+    #     raise NotImplementedError("TwinModel history functionality needs re-implementation based on entity definition.")
 
     async def analyze_treatment_response(
         self,
@@ -392,7 +387,7 @@ class DigitalTwinService:
 
         except Exception as e:
             logging.error(f"Error generating patient insights: {e!s}")
-            raise ServiceError(f"Failed to generate patient insights: {e!s}")
+            raise DomainError(f"Failed to generate patient insights: {e!s}")
 
     async def forecast_patient_symptoms(
         self,
@@ -431,7 +426,7 @@ class DigitalTwinService:
 
         except Exception as e:
             logging.error(f"Error forecasting patient symptoms: {e!s}")
-            raise ServiceError(f"Failed to forecast patient symptoms: {e!s}")
+            raise DomainError(f"Failed to forecast patient symptoms: {e!s}")
 
     async def analyze_biometric_correlations(
         self,
@@ -475,7 +470,7 @@ class DigitalTwinService:
 
         except Exception as e:
             logging.error(f"Error analyzing biometric correlations: {e!s}")
-            raise ServiceError(f"Failed to analyze biometric correlations: {e!s}")
+            raise DomainError(f"Failed to analyze biometric correlations: {e!s}")
 
     async def predict_medication_responses(
         self,
@@ -519,7 +514,7 @@ class DigitalTwinService:
 
         except Exception as e:
             logging.error(f"Error predicting medication responses: {e!s}")
-            raise ServiceError(f"Failed to predict medication responses: {e!s}")
+            raise DomainError(f"Failed to predict medication responses: {e!s}")
 
     async def generate_personalized_therapeutic_plan(
         self, patient_id: UUID, patient_data: dict[str, Any], diagnosis: str
@@ -675,7 +670,7 @@ class DigitalTwinService:
 
         except Exception as e:
             logging.error(f"Error generating personalized therapeutic plan: {e!s}")
-            raise ServiceError(
+            raise DomainError(
                 f"Failed to generate personalized therapeutic plan: {e!s}"
             )
 
@@ -710,7 +705,7 @@ class DigitalTwinService:
 
         except Exception as e:
             logging.error(f"Error updating patient Digital Twin: {e!s}")
-            raise ServiceError(f"Failed to update patient Digital Twin: {e!s}")
+            raise DomainError(f"Failed to update patient Digital Twin: {e!s}")
 
     async def get_patient_digital_twin_status(self, patient_id: UUID) -> dict[str, Any]:
         """
@@ -737,4 +732,4 @@ class DigitalTwinService:
 
         except Exception as e:
             logging.error(f"Error getting patient Digital Twin status: {e!s}")
-            raise ServiceError(f"Failed to get patient Digital Twin status: {e!s}")
+            raise DomainError(f"Failed to get patient Digital Twin status: {e!s}")

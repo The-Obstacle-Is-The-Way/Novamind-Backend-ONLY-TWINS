@@ -11,7 +11,12 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from app.core.utils.logging import HIPAACompliantLogger
+import pandas as pd
+import numpy as np
+from prophet import Prophet
+from app.core.utils.logging import get_logger
+from app.core.config.settings import settings
+from app.domain.interfaces.symptom_forecasting_interface import SymptomForecastingInterface
 from app.domain.exceptions.ml_exceptions import MLModelException
 
 
@@ -26,7 +31,8 @@ class SymptomForecastingService:
 
     def __init__(self):
         """Initialize the Symptom Forecasting Service."""
-        self.logger = HIPAACompliantLogger(__name__)
+        self.logger = get_logger(__name__)
+        self.models = {}
 
         # In a production implementation, we would initialize the ML models here
         # self.transformer_model = self._load_transformer_model()

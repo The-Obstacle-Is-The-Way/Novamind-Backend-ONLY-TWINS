@@ -16,7 +16,6 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.api.routes.ml import router as ml_router
 from app.core.config.ml_settings import ml_settings
 from app.core.exceptions import (
     InvalidRequestError,
@@ -25,6 +24,7 @@ from app.core.exceptions import (
 )
 
 from app.core.services.ml.interface import MentaLLaMAInterface
+from app.infrastructure.ml.mentallama.service import MentalLlamaService
 
 
 # Mock services

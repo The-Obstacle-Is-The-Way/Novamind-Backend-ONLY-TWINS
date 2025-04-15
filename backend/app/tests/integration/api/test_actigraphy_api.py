@@ -19,14 +19,17 @@ from fastapi.testclient import TestClient
 # Use create_application factory instead of importing the instance directly
 from app.main import create_application
 # Import necessary components for testing actigraphy API
-from app.api.routes.actigraphy import get_pat_service, router as actigraphy_router
+from app.presentation.api.dependencies.ml import get_pat_service
+# Assuming actigraphy router import is not needed if using TestClient with main app
+# from app.presentation.api.v1.endpoints.actigraphy import router as actigraphy_router
 from app.core.services.ml.pat.mock import MockPATService
-from app.presentation.api.dependencies import get_pat_service
-from app.api.schemas.actigraphy import (
+from app.presentation.api.schemas.actigraphy import (
     AnalysisType,
     DeviceInfo,
     AnalyzeActigraphyRequest,
     AccelerometerReading,
+    UploadResponse,
+    AnalysisResponse,
 )
 
 

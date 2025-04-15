@@ -44,6 +44,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             "/docs", "/openapi.json", "/health", "/metrics",
             "/api/v1/auth/login",
             "/api/v1/auth/register",
+            "/public",
             # Add other public endpoints like password reset, etc.
         ]
 
@@ -51,17 +52,19 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         """
         Process request, perform authentication, and call next handler.
         """
+        # --- Check for public paths FIRST --- 
         if any(request.url.path.startswith(path) for path in self.public_paths):
             logger.debug(f"Public path accessed: {request.url.path}. Skipping authentication.")
-            request.state.user = None
+            request.state.user = None # Explicitly set user to None for public paths
             return await call_next(request)
 
+        # --- If not public, proceed with authentication --- 
         try:
             # Attempt to extract token from header or cookies
             token = self._extract_token(request)
             
             # Attempt to decode and validate token using JWTService instance
-            token_data: TokenPayload = self.jwt_service.decode_token(token)
+            token_data: TokenPayload = await self.jwt_service.decode_token(token) 
             
             # Token is valid, payload extracted. Fetch the user.
             if not token_data.sub:

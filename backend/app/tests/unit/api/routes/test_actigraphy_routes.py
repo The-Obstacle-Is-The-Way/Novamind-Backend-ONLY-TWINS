@@ -16,8 +16,8 @@ import pytest
 from fastapi import HTTPException, status, FastAPI  # Added FastAPI
 from fastapi.testclient import TestClient
 
-from app.api.routes.actigraphy import router  # Assuming router is defined here
-from app.api.schemas.actigraphy import AnalysisType
+from app.presentation.api.v1.endpoints.actigraphy import router
+from app.presentation.api.schemas.actigraphy import AnalysisType
 from app.core.services.ml.pat.exceptions import (
     AnalysisError,
     AuthorizationError,
@@ -349,8 +349,8 @@ def app(mock_pat_service):
         return payload.get("sub")
     
     try:
-        from app.api.dependencies.auth import validate_jwt as actual_validate_jwt
-        from app.api.dependencies.auth import get_current_user_id as actual_get_user_id
+        from app.presentation.api.dependencies.auth import validate_jwt as actual_validate_jwt
+        from app.presentation.api.dependencies.auth import get_current_user_id as actual_get_user_id
         
         app_instance.dependency_overrides[actual_validate_jwt] = lambda: mock_validate_jwt
         app_instance.dependency_overrides[actual_get_user_id] = mock_get_current_user_id
@@ -360,7 +360,7 @@ def app(mock_pat_service):
         
     # Mock PAT service dependency
     try:
-        from app.api.dependencies.ml import get_pat_service as actual_get_pat_service
+        from app.presentation.api.dependencies.ml import get_pat_service as actual_get_pat_service
         
         app_instance.dependency_overrides[actual_get_pat_service] = lambda: mock_pat_service
     except ImportError:

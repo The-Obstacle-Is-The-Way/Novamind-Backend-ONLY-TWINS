@@ -19,7 +19,7 @@ from pydantic import PostgresDsn
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from fastapi.testclient import TestClient
-from app.api.routes import api_router, setup_routers # Import setup_routers
+from app.presentation.api.routes import api_router, setup_routers
 from app.presentation.middleware.phi_middleware import add_phi_middleware
 from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
@@ -38,7 +38,7 @@ from app.config.settings import get_settings # To get API prefix, etc.
 from fastapi import FastAPI, Depends, HTTPException, status # Removed try block
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.testclient import TestClient
-from app.api.routes.patients_router import router as patients_router
+from app.presentation.api.v1.endpoints.patients import router as patients_router
 from app.presentation.middleware.phi_middleware import PHIMiddleware, add_phi_middleware
 # Removed fallback mock definitions for FastAPI components
 

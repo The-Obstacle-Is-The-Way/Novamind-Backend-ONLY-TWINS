@@ -20,8 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config.settings import get_settings
             
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_instance, get_db_session
-from app.api.routes import api_router, setup_routers  # Import the setup_routers function
-from app.presentation.api.routes.analytics_endpoints import router as analytics_router
+from app.presentation.api.routes import api_router, setup_routers  # Import from the new location
 
 # Import Middleware and Services
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
@@ -167,9 +166,6 @@ def create_application() -> FastAPI:
         api_prefix = api_prefix[:-1]
     
     app.include_router(api_router, prefix=api_prefix)
-    
-    if settings.ENABLE_ANALYTICS:
-        app.include_router(analytics_router, prefix=api_prefix)
     
     # --- Static Files (Optional) ---
     static_dir = settings.STATIC_DIR

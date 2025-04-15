@@ -11,9 +11,10 @@ from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 from fastapi import FastAPI
 from datetime import datetime, timezone
+from fastapi import status
 
 from app.main import app
-from app.api.routes.xgboost import router as xgboost_router
+from app.infrastructure.di.container import Container
 from app.core.services.ml.xgboost.interface import XGBoostInterface
 from app.core.services.ml.xgboost.exceptions import (
     ValidationError, DataPrivacyError, ResourceNotFoundError,

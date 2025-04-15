@@ -10,13 +10,13 @@ import json
 import pytest
 
 # Import FastAPI and TestClient
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime
 
 # Router import remains the same
-from app.api.routes.xgboost import router
+# from app.api.routes.xgboost import router
 from app.core.services.ml.xgboost import (
     get_xgboost_service,
     MockXGBoostService,
@@ -24,6 +24,7 @@ from app.core.services.ml.xgboost import (
     TreatmentCategory,
     RiskLevel,
 )
+from app.domain.services.interfaces.ixgboost_service import IXGBoostService
 
 
 # Create a test client fixture
@@ -34,7 +35,7 @@ def client():
     app = FastAPI()
 
     # Include the router
-    app.include_router(router)
+    # app.include_router(router)
 
     # Create a test client with authentication headers
     from fastapi.testclient import TestClient

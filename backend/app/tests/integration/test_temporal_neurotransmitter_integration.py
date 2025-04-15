@@ -19,7 +19,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.api.routes.temporal_neurotransmitter import router as temporal_router
 from app.application.services.temporal_neurotransmitter_service import TemporalNeurotransmitterService
 from app.config.settings import get_settings
 from app.domain.entities.digital_twin_enums import BrainRegion, Neurotransmitter, ClinicalSignificance
@@ -33,6 +32,7 @@ from app.infrastructure.models.temporal_sequence_model import Base
 from app.infrastructure.repositories.temporal_event_repository import SqlAlchemyEventRepository
 from app.infrastructure.repositories.temporal_sequence_repository import SqlAlchemyTemporalSequenceRepository
 from app.domain.enums.role import Role
+from app.domain.services.interfaces.itemporal_neurotransmitter_service import ITemporalNeurotransmitterService
 
 # Initialize settings using the getter function
 settings = get_settings()

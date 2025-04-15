@@ -15,11 +15,12 @@ import concurrent.futures
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Set, Pattern, Match, Union, cast
 
-from app.api.schemas.ml_schemas import (
-    PHIDetectionMatch,
-    PHIDetectionRequest,
-    PHIDetectionResult
+from sqlalchemy.orm import Session
+from app.infrastructure.persistence.sqlalchemy.models import Patient, User
+from app.presentation.api.schemas.ml_schemas import (
+    PHIContextEnum, PHIRequest, PHIDetectionRequest, TextProcessingRequest
 )
+from app.core.config.settings import settings
 from app.core.config.ml_settings import PHIDetectionSettings
 from app.core.exceptions.ml_exceptions import (
     PHIDetectionException,

@@ -15,10 +15,11 @@ import pytest
 from fastapi import FastAPI, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.testclient import TestClient
+from unittest.mock import AsyncMock, patch
 
-from app.api.dependencies.auth import get_current_user
-from app.api.dependencies.ml import get_pat_service
-from app.api.routes.actigraphy import router as actigraphy_router
+from app.presentation.api.dependencies.auth import get_current_user
+from app.presentation.api.dependencies.ml import get_pat_service
+from app.presentation.api.v1.endpoints.actigraphy import router as actigraphy_router
 from app.domain.entities.user import User
 from app.core.services.ml.pat.mock import MockPATService
 

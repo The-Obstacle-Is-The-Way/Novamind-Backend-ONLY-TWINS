@@ -9,12 +9,14 @@ import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi import HTTPException, status
 from typing import Dict, Any
+from starlette.requests import Request
 
-from app.api.dependencies.auth import (
+from app.presentation.api.dependencies.auth import (
     get_current_token_payload,
     get_current_user,
     get_current_active_clinician,
     get_current_active_admin,
+    require_role,
 )
 
 

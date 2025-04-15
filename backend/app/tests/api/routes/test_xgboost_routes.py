@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from datetime import datetime
 
 # Import directly from app.api.schemas to avoid routes import issues
-from app.api.schemas.xgboost import (
+from app.presentation.api.schemas.xgboost import (
     RiskPredictionRequest,
     RiskPredictionResponse,
     TreatmentResponseRequest,
