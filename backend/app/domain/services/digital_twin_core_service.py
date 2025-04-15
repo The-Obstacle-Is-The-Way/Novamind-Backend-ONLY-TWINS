@@ -4,9 +4,16 @@ This is the central orchestrating service that coordinates all components.
 Pure domain interface with no infrastructure dependencies.
 """
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, AsyncGenerator, Tuple
 from uuid import UUID
 
-from app.domain.entities.digital_twin import ClinicalInsight, DigitalTwinState
+from app.domain.entities.digital_twin_entity import DigitalTwin, ClinicalInsight
+from app.domain.entities.digital_twin_enums import (
+    BrainRegion,
+    Neurotransmitter,
+)
+from app.domain.entities.digital_twin import DigitalTwinState
 
 
 class DigitalTwinCoreService(ABC):
