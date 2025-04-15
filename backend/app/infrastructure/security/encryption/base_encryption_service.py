@@ -15,7 +15,9 @@ from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from app.core.config import get_settings
+# Use canonical config import
+# from app.core.config import get_settings
+from app.config.settings import get_settings
 
 # Configure logger
 logger = logging.getLogger(__name__)

@@ -16,7 +16,9 @@ import logging
 
 from app.config.settings import get_settings
 from app.domain.exceptions import InvalidTokenError, TokenExpiredError
-from app.infrastructure.security.jwt.jwt_models import TokenData
+# TokenData was likely renamed TokenPayload and is defined below
+# from app.infrastructure.security.jwt.jwt_models import TokenData
+# No need to import TokenPayload from here as it's defined below
 
 
 logger = logging.getLogger(__name__)

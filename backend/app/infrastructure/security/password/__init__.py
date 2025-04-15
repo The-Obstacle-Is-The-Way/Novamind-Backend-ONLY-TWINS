@@ -8,4 +8,6 @@ for HIPAA-compliant user authentication.
 """
 
 from app.infrastructure.security.password.password_handler import PasswordHandler
-from app.infrastructure.security.password.hashing import hash_data, secure_compare
+# Import the correct functions from hashing.py
+# from app.infrastructure.security.password.hashing import hash_data, secure_compare
+from app.infrastructure.security.password.hashing import get_password_hash, verify_password

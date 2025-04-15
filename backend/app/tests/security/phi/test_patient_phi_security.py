@@ -21,7 +21,7 @@ from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
 # from app.domain.value_objects.insurance import Insurance # Insurance VO
 # removed or refactored
-from app.infrastructure.security.encryption import EncryptionService
+from app.infrastructure.security.encryption import BaseEncryptionService
 from app.core.utils.logging import get_logger
 from app.tests.security.utils.base_security_test import BaseSecurityTest
 
@@ -59,7 +59,7 @@ class TestPatientPHISecurity(BaseSecurityTest):
     def _create_encryption_service(self):
         # Use a deterministic test key for repeatability
         test_key = b"testkeyfortestingonly1234567890abcdef"
-        service = EncryptionService(direct_key=test_key.hex())
+        service = BaseEncryptionService(direct_key=test_key.hex())
         return service
 
     def test_patient_phi_encryption_at_rest(self):
@@ -79,7 +79,7 @@ class TestPatientPHISecurity(BaseSecurityTest):
 
     def test_no_phi_in_logs(self):
         patient = self._create_sample_patient_with_phi()
-        logger = get_logger(__name__)
+        logger = logging.getLogger(__name__)
         with patch.object(logger, "info") as mock_log_info, patch.object(logger, "debug") as mock_log_debug:
             logger.info(f"Processing patient {patient.id}")
             logger.debug(f"Patient details accessed for {patient.id}")
@@ -132,17 +132,17 @@ class TestPatientPHISecurity(BaseSecurityTest):
     def test_no_phi_in_logs(self, mock_get_logger):
         pytest.skip("Duplicate or legacy test; Patient does not have first_name/last_name fields.")
 
-    @patch('app.infrastructure.security.encryption.EncryptionService.encrypt')
+    @patch('app.infrastructure.security.encryption.BaseEncryptionService.encrypt')
     def test_all_phi_fields_are_encrypted(self, mock_encrypt):
         pytest.skip("Patient model does not have all expected PHI fields for this test.")
 
-    @patch('app.infrastructure.security.encryption.EncryptionService.decrypt')
+    @patch('app.infrastructure.security.encryption.BaseEncryptionService.decrypt')
     def test_phi_fields_decryption(self, mock_decrypt):
         pytest.skip("Patient model does not have all expected PHI fields for this test.")
 
     def test_audit_trail_for_phi_access(self):
         pytest.skip("Patient model does not have all expected PHI fields for this test.")
 
-    @patch('app.infrastructure.security.encryption.EncryptionService.decrypt')
+    @patch('app.infrastructure.security.encryption.BaseEncryptionService.decrypt')
     def test_error_handling_without_phi_exposure(self, mock_decrypt):
         pytest.skip("Patient model does not have all expected PHI fields for this test.")

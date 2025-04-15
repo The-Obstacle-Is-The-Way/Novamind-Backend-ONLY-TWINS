@@ -14,21 +14,28 @@ from app.infrastructure.security.phi import LogSanitizer, PHIFormatter, PHIRedac
 from app.infrastructure.security.auth import MFAService 
 
 # JWT Components
-from app.infrastructure.security.jwt import (
-    TokenHandler, 
-    JWTService, 
-    JWTAuth,
-    create_access_token,
-    create_refresh_token,
-    verify_token,
-    get_current_user
-)
+# Only import JWTService from the jwt package
+# from app.infrastructure.security.jwt import (
+#     TokenHandler, 
+#     JWTService, 
+#     JWTAuth,
+#     create_access_token,
+#     create_refresh_token,
+#     verify_token,
+#     get_current_user
+# )
+from app.infrastructure.security.jwt import JWTService
 
 # Encryption Components
-from app.infrastructure.security.encryption import EncryptionService, EncryptionHandler, KeyRotationManager
+# Import BaseEncryptionService as EncryptionService for consistency elsewhere maybe?
+# Or just import BaseEncryptionService directly.
+# from app.infrastructure.security.encryption import EncryptionService, EncryptionHandler, KeyRotationManager
+from app.infrastructure.security.encryption import BaseEncryptionService
 
 # Password Components
-from app.infrastructure.security.password import PasswordHandler, hash_data, secure_compare
+# Import correct functions from password package
+# from app.infrastructure.security.password import PasswordHandler, hash_data, secure_compare
+from app.infrastructure.security.password import PasswordHandler, get_password_hash, verify_password
 
 # RBAC Components
 from app.infrastructure.security.rbac import RoleBasedAccessControl, RoleAccessManager, RoleManager
@@ -41,7 +48,7 @@ from app.infrastructure.security.audit import AuditService
 
 from .auth.authentication_service import AuthenticationService
 from .auth.password_service import PasswordService
-from .encryption.encryption_service import EncryptionService
+from .encryption.base_encryption_service import BaseEncryptionService
 from .jwt.jwt_service import JWTService
 
 # PHIMiddleware is now in presentation layer, remove export from here
@@ -50,7 +57,7 @@ from .jwt.jwt_service import JWTService
 __all__ = [
     "AuthenticationService",
     "PasswordService",
-    "EncryptionService",
+    "BaseEncryptionService",
     "JWTService",
 #    "PHIMiddleware",
 ]
