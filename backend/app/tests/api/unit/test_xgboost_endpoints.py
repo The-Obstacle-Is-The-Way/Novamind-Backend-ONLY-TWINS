@@ -34,6 +34,7 @@ from app.presentation.api.schemas.xgboost import (
 from app.infrastructure.di.container import get_service # Use generic service provider
 from app.core.services.ml.xgboost.interface import XGBoostInterface # Import the interface
 from app.core.services.ml.xgboost.enums import RiskLevel, ResponseLevel
+from app.core.services.ml.xgboost.interface import ModelType
 from app.core.services.ml.xgboost.exceptions import (
     XGBoostServiceError,
     ConfigurationError,

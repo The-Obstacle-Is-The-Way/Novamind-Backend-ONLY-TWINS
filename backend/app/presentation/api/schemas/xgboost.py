@@ -108,6 +108,7 @@ class RiskPredictionRequest(BaseModel):
     
     patient_id: str = Field(..., description="Patient identifier")
     risk_type: RiskType = Field(..., description="Type of risk to predict")
+    patient_data: Dict[str, Any] = Field(..., description="Patient data for prediction")
     clinical_data: Dict[str, Any] = Field(..., description="Clinical data for prediction")
     time_frame_days: Optional[int] = Field(30, ge=1, description="Time frame for prediction in days")
     
