@@ -26,16 +26,16 @@ from app.presentation.api.routes import api_router, setup_routers  # Import from
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
 from app.presentation.middleware.rate_limiting_middleware import setup_rate_limiting
 from app.presentation.middleware.phi_middleware import add_phi_middleware # Updated import path
-from app.infrastructure.security.auth.authentication_service import AuthenticationService 
-from app.domain.repositories.user_repository import UserRepository # Keep domain interface
-from app.infrastructure.security.password.password_handler import PasswordHandler
-from app.infrastructure.security.jwt.jwt_service import JWTService, get_jwt_service
-from unittest.mock import MagicMock # Import MagicMock
 
 # Import necessary types for middleware
 from starlette.requests import Request
 from starlette.responses import Response
 from typing import Callable, Awaitable
+
+# Remove direct imports of handlers/repos if not needed elsewhere in main
+# from app.infrastructure.security.password.password_handler import PasswordHandler
+# from app.domain.repositories.user_repository import UserRepository
+# from unittest.mock import MagicMock
 
 # Configure logging
 logging.basicConfig(
@@ -96,26 +96,6 @@ def create_application() -> FastAPI:
         lifespan=lifespan, # Use the defined lifespan manager
     )
     
-    # --- Instantiate Services (TEMPORARY) --- 
-    # This block needs to be replaced by a proper DI setup
-    try:
-        password_handler = PasswordHandler()
-        # Instantiate JWTService using its provider, which should handle Depends(get_settings)
-        # This might still fail if called before settings are fully loaded/mocked in tests
-        # but it's closer to the intended pattern than JWTService() directly.
-        jwt_service = get_jwt_service() 
-        mock_user_repo = MagicMock(spec=UserRepository)
-        
-        auth_service = AuthenticationService(
-            user_repository=mock_user_repo, 
-            password_handler=password_handler,
-            jwt_service=jwt_service
-        )
-        logger.info("AuthenticationService instantiated for middleware setup (using Mocks).")
-    except Exception as e:
-        logger.critical(f"Failed to instantiate AuthenticationService dependencies: {e}", exc_info=True)
-        raise RuntimeError("Could not set up core authentication services.") from e
-
     # --- Add Middleware (Order Matters!) ---
     
     # 1. CORS Middleware (Handles cross-origin requests first)
@@ -137,16 +117,14 @@ def create_application() -> FastAPI:
 
     # 4. Authentication Middleware 
     app.add_middleware(
-        AuthenticationMiddleware,
-        auth_service=auth_service, 
-        jwt_service=jwt_service,
+        AuthenticationMiddleware, # Only pass the middleware class
         public_paths={
             "/openapi.json",
             "/docs",
             "/api/v1/auth/refresh",
             "/health", 
-        },
-    )
+        } # Close the set properly
+    ) # Close the add_middleware call
     
     # 5. PHI Sanitization/Auditing Middleware (Processes after auth)
     add_phi_middleware(

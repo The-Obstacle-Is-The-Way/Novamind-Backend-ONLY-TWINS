@@ -148,8 +148,9 @@ class JWTService(JWTServiceInterface):
             raise InvalidTokenError(f"Token validation failed: {e}") from e
 
 
-# Dependency provider remains the same, but JWTService now resolves its own settings
-def get_jwt_service() -> JWTService:
-    """FastAPI dependency provider for JWTService."""
-    # JWTService now resolves its own settings via get_settings() in __init__
-    return JWTService()
+# Provider function
+def get_jwt_service(settings: Settings = Depends(get_settings)) -> JWTService:
+    """Dependency provider for JWTService, ensuring settings are injected."""
+    logger.debug(f"Providing JWTService instance using settings: {id(settings)}")
+    # Instantiate service explicitly with resolved settings
+    return JWTService(settings=settings)

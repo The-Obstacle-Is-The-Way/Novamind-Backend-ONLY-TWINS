@@ -23,6 +23,10 @@ from app.infrastructure.security.auth.authentication_service import Authenticati
 from app.infrastructure.models.user_model import UserModel
 from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 
+# Import PROVIDER functions for Depends
+from app.presentation.dependencies.auth import get_authentication_service
+from app.infrastructure.security.jwt.jwt_service import get_jwt_service
+
 # Corrected import path for settings
 from app.config.settings import get_settings, Settings
 
@@ -33,33 +37,30 @@ logger = get_logger(__name__)
 
 class AuthenticationMiddleware(BaseHTTPMiddleware):
     """
-    Middleware for JWT authentication. Receives services via __init__.
+    Middleware for JWT authentication using dependency injection within dispatch.
     """
 
+    # __init__ only takes app and optional public_paths
     def __init__(
         self,
         app,
-        auth_service: AuthenticationService,
-        jwt_service: JWTService,
-        public_paths: Optional[Set[str]] = None,
+        public_paths: Optional[Set[str]] = None, 
     ):
-        """Initialize the middleware.
-
-        Args:
-            app: The ASGI application.
-            auth_service: Service for authentication logic.
-            jwt_service: Service for JWT operations.
-            public_paths: A set of URL paths that do not require authentication.
-        """
         super().__init__(app)
-        self.auth_service = auth_service
-        self.jwt_service = jwt_service
         self.public_paths = public_paths or set()
-        logger.info(f"AuthenticationMiddleware initialized. Public paths: {self.public_paths}.")
+        logger.info(f"AuthenticationMiddleware initialized (using Depends in dispatch). Public paths: {self.public_paths}.")
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    # Inject dependencies directly into dispatch
+    async def dispatch(
+        self, 
+        request: Request, 
+        call_next: RequestResponseEndpoint,
+        # Use Depends to inject services - FastAPI handles this
+        auth_service: AuthenticationService = Depends(get_authentication_service),
+        jwt_service: JWTService = Depends(get_jwt_service)
+    ) -> Response:
         """
-        Process request, perform authentication using stored services, and call next handler.
+        Process request, perform authentication using injected services, and call next handler.
         """
         request.state.user = UnauthenticatedUser()
         request.state.auth = None 
@@ -84,11 +85,12 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
 
         if not token or not scheme or scheme.lower() != "bearer":
             logger.debug("No valid Bearer token found in header.")
-            return await call_next(request)
+            return await call_next(request) 
 
+        # Use injected services directly
         try:
-            token_data: TokenPayload = await self.jwt_service.verify_token(token)
-            user: Optional[UserModel] = await self.auth_service.get_user_by_id(str(token_data.sub)) 
+            token_data: TokenPayload = await jwt_service.verify_token(token)
+            user: Optional[UserModel] = await auth_service.get_user_by_id(str(token_data.sub)) 
 
             if not user:
                 logger.warning(f"User not found for token subject: {token_data.sub}")
@@ -100,7 +102,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
 
             request.state.user = user
             user_roles = getattr(user, 'roles', []) 
-            scopes = [str(role) for role in user_roles]
+            scopes = [str(role) for role in user_roles] 
             request.state.auth = AuthCredentials(scopes=scopes)
             logger.debug(f"User {user.id} authenticated successfully.")
 
@@ -120,14 +122,6 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             )
         except Exception as e:
             logger.error(f"Unexpected error during authentication: {type(e).__name__} - {e}", exc_info=True)
-            secret_key_snippet = "[SECRET KEY LOGGING FAILED]"
-            try:
-                if hasattr(self.jwt_service, 'settings') and hasattr(self.jwt_service.settings, 'SECRET_KEY'):
-                    secret_key_snippet = f"{self.jwt_service.settings.SECRET_KEY.get_secret_value()[:5]}..." 
-            except Exception as log_e:
-                logger.error(f"Failed to retrieve secret key for logging: {log_e}")
-            logger.error(f"--- [Middleware] Secret Key during UNEXPECTED error: {secret_key_snippet}")
-
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={"detail": "Internal server error during authentication"},

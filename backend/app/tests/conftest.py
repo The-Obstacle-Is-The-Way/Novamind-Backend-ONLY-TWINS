@@ -417,7 +417,7 @@ def mock_jwt_service_override(
     return mock_service
 
 
-# Final client fixture structure with direct TYPE overrides
+# Client fixture with PROVIDER overrides
 @pytest_asyncio.fixture(scope="function") 
 async def client(
     # Non-default arguments FIRST
@@ -428,21 +428,17 @@ async def client(
     mock_auth_service_instance: AuthenticationService = Depends(mock_auth_service_override),
     mock_jwt_service_instance: JWTService = Depends(mock_jwt_service_override)
 ) -> AsyncGenerator[AsyncClient, None]: 
-    """Provides an httpx.AsyncClient with overridden service dependencies.
-    Overrides the specific service classes (AuthenticationService, JWTService).
-    """
-    logger.info("[Fixture client - async] ENTERING - Applying direct service type overrides")
+    """Provides an httpx.AsyncClient with overridden dependency PROVIDERS."""
+    logger.info("[Fixture client - async] ENTERING - Applying provider overrides")
 
-    # Override service TYPES directly
+    # Override PROVIDER functions
     app.dependency_overrides[get_settings] = lambda: mock_settings
-    # Override AuthenticationService type to return the mock instance
-    app.dependency_overrides[AuthenticationService] = lambda: mock_auth_service_instance
-    # Override JWTService type to return the mock instance
-    app.dependency_overrides[JWTService] = lambda: mock_jwt_service_instance
+    app.dependency_overrides[get_authentication_service] = lambda: mock_auth_service_instance
+    app.dependency_overrides[get_jwt_service] = lambda: mock_jwt_service_instance
     
     logger.info(f"[Fixture client - async] Overrode get_settings provider.")
-    logger.info(f"[Fixture client - async] Overrode AuthenticationService type with mock: {id(mock_auth_service_instance)}")
-    logger.info(f"[Fixture client - async] Overrode JWTService type with mock: {id(mock_jwt_service_instance)}")
+    logger.info(f"[Fixture client - async] Overrode get_authentication_service provider with mock: {id(mock_auth_service_instance)}")
+    logger.info(f"[Fixture client - async] Overrode get_jwt_service provider with mock: {id(mock_jwt_service_instance)}")
 
     get_settings.cache_clear()
     logger.info("--- [Fixture: client] Cleared get_settings cache before AsyncClient creation.")
