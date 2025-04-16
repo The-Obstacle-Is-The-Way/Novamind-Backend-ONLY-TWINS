@@ -78,13 +78,16 @@ async def get_patient_endpoint(
         )
 
     # Authorization logic: Check if the user can access this specific patient
-    user_id = current_user.get("id")
+    user_sub = current_user.get("sub") # Use 'sub' from JWT payload
     user_roles = current_user.get("roles", [])
 
     can_access = False
-    if "admin" in user_roles or "doctor" in user_roles:
+    if "admin" in user_roles: # Admins can access any
         can_access = True
-    elif "patient" in user_roles and user_id == patient_id:
+    # TODO: Refine doctor access check based on assigned patients if needed by repo/service layer
+    elif "doctor" in user_roles:
+         can_access = True # Currently allowing doctors access to any patient endpoint hit
+    elif "patient" in user_roles and user_sub == patient_id: # Patients can access own (compare sub to patient_id)
         can_access = True
         
     if not can_access:
@@ -105,7 +108,7 @@ async def create_patient_endpoint(
 ):
     # Authorization: Check if the user has permission to create patients
     user_roles = current_user.get("roles", [])
-    if "admin" not in user_roles and "doctor" not in user_roles:
+    if "admin" not in user_roles and "doctor" not in user_roles: # Only Admin/Doctor can create
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to create patients")
 
     # Create patient using repository
