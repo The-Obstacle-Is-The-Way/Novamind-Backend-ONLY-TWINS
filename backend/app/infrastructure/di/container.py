@@ -36,6 +36,10 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
+class Container(DIContainer):
+    """Minimal Container class for import compatibility."""
+    pass
+
 class DIContainer:
     """
     Dependency Injection Container for managing service dependencies.

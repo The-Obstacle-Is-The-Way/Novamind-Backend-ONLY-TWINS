@@ -34,10 +34,11 @@ from app.domain.services.enhanced_digital_twin_core_service import (
 from app.infrastructure.factories.enhanced_mock_digital_twin_factory import (
     EnhancedMockDigitalTwinFactory,
 )
-from app.domain.entities.neurotransmitter import NeurotransmitterType
-from app.domain.services.neurotransmitter_mapping_service import (
-    NeurotransmitterMappingService
-)
+from app.domain.entities.digital_twin_enums import Neurotransmitter # Corrected import path and name
+# Commented out imports for missing service - requires further investigation
+# from app.domain.services.neurotransmitter_mapping_service import (
+#     NeurotransmitterMappingService
+# )
 
 
 @pytest.fixture

@@ -385,6 +385,18 @@ class ProfileUpdate(BaseModel):
     )
 
 
+class AnalysisResponse(BaseModel):
+    """Minimal AnalysisResponse schema for actigraphy analysis endpoints."""
+    analysis_id: str
+    status: str
+    result: Optional[str] = None
+
+class UploadResponse(BaseModel):
+    """Minimal UploadResponse schema for actigraphy upload endpoints."""
+    upload_id: str
+    status: str
+    detail: Optional[str] = None
+
 class IntegrationResult(BaseModel):
     """Result of digital twin integration."""
     

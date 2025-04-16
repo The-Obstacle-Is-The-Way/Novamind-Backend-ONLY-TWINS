@@ -9,6 +9,7 @@ from app.core.exceptions.base_exceptions import (
     ApplicationError,
     AuthenticationException,
     AuthorizationException,
+    AuthorizationError,
     BaseException,
     BusinessRuleException,
     ConfigurationError,
@@ -20,8 +21,14 @@ from app.core.exceptions.base_exceptions import (
     ResourceNotFoundError,
     SecurityException,
     ValidationException,
+    ValidationError,
     HIPAAComplianceError,
+    ServiceProviderError,
+    AnalysisError,
+    EmbeddingError,
+    IntegrationError,
 )
+
 
 from app.core.exceptions.ml_exceptions import (
     InvalidRequestError,

@@ -5,6 +5,10 @@ This module defines domain-specific exceptions that represent business rule viol
 and other domain-related errors, following clean architecture principles.
 """
 
+class EntityNotFoundError(Exception):
+    """Exception raised when a requested entity is not found in the domain layer."""
+    pass
+
 class DomainError(Exception):
     """Base exception for all domain-related errors."""
     pass

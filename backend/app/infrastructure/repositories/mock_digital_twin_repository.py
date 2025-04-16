@@ -6,7 +6,8 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from uuid import UUID, uuid4
 
-from app.domain.entities.digital_twin import ClinicalSignificance, DigitalTwinState
+from app.domain.entities.digital_twin_enums import ClinicalSignificance # Corrected import path
+from app.domain.entities.digital_twin import DigitalTwinState
 from app.domain.repositories.digital_twin_repository import DigitalTwinRepository
 
 

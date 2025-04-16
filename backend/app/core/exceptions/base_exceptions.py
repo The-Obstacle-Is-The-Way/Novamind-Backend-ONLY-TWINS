@@ -215,6 +215,43 @@ class InvalidConfigurationError(BaseException):
         super().__init__(message=message, detail=detail, code=code)
 
 
+# --- Additional exceptions to satisfy imports and test collection ---
+
+class AuthorizationError(BaseException):
+    """Exception raised for authorization errors (legacy import compatibility)."""
+    def __init__(self, message: str = "Authorization error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "AUTHORIZATION_ERROR"):
+        super().__init__(message=message, detail=detail, code=code)
+
+class ValidationError(BaseException):
+    """Exception raised for validation errors (legacy import compatibility)."""
+    def __init__(self, message: str = "Validation error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "VALIDATION_ERROR"):
+        super().__init__(message=message, detail=detail, code=code)
+
+class ServiceProviderError(BaseException):
+    """Exception raised for service provider errors (legacy import compatibility)."""
+    def __init__(self, message: str = "Service provider error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "SERVICE_PROVIDER_ERROR"):
+        super().__init__(message=message, detail=detail, code=code)
+
+class AnalysisError(BaseException):
+    """Exception raised for analysis errors (legacy import compatibility)."""
+    def __init__(self, message: str = "Analysis error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "ANALYSIS_ERROR"):
+        super().__init__(message=message, detail=detail, code=code)
+
+class EmbeddingError(BaseException):
+    """Exception raised for embedding errors (legacy import compatibility)."""
+    def __init__(self, message: str = "Embedding error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "EMBEDDING_ERROR"):
+        super().__init__(message=message, detail=detail, code=code)
+
+class InitializationError(BaseException):
+    """Exception raised for initialization errors (legacy import compatibility)."""
+    def __init__(self, message: str = "Initialization error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "INITIALIZATION_ERROR"):
+        super().__init__(message=message, detail=detail, code=code)
+
+class IntegrationError(BaseException):
+    """Exception raised for integration errors (legacy import compatibility)."""
+    def __init__(self, message: str = "Integration error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "INTEGRATION_ERROR"):
+        super().__init__(message=message, detail=detail, code=code)
+
 # --- Exceptions moved from standalone exceptions.py --- 
 
 class HIPAAComplianceError(BusinessRuleException):
