@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.settings import get_settings
 settings = get_settings()
-from app.infrastructure.security.jwt.jwt_service import JWTService # Corrected path
+from app.infrastructure.security.jwt.jwt_service import JWTService, get_jwt_service
 from app.core.utils.logging import get_logger
 
 
@@ -40,7 +40,8 @@ async def get_token_from_header(
 
 
 async def get_current_user(
-    token: Optional[str] = Depends(get_token_from_header)
+    token: Optional[str] = Depends(get_token_from_header),
+    jwt_service: JWTService = Depends(get_jwt_service)
 ) -> Dict[str, Any]:
     """
     Authenticate and get current user from JWT token.
@@ -50,6 +51,7 @@ async def get_current_user(
     
     Args:
         token: JWT token from Authorization header
+        jwt_service: Injected JWTService instance
         
     Returns:
         User data extracted from token
@@ -65,10 +67,7 @@ async def get_current_user(
         )
         
     try:
-        # Initialize JWT service
-        jwt_service = JWTService(settings=settings)
-        
-        # Validate and decode token
+        # Validate and decode token using the *injected* service
         payload = await jwt_service.verify_token(token)
         
         if not payload:
@@ -77,7 +76,7 @@ async def get_current_user(
         return payload
         
     except Exception as e:
-        logger.warning(f"Authentication failed: {str(e)}")
+        logger.warning(f"Authentication failed ({type(e).__name__}): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
@@ -86,7 +85,8 @@ async def get_current_user(
 
 
 async def get_optional_user(
-    token: Optional[str] = Depends(get_token_from_header)
+    token: Optional[str] = Depends(get_token_from_header),
+    jwt_service: JWTService = Depends(get_jwt_service)
 ) -> Optional[Dict[str, Any]]:
     """
     Get user from JWT token without requiring authentication.
@@ -97,6 +97,7 @@ async def get_optional_user(
     
     Args:
         token: JWT token from Authorization header
+        jwt_service: Injected JWTService instance
         
     Returns:
         User data extracted from token if valid, None otherwise
@@ -105,16 +106,13 @@ async def get_optional_user(
         return None
         
     try:
-        # Initialize JWT service
-        jwt_service = JWTService(settings=settings)
-        
-        # Validate and decode token
+        # Validate and decode token using the *injected* service
         payload = await jwt_service.verify_token(token)
         
         return payload
         
     except Exception as e:
-        logger.debug(f"Optional authentication failed: {str(e)}")
+        logger.debug(f"Optional authentication failed ({type(e).__name__}): {str(e)}")
         return None
 
 

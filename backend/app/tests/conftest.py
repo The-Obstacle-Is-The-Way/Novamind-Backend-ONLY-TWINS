@@ -35,6 +35,9 @@ from app.infrastructure.security.auth.authentication_service import Authenticati
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
 from app.domain.entities.patient import Patient
 from app.domain.entities.base_entity import BaseEntity  # Assuming BaseEntity exists
+# Add necessary SQLAlchemy imports
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession # <-- Add AsyncSession here
+from sqlalchemy.orm import sessionmaker
 
 # Try to import our patching utility
 try:
@@ -313,12 +316,12 @@ def mock_auth_service_for_client() -> AuthenticationService:
 async def client(
     mock_settings: MockSettings, # Inject mock_settings
     test_environment, 
-    # Use the override_jwt_service fixture directly
-    override_jwt_service: JWTService, 
+    # Use the MOCK jwt service fixture for the client's app override
+    mock_jwt_service_for_client: JWTService, # Corrected dependency
     app: FastAPI # Inject the app fixture
 ) -> Generator[TestClient, None, None]:
-    """Provides an async TestClient instance with JWT dependency overridden by a service using mock_settings."""
-    logger.info("[Fixture client - async] ENTERING - Overriding JWT with service based on mock_settings")
+    """Provides an async TestClient instance with JWT dependency overridden by a MOCKED service."""
+    logger.info("[Fixture client - async] ENTERING - Overriding JWT with MOCKED service")
 
     # --- Dependency Overrides --- 
     
@@ -332,9 +335,9 @@ async def client(
     try:
         # Correct import path for get_jwt_service
         from app.infrastructure.security.jwt.jwt_service import get_jwt_service 
-        # Override with the *resolved* override_jwt_service instance from the fixture
-        app.dependency_overrides[get_jwt_service] = lambda: override_jwt_service
-        logger.info(f"[Fixture client - async] Overrode get_jwt_service with: {id(override_jwt_service)}")
+        # Override with the *resolved* mock_jwt_service_for_client instance from the fixture
+        app.dependency_overrides[get_jwt_service] = lambda: mock_jwt_service_for_client # Use the corrected fixture
+        logger.info(f"[Fixture client - async] Overrode get_jwt_service with MOCKED service: {id(mock_jwt_service_for_client)}")
     except ImportError:
         logger.error("Could not import get_jwt_service from app.infrastructure.security.jwt.jwt_service to override.")
         # Optionally re-raise or handle differently if this import MUST succeed
@@ -487,3 +490,66 @@ def test_patient() -> Patient:
 #     yield app_instance
 
 # ... potentially other global fixtures ...
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test session."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+@pytest.fixture(scope="session")
+async def db_engine(mock_settings: MockSettings):
+    """Yields an SQLAlchemy engine scoped for the entire test session."""
+    engine = create_async_engine(mock_settings.DATABASE_URL, echo=mock_settings.DATABASE_ECHO)
+    yield engine
+    await engine.dispose()
+
+@pytest.fixture(scope="session", autouse=True)
+async def setup_database(db_engine):
+    """Creates and drops database tables for the test session."""
+    async with db_engine.begin() as conn:
+        # Drop existing tables (optional, for clean slate)
+        # await conn.run_sync(Base.metadata.drop_all) 
+        # Create new tables
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # Optional: Drop tables after session if needed, careful with parallel tests
+    # async with db_engine.begin() as conn:
+    #     await conn.run_sync(Base.metadata.drop_all)
+
+@pytest.fixture(scope="function") # Function scope for transaction isolation
+async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
+    """Yields an SQLAlchemy session with transaction rollback for each test."""
+    async_session_factory = sessionmaker(
+        db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with async_session_factory() as session:
+        # Begin a nested transaction (if supported, helps with rollback)
+        # await session.begin_nested() # Use if needed and supported
+        try:
+            yield session
+            await session.commit() # Commit if test passes without exception
+        except Exception:
+            await session.rollback() # Rollback on any test exception
+            raise # Re-raise the exception
+        finally:
+            await session.close()
+
+
+# --- FastAPI Application and Client Fixtures ---
+
+@pytest.fixture(scope="function") # Change scope to function if app state needs reset
+def app(mock_settings: MockSettings, db_session: AsyncSession) -> FastAPI: # Inject db_session here
+    """Creates a FastAPI application instance for testing."""
+    
+    # Override the database dependency *before* creating the application
+    # This ensures the test client uses the test database session
+    async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
+        yield db_session
+
+    # Create the application *after* setting up the override
+    application = create_application()
+    application.dependency_overrides[get_db_dependency] = override_get_db
+
+    return application
