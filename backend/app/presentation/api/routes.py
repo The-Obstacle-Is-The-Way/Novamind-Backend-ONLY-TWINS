@@ -133,15 +133,15 @@ def setup_routers() -> None:
     # except (ModuleNotFoundError, AttributeError):
     #     print("Auth router not found or setup incorrectly, skipping.")
 
-    # XGBoost router (if moved to endpoints/xgboost.py)
-    # try:
-    #     api_router.include_router(
-    #         get_router("xgboost"),
-    #         prefix="/v1/ml/xgboost",
-    #         tags=["XGBoost ML Services"]
-    #     )
-    # except (ModuleNotFoundError, AttributeError):
-    #     print("XGBoost router not found or setup incorrectly, skipping.")
+    # XGBoost router
+    try:
+        api_router.include_router(
+            get_router("xgboost"),
+            prefix="/ml/xgboost",
+            tags=["XGBoost ML Services"]
+        )
+    except (ModuleNotFoundError, AttributeError):
+        print("XGBoost router not found or setup incorrectly, skipping.")
 
 # This function should be called by the main application (e.g., main.py)
 # after the FastAPI app instance is created.
