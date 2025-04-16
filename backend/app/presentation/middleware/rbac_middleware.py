@@ -6,7 +6,7 @@ on user roles attached to the request state.
 """
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Set, Any, Dict
 
 from fastapi import Request, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware

@@ -11,14 +11,18 @@ from datetime import datetime
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional
 from uuid import UUID
+from pydantic import BaseModel, Field
+from typing import List, Optional, Union
 
-from app.domain.entities.digital_twin.biometric_alert import AlertPriority
-from app.domain.entities.digital_twin.biometric_rule import (
+from app.domain.services.biometric_event_processor import AlertPriority
+from app.domain.entities.biometric_rule import (
     BiometricRule,
-    LogicalOperator,
     RuleCondition,
-    RuleOperator,
+    RuleConditionOperator,
+    RuleAction,
+    RuleActionType,
 )
+from app.domain.entities.biometric_twin import BiometricTwin
 from app.domain.exceptions import ValidationError
 from app.domain.repositories.biometric_rule_repository import BiometricRuleRepository
 

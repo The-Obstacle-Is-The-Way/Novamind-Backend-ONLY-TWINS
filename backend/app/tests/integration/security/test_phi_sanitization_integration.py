@@ -14,6 +14,8 @@ import uuid
 from datetime import date
 from typing import List, Dict, Any, Optional
 from io import StringIO
+from sqlalchemy.orm import Session
+from unittest.mock import MagicMock, patch
 
 from app.domain.entities.patient import Patient
 from app.domain.value_objects.address import Address
@@ -21,8 +23,9 @@ from app.domain.value_objects.emergency_contact import EmergencyContact
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
 from app.core.utils.phi_sanitizer import PHIDetector, PHISanitizer
-# Import the correct function for getting a sanitized logger
-from app.infrastructure.security.log_sanitizer import get_sanitized_logger
+# Corrected import path for get_sanitized_logger
+from app.infrastructure.security.phi.log_sanitizer import get_sanitized_logger
+from app.domain.entities.patient import Patient as PatientDomain
 
 
 @pytest.fixture

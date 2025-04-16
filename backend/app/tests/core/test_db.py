@@ -6,8 +6,8 @@ This module tests the database connection utilities for SQLAlchemy.
 import pytest
 import os
 from sqlalchemy import Column, String, Integer
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.db import engine, init_db, get_session, Base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from app.core.db import get_engine, init_db, get_session, Base
 
 
 # Define TestModel at module level
@@ -22,6 +22,7 @@ class TestModel(Base):
 @pytest.mark.db_required()
 async def test_engine_creation():
     """Test that the database engine is created with correct settings."""
+    engine = get_engine()
     # Verify the engine is correctly configured for testing
     assert engine is not None
     assert engine.dialect.name in ["sqlite", "postgresql"]
@@ -40,6 +41,7 @@ async def test_engine_creation():
 @pytest.mark.db_required()
 async def test_init_db():
     """Test database initialization."""
+    engine = get_engine()
     # Clear any existing tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -95,6 +97,7 @@ class TestDatabaseBase:
     @pytest.mark.db_required()
     async def test_base_class_table_creation(self):
         """Test that Base can create tables."""
+        engine = get_engine()
         # Create just this table
         async with engine.begin() as conn:
             await conn.run_sync(
@@ -102,20 +105,23 @@ class TestDatabaseBase:
             )
 
         # Verify the table exists by querying it
-        async with AsyncSession(engine) as session:
-            if engine.dialect.name == "sqlite":
-                result = await session.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table' AND name='test_models_temp'"
-                )
-            elif engine.dialect.name == "postgresql":
-                result = await session.execute(
-                    "SELECT table_name FROM information_schema.tables WHERE table_name='test_models_temp'"
-                )
+        session_gen = get_session()
+        session = await anext(session_gen)
+        try:
+            # Use a simple query to check table existence
+            result = await session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='test_models_temp'")
             table_exists = result.scalar() is not None
             assert table_exists
+        finally:
+            await session.close()
+             # Exhaust generator
+            try:
+                await anext(session_gen, None)
+            except StopAsyncIteration:
+                pass
 
-            # Clean up - drop the table
-            async with engine.begin() as conn:
-                await conn.run_sync(
-                    lambda schema: TestModel.__table__.drop(schema, checkfirst=True)
-                )
+        # Clean up - drop the table
+        async with engine.begin() as conn:
+            await conn.run_sync(
+                lambda schema: TestModel.__table__.drop(schema, checkfirst=True)
+            )

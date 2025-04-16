@@ -12,24 +12,13 @@ import io
 from typing import Dict, Any, List
 from unittest.mock import patch, MagicMock, Mock
 
-from app.infrastructure.security.log_sanitizer import (
+from app.infrastructure.security.phi.log_sanitizer import (
     LogSanitizer,
-    SanitizerConfig,
-    PatternType,
-    RedactionMode,
-    PHIPattern,
-    PatternRepository,
-    RedactionStrategy,
-    FullRedactionStrategy,
-    PartialRedactionStrategy,
-    HashRedactionStrategy,
-    RedactionStrategyFactory,
+    LogSanitizerConfig,
     PHIFormatter,
-    PHIRedactionHandler,
-    SanitizedLogger,
-    sanitize_logs,
-    get_sanitized_logger,
+    get_sanitized_logger
 )
+from app.infrastructure.security.phi.phi_service import PHIService
 
 class TestPHIPattern:
     """Test suite for PHIPattern class."""
@@ -451,50 +440,36 @@ class TestPHIRedactionHandler:
         assert "[SANITIZED]" in sanitized_record.msg
 
 class TestSanitizedLogger:
-    """Test suite for SanitizedLogger class."""
+    """Tests for the get_sanitized_logger utility."""
 
-    def test_sanitized_logger(self):
-        """Test logging through the SanitizedLogger."""
-        logger_name = "test_sanitized_logger"
-        # Get the standard logger instance to attach the handler
-        underlying_logger = logging.getLogger(logger_name)
-        underlying_logger.setLevel(logging.INFO)
-        # Ensure no duplicate handlers
-        for handler in underlying_logger.handlers[:]:
-            underlying_logger.removeHandler(handler)
-            
-        mock_handler = logging.StreamHandler(io.StringIO()) # Capture logs
-        underlying_logger.addHandler(mock_handler)
-
-        # Configure sanitizer
-        config = SanitizerConfig(sensitive_field_names=["email"])
-        sanitizer = LogSanitizer(config=config)
-
-        # Wrap logger - Use the name, pass sanitizer instance
-        sanitized_logger = SanitizedLogger(logger_name, sanitizer=sanitizer)
+    def setup_method(self):
+        self.logger = get_sanitized_logger("test_sanitized_logger")
+        self.stream = io.StringIO()
+        self.handler = logging.StreamHandler(self.stream)
+        self.formatter = logging.Formatter('%(message)s')
+        self.handler.setFormatter(self.formatter)
         
-        # Log messages using the SanitizedLogger instance
-        message = "User contact: test@example.com" 
-        data = {"email": "another@domain.net", "id": 42}
-        
-        sanitized_logger.info(message)
-        sanitized_logger.warning("Sensitive data: %s", data)
-        sanitized_logger.error("Error accessing resource for user: %s", "final@test.org")
+        # Add handler only if not already present
+        if not any(isinstance(h, logging.StreamHandler) for h in self.logger.handlers):
+            self.logger.addHandler(self.handler)
 
-        # Check logs captured by the handler attached to the underlying logger
-        mock_handler.flush()
-        log_output = mock_handler.stream.getvalue()
+    def teardown_method(self):
+        self.logger.removeHandler(self.handler)
 
-        assert "User contact: [REDACTED:email]" in log_output
-        assert "Sensitive data: {'email': '[REDACTED:email]', 'id': 42}" in log_output
-        assert "Error accessing resource for user: [REDACTED:email]" in log_output
+    def test_sanitized_logger_logs_non_phi(self):
+        message = "This is a normal log message."
+        self.logger.info(message)
+        log_output = self.stream.getvalue().strip()
+        assert message in log_output
 
-        # Clean up
-        underlying_logger.removeHandler(mock_handler)
-
-    @sanitize_logs()
-    def function_to_log(self, logger):
-        pass
+    def test_sanitized_logger_redacts_phi(self):
+        phi_message = "Patient John Doe (DOB: 1990-01-01) needs follow-up."
+        self.logger.warning(phi_message)
+        log_output = self.stream.getvalue().strip()
+        assert "John Doe" not in log_output
+        assert "1990-01-01" not in log_output
+        assert "[NAME REDACTED]" in log_output
+        assert "[DOB REDACTED]" in log_output
 
 # Example of running tests if the file is executed directly
 if __name__ == "__main__":

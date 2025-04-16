@@ -9,8 +9,15 @@ import unittest
 import pytest
 import re
 from typing import Dict, Any
+import logging
+from unittest.mock import patch, MagicMock
 
-from app.core.utils.phi_sanitizer import PHISanitizer
+# Corrected import path based on previous findings
+from app.core.utils.phi_sanitizer import sanitize_data # Assuming this is the intended import
+from app.core.utils.logging import get_sanitized_logger, log_sensitive_data_decorator
+# Use the correct class name from the infrastructure layer
+from app.infrastructure.security.phi.log_sanitizer import LogSanitizer, LogSanitizerConfig
+from app.infrastructure.security.phi.phi_service import PHIService, Sensitivity
 
 
 @pytest.mark.venv_only()
@@ -45,7 +52,7 @@ class TestPHISanitizer(unittest.TestCase):
         ]
 
         for input_text, expected_output in test_cases:
-            sanitized = PHISanitizer.sanitize_string(input_text)
+            sanitized = sanitize_data(input_text)
             self.assertEqual(sanitized, expected_output)
 
     def test_sanitize_string_without_phi(self):
@@ -60,7 +67,7 @@ class TestPHISanitizer(unittest.TestCase):
         ]
 
         for input_text in test_cases:
-            sanitized = PHISanitizer.sanitize_string(input_text)
+            sanitized = sanitize_data(input_text)
             self.assertEqual(sanitized, input_text)
 
     def test_sanitize_dict_with_phi(self):
@@ -91,7 +98,7 @@ class TestPHISanitizer(unittest.TestCase):
             "visit_count": 3
         }
 
-        sanitized = PHISanitizer.sanitize_dict(test_dict)
+        sanitized = sanitize_data(test_dict)
         self.assertEqual(sanitized, expected_output)
 
     def test_sanitize_dict_without_phi(self):
@@ -107,7 +114,7 @@ class TestPHISanitizer(unittest.TestCase):
             }
         }
 
-        sanitized = PHISanitizer.sanitize_dict(test_dict)
+        sanitized = sanitize_data(test_dict)
         self.assertEqual(sanitized, test_dict)
 
     def test_sanitize_list_with_phi(self):
@@ -126,7 +133,7 @@ class TestPHISanitizer(unittest.TestCase):
             123,
         ]
 
-        sanitized = PHISanitizer.sanitize_list(test_list)
+        sanitized = sanitize_data(test_list)
         self.assertEqual(sanitized, expected_output)
 
     def test_sanitize_error_message(self):
@@ -134,7 +141,7 @@ class TestPHISanitizer(unittest.TestCase):
         error_message = "Error processing data for John Smith (SSN: 123-45-6789)"
         expected = "Error processing data for [NAME REDACTED] (SSN: [SSN REDACTED])"
 
-        sanitized = PHISanitizer.sanitize_error_message(error_message)
+        sanitized = sanitize_data(error_message)
         self.assertEqual(sanitized, expected)
 
     def test_sanitize_log_entry(self):
@@ -142,7 +149,7 @@ class TestPHISanitizer(unittest.TestCase):
         log_entry = "User accessed record for patient John Smith (DOB: 01/01/1980)"
         expected = "User accessed record for patient [NAME REDACTED] (DOB: [DOB REDACTED])"
 
-        sanitized = PHISanitizer.sanitize_log_entry(log_entry)
+        sanitized = LogSanitizer.sanitize_log_entry(log_entry)
         self.assertEqual(sanitized, expected)
 
     def test_update_patterns(self):
@@ -150,14 +157,14 @@ class TestPHISanitizer(unittest.TestCase):
         # Original string with custom pattern
         test_string = "Patient ID: PT-12345-ABC"
         # Should not be redacted with default patterns
-        self.assertEqual(PHISanitizer.sanitize_string(test_string), test_string)
+        self.assertEqual(LogSanitizer.sanitize_string(test_string), test_string)
 
         # Add new pattern
-        PHISanitizer.update_patterns({"patient_id": re.compile(r"\bPT-\d{5}-[A-Z]{3}\b")})
+        LogSanitizer.update_patterns({"patient_id": re.compile(r"\bPT-\d{5}-[A-Z]{3}\b")})
 
         # Now should be redacted
         expected = "Patient ID: [PATIENT_ID REDACTED]"
-        self.assertEqual(PHISanitizer.sanitize_string(test_string), expected)
+        self.assertEqual(LogSanitizer.sanitize_string(test_string), expected)
 
 
 if __name__ == "__main__":

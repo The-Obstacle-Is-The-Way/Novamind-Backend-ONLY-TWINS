@@ -17,10 +17,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
-import sagemaker
-from sagemaker.predictor import Predictor
+# import sagemaker # Removed unused import
+# from sagemaker.predictor import Predictor # Removed unused import
 
-from app.config.ml_settings import ml_settings
+# Removed incorrect ml_settings import
+# from app.config.ml_settings import ml_settings
 from app.core.exceptions import (
     ModelNotFoundError,
     InferenceError,
@@ -28,7 +29,7 @@ from app.core.exceptions import (
     ServiceUnavailableError
 )
 from app.core.utils.logging import get_logger
-from app.config.settings import get_settings # Import main settings
+from app.config.settings import get_settings # Import main settings function
 
 
 logger = logging.getLogger(__name__)

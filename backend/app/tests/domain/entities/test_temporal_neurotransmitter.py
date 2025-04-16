@@ -26,7 +26,8 @@ from app.domain.entities.neurotransmitter_mapping import (
     ReceptorType,
     create_default_neurotransmitter_mapping,
 )
-from app.domain.entities.digital_twin.receptor_subtype import ReceptorSubtype
+from app.domain.entities.temporal_events import TemporalEvent
+from app.domain.entities.neurotransmitter_mapping import ReceptorSubtype
 
 from app.domain.entities.temporal_neurotransmitter_mapping import (
     extend_neurotransmitter_mapping,

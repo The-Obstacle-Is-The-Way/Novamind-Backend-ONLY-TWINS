@@ -11,16 +11,31 @@ import random
 import time
 import uuid
 from typing import Dict, List, Optional, Tuple, Union, Set
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from app.domain.entities.digital_twin import (
-    BrainRegion, ClinicalInsight, ClinicalSignificance, Neurotransmitter, ConnectionType
+from app.domain.entities.digital_twin_enums import (
+    BrainRegion,
+    ClinicalInsight,
+    ClinicalSignificance,
+    Neurotransmitter,
+    DigitalTwinState as DigitalTwinStateEnum # Alias if needed
 )
-from app.domain.entities.digital_twin.receptor_subtype import ReceptorSubtype
+from app.domain.entities.digital_twin import (
+    DigitalTwin, # Actual entity
+    DigitalTwinState # Actual state class
+)
+from app.domain.entities.neurotransmitter_mapping import ReceptorSubtype
+from app.domain.entities.neurotransmitter_mapping import (
+    NeurotransmitterMapping,
+    ReceptorProfile,
+    ReceptorType,
+    create_default_neurotransmitter_mapping
+)
 # Import the original DigitalTwinState and all adapter classes
-from app.domain.entities.digital_twin.digital_twin_state import DigitalTwinState
+from app.domain.entities.digital_twin_enums import DigitalTwinState
 
-from app.domain.entities.digital_twin.model_adapter import (
+# Corrected import path assuming model_adapter is directly under entities
+from app.domain.entities.model_adapter import (
     BrainRegionStateAdapter,
     NeurotransmitterStateAdapter,
     NeuralConnectionAdapter,
@@ -35,10 +50,6 @@ from app.domain.services.enhanced_pat_service import EnhancedPATService
 from app.domain.entities.knowledge_graph import (
     TemporalKnowledgeGraph, BayesianBeliefNetwork, KnowledgeGraphNode, KnowledgeGraphEdge,
     NodeType, EdgeType
-)
-from app.domain.entities.neurotransmitter_mapping import (
-    NeurotransmitterMapping, ReceptorProfile, ReceptorType,
-    create_default_neurotransmitter_mapping
 )
 
 
@@ -1696,7 +1707,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
                     neurotransmitter_level=nt_levels[nt]
                 )
                 
-                if abs(net_effect * confidence) >= min_effect_threshold:
+                if abs(net_effect) >= min_effect_threshold:
                     affected_regions.append({
                         "region": region.value,
                         "effect": round(net_effect, 3),

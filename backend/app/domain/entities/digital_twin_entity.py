@@ -76,12 +76,15 @@ class ClinicalInsight:
     description: str
     source: str  # e.g., "PAT", "MentalLLaMA", "XGBoost"
     confidence: float  # 0.0 to 1.0
-    timestamp: datetime
-    clinical_significance: ClinicalSignificance
+    timestamp: datetime = field(default_factory=datetime.now)
+    clinical_significance: ClinicalSignificance = ClinicalSignificance.NONE
+    patient_id: str = None
     brain_regions: list[BrainRegion] = field(default_factory=list)
     neurotransmitters: list[Neurotransmitter] = field(default_factory=list)
     supporting_evidence: list[str] = field(default_factory=list)
     recommended_actions: list[str] = field(default_factory=list)
+    related_data: dict = field(default_factory=dict)
+    significance: ClinicalSignificance = None
 
 
 @dataclass

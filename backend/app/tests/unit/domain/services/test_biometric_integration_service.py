@@ -13,9 +13,13 @@ from unittest.mock import Mock, patch, MagicMock, AsyncMock
 from uuid import UUID, uuid4
 from typing import Any
 
-from app.domain.entities.digital_twin.biometric_twin import BiometricTwin, BiometricDataPoint
-from app.domain.exceptions import BiometricIntegrationError
+# Correct import for BiometricTwin
+from app.domain.entities.biometric_twin import BiometricTwin
+from app.domain.entities.biometric_twin_enhanced import BiometricDataPoint
+# Correct repository import path
+from app.domain.repositories.biometric_twin_repository import BiometricTwinRepository
 from app.domain.services.biometric_integration_service import BiometricIntegrationService
+from app.domain.exceptions import BiometricIntegrationError
 
 
 @pytest.mark.db_required()  # Assuming db_required is a valid marker

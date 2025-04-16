@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for the Digital Twin entity.
 
@@ -11,8 +12,14 @@ from app.domain.utils.datetime_utils import UTC
 from uuid import UUID, uuid4
 from typing import Dict, List, Any
 
+# Correct imports for entities living directly under app.domain.entities
+from app.domain.entities.digital_twin import DigitalTwin, DigitalTwinConfiguration, DigitalTwinState
+# Commenting out missing treatment entity import
+# from app.domain.entities.treatment import Treatment, TreatmentCategory, TreatmentFrequency, MedicationDetails, MedicationType
+from app.domain.entities.treatment_plan import TreatmentPlan
+from app.domain.entities.response_prediction import TreatmentResponse, TrajectoryPrediction, TreatmentComparison
+
 # Removed ModelConfidence
-from app.domain.entities.digital_twin.digital_twin import DigitalTwin
 # Removed import of non-existent state module and 
 
 

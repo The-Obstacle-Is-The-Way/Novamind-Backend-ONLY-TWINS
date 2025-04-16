@@ -6,7 +6,6 @@ These tests verify that the biometric alert API endpoints correctly handle
 requests and responses, including validation, error handling, and authentication.
 """
 
-from app.domain.repositories.base_repository import BaseRepository
 from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -28,8 +27,9 @@ from app.presentation.api.schemas.biometric_alert import (
     AlertStatusEnum
 )
 
-# Assuming BaseRepository exists for type hinting
-
+# Commenting out missing repository import
+# from app.domain.repositories.base_repository import BaseRepository
+from app.domain.entities.biometric_alert import BiometricAlert
 
 @pytest.fixture
 def app():

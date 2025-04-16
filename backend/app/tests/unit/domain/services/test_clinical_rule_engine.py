@@ -13,10 +13,18 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
-from app.domain.entities.digital_twin.biometric_alert import AlertPriority
-from app.domain.entities.digital_twin.biometric_rule import (
-    BiometricRule, RuleCondition, RuleOperator, LogicalOperator
-)
+from app.domain.entities.patient import Patient
+# Commenting out missing entity/enum imports
+# from app.domain.entities.biometric_rule import (
+#     BiometricRule,
+#     RuleCondition,
+#     RuleConditionOperator,
+#     RuleAction,
+#     RuleActionType,
+# )
+# from app.domain.entities.digital_twin_enums import AlertPriority
+# from app.domain.entities.biometric_twin import BiometricTwin
+# from app.domain.repositories.biometric_rule_repository import BiometricRuleRepository
 
 
 @pytest.mark.db_required()  # Assuming db_required is a valid marker

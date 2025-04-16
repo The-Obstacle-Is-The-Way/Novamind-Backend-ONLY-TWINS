@@ -4,8 +4,10 @@ Tests for the PHI sanitization utilities.
 import pytest
 import re
 from typing import Dict, List, Any, Union
+from logging import LogRecord
 
-from app.core.security.phi_sanitizer import PHISanitizer
+# Corrected import path based on file search results
+from app.infrastructure.security.phi.log_sanitizer import LogSanitizer, LogSanitizerConfig, PHIFormatter
 
 
 class TestPHISanitizer:
@@ -13,7 +15,7 @@ class TestPHISanitizer:
 
     def setup_method(self):
         """Set up test fixtures before each test method."""
-        self.sanitizer = PHISanitizer()
+        self.sanitizer = LogSanitizer()
 
         # Sample PHI data
         self.patient_name = "John Smith"
@@ -200,31 +202,143 @@ class TestPHISanitizer:
         assert isinstance(string_sanitized, str)
 
 
-class TestCustomPHISanitizer:
-    """Test cases for PHI sanitization with custom patterns."""
+# Mock PHIService for testing the infrastructure layer
+class MockPHIService:
+    def sanitize(self, data, sensitivity=None, replacement=None):
+        if isinstance(data, str) and "PHI" in data:
+            return "[SANITIZED]"
+        return data
 
-    # Define custom patterns using PHISanitizer's internal structure
-    CUSTOM_PATTERNS = [
-        (pattern, replacement) for pattern, replacement in PHISanitizer._PHI_PATTERNS
-    ] + [
-        (re.compile(r"\bEmployeeID:\s*\d+\b", re.IGNORECASE), "[REDACTED EMPLOYEE ID]"),
-        (re.compile(r"\bProjectCode:\s*[A-Z]{3}-\d{4}\b"), "[REDACTED PROJECT CODE]"),
-    ]
+@pytest.fixture
+def mock_phi_service(mocker):
+    """Fixture to mock the core PHIService."""
+    # Mock the instantiation within LogSanitizer
+    mock_instance = MockPHIService()
+    mocker.patch('app.infrastructure.security.phi.log_sanitizer.PHIService', return_value=mock_instance)
+    return mock_instance
 
-    def setup_method(self):
-        """Set up test fixtures for custom sanitization."""
-        self.sanitizer = PHISanitizer(additional_patterns=self.CUSTOM_PATTERNS)
-        self.text_with_phi = "EmployeeID: 1234, ProjectCode: ABC-1234"
+@pytest.fixture
+def sanitizer_config():
+    """Fixture for LogSanitizerConfig."""
+    return LogSanitizerConfig(enabled=True)
 
-    def test_custom_patterns_in_string(self):
-        """Test custom patterns in string sanitization."""
-        sanitized_text = self.sanitizer.sanitize(self.text_with_phi)
-        assert "[REDACTED EMPLOYEE ID]" in sanitized_text
-        assert "[REDACTED PROJECT CODE]" in sanitized_text
+@pytest.fixture
+def log_sanitizer(sanitizer_config, mock_phi_service): # Ensure mock is active
+    """Fixture for LogSanitizer instance."""
+    # The mock_phi_service fixture ensures PHIService() inside LogSanitizer.__init__ returns the mock
+    return LogSanitizer(config=sanitizer_config)
 
-    def test_custom_patterns_in_dict(self):
-        """Test custom patterns in dictionary sanitization."""
-        dict_with_phi = {"employee_id": "EmployeeID: 1234", "project_code": "ProjectCode: ABC-1234"}
-        sanitized_dict = self.sanitizer.sanitize(dict_with_phi)
-        assert "[REDACTED EMPLOYEE ID]" in sanitized_dict["employee_id"]
-        assert "[REDACTED PROJECT CODE]" in sanitized_dict["project_code"]
+def test_log_sanitizer_init(log_sanitizer, sanitizer_config):
+    """Test initialization of LogSanitizer."""
+    assert log_sanitizer.config == sanitizer_config
+    assert isinstance(log_sanitizer._phi_service, MockPHIService) # Check if the mock was injected
+
+def test_log_sanitizer_sanitize_method(log_sanitizer, mock_phi_service):
+    """Test the sanitize method delegates correctly."""
+    assert log_sanitizer.sanitize("No sensitive data") == "No sensitive data"
+    assert log_sanitizer.sanitize("Contains PHI data") == "[SANITIZED]"
+
+def test_log_sanitizer_disabled(mock_phi_service):
+    """Test sanitization is skipped when disabled."""
+    config = LogSanitizerConfig(enabled=False)
+    sanitizer = LogSanitizer(config=config)
+    assert sanitizer.sanitize("Contains PHI data") == "Contains PHI data"
+
+@pytest.fixture
+def log_record():
+    """Fixture for a sample LogRecord."""
+    # Use dummy values for required LogRecord attributes
+    return LogRecord(
+        name='test_logger',
+        level=20, # INFO
+        pathname='/path/to/test.py',
+        lineno=10,
+        msg="Log message with PHI",
+        args=[],
+        exc_info=None,
+        func='test_func'
+    )
+
+def test_log_sanitizer_sanitize_log_record(log_sanitizer, log_record, mock_phi_service):
+    """Test sanitization of a LogRecord message."""
+    sanitized_record = log_sanitizer.sanitize_log_record(log_record)
+    # getMessage() handles the formatting, which might be empty if args were used and cleared
+    # Instead, check the msg attribute directly after potential sanitization
+    assert sanitized_record.getMessage() == "[SANITIZED]" # Check the final formatted msg
+    # Verify args are cleared as per implementation
+    assert sanitized_record.args == []
+
+def test_log_sanitizer_sanitize_log_record_with_exception(log_sanitizer, mock_phi_service):
+    """Test sanitization of LogRecord exception info."""
+    try:
+        raise ValueError("Exception with PHI details")
+    except ValueError as e:
+        exc_info = (type(e), e, e.__traceback__)
+
+    record = LogRecord(
+        name='test_exception_logger',
+        level=40, # ERROR
+        pathname='/path/to/error.py',
+        lineno=25,
+        msg="An error occurred",
+        args=[],
+        exc_info=exc_info,
+        func='error_func'
+    )
+
+    sanitized_record = log_sanitizer.sanitize_log_record(record)
+
+    assert sanitized_record.exc_info is not None
+    exc_type, sanitized_exc_value, exc_traceback = sanitized_record.exc_info
+    assert isinstance(sanitized_exc_value, ValueError)
+    assert str(sanitized_exc_value) == "[SANITIZED]"
+
+# --- Tests for PHIFormatter ---
+
+@pytest.fixture
+def phi_formatter(sanitizer_config, mock_phi_service): # Mock service needed for formatter's sanitizer
+    """Fixture for PHIFormatter instance."""
+    # Pass the config to the formatter
+    return PHIFormatter(fmt='%(levelname)s:%(name)s:%(message)s', sanitizer_config=sanitizer_config)
+
+def test_phi_formatter_format(phi_formatter, log_record):
+    """Test the format method sanitizes the final output."""
+    log_record.msg = "Log message with PHI" # Reset msg for this test
+    log_record.args = [] # Ensure args are empty for direct msg check
+    formatted_sanitized = phi_formatter.format(log_record)
+    assert formatted_sanitized == "INFO:test_logger:[SANITIZED]"
+
+def test_phi_formatter_format_no_phi(phi_formatter, log_record):
+    """Test the format method when no PHI is present."""
+    log_record.msg = "Normal log message"
+    log_record.args = []
+    formatted_sanitized = phi_formatter.format(log_record)
+    assert formatted_sanitized == "INFO:test_logger:Normal log message"
+
+def test_phi_formatter_format_with_args(phi_formatter, mock_phi_service):
+    """Test formatting with arguments (handled by standard Formatter + final sanitization)."""
+    record = LogRecord(
+        name='test_args_logger',
+        level=20,
+        pathname='/path/to/args.py',
+        lineno=5,
+        msg="User %s action failed for patient %s",
+        args=["admin", "ID123 contains PHI"], # Patient ID contains PHI
+        exc_info=None,
+        func='action_func'
+    )
+    formatted_sanitized = phi_formatter.format(record)
+    # The full message "User admin action failed for patient ID123 contains PHI" is sanitized
+    assert formatted_sanitized == "INFO:test_args_logger:[SANITIZED]"
+
+def test_phi_formatter_format_exception(phi_formatter, mock_phi_service):
+    """Test formatting and sanitizing exceptions."""
+    try:
+        raise RuntimeError("Critical error with PHI payload")
+    except RuntimeError as e:
+        ei = (type(e), e, e.__traceback__)
+
+    formatted_exception = phi_formatter.formatException(ei)
+    # Assuming the default exception format includes the message
+    assert "[SANITIZED]" in formatted_exception
+    assert "RuntimeError" in formatted_exception # Type should remain

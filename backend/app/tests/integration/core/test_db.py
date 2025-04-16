@@ -7,13 +7,14 @@ import pytest
 import os
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import engine, init_db, get_session, Base
+from app.core.db import get_engine, init_db, get_session, Base
 
 
 @pytest.mark.asyncio()
 @pytest.mark.db_required()
 async def test_engine_creation():
     """Test that the database engine is created with correct settings."""
+    engine = get_engine()
     # Verify the engine is correctly configured for testing
     assert engine is not None
     assert engine.dialect.name in ["sqlite", "postgresql"]
@@ -32,6 +33,7 @@ async def test_engine_creation():
 @pytest.mark.db_required()
 async def test_init_db():
     """Test database initialization."""
+    engine = get_engine()
     # Clear any existing tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -86,16 +88,22 @@ class TestDatabaseBase:
     @pytest.mark.db_required()
     async def test_base_class_table_creation(self):
         """Test that Base can create tables."""
+        engine = get_engine()
         # Model definition moved outside the test method
         # Create just this table
         async with engine.begin() as conn:
             await conn.run_sync(lambda schema: TestModel.__table__.create(schema, checkfirst=True))
 
         # Verify the table exists by querying it
-        async with AsyncSession(engine) as session:
-            result = await session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='test_models_temp'")
+        session_gen = get_session()
+        session = await anext(session_gen)
+        try:
+            # Simplified query check assuming sqlite for brevity, adjust if needed
+            result = await session.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='test_models_integration'")
             table_exists = result.scalar() is not None
             assert table_exists
+        finally:
+            await session.close()
 
         # Clean up - drop the table
         async with engine.begin() as conn:
@@ -107,6 +115,6 @@ from sqlalchemy import Column, String, Integer  # Move import here too
 
 
 class TestModel(Base):
-    __tablename__ = "test_models_temp"
+    __tablename__ = "test_models_integration"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)

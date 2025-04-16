@@ -6,18 +6,20 @@ These tests verify that the BiometricAlert entity correctly implements
 its business logic and state transitions.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.domain.utils.datetime_utils import UTC
 from uuid import UUID, uuid4
 
 import pytest
 
-from app.domain.entities.digital_twin.biometric_alert import (
+# Revert AlertPriority and AlertStatus imports
+from app.domain.services.biometric_event_processor import AlertPriority, AlertStatus
+# Assuming the rest are in digital_twin_entity for now
+from app.domain.entities.digital_twin_entity import (
     BiometricAlert,
-    AlertPriority,
-    AlertStatus,
+    MitigationAction,
+    BiometricDataSource
 )
-
 
 
 @pytest.fixture

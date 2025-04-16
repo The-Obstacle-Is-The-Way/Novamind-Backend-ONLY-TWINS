@@ -60,7 +60,10 @@ class MockSettings:
         self.API_V1_STR = "/api/v1"
         self.STATIC_DIR = Path(__file__).parent.parent / "static" # Adjust static/template paths relative to conftest location
         self.TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
-        self.SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///./test.db"
+        self.DATABASE_URL = "sqlite+aiosqlite:///./test.db" # Renamed attribute
+        self.DB_POOL_SIZE = 5
+        self.DB_MAX_OVERFLOW = 10
+        self.DATABASE_ECHO = False
         self.LOG_LEVEL = "DEBUG"
         self.ENABLE_ANALYTICS = False
 
@@ -70,6 +73,37 @@ class MockSettings:
         self.ACCESS_TOKEN_EXPIRE_MINUTES = 30 # Direct access
         self.JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7 # Direct access
         # --- End Direct JWT Settings ---
+        
+        # --- Mocked ML Settings --- 
+        self.ml = MagicMock()
+        self.ml.models_path = "/test/models"
+        self.ml.cache_path = "/test/cache"
+        self.ml.storage_path = "/test/storage"
+        
+        # Mock nested settings - adjust attributes as needed for tests
+        self.ml.mentallama = MagicMock(
+            provider="mock",
+            openai_api_key=None,
+            model_mappings={"default": "mock-model"}
+        )
+        self.ml.pat = MagicMock(
+            model_path="/test/models/pat/mock-pat",
+            cache_dir="/test/cache/pat",
+            use_gpu=False
+        )
+        self.ml.xgboost = MagicMock(
+            treatment_response_model_path="/test/models/xgboost/mock-treat.xgb",
+            outcome_prediction_model_path="/test/models/xgboost/mock-outcome.xgb",
+            risk_prediction_model_path="/test/models/xgboost/mock-risk.xgb"
+        )
+        self.ml.lstm = MagicMock(
+            biometric_correlation_model_path="/test/models/lstm/mock-biometric.pkl"
+        )
+        self.ml.phi_detection = MagicMock(
+            patterns_file="/test/config/mock-phi-patterns.yaml",
+            default_redaction_format="[MOCK_PHI]"
+        )
+        # --- End Mocked ML Settings ---
 
         # API settings (can remain nested if only used elsewhere)
         self.api = MagicMock(
@@ -286,8 +320,8 @@ def client(
     logger.info("--- [Client Fixture Start] ---")
     logger.info(f"[Client Fixture] ENVIRONMENT: {os.getenv('ENVIRONMENT')}")
     logger.info(f"[Client Fixture] Using settings object: {settings}")
-    logger.info(f"[Client Fixture] Settings URI: {settings.SQLALCHEMY_DATABASE_URI}")
-    env_uri_override = os.getenv("SQLALCHEMY_DATABASE_URI")
+    logger.info(f"[Client Fixture] Settings URI: {settings.DATABASE_URL}")
+    env_uri_override = os.getenv("DATABASE_URL")
     logger.info(f"[Client Fixture] Env Var Override URI: {env_uri_override}")
     logger.info("[Client Fixture] Instantiating Database...")
 

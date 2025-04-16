@@ -251,7 +251,7 @@ async def generate_time_series(
         "time_step_hours": request.time_step_hours
     }
     
-    return ensure_serializable_response(response_data)
+    return response_data
 
 
 @router.post(
@@ -318,7 +318,7 @@ async def analyze_neurotransmitter(
         "time_series_data": time_series_data,
         "comparison_periods": comparison_periods
     }
-    return ensure_serializable_response(response_data)
+    return response_data
 
 
 @router.post(
@@ -359,7 +359,7 @@ async def simulate_treatment(
         "treatment_effect": request.treatment_effect,
         "simulation_days": request.simulation_days
     }
-    return ensure_serializable_response(response_data)
+    return response_data
 
 
 @router.post(
@@ -394,7 +394,7 @@ async def get_visualization_data(
             detail=f"No data found for sequence {request.sequence_id}"
         )
     
-    return ensure_serializable_response(data)
+    return data
 
 
 @router.post(
@@ -431,4 +431,4 @@ async def get_cascade_visualization(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No cascade data found for patient {request.patient_id} with {request.neurotransmitter.value} in {request.starting_region.value}"
         )
-    return ensure_serializable_response(data)
+    return data

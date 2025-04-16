@@ -11,7 +11,11 @@ from datetime import datetime, UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
-from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertPriority, AlertStatus
+# Revert AlertPriority import
+from app.domain.entities.digital_twin_enums import AlertStatus
+from app.domain.services.biometric_event_processor import BiometricAlert, AlertPriority
+# Correct repository import
+from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 from app.domain.services.biometric_alert_audit_service import BiometricAlertAuditService
 
 

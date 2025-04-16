@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, List
 from uuid import UUID
 
+# Import directly from the module, not the package
 from app.domain.entities.digital_twin import DigitalTwin
 
 # Rename class to match import in DI container -> Renaming back to DigitalTwinRepository

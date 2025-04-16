@@ -13,12 +13,12 @@ from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Optional
 from uuid import UUID
+from unittest.mock import MagicMock
 
-from app.domain.entities.digital_twin import (
+from app.domain.entities.digital_twin_enums import (
     BrainRegion,
     ClinicalSignificance,
     Neurotransmitter,
-    DigitalTwinState,
 )
 
 from app.domain.entities.neurotransmitter_mapping import (
@@ -26,6 +26,16 @@ from app.domain.entities.neurotransmitter_mapping import (
     ReceptorProfile,
     ReceptorType,
     ReceptorSubtype,
+)
+
+from app.domain.entities.digital_twin import DigitalTwin
+
+from app.domain.entities.model_adapter import (
+    BrainRegionStateAdapter,
+    NeurotransmitterStateAdapter,
+    NeuralConnectionAdapter,
+    TemporalPatternAdapter,
+    DigitalTwinStateAdapter
 )
 
 from app.infrastructure.services.mock_enhanced_digital_twin_core_service import (

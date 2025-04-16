@@ -8,12 +8,18 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, AsyncGenerator, Tuple
 from uuid import UUID
 
-from app.domain.entities.digital_twin_entity import DigitalTwin, ClinicalInsight
+# Commenting out missing repository import
+# from app.domain.repositories.knowledge_graph_repository import KnowledgeGraphRepository
+from app.domain.repositories.digital_twin_repository import DigitalTwinRepository
+from app.domain.entities.digital_twin_entity import DigitalTwinState, ClinicalInsight
 from app.domain.entities.digital_twin_enums import (
     BrainRegion,
     Neurotransmitter,
 )
 from app.domain.entities.digital_twin import DigitalTwinState
+from app.domain.entities.patient import Patient
+from app.core.exceptions.base_exceptions import EntityNotFoundError
+from app.domain.entities.knowledge_graph import TemporalKnowledgeGraph, BayesianBeliefNetwork
 
 
 class DigitalTwinCoreService(ABC):

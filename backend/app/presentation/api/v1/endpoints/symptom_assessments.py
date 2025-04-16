@@ -114,7 +114,7 @@ async def get_symptom_assessment(
                  patient_id=uuid4(),
                  assessment_type=AssessmentType.PHQ9,
                  assessment_date=datetime.utcnow(),
-                 scores={\"total_score\": 10}
+                 scores={"total_score": 10}
              )
         return None
     repo.get_by_id = mock_get_id

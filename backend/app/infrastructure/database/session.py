@@ -6,13 +6,14 @@ and dependency injection for FastAPI endpoints.
 """
 import os
 from typing import Generator, AsyncGenerator
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 import logging
 
 # Import settings from the canonical location
-from app.config.settings import settings
+from app.config.settings import get_settings
 
+# Call the function to get the settings object
+settings = get_settings()
 
 # Check if we're in test mode
 is_test_mode = os.environ.get("TESTING") == "1"
@@ -28,22 +29,29 @@ if is_test_mode:
 else:
     # Use actual PostgreSQL database for production/development
     engine = create_async_engine(
-        str(settings.DATABASE_URL),
+        settings.DATABASE_URL,
         pool_size=settings.DB_POOL_SIZE,
         max_overflow=settings.DB_MAX_OVERFLOW,
-        echo=settings.DEBUG,
-        future=True,
+        echo=settings.DATABASE_ECHO,
+        # Add SSL context if configured (handle potential None values)
+        connect_args={
+            "ssl": {
+                "ca_certs": settings.DATABASE_SSL_CA,
+                "ssl_mode": settings.DATABASE_SSL_MODE
+                # Verify SSL certificate if specified
+                # "check_hostname": settings.DATABASE_SSL_VERIFY is not False
+            } if settings.DATABASE_SSL_MODE else None
+        }
     )
 
 # Create session factory for creating AsyncSession instances
-AsyncSessionLocal = sessionmaker(
-    engine, 
-    class_=AsyncSession, 
+session_local = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
     expire_on_commit=False,
     autocommit=False,
     autoflush=False,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +65,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     Yields:
         AsyncSession: Database session
     """
-    async with AsyncSessionLocal() as session:
+    async with session_local() as session:
         try:
             yield session
             # Session will be committed if no exception occurs

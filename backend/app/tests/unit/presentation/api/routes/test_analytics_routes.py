@@ -6,7 +6,8 @@ Tests the analytics API endpoints, ensuring proper background processing,
 caching, and response formatting.
 """
 
-from app.domain.repositories.base_repository import BaseRepository
+# Commenting out missing repository import
+# from app.domain.repositories.base_repository import BaseRepository
 import json
 from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
@@ -30,6 +31,8 @@ from app.presentation.api.routes.analytics_endpoints import (
     _process_treatment_comparison,
 )
 # Assuming BaseRepository exists for type hinting
+
+from app.domain.entities.analytics import AnalyticsEvent
 
 
 @pytest.fixture

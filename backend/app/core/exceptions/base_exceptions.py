@@ -79,6 +79,22 @@ class ResourceNotFoundError(BaseException):
             self.message = f"{message} not found"
 
 
+class EntityNotFoundError(ResourceNotFoundError):
+    """
+    Exception raised when an entity cannot be found.
+    
+    This is a specialized form of ResourceNotFoundError for domain entities.
+    """
+
+    def __init__(
+        self,
+        message: str = "Entity not found",
+        detail: Optional[Union[str, List[str], Dict[str, Any]]] = None,
+        code: str = "ENTITY_NOT_FOUND",
+    ):
+        super().__init__(message=message, detail=detail, code=code)
+
+
 class AuthenticationException(BaseException):
     """Exception raised for authentication errors."""
 

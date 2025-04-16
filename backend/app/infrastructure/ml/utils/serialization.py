@@ -11,7 +11,7 @@ import json
 import logging
 import os
 import pickle
-from datetime import datetime, , UTC
+from datetime import datetime, UTC
 from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, Optional, Union
 

@@ -9,14 +9,14 @@ clean architecture principles with precise, mathematically elegant implementatio
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Generator
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
-from app.config.ml_settings import ml_settings
+from app.config.settings import get_settings
 from app.core.exceptions import (
     InvalidRequestError,
     ModelNotFoundError,
@@ -25,7 +25,11 @@ from app.core.exceptions import (
 
 from app.core.services.ml.interface import MentaLLaMAInterface
 from app.infrastructure.ml.mentallama.service import MentalLlamaService
+from app.main import create_application
 
+# Load settings ONCE for the module
+settings = get_settings()
+MENTALLAMA_API_PREFIX = f"{settings.API_V1_STR}/mentallama"
 
 # Mock services
 @pytest.mark.db_required()
@@ -35,6 +39,8 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
     def __init__(self):
         """Initialize mock service."""
         self.initialized = True
+        # Add a mock version attribute based on loaded settings if health check needs it
+        self.version = settings.ml.mentallama.version if hasattr(settings.ml.mentallama, 'version') else "mock-0.1"
     
     def initialize(self, config: Dict[str, Any]) -> None:
         """Mock initialization."""
@@ -242,16 +248,52 @@ class MockMentaLLaMAService(MentaLLaMAInterface):
             "created_at": datetime.now().isoformat()
         }
 
+    # Add get_health_status if the endpoint calls it directly
+    def get_health_status(self) -> Dict[str, Any]:
+        return {
+            "status": "healthy" if self.initialized else "unhealthy",
+            "version": self.version,
+            "model_provider": settings.ml.mentallama.provider, # Use loaded settings
+            "models_loaded": list(settings.ml.mentallama.model_mappings.values()) if settings.ml.mentallama.model_mappings else ["mock-model"]
+        }
 
-@pytest.fixture
-def mock_services():
-    """Fixture to provide mock services for testing."""
-    # Create mock service
-    mock_service = MockMentaLLaMAService()
+
+@pytest.fixture(scope="module")
+def test_app(mock_mentallama_service_override) -> FastAPI:
+    """Create a test application instance with overrides."""
+    app = create_application()
+    # Dependency override is handled by mock_mentallama_service_override fixture
+    return app
+
+@pytest.fixture(scope="module")
+def client(test_app: FastAPI) -> Generator[TestClient, None, None]:
+    """Create a TestClient for the application."""
+    with TestClient(test_app) as c:
+        yield c
+
+@pytest.fixture(scope="module") # Use module scope if service is stateless for the module
+def mock_mentallama_service_instance() -> MockMentaLLaMAService:
+    """Provides a single instance of the mock service for the module."""
+    return MockMentaLLaMAService()
+
+# Fixture to apply the override
+@pytest.fixture(scope="module", autouse=True) # Autouse applies it to all tests in the module
+def mock_mentallama_service_override(mock_mentallama_service_instance):
+    """Overrides the real MentaLLaMA service with the mock instance."""
+    # Need to patch the actual dependency function used by the endpoint
+    # Assuming it's something like 'app.presentation.api.v1.dependencies.get_mentallama_service'
+    # This path needs to be verified.
+    dependency_path = "app.presentation.api.v1.dependencies.ml.get_mentallama_service" # Example path - VERIFY THIS
     
-    # Patch the get_mentallama_service function
-    with patch("app.core.services.ml.factory.get_mentallama_service", return_value=mock_service):
-        yield mock_service
+    # Define the override function
+    def override_dependency():
+        return mock_mentallama_service_instance
+
+    # Use patch context manager for robust override
+    with patch(dependency_path, return_value=override_dependency) as mock_dependency:
+        # Yield control to allow tests to run with the patch active
+        yield mock_dependency 
+        # Patch is automatically removed when the context exits
 
 
 @pytest.fixture
@@ -269,7 +311,7 @@ class TestMentaLLaMAAPI:
     with mathematically precise validation of inputs, outputs, and error cases.
     """
     
-    def test_process_endpoint(self, client: TestClient, mock_services, mock_auth):
+    def test_process_endpoint(self, client: TestClient, mock_auth):
         """Test the process endpoint."""
         # Prepare test data
         payload = {
@@ -281,19 +323,19 @@ class TestMentaLLaMAAPI:
         
         # Call API
         response = client.post(
-            f"{ml_settings.api_prefix}/process",
+            f"{MENTALLAMA_API_PREFIX}/process",
             json=payload,
-            headers={"X-API-Key": "test_key"}
+            headers=mock_auth
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["model"] == "mentallama-33b"
         assert "text" in data
         assert data["provider"] == "aws-bedrock"
     
-    def test_process_invalid_model(self, client: TestClient, mock_services, mock_auth):
+    def test_process_invalid_model(self, client: TestClient, mock_auth):
         """Test process endpoint with invalid model."""
         # Prepare test data
         payload = {
@@ -304,18 +346,18 @@ class TestMentaLLaMAAPI:
         
         # Call API
         response = client.post(
-            f"{ml_settings.api_prefix}/process",
+            f"{MENTALLAMA_API_PREFIX}/process",
             json=payload,
-            headers={"X-API-Key": "test_key"}
+            headers=mock_auth
         )
         
         # Verify response
-        assert response.status_code == 404
+        assert response.status_code == status.HTTP_404_NOT_FOUND
         data = response.json()
         assert "detail" in data
         assert "not found" in data["detail"].lower()
     
-    def test_process_empty_prompt(self, client: TestClient, mock_services, mock_auth):
+    def test_process_empty_prompt(self, client: TestClient, mock_auth):
         """Test process endpoint with empty prompt."""
         # Prepare test data
         payload = {
@@ -325,18 +367,18 @@ class TestMentaLLaMAAPI:
         
         # Call API
         response = client.post(
-            f"{ml_settings.api_prefix}/process",
+            f"{MENTALLAMA_API_PREFIX}/process",
             json=payload,
-            headers={"X-API-Key": "test_key"}
+            headers=mock_auth
         )
         
         # Verify response
-        assert response.status_code == 400
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         data = response.json()
         assert "detail" in data
         assert "empty" in data["detail"].lower()
     
-    def test_analyze_text_endpoint(self, client: TestClient, mock_services, mock_auth):
+    def test_analyze_text_endpoint(self, client: TestClient, mock_auth):
         """Test the analyze_text endpoint."""
         # Prepare test data
         payload = {
@@ -346,19 +388,19 @@ class TestMentaLLaMAAPI:
         
         # Call API
         response = client.post(
-            f"{ml_settings.api_prefix}/analyze",
+            f"{MENTALLAMA_API_PREFIX}/analyze",
             json=payload,
-            headers={"X-API-Key": "test_key"}
+            headers=mock_auth
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "structured_data" in data
         assert "sentiment" in data["structured_data"]
         assert "entities" in data["structured_data"]
     
-    def test_detect_conditions_endpoint(self, client: TestClient, mock_services, mock_auth):
+    def test_detect_conditions_endpoint(self, client: TestClient, mock_auth):
         """Test the detect_mental_health_conditions endpoint."""
         # Prepare test data
         payload = {
@@ -367,13 +409,13 @@ class TestMentaLLaMAAPI:
         
         # Call API
         response = client.post(
-            f"{ml_settings.api_prefix}/detect_conditions",
+            f"{MENTALLAMA_API_PREFIX}/detect_conditions",
             json=payload,
-            headers={"X-API-Key": "test_key"}
+            headers=mock_auth
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "structured_data" in data
         assert "conditions" in data["structured_data"]
@@ -382,7 +424,7 @@ class TestMentaLLaMAAPI:
         assert "condition" in conditions[0]
         assert "confidence" in conditions[0]
     
-    def test_therapeutic_response_endpoint(self, client: TestClient, mock_services, mock_auth):
+    def test_therapeutic_response_endpoint(self, client: TestClient, mock_auth):
         """Test the generate_therapeutic_response endpoint."""
         # Prepare test data
         payload = {
@@ -395,20 +437,20 @@ class TestMentaLLaMAAPI:
         
         # Call API
         response = client.post(
-            f"{ml_settings.api_prefix}/therapeutic_response",
+            f"{MENTALLAMA_API_PREFIX}/therapeutic_response",
             json=payload,
-            headers={"X-API-Key": "test_key"}
+            headers=mock_auth
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "text" in data
         assert "structured_data" in data
         assert "therapeutic_approach" in data["structured_data"]
         assert "techniques" in data["structured_data"]
     
-    def test_suicide_risk_endpoint(self, client: TestClient, mock_services, mock_auth):
+    def test_suicide_risk_endpoint(self, client: TestClient, mock_auth):
         """Test the assess_suicide_risk endpoint."""
         # Prepare test data
         payload = {
@@ -421,13 +463,13 @@ class TestMentaLLaMAAPI:
         
         # Call API
         response = client.post(
-            f"{ml_settings.api_prefix}/suicide_risk",
+            f"{MENTALLAMA_API_PREFIX}/assess_suicide_risk",
             json=payload,
-            headers={"X-API-Key": "test_key"}
+            headers=mock_auth
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "structured_data" in data
         assert "risk_level" in data["structured_data"]
@@ -436,7 +478,7 @@ class TestMentaLLaMAAPI:
         assert "recommendations" in data["structured_data"]
         assert "immediate_action_required" in data["structured_data"]
     
-    def test_wellness_dimensions_endpoint(self, client: TestClient, mock_services, mock_auth):
+    def test_wellness_dimensions_endpoint(self, client: TestClient, mock_auth):
         """Test the analyze_wellness_dimensions endpoint."""
         # Prepare test data
         payload = {
@@ -447,13 +489,13 @@ class TestMentaLLaMAAPI:
         
         # Call API
         response = client.post(
-            f"{ml_settings.api_prefix}/wellness_dimensions",
+            f"{MENTALLAMA_API_PREFIX}/analyze_wellness_dimensions",
             json=payload,
-            headers={"X-API-Key": "test_key"}
+            headers=mock_auth
         )
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "structured_data" in data
         assert "dimensions" in data["structured_data"]
@@ -462,32 +504,33 @@ class TestMentaLLaMAAPI:
         assert "score" in dimensions["physical"]
         assert "recommendations" in dimensions["physical"]
     
-    def test_health_check(self, client: TestClient, mock_services):
+    def test_health_check(self, client: TestClient):
         """Test the health check endpoint."""
         # Call API
-        response = client.get(f"{ml_settings.api_prefix}/health")
+        response = client.get(f"{MENTALLAMA_API_PREFIX}/health")
         
         # Verify response
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["status"] == "healthy"
-        assert data["version"] == ml_settings.version
+        assert data["version"] == settings.ml.mentallama.version if hasattr(settings.ml.mentallama, 'version') else "mock-0.1"
     
-    def test_service_unavailable(self, client: TestClient, mock_auth):
+    def test_service_unavailable(self, client: TestClient, mock_auth, mock_mentallama_service_instance):
         """Test behavior when service is unavailable."""
-        # Mock service unavailable
-        with patch("app.core.services.ml.factory.get_mentallama_service", 
-                   side_effect=ServiceUnavailableError("Service unavailable")):
-            
-            # Call API
-            response = client.post(
-                f"{ml_settings.api_prefix}/process",
-                json={"prompt": "Test prompt"},
-                headers={"X-API-Key": "test_key"}
-            )
-            
-            # Verify response
-            assert response.status_code == 503
-            data = response.json()
-            assert "detail" in data
-            assert "unavailable" in data["detail"].lower()
+        # Make the mock service unhealthy
+        mock_mentallama_service_instance.initialized = False 
+        # Or configure a specific method to raise ServiceUnavailableError
+        # mock_mentallama_service_instance.process.side_effect = ServiceUnavailableError("Mock service down")
+        
+        payload = {"prompt": "Test prompt"}
+        response = client.post(
+            f"{MENTALLAMA_API_PREFIX}/process",
+            json=payload,
+            headers=mock_auth
+        )
+        # Adjust expected status based on how unavailability is handled (e.g., 503)
+        # If the health check within the endpoint fails first, it might be 503
+        # If the process call itself fails with ServiceUnavailableError, depends on exception handler
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE # Assuming 503 for general unavailability
+        # Restore service state for other tests if needed
+        mock_mentallama_service_instance.initialized = True

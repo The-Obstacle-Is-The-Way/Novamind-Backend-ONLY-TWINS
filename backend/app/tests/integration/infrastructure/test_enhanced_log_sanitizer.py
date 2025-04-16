@@ -11,13 +11,13 @@ import logging
 from typing import Dict, Any, List
 
 from unittest.mock import patch, MagicMock, Mock
-from app.infrastructure.security.log_sanitizer import (
-    LogSanitizer, SanitizerConfig, PatternType, RedactionMode,
-    PHIPattern, PatternRepository, RedactionStrategy,
-    FullRedactionStrategy, PartialRedactionStrategy, HashRedactionStrategy,
-    RedactionStrategyFactory, PHIFormatter, PHIRedactionHandler,
-    SanitizedLogger, sanitize_logs, get_sanitized_logger
+from app.infrastructure.security.phi.log_sanitizer import (
+    LogSanitizer,
+    LogSanitizerConfig,
+    PHIFormatter,
+    get_sanitized_logger
 )
+from app.infrastructure.security.phi.phi_service import PHIService
 
 
 @pytest.mark.db_required
