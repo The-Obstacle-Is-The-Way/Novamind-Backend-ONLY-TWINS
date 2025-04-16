@@ -13,7 +13,8 @@ from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.patient import Patient
-from app.infrastructure.repositories.mock_patient_repository import MockPatientRepository as PatientRepository
+# Corrected import to use the concrete SQLAlchemy repository
+from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
 
