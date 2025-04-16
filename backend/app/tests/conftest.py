@@ -1,21 +1,15 @@
+# -*- coding: utf-8 -*-
+"""
+Global pytest configuration file (conftest.py) for backend tests.
+
+Defines shared fixtures, hooks, and configuration for the entire test suite.
+"""
+
 import os
 from dotenv import load_dotenv, find_dotenv
-
-# Load test environment variables BEFORE application imports
-# Construct the path relative to this conftest.py file
-dotenv_path = os.path.join(os.path.dirname(__file__), '../../.env.test')
-found = load_dotenv(dotenv_path=dotenv_path)
-if not found:
-    print(f"Warning: .env.test file not found at {dotenv_path}. Ensure it exists.")
-
-"""
-Global pytest configuration and fixtures.
-
-This module sets up global fixtures and configuration for all tests.
-It also handles patching of problematic imports during test collection.
-"""
 import sys
 import pytest
+import pytest_asyncio
 from pathlib import Path
 from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi.testclient import TestClient
@@ -25,7 +19,7 @@ from app.config.settings import get_settings, Settings
 from contextlib import asynccontextmanager
 import asyncio
 import logging
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 import uuid
 import time
 from typing import Dict, Any, Callable, Generator, Coroutine, List, Optional, AsyncGenerator
@@ -38,6 +32,16 @@ from app.domain.entities.base_entity import BaseEntity  # Assuming BaseEntity ex
 # Add necessary SQLAlchemy imports
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession # <-- Add AsyncSession here
 from sqlalchemy.orm import sessionmaker
+from httpx import AsyncClient # ADDED
+from app.tests.security.utils.base_security_test import BaseSecurityTest 
+# AuthenticationService might be needed if testing it directly
+from app.infrastructure.security.auth.authentication_service import AuthenticationService # For mocking
+# Import UserModel and Role enum - CORRECTED PATHS & CLASS NAME
+from app.infrastructure.models.user_model import UserModel # CORRECTED Class name
+from app.domain.enums.role import Role # Corrected Role path
+# Import provider functions to override
+from app.presentation.dependencies.auth import get_authentication_service
+from app.infrastructure.security.jwt.jwt_service import get_jwt_service
 
 # Try to import our patching utility
 try:
@@ -58,86 +62,68 @@ logger = get_logger(__name__)
 
 # Mock the settings object
 class MockSettings:
+    """Mock settings class to override production settings during tests."""
     def __init__(self):
-        self.APP_NAME = "Novamind Test"
-        self.APP_VERSION = "test-1.0.0"
-        self.ENVIRONMENT = "test"
-        self.DEBUG = True
-        self.PROJECT_NAME = "Novamind Test"
-        self.APP_DESCRIPTION = "Test environment for Novamind"
-        self.VERSION = "test-1.0.0"
-        self.BACKEND_CORS_ORIGINS = ["*"]
+        """Initialize mock settings with test-specific values."""
+        # Basic Info
+        self.PROJECT_NAME = "NovaMind Test"
         self.API_V1_STR = "/api/v1"
-        self.STATIC_DIR = Path(__file__).parent.parent / "static" # Adjust static/template paths relative to conftest location
-        self.TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
-        self.DATABASE_URL = "sqlite+aiosqlite:///./test.db" # Renamed attribute
-        self.DB_POOL_SIZE = 5
-        self.DB_MAX_OVERFLOW = 10
-        self.DATABASE_ECHO = False
-        self.LOG_LEVEL = "DEBUG"
-        self.ENABLE_ANALYTICS = False
+        self.ENVIRONMENT = "test"
+        self.TESTING = True
+        self.LOG_LEVEL = "DEBUG" # Enable detailed logging for tests
 
-        # --- Directly add JWT settings expected by JWTService --- 
-        # Use SecretStr to match the real Settings class
-        self.SECRET_KEY = SecretStr("test-secret-key-longer-than-32-chars-for-sure") 
-        self.ALGORITHM = "HS256" # Direct access
-        self.ACCESS_TOKEN_EXPIRE_MINUTES = 30 # Direct access
-        self.JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7 # Direct access
-        # --- End Direct JWT Settings ---
-        
-        # --- Mocked ML Settings --- 
-        self.ml = MagicMock()
-        self.ml.models_path = "/test/models"
-        self.ml.cache_path = "/test/cache"
-        self.ml.storage_path = "/test/storage"
-        
-        # Mock nested settings - adjust attributes as needed for tests
-        self.ml.mentallama = MagicMock(
-            provider="mock",
-            openai_api_key=None,
-            model_mappings={"default": "mock-model"}
-        )
-        self.ml.pat = MagicMock(
-            model_path="/test/models/pat/mock-pat",
-            cache_dir="/test/cache/pat",
-            use_gpu=False
-        )
-        self.ml.xgboost = MagicMock(
-            treatment_response_model_path="/test/models/xgboost/mock-treat.xgb",
-            outcome_prediction_model_path="/test/models/xgboost/mock-outcome.xgb",
-            risk_prediction_model_path="/test/models/xgboost/mock-risk.xgb"
-        )
-        self.ml.lstm = MagicMock(
-            biometric_correlation_model_path="/test/models/lstm/mock-biometric.pkl"
-        )
-        self.ml.phi_detection = MagicMock(
-            patterns_file="/test/config/mock-phi-patterns.yaml",
-            default_redaction_format="[MOCK_PHI]"
-        )
-        # --- End Mocked ML Settings ---
+        # Security
+        # Use a fixed, known secret key for reproducible JWT generation in tests
+        # WRAPPED in SecretStr to match expected type
+        self.SECRET_KEY = SecretStr(os.getenv(
+            "TEST_SECRET_KEY",
+            "a_very_secure_and_long_test_secret_key_for_pytest_runs_1234567890_abcdefghijklmnopqrstuvwxyz"
+        ))
+        self.ACCESS_TOKEN_EXPIRE_MINUTES = 30
+        self.REFRESH_TOKEN_EXPIRE_DAYS = 7
+        self.ALGORITHM = "HS256"
+        self.BACKEND_CORS_ORIGINS = ["*"] # Allow all for testing, or configure specific test origins
+        self.PASSWORD_HASHING_SCHEMES = ["bcrypt"]
+        self.PASSWORD_SALT_ROUNDS = 4 # Use lower rounds for faster tests
 
-        # API settings (can remain nested if only used elsewhere)
-        self.api = MagicMock(
-            CORS_ORIGINS=["*"],
-            ALLOWED_HOSTS=["*"],
-            HOST="localhost",
-            PORT=8000,
-            API_V1_PREFIX="/api/v1"
-        )
-        # Security settings (can remain nested, JWT keys duplicated above)
-        self.security = MagicMock(
-            JWT_SECRET_KEY=self.SECRET_KEY, # Keep nested consistent if needed
-            ENFORCE_HTTPS=False,
-            SSL_KEY_PATH=None,
-            SSL_CERT_PATH=None
-        )
-        # Logging settings
-        self.logging = MagicMock(
-            LOG_LEVEL="DEBUG"
-        )
+        # Database (using test-specific settings from .env.test)
+        self.DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///./test_db.sqlite")
+        self.DATABASE_ECHO = os.getenv("TEST_DATABASE_ECHO", "False").lower() in ('true', '1', 't')
 
-    def is_production(self):
-        return False
+        # ADDED: Redis settings for testing
+        self.REDIS_URL = os.getenv("TEST_REDIS_URL", "redis://localhost:6379/1") # Default to DB 1 for tests
+        self.CACHE_EXPIRATION_SECONDS = 60 # Example cache time for tests
+
+        # MFA Settings (provide sensible defaults for testing)
+        self.MFA_SECRET_KEY = SecretStr(os.getenv("TEST_MFA_SECRET_KEY", "test_mfa_secret_for_pytest_runs_123"))
+        self.MFA_ISSUER_NAME = "NovaMind Test Platform"
+
+        # PHI Detection Settings (can be mocked or use defaults)
+        # Assuming a nested structure based on previous examples
+        class MockMLSettings:
+            class MockPhiDetectionSettings:
+                model_path: str = "mock/phi/model/path"
+                confidence_threshold: float = 0.85
+                redaction_strategy: str = "replace"
+                phi_patterns_file: str = "app/infrastructure/security/phi/phi_patterns.yaml"
+                default_redaction_format: str = "[{category}]"
+                parallel_processing: bool = False # Keep false for simpler testing?
+            phi_detection = MockPhiDetectionSettings()
+        self.ml = MockMLSettings()
+
+        # Add other necessary mock settings as needed by the application components
+        self.AUDIT_LOG_FILE = "./test_audit.log"
+        self.EXTERNAL_AUDIT_ENABLED = False
+
+        # Rate Limiting (Example defaults)
+        self.RATE_LIMIT_TIMES = 500 # Allow generous limits for testing
+        self.RATE_LIMIT_SECONDS = 60
+
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT == "production"
+
+    def is_development(self) -> bool:
+        return self.ENVIRONMENT == "development"
 
 # Provide mocked settings as a fixture
 @pytest.fixture(scope="session", autouse=True)
@@ -289,97 +275,192 @@ def mock_jwt_service_for_client(
     return mock_service
 
 @pytest.fixture(scope="function")
-def mock_auth_service_for_client() -> AuthenticationService:
-    """Provides a mocked AuthenticationService for the client fixture."""
+def mock_auth_service_for_client(
+    mock_patient_payload: Dict[str, Any], # Inject payloads
+    mock_provider_payload: Dict[str, Any]
+) -> AuthenticationService:
+    """Provides a mocked AuthenticationService that returns valid UserModel objects."""
     mock_service = AsyncMock(spec=AuthenticationService)
 
-    # Define a mock get_user_by_id based on payloads
+    # Define a mock get_user_by_id that returns valid UserModel instances
     async def mock_get_user_by_id(user_id: str):
-        mock_user = MagicMock()
-        mock_user.id = user_id
-        # Determine roles based on user_id prefix or other convention
-        if user_id.startswith("test_patient"):
-            mock_user.roles = ["patient"]
-        elif user_id.startswith("test_provider"):
-            mock_user.roles = ["provider"]
-        # Add other roles if needed
+        # Use payload data to construct realistic UserModel objects
+        
+        # Handle patient user
+        if user_id == mock_patient_payload.get("sub"): 
+            try:
+                patient_uuid = uuid.UUID(mock_patient_payload["id"]) 
+                # Create UserModel instance, matching its attributes
+                return UserModel(
+                    id=patient_uuid, 
+                    email=f"{user_id}@test.novamind.com", 
+                    first_name="MockPatient", # Add required fields
+                    last_name="User",
+                    roles=[Role.PATIENT.value], # Use Role enum VALUE (string)
+                    is_active=True,
+                    hashed_password="mock_hashed_password" 
+                )
+            except Exception as e:
+                logger.error(f"Error creating mock patient UserModel for ID {user_id}: {e}")
+                return None 
+        
+        # Handle provider user
+        elif user_id == mock_provider_payload.get("sub"): 
+            try:
+                provider_uuid = uuid.UUID(mock_provider_payload["id"])
+                 # Create UserModel instance
+                return UserModel(
+                    id=provider_uuid, 
+                    email=f"{user_id}@test.novamind.com", 
+                    first_name="MockProvider", # Add required fields
+                    last_name="User",
+                    roles=[Role.PROVIDER.value], # Use Role enum VALUE
+                    is_active=True,
+                    hashed_password="mock_hashed_password" 
+                )
+            except Exception as e:
+                logger.error(f"Error creating mock provider UserModel for ID {user_id}: {e}")
+                return None 
+
+        # Handle the hardcoded admin user (used by mock_jwt_service_for_client verify)
+        # Note: The mock_jwt_service currently verifies using "patient_token_string" or "provider_token_string" 
+        # and doesn't seem to directly use "uuid-admin-123". 
+        # Let's refine this part if needed based on future errors.
+        # For now, returning None for other IDs is likely sufficient.
+        
+        # Simulate user not found for other IDs
         else:
-            mock_user.roles = [] # Default or handle unknown
-        # Simulate user found
-        return mock_user
-        # Return None # Simulate user not found if needed for specific tests
+            logger.warning(f"Mock get_user_by_id called with unexpected ID: {user_id}")
+            return None
 
     mock_service.get_user_by_id = AsyncMock(side_effect=mock_get_user_by_id)
-    # Mock other methods if they are called by middleware or dependencies
-    # e.g., mock_service.validate_credentials = AsyncMock(...)
     return mock_service
 
 
-# Restore the client fixture
+# Fixture providing the MOCKED AuthenticationService instance
 @pytest.fixture(scope="function")
+def mock_auth_service_override(
+    mock_patient_payload: Dict[str, Any], 
+    mock_provider_payload: Dict[str, Any]
+) -> AuthenticationService:
+    """Provides the MOCKED AuthenticationService instance to be used in overrides."""
+    mock_service = AsyncMock(spec=AuthenticationService)
+
+    async def mock_get_user_by_id(user_id: str):
+        # Simplified logic based on previous edits
+        if user_id == mock_patient_payload.get("sub"): 
+            try:
+                return UserModel(
+                    id=uuid.UUID(mock_patient_payload["id"]),
+                    email=f"{user_id}@test.novamind.com", 
+                    first_name="MockPatient", last_name="User",
+                    roles=[Role.PATIENT.value], is_active=True,
+                    hashed_password="mock_hashed_password" 
+                )
+            except Exception: return None
+        elif user_id == mock_provider_payload.get("sub"): 
+            try:
+                return UserModel(
+                    id=uuid.UUID(mock_provider_payload["id"]),
+                    email=f"{user_id}@test.novamind.com", 
+                    first_name="MockProvider", last_name="User",
+                    roles=[Role.PROVIDER.value], is_active=True,
+                    hashed_password="mock_hashed_password" 
+                )
+            except Exception: return None
+        else:
+            return None
+            
+    mock_service.get_user_by_id = AsyncMock(side_effect=mock_get_user_by_id)
+    return mock_service
+
+# Fixture providing the MOCKED JWTService instance
+@pytest.fixture(scope="function")
+def mock_jwt_service_override(
+    mock_settings,
+    mock_patient_payload: Dict[str, Any],
+    mock_provider_payload: Dict[str, Any]
+) -> JWTService:
+    """Provides the MOCKED JWTService instance to be used in overrides."""
+    # This is the same logic as the old mock_jwt_service_for_client
+    mock_service = AsyncMock(spec=JWTService)
+    patient_payload = mock_patient_payload 
+    provider_payload = mock_provider_payload 
+
+    async def async_mock_verify_token(token: str) -> TokenPayload:
+        if token == "patient_token_string":
+            return TokenPayload(
+                sub=patient_payload.get('sub'), exp=patient_payload.get('exp'),
+                iat=int(time.time()), jti=f"jti_{patient_payload.get('sub')}",
+                scope="access_token", roles=patient_payload.get('roles'),
+                user_id=patient_payload.get('id')
+            )
+        elif token == "provider_token_string":
+            return TokenPayload(
+                 sub=provider_payload.get('sub'), exp=provider_payload.get('exp'),
+                 iat=int(time.time()), jti=f"jti_{provider_payload.get('sub')}",
+                 scope="access_token", roles=provider_payload.get('roles'),
+                 user_id=provider_payload.get('id')
+             )
+        else:
+            from app.domain.exceptions import InvalidTokenError
+            raise InvalidTokenError("Mocked invalid token")
+            
+    mock_service.verify_token = AsyncMock(side_effect=async_mock_verify_token)
+
+    async def async_mock_create_token(subject: str, roles: Optional[List[str]] = None) -> str:
+         if Role.PATIENT.value in (roles or []): return "patient_token_string"
+         elif Role.PROVIDER.value in (roles or []): return "provider_token_string"
+         return "generic_token_string"
+         
+    mock_service.create_access_token = AsyncMock(side_effect=async_mock_create_token)
+    return mock_service
+
+
+# Final client fixture structure with direct TYPE overrides
+@pytest_asyncio.fixture(scope="function") 
 async def client(
-    mock_settings: MockSettings, # Inject mock_settings
+    # Non-default arguments FIRST
+    app: FastAPI, 
+    mock_settings: MockSettings, 
     test_environment, 
-    # Use the MOCK jwt service fixture for the client's app override
-    mock_jwt_service_for_client: JWTService, # Corrected dependency
-    app: FastAPI # Inject the app fixture
-) -> Generator[TestClient, None, None]:
-    """Provides an async TestClient instance with JWT dependency overridden by a MOCKED service."""
-    logger.info("[Fixture client - async] ENTERING - Overriding JWT with MOCKED service")
+    # Default arguments (using Depends) LAST
+    mock_auth_service_instance: AuthenticationService = Depends(mock_auth_service_override),
+    mock_jwt_service_instance: JWTService = Depends(mock_jwt_service_override)
+) -> AsyncGenerator[AsyncClient, None]: 
+    """Provides an httpx.AsyncClient with overridden service dependencies.
+    Overrides the specific service classes (AuthenticationService, JWTService).
+    """
+    logger.info("[Fixture client - async] ENTERING - Applying direct service type overrides")
 
-    # --- Dependency Overrides --- 
-    
-    # Override settings using get_settings
-    # This is the primary way settings should be accessed in the app
+    # Override service TYPES directly
     app.dependency_overrides[get_settings] = lambda: mock_settings
-    logger.info(f"[Fixture client - async] Overrode get_settings with mock_settings: {id(mock_settings)}")
-
-    # Override the JWT service provider function
-    # Ensure the import path is correct
-    try:
-        # Correct import path for get_jwt_service
-        from app.infrastructure.security.jwt.jwt_service import get_jwt_service 
-        # Override with the *resolved* mock_jwt_service_for_client instance from the fixture
-        app.dependency_overrides[get_jwt_service] = lambda: mock_jwt_service_for_client # Use the corrected fixture
-        logger.info(f"[Fixture client - async] Overrode get_jwt_service with MOCKED service: {id(mock_jwt_service_for_client)}")
-    except ImportError:
-        logger.error("Could not import get_jwt_service from app.infrastructure.security.jwt.jwt_service to override.")
-        # Optionally re-raise or handle differently if this import MUST succeed
-        raise
-
-    # Optional: Override specific repository implementations if needed for tests
-    # Example (adjust import paths and classes as needed):
-    # try:
-    #     from app.infrastructure.persistence.sqlalchemy.repositories import get_patient_repository
-    #     app.dependency_overrides[get_patient_repository] = lambda: mock_patient_repository
-    # except ImportError:
-    #     logger.error("Could not import get_patient_repository to override.")
-
-    # --- Include Routers ---
-    # Example: app.include_router(...)
-
-    # --- Yield TestClient ---
-    # TestClient is used directly within the async fixture context
-    get_settings.cache_clear() 
-    logger.info("--- [Fixture: client] Cleared get_settings cache.")
+    # Override AuthenticationService type to return the mock instance
+    app.dependency_overrides[AuthenticationService] = lambda: mock_auth_service_instance
+    # Override JWTService type to return the mock instance
+    app.dependency_overrides[JWTService] = lambda: mock_jwt_service_instance
     
-    with TestClient(app) as c:
-        logger.info("--- [Fixture: client] TestClient created.")
-        yield c
-    
-    # Optional: Clear cache again after test if needed, though clearing before should suffice
-    # get_settings.cache_clear()
-    # logger.info("--- [Fixture: client] Cleared get_settings cache post-yield.")
+    logger.info(f"[Fixture client - async] Overrode get_settings provider.")
+    logger.info(f"[Fixture client - async] Overrode AuthenticationService type with mock: {id(mock_auth_service_instance)}")
+    logger.info(f"[Fixture client - async] Overrode JWTService type with mock: {id(mock_jwt_service_instance)}")
+
+    get_settings.cache_clear()
+    logger.info("--- [Fixture: client] Cleared get_settings cache before AsyncClient creation.")
+
+    async with AsyncClient(app=app, base_url="http://test") as async_client:
+        logger.info("--- [Fixture: client] httpx.AsyncClient created.")
+        yield async_client
+        logger.info("--- [Fixture: client] httpx.AsyncClient context exiting.")
+
     logger.info("[Fixture client - async] EXITING")
-    # Restore original dependencies (handled by pytest fixture teardown)
-
+    app.dependency_overrides = {} 
 
 # --- Database Fixtures (Independent of client) ---
 # If you need direct DB access in tests *not* using the client, define separate fixtures.
 
 # Fixture for JWTService (can be used directly by tests if needed)
-@pytest.fixture(scope="function") # Keep function scope
-async def jwt_service(mock_settings: MockSettings) -> AsyncGenerator[JWTService, None]:
+@pytest_asyncio.fixture(scope="function") # CHANGED decorator
+async def jwt_service(mock_settings: MockSettings) -> AsyncGenerator[JWTService, None]: # Keep AsyncGenerator here for yield
     """Provides a JWTService instance explicitly configured with mock settings for test setup."""
     # Explicitly pass mock_settings for test fixture usage, overriding the Depends default for this call.
     # The instance used by middleware during requests will still use Depends().
@@ -390,11 +471,10 @@ async def jwt_service(mock_settings: MockSettings) -> AsyncGenerator[JWTService,
     yield service
 
 # Fixture to generate tokens using the real JWTService (configured with mock settings)
-@pytest.fixture(scope="function") # Ensure function scope
-async def generate_token(jwt_service: AsyncGenerator[JWTService, None]) -> Callable[[Dict[str, Any]], Coroutine[Any, Any, str]]:
-    """Provides a function to generate access tokens using the jwt_service fixture."""
-    # Consume the async generator to get the actual JWTService instance
-    actual_jwt_service = await anext(jwt_service)
+@pytest_asyncio.fixture(scope="function") # CHANGED decorator
+async def generate_token(jwt_service: JWTService) -> Callable[[Dict[str, Any]], Coroutine[Any, Any, str]]: # CHANGED: jwt_service type hint, assuming it's resolved
+    """Provides a function to generate access tokens using the resolved jwt_service fixture."""
+    # REMOVED: actual_jwt_service = await anext(jwt_service) - Assuming pytest_asyncio handles resolution
 
     async def _generate(payload: Dict[str, Any]) -> str: # Inner function remains async
         """Generates a token using the resolved jwt_service instance."""
@@ -405,8 +485,8 @@ async def generate_token(jwt_service: AsyncGenerator[JWTService, None]) -> Calla
         if not subject:
             raise ValueError("Payload must contain 'sub' key for token generation")
 
-        # Call the method on the resolved service instance
-        return await actual_jwt_service.create_access_token(subject=subject, roles=roles) # Use actual_jwt_service
+        # Call the method on the resolved service instance (injected by pytest_asyncio)
+        return await jwt_service.create_access_token(subject=subject, roles=roles) # Use jwt_service directly
 
     return _generate # Return the inner async function
 
@@ -440,18 +520,18 @@ def mock_provider_payload() -> Dict[str, Any]:
 # This setup ensures tests can generate valid tokens (using the test key)
 # and the TestClient interacts with an app that uses mocks for validation.
 
-@pytest.fixture(scope="function") # Ensure function scope
+@pytest_asyncio.fixture(scope="function") # CHANGED decorator
 async def patient_token_headers(generate_token: Callable[[Dict[str, Any]], Coroutine[Any, Any, str]], mock_patient_payload: Dict[str, Any]) -> Dict[str, str]:
     """Generates auth headers with a valid patient token."""
-    token_generator = await generate_token # Await the fixture to get the generator function
-    token = await token_generator(mock_patient_payload) # Call and await the generator function
+    # generate_token is now the resolved _generate function injected by pytest_asyncio
+    token = await generate_token(mock_patient_payload) # Call and await the generator function
     return {"Authorization": f"Bearer {token}"}
 
-@pytest.fixture(scope="function") # Ensure function scope
+@pytest_asyncio.fixture(scope="function") # CHANGED decorator
 async def provider_token_headers(generate_token: Callable[[Dict[str, Any]], Coroutine[Any, Any, str]], mock_provider_payload: Dict[str, Any]) -> Dict[str, str]:
     """Generates auth headers with a valid provider token."""
-    token_generator = await generate_token # Await the fixture to get the generator function
-    token = await token_generator(mock_provider_payload) # Call and await the generator function
+    # generate_token is now the resolved _generate function injected by pytest_asyncio
+    token = await generate_token(mock_provider_payload) # Call and await the generator function
     return {"Authorization": f"Bearer {token}"}
 
 

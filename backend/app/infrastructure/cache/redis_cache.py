@@ -9,15 +9,16 @@ interface for efficient caching in a distributed environment.
 import json
 from typing import Any, Dict, Optional
 import time
+import asyncio
+import logging
 
 import redis.asyncio as aioredis # Use redis.asyncio instead of aioredis
 
 from app.application.interfaces.services.cache_service import CacheService
 from app.core.utils.logging import get_logger
 from app.config.settings import get_settings
-settings = get_settings()
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class RedisCache(CacheService):
@@ -28,10 +29,27 @@ class RedisCache(CacheService):
     suitable for production use in a distributed environment.
     """
     
-    def __init__(self):
-        """Initialize the Redis cache service."""
-        self._client = None
-        self._settings = settings # Use the imported settings object
+    _client: Optional[aioredis.Redis] = None
+    _lock = asyncio.Lock()
+
+    def __init__(self, redis_url: Optional[str] = None):
+        """
+        Initialize RedisCache.
+
+        Args:
+            redis_url: Optional Redis connection URL. Defaults to settings.
+        """
+        settings = get_settings()
+        # Use getattr for safer access with a fallback default for testing
+        default_redis_url = "redis://localhost:6379/1" # Default test Redis DB
+        effective_redis_url = getattr(settings, 'REDIS_URL', default_redis_url)
+        self.redis_url = redis_url or effective_redis_url
+        
+        if not self.redis_url:
+            # This path should ideally not be hit if defaults work
+            logger.warning("Redis URL not configured and default failed. RedisCache will not connect.")
+            self.redis_url = default_redis_url # Ensure there's always a fallback
+        # Connection is established lazily in get_client
         
     async def initialize(self) -> None:
         """
@@ -45,8 +63,7 @@ class RedisCache(CacheService):
             
         try:
             # Get Redis connection settings
-            redis_url = getattr(self._settings, "REDIS_URL", "redis://localhost:6379/0")
-            redis_ssl = getattr(self._settings, "REDIS_SSL", False)
+            redis_ssl = getattr(self, "REDIS_SSL", False)
             
             # Prepare connection options
             redis_connection_options = {
@@ -59,11 +76,11 @@ class RedisCache(CacheService):
 
             # Connect to Redis using the prepared options
             self._client = await aioredis.from_url(
-                redis_url,
+                self.redis_url,
                 **redis_connection_options
             )
             
-            logger.info(f"Connected to Redis at {redis_url}")
+            logger.info(f"Connected to Redis at {self.redis_url}")
             
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {str(e)}")

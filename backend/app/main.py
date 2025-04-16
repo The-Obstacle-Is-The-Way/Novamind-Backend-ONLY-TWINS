@@ -24,11 +24,13 @@ from app.presentation.api.routes import api_router, setup_routers  # Import from
 
 # Import Middleware and Services
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
-from app.infrastructure.security.jwt.jwt_service import get_jwt_service # Import the provider
 from app.presentation.middleware.rate_limiting_middleware import setup_rate_limiting
-from app.infrastructure.security.auth.authentication_service import AuthenticationService
-from app.domain.repositories.user_repository import UserRepository
 from app.presentation.middleware.phi_middleware import add_phi_middleware # Updated import path
+from app.infrastructure.security.auth.authentication_service import AuthenticationService 
+from app.domain.repositories.user_repository import UserRepository # Keep domain interface
+from app.infrastructure.security.password.password_handler import PasswordHandler
+from app.infrastructure.security.jwt.jwt_service import JWTService, get_jwt_service
+from unittest.mock import MagicMock # Import MagicMock
 
 # Import necessary types for middleware
 from starlette.requests import Request
@@ -64,14 +66,14 @@ async def lifespan(app: FastAPI):
         await db_instance.create_all()
     
     # Yield control to the application
+    logger.info("ASGI lifespan startup complete.")
     yield
     
     # Shutdown events
-    logger.info("Shutting down NOVAMIND application")
+    logger.info("ASGI lifespan shutdown starting.")
     # Close database connections
     await db_instance.dispose()
-    
-    logger.info("Application shutdown complete")
+    logger.info("ASGI lifespan shutdown complete.")
 
 
 def create_application() -> FastAPI:
@@ -94,21 +96,25 @@ def create_application() -> FastAPI:
         lifespan=lifespan, # Use the defined lifespan manager
     )
     
-    # --- Instantiate Services ---
-    # Note: Ideally, use dependency injection framework for cleaner service management
-    async def get_db_session():
-        async with get_db_session() as session:
-            yield session
-            
-    # Instantiate necessary services here, potentially using a DI container later
-    # AuthenticationService might need a UserRepository, which needs a db session
-    # This setup implies services might need request-scoped dependencies (like db session)
-    # which middleware setup doesn't easily handle. 
-    # For now, let's assume AuthenticationService can be instantiated without a session,
-    # or we adjust its get_user_by_id to accept a session.
-    # TEMP: Instantiate Auth Service - REVISIT DEPENDENCY INJECTION
-    # Assuming AuthenticationService can get a session itself or is adapted
-    auth_service = AuthenticationService() # Removed unnecessary repository instantiation
+    # --- Instantiate Services (TEMPORARY) --- 
+    # This block needs to be replaced by a proper DI setup
+    try:
+        password_handler = PasswordHandler()
+        # Instantiate JWTService using its provider, which should handle Depends(get_settings)
+        # This might still fail if called before settings are fully loaded/mocked in tests
+        # but it's closer to the intended pattern than JWTService() directly.
+        jwt_service = get_jwt_service() 
+        mock_user_repo = MagicMock(spec=UserRepository)
+        
+        auth_service = AuthenticationService(
+            user_repository=mock_user_repo, 
+            password_handler=password_handler,
+            jwt_service=jwt_service
+        )
+        logger.info("AuthenticationService instantiated for middleware setup (using Mocks).")
+    except Exception as e:
+        logger.critical(f"Failed to instantiate AuthenticationService dependencies: {e}", exc_info=True)
+        raise RuntimeError("Could not set up core authentication services.") from e
 
     # --- Add Middleware (Order Matters!) ---
     
@@ -129,16 +135,16 @@ def create_application() -> FastAPI:
     # 3. Security Headers
     # app.add_middleware(SecurityHeadersMiddleware)
 
-    # 4. Authentication Middleware (Processes token, sets request.state.user)
+    # 4. Authentication Middleware 
     app.add_middleware(
         AuthenticationMiddleware,
-        auth_service=auth_service,
+        auth_service=auth_service, 
+        jwt_service=jwt_service,
         public_paths={
             "/openapi.json",
             "/docs",
             "/api/v1/auth/refresh",
-            "/health", # Assuming health check is public
-            # Add other public websocket paths if needed, e.g., "/ws/public"
+            "/health", 
         },
     )
     
@@ -185,4 +191,33 @@ def create_application() -> FastAPI:
     
     return app
 
-app = create_application()
+# Create the main FastAPI application instance using the factory function
+# COMMENTED OUT: Avoid module-level app creation which interferes with test fixture setup.
+# The app instance should be created within fixtures (like in conftest.py) or entry points.
+# app = create_application()
+
+# Entry point for running the application directly (e.g., with `python app/main.py`)
+# This is typically used for local development/debugging.
+if __name__ == "__main__":
+    import uvicorn
+    logger.info("Starting application directly using uvicorn for development.")
+    # Load settings to get host and port for uvicorn
+    # Ensure settings are loaded correctly here for direct execution
+    try:
+        run_settings = get_settings()
+        uvicorn.run(
+            # Point uvicorn to the location of the factory function or the app instance
+            # If using the factory pattern, it's often cleaner to point to the factory:
+            "app.main:create_application", 
+            # Or if you need the instance (ensure it's created only here):
+            # app, 
+            host=run_settings.HOST,
+            port=run_settings.PORT,
+            reload=run_settings.RELOAD, # Enable reload based on settings
+            factory=True # Indicate that the import string points to a factory
+        )
+    except Exception as e:
+        logger.critical(f"Failed to start uvicorn: {e}", exc_info=True)
+        # Optionally, exit with an error code
+        # import sys
+        # sys.exit(1)

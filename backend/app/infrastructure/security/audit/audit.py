@@ -20,9 +20,12 @@ import json
 import logging
 import uuid
 from typing import Any, Dict, List, Optional, Union
+import os
 
+# Use canonical config import
 from app.config.settings import get_settings
-settings = get_settings()
+# REMOVED: settings = get_settings() - Defer loading
+logger = logging.getLogger(__name__) # Use standard logger
 
 
 class AuditLogger:
@@ -41,38 +44,56 @@ class AuditLogger:
         Args:
             logger_name: The name to use for the logger instance
         """
+        # ADDED: Load settings within __init__
+        settings = get_settings()
+        self.log_level = getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO)
+        self.audit_log_file = settings.AUDIT_LOG_FILE
+        
+        # Configure the audit logger
         self.logger = logging.getLogger(logger_name)
-        self.settings = settings
-
-        # Configure logging based on settings
-        self._configure_logging()
-
-    def _configure_logging(self) -> None:
-        """Configure the logger with appropriate handlers and formatters."""
-        # Set logger level from settings
-        self.logger.setLevel(self.settings.AUDIT_LOG_LEVEL)
-
-        # If handlers are not already configured
-        if not self.logger.handlers:
-            # Create handlers based on settings
-            if self.settings.AUDIT_LOG_TO_FILE:
-                file_handler = logging.FileHandler(self.settings.AUDIT_LOG_FILE)
-                file_formatter = logging.Formatter(
-                    "%(asctime)s [%(levelname)s] %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S",
+        self.logger.setLevel(self.log_level)
+        
+        # Remove existing handlers to avoid duplicate logs if re-initialized
+        if self.logger.hasHandlers():
+            self.logger.handlers.clear()
+            
+        # Create a file handler
+        if self.audit_log_file:
+            try:
+                # Ensure the directory exists
+                log_dir = os.path.dirname(self.audit_log_file)
+                if log_dir:
+                    os.makedirs(log_dir, exist_ok=True)
+                    
+                file_handler = logging.FileHandler(self.audit_log_file)
+                # Use a specific format for audit logs
+                formatter = logging.Formatter(
+                    '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "event": %(message)s}',
+                    datefmt='%Y-%m-%dT%H:%M:%S%z' # ISO 8601 format
                 )
-                file_handler.setFormatter(file_formatter)
+                file_handler.setFormatter(formatter)
                 self.logger.addHandler(file_handler)
+                logger.info(f"Audit logs will be written to: {self.audit_log_file}")
+            except Exception as e:
+                logger.error(f"Failed to configure file handler for audit log at {self.audit_log_file}: {e}", exc_info=True)
+        else:
+            logger.warning("AUDIT_LOG_FILE not set. Audit logs will not be written to a file.")
 
-            # Always add console handler in development mode
-            if self.settings.ENVIRONMENT.lower() == "development":
-                console_handler = logging.StreamHandler()
-                console_formatter = logging.Formatter(
-                    "%(asctime)s [%(levelname)s] %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S",
-                )
-                console_handler.setFormatter(console_formatter)
-                self.logger.addHandler(console_handler)
+        # Add a console handler as well for visibility during development/debugging
+        console_handler = logging.StreamHandler()
+        console_formatter = logging.Formatter(
+            'AUDIT [%(levelname)s]: %(message)s'
+        )
+        console_handler.setFormatter(console_formatter)
+        self.logger.addHandler(console_handler)
+        
+        # Prevent audit logs from propagating to the root logger if handlers are set
+        if self.logger.hasHandlers():
+            self.logger.propagate = False
+        else:
+            # If no handlers could be set up, allow propagation so messages aren't lost
+            self.logger.propagate = True 
+            logger.error("AuditLogger failed to set up any handlers. Logs may be lost or appear in root logger.")
 
     def log_phi_access(
         self,
@@ -111,7 +132,7 @@ class AuditLogger:
         self.logger.info(f"PHI_ACCESS: {json.dumps(audit_entry)}")
 
         # If configured, also send to external audit service
-        if self.settings.EXTERNAL_AUDIT_ENABLED:
+        if settings.EXTERNAL_AUDIT_ENABLED:
             self._send_to_external_audit_service(audit_entry)
 
     def log_auth_event(
@@ -148,7 +169,7 @@ class AuditLogger:
         self.logger.info(f"AUTH_EVENT: {json.dumps(audit_entry)}")
 
         # If configured, also send to external audit service
-        if self.settings.EXTERNAL_AUDIT_ENABLED:
+        if settings.EXTERNAL_AUDIT_ENABLED:
             self._send_to_external_audit_service(audit_entry)
 
     def _send_to_external_audit_service(self, audit_entry: Dict[str, Any]) -> None:
@@ -169,4 +190,4 @@ class AuditLogger:
 # Create a singleton instance for global use
 # (Note: This is not a true singleton as it can be instantiated elsewhere,
 # but provides a convenient access point)
-audit_logger = AuditLogger()
+# audit_logger = AuditLogger()

@@ -262,7 +262,8 @@ class TestSecureHeaders(BaseSecurityTest):
              assert "max-age=" in hsts_header
              # assert "includeSubDomains" in hsts_header # If applicable
 
-    def test_cors_headers_configuration(self, client: TestClient):
+    @pytest.mark.asyncio # ADDED asyncio marker
+    async def test_cors_headers_configuration(self, client: AsyncClient): # CHANGED client type, made async
         """Verify CORS headers based on application settings."""
         # Use the OPTIONS method to trigger CORS preflight checks
         allowed_origin = "http://localhost:3000" # Example, should match test settings if specific
@@ -271,7 +272,8 @@ class TestSecureHeaders(BaseSecurityTest):
             "Access-Control-Request-Method": "GET",
             "Access-Control-Request-Headers": "Authorization"
         }
-        response = client.options("/api/v1/health", headers=headers)
+        # Use await with AsyncClient
+        response = await client.options("/api/v1/health", headers=headers)
 
         assert response.status_code == 200 # Preflight should succeed if origin allowed
         response_headers = response.headers

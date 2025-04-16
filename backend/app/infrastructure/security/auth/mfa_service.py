@@ -22,7 +22,6 @@ from io import BytesIO
 # Use canonical config import
 # from app.core.config import get_settings
 from app.config.settings import get_settings
-settings = get_settings()
 logger = logging.getLogger(__name__) # Use standard logger
 
 
@@ -80,6 +79,8 @@ class MFAService:
             email_code_length: Length of email verification codes
             verification_timeout_seconds: Timeout for verification codes
         """
+        settings = get_settings()
+        
         self.secret_key = secret_key or settings.MFA_SECRET_KEY
         self.issuer_name = issuer_name or settings.MFA_ISSUER_NAME
         self.totp_digits = totp_digits

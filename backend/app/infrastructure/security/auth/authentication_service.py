@@ -4,6 +4,7 @@ Service responsible for user authentication logic.
 
 import logging
 from typing import Optional
+import uuid
 
 from app.domain.entities.user import User
 # Import password service and user repository interface (adjust path as needed)
@@ -75,32 +76,34 @@ class AuthenticationService:
 
     async def get_user_by_id(self, user_id: str) -> Optional[User]:
         """
-        Retrieves a user by their ID.
+        Retrieve a user by their unique ID.
 
         Args:
-            user_id: The ID of the user to retrieve.
+            user_id: The unique identifier of the user.
 
         Returns:
-            The User object if found and active, otherwise None.
+            User object if found, None otherwise.
         """
-        logger.debug(f"Fetching user by ID: {user_id}")
-        # --- Replace with actual database lookup --- 
-        # user = await self.user_repository.get_by_id(user_id)
-        # Mock implementation
-        from app.infrastructure.security.rbac.roles import Role # Temp import
-        MOCK_USERS = {
-            "uuid-admin-123": User(id="uuid-admin-123", username="test_admin", roles=[Role.ADMIN], is_active=True),
-            "uuid-clinician-456": User(id="uuid-clinician-456", username="test_clinician", roles=[Role.CLINICIAN], is_active=True),
-        }
-        user = MOCK_USERS.get(user_id)
-        # --- End replace --- 
-
-        if user and user.is_active:
-            logger.debug(f"User found and active: {user_id}")
-            return user
-        elif user:
-             logger.warning(f"User found but inactive: {user_id}")
-             return None # Or raise specific exception
-        else:
-            logger.warning(f"User not found: {user_id}")
+        logger.debug(f"Retrieving user by ID: {user_id}")
+        
+        # --- REMOVED MOCK IMPLEMENTATION ---
+        # Use the actual repository to fetch the user.
+        # Ensure user_id is converted to UUID if repository expects it.
+        try:
+            user_uuid = uuid.UUID(user_id)
+        except ValueError:
+            logger.warning(f"Invalid UUID format provided for user_id: {user_id}")
             return None
+            
+        user = await self.user_repository.get_by_id(user_uuid)
+        # --- END REPOSITORY USAGE ---
+
+        if not user:
+            logger.warning(f"User not found by ID: {user_id}")
+            return None
+            
+        logger.debug(f"User found by ID: {user_id}")
+        # Ensure the returned object matches the User domain model if necessary (e.g., mapping)
+        # Assuming repository returns objects compatible with the User domain model directly or requires mapping.
+        # If repository returns UserModel, map it to User domain model here if needed.
+        return user # Return the user fetched from the repository

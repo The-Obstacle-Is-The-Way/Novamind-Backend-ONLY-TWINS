@@ -6,22 +6,22 @@ retrieving the associated user, and attaching the user object to the request sta
 """
 
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Set, Callable, Awaitable, Any
+from enum import Enum
 
 from fastapi import Request, HTTPException, status, Depends
 from fastapi.security.utils import get_authorization_scheme_param
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response, JSONResponse
+from starlette.authentication import AuthCredentials, UnauthenticatedUser
 
 # Domain Exceptions
-from app.domain.exceptions import InvalidTokenError, TokenExpiredError, MissingTokenError
-from app.core.exceptions.auth_exceptions import AuthenticationError
+from app.domain.exceptions import InvalidTokenError, TokenExpiredError, MissingTokenError, AuthenticationError, EntityNotFoundError
 
 # Consolidated services
-from app.core.models.token_models import TokenPayload
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
-from app.domain.entities.user import User
-from app.infrastructure.security.jwt.jwt_service import JWTService
+from app.infrastructure.models.user_model import UserModel
+from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 
 # Corrected import path for settings
 from app.config.settings import get_settings, Settings
@@ -33,121 +33,105 @@ logger = get_logger(__name__)
 
 class AuthenticationMiddleware(BaseHTTPMiddleware):
     """
-    Middleware for JWT authentication and user context setting.
-    Relies on JWTService for token decoding and AuthenticationService for user retrieval.
+    Middleware for JWT authentication. Receives services via __init__.
     """
 
     def __init__(
         self,
         app,
-        # Only non-default args needed here
         auth_service: AuthenticationService,
-        public_paths: set[str],
+        jwt_service: JWTService,
+        public_paths: Optional[Set[str]] = None,
     ):
         """Initialize the middleware.
 
         Args:
             app: The ASGI application.
-            auth_service: Service for authentication logic (e.g., user retrieval).
+            auth_service: Service for authentication logic.
+            jwt_service: Service for JWT operations.
             public_paths: A set of URL paths that do not require authentication.
         """
         super().__init__(app)
-        self.auth_service = auth_service # Store non-default args
-        self.public_paths = public_paths
+        self.auth_service = auth_service
+        self.jwt_service = jwt_service
+        self.public_paths = public_paths or set()
         logger.info(f"AuthenticationMiddleware initialized. Public paths: {self.public_paths}.")
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """
-        Process request, perform authentication, and call next handler.
+        Process request, perform authentication using stored services, and call next handler.
         """
-        # --- Check for public paths FIRST --- 
-        if any(request.url.path.startswith(path) for path in self.public_paths):
-            logger.debug(f"Public path accessed: {request.url.path}. Skipping authentication.")
-            request.state.user = None # Explicitly set user to None for public paths
+        request.state.user = UnauthenticatedUser()
+        request.state.auth = None 
+
+        current_path = request.url.path
+        if current_path in self.public_paths or any(current_path.startswith(path) for path in self.public_paths):
+            logger.debug(f"Public path accessed: {current_path}. Skipping authentication.")
             return await call_next(request)
 
-        # --- If not public, proceed with authentication --- 
+        auth_header = request.headers.get("Authorization")
+        scheme, token = None, None
+        if auth_header:
+            try:
+                scheme, token = get_authorization_scheme_param(auth_header)
+            except HTTPException:
+                logger.warning("Invalid Authorization header format.")
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"detail": "Invalid Authorization header"},
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+
+        if not token or not scheme or scheme.lower() != "bearer":
+            logger.debug("No valid Bearer token found in header.")
+            return await call_next(request)
+
         try:
-            # Attempt to extract token from header or cookies
-            scheme, token = self._validate_auth_header(request.headers.get("Authorization"))
+            token_data: TokenPayload = await self.jwt_service.verify_token(token)
+            user: Optional[UserModel] = await self.auth_service.get_user_by_id(str(token_data.sub)) 
 
-            # --- Explicit Dependency Resolution for Settings --- 
-            app = request.app
-            # Find the correct settings provider (override or original)
-            override_settings_provider = app.dependency_overrides.get(get_settings)
-            settings_provider = override_settings_provider if override_settings_provider else get_settings
-            
-            # Call the provider to get the actual settings object
-            # NOTE: Assumes settings providers are synchronous. If they were async, we'd need to await.
-            current_settings: Settings = settings_provider()
-            logger.debug(f"Middleware resolved settings type: {type(current_settings)}, ID: {id(current_settings)}")
-            # --- End Explicit Dependency Resolution --- 
+            if not user:
+                logger.warning(f"User not found for token subject: {token_data.sub}")
+                raise EntityNotFoundError(f"User {token_data.sub} not found.") 
 
-            # Instantiate JWTService explicitly passing the resolved settings.
-            # The Depends(get_settings) in JWTService.__init__ is effectively ignored for this call.
-            jwt_service_instance = JWTService(settings=current_settings)
-            logger.debug(f"Dispatch JWTService instance ID: {id(jwt_service_instance)} using explicitly resolved settings.")
-            
-            # --- Cascade: Added Logging START ---
-            logger.debug(f"--- [Middleware] Attempting validation with Settings SECRET_KEY: {current_settings.SECRET_KEY}")
-            logger.debug(f"--- [Middleware] JWTService using SECRET_KEY: {current_settings.SECRET_KEY}") # Log key from settings used by JWTService
-            logger.debug(f"--- [Middleware] Token Received: {token[:10]}...{token[-10:]}") # Log token snippet
-            # --- Cascade: Added Logging END ---
-            
-            token_data: TokenPayload = await jwt_service_instance.decode_token(token) 
-            
-            # Token is valid, payload extracted. Fetch the user.
-            if not token_data.sub:
-                # This case should ideally be caught by TokenPayload validation now
-                raise InvalidTokenError("Token is missing required 'sub' claim.")
-            
-            user: Optional[User] = await self.auth_service.get_user_by_id(str(token_data.sub))
+            if not user.is_active:
+                 logger.warning(f"Authentication attempt by inactive user: {token_data.sub}")
+                 raise AuthenticationError("User account is inactive.")
 
-            if user is None:
-                # User ID from token not found in DB or user is inactive
-                raise AuthenticationError("User not found or inactive for token subject.")
-
-            # --- Authentication Successful ---
             request.state.user = user
-            logger.debug(f"User {user.id} authenticated successfully. Roles: {getattr(user, 'roles', 'N/A')}")
+            user_roles = getattr(user, 'roles', []) 
+            scopes = [str(role) for role in user_roles]
+            request.state.auth = AuthCredentials(scopes=scopes)
+            logger.debug(f"User {user.id} authenticated successfully.")
 
-            response = await call_next(request)
-            return response
-            
-        except (MissingTokenError, InvalidTokenError, TokenExpiredError, AuthenticationError) as e:
-            # Handle all authentication-related domain exceptions
-            error_detail = str(e)
-            logger.warning(f"Auth failed: {error_detail} for path {request.url.path}")
-            # --- Cascade: Added Logging START ---
-            # Explicitly log the key used during the FAILED validation attempt
-            logger.warning(f"--- [Middleware] Secret Key used for FAILED validation: {current_settings.SECRET_KEY if 'current_settings' in locals() else 'Settings not available'}")
-            # --- Cascade: Added Logging END ---
+        except (InvalidTokenError, AuthenticationError, EntityNotFoundError, TokenExpiredError, MissingTokenError) as e: 
+            logger.warning(f"Authentication failed: {e} for path {current_path}")
+            status_code = status.HTTP_401_UNAUTHORIZED
+            detail = str(e)
+            if isinstance(e, EntityNotFoundError):
+                 detail = "User associated with token not found."
+            elif isinstance(e, AuthenticationError) and "inactive" in str(e).lower():
+                 detail = "User account is inactive."
+                 status_code = status.HTTP_403_FORBIDDEN
             return JSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"detail": error_detail},
+                status_code=status_code,
+                content={"detail": detail},
                 headers={"WWW-Authenticate": "Bearer"},
             )
         except Exception as e:
-             # Catch unexpected errors during auth process
-             logger.error(f"Unexpected error during authentication: {type(e).__name__} - {e}", exc_info=True)
-             # --- Cascade: Added Logging START ---
-             logger.error(f"--- [Middleware] Secret Key during UNEXPECTED error: {current_settings.SECRET_KEY if 'current_settings' in locals() else 'Settings not available'}")
-             # --- Cascade: Added Logging END ---
-             return JSONResponse(
-                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                 content={"detail": "Internal server error during authentication"},
-             )
+            logger.error(f"Unexpected error during authentication: {type(e).__name__} - {e}", exc_info=True)
+            secret_key_snippet = "[SECRET KEY LOGGING FAILED]"
+            try:
+                if hasattr(self.jwt_service, 'settings') and hasattr(self.jwt_service.settings, 'SECRET_KEY'):
+                    secret_key_snippet = f"{self.jwt_service.settings.SECRET_KEY.get_secret_value()[:5]}..." 
+            except Exception as log_e:
+                logger.error(f"Failed to retrieve secret key for logging: {log_e}")
+            logger.error(f"--- [Middleware] Secret Key during UNEXPECTED error: {secret_key_snippet}")
 
-    def _validate_auth_header(self, header: Optional[str]) -> Tuple[str, str]:
-        """Validates the Authorization header and extracts scheme and token."""
-        if not header:
-            raise MissingTokenError("Not authenticated: Authorization header missing") # Use specific exception
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": "Internal server error during authentication"},
+            )
 
-        scheme, token = get_authorization_scheme_param(header)
-        if not scheme or scheme.lower() != "bearer":
-            # Use specific exception
-            raise InvalidTokenError("Not authenticated: Authorization scheme not Bearer or invalid") 
-        if not token:
-             # Use specific exception
-            raise MissingTokenError("Not authenticated: Bearer token missing")
-        return scheme, token
+        response = await call_next(request)
+        return response

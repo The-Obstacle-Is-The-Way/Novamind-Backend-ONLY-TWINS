@@ -340,16 +340,27 @@ class DistributedRateLimiter:
         return await self.is_rate_limited(identifier, limit_type, user_id)
 
 
-# Create a global instance for direct imports
-rate_limiter = DistributedRateLimiter()
+# Optional: Clean up expired entries periodically if needed
+# pass
 
+# Optional: Default instance for convenience, if not using DI extensively
+# Consider using dependency injection (e.g., FastAPI Depends) to manage the instance.
+# rate_limiter = DistributedRateLimiter() # COMMENTED OUT: Avoid module-level instantiation
 
-# Dependency for injection
+# Singleton instance holder
+_default_rate_limiter: Optional[DistributedRateLimiter] = None
+
 def get_rate_limiter() -> DistributedRateLimiter:
     """
-    Dependency for getting the rate limiter instance.
-    
+    Dependency provider function for getting the rate limiter instance.
+    Uses a simple singleton pattern to avoid module-level instantiation issues.
+
     Returns:
-        DistributedRateLimiter: Initialized rate limiter
+        DistributedRateLimiter: Initialized rate limiter instance.
     """
-    return rate_limiter
+    global _default_rate_limiter
+    if _default_rate_limiter is None:
+        logger.info("Creating default DistributedRateLimiter instance.")
+        # Instantiation here will correctly load settings via __init__
+        _default_rate_limiter = DistributedRateLimiter()
+    return _default_rate_limiter
