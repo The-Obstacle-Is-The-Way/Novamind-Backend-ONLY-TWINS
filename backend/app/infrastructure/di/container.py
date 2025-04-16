@@ -14,11 +14,14 @@ from fastapi import Depends
 
 # Defer service/repository imports to within get_container
 from app.core.utils.logging import get_logger
+# Corrected import path for XGBoostInterface
+from app.core.services.ml.xgboost.interface import XGBoostInterface
 from app.domain.interfaces.ml_service_interface import (
     BiometricCorrelationInterface,
     DigitalTwinServiceInterface,
     PharmacogenomicsInterface,
     SymptomForecastingInterface,
+    # XGBoostInterface, # Removed from here
 )
 
 # Remove top-level repository interface imports as they don't exist with these names
@@ -181,6 +184,7 @@ def get_container() -> DIContainer:
     # Assuming DigitalTwinRepository/PatientRepository are the ABCs/Interfaces for now
     from app.domain.services.digital_twin_service import DigitalTwinService
     from app.domain.services.patient_service import PatientService
+    from app.core.services.ml.xgboost.aws import AWSXGBoostService
     # --- End deferred imports ---
 
     # Register repositories
@@ -200,6 +204,10 @@ def get_container() -> DIContainer:
     container.register(DigitalTwinServiceInterface, lambda: None) # Placeholder
     container.register(PharmacogenomicsInterface, lambda: None) # Placeholder
     container.register(SymptomForecastingInterface, lambda: None) # Placeholder
+    container.register(
+        XGBoostInterface, 
+        lambda: AWSXGBoostService() # Basic factory, might need config
+    ) 
 
     # Register domain services
     container.register_scoped(DigitalTwinService, DigitalTwinService)

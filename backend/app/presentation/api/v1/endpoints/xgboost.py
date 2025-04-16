@@ -12,8 +12,10 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Query
 
 # Dependency Injection for Service
-from app.presentation.api.dependencies.services import get_xgboost_service
-from app.core.services.ml.xgboost.interface import XGBoostInterface
+# from app.presentation.api.dependencies.services import get_xgboost_service # Likely removed/refactored
+# TODO: Update dependency injection for XGBoostInterface if needed.
+from app.infrastructure.di.container import get_service # Use generic service provider
+from app.core.services.ml.xgboost.interface import XGBoostInterface # Import the interface
 
 # Schemas for Request/Response Validation
 from app.presentation.api.schemas.xgboost import (
@@ -59,7 +61,7 @@ router = APIRouter(
 )
 async def predict_risk(
     request: RiskPredictionRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
+    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
     # current_user: User = Depends(get_current_user) # Optional: If user info needed
 ) -> RiskPredictionResponse:
     """Endpoint to predict patient risk using XGBoost."""
@@ -98,7 +100,7 @@ async def predict_risk(
 )
 async def predict_treatment_response(
     request: TreatmentResponseRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
+    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
 ) -> TreatmentResponseResponse:
     """Endpoint to predict treatment response using XGBoost."""
     try:
@@ -136,7 +138,7 @@ async def predict_treatment_response(
 )
 async def predict_outcome(
     request: OutcomePredictionRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
+    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
 ) -> OutcomePredictionResponse:
     """Endpoint to predict clinical outcome using XGBoost."""
     try:
@@ -174,7 +176,7 @@ async def predict_outcome(
 )
 async def get_model_info(
     model_type: str, # Or use ModelType enum if defined appropriately
-    xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
+    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
 ) -> ModelInfoResponse:
     """Endpoint to get information about an XGBoost model."""
     try:
@@ -203,7 +205,7 @@ async def get_feature_importance(
     # request: FeatureImportanceRequest = Body(...), # Or get params from query/path
     patient_id: UUID = Query(..., description="Patient ID associated with the prediction"), # Need patient ID
     model_type: str = Query(..., description="Model type used for the prediction"), # Need model type
-    xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
+    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
 ) -> FeatureImportanceResponse:
     """Endpoint to get feature importance for a prediction."""
     try:

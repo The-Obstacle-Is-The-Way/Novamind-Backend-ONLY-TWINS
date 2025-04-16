@@ -26,11 +26,13 @@ from app.presentation.api.schemas.xgboost import (
     TreatmentResponseRequest,
     OutcomePredictionRequest,
     RiskPredictionResponse,
+    TreatmentResponseResponse,
+    OutcomePredictionResponse,
 )
 # Update dependency import path for service getter
-from app.presentation.api.dependencies.services import get_xgboost_service
-
-from app.core.services.ml.xgboost.interface import ModelType
+# from app.presentation.api.dependencies.services import get_xgboost_service # Old, likely removed
+from app.infrastructure.di.container import get_service # Use generic service provider
+from app.core.services.ml.xgboost.interface import XGBoostInterface # Import the interface
 from app.core.services.ml.xgboost.enums import RiskLevel, ResponseLevel
 from app.core.services.ml.xgboost.exceptions import (
     XGBoostServiceError,
@@ -232,7 +234,7 @@ def mock_dependencies(app, mock_user, mock_xgboost_service):
     """Override dependencies for testing."""
     app.dependency_overrides[get_current_user] = lambda: mock_user
     # Override the XGBoost service dependency
-    app.dependency_overrides[get_xgboost_service] = lambda: mock_xgboost_service
+    app.dependency_overrides[get_service] = lambda: mock_xgboost_service
     return {"user": mock_user, "service": mock_xgboost_service}
 
 
@@ -242,7 +244,7 @@ def mock_error_dependencies(app, mock_user, mock_xgboost_service):
     app.dependency_overrides[get_current_user] = lambda: mock_user
     mock_xgboost_service.setup_error_responses()
     # Override the XGBoost service dependency
-    app.dependency_overrides[get_xgboost_service] = lambda: mock_xgboost_service
+    app.dependency_overrides[get_service] = lambda: mock_xgboost_service
     return {"user": mock_user, "service": mock_xgboost_service}
 
 

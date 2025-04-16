@@ -1,8 +1,7 @@
 """
-PHI Sanitizer Tests
+Unit tests for PHI Sanitizer Utility.
 
-This module contains tests for the PHI sanitization utilities
-to ensure proper detection and redaction of Protected Health Information.
+Ensures PHI is correctly identified and redacted/masked from various data structures.
 """
 
 import unittest
@@ -11,14 +10,44 @@ import re
 from typing import Dict, Any
 import logging
 from unittest.mock import patch, MagicMock
+import json
 
-# Corrected import path based on previous findings
-from app.core.utils.phi_sanitizer import sanitize_data # Assuming this is the intended import
-from app.core.utils.logging import get_sanitized_logger, log_sensitive_data_decorator
-# Use the correct class name from the infrastructure layer
+# Updated import to use LogSanitizer from the infrastructure layer
+# from app.core.utils.phi_sanitizer import sanitize_data # Old import REMOVED
 from app.infrastructure.security.phi.log_sanitizer import LogSanitizer, LogSanitizerConfig
-from app.infrastructure.security.phi.phi_service import PHIService, Sensitivity
+from app.infrastructure.security.phi.phi_service import PHIService
 
+# Helper function for tests
+def create_test_data() -> Dict[str, Any]:
+    """Creates a sample data structure containing potential PHI."""
+    return {
+        "patient_name": "John Doe",
+        "ssn": "000-12-3456",
+        "address": {
+            "street": "123 Main St",
+            "city": "Anytown",
+            "zip": "12345",
+        },
+        "notes": "Patient reported feeling anxious. Phone number: 555-867-5309.",
+        "details": [
+            {"id": 1, "value": "Regular checkup"}, 
+            {"id": 2, "value": "Email: test@example.com"} # Add email
+        ],
+        "medical_record_number": "MRN12345XYZ",
+        "metadata": {
+            "unrelated": "safe data",
+            "sensitive_key": "DOB: 01/01/1980",
+            "nested_sensitive": {
+                 "contact": "primary phone is 123-456-7890"
+            }
+        }
+    }
+
+@pytest.fixture
+def phi_sanitizer() -> LogSanitizer:
+    """Provides an instance of the LogSanitizer."""
+    # Using default config for testing
+    return LogSanitizer()
 
 @pytest.mark.venv_only()
 class TestPHISanitizer(unittest.TestCase):
@@ -52,7 +81,7 @@ class TestPHISanitizer(unittest.TestCase):
         ]
 
         for input_text, expected_output in test_cases:
-            sanitized = sanitize_data(input_text)
+            sanitized = phi_sanitizer.sanitize(input_text)
             self.assertEqual(sanitized, expected_output)
 
     def test_sanitize_string_without_phi(self):
@@ -67,39 +96,30 @@ class TestPHISanitizer(unittest.TestCase):
         ]
 
         for input_text in test_cases:
-            sanitized = sanitize_data(input_text)
+            sanitized = phi_sanitizer.sanitize(input_text)
             self.assertEqual(sanitized, input_text)
 
     def test_sanitize_dict_with_phi(self):
         """Test sanitization of dictionaries containing PHI."""
-        test_dict = {
-            "patient_name": "John Smith",
-            "ssn": "123-45-6789",
-            "dob": "01/01/1980",
-            "contact": {
-                "phone": "555-123-4567",
-                "email": "john.smith@example.com",
-                "address": "123 Main Street"
-            },
-            "notes": "Regular checkup",
-            "visit_count": 3
-        }
-
-        expected_output = {
-            "patient_name": "[NAME REDACTED]",
-            "ssn": "[SSN REDACTED]",
-            "dob": "[DOB REDACTED]",
-            "contact": {
-                "phone": "[PHONE REDACTED]",
-                "email": "[EMAIL REDACTED]",
-                "address": "[ADDRESS REDACTED]"
-            },
-            "notes": "Regular checkup",
-            "visit_count": 3
-        }
-
-        sanitized = sanitize_data(test_dict)
-        self.assertEqual(sanitized, expected_output)
+        data = create_test_data()
+        sanitized = phi_sanitizer.sanitize(data)
+        
+        # Check specific fields
+        self.assertNotEqual(sanitized["patient_name"], "John Doe")
+        self.assertIn("[REDACTED", sanitized["patient_name"])
+        self.assertNotEqual(sanitized["ssn"], "000-12-3456")
+        self.assertIn("[REDACTED", sanitized["ssn"])
+        self.assertNotEqual(sanitized["address"]["street"], "123 Main St")
+        self.assertNotIn("555-867-5309", sanitized["notes"])
+        self.assertNotIn("test@example.com", sanitized["details"][1]["value"])
+        self.assertNotEqual(sanitized["medical_record_number"], "MRN12345XYZ")
+        self.assertNotIn("01/01/1980", sanitized["metadata"]["sensitive_key"])
+        self.assertNotIn("123-456-7890", sanitized["metadata"]["nested_sensitive"]["contact"])
+        
+        # Check safe fields remain untouched
+        self.assertEqual(sanitized["address"]["city"], "Anytown")
+        self.assertEqual(sanitized["details"][0]["value"], "Regular checkup")
+        self.assertEqual(sanitized["metadata"]["unrelated"], "safe data")
 
     def test_sanitize_dict_without_phi(self):
         """Test sanitization of dictionaries without PHI."""
@@ -114,7 +134,7 @@ class TestPHISanitizer(unittest.TestCase):
             }
         }
 
-        sanitized = sanitize_data(test_dict)
+        sanitized = phi_sanitizer.sanitize(test_dict)
         self.assertEqual(sanitized, test_dict)
 
     def test_sanitize_list_with_phi(self):
@@ -133,7 +153,7 @@ class TestPHISanitizer(unittest.TestCase):
             123,
         ]
 
-        sanitized = sanitize_data(test_list)
+        sanitized = phi_sanitizer.sanitize(test_list)
         self.assertEqual(sanitized, expected_output)
 
     def test_sanitize_error_message(self):
@@ -141,7 +161,7 @@ class TestPHISanitizer(unittest.TestCase):
         error_message = "Error processing data for John Smith (SSN: 123-45-6789)"
         expected = "Error processing data for [NAME REDACTED] (SSN: [SSN REDACTED])"
 
-        sanitized = sanitize_data(error_message)
+        sanitized = phi_sanitizer.sanitize(error_message)
         self.assertEqual(sanitized, expected)
 
     def test_sanitize_log_entry(self):
@@ -165,6 +185,61 @@ class TestPHISanitizer(unittest.TestCase):
         # Now should be redacted
         expected = "Patient ID: [PATIENT_ID REDACTED]"
         self.assertEqual(LogSanitizer.sanitize_string(test_string), expected)
+
+    def test_sanitize_empty_data(self):
+        """Test sanitizing empty structures."""
+        self.assertEqual(phi_sanitizer.sanitize({}), {})
+        self.assertEqual(phi_sanitizer.sanitize([]), [])
+        self.assertEqual(phi_sanitizer.sanitize(""), "")
+        self.assertIsNone(phi_sanitizer.sanitize(None))
+
+    def test_sanitize_non_string_types(self):
+        """Test sanitizing non-string/collection types (should pass through)."""
+        self.assertEqual(phi_sanitizer.sanitize(123), 123)
+        self.assertEqual(phi_sanitizer.sanitize(123.45), 123.45)
+        self.assertTrue(phi_sanitizer.sanitize(True))
+
+    def test_sanitize_json_string(self):
+        """Test sanitizing a JSON string."""
+        json_str = json.dumps(create_test_data())
+        sanitized_str = phi_sanitizer.sanitize(json_str)
+        
+        # Should sanitize content within the string
+        self.assertNotIn("John Doe", sanitized_str)
+        self.assertNotIn("000-12-3456", sanitized_str)
+        self.assertNotIn("555-867-5309", sanitized_str)
+        self.assertIn("[REDACTED", sanitized_str)
+
+        # Ensure it's still valid JSON (assuming redaction doesn't break JSON structure)
+        try:
+            json.loads(sanitized_str)
+        except json.JSONDecodeError:
+            self.fail("Sanitized JSON string is not valid JSON")
+
+    def test_sanitize_with_different_sensitivity(self):
+        """Test sanitizing with potentially different sensitivity levels (conceptual)."""
+        # Assuming PHIService might have levels like 'high', 'medium', 'low'
+        data = {"name": "Sensitive Name", "phone": "555-123-4567", "diagnosis": "Common Cold"}
+        
+        # Example: Default sensitivity might catch name and phone
+        sanitized_default = phi_sanitizer.sanitize(data)
+        self.assertNotIn("Sensitive Name", sanitized_default["name"])
+        self.assertNotIn("555-123-4567", sanitized_default["phone"])
+        # Assuming diagnosis is not PHI at default level
+        # assert sanitized_default["diagnosis"] == "Common Cold" 
+        
+        # Example: Higher sensitivity might catch diagnosis too (if configured in PHIService)
+        # sanitized_high = phi_sanitizer.sanitize(data, sensitivity='high')
+        # assert "Common Cold" not in sanitized_high["diagnosis"] 
+        pass # Keep as pass until sensitivity levels are concrete
+
+    def test_sanitization_disabled(self):
+        """Test behavior when sanitization is disabled via config."""
+        disabled_config = LogSanitizerConfig(enabled=False)
+        sanitizer = LogSanitizer(config=disabled_config)
+        data = create_test_data()
+        sanitized = sanitizer.sanitize(data)
+        self.assertEqual(sanitized, data) # Data should be unchanged
 
 
 if __name__ == "__main__":

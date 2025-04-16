@@ -27,26 +27,34 @@ from tenacity import (
 )
 import boto3
 
-from app.presentation.api.schemas.ml_schemas import (
-    ModelType,
-    TaskType,
-    MentaLLaMARequest,
-    MentaLLaMAResponse
-)
 from app.config.settings import get_settings
+# Import only ConfigurationError from core
 from app.core.exceptions import (
     ConfigurationError,
-    MentaLLaMAException,
-    MentaLLaMAConnectionError,
-    MentaLLaMATimeoutError,
-    MentaLLaMAInvalidInputError,
-    MentaLLaMAAuthenticationError,
-    MentaLLaMAQuotaExceededError
+    # Removed non-existent MentaLLaMA errors: Timeout, InvalidInput, Auth, Quota
+    # MentaLLaMAException # TODO: Verify if this exception was removed/renamed
 )
+
 from app.core.utils.logging import get_logger
-from app.infrastructure.ml.mentallama.model import MentalLlamaModel
+# Import only the exceptions defined locally in models.py
+from .models import (
+    MentaLLaMAConnectionError,
+    MentaLLaMAError # Import base error for generic catch if needed
+    # MentaLLaMAResult # If needed later
+)
 from app.infrastructure.ml.mentallama.utils import preprocess_input, postprocess_output
 from app.domain.entities.ml_model import MLModelInfo, MLModelStatus
+from app.infrastructure.ml.aws_clients import get_bedrock_client
+from app.domain.ml.ml_model import ModelType
+# Schemas below seem to be removed/refactored
+# from app.presentation.api.schemas.ml_schemas import (
+#     ChatRequest, 
+#     ChatResponse,
+#     SummarizationRequest, 
+#     MentaLLaMARequest,
+#     MentaLLaMAResponse
+# ) 
+# TODO: Verify necessary schemas for MentaLLaMA service and import correctly.
 
 
 # Setup logger
@@ -98,6 +106,7 @@ class MentaLLaMAService:
             elif self.provider == MentaLLaMAProvider.CUSTOM:
                 self._initialize_custom_client()
             else:
+                # Use local MentaLLaMAError or ConnectionError
                 raise MentaLLaMAConnectionError(
                     message=f"Unsupported provider: {self.provider}",
                     details={"provider": self.provider}
@@ -107,9 +116,10 @@ class MentaLLaMAService:
                 f"Error initializing MentaLLaMA clients: {str(e)}",
                 extra={"provider": self.provider}
             )
+            # Use local MentaLLaMAConnectionError
             raise MentaLLaMAConnectionError(
                 message=f"Error initializing MentaLLaMA clients: {str(e)}",
-                details={"provider": self.provider}
+                details={"provider": self.provider, "original_error": str(e)}
             )
     
     def _initialize_openai_client(self) -> None:
@@ -291,15 +301,12 @@ class MentaLLaMAService:
             MentaLLaMA response
             
         Raises:
-            MentaLLaMAInvalidInputError: If request is invalid
-            MentaLLaMAConnectionError: If connection fails
-            MentaLLaMATimeoutError: If request times out
-            MentaLLaMAAuthenticationError: If authentication fails
-            MentaLLaMAQuotaExceededError: If quota is exceeded
-            MentaLLaMAException: For other errors
+            ValueError: If request input is invalid
+            MentaLLaMAConnectionError: If connection fails, including auth/quota/timeout issues.
+            MentaLLaMAError: For other MentaLLaMA specific errors.
         """
         try:
-            # Validate request
+            # Validate request - raises ValueError now
             self._validate_request(request)
             
             # Process based on provider
@@ -312,47 +319,54 @@ class MentaLLaMAService:
             elif self.provider == MentaLLaMAProvider.CUSTOM:
                 response = await self._process_custom_request(request)
             else:
-                raise MentaLLaMAException(
+                # Use local MentaLLaMAError for unhandled provider
+                raise MentaLLaMAError(
                     message=f"Unsupported provider: {self.provider}",
                     details={"provider": self.provider}
                 )
             
             return response
-        except MentaLLaMAException:
-            # Re-raise known exceptions
-            raise
+        # Specific known local error
+        except MentaLLaMAConnectionError:
+             raise # Re-raise if already the correct type
+        # Catch ValueErrors from validation
+        except ValueError as e:
+             logger.warning(f"Invalid input for MentaLLaMA request: {e}")
+             raise # Re-raise standard ValueError
+        # Generic MentaLLaMA error (if raised explicitly elsewhere)
+        except MentaLLaMAError as e:
+             logger.error(f"MentaLLaMA specific error: {e}")
+             raise
+        # Catch HTTP errors and wrap them
         except aiohttp.ClientResponseError as e:
-            if e.status == 401:
-                raise MentaLLaMAAuthenticationError(
-                    message=f"Authentication failed: {str(e)}",
-                    details={"status": e.status, "message": e.message}
-                )
-            elif e.status == 429:
-                raise MentaLLaMAQuotaExceededError(
-                    message=f"Rate limit exceeded: {str(e)}",
-                    details={"status": e.status, "message": e.message}
-                )
-            else:
-                raise MentaLLaMAConnectionError(
-                    message=f"API request failed: {str(e)}",
-                    details={"status": e.status, "message": e.message}
-                )
-        except (aiohttp.ClientError, aiohttp.ClientConnectionError) as e:
+            err_msg = f"API request failed with status {e.status}: {e.message}"
+            logger.error(err_msg, extra={"status": e.status, "message": e.message})
+            # Raise local connection error, incorporating status
             raise MentaLLaMAConnectionError(
-                message=f"Connection error: {str(e)}",
+                message=err_msg,
+                details={"status": e.status, "message": e.message}
+            )
+        # Catch general connection errors and wrap them
+        except (aiohttp.ClientError, aiohttp.ClientConnectionError) as e:
+            err_msg = f"Connection error: {str(e)}"
+            logger.error(err_msg, extra={"error_type": type(e).__name__})
+            raise MentaLLaMAConnectionError(
+                message=err_msg,
                 details={"error_type": type(e).__name__}
             )
+        # Catch timeouts and wrap them
         except asyncio.TimeoutError as e:
-            raise MentaLLaMATimeoutError(
-                message=f"Request timed out: {str(e)}",
+            err_msg = f"Request timed out after {self.settings.request_timeout}s: {str(e)}"
+            logger.error(err_msg, extra={"timeout": self.settings.request_timeout})
+            raise MentaLLaMAConnectionError(
+                message=err_msg,
                 details={"timeout": self.settings.request_timeout}
             )
+        # Catch any other unexpected errors
         except Exception as e:
-            logger.error(
-                f"Unexpected error processing MentaLLaMA request: {str(e)}",
-                extra={"error_type": type(e).__name__}
-            )
-            raise MentaLLaMAException(
+            logger.exception(f"Unexpected error processing MentaLLaMA request: {str(e)}")
+            # Wrap unexpected errors in the base MentaLLaMAError
+            raise MentaLLaMAError(
                 message=f"Unexpected error: {str(e)}",
                 details={"error_type": type(e).__name__}
             )
@@ -365,30 +379,30 @@ class MentaLLaMAService:
             request: MentaLLaMA request
             
         Raises:
-            MentaLLaMAInvalidInputError: If request is invalid
+            ValueError: If request is invalid
         """
         if not request.prompt or len(request.prompt.strip()) < 3:
-            raise MentaLLaMAInvalidInputError(
-                message="Prompt is too short or empty",
-                details={"prompt_length": len(request.prompt) if request.prompt else 0}
+            # Raise standard ValueError
+            raise ValueError(
+                f"Prompt is too short or empty (length: {len(request.prompt) if request.prompt else 0})"
             )
         
         if request.max_tokens is not None and request.max_tokens <= 0:
-            raise MentaLLaMAInvalidInputError(
-                message="max_tokens must be positive",
-                details={"max_tokens": request.max_tokens}
+             # Raise standard ValueError
+            raise ValueError(
+                f"max_tokens must be positive (value: {request.max_tokens})"
             )
         
         if request.temperature is not None and (request.temperature < 0.0 or request.temperature > 1.0):
-            raise MentaLLaMAInvalidInputError(
-                message="temperature must be between 0.0 and 1.0",
-                details={"temperature": request.temperature}
+             # Raise standard ValueError
+            raise ValueError(
+                f"temperature must be between 0.0 and 1.0 (value: {request.temperature})"
             )
         
         if request.top_p is not None and (request.top_p < 0.0 or request.top_p > 1.0):
-            raise MentaLLaMAInvalidInputError(
-                message="top_p must be between 0.0 and 1.0",
-                details={"top_p": request.top_p}
+             # Raise standard ValueError
+            raise ValueError(
+                f"top_p must be between 0.0 and 1.0 (value: {request.top_p})"
             )
     
     async def _process_openai_request(self, request: MentaLLaMARequest) -> MentaLLaMAResponse:

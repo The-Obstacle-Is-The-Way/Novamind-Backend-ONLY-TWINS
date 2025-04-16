@@ -38,8 +38,10 @@ from app.core.services.ml.xgboost import (
     ModelType,
 )  # Assuming ModelType is correctly here for now
 
-from app.domain.services.interfaces.ixgboost_service import IXGBoostService
-from app.domain.entities.patient import PatientRecord
+# from app.domain.services.xgboost_service import IXGBoostService # Corrected import -> Interface likely removed
+# TODO: Verify if this test is still relevant after IXGBoostService removal/refactor.
+# from app.domain.entities.patient import PatientRecord # Likely removed/renamed during refactor
+# TODO: Verify if PatientRecord is still needed or was replaced.
 
 
 @pytest.fixture
