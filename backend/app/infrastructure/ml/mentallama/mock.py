@@ -29,10 +29,10 @@ logger = get_logger(__name__)
 
 
 # REMOVE: Legacy MockMentaLLaMA from core.services.ml.mentallama.mock. Use infrastructure layer only.
-# class MockMentaLLaMA(MentaLLaMAInterface):
+class MockMentaLLaMA(MentaLLaMAInterface): # Uncommented class definition
     """
     Mock MentaLLaMA implementation.
-    
+
     This class provides a mock implementation of MentaLLaMA services for testing.
     It simulates responses from various mental health analysis models and 
     implements Digital Twin functionality for patient simulation.

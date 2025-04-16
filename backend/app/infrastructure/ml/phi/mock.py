@@ -16,7 +16,7 @@ from app.core.exceptions import (
     InvalidRequestError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.interface import PHIDetectionService
+from app.core.services.ml.interface import PHIDetectionInterface # Corrected import
 from app.core.utils.logging import get_logger
 
 
@@ -24,7 +24,7 @@ from app.core.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-class MockPHIDetectionService(PHIDetectionService):
+class MockPHIDetection(PHIDetectionInterface): # Corrected class name and inheritance
     """
     Mock implementation of PHI Detection service.
     

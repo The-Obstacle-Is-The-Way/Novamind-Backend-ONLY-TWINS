@@ -7,8 +7,9 @@ realistic psychiatric session modeling for testing purposes.
 """
 
 # Remove BaseUnitTest import
-# from app.tests.unit.base_test_unit import BaseUnitTest 
-from app.core.services.ml.mock_dt import MockDigitalTwinService
+# from app.tests.unit.base_test_unit import BaseUnitTest
+# Corrected import path for MockDigitalTwinService
+from app.infrastructure.ml.digital_twin.mock import MockDigitalTwinService
 import pytest
 from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC

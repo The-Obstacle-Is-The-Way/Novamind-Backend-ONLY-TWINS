@@ -20,7 +20,9 @@ from app.core.exceptions import (
     ServiceUnavailableError,
 )
 
-from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
+# Corrected imports from infrastructure layer
+from app.infrastructure.ml.mentallama.mock import MockMentaLLaMA
+from app.infrastructure.ml.phi.mock import MockPHIDetection
 
 
 # Apply test markers for categorization

@@ -8,7 +8,7 @@ responses for testing purposes.
 """
 
 from app.core.services.ml.interface import DigitalTwinInterface
-from app.core.services.ml.mock_dt import MockDigitalTwinService
+from app.infrastructure.ml.digital_twin.mock import MockDigitalTwinService # Corrected import path
 import pytest
 import time
 from datetime import datetime, timedelta

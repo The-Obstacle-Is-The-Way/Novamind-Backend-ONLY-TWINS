@@ -11,7 +11,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from botocore.exceptions import ClientError
 
-from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
+# Corrected import path for AWSComprehendMedicalPHIDetection
+from app.infrastructure.ml.phi.aws_comprehend_medical import AWSComprehendMedicalPHIDetection
 from app.core.exceptions import (
     InvalidConfigurationError,
     InvalidRequestError,

@@ -13,8 +13,8 @@ from app.core.services.ml.factory import MLServiceFactory, MLServiceCache
 from app.core.services.ml.interface import (
     DigitalTwinInterface,
     MentaLLaMAInterface,
-    BaseMLInterface as MLService,
-    PHIDetectionInterface as PHIDetectionService,
+    BaseMLInterface as MLService, # Keep alias if needed elsewhere for now
+    PHIDetectionInterface, # Corrected: Remove alias
 )
 # from app.core.services.ml.mentalllama import MentaLLaMA # REMOVE: No such module in core.services.ml
 # from app.core.services.ml.mock import MockMentaLLaMA # REMOVE: Use infrastructure layer for real/mock services
@@ -25,7 +25,7 @@ __all__ = [
     # Interfaces
     "MLService",
     "MentaLLaMAInterface",
-    "PHIDetectionService",
+    "PHIDetectionInterface", # Corrected: Use actual interface name
     "DigitalTwinInterface",
     "PATInterface",
     

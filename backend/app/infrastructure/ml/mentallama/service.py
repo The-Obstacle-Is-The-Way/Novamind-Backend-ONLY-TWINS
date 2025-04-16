@@ -1,930 +1,458 @@
-# -*- coding: utf-8 -*-
 """
-MentaLLaMA Service Module.
+MentaLLaMA service implementation.
 
-This module provides a HIPAA-compliant integration with the MentaLLaMA
-mental health language models, optimized for clinical use.
+This module implements the MentaLLaMA service interface.
 """
 
-import os
+import uuid
 import json
-import logging
-import asyncio
-import time
-from typing import Dict, List, Any, Optional, Tuple, Set, Union, cast
-from enum import Enum
-from pathlib import Path
+import os
+from typing import Dict, Any, List, Optional
+import requests
 
-import aiohttp
-import backoff
-from openai import AsyncOpenAI
-from openai.types.chat import ChatCompletion, ChatCompletionMessage
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_exponential,
-    retry_if_exception_type
-)
-import boto3
-
+# Removed incorrect import of domain service: from app.domain.services.mentallama_service import MentaLLaMAService
+from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository
+from app.core.patterns.observer import Subject # Corrected import path for Subject
 from app.config.settings import get_settings
-# Import only ConfigurationError from core
-from app.core.exceptions import (
-    ConfigurationError,
-    # Removed non-existent MentaLLaMA errors: Timeout, InvalidInput, Auth, Quota
-    # MentaLLaMAException # TODO: Verify if this exception was removed/renamed
-)
-
-from app.core.utils.logging import get_logger
-# Import only the exceptions defined locally in models.py
-from .models import (
-    MentaLLaMAConnectionError,
-    MentaLLaMAError # Import base error for generic catch if needed
-    # MentaLLaMAResult # If needed later
-)
-# Removed unused import for preprocess_input, postprocess_output from non-existent utils
-# Removed unused import for MLModelInfo, MLModelStatus from non-existent ml_model
-# Removed unused import for get_bedrock_client from non-existent aws_clients
-from app.domain.ml.ml_model import ModelType
-# Schemas below seem to be removed/refactored
-# from app.presentation.api.schemas.ml_schemas import (
-#     ChatRequest, 
-#     ChatResponse,
-#     SummarizationRequest, 
-#     MentaLLaMARequest,
-#     MentaLLaMAResponse
-# ) 
-# TODO: Verify necessary schemas for MentaLLaMA service and import correctly.
+settings = get_settings()
+from app.core.utils.logging import get_logger # Corrected import path for get_logger
+from app.core.services.ml.interface import MentaLLaMAInterface # Corrected import path and interface name
 
 
-# Setup logger
 logger = get_logger(__name__)
 
 
-class MentaLLaMAProvider(str, Enum):
-    """MentaLLaMA provider types."""
-    
-    OPENAI = "openai"
-    AZURE = "azure"
-    LOCAL = "local"
-    CUSTOM = "custom"
+# REMOVE: Legacy MentaLLaMAServiceImpl from core.services.ml.mentallama.service. Use infrastructure layer only.
+# Define the class correctly in the infrastructure layer
+class MentaLLaMA(MentaLLaMAInterface, Subject): # Corrected interface name
+    """
+    Implementation of the MentaLLaMA service.
 
-
-class MentaLLaMAService:
-    """Service for interacting with MentaLLaMA models."""
+    This service provides natural language processing capabilities for clinical notes.
+    """
     
-    def __init__(self):
-        """
-        Initialize MentaLLaMA service using global settings.
-        """
-        self.settings = get_settings().ml.mentallama # Get nested settings
-        self.provider = self.settings.provider
-        self.clients: Dict[str, Any] = {}
-        
-        # Initialize clients
-        self._initialize_clients()
-        
-        logger.info(
-            "Initialized MentaLLaMA service",
-            extra={"provider": self.provider}
-        )
+    # Event types
+    NOTE_ANALYSIS_COMPLETE = "note_analysis_complete"
+    SEARCH_COMPLETE = "search_complete"
+    SUMMARY_GENERATION_COMPLETE = "summary_generation_complete"
+    TREATMENT_SUGGESTIONS_COMPLETE = "treatment_suggestions_complete"
+    BRAIN_REGION_EXTRACTION_COMPLETE = "brain_region_extraction_complete"
     
-    def _initialize_clients(self) -> None:
+    def __init__(
+        self,
+        clinical_note_repository: ClinicalNoteRepository,
+        api_key: Optional[str] = None,
+        api_url: Optional[str] = None
+    ):
         """
-        Initialize API clients for different providers.
-        
-        Raises:
-            MentaLLaMAConnectionError: If client initialization fails
-        """
-        try:
-            if self.provider == MentaLLaMAProvider.OPENAI:
-                self._initialize_openai_client()
-            elif self.provider == MentaLLaMAProvider.AZURE:
-                self._initialize_azure_client()
-            elif self.provider == MentaLLaMAProvider.LOCAL:
-                self._initialize_local_client()
-            elif self.provider == MentaLLaMAProvider.CUSTOM:
-                self._initialize_custom_client()
-            else:
-                # Use local MentaLLaMAError or ConnectionError
-                raise MentaLLaMAConnectionError(
-                    message=f"Unsupported provider: {self.provider}",
-                    details={"provider": self.provider}
-                )
-        except Exception as e:
-            logger.error(
-                f"Error initializing MentaLLaMA clients: {str(e)}",
-                extra={"provider": self.provider}
-            )
-            # Use local MentaLLaMAConnectionError
-            raise MentaLLaMAConnectionError(
-                message=f"Error initializing MentaLLaMA clients: {str(e)}",
-                details={"provider": self.provider, "original_error": str(e)}
-            )
-    
-    def _initialize_openai_client(self) -> None:
-        """
-        Initialize OpenAI client.
-        
-        Raises:
-            MentaLLaMAConnectionError: If client initialization fails
-        """
-        try:
-            # Check if API key is set
-            if not self.settings.openai_api_key:
-                raise MentaLLaMAConnectionError(
-                    message="OpenAI API key is not set",
-                    details={"provider": MentaLLaMAProvider.OPENAI}
-                )
-            
-            # Initialize client
-            self.clients["openai"] = AsyncOpenAI(
-                api_key=self.settings.openai_api_key,
-                organization=self.settings.openai_organization,
-                timeout=aiohttp.ClientTimeout(total=self.settings.request_timeout)
-            )
-            
-            logger.info(
-                "Initialized OpenAI client",
-                extra={"provider": MentaLLaMAProvider.OPENAI}
-            )
-        except Exception as e:
-            logger.error(
-                f"Error initializing OpenAI client: {str(e)}",
-                extra={"provider": MentaLLaMAProvider.OPENAI}
-            )
-            raise MentaLLaMAConnectionError(
-                message=f"Error initializing OpenAI client: {str(e)}",
-                details={"provider": MentaLLaMAProvider.OPENAI}
-            )
-    
-    def _initialize_azure_client(self) -> None:
-        """
-        Initialize Azure OpenAI client.
-        
-        Raises:
-            MentaLLaMAConnectionError: If client initialization fails
-        """
-        try:
-            # Check if Azure API key is set
-            if not self.settings.azure_api_key:
-                raise MentaLLaMAConnectionError(
-                    message="Azure API key is not set",
-                    details={"provider": MentaLLaMAProvider.AZURE}
-                )
-            
-            if not self.settings.azure_endpoint:
-                raise MentaLLaMAConnectionError(
-                    message="Azure endpoint is not set",
-                    details={"provider": MentaLLaMAProvider.AZURE}
-                )
-            
-            # Initialize client
-            self.clients["azure"] = AsyncOpenAI(
-                api_key=self.settings.azure_api_key,
-                azure_endpoint=self.settings.azure_endpoint,
-                azure_deployment=self.settings.azure_deployment,
-                api_version=self.settings.azure_api_version,
-                timeout=aiohttp.ClientTimeout(total=self.settings.request_timeout)
-            )
-            
-            logger.info(
-                "Initialized Azure OpenAI client",
-                extra={"provider": MentaLLaMAProvider.AZURE}
-            )
-        except Exception as e:
-            logger.error(
-                f"Error initializing Azure OpenAI client: {str(e)}",
-                extra={"provider": MentaLLaMAProvider.AZURE}
-            )
-            raise MentaLLaMAConnectionError(
-                message=f"Error initializing Azure OpenAI client: {str(e)}",
-                details={"provider": MentaLLaMAProvider.AZURE}
-            )
-    
-    def _initialize_local_client(self) -> None:
-        """
-        Initialize local client.
-        
-        Raises:
-            MentaLLaMAConnectionError: If client initialization fails
-        """
-        try:
-            # Check if local URL is set
-            if not self.settings.local_url:
-                raise MentaLLaMAConnectionError(
-                    message="Local URL is not set",
-                    details={"provider": MentaLLaMAProvider.LOCAL}
-                )
-            
-            # Initialize HTTP client for local API
-            self.clients["local"] = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.settings.request_timeout)
-            )
-            
-            logger.info(
-                "Initialized local client",
-                extra={
-                    "provider": MentaLLaMAProvider.LOCAL,
-                    "url": self.settings.local_url
-                }
-            )
-        except Exception as e:
-            logger.error(
-                f"Error initializing local client: {str(e)}",
-                extra={"provider": MentaLLaMAProvider.LOCAL}
-            )
-            raise MentaLLaMAConnectionError(
-                message=f"Error initializing local client: {str(e)}",
-                details={"provider": MentaLLaMAProvider.LOCAL}
-            )
-    
-    def _initialize_custom_client(self) -> None:
-        """
-        Initialize custom client.
-        
-        Raises:
-            MentaLLaMAConnectionError: If client initialization fails
-        """
-        try:
-            # Check if custom URL is set
-            if not self.settings.custom_url:
-                raise MentaLLaMAConnectionError(
-                    message="Custom URL is not set",
-                    details={"provider": MentaLLaMAProvider.CUSTOM}
-                )
-            
-            # Initialize HTTP client for custom API
-            self.clients["custom"] = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.settings.request_timeout)
-            )
-            
-            logger.info(
-                "Initialized custom client",
-                extra={
-                    "provider": MentaLLaMAProvider.CUSTOM,
-                    "url": self.settings.custom_url
-                }
-            )
-        except Exception as e:
-            logger.error(
-                f"Error initializing custom client: {str(e)}",
-                extra={"provider": MentaLLaMAProvider.CUSTOM}
-            )
-            raise MentaLLaMAConnectionError(
-                message=f"Error initializing custom client: {str(e)}",
-                details={"provider": MentaLLaMAProvider.CUSTOM}
-            )
-    
-    async def close(self) -> None:
-        """Close all clients."""
-        for provider, client in self.clients.items():
-            if provider in ["local", "custom"] and isinstance(client, aiohttp.ClientSession):
-                await client.close()
-    
-    @retry(
-        retry=retry_if_exception_type(
-            (aiohttp.ClientError, asyncio.TimeoutError)
-        ),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        reraise=True
-    )
-    async def process_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
-        """
-        Process a MentaLLaMA request.
+        Initialize the MentaLLaMA service.
         
         Args:
-            request: MentaLLaMA request
+            clinical_note_repository: The clinical note repository
+            api_key: The API key for the MentaLLaMA service
+            api_url: The URL of the MentaLLaMA service
+        """
+        super().__init__()  # Initialize the Subject base class
+        self.clinical_note_repository = clinical_note_repository
+        self.api_key = api_key or settings.MENTALLAMA_API_KEY
+        self.api_url = api_url or settings.MENTALLAMA_API_URL
+        
+        if not self.api_key:
+            logger.warning("MentaLLaMA API key not provided")
+        
+        if not self.api_url:
+            logger.warning("MentaLLaMA API URL not provided")
+    
+    def analyze_clinical_note(
+        self,
+        patient_id: uuid.UUID,
+        provider_id: uuid.UUID,
+        content: str
+    ) -> Dict[str, Any]:
+        """
+        Analyze a clinical note and extract insights.
+        
+        Args:
+            patient_id: The ID of the patient
+            provider_id: The ID of the provider who wrote the note
+            content: The content of the note
             
         Returns:
-            MentaLLaMA response
+            A dictionary containing the note ID and extracted insights
             
         Raises:
-            ValueError: If request input is invalid
-            MentaLLaMAConnectionError: If connection fails, including auth/quota/timeout issues.
-            MentaLLaMAError: For other MentaLLaMA specific errors.
+            ValueError: If there is an error analyzing the note
         """
         try:
-            # Validate request - raises ValueError now
-            self._validate_request(request)
-            
-            # Process based on provider
-            if self.provider == MentaLLaMAProvider.OPENAI:
-                response = await self._process_openai_request(request)
-            elif self.provider == MentaLLaMAProvider.AZURE:
-                response = await self._process_azure_request(request)
-            elif self.provider == MentaLLaMAProvider.LOCAL:
-                response = await self._process_local_request(request)
-            elif self.provider == MentaLLaMAProvider.CUSTOM:
-                response = await self._process_custom_request(request)
-            else:
-                # Use local MentaLLaMAError for unhandled provider
-                raise MentaLLaMAError(
-                    message=f"Unsupported provider: {self.provider}",
-                    details={"provider": self.provider}
-                )
-            
-            return response
-        # Specific known local error
-        except MentaLLaMAConnectionError:
-             raise # Re-raise if already the correct type
-        # Catch ValueErrors from validation
-        except ValueError as e:
-             logger.warning(f"Invalid input for MentaLLaMA request: {e}")
-             raise # Re-raise standard ValueError
-        # Generic MentaLLaMA error (if raised explicitly elsewhere)
-        except MentaLLaMAError as e:
-             logger.error(f"MentaLLaMA specific error: {e}")
-             raise
-        # Catch HTTP errors and wrap them
-        except aiohttp.ClientResponseError as e:
-            err_msg = f"API request failed with status {e.status}: {e.message}"
-            logger.error(err_msg, extra={"status": e.status, "message": e.message})
-            # Raise local connection error, incorporating status
-            raise MentaLLaMAConnectionError(
-                message=err_msg,
-                details={"status": e.status, "message": e.message}
-            )
-        # Catch general connection errors and wrap them
-        except (aiohttp.ClientError, aiohttp.ClientConnectionError) as e:
-            err_msg = f"Connection error: {str(e)}"
-            logger.error(err_msg, extra={"error_type": type(e).__name__})
-            raise MentaLLaMAConnectionError(
-                message=err_msg,
-                details={"error_type": type(e).__name__}
-            )
-        # Catch timeouts and wrap them
-        except asyncio.TimeoutError as e:
-            err_msg = f"Request timed out after {self.settings.request_timeout}s: {str(e)}"
-            logger.error(err_msg, extra={"timeout": self.settings.request_timeout})
-            raise MentaLLaMAConnectionError(
-                message=err_msg,
-                details={"timeout": self.settings.request_timeout}
-            )
-        # Catch any other unexpected errors
-        except Exception as e:
-            logger.exception(f"Unexpected error processing MentaLLaMA request: {str(e)}")
-            # Wrap unexpected errors in the base MentaLLaMAError
-            raise MentaLLaMAError(
-                message=f"Unexpected error: {str(e)}",
-                details={"error_type": type(e).__name__}
-            )
-    
-    def _validate_request(self, request: Any) -> None: # Replaced MentaLLaMARequest with Any
-        """
-        Validate MentaLLaMA request.
-        
-        Args:
-            request: MentaLLaMA request
-            
-        Raises:
-            ValueError: If request is invalid
-        """
-        if not request.prompt or len(request.prompt.strip()) < 3:
-            # Raise standard ValueError
-            raise ValueError(
-                f"Prompt is too short or empty (length: {len(request.prompt) if request.prompt else 0})"
-            )
-        
-        if request.max_tokens is not None and request.max_tokens <= 0:
-             # Raise standard ValueError
-            raise ValueError(
-                f"max_tokens must be positive (value: {request.max_tokens})"
-            )
-        
-        if request.temperature is not None and (request.temperature < 0.0 or request.temperature > 1.0):
-             # Raise standard ValueError
-            raise ValueError(
-                f"temperature must be between 0.0 and 1.0 (value: {request.temperature})"
-            )
-        
-        if request.top_p is not None and (request.top_p < 0.0 or request.top_p > 1.0):
-             # Raise standard ValueError
-            raise ValueError(
-                f"top_p must be between 0.0 and 1.0 (value: {request.top_p})"
-            )
-    
-    async def _process_openai_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
-        """
-        Process request using OpenAI client.
-        
-        Args:
-            request: MentaLLaMA request
-            
-        Returns:
-            MentaLLaMA response
-            
-        Raises:
-            MentaLLaMAConnectionError: If API request fails
-        """
-        client = cast(AsyncOpenAI, self.clients.get("openai"))
-        
-        if not client:
-            raise MentaLLaMAConnectionError(
-                message="OpenAI client not initialized",
-                details={"provider": MentaLLaMAProvider.OPENAI}
-            )
-        
-        # Map MentaLLaMA model to OpenAI model
-        model = self._map_model_to_openai(request.model)
-        
-        # Create system message based on task
-        system_message = self._create_system_message(request.task, request.model)
-        
-        # Create messages
-        messages = [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": request.prompt}
-        ]
-        
-        # Add context if provided
-        if request.context:
-            context_str = json.dumps(request.context)
-            messages.insert(1, {"role": "system", "content": f"Context: {context_str}"})
-        
-        # Create request parameters
-        params = {
-            "model": model,
-            "messages": messages,
-            "temperature": request.temperature,
-            "max_tokens": request.max_tokens,
-            "top_p": request.top_p
-        }
-        
-        # Call OpenAI API
-        try:
-            start_time = time.time()
-            completion: ChatCompletion = await client.chat.completions.create(**params)
-            end_time = time.time()
-            
-            # Extract response
-            message = completion.choices[0].message
-            generated_text = message.content or ""
-            
-            # Create response
-            # Original response creation - type hint changed in method signature
-            response = MentaLLaMAResponse(
-                model=request.model,
-                task=request.task,
-                generated_text=generated_text,
-                usage=completion.usage.model_dump() if completion.usage else None
-            )
-            
-            # Log performance (without sensitive data)
-            logger.info(
-                "OpenAI request completed",
-                extra={
-                    "model": model,
-                    "duration_ms": int((end_time - start_time) * 1000),
-                    "tokens": completion.usage.total_tokens if completion.usage else None
+            # Extract insights using the MentaLLaMA API
+            insights = self._call_mentallama_api(
+                endpoint="analyze",
+                payload={
+                    "patient_id": str(patient_id),
+                    "content": content
                 }
             )
             
-            return response
-        except Exception as e:
-            logger.error(
-                f"Error calling OpenAI API: {str(e)}",
-                extra={"model": model}
-            )
-            raise
-    
-    async def _process_azure_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
-        """
-        Process request using Azure OpenAI client.
-        
-        Args:
-            request: MentaLLaMA request
-            
-        Returns:
-            MentaLLaMA response
-            
-        Raises:
-            MentaLLaMAConnectionError: If API request fails
-        """
-        client = cast(AsyncOpenAI, self.clients.get("azure"))
-        
-        if not client:
-            raise MentaLLaMAConnectionError(
-                message="Azure OpenAI client not initialized",
-                details={"provider": MentaLLaMAProvider.AZURE}
-            )
-        
-        # Map MentaLLaMA model to Azure deployment
-        # Use the configured deployment or fallback to a mapping
-        if self.settings.azure_deployment:
-            model = self.settings.azure_deployment
-        else:
-            model = self._map_model_to_azure(request.model)
-        
-        # Create system message based on task
-        system_message = self._create_system_message(request.task, request.model)
-        
-        # Create messages
-        messages = [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": request.prompt}
-        ]
-        
-        # Add context if provided
-        if request.context:
-            context_str = json.dumps(request.context)
-            messages.insert(1, {"role": "system", "content": f"Context: {context_str}"})
-        
-        # Create request parameters
-        params = {
-            "model": model,
-            "messages": messages,
-            "temperature": request.temperature,
-            "max_tokens": request.max_tokens,
-            "top_p": request.top_p
-        }
-        
-        # Call Azure API
-        try:
-            start_time = time.time()
-            completion: ChatCompletion = await client.chat.completions.create(**params)
-            end_time = time.time()
-            
-            # Extract response
-            message = completion.choices[0].message
-            generated_text = message.content or ""
-            
-            # Create response
-            # Original response creation - type hint changed in method signature
-            response = MentaLLaMAResponse(
-                model=request.model,
-                task=request.task,
-                generated_text=generated_text,
-                usage=completion.usage.model_dump() if completion.usage else None
+            # Store the note and insights in the database
+            note_id = self.clinical_note_repository.create_note(
+                patient_id=patient_id,
+                provider_id=provider_id,
+                content=content,
+                insights=insights
             )
             
-            # Log performance (without sensitive data)
             logger.info(
-                "Azure OpenAI request completed",
+                "Analyzed clinical note",
                 extra={
-                    "model": model,
-                    "duration_ms": int((end_time - start_time) * 1000),
-                    "tokens": completion.usage.total_tokens if completion.usage else None
+                    "note_id": str(note_id),
+                    "patient_id": str(patient_id),
+                    "provider_id": str(provider_id)
                 }
             )
             
-            return response
+            # Prepare result
+            result = {
+                "note_id": note_id,
+                "insights": insights
+            }
+            
+            # Notify observers
+            self.notify(
+                self.NOTE_ANALYSIS_COMPLETE,
+                {
+                    "patient_id": str(patient_id),
+                    "provider_id": str(provider_id),
+                    "note_id": str(note_id),
+                    "result": result
+                }
+            )
+            
+            return result
         except Exception as e:
             logger.error(
-                f"Error calling Azure OpenAI API: {str(e)}",
-                extra={"model": model}
+                "Error analyzing clinical note",
+                extra={
+                    "patient_id": str(patient_id),
+                    "provider_id": str(provider_id),
+                    "error": str(e)
+                }
             )
-            raise
+            raise ValueError(f"Error analyzing clinical note: {str(e)}")
     
-    async def _process_local_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
+    def search_patient_notes(
+        self,
+        patient_id: uuid.UUID,
+        query: str
+    ) -> List[Dict[str, Any]]:
         """
-        Process request using local client.
+        Search clinical notes for a patient.
         
         Args:
-            request: MentaLLaMA request
+            patient_id: The ID of the patient
+            query: The search query
             
         Returns:
-            MentaLLaMA response
+            A list of matching clinical notes
             
         Raises:
-            MentaLLaMAConnectionError: If API request fails
+            ValueError: If there is an error searching the notes
         """
-        client = cast(aiohttp.ClientSession, self.clients.get("local"))
-        
-        if not client:
-            raise MentaLLaMAConnectionError(
-                message="Local client not initialized",
-                details={"provider": MentaLLaMAProvider.LOCAL}
-            )
-        
-        if not self.settings.local_url:
-            raise MentaLLaMAConnectionError(
-                message="Local URL not set",
-                details={"provider": MentaLLaMAProvider.LOCAL}
-            )
-        
-        # Prepare request payload
-        payload = {
-            "model": request.model.value,
-            "task": request.task.value,
-            "prompt": request.prompt,
-            "max_tokens": request.max_tokens,
-            "temperature": request.temperature,
-            "top_p": request.top_p
-        }
-        
-        if request.context:
-            payload["context"] = request.context
-        
-        # Call local API
         try:
-            start_time = time.time()
-            async with client.post(
-                self.settings.local_url,
-                json=payload,
-                headers={"Content-Type": "application/json"}
-            ) as response:
-                end_time = time.time()
-                
-                # Raise for HTTP errors
-                response.raise_for_status()
-                
-                # Parse response
-                result = await response.json()
-                
-                # Create response
-                # Original response creation - type hint changed in method signature
-                response_obj = MentaLLaMAResponse(
-                    model=request.model,
-                    task=request.task,
-                    generated_text=result.get("generated_text", ""),
-                    usage=result.get("usage"),
-                    warnings=result.get("warnings")
-                )
-                
-                # Log performance (without sensitive data)
+            # Get all notes for the patient
+            notes = self.clinical_note_repository.get_patient_notes(
+                patient_id=patient_id
+            )
+            
+            if not notes:
                 logger.info(
-                    "Local API request completed",
-                    extra={
-                        "model": request.model.value,
-                        "duration_ms": int((end_time - start_time) * 1000),
-                        "tokens": result.get("usage", {}).get("total_tokens") if result.get("usage") else None
-                    }
+                    "No notes found for patient",
+                    extra={"patient_id": str(patient_id)}
                 )
-                
-                return response_obj
-        except aiohttp.ClientResponseError as e:
-            logger.error(
-                f"Error from local API: {str(e)}",
-                extra={"status": e.status, "model": request.model.value}
+                return []
+            
+            # Use the MentaLLaMA API to search the notes
+            search_results = self._call_mentallama_api(
+                endpoint="search",
+                payload={
+                    "patient_id": str(patient_id),
+                    "query": query,
+                    "notes": notes
+                }
             )
-            raise
+            
+            logger.info(
+                "Searched patient notes",
+                extra={
+                    "patient_id": str(patient_id),
+                    "query": query,
+                    "result_count": len(search_results)
+                }
+            )
+            
+            # Notify observers
+            self.notify(
+                self.SEARCH_COMPLETE,
+                {
+                    "patient_id": str(patient_id),
+                    "query": query,
+                    "result_count": len(search_results)
+                }
+            )
+            
+            return search_results
         except Exception as e:
             logger.error(
-                f"Error calling local API: {str(e)}",
-                extra={"model": request.model.value}
+                "Error searching patient notes",
+                extra={
+                    "patient_id": str(patient_id),
+                    "query": query,
+                    "error": str(e)
+                }
             )
-            raise
+            raise ValueError(f"Error searching patient notes: {str(e)}")
     
-    async def _process_custom_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
+    def generate_patient_summary(
+        self,
+        patient_id: uuid.UUID
+    ) -> Dict[str, Any]:
         """
-        Process request using custom client.
+        Generate a summary of a patient's clinical history.
         
         Args:
-            request: MentaLLaMA request
+            patient_id: The ID of the patient
             
         Returns:
-            MentaLLaMA response
+            A dictionary containing the summary and key insights
             
         Raises:
-            MentaLLaMAConnectionError: If API request fails
+            ValueError: If there is an error generating the summary
         """
-        client = cast(aiohttp.ClientSession, self.clients.get("custom"))
-        
-        if not client:
-            raise MentaLLaMAConnectionError(
-                message="Custom client not initialized",
-                details={"provider": MentaLLaMAProvider.CUSTOM}
-            )
-        
-        if not self.settings.custom_url:
-            raise MentaLLaMAConnectionError(
-                message="Custom URL not set",
-                details={"provider": MentaLLaMAProvider.CUSTOM}
-            )
-        
-        # Prepare request payload
-        payload = {
-            "model": request.model.value,
-            "task": request.task.value,
-            "prompt": request.prompt,
-            "max_tokens": request.max_tokens,
-            "temperature": request.temperature,
-            "top_p": request.top_p
-        }
-        
-        if request.context:
-            payload["context"] = request.context
-        
-        # Prepare headers
-        headers = {"Content-Type": "application/json"}
-        
-        # Add API key if set
-        if self.settings.custom_api_key:
-            headers["Authorization"] = f"Bearer {self.settings.custom_api_key}"
-        
-        # Call custom API
         try:
-            start_time = time.time()
-            async with client.post(
-                self.settings.custom_url,
-                json=payload,
-                headers=headers
-            ) as response:
-                end_time = time.time()
-                
-                # Raise for HTTP errors
-                response.raise_for_status()
-                
-                # Parse response
-                result = await response.json()
-                
-                # Create response
-                # Original response creation - type hint changed in method signature
-                response_obj = MentaLLaMAResponse(
-                    model=request.model,
-                    task=request.task,
-                    generated_text=result.get("generated_text", ""),
-                    usage=result.get("usage"),
-                    warnings=result.get("warnings")
-                )
-                
-                # Log performance (without sensitive data)
-                logger.info(
-                    "Custom API request completed",
-                    extra={
-                        "model": request.model.value,
-                        "duration_ms": int((end_time - start_time) * 1000),
-                        "tokens": result.get("usage", {}).get("total_tokens") if result.get("usage") else None
-                    }
-                )
-                
-                return response_obj
-        except aiohttp.ClientResponseError as e:
-            logger.error(
-                f"Error from custom API: {str(e)}",
-                extra={"status": e.status, "model": request.model.value}
+            # Get all notes for the patient
+            notes = self.clinical_note_repository.get_patient_notes(
+                patient_id=patient_id
             )
-            raise
+            
+            if not notes:
+                logger.info(
+                    "No notes found for patient",
+                    extra={"patient_id": str(patient_id)}
+                )
+                return {
+                    "summary": "No clinical notes available for this patient.",
+                    "key_insights": []
+                }
+            
+            # Use the MentaLLaMA API to generate a summary
+            summary = self._call_mentallama_api(
+                endpoint="summarize",
+                payload={
+                    "patient_id": str(patient_id),
+                    "notes": notes
+                }
+            )
+            
+            logger.info(
+                "Generated patient summary",
+                extra={"patient_id": str(patient_id)}
+            )
+            
+            # Notify observers
+            self.notify(
+                self.SUMMARY_GENERATION_COMPLETE,
+                {
+                    "patient_id": str(patient_id),
+                    "summary": summary
+                }
+            )
+            
+            return summary
         except Exception as e:
             logger.error(
-                f"Error calling custom API: {str(e)}",
-                extra={"model": request.model.value}
+                "Error generating patient summary",
+                extra={
+                    "patient_id": str(patient_id),
+                    "error": str(e)
+                }
             )
-            raise
+            raise ValueError(f"Error generating patient summary: {str(e)}")
     
-    def _map_model_to_openai(self, model: ModelType) -> str:
+    def generate_treatment_suggestions(
+        self,
+        patient_id: uuid.UUID
+    ) -> List[Dict[str, Any]]:
         """
-        Map MentaLLaMA model to OpenAI model.
+        Generate treatment suggestions for a patient.
         
         Args:
-            model: MentaLLaMA model
+            patient_id: The ID of the patient
             
         Returns:
-            OpenAI model name
-        """
-        # Default mappings
-        mappings = {
-            ModelType.MENTALLAMA_CLINICAL: "gpt-4-turbo",
-            ModelType.MENTALLAMA_PSYCHIATRY: "gpt-4",
-            ModelType.MENTALLAMA_THERAPY: "gpt-4",
-            ModelType.MENTALLAMA_ASSESSMENT: "gpt-4",
-            ModelType.MENTALLAMA_RESEARCH: "gpt-4-turbo"
-        }
-        
-        # Override with settings if available
-        if self.settings.model_mappings and model.value in self.settings.model_mappings:
-            return self.settings.model_mappings[model.value]
-        
-        return mappings.get(model, "gpt-4-turbo")
-    
-    def _map_model_to_azure(self, model: ModelType) -> str:
-        """
-        Map MentaLLaMA model to Azure deployment.
-        
-        Args:
-            model: MentaLLaMA model
+            A list of treatment suggestions
             
-        Returns:
-            Azure deployment name
+        Raises:
+            ValueError: If there is an error generating the suggestions
         """
-        # Default to the configured deployment
-        if self.settings.azure_deployment:
-            return self.settings.azure_deployment
-        
-        # Default mappings
-        mappings = {
-            ModelType.MENTALLAMA_CLINICAL: "gpt-4",
-            ModelType.MENTALLAMA_PSYCHIATRY: "gpt-4",
-            ModelType.MENTALLAMA_THERAPY: "gpt-4",
-            ModelType.MENTALLAMA_ASSESSMENT: "gpt-4",
-            ModelType.MENTALLAMA_RESEARCH: "gpt-4"
-        }
-        
-        # Override with settings if available
-        if self.settings.model_mappings and model.value in self.settings.model_mappings:
-            return self.settings.model_mappings[model.value]
-        
-        return mappings.get(model, "gpt-4")
-    
-    def _create_system_message(self, task: Any, model: ModelType) -> str: # Replaced TaskType with Any
-        """
-        Create system message based on task and model.
-        
-        Args:
-            task: Task type
-            model: Model type
-            
-        Returns:
-            System message
-        """
-        # Base instructions
-        base_instructions = (
-            "You are MentaLLaMA, an advanced clinical AI assistant specialized in mental health. "
-            "Your responses are evidence-based, ethical, and patient-centered. "
-            "You adhere to clinical best practices and maintain a professional tone. "
-            "Your information is based on peer-reviewed literature and clinical guidelines. "
-            "You clarify when information is speculative or when multiple perspectives exist. "
-            "You DO NOT diagnose patients or replace professional medical advice. "
-            "You maintain strict confidentiality and never share or reference patient information outside this conversation. "
-            "You DO NOT make up information or references."
-        )
-        
-        # Task-specific instructions
-        task_instructions = {
-            TaskType.SUMMARIZATION: (
-                "Your task is to summarize clinical information into concise, structured formats. "
-                "Highlight key patterns, concerns, and clinical observations. "
-                "Maintain all clinically relevant details while eliminating redundancy."
-            ),
-            TaskType.ASSESSMENT: (
-                "Your task is to help analyze assessment data and clinical observations. "
-                "Provide structured analysis of findings based on clinical frameworks. "
-                "Identify patterns and suggest areas for further clinical exploration."
-            ),
-            TaskType.DIAGNOSIS: (
-                "Your task is to discuss diagnostic criteria and differential diagnoses based on DSM-5-TR or ICD-11. "
-                "Present various diagnostic considerations based on the information provided. "
-                "Highlight what additional information would be helpful for diagnostic clarification."
-            ),
-            TaskType.TREATMENT_RECOMMENDATION: (
-                "Your task is to provide treatment options based on clinical guidelines and evidence-based practices. "
-                "Include first-line and alternative approaches when appropriate. "
-                "Discuss potential benefits, limitations, and considerations for each option."
-            ),
-            TaskType.RISK_ASSESSMENT: (
-                "Your task is to help identify risk factors and protective factors from clinical information. "
-                "Suggest evidence-based risk assessment frameworks that may be applicable. "
-                "Emphasize the importance of clinical judgment in risk evaluation."
-            ),
-            TaskType.SESSION_NOTES: (
-                "Your task is to help structure and organize clinical session notes. "
-                "Follow SOAP or similar clinical documentation formats. "
-                "Focus on objective observations while maintaining clinical relevance."
-            ),
-            TaskType.LITERATURE_REVIEW: (
-                "Your task is to provide concise summaries of current research and clinical literature. "
-                "Focus on high-quality evidence from peer-reviewed sources. "
-                "Highlight consensus views as well as areas of ongoing research or debate."
-            ),
-            TaskType.PATIENT_EDUCATION: (
-                "Your task is to create clear, accessible educational material for patients. "
-                "Use plain language while maintaining clinical accuracy. "
-                "Focus on empowerment and self-management strategies when appropriate."
-            ),
-            TaskType.CLINICAL_QUESTIONS: (
-                "Your task is to answer clinical questions with evidence-based information. "
-                "Provide nuanced responses that acknowledge clinical complexity. "
-                "Cite relevant guidelines or research when applicable."
-            ),
-            TaskType.DIFFERENTIAL_DIAGNOSIS: (
-                "Your task is to develop comprehensive differential diagnoses based on clinical presentations. "
-                "Consider common and uncommon possibilities based on the provided information. "
-                "Suggest diagnostic approaches to narrow the differential."
-            ),
-            TaskType.PREDICTION: (
-                "Your task is to analyze clinical patterns and trends to identify potential trajectories. "
-                "Base predictions on established clinical patterns and evidence. "
-                "Emphasize that predictions are probabilistic and require clinical validation."
-            ),
-            TaskType.CUSTOM: (
-                "Respond to the request with your clinical expertise while adhering to ethical guidelines. "
-                "Provide structured and evidence-based information tailored to the specific request. "
-                "Maintain professional boundaries and clinical best practices."
+        try:
+            # Get all notes for the patient
+            notes = self.clinical_note_repository.get_patient_notes(
+                patient_id=patient_id
             )
+            
+            if not notes:
+                logger.info(
+                    "No notes found for patient",
+                    extra={"patient_id": str(patient_id)}
+                )
+                return []
+            
+            # Use the MentaLLaMA API to generate treatment suggestions
+            suggestions = self._call_mentallama_api(
+                endpoint="suggest-treatments",
+                payload={
+                    "patient_id": str(patient_id),
+                    "notes": notes
+                }
+            )
+            
+            logger.info(
+                "Generated treatment suggestions",
+                extra={
+                    "patient_id": str(patient_id),
+                    "suggestion_count": len(suggestions)
+                }
+            )
+            
+            # Notify observers
+            self.notify(
+                self.TREATMENT_SUGGESTIONS_COMPLETE,
+                {
+                    "patient_id": str(patient_id),
+                    "suggestion_count": len(suggestions)
+                }
+            )
+            
+            return suggestions
+        except Exception as e:
+            logger.error(
+                "Error generating treatment suggestions",
+                extra={
+                    "patient_id": str(patient_id),
+                    "error": str(e)
+                }
+            )
+            raise ValueError(f"Error generating treatment suggestions: {str(e)}")
+    
+    def extract_brain_region_data(
+        self,
+        patient_id: uuid.UUID
+    ) -> Dict[str, Dict[str, Any]]:
+        """
+        Extract brain region data from a patient's clinical notes.
+        
+        Args:
+            patient_id: The ID of the patient
+            
+        Returns:
+            A dictionary mapping brain regions to data points
+            
+        Raises:
+            ValueError: If there is an error extracting the data
+        """
+        try:
+            # Get all notes for the patient
+            notes = self.clinical_note_repository.get_patient_notes(
+                patient_id=patient_id
+            )
+            
+            if not notes:
+                logger.info(
+                    "No notes found for patient",
+                    extra={"patient_id": str(patient_id)}
+                )
+                return {}
+            
+            # Use the MentaLLaMA API to extract brain region data
+            brain_data = self._call_mentallama_api(
+                endpoint="extract-brain-regions",
+                payload={
+                    "patient_id": str(patient_id),
+                    "notes": notes
+                }
+            )
+            
+            logger.info(
+                "Extracted brain region data",
+                extra={
+                    "patient_id": str(patient_id),
+                    "region_count": len(brain_data)
+                }
+            )
+            
+            # Notify observers
+            self.notify(
+                self.BRAIN_REGION_EXTRACTION_COMPLETE,
+                {
+                    "patient_id": str(patient_id),
+                    "region_count": len(brain_data)
+                }
+            )
+            
+            return brain_data
+        except Exception as e:
+            logger.error(
+                "Error extracting brain region data",
+                extra={
+                    "patient_id": str(patient_id),
+                    "error": str(e)
+                }
+            )
+            raise ValueError(f"Error extracting brain region data: {str(e)}")
+    
+    def _call_mentallama_api(
+        self,
+        endpoint: str,
+        payload: Dict[str, Any]
+    ) -> Any:
+        """
+        Call the MentaLLaMA API.
+        
+        Args:
+            endpoint: The API endpoint to call
+            payload: The payload to send
+            
+        Returns:
+            The API response
+            
+        Raises:
+            ValueError: If there is an error calling the API
+        """
+        if not self.api_url or not self.api_key:
+            raise ValueError("MentaLLaMA API URL or API key not provided")
+        
+        url = f"{self.api_url}/{endpoint}"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
         }
         
-        # Model-specific adjustments
-        model_adjustments = {
-            ModelType.MENTALLAMA_CLINICAL: "Focus on general clinical mental health concepts and practices.",
-            ModelType.MENTALLAMA_PSYCHIATRY: "Emphasize psychiatric perspectives including medication management considerations.",
-            ModelType.MENTALLAMA_THERAPY: "Focus on psychotherapeutic approaches, interventions, and therapeutic relationships.",
-            ModelType.MENTALLAMA_ASSESSMENT: "Specialize in psychological assessment, testing, and measurement concepts.",
-            ModelType.MENTALLAMA_RESEARCH: "Emphasize research methodologies, statistical concepts, and current literature."
-        }
-        
-        # Combine instructions
-        instructions = [
-            base_instructions,
-            task_instructions.get(task, task_instructions[TaskType.CUSTOM]),
-            model_adjustments.get(model, "")
-        ]
-        
-        # Add HIPAA compliance reminder
-        instructions.append(
-            "IMPORTANT: Maintain strict HIPAA compliance. Never include PHI in your responses. "
-            "Do not reference patient identifiers, dates, or location information."
-        )
-        
-        return " ".join(instructions)
+        try:
+            response = requests.post(
+                url=url,
+                headers=headers,
+                data=json.dumps(payload),
+                timeout=30
+            )
+            
+            response.raise_for_status()
+            
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            logger.error(
+                "Error calling MentaLLaMA API",
+                extra={
+                    "endpoint": endpoint,
+                    "error": str(e)
+                }
+            )
+            raise ValueError(f"Error calling MentaLLaMA API: {str(e)}")

@@ -22,7 +22,8 @@ from app.core.exceptions import (
     ModelNotFoundError,
     ServiceUnavailableError,
 )
-from app.core.services.ml.mentalllama import MentaLLaMA as BaseMentaLLaMA
+# Corrected import path for the base MentaLLaMA implementation
+from app.infrastructure.ml.mentallama.service import MentaLLaMA as BaseMentaLLaMA
 from app.core.utils.logging import get_logger
 
 

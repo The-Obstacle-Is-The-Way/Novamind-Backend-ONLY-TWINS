@@ -9,9 +9,9 @@ from typing import Dict, Optional, Any, Literal
 
 from app.core.exceptions import InvalidConfigurationError
 from app.core.services.ml.interface import PHIDetectionInterface
-# from app.core.services.ml.mentalllama import MentaLLaMA # REMOVE: Use infrastructure layer
-# from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection # REMOVE: Use infrastructure layer
-from app.core.services.ml.phi.phi_detection import AWSComprehendMedicalPHIDetection
+# Import implementations from the infrastructure layer
+from app.infrastructure.ml.phi.aws_comprehend_medical import AWSComprehendMedicalPHIDetection
+from app.infrastructure.ml.phi.mock import MockPHIDetection
 from app.core.utils.logging import get_logger
 
 
@@ -94,10 +94,8 @@ class MLServiceFactory:
     
     
 
-        return self.create_mentalllama_service(service_type, with_phi_detection)
-    
     def get_phi_detection_service(
-        self, 
+        self,
         service_type: Literal["aws", "mock"] = "aws"
     ) -> PHIDetectionInterface:
         """

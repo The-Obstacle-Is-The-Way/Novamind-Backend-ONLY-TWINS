@@ -19,7 +19,7 @@ from app.core.exceptions import (
     ServiceUnavailableError,
 )
 
-from app.core.services.ml.mock import MockMentaLLaMA
+from app.infrastructure.ml.mentallama.mock import MockMentaLLaMA # Corrected import path
 
 
 @pytest.fixture(scope="function")
