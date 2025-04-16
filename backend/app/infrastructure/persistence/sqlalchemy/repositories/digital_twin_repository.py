@@ -4,6 +4,7 @@
 
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 from app.domain.repositories.digital_twin_repository import DigitalTwinRepository
 from app.domain.entities.digital_twin import DigitalTwin
 
