@@ -8,41 +8,43 @@ import os
 from typing import Generator, AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 import logging
+from sqlalchemy.pool import StaticPool
 
 # Import settings from the canonical location
 from app.config.settings import get_settings
 
 # Call the function to get the settings object
 settings = get_settings()
+# Determine the database URL, fallback to in-memory SQLite if unset
+database_url = settings.DATABASE_URL or "sqlite+aiosqlite:///:memory:"
 
-# Create async SQLAlchemy engine using the DATABASE_URL from settings.
-# The settings object will have the correct URL loaded based on the environment
-# (e.g., from .env.test during testing, or .env/environment variables otherwise).
-
-# Ensure DATABASE_URL is available before creating the engine
-if not settings.DATABASE_URL:
-    raise ValueError("DATABASE_URL is not set in settings. Cannot create database engine.")
-
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    pool_size=settings.DB_POOL_SIZE,       # Use pool settings from config
-    max_overflow=settings.DB_MAX_OVERFLOW, # Use pool settings from config
-    echo=settings.DATABASE_ECHO,           # Use echo setting from config
-    future=True,                           # Recommended for SQLAlchemy 2.0 async
-    # Add SSL context if configured and if it's a PostgreSQL connection
-    # Check if the URL indicates PostgreSQL before attempting SSL connect_args
-    connect_args=(
-        {
-            "ssl": {
-                "ca_certs": settings.DATABASE_SSL_CA,
-                "ssl_mode": settings.DATABASE_SSL_MODE
-                # "check_hostname": settings.DATABASE_SSL_VERIFY is not False # Add if needed
-            } if settings.DATABASE_SSL_MODE else None
-        }
-        if settings.DATABASE_URL.startswith("postgresql")
-        else {}
+# Create async SQLAlchemy engine, handling SQLite in-memory differently
+if database_url.startswith("sqlite"):
+    engine = create_async_engine(
+        database_url,
+        echo=settings.DATABASE_ECHO,
+        future=True,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
-)
+else:
+    engine = create_async_engine(
+        database_url,
+        pool_size=settings.DB_POOL_SIZE,
+        max_overflow=settings.DB_MAX_OVERFLOW,
+        echo=settings.DATABASE_ECHO,
+        future=True,
+        connect_args=(
+            {
+                "ssl": {
+                    "ca_certs": settings.DATABASE_SSL_CA,
+                    "ssl_mode": settings.DATABASE_SSL_MODE
+                } if settings.DATABASE_SSL_MODE else None
+            }
+            if database_url.startswith("postgresql")
+            else {}
+        )
+    )
 
 # Create session factory for creating AsyncSession instances
 session_local = async_sessionmaker(

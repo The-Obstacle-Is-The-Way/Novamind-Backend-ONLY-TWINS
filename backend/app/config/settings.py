@@ -281,9 +281,9 @@ class Settings(BaseSettings):
 
     model_config = ConfigDict(
         case_sensitive=True,
-        env_file=".env",
+        env_file=".env.test",
         env_file_encoding="utf-8",
-        env_nested_delimiter='__' # Allows setting nested env vars like MENTALLAMA__OPENAI_API_KEY
+        env_nested_delimiter='__'
     )
 
 

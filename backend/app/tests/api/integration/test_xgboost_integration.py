@@ -40,33 +40,25 @@ def mock_service() -> MockXGBoostService:
 
 # Refactored test client fixture
 @pytest.fixture
-def client(mock_service: MockXGBoostService): # Inject the mock service fixture
+def client(mock_service: MockXGBoostService):
     """Create a FastAPI test client with the XGBoost router and mock service."""
     app = FastAPI()
 
-    # Include the actual router
-    app.include_router(xgboost_router, prefix="/api/v1/xgboost") # Use the actual prefix
+    # Override the XGBoostInterface service in DI container to return mock_service
+    from app.infrastructure.di.container import get_container
+    from app.core.services.ml.xgboost.interface import XGBoostInterface
+    container = get_container()
+    container.override(XGBoostInterface, lambda: mock_service)
 
-    # Override the XGBoostInterface dependency for this app instance
-    # Use the generic 'get_service' import path from the router file if applicable,
-    # otherwise adapt to the specific dependency function used in the router.
-    # Assuming the router uses: from app.infrastructure.di.container import get_service
-    from app.infrastructure.di.container import get_service # Ensure this matches router
-    app.dependency_overrides[get_service(XGBoostInterface)] = lambda: mock_service
+    # Override authentication dependency to bypass auth checks in integration tests
+    from app.presentation.api.dependencies.auth import verify_provider_access
+    app.dependency_overrides[verify_provider_access] = mock_verify_provider_access
 
-    # Override authentication dependency if needed (adjust path as necessary)
-    # from app.presentation.api.dependencies.auth import verify_provider_access # Path used in router
-    # app.dependency_overrides[verify_provider_access] = mock_verify_provider_access
+    # Include the router
+    app.include_router(xgboost_router, prefix="/api/v1/xgboost")
 
-    # Create the TestClient
-    test_client = TestClient(app)
-
-    # Optional: Add default headers if needed (e.g., fake auth)
-    # test_client.headers = {
-    #     "Authorization": "Bearer fake-token-for-testing"
-    # }
-
-    return test_client
+    # Create and return the TestClient
+    return TestClient(app)
 
 
 @pytest.mark.integration

@@ -171,9 +171,7 @@ def create_application() -> FastAPI:
     return app
 
 # Create the main FastAPI application instance using the factory function
-# COMMENTED OUT: Avoid module-level app creation which interferes with test fixture setup.
-# The app instance should be created within fixtures (like in conftest.py) or entry points.
-# app = create_application()
+app = create_application()
 
 # Entry point for running the application directly (e.g., with `python app/main.py`)
 # This is typically used for local development/debugging.
