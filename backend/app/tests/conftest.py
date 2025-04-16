@@ -29,6 +29,7 @@ from fastapi import FastAPI, Request
 import uuid
 import time
 from typing import Dict, Any, Callable, Generator, Coroutine, List, Optional, AsyncGenerator
+from pydantic import SecretStr # Import SecretStr
 from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
@@ -45,6 +46,12 @@ except ImportError:
     @contextmanager
     def patch_imports():
         yield
+
+# Import the logger setup function
+from app.infrastructure.logging.logger import get_logger
+
+# Instantiate the logger for this module
+logger = get_logger(__name__)
 
 # Mock the settings object
 class MockSettings:
@@ -67,8 +74,9 @@ class MockSettings:
         self.LOG_LEVEL = "DEBUG"
         self.ENABLE_ANALYTICS = False
 
-        # --- Directly add JWT settings expected by JWTService ---
-        self.SECRET_KEY = "test-secret-key-longer-than-32-chars-for-sure" # Direct access
+        # --- Directly add JWT settings expected by JWTService --- 
+        # Use SecretStr to match the real Settings class
+        self.SECRET_KEY = SecretStr("test-secret-key-longer-than-32-chars-for-sure") 
         self.ALGORITHM = "HS256" # Direct access
         self.ACCESS_TOKEN_EXPIRE_MINUTES = 30 # Direct access
         self.JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7 # Direct access
@@ -391,11 +399,14 @@ async def client( # Keep fixture async
 # Fixture for JWTService (can be used directly by tests if needed)
 @pytest.fixture(scope="function") # Keep function scope
 async def jwt_service(mock_settings: MockSettings) -> AsyncGenerator[JWTService, None]:
-    """Provides a real JWTService instance configured with mock settings."""
-    # Use the mocked settings to initialize a real service instance
+    """Provides a JWTService instance explicitly configured with mock settings for test setup."""
+    # Explicitly pass mock_settings for test fixture usage, overriding the Depends default for this call.
+    # The instance used by middleware during requests will still use Depends().
     service = JWTService(settings=mock_settings)
-    yield service # Yield the service instance
-
+    logger.debug(f"[jwt_service fixture] Instantiated JWTService {id(service)} EXPLICITLY using settings {id(mock_settings)}") # Now logger is defined
+    
+    # Yield the service instance
+    yield service
 
 # Fixture to generate tokens using the real JWTService (configured with mock settings)
 @pytest.fixture(scope="function") # Ensure function scope

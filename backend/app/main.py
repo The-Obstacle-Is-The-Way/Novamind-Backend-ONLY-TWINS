@@ -24,9 +24,9 @@ from app.presentation.api.routes import api_router, setup_routers  # Import from
 
 # Import Middleware and Services
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
+from app.infrastructure.security.jwt.jwt_service import get_jwt_service # Import the provider
 from app.presentation.middleware.rate_limiting_middleware import setup_rate_limiting
 from app.infrastructure.security.auth.authentication_service import AuthenticationService
-from app.infrastructure.security.jwt.jwt_service import JWTService
 from app.domain.repositories.user_repository import UserRepository
 from app.presentation.middleware.phi_middleware import add_phi_middleware # Updated import path
 
@@ -101,7 +101,6 @@ def create_application() -> FastAPI:
             yield session
             
     # Instantiate necessary services here, potentially using a DI container later
-    jwt_service = JWTService()
     # AuthenticationService might need a UserRepository, which needs a db session
     # This setup implies services might need request-scoped dependencies (like db session)
     # which middleware setup doesn't easily handle. 
@@ -124,14 +123,26 @@ def create_application() -> FastAPI:
             allow_headers=["*"],
         )
         
-    # 2. Authentication Middleware (Processes token, sets request.state.user)
+    # 2. Error Handling Middleware (Outermost)
+    # app.add_middleware(ErrorHandlingMiddleware)
+
+    # 3. Security Headers
+    # app.add_middleware(SecurityHeadersMiddleware)
+
+    # 4. Authentication Middleware (Processes token, sets request.state.user)
     app.add_middleware(
-        AuthenticationMiddleware, 
-        auth_service=auth_service, 
-        jwt_service=jwt_service
+        AuthenticationMiddleware,
+        auth_service=auth_service,
+        public_paths={
+            "/openapi.json",
+            "/docs",
+            "/api/v1/auth/refresh",
+            "/health", # Assuming health check is public
+            # Add other public websocket paths if needed, e.g., "/ws/public"
+        },
     )
     
-    # 3. PHI Sanitization/Auditing Middleware (Processes after auth)
+    # 5. PHI Sanitization/Auditing Middleware (Processes after auth)
     add_phi_middleware(
         app,
         exclude_paths=settings.PHI_EXCLUDE_PATHS, # Configure via settings
@@ -139,10 +150,10 @@ def create_application() -> FastAPI:
         audit_mode=settings.PHI_AUDIT_MODE # Configure via settings
     )
 
-    # 4. Rate Limiting Middleware (Applies limits after auth & PHI handling)
+    # 6. Rate Limiting Middleware (Applies limits after auth & PHI handling)
     setup_rate_limiting(app)
 
-    # 5. Security Headers Middleware (Adds headers to the final response using decorator style)
+    # 7. Security Headers Middleware (Adds headers to the final response using decorator style)
     @app.middleware("http")
     async def security_headers_middleware(
         request: Request,

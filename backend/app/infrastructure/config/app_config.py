@@ -13,11 +13,11 @@ from app.domain.repositories.digital_twin_repository import DigitalTwinRepositor
 from app.domain.repositories.patient_repository import PatientRepository
 from app.domain.services.digital_twin_service import DigitalTwinService
 from app.infrastructure.config.ml_service_config import MLServiceConfig
-from app.infrastructure.database.database_config import DatabaseConfig
-from app.infrastructure.repositories.digital_twin_repository_impl import (
+from app.infrastructure.persistence.sqlalchemy.config.database import Database
+from app.infrastructure.persistence.sqlalchemy.repositories.digital_twin_repository import (
     DigitalTwinRepositoryImpl,
 )
-from app.infrastructure.repositories.patient_repository_impl import (
+from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import (
     PatientRepositoryImpl,
 )
 
@@ -41,7 +41,7 @@ class AppConfig:
         self.config = config
 
         # Create database configuration
-        self.db_config = DatabaseConfig(config.get("database", {}))
+        self.db_config = Database(config.get("database", {}))
 
         # Create ML service configuration
         self.ml_config = MLServiceConfig(config.get("ml_services", {}))
