@@ -20,7 +20,8 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestClassifier
 
-from app.domain.exceptions import ModelInferenceError, ValidationError
+from app.core.exceptions.base_exceptions import ModelExecutionError
+from app.domain.exceptions import ValidationError
 from app.infrastructure.ml.base.base_model import BaseModel
 from app.infrastructure.ml.utils.serialization import ModelSerializer
 

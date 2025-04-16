@@ -104,16 +104,17 @@ def mock_db_data() -> Dict[str, List[Dict[str, Any]]]:
 
 
 # API Testing Fixtures
-@pytest.fixture
-def test_client() -> Generator[TestClient, None, None]:
-    """
-    Creates a real test client for API integration testing.
-
-    Yields:
-        A FastAPI TestClient instance.
-    """
-    with TestClient(app) as client:
-        yield client
+# Commenting out potentially conflicting test_client fixture
+# @pytest.fixture
+# def test_client() -> Generator[TestClient, None, None]:
+#     """
+#     Creates a real test client for API integration testing.
+# 
+#     Yields:
+#         A FastAPI TestClient instance.
+#     """
+#     with TestClient(app) as client:
+#         yield client
 
 
 @pytest.fixture

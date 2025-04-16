@@ -154,13 +154,13 @@ def pytest_configure(config):
     Pytest hook that runs before test collection.
     Handles sys.path adjustment and marker registration.
     """
-    # --- Add backend directory to sys.path ---
-    conftest_path = Path(__file__).resolve()
-    backend_dir = conftest_path.parent.parent.parent
-    if str(backend_dir) not in sys.path:
-        sys.path.insert(0, str(backend_dir))
-        # Use print to stderr for reliable logging during early configuration
-        print(f"[pytest_configure] Added to sys.path: {str(backend_dir)}", file=sys.stderr)
+    # --- Add backend directory to sys.path (DISABLED - Relying on pytest.ini pythonpath = .) ---
+    # conftest_path = Path(__file__).resolve()
+    # backend_dir = conftest_path.parent.parent.parent 
+    # if str(backend_dir) not in sys.path:
+    #     sys.path.insert(0, str(backend_dir))
+    #     # Use print to stderr for reliable logging during early configuration
+    #     print(f"[pytest_configure] Added to sys.path: {str(backend_dir)}", file=sys.stderr)
     # --- End sys.path modification ---
 
     # --- Register custom markers ---
@@ -182,9 +182,9 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "phi: Protected Health Information related tests")
     # --- End marker registration ---
 
-    # Apply the import patch (if still needed)
-    with patch_imports():
-        pass
+    # Apply the import patch (if still needed) - DISABLED FOR NOW
+    # with patch_imports():
+    #     pass
 
 # --- Session Setup Fixtures ---
 
@@ -509,26 +509,27 @@ def test_patient() -> Patient:
         # medical_history=["Tested Positive"], # Example if needed
     )
 
-@pytest.fixture(scope="session")
-async def test_app() -> AsyncGenerator[FastAPI, None]:
-    """
-    Create a test application instance with potentially overridden settings.
-    """
-    # Ensure a valid SECRET_KEY for testing by patching get_settings
-    test_secret_key = "a_very_secure_and_long_test_secret_key_for_pytest_runs_12345"
-    
-    # Create a test settings instance with the valid key
-    # Load other settings from the default mechanism (.env.test or .env)
-    base_settings = get_settings() # Load base settings first
-    # Override the secret key
-    base_settings.SECRET_KEY = test_secret_key 
-    
-    # Patch get_settings to return our modified settings during app creation
-    with patch('app.config.settings.get_settings', return_value=base_settings):
-        app_instance = create_application()
-    
-    # Apply other overrides if necessary (e.g., for database session)
-    # app_instance.dependency_overrides[get_db] = override_get_db
-    yield app_instance
+# Commenting out potentially conflicting session-scoped app fixture
+# @pytest.fixture(scope="session")
+# async def test_app() -> AsyncGenerator[FastAPI, None]:
+#     """
+#     Create a test application instance with potentially overridden settings.
+#     """
+#     # Ensure a valid SECRET_KEY for testing by patching get_settings
+#     test_secret_key = "a_very_secure_and_long_test_secret_key_for_pytest_runs_12345"
+#     
+#     # Create a test settings instance with the valid key
+#     # Load other settings from the default mechanism (.env.test or .env)
+#     base_settings = get_settings() # Load base settings first
+#     # Override the secret key
+#     base_settings.SECRET_KEY = test_secret_key 
+#     
+#     # Patch get_settings to return our modified settings during app creation
+#     with patch('app.config.settings.get_settings', return_value=base_settings):
+#         app_instance = create_application()
+#     
+#     # Apply other overrides if necessary (e.g., for database session)
+#     # app_instance.dependency_overrides[get_db] = override_get_db
+#     yield app_instance
 
 # ... potentially other global fixtures ...

@@ -15,9 +15,11 @@ from typing import List, Dict, Any, Optional
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 # Correct import for BiometricAlert and enums
-from app.domain.services.biometric_event_processor import BiometricAlert, AlertPriority, AlertStatus
+from app.domain.services.biometric_event_processor import BiometricAlert, AlertPriority
+from app.presentation.api.schemas.biometric_alert import AlertStatusEnum as AlertStatus
 from app.domain.exceptions import EntityNotFoundError, RepositoryError
 from app.infrastructure.persistence.sqlalchemy.models.biometric_alert_model import BiometricAlertModel
 from app.infrastructure.persistence.sqlalchemy.repositories.biometric_alert_repository import SQLAlchemyBiometricAlertRepository

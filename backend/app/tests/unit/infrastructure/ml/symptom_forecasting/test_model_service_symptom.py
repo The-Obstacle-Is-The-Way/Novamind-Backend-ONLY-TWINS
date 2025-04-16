@@ -6,28 +6,37 @@ import numpy as np
 from uuid import UUID
 from datetime import datetime, timedelta, date
 
-# from app.config.ml_settings import MLSettings # Remove unused import
-from app.infrastructure.ml.symptom_forecasting.model_service import SymptomForecastingModelService
+# Removed unused import for MLSettings
+from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomForecastingEnsemble as EnsembleModel
+# Removed import for non-existent ModelRegistry
+# from app.infrastructure.ml.interfaces.model_registry import ModelRegistry 
+from app.infrastructure.ml.symptom_forecasting.model_service import SymptomForecastingService
 from app.domain.entities.patient import Patient
-from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
-from app.infrastructure.ml.interfaces.model_registry import ModelRegistry
+# Corrected exception imports based on definitive source location
+from app.core.exceptions import ResourceNotFoundError
+from app.core.exceptions.base_exceptions import ModelExecutionError
+# from app.core.exceptions import ModelExecutionError, ResourceNotFoundError # Old incorrect import
 
 class TestSymptomForecastingModelService:
     """Test suite for the SymptomForecastingModelService."""
 
-    def mock_model_registry(self):
-        """Create a mock model registry for testing."""
-        registry = MagicMock(spec=ModelRegistry)
-        # Configure mock behavior if needed, e.g., registry.get_model.return_value = ...
-        return registry
+    # Removed unused mock_model_registry fixture
+    # def mock_model_registry(self):
+    #     """Create a mock model registry for testing."""
+    #     registry = MagicMock(spec=ModelRegistry)
+    #     # Configure mock behavior if needed, e.g., registry.get_model.return_value = ...
+    #     return registry
 
     @pytest.fixture
-    def service(self, mock_model_registry):
+    def service(self): # Removed mock_model_registry dependency
         """Create a SymptomForecastingModelService instance for testing."""
-        # Correct instantiation
-        return SymptomForecastingModelService(
-            model_registry=mock_model_registry, 
-            # Correct instantiation
+        # Correct instantiation - requires updating based on new __init__ 
+        # TODO: Update instantiation with necessary paths/mocks
+        return SymptomForecastingService(
+            model_dir="/tmp/test_symptom_service",
+            # model_registry=mock_model_registry, # Removed registry argument
+            feature_names=["anxiety", "depression", "sleep_hours"], # Example features
+            target_names=["anxiety_forecast", "depression_forecast"] # Example targets
         )
 
     @pytest.fixture
@@ -252,3 +261,86 @@ class TestSymptomForecastingModelService:
             # The baseline forecast should be different from the intervention
             # forecast
             assert result["forecast"] != result["baseline_forecast"]
+
+    @pytest.mark.asyncio
+    async def test_forecast_symptoms(self, service):
+        """Test the forecast_symptoms method."""
+        # Setup
+        mock_transformer = MagicMock()
+        mock_xgboost = MagicMock()
+        service.transformer_model = mock_transformer
+        service.xgboost_model = mock_xgboost
+
+        # Act
+        result = await service.forecast_symptoms(
+            patient_id=UUID("00000000-0000-0000-0000-000000000001"),
+            patient_data={
+                "patient_id": "00000000-0000-0000-0000-000000000001",
+                "demographics": {"age": 42, "gender": "male"},
+                "medication_history": [],
+                "biometrics": [],
+                "symptom_history": [],
+            },
+            forecast_days=3
+        )
+        
+        # Verify
+        assert isinstance(result, dict)
+        assert "forecast" in result
+        assert "dates" in result["forecast"]
+        assert "values" in result["forecast"]
+        assert len(result["forecast"]["values"]) == 3
+        assert result["symptom_type"] == "anxiety"
+        assert "confidence_intervals" in result["forecast"]
+        mock_transformer.predict.assert_called_once()
+        mock_xgboost.predict.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_forecast_symptoms_with_interventions(self, service):
+        """Test the forecast_symptoms method with interventions."""
+        # Setup
+        mock_transformer = MagicMock()
+        mock_xgboost = MagicMock()
+        service.transformer_model = mock_transformer
+        service.xgboost_model = mock_xgboost
+
+        # Act
+        result = await service.forecast_symptoms(
+            patient_id=UUID("00000000-0000-0000-0000-000000000001"),
+            patient_data={
+                "patient_id": "00000000-0000-0000-0000-000000000001",
+                "demographics": {"age": 42, "gender": "male"},
+                "medication_history": [],
+                "biometrics": [],
+                "symptom_history": [],
+            },
+            forecast_days=7,
+            interventions=[
+                {
+                    "type": "medication",
+                    "name": "Fluoxetine",
+                    "start_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"),
+                    "expected_effect": -0.5,
+                },
+                {
+                    "type": "therapy",
+                    "name": "CBT",
+                    "start_date": datetime.now().strftime("%Y-%m-%d"),
+                    "expected_effect": -0.3
+                }
+            ]
+        )
+        
+        # Verify
+        assert isinstance(result, dict)
+        assert "forecast" in result
+        assert "dates" in result["forecast"]
+        assert "values" in result["forecast"]
+        assert len(result["forecast"]["values"]) == 7
+        assert result["symptom_type"] == "anxiety"
+        assert "confidence_intervals" in result["forecast"]
+        assert "intervention_effect" in result
+        assert len(result["intervention_effect"]) > 0
+        assert result["forecast"] != result["baseline_forecast"]
+        mock_transformer.predict.assert_called_once()
+        mock_xgboost.predict.assert_not_called()

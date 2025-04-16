@@ -15,7 +15,7 @@ from typing import Dict, Any
 from datetime import timezone # Import timezone directly
 
 # Corrected imports
-from app.infrastructure.security.jwt_service import JWTService
+from app.infrastructure.security.jwt.jwt_service import JWTService
 from jwt.exceptions import PyJWTError, ExpiredSignatureError, DecodeError, InvalidSignatureError, InvalidIssuerError, InvalidAudienceError, ImmatureSignatureError # Import specific JWT errors
 
 # Define test constants directly

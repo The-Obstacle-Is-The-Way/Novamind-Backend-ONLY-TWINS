@@ -22,20 +22,27 @@ from pydantic import parse_obj_as
 # Assuming base exceptions are in core.exceptions.base_exceptions
 from app.core.exceptions.base_exceptions import (
     ResourceNotFoundError, 
+    ExternalServiceException, # Corrected name
     ValidationError, 
-    ModelInferenceError, 
-    ExternalServiceError, # Assuming MentalLLaMA/PHI errors might map here
+    ModelExecutionError, # Changed from ModelInferenceError
+    AuthorizationError,
     # Add specific exceptions if they exist (e.g., MentalLLaMAInferenceError, PhiDetectionError)
 ) 
 # Import domain entities/services - Adjust paths if necessary
 from app.domain.entities.user import User
+from app.domain.entities.digital_twin import DigitalTwin # Corrected path
 # from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService # Use for spec if needed
 
 # Import presentation layer components
-from app.presentation.api.v1.endpoints.digital_twins import (
-    router as digital_twins_router,
-    get_digital_twin_service, # The dependency function to override
+from app.presentation.api.dependencies import (
+    get_digital_twin_service,
+    # get_patient_service, # Removed - Not found in dependencies
+    # get_provider_service, # Removed - Assuming also unused or moved
+    get_cache_service,
 )
+from app.presentation.api.v1.endpoints.digital_twins import router as digital_twins_router
+from app.domain.services.digital_twin_service import DigitalTwinService
+from app.domain.services.patient_service import PatientService
 from app.presentation.api.v1.schemas.digital_twin_schemas import (
     PersonalizedInsightResponse,
     BiometricCorrelationResponse,
@@ -43,7 +50,6 @@ from app.presentation.api.v1.schemas.digital_twin_schemas import (
     TreatmentPlanResponse,
     ClinicalTextAnalysisRequest,
     ClinicalTextAnalysisResponse,
-    DigitalTwinStatusResponse # Added missing schema
 )
 from app.presentation.api.dependencies.auth import get_current_user # Standard auth dependency
 
@@ -232,7 +238,7 @@ class TestDigitalTwinsEndpoints:
     @pytest.mark.asyncio
     async def test_get_comprehensive_insights_error(self, client, mock_digital_twin_service, sample_patient_id):
         """Test GET /digital-twins/{patient_id}/insights error handling"""
-        mock_digital_twin_service.generate_comprehensive_patient_insights.side_effect = ModelInferenceError("Insight generation failed")
+        mock_digital_twin_service.generate_comprehensive_patient_insights.side_effect = ModelExecutionError("Insight generation failed")
         
         response = await client.get(f"/digital-twins/{sample_patient_id}/insights")
         
@@ -277,17 +283,19 @@ class TestDigitalTwinsEndpoints:
     
     @pytest.mark.asyncio
     async def test_analyze_clinical_text_service_error(self, client, mock_digital_twin_service, sample_patient_id):
-        """Test POST /digital-twins/{patient_id}/analyze-text service error"""
-        request_data = {
-            "text": "Valid text.",
-            "analysis_type": "summary"
-        }
-        mock_digital_twin_service.analyze_clinical_text_mentallama.side_effect = ExternalServiceError("MentaLLaMA unavailable")
-        
-        response = await client.post(f"/digital-twins/{sample_patient_id}/analyze-text", json=request_data)
-        
-        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
-        assert "MentaLLaMA service failed" in response.json()["detail"]
+        """Test error handling for clinical text analysis."""
+        # Setup - Simulate service error
+        mock_digital_twin_service.analyze_clinical_text_mentallama.side_effect = ModelExecutionError("Inference failed")
+        request_data = {"text": "Patient reports feeling anxious.", "data_source": "session_notes"}
+
+        # Execute & Verify
+        with pytest.raises(ModelExecutionError):
+             client.post(f"/digital-twins/{sample_patient_id}/analyze-text", json=request_data)
+        # Check the actual response status code based on how ModelExecutionError is handled by FastAPI exception handlers
+        response = client.post(f"/digital-twins/{sample_patient_id}/analyze-text", json=request_data)
+        # Assuming ModelExecutionError maps to 500 Internal Server Error by default or via handler
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR 
+        assert "Inference failed" in response.json()["detail"] # Check if detail contains the error message
 
 
 # Add tests for other endpoints (/forecast, /correlations, /medication-response, /treatment-plan)

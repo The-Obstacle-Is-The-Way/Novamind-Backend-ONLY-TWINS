@@ -7,14 +7,18 @@ to enforce proper authentication and authorization boundaries.
 
 import pytest
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch, MagicMock
+import uuid
+import asyncio
 
-from app.infrastructure.security.jwt.jwt_service import JWTHandler
+from app.config.settings import get_settings
+from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 from app.infrastructure.security.password.password_handler import PasswordHandler
 from app.infrastructure.security.rbac.rbac_service import RBACService
-from app.domain.entities.security.role import Role
-from app.domain.entities.security.permission import Permission
+from app.domain.enums.role import Role
+from app.presentation.api.dependencies.auth import get_current_user
+from app.domain.exceptions import InvalidTokenError, TokenExpiredError
 
 
 @pytest.fixture
@@ -25,7 +29,7 @@ def security_components():
     Returns:
         Tuple of (jwt_handler, password_handler, role_manager)
     """
-    jwt_handler = JWTHandler(
+    jwt_handler = JWTService(
         secret_key="testkey12345678901234567890123456789",
         algorithm="HS256",
         access_token_expire_minutes=15
@@ -77,8 +81,8 @@ class TestSecurityBoundary:
         assert token_data.session_id == session_id
         
         # 6. Check permissions using role manager
-        assert role_manager.has_permission(token_data.role, Permission.VIEW_OWN_MEDICAL_RECORDS)
-        assert not role_manager.has_permission(token_data.role, Permission.VIEW_ALL_MEDICAL_RECORDS)
+        assert role_manager.has_permission(token_data.role, "view_own_medical_records")
+        assert not role_manager.has_permission(token_data.role, "view_all_medical_records")
 
     def test_token_expiration(self, security_components):
         """Test token expiration handling."""
@@ -86,7 +90,7 @@ class TestSecurityBoundary:
         jwt_handler, _, _ = security_components
         
         # Create a token with very short expiration
-        short_lived_jwt = JWTHandler(
+        short_lived_jwt = JWTService(
             secret_key="testkey12345678901234567890123456789",
             algorithm="HS256",
             access_token_expire_minutes=0.01  # 0.6 seconds
@@ -121,18 +125,18 @@ class TestSecurityBoundary:
         # Create tokens for different roles
         roles_and_permissions = {
             Role.PATIENT: [
-                Permission.VIEW_OWN_MEDICAL_RECORDS,
-                Permission.UPDATE_OWN_PROFILE
+                "view_own_medical_records",
+                "update_own_profile"
             ],
             Role.DOCTOR: [
-                Permission.VIEW_PATIENT_MEDICAL_RECORDS,
-                Permission.CREATE_MEDICAL_RECORD,
-                Permission.UPDATE_MEDICAL_RECORD
+                "view_patient_medical_records",
+                "create_medical_record",
+                "update_medical_record"
             ],
             Role.ADMIN: [
-                Permission.VIEW_ALL_MEDICAL_RECORDS,
-                Permission.MANAGE_USERS,
-                Permission.SYSTEM_CONFIGURATION
+                "view_all_medical_records",
+                "manage_users",
+                "system_configuration"
             ]
         }
         
@@ -216,12 +220,114 @@ class TestSecurityBoundary:
         admin_data = jwt_handler.verify_token(admin_token)
         nurse_data = jwt_handler.verify_token(nurse_token)
         
-        # Admin should have access to everything via ADMIN_ALL permission
-        assert role_manager.has_permission(admin_data.role, Permission.VIEW_PATIENT_MEDICAL_RECORDS)
-        assert role_manager.has_permission(admin_data.role, Permission.CREATE_PRESCRIPTION)
-        assert role_manager.has_permission(admin_data.role, Permission.PROCESS_PAYMENTS)
+        # Admin should have broad access (adjust permission strings as needed based on roles.py)
+        assert role_manager.has_permission(admin_data.role, "view_all_data")
+        assert role_manager.has_permission(admin_data.role, "manage_users")
+        assert role_manager.has_permission(admin_data.role, "manage_system")
         
         # Nurse should have limited permissions
-        assert role_manager.has_permission(nurse_data.role, Permission.VIEW_PATIENT_MEDICAL_RECORDS)
-        assert not role_manager.has_permission(nurse_data.role, Permission.CREATE_PRESCRIPTION)
-        assert not role_manager.has_permission(nurse_data.role, Permission.PROCESS_PAYMENTS)
+        assert role_manager.has_permission(nurse_data.role, "view_patient_data")
+        assert not role_manager.has_permission(nurse_data.role, "create_prescription")
+        assert not role_manager.has_permission(nurse_data.role, "process_payments")
+
+    async def test_token_generation_and_validation(self):
+        """Test generating and validating a standard token."""
+        settings = get_settings()
+        # Use JWTService
+        jwt_service = JWTService(settings=settings)
+        user_id = str(uuid.uuid4())
+        roles = ["admin"]
+
+        # Create token using JWTService
+        token = await jwt_service.create_access_token(subject=user_id, roles=roles)
+
+        assert isinstance(token, str)
+
+        # Decode token using JWTService
+        payload = await jwt_service.decode_token(token)
+
+        assert payload.sub == user_id
+        assert payload.roles == roles
+        assert payload.scope == "access_token"
+        assert payload.exp > int(datetime.now(timezone.utc).timestamp())
+
+    async def test_expired_token_validation(self):
+        """Test that an expired token raises TokenExpiredError."""
+        settings = get_settings()
+        # Use JWTService
+        jwt_service = JWTService(settings=settings)
+        user_id = str(uuid.uuid4())
+        # Create token that expired 1 hour ago
+        past_expiry = timedelta(hours=-1)
+        expired_token = jwt_service._create_token(
+            subject=user_id, 
+            expires_delta=past_expiry, 
+            scope="access_token", 
+            jti=str(uuid.uuid4())
+        )
+        
+        with pytest.raises(TokenExpiredError):
+             await jwt_service.decode_token(expired_token)
+
+    async def test_invalid_token_validation(self):
+        """Test that an invalid/tampered token raises InvalidTokenError."""
+        settings = get_settings()
+        # Use JWTService
+        jwt_service = JWTService(settings=settings)
+        invalid_token = "this.is.not.a.valid.token"
+
+        with pytest.raises(InvalidTokenError):
+            await jwt_service.decode_token(invalid_token)
+
+        # Test token with incorrect signature
+        user_id = str(uuid.uuid4())
+        token = await jwt_service.create_access_token(subject=user_id)
+        tampered_token = token[:-5] + "wrong"
+        with pytest.raises(InvalidTokenError):
+            await jwt_service.decode_token(tampered_token)
+            
+    async def test_token_with_minimal_payload(self):
+        """Test token validation with only required fields (sub, exp, iat, jti, scope)."""
+        settings = get_settings()
+        jwt_service = JWTService(settings=settings)
+        user_id = str(uuid.uuid4())
+        jti = str(uuid.uuid4())
+        # Create token using the internal helper with minimal claims
+        minimal_token = jwt_service._create_token(
+            subject=user_id,
+            expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+            scope="access_token",
+            jti=jti,
+            additional_claims=None # Explicitly no additional claims
+        )
+        payload = await jwt_service.decode_token(minimal_token)
+        assert payload.sub == user_id
+        assert payload.jti == jti
+        assert payload.scope == "access_token"
+        assert payload.roles is None
+        assert payload.permissions is None
+        assert payload.session_id is None
+
+    # Test for very short-lived tokens if necessary for specific security contexts
+    async def test_short_lived_token_validation(self):
+        """Test validation of a very short-lived token (e.g., 1 second)."""
+        settings = get_settings()
+        # Use JWTService
+        short_lived_jwt_service = JWTService(settings=settings)
+        user_id = str(uuid.uuid4())
+        short_expiry = timedelta(seconds=1)
+        short_lived_token = short_lived_jwt_service._create_token(
+            subject=user_id,
+            expires_delta=short_expiry,
+            scope="access_token",
+            jti=str(uuid.uuid4())
+        )
+        
+        # Token should be valid immediately after creation
+        payload = await short_lived_jwt_service.decode_token(short_lived_token)
+        assert payload.sub == user_id
+        
+        # Wait for slightly longer than expiration and check it fails
+        await asyncio.sleep(1.1)
+        with pytest.raises(TokenExpiredError):
+            await short_lived_jwt_service.decode_token(short_lived_token)

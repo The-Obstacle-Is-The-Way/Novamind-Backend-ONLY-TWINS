@@ -109,8 +109,8 @@ class MockDigitalTwinService(DigitalTwinInterface): # Corrected base class
         
         # Simulate processing time
         start_time = time.time()
-        processing_delay = random.uniform(0.2, 0.8)
-        time.sleep(processing_delay)
+        # processing_delay = random.uniform(0.1, 0.3) # Reduced delay
+        # time.sleep(processing_delay) # Remove blocking sleep
         
         # Generate session ID
         session_id = str(uuid.uuid4())
@@ -235,8 +235,8 @@ class MockDigitalTwinService(DigitalTwinInterface): # Corrected base class
         
         # Simulate processing time
         start_time = time.time()
-        processing_delay = random.uniform(0.5, 2.0)
-        time.sleep(processing_delay)
+        # processing_delay = random.uniform(0.1, 0.5) # Reduced delay
+        # time.sleep(processing_delay) # Remove blocking sleep
         
         # Determine response based on message
         response = self._get_response_for_message(message, session)
@@ -410,8 +410,8 @@ class MockDigitalTwinService(DigitalTwinInterface): # Corrected base class
         
         # Simulate processing time
         start_time = time.time()
-        processing_delay = random.uniform(0.5, 1.5)
-        time.sleep(processing_delay)
+        # processing_delay = random.uniform(0.5, 1.5)
+        # time.sleep(processing_delay) # Remove blocking sleep
         
         # Default insights
         insights = {}

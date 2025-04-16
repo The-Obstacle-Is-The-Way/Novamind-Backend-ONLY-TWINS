@@ -13,12 +13,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from sqlalchemy.orm import Session
 
-from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertStatus, AlertPriority
+from app.domain.services.biometric_event_processor import BiometricAlert, AlertStatus, AlertPriority
 from app.domain.exceptions import EntityNotFoundError, RepositoryError
 from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session # Corrected import
 from app.infrastructure.persistence.sqlalchemy.repositories.biometric_alert_repository import SQLAlchemyBiometricAlertRepository
-from app.presentation.api.dependencies.auth import get_current_user # Removed get_current_provider
+from app.presentation.api.dependencies.auth import get_current_user, verify_provider_access
 from app.presentation.api.schemas.biometric_alert import (
     AlertListResponseSchema,
     AlertStatusUpdateSchema,
@@ -28,6 +28,9 @@ from app.presentation.api.schemas.biometric_alert import (
     AlertStatusEnum
 )
 from app.presentation.api.schemas.user import UserResponseSchema
+from app.infrastructure.cache.redis_cache import RedisCache # Import directly
+from app.presentation.api.dependencies import get_cache_service, get_alert_repository
+from app.infrastructure.di.container import get_service
 
 
 router = APIRouter(

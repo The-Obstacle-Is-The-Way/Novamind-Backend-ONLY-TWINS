@@ -22,10 +22,11 @@ from fastapi.testclient import TestClient
 from app.infrastructure.cache.redis_cache import RedisCache # Assuming RedisCache is used
 # Correctly import router and endpoint functions/models we need to test or mock
 # Avoid importing the dependency provider (get_analytics_service) itself if possible
+from app.domain.entities.analytics import AnalyticsEvent
 from app.presentation.api.v1.endpoints.analytics_endpoints import (
     router,
     # get_analytics_service, # Don't import the dependency provider
-    AnalyticsEvent # Import the Pydantic model
+    # AnalyticsEvent # Import the Pydantic model
 )
 
 # Import the *actual* service for type hints where necessary

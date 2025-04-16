@@ -37,13 +37,13 @@ from app.domain.services.biometric_event_processor import (
 ) # Corrected import syntax
 
 from app.domain.entities.biometric_twin import BiometricDataPoint
-from app.domain.enums import AlertStatus  # Added import
+from app.presentation.api.schemas.biometric_alert import AlertStatusEnum as AlertStatus
+
+from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 from app.presentation.api.v1.endpoints.biometric_alerts import (
     router,
-    get_biometric_event_processor,
-    get_clinical_rule_engine,
     get_alert_repository,
-    get_rule_repository,
+    # get_rule_repository,
     # Assuming get_current_user_id is imported/defined correctly for dependency injection
     # If not, it needs to be imported or mocked appropriately
     # get_current_user_id
@@ -59,19 +59,19 @@ from app.presentation.api.v1.schemas.biometric_alert_schemas import (
     AlertRuleTemplateResponse,
     AlertRuleTemplateListResponse,
     AlertAcknowledgementRequest,
-    AlertStatusEnum,  # Added import
     AlertPriorityEnum,  # Added import
 ) # Corrected import syntax
 
 
 # Corrected imports based on likely structure - adjust if actual paths differ
-from app.domain.enums import AlertStatus # Assuming AlertStatus enum is here
+# Remove incorrect AlertStatus import from enums
+# from app.domain.enums import AlertStatus
 from app.presentation.api.dependencies.auth import get_current_user # Import standard dependency
 from app.domain.entities.user import User # Import User for mocking
 # ... existing imports ...
 
-# Assuming BaseRepository exists for type hinting - Check actual path
-from app.domain.repositories import BaseRepository # Assuming BaseRepository is here
+# Removed faulty import
+# from app.domain.repositories import BaseRepository # Assuming BaseRepository is here
 
 
 @pytest.fixture
@@ -120,23 +120,12 @@ def mock_clinical_rule_engine():
 @pytest.fixture
 def mock_alert_repository():
     """Create a mock alert repository."""
-    repository = AsyncMock(spec=BaseRepository)  # Use a base spec if available
+    repository = AsyncMock(spec=BiometricAlertRepository)  # Use the actual repository spec
     repository.get_alerts = AsyncMock()
     repository.get_alert_by_id = AsyncMock()
     repository.create_alert = AsyncMock()
     repository.update_alert = AsyncMock()
     repository.delete_alert = AsyncMock()
-    return repository # Fixed return statement
-
-@pytest.fixture
-def mock_rule_repository():
-    """Create a mock rule repository."""
-    repository = AsyncMock(spec=BaseRepository)  # Use a base spec if available
-    repository.get_rules = AsyncMock()
-    repository.get_rule_by_id = AsyncMock()
-    repository.create_rule = AsyncMock()
-    repository.update_rule = AsyncMock()
-    repository.delete_rule = AsyncMock()
     return repository # Fixed return statement
 
 @pytest.fixture
@@ -151,27 +140,26 @@ def app(
     mock_biometric_event_processor,
     mock_clinical_rule_engine,
     mock_alert_repository,
-    mock_rule_repository,
     mock_current_user, # Use the new user mock
 ):
     """Create a FastAPI test app with the biometric alerts router."""
     app_instance = FastAPI()
 
-    # Override dependencies
-    app_instance.dependency_overrides[
-        get_biometric_event_processor
-    ] = lambda: mock_biometric_event_processor
-    app_instance.dependency_overrides[
-        get_clinical_rule_engine
-    ] = lambda: mock_clinical_rule_engine
+    # Override dependencies - Remove overrides relying on non-existent getters
+    # app_instance.dependency_overrides[
+    #     get_biometric_event_processor
+    # ] = lambda: mock_biometric_event_processor
+    # app_instance.dependency_overrides[
+    #     get_clinical_rule_engine
+    # ] = lambda: mock_clinical_rule_engine
     app_instance.dependency_overrides[
         get_alert_repository
     ] = lambda: mock_alert_repository
-    app_instance.dependency_overrides[
-        get_rule_repository
-    ] = lambda: mock_rule_repository
+    # app_instance.dependency_overrides[
+    #     get_rule_repository
+    # ] = lambda: mock_rule_repository
     # Override the standard user dependency
-    app_instance.dependency_overrides[get_current_user] = lambda: mock_current_user 
+    app_instance.dependency_overrides[get_current_user] = lambda: mock_current_user
 
     # Include router
     app_instance.include_router(router)

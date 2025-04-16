@@ -23,7 +23,10 @@ from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from app.domain.exceptions import ModelInferenceError, ValidationError
+# Import relevant exceptions from core layer as a temporary workaround
+from app.core.exceptions.base_exceptions import ModelExecutionError
+from app.domain.exceptions import ValidationError
+from app.infrastructure.ml.base.base_model import BaseModel
 
 
 class PharmacogenomicsModel:
@@ -139,7 +142,7 @@ class PharmacogenomicsModel:
             logging.info(f"Loaded pharmacogenomics model from {model_path}")
         except Exception as e:
             logging.error(f"Error loading pharmacogenomics model: {str(e)}")
-            raise ModelInferenceError(
+            raise ModelExecutionError(
                 f"Failed to load pharmacogenomics model: {str(e)}"
             )
 
@@ -372,7 +375,7 @@ class PharmacogenomicsModel:
 
         except Exception as e:
             logging.error(f"Error training pharmacogenomics model: {str(e)}")
-            raise ModelInferenceError(
+            raise ModelExecutionError(
                 f"Failed to train pharmacogenomics model: {str(e)}"
             )
 
@@ -395,7 +398,7 @@ class PharmacogenomicsModel:
         """
         try:
             if not self.models:
-                raise ModelInferenceError("Model has not been trained or loaded")
+                raise ModelExecutionError("Model has not been trained or loaded")
 
             # Use all medications if not specified
             if medications is None:
@@ -456,7 +459,7 @@ class PharmacogenomicsModel:
 
         except Exception as e:
             logging.error(f"Error predicting medication response: {str(e)}")
-            raise ModelInferenceError(
+            raise ModelExecutionError(
                 f"Failed to predict medication response: {str(e)}"
             )
 
@@ -563,7 +566,7 @@ class PharmacogenomicsModel:
 
         except Exception as e:
             logging.error(f"Error analyzing gene-medication interactions: {str(e)}")
-            raise ModelInferenceError(
+            raise ModelExecutionError(
                 f"Failed to analyze gene-medication interactions: {str(e)}"
             )
 
@@ -812,7 +815,7 @@ class PharmacogenomicsModel:
 
         except Exception as e:
             logging.error(f"Error predicting side effects: {str(e)}")
-            raise ModelInferenceError(f"Failed to predict side effects: {str(e)}")
+            raise ModelExecutionError(f"Failed to predict side effects: {str(e)}")
 
     def get_model_info(self) -> Dict[str, Any]:
         """

@@ -29,7 +29,7 @@ from app.core.exceptions import (
 def mock_dt_service(request):
     """Pytest fixture to set up and tear down MockDigitalTwinService for each test."""
     service = MockDigitalTwinService()
-    service.initialize({})
+    service.initialize({"mock_config": True})
 
     patient_data = {
         "patient_id": "test-patient-123",

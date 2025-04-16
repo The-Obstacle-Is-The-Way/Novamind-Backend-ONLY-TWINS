@@ -7,13 +7,26 @@ import pytest
 from unittest.mock import patch, MagicMock
 import base64
 import json # Moved import to top level
+from cryptography.fernet import Fernet
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
 
-# Use infrastructure layer imports
-from app.infrastructure.security.encryption import (
-    encrypt_value,
-    decrypt_value,
-    get_encryption_key,
+# Correct import path for Patient model
+from app.infrastructure.persistence.sqlalchemy.models.patient import Patient as PatientModel
+# from app.infrastructure.persistence.sqlalchemy.models.patient_model import PatientModel # Old incorrect path
+
+# Correct import path for SQLAlchemy Base
+from app.infrastructure.persistence.sqlalchemy.config.base import Base
+
+# Corrected import path
+from app.infrastructure.security.encryption.base_encryption_service import (
+    get_encryption_key, encrypt_value, decrypt_value
 )
+
+# from app.infrastructure.security.encryption.field_encryptor import encrypt_value, decrypt_value # Commented out problematic import
+from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
 
 
 @pytest.fixture(scope="module") # Use module scope for efficiency
@@ -313,3 +326,4 @@ class TestPatientEncryption:
         # Mock decrypt_value to raise an error for this specific test case
         with patch('app.infrastructure.security.encryption.decrypt_value', side_effect=Exception("Decryption failed")):
              assert patient.first_name is None
+    

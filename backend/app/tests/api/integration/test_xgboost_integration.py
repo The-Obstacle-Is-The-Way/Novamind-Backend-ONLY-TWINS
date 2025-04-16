@@ -57,7 +57,7 @@ def client():
 
 
 # Override dependencies for testing
-@pytest.fixture(autouse=True)
+# @pytest.fixture(autouse=True) # Temporarily disable this fixture
 def mock_auth_dependencies():
     """Mock authentication dependencies for all tests."""
     # TODO: Update patch targets if auth dependency locations changed
@@ -77,7 +77,7 @@ def mock_auth_dependencies():
         yield
 
 
-@pytest.fixture
+# @pytest.fixture # Temporarily disable this fixture
 def mock_service():
     """Set up a real MockXGBoostService for integration testing."""
     # Create a real mock service instance

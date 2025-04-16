@@ -22,13 +22,22 @@ from app.domain.exceptions import (
 
 # Assuming these dependencies exist in the specified path
 # Corrected dependency import syntax
+from app.presentation.api.dependencies.auth import get_current_user # Removed get_current_user_id, get_current_user_role
+from app.domain.entities.biometric_twin import BiometricDataPoint # Import corrected
+# Correct import for the dependency function
 from app.presentation.api.v1.endpoints.biometric_endpoints import (
-    get_current_user_id,
     get_patient_id,
-    get_current_user_role,
     require_clinician_role,
     require_admin_role,
+    # router, # Removed - Endpoint modules typically don't export routers directly
+    # get_biometric_twin_service, # Moved import to dependencies
+    # BiometricDataBatchRequest, # This is a schema, should not be imported from endpoint
+    # BiometricDataResponse # This is also a schema
 )
+# Import service dependencies from the correct location
+from app.presentation.api.dependencies.services import get_digital_twin_service # Corrected service name
+# Import schema from the correct location
+from app.presentation.api.v1.schemas.biometric_schemas import BiometricDataPointBatchCreate, BiometricDataPointResponse
 
 # Assuming JWTService exists for mocking
 # from app.infrastructure.security.jwt_service import JWTService
@@ -66,9 +75,9 @@ def app(mock_jwt_service): # Removed redundant decorator
     # Define test endpoints using the dependencies
     @app_instance.get("/test/user-id")
     async def test_get_current_user_id_endpoint(
-        user_id: UUID = Depends(get_current_user_id) 
+        current_user: User = Depends(get_current_user) # Depend on get_current_user
     ):
-        return {"user_id": str(user_id)}
+        return {"user_id": str(current_user.id)} # Extract ID from user object
 
     @app_instance.get("/test/patient/{patient_id}")
     async def test_get_patient_id_endpoint(
@@ -78,23 +87,23 @@ def app(mock_jwt_service): # Removed redundant decorator
 
     @app_instance.get("/test/user-role")
     async def test_get_current_user_role_endpoint(
-        role: str = Depends(get_current_user_role)
+        current_user: User = Depends(get_current_user) # Depend on get_current_user
     ):
-        return {"role": role}
+        return {"role": current_user.role} # Extract role from user object
 
     @app_instance.get("/test/clinician-only")
     async def test_require_clinician_role_endpoint(
         _: None = Depends(require_clinician_role),
-        user_id: UUID = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user) # Depend on get_current_user
     ):
-        return {"user_id": str(user_id)}
+        return {"user_id": str(current_user.id)} # Return user_id for assertion
 
     @app_instance.get("/test/admin-only")
     async def test_require_admin_role_endpoint(
         _: None = Depends(require_admin_role),
-        user_id: UUID = Depends(get_current_user_id)
+        current_user: User = Depends(get_current_user) # Depend on get_current_user
     ):
-        return {"user_id": str(user_id)}
+        return {"user_id": str(current_user.id)} # Return user_id for assertion
 
     return app_instance
 

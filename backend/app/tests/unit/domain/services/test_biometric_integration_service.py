@@ -14,12 +14,18 @@ from uuid import UUID, uuid4
 from typing import Any
 
 # Correct import for BiometricTwin
-from app.domain.entities.biometric_twin import BiometricTwin
-from app.domain.entities.biometric_twin_enhanced import BiometricDataPoint
-# Correct repository import path
+from app.domain.entities.digital_twin.digital_twin import DigitalTwin
+from app.domain.entities.patient import Patient
+from app.domain.entities.provider import Provider
+# Correct import path for BiometricTwin
+from app.domain.entities.biometric_twin_enhanced import BiometricTwin
 from app.domain.repositories.biometric_twin_repository import BiometricTwinRepository
 from app.domain.services.biometric_integration_service import BiometricIntegrationService
-from app.domain.exceptions import BiometricIntegrationError
+from app.domain.exceptions import DomainError
+from app.domain.services.digital_twin_service import DigitalTwinService
+# from app.infrastructure.external.devices.interface import WearableDevice  # Commented out: Path seems incorrect and usage unclear
+# Keep existing BiometricDataPoint import if needed by tests
+from app.domain.entities.biometric_twin import BiometricDataPoint
 
 
 @pytest.mark.db_required()  # Assuming db_required is a valid marker
@@ -86,7 +92,7 @@ class TestBiometricIntegrationService:
         mock_repository.get_by_patient_id.side_effect = Exception("Database error")
 
         # Act & Assert
-        with pytest.raises(BiometricIntegrationError) as exc_info:
+        with pytest.raises(DomainError) as exc_info:
             await service.get_or_create_biometric_twin(patient_id)
             
         assert "Failed to get or create biometric twin" in str(exc_info.value)
@@ -124,7 +130,7 @@ class TestBiometricIntegrationService:
         # Check the argument passed to add_data_point
         call_args, _ = mock_twin.add_data_point.call_args
         added_dp = call_args[0]
-        assert isinstance(added_dp, BiometricDataPoint)
+        assert isinstance(added_dp, BiometricTwin)
         assert added_dp.data_type == "heart_rate"
         
         mock_repository.save.assert_called_once_with(mock_twin)
@@ -137,7 +143,7 @@ class TestBiometricIntegrationService:
         service.get_or_create_biometric_twin = AsyncMock(side_effect=Exception("Repository error"))
         
         # Act & Assert
-        with pytest.raises(BiometricIntegrationError) as exc_info:
+        with pytest.raises(DomainError) as exc_info:
             await service.add_biometric_data(
                 patient_id=patient_id,
                 data_type="heart_rate",
@@ -196,21 +202,21 @@ class TestBiometricIntegrationService:
         # Create some test data points
         now = datetime.now(UTC)
         data_points = [
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="heart_rate",
                 value=75,
                 timestamp=now,
                 source="smartwatch",
                 patient_id=patient_id
             ),
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="heart_rate",
                 value=80,
                 timestamp=now - timedelta(hours=1),
                 source="smartwatch",
                 patient_id=patient_id
             ),
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="blood_pressure",
                 value="120/80",
                 timestamp=now,
@@ -275,28 +281,28 @@ class TestBiometricIntegrationService:
         # Mock the get_biometric_data method to return test data
         now = datetime.now(UTC)
         test_data = [
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="heart_rate",
                 value=70,
                 timestamp=now - timedelta(days=3),
                 source="smartwatch",
                 patient_id=patient_id
             ),
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="heart_rate",
                 value=75,
                 timestamp=now - timedelta(days=2),
                 source="smartwatch",
                 patient_id=patient_id
             ),
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="heart_rate",
                 value=80,
                 timestamp=now - timedelta(days=1),
                 source="smartwatch",
                 patient_id=patient_id
             ),
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="heart_rate",
                 value=85,
                 timestamp=now,
@@ -352,7 +358,7 @@ class TestBiometricIntegrationService:
         # Mock the get_data_points_by_type method to return sufficient data
         now = datetime.now(UTC)
         heart_rate_data = [
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="heart_rate",
                 value=70 + i,
                 timestamp=now - timedelta(hours=i),
@@ -362,7 +368,7 @@ class TestBiometricIntegrationService:
         ]
         
         sleep_data = [
-            BiometricDataPoint(
+            BiometricTwin(
                 data_type="sleep_quality",
                 value=0.8 - (i * 0.05),
                 timestamp=now - timedelta(hours=i),

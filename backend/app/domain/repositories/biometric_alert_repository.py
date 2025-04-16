@@ -9,11 +9,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_alert import (
-    AlertPriority,
-    AlertStatus,
-    BiometricAlert,
-)
+from app.domain.services.biometric_event_processor import BiometricAlert, AlertPriority
 
 
 class BiometricAlertRepository(ABC):
@@ -22,6 +18,7 @@ class BiometricAlertRepository(ABC):
     
     This abstract class defines the contract that any concrete repository
     implementation must follow for BiometricAlert data access operations.
+    Handles persistence of alerts based on their acknowledged state.
     """
     
     @abstractmethod
@@ -41,7 +38,7 @@ class BiometricAlertRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_by_id(self, alert_id: UUID) -> BiometricAlert | None:
+    async def get_by_id(self, alert_id: UUID | str) -> BiometricAlert | None:
         """
         Retrieve a biometric alert by its ID.
         
@@ -60,7 +57,7 @@ class BiometricAlertRepository(ABC):
     async def get_by_patient_id(
         self,
         patient_id: UUID,
-        status: AlertStatus | None = None,
+        acknowledged: bool | None = None,
         start_date: datetime | None = None,
         end_date: datetime | None = None,
         limit: int = 100,
@@ -71,7 +68,7 @@ class BiometricAlertRepository(ABC):
         
         Args:
             patient_id: ID of the patient
-            status: Optional filter by alert status
+            acknowledged: Optional filter by acknowledged status (True/False)
             start_date: Optional start date for filtering
             end_date: Optional end date for filtering
             limit: Maximum number of alerts to return
@@ -86,22 +83,24 @@ class BiometricAlertRepository(ABC):
         pass
     
     @abstractmethod
-    async def get_active_alerts(
+    async def get_unacknowledged_alerts(
         self,
         priority: AlertPriority | None = None,
+        patient_id: UUID | None = None,
         limit: int = 100,
         offset: int = 0
     ) -> list[BiometricAlert]:
         """
-        Retrieve active (non-resolved) biometric alerts.
+        Retrieve unacknowledged (active) biometric alerts.
         
         Args:
             priority: Optional filter by alert priority
+            patient_id: Optional filter by patient ID
             limit: Maximum number of alerts to return
             offset: Number of alerts to skip for pagination
             
         Returns:
-            List of active biometric alerts matching the criteria
+            List of active (unacknowledged) biometric alerts matching the criteria
             
         Raises:
             RepositoryError: If there's an error retrieving the alerts
@@ -109,33 +108,7 @@ class BiometricAlertRepository(ABC):
         pass
     
     @abstractmethod
-    async def update_status(
-        self,
-        alert_id: UUID,
-        status: AlertStatus,
-        provider_id: UUID,
-        notes: str | None = None
-    ) -> BiometricAlert:
-        """
-        Update the status of a biometric alert.
-        
-        Args:
-            alert_id: ID of the alert to update
-            status: New status for the alert
-            provider_id: ID of the provider making the update
-            notes: Optional notes about the status update
-            
-        Returns:
-            The updated biometric alert
-            
-        Raises:
-            EntityNotFoundError: If the alert doesn't exist
-            RepositoryError: If there's an error updating the alert
-        """
-        pass
-    
-    @abstractmethod
-    async def delete(self, alert_id: UUID) -> bool:
+    async def delete(self, alert_id: UUID | str) -> bool:
         """
         Delete a biometric alert from the repository.
         
@@ -154,7 +127,7 @@ class BiometricAlertRepository(ABC):
     async def count_by_patient(
         self,
         patient_id: UUID,
-        status: AlertStatus | None = None,
+        acknowledged: bool | None = None,
         start_date: datetime | None = None,
         end_date: datetime | None = None
     ) -> int:
@@ -163,7 +136,7 @@ class BiometricAlertRepository(ABC):
         
         Args:
             patient_id: ID of the patient
-            status: Optional filter by alert status
+            acknowledged: Optional filter by acknowledged status (True/False)
             start_date: Optional start date for filtering
             end_date: Optional end date for filtering
             

@@ -9,15 +9,22 @@ analyzes genetic data and predicts medication responses.
 import pytest
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
+from typing import Dict, Any, Optional
+from pytest_mock import MockerFixture
 
 from app.infrastructure.ml.pharmacogenomics.model_service import PharmacogenomicsService
 # Corrected import
 from app.infrastructure.ml.pharmacogenomics.gene_medication_model import GeneMedicationModel
-from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel
-from app.core.exceptions.ml_exceptions import ModelServiceError # Assuming this exception exists
+# Corrected exception imports based on definitive source location
+from app.core.exceptions import ValidationError
+from app.core.exceptions.base_exceptions import ModelExecutionError
+from app.config import settings # Corrected path: app.config.settings
+from app.domain.entities.digital_twin import DigitalTwin # Corrected import name
+from app.domain.entities.pgx import PGXReport, PGXResult # Correct import path
+from app.domain.entities.patient import Patient
 
 # Define test class
 class TestPharmacogenomicsService:
@@ -420,3 +427,217 @@ class TestPharmacogenomicsService:
         assert "treatment_model" in result
         assert result["gene_medication_model"]["name"] == "GeneMedicationModel"
         assert result["treatment_model"]["name"] == "PharmacogenomicsModel"
+
+    @pytest.mark.asyncio
+    async def test_predict_treatment_response_success(
+        self,
+        pharmacogenomics_service: PharmacogenomicsService,
+        mocker: MockerFixture,
+        test_patient: Patient,
+        test_report: PGXReport,
+    ):
+        # Mock the model's predict method
+        mock_predict = mocker.patch.object(
+            pharmacogenomics_service.model, "predict_treatment_response", new_callable=AsyncMock
+        )
+        mock_predict.return_value = {
+            "medication_recommendations": [
+                {"medication": "fluoxetine", "recommendation": "Recommended"},
+                {"medication": "sertraline", "recommendation": "Consider"},
+            ],
+            "prediction_generated_at": datetime.now(UTC).isoformat(),
+        }
+
+        # Mock the report service
+        mock_report_service = mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PharmacogenomicReportService",
+            autospec=True,
+        )
+        mock_report_service.get_latest_report_by_patient_id.return_value = test_report
+
+        # Mock the patient service
+        mock_patient_service = mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PatientService",
+            autospec=True,
+        )
+        mock_patient_service.get_patient_by_id.return_value = test_patient
+
+        # Create mock patient data (simplified)
+        patient_data = {"age": 30, "sex": "Female", "genetic_markers": test_report.genetic_markers}
+
+        result = await pharmacogenomics_service.predict_treatment_response(
+            test_patient.id, patient_data
+        )
+
+        assert "medication_recommendations" in result
+        assert len(result["medication_recommendations"]) > 0
+        assert "prediction_generated_at" in result
+        mock_predict.assert_called_once()
+        # Check that the model's predict was called with the combined data
+        call_args, _ = mock_predict.call_args
+        assert call_args[0] == test_patient.id
+        # Ensure the model received the expected structure
+        assert "age" in call_args[1]
+        assert "sex" in call_args[1]
+        assert "genetic_markers" in call_args[1]
+
+    @pytest.mark.asyncio
+    async def test_analyze_gene_medication_interactions_success(
+        self,
+        pharmacogenomics_service: PharmacogenomicsService,
+        mocker: MockerFixture,
+        test_patient: Patient,
+        test_report: PGXReport,
+    ):
+        # Mock the model's analyze method
+        mock_analyze = mocker.patch.object(
+            pharmacogenomics_service.model,
+            "analyze_gene_medication_interactions",
+            new_callable=AsyncMock,
+        )
+        mock_analyze.return_value = {
+            "gene_medication_interactions": [
+                {
+                    "gene": "CYP2D6",
+                    "variant": "poor_metabolizer",
+                    "medication": "fluoxetine",
+                    "recommendation": "Consider dose adjustment",
+                }
+            ],
+            "analysis_generated_at": datetime.now(UTC).isoformat(),
+        }
+
+        # Mock the report service
+        mock_report_service = mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PharmacogenomicReportService",
+            autospec=True,
+        )
+        mock_report_service.get_latest_report_by_patient_id.return_value = test_report
+
+        # Mock the patient service
+        mock_patient_service = mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PatientService",
+            autospec=True,
+        )
+        mock_patient_service.get_patient_by_id.return_value = test_patient
+
+        # Create mock patient data
+        patient_data = {"genetic_markers": test_report.genetic_markers}
+
+        result = await pharmacogenomics_service.analyze_gene_medication_interactions(
+            test_patient.id, patient_data
+        )
+
+        assert "gene_medication_interactions" in result
+        assert len(result["gene_medication_interactions"]) > 0
+        assert "analysis_generated_at" in result
+        mock_analyze.assert_called_once_with(test_report.genetic_markers)
+
+    @pytest.mark.asyncio
+    async def test_predict_side_effects_success(
+        self,
+        pharmacogenomics_service: PharmacogenomicsService,
+        mocker: MockerFixture,
+        test_patient: Patient,
+        test_report: PGXReport,
+    ):
+        # Mock the model's predict_side_effects method
+        mock_predict_se = mocker.patch.object(
+            pharmacogenomics_service.model, "predict_side_effects", new_callable=AsyncMock
+        )
+        mock_predict_se.return_value = {
+            "medication": "fluoxetine",
+            "side_effects": [
+                {"side_effect": "nausea", "probability": 0.3},
+                {"side_effect": "insomnia", "probability": 0.2},
+            ],
+            "prediction_generated_at": datetime.now(UTC).isoformat(),
+        }
+
+        # Mock the report service and patient service (as before)
+        mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PharmacogenomicReportService",
+            autospec=True,
+        ).get_latest_report_by_patient_id.return_value = test_report
+        mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PatientService",
+            autospec=True,
+        ).get_patient_by_id.return_value = test_patient
+
+        # Create mock patient data
+        patient_data = {"age": 30, "sex": "Female", "genetic_markers": test_report.genetic_markers}
+        medication_name = "fluoxetine"
+
+        result = await pharmacogenomics_service.predict_side_effects(
+            test_patient.id, patient_data, medication_name
+        )
+
+        assert "medication" in result
+        assert result["medication"] == medication_name
+        assert "side_effects" in result
+        assert len(result["side_effects"]) > 0
+        assert "prediction_generated_at" in result
+        mock_predict_se.assert_called_once()
+        call_args, _ = mock_predict_se.call_args
+        assert call_args[0] == test_patient.id
+        assert "genetic_markers" in call_args[1] # Check patient_data arg
+        assert call_args[2] == medication_name # Check medication arg
+
+    @pytest.mark.asyncio
+    async def test_pharmacogenomics_service_handles_model_execution_error(
+        self,
+        pharmacogenomics_service: PharmacogenomicsService,
+        mocker: MockerFixture,
+        test_patient: Patient,
+    ):
+        # Mock the model's predict method to raise ModelExecutionError
+        mock_predict = mocker.patch.object(
+            pharmacogenomics_service.model, "predict_treatment_response", new_callable=AsyncMock
+        )
+        mock_predict.side_effect = ModelExecutionError("Model prediction failed")
+
+        # Mock services (as before)
+        mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PharmacogenomicReportService",
+            autospec=True,
+        ).get_latest_report_by_patient_id.return_value = MagicMock(spec=PGXReport)
+        mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PatientService",
+            autospec=True,
+        ).get_patient_by_id.return_value = test_patient
+
+        patient_data = {"age": 30, "sex": "Female", "genetic_markers": {}}
+
+        with pytest.raises(ModelExecutionError, match="Model prediction failed"):
+            await pharmacogenomics_service.predict_treatment_response(
+                test_patient.id, patient_data
+            )
+
+    @pytest.mark.asyncio
+    async def test_pharmacogenomics_service_handles_validation_error(
+        self,
+        pharmacogenomics_service: PharmacogenomicsService,
+        mocker: MockerFixture,
+        test_patient: Patient,
+    ):
+        # No need to mock the model itself, validation happens before model call
+        # Mock services (as before)
+        mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PharmacogenomicReportService",
+            autospec=True,
+        ).get_latest_report_by_patient_id.return_value = MagicMock(spec=PGXReport)
+        mocker.patch(
+            "app.infrastructure.ml.pharmacogenomics.model_service.PatientService",
+            autospec=True,
+        ).get_patient_by_id.return_value = test_patient
+
+        # Provide invalid patient data (e.g., missing genetic_markers for analysis)
+        invalid_patient_data = {"age": 30, "sex": "Female"}
+
+        with pytest.raises(ValidationError, match="Patient data must include genetic markers"):
+            await pharmacogenomics_service.analyze_gene_medication_interactions(
+                test_patient.id, invalid_patient_data
+            )
+
+    # Test cases for the helper methods could be added here if they were complex
+    # e.g., _extract_patient_features, _validate_patient_data

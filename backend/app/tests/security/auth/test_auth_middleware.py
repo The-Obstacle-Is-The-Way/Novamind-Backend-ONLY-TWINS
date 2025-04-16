@@ -10,14 +10,18 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from starlette.responses import Response
 from starlette.testclient import TestClient
 import sys
+from datetime import datetime, timezone
+import uuid
 
 # Update import path for AuthenticationMiddleware
 from app.presentation.middleware.authentication_middleware import (
     AuthenticationMiddleware,
 )
 
-# Update import path for the dependency function
-from app.presentation.api.dependencies.auth import get_jwt_service
+# Remove import of non-existent get_jwt_service
+# from app.presentation.api.dependencies.auth import get_jwt_service
+# Import necessary dependencies that are actually used (like get_current_user)
+from app.presentation.api.dependencies.auth import get_current_user
 
 
 
@@ -214,6 +218,39 @@ class TestAuthMiddleware(BaseSecurityTest):
                 "patient_id": patient_id,
                  "accessed_by": user.id
             }
+
+        # Mock the JWTService to raise an expired error
+        mock_jwt_service_expired = AsyncMock(spec=JWTService)
+        mock_jwt_service_expired.decode_token.side_effect = TokenExpiredError()
+        
+        # Override get_current_user to simulate expired token scenario
+        async def override_get_current_user_expired():
+            # Simulate get_current_user when token decoding results in TokenExpiredError
+            # It should raise an HTTPException 401
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+            
+        app.dependency_overrides[get_current_user] = override_get_current_user_expired
+
+        # Mock the JWTService to raise an invalid token error
+        mock_jwt_service_invalid = AsyncMock(spec=JWTService)
+        mock_jwt_service_invalid.decode_token.side_effect = InvalidTokenError()
+
+        # Override get_current_user to simulate invalid token scenario
+        async def override_get_current_user_invalid():
+            # Simulate get_current_user when token decoding results in InvalidTokenError
+            # It should raise an HTTPException 401
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+            
+        app.dependency_overrides[get_current_user] = override_get_current_user_invalid
+
         return app
 
     @pytest.fixture

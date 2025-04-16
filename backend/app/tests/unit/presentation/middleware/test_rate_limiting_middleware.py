@@ -9,16 +9,17 @@ from starlette.routing import Route
 from starlette.testclient import TestClient
 from fastapi import status
 
-from app.infrastructure.security.rate_limiting.limiter import (
-    RateLimiter,
-    RateLimitConfig,
-    RateLimitExceeded,
-    InMemoryRateLimiter,
-)
+# Corrected import
+# from app.infrastructure.security.rate_limiting.limiter import (
+#     RateLimiter,
+#     RateLimitConfig,
+#     RateLimitExceeded,
+#     InMemoryRateLimiter,
+# )
 
 from app.presentation.middleware.rate_limiting_middleware import (
     RateLimitingMiddleware,
-    create_rate_limiting_middleware,
+    # create_rate_limiting_middleware, # Removed import of non-existent factory
 )
 
 

@@ -9,7 +9,7 @@ and maintain separation between domain and infrastructure layers.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_rule import AlertPriority, BiometricRule
+from app.domain.entities.biometric_rule import AlertPriority, BiometricRule
 
 
 class BiometricRuleRepository(ABC):

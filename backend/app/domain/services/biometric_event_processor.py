@@ -24,6 +24,13 @@ class AlertPriority(Enum):
     WARNING = "warning"
     INFORMATIONAL = "informational"
 
+# Define AlertStatus enum here
+class AlertStatus(Enum):
+    """Status of biometric alerts."""
+    NEW = "new"
+    ACKNOWLEDGED = "acknowledged"
+    RESOLVED = "resolved"
+    DISMISSED = "dismissed"
 
 class AlertRule:
     """Rule for triggering biometric alerts."""

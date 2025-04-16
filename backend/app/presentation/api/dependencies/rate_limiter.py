@@ -127,3 +127,29 @@ class RateLimitDependency:
         await cache.expire(cache_key, window_seconds)
         
         return False
+
+# --- Factory Functions --- (Likely missing definitions)
+
+def rate_limit(
+    api_tier: str = "standard", 
+    max_requests: Optional[int] = None, 
+    window_seconds: Optional[int] = None
+) -> RateLimitDependency:
+    """Factory for standard rate limit dependency."""
+    return RateLimitDependency(api_tier, max_requests, window_seconds)
+
+def sensitive_rate_limit(
+    api_tier: str = "sensitive", 
+    max_requests: Optional[int] = 5, # Example: Lower limit for sensitive ops
+    window_seconds: Optional[int] = 60
+) -> RateLimitDependency:
+    """Factory for sensitive operation rate limit dependency."""
+    return RateLimitDependency(api_tier, max_requests, window_seconds)
+
+def admin_rate_limit(
+    api_tier: str = "admin", 
+    max_requests: Optional[int] = 1000, # Example: Higher limit for admin ops
+    window_seconds: Optional[int] = 60 
+) -> RateLimitDependency:
+    """Factory for admin operation rate limit dependency."""
+    return RateLimitDependency(api_tier, max_requests, window_seconds)

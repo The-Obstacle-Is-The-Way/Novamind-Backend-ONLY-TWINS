@@ -5,9 +5,9 @@ import pandas as pd
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch, AsyncMock
 
-from app.infrastructure.ml.symptom_forecasting.ensemble_model import EnsembleModel
-from app.infrastructure.ml.symptom_forecasting.transformer_model import TransformerModel
-from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostModel
+from app.infrastructure.ml.symptom_forecasting.transformer_model import SymptomTransformerModel as TransformerModel
+from app.infrastructure.ml.symptom_forecasting.xgboost_model import XGBoostSymptomModel
+from app.infrastructure.ml.symptom_forecasting.ensemble_model import SymptomForecastingEnsemble
 
 class TestEnsembleModel:
     """Test suite for the EnsembleModel class."""
@@ -27,7 +27,7 @@ class TestEnsembleModel:
     @pytest.fixture
     def mock_xgboost_model(self):
         """Create a mock XGBoost model."""
-        model = MagicMock(spec=XGBoostModel)
+        model = MagicMock(spec=XGBoostSymptomModel)
         model.predict = AsyncMock(return_value=np.array([4.0, 3.9, 3.7, 3.5, 3.3]))
         return model
 
@@ -40,7 +40,7 @@ class TestEnsembleModel:
     ):
         """Create an ensemble model with mock component models."""
         # Create an ensemble model with mock component models
-        ensemble = EnsembleModel(settings=ml_settings)
+        ensemble = SymptomForecastingEnsemble(settings=ml_settings)
 
         # Replace the actual model components with mocks
         ensemble.models = {
@@ -71,7 +71,7 @@ class TestEnsembleModel:
     @pytest.mark.asyncio
     async def test_initialize(self, ml_settings):
         """Test initialization of the ensemble model."""
-        model = EnsembleModel(settings=ml_settings)
+        model = SymptomForecastingEnsemble(settings=ml_settings)
 
         # Verify models dictionary is initialized
         assert isinstance(model.models, dict)

@@ -20,7 +20,8 @@ from uuid import UUID
 import numpy as np
 import pandas as pd
 
-from app.domain.exceptions import ModelInferenceError, ValidationError
+from app.core.exceptions.base_exceptions import ModelExecutionError
+from app.domain.exceptions import ValidationError
 from app.infrastructure.ml.pharmacogenomics.treatment_model import PharmacogenomicsModel
 
 
@@ -142,7 +143,7 @@ class PharmacogenomicsService:
 
         except Exception as e:
             logging.error(f"Error predicting medication responses: {str(e)}")
-            raise ModelInferenceError(
+            raise ModelExecutionError(
                 f"Failed to predict medication responses: {str(e)}"
             )
 
@@ -264,7 +265,7 @@ class PharmacogenomicsService:
 
         except Exception as e:
             logging.error(f"Error analyzing gene-medication interactions: {str(e)}")
-            raise ModelInferenceError(
+            raise ModelExecutionError(
                 f"Failed to analyze gene-medication interactions: {str(e)}"
             )
 
@@ -390,7 +391,7 @@ class PharmacogenomicsService:
 
         except Exception as e:
             logging.error(f"Error predicting side effects: {str(e)}")
-            raise ModelInferenceError(f"Failed to predict side effects: {str(e)}")
+            raise ModelExecutionError(f"Failed to predict side effects: {str(e)}")
 
     async def _identify_common_side_effects(
         self, side_effect_predictions: Dict[str, Dict[str, Any]]
@@ -654,7 +655,7 @@ class PharmacogenomicsService:
 
         except Exception as e:
             logging.error(f"Error recommending treatment plan: {str(e)}")
-            raise ModelInferenceError(f"Failed to recommend treatment plan: {str(e)}")
+            raise ModelExecutionError(f"Failed to recommend treatment plan: {str(e)}")
 
     async def _generate_treatment_recommendations(
         self,

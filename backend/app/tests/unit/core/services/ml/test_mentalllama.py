@@ -9,7 +9,7 @@ from botocore.exceptions import BotoCoreError
 
 from app.config.settings import get_settings
 from app.core.exceptions import InitializationError, ModelNotFoundError, ServiceUnavailableError
-from app.core.services.ml.mentallama.bedrock_service import BedrockMentalLamaService
+from app.core.services.ml.aws_bedrock import AWSBedrockMentaLLaMA
 
 # Constants for testing
 UTC = timezone.utc
@@ -19,7 +19,7 @@ SAMPLE_TEXT = "I've been feeling down lately and can't seem to find joy in activ
 @pytest.fixture
 def mentalllama_service():
     """Create a BedrockMentalLamaService instance for testing."""
-    service = BedrockMentalLamaService()
+    service = AWSBedrockMentaLLaMA()
     service._bedrock_client = Mock()  # Use a standard Mock for the client
     service._model_id = "anthropic.claude-instant-v1"
     # Need to initialize properly or mock relevant methods if needed
@@ -52,7 +52,6 @@ def mock_error_response():
     return mock
 
 # Mock settings to avoid dependency on actual environment/config files
-@pytest.fixture(scope="module", autouse=True)
 
 class TestBedrockMentalLamaService:
     """Test cases for the BedrockMentalLamaService."""
@@ -62,7 +61,7 @@ class TestBedrockMentalLamaService:
         settings = get_settings()
 
         # Test with default settings
-        service = BedrockMentalLamaService()
+        service = AWSBedrockMentaLLaMA()
         assert service._region_name == settings.aws.region
         assert service._model_id == settings.aws.bedrock.anthropic_model_id
 
@@ -70,7 +69,7 @@ class TestBedrockMentalLamaService:
         custom_region = "us-west-2"
         custom_model = "anthropic.claude-v2"
         # Pass args correctly during instantiation
-        service = BedrockMentalLamaService(region_name=custom_region, model_id=custom_model)
+        service = AWSBedrockMentaLLaMA(region_name=custom_region, model_id=custom_model)
         assert service._region_name == custom_region
         assert service._model_id == custom_model
 
@@ -79,7 +78,7 @@ class TestBedrockMentalLamaService:
 
     def test_initialize(self):
         """Test initialization of the AWS Bedrock client."""
-        service = BedrockMentalLamaService()
+        service = AWSBedrockMentaLLaMA()
 
         # Mock the boto3 client
         client_mock = Mock() # Correct Mock usage
@@ -94,7 +93,7 @@ class TestBedrockMentalLamaService:
 
     def test_initialize_error(self):
         """Test handling of initialization errors."""
-        service = BedrockMentalLamaService()
+        service = AWSBedrockMentaLLaMA()
 
         # Mock the boto3 client to raise an exception
         with patch("boto3.client", side_effect=BotoCoreError()):
@@ -103,7 +102,7 @@ class TestBedrockMentalLamaService:
 
     def test_is_initialized(self):
         """Test checking if the service is initialized."""
-        service = BedrockMentalLamaService()
+        service = AWSBedrockMentaLLaMA()
         assert not service.is_initialized()
 
         service._bedrock_client = Mock()

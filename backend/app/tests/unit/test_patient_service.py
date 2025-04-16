@@ -8,9 +8,12 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from uuid import uuid4
+from datetime import date
 
-from app.application.services.patient_service import PatientService
+from app.domain.services.patient_service import PatientService
 from app.domain.entities.patient import Patient
+from app.domain.repositories.patient_repository import PatientRepository
 from app.domain.exceptions.patient_exceptions import PatientNotFoundError
 
 

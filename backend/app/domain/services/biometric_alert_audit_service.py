@@ -12,7 +12,8 @@ from app.domain.utils.datetime_utils import UTC
 from typing import Any, Optional
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_alert import AlertStatus, BiometricAlert
+# Import only BiometricAlert
+from app.domain.services.biometric_event_processor import BiometricAlert
 from app.domain.interfaces.alert_observer import AlertObserver
 from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 
@@ -21,9 +22,7 @@ class BiometricAlertAuditService(AlertObserver):
     """
     Service for maintaining a comprehensive audit trail of biometric alerts.
     
-    This service implements the AlertObserver interface to receive notifications
-    when new biometric alerts are generated. It then creates detailed audit
-    records for regulatory compliance and clinical oversight.
+    Listens for new alerts and logs acknowledgement events.
     """
     
     def __init__(
@@ -45,14 +44,11 @@ class BiometricAlertAuditService(AlertObserver):
         """
         Create an audit record for a new biometric alert.
         
-        This method is called by the BiometricEventProcessor when a new
-        alert is generated. It creates a detailed audit record with all
-        relevant information about the alert.
+        Called by the BiometricEventProcessor when a new alert is generated.
         
         Args:
             alert: The biometric alert to audit
         """
-        # Create an audit record for the new alert
         await self._create_alert_audit_record(
             alert,
             "alert_generated",
@@ -61,114 +57,38 @@ class BiometricAlertAuditService(AlertObserver):
     
     async def record_alert_acknowledgment(
         self,
-        alert_id: UUID,
+        alert_id: UUID | str,
         provider_id: UUID,
         notes: str | None = None
     ) -> None:
         """
         Record the acknowledgment of an alert in the audit trail.
         
+        NOTE: This method ONLY logs the event. The alert state itself
+        should be updated via BiometricAlert.acknowledge() BEFORE calling this.
+        
         Args:
             alert_id: ID of the acknowledged alert
             provider_id: ID of the provider who acknowledged the alert
             notes: Optional notes about the acknowledgment
         """
-        # Get the alert
+        # Get the alert to retrieve associated info like patient_id
         alert = await self.alert_repository.get_by_id(alert_id)
         if not alert:
+            # Log or raise an error if alert not found for auditing?
+            print(f"Warning: Alert {alert_id} not found for acknowledgement audit.")
             return
         
-        # Update the alert status
-        updated_alert = await self.alert_repository.update_status(
-            alert_id,
-            AlertStatus.ACKNOWLEDGED,
-            provider_id,
-            notes
-        )
+        # DO NOT update status via repository here.
+        # Status update happens on the BiometricAlert object itself.
         
-        # Create an audit record
+        # Create an audit record for the acknowledgement
         await self._create_alert_audit_record(
-            updated_alert,
+            alert, # Pass the fetched alert
             "alert_acknowledged",
             f"Alert acknowledged by provider {provider_id}",
             provider_id,
             notes
-        )
-    
-    async def record_alert_resolution(
-        self,
-        alert_id: UUID,
-        provider_id: UUID,
-        resolution_notes: str,
-        resolution_action: str
-    ) -> None:
-        """
-        Record the resolution of an alert in the audit trail.
-        
-        Args:
-            alert_id: ID of the resolved alert
-            provider_id: ID of the provider who resolved the alert
-            resolution_notes: Notes about how the alert was resolved
-            resolution_action: Action taken to resolve the alert
-        """
-        # Get the alert
-        alert = await self.alert_repository.get_by_id(alert_id)
-        if not alert:
-            return
-        
-        # Update the alert status
-        updated_alert = await self.alert_repository.update_status(
-            alert_id,
-            AlertStatus.RESOLVED,
-            provider_id,
-            resolution_notes
-        )
-        
-        # Create an audit record
-        await self._create_alert_audit_record(
-            updated_alert,
-            "alert_resolved",
-            f"Alert resolved by provider {provider_id}",
-            provider_id,
-            resolution_notes,
-            {"resolution_action": resolution_action}
-        )
-    
-    async def record_alert_dismissal(
-        self,
-        alert_id: UUID,
-        provider_id: UUID,
-        dismissal_reason: str
-    ) -> None:
-        """
-        Record the dismissal of an alert in the audit trail.
-        
-        Args:
-            alert_id: ID of the dismissed alert
-            provider_id: ID of the provider who dismissed the alert
-            dismissal_reason: Reason for dismissing the alert
-        """
-        # Get the alert
-        alert = await self.alert_repository.get_by_id(alert_id)
-        if not alert:
-            return
-        
-        # Update the alert status
-        updated_alert = await self.alert_repository.update_status(
-            alert_id,
-            AlertStatus.DISMISSED,
-            provider_id,
-            f"Dismissed: {dismissal_reason}"
-        )
-        
-        # Create an audit record
-        await self._create_alert_audit_record(
-            updated_alert,
-            "alert_dismissed",
-            f"Alert dismissed by provider {provider_id}",
-            provider_id,
-            dismissal_reason,
-            {"dismissal_reason": dismissal_reason}
         )
     
     async def _create_alert_audit_record(
@@ -192,30 +112,35 @@ class BiometricAlertAuditService(AlertObserver):
             additional_data: Optional additional data about the event
         """
         # Create a sanitized version of the alert data for the audit record
-        # This ensures no PHI is included in the audit logs
         sanitized_alert_data = {
             "alert_id": str(alert.alert_id),
-            "alert_type": alert.alert_type,
+            # "alert_type": alert.alert_type, # alert_type not on BiometricAlert class
+            "rule_id": alert.rule_id,
+            "rule_name": alert.rule_name,
             "priority": alert.priority.value,
-            "status": alert.status.value,
+            "acknowledged": alert.acknowledged, # Use boolean acknowledged field
             "created_at": alert.created_at.isoformat(),
-            "updated_at": alert.updated_at.isoformat()
+            "acknowledged_at": alert.acknowledged_at.isoformat() if alert.acknowledged_at else None,
+            "acknowledged_by": str(alert.acknowledged_by) if alert.acknowledged_by else None,
+            # Potentially add data_point timestamp or type if safe and useful
+            # "data_point_timestamp": alert.data_point.timestamp.isoformat() if alert.data_point else None,
+            # "data_point_type": alert.data_point.data_type if alert.data_point else None,
         }
         
-        # Create the audit record
+        log_data = {"alert": sanitized_alert_data}
+        if additional_data:
+            log_data.update(additional_data)
+
         await self.audit_logger.log_event(
             event_type=event_type,
             event_description=event_description,
             resource_type="biometric_alert",
             resource_id=str(alert.alert_id),
             actor_id=str(actor_id) if actor_id else None,
-            patient_id=str(alert.patient_id),  # This is necessary for compliance
+            patient_id=str(alert.patient_id),
             timestamp=datetime.now(UTC),
             notes=notes,
-            data={
-                "alert": sanitized_alert_data,
-                **(additional_data or {})
-            }
+            data=log_data
         )
     
     async def search_audit_trail(

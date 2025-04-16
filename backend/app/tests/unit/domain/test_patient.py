@@ -9,14 +9,14 @@ from uuid import UUID
 from app.domain.entities.patient import Patient
 from app.domain.value_objects.contact_info import ContactInfo
 from app.domain.value_objects.address import Address
-from app.infrastructure.security.encryption import EncryptionService
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
 
 
 @pytest.fixture
 def mock_encryption_service():
 
     """Create a mock encryption service."""
-    mock = MagicMock(spec=EncryptionService)
+    mock = MagicMock(spec=BaseEncryptionService)
     mock.encrypt.side_effect = lambda x: f"encrypted_{x}"
     mock.decrypt.side_effect = lambda x: x.replace("encrypted_", "")
     return mock

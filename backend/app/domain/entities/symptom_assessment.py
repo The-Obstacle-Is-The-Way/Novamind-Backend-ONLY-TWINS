@@ -15,14 +15,17 @@ class AssessmentType(str, Enum):
     CUSTOM = "Custom"
     # Add other standard scales (e.g., BDI, MADRS, YBOCS)
 
-@dataclass
+@dataclass(kw_only=True)
 class SymptomAssessment(BaseEntity):
     """Symptom Assessment entity."""
-    id: UUID = field(default_factory=uuid4)
+    # Fields without defaults first
     patient_id: UUID
     assessment_type: AssessmentType
     assessment_date: datetime # Date/time the assessment was completed
     scores: Dict[str, Any] # e.g., {"total_score": 15, "q1": 2, "q2": 3, ...} or {"custom_symptom": "severity_level"}
+    
+    # Fields with defaults
+    id: UUID = field(default_factory=uuid4)
     source: Optional[str] = None # e.g., "Patient Reported", "Clinician Administered"
     created_at: datetime = field(default_factory=datetime.utcnow)
     last_updated: datetime = field(default_factory=datetime.utcnow) # Usually same as created_at for assessments

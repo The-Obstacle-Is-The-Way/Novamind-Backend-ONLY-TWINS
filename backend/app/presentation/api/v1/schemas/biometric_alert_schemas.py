@@ -9,9 +9,16 @@ API endpoints, ensuring proper validation and documentation of the API contract.
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union, ClassVar
 from uuid import UUID
+from enum import Enum
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+# Define AlertPriorityEnum based on domain AlertPriority
+class AlertPriorityEnum(str, Enum):
+    """Priority levels for biometric alerts (API Schema)."""
+    URGENT = "urgent"
+    WARNING = "warning"
+    INFORMATIONAL = "informational"
 
 class AlertRuleCreate(BaseModel):
     """Request model for creating an alert rule."""

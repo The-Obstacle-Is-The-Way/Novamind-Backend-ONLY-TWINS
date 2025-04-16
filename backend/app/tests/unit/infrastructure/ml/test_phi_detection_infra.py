@@ -10,13 +10,16 @@ import pytest
 import re # Import re for pattern creation test
 from typing import List, Dict, Any
 from unittest.mock import patch, mock_open, MagicMock
+import logging
 
-from app.infrastructure.ml.phi_detection import PHIDetectionService
-from app.core.exceptions.ml_exceptions import PHIDetectionError
-# Updated import path
-# from app.infrastructure.security.log_sanitizer import PHIPattern
-from app.infrastructure.security.phi.log_sanitizer import PHIPattern
+from app.config.settings import Settings, get_settings
+from app.infrastructure.ml.phi_detection.service import PHIPattern
+from app.infrastructure.ml.phi_detection.service import PHIDetectionService
+from app.core.exceptions import PHIDetectionError
+from app.domain.exceptions import PHISecurityError
 
+# Mock external dependencies
+mock_model = MagicMock()
 
 @pytest.fixture
 def phi_detection_service():
@@ -245,17 +248,17 @@ class TestPHIDetectionService:
         """Test that the service handles errors during detection/redaction gracefully."""
         # Mock the ensure_initialized to raise an error during a call
         with patch.object(phi_detection_service, "ensure_initialized", side_effect=Exception("Initialization failed")):
-            with pytest.raises(PHIDetectionError):
+            with pytest.raises(PHISecurityError):
                 phi_detection_service.contains_phi("Test text")
 
-            with pytest.raises(PHIDetectionError):
+            with pytest.raises(PHISecurityError):
                 phi_detection_service.detect_phi("Test text")
 
-            with pytest.raises(PHIDetectionError):
+            with pytest.raises(PHISecurityError):
                 phi_detection_service.redact_phi("Test text")
 
             # Anonymize might depend on detect_phi, so it should also raise
-            with pytest.raises(PHIDetectionError):
+            with pytest.raises(PHISecurityError):
                 phi_detection_service.anonymize_phi("Test text")
 
 # Mock classes

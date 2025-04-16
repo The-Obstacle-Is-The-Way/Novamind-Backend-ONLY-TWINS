@@ -252,6 +252,11 @@ class IntegrationError(BaseException):
     def __init__(self, message: str = "Integration error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "INTEGRATION_ERROR"):
         super().__init__(message=message, detail=detail, code=code)
 
+class ModelExecutionError(BaseException):
+    """Exception raised when an ML model fails during execution."""
+    def __init__(self, message: str = "Model execution error", detail: Optional[Union[str, List[str], Dict[str, Any]]] = None, code: str = "MODEL_EXECUTION_ERROR"):
+        super().__init__(message=message, detail=detail, code=code)
+
 # --- Exceptions moved from standalone exceptions.py --- 
 
 class HIPAAComplianceError(BusinessRuleException):

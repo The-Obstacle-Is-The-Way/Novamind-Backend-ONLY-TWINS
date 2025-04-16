@@ -8,7 +8,7 @@ are generated, allowing for flexible handling of alerts by different components.
 
 from abc import ABC, abstractmethod
 
-from app.domain.entities.digital_twin.biometric_alert import BiometricAlert
+from app.domain.services.biometric_event_processor import BiometricAlert
 
 
 class AlertObserver(ABC):

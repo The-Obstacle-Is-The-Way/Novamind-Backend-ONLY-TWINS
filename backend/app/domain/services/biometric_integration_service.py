@@ -12,8 +12,9 @@ from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_twin import BiometricDataPoint, BiometricTwin
-from app.domain.exceptions import BiometricIntegrationError
+from app.domain.entities.biometric_twin import BiometricDataPoint
+from app.domain.entities.biometric_twin_enhanced import BiometricTwin
+from app.domain.exceptions import DomainError
 from app.domain.repositories.biometric_twin_repository import BiometricTwinRepository
 
 
@@ -47,7 +48,7 @@ class BiometricIntegrationService:
             The patient's biometric twin
             
         Raises:
-            BiometricIntegrationError: If there's an error retrieving or creating the twin
+            DomainError: If there's an error retrieving or creating the twin
         """
         try:
             twin = self.biometric_twin_repository.get_by_patient_id(patient_id)
@@ -59,7 +60,7 @@ class BiometricIntegrationService:
             self.biometric_twin_repository.save(new_twin)
             return new_twin
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to get or create biometric twin: {e!s}")
+            raise DomainError(f"Failed to get or create biometric twin: {e!s}")
     
     def add_biometric_data(
         self,
@@ -87,7 +88,7 @@ class BiometricIntegrationService:
             The created biometric data point
             
         Raises:
-            BiometricIntegrationError: If there's an error adding the data
+            DomainError: If there's an error adding the data
         """
         try:
             # Get or create the patient's biometric twin
@@ -110,7 +111,7 @@ class BiometricIntegrationService:
             
             return data_point
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to add biometric data: {e!s}")
+            raise DomainError(f"Failed to add biometric data: {e!s}")
     
     def batch_add_biometric_data(
         self,
@@ -128,7 +129,7 @@ class BiometricIntegrationService:
             List of created biometric data points
             
         Raises:
-            BiometricIntegrationError: If there's an error adding the data
+            DomainError: If there's an error adding the data
         """
         try:
             twin = self.get_or_create_biometric_twin(patient_id)
@@ -153,7 +154,7 @@ class BiometricIntegrationService:
             
             return created_points
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to batch add biometric data: {e!s}")
+            raise DomainError(f"Failed to batch add biometric data: {e!s}")
     
     def get_biometric_data(
         self,
@@ -177,7 +178,7 @@ class BiometricIntegrationService:
             List of matching biometric data points
             
         Raises:
-            BiometricIntegrationError: If there's an error retrieving the data
+            DomainError: If there's an error retrieving the data
         """
         try:
             twin = self.biometric_twin_repository.get_by_patient_id(patient_id)
@@ -202,7 +203,7 @@ class BiometricIntegrationService:
             
             return sorted(filtered_points, key=lambda dp: dp.timestamp)
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to retrieve biometric data: {e!s}")
+            raise DomainError(f"Failed to retrieve biometric data: {e!s}")
     
     def analyze_trends(
         self,
@@ -224,7 +225,7 @@ class BiometricIntegrationService:
             Dictionary containing trend analysis results
             
         Raises:
-            BiometricIntegrationError: If there's an error analyzing the data
+            DomainError: If there's an error analyzing the data
         """
         try:
             # Get data for the specified time window
@@ -288,7 +289,7 @@ class BiometricIntegrationService:
                 "last_updated": data_points[-1].timestamp.isoformat() if data_points else None
             }
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to analyze trends: {e!s}")
+            raise DomainError(f"Failed to analyze trends: {e!s}")
     
     def detect_correlations(
         self,
@@ -310,13 +311,13 @@ class BiometricIntegrationService:
             Dictionary mapping data types to correlation coefficients
             
         Raises:
-            BiometricIntegrationError: If there's an error analyzing correlations
+            DomainError: If there's an error analyzing correlations
         """
         try:
             # Get the patient's biometric twin
             twin = self.biometric_twin_repository.get_by_patient_id(patient_id)
             if not twin:
-                raise BiometricIntegrationError(f"No biometric twin found for patient {patient_id}")
+                raise DomainError(f"No biometric twin found for patient {patient_id}")
             
             # Define time window
             end_time = datetime.now(UTC)
@@ -361,7 +362,7 @@ class BiometricIntegrationService:
             
             return correlations
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to detect correlations: {e!s}")
+            raise DomainError(f"Failed to detect correlations: {e!s}")
     
     def connect_device(
         self,
@@ -383,7 +384,7 @@ class BiometricIntegrationService:
             True if the device was successfully connected
             
         Raises:
-            BiometricIntegrationError: If there's an error connecting the device
+            DomainError: If there's an error connecting the device
         """
         try:
             twin = self.get_or_create_biometric_twin(patient_id)
@@ -412,7 +413,7 @@ class BiometricIntegrationService:
             
             return True
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to connect device: {e!s}")
+            raise DomainError(f"Failed to connect device: {e!s}")
     
     def disconnect_device(
         self,
@@ -432,7 +433,7 @@ class BiometricIntegrationService:
             True if the device was successfully disconnected
             
         Raises:
-            BiometricIntegrationError: If there's an error disconnecting the device
+            DomainError: If there's an error disconnecting the device
         """
         try:
             twin = self.biometric_twin_repository.get_by_patient_id(patient_id)
@@ -456,4 +457,4 @@ class BiometricIntegrationService:
             
             return True
         except Exception as e:
-            raise BiometricIntegrationError(f"Failed to disconnect device: {e!s}")
+            raise DomainError(f"Failed to disconnect device: {e!s}")

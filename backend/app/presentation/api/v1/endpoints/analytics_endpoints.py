@@ -9,6 +9,7 @@ These endpoints follow HIPAA compliance guidelines and implement caching and rat
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 from uuid import UUID
+import json
 
 from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -74,9 +75,20 @@ async def get_patient_treatment_outcomes(
     cache_key = f"treatment_outcomes:{patient_id}:{start_date.isoformat()}:{end_date.isoformat() if end_date else 'now'}"
     
     # Try to get from cache
-    cached_data = await cache_service.get(cache_key)
-    if cached_data:
-        return cached_data
+    cached_data_str = await cache_service.get(cache_key)
+    if cached_data_str:
+        try:
+            # Decode JSON string from cache before returning
+            return json.loads(cached_data_str)
+        except json.JSONDecodeError:
+            # Handle potential JSON decoding errors (e.g., corrupted cache)
+            # Option 1: Log error and proceed as cache miss
+            # logger.error(f"Failed to decode cached data for key {cache_key}", exc_info=True)
+            # Option 2: Return an error response (might require adjusting response_model or using Response)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                detail="Failed to process cached data."
+            )
     
     # If not in cache, process analytically expensive operation asynchronously
     background_tasks.add_task(

@@ -7,7 +7,7 @@ Tests for the Appointment Service.
 # from app.domain.services.appointment_service import AppointmentService 
 from app.domain.exceptions import (
     EntityNotFoundError,
-    AppointmentConflictError,
+    ValidationError,
     InvalidAppointmentStateError,
     InvalidAppointmentTimeError # Moved from below
 )
@@ -146,7 +146,7 @@ class TestAppointmentService:
             )
         ]
         
-        with pytest.raises(AppointmentConflictError):
+        with pytest.raises(ValidationError):
             appointment_service.create_appointment(
                 patient_id="patient123",
                 provider_id="provider456",
@@ -173,7 +173,7 @@ class TestAppointmentService:
         ]
         appointment_repository.get_by_provider_id.return_value = appointments
         
-        with pytest.raises(AppointmentConflictError): # Assuming conflict error is raised for limit
+        with pytest.raises(ValidationError): # Assuming conflict error is raised for limit
             appointment_service.create_appointment(
                 patient_id="patient_new",
                 provider_id="provider456",

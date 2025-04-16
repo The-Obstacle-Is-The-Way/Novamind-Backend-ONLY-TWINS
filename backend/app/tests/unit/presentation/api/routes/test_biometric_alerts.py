@@ -15,27 +15,32 @@ from typing import List, Dict, Any, Optional  # Added Optional
 import pytest
 from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
+from httpx import AsyncClient
 
-from app.domain.entities.digital_twin.biometric_alert import BiometricAlert, AlertStatus, AlertPriority
+from app.domain.services.biometric_event_processor import BiometricAlert, AlertPriority, AlertStatus
 from app.domain.exceptions import EntityNotFoundError, RepositoryError
-# Assuming the router and dependency are correctly defined in this path
-from app.presentation.api.routes.biometric_alerts import router, get_alert_repository
+# Corrected import path
+from app.presentation.api.v1.endpoints.biometric_alerts import router as alerts_router, get_alert_repository
 from app.presentation.api.schemas.biometric_alert import (
     AlertStatusUpdateSchema,
     BiometricAlertCreateSchema,
     AlertPriorityEnum,
-    AlertStatusEnum
+    AlertStatusEnum,
+    BiometricAlertResponseSchema,
+    AlertListResponseSchema
 )
 
 # Commenting out missing repository import
 # from app.domain.repositories.base_repository import BaseRepository
-from app.domain.entities.biometric_alert import BiometricAlert
+from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 
 @pytest.fixture
 def app():
     """Create a FastAPI app with the biometric alerts router."""
     app_instance = FastAPI()
-    app_instance.include_router(router)
+    app_instance.include_router(alerts_router)
     return app_instance
 
 @pytest.fixture
@@ -96,17 +101,14 @@ def sample_alert(sample_alert_data):
     patient_uuid = UUID(sample_alert_data["patient_id"])
     rule_uuid = UUID(sample_alert_data["rule_id"])
     return BiometricAlert(
+        alert_id=str(uuid4()),
         patient_id=patient_uuid,
-        alert_type=sample_alert_data["alert_type"],
-        description=sample_alert_data["description"],
+        rule_id=sample_alert_data["rule_id"],
+        rule_name="Sample Rule Name",
         priority=AlertPriority(sample_alert_data["priority"]),
-        status=AlertStatus(sample_alert_data["status"]),
-        rule_id=rule_uuid,
-        metric_value=sample_alert_data["metric_value"],
-        threshold_value=sample_alert_data["threshold_value"],
-        context_data=sample_alert_data["context_data"],
-        created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        data_point=MagicMock(),
+        message=sample_alert_data["description"],
+        context=sample_alert_data.get("context_data", {})
     )
 
 

@@ -7,12 +7,12 @@ which are generated from biometric data analysis to notify clinical staff
 of concerning patterns in patient biometric data.
 """
 
-from datetime import datetime, , UTC
+from datetime import datetime, UTC
 from app.domain.utils.datetime_utils import UTC
 from sqlalchemy import Column, String, DateTime, Float, ForeignKey, JSON, Enum
 from sqlalchemy.orm import relationship
 
-from app.domain.entities.digital_twin.biometric_alert import AlertPriority, AlertStatus
+from app.domain.services.biometric_event_processor import AlertPriority, AlertStatus
 from app.infrastructure.persistence.sqlalchemy.config.database import Base
 
 

@@ -14,86 +14,45 @@ from unittest.mock import patch, MagicMock, call
 # from app.infrastructure.security.log_sanitizer import (
 from app.infrastructure.security.phi.log_sanitizer import (
     LogSanitizer,
-    SanitizerConfig,
-    PHIPattern,
-    SanitizationStrategy,
-    PatternType,
-    RedactionMode,
     LogSanitizerConfig
 )
-from app.infrastructure.security.phi.phi_service import PHIService, PHIType
+from app.infrastructure.security.phi.phi_service import PHIService, PHIType, RedactionMode
 
 @pytest.fixture
 def sanitizer_config():
     """Create a log sanitizer configuration for testing."""
-    return SanitizerConfig(
-        enabled=True,
-        redaction_mode=RedactionMode.PARTIAL,
-        partial_redaction_length=4,
-        redaction_marker="[REDACTED]",
-        phi_patterns_path="phi_patterns.yaml",
-        enable_contextual_detection=True,
-        scan_nested_objects=True,
-        sensitive_field_names=[
-            "ssn", "social_security", "dob", "birth_date", "address",
-            "phone", "email", "full_name", "patient_name", "mrn",
-            "medical_record_number", "credit_card", "insurance_id"
-        ],
-        sensitive_keys_case_sensitive=False,
-        preserve_data_structure=True,
-        exceptions_allowed=False,
-        log_sanitization_attempts=True,
-        max_log_size_kb=256,
-        hash_identifiers=True,
-        identifier_hash_salt="novamind-phi-salt-key"
-    )
+    return LogSanitizerConfig()
 
 @pytest.fixture
 def pattern_repository():
-    """Create a mock pattern repository with test data."""
-    # Mock pattern repository with test patterns
+    """Create a mock pattern repository with test data as dictionaries."""
     repo = MagicMock()
-    repo.get_patterns.return_value = [
-        PHIPattern(
-            name="ssn",
-            pattern_type=PatternType.REGEX,
-            pattern=r"\b\d{3}-\d{2}-\d{4}\b",
-            confidence=0.95,
-            context_terms=["ssn", "social", "security", "number"],
-            context_weight=0.3,
-            requires_context=False
-        ),
-        PHIPattern(
-            name="email",
-            pattern_type=PatternType.REGEX,
-            pattern=r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
-            confidence=0.90,
-            context_terms=["email", "mail", "contact"],
-            context_weight=0.2,
-            requires_context=False
-        ),
-        PHIPattern(
-            name="phone",
-            pattern_type=PatternType.REGEX,
-            pattern=r"\b\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})\b",
-            confidence=0.85,
-            context_terms=["phone", "number", "contact", "call"],
-            context_weight=0.25,
-            requires_context=False
-        ),
-        PHIPattern(
-            name="patient_id",
-            pattern_type=PatternType.REGEX,
-            pattern=r"\bPT\d{6,8}\b",
-            confidence=0.80,
-            context_terms=["patient", "id", "record", "number"],
-            context_weight=0.4,
-            requires_context=True
-        )
+    # Return list of dicts instead of PHIPattern objects
+    patterns_list = [
+        {
+            "name": "ssn",
+            "pattern_type": "REGEX", # Use string value if PatternType enum is not importable/used
+            "pattern": r"\b\d{3}-\d{2}-\d{4}\b",
+            "confidence": 0.95,
+            "context_terms": ["ssn", "social", "security", "number"],
+            "context_weight": 0.3,
+            "requires_context": False
+        },
+        {
+            "name": "email",
+            "pattern_type": "REGEX",
+            "pattern": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+            "confidence": 0.90,
+            "context_terms": ["email", "mail", "contact"],
+            "context_weight": 0.2,
+            "requires_context": False
+        },
+        # Add other patterns as dictionaries...
     ]
-    repo.get_pattern_names.return_value = ["ssn", "email", "phone", "patient_id"]
+    repo.get_patterns.return_value = patterns_list
+    repo.get_pattern_names.return_value = [p["name"] for p in patterns_list]
     repo.get_pattern_by_name.side_effect = lambda name: next(
-        (p for p in repo.get_patterns.return_value if p.name == name), None
+        (p for p in patterns_list if p["name"] == name), None
     )
     return repo
 

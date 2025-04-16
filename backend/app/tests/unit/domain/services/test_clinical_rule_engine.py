@@ -14,6 +14,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from app.domain.entities.patient import Patient
+from app.domain.entities.symptom_assessment import SymptomAssessment
+# Removed unused import for non-existent entity
+# from app.domain.entities.clinical_impression import ClinicalImpression, ImpressionSection 
+from app.domain.entities.biometric_rule import BiometricRule, RuleCondition, RuleOperator, LogicalOperator, AlertPriority
 # Commenting out missing entity/enum imports
 # from app.domain.entities.biometric_rule import (
 #     BiometricRule,
@@ -25,6 +29,8 @@ from app.domain.entities.patient import Patient
 # from app.domain.entities.digital_twin_enums import AlertPriority
 # from app.domain.entities.biometric_twin import BiometricTwin
 # from app.domain.repositories.biometric_rule_repository import BiometricRuleRepository
+# from app.domain.entities.emr import (
+# )
 
 
 @pytest.mark.db_required()  # Assuming db_required is a valid marker

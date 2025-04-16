@@ -14,15 +14,16 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
-from app.domain.services.biometric_event_processor import AlertPriority
+from app.domain.services.biometric_event_processor import AlertRule, AlertPriority
+from app.domain.entities.biometric_twin import BiometricDataPoint
 from app.domain.entities.biometric_rule import (
+    AlertPriority,
     BiometricRule,
     RuleCondition,
-    RuleConditionOperator,
-    RuleAction,
-    RuleActionType,
+    RuleOperator,
+    LogicalOperator,
 )
-from app.domain.entities.biometric_twin import BiometricTwin
+from app.domain.entities.biometric_twin import BiometricTwinState
 from app.domain.exceptions import ValidationError
 from app.domain.repositories.biometric_rule_repository import BiometricRuleRepository
 

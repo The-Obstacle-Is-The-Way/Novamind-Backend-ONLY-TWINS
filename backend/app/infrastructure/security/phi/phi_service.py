@@ -38,6 +38,13 @@ class PHIType(Enum):
     PHOTO = auto() # Full face photographic images (placeholder)
     OTHER = auto() # Generic placeholder for less common types
 
+# Define RedactionMode enum
+class RedactionMode(Enum):
+    """Modes for redacting detected PHI."""
+    FULL = "full"       # Replace entire PHI with marker
+    PARTIAL = "partial" # Replace partially (e.g., keep last 4 digits)
+    HASH = "hash"       # Replace with a consistent hash
+    MASK = "mask"       # Replace characters with a mask (e.g., *) - similar to partial
 
 class PHIService:
     """

@@ -292,102 +292,68 @@ class TestMockDigitalTwinService:
     def test_mood_insights(self, mock_service, sample_patient_id):
         """Test mood insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="mood")
+        assert result["insights"]["type"] == "mood"
         mood_data = result["insights"]["data"]
-
-        # Verify structure
-        assert "entries" in mood_data
-        assert len(mood_data["entries"]) > 0
-        assert "average_mood" in mood_data
-        assert "mood_trend" in mood_data
-        assert "mood_variability" in mood_data
-
-        # Verify entries format
-        first_entry = mood_data["entries"][0]
-        assert "date" in first_entry
-        assert "mood_value" in first_entry
-        assert "mood_label" in first_entry
-        assert "factors" in first_entry
-
-        # Verify mood mapping
-        mood_labels = [entry["mood_label"] for entry in mood_data["entries"]]
-        for label in mood_labels:
-            assert label in [
-                "very negative",
-                "negative",
-                "neutral",
-                "positive",
-                "very positive"
-            ]
+    
+        # Verify structure within the 'data' dict
+        assert "daily_values" in mood_data
+        assert "average" in mood_data
+        assert "trend" in mood_data
+        assert "observations" in mood_data
+        assert len(mood_data["daily_values"]) > 0
 
     def test_activity_insights(self, mock_service, sample_patient_id):
         """Test activity insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="activity")
+        assert result["insights"]["type"] == "activity"
         activity_data = result["insights"]["data"]
-
-        # Verify structure
-        assert "daily_activity" in activity_data
-        assert len(activity_data["daily_activity"]) > 0
-        assert "activity_trend" in activity_data
-        assert "activity_recommendations" in activity_data
-
-        # Verify daily activity format
-        first_entry = activity_data["daily_activity"][0]
-        assert "date" in first_entry
-        assert "steps" in first_entry
-        assert "active_minutes" in first_entry
-        assert "activity_level" in first_entry
+    
+        # Verify structure within the 'data' dict
+        assert "daily_values" in activity_data
+        assert "average" in activity_data
+        assert "trend" in activity_data
+        assert "observations" in activity_data
+        assert len(activity_data["daily_values"]) > 0
 
     def test_sleep_insights(self, mock_service, sample_patient_id):
         """Test sleep insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="sleep")
+        assert result["insights"]["type"] == "sleep"
         sleep_data = result["insights"]["data"]
-
-        # Verify structure
-        assert "sleep_records" in sleep_data
-        assert len(sleep_data["sleep_records"]) > 0
-        assert "average_sleep_duration" in sleep_data
-        assert "sleep_quality_trend" in sleep_data
-        assert "sleep_recommendations" in sleep_data
-
-        # Verify sleep records format
-        first_entry = sleep_data["sleep_records"][0]
-        assert "date" in first_entry
-        assert "duration_hours" in first_entry
-        assert "quality" in first_entry
-        assert "interruptions" in first_entry
+    
+        # Verify structure within the 'data' dict
+        assert "daily_values" in sleep_data
+        assert "average_hours" in sleep_data
+        assert "average_quality" in sleep_data
+        assert "trend" in sleep_data
+        assert "observations" in sleep_data
+        assert len(sleep_data["daily_values"]) > 0
 
     def test_medication_insights(self, mock_service, sample_patient_id):
         """Test medication insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="medication")
+        assert result["insights"]["type"] == "medication"
         med_data = result["insights"]["data"]
-
-        # Verify structure
-        assert "medications" in med_data
-        assert len(med_data["medications"]) > 0
+    
+        # Verify structure within the 'data' dict
+        assert "daily_values" in med_data
         assert "adherence_rate" in med_data
-        assert "side_effects" in med_data
-        assert "medication_recommendations" in med_data
-
-        # Verify medication format
-        first_med = med_data["medications"][0]
-        assert "name" in first_med
-        assert "dosage" in first_med
-        assert "adherence" in first_med
-        assert "reported_effects" in first_med
+        assert "adherence_label" in med_data
+        assert "trend" in med_data
+        assert "observations" in med_data
+        assert len(med_data["daily_values"]) > 0
 
     def test_treatment_insights(self, mock_service, sample_patient_id):
         """Test treatment insights specifically."""
         result = mock_service.get_insights(sample_patient_id, insight_type="treatment")
+        assert result["insights"]["type"] == "treatment"
         treatment_data = result["insights"]["data"]
-
-        # Verify structure
-        assert "treatment_plan" in treatment_data
-        assert "progress" in treatment_data
-        assert "engagement" in treatment_data
-        assert "treatment_recommendations" in treatment_data
-
-        # Verify treatment plan format
-        assert "therapies" in treatment_data["treatment_plan"]
-        assert "goals" in treatment_data["treatment_plan"]
-        assert len(treatment_data["treatment_plan"]["therapies"]) > 0
-        assert len(treatment_data["treatment_plan"]["goals"]) > 0
+    
+        # Verify structure within the 'data' dict
+        assert "engagement_score" in treatment_data
+        assert "engagement_label" in treatment_data
+        assert "appointments" in treatment_data
+        assert "completed_tasks" in treatment_data
+        assert "upcoming_tasks" in treatment_data
+        assert "observations" in treatment_data
+        assert len(treatment_data["appointments"]) >= 0

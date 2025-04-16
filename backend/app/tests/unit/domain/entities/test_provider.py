@@ -3,7 +3,7 @@
 Tests for the Provider entity.
 """
 
-from app.domain.exceptions import ValidationException
+from app.domain.exceptions import ValidationError
 from datetime import datetime, time
 import uuid
 import pytest
@@ -111,7 +111,7 @@ class TestProvider:
 
     def test_validate_required_fields(self):
         # Missing first_name
-        with pytest.raises(ValidationException):
+        with pytest.raises(ValidationError):
             Provider(
                 last_name="Smith",
                 provider_type=ProviderType.PSYCHIATRIST,
@@ -119,7 +119,7 @@ class TestProvider:
                 email="dr.smith@example.com"
             )
         # Missing last_name
-        with pytest.raises(ValidationException):
+        with pytest.raises(ValidationError):
             Provider(
                 first_name="Dr. Jane",
                 provider_type=ProviderType.PSYCHIATRIST,
@@ -127,7 +127,7 @@ class TestProvider:
                 email="dr.smith@example.com"
             )
         # Missing provider_type
-        with pytest.raises(ValidationException):
+        with pytest.raises(ValidationError):
             Provider(
                 first_name="Dr. Jane",
                 last_name="Smith",
@@ -135,7 +135,7 @@ class TestProvider:
                 email="dr.smith@example.com"
             )
         # Missing both email and phone
-        with pytest.raises(ValidationException):
+        with pytest.raises(ValidationError):
             Provider(
                 first_name="Dr. Jane",
                 last_name="Smith",
@@ -145,7 +145,7 @@ class TestProvider:
 
     def test_validate_psychiatrist_license(self):
         # Missing license for psychiatrist
-        with pytest.raises(ValidationException):
+        with pytest.raises(ValidationError):
             Provider(
                 first_name="Dr. Jane",
                 last_name="Smith",
@@ -156,14 +156,14 @@ class TestProvider:
     def test_validate_email_format(self, valid_provider_data):
         data = valid_provider_data.copy()
         data["email"] = "invalid-email"
-        with pytest.raises(ValidationException):
+        with pytest.raises(ValidationError):
             Provider(**data)
 
     def test_validate_phone_format(self, valid_provider_data):
         data = valid_provider_data.copy()
         data["email"] = None  # Remove email to force phone validation
         data["phone"] = "invalid@phone"
-        with pytest.raises(ValidationException):
+        with pytest.raises(ValidationError):
             Provider(**data)
 
 # ... (rest of the test class and methods should be similarly refactored for clarity, indentation, and correctness)

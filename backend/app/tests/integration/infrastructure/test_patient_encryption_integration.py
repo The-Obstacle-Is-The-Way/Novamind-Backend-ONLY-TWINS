@@ -17,7 +17,7 @@ from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
 # Removed import of non-existent Insurance value object
 from app.infrastructure.persistence.sqlalchemy.models.patient import Patient as PatientModel
-from app.infrastructure.security.encryption import EncryptionService
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
 
 
 @pytest.mark.db_required()
@@ -60,7 +60,7 @@ class TestPatientEncryptionIntegration:
     async def test_phi_encrypted_in_database(self, db_session: AsyncSession, sample_patient):
         """Test that PHI is stored encrypted in the database."""
         # Create a real encryption service
-        encryption_service = EncryptionService()
+        encryption_service = BaseEncryptionService()
 
         # Convert domain entity to model and save to database
         patient_model = PatientModel.from_domain(sample_patient)

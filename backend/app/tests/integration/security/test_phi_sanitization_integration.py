@@ -20,7 +20,8 @@ from unittest.mock import MagicMock, patch
 from app.domain.entities.patient import Patient
 from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
-from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
+# Corrected import path for PatientModel
+from app.infrastructure.database.models import PatientModel
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
 from app.infrastructure.security.phi.phi_service import PHIService
 # Corrected import path for get_sanitized_logger

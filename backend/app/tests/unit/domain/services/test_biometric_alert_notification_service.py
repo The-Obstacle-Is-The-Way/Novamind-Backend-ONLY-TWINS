@@ -11,8 +11,7 @@ from datetime import datetime, UTC
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
-# Revert AlertPriority import
-from app.domain.entities.digital_twin_enums import AlertStatus
+# Corrected import path for BiometricAlert and AlertPriority
 from app.domain.services.biometric_event_processor import BiometricAlert, AlertPriority
 # Correct repository import
 from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
@@ -136,12 +135,12 @@ class TestBiometricAlertNotificationService:
         assert mock_notification_service.send_in_app_notification.call_count == 1
         assert mock_notification_service.send_push_notification.call_count == 1
 
-    # Verify SMS content is HIPAA-compliant
-    sms_message = mock_notification_service.send_sms.call_args[0][1]
-    assert "SECURE" in sms_message
-    assert "URGENT" in sms_message
-    # Ensure no PHI is included
-    assert sample_urgent_alert.patient_id.hex not in sms_message
+        # Verify SMS content is HIPAA-compliant (Moved inside test)
+        sms_message = mock_notification_service.send_sms.call_args[0][1]
+        assert "SECURE" in sms_message
+        assert "URGENT" in sms_message
+        # Ensure no PHI is included
+        assert sample_urgent_alert.patient_id.hex not in sms_message
 
     async def test_notify_alert_warning_priority(self, notification_service, mock_notification_service, sample_warning_alert):
         """Test that notify_alert sends notifications through appropriate channels for warning alerts."""

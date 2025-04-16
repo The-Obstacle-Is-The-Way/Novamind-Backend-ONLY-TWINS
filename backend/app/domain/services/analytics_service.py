@@ -7,14 +7,27 @@ related to patient analytics and insights in the concierge psychiatry practice.
 
 from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
-from typing import Any
+from typing import Any, List, Dict, Optional, Tuple
 from uuid import UUID
+import pandas as pd
+import numpy as np
 
 from app.domain.exceptions import ValidationError
-from app.domain.repositories.appointment_repository import AppointmentRepository
+from app.domain.repositories.temporal_repository import EventRepository
+from app.domain.repositories.appointment_repository import IAppointmentRepository
 from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository
 from app.domain.repositories.medication_repository import MedicationRepository
 from app.domain.repositories.patient_repository import PatientRepository
+from app.domain.repositories.digital_twin_repository import DigitalTwinRepository
+
+# Domain Models and Entities
+from app.domain.entities.appointment import Appointment
+from app.domain.entities.clinical_note import ClinicalNote
+from app.domain.entities.medication import Medication
+from app.domain.entities.patient import Patient
+from app.domain.entities.digital_twin import DigitalTwin
+from app.domain.entities.symptom_assessment import SymptomAssessment
+from app.domain.entities.analytics import AnalyticsEvent, AnalyticsAggregate
 
 
 class AnalyticsService:
@@ -27,24 +40,30 @@ class AnalyticsService:
 
     def __init__(
         self,
-        patient_repository: PatientRepository,
-        appointment_repository: AppointmentRepository,
+        event_repository: EventRepository,
+        appointment_repository: IAppointmentRepository,
         clinical_note_repository: ClinicalNoteRepository,
         medication_repository: MedicationRepository,
+        patient_repository: PatientRepository,
+        digital_twin_repository: DigitalTwinRepository,
     ):
         """
         Initialize the analytics service
 
         Args:
-            patient_repository: Repository for patient data access
+            event_repository: Repository for event data access
             appointment_repository: Repository for appointment data access
             clinical_note_repository: Repository for clinical note data access
             medication_repository: Repository for medication data access
+            patient_repository: Repository for patient data access
+            digital_twin_repository: Repository for digital twin data access
         """
-        self._patient_repo = patient_repository
-        self._appointment_repo = appointment_repository
+        self.event_repository = event_repository
+        self.appointment_repository = appointment_repository
         self._note_repo = clinical_note_repository
         self._medication_repo = medication_repository
+        self.patient_repository = patient_repository
+        self.digital_twin_repository = digital_twin_repository
 
     async def get_patient_treatment_outcomes(
         self,
@@ -67,7 +86,7 @@ class AnalyticsService:
             ValidationError: If the patient doesn't exist
         """
         # Verify patient exists
-        patient = await self._patient_repo.get_by_id(patient_id)
+        patient = await self.patient_repository.get_by_id(patient_id)
         if not patient:
             raise ValidationError(f"Patient with ID {patient_id} does not exist")
 
@@ -81,7 +100,7 @@ class AnalyticsService:
         )
 
         # Get appointments in date range
-        appointments = await self._appointment_repo.list_by_patient_date_range(
+        appointments = await self.appointment_repository.list_by_patient_date_range(
             patient_id=patient_id, start_date=start_date, end_date=end_date
         )
 
@@ -139,11 +158,11 @@ class AnalyticsService:
 
         # Get appointments in date range
         if provider_id:
-            appointments = await self._appointment_repo.list_by_provider_date_range(
+            appointments = await self.appointment_repository.list_by_provider_date_range(
                 provider_id=provider_id, start_date=start_date, end_date=end_date
             )
         else:
-            appointments = await self._appointment_repo.list_by_date_range(
+            appointments = await self.appointment_repository.list_by_date_range(
                 start_date=start_date, end_date=end_date
             )
 

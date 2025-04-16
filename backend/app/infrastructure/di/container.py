@@ -7,8 +7,9 @@ Follows SOLID principles and Clean Architecture by centralizing dependency manag
 """
 
 import inspect
+import importlib # Added for dynamic imports
 from functools import lru_cache
-from typing import Any, Callable, Dict, Generic, Optional, Type, TypeVar, cast
+from typing import Any, Callable, Dict, Generic, Optional, Type, TypeVar, cast, Union # Added Union
 
 from fastapi import Depends
 
@@ -89,7 +90,7 @@ class DIContainer:
         self._instances[key] = instance
         logger.debug(f"Registered instance for {key}")
 
-    def resolve(self, interface_type: Type[T]) -> T:
+    def resolve(self, interface_type: Union[Type[T], str]) -> T:
         """
         Resolve a dependency by its interface type.
 
@@ -133,8 +134,8 @@ class DIContainer:
                     logger.error(f"Error instantiating scoped {key}: {e}", exc_info=True)
                     raise Exception(f"Error resolving scoped {key}: {e}") from e
 
-        logger.error(f"Type {interface_type.__name__} not registered in DI container.")
-        raise TypeError(f"Type {interface_type.__name__} not registered.")
+        logger.error(f"Type {interface_type} not registered in DI container.")
+        raise TypeError(f"Type {interface_type} not registered.")
 
     def _create_instance_with_dependencies(self, implementation_type: Type[T]) -> T:
         """Instantiate a class, injecting its dependencies from the container."""
@@ -174,11 +175,19 @@ class DIContainer:
         logger.debug(f"Injecting dependencies {list(dependencies.keys())} into {implementation_type.__name__}")
         return implementation_type(**dependencies)
 
-    def _get_key(self, interface_type: Type[T]) -> str:
+    def _get_key(self, interface_type: Union[Type[T], str]) -> str: # Accept string
         """Generate a unique key for registration/resolution."""
-        return f"{interface_type.__module__}.{interface_type.__name__}"
+        if isinstance(interface_type, str):
+            # If it's a string path, use it directly as the key
+            # We assume the registration also used this string path
+            return interface_type
+        elif inspect.isclass(interface_type):
+            return f"{interface_type.__module__}.{interface_type.__name__}"
+        else:
+            # Handle unexpected types
+            raise TypeError(f"Unsupported type for DI key: {type(interface_type)}")
 
-    def override(self, interface_type: Type[T], implementation_factory: Callable[[], T]) -> None:
+    def override(self, interface_type: Union[Type[T], str], implementation_factory: Callable[[], T]) -> None: # Accept string
         """
         Override an existing registration, useful for testing.
 
@@ -342,10 +351,16 @@ def get_container() -> DIContainer:
     # Import the repository classes that contain the ABCs (interfaces)
     from app.domain.repositories.digital_twin_repository import DigitalTwinRepository
     from app.domain.repositories.patient_repository import PatientRepository
+    # Import necessary repositories for AnalyticsService
+    from app.domain.repositories.temporal_repository import EventRepository
+    from app.domain.repositories.appointment_repository import IAppointmentRepository
+    from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository
+    from app.domain.repositories.medication_repository import MedicationRepository
     # TODO: Need concrete repository implementations if these are just ABCs
     # Assuming DigitalTwinRepository/PatientRepository are the ABCs/Interfaces for now
     from app.domain.services.digital_twin_service import DigitalTwinService
     from app.domain.services.patient_service import PatientService
+    from app.domain.services.analytics_service import AnalyticsService # Import AnalyticsService
     from app.core.services.ml.xgboost.aws import AWSXGBoostService
     # --- End deferred imports ---
 
@@ -359,6 +374,13 @@ def get_container() -> DIContainer:
         PatientRepository, # Register the ABC (which serves as interface)
         lambda: None # Placeholder factory - NEEDS CONCRETE IMPLEMENTATION
     )
+
+    # Register required repository dependencies for AnalyticsService
+    # TODO: Replace placeholders with actual concrete repository factories/implementations
+    container.register(EventRepository, lambda: None) # Placeholder
+    container.register(IAppointmentRepository, lambda: None) # Placeholder
+    container.register(ClinicalNoteRepository, lambda: None) # Placeholder
+    container.register(MedicationRepository, lambda: None) # Placeholder
 
     # Register ML services (Assuming concrete implementations exist/will be created)
     # TODO: Replace placeholders with actual ML service implementations/factories
@@ -374,6 +396,7 @@ def get_container() -> DIContainer:
     # Register domain services
     container.register_scoped(DigitalTwinService, DigitalTwinService)
     container.register_scoped(PatientService, PatientService) # Keep this
+    container.register_scoped(AnalyticsService, AnalyticsService) # Register AnalyticsService
 
     # Register application services
     container.register_scoped(
@@ -390,19 +413,25 @@ def get_container() -> DIContainer:
 
 
 # Convenience function for FastAPI dependency injection
-def get_service(service_type: Type[T]) -> Callable[[], T]:
-    """
-    Create a FastAPI dependency that resolves a service.
-
-    Args:
-        service_type: The type of service to resolve
-
-    Returns:
-        FastAPI dependency function that yields the resolved service
-    """
+def get_service(service_type: Union[Type[T], str]) -> Callable[[], T]: # Accept string
+    """Factory function to get a service instance for FastAPI Depends."""
+    container = get_container()
 
     def _get_service() -> T:
-        container = get_container()
-        return container.resolve(service_type)
+        if isinstance(service_type, str):
+            # Dynamically import if a string path is provided
+            try:
+                module_path, class_name = service_type.rsplit('.', 1)
+                module = importlib.import_module(module_path)
+                actual_type = getattr(module, class_name)
+                # Resolve using the actual type now
+                return container.resolve(actual_type)
+            except (ImportError, AttributeError, ValueError) as e:
+                logger.error(f"Failed to dynamically import or resolve service from path '{service_type}': {e}", exc_info=True)
+                raise TypeError(f"Could not resolve service from path '{service_type}'") from e
+        elif inspect.isclass(service_type):
+            return container.resolve(service_type)
+        else:
+            raise TypeError(f"Unsupported service type for get_service: {type(service_type)}")
 
     return _get_service

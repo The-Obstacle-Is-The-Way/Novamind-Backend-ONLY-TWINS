@@ -10,7 +10,7 @@ sanitized in all communications.
 from enum import Enum
 from typing import Any
 
-from app.domain.entities.digital_twin.biometric_alert import AlertPriority, BiometricAlert
+from app.domain.services.biometric_event_processor import AlertPriority, BiometricAlert
 from app.domain.interfaces.alert_observer import AlertObserver
 from app.domain.repositories.biometric_alert_repository import BiometricAlertRepository
 

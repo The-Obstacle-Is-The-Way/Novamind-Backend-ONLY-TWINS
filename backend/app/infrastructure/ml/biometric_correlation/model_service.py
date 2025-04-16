@@ -18,7 +18,9 @@ from uuid import UUID
 
 import numpy as np
 
-from app.domain.exceptions import ModelInferenceError, ValidationError
+# Import relevant exceptions from core layer as a temporary workaround
+from app.core.exceptions.base_exceptions import ModelExecutionError
+from app.domain.exceptions import ValidationError
 from app.infrastructure.ml.biometric_correlation.lstm_model import (
     BiometricCorrelationModel,
 )
@@ -421,7 +423,7 @@ class BiometricCorrelationService:
             raise ve
         except Exception as e:
             logging.error(f"Error analyzing correlations: {str(e)}")
-            raise ModelInferenceError(f"Failed to analyze correlations: {str(e)}")
+            raise ModelExecutionError(f"Failed to analyze correlations: {str(e)}")
 
     async def _calculate_lag_correlations(
         self,
@@ -625,7 +627,7 @@ class BiometricCorrelationService:
 
         except Exception as e:
             logging.error(f"Error detecting anomalies: {str(e)}")
-            raise ModelInferenceError(f"Failed to detect anomalies: {str(e)}")
+            raise ModelExecutionError(f"Failed to detect anomalies: {str(e)}")
 
     async def _analyze_mental_health_changes(
         self,
@@ -888,7 +890,7 @@ class BiometricCorrelationService:
 
         except Exception as e:
             logging.error(f"Error generating monitoring recommendations: {str(e)}")
-            raise ModelInferenceError(
+            raise ModelExecutionError(
                 f"Failed to generate monitoring recommendations: {str(e)}"
             )
 

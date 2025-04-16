@@ -8,7 +8,7 @@ entities, following the Repository pattern to abstract data access operations.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.entities.digital_twin.biometric_twin import BiometricTwin
+from app.domain.entities.biometric_twin_enhanced import BiometricTwin
 
 
 class BiometricTwinRepository(ABC):

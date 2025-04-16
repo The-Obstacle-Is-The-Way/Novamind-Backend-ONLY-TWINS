@@ -15,7 +15,7 @@ from app.domain.entities.patient import Patient
 from app.domain.exceptions import (
     ValidationError,
 )
-from app.domain.repositories.appointment_repository import AppointmentRepository
+from app.domain.repositories.appointment_repository import IAppointmentRepository
 from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository
 from app.domain.repositories.patient_repository import PatientRepository
 from app.domain.repositories.provider_repository import ProviderRepository
@@ -33,7 +33,7 @@ class PatientService:
         self,
         patient_repository: PatientRepository,
         provider_repository: ProviderRepository,
-        appointment_repository: AppointmentRepository,
+        appointment_repository: IAppointmentRepository,
         clinical_note_repository: ClinicalNoteRepository,
     ):
         """
@@ -45,9 +45,9 @@ class PatientService:
             appointment_repository: Repository for appointment data access
             clinical_note_repository: Repository for clinical note data access
         """
-        self._patient_repo = patient_repository
-        self._provider_repo = provider_repository
-        self._appointment_repo = appointment_repository
+        self.patient_repository = patient_repository
+        self.provider_repository = provider_repository
+        self.appointment_repository = appointment_repository
         self._note_repo = clinical_note_repository
 
     async def register_patient(
@@ -94,7 +94,7 @@ class PatientService:
 
         # Validate preferred provider if specified
         if preferred_provider_id:
-            provider = await self._provider_repo.get_by_id(preferred_provider_id)
+            provider = await self.provider_repository.get_by_id(preferred_provider_id)
             if not provider:
                 raise ValidationError(
                     f"Provider with ID {preferred_provider_id} does not exist"
@@ -128,7 +128,7 @@ class PatientService:
             patient.preferred_provider_id = preferred_provider_id
 
         # Save to repository
-        return await self._patient_repo.create(patient)
+        return await self.patient_repository.create(patient)
 
     async def update_patient_info(
         self, patient_id: UUID, updated_fields: dict
@@ -147,7 +147,7 @@ class PatientService:
             ValidationError: If the patient data is invalid
         """
         # Retrieve the patient
-        patient = await self._patient_repo.get_by_id(patient_id)
+        patient = await self.patient_repository.get_by_id(patient_id)
         if not patient:
             raise ValidationError(f"Patient with ID {patient_id} does not exist")
 
@@ -159,7 +159,7 @@ class PatientService:
                 raise ValidationError(f"Invalid field: {field}")
 
         # Save to repository
-        return await self._patient_repo.update(patient)
+        return await self.patient_repository.update(patient)
 
     async def get_patient_care_summary(self, patient_id: UUID) -> dict:
         """
@@ -175,17 +175,17 @@ class PatientService:
             ValidationError: If the patient doesn't exist
         """
         # Retrieve the patient
-        patient = await self._patient_repo.get_by_id(patient_id)
+        patient = await self.patient_repository.get_by_id(patient_id)
         if not patient:
             raise ValidationError(f"Patient with ID {patient_id} does not exist")
 
         # Get recent appointments
-        recent_appointments = await self._appointment_repo.list_by_patient(
+        recent_appointments = await self.appointment_repository.list_by_patient(
             patient_id=patient_id, limit=5, offset=0
         )
 
         # Get upcoming appointments
-        upcoming_appointments = await self._appointment_repo.list_upcoming_by_patient(
+        upcoming_appointments = await self.appointment_repository.list_upcoming_by_patient(
             patient_id=patient_id, limit=5
         )
 
@@ -197,7 +197,7 @@ class PatientService:
         # Get preferred provider if set
         preferred_provider = None
         if patient.preferred_provider_id:
-            preferred_provider = await self._provider_repo.get_by_id(
+            preferred_provider = await self.provider_repository.get_by_id(
                 patient.preferred_provider_id
             )
 
@@ -274,12 +274,12 @@ class PatientService:
             ValidationError: If the patient or provider doesn't exist
         """
         # Retrieve the patient
-        patient = await self._patient_repo.get_by_id(patient_id)
+        patient = await self.patient_repository.get_by_id(patient_id)
         if not patient:
             raise ValidationError(f"Patient with ID {patient_id} does not exist")
 
         # Verify provider exists
-        provider = await self._provider_repo.get_by_id(provider_id)
+        provider = await self.provider_repository.get_by_id(provider_id)
         if not provider:
             raise ValidationError(f"Provider with ID {provider_id} does not exist")
 
@@ -287,7 +287,7 @@ class PatientService:
         patient.preferred_provider_id = provider_id
 
         # Save to repository
-        return await self._patient_repo.update(patient)
+        return await self.patient_repository.update(patient)
 
     async def get_patient_medication_history(self, patient_id: UUID) -> list[dict]:
         """
@@ -303,7 +303,7 @@ class PatientService:
             ValidationError: If the patient doesn't exist
         """
         # Retrieve the patient
-        patient = await self._patient_repo.get_by_id(patient_id)
+        patient = await self.patient_repository.get_by_id(patient_id)
         if not patient:
             raise ValidationError(f"Patient with ID {patient_id} does not exist")
 
@@ -348,7 +348,7 @@ class PatientService:
             ValidationError: If the patient doesn't exist
         """
         # Retrieve the patient
-        patient = await self._patient_repo.get_by_id(patient_id)
+        patient = await self.patient_repository.get_by_id(patient_id)
         if not patient:
             raise ValidationError(f"Patient with ID {patient_id} does not exist")
 
@@ -390,7 +390,7 @@ class PatientService:
         Returns:
             List of matching patient entities
         """
-        return await self._patient_repo.search(query, limit, offset)
+        return await self.patient_repository.search(query, limit, offset)
 
     async def get_patients_with_upcoming_appointments(
         self, days_ahead: int = 7
@@ -409,7 +409,7 @@ class PatientService:
         end_date = start_date + timedelta(days=days_ahead)
 
         # Get appointments in date range
-        appointments = await self._appointment_repo.list_by_date_range(
+        appointments = await self.appointment_repository.list_by_date_range(
             start_date, end_date
         )
 
@@ -436,7 +436,7 @@ class PatientService:
         # Get patient details for each patient with appointments
         result = []
         for patient_id, appointments in patient_appointments.items():
-            patient = await self._patient_repo.get_by_id(UUID(patient_id))
+            patient = await self.patient_repository.get_by_id(UUID(patient_id))
             if patient:
                 result.append(
                     {
@@ -465,19 +465,19 @@ class PatientService:
             ValidationError: If the patient doesn't exist
         """
         # Retrieve the patient
-        patient = await self._patient_repo.get_by_id(patient_id)
+        patient = await self.patient_repository.get_by_id(patient_id)
         if not patient:
             raise ValidationError(f"Patient with ID {patient_id} does not exist")
 
         # Archive patient
         if hasattr(patient, "archive"):
             patient.archive()
-            await self._patient_repo.update(patient)
+            await self.patient_repository.update(patient)
             return True
         else:
             # Fallback if archive method doesn't exist
             patient.is_active = False
-            await self._patient_repo.update(patient)
+            await self.patient_repository.update(patient)
             return True
 
     def _calculate_age(self, birth_date: date) -> int:

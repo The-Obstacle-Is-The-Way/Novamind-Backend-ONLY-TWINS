@@ -3,8 +3,7 @@
 Tests for the Secure Messaging Service.
 """
 
-from app.domain.repositories.base_repository import BaseRepository
-from app.infrastructure.security.encryption_service import EncryptionService
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
 import base64
 import json
 import time
@@ -17,6 +16,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from unittest.mock import MagicMock, AsyncMock
 
 # Corrected import
 from app.infrastructure.messaging.secure_messaging_service import (
@@ -38,7 +38,7 @@ from app.infrastructure.messaging.secure_messaging_service import (
 @pytest.fixture
 def encryption_service():
     """Fixture for encryption service."""
-    service = MagicMock(spec=EncryptionService)
+    service = MagicMock(spec=BaseEncryptionService)
     service.encrypt_field.side_effect = lambda x: f"encrypted_{x}"
     # Corrected decrypt_field side effect
     service.decrypt_field.side_effect = lambda x: x.replace("encrypted_", "") if isinstance(x, str) else x
@@ -47,7 +47,7 @@ def encryption_service():
 @pytest.fixture
 def message_repository():
     """Fixture for message repository."""
-    repository = AsyncMock(spec=BaseRepository) # Use AsyncMock for async methods
+    repository = AsyncMock() # Removed spec for non-existent BaseRepository
     # Make save return the object passed to it
     async def save_side_effect(msg):
         return msg

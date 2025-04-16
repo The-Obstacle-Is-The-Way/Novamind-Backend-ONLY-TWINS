@@ -10,11 +10,12 @@ from uuid import uuid4, UUID
 from datetime import datetime
 from typing import List, Optional
 from unittest.mock import AsyncMock, MagicMock
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.patient import Patient
-from app.infrastructure.repositories.patient_repository import PatientRepository
+from app.infrastructure.repositories.mock_patient_repository import MockPatientRepository as PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
-from app.infrastructure.security.encryption.fernet_encryption_service import FernetEncryptionService
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
 
 
 @pytest.fixture
@@ -25,16 +26,14 @@ def mock_db_session():
 @pytest.fixture
 def mock_encryption_service():
     """Fixture for a mock encryption service."""
-    mock_service = MagicMock(spec=FernetEncryptionService) 
-    # Mock encrypt/decrypt methods to simply return the input for testing
-    mock_service.encrypt_data.side_effect = lambda data, _: data
-    mock_service.decrypt_data.side_effect = lambda data, _: data
+    mock_service = MagicMock(spec=BaseEncryptionService)
+    mock_service.encrypt.side_effect = lambda x: f"enc_{x}" if x else None
+    mock_service.decrypt.side_effect = lambda x: x[4:] if x and x.startswith("enc_") else x
     return mock_service
 
 @pytest.fixture
-def patient_repository(mock_db_session, mock_encryption_service):
+def repository(mock_db_session, mock_encryption_service):
     """Fixture for PatientRepository with mocked dependencies."""
-    # Pass the mocked encryption service during instantiation
     return PatientRepository(session=mock_db_session, encryption_service=mock_encryption_service)
 
 @pytest.fixture
@@ -52,15 +51,14 @@ def sample_patient_data():
 class TestPatientRepository:
     """Tests for the PatientRepository."""
 
-    def setup_method(self):
-        """Set up test fixtures before each test method."""
-        self.mock_db = MockAsyncSession()
-        # Instantiate the mock encryption service directly here
-        self.mock_encryption_service = MagicMock(spec=FernetEncryptionService)
-        self.mock_encryption_service.encrypt_data.side_effect = lambda data, _: data
-        self.mock_encryption_service.decrypt_data.side_effect = lambda data, _: data
-        # Correctly instantiate the repository with both mocks
+    @pytest.fixture(autouse=True)
+    async def setup_method(self, mock_db_session, mock_encryption_service):
+        """Setup method for TestPatientRepository class."""
+        self.mock_db = mock_db_session
+        self.mock_encryption_service = mock_encryption_service
         self.repository = PatientRepository(session=self.mock_db, encryption_service=self.mock_encryption_service)
+        self.mock_db.reset_mock()
+        self.mock_encryption_service.reset_mock()
 
         # Create sample patients for testing
         self.patient_1 = self._create_test_patient(
@@ -105,47 +103,47 @@ class TestPatientRepository:
             updated_at=datetime.now()
         )
 
-    async def test_create_patient(self, patient_repository, sample_patient_data):
+    async def test_create_patient(self, repository, sample_patient_data):
         """Test creating a patient."""
         patient = Patient(**sample_patient_data)
-        await patient_repository.create(patient)
-        patient_repository.session.add.assert_called_once_with(patient)
-        patient_repository.session.commit.assert_called_once()
+        await repository.create(patient)
+        repository.session.add.assert_called_once_with(patient)
+        repository.session.commit.assert_called_once()
 
-    async def test_get_patient_by_id(self, patient_repository, sample_patient_data):
+    async def test_get_patient_by_id(self, repository, sample_patient_data):
         """Test retrieving a patient by ID."""
         mock_patient = Patient(**sample_patient_data)
-        patient_repository.session.get.return_value = mock_patient
-        retrieved_patient = await patient_repository.get_by_id(mock_patient.id)
+        repository.session.get.return_value = mock_patient
+        retrieved_patient = await repository.get_by_id(mock_patient.id)
         assert retrieved_patient == mock_patient
-        patient_repository.session.get.assert_called_once_with(Patient, mock_patient.id)
+        repository.session.get.assert_called_once_with(Patient, mock_patient.id)
 
-    async def test_get_patient_by_id_not_found(self, patient_repository):
+    async def test_get_patient_by_id_not_found(self, repository):
         """Test retrieving a non-existent patient by ID."""
-        patient_repository.session.get.return_value = None
-        retrieved_patient = await patient_repository.get_by_id(str(uuid4()))
+        repository.session.get.return_value = None
+        retrieved_patient = await repository.get_by_id(str(uuid4()))
         assert retrieved_patient is None
-        patient_repository.session.get.assert_called_once()
+        repository.session.get.assert_called_once()
 
-    async def test_update_patient(self, patient_repository, sample_patient_data):
+    async def test_update_patient(self, repository, sample_patient_data):
         """Test updating a patient."""
         patient = Patient(**sample_patient_data)
-        patient_repository.session.merge.return_value = patient
-        patient_repository.session.get.return_value = patient
+        repository.session.merge.return_value = patient
+        repository.session.get.return_value = patient
         
         update_data = {"name": "Jane Smith Updated"}
-        updated_patient = await patient_repository.update(patient.id, update_data)
+        updated_patient = await repository.update(patient.id, update_data)
         
         assert updated_patient.name == "Jane Smith Updated"
-        patient_repository.session.commit.assert_called_once()
+        repository.session.commit.assert_called_once()
 
-    async def test_delete_patient(self, patient_repository, sample_patient_data):
+    async def test_delete_patient(self, repository, sample_patient_data):
         """Test deleting a patient."""
         patient = Patient(**sample_patient_data)
-        patient_repository.session.get.return_value = patient
-        await patient_repository.delete(patient.id)
-        patient_repository.session.delete.assert_called_once_with(patient)
-        patient_repository.session.commit.assert_called_once()
+        repository.session.get.return_value = patient
+        await repository.delete(patient.id)
+        repository.session.delete.assert_called_once_with(patient)
+        repository.session.commit.assert_called_once()
 
     @pytest.mark.asyncio
     @pytest.mark.db_required
