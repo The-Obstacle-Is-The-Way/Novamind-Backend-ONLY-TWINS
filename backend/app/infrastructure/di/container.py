@@ -36,16 +36,174 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
-class Container(DIContainer):
-    """Minimal Container class for import compatibility."""
-    pass
-
 class DIContainer:
     """
     Dependency Injection Container for managing service dependencies.
     Implements the Service Locator pattern in a clean, type-safe way.
     """
 
+    def __init__(self):
+        """Initialize the container with empty registrations."""
+        self._registrations: Dict[str, Callable[[], Any]] = {}
+        self._instances: Dict[str, Any] = {}
+        logger.debug("Dependency Injection Container initialized")
+
+    def register(
+        self, interface_type: Type[T], implementation_factory: Callable[[], T]
+    ) -> None:
+        """
+        Register a service implementation factory for an interface.
+
+        Args:
+            interface_type: The interface or abstract type
+            implementation_factory: Factory function creating the implementation
+        """
+        key = self._get_key(interface_type)
+        self._registrations[key] = implementation_factory
+        logger.debug(f"Registered factory for {key}")
+
+    def register_scoped(
+        self, interface_type: Type[T], implementation_type: Type[T]
+    ) -> None:
+        """
+        Register a scoped service (instance per request/scope).
+
+        Args:
+            interface_type: The interface or abstract type
+            implementation_type: The concrete implementation class
+        """
+        key = self._get_key(interface_type)
+        # Store the type itself; instantiation happens on resolution
+        self._registrations[key] = implementation_type
+        logger.debug(f"Registered scoped service for {key}")
+
+    def register_instance(self, interface_type: Type[T], instance: T) -> None:
+        """
+        Register a singleton instance for an interface.
+
+        Args:
+            interface_type: The interface or abstract type
+            instance: The singleton instance
+        """
+        key = self._get_key(interface_type)
+        self._instances[key] = instance
+        logger.debug(f"Registered instance for {key}")
+
+    def resolve(self, interface_type: Type[T]) -> T:
+        """
+        Resolve a dependency by its interface type.
+
+        Args:
+            interface_type: The interface type to resolve
+
+        Returns:
+            An instance of the registered implementation
+
+        Raises:
+            TypeError: If the type is not registered
+            Exception: If instantiation fails
+        """
+        key = self._get_key(interface_type)
+
+        # Check singletons first
+        if key in self._instances:
+            logger.debug(f"Resolving instance for {key}")
+            return cast(T, self._instances[key])
+
+        # Check registrations (factories or scoped types)
+        if key in self._registrations:
+            registration = self._registrations[key]
+            # If it's a factory function
+            if callable(registration) and not isinstance(registration, type):
+                logger.debug(f"Resolving factory for {key}")
+                try:
+                    instance = registration()
+                    return cast(T, instance)
+                except Exception as e:
+                    logger.error(f"Error instantiating {key} from factory: {e}", exc_info=True)
+                    raise Exception(f"Error resolving {key}: {e}") from e
+            # If it's a type (scoped registration)
+            elif isinstance(registration, type):
+                logger.debug(f"Resolving scoped type {key}")
+                try:
+                    # Perform dependency injection for the implementation's __init__
+                    instance = self._create_instance_with_dependencies(registration)
+                    return cast(T, instance)
+                except Exception as e:
+                    logger.error(f"Error instantiating scoped {key}: {e}", exc_info=True)
+                    raise Exception(f"Error resolving scoped {key}: {e}") from e
+
+        logger.error(f"Type {interface_type.__name__} not registered in DI container.")
+        raise TypeError(f"Type {interface_type.__name__} not registered.")
+
+    def _create_instance_with_dependencies(self, implementation_type: Type[T]) -> T:
+        """Instantiate a class, injecting its dependencies from the container."""
+        signature = inspect.signature(implementation_type.__init__)
+        dependencies: Dict[str, Any] = {}
+
+        for name, param in signature.parameters.items():
+            if name == 'self':
+                continue
+            if param.annotation is inspect.Parameter.empty:
+                logger.warning(
+                    f"Dependency '{name}' for {implementation_type.__name__} has no type hint. Cannot inject."
+                )
+                # Or raise an error if strict injection is required
+                # raise TypeError(f"Missing type hint for dependency '{name}' in {implementation_type.__name__}")
+                continue
+
+            # Resolve dependency based on type hint
+            try:
+                dependencies[name] = self.resolve(param.annotation)
+            except TypeError as e:
+                # If dependency not found, re-raise with more context
+                logger.error(
+                    f"Failed to resolve dependency '{name}: {param.annotation.__name__}' for {implementation_type.__name__}",
+                    exc_info=True
+                )
+                raise TypeError(
+                    f"Cannot instantiate {implementation_type.__name__}: Dependency '{name}' ({param.annotation.__name__}) not registered."
+                ) from e
+            except Exception as e:
+                 logger.error(
+                    f"Unexpected error resolving dependency '{name}: {param.annotation.__name__}' for {implementation_type.__name__}",
+                    exc_info=True
+                )
+                 raise
+
+        logger.debug(f"Injecting dependencies {list(dependencies.keys())} into {implementation_type.__name__}")
+        return implementation_type(**dependencies)
+
+    def _get_key(self, interface_type: Type[T]) -> str:
+        """Generate a unique key for registration/resolution."""
+        return f"{interface_type.__module__}.{interface_type.__name__}"
+
+    def override(self, interface_type: Type[T], implementation_factory: Callable[[], T]) -> None:
+        """
+        Override an existing registration, useful for testing.
+
+        Args:
+            interface_type: The interface type to override.
+            implementation_factory: The new factory function.
+        """
+        key = self._get_key(interface_type)
+        if key not in self._registrations and key not in self._instances:
+             logger.warning(f"Attempting to override non-existent registration for {key}. Registering instead.")
+        self._registrations[key] = implementation_factory
+        if key in self._instances:
+            del self._instances[key] # Remove old singleton if overriding with factory
+        logger.info(f"Overrode registration for {key}")
+
+    def clear(self) -> None:
+        """Clear all registrations and instances."""
+        self._registrations.clear()
+        self._instances.clear()
+        logger.info("DI Container cleared.")
+
+
+class Container(DIContainer):
+    """Minimal Container class for import compatibility."""
+    pass
     def __init__(self):
         """Initialize the container with empty registrations."""
         self._registrations: Dict[str, Callable[[], Any]] = {}

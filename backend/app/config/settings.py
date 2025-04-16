@@ -11,7 +11,7 @@ from typing import Optional, Dict, Any, List, Union
 import json # Ensure json is imported for the validator
 
 from pydantic_settings import BaseSettings
-from pydantic import Field, field_validator, PostgresDsn, SecretStr, HttpUrl, ConfigDict
+from pydantic import Field, field_validator, model_validator, PostgresDsn, SecretStr, HttpUrl, ConfigDict
 
 
 # --- ML Settings Sub-Models ---
@@ -243,6 +243,42 @@ class Settings(BaseSettings):
     # --- Nested ML Settings ---
     ml: MLSettings = Field(default_factory=MLSettings)
 
+    @model_validator(mode='before')
+    @classmethod
+    def assemble_database_url(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Assemble DATABASE_URL from components if DATABASE_URL is not explicitly set."""
+        # Check if DATABASE_URL is missing and if postgres components are provided
+        if values.get('DATABASE_URL') is None and values.get('POSTGRES_DB'):
+            try:
+                password = values.get("POSTGRES_PASSWORD")
+                password_str = password.get_secret_value() if isinstance(password, SecretStr) else None
+
+                # Construct the postgresql+asyncpg URL
+                dsn = PostgresDsn.build(
+                    scheme="postgresql+asyncpg", # Use asyncpg driver
+                    username=values.get("POSTGRES_USER"),
+                    password=password_str,
+                    host=values.get("POSTGRES_SERVER"),
+                    port=str(values.get("POSTGRES_PORT", 5432)),
+                    path=f"{values.get('POSTGRES_DB') or ''}",
+                )
+                url_parts = [str(dsn)]
+                # Optional: Add SSL parameters if provided
+                ssl_mode = values.get('DATABASE_SSL_MODE')
+                if ssl_mode and ssl_mode != 'disable':
+                     url_parts.append(f"sslmode={ssl_mode}")
+                     # Add handling for other SSL params like sslrootcert if needed
+
+                values['DATABASE_URL'] = "?".join(url_parts) if len(url_parts) > 1 else url_parts[0]
+                print(f"Constructed DATABASE_URL from components: {values['DATABASE_URL']}") # Debugging
+            except Exception as e:
+                print(f"Error assembling DATABASE_URL from components: {e}") # Debugging
+                pass # Allow None if assembly fails
+
+        # Remove the old URI field if it exists, ensuring clean output
+        values.pop('SQLALCHEMY_DATABASE_URI', None)
+        return values
+
     model_config = ConfigDict(
         case_sensitive=True,
         env_file=".env",
@@ -253,26 +289,26 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Return the singleton Settings instance, loading from .env if specified."""
-    env_file = os.getenv("ENV_FILE", ".env") # Allow overriding .env file via ENV_FILE env var
-    # Check if the file exists, otherwise load without it (and rely on environment variables)
-    if not os.path.exists(env_file):
-        print(f"Warning: Environment file '{env_file}' not found. Loading settings from environment variables only.")
-        return Settings()
-    else:
-        # Ensure .env.test is used if TESTING=1 is set *before* this runs
-        # This check is a bit redundant now with the conftest explicit load, but harmless.
-        if os.getenv('TESTING') == '1' and env_file == '.env':
-            test_env_path = '.env.test'
-            if os.path.exists(test_env_path):
-                print(f"Detected TESTING=1, using '{test_env_path}' for settings.")
-                env_file = test_env_path
-            else:
-                print(f"Warning: TESTING=1 detected, but '{test_env_path}' not found. Using '{env_file}'.")
-        # Load settings, explicitly passing the determined env_file path
-        # This ensures pydantic-settings uses the correct file (e.g., .env.test)
-        print(f"Loading settings from: {env_file}")
-        return Settings(_env_file=env_file)
+    """Return the singleton Settings instance, loading based on pydantic-settings defaults.
+
+    Relies on the Pydantic Settings logic to find and load the correct .env file
+    (e.g., .env by default, or potentially .env.test if managed externally like in conftest.py).
+    """
+    print("Attempting to load settings (expecting .env or .env.test if overridden)...")
+    try:
+        # Settings class automatically loads from .env based on its model_config
+        settings = Settings()
+        # Crucial: Check if DATABASE_URL is None *after* loading and assembly attempt
+        if settings.DATABASE_URL is None:
+             print("CRITICAL WARNING: DATABASE_URL is None after settings load. Check .env files and assembly logic.")
+             # Decide whether to raise an error here or let the DB connection fail later
+             # raise ValueError("DATABASE_URL is not configured.")
+        else:
+             print(f"Settings loaded. DATABASE_URL resolved to: {settings.DATABASE_URL}")
+        return settings
+    except Exception as e:
+        print(f"CRITICAL ERROR loading settings: {e}")
+        raise RuntimeError(f"Failed to load application settings: {e}")
 
 # Optional: Add a main block to print settings for verification during development
 # if __name__ == "__main__":

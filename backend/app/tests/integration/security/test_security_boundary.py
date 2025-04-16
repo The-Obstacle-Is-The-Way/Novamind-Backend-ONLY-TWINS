@@ -10,9 +10,9 @@ import time
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
-from app.infrastructure.security.jwt.token_handler import JWTHandler
+from app.infrastructure.security.jwt.jwt_service import JWTHandler
 from app.infrastructure.security.password.password_handler import PasswordHandler
-from app.infrastructure.security.rbac.role_manager import RoleBasedAccessControl
+from app.infrastructure.security.rbac.rbac_service import RBACService
 from app.domain.entities.security.role import Role
 from app.domain.entities.security.permission import Permission
 

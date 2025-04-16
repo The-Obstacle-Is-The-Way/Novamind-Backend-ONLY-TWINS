@@ -22,7 +22,7 @@ from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
 from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
 from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
-from app.core.utils.phi_sanitizer import PHIDetector, PHISanitizer
+from app.infrastructure.security.phi.phi_service import PHIService
 # Corrected import path for get_sanitized_logger
 from app.infrastructure.security.phi.log_sanitizer import get_sanitized_logger
 from app.domain.entities.patient import Patient as PatientDomain
@@ -92,18 +92,18 @@ class TestPHISanitization:
     @pytest.mark.asyncio
     async def test_phi_detection(self, test_patient):
         """Test that PHI detector correctly identifies PHI."""
-        # Create a PHI detector
-        detector = PHIDetector()
+        # Create a PHI service instance
+        service = PHIService() # Assuming default config is sufficient for this test
         
         # Test detection in string
         test_string = f"Patient {test_patient.first_name} {test_patient.last_name} " \
                       f"with email {test_patient.email} and phone {test_patient.phone}"
         
-        # Detect PHI
-        phi_detected = detector.detect_phi(test_string)
+        # Detect PHI - PHIService.detect_phi returns a list of findings
+        phi_detected_list = service.detect_phi(test_string)
         
-        # Verify PHI was detected
-        assert phi_detected, "PHI should be detected in the test string"
+        # Verify PHI was detected (list is not empty)
+        assert phi_detected_list, "PHI detection list should not be empty for the test string"
         
         # Test detection in dictionary
         test_dict = {
@@ -114,11 +114,11 @@ class TestPHISanitization:
             }
         }
         
-        # Detect PHI
-        phi_detected = detector.detect_phi(test_dict)
+        # Detect PHI - PHIService.detect_phi returns a list of findings
+        phi_detected_list = service.detect_phi(test_dict)
         
-        # Verify PHI was detected
-        assert phi_detected, "PHI should be detected in the test dictionary"
+        # Verify PHI was detected (list is not empty)
+        assert phi_detected_list, "PHI detection list should not be empty for the test dictionary"
     
     @pytest.mark.asyncio
     async def test_phi_sanitization_in_logs(self, test_patient, log_capture):

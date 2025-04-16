@@ -64,7 +64,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.tests.conftest import MockSettings
 
 # Added import for PatientService
-from app.application.services.patient_service import PatientServiceInterface as PatientService
+from app.application.services.patient_service import PatientApplicationService as PatientService
 
 # Global settings for these tests
 # Note: Using fixtures might be cleaner than global variables
@@ -166,7 +166,7 @@ class TestAPIHIPAACompliance:
 
             # --- Dependency Overrides ---
             # Override get_current_user (assuming it uses decode_token and get_user)
-            async def override_get_current_user(token: str = Depends(OAuth2PasswordBearer(tokenUrl="token", auto_error=False))):
+            async def override_get_current_user(request: Request, token: str = Depends(OAuth2PasswordBearer(tokenUrl="token", auto_error=False))):
                 # DEBUG: Log the received token
                 logger.info(f"---> override_get_current_user: Received token parameter: {repr(token)}") 
                 if not token:
@@ -188,7 +188,7 @@ class TestAPIHIPAACompliance:
                     
                     # Check patient ID access for patient role
                     if user['role'] == 'patient':
-                         request_path = app.current_request.url.path if hasattr(app, 'current_request') else "Unknown"
+                         request_path = request.url.path # Use the request parameter
                          # Extract patient_id from URL if relevant (e.g., /patients/{patient_id})
                          match = re.search(r"/patients/([^/]+)", request_path)
                          requested_patient_id = match.group(1) if match else None
@@ -201,7 +201,7 @@ class TestAPIHIPAACompliance:
                               )
                          # Add similar check for doctor based on user['patient_ids']
                     elif user['role'] == 'doctor':
-                        request_path = app.current_request.url.path if hasattr(app, 'current_request') else "Unknown"
+                        request_path = request.url.path # Use the request parameter
                         match = re.search(r"/patients/([^/]+)", request_path)
                         requested_patient_id = match.group(1) if match else None
                         # logger.debug(f"Doctor {user['id']} accessing path {request_path}, requested_id: {requested_patient_id}")
@@ -340,7 +340,7 @@ class TestAPIHIPAACompliance:
         return mock_patient
 
     @pytest.fixture
-    def mock_patient_service() -> Generator[MagicMock, None, None]:
+    def mock_patient_service(self) -> Generator[MagicMock, None, None]:
         """Fixture for a mock patient service."""
         mock_service = AsyncMock(spec=PatientService)
         # Setup mock responses

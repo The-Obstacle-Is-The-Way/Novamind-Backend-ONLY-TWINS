@@ -16,7 +16,7 @@ from app.domain.entities.patient import Patient
 from app.domain.value_objects.address import Address
 from app.domain.value_objects.emergency_contact import EmergencyContact
 # Removed import of non-existent Insurance value object
-from app.infrastructure.persistence.sqlalchemy.models.patient import PatientModel
+from app.infrastructure.persistence.sqlalchemy.models.patient import Patient as PatientModel
 from app.infrastructure.security.encryption import EncryptionService
 
 

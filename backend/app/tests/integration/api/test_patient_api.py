@@ -20,7 +20,7 @@ try:
 except ImportError:
     # If the above doesn't work, try another possible path
     from app.domain.entities import Patient
-from app.infrastructure.database.session import get_session
+from app.infrastructure.database.session import get_db
 
 
 @pytest.fixture
