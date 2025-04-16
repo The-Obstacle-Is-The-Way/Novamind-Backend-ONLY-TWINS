@@ -42,9 +42,9 @@ from .models import (
     MentaLLaMAError # Import base error for generic catch if needed
     # MentaLLaMAResult # If needed later
 )
-from app.infrastructure.ml.mentallama.utils import preprocess_input, postprocess_output
-from app.domain.entities.ml_model import MLModelInfo, MLModelStatus
-from app.infrastructure.ml.aws_clients import get_bedrock_client
+# Removed unused import for preprocess_input, postprocess_output from non-existent utils
+# Removed unused import for MLModelInfo, MLModelStatus from non-existent ml_model
+# Removed unused import for get_bedrock_client from non-existent aws_clients
 from app.domain.ml.ml_model import ModelType
 # Schemas below seem to be removed/refactored
 # from app.presentation.api.schemas.ml_schemas import (
@@ -290,7 +290,7 @@ class MentaLLaMAService:
         wait=wait_exponential(multiplier=1, min=1, max=10),
         reraise=True
     )
-    async def process_request(self, request: MentaLLaMARequest) -> MentaLLaMAResponse:
+    async def process_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
         """
         Process a MentaLLaMA request.
         
@@ -371,7 +371,7 @@ class MentaLLaMAService:
                 details={"error_type": type(e).__name__}
             )
     
-    def _validate_request(self, request: MentaLLaMARequest) -> None:
+    def _validate_request(self, request: Any) -> None: # Replaced MentaLLaMARequest with Any
         """
         Validate MentaLLaMA request.
         
@@ -405,7 +405,7 @@ class MentaLLaMAService:
                 f"top_p must be between 0.0 and 1.0 (value: {request.top_p})"
             )
     
-    async def _process_openai_request(self, request: MentaLLaMARequest) -> MentaLLaMAResponse:
+    async def _process_openai_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
         """
         Process request using OpenAI client.
         
@@ -463,6 +463,7 @@ class MentaLLaMAService:
             generated_text = message.content or ""
             
             # Create response
+            # Original response creation - type hint changed in method signature
             response = MentaLLaMAResponse(
                 model=request.model,
                 task=request.task,
@@ -488,7 +489,7 @@ class MentaLLaMAService:
             )
             raise
     
-    async def _process_azure_request(self, request: MentaLLaMARequest) -> MentaLLaMAResponse:
+    async def _process_azure_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
         """
         Process request using Azure OpenAI client.
         
@@ -550,6 +551,7 @@ class MentaLLaMAService:
             generated_text = message.content or ""
             
             # Create response
+            # Original response creation - type hint changed in method signature
             response = MentaLLaMAResponse(
                 model=request.model,
                 task=request.task,
@@ -575,7 +577,7 @@ class MentaLLaMAService:
             )
             raise
     
-    async def _process_local_request(self, request: MentaLLaMARequest) -> MentaLLaMAResponse:
+    async def _process_local_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
         """
         Process request using local client.
         
@@ -632,6 +634,7 @@ class MentaLLaMAService:
                 result = await response.json()
                 
                 # Create response
+                # Original response creation - type hint changed in method signature
                 response_obj = MentaLLaMAResponse(
                     model=request.model,
                     task=request.task,
@@ -664,7 +667,7 @@ class MentaLLaMAService:
             )
             raise
     
-    async def _process_custom_request(self, request: MentaLLaMARequest) -> MentaLLaMAResponse:
+    async def _process_custom_request(self, request: Any) -> Any: # Replaced MentaLLaMARequest/Response with Any
         """
         Process request using custom client.
         
@@ -728,6 +731,7 @@ class MentaLLaMAService:
                 result = await response.json()
                 
                 # Create response
+                # Original response creation - type hint changed in method signature
                 response_obj = MentaLLaMAResponse(
                     model=request.model,
                     task=request.task,
@@ -814,7 +818,7 @@ class MentaLLaMAService:
         
         return mappings.get(model, "gpt-4")
     
-    def _create_system_message(self, task: TaskType, model: ModelType) -> str:
+    def _create_system_message(self, task: Any, model: ModelType) -> str: # Replaced TaskType with Any
         """
         Create system message based on task and model.
         

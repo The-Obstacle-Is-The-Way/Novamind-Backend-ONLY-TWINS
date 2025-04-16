@@ -36,10 +36,11 @@ from app.domain.entities.digital_twin.temporal_neurotransmitter_sequence import 
     TemporalNeurotransmitterSequence, 
 )
 from app.domain.ml.ml_model import MLModel, ModelType
-from app.presentation.api.schemas.ml_schemas import (
-    DigitalTwinCreateRequest,
-    DigitalTwinResponse,
-)
+# Commented out imports for missing schemas - requires further investigation
+# from app.presentation.api.schemas.ml_schemas import (
+#     DigitalTwinCreateRequest,
+#     DigitalTwinResponse,
+# )
 
 from app.infrastructure.factories.enhanced_mock_digital_twin_factory import (
     EnhancedMockDigitalTwinFactory,

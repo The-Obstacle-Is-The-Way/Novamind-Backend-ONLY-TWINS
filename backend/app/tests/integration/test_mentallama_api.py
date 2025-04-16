@@ -24,7 +24,7 @@ from app.core.exceptions import (
 )
 
 from app.core.services.ml.interface import MentaLLaMAInterface
-from app.infrastructure.ml.mentallama.service import MentalLlamaService
+from app.infrastructure.ml.mentallama.service import MentaLLaMAService # Corrected spelling
 from app.main import create_application
 
 # Load settings ONCE for the module

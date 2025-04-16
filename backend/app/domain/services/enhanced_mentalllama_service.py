@@ -13,7 +13,7 @@ from app.domain.entities.knowledge_graph import (
     KnowledgeGraphEdge,
     KnowledgeGraphNode,
 )
-from app.infrastructure.ml.mentallama.service import MentalLlamaService
+from app.infrastructure.ml.mentallama.service import MentaLLaMAService # Corrected spelling
 
 
 class EnhancedMentalLLaMAService(ABC):
