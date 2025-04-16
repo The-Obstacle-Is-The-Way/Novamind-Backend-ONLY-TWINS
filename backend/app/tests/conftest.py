@@ -301,18 +301,23 @@ def mock_auth_service_for_client() -> AuthenticationService:
 
 
 # Restore the client fixture
-@pytest.fixture(scope="function") # Use function scope for isolation
-def client(
-    mock_settings, # Inject the mock_settings fixture directly
+async def client( # Keep fixture async
+    mock_settings: MockSettings, # Inject mock_settings
     test_environment,
-    mock_jwt_service_for_client: JWTService, # Inject JWT mock
-    mock_auth_service_for_client: AuthenticationService # Inject Auth mock
-) -> Generator[TestClient, None, None]:
-    """Create a FastAPI test client with mocked dependencies."""
-    
+    # Remove jwt_service injection
+    mock_auth_service_for_client: AuthenticationService
+) -> AsyncGenerator[TestClient, None]:
+    """Provides an async TestClient instance with JWT dependency overridden by a service using mock_settings."""
+    logger.info("[Fixture client - async] ENTERING - Overriding JWT with service based on mock_settings")
+
+    # Create a JWTService instance using mock_settings specifically for the override
+    # This ensures it uses the same secret key as the one used for token generation via jwt_service fixture
+    override_jwt_service = JWTService(settings=mock_settings)
+    logger.info(f"[Fixture client - async] Created override_jwt_service: {id(override_jwt_service)}")
+
+
     # --- Database Setup (Async context manager for setup/teardown) ---
     test_db = Database(db_url=mock_settings.DATABASE_URL, echo=mock_settings.DATABASE_ECHO)
-    # ... (rest of db setup as before)
     async def setup_db():
         await test_db.connect()
         await test_db.init_models()
@@ -321,12 +326,10 @@ def client(
         await test_db.close_database()
 
     @asynccontextmanager
-    async def test_lifespan(app_param: FastAPI): # Changed variable name
-        # Startup: Use the pre-configured test_db for setup
+    async def test_lifespan(app_param: FastAPI):
         await setup_db()
         logger.info("[Test Lifespan] Database initialized for test.")
         yield
-        # Shutdown: Close database connection
         await teardown_db()
         logger.info("[Test Lifespan] Database closed after test.")
 
@@ -335,13 +338,11 @@ def client(
 
     # --- Dependency Overrides ---
     # Override settings dependency
-    # Assumes the dependency is imported as 'from app.config.settings import get_settings'
     try:
         from app.config.settings import get_settings
         app.dependency_overrides[get_settings] = lambda: mock_settings
     except ImportError:
         logger.error("Could not import get_settings from app.config.settings to override.")
-        # Optionally, try other paths if structure varies
         try:
             from app.core.config import get_settings as core_get_settings
             app.dependency_overrides[core_get_settings] = lambda: mock_settings
@@ -353,71 +354,69 @@ def client(
     async def override_get_db():
         async with test_db.get_session() as session:
             yield session
-
     app.dependency_overrides[get_db_dependency] = override_get_db
 
     # Override Auth dependencies
     try:
-        from app.infrastructure.security.jwt.jwt_service import get_jwt_service # Adjust import if needed
-        app.dependency_overrides[get_jwt_service] = lambda: mock_jwt_service_for_client
+        from app.infrastructure.security.jwt.jwt_service import get_jwt_service
+        # Override with the *resolved* real jwt_service instance from the fixture
+        app.dependency_overrides[get_jwt_service] = lambda: actual_jwt_service
+        logger.info(f"[Fixture client - async] Overrode get_jwt_service with: {id(actual_jwt_service)}")
     except ImportError:
         logger.error("Could not import get_jwt_service to override.")
 
     try:
-        from app.infrastructure.security.auth.authentication_service import get_auth_service # Adjust import if needed
+        from app.infrastructure.security.auth.authentication_service import get_auth_service
         app.dependency_overrides[get_auth_service] = lambda: mock_auth_service_for_client
     except ImportError:
         logger.error("Could not import get_auth_service to override.")
 
-    # --- Include Routers (TODO: Uncomment and add actual routers) ---
-    # from app.presentation.api.v1.endpoints import users, items # Example
-    # app.include_router(users.router, prefix="/api/v1")
-    # app.include_router(items.router, prefix="/api/v1")
+    # --- Include Routers ---
+    # Example: app.include_router(...)
 
-    # Add AuthenticationMiddleware using mocked services
-    # Note: Middleware setup might need adjustment based on actual implementation
-    # app.add_middleware(
-    #     AuthenticationMiddleware,
-    #     jwt_service=mock_jwt_service_for_client,
-    #     exempt_paths=["/docs", "/openapi.json"] # Example exempt paths
-    # )
+    # --- Yield TestClient ---
+    # TestClient is used directly within the async fixture context
+    test_client_instance = TestClient(app)
+    logger.info("[Fixture client - async] Yielding TestClient")
+    yield test_client_instance # Yield the client instance
 
-    # --- Create Test Client ---
-    with TestClient(app) as test_client:
-        yield test_client
+    # Teardown is handled by the lifespan context manager
+    logger.info("[Fixture client - async] EXITING")
+    # Restore original dependencies (handled by pytest fixture teardown)
 
 
 # --- Database Fixtures (Independent of client) ---
 # If you need direct DB access in tests *not* using the client, define separate fixtures.
 
 # Fixture for JWTService (can be used directly by tests if needed)
-@pytest.fixture(scope="function")
-async def jwt_service(mock_settings: MockSettings) -> JWTService:
+@pytest.fixture(scope="function") # Keep function scope
+async def jwt_service(mock_settings: MockSettings) -> AsyncGenerator[JWTService, None]:
     """Provides a real JWTService instance configured with mock settings."""
     # Use the mocked settings to initialize a real service instance
-    return JWTService(settings=mock_settings)
+    service = JWTService(settings=mock_settings)
+    yield service # Yield the service instance
 
 
 # Fixture to generate tokens using the real JWTService (configured with mock settings)
-@pytest.fixture(scope="function")
-async def generate_token(jwt_service: JWTService) -> Callable[[Dict[str, Any]], Coroutine[Any, Any, str]]:
+@pytest.fixture(scope="function") # Ensure function scope
+async def generate_token(jwt_service: AsyncGenerator[JWTService, None]) -> Callable[[Dict[str, Any]], Coroutine[Any, Any, str]]:
     """Provides a function to generate access tokens using the jwt_service fixture."""
+    # Consume the async generator to get the actual JWTService instance
+    actual_jwt_service = await anext(jwt_service)
 
-    async def _generate(payload: Dict[str, Any]) -> str:
-        """Generates a token using the jwt_service."""
+    async def _generate(payload: Dict[str, Any]) -> str: # Inner function remains async
+        """Generates a token using the resolved jwt_service instance."""
         # Ensure payload has essential claims like 'sub' and 'exp'
-        # The payload fixtures (mock_patient_payload, etc.) should provide these
         subject = payload.get('sub')
-        roles = payload.get('roles') # Get roles if present
+        roles = payload.get('roles')
 
         if not subject:
             raise ValueError("Payload must contain 'sub' key for token generation")
 
-        # Call the actual service method - adjust signature if needed
-        # Assuming create_access_token takes subject and optional roles
-        return await jwt_service.create_access_token(subject=subject, roles=roles)
+        # Call the method on the resolved service instance
+        return await actual_jwt_service.create_access_token(subject=subject, roles=roles) # Use actual_jwt_service
 
-    return _generate
+    return _generate # Return the inner async function
 
 @pytest.fixture(scope="function")
 def mock_patient_payload() -> Dict[str, Any]:
@@ -449,16 +448,18 @@ def mock_provider_payload() -> Dict[str, Any]:
 # This setup ensures tests can generate valid tokens (using the test key)
 # and the TestClient interacts with an app that uses mocks for validation.
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function") # Ensure function scope
 async def patient_token_headers(generate_token: Callable[[Dict[str, Any]], Coroutine[Any, Any, str]], mock_patient_payload: Dict[str, Any]) -> Dict[str, str]:
     """Generates auth headers with a valid patient token."""
-    token = await generate_token(mock_patient_payload)
+    token_generator = await generate_token # Await the fixture to get the generator function
+    token = await token_generator(mock_patient_payload) # Call and await the generator function
     return {"Authorization": f"Bearer {token}"}
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function") # Ensure function scope
 async def provider_token_headers(generate_token: Callable[[Dict[str, Any]], Coroutine[Any, Any, str]], mock_provider_payload: Dict[str, Any]) -> Dict[str, str]:
     """Generates auth headers with a valid provider token."""
-    token = await generate_token(mock_provider_payload)
+    token_generator = await generate_token # Await the fixture to get the generator function
+    token = await token_generator(mock_provider_payload) # Call and await the generator function
     return {"Authorization": f"Bearer {token}"}
 
 

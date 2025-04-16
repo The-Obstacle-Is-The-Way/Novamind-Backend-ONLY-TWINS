@@ -51,11 +51,11 @@ class Database:
         # DIAGNOSTIC LOGGING
         env_uri_override = os.getenv("SQLALCHEMY_DATABASE_URI")
         logger.info(f"[DB._create_engine] ENTERING. ENVIRONMENT={self.settings.ENVIRONMENT}")
-        logger.info(f"[DB._create_engine] Settings URI: {self.settings.SQLALCHEMY_DATABASE_URI}")
+        logger.info(f"[DB._create_engine] Settings URI: {self.settings.DATABASE_URL}")
         logger.info(f"[DB._create_engine] Env Var Override URI: {env_uri_override}")
 
         # Use the assembled connection string directly from main settings
-        connection_url = str(self.settings.SQLALCHEMY_DATABASE_URI)
+        connection_url = str(self.settings.DATABASE_URL)
         logger.info(f"[DB._create_engine] Final Connection URL for create_async_engine: {connection_url}")
 
         # --- Pooling configuration --- 
@@ -159,7 +159,7 @@ def get_db_instance() -> Database:
         # Get the main application settings instance (potentially cached)
         main_settings = get_settings()
         logger.info(
-            f"Non-Test Environment: Initializing global Database instance. URI: {main_settings.SQLALCHEMY_DATABASE_URI}"
+            f"Non-Test Environment: Initializing global Database instance. URI: {main_settings.DATABASE_URL}"
         )
         # Initialize Database with the main settings object
         _db_instance = Database(main_settings)

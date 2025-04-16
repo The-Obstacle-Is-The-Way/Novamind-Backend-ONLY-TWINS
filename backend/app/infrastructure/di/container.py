@@ -334,14 +334,12 @@ class Container(DIContainer):
         return deps
 
 
+# Restore lru_cache
 @lru_cache()
 def get_container() -> DIContainer:
     """
-    Get the global DI container with all service registrations.
-    Uses lru_cache to ensure we only create a single container instance.
-
-    Returns:
-        Configured DIContainer instance
+    Get the singleton DI container instance and configure it.
+    Uses lru_cache to ensure only one instance is created and configured.
     """
     container = DIContainer()
 

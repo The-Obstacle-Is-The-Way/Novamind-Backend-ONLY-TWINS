@@ -77,8 +77,8 @@ class JWTService:
              raise ValueError(f"Invalid payload data for JWT: {e}") from e
 
         return jwt.encode(
-            to_encode, 
-            self.settings.SECRET_KEY, 
+            to_encode,
+            self.settings.SECRET_KEY,
             algorithm=self.settings.ALGORITHM
         )
 
