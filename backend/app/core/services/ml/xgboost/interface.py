@@ -14,6 +14,7 @@ from typing import Dict, List, Any, Optional, Set, Union
 class ModelType(str, Enum):
     """Types of XGBoost models available in the service."""
     
+    RISK = "risk"
     RISK_RELAPSE = "relapse-risk"
     RISK_SUICIDE = "suicide-risk"
     RISK_HOSPITALIZATION = "hospitalization-risk"
