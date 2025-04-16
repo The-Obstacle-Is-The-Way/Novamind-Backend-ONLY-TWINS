@@ -84,6 +84,12 @@ class TestXGBoostIntegration:
         risk_request = {
             "patient_id": "patient-123",
             "risk_type": "relapse", # Ensure this matches schema enum/string
+            "patient_data": {
+                "age": 40,
+                "prior_episodes": 2,
+                "severity_score": 7,
+                "medication_adherence": 0.8,
+            },
             "clinical_data": {
                 "age": 40,
                 "prior_episodes": 2,

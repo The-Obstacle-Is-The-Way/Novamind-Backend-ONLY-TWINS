@@ -8,8 +8,7 @@ ensuring proper validation and documentation of API inputs and outputs.
 from typing import Dict, List, Any, Optional, Union
 from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator, ConfigDict
-
+from pydantic import BaseModel, Field, model_validator, field_validator, ConfigDict
 
 # -------------------- Enum Definitions --------------------
 
@@ -76,8 +75,6 @@ class BaseResponse(BaseModel):
     """Base model for all response schemas."""
     
     model_config = ConfigDict(extra="ignore")
-
-
 class ErrorResponse(BaseResponse):
     """Schema for error responses."""
     
@@ -95,15 +92,13 @@ class TimeFrame(BaseModel):
     weeks: Optional[int] = Field(None, ge=0, description="Number of weeks")
     months: Optional[int] = Field(None, ge=0, description="Number of months")
     
-    @field_validator("days", "weeks", "months")
+    @model_validator(mode="after")
     @classmethod
-    def validate_at_least_one(cls, v, info):
+    def validate_at_least_one(cls, m):
         """Validate that at least one time unit is provided."""
-        field = info.field_name
-        data = info.data
-        if field == "days" and v is None and data.get("weeks") is None and data.get("months") is None:
+        if m.days is None and m.weeks is None and m.months is None:
             raise ValueError("At least one time unit (days, weeks, months) must be provided")
-        return v
+        return m
 
 
 # -------------------- Risk Prediction --------------------
@@ -153,8 +148,15 @@ class RiskPredictionResponse(BaseResponse):
     supporting_evidence: List[SupportingEvidence] = Field(default_factory=list, description="Evidence supporting the prediction")
     risk_factors: RiskFactors = Field(..., description="Risk factors identified")
     features: Dict[str, Any] = Field(default_factory=dict, description="Features used in the prediction")
-    timestamp: datetime = Field(..., description="Timestamp of the prediction")
+    timestamp: str = Field(..., description="Timestamp of the prediction")
     time_frame_days: int = Field(..., ge=1, description="Time frame for prediction in days")
+
+    @field_validator('timestamp', mode='before')
+    @classmethod
+    def format_timestamp(cls, v):
+        if isinstance(v, datetime):
+            return v.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return v
 
 
 # -------------------- Treatment Response Prediction --------------------
@@ -232,8 +234,15 @@ class TreatmentResponseResponse(BaseResponse):
     side_effect_risk: SideEffectRisk = Field(..., description="Side effect risk assessment")
     features: Dict[str, Any] = Field(default_factory=dict, description="Clinical features used in the prediction")
     treatment_features: Dict[str, Any] = Field(default_factory=dict, description="Treatment features used in the prediction")
-    timestamp: datetime = Field(..., description="Timestamp of the prediction")
+    timestamp: str = Field(..., description="Timestamp of the prediction")
     prediction_horizon: str = Field(..., description="Time horizon for prediction")
+
+    @field_validator('timestamp', mode='before')
+    @classmethod
+    def format_timestamp(cls, v):
+        if isinstance(v, datetime):
+            return v.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return v
 
 
 # -------------------- Outcome Prediction --------------------
@@ -296,7 +305,14 @@ class OutcomePredictionResponse(BaseResponse):
     outcome_details: OutcomeDetails = Field(..., description="Detailed outcome information")
     features: Dict[str, Any] = Field(default_factory=dict, description="Clinical features used in the prediction")
     treatment_features: Dict[str, Any] = Field(default_factory=dict, description="Treatment features used in the prediction")
-    timestamp: datetime = Field(..., description="Timestamp of the prediction")
+    timestamp: str = Field(..., description="Timestamp of the prediction")
+
+    @field_validator('timestamp', mode='before')
+    @classmethod
+    def format_timestamp(cls, v):
+        if isinstance(v, datetime):
+            return v.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return v
 
 
 # -------------------- Feature Importance --------------------
@@ -333,7 +349,14 @@ class FeatureImportanceResponse(BaseResponse):
     model_type: str = Field(..., description="Type of model")
     feature_importance: Dict[str, float] = Field(..., description="Feature importance values")
     visualization: Visualization = Field(..., description="Visualization data")
-    timestamp: datetime = Field(..., description="Timestamp of the feature importance calculation")
+    timestamp: str = Field(..., description="Timestamp of the feature importance calculation")
+
+    @field_validator('timestamp', mode='before')
+    @classmethod
+    def format_timestamp(cls, v):
+        if isinstance(v, datetime):
+            return v.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return v
     
     model_config = {"protected_namespaces": ()}
 
@@ -355,7 +378,14 @@ class DigitalTwinIntegrationResponse(BaseResponse):
     patient_id: str = Field(..., description="Patient identifier")
     prediction_id: str = Field(..., description="Prediction identifier")
     status: str = Field(..., description="Integration status")
-    timestamp: datetime = Field(..., description="Timestamp of the integration")
+    timestamp: str = Field(..., description="Timestamp of the integration")
+
+    @field_validator('timestamp', mode='before')
+    @classmethod
+    def format_timestamp(cls, v):
+        if isinstance(v, datetime):
+            return v.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return v
     recommendations_generated: bool = Field(..., description="Whether recommendations were generated")
     statistics_updated: bool = Field(..., description="Whether statistics were updated")
 
@@ -387,9 +417,18 @@ class ModelInfoResponse(BaseResponse):
     
     model_type: str = Field(..., description="Type of model")
     version: str = Field(..., description="Model version")
-    last_updated: datetime = Field(..., description="Last update timestamp")
+    last_updated: str = Field(..., description="Last update timestamp")
     description: str = Field(..., description="Model description")
+
+    @field_validator('last_updated', mode='before')
+    @classmethod
+    def format_last_updated(cls, v):
+        if isinstance(v, datetime):
+            return v.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return v
     features: List[str] = Field(..., description="Features used by the model")
     performance_metrics: PerformanceMetrics = Field(..., description="Performance metrics")
+    hyperparameters: Dict[str, Any] = Field(..., description="Model hyperparameters")
+    status: str = Field(..., description="Model status")
     hyperparameters: Dict[str, Any] = Field(..., description="Model hyperparameters")
     status: str = Field(..., description="Model status")
