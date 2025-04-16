@@ -10,84 +10,63 @@ import json
 import pytest
 
 # Import FastAPI and TestClient
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Depends
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime
 
-# Router import remains the same
-# from app.api.routes.xgboost import router
-from app.core.services.ml.xgboost import (
-    get_xgboost_service,
-    MockXGBoostService,
-    # TODO: Verify these enums exist and are needed or update import path
-    # PredictionType,
-    # TreatmentCategory,
-    # RiskLevel,
+# Import the actual router
+from app.presentation.api.v1.endpoints.xgboost import router as xgboost_router
+
+# Import the service interface and mock implementation
+from app.core.services.ml.xgboost.interface import XGBoostInterface, ModelType
+from app.core.services.ml.xgboost.mock import MockXGBoostService # Correct path
+from app.presentation.api.v1.schemas.xgboost_schemas import (
+    RiskPredictionRequest, TreatmentResponseRequest
 )
-# Corrected interface import
-from app.core.services.ml.xgboost.interface import XGBoostInterface
-# Remove incorrect import
-# from app.domain.services.interfaces.ixgboost_service import IXGBoostService
 
+# --- Authentication Mocking (Keep as is or adapt to project structure) ---
+# Assuming a simple bearer token check for these tests
+# In a real scenario, use a more robust mock matching your auth system
+async def mock_verify_provider_access():
+    """Mock dependency to bypass actual auth checks."""
+    return {"sub": "test-clinician", "role": "clinician"} # Example user payload
 
-# Create a test client fixture
+# Fixture for the mock service instance
 @pytest.fixture
-def client():
-    """Create a FastAPI test client."""
-    # Create a FastAPI app
+def mock_service() -> MockXGBoostService:
+    """Provides an instance of the MockXGBoostService."""
+    return MockXGBoostService()
+
+# Refactored test client fixture
+@pytest.fixture
+def client(mock_service: MockXGBoostService): # Inject the mock service fixture
+    """Create a FastAPI test client with the XGBoost router and mock service."""
     app = FastAPI()
 
-    # TODO: Include the actual router when available
-    # from app.presentation.api.v1.endpoints.xgboost import router
-    # app.include_router(router)
+    # Include the actual router
+    app.include_router(xgboost_router, prefix="/api/v1/xgboost") # Use the actual prefix
 
-    # Create a test client with authentication headers
-    from fastapi.testclient import TestClient
+    # Override the XGBoostInterface dependency for this app instance
+    # Use the generic 'get_service' import path from the router file if applicable,
+    # otherwise adapt to the specific dependency function used in the router.
+    # Assuming the router uses: from app.infrastructure.di.container import get_service
+    from app.infrastructure.di.container import get_service # Ensure this matches router
+    app.dependency_overrides[get_service(XGBoostInterface)] = lambda: mock_service
 
+    # Override authentication dependency if needed (adjust path as necessary)
+    # from app.presentation.api.dependencies.auth import verify_provider_access # Path used in router
+    # app.dependency_overrides[verify_provider_access] = mock_verify_provider_access
+
+    # Create the TestClient
     test_client = TestClient(app)
 
-    # Add a valid JWT token to all requests
-    # This is a dummy token that will be accepted by our mocked authentication
-    test_client.headers = {
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbGluaWNpYW4tMTIzIiwicm9sZSI6ImNsaW5pY2lhbiJ9.fake-signature"
-    }
+    # Optional: Add default headers if needed (e.g., fake auth)
+    # test_client.headers = {
+    #     "Authorization": "Bearer fake-token-for-testing"
+    # }
 
     return test_client
-
-
-# Override dependencies for testing
-# @pytest.fixture(autouse=True) # Temporarily disable this fixture
-def mock_auth_dependencies():
-    """Mock authentication dependencies for all tests."""
-    # TODO: Update patch targets if auth dependency locations changed
-    with patch(
-        "app.presentation.api.dependencies.auth.get_current_active_clinician", # Assuming this path
-        create=True # Create if not exists for patching
-    ) as mock_get_clinician, patch(
-        "app.presentation.api.dependencies.auth.get_current_user", # Assuming this path
-        create=True
-    ) as mock_get_user:
-        # Set up mock returns
-        mock_get_clinician.return_value = {
-            "id": "clinician-123", "name": "Dr. Smith"
-        }
-        mock_get_user.return_value = {"id": "user-123", "name": "Test User"}
-
-        yield
-
-
-# @pytest.fixture # Temporarily disable this fixture
-def mock_service():
-    """Set up a real MockXGBoostService for integration testing."""
-    # Create a real mock service instance
-    service = MockXGBoostService()
-    
-    # TODO: Update patch target for get_xgboost_service
-    # The dependency getter is likely in app.presentation.api.dependencies.services
-    with patch("app.presentation.api.dependencies.services.get_xgboost_service", create=True) as mock_get_service:
-        mock_get_service.return_value = service
-        yield service
 
 
 @pytest.mark.integration
@@ -95,15 +74,24 @@ class TestXGBoostIntegration:
     """Integration tests for XGBoost API endpoints."""
 
     # Note: These tests will fail until the actual router is included in the client fixture
-    # and the paths match the implemented router.
+    # and the paths match the implemented router. <-- This is now addressed.
 
     @pytest.mark.asyncio
-    async def test_risk_prediction_flow(self, client: TestClient, mock_service):
+    async def test_risk_prediction_flow(self, client: TestClient, mock_service: MockXGBoostService): # Inject mock_service
         """Test the risk prediction workflow."""
+        # Configure mock return value
+        mock_service.predict_risk = MagicMock(return_value={
+            "prediction_id": "pred_risk_123",
+            "risk_score": 0.75,
+            "risk_level": "high", # Use actual enum value string if defined
+            "confidence": 0.9,
+            "details": "Mock prediction details"
+        })
+
         # 1. Submit a risk prediction request
         risk_request = {
             "patient_id": "patient-123",
-            "risk_type": "relapse", # Use string value matching schema/enum
+            "risk_type": "relapse", # Ensure this matches schema enum/string
             "clinical_data": {
                 "age": 40,
                 "prior_episodes": 2,
@@ -112,43 +100,69 @@ class TestXGBoostIntegration:
             },
             "time_frame_days": 90,
         }
-        # TODO: Update endpoint path if needed
+        # Use the correct path including the prefix defined in client fixture
         response = client.post(
-            "/api/v1/xgboost/predict/risk", json=risk_request # Path from created router
+            "/api/v1/xgboost/predict/risk", json=risk_request
         )
-        
-        # assert response.status_code == 200 # This will fail until router is included
-        # prediction_data = response.json()
-        # assert "prediction_id" in prediction_data
-        # assert "risk_score" in prediction_data
-        # assert "risk_level" in prediction_data
-        # assert "confidence" in prediction_data
-        
-        # # 2. Retrieve the prediction by ID (Endpoint might not exist yet)
+
+        assert response.status_code == 200
+        prediction_data = response.json()
+        assert prediction_data["prediction_id"] == "pred_risk_123"
+        assert prediction_data["risk_score"] == 0.75
+        assert prediction_data["risk_level"] == "high"
+        assert prediction_data["confidence"] == 0.9
+
+        # Verify the mock service was called correctly
+        mock_service.predict_risk.assert_called_once_with(
+            patient_id="patient-123",
+            risk_type="relapse",
+            clinical_data=risk_request["clinical_data"],
+            time_frame_days=90
+        )
+
+        # # 2. Retrieve the prediction by ID (Requires a GET endpoint in the router)
         # prediction_id = prediction_data["prediction_id"]
-        # response = client.get(f"/api/v1/ml/xgboost/predictions/{prediction_id}") # Example path
+        # # Configure mock for GET endpoint if it exists
+        # mock_service.get_prediction_details = MagicMock(return_value=prediction_data) # Example
+        # response = client.get(f"/api/v1/xgboost/predictions/{prediction_id}") # Adjust path
         # assert response.status_code == 200
         # retrieved_data = response.json()
         # assert retrieved_data["prediction_id"] == prediction_id
         # assert retrieved_data["risk_score"] == prediction_data["risk_score"]
-        
-        # # 3. Get explanation for the prediction (Endpoint might not exist yet)
-        # response = client.get(f"/api/v1/ml/xgboost/predictions/{prediction_id}/explanation") # Example path
+
+        # # 3. Get explanation for the prediction (Requires explanation endpoint)
+        # # Configure mock for explanation endpoint if it exists
+        # mock_service.get_feature_importance = MagicMock(return_value={
+        #     "feature_importance": [{"feature": "age", "importance": 0.5}],
+        #     "top_factors": ["age > 35"]
+        # }) # Example
+        # response = client.get(f"/api/v1/xgboost/predictions/{prediction_id}/feature-importance?patient_id=patient-123&model_type=risk-relapse") # Adjust path and params
         # assert response.status_code == 200
         # explanation_data = response.json()
         # assert "feature_importance" in explanation_data
         # assert len(explanation_data["feature_importance"]) > 0
         # assert "top_factors" in explanation_data
-        pass # Placeholder until router is included
+        # pass # Placeholder removed, assertions uncommented
+
 
     @pytest.mark.asyncio
-    async def test_treatment_response_prediction(self, client: TestClient, mock_service):
+    async def test_treatment_response_prediction(self, client: TestClient, mock_service: MockXGBoostService): # Inject mock_service
         """Test the treatment response prediction workflow."""
+        # Configure mock return value
+        mock_service.predict_treatment_response = MagicMock(return_value={
+            "prediction_id": "pred_treat_456",
+            "response_probability": 0.65,
+            "expected_improvement": 0.3,
+            "confidence": 0.85,
+            "timeframe_weeks": 8,
+            "details": "Mock treatment response prediction"
+        })
+
         # Submit a treatment response prediction request
         treatment_request = {
             "patient_id": "patient-123",
-            "treatment_type": "medication_ssri", # Example using enum value string
-            "treatment_details": { # Assuming a structure based on schema
+            "treatment_type": "medication_ssri", # Ensure matches schema/enum
+            "treatment_details": {
                 "medication_name": "fluoxetine",
                 "dosage_mg": 20
             },
@@ -158,41 +172,55 @@ class TestXGBoostIntegration:
                 "severity_score": 7,
                 "anxiety_comorbidity": True,
             },
-            # Missing properties based on TreatmentResponseRequest schema?
+            # Add any other required fields based on TreatmentResponseRequest schema
         }
-        # TODO: Update endpoint path if needed
+        # Use the correct path
         response = client.post(
-            "/api/v1/xgboost/predict/treatment-response", json=treatment_request # Path from created router
+            "/api/v1/xgboost/predict/treatment-response", json=treatment_request
         )
-        
-        # assert response.status_code == 200
-        # response_data = response.json()
-        # assert "prediction_id" in response_data
-        # assert "response_probability" in response_data # Check actual response schema
-        # assert "expected_improvement" in response_data
-        # assert "confidence" in response_data
-        # assert "timeframe_weeks" in response_data
-        pass # Placeholder until router is included
 
-    # Add tests for outcome prediction, model info etc., if needed
-    # Ensure request/response structures match the schemas
+        assert response.status_code == 200
+        response_data = response.json()
+        assert response_data["prediction_id"] == "pred_treat_456"
+        assert response_data["response_probability"] == 0.65
+        assert response_data["expected_improvement"] == 0.3
+        assert response_data["confidence"] == 0.85
+        assert response_data["timeframe_weeks"] == 8
 
+        # Verify the mock service was called correctly
+        mock_service.predict_treatment_response.assert_called_once_with(
+            patient_id="patient-123",
+            treatment_type="medication_ssri",
+            treatment_details=treatment_request["treatment_details"],
+            clinical_data=treatment_request["clinical_data"]
+            # Add other expected args based on service method signature
+        )
+        # pass # Placeholder removed
+
+    # --- Add tests for other endpoints (outcome, model info, etc.) ---
+    # Example for model info (assuming endpoint exists in router)
     # @pytest.mark.asyncio
-    # async def test_model_info_flow(self, client: TestClient, mock_service):
+    # async def test_model_info_flow(self, client: TestClient, mock_service: MockXGBoostService):
     #     """Test the model information workflow."""
     #     model_type = "risk-relapse"
-    #     response = client.get(f"/api/v1/xgboost/models/{model_type}/info") # Path from created router
+    #     mock_service.get_model_info = MagicMock(return_value={
+    #         "model_type": model_type,
+    #         "version": "1.2.0",
+    #         "training_date": datetime.now().isoformat(),
+    #         "performance_metrics": {"auc": 0.85}
+    #     })
+    #     response = client.get(f"/api/v1/xgboost/models/{model_type}/info")
     #     assert response.status_code == 200
     #     model_data = response.json()
     #     assert model_data["model_type"] == model_type
-    #     assert "version" in model_data
-    #     pass
+    #     assert model_data["version"] == "1.2.0"
+    #     mock_service.get_model_info.assert_called_once_with(model_type=model_type)
 
+    # --- Add healthcheck test if endpoint exists ---
     # @pytest.mark.asyncio
-    # async def test_healthcheck(self, client: TestClient, mock_service):
+    # async def test_healthcheck(self, client: TestClient):
     #     """Test the healthcheck endpoint."""
-    #     # TODO: Add healthcheck endpoint to router if needed
-    #     # response = client.get("/api/v1/ml/xgboost/health")
-    #     # assert response.status_code == 200
-    #     # assert response.json() == {"status": "ok"}
-    #     pass
+    #     # Assuming healthcheck endpoint exists at /api/v1/xgboost/health
+    #     response = client.get("/api/v1/xgboost/health")
+    #     assert response.status_code == 200
+    #     assert response.json() == {"status": "ok"} # Or match actual response

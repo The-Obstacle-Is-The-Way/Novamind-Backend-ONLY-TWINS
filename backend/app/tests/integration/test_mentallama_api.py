@@ -8,9 +8,9 @@ clean architecture principles with precise, mathematically elegant implementatio
 
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Generator
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch, AsyncMock
 
 import pytest
 from fastapi import FastAPI, status
@@ -272,9 +272,47 @@ def client(test_app: FastAPI) -> Generator[TestClient, None, None]:
         yield c
 
 @pytest.fixture(scope="module") # Use module scope if service is stateless for the module
-def mock_mentallama_service_instance() -> MockMentaLLaMAService:
+def mock_mentallama_service_instance() -> AsyncMock:
     """Provides a single instance of the mock service for the module."""
-    return MockMentaLLaMAService()
+    # Use AsyncMock with the correct interface spec
+    mock_service = AsyncMock(spec=MentaLLaMAInterface)
+    
+    # --- Setup Mock Return Values for Methods Used in Tests ---
+    # Example: Mock the 'process' method (adjust based on actual test needs)
+    mock_process_result = {
+        "model": "mock-mentallama",
+        "model_version": "1.0.0",
+        "text_length": 100,
+        "word_count": 20,
+        "processed_at": datetime.now(timezone.utc).isoformat(),
+        "sentiment": {"score": 0.5, "label": "positive"},
+        "language_stats": {"avg_word_length": 5.0, "sentence_count": 2},
+        "options_used": {}
+    }
+    mock_service.process = AsyncMock(return_value=mock_process_result)
+    
+    # Example: Mock 'analyze_sentiment'
+    mock_sentiment_result = {"sentiment": {"score": 0.6, "label": "positive"}}
+    mock_service.analyze_sentiment = AsyncMock(return_value=mock_sentiment_result)
+    
+    # Example: Mock 'assess_risk'
+    mock_risk_result = {"risk_level": "low", "confidence": 0.9}
+    mock_service.assess_risk = AsyncMock(return_value=mock_risk_result)
+
+    # Example: Mock 'detect_depression'
+    mock_depression_result = {"detected": False, "score": 0.1}
+    mock_service.detect_depression = AsyncMock(return_value=mock_depression_result)
+    
+    # Example: Mock 'analyze_wellness_dimensions'
+    mock_wellness_result = {"dimensions": {"emotional": 0.7, "social": 0.6}}
+    mock_service.analyze_wellness_dimensions = AsyncMock(return_value=mock_wellness_result)
+    
+    # Mock 'is_healthy' to return True
+    mock_service.is_healthy = MagicMock(return_value=True) # is_healthy might be synchronous
+
+    # --- End Mock Return Values ---
+    
+    return mock_service # Return the configured AsyncMock
 
 # Fixture to apply the override
 @pytest.fixture(scope="module", autouse=True) # Autouse applies it to all tests in the module

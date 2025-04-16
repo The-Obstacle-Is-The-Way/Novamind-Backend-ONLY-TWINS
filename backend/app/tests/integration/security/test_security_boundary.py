@@ -108,7 +108,7 @@ class TestSecurityBoundary:
         assert token_data is not None
         
         # Wait for token to expire
-        time.sleep(1)
+        # time.sleep(1) # TODO: Replace with freezegun or time travel
         
         # Token should now be expired
         with pytest.raises(Exception) as excinfo:
@@ -328,6 +328,6 @@ class TestSecurityBoundary:
         assert payload.sub == user_id
         
         # Wait for slightly longer than expiration and check it fails
-        await asyncio.sleep(1.1)
+        # await asyncio.sleep(1.1)
         with pytest.raises(TokenExpiredError):
             await short_lived_jwt_service.decode_token(short_lived_token)

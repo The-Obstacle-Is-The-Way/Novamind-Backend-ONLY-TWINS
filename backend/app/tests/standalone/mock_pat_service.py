@@ -67,7 +67,9 @@ class MockPATService:
     def _simulate_delay(self) -> None:
         """Simulate processing delay if configured."""
         if self._mock_delay_ms > 0:
-            time.sleep(self._mock_delay_ms / 1000.0)
+            self._logger.debug(f"PAT Mock: Simulating delay of {self._mock_delay_ms} ms")
+            # time.sleep(self._mock_delay_ms / 1000.0) # Remove blocking sleep
+            pass # Keep block structure valid
 
     def analyze_actigraphy(
         self,

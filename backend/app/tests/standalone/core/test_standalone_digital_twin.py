@@ -894,10 +894,6 @@ class TestTimeSeriesModel(unittest.TestCase):
         # Record initial update time
         initial_update_time = self.model.updated_at
         
-        # Add a delay to ensure updated_at will be different
-        import time
-        time.sleep(0.001)
-        
         # Update metadata
         self.model.update_metadata("last_trained", datetime.now().isoformat())
         

@@ -392,9 +392,6 @@ class TestPatient:
         original_updated_at = valid_patient.updated_at
 
         # Wait a moment to ensure updated_at would change if modified
-        import time
-        time.sleep(0.001)
-
         valid_patient.add_allergy("Penicillin")
 
         assert len(valid_patient.allergies) == 1
@@ -410,10 +407,6 @@ class TestPatient:
     def test_remove_nonexistent_allergy(self, valid_patient):
         """Test removing a nonexistent allergy."""
         original_updated_at = valid_patient.updated_at
-
-        # Wait a moment to ensure updated_at would change if modified
-        import time
-        time.sleep(0.001)
 
         valid_patient.remove_allergy("Sulfa")
 

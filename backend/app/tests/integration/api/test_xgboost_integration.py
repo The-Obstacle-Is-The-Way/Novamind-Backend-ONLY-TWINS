@@ -10,7 +10,9 @@ import json
 import pytest
 from datetime import datetime, timedelta
 from fastapi.testclient import TestClient
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock, MagicMock
+from fastapi import FastAPI
+
 from app.core.services.ml.xgboost import (
     get_xgboost_service,
     MockXGBoostService,
@@ -20,38 +22,54 @@ from app.core.services.ml.xgboost import (
 )
 from fastapi import status
 
+from app.core.services.ml.xgboost.interface import XGBoostInterface
+from app.infrastructure.di.container import get_service # Use generic service provider
+from app.presentation.api.v1.schemas.xgboost import (
+    RiskPredictionRequest,
+    RiskPredictionResponse,
+    TreatmentResponseRequest,
+    TreatmentResponseResponse,
+    OutcomePredictionRequest,
+    OutcomePredictionResponse,
+    ModelInfoRequest,
+    ModelInfoResponse,
+    FeatureImportanceRequest,
+    FeatureImportanceResponse,
+)
+from app.presentation.api.v1.endpoints.xgboost import router as xgboost_router # Import the actual router
+
 # Override dependencies for testing
 @pytest.fixture
 def mock_xgboost_service():
     """Fixture for a mock XGBoost service."""
-    service = MockXGBoostService()
-    # Initialize with some configuration
-    service.initialize({"mock_delay_ms": 0})  # No delay in tests for faster execution
-    return service
+    mock_service = AsyncMock(spec=XGBoostInterface)
+    mock_service.predict_risk.return_value = {"risk_score": 0.75, "confidence": 0.9}
+    mock_service.predict_treatment_response.return_value = {"response_probability": 0.8, "confidence": 0.85}
+    mock_service.predict_outcome.return_value = {"outcome_prediction": "stable", "confidence": 0.92}
+    mock_service.get_model_info.return_value = {"model_type": "test", "version": "1.0", "description": "Mock Model", "features": ["feat1", "feat2"]}
+    mock_service.get_feature_importance.return_value = {"prediction_id": "pred123", "feature_importance": {"feat1": 0.6, "feat2": 0.4}}
+    return mock_service
 
-@pytest.fixture
-def test_app(mock_xgboost_service) -> 'FastAPI':
-    """Create a test app instance with overridden dependencies."""
-    # Patch the settings object *before* creating the application
-    # Create a simple test app instead of using the full application
-    from fastapi import FastAPI, APIRouter, Depends
+@pytest.fixture(scope="function") # Function scope if test isolation is needed
+def test_app(mock_xgboost_service):
+    """Creates a FastAPI test app instance with the mock XGBoost service."""
+    app = FastAPI(title="Test XGBoost API")
 
-    app_instance = FastAPI(
-        title="Novamind Test API",
-        description="Test App Description",
-        version="1.0.0",
-    )
+    # Apply the dependency override for the XGBoostInterface
+    app.dependency_overrides[get_service(XGBoostInterface)] = lambda: mock_xgboost_service
 
-    # Create a test router with our mock endpoints
-    test_router = APIRouter(prefix="/api/v1/symptom-forecasting", tags=["Symptom Forecasting"])
+    # Placeholder router for testing setup (REMOVE THIS)
+    # from fastapi import APIRouter
+    # test_router = APIRouter()
+    # @test_router.get("/test")
+    # async def read_test():
+    #     return {"msg": "Test Router"}
+    # app.include_router(test_router, prefix="/api/v1/xgboost") # Include the placeholder router
 
-    # Include our test router
-    app_instance.include_router(test_router)
+    # Include the actual XGBoost router
+    app.include_router(xgboost_router, prefix="/api/v1/xgboost") # Correct prefix
 
-    # Override the dependency to use our mock XGBoost service for other endpoints
-    app_instance.dependency_overrides[get_xgboost_service] = lambda: mock_xgboost_service
-
-    return app_instance
+    return app
 
 @pytest.fixture
 def client(test_app):
