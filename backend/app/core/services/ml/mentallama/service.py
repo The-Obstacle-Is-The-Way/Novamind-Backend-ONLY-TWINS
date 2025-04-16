@@ -22,7 +22,8 @@ from app.domain.interfaces.ml_services import MentalLLaMAServiceInterface
 logger = get_logger(__name__)
 
 
-class MentaLLaMAServiceImpl(MentaLLaMAService, Subject):
+# REMOVE: Legacy MentaLLaMAServiceImpl from core.services.ml.mentallama.service. Use infrastructure layer only.
+# class MentaLLaMAServiceImpl(MentaLLaMAService, Subject):
     """
     Implementation of the MentaLLaMA service.
     

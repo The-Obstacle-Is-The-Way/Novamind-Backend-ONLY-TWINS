@@ -309,86 +309,60 @@ def mock_auth_service_for_client() -> AuthenticationService:
 
 
 # Restore the client fixture
-async def client( # Keep fixture async
+@pytest.fixture(scope="function")
+async def client(
     mock_settings: MockSettings, # Inject mock_settings
-    test_environment,
-    # Remove jwt_service injection
-    mock_auth_service_for_client: AuthenticationService
-) -> AsyncGenerator[TestClient, None]:
+    test_environment, 
+    # Use the override_jwt_service fixture directly
+    override_jwt_service: JWTService, 
+    app: FastAPI # Inject the app fixture
+) -> Generator[TestClient, None, None]:
     """Provides an async TestClient instance with JWT dependency overridden by a service using mock_settings."""
     logger.info("[Fixture client - async] ENTERING - Overriding JWT with service based on mock_settings")
 
-    # Create a JWTService instance using mock_settings specifically for the override
-    # This ensures it uses the same secret key as the one used for token generation via jwt_service fixture
-    override_jwt_service = JWTService(settings=mock_settings)
-    logger.info(f"[Fixture client - async] Created override_jwt_service: {id(override_jwt_service)}")
+    # --- Dependency Overrides --- 
+    
+    # Override settings using get_settings
+    # This is the primary way settings should be accessed in the app
+    app.dependency_overrides[get_settings] = lambda: mock_settings
+    logger.info(f"[Fixture client - async] Overrode get_settings with mock_settings: {id(mock_settings)}")
 
-
-    # --- Database Setup (Async context manager for setup/teardown) ---
-    test_db = Database(db_url=mock_settings.DATABASE_URL, echo=mock_settings.DATABASE_ECHO)
-    async def setup_db():
-        await test_db.connect()
-        await test_db.init_models()
-
-    async def teardown_db():
-        await test_db.close_database()
-
-    @asynccontextmanager
-    async def test_lifespan(app_param: FastAPI):
-        await setup_db()
-        logger.info("[Test Lifespan] Database initialized for test.")
-        yield
-        await teardown_db()
-        logger.info("[Test Lifespan] Database closed after test.")
-
-    # --- FastAPI App Creation with Lifespan ---
-    app = FastAPI(lifespan=test_lifespan)
-
-    # --- Dependency Overrides ---
-    # Override settings dependency
+    # Override the JWT service provider function
+    # Ensure the import path is correct
     try:
-        from app.config.settings import get_settings
-        app.dependency_overrides[get_settings] = lambda: mock_settings
+        # Correct import path for get_jwt_service
+        from app.infrastructure.security.jwt.jwt_service import get_jwt_service 
+        # Override with the *resolved* override_jwt_service instance from the fixture
+        app.dependency_overrides[get_jwt_service] = lambda: override_jwt_service
+        logger.info(f"[Fixture client - async] Overrode get_jwt_service with: {id(override_jwt_service)}")
     except ImportError:
-        logger.error("Could not import get_settings from app.config.settings to override.")
-        try:
-            from app.core.config import get_settings as core_get_settings
-            app.dependency_overrides[core_get_settings] = lambda: mock_settings
-        except ImportError:
-            logger.error("Could not import get_settings from app.core.config either.")
+        logger.error("Could not import get_jwt_service from app.infrastructure.security.jwt.jwt_service to override.")
+        # Optionally re-raise or handle differently if this import MUST succeed
+        raise
 
-    # Override DB dependency
-    @asynccontextmanager
-    async def override_get_db():
-        async with test_db.get_session() as session:
-            yield session
-    app.dependency_overrides[get_db_dependency] = override_get_db
-
-    # Override Auth dependencies
-    try:
-        from app.infrastructure.security.jwt.jwt_service import get_jwt_service
-        # Override with the *resolved* real jwt_service instance from the fixture
-        app.dependency_overrides[get_jwt_service] = lambda: actual_jwt_service
-        logger.info(f"[Fixture client - async] Overrode get_jwt_service with: {id(actual_jwt_service)}")
-    except ImportError:
-        logger.error("Could not import get_jwt_service to override.")
-
-    try:
-        from app.infrastructure.security.auth.authentication_service import get_auth_service
-        app.dependency_overrides[get_auth_service] = lambda: mock_auth_service_for_client
-    except ImportError:
-        logger.error("Could not import get_auth_service to override.")
+    # Optional: Override specific repository implementations if needed for tests
+    # Example (adjust import paths and classes as needed):
+    # try:
+    #     from app.infrastructure.persistence.sqlalchemy.repositories import get_patient_repository
+    #     app.dependency_overrides[get_patient_repository] = lambda: mock_patient_repository
+    # except ImportError:
+    #     logger.error("Could not import get_patient_repository to override.")
 
     # --- Include Routers ---
     # Example: app.include_router(...)
 
     # --- Yield TestClient ---
     # TestClient is used directly within the async fixture context
-    test_client_instance = TestClient(app)
-    logger.info("[Fixture client - async] Yielding TestClient")
-    yield test_client_instance # Yield the client instance
-
-    # Teardown is handled by the lifespan context manager
+    get_settings.cache_clear() 
+    logger.info("--- [Fixture: client] Cleared get_settings cache.")
+    
+    with TestClient(app) as c:
+        logger.info("--- [Fixture: client] TestClient created.")
+        yield c
+    
+    # Optional: Clear cache again after test if needed, though clearing before should suffice
+    # get_settings.cache_clear()
+    # logger.info("--- [Fixture: client] Cleared get_settings cache post-yield.")
     logger.info("[Fixture client - async] EXITING")
     # Restore original dependencies (handled by pytest fixture teardown)
 

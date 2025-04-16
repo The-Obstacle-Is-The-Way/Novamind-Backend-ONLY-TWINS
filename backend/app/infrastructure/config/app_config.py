@@ -18,7 +18,7 @@ from app.infrastructure.persistence.sqlalchemy.repositories.digital_twin_reposit
     DigitalTwinRepositoryImpl,
 )
 from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import (
-    PatientRepositoryImpl,
+    PatientRepository,
 )
 
 
@@ -46,25 +46,11 @@ class AppConfig:
         # Create ML service configuration
         self.ml_config = MLServiceConfig(config.get("ml_services", {}))
 
-    def create_digital_twin_repository(self) -> DigitalTwinRepository:
-        """
-        Create a digital twin repository.
+        # Create patient repository
+        self.patient_repo = PatientRepository(self.db_config.session)
 
-        Returns:
-            Digital twin repository
-        """
-        return DigitalTwinRepositoryImpl(
-            db_session_factory=self.db_config.create_session_factory()
-        )
-
-    def create_patient_repository(self) -> PatientRepository:
-        """
-        Create a patient repository.
-
-        Returns:
-            Patient repository
-        """
-        return PatientRepositoryImpl(
+        # Create digital twin repository
+        self.digital_twin_repo = DigitalTwinRepositoryImpl(
             db_session_factory=self.db_config.create_session_factory()
         )
 
@@ -75,22 +61,19 @@ class AppConfig:
         Returns:
             Digital twin service
         """
-        # Create repositories
-        digital_twin_repo = self.create_digital_twin_repository()
-        patient_repo = self.create_patient_repository()
-
         # Create ML service adapters
         adapters = self.ml_config.create_all_adapters()
 
         # Create digital twin service
-        return DigitalTwinService(
-            digital_twin_repository=digital_twin_repo,
-            patient_repository=patient_repo,
+        self.digital_twin_service = DigitalTwinService(
+            digital_twin_repository=self.digital_twin_repo,
+            patient_repository=self.patient_repo,
             digital_twin_service=adapters["digital_twin"],
             symptom_forecasting_service=adapters["symptom_forecasting"],
             biometric_correlation_service=adapters["biometric_correlation"],
             pharmacogenomics_service=adapters["pharmacogenomics"],
         )
+        return self.digital_twin_service
 
     def create_application(self) -> Dict[str, Any]:
         """

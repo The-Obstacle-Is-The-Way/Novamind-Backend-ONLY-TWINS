@@ -16,8 +16,8 @@ from app.core.services.ml.interface import (
     BaseMLInterface as MLService,
     PHIDetectionInterface as PHIDetectionService,
 )
-from app.core.services.ml.mentalllama import MentaLLaMA # Corrected class name
-from app.core.services.ml.mock import MockMentaLLaMA
+# from app.core.services.ml.mentalllama import MentaLLaMA # REMOVE: No such module in core.services.ml
+# from app.core.services.ml.mock import MockMentaLLaMA # REMOVE: Use infrastructure layer for real/mock services
 from app.core.services.ml.pat import PATInterface, PATService, MockPATService
 
 
@@ -30,11 +30,11 @@ __all__ = [
     "PATInterface",
     
     # Base implementations
-    "MentaLLaMA", # Corrected class name in export list
+    # "MentaLLaMA", # REMOVE: Not in this layer
     "PATService",
     
     # Mock implementations
-    "MockMentaLLaMA",
+    # "MockMentaLLaMA", # REMOVE: Not in this layer
     "MockPATService",
     
     # Factory and cache

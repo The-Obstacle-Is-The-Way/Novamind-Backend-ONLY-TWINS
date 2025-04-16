@@ -1,303 +1,159 @@
 # -*- coding: utf-8 -*-
 """
-Patient Assessment Tool (PAT) Interface.
+PAT (Pretrained Actigraphy Transformer) Service Interface.
 
-This module defines the interface for the PAT service used in patient assessment
-and clinical evaluation.
+This module provides the interface for PAT services.
 """
 
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from abc import abstractmethod
+from typing import Any, Dict, List, Optional, Union
+
+from app.core.services.ml.interface import MLService
 
 
-class PATInterface(ABC):
-    """Interface for Patient Assessment Tool services."""
+class PATInterface(MLService):
+    """
+    Interface for Pretrained Actigraphy Transformer (PAT) services.
+    
+    This interface defines the contract that PAT implementations must follow.
+    """
     
     @abstractmethod
-    def initialize(self, config: Dict[str, Any]) -> None:
-        """
-        Initialize the service with configuration.
-        
-        Args:
-            config: Configuration dictionary
-            
-        Raises:
-            InvalidConfigurationError: If configuration is invalid
-        """
-        pass
-    
-    @abstractmethod
-    def is_healthy(self) -> bool:
-        """
-        Check if the service is healthy.
-        
-        Returns:
-            True if healthy, False otherwise
-        """
-        pass
-    
-    @abstractmethod
-    def shutdown(self) -> None:
-        """Shutdown the service and release resources."""
-        pass
-    
-    @abstractmethod
-    def create_assessment(
+    def analyze_actigraphy(
         self,
         patient_id: str,
-        assessment_type: str,
-        clinician_id: Optional[str] = None,
-        initial_data: Optional[Dict[str, Any]] = None
+        readings: List[Dict[str, Any]],
+        start_time: str,
+        end_time: str,
+        sampling_rate_hz: float,
+        device_info: Dict[str, str],
+        analysis_types: List[str],
+        **kwargs
     ) -> Dict[str, Any]:
         """
-        Create a new patient assessment.
+        Analyze actigraphy data using the PAT model.
         
         Args:
             patient_id: Patient identifier
-            assessment_type: Type of assessment (e.g., "depression", "anxiety")
-            clinician_id: Clinician identifier (optional)
-            initial_data: Initial assessment data (optional)
+            readings: Accelerometer readings with timestamp and x,y,z values
+            start_time: Start time of recording (ISO 8601 format)
+            end_time: End time of recording (ISO 8601 format)
+            sampling_rate_hz: Sampling rate in Hz
+            device_info: Information about the device used
+            analysis_types: Types of analysis to perform (e.g., "sleep", "activity", "mood")
+            **kwargs: Additional parameters
             
         Returns:
-            Dict containing assessment information
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If patient_id or assessment_type is invalid
+            Dict containing analysis results and metadata
         """
         pass
     
     @abstractmethod
-    def get_assessment(self, assessment_id: str) -> Dict[str, Any]:
-        """
-        Get information about an assessment.
-        
-        Args:
-            assessment_id: Assessment identifier
-            
-        Returns:
-            Dict containing assessment information
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If assessment_id is invalid
-            ModelNotFoundError: If assessment not found
-        """
-        pass
-    
-    @abstractmethod
-    def update_assessment(
-        self,
-        assessment_id: str,
-        data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """
-        Update an assessment with new data.
-        
-        Args:
-            assessment_id: Assessment identifier
-            data: Updated assessment data
-            
-        Returns:
-            Dict containing update status
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If assessment_id is invalid or assessment is completed
-            ModelNotFoundError: If assessment not found
-        """
-        pass
-    
-    @abstractmethod
-    def complete_assessment(
-        self,
-        assessment_id: str,
-        completion_data: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Complete an assessment.
-        
-        Args:
-            assessment_id: Assessment identifier
-            completion_data: Final data to add before completion (optional)
-            
-        Returns:
-            Dict containing completion status and results
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If assessment_id is invalid or already completed
-            ModelNotFoundError: If assessment not found
-        """
-        pass
-    
-    @abstractmethod
-    def analyze_assessment(
-        self,
-        assessment_id: str,
-        analysis_type: Optional[str] = None,
-        options: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Analyze an assessment.
-        
-        Args:
-            assessment_id: Assessment identifier
-            analysis_type: Type of analysis to perform (optional)
-            options: Additional analysis options (optional)
-            
-        Returns:
-            Dict containing analysis results
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If assessment_id or analysis_type is invalid
-            ModelNotFoundError: If assessment not found
-        """
-        pass
-    
-    @abstractmethod
-    def get_assessment_history(
+    def get_sleep_metrics(
         self,
         patient_id: str,
-        assessment_type: Optional[str] = None,
-        limit: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None
+        start_date: str,
+        end_date: str,
+        **kwargs
     ) -> Dict[str, Any]:
         """
-        Get assessment history for a patient.
+        Get sleep metrics for a patient over a specified time period.
         
         Args:
             patient_id: Patient identifier
-            assessment_type: Type of assessments to retrieve (optional)
-            limit: Maximum number of assessments to retrieve (optional)
-            options: Additional retrieval options (optional)
+            start_date: Start date (ISO 8601 format)
+            end_date: End date (ISO 8601 format)
+            **kwargs: Additional parameters
             
         Returns:
-            Dict containing assessment history
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If patient_id is invalid
+            Dict containing sleep metrics
         """
         pass
     
     @abstractmethod
-    def create_form_template(
+    def get_activity_metrics(
         self,
-        name: str,
-        form_type: str,
-        fields: List[Dict[str, Any]],
-        metadata: Optional[Dict[str, Any]] = None
+        patient_id: str,
+        start_date: str,
+        end_date: str,
+        **kwargs
     ) -> Dict[str, Any]:
         """
-        Create a new assessment form template.
+        Get activity metrics for a patient over a specified time period.
         
         Args:
-            name: Template name
-            form_type: Type of form (e.g., "depression", "anxiety")
-            fields: List of field definitions
-            metadata: Additional template metadata (optional)
+            patient_id: Patient identifier
+            start_date: Start date (ISO 8601 format)
+            end_date: End date (ISO 8601 format)
+            **kwargs: Additional parameters
             
         Returns:
-            Dict containing template information
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If name, form_type, or fields are invalid
+            Dict containing activity metrics
         """
         pass
     
     @abstractmethod
-    def get_form_template(
+    def detect_anomalies(
         self,
-        template_id: str
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        baseline_period: Optional[Dict[str, str]] = None,
+        **kwargs
     ) -> Dict[str, Any]:
         """
-        Get a form template.
+        Detect anomalies in actigraphy data compared to baseline or population norms.
         
         Args:
-            template_id: Template identifier
+            patient_id: Patient identifier
+            readings: Accelerometer readings with timestamp and x,y,z values
+            baseline_period: Optional period to use as baseline (start_date, end_date)
+            **kwargs: Additional parameters
             
         Returns:
-            Dict containing template information
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If template_id is invalid
-            ModelNotFoundError: If template not found
+            Dict containing detected anomalies
         """
         pass
     
     @abstractmethod
-    def list_form_templates(
+    def predict_mood_state(
         self,
-        form_type: Optional[str] = None,
-        limit: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        historical_context: Optional[Dict[str, Any]] = None,
+        **kwargs
     ) -> Dict[str, Any]:
         """
-        List available form templates.
+        Predict mood state based on actigraphy patterns.
         
         Args:
-            form_type: Type of templates to list (optional)
-            limit: Maximum number of templates to retrieve (optional)
-            options: Additional retrieval options (optional)
+            patient_id: Patient identifier
+            readings: Accelerometer readings with timestamp and x,y,z values
+            historical_context: Optional historical context for the patient
+            **kwargs: Additional parameters
             
         Returns:
-            Dict containing list of templates
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
+            Dict containing mood state predictions
         """
         pass
     
     @abstractmethod
-    def calculate_score(
+    def integrate_with_digital_twin(
         self,
-        assessment_id: str,
-        scoring_method: Optional[str] = None,
-        options: Optional[Dict[str, Any]] = None
+        patient_id: str,
+        profile_id: str,
+        actigraphy_analysis: Dict[str, Any],
+        **kwargs
     ) -> Dict[str, Any]:
         """
-        Calculate score for an assessment.
+        Integrate actigraphy analysis with digital twin profile.
         
         Args:
-            assessment_id: Assessment identifier
-            scoring_method: Method to use for scoring (optional)
-            options: Additional scoring options (optional)
+            patient_id: Patient identifier
+            profile_id: Digital twin profile identifier
+            actigraphy_analysis: Results from actigraphy analysis
+            **kwargs: Additional parameters
             
         Returns:
-            Dict containing calculated scores
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If assessment_id or scoring_method is invalid
-            ModelNotFoundError: If assessment not found
-        """
-        pass
-    
-    @abstractmethod
-    def generate_report(
-        self,
-        assessment_id: str,
-        report_type: Optional[str] = None,
-        options: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Generate a report for an assessment.
-        
-        Args:
-            assessment_id: Assessment identifier
-            report_type: Type of report to generate (optional)
-            options: Additional report options (optional)
-            
-        Returns:
-            Dict containing generated report
-            
-        Raises:
-            ServiceUnavailableError: If service is not initialized
-            InvalidRequestError: If assessment_id or report_type is invalid
-            ModelNotFoundError: If assessment not found
+            Dict containing integrated digital twin profile
         """
         pass

@@ -23,8 +23,8 @@ from app.infrastructure.security.auth.authentication_service import Authenticati
 from app.domain.entities.user import User
 from app.infrastructure.security.jwt.jwt_service import JWTService
 
-# Import necessary config items from the correct path
-from app.infrastructure.config.app_config import get_settings, Settings
+# Corrected import path for settings
+from app.config.settings import get_settings, Settings
 
 # Corrected import path for logger
 from app.infrastructure.logging.logger import get_logger
@@ -88,6 +88,12 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             jwt_service_instance = JWTService(settings=current_settings)
             logger.debug(f"Dispatch JWTService instance ID: {id(jwt_service_instance)} using explicitly resolved settings.")
             
+            # --- Cascade: Added Logging START ---
+            logger.debug(f"--- [Middleware] Attempting validation with Settings SECRET_KEY: {current_settings.SECRET_KEY}")
+            logger.debug(f"--- [Middleware] JWTService using SECRET_KEY: {current_settings.SECRET_KEY}") # Log key from settings used by JWTService
+            logger.debug(f"--- [Middleware] Token Received: {token[:10]}...{token[-10:]}") # Log token snippet
+            # --- Cascade: Added Logging END ---
+            
             token_data: TokenPayload = await jwt_service_instance.decode_token(token) 
             
             # Token is valid, payload extracted. Fetch the user.
@@ -112,6 +118,10 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             # Handle all authentication-related domain exceptions
             error_detail = str(e)
             logger.warning(f"Auth failed: {error_detail} for path {request.url.path}")
+            # --- Cascade: Added Logging START ---
+            # Explicitly log the key used during the FAILED validation attempt
+            logger.warning(f"--- [Middleware] Secret Key used for FAILED validation: {current_settings.SECRET_KEY if 'current_settings' in locals() else 'Settings not available'}")
+            # --- Cascade: Added Logging END ---
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"detail": error_detail},
@@ -120,6 +130,9 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         except Exception as e:
              # Catch unexpected errors during auth process
              logger.error(f"Unexpected error during authentication: {type(e).__name__} - {e}", exc_info=True)
+             # --- Cascade: Added Logging START ---
+             logger.error(f"--- [Middleware] Secret Key during UNEXPECTED error: {current_settings.SECRET_KEY if 'current_settings' in locals() else 'Settings not available'}")
+             # --- Cascade: Added Logging END ---
              return JSONResponse(
                  status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                  content={"detail": "Internal server error during authentication"},

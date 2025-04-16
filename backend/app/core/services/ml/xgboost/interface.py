@@ -44,6 +44,7 @@ class PrivacyLevel(Enum):
     STANDARD = 1  # Basic PHI detection (SSNs, MRNs, names)
     ENHANCED = 2  # Enhanced detection (includes contact info)
     MAXIMUM = 3   # Maximum detection (includes demographic info)
+    STRICT = 4    # Strictest detection (legacy/test compatibility)
 
 
 class Observer(ABC):

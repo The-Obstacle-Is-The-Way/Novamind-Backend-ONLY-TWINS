@@ -8,10 +8,10 @@ This module provides factory methods for creating ML service instances.
 from typing import Dict, Optional, Any, Literal
 
 from app.core.exceptions import InvalidConfigurationError
-from app.core.services.ml.interface import MentaLLaMAInterface, PHIDetectionInterface
-from app.core.services.ml.mentalllama import MentaLLaMA
-from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection
-from app.core.services.ml.phi_detection import AWSComprehendMedicalPHIDetection
+from app.core.services.ml.interface import PHIDetectionInterface
+# from app.core.services.ml.mentalllama import MentaLLaMA # REMOVE: Use infrastructure layer
+# from app.core.services.ml.mock import MockMentaLLaMA, MockPHIDetection # REMOVE: Use infrastructure layer
+from app.core.services.ml.phi.phi_detection import AWSComprehendMedicalPHIDetection
 from app.core.utils.logging import get_logger
 
 
@@ -30,7 +30,7 @@ class MLServiceFactory:
     
     def __init__(self) -> None:
         """Initialize the ML service factory."""
-        self._mental_llama_instances: Dict[str, MentaLLaMAInterface] = {}
+        # self._mental_llama_instances: Dict[str, MentaLLaMAInterface] = {}  # REMOVE: No core-layer MentaLLaMA
         self._phi_detection_instances: Dict[str, PHIDetectionInterface] = {}
         self._config: Dict[str, Any] = {}
     
@@ -92,72 +92,8 @@ class MLServiceFactory:
         
         return phi_detection_service
     
-    def create_mentalllama_service(
-        self, 
-        service_type: Literal["aws", "mock"] = "aws",
-        with_phi_detection: bool = True
-    ) -> MentaLLaMAInterface:
-        """
-        Create a MentaLLaMA service instance.
-        
-        Args:
-            service_type: Type of service to create (aws or mock)
-            with_phi_detection: Whether to include PHI detection service
-            
-        Returns:
-            MentaLLaMA service instance
-            
-        Raises:
-            InvalidConfigurationError: If service type is invalid
-        """
-        # Create key for caching
-        cache_key = f"{service_type}_{with_phi_detection}"
-        
-        # Check if instance already exists for this service type and PHI detection setting
-        if cache_key in self._mental_llama_instances:
-            return self._mental_llama_instances[cache_key]
-        
-        # Create PHI detection service if needed
-        phi_detection_service = None
-        if with_phi_detection:
-            phi_detection_type = "mock" if service_type == "mock" else "aws"
-            phi_detection_service = self.create_phi_detection_service(phi_detection_type)
-        
-        # Create new instance based on service type
-        mentalllama_service: MentaLLaMAInterface
-        
-        if service_type == "aws":
-            mentalllama_service = MentaLLaMA(phi_detection_service=phi_detection_service)
-            ml_config = self._config.get("mentalllama", {})
-            mentalllama_service.initialize(ml_config)
-            
-        elif service_type == "mock":
-            mentalllama_service = MockMentaLLaMA(phi_detection_service=phi_detection_service)
-            mentalllama_service.initialize({})
-            
-        else:
-            raise InvalidConfigurationError(f"Invalid MentaLLaMA service type: {service_type}")
-        
-        # Store instance for reuse
-        self._mental_llama_instances[cache_key] = mentalllama_service
-        
-        return mentalllama_service
     
-    def get_mentalllama_service(
-        self, 
-        service_type: Literal["aws", "mock"] = "aws",
-        with_phi_detection: bool = True
-    ) -> MentaLLaMAInterface:
-        """
-        Get a MentaLLaMA service instance, creating it if needed.
-        
-        Args:
-            service_type: Type of service to get (aws or mock)
-            with_phi_detection: Whether to include PHI detection service
-            
-        Returns:
-            MentaLLaMA service instance
-        """
+
         return self.create_mentalllama_service(service_type, with_phi_detection)
     
     def get_phi_detection_service(
@@ -243,28 +179,6 @@ class MLServiceCache:
         
         logger.info("ML service cache initialized")
     
-    def get_mentalllama_service(
-        self, 
-        service_type: Literal["aws", "mock"] = "aws",
-        with_phi_detection: bool = True
-    ) -> MentaLLaMAInterface:
-        """
-        Get a MentaLLaMA service instance from the cache.
-        
-        Args:
-            service_type: Type of service to get (aws or mock)
-            with_phi_detection: Whether to include PHI detection service
-            
-        Returns:
-            MentaLLaMA service instance
-            
-        Raises:
-            ServiceUnavailableError: If cache is not initialized
-        """
-        if not self._factory:
-            raise InvalidConfigurationError("ML service cache not initialized")
-            
-        return self._factory.get_mentalllama_service(service_type, with_phi_detection)
     
     def get_phi_detection_service(
         self, 

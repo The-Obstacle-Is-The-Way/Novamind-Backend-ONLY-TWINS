@@ -5,6 +5,8 @@ This module contains tests for the AWS implementation of the PAT service.
 All AWS services are mocked to avoid making actual API calls.
 """
 
+import os
+os.environ.setdefault('AWS_REGION', 'us-east-1')
 import json
 import logging
 import uuid

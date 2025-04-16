@@ -28,7 +28,8 @@ from app.core.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-class MockMentaLLaMA(MentaLLaMAInterface):
+# REMOVE: Legacy MockMentaLLaMA from core.services.ml.mentallama.mock. Use infrastructure layer only.
+# class MockMentaLLaMA(MentaLLaMAInterface):
     """
     Mock MentaLLaMA implementation.
     

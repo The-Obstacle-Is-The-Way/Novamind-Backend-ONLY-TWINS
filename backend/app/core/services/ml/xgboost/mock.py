@@ -36,6 +36,19 @@ from app.core.services.ml.xgboost.exceptions import (
 class MockXGBoostService(XGBoostInterface):
     """Mock implementation of the XGBoost service interface for testing and development."""
 
+    @property
+    def is_initialized(self) -> bool:
+        return True
+
+    async def get_available_models(self) -> list[dict]:
+        return []
+
+    async def get_model_info(self, model_type: str) -> dict:
+        return {"model_type": model_type, "version": "mock", "info": "Mock model info"}
+
+    async def integrate_with_digital_twin(self, patient_id: str, profile_id: str, prediction_id: str) -> dict:
+        return {"patient_id": patient_id, "profile_id": profile_id, "prediction_id": prediction_id, "status": "integrated (mock)"}
+
     def __init__(self):
         """Initialize a new mock XGBoost service."""
         super().__init__()

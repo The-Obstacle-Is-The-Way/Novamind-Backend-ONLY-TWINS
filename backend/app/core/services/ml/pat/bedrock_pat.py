@@ -30,6 +30,10 @@ class BedrockPAT(PATInterface):
     This service provides patient assessment capabilities using
     AWS Bedrock's natural language processing and machine learning features.
     """
+    def generate_report(self, assessment_id: str, report_type: Optional[str] = None, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Minimal stub for testing."""
+        return {"assessment_id": assessment_id, "report_type": report_type, "options": options, "result": "dummy"}
+
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """

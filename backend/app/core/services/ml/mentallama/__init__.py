@@ -23,7 +23,8 @@ from app.core.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-class MentaLLaMA(MentaLLaMAInterface):
+# REMOVE: Legacy MentaLLaMA implementation from core.services.ml. Use infrastructure layer only.
+# class MentaLLaMA(MentaLLaMAInterface):
     """
     Implementation of the MentaLLaMA service.
     
@@ -31,7 +32,7 @@ class MentaLLaMA(MentaLLaMAInterface):
     specialized for mental health applications.
     """
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    # def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize the MentaLLaMA service.
         
@@ -44,7 +45,7 @@ class MentaLLaMA(MentaLLaMAInterface):
         self._healthy = True
         self._digital_twin_sessions = {}
     
-    def initialize(self, config: Dict[str, Any]) -> None:
+    # def initialize(self, config: Dict[str, Any]) -> None:
         """
         Initialize the service with configuration.
         
@@ -132,7 +133,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             logger.error("Model not loaded: %s", model_type)
             raise ServiceUnavailableError(f"Model not loaded: {model_type}")
     
-    def process(
+    # def process(
         self, 
         text: str,
         model_type: Optional[str] = None,
@@ -1426,7 +1427,7 @@ class MentaLLaMA(MentaLLaMAInterface):
         
         return insights
     
-    def _analyze_interaction_patterns(self, messages: List[Dict[str, Any]]) -> Dict[str, Any]:
+    # def _analyze_interaction_patterns(self, messages: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Analyze interaction patterns in a list of messages.
         
@@ -1484,7 +1485,7 @@ class MentaLLaMA(MentaLLaMAInterface):
             "message_length": avg_message_length
         }
     
-    def _generate_clinical_recommendations(self, insights: Dict[str, Any]) -> Dict[str, Any]:
+    # def _generate_clinical_recommendations(self, insights: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate clinical recommendations based on insights.
         

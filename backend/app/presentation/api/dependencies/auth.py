@@ -66,7 +66,7 @@ async def get_current_user(
         
     try:
         # Initialize JWT service
-        jwt_service = JWTService(get_settings().JWT_SECRET_KEY)
+        jwt_service = JWTService(settings=settings)
         
         # Validate and decode token
         payload = await jwt_service.verify_token(token)
@@ -106,7 +106,7 @@ async def get_optional_user(
         
     try:
         # Initialize JWT service
-        jwt_service = JWTService(get_settings().JWT_SECRET_KEY)
+        jwt_service = JWTService(settings=settings)
         
         # Validate and decode token
         payload = await jwt_service.verify_token(token)
