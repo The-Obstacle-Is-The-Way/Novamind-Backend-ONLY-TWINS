@@ -197,7 +197,7 @@ class MockXGBoostService(XGBoostInterface):
                 del self._observers[event_key]
             self._logger.debug(f"Observer unregistered for event type {event_type}")
     
-    def predict_risk(
+    async def predict_risk(
         self,
         patient_id: str,
         risk_type: str,
@@ -280,7 +280,7 @@ class MockXGBoostService(XGBoostInterface):
         
         return result
     
-    def predict_treatment_response(
+    async def predict_treatment_response(
         self,
         patient_id: str,
         treatment_type: str,
@@ -367,7 +367,7 @@ class MockXGBoostService(XGBoostInterface):
         
         return result
     
-    def predict_outcome(
+    async def predict_outcome(
         self,
         patient_id: str,
         outcome_timeframe: Dict[str, int],
