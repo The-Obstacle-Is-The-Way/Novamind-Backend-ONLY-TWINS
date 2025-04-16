@@ -117,14 +117,15 @@ def create_application() -> FastAPI:
 
     # 4. Authentication Middleware 
     app.add_middleware(
-        AuthenticationMiddleware, # Only pass the middleware class
+        AuthenticationMiddleware, # Pass the class 
+        # Explicitly pass only the intended kwarg
         public_paths={
             "/openapi.json",
             "/docs",
             "/api/v1/auth/refresh",
             "/health", 
-        } # Close the set properly
-    ) # Close the add_middleware call
+        }
+    )
     
     # 5. PHI Sanitization/Auditing Middleware (Processes after auth)
     add_phi_middleware(
