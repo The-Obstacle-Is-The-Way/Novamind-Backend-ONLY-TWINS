@@ -243,9 +243,9 @@ def mock_jwt_service_for_client(
     patient_payload = mock_patient_payload # Use injected argument
     provider_payload = mock_provider_payload # Use injected argument
 
-    async def async_mock_decode_token(token: str) -> TokenPayload:
-        # Map simple token strings to payloads for test simplicity
-        # The token strings here MUST match those returned by the mocked create_access_token below
+    async def async_mock_verify_token(token: str) -> TokenPayload:
+        # Verify the token based on the simple strings
+        # Raise specific exceptions for invalid/missing tokens
         if token == "patient_token_string":
             return TokenPayload(
                 sub=patient_payload['sub'],
@@ -267,12 +267,16 @@ def mock_jwt_service_for_client(
                  user_id=provider_payload.get('id', provider_payload['sub'])
              )
         else:
+            # Import here or ensure it's available in the scope
             from app.domain.exceptions import InvalidTokenError
             raise InvalidTokenError("Mocked invalid token")
 
-    mock_service.decode_token = AsyncMock(side_effect=async_mock_decode_token)
+    # Mock verify_token, not decode_token
+    mock_service.verify_token = AsyncMock(side_effect=async_mock_verify_token)
+    # Remove or comment out the old decode_token mock if it exists
+    # mock_service.decode_token = AsyncMock(side_effect=async_mock_decode_token) # Remove/Comment this
 
-    # Mock create_access_token to return predictable strings used in decode mock
+    # Mock create_access_token to return predictable strings used in verify mock
     async def async_mock_create_token(subject: str, roles: Optional[List[str]] = None) -> str:
          if "patient" in (roles or []):
              return "patient_token_string"
