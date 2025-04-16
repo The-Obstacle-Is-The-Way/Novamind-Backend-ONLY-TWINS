@@ -66,7 +66,7 @@ async def predict_risk(
 ) -> RiskPredictionResponse:
     """Endpoint to predict patient risk using XGBoost."""
     try:
-        result = xgboost_service.predict_risk(
+        result = await xgboost_service.predict_risk(
             patient_id=str(request.patient_id), # Ensure ID is string if needed by service
             risk_type=request.risk_type.value, # Use enum value
             clinical_data=request.clinical_data,
@@ -104,7 +104,7 @@ async def predict_treatment_response(
 ) -> TreatmentResponseResponse:
     """Endpoint to predict treatment response using XGBoost."""
     try:
-        result = xgboost_service.predict_treatment_response(
+        result = await xgboost_service.predict_treatment_response(
             patient_id=str(request.patient_id),
             treatment_type=request.treatment_type.value,
             treatment_details=request.treatment_details.dict() if request.treatment_details else {},
@@ -142,7 +142,7 @@ async def predict_outcome(
 ) -> OutcomePredictionResponse:
     """Endpoint to predict clinical outcome using XGBoost."""
     try:
-        result = xgboost_service.predict_outcome(
+        result = await xgboost_service.predict_outcome(
             patient_id=str(request.patient_id),
             outcome_timeframe=request.outcome_timeframe.dict() if request.outcome_timeframe else {},
             clinical_data=request.clinical_data,
@@ -180,7 +180,7 @@ async def get_model_info(
 ) -> ModelInfoResponse:
     """Endpoint to get information about an XGBoost model."""
     try:
-        info = xgboost_service.get_model_info(model_type=model_type)
+        info = await xgboost_service.get_model_info(model_type=model_type)
         # Assuming service returns a dict compatible with ModelInfoResponse
         return ModelInfoResponse(**info)
     except ModelNotFoundError as e:
@@ -210,7 +210,7 @@ async def get_feature_importance(
     """Endpoint to get feature importance for a prediction."""
     try:
         # Note: Service interface might need patient_id and model_type here
-        importance_data = xgboost_service.get_feature_importance(
+        importance_data = await xgboost_service.get_feature_importance(
             patient_id=str(patient_id),
             model_type=model_type,
             prediction_id=prediction_id

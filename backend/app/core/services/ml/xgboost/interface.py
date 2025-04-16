@@ -74,7 +74,7 @@ class XGBoostInterface(ABC):
         self._initialized = False
     
     @abstractmethod
-    def initialize(self, config: Dict[str, Any]) -> None:
+    async def initialize(self, config: Dict[str, Any]) -> None:
         """
         Initialize the XGBoost service with configuration.
         
@@ -87,7 +87,7 @@ class XGBoostInterface(ABC):
         pass
     
     @abstractmethod
-    def register_observer(self, event_type: Union[EventType, str], observer: Observer) -> None:
+    async def register_observer(self, event_type: Union[EventType, str], observer: Observer) -> None:
         """
         Register an observer for a specific event type.
         
@@ -98,7 +98,7 @@ class XGBoostInterface(ABC):
         pass
     
     @abstractmethod
-    def unregister_observer(self, event_type: Union[EventType, str], observer: Observer) -> None:
+    async def unregister_observer(self, event_type: Union[EventType, str], observer: Observer) -> None:
         """
         Unregister an observer for a specific event type.
         
@@ -109,7 +109,7 @@ class XGBoostInterface(ABC):
         pass
     
     @abstractmethod
-    def predict_risk(
+    async def predict_risk(
         self,
         patient_id: str,
         risk_type: str,
@@ -136,7 +136,7 @@ class XGBoostInterface(ABC):
         pass
     
     @abstractmethod
-    def predict_treatment_response(
+    async def predict_treatment_response(
         self,
         patient_id: str,
         treatment_type: str,
@@ -165,7 +165,7 @@ class XGBoostInterface(ABC):
         pass
     
     @abstractmethod
-    def predict_outcome(
+    async def predict_outcome(
         self,
         patient_id: str,
         outcome_timeframe: Dict[str, int],
@@ -194,7 +194,7 @@ class XGBoostInterface(ABC):
         pass
     
     @abstractmethod
-    def get_feature_importance(
+    async def get_feature_importance(
         self,
         patient_id: str,
         model_type: str,
@@ -218,7 +218,7 @@ class XGBoostInterface(ABC):
         pass
     
     @abstractmethod
-    def integrate_with_digital_twin(
+    async def integrate_with_digital_twin(
         self,
         patient_id: str,
         profile_id: str,
@@ -242,7 +242,7 @@ class XGBoostInterface(ABC):
         pass
     
     @abstractmethod
-    def get_model_info(self, model_type: str) -> Dict[str, Any]:
+    async def get_model_info(self, model_type: str) -> Dict[str, Any]:
         """
         Get information about a model.
         
@@ -253,7 +253,18 @@ class XGBoostInterface(ABC):
             Model information
             
         Raises:
-            ModelNotFoundError: If model not found
+            ResourceNotFoundError: If model not found
+            ValidationError: If parameters are invalid
+        """
+        pass
+    
+    @abstractmethod
+    async def get_available_models(self) -> List[Dict[str, Any]]:
+        """
+        Get a list of available models.
+
+        Returns:
+            List of available models with basic info
         """
         pass
     
@@ -269,3 +280,9 @@ class XGBoostInterface(ABC):
             raise ConfigurationError(
                 "XGBoost service not initialized. Call initialize() first."
             )
+
+    @property
+    @abstractmethod
+    def is_initialized(self) -> bool:
+        """Check if the service is initialized."""
+        pass
