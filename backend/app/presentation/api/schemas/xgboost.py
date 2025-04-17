@@ -107,7 +107,8 @@ class RiskPredictionRequest(BaseModel):
     """Schema for risk prediction requests."""
     
     patient_id: str = Field(..., description="Patient identifier")
-    risk_type: RiskType = Field(..., description="Type of risk to predict")
+    # Use str for risk_type to allow model lookup to handle unknown types
+    risk_type: str = Field(..., description="Type of risk to predict")
     # Allow patient_data to be optional; clinical_data will be used if patient_data is not provided
     patient_data: Optional[Dict[str, Any]] = Field(None, description="Patient data for prediction")
     clinical_data: Dict[str, Any] = Field(..., description="Clinical data for prediction")
@@ -194,7 +195,21 @@ class TreatmentResponseRequest(BaseModel):
     )
     clinical_data: Dict[str, Any] = Field(..., description="Clinical data for prediction")
     prediction_horizon: Optional[str] = Field("8_weeks", description="Time horizon for prediction")
-    
+
+    @field_validator('treatment_type', mode='before')
+    @classmethod
+    def parse_treatment_type(cls, v):
+        # Allow simplified treatment type inputs (e.g., 'ssri' for 'medication_ssri')
+        if isinstance(v, str):
+            norm = v.lower()
+            for member in TreatmentType:
+                if norm == member.value:
+                    return member
+                # allow suffix match (e.g., 'ssri', 'cbt')
+                if norm == member.value.split('_')[-1]:
+                    return member
+        return v
+
     model_config = ConfigDict(extra="allow")
 
 

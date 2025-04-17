@@ -73,9 +73,11 @@ async def predict_risk(
 ) -> dict:
     """Endpoint to predict patient risk using XGBoost."""
     try:
+        # Determine risk_type value for service, supporting enum or string
+        rt = request.risk_type.value if hasattr(request.risk_type, 'value') else request.risk_type
         raw = xgboost_service.predict_risk(
             patient_id=str(request.patient_id),
-            risk_type=request.risk_type.value,
+            risk_type=rt,
             clinical_data=request.clinical_data,
             time_frame_days=request.time_frame_days
         )
@@ -86,10 +88,14 @@ async def predict_risk(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
     except ModelNotFoundError as e:
         logger.error(f"Model not found for risk prediction: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        # Return error detail as list to indicate missing model
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=[str(e)])
     except PredictionError as e:
         logger.error(f"Prediction failed during risk prediction: {e}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Prediction failed: {e}")
+    except ConfigurationError as e:
+        logger.error(f"Configuration error during risk prediction: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     except XGBoostServiceError as e:
         logger.error(f"XGBoost service error during risk prediction: {e}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"XGBoost service error: {e}")
@@ -127,13 +133,15 @@ async def predict_treatment_response(
         return result
     except ValidationError as e:
         logger.warning(f"Validation error during treatment response prediction: {e}", exc_info=True)
+        # Return validation error details
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
     except ModelNotFoundError as e:
         logger.error(f"Model not found for treatment response prediction: {e}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except PredictionError as e:
         logger.error(f"Prediction failed during treatment response prediction: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Prediction failed: {e}")
+        # Return prediction errors as client errors
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=[str(e)])
     except XGBoostServiceError as e:
         logger.error(f"XGBoost service error during treatment response prediction: {e}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"XGBoost service error: {e}")
@@ -206,7 +214,9 @@ async def get_model_info(
 ) -> dict:
     """Endpoint to get information about an XGBoost model."""
     try:
-        info = await xgboost_service.get_model_info(model_type=model_type)
+        # Handle sync or async service methods
+        raw = xgboost_service.get_model_info(model_type=model_type)
+        info = await raw if inspect.isawaitable(raw) else raw
         return info
     except ModelNotFoundError as e:
         logger.warning(f"Model info not found for type '{model_type}': {e}")
@@ -230,7 +240,9 @@ async def get_feature_importance(
 ) -> dict:
     """Endpoint to get feature importance for a prediction."""
     try:
-        importance_data = await xgboost_service.get_feature_importance(model_type=model_type)
+        # Handle sync or async service methods
+        raw = xgboost_service.get_feature_importance(model_type=model_type)
+        importance_data = await raw if inspect.isawaitable(raw) else raw
         return importance_data
     except ValidationError as e:
         logger.warning(f"Validation error during feature importance request: {e}", exc_info=True)

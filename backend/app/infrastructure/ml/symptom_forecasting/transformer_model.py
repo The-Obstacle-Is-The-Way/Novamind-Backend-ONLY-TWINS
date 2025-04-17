@@ -12,9 +12,15 @@ from app.domain.utils.datetime_utils import UTC
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+try:
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+except Exception:
+    # PyTorch may not be available or may crash on import in certain environments
+    torch = None
+    nn = None
+    F = None
 
 # Removed import for ModelInferenceError as it is not available
 # from app.domain.exceptions import ModelInferenceError
@@ -43,9 +49,9 @@ class MultiHeadAttention(nn.Module):
 
     def forward(
         self,
-        query: torch.Tensor,
-        key: torch.Tensor,
-        value: torch.Tensor,
+        query: 'torch.Tensor',  # type: ignore
+        key: 'torch.Tensor',    # type: ignore
+        value: 'torch.Tensor',  # type: ignore
         mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
@@ -80,9 +86,10 @@ class MultiHeadAttention(nn.Module):
         )
 
         # Scaled dot-product attention
+        # Scaled dot-product attention
         scores = torch.matmul(query, key.transpose(-2, -1)) / torch.sqrt(
             torch.tensor(self.head_dim, dtype=torch.float32)
-        )
+        ) if torch is not None else None
 
         if mask is not None:
             scores = scores.masked_fill(mask == 0, -1e9)

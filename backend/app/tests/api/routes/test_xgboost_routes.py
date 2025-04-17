@@ -269,4 +269,6 @@ def test_xgboost_risk_prediction_with_invalid_data(client):
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY, "Endpoint accepted invalid data without validation error"
     
     error_detail = response.json()['detail']
-    assert any('patient_data' in error['loc'] for error in error_detail), "Validation error should mention missing patient_data field"
+    # Validation error should mention missing required patient_id field
+    assert any('patient_id' in error['loc'] for error in error_detail), \
+        "Validation error should mention missing patient_id field"

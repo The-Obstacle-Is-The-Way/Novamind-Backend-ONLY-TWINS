@@ -195,11 +195,13 @@ class MockXGBoostService:
 
     def setup_error_responses(self):
         """Set up mock responses for error cases."""
-        # Configuration error
-        self.predict_risk.side_effect = ConfigurationError("Invalid configuration")
-        
-        # Model not found error
-        self.predict_risk.side_effect = ModelNotFoundError("Model type 'nonexistent' not found")
+        # Configuration and ModelNotFound errors based on risk_type
+        def risk_side_effect(patient_id, risk_type, clinical_data, time_frame_days):
+            if risk_type == 'nonexistent':
+                raise ModelNotFoundError(f"Model type '{risk_type}' not found")
+            # Default to configuration error for other risk types
+            raise ConfigurationError("Invalid configuration")
+        self.predict_risk.side_effect = risk_side_effect
         
         # Prediction error
         self.predict_treatment_response.side_effect = PredictionError("Failed to predict response for treatment 'ssri'")

@@ -1,7 +1,0 @@
-{
-  "timestamp": "20250327_092524",
-  "command": "bandit -r . -f html -o /home/jj/dev/Novamind-Backend/security-reports/static-analysis-20250327_092524.html --exclude ./venv,./tests,./.git",
-  "exit_code": 1,
-  "stdout": "Working... \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501 100% 0:00:01\n",
-  "stderr": "[main]\tINFO\tprofile include tests: None\n[main]\tINFO\tprofile exclude tests: None\n[main]\tINFO\tcli include tests: None\n[main]\tINFO\tcli exclude tests: None\n[main]\tINFO\trunning on Python 3.10.12\n[html]\tINFO\tHTML output written to file: /home/jj/dev/Novamind-Backend/security-reports/static-analysis-20250327_092524.html\n"
-}

@@ -650,6 +650,9 @@ class TemporalNeurotransmitterService:
             timestamp=timestamp,
             metadata=details or {},
         )
+        # Attach details attribute for consistency with record_event expectations
+        if details is not None:
+            setattr(event, 'details', details)
 
         if self.event_repository is None:
             # In production this should never happen, but unit‑tests may provide None – emulate save and return id.

@@ -1,6 +1,0 @@
-{
-  "requirements": {
-    "requirements.txt": "security-reports/dependency-check-requirements.txt.json",
-    "requirements-security.txt": "security-reports/dependency-check-requirements-security.txt.json"
-  }
-}
