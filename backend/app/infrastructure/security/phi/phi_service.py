@@ -59,7 +59,8 @@ class PHIService:
     # medium: Standard patterns, some context awareness (e.g., names after Dr.).
     # high: Aggressive matching, broader context checks, potential for more false positives.
     DEFAULT_SENSITIVITY = "medium"
-    DEFAULT_REPLACEMENT_TEMPLATE = "[REDACTED {phi_type}]"
+    # Replacement template: use '[TYPE REDACTED]' format
+    DEFAULT_REPLACEMENT_TEMPLATE = "[{phi_type} REDACTED]"
 
     # --- Core Pattern Definitions (Combined & Prioritized) ---
     # Priority: Higher number = matched first in overlaps. Type maps to PHIType enum.
@@ -143,8 +144,11 @@ class PHIService:
             "flags": re.IGNORECASE
         },
         {
-            "name": "Name", "type": PHIType.NAME, "priority": 4, "context_dependent": True,
-            # Matches Title Caps Name (e.g., John Smith), Dr. Name, etc. Requires context check later.
+            # Person names: match capitalized full names or titles (e.g., John Smith, Dr. Jane Doe)
+            "name": "Name",
+            "type": PHIType.NAME,
+            # Treat as medium-priority non-context-dependent pattern for consistent detection
+            "priority": 6,
             "pattern": r'\b(?:(?:[A-Z][a-z\'-]+){1,3}\s+(?:[A-Z][a-z\'-]+){1,3}|(?:Dr|Mr|Mrs|Ms)\.?\s+[A-Z][a-z\'-]+(?:\s+[A-Z][a-z\'-]+)?)\b'
         },
          {
@@ -404,12 +408,12 @@ class PHIService:
         if text.strip().startswith('Patient') and not final_sanitized.lstrip().startswith('Patient'):
             # Prepend leading 'Patient ' to sanitized text
             final_sanitized = 'Patient ' + final_sanitized.lstrip()
-        # Ensure SSN label is preserved
-        if 'SSN:' in text and 'SSN:' not in final_sanitized and '[REDACTED SSN]' in final_sanitized:
-            final_sanitized = final_sanitized.replace('[REDACTED SSN]', 'SSN: [REDACTED SSN]')
-        # Ensure Medical Record Number label is preserved
-        if 'Medical Record Number:' in text and 'Medical Record Number:' not in final_sanitized and '[REDACTED MRN]' in final_sanitized:
-            final_sanitized = final_sanitized.replace('[REDACTED MRN]', 'Medical Record Number: [REDACTED MRN]')
+        # Ensure SSN label is preserved when using new template '[SSN REDACTED]'
+        if 'SSN:' in text and 'SSN:' not in final_sanitized and '[SSN REDACTED]' in final_sanitized:
+            final_sanitized = final_sanitized.replace('[SSN REDACTED]', 'SSN: [SSN REDACTED]')
+        # Ensure Medical Record Number label is preserved when using new template '[MRN REDACTED]'
+        if 'Medical Record Number:' in text and 'Medical Record Number:' not in final_sanitized and '[MRN REDACTED]' in final_sanitized:
+            final_sanitized = final_sanitized.replace('[MRN REDACTED]', 'Medical Record Number: [MRN REDACTED]')
         return final_sanitized
 
     # --- Helper Methods ---

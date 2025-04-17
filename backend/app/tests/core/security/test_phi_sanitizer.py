@@ -81,7 +81,7 @@ class TestPHISanitizer:
         assert self.patient_mrn not in sanitized_text
         
         # Verify redaction markers are present
-        assert "[REDACTED" in sanitized_text
+        assert "REDACTED" in sanitized_text
         
         # Verify non-PHI content is preserved
         assert "Patient" in sanitized_text
@@ -96,7 +96,7 @@ class TestPHISanitizer:
         
         # Verify PHI is redacted in top-level keys
         assert sanitized_dict["name"] != self.patient_name
-        assert "[REDACTED" in sanitized_dict["name"]
+        assert "REDACTED" in sanitized_dict["name"]
         
         # Verify PHI is redacted in nested dictionaries
         assert sanitized_dict["contact"]["email"] != self.patient_email
@@ -131,7 +131,7 @@ class TestPHISanitizer:
         assert all(self.patient_mrn not in item for item in sanitized_list)
         
         # Verify redaction markers are present
-        assert any("[REDACTED" in item for item in sanitized_list)
+        assert any("REDACTED" in item for item in sanitized_list)
         
         # Verify non-PHI content is preserved
         assert "Notes: Patient reports improved mood" in sanitized_list

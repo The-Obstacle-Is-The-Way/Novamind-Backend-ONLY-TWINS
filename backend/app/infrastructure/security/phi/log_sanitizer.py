@@ -52,9 +52,15 @@ class LogSanitizer:
         replacement = self.config.replacement_template
 
         # Delegate to the core service for base sanitization
-        sanitized = self._phi_service.sanitize(data,
-                                              sensitivity=effective_sensitivity,
-                                              replacement=replacement)
+        sanitized = self._phi_service.sanitize(
+            data,
+            sensitivity=effective_sensitivity,
+            replacement=replacement
+        )
+        # For direct atomic (non-string/collection) types, convert to string representation
+        if not isinstance(data, (str, dict, list, tuple, set)):
+            # None, int, float, bool, etc.
+            return str(sanitized)
         # Override top-level name fields without relying on text context
         if isinstance(data, dict):
             for key in data:
@@ -160,19 +166,33 @@ class PHIFormatter(logging.Formatter):
         self.log_sanitizer = LogSanitizer(config=sanitizer_config)
 
     def format(self, record: logging.LogRecord) -> str:
-        """Format a log record, then sanitize the resulting string."""
-        # Let the standard formatter handle initial formatting and interpolation
+        """Format a log record, then sanitize the message part, preserving the level and logger prefix."""
+        # Ensure args are a tuple for %-format compatibility
+        if record.args and not isinstance(record.args, tuple):
+            try:
+                record.args = tuple(record.args)
+            except Exception:
+                # Leave args unchanged if conversion fails
+                pass
+        # Perform standard formatting and interpolation
         formatted_message = super().format(record)
-        
-        # Sanitize the fully formatted message using LogSanitizer -> PHIService
-        # Pass the default sensitivity configured for the logger
-        sanitized_message = self.log_sanitizer.sanitize(formatted_message)
-        return sanitized_message
+        # Preserve the prefix 'LEVEL:logger_name:' if present
+        prefix = f"{record.levelname}:{record.name}:"
+        if formatted_message.startswith(prefix):
+            # Sanitize only the message portion after the prefix
+            msg_part = formatted_message[len(prefix):]
+            sanitized_part = self.log_sanitizer.sanitize(msg_part)
+            return prefix + sanitized_part
+        # Fallback: sanitize the entire formatted message
+        return self.log_sanitizer.sanitize(formatted_message)
 
     def formatException(self, ei) -> str:
-        """Formats and sanitizes the exception part of a log record."""
-        s = super().formatException(ei)
-        return self.log_sanitizer.sanitize(s)
+        """Format exception type and sanitized message (stack trace omitted)."""
+        exc_type, exc_value, _ = ei
+        # Sanitize exception message
+        sanitized_msg = self.log_sanitizer.sanitize(str(exc_value))
+        # Preserve exception type
+        return f"{exc_type.__name__}: {sanitized_msg}"
 
     def formatStack(self, stack_info: str) -> str:
         """Formats and sanitizes the stack trace part of a log record."""
