@@ -42,28 +42,37 @@ async def get_cache_service() -> AsyncGenerator[CacheService, None]:
         # No cleanup needed since we're keeping the instance alive
         pass
 
-# Singleton digital twin service instance
-_digital_twin_service = None
+# Singleton digital twin core service instance
+_digital_twin_service = None  # type: MockDigitalTwinCoreService
 
-async def get_digital_twin_service() -> AsyncGenerator['DigitalTwinIntegrationService', None]:
+async def get_digital_twin_service() -> AsyncGenerator['DigitalTwinCoreService', None]:
     """
-    Provide a Digital Twin Integration service instance.
+    Provide a stub Digital Twin Core service instance for API endpoints.
     
     Yields:
-        DigitalTwinIntegrationService instance
+        MockDigitalTwinCoreService instance implementing DigitalTwinCoreService
     """
     global _digital_twin_service
-    from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService # Local import
-    
+    # Import stub core service and mock repositories
+    from app.infrastructure.services.mock_digital_twin_core_service import MockDigitalTwinCoreService
+    from app.infrastructure.repositories.mock_digital_twin_repository import MockDigitalTwinRepository
+    from app.infrastructure.repositories.mock_patient_repository import MockPatientRepository
+    # Import domain interface for type annotation
+    from app.domain.services.digital_twin_core_service import DigitalTwinCoreService
+
     if _digital_twin_service is None:
-        # In a real app, config would come from settings
-        _digital_twin_service = DigitalTwinIntegrationService(config={})
-        await _digital_twin_service.initialize() # Assuming an async init method
-        
+        # Instantiate mock repositories
+        twin_repo = MockDigitalTwinRepository()
+        patient_repo = MockPatientRepository()
+        # Create stub core service with mock dependencies
+        _digital_twin_service = MockDigitalTwinCoreService(
+            digital_twin_repository=twin_repo,
+            patient_repository=patient_repo
+        )
     try:
-        yield _digital_twin_service
+        yield _digital_twin_service  # type: ignore
     finally:
-        # No cleanup needed for singleton
+        # Singleton stub; no cleanup required
         pass
 
 # Singleton PAT service instance

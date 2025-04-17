@@ -143,3 +143,16 @@ class MockPatientRepository(PatientRepository):
                     break  # Found a match, no need to check other medications
         
         return matching_patients
+    
+    # Implement abstract methods for compatibility
+    async def create(self, patient: Patient) -> Patient:
+        """Create a new patient record (alias for save)."""
+        return await self.save(patient)
+
+    async def update(self, patient: Patient) -> Optional[Patient]:
+        """Update an existing patient record (alias for save)."""
+        return await self.save(patient)
+
+    async def list_all(self, limit: int = 100, offset: int = 0) -> List[Patient]:
+        """List all patients with pagination (alias for get_all)."""
+        return await self.get_all(limit=limit, offset=offset)

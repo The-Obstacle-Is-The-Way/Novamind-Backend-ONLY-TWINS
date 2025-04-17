@@ -13,21 +13,27 @@ from typing import Any
 class Patient:
     """
     Patient entity representing a person receiving care.
-    
-    This class is a pure domain entity with no dependencies on external
-    systems or frameworks.
+
+    This class supports basic patient information and is used across the domain.
     """
     id: str
-    name: str
+    # Support first_name/last_name for downstream services and tests
+    first_name: str
+    last_name: str
     date_of_birth: datetime | str
     gender: str
+    # Composite contact info for flexibility (e.g., {'email': ..., 'phone': ...})
+    contact_info: dict[str, Any] = field(default_factory=dict)
+    # Preserve original email/phone fields if used elsewhere
     email: str | None = None
     phone: str | None = None
     address: str | None = None
     insurance_number: str | None = None
-    medical_history: list[str] = field(default_factory=list)
+    # Support diagnoses list for integration scenarios
+    diagnoses: list[str] = field(default_factory=list)
     medications: list[str] = field(default_factory=list)
     allergies: list[str] = field(default_factory=list)
+    medical_history: list[str] = field(default_factory=list)
     treatment_notes: list[dict[str, Any]] = field(default_factory=list)
     created_at: datetime | str | None = None
     updated_at: datetime | str | None = None

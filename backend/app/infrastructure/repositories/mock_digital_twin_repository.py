@@ -47,16 +47,10 @@ class MockDigitalTwinRepository(DigitalTwinRepository):
         Returns:
             The latest Digital Twin state if found, None otherwise
         """
+        # Return the most recently saved state (append order)
         if patient_id not in self._storage or not self._storage[patient_id]:
             return None
-        
-        # Sort by timestamp and return the most recent
-        sorted_states = sorted(
-            self._storage[patient_id], 
-            key=lambda state: state.updated_at,
-            reverse=True
-        )
-        return sorted_states[0] if sorted_states else None
+        return self._storage[patient_id][-1]
     
     async def get_history_for_patient(
         self, 
@@ -189,3 +183,26 @@ class MockDigitalTwinRepository(DigitalTwinRepository):
                         return results
         
         return results
+    
+    # Implement abstract interface methods for compatibility
+    async def get_by_patient_id(self, patient_id: UUID) -> Optional[DigitalTwinState]:  # type: ignore
+        """Alias for retrieving the latest Digital Twin state by patient ID."""
+        return await self.get_latest_for_patient(patient_id)
+
+    async def create(self, twin: DigitalTwinState) -> DigitalTwinState:
+        """Create a new Digital Twin state (alias for save)."""
+        return await self.save(twin)
+
+    async def update(self, twin: DigitalTwinState) -> Optional[DigitalTwinState]:
+        """Update an existing Digital Twin state (alias for save)."""
+        return await self.save(twin)
+
+    async def delete(self, twin_id: UUID) -> bool:
+        """Delete a Digital Twin state by its ID."""
+        removed = False
+        for patient_id, states in list(self._storage.items()):
+            filtered = [s for s in states if not (hasattr(s, 'id') and s.id == twin_id)]
+            if len(filtered) < len(states):
+                self._storage[patient_id] = filtered
+                removed = True
+        return removed

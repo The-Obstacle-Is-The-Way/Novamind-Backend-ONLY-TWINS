@@ -2,9 +2,12 @@
 Stub mock implementation of DigitalTwinCoreService for non-enhanced integration tests.
 """
 import uuid
-from typing import Dict, Any, List
-from uuid import UUID
+from datetime import datetime, timedelta
+from typing import Dict, Any, List, Optional, Tuple
+from uuid import UUID, uuid4
 from app.domain.services.digital_twin_core_service import DigitalTwinCoreService
+from app.domain.entities.digital_twin import DigitalTwinState
+from app.domain.entities.digital_twin_entity import ClinicalInsight
 
 
 class MockDigitalTwinCoreService(DigitalTwinCoreService):
