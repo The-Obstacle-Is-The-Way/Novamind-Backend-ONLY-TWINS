@@ -111,7 +111,7 @@ class Settings(BaseSettings):
 
     # Security settings
     SECRET_KEY: SecretStr = Field(
-        ..., # Remove default, force loading from env/.env
+        default="dev_secret", # Default secret for development/testing environments
         json_schema_extra={"env": "SECRET_KEY"}
     )
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, json_schema_extra={"env": "ACCESS_TOKEN_EXPIRE_MINUTES"})
@@ -191,7 +191,11 @@ class Settings(BaseSettings):
         raise ValueError(f"Invalid PHI_EXCLUDE_PATHS: {v}")
 
     # Database
-    DATABASE_URL: Optional[str] = Field(default=None, json_schema_extra={"env": "DATABASE_URL"}) # Store as str for flexibility
+    # Default to in-memory SQLite for development/testing environments
+    DATABASE_URL: str = Field(
+        default="sqlite+aiosqlite:///:memory:",
+        json_schema_extra={"env": "DATABASE_URL"}
+    )
     POSTGRES_SERVER: str = Field(default="localhost", json_schema_extra={"env": "POSTGRES_SERVER"})
     POSTGRES_USER: str = Field(default="postgres", json_schema_extra={"env": "POSTGRES_USER"})
     POSTGRES_PASSWORD: SecretStr = Field(default="postgres", json_schema_extra={"env": "POSTGRES_PASSWORD"}) # Use SecretStr
@@ -319,7 +323,6 @@ class Settings(BaseSettings):
 
     model_config = ConfigDict(
         case_sensitive=True,
-        env_file=".env.test",
         env_file_encoding="utf-8",
         env_nested_delimiter='__'
     )

@@ -407,6 +407,9 @@ class PHIService:
         # Ensure SSN label is preserved
         if 'SSN:' in text and 'SSN:' not in final_sanitized and '[REDACTED SSN]' in final_sanitized:
             final_sanitized = final_sanitized.replace('[REDACTED SSN]', 'SSN: [REDACTED SSN]')
+        # Ensure Medical Record Number label is preserved
+        if 'Medical Record Number:' in text and 'Medical Record Number:' not in final_sanitized and '[REDACTED MRN]' in final_sanitized:
+            final_sanitized = final_sanitized.replace('[REDACTED MRN]', 'Medical Record Number: [REDACTED MRN]')
         return final_sanitized
 
     # --- Helper Methods ---
