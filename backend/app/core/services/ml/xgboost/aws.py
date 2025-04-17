@@ -179,14 +179,14 @@ class AWSXGBoostService(XGBoostInterface):
         
         except Exception as e:
             self._logger.error(f"Failed to initialize AWS XGBoost service: {e}")
-            
-            if isinstance(e, (ConfigurationError, ServiceConnectionError)):
+            # Propagate if already a configuration or service error
+            if isinstance(e, (ConfigurationError, ServiceConnectionError, ServiceConfigurationError)):
                 raise
-            else:
-                raise ConfigurationError(
-                    f"Failed to initialize AWS XGBoost service: {str(e)}",
-                    details=str(e)
-                ) from e
+            # Wrap other errors as configuration issues
+            raise ConfigurationError(
+                f"Failed to initialize AWS XGBoost service: {str(e)}",
+                details=str(e)
+            ) from e
     
     def register_observer(self, event_type: Union[EventType, str], observer: Observer) -> None:
         """
@@ -900,8 +900,12 @@ class AWSXGBoostService(XGBoostInterface):
         table = dynamodb_res.Table(self._dynamodb_table_name)
         # Persist table for later operations
         self._predictions_table = table
-        # Ensure table exists and is accessible
-        table.scan()
+        # Ensure table exists and is accessible, map missing table to resource not found
+        try:
+            table.scan()
+        except botocore.exceptions.ClientError as e:
+            msg = e.response.get("Error", {}).get("Message", str(e))
+            raise ServiceConfigurationError(f"Resource not found: {msg}") from e
         # Validate S3 bucket accessibility
         self._s3.head_bucket(Bucket=self._bucket_name)
         # Validate SageMaker endpoint listing
@@ -1733,12 +1737,14 @@ class AWSXGBoostService(XGBoostInterface):
                     models[key] = "error"
         except botocore.exceptions.ClientError as e:
             components["sagemaker"] = {"status": "unhealthy", "error": e.response.get("Error", {}).get("Message", str(e))}
-        # Determine overall status
-        overall = "healthy"
-        if any(c.get("status") == "unhealthy" for c in components.values()):
+        # Determine overall status: all unhealthy -> unhealthy, any unhealthy or model issues -> degraded, else healthy
+        statuses = [comp.get("status") for comp in components.values()]
+        if statuses and all(s == "unhealthy" for s in statuses):
             overall = "unhealthy"
-        elif any(state != "active" for state in models.values()):
+        elif any(s == "unhealthy" for s in statuses) or any(state != "active" for state in models.values()):
             overall = "degraded"
+        else:
+            overall = "healthy"
         result = {
             "status": overall,
             "timestamp": datetime.now().isoformat(),
