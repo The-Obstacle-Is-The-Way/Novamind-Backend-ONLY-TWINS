@@ -131,11 +131,16 @@ async def verify_provider_access(
     Raises:
         HTTPException: If the user does not have required access level
     """
-    role = user.get('role', '').lower()
-    if role not in ['provider', 'admin']:
+    # Support both dict-based payloads (production) and simple objects used in unit‑tests
+    role = (
+        user.get("role", "").lower()
+        if isinstance(user, dict)
+        else getattr(user, "role", "").lower()
+    )
+    if role not in ["provider", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Provider or Admin access required"
+            detail="Provider or Admin access required",
         )
     return user
 
@@ -155,10 +160,15 @@ async def verify_admin_access(
     Raises:
         HTTPException: If the user does not have admin access
     """
-    role = user.get('role', '').lower()
-    if role != 'admin':
+    # Support both dict payloads and object-based mocks
+    role = (
+        user.get("role", "").lower()
+        if isinstance(user, dict)
+        else getattr(user, "role", "").lower()
+    )
+    if role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required"
+            detail="Admin access required",
         )
     return user
