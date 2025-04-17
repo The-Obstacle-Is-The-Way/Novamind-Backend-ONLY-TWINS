@@ -411,18 +411,24 @@ def get_container() -> DIContainer:
 
 
 # Convenience function for FastAPI dependency injection
-def get_service(service_type: Union[Type[T], str] = XGBoostInterface) -> Callable[[], T]: # Accept string or default to XGBoostInterface
+def get_service(service_type: Union[Type[T], str] = None) -> Any: # Accept string or default to None, returns service instance or resolver
     """Factory function to get a service instance for FastAPI Depends."""
+    """
+    Factory function to get a service instance for FastAPI Depends.
+    If called without a service_type (service_type is None), resolves XGBoostInterface by default.
+    """
     container = get_container()
+    # If used as dependency without specifying service_type, return XGBoostInterface instance
+    if service_type is None:
+        return container.resolve(XGBoostInterface)
 
+    # If specifying service_type, return a callable for resolving the service
     def _get_service() -> T:
         if isinstance(service_type, str):
-            # Dynamically import if a string path is provided
             try:
                 module_path, class_name = service_type.rsplit('.', 1)
                 module = importlib.import_module(module_path)
                 actual_type = getattr(module, class_name)
-                # Resolve using the actual type now
                 return container.resolve(actual_type)
             except (ImportError, AttributeError, ValueError) as e:
                 logger.error(f"Failed to dynamically import or resolve service from path '{service_type}': {e}", exc_info=True)
