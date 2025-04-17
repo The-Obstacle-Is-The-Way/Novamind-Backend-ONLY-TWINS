@@ -10,7 +10,7 @@ from app.domain.utils.datetime_utils import UTC
 from typing import List
 
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy import JSON
 
 from app.core.db import Base
 
@@ -26,7 +26,8 @@ class UserModel(Base):
     __tablename__ = "users"
     
     # Primary key and identity
-    id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Use generic String to store UUID for cross-dialect support
+    id = sa.Column(sa.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = sa.Column(sa.String, unique=True, index=True, nullable=False)
     first_name = sa.Column(sa.String, nullable=False)
     last_name = sa.Column(sa.String, nullable=False)
@@ -36,7 +37,8 @@ class UserModel(Base):
     is_active = sa.Column(sa.Boolean, default=True, nullable=False)
     
     # Authorization
-    roles = sa.Column(ARRAY(sa.String), default=[], nullable=False)
+    # Use JSON array for roles to support both PostgreSQL and SQLite
+    roles = sa.Column(sa.JSON, default=list, nullable=False)
     
     # Audit fields
     created_at = sa.Column(sa.DateTime, default=datetime.utcnow, nullable=False)

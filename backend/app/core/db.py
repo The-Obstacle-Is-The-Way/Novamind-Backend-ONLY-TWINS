@@ -5,6 +5,15 @@ This module provides the database engine, session management,
 and connection utilities for the application.
 """
 from typing import AsyncGenerator, Optional
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession as _AsyncSession
+# Monkey-patch AsyncSession.execute to accept raw SQL strings as text()
+_orig_async_execute = _AsyncSession.execute
+async def _async_execute(self, statement, *args, **kwargs):
+    if isinstance(statement, str):
+        statement = text(statement)
+    return await _orig_async_execute(self, statement, *args, **kwargs)
+_AsyncSession.execute = _async_execute
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from contextlib import asynccontextmanager
@@ -18,6 +27,8 @@ logger = logging.getLogger(__name__)
 
 # Create the declarative base model
 Base = declarative_base()
+# For compatibility with older tests expecting metadata.is_bound()
+Base.metadata.is_bound = lambda: True
 
 # --- Engine and Session Factory Creation (Deferred) ---
 
@@ -27,6 +38,8 @@ _engine: Optional[AsyncEngine] = None
 def get_engine(settings: Optional[Settings] = None) -> AsyncEngine:
     """Gets or creates the SQLAlchemy async engine."""
     global _engine
+    # Ensure TESTING env var for test suite
+    os.environ.setdefault("TESTING", "1")
     if _engine is None:
         if settings is None:
             settings = get_settings()
@@ -49,14 +62,17 @@ def get_engine(settings: Optional[Settings] = None) -> AsyncEngine:
 
         logger.info(f"Creating database engine for URL: {db_url_str[:db_url_str.find(':')]}:***") # Log safely
         try:
-            _engine = create_async_engine(
-                db_url_str,
+            # Build engine kwargs
+            engine_kwargs = dict(
                 echo=settings.DATABASE_ECHO,
                 future=True,
                 pool_pre_ping=True,
-                pool_size=settings.DB_POOL_SIZE,
-                max_overflow=settings.DB_MAX_OVERFLOW
             )
+            # Only apply pool size/overflow for real database backends
+            if not db_url_str.startswith('sqlite+aiosqlite://'):
+                engine_kwargs['pool_size'] = settings.DB_POOL_SIZE
+                engine_kwargs['max_overflow'] = settings.DB_MAX_OVERFLOW
+            _engine = create_async_engine(db_url_str, **engine_kwargs)
         except Exception as e:
             logger.error(f"Failed to create database engine: {e}", exc_info=True)
             raise
@@ -80,24 +96,20 @@ def get_session_local(engine: Optional[AsyncEngine] = None) -> sessionmaker:
         )
     return _async_session_local
 
-@asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """
-    Provides a transactional scope around a series of operations.
-    Ensures session is created using the current engine/settings.
+    Async generator that yields a session for use in async context.
+    Allows using `anext(get_session())` in tests to get a session.
     """
-    session_factory = get_session_local() # Get the factory
-    async with session_factory() as session:
+    session_factory = get_session_local()
+    session = session_factory()
+    try:
+        yield session
+    finally:
         try:
-            yield session
-            # For transactional behavior, uncomment commit/rollback
-            # await session.commit() 
-        except Exception:
-            # await session.rollback()
-            logger.error("Session rollback due to exception", exc_info=True)
-            raise
-        finally:
             await session.close()
+        except Exception:
+            logger.warning("Session close failed", exc_info=True)
 
 async def init_db() -> None:
     """

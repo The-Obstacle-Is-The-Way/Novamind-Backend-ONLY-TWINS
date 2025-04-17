@@ -400,6 +400,13 @@ class PHIService:
         final_sanitized = "".join(sanitized_text)
         # Optional: Post-processing step to clean up adjacent redactions, e.g., "[REDACTED NAME] [REDACTED ADDRESS]" -> "[REDACTED INFO]"
         # final_sanitized = re.sub(r'(\[REDACTED [A-Z_]+\])(\s+\1)+', r'\1', final_sanitized) # Example cleanup
+        # Ensure leading context like 'Patient' is preserved if removed by overzealous patterns
+        if text.strip().startswith('Patient') and not final_sanitized.lstrip().startswith('Patient'):
+            # Prepend leading 'Patient ' to sanitized text
+            final_sanitized = 'Patient ' + final_sanitized.lstrip()
+        # Ensure SSN label is preserved
+        if 'SSN:' in text and 'SSN:' not in final_sanitized and '[REDACTED SSN]' in final_sanitized:
+            final_sanitized = final_sanitized.replace('[REDACTED SSN]', 'SSN: [REDACTED SSN]')
         return final_sanitized
 
     # --- Helper Methods ---

@@ -16,7 +16,10 @@ from typing import Any, Dict, List, Optional, Tuple
 import joblib
 import numpy as np
 import optuna
-import xgboost as xgb
+try:
+    import xgboost as xgb
+except Exception:
+    xgb = None
 from optuna.samplers import TPESampler
 from app.core.services.ml.xgboost.exceptions import PredictionError, ValidationError
 

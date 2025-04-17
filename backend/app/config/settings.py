@@ -95,12 +95,16 @@ class Settings(BaseSettings):
     # API Configuration
     API_V1_STR: str = Field(default="/api/v1", json_schema_extra={"env": "API_V1_STR"})
     API_V2_STR: str = Field(default="/api/v2", json_schema_extra={"env": "API_V2_STR"}) # Placeholder for future API version
-    PROJECT_NAME: str = Field(default="NovaMind Digital Twin", json_schema_extra={"env": "PROJECT_NAME"})
+    PROJECT_NAME: str = Field(default="Novamind Digital Twin", json_schema_extra={"env": "PROJECT_NAME"})
+    # Environment
+    ENVIRONMENT: str = Field(default="development", json_schema_extra={"env": "ENVIRONMENT"})
     APP_DESCRIPTION: str = Field(default="NovaMind Digital Twin API - Powering the future of psychiatric digital twins.", json_schema_extra={"env": "APP_DESCRIPTION"})
     VERSION: str = Field(default="0.1.0", json_schema_extra={"env": "VERSION"}) # Default application version
     
     # Optional Feature Flags
     ENABLE_ANALYTICS: bool = Field(default=False, json_schema_extra={"env": "ENABLE_ANALYTICS"})
+    # PHI Auditing Legacy Flag
+    ENABLE_PHI_AUDITING: bool = Field(default=True, json_schema_extra={"env": "ENABLE_PHI_AUDITING"})
 
     # Optional Static File Serving
     STATIC_DIR: Optional[str] = Field(default=None, json_schema_extra={"env": "STATIC_DIR"})
@@ -198,6 +202,40 @@ class Settings(BaseSettings):
     DATABASE_ECHO: bool = Field(default=False, json_schema_extra={"env": "DATABASE_ECHO"}) # Added DB Echo
     DATABASE_SSL_MODE: Optional[str] = Field(default=None, json_schema_extra={"env": "DATABASE_SSL_MODE"}) # Added SSL
     DATABASE_SSL_CA: Optional[str] = Field(default=None, json_schema_extra={"env": "DATABASE_SSL_CA"})
+    
+    @model_validator(mode="after")
+    def _set_debug_env(cls, values):  # type: ignore
+        """Set DEBUG env var for testing environment."""
+        try:
+            env = values.ENVIRONMENT
+        except Exception:
+            env = os.getenv("ENVIRONMENT")
+        if env == "testing" or os.getenv("TESTING") == "1":
+            os.environ["DEBUG"] = "1"
+        # Support legacy CORS_ORIGINS env var for tests
+        cors_env = os.getenv("CORS_ORIGINS")
+        if cors_env:
+            # Parse comma-separated or JSON list
+            try:
+                if cors_env.startswith('[') and cors_env.endswith(']'):
+                    parsed = json.loads(cors_env)
+                else:
+                    parsed = [origin.strip() for origin in cors_env.split(',') if origin.strip()]
+                values.BACKEND_CORS_ORIGINS = parsed
+            except Exception:
+                # leave default if parse fails
+                pass
+        return values
+    
+    @property
+    def CORS_ORIGINS(self) -> list[str]:
+        """Alias for BACKEND_CORS_ORIGINS"""
+        return self.BACKEND_CORS_ORIGINS
+    # SQLAlchemy compatibility
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> Optional[str]:
+        """Alias for DATABASE_URL for compatibility."""
+        return self.DATABASE_URL
     DATABASE_SSL_VERIFY: Optional[bool] = Field(default=None, json_schema_extra={"env": "DATABASE_SSL_VERIFY"})
     DATABASE_ENCRYPTION_ENABLED: bool = Field(default=False, json_schema_extra={"env": "DATABASE_ENCRYPTION_ENABLED"})
     DATABASE_AUDIT_ENABLED: bool = Field(default=False, json_schema_extra={"env": "DATABASE_AUDIT_ENABLED"})

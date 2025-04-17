@@ -39,11 +39,13 @@ class TemporalSequence(Generic[T]):
     
     def __init__(
         self,
-        sequence_id: UUID,
-        feature_names: list[str],
-        timestamps: list[datetime],
-        values: list[list[float]],
-        patient_id: UUID,
+        sequence_id: UUID | None = None,
+        id: UUID | None = None,
+        feature_names: list[str] | None = None,
+        timestamps: list[datetime] | None = None,
+        values: list[Any] | None = None,
+        patient_id: UUID | None = None,
+        clinical_significance: Any | None = None,
         metadata: dict[str, Any] | None = None,
         name: str | None = None,
         brain_region: BrainRegion | None = None,
@@ -69,18 +71,33 @@ class TemporalSequence(Generic[T]):
             updated_at: Last update timestamp
             temporal_resolution: Time resolution of the sequence
         """
+        # Map alias 'id' to sequence_id if provided
+        if sequence_id is None and id is not None:
+            sequence_id = id
+        # Feature names default: neurotransmitter value or generic 'value'
+        if feature_names is None:
+            if neurotransmitter is not None:
+                feature_names = [neurotransmitter.value]
+            else:
+                feature_names = ["value"]
+        # Values: allow list of floats, convert to list of 1-element lists
+        if values is not None and values and not isinstance(values[0], list):
+            values = [[v] for v in values]
+        # Validate required fields
+        if not sequence_id or timestamps is None or values is None or patient_id is None:
+            raise ValueError("sequence_id, timestamps, values, and patient_id are required")
         # Validate input lengths match
         if len(timestamps) != len(values):
             raise ValueError("Number of timestamps must match number of value vectors")
-            
         if any(len(value_vec) != len(feature_names) for value_vec in values):
             raise ValueError("Each value vector must have the same number of features")
-        
+        # Assign core attributes
         self.sequence_id = sequence_id
         self._feature_names = feature_names
         self._timestamps = timestamps
         self._values = values
         self.patient_id = patient_id
+        self.clinical_significance = clinical_significance
         self.metadata = metadata or {}
         self.name = name or f"Sequence-{str(sequence_id)[:8]}"
         self.brain_region = brain_region
@@ -88,7 +105,6 @@ class TemporalSequence(Generic[T]):
         self.created_at = created_at or datetime.now(UTC)
         self.updated_at = updated_at or datetime.now(UTC)
         self.temporal_resolution = temporal_resolution
-        
         # Cache for sequence length
         self._sequence_length = len(timestamps)
     @property
