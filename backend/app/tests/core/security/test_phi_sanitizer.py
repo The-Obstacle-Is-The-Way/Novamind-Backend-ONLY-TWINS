@@ -100,19 +100,19 @@ class TestPHISanitizer:
         
         # Verify PHI is redacted in nested dictionaries
         assert sanitized_dict["contact"]["email"] != self.patient_email
-        assert "[REDACTED" in sanitized_dict["contact"]["email"]
+        assert "REDACTED" in sanitized_dict["contact"]["email"]
         assert sanitized_dict["contact"]["phone"] != self.patient_phone
-        assert "[REDACTED" in sanitized_dict["contact"]["phone"]
+        assert "REDACTED" in sanitized_dict["contact"]["phone"]
         
         assert sanitized_dict["demographics"]["dob"] != self.patient_dob
-        assert "[REDACTED" in sanitized_dict["demographics"]["dob"]
+        assert "REDACTED" in sanitized_dict["demographics"]["dob"]
         assert sanitized_dict["demographics"]["ssn"] != self.patient_ssn
-        assert "[REDACTED" in sanitized_dict["demographics"]["ssn"]
+        assert "REDACTED" in sanitized_dict["demographics"]["ssn"]
         assert sanitized_dict["demographics"]["address"] != self.patient_address
-        assert "[REDACTED" in sanitized_dict["demographics"]["address"]
+        assert "REDACTED" in sanitized_dict["demographics"]["address"]
         
         assert sanitized_dict["medical_info"]["mrn"] != self.patient_mrn
-        assert "[REDACTED" in sanitized_dict["medical_info"]["mrn"]
+        assert "REDACTED" in sanitized_dict["medical_info"]["mrn"]
         
         # Verify non-PHI content is preserved
         assert sanitized_dict["medical_info"]["diagnosis"] == "Depression"

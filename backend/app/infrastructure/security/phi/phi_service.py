@@ -411,9 +411,23 @@ class PHIService:
         # Ensure SSN label is preserved when using new template '[SSN REDACTED]'
         if 'SSN:' in text and 'SSN:' not in final_sanitized and '[SSN REDACTED]' in final_sanitized:
             final_sanitized = final_sanitized.replace('[SSN REDACTED]', 'SSN: [SSN REDACTED]')
+        # Ensure DOB label is preserved when using new template '[DOB REDACTED]'
+        if 'DOB:' in text and 'DOB:' not in final_sanitized and '[DOB REDACTED]' in final_sanitized:
+            final_sanitized = final_sanitized.replace('[DOB REDACTED]', 'DOB: [DOB REDACTED]')
         # Ensure Medical Record Number label is preserved when using new template '[MRN REDACTED]'
         if 'Medical Record Number:' in text and 'Medical Record Number:' not in final_sanitized and '[MRN REDACTED]' in final_sanitized:
             final_sanitized = final_sanitized.replace('[MRN REDACTED]', 'Medical Record Number: [MRN REDACTED]')
+        # Ensure MRN label is preserved for shorthand 'MRN:' occurrences
+        if 'MRN:' in text and 'MRN:' not in final_sanitized and '[MRN REDACTED]' in final_sanitized:
+            final_sanitized = final_sanitized.replace('[MRN REDACTED]', 'MRN: [MRN REDACTED]')
+        # Restore honorifics (e.g., Dr., Mr., Mrs., Ms.) before redacted name at start
+        # Handle cases where name replacement removed honorific prefix
+        stripped = text.strip()
+        if stripped.startswith(('Dr.', 'Mr.', 'Mrs.', 'Ms.')) and final_sanitized.lstrip().startswith('['):
+            m = re.match(r'^(Dr\.?|Mr\.?|Mrs\.?|Ms\.?)', stripped)
+            if m:
+                honorific = m.group(1)
+                final_sanitized = honorific + ' ' + final_sanitized.lstrip()
         return final_sanitized
 
     # --- Helper Methods ---

@@ -10,6 +10,7 @@ the core PHIService.
 import logging
 import functools
 from typing import Any, Dict, Optional, Union, List, Tuple, Set, Callable
+import json
 
 # Import the NEW core PHI service
 # from app.core.security.phi_sanitizer import PHISanitizer # Old import REMOVED
@@ -51,6 +52,19 @@ class LogSanitizer:
         effective_sensitivity = sensitivity or self.config.default_sensitivity
         replacement = self.config.replacement_template
 
+        # If input is a JSON string, parse and sanitize the data structure, then re-dump
+        if isinstance(data, str):
+            try:
+                parsed = json.loads(data)
+            except (ValueError, TypeError):
+                pass
+            else:
+                sanitized_obj = self.sanitize(parsed, sensitivity)
+                try:
+                    return json.dumps(sanitized_obj)
+                except (TypeError, ValueError):
+                    # Fallback to plain string sanitization
+                    pass
         # Delegate to the core service for base sanitization
         sanitized = self._phi_service.sanitize(
             data,
