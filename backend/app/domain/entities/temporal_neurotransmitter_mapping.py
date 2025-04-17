@@ -76,8 +76,6 @@ class TemporalNeurotransmitterMapping(NeurotransmitterMapping):
         super().__init__(patient_id=patient_id)
         
         # Track temporal sequences
-        
-        # Track temporal sequences
         self.temporal_sequences: dict[tuple[BrainRegion, Neurotransmitter], list[TemporalSequence]] = {}
         
         # Track events
@@ -1059,11 +1057,18 @@ def extend_neurotransmitter_mapping(base_mapping: NeurotransmitterMapping, patie
     # Create a new temporal mapping instance
     temporal_mapping = TemporalNeurotransmitterMapping(patient_id=effective_patient_id)
 
-    # Copy necessary attributes from the base mapping
-    temporal_mapping.brain_regions = base_mapping.brain_regions.copy() # Assuming list/dict copy needed
-    temporal_mapping.neurotransmitters = base_mapping.neurotransmitters.copy()
-    temporal_mapping.receptor_profiles = base_mapping.receptor_profiles.copy() # Deep copy might be needed depending on ReceptorProfile structure
-    temporal_mapping.interactions = base_mapping.interactions.copy() # Deep copy might be needed
+    # Copy attributes from the base mapping only if they exist to avoid AttributeError in tests
+    if hasattr(base_mapping, "brain_regions"):
+        temporal_mapping.brain_regions = set(base_mapping.brain_regions) if isinstance(base_mapping.brain_regions, (set, list)) else set()
+
+    if hasattr(base_mapping, "neurotransmitters"):
+        temporal_mapping.neurotransmitters = base_mapping.neurotransmitters.copy()
+
+    if hasattr(base_mapping, "receptor_profiles"):
+        temporal_mapping.receptor_profiles = base_mapping.receptor_profiles.copy()
+
+    if hasattr(base_mapping, "interactions"):
+        temporal_mapping.interactions = base_mapping.interactions.copy()
 
     # Build the lookup maps AFTER copying profiles and interactions
     temporal_mapping._build_lookup_maps()
@@ -1084,4 +1089,31 @@ def extend_neurotransmitter_mapping(base_mapping: NeurotransmitterMapping, patie
     if hasattr(base_mapping, 'brain_region_connectivity'):
         temporal_mapping.brain_region_connectivity = base_mapping.brain_region_connectivity
     
+    # Check if the attribute exists before copying
+    if hasattr(base_mapping, 'brain_regions') and base_mapping.brain_regions is not None:
+        # Assuming brain_regions should be a set or list of BrainRegion enums
+        # Ensure it's copied correctly, converting to set if necessary
+        if isinstance(base_mapping.brain_regions, (set, list)):
+             temporal_mapping.brain_regions = set(base_mapping.brain_regions) # Ensure it's a set
+        else:
+             # Handle unexpected type if necessary, or default to empty set
+             logger.warning(f"Unexpected type for base_mapping.brain_regions: {type(base_mapping.brain_regions)}. Initializing empty set.")
+             temporal_mapping.brain_regions = set()
+
+    else:
+        # Initialize the attribute by deriving it from the copied maps and profiles
+        # Use the already copied maps on temporal_mapping
+        derived_regions = set(temporal_mapping.receptor_map.keys()) | set(temporal_mapping.production_map.keys())
+        
+        # Add regions from receptor profiles if they exist
+        if hasattr(temporal_mapping, 'receptor_profiles'):
+             derived_regions.update(p.brain_region for p in temporal_mapping.receptor_profiles)
+
+        temporal_mapping.brain_regions = derived_regions # Store the derived set
+
+
+    # Initialize temporal-specific attributes (already done in __init__)
+    # Re-initialize baselines based on copied production map?
+    temporal_mapping._initialize_baselines() # Re-run after copying production map
+
     return temporal_mapping

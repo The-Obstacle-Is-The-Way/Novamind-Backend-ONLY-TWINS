@@ -20,7 +20,8 @@ from app.infrastructure.security.rate_limiting.rate_limiter_enhanced import Rate
 
 from app.presentation.middleware.rate_limiting_middleware import (
     RateLimitingMiddleware,
-    # create_rate_limiting_middleware, # Removed import of non-existent factory
+    create_rate_limiting_middleware,
+    RateLimitConfig,
 )
 
 

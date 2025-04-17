@@ -67,4 +67,9 @@ __all__ = [
     "ValidationException",
     "XGBoostServiceError",
     "HIPAAComplianceError",
+    "AnalysisError",
+    "EmbeddingError",
+    "IntegrationError",
+    "ValidationError",
+    "AuthorizationError",
 ]

@@ -128,13 +128,19 @@ class MockSettings:
 # Provide mocked settings as a fixture
 @pytest.fixture(scope="session", autouse=True)
 def mock_settings():
+    """Provides mock settings and patches get_settings() for the session."""
     settings = MockSettings()
-    # Mock get_settings to return our mock object
-    # Ensure app.config.settings is also mocked if it exists and is used directly
-    # sys.modules['app.config.settings'] = MagicMock(get_settings=lambda: settings, settings=settings) # REMOVE sys.modules patch
-    # Also mock app.core.config if that path is used
-    # sys.modules['app.core.config'] = MagicMock(get_settings=lambda: settings, settings=settings) # REMOVE sys.modules patch
-    return settings
+    # Use unittest.mock.patch to replace get_settings where it's imported
+    with patch('app.config.settings.get_settings', return_value=settings, create=True) as p1, \
+         patch('app.main.get_settings', return_value=settings, create=True) as p2, \
+         patch('app.presentation.middleware.authentication_middleware.get_settings', return_value=settings, create=True) as p3, \
+         patch('app.presentation.middleware.rate_limiting_middleware.get_settings', return_value=settings, create=True) as p4, \
+         patch('app.presentation.middleware.phi_middleware.get_settings', return_value=settings, create=True) as p5, \
+         patch('app.infrastructure.persistence.sqlalchemy.config.database.get_settings', return_value=settings, create=True) as p6:
+        # Add more patch targets if get_settings is imported elsewhere
+        logger.info("Patched get_settings in multiple modules.")
+        yield settings
+    logger.info("Finished session, get_settings patches removed.")
 
 # Use the patch_imports context manager during collection
 def pytest_collection_modifyitems(config, items):
@@ -455,7 +461,7 @@ async def client(
 # If you need direct DB access in tests *not* using the client, define separate fixtures.
 
 # Fixture for JWTService (can be used directly by tests if needed)
-@pytest_asyncio.fixture(scope="function") # CHANGED decorator
+@pytest_asyncio.fixture(scope="function") # Ensure consistent async decorator
 async def jwt_service(mock_settings: MockSettings) -> AsyncGenerator[JWTService, None]: # Keep AsyncGenerator here for yield
     """Provides a JWTService instance explicitly configured with mock settings for test setup."""
     # Explicitly pass mock_settings for test fixture usage, overriding the Depends default for this call.
@@ -467,7 +473,7 @@ async def jwt_service(mock_settings: MockSettings) -> AsyncGenerator[JWTService,
     yield service
 
 # Fixture to generate tokens using the real JWTService (configured with mock settings)
-@pytest_asyncio.fixture(scope="function") # CHANGED decorator
+@pytest_asyncio.fixture(scope="function") # Ensure consistent async decorator
 async def generate_token(jwt_service: JWTService) -> Callable[[Dict[str, Any]], Coroutine[Any, Any, str]]: # CHANGED: jwt_service type hint, assuming it's resolved
     """Provides a function to generate access tokens using the resolved jwt_service fixture."""
     # REMOVED: actual_jwt_service = await anext(jwt_service) - Assuming pytest_asyncio handles resolution
@@ -516,14 +522,14 @@ def mock_provider_payload() -> Dict[str, Any]:
 # This setup ensures tests can generate valid tokens (using the test key)
 # and the TestClient interacts with an app that uses mocks for validation.
 
-@pytest_asyncio.fixture(scope="function") # CHANGED decorator
+@pytest_asyncio.fixture(scope="function") # Ensure consistent async decorator
 async def patient_token_headers(generate_token: Callable[[Dict[str, Any]], Coroutine[Any, Any, str]], mock_patient_payload: Dict[str, Any]) -> Dict[str, str]:
     """Generates auth headers with a valid patient token."""
     # generate_token is now the resolved _generate function injected by pytest_asyncio
     token = await generate_token(mock_patient_payload) # Call and await the generator function
     return {"Authorization": f"Bearer {token}"}
 
-@pytest_asyncio.fixture(scope="function") # CHANGED decorator
+@pytest_asyncio.fixture(scope="function") # Ensure consistent async decorator
 async def provider_token_headers(generate_token: Callable[[Dict[str, Any]], Coroutine[Any, Any, str]], mock_provider_payload: Dict[str, Any]) -> Dict[str, str]:
     """Generates auth headers with a valid provider token."""
     # generate_token is now the resolved _generate function injected by pytest_asyncio
@@ -622,14 +628,20 @@ async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture(scope="function") # Change scope to function if app state needs reset
 def app(mock_settings: MockSettings, db_session: AsyncSession) -> FastAPI: # Inject db_session here
     """Creates a FastAPI application instance for testing."""
-    
-    # Override the database dependency *before* creating the application
-    # This ensures the test client uses the test database session
+
+    # Define the override function
     async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
         yield db_session
 
-    # Create the application *after* setting up the override
-    application = create_application()
-    application.dependency_overrides[get_db_dependency] = override_get_db
+    # Prepare the overrides dictionary BEFORE creating the application
+    dependency_overrides = {
+        get_db_dependency: override_get_db
+    }
+
+    # Create the application, passing the overrides
+    application = create_application(dependency_overrides=dependency_overrides)
+
+    # No need to apply overrides after creation anymore
+    # application.dependency_overrides[get_db_dependency] = override_get_db
 
     return application

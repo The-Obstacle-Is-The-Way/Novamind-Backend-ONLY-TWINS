@@ -23,10 +23,6 @@ from app.infrastructure.security.auth.authentication_service import Authenticati
 from app.infrastructure.models.user_model import UserModel
 from app.infrastructure.security.jwt.jwt_service import JWTService, TokenPayload
 
-# Import PROVIDER functions for Depends
-from app.presentation.dependencies.auth import get_authentication_service
-from app.infrastructure.security.jwt.jwt_service import get_jwt_service
-
 # Corrected import path for settings
 from app.config.settings import get_settings, Settings
 
@@ -37,27 +33,29 @@ logger = get_logger(__name__)
 
 class AuthenticationMiddleware(BaseHTTPMiddleware):
     """
-    Middleware for JWT authentication using dependency injection within dispatch.
+    Middleware for JWT authentication using constructor injection.
     """
 
-    # __init__ only takes app and optional public_paths
+    # Inject services via constructor
     def __init__(
         self,
         app,
-        public_paths: Optional[Set[str]] = None, 
+        auth_service: AuthenticationService, # Inject AuthenticationService
+        jwt_service: JWTService,           # Inject JWTService
+        public_paths: Optional[Set[str]] = None,
     ):
         super().__init__(app)
+        self.auth_service = auth_service # Store injected service
+        self.jwt_service = jwt_service   # Store injected service
         self.public_paths = public_paths or set()
-        logger.info(f"AuthenticationMiddleware initialized (using Depends in dispatch). Public paths: {self.public_paths}.")
+        logger.info(f"AuthenticationMiddleware initialized (using constructor injection). Public paths: {self.public_paths}.")
 
-    # Inject dependencies directly into dispatch
+    # Remove Depends from dispatch
     async def dispatch(
-        self, 
-        request: Request, 
+        self,
+        request: Request,
         call_next: RequestResponseEndpoint,
-        # Use Depends to inject services - FastAPI handles this
-        auth_service: AuthenticationService = Depends(get_authentication_service),
-        jwt_service: JWTService = Depends(get_jwt_service)
+        # No Depends here anymore
     ) -> Response:
         """
         Process request, perform authentication using injected services, and call next handler.
@@ -66,9 +64,13 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         settings = get_settings()
         if getattr(settings, 'TESTING', False):
             logger.debug("Testing environment detected: skipping authentication.")
+            # Still set unauthenticated user for consistency in tests if needed
+            request.state.user = UnauthenticatedUser()
+            request.state.auth = None
             return await call_next(request)
+
         request.state.user = UnauthenticatedUser()
-        request.state.auth = None 
+        request.state.auth = None
 
         current_path = request.url.path
         if current_path in self.public_paths or any(current_path.startswith(path) for path in self.public_paths):
@@ -90,28 +92,29 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
 
         if not token or not scheme or scheme.lower() != "bearer":
             logger.debug("No valid Bearer token found in header.")
-            return await call_next(request) 
+            return await call_next(request) # Proceed as unauthenticated
 
-        # Use injected services directly
+        # Use stored service instances
         try:
-            token_data: TokenPayload = await jwt_service.verify_token(token)
-            user: Optional[UserModel] = await auth_service.get_user_by_id(str(token_data.sub)) 
+            # Use self.jwt_service and self.auth_service
+            token_data: TokenPayload = await self.jwt_service.verify_token(token)
+            user: Optional[UserModel] = await self.auth_service.get_user_by_id(str(token_data.sub))
 
             if not user:
                 logger.warning(f"User not found for token subject: {token_data.sub}")
-                raise EntityNotFoundError(f"User {token_data.sub} not found.") 
+                raise EntityNotFoundError(f"User {token_data.sub} not found.")
 
             if not user.is_active:
                  logger.warning(f"Authentication attempt by inactive user: {token_data.sub}")
                  raise AuthenticationError("User account is inactive.")
 
             request.state.user = user
-            user_roles = getattr(user, 'roles', []) 
-            scopes = [str(role) for role in user_roles] 
+            user_roles = getattr(user, 'roles', [])
+            scopes = [str(role) for role in user_roles]
             request.state.auth = AuthCredentials(scopes=scopes)
             logger.debug(f"User {user.id} authenticated successfully.")
 
-        except (InvalidTokenError, AuthenticationError, EntityNotFoundError, TokenExpiredError, MissingTokenError) as e: 
+        except (InvalidTokenError, AuthenticationError, EntityNotFoundError, TokenExpiredError, MissingTokenError) as e:
             logger.warning(f"Authentication failed: {e} for path {current_path}")
             status_code = status.HTTP_401_UNAUTHORIZED
             detail = str(e)

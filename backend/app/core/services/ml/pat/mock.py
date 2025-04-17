@@ -644,23 +644,31 @@ class MockPATService(PATInterface):
     ) -> Dict[str, Any]:
         """Analyze actigraphy readings."""
         self._check_initialized()
-        
         # Validate inputs
+        from app.core.exceptions import ValidationError
         if not patient_id:
-            raise ValueError("Patient ID is required")
-        
+            raise ValidationError("Patient ID is required")
         if not readings or not isinstance(readings, list):
-            raise ValueError("Readings must be a non-empty list")
-        
-        if sampling_rate_hz <= 0:
-            from app.core.services.ml.pat.exceptions import ValidationError
+            raise ValidationError("Readings must be a non-empty list")
+        if sampling_rate_hz is None or not isinstance(sampling_rate_hz, (int, float)) or sampling_rate_hz <= 0:
             raise ValidationError("Sampling rate must be positive")
-        
-        # Basic shape validation
+        if not device_info or not isinstance(device_info, dict):
+            raise ValidationError("device_info must be a non-empty dict")
+        required_fields = {'device_type', 'manufacturer', 'placement'}
+        if not required_fields.issubset(device_info.keys()):
+            raise ValidationError("device_info missing required fields")
+        if not analysis_types or not isinstance(analysis_types, list):
+            raise ValidationError("analysis_types must be a non-empty list")
+        # Validate allowed analysis types
+        valid_types = ['sleep', 'activity']
+        for t in analysis_types:
+            if not isinstance(t, str) or t not in valid_types:
+                raise ValidationError(f"Invalid analysis type: {t}")
+        # Basic shape validation for readings
         for reading in readings:
-            if not all(k in reading for k in ['x', 'y', 'z']):
-                raise ValueError("Each reading must contain x, y, z values")
-        
+            if not all(k in reading for k in ('x', 'y', 'z')):
+                raise ValidationError("Each reading must contain x, y, z values")
+
         # Create analysis ID
         analysis_id = str(uuid.uuid4())
         
@@ -728,21 +736,18 @@ class MockPATService(PATInterface):
         """Generate embeddings from actigraphy readings."""
         self._check_initialized()
         
+        from app.core.exceptions import ValidationError
         # Validate inputs
         if not patient_id:
-            raise ValueError("Patient ID is required")
-        
+            raise ValidationError("Patient ID is required")
         if not readings or not isinstance(readings, list):
-            raise ValueError("Readings must be a non-empty list")
-        
-        if sampling_rate_hz <= 0:
-            from app.core.services.ml.pat.exceptions import ValidationError
+            raise ValidationError("Readings must be a non-empty list")
+        if sampling_rate_hz is None or not isinstance(sampling_rate_hz, (int, float)) or sampling_rate_hz <= 0:
             raise ValidationError("Sampling rate must be positive")
-        
-        # Basic shape validation
+        # Basic shape validation for readings
         for reading in readings:
-            if not all(k in reading for k in ['x', 'y', 'z']):
-                raise ValueError("Each reading must contain x, y, z values")
+            if not all(k in reading for k in ('x', 'y', 'z')):
+                raise ValidationError("Each reading must contain x, y, z values")
         
         # Generate mock embeddings with 384 dimensions
         embedding_id = str(uuid.uuid4())
@@ -899,17 +904,28 @@ class MockPATService(PATInterface):
         self,
         patient_id: str,
         profile_id: str,
-        actigraphy_analysis: Dict[str, Any], # Changed parameter name and type
-        **kwargs # Added **kwargs to match interface
+        analysis_id: str = None,
+        actigraphy_analysis: Dict[str, Any] = None,
+        **kwargs
     ) -> Dict[str, Any]:
         """Integrate an actigraphy analysis with a digital twin."""
         self._check_initialized()
+        from app.core.exceptions import ValidationError, ResourceNotFoundError
+        # Determine actigraphy_analysis from inputs
+        if analysis_id:
+            # fetch analysis or raise ResourceNotFoundError
+            actigraphy_analysis = self.get_analysis_by_id(analysis_id)
+        if actigraphy_analysis is None:
+            raise ValidationError("Missing actigraphy_analysis or analysis_id")
 
-        # Extract analysis_id from the input dictionary
+        # Extract analysis_id
         analysis_id = actigraphy_analysis.get("analysis_id")
         if not analysis_id:
-             from app.core.exceptions import ValidationError
-             raise ValidationError("Missing 'analysis_id' in actigraphy_analysis data")
+            raise ValidationError("Missing 'analysis_id' in actigraphy_analysis data")
+
+        if actigraphy_analysis.get("patient_id") != patient_id:
+            from app.core.exceptions import AuthorizationError
+            raise AuthorizationError(f"Analysis {analysis_id} does not belong to patient {patient_id}")
 
         logger.info(f"Mock integrating analysis {analysis_id} for patient {patient_id} with profile {profile_id}")
 
@@ -919,11 +935,6 @@ class MockPATService(PATInterface):
 
         # Check if analysis exists (using the passed data, but could also re-fetch)
         # analysis = self.get_analysis_by_id(analysis_id) # Optional: re-fetch to ensure consistency
-
-        # Check if analysis belongs to the patient (using passed data)
-        if actigraphy_analysis.get("patient_id") != patient_id:
-             from app.core.exceptions import AuthorizationError # Use correct exception
-             raise AuthorizationError(f"Analysis {analysis_id} does not belong to patient {patient_id}")
 
         # Generate mock integration result
         integration_id = str(uuid.uuid4())
