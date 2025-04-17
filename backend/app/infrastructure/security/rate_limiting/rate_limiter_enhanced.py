@@ -12,11 +12,25 @@ from typing import Dict, List, Optional, Set, Tuple, Any, cast
 
 import redis
 from pydantic import BaseModel
+import asyncio
+import inspect
+from enum import Enum
 
 from app.config.settings import get_settings
 settings = get_settings()
 
 logger = logging.getLogger(__name__)
+
+class RateLimitType(Enum):
+    """
+    Enumeration for different rate limit types/scopes.
+    Used to select specific rate limit configurations.
+    """
+    DEFAULT = "default"
+    LOGIN = "login"
+    SENSITIVE = "sensitive"
+    ADMIN = "admin"
+    FACTORY = "factory"
 
 
 class RateLimitConfig(BaseModel):
@@ -32,6 +46,16 @@ class RateLimitConfig(BaseModel):
     requests: int
     window_seconds: int
     block_seconds: Optional[int] = None
+    
+    @property
+    def requests_per_period(self) -> int:
+        # Alias for compatibility with pipeline info
+        return self.requests
+
+    @property
+    def period_seconds(self) -> int:
+        # Alias for compatibility with pipeline info
+        return self.window_seconds
 
 
 class RateLimiter(ABC):
@@ -42,7 +66,7 @@ class RateLimiter(ABC):
     """
     
     @abstractmethod
-    def check_rate_limit(self, key: str, config: RateLimitConfig) -> bool:
+    def check_rate_limit(self, key: str, config: Any = None, user_id: Optional[str] = None) -> Any:
         """
         Check if a request should be rate limited.
         
@@ -161,6 +185,12 @@ class RedisRateLimiter(RateLimiter):
             redis_client: Optional Redis client to use
         """
         self._redis = redis_client
+        # Default configurations for different rate limit types
+        # Values here can be adjusted or loaded from settings
+        self.configs: Dict[RateLimitType, RateLimitConfig] = {
+            RateLimitType.DEFAULT: RateLimitConfig(requests=10, window_seconds=60),
+            RateLimitType.LOGIN: RateLimitConfig(requests=10, window_seconds=60),
+        }
     
     def _get_counter_key(self, key: str) -> str:
         """
@@ -186,7 +216,7 @@ class RedisRateLimiter(RateLimiter):
         """
         return f"ratelimit:blocked:{key}"
     
-    def check_rate_limit(self, key: str, config: RateLimitConfig) -> bool:
+    def check_rate_limit(self, key: str, config: Any = None, user_id: Optional[str] = None) -> Any:
         """
         Check if a request should be rate limited.
         
@@ -197,41 +227,120 @@ class RedisRateLimiter(RateLimiter):
         Returns:
             True if request is allowed, False if it should be rate limited
         """
+        # Dispatch based on parameters: pipeline branch vs config-only
+        # Pipeline usage: when config is a RateLimitType
+        if isinstance(config, RateLimitType):
+            # user_id must be provided for pipeline key composition
+            return self._check_rate_limit_pipeline(key, config, user_id)
+        # Config override or default config branch
+        # Determine default config if not provided
+        cfg = config if isinstance(config, RateLimitConfig) else RateLimitConfig(requests=10, window_seconds=60)
+        # If no Redis client, always allow
+        if not self._redis:
+            return True
+        # Decide branch based on whether Redis client exists() is async
+        if inspect.iscoroutinefunction(getattr(self._redis, 'exists', None)):
+            # Asynchronous Redis client branch
+            return self._check_rate_limit_async(key, cfg)
+        # Fallback to synchronous Redis client branch
+        return self._check_rate_limit_sync(key, cfg)
+    
+    def _check_rate_limit_sync(self, key: str, config: RateLimitConfig) -> bool:
+        """
+        Synchronous rate limit check using a blocking Redis client.
+        """
         try:
             if not self._redis:
                 return True
-                
             now = datetime.now().timestamp()
             blocked_key = self._get_blocked_key(key)
             counter_key = self._get_counter_key(key)
-            
             # Check if the key is blocked
             if self._redis.exists(blocked_key):
                 return False
-            
             # Clean up old requests
             expired_cutoff = now - config.window_seconds
             self._redis.zremrangebyscore(counter_key, 0, expired_cutoff)
-            
             # Check if over the limit
             request_count = self._redis.zcard(counter_key)
             if request_count >= config.requests:
-                # Block the key if block_seconds is set
                 if config.block_seconds:
                     self._redis.setex(blocked_key, config.block_seconds, 1)
                 return False
-            
             # Add this request to the log
             self._redis.zadd(counter_key, {str(now): now})
             # Set expiration on the sorted set
             self._redis.expire(counter_key, config.window_seconds * 2)
-            
             return True
-            
         except redis.RedisError as e:
             logger.error(f"Redis error in rate limiter: {e}")
-            # Fail open - allow the request when Redis has an error
             return True
+    
+    async def _check_rate_limit_async(self, key: str, config: RateLimitConfig) -> bool:
+        """
+        Asynchronous rate limit check using an async Redis client.
+        """
+        try:
+            if not self._redis:
+                return True
+            now = datetime.now().timestamp()
+            blocked_key = self._get_blocked_key(key)
+            counter_key = self._get_counter_key(key)
+            # Check if the key is blocked
+            if await self._redis.exists(blocked_key):
+                return False
+            # Clean up old requests
+            expired_cutoff = now - config.window_seconds
+            await self._redis.zremrangebyscore(counter_key, 0, expired_cutoff)
+            # Check if over the limit
+            request_count = await self._redis.zcard(counter_key)
+            if request_count >= config.requests:
+                if config.block_seconds:
+                    await self._redis.setex(blocked_key, config.block_seconds, 1)
+                return False
+            # Add this request to the log
+            await self._redis.zadd(counter_key, {str(now): now})
+            # Set expiration on the sorted set
+            await self._redis.expire(counter_key, config.window_seconds * 2)
+            return True
+        except redis.RedisError as e:
+            logger.error(f"Redis error in rate limiter: {e}")
+            return True
+    
+    async def _check_rate_limit_pipeline(self, identifier: str, limit_type: RateLimitType, user_id: Optional[str]) -> Tuple[bool, Dict[str, Any]]:
+        """
+        Advanced async pipeline-based rate limit check with user scoping.
+        """
+        # Determine combined key for user and identifier
+        combined_key = f"{limit_type.value}:{user_id}:{identifier}"
+        config = self.configs.get(limit_type)
+        now = datetime.now().timestamp()
+        try:
+            # Use Redis pipeline for atomic operations
+            async with self._redis.pipeline() as pipe:
+                # Remove expired entries
+                expired_cutoff = now - config.period_seconds
+                pipe.zremrangebyscore(combined_key, 0, expired_cutoff)
+                # Add current request
+                pipe.zadd(combined_key, {str(now): now})
+                # Count total requests
+                pipe.zcard(combined_key)
+                # Get TTL for reset calculation
+                pipe.pttl(combined_key)
+                results = await pipe.execute()
+            # Extract count and TTL
+            count = results[2]
+            ttl_ms = results[3]
+            # Determine limit and remaining
+            limit = config.requests_per_period
+            remaining = max(limit - count, 0)
+            # Compute reset time
+            reset_at = datetime.now() + timedelta(seconds=config.period_seconds)
+            return False, {"limit": limit, "remaining": remaining, "reset_at": reset_at}
+        except redis.RedisError as e:
+            logger.error(f"Redis error in pipeline rate limiter: {e}")
+            # Fail open
+            return False, {}
     
     def reset_limits(self, key: str) -> None:
         """

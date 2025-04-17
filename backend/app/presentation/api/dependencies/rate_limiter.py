@@ -70,8 +70,9 @@ class RateLimitDependency:
         # Decorator usage
         if isinstance(request, types.FunctionType):
             original_func = request
-            async def wrapper(req: Request, *args, **kwargs):
-                key = self.key_func(req)
+            async def wrapper(request: Request):
+                # Decorator branch: extract key and enforce limit
+                key = self.key_func(request)
                 if self.scope_key != "default":
                     key = f"{self.scope_key}:{key}"
                 allowed = self.limiter.check_rate_limit(key, self)
@@ -80,21 +81,27 @@ class RateLimitDependency:
                         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                         detail=self.error_message
                     )
-                return await original_func(req, *args, **kwargs)
+                return await original_func(request)
             return wrapper
-        # Dependency injection usage
-        async def dependency_coro():
-            key = self.key_func(request)
-            if self.scope_key != "default":
-                key = f"{self.scope_key}:{key}"
-            allowed = self.limiter.check_rate_limit(key, self)
-            if not allowed:
-                raise HTTPException(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail=self.error_message
-                )
-            return None
-        return dependency_coro()
+        # Dependency injection usage: perform synchronous check
+        # Extract client key
+        key = self.key_func(request)
+        if self.scope_key != "default":
+            key = f"{self.scope_key}:{key}"
+        # Invoke limiter synchronously
+        allowed = self.limiter.check_rate_limit(key, self)
+        if not allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=self.error_message
+            )
+        # Return an awaitable for compatibility with direct await calls
+        class _AwaitableNone:
+            def __await__(self):
+                if False:
+                    yield
+                return None
+        return _AwaitableNone()
 
     def _apply_limit(self, request: Request) -> None:
         """Common rate limit logic."""
