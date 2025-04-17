@@ -24,6 +24,7 @@ from app.domain.exceptions import (
 # Corrected dependency import syntax
 from app.presentation.api.dependencies.auth import get_current_user # Removed get_current_user_id, get_current_user_role
 from app.domain.entities.biometric_twin import BiometricDataPoint # Import corrected
+from app.domain.entities.user import User # Added User import
 # Correct import for the dependency function
 from app.presentation.api.v1.endpoints.biometric_endpoints import (
     get_patient_id,

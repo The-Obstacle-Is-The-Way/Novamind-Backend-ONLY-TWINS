@@ -10,6 +10,7 @@ from starlette.testclient import TestClient
 from fastapi import status
 
 # Corrected import
+from app.infrastructure.security.rate_limiting.rate_limiter_enhanced import RateLimiter # Added import
 # from app.infrastructure.security.rate_limiting.limiter import (
 #     RateLimiter,
 #     RateLimitConfig,

@@ -7,10 +7,10 @@ including PHI detection, MentaLLaMA integration, and Digital Twin services.
 """
 
 from app.infrastructure.ml.phi_detection import PHIDetectionService
-from app.infrastructure.ml.mentallama import MentaLLaMAService, MentaLLaMAResult
+from app.infrastructure.ml.mentallama import MockMentaLLaMA, MentaLLaMAResult # Import correct class name
 
 __all__ = [
-    "PHIDetectionService", 
-    "MentaLLaMAService", 
+    "PHIDetectionService",
+    "MockMentaLLaMA", # Update __all__
     "MentaLLaMAResult"
 ]

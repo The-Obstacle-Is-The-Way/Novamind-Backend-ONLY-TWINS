@@ -65,36 +65,55 @@ class AWSPATService(PATInterface):
     
     def initialize(self, config: Dict[str, Any]) -> None:
         """Initialize the AWS PAT service with configuration.
-        
+
         Args:
-            config: Configuration parameters for the service
+            config: Configuration parameters for the service, must include:
                 - aws_region: AWS region for services
                 - endpoint_name: SageMaker endpoint name
                 - bucket_name: S3 bucket for data storage
                 - analyses_table: DynamoDB table for analyses
                 - embeddings_table: DynamoDB table for embeddings
                 - integrations_table: DynamoDB table for integrations
-                
+
         Raises:
-            InitializationError: If initialization fails
+            InitializationError: If initialization fails or config is missing required keys.
         """
         try:
-            # Extract configuration
-            self._config = config
-            aws_region = config.get("aws_region", settings.AWS_REGION)
-            self._endpoint_name = config.get("endpoint_name", settings.PAT_ENDPOINT_NAME)
-            self._bucket_name = config.get("bucket_name", settings.PAT_BUCKET_NAME)
-            self._analyses_table = config.get("analyses_table", settings.PAT_ANALYSES_TABLE)
-            self._embeddings_table = config.get("embeddings_table", settings.PAT_EMBEDDINGS_TABLE)
-            self._integrations_table = config.get("integrations_table", settings.PAT_INTEGRATIONS_TABLE)
-            
-            # Initialize AWS clients
-            self._sagemaker_runtime = boto3.client("sagemaker-runtime", region_name=aws_region)
-            self._s3_client = boto3.client("s3", region_name=aws_region)
-            self._dynamodb_resource = boto3.resource("dynamodb", region_name=aws_region)
-            self._comprehend_medical = boto3.client("comprehendmedical", region_name=aws_region)
-            
-            # Verify resources exist
+            # Validate and extract required configuration
+            required_keys = [
+                "aws_region", "endpoint_name", "bucket_name",
+                "analyses_table", "embeddings_table", "integrations_table"
+            ]
+            missing_keys = [key for key in required_keys if key not in config]
+            if missing_keys:
+                raise InitializationError(f"Missing required configuration keys: {', '.join(missing_keys)}")
+
+            self._config = config # Store the validated config
+            self._aws_region = config["aws_region"] # Store region as instance attribute
+            self._endpoint_name = config["endpoint_name"]
+            self._bucket_name = config["bucket_name"]
+            self._analyses_table_name = config["analyses_table"] # Use distinct name for table name
+            self._embeddings_table_name = config["embeddings_table"]
+            self._integrations_table_name = config["integrations_table"]
+
+            logger.info(
+                "Initializing AWSPATService with region: %s, endpoint: %s, bucket: %s, tables: %s, %s, %s",
+                self._aws_region, self._endpoint_name, self._bucket_name,
+                self._analyses_table_name, self._embeddings_table_name, self._integrations_table_name
+            )
+
+            # Initialize AWS clients using the stored region
+            self._sagemaker_runtime = boto3.client("sagemaker-runtime", region_name=self._aws_region)
+            self._s3_client = boto3.client("s3", region_name=self._aws_region)
+            self._dynamodb_resource = boto3.resource("dynamodb", region_name=self._aws_region)
+            self._comprehend_medical = boto3.client("comprehendmedical", region_name=self._aws_region)
+
+            # Get DynamoDB table resources
+            self._analyses_table = self._dynamodb_resource.Table(self._analyses_table_name)
+            self._embeddings_table = self._dynamodb_resource.Table(self._embeddings_table_name)
+            self._integrations_table = self._dynamodb_resource.Table(self._integrations_table_name)
+
+            # Verify resources exist (optional, can be time-consuming)
             self._verify_resources()
             
             self._initialized = True
@@ -362,7 +381,7 @@ class AWSPATService(PATInterface):
             "maintainer": "Concierge Psychiatry Platform Team",
             "last_updated": "2025-03-28",
             "active": True,
-            "aws_region": self._config.get("aws_region", settings.AWS_REGION),
+            "aws_region": self._aws_region, # Use stored instance attribute
             "endpoint_name": self._endpoint_name
         }
     

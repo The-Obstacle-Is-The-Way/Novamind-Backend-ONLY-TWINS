@@ -27,7 +27,8 @@ from app.core.exceptions.base_exceptions import (
     ModelExecutionError, # Changed from ModelInferenceError
     AuthorizationError,
     # Add specific exceptions if they exist (e.g., MentalLLaMAInferenceError, PhiDetectionError)
-) 
+)
+from app.domain.entities.user import User # Added User import
 # Import domain entities/services - Adjust paths if necessary
 from app.domain.entities.user import User
 from app.domain.entities.digital_twin import DigitalTwin # Corrected path

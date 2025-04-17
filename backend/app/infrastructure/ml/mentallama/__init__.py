@@ -7,6 +7,6 @@ and decision support.
 """
 
 from app.infrastructure.ml.mentallama.models import MentaLLaMAResult
-from app.infrastructure.ml.mentallama.mock_service import MentaLLaMAService
+from app.infrastructure.ml.mentallama.mock_service import MockMentaLLaMA # Import correct class name
 
-__all__ = ["MentaLLaMAService", "MentaLLaMAResult"]
+__all__ = ["MockMentaLLaMA", "MentaLLaMAResult"] # Update __all__

@@ -440,7 +440,8 @@ class TestMockPATIntegrateWithDigitalTwin:
         result = initialized_mock_pat.integrate_with_digital_twin(
             patient_id=patient_id,
             profile_id=profile_id,
-            analysis_id=analysis_id,
+            actigraphy_analysis=analysis, # Pass the full analysis dict
+            # analysis_id=analysis_id, # Removed old argument
         )
 
         # Verify the result structure

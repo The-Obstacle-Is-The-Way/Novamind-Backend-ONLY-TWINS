@@ -92,7 +92,7 @@ class MockMentaLLaMA(MentaLLaMAInterface):
         if not self._initialized:
             raise ServiceUnavailableError("MockMentaLLaMA service not initialized.")
 
-    async def process(
+    def process( # Removed async
         self,
         text: str,
         model_type: Optional[str] = None, # model_type might map to analysis_type
@@ -102,12 +102,12 @@ class MockMentaLLaMA(MentaLLaMAInterface):
         self._ensure_initialized()
         if not text:
             raise InvalidRequestError("Input text cannot be empty.")
-            
+
         # Map model_type to analysis_type if provided, otherwise use 'general'
         analysis_type = model_type if model_type else "general"
-        
-        # Use existing analyze_text logic
-        result_obj = await self.analyze_text(
+
+        # Use existing analyze_text logic (now synchronous)
+        result_obj = self.analyze_text( # Removed await
             text=text,
             analysis_type=analysis_type,
             anonymize_phi=options.get("anonymize_phi", True) if options else True
@@ -115,7 +115,7 @@ class MockMentaLLaMA(MentaLLaMAInterface):
         # Return a dictionary representation as per interface
         return result_obj.dict() # Assuming MentaLLaMAResult has a dict() method
 
-    async def detect_depression(
+    def detect_depression( # Removed async
         self,
         text: str,
         options: Optional[Dict[str, Any]] = None
@@ -124,11 +124,11 @@ class MockMentaLLaMA(MentaLLaMAInterface):
         self._ensure_initialized()
         if not text:
              raise InvalidRequestError("Input text cannot be empty.")
-             
+
         logger.info(f"Mock detecting depression for text snippet: '{text[:50]}...'")
         # Simulate based on keywords
         has_depression_keywords = any(word in text.lower() for word in ["sad", "hopeless", "down", "depressed"])
-        
+
         return {
             "detected": has_depression_keywords,
             "confidence": 0.75 if has_depression_keywords else 0.25,
@@ -137,8 +137,8 @@ class MockMentaLLaMA(MentaLLaMAInterface):
             "mock": True
         }
 
-    # --- Keep existing analyze_text and helpers, make them async ---
-    async def analyze_text(
+    # --- Keep existing analyze_text and helpers, make them sync ---
+    def analyze_text( # Removed async
         self,
         text: str,
         analysis_type: str = "general",
@@ -146,18 +146,18 @@ class MockMentaLLaMA(MentaLLaMAInterface):
     ) -> MentaLLaMAResult:
         """
         Analyze text using MentaLLaMA.
-        
-        This method simulates sending text to MentaLLaMA for analysis, 
+
+        This method simulates sending text to MentaLLaMA for analysis,
         with optional PHI anonymization for HIPAA compliance.
-        
+
         Args:
             text: Text to analyze
             analysis_type: Type of analysis to perform
             anonymize_phi: Whether to anonymize PHI before analysis
-            
+
         Returns:
             Analysis result
-            
+
         Raises:
             MentaLLaMAError: If analysis fails
         """
@@ -166,13 +166,10 @@ class MockMentaLLaMA(MentaLLaMAInterface):
         if anonymize_phi:
             # Use the potentially updated private attribute
             if hasattr(self, '_phi_detection_service') and self._phi_detection_service:
-                 # Assuming PHI service methods might be async now or need init check
-                 # self._phi_detection_service.ensure_initialized() # Remove if not needed
-                 # contains_phi might be async
-                 contains = await self._phi_detection_service.contains_phi(text) if hasattr(self._phi_detection_service, 'contains_phi') else False # Add await if needed
+                 # Treat PHI service calls as synchronous within the mock
+                 contains = self._phi_detection_service.contains_phi(text) if hasattr(self._phi_detection_service, 'contains_phi') else False # Removed await
                  if contains:
-                     # redact_phi might be async
-                     processed_text = await self._phi_detection_service.redact_phi(text) if hasattr(self._phi_detection_service, 'redact_phi') else "[REDACTED]" # Add await if needed
+                     processed_text = self._phi_detection_service.redact_phi(text) if hasattr(self._phi_detection_service, 'redact_phi') else "[REDACTED]" # Removed await
                      logger.info("PHI detected and redacted before MentaLLaMA analysis")
             else:
                  logger.warning("PHI detection skipped: No PHI service available in MockMentaLLaMA.")
@@ -189,7 +186,6 @@ class MockMentaLLaMA(MentaLLaMAInterface):
             
         # Create and return result
         return MentaLLaMAResult(
-            text=processed_text,
             text=processed_text, # Use the potentially processed text
             analysis=analysis_result,
             confidence=0.85, # Mock confidence
@@ -282,6 +278,6 @@ class MockMentaLLaMA(MentaLLaMAInterface):
     
     # Keep close method for potential backward compatibility if tests use it,
     # but shutdown is the interface method.
-    async def close(self) -> None:
+    def close(self) -> None: # Removed async
         """Alias for shutdown for potential compatibility."""
         self.shutdown()

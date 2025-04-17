@@ -11,7 +11,7 @@ import json
 import os
 import logging
 
-from app.infrastructure.ml.mentallama import MentaLLaMAService
+from app.infrastructure.ml.mentallama import MockMentaLLaMA # Import correct class name
 
 
 logger = logging.getLogger(__name__)

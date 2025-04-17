@@ -899,67 +899,83 @@ class MockPATService(PATInterface):
         self,
         patient_id: str,
         profile_id: str,
-        analysis_id: str
+        actigraphy_analysis: Dict[str, Any], # Changed parameter name and type
+        **kwargs # Added **kwargs to match interface
     ) -> Dict[str, Any]:
         """Integrate an actigraphy analysis with a digital twin."""
         self._check_initialized()
-        
+
+        # Extract analysis_id from the input dictionary
+        analysis_id = actigraphy_analysis.get("analysis_id")
+        if not analysis_id:
+             from app.core.exceptions import ValidationError
+             raise ValidationError("Missing 'analysis_id' in actigraphy_analysis data")
+
+        logger.info(f"Mock integrating analysis {analysis_id} for patient {patient_id} with profile {profile_id}")
+
         # Initialize integrations storage if needed
         if not hasattr(self, "_integrations"):
             self._integrations = {}
-        
-        # Check if analysis exists
-        analysis = self.get_analysis_by_id(analysis_id)
-        
-        # Check if analysis belongs to the patient
-        if analysis["patient_id"] != patient_id:
-            raise ValueError(f"Analysis {analysis_id} does not belong to patient {patient_id}")
-        
+
+        # Check if analysis exists (using the passed data, but could also re-fetch)
+        # analysis = self.get_analysis_by_id(analysis_id) # Optional: re-fetch to ensure consistency
+
+        # Check if analysis belongs to the patient (using passed data)
+        if actigraphy_analysis.get("patient_id") != patient_id:
+             from app.core.exceptions import AuthorizationError # Use correct exception
+             raise AuthorizationError(f"Analysis {analysis_id} does not belong to patient {patient_id}")
+
         # Generate mock integration result
         integration_id = str(uuid.uuid4())
-        
+        integration_timestamp = datetime.datetime.now(datetime.UTC).isoformat()
+
+        # Mock updated profile data based on analysis
+        sleep_results = actigraphy_analysis.get("results", {}).get("sleep", {})
+        activity_results = actigraphy_analysis.get("results", {}).get("activity", {})
+        analysis_metrics = actigraphy_analysis.get("metrics", {}) # Use passed metrics
+
         result = {
             "integration_id": integration_id,
             "patient_id": patient_id,
             "profile_id": profile_id,
             "analysis_id": analysis_id,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
-            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),  # Keep timestamp for backward compatibility
+            "created_at": integration_timestamp,
+            "timestamp": integration_timestamp, # Align timestamp
             "status": "completed",
-            "metrics_integrated": len(analysis["metrics"]),
+            "metrics_integrated": len(analysis_metrics), # Use passed metrics count
             "digital_twin_updated": True,
             "updated_profile": {
-                "id": profile_id,  # Keep original id field
-                "profile_id": profile_id,  # Add expected profile_id field
-                "patient_id": patient_id,  # Add patient_id field
-                "metrics_count": len(analysis["metrics"]),
-                "last_update": datetime.datetime.now(datetime.UTC).isoformat(),
-                "last_updated": datetime.datetime.now(datetime.UTC).isoformat(),  # Field with expected name
+                "id": profile_id,
+                "profile_id": profile_id,
+                "patient_id": patient_id,
+                "metrics_count": len(analysis_metrics), # Use passed metrics count
+                "last_update": integration_timestamp,
+                "last_updated": integration_timestamp,
                 "insights": [
-                    {
-                        "type": "sleep",
-                        "summary": "Sleep patterns show normal circadian rhythm",
-                        "confidence": 0.85
-                    },
-                    {
-                        "type": "activity",
-                        "summary": "Activity levels indicate moderate physical engagement",
-                        "confidence": 0.78
-                    }
-                ]
+                     {
+                         "type": "sleep",
+                         "summary": f"Sleep quality appears {sleep_results.get('quality', 'average')}", # Use actual results
+                         "confidence": sleep_results.get('confidence', 0.85)
+                     },
+                     {
+                         "type": "activity",
+                         "summary": f"Activity level is {activity_results.get('level', 'moderate')}", # Use actual results
+                         "confidence": activity_results.get('confidence', 0.78)
+                     }
+                 ]
             }
         }
-        
+
         # Store integration result
         self._integrations[integration_id] = {
             "integration_id": integration_id,
             "patient_id": patient_id,
             "profile_id": profile_id,
             "analysis_id": analysis_id,
-            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "created_at": integration_timestamp,
             "status": "completed"
         }
-        
+
         return result
     
     def _generate_mock_actigraphy_metrics(
