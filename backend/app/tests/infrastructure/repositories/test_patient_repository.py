@@ -13,7 +13,7 @@ from unittest.mock import MagicMock # Import MagicMock
 from app.domain.entities.patient import Patient
 # Import the concrete implementation and the required dependency interface
 from app.infrastructure.persistence.sqlalchemy.patient_repository import SQLAlchemyPatientRepository
-from app.core.services.security.encryption_interface import BaseEncryptionService
+from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
 
 class TestPatientRepository:
