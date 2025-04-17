@@ -148,7 +148,14 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
             patient_id=patient_id
         )
         
-        return initial_state, knowledge_graph, belief_network
+        # Return a mapping compatible with tests
+        return {
+            "patient_id": patient_id,
+            "status": "initialized",
+            "state": initial_state,
+            "knowledge_graph": knowledge_graph,
+            "belief_network": belief_network
+        }
     
     async def process_multimodal_data(
         self,
@@ -1383,7 +1390,8 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         if custom_mapping:
             mapping = custom_mapping
         elif use_default_mapping:
-            mapping = create_default_neurotransmitter_mapping(patient_id=patient_id)
+            # Use default mapping factory without unexpected kwargs
+            mapping = create_default_neurotransmitter_mapping()
         else:
             mapping = NeurotransmitterMapping(patient_id=patient_id)
         
