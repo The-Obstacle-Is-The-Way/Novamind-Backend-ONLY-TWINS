@@ -2,430 +2,235 @@
 """
 Unit tests for the Digital Twin entity.
 
-This module contains tests for the core Digital Twin entity, verifying its ability
-to represent and simulate a patient's psychiatric state.
+This module contains tests for the core Digital Twin entity, verifying its
+initialization and state/configuration updates.
 """
-import unittest
 import pytest
-from datetime import datetime, UTC, timedelta
-from app.domain.utils.datetime_utils import UTC
+from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 from typing import Dict, List, Any
-from unittest.mock import MagicMock, patch
-import logging
+from unittest.mock import MagicMock
 
-# Correct imports for entities living directly under app.domain.entities
-from app.domain.entities.digital_twin import DigitalTwin, DigitalTwinConfiguration, DigitalTwinState
-# Commenting out missing treatment entity import
-# from app.domain.entities.treatment import Treatment, TreatmentCategory, TreatmentFrequency, MedicationDetails, MedicationType
-from app.domain.value_objects.therapeutic_plan import TherapeuticPlan
-# from app.domain.entities.response_prediction import TreatmentResponse, TrajectoryPrediction, TreatmentComparison # Removed - Module does not exist
-
-# Removed ModelConfidence
-# Removed import of non-existent state module and 
-
-# Domain entities and value objects
-from app.domain.entities.patient import Patient
-from app.domain.entities.provider import Provider
-# from app.domain.entities.digital_twin.neurotransmitter_profile import NeurotransmitterProfile # Removed - Module/Class does not exist
-# from app.domain.entities.digital_twin.cognitive_assessment import CognitiveAssessment # Removed - Module/Class does not exist
-# from app.domain.entities.digital_twin.genetic_marker import GeneticMarker # Removed - Module/Class does not exist
-# from app.domain.entities.digital_twin.biometric_alert import BiometricAlert # Removed - Module/Class does not exist
-# Removed import of non-existent TreatmentPlan entity
-# Instead, we can mock it if needed for the test
-
-# Enums
-from app.domain.entities.digital_twin_enums import DigitalTwinState
-from app.domain.entities.biometric_twin_enhanced import BiometricTwin
-from app.domain.entities.clinical_note import ClinicalNote
-from app.domain.entities.digital_twin.digital_twin import DigitalTwinState
-# from app.domain.entities.digital_twin.temporal import TemporalDynamics # Line 42 to be removed
-from app.domain.entities.neurotransmitter_effect import NeurotransmitterEffect
-from app.domain.entities.digital_twin_enums import (
-    BrainRegion, Neurotransmitter, ClinicalSignificance, DigitalTwinState
-)
-from app.domain.entities.digital_twin.clinical_insight import ClinicalInsight
-from app.domain.entities.digital_twin.clinical_significance import ClinicalSignificance
-from app.domain.entities.digital_twin.temporal_neurotransmitter_sequence import TemporalNeurotransmitterSequence
-from app.domain.entities.digital_twin_entity import (
-    BrainRegionState, 
-    NeurotransmitterState, 
-    NeuralConnection, 
-    ClinicalInsight,
+# Import the entities to test
+from app.domain.entities.digital_twin.digital_twin import (
+    DigitalTwin,
+    DigitalTwinConfiguration,
     DigitalTwinState
 )
+# Import enums if needed for configuration/state values
+# from app.domain.entities.digital_twin_enums import ...
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
+@pytest.fixture
+def patient_id() -> UUID:
+    """Provides a consistent patient UUID."""
+    return uuid4()
+
+@pytest.fixture
+def digital_twin(patient_id: UUID) -> DigitalTwin:
+    """Provides a basic DigitalTwin instance."""
+    return DigitalTwin(patient_id=patient_id)
 
 @pytest.mark.venv_only()
-class TestDigitalTwin(unittest.TestCase):
+class TestDigitalTwin:
     """Tests for the DigitalTwin entity."""
 
-    def setUp(self):
-        """Set up test fixtures."""
-        # Create a patient ID
-        self.patient_id = uuid4()
-
-        # Create a basic state
-        self.initial_state = DigitalTwinState(
-            neurotransmitter=NeurotransmitterState(
-                serotonin_level=-0.3,
-                dopamine_level=-0.2,
-                norepinephrine_level=0.1,
-                gaba_level=-0.1,
-                glutamate_level=0.2
-            ),
-            psychological=PsychologicalState(
-                mood_valence=-0.4,
-                mood_arousal=0.2,
-                mood_stability=0.3,
-                anxiety_level=0.6,
-                stress_reactivity=0.5,
-                rumination=0.4,
-                anhedonia=0.5
-            ),
-            behavioral=BehavioralState(
-                activity_level=-0.3,
-                psychomotor_changes=0.1,
-                sleep_quality=0.4,
-                sleep_duration=6.5,
-                circadian_rhythm=0.3,
-                appetite_level=-0.2,
-                social_engagement=0.3
-            ),
-            cognitive=CognitiveState(
-                attention_level=0.5,
-                concentration=0.4,
-                working_memory=0.5,
-                executive_function=0.4,
-                decision_making=0.3
-            )
-        )
-        self.initial_state.update_derived_values()
-
-        # Create test treatments
-        self.ssri_treatment = Treatment(
-            id=uuid4(),
-            name="Fluoxetine",
-            category=TreatmentCategory.MEDICATION,
-            frequency=TreatmentFrequency.DAILY,
-            start_date=datetime.now(UTC),
-            medication_details=MedicationDetails(
-                type=MedicationType.SSRI,
-                dosage=20.0,
-                dosage_unit="mg",
-                serotonin_effect=0.5,
-                dopamine_effect=0.1,
-                norepinephrine_effect=0.1,
-                gaba_effect=0.0,
-                glutamate_effect=0.0
-            )
-        )
-
-        self.therapy_treatment = Treatment(
-            id=uuid4(),
-            name="Cognitive Behavioral Therapy",
-            category=TreatmentCategory.THERAPY,
-            frequency=TreatmentFrequency.WEEKLY,
-            start_date=datetime.now(UTC),
-            # Removed therapy_details due to missing TherapyDetails/TherapyType
-            predicted_effects={
-                "serotonin": 0.2,
-                "rumination": -0.3,
-                "cognitive_distortions": -0.4
-            }  # Keep predicted_effects if needed
-        )
-
-        # Create treatment plan
-        self.treatment_plan = MagicMock(spec=TherapeuticPlan) # Mock using the correct class
-        
-        # Create a basic digital twin
-        self.digital_twin = DigitalTwin(
-            patient_id=self.patient_id,
-            current_state=self.initial_state,
-            confidence_level=0.5  # Replaced enum with float
-        )
-
-    def test_init_default_values(self):
+    def test_init_default_values(self, patient_id: UUID):
         """Test that default values are correctly initialized."""
-        twin = DigitalTwin(
-            patient_id=self.patient_id,
-            current_state=self.initial_state
-        )
+        twin = DigitalTwin(patient_id=patient_id)
 
-        assert twin.patient_id == self.patient_id
-        assert twin.version == "1.0.0"
+        assert twin.patient_id == patient_id
+        assert isinstance(twin.id, UUID)
+        assert isinstance(twin.configuration, DigitalTwinConfiguration)
+        assert isinstance(twin.state, DigitalTwinState)
         assert isinstance(twin.created_at, datetime)
-        assert isinstance(twin.updated_at, datetime)
-        assert twin.last_calibration is None
-        assert twin.state_history == []
-        assert isinstance(twin.demographic_factors, dict)
-        assert isinstance(twin.genetic_factors, dict)
-        assert isinstance(twin.medical_history, dict)
-        assert isinstance(twin.environmental_factors, dict)
-        assert twin.confidence_level == 0.5  # Replaced enum with float
-        assert twin.calibration_score == 0.0
-        assert isinstance(twin.validation_metrics, dict)
-        assert twin.temporal_dynamics is None
+        assert isinstance(twin.last_updated, datetime)
+        assert twin.created_at == twin.last_updated # Initially should be same
+        assert twin.version == 1
 
-    def test_init_custom_values(self):
-        """Test initialization with custom values."""
-        created_at = datetime.now(UTC) - timedelta(days=10)
-        last_calibration = datetime.now(UTC) - timedelta(days=5)
+        # Check default config values
+        assert twin.configuration.simulation_granularity_hours == 1
+        assert twin.configuration.prediction_models_enabled == ["risk_relapse", "treatment_response"]
+        assert twin.configuration.data_sources_enabled == ["actigraphy", "symptoms", "sessions"]
+        assert twin.configuration.alert_thresholds == {}
+
+        # Check default state values
+        assert twin.state.last_sync_time is None
+        assert twin.state.overall_risk_level is None
+        assert twin.state.dominant_symptoms == []
+        assert twin.state.current_treatment_effectiveness is None
+        assert twin.state.predicted_phq9_trajectory is None
+
+
+    def test_init_custom_values(self, patient_id: UUID):
+        """Test initialization with custom configuration and state."""
+        custom_id = uuid4()
+        created_time = datetime.now(timezone.utc) - timedelta(days=1)
+        custom_config = DigitalTwinConfiguration(
+            simulation_granularity_hours=2,
+            prediction_models_enabled=["risk_suicide"],
+            alert_thresholds={"phq9_change": 3.0}
+        )
+        custom_state = DigitalTwinState(
+            last_sync_time=created_time,
+            overall_risk_level="moderate",
+            dominant_symptoms=["anhedonia", "insomnia"]
+        )
 
         twin = DigitalTwin(
-            patient_id=self.patient_id,
-            current_state=self.initial_state,
-            version="1.1.0",
-            created_at=created_at,
-            last_calibration=last_calibration,
-            demographic_factors={"age": 35, "gender": "female"},
-            genetic_factors={"cyp2d6_metabolizer": "extensive"},
-            medical_history={"prior_treatments": ["SSRIs", "CBT"]},
-            confidence_level=0.85,  # Replaced enum with float
-            calibration_score=0.85
+            id=custom_id,
+            patient_id=patient_id,
+            configuration=custom_config,
+            state=custom_state,
+            created_at=created_time,
+            last_updated=created_time, # Initial last_updated matches created_at
+            version=5 # Test custom version
         )
 
-        assert twin.patient_id == self.patient_id
-        assert twin.version == "1.1.0"
-        assert twin.created_at == created_at
-        assert twin.last_calibration == last_calibration
-        assert twin.demographic_factors == {"age": 35, "gender": "female"}
-        assert twin.genetic_factors == {"cyp2d6_metabolizer": "extensive"}
-        assert twin.medical_history == {"prior_treatments": ["SSRIs", "CBT"]}
-        assert twin.confidence_level == 0.85  # Replaced enum with float
-        assert twin.calibration_score == 0.85
+        assert twin.id == custom_id
+        assert twin.patient_id == patient_id
+        assert twin.configuration == custom_config
+        assert twin.state == custom_state
+        assert twin.created_at == created_time
+        assert twin.last_updated == created_time
+        assert twin.version == 5
 
-    def test_update_state(self):
+    def test_update_state(self, digital_twin: DigitalTwin):
         """Test updating the digital twin state."""
-        # Create initial state snapshot
-        initial_state_copy = self.digital_twin.current_state.copy(deep=True)
+        original_state = digital_twin.state
+        original_updated_at = digital_twin.last_updated
+        original_version = digital_twin.version
+        time.sleep(0.01) # Ensure time difference
 
-        # Update with new data
-        new_data = {
-            "neurotransmitter_data": {
-                "serotonin": {"level": 0.1},
-                "dopamine": {"level": 0.0}
-            },
-            "psychological_data": {
-                "mood": {"valence": -0.2},
-                "anxiety": {"level": 0.4}
-            },
-            "behavioral_data": {
-                "sleep": {"quality": 0.6},
-                "activity": {"level": 0.0}
-            },
-            "cognitive_data": {
-                "attention": {"level": 0.6},
-                "memory": {"working_memory": 0.6}
-            }
+        new_state_data = {
+            "overall_risk_level": "high",
+            "dominant_symptoms": ["anhedonia", "fatigue", "suicidal_ideation"],
+            "current_treatment_effectiveness": "worsening",
+            "predicted_phq9_trajectory": [{"week": 1, "score": 18.5}]
+            # "last_sync_time" is updated automatically
         }
 
-        # Update state
-        self.digital_twin.update_state(new_data)
+        digital_twin.update_state(new_state_data)
 
-        # Verify state history updated
-        assert len(self.digital_twin.state_history) == 1
-        assert self.digital_twin.state_history[0][1] == initial_state_copy
+        assert digital_twin.state.overall_risk_level == "high"
+        assert digital_twin.state.dominant_symptoms == ["anhedonia", "fatigue", "suicidal_ideation"]
+        assert digital_twin.state.current_treatment_effectiveness == "worsening"
+        assert digital_twin.state.predicted_phq9_trajectory == [{"week": 1, "score": 18.5}]
+        assert isinstance(digital_twin.state.last_sync_time, datetime)
+        assert digital_twin.state.last_sync_time > original_updated_at # Sync time updated
+        assert digital_twin.last_updated > original_updated_at # Entity updated time
+        assert digital_twin.version == original_version + 1 # Version incremented
 
-        # Verify current state updated
-        assert self.digital_twin.current_state.neurotransmitter.serotonin_level == 0.1
-        assert self.digital_twin.current_state.neurotransmitter.dopamine_level == 0.0
-        assert self.digital_twin.current_state.psychological.mood_valence == -0.2
-        assert self.digital_twin.current_state.psychological.anxiety_level == 0.4
-        assert self.digital_twin.current_state.behavioral.sleep_quality == 0.6
-        assert self.digital_twin.current_state.behavioral.activity_level == 0.0
-        assert self.digital_twin.current_state.cognitive.attention_level == 0.6
-        assert self.digital_twin.current_state.cognitive.working_memory == 0.6
+    def test_update_state_partial(self, digital_twin: DigitalTwin):
+        """Test partially updating the digital twin state."""
+        original_risk = digital_twin.state.overall_risk_level # Should be None initially
+        original_updated_at = digital_twin.last_updated
+        original_version = digital_twin.version
+        time.sleep(0.01)
 
-        # Verify update timestamp
-        assert self.digital_twin.updated_at > self.digital_twin.created_at
-
-    def test_detect_patterns(self):
-        """Test detection of temporal patterns."""
-        from app.domain.entities.digital_twin.temporal import TemporalDynamics, SeasonalPatternDetector, EpisodicPatternDetector
-        self.digital_twin.temporal_dynamics = TemporalDynamics(
-            pattern_detectors={
-                "seasonal": SeasonalPatternDetector(),
-                "episodic": EpisodicPatternDetector()
-            }
-        )
-        # Add some state history
-        for i in range(5):
-            state = self.initial_state.copy(deep=True)
-            state.psychological.mood_valence = -0.4 + (i * 0.1)
-            self.digital_twin.temporal_dynamics.record_state_point(state)
-        # Detect patterns
-        patterns = self.digital_twin.detect_patterns()
-        # Verify patterns
-        assert "seasonal" in patterns
-        assert "episodic" in patterns
-        assert isinstance(patterns["seasonal"], PatternStrength)
-        assert isinstance(patterns["episodic"], PatternStrength)
-
-    def test_calibrate(self):
-        """Test calibration of the model."""
-        observed_data = {
-            "mood_valence": -0.2,
-            "anxiety_level": 0.5,
-            "sleep_quality": 0.6,
-            "serotonin_level": 0.0,
-            "treatment_response": {
-                "ssri": 0.6,
-                "therapy": 0.5
-            }
+        new_state_data = {
+            "overall_risk_level": "moderate",
         }
-        calibration_score = self.digital_twin.calibrate(observed_data)
-        assert isinstance(calibration_score, float)
-        assert 0.0 <= calibration_score <= 1.0
-        assert self.digital_twin.calibration_score == calibration_score
-        assert self.digital_twin.last_calibration is not None
+        digital_twin.update_state(new_state_data)
 
-    def test_evaluate_accuracy(self):
-        """Test evaluation of model accuracy."""
-        validation_data = {
-            "actual_values": {
-                "mood_valence": [-0.3, -0.2, -0.1, 0.0, 0.1],
-                "anxiety_level": [0.6, 0.5, 0.5, 0.4, 0.3],
-                "sleep_quality": [0.4, 0.5, 0.5, 0.6, 0.7]
-            },
-            "predicted_values": {
-                "mood_valence": [-0.35, -0.25, -0.15, -0.05, 0.05],
-                "anxiety_level": [0.65, 0.55, 0.45, 0.35, 0.25],
-                "sleep_quality": [0.45, 0.5, 0.55, 0.6, 0.65]
-            },
-            "binary_outcomes": {
-                "actual": [1, 0, 1, 1, 0],
-                "predicted": [1, 0, 0, 1, 0]
-            }
+        assert digital_twin.state.overall_risk_level == "moderate"
+        assert digital_twin.state.dominant_symptoms == [] # Unchanged
+        assert digital_twin.last_updated > original_updated_at
+        assert digital_twin.version == original_version + 1
+
+    def test_update_state_invalid_key(self, digital_twin: DigitalTwin):
+        """Test updating state with an invalid key does not change state."""
+        original_state_dict = digital_twin.state.__dict__.copy()
+        original_updated_at = digital_twin.last_updated
+        original_version = digital_twin.version
+        time.sleep(0.01)
+
+        new_state_data = {
+            "invalid_state_key": "some_value",
+            "overall_risk_level": "low" # Include a valid key too
         }
-        metrics = self.digital_twin.evaluate_accuracy(validation_data)
-        assert "rmse" in metrics
-        assert "mae" in metrics
-        assert "r_squared" in metrics
-        assert "auc" in metrics
-        assert all(0.0 <= value <= 1.0 for value in metrics.values())
-        assert self.digital_twin.validation_metrics == metrics
+        digital_twin.update_state(new_state_data)
 
-    def test_neurotransmitter_update(self):
-        """Test updating neurotransmitter state."""
-        neurotransmitter_data = {
-            "serotonin": {
-                "level": 0.3,
-                "receptor_sensitivity": 0.4
-            },
-            "dopamine": {
-                "level": 0.2
-            },
-            "norepinephrine": {
-                "receptor_sensitivity": 0.1
-            }
+        # Check valid key was updated
+        assert digital_twin.state.overall_risk_level == "low"
+        # Check other keys remain unchanged
+        assert digital_twin.state.dominant_symptoms == original_state_dict["dominant_symptoms"]
+        # Check timestamp and version updated
+        assert digital_twin.last_updated > original_updated_at
+        assert digital_twin.version == original_version + 1
+
+
+    def test_update_configuration(self, digital_twin: DigitalTwin):
+        """Test updating the digital twin configuration."""
+        original_config = digital_twin.configuration
+        original_updated_at = digital_twin.last_updated
+        original_version = digital_twin.version
+        time.sleep(0.01)
+
+        new_config_data = {
+            "simulation_granularity_hours": 4,
+            "prediction_models_enabled": ["risk_relapse", "risk_suicide"],
+            "alert_thresholds": {"phq9_change": 4.0}
         }
-        original_serotonin = self.digital_twin.current_state.neurotransmitter.serotonin_level
-        original_dopamine = self.digital_twin.current_state.neurotransmitter.dopamine_level
-        original_norepinephrine_sensitivity = self.digital_twin.current_state.neurotransmitter.norepinephrine_receptor_sensitivity
-        self.digital_twin._update_neurotransmitter_state(neurotransmitter_data)
-        # Verify updates
-        assert self.digital_twin.current_state.neurotransmitter.serotonin_level == 0.3
-        assert self.digital_twin.current_state.neurotransmitter.serotonin_receptor_sensitivity == 0.4
-        assert self.digital_twin.current_state.neurotransmitter.dopamine_level == 0.2
-        assert self.digital_twin.current_state.neurotransmitter.norepinephrine_receptor_sensitivity == 0.1
-        # Verify unchanged values remain the same
-        assert self.digital_twin.current_state.neurotransmitter.dopamine_receptor_sensitivity == self.initial_state.neurotransmitter.dopamine_receptor_sensitivity
-        assert self.digital_twin.current_state.neurotransmitter.norepinephrine_level == self.initial_state.neurotransmitter.norepinephrine_level
 
-    def test_psychological_update(self):
-        """Test updating psychological state."""
-        psychological_data = {
-            "mood": {
-                "valence": 0.1,
-                "arousal": 0.3,
-                "stability": 0.5
-            },
-            "anxiety": {
-                "level": 0.3
-            },
-            "thought_patterns": {
-                "rumination": 0.2
-            }
+        digital_twin.update_configuration(new_config_data)
+
+        assert digital_twin.configuration.simulation_granularity_hours == 4
+        assert digital_twin.configuration.prediction_models_enabled == ["risk_relapse", "risk_suicide"]
+        assert digital_twin.configuration.alert_thresholds == {"phq9_change": 4.0}
+        # Check unchanged config value
+        assert digital_twin.configuration.data_sources_enabled == original_config.data_sources_enabled
+        assert digital_twin.last_updated > original_updated_at
+        assert digital_twin.version == original_version + 1
+
+    def test_update_configuration_partial(self, digital_twin: DigitalTwin):
+        """Test partially updating the digital twin configuration."""
+        original_granularity = digital_twin.configuration.simulation_granularity_hours
+        original_updated_at = digital_twin.last_updated
+        original_version = digital_twin.version
+        time.sleep(0.01)
+
+        new_config_data = {
+            "prediction_models_enabled": ["risk_hospitalization"],
         }
-        self.digital_twin._update_psychological_state(psychological_data)
-        # Verify updates
-        assert self.digital_twin.current_state.psychological.mood_valence == 0.1
-        assert self.digital_twin.current_state.psychological.mood_arousal == 0.3
-        assert self.digital_twin.current_state.psychological.mood_stability == 0.5
-        assert self.digital_twin.current_state.psychological.anxiety_level == 0.3
-        assert self.digital_twin.current_state.psychological.rumination == 0.2
-        # Verify unchanged values remain the same
-        assert self.digital_twin.current_state.psychological.stress_reactivity == self.initial_state.psychological.stress_reactivity
-        assert self.digital_twin.current_state.psychological.anhedonia == self.initial_state.psychological.anhedonia
+        digital_twin.update_configuration(new_config_data)
 
-    def test_behavioral_update(self):
-        """Test updating behavioral state."""
-        behavioral_data = {
-            "activity": {
-                "level": 0.2,
-                "psychomotor_changes": 0.1
-            },
-            "sleep": {
-                "quality": 0.7,
-                "duration": 7.5
-            },
-            "appetite": {
-                "level": 0.1
-            }
+        assert digital_twin.configuration.prediction_models_enabled == ["risk_hospitalization"]
+        assert digital_twin.configuration.simulation_granularity_hours == original_granularity # Unchanged
+        assert digital_twin.last_updated > original_updated_at
+        assert digital_twin.version == original_version + 1
+
+    def test_update_configuration_invalid_key(self, digital_twin: DigitalTwin):
+        """Test updating configuration with an invalid key."""
+        original_config_dict = digital_twin.configuration.__dict__.copy()
+        original_updated_at = digital_twin.last_updated
+        original_version = digital_twin.version
+        time.sleep(0.01)
+
+        new_config_data = {
+            "invalid_config_key": "some_value",
+            "simulation_granularity_hours": 8 # Include a valid key
         }
-        self.digital_twin._update_behavioral_state(behavioral_data)
-        # Verify updates
-        assert self.digital_twin.current_state.behavioral.activity_level == 0.2
-        assert self.digital_twin.current_state.behavioral.psychomotor_changes == 0.1
-        assert self.digital_twin.current_state.behavioral.sleep_quality == 0.7
-        assert self.digital_twin.current_state.behavioral.sleep_duration == 7.5
-        assert self.digital_twin.current_state.behavioral.appetite_level == 0.1
-        # Verify unchanged values remain the same
-        assert self.digital_twin.current_state.behavioral.circadian_rhythm == self.initial_state.behavioral.circadian_rhythm
-        assert self.digital_twin.current_state.behavioral.weight_changes == self.initial_state.behavioral.weight_changes
-        assert self.digital_twin.current_state.behavioral.social_engagement == self.initial_state.behavioral.social_engagement
+        digital_twin.update_configuration(new_config_data)
 
-    def test_cognitive_update(self):
-        """Test updating cognitive state."""
-        cognitive_data = {
-            "attention": {
-                "level": 0.7,
-                "concentration": 0.6
-            },
-            "memory": {
-                "working_memory": 0.7,
-                "long_term_memory": 0.8
-            },
-            "executive_function": {
-                "level": 0.6,
-                "decision_making": 0.5
-            }
-        }
-        self.digital_twin._update_cognitive_state(cognitive_data)
-        # Verify updates
-        assert self.digital_twin.current_state.cognitive.attention_level == 0.7
-        assert self.digital_twin.current_state.cognitive.concentration == 0.6
-        assert self.digital_twin.current_state.cognitive.working_memory == 0.7
-        assert self.digital_twin.current_state.cognitive.long_term_memory == 0.8
-        assert self.digital_twin.current_state.cognitive.executive_function == 0.6
-        assert self.digital_twin.current_state.cognitive.decision_making == 0.5
-        # Verify unchanged values remain the same
-        assert self.digital_twin.current_state.cognitive.processing_speed == self.initial_state.cognitive.processing_speed
-        assert self.digital_twin.current_state.cognitive.cognitive_flexibility == self.initial_state.cognitive.cognitive_flexibility
-        assert self.digital_twin.current_state.cognitive.insight == self.initial_state.cognitive.insight
+        # Check valid key was updated
+        assert digital_twin.configuration.simulation_granularity_hours == 8
+        # Check other keys remain unchanged
+        assert digital_twin.configuration.prediction_models_enabled == original_config_dict["prediction_models_enabled"]
+        # Check timestamp and version updated
+        assert digital_twin.last_updated > original_updated_at
+        assert digital_twin.version == original_version + 1
 
-    def test_update_patient_state(
-        self):
-        assert isinstance(self.digital_twin.temporal_dynamics, TemporalDynamics)
-        assert self.digital_twin.components["treatment_history"] == self.treatment_history
+    def test_touch_method(self, digital_twin: DigitalTwin):
+        """Test the touch method updates timestamp and version."""
+        original_updated_at = digital_twin.last_updated
+        original_version = digital_twin.version
+        time.sleep(0.01) # Ensure time difference
 
-def create_mock_user(user_id=None):
-    # ... existing code ...
-    pass # Add pass or actual implementation if needed
+        digital_twin.touch()
 
-if __name__ == '__main__':
-    unittest.main()
+        assert digital_twin.last_updated > original_updated_at
+        assert digital_twin.version == original_version + 1
+
+    # Removed tests related to old state structure and non-existent methods
+    # (e.g., _update_neurotransmitter_state, detect_patterns, calibrate, evaluate_accuracy)

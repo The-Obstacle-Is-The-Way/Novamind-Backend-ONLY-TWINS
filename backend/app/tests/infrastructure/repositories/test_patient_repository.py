@@ -8,63 +8,72 @@ import pytest
 from uuid import uuid4, UUID
 from datetime import datetime
 from typing import List, Optional
+from unittest.mock import MagicMock # Import MagicMock
 
 from app.domain.entities.patient import Patient
-from app.infrastructure.persistence.sqlalchemy.patient_repository import PatientRepository
+# Import the concrete implementation and the required dependency interface
+from app.infrastructure.persistence.sqlalchemy.patient_repository import SQLAlchemyPatientRepository
+from app.core.services.security.encryption_interface import BaseEncryptionService
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
+
 class TestPatientRepository:
-    """Tests for the PatientRepository."""
+    """Tests for the SQLAlchemyPatientRepository."""
 
     def setup_method(self):
         """Set up test fixtures before each test method."""
         self.mock_db = MockAsyncSession()
-        self.repository = PatientRepository(self.mock_db)
+        # Create a mock encryption service
+        self.mock_encryption_service = MagicMock(spec=BaseEncryptionService)
+        # Instantiate the correct repository with both dependencies
+        self.repository = SQLAlchemyPatientRepository(self.mock_db, self.mock_encryption_service)
 
-        # Create sample patients for testing
+        # Create sample patients for testing using the correct Patient dataclass fields
         self.patient_1 = self._create_test_patient(
-            first_name="John",
-            last_name="Doe",
+            name="John Doe",
             date_of_birth=datetime(1980, 1, 15),
+            gender="Male", # Gender is required by Patient dataclass
             email="john.doe@example.com"
         )
 
         self.patient_2 = self._create_test_patient(
-            first_name="Jane",
-            last_name="Smith",
+            name="Jane Smith",
             date_of_birth=datetime(1985, 5, 20),
+            gender="Female",
             email="jane.smith@example.com"
         )
 
         self.patient_3 = self._create_test_patient(
-            first_name="Robert",
-            last_name="Johnson",
+            name="Robert Johnson",
             date_of_birth=datetime(1975, 10, 8),
+            gender="Male",
             email="robert.johnson@example.com"
         )
 
     def _create_test_patient(
         self,
-        first_name: str,
-        last_name: str,
+        name: str, # Use 'name' instead of first/last
         date_of_birth: datetime,
+        gender: str, # Add gender
         email: str,
-        patient_id: Optional[UUID] = None
+        patient_id: Optional[UUID] = None,
+        **kwargs # Allow extra args for flexibility if needed later
     ) -> Patient:
         """Create a test patient entity for testing."""
+        # Use Patient dataclass fields
         return Patient(
             id=patient_id or uuid4(),
-            first_name=first_name,
-            last_name=last_name,
+            name=name,
             date_of_birth=date_of_birth,
+            gender=gender,
             email=email,
-            phone_number="555-123-4567",
-            address="123 Main St",
-            city="Anytown",
-            state="CA",
-            zip_code="94321",
-            is_active=True,
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+            phone="555-123-4567", # Example phone
+            address="123 Main St, Anytown, CA 94321", # Example address string
+            # medical_history=[], # Add defaults if needed by tests
+            # medications=[],
+            # allergies=[],
+            # treatment_notes=[],
+            created_at=datetime.now(), # Add default if not handled by __post_init__
+            updated_at=datetime.now()  # Add default if not handled by __post_init__
         )
 
     @pytest.mark.asyncio
@@ -117,10 +126,25 @@ class TestPatientRepository:
         # Configure mock to track update operation
         self.mock_db._committed_objects = []
 
-        # Make a copy of the patient with updated information
-        updated_patient = self.patient_1
-        updated_patient.first_name = "Jonathan"
-        updated_patient.email = "jonathan.doe@example.com"
+        # Create a new patient instance for update to avoid modifying the fixture directly
+        # Ensure all required fields are present
+        updated_patient_data = {
+             "id": self.patient_1.id,
+             "name": "Jonathan Doe", # Updated name
+             "date_of_birth": self.patient_1.date_of_birth,
+             "gender": self.patient_1.gender,
+             "email": "jonathan.doe@example.com", # Updated email
+             "phone": self.patient_1.phone,
+             "address": self.patient_1.address,
+             "medical_history": self.patient_1.medical_history,
+             "medications": self.patient_1.medications,
+             "allergies": self.patient_1.allergies,
+             "treatment_notes": self.patient_1.treatment_notes,
+             "created_at": self.patient_1.created_at,
+             "updated_at": datetime.now() # Update timestamp
+        }
+        updated_patient = Patient(**updated_patient_data)
+
 
         # Update patient
         result = await self.repository.update(updated_patient)
@@ -128,7 +152,7 @@ class TestPatientRepository:
         # Verify patient was updated and committed
         assert updated_patient in self.mock_db._committed_objects
         assert result == updated_patient
-        assert result.first_name == "Jonathan"
+        assert result.name == "Jonathan Doe" # Check updated name
         assert result.email == "jonathan.doe@example.com"
 
     @pytest.mark.asyncio
