@@ -7,6 +7,7 @@ HIPAA compliance and security considerations.
 """
 
 import json
+import uuid
 import logging
 import os
 import re
@@ -23,6 +24,7 @@ from app.core.services.ml.xgboost.interface import (
     Observer,
     PrivacyLevel
 )
+from app.core.services.ml.xgboost.enums import RiskLevel
 from app.core.services.ml.xgboost.exceptions import (
     ValidationError,
     DataPrivacyError,
@@ -144,6 +146,14 @@ class AWSXGBoostService(XGBoostInterface):
             
             # Initialize AWS clients
             self._initialize_aws_clients()
+            # Validate AWS resources: DynamoDB table, S3 bucket, and SageMaker access
+            try:
+                self._validate_aws_services()
+            except botocore.exceptions.ClientError as e:
+                msg = e.response.get("Error", {}).get("Message", str(e))
+                raise ServiceConfigurationError(
+                    f"AWS configuration validation failed: {msg}",
+                ) from e
             
             # Mark as initialized
             self._initialized = True
@@ -206,13 +216,28 @@ class AWSXGBoostService(XGBoostInterface):
                 del self._observers[event_key]
             self._logger.debug(f"Observer unregistered for event type {event_type}")
     
+    def _validate_prediction_params(self, risk_type: ModelType, patient_id: str, clinical_data: Dict[str, Any]) -> None:
+        """
+        Validate parameters for risk prediction.
+        Raises ValidationError for invalid inputs.
+        """
+        # Check risk type is a valid risk model
+        if not isinstance(risk_type, ModelType) or not risk_type.name.startswith("RISK_"):
+            raise ValidationError(f"Invalid risk type: {risk_type}", field="risk_type", value=risk_type)
+        # Patient ID must be provided
+        if not patient_id:
+            raise ValidationError("Patient ID cannot be empty", field="patient_id", value=patient_id)
+        # Clinical data must be a dict
+        if not isinstance(clinical_data, dict):
+            raise ValidationError("Clinical data must be provided", field="clinical_data", value=clinical_data)
+
     def predict_risk(
         self,
         patient_id: str,
-        risk_type: str,
+        risk_type: ModelType,
         clinical_data: Dict[str, Any],
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> Any:
         """
         Predict risk level using a risk model.
         
@@ -237,60 +262,79 @@ class AWSXGBoostService(XGBoostInterface):
         # Validate parameters
         self._validate_prediction_params(risk_type, patient_id, clinical_data)
         
-        # Add additional parameters to input data
+        # Prepare input data for invocation
+        time_frame_days = kwargs.get("time_frame_days", 30)
         input_data = {
             "patient_id": patient_id,
             "clinical_data": clinical_data,
-            "time_frame_days": kwargs.get("time_frame_days", 30)
+            "time_frame_days": time_frame_days
         }
-        
+        # Determine endpoint name: prefix + normalized risk type
+        endpoint_name = f"{self._endpoint_prefix}{risk_type.name.lower()}"
+        # Ensure endpoint exists and is in service
         try:
-            # Get endpoint name for this risk type
-            endpoint_name = self._get_endpoint_name(f"risk-{risk_type}")
-            
-            # Invoke SageMaker endpoint for prediction
-            result = self._invoke_endpoint(endpoint_name, input_data)
-            
-            # Add predictionId and timestamp if not provided
-            if "prediction_id" not in result:
-                result["prediction_id"] = f"risk-{int(time.time())}-{patient_id[:8]}"
-            
-            if "timestamp" not in result:
-                result["timestamp"] = datetime.now().isoformat()
-            
-            # Notify observers
-            self._notify_observers(EventType.PREDICTION, {
-                "prediction_type": "risk",
-                "risk_type": risk_type,
-                "patient_id": patient_id,
-                "prediction_id": result["prediction_id"]
-            })
-            
-            return result
-        
+            desc = self._sagemaker.describe_endpoint(EndpointName=endpoint_name)
         except botocore.exceptions.ClientError as e:
-            error_code = e.response.get("Error", {}).get("Code", "Unknown")
-            error_message = e.response.get("Error", {}).get("Message", str(e))
-            
-            self._logger.error(f"AWS client error during risk prediction: {error_code} - {error_message}")
-            
-            if error_code == "ModelError":
-                raise PredictionError(
-                    f"Model prediction failed: {error_message}",
-                    model_type=f"risk-{risk_type}"
-                ) from e
-            elif error_code == "ValidationError":
-                raise ValidationError(
-                    f"Invalid prediction parameters: {error_message}",
-                    details=str(e)
-                ) from e
-            else:
-                raise ServiceConnectionError(
-                    f"Failed to connect to AWS services: {error_message}",
-                    service="SageMaker",
-                    error_type=error_code,
-                    details=str(e)
-                ) from e
+            # No such endpoint
+            raise ModelNotFoundError(f"No model available for {risk_type.name.lower()}") from e
+        if desc.get("EndpointStatus") != "InService":
+            raise ServiceConnectionError(f"Endpoint {endpoint_name} not in service")
+        # Invoke SageMaker runtime
+        try:
+            response = self._sagemaker_runtime.invoke_endpoint(
+                EndpointName=endpoint_name,
+                ContentType="application/json",
+                Body=json.dumps(input_data)
+            )
+        except botocore.exceptions.ClientError as e:
+            # Invocation failed
+            err_msg = e.response.get("Error", {}).get("Message", str(e))
+            raise ServiceConnectionError(f"Failed to invoke endpoint: {err_msg}") from e
+        # Parse result
+        body = response.get("Body")
+        raw = json.loads(body.read().decode("utf-8"))
+        # Build result object
+        score = raw.get("risk_score")
+        confidence = raw.get("confidence")
+        factors = raw.get("contributing_factors", [])
+        # Determine risk level based on score
+        if score is None:
+            raise PredictionError("Missing risk_score in response")
+        if score < 0.2:
+            risk_level = RiskLevel.VERY_LOW
+        elif score < 0.4:
+            risk_level = RiskLevel.LOW
+        elif score < 0.6:
+            risk_level = RiskLevel.MODERATE
+        elif score < 0.8:
+            risk_level = RiskLevel.HIGH
+        else:
+            risk_level = RiskLevel.VERY_HIGH
+        # Generate prediction ID
+        pred_id = str(uuid.uuid4())
+        # Assemble final result
+        result = {
+            "prediction_id": pred_id,
+            "patient_id": patient_id,
+            "prediction_type": risk_type,
+            "risk_level": risk_level,
+            "risk_score": score,
+            "confidence": confidence,
+            "time_frame_days": time_frame_days,
+            "contributing_factors": factors
+        }
+        # Store prediction record
+        self._predictions_table.put_item(Item=result)
+        # Notify observers
+        self._notify_observers(EventType.PREDICTION, {
+            "prediction_type": "risk",
+            "risk_type": risk_type,
+            "patient_id": patient_id,
+            "prediction_id": pred_id
+        })
+        # Return as object for attribute access
+        from types import SimpleNamespace
+        return SimpleNamespace(**result)
     
     def predict_treatment_response(
         self,
@@ -760,19 +804,19 @@ class AWSXGBoostService(XGBoostInterface):
         Raises:
             ConfigurationError: If required parameters are missing or invalid
         """
-        # Check required parameters
-        required_params = ["region_name", "endpoint_prefix", "bucket_name"]
+        # Check required configuration parameters
+        required_params = ["region_name", "endpoint_prefix", "dynamodb_table", "s3_bucket"]
         for param in required_params:
             if param not in config:
                 raise ConfigurationError(
-                    f"Missing required AWS parameter: {param}",
+                    f"Missing required AWS configuration parameter: {param}",
                     field=param
                 )
-        
         # Set configuration values
         self._region_name = config["region_name"]
         self._endpoint_prefix = config["endpoint_prefix"]
-        self._bucket_name = config["bucket_name"]
+        self._dynamodb_table_name = config["dynamodb_table"]
+        self._bucket_name = config["s3_bucket"]
         
         # Set model mappings if provided
         if "model_mappings" in config:
@@ -839,6 +883,27 @@ class AWSXGBoostService(XGBoostInterface):
                 error_type="UnexpectedError",
                 details=str(e)
             ) from e
+    
+    def _validate_aws_services(self) -> None:
+        """
+        Validate AWS resources: DynamoDB table, S3 bucket, and SageMaker endpoints.
+        Raises:
+            botocore.exceptions.ClientError: If validation calls to AWS services fail
+        """
+        # Validate DynamoDB table accessibility
+        dynamodb_res = boto3.resource(
+            "dynamodb",
+            region_name=self._region_name
+        )
+        table = dynamodb_res.Table(self._dynamodb_table_name)
+        # Persist table for later operations
+        self._predictions_table = table
+        # Ensure table exists and is accessible
+        table.scan()
+        # Validate S3 bucket accessibility
+        self._s3.head_bucket(Bucket=self._bucket_name)
+        # Validate SageMaker endpoint listing
+        self._sagemaker.list_endpoints()
     
     def _get_endpoint_name(self, model_type: str) -> str:
         """

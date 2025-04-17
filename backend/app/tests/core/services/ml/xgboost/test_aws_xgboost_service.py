@@ -88,13 +88,12 @@ def aws_xgboost_service(mock_aws_clients):
     # Config matching the defaults set in AWSXGBoostService.initialize for tests
     config = {
         'region_name': 'us-east-1',
-        'endpoint_prefix': 'test-endpoint', # Match test default in initialize
-        'bucket_name': 'test-bucket',       # Match test default in initialize
-        'model_mappings': {'mock-model': 'test-endpoint'}, # Match test default
-        'privacy_level': PrivacyLevel.STANDARD,           # Match test default
+        'endpoint_prefix': 'xgboost-',  # Use xgboost prefix for tests
+        'model_mappings': {'mock-model': 'xgboost'}, # Dummy mapping if needed
+        'privacy_level': PrivacyLevel.STANDARD,
         'log_level': 'INFO',
-        'dynamodb_table': 'predictions', # Keep original fixture value if needed, or use test default
-        's3_bucket': 'xgboost-models',   # Keep original fixture value if needed, or use test default
+        'dynamodb_table': 'predictions',
+        's3_bucket': 'xgboost-models',
         # Add audit_table_name if required by _validate_aws_config
         # 'audit_table_name': 'test-audit-table'
     }

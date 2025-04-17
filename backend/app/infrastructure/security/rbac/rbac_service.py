@@ -9,7 +9,7 @@ import logging
 from typing import List, Optional, Set
 
 # Use relative import within the same package
-from .roles import Role, ROLE_PERMISSIONS, has_permission as check_role_has_permission
+from .roles import Role, ROLE_PERMISSIONS
 
 # Assuming User entity might be needed for context later
 # from app.domain.entities.user import User 
@@ -42,8 +42,11 @@ class RBACService:
         if not user_roles:
             return False
             
-        # Delegate to the check function from roles.py for consistency
-        has_perm = check_role_has_permission(user_roles, required_permission)
+        # Check against the ROLE_PERMISSIONS mapping, allowing dynamic overrides
+        has_perm = any(
+            required_permission in ROLE_PERMISSIONS.get(role, [])
+            for role in user_roles
+        )
         
         # Future: Implement context-aware checks here if needed 
         # (e.g., checking resource ownership for 'own_' permissions)
