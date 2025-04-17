@@ -65,6 +65,9 @@ class Neurotransmitter(Enum):
 class ClinicalSignificance(Enum):
     """Clinical significance levels for neurotransmitter effects."""
     NONE = "none"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
     MINIMAL = "minimal"
     MILD = "mild"
     MODERATE = "moderate"
@@ -134,6 +137,8 @@ class TemporalResolution(Enum):
 class ClinicalInsight(Enum):
     """Clinical insights derived from digital twin analysis."""
     TREATMENT_RESPONSE = "treatment_response"
+    SYMPTOM_TRAJECTORY = "symptom_trajectory"
+    NEUROTRANSMITTER_IMBALANCE = "neurotransmitter_imbalance"
     RELAPSE_RISK = "relapse_risk"
     SIDE_EFFECT_PROFILE = "side_effect_profile"
     THERAPEUTIC_WINDOW = "therapeutic_window"

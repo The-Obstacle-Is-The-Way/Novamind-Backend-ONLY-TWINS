@@ -5,7 +5,8 @@ This factory is responsible for creating and wiring up the enhanced mock impleme
 of the Digital Twin core service and its dependencies (MentalLLaMA, XGBoost, PAT).
 """
 import logging
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict
+from uuid import UUID
 
 from app.domain.services.enhanced_digital_twin_core_service import EnhancedDigitalTwinCoreService
 from app.domain.services.enhanced_mentalllama_service import EnhancedMentalLLaMAService
@@ -63,6 +64,12 @@ class MockEnhancedMentalLLaMAService(EnhancedMentalLLaMAService):
     async def integrate_with_belief_network(self, *args, **kwargs):
         logger.info("MockEnhancedMentalLLaMAService.integrate_with_belief_network called")
         return {}
+    
+    async def generate_insight_explanation(self, patient_id: UUID, insight: Dict, detail_level: str) -> Dict:
+        """Stub for generating explanations for clinical insights."""
+        logger.info("MockEnhancedMentalLLaMAService.generate_insight_explanation called")
+        # Provide a non-empty explanation for test compatibility
+        return {"explanation": "This is a detailed insight explanation."}
 
 
 class MockEnhancedXGBoostService(EnhancedXGBoostService):
@@ -142,6 +149,16 @@ class MockEnhancedXGBoostService(EnhancedXGBoostService):
     async def integrate_with_knowledge_graph(self, *args, **kwargs):
         logger.info("MockEnhancedXGBoostService.integrate_with_knowledge_graph called")
         return {}
+    
+    async def simulate_treatment_cascade(self, *args, **kwargs) -> Dict:
+        """Stub for simulating treatment cascade effects."""
+        logger.info("MockEnhancedXGBoostService.simulate_treatment_cascade called")
+        return {"direct_effects": {}, "indirect_effects": [{}]}
+    
+    async def predict_treatment_response(self, *args, **kwargs) -> Dict:
+        """Stub for predicting treatment response via XGBoost."""
+        logger.info("MockEnhancedXGBoostService.predict_treatment_response called")
+        return {"predicted_response": 0.5, "confidence": 1.0, "timeframe_days": 7}
 
 
 class MockEnhancedPATService(EnhancedPATService):

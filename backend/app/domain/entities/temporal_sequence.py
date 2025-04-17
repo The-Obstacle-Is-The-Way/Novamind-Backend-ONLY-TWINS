@@ -171,6 +171,13 @@ class TemporalSequence(Generic[T]):
         Get the number of timestamps in the sequence.
         """
         return self._sequence_length
+    
+    @property
+    def id(self) -> UUID:
+        """
+        Alias for sequence identifier to support 'id' attribute access.
+        """
+        return self.sequence_id
         
     @property
     def feature_dimension(self) -> int:

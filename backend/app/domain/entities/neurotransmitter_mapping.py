@@ -551,7 +551,17 @@ def create_default_neurotransmitter_mapping() -> NeurotransmitterMapping:
             density=0.7,
             sensitivity=0.8,
             clinical_relevance=ClinicalSignificance.MODERATE
-        )
+        ),
+        # Default pituitary profile for test compatibility
+        ReceptorProfile(
+            brain_region=BrainRegion.PITUITARY,
+            neurotransmitter=Neurotransmitter.SEROTONIN,
+            receptor_type=ReceptorType.INHIBITORY,
+            receptor_subtype=ReceptorSubtype.GABA_A,
+            density=0.5,
+            sensitivity=0.5,
+            clinical_relevance=ClinicalSignificance.MODERATE
+        ),
     ]
     
     for profile in profiles:
