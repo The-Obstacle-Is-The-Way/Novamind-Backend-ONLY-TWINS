@@ -438,10 +438,10 @@ async def test_check_rate_limit_redis_with_user_id(distributed_rate_limiter: Red
     assert info["remaining"] == config.requests_per_period - 1
     assert "reset_at" in info
     mock_redis_client.pipeline.assert_called_once()
-        # Check that the key used in redis calls includes the user_id and limit_type
-        pipeline_mock.zadd.assert_called_once()
-        zadd_args, _ = pipeline_mock.zadd.call_args
-        assert zadd_args[0] == combined_key
+    # Check that the key used in redis calls includes the user_id and limit_type
+    pipeline_mock.zadd.assert_called_once()
+    zadd_args, _ = pipeline_mock.zadd.call_args
+    assert zadd_args[0] == combined_key
 
 
 def test_rate_limit_config_override_redis(redis_rate_limiter: RedisRateLimiter, mock_redis: MagicMock):
