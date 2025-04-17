@@ -15,9 +15,11 @@ class ModelType(str, Enum):
     """Types of XGBoost models available in the service."""
     
     RISK = "risk"
-    RISK_RELAPSE = "relapse-risk"
-    RISK_SUICIDE = "suicide-risk"
-    RISK_HOSPITALIZATION = "hospitalization-risk"
+    RISK_RELAPSE = "risk_relapse"
+    RISK_SUICIDE = "risk_suicide"
+    RISK_HOSPITALIZATION = "risk_hospitalization"
+    # Generic alias for medication treatment response (used in tests)
+    TREATMENT_RESPONSE_MEDICATION = "treatment_response_medication"
     TREATMENT_MEDICATION_SSRI = "medication_ssri-response"
     TREATMENT_MEDICATION_SNRI = "medication_snri-response"
     TREATMENT_MEDICATION_ATYPICAL = "medication_atypical-response"

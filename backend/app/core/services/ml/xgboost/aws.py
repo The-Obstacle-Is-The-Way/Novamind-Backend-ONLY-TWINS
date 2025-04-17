@@ -32,7 +32,8 @@ from app.core.services.ml.xgboost.exceptions import (
     ModelNotFoundError,
     PredictionError,
     ServiceConnectionError,
-    ConfigurationError
+    ConfigurationError,
+    ServiceConfigurationError
 )
 
 
@@ -235,7 +236,8 @@ class AWSXGBoostService(XGBoostInterface):
         self,
         patient_id: str,
         risk_type: ModelType,
-        clinical_data: Dict[str, Any],
+        features: Dict[str, Any],
+        time_frame_days: Optional[int] = None,
         **kwargs
     ) -> Any:
         """
@@ -260,14 +262,14 @@ class AWSXGBoostService(XGBoostInterface):
         self._ensure_initialized()
         
         # Validate parameters
-        self._validate_prediction_params(risk_type, patient_id, clinical_data)
+        self._validate_prediction_params(risk_type, patient_id, features)
         
         # Prepare input data for invocation
-        time_frame_days = kwargs.get("time_frame_days", 30)
+        tf_days = time_frame_days if time_frame_days is not None else kwargs.get("time_frame_days", 30)
         input_data = {
             "patient_id": patient_id,
-            "clinical_data": clinical_data,
-            "time_frame_days": time_frame_days
+            "clinical_data": features,
+            "time_frame_days": tf_days
         }
         # Determine endpoint name: prefix + normalized risk type
         endpoint_name = f"{self._endpoint_prefix}{risk_type.name.lower()}"
@@ -320,7 +322,7 @@ class AWSXGBoostService(XGBoostInterface):
             "risk_level": risk_level,
             "risk_score": score,
             "confidence": confidence,
-            "time_frame_days": time_frame_days,
+            "time_frame_days": tf_days,
             "contributing_factors": factors
         }
         # Store prediction record
@@ -1528,31 +1530,6 @@ class AWSXGBoostService(XGBoostInterface):
                 except Exception as e:
                     self._logger.error(f"Error notifying wildcard observer: {e}")
     
-    def _validate_prediction_params(
-        self,
-        prediction_type: str,
-        patient_id: str,
-        clinical_data: Dict[str, Any]
-    ) -> None:
-        """
-        Validate prediction parameters.
-        
-        Args:
-            prediction_type: Type of prediction
-            patient_id: Patient identifier
-            clinical_data: Clinical data
-            
-        Raises:
-            ValidationError: If parameters are invalid
-        """
-        if not patient_id:
-            raise ValidationError("Patient ID cannot be empty", field="patient_id")
-        
-        if not prediction_type:
-            raise ValidationError("Prediction type cannot be empty", field="prediction_type")
-        
-        if not clinical_data:
-            raise ValidationError("Clinical data cannot be empty", field="clinical_data")
     
     def _validate_outcome_params(
         self,
@@ -1645,3 +1622,127 @@ class AWSXGBoostService(XGBoostInterface):
             raise ConfigurationError(
                 "XGBoost service not initialized. Call initialize() first."
             )
+    
+    def get_prediction(self, prediction_id: str) -> Any:
+        """
+        Retrieve a stored prediction by its ID from DynamoDB.
+        Raises ResourceNotFoundError or ServiceConnectionError.
+        """
+        self._ensure_initialized()
+        try:
+            resp = self._predictions_table.get_item(Key={"prediction_id": prediction_id})
+        except botocore.exceptions.ClientError as e:
+            raise ServiceConnectionError("Failed to retrieve prediction") from e
+        item = resp.get("Item")
+        if not item:
+            raise ResourceNotFoundError(f"Prediction {prediction_id} not found", resource_type="prediction", resource_id=prediction_id)
+        # Convert to object with attributes
+        # Parse enums
+        pt_val = item.get("prediction_type")
+        try:
+            pt_enum = ModelType(pt_val)
+        except Exception:
+            pt_enum = pt_val
+        rl_val = item.get("risk_level")
+        try:
+            rl_enum = RiskLevel(rl_val)
+        except Exception:
+            rl_enum = rl_val
+        # Assemble result
+        result = {
+            "prediction_id": item.get("prediction_id"),
+            "patient_id": item.get("patient_id"),
+            "prediction_type": pt_enum,
+            "risk_level": rl_enum,
+            "risk_score": item.get("risk_score"),
+            "confidence": item.get("confidence"),
+            # keep other fields if necessary
+        }
+        from types import SimpleNamespace
+        return SimpleNamespace(**result)
+
+    def validate_prediction(self, prediction_id: str, status: str, validator_notes: Optional[str] = None) -> bool:
+        """
+        Validate or update the status of a prediction.
+        Calls internal update method.
+        """
+        self._ensure_initialized()
+        updates = {"validation_status": status}
+        if validator_notes is not None:
+            updates["validator_notes"] = validator_notes
+        # Delegate to update function
+        self._update_prediction(prediction_id, updates)
+        return True
+
+    def _update_prediction(self, prediction_id: str, updates: Dict[str, Any]) -> None:
+        """
+        Internal method to update a prediction record in DynamoDB.
+        """
+        try:
+            expr = ", ".join(f"#{k}=:{k}" for k in updates.keys())
+            expr = f"SET {expr}"
+            names = {f"#{k}": k for k in updates.keys()}
+            values = {f":{k}": v for k, v in updates.items()}
+            self._predictions_table.update_item(
+                Key={"prediction_id": prediction_id},
+                UpdateExpression=expr,
+                ExpressionAttributeNames=names,
+                ExpressionAttributeValues=values
+            )
+        except botocore.exceptions.ClientError as e:
+            code = e.response.get("Error", {}).get("Code", "")
+            if code == "ResourceNotFoundException":
+                raise ResourceNotFoundError(f"Prediction {prediction_id} not found", resource_type="prediction", resource_id=prediction_id) from e
+            else:
+                raise ServiceConnectionError(f"Failed to update prediction: {e.response.get('Error', {}).get('Message', str(e))}") from e
+
+    def healthcheck(self) -> Dict[str, Any]:
+        """
+        Perform health check for AWS resources and endpoints.
+        Returns status dict.
+        """
+        self._ensure_initialized()
+        components: Dict[str, Any] = {}
+        # DynamoDB
+        try:
+            self._predictions_table.scan()
+            components["dynamodb"] = {"status": "healthy"}
+        except botocore.exceptions.ClientError as e:
+            components["dynamodb"] = {"status": "unhealthy", "error": e.response.get("Error", {}).get("Message", str(e))}
+        # S3
+        try:
+            self._s3.head_bucket(Bucket=self._bucket_name)
+            components["s3"] = {"status": "healthy"}
+        except botocore.exceptions.ClientError as e:
+            components["s3"] = {"status": "unhealthy", "error": e.response.get("Error", {}).get("Message", str(e))}
+        # SageMaker
+        models: Dict[str, str] = {}
+        try:
+            resp = self._sagemaker.list_endpoints()
+            components["sagemaker"] = {"status": "healthy"}
+            for ep in resp.get("Endpoints", []):
+                name = ep.get("EndpointName", "")
+                status = ep.get("EndpointStatus", "")
+                # strip prefix
+                key = name[len(self._endpoint_prefix):] if name.startswith(self._endpoint_prefix) else name
+                if status == "InService":
+                    models[key] = "active"
+                elif status == "Updating":
+                    models[key] = "updating"
+                else:
+                    models[key] = "error"
+        except botocore.exceptions.ClientError as e:
+            components["sagemaker"] = {"status": "unhealthy", "error": e.response.get("Error", {}).get("Message", str(e))}
+        # Determine overall status
+        overall = "healthy"
+        if any(c.get("status") == "unhealthy" for c in components.values()):
+            overall = "unhealthy"
+        elif any(state != "active" for state in models.values()):
+            overall = "degraded"
+        result = {
+            "status": overall,
+            "timestamp": datetime.now().isoformat(),
+            "components": components,
+            "models": models
+        }
+        return result
