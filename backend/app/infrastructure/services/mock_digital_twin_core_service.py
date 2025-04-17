@@ -1,96 +1,41 @@
 """
-Mock implementation of DigitalTwinCoreService for testing.
-This is the central orchestrating service that coordinates all components.
+Stub mock implementation of DigitalTwinCoreService for non-enhanced integration tests.
 """
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
-from uuid import UUID, uuid4
-
-from app.domain.entities.digital_twin import ClinicalInsight, DigitalTwinState
-from app.domain.entities.digital_twin_enums import ClinicalSignificance
-from app.domain.repositories.digital_twin_repository import DigitalTwinRepository
-from app.domain.repositories.patient_repository import PatientRepository
+import uuid
+from typing import Dict, Any, List
+from uuid import UUID
 from app.domain.services.digital_twin_core_service import DigitalTwinCoreService
-from app.domain.services.mentalllama_service import MentalLLaMAService
-from app.domain.services.pat_service import PATService
-from app.domain.services.xgboost_service import XGBoostService
 
 
 class MockDigitalTwinCoreService(DigitalTwinCoreService):
-    """
-    Mock implementation of the Digital Twin Core Service.
-    Coordinates interactions between all AI components and repositories.
-    """
+    """Stub Digital Twin Core Service for integration tests."""
     
-    def __init__(
-        self,
-        digital_twin_repository: DigitalTwinRepository,
-        patient_repository: PatientRepository,
-        xgboost_service: XGBoostService,
-        pat_service: PATService,
-        mentalllama_service: MentalLLaMAService
-    ):
-        """
-        Initialize the Digital Twin Core Service with required dependencies.
-        
-        Args:
-            digital_twin_repository: Repository for Digital Twin data
-            patient_repository: Repository for Patient data
-            xgboost_service: XGBoost prediction service
-            pat_service: PAT activity analysis service
-            mentalllama_service: MentalLLaMA NLP service
-        """
+    def __init__(self, digital_twin_repository, patient_repository, *args, **kwargs):
+        """Initialize stub service with repository and patient repository."""
         self._digital_twin_repository = digital_twin_repository
         self._patient_repository = patient_repository
-        self._xgboost_service = xgboost_service
-        self._pat_service = pat_service
-        self._mentalllama_service = mentalllama_service
     
+    class State:
+        def __init__(self, patient_id: UUID, data: Dict[str, Any], version: int = 1):
+            self.id = uuid.uuid4()
+            self.patient_id = patient_id
+            self.version = version
+            self.data = data
+
     async def initialize_digital_twin(
         self,
         patient_id: UUID,
-        initial_data: Optional[Dict] = None
-    ) -> DigitalTwinState:
-        """
-        Initialize a new Digital Twin state for a patient.
-        
-        Args:
-            patient_id: UUID of the patient
-            initial_data: Optional initial data for the Digital Twin
-            
-        Returns:
-            Newly created Digital Twin state
-        """
-        # Check if patient exists
+        include_genetic_data: bool,
+        include_biomarkers: bool
+    ) -> Any:
+        """Stub initialization returns minimal state with brain_state and neurotransmitter_levels."""
         patient = await self._patient_repository.get_by_id(patient_id)
         if not patient:
             raise ValueError(f"Patient with ID {patient_id} not found")
-        
-        # Create empty initial digital twin state
-        # Import needed for UUID
-        from uuid import uuid4
-        from datetime import datetime
-
-        # Import the DigitalTwinState from the digital_twin_enums module
-        from app.domain.entities.digital_twin_enums import DigitalTwinState
-        
-        # Use the factory method to create a new DigitalTwinState
-        initial_state = DigitalTwinState.create(
-            patient_id=patient_id,
-            brain_regions={},
-            neurotransmitters={},
-            clinical_insights=[]
-        )
-        
-        # Add any initial data if provided
-        if initial_data:
-            if "clinical_metrics" in initial_data:
-                initial_state.clinical_metrics = initial_data["clinical_metrics"]
-            if "metadata" in initial_data:
-                initial_state.metadata.update(initial_data["metadata"])
-        
-        # Save the initial state
-        return await self._digital_twin_repository.save(initial_state)
+        data = {"brain_state": {"neurotransmitter_levels": {}}, "treatment_history": []}
+        state = self.State(patient_id, data, version=1)
+        await self._digital_twin_repository.save(state)
+        return state
     
     async def update_from_actigraphy(
         self,
@@ -916,38 +861,73 @@ class MockDigitalTwinCoreService(DigitalTwinCoreService):
         
         return summary
     
-    # Helper methods
-    
-    def _map_clinical_relevance(self, relevance_str: str) -> 'ClinicalSignificance':
-        """Map a string relevance to ClinicalSignificance enum."""
-        relevance_map = {
-            "none": ClinicalSignificance.NONE,
-            "minimal": ClinicalSignificance.MINIMAL,
-            "mild": ClinicalSignificance.MILD,
-            "moderate": ClinicalSignificance.MODERATE,
-            "severe": ClinicalSignificance.SEVERE,
-            "critical": ClinicalSignificance.CRITICAL,
-            "subclinical": ClinicalSignificance.SUBCLINICAL,
-            "uncertain": ClinicalSignificance.UNCERTAIN
+    async def process_treatment_event(
+        self,
+        patient_id: UUID,
+        event_data: Dict[str, Any]
+    ) -> Any:
+        """Stub treatment event processing: appends to treatment_history."""
+        prev = await self._digital_twin_repository.get_latest_state(patient_id)
+        version = (getattr(prev, "version", 1) or 1) + 1
+        data = dict(prev.data)
+        history = list(data.get("treatment_history", []))
+        history.append(event_data)
+        data["treatment_history"] = history
+        state = self.State(patient_id, data, version)
+        await self._digital_twin_repository.save(state)
+        return state
+
+    async def generate_treatment_recommendations(
+        self,
+        patient_id: UUID,
+        consider_current_medications: bool,
+        include_therapy_options: bool
+    ) -> List[Dict[str, Any]]:
+        """Stub recommendations with at least one medication and one therapy."""
+        recs = []
+        recs.append({"type": "medication", "name": "Sertraline", "rationale": "Standard SSRI"})
+        if include_therapy_options:
+            recs.append({"type": "therapy", "name": "Cognitive Behavioral Therapy", "rationale": "Recommended therapy"})
+        return recs
+
+    async def get_visualization_data(
+        self,
+        patient_id: UUID,
+        visualization_type: str
+    ) -> Dict[str, Any]:
+        """Stub visualization: returns brain_model_3d and sample brain_regions."""
+        return {"visualization_type": "brain_model_3d", "brain_regions": [{"id": "AMYGDALA", "activation": 0.5}]}
+
+    async def compare_states(
+        self,
+        patient_id: UUID,
+        state_id_1: UUID,
+        state_id_2: UUID
+    ) -> Dict[str, Any]:
+        """Stub state comparison with minimal brain_state_changes and new_insights."""
+        return {
+            "state_1": {"id": str(state_id_1)},
+            "state_2": {"id": str(state_id_2)},
+            "brain_state_changes": [{"region": "amygdala", "before": 0.1, "after": 0.3, "change": 0.2}],
+            "new_insights": [{"id": "ins1", "title": "New insight"}]
         }
-        return relevance_map.get(relevance_str.lower(), ClinicalSignificance.MODERATE)
-    
-    def _get_significance_factor(self, significance: 'ClinicalSignificance') -> float:
-        """Get a numerical factor based on clinical significance."""
-        significance_map = {
-            ClinicalSignificance.NONE: 0.0,
-            ClinicalSignificance.MINIMAL: 0.2,
-            ClinicalSignificance.MILD: 0.4,
-            ClinicalSignificance.MODERATE: 0.6,
-            ClinicalSignificance.SIGNIFICANT: 0.8,
-            ClinicalSignificance.CRITICAL: 1.0,
-            ClinicalSignificance.POSITIVE: 0.5
+
+    async def generate_clinical_summary(
+        self,
+        patient_id: UUID,
+        include_treatment_history: bool,
+        include_predictions: bool
+    ) -> Dict[str, Any]:
+        """Stub clinical summary with patient info, insights, and history."""
+        patient = await self._patient_repository.get_by_id(patient_id)
+        name = getattr(patient, "full_name", None) or f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip()
+        return {
+            "patient": {"id": str(patient_id), "name": name},
+            "digital_twin_state": {"id": str(uuid.uuid4())},
+            "significant_insights": [{"id": "ins1", "title": "Insight"}],
+            "treatment_recommendations": [],
+            "treatment_history": [{"type": "medication", "name": "Sertraline"}]
         }
-        return significance_map.get(significance, 0.5)
-    
-    def _get_region_coordinates(self, region: 'BrainRegion') -> Dict[str, float]:
-        """Get 3D coordinates for a brain region (mock implementation)."""
-        import random
         
         # This would be replaced with actual neuroanatomical coordinates
         # in a real implementation

@@ -132,6 +132,13 @@ class MockDigitalTwinRepository(DigitalTwinRepository):
         self._storage[patient_id].append(state_copy)
         return state_copy
     
+    # Alias for non-enhanced tests
+    async def get_latest_state(self, patient_id: UUID) -> Optional[DigitalTwinState]:
+        """
+        Retrieve the latest Digital Twin state for a patient (alias for get_latest_for_patient).
+        """
+        return await self.get_latest_for_patient(patient_id)
+    
     async def find_by_clinical_significance(
         self,
         significance_level: str,
