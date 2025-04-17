@@ -33,10 +33,11 @@ from app.core.services.ml.xgboost.exceptions import (
     ValidationError,  # Added for input validation errors
 )
 
-# ModelType might be defined elsewhere or needs clarification
+# ModelType and PrivacyLevel might be defined elsewhere or need clarification
 from app.core.services.ml.xgboost import (
     ModelType,
-)  # Assuming ModelType is correctly here for now
+    PrivacyLevel,
+)  # Assuming ModelType and PrivacyLevel are correctly here for now
 
 # from app.domain.services.xgboost_service import IXGBoostService # Corrected import -> Interface likely removed
 # TODO: Verify if this test is still relevant after IXGBoostService removal/refactor.

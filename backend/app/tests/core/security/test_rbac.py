@@ -132,20 +132,25 @@ class TestRoleBasedAccessControl:
 
     # The patch target needs to be updated to the actual location of ROLE_PERMISSIONS
     # Assuming it's within the RBACService module or RoleManager
-    @mock.patch('app.infrastructure.security.rbac.rbac_service.ROLE_PERMISSIONS', {
-        Role.ADMIN: {"custom:permission"},
-        Role.CLINICIAN: set(),
-        Role.USER: set(),
-        Role.RESEARCHER: set(),
-        Role.SUPERVISOR: set(),
-        Role.SYSTEM: set()
-    }) # VERIFY PATCH TARGET
-    def test_check_permission_with_custom_permissions(self, mock_role_permissions):
+    def test_check_permission_with_custom_permissions(self):
         """Test permission check with custom permissions configuration."""
-        # Admin should have the custom permission
-        assert self.rbac_service.check_permission(self.admin_user.roles, "custom:permission") is True
-        
-        # Other roles should not have the custom permission
-        assert self.rbac_service.check_permission(self.clinician_user.roles, "custom:permission") is False
-        assert self.rbac_service.check_permission(self.patient_user.roles, "custom:permission") is False
-        assert self.rbac_service.check_permission(self.researcher_user.roles, "custom:permission") is False
+        # Temporarily override ROLE_PERMISSIONS for this test
+        import app.infrastructure.security.rbac.rbac_service as rbac_mod
+        original = rbac_mod.ROLE_PERMISSIONS
+        try:
+            rbac_mod.ROLE_PERMISSIONS = {
+                Role.ADMIN: {"custom:permission"},
+                Role.CLINICIAN: set(),
+                Role.USER: set(),
+                Role.RESEARCHER: set(),
+                Role.SUPERVISOR: set(),
+                Role.SYSTEM: set()
+            }
+            # Admin should have the custom permission
+            assert self.rbac_service.check_permission(self.admin_user.roles, "custom:permission") is True
+            # Other roles should not have the custom permission
+            assert self.rbac_service.check_permission(self.clinician_user.roles, "custom:permission") is False
+            assert self.rbac_service.check_permission(self.patient_user.roles, "custom:permission") is False
+            assert self.rbac_service.check_permission(self.researcher_user.roles, "custom:permission") is False
+        finally:
+            rbac_mod.ROLE_PERMISSIONS = original
