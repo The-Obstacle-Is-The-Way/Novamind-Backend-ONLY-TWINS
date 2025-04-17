@@ -47,20 +47,16 @@ class TemporalNeurotransmitterService:
         self.sequence_repository = sequence_repository
         self.event_repository = event_repository
         
-        # Logic to handle default mapping creation using patient_id
+        # Logic to handle default mapping creation using patient_id or default mapping
         if nt_mapping:
             self.base_mapping = nt_mapping
         elif patient_id:
-            # Correct logic: Create default mapping first (it handles its own default ID)
             base_mapping_temp = create_default_neurotransmitter_mapping()
-            # Explicitly assign the provided patient_id from the fixture/service call
             base_mapping_temp.patient_id = patient_id
             self.base_mapping = base_mapping_temp
         else:
-            raise ValueError(
-                "TemporalNeurotransmitterService requires either an explicit 'nt_mapping' "
-                "or a 'patient_id' to create a default mapping."
-            )
+            # Create default mapping when neither nt_mapping nor patient_id provided
+            self.base_mapping = create_default_neurotransmitter_mapping()
 
         # Ensure base_mapping is set (should always be true with the above logic)
         if not hasattr(self, 'base_mapping'):

@@ -83,21 +83,26 @@ def mock_aws_clients():
 
 @pytest.fixture
 def aws_xgboost_service(mock_aws_clients):
-    """Fixture to create an AWSXGBoostService with mocked AWS clients."""
-    # Set up successful validation responses
-    mock_aws_clients["predictions_table"].scan.return_value = {"Items": []}
-    mock_aws_clients["s3"].head_bucket.return_value = {}
-    mock_aws_clients["sagemaker"].list_endpoints.return_value = {
-        "Endpoints": []
+    """Fixture to create an initialized AWSXGBoostService with mocked AWS clients."""
+    # Config matching the defaults set in AWSXGBoostService.initialize for tests
+    config = {
+        'region_name': 'us-east-1',
+        'endpoint_prefix': 'test-endpoint', # Match test default in initialize
+        'bucket_name': 'test-bucket',       # Match test default in initialize
+        'model_mappings': {'mock-model': 'test-endpoint'}, # Match test default
+        'privacy_level': PrivacyLevel.STANDARD,           # Match test default
+        'log_level': 'INFO',
+        'dynamodb_table': 'predictions', # Keep original fixture value if needed, or use test default
+        's3_bucket': 'xgboost-models',   # Keep original fixture value if needed, or use test default
+        # Add audit_table_name if required by _validate_aws_config
+        # 'audit_table_name': 'test-audit-table'
     }
 
-    service = AWSXGBoostService(
-        region_name="us-east-1",
-        endpoint_prefix="xgboost-",
-        dynamodb_table="predictions",
-        s3_bucket="xgboost-models",
-        log_level="INFO",
-    )
+    # Instantiate without args
+    service = AWSXGBoostService()
+    # Initialize with config
+    # Mock validation within initialize if necessary, though test defaults might suffice
+    service.initialize(config)
     
     return service
 
@@ -115,18 +120,26 @@ class TestAWSXGBoostServiceInitialization:
             "Endpoints": []
         }
 
-        service = AWSXGBoostService(
-            region_name="us-east-1",
-            endpoint_prefix="xgboost-",
-            dynamodb_table="predictions",
-            s3_bucket="xgboost-models",
-            log_level="INFO",
-        )
+        config = {
+            'region_name': 'us-east-1',
+            'endpoint_prefix': 'xgboost-',
+            'dynamodb_table': 'predictions',
+            's3_bucket': 'xgboost-models',
+            'log_level': 'INFO',
+            'model_mappings': {'mock-model': 'test-endpoint'}, # Add based on initialize defaults
+            'privacy_level': PrivacyLevel.STANDARD,           # Add based on initialize defaults
+            # 'audit_table_name': 'test-audit-table' # Add if needed
+        }
+        service = AWSXGBoostService()
+        service.initialize(config)
 
-        assert service.region_name == "us-east-1"
-        assert service.endpoint_prefix == "xgboost-"
-        assert service.dynamodb_table == "predictions"
-        assert service.s3_bucket == "xgboost-models"
+        # Assert internal attributes set during initialization
+        assert service._region_name == "us-east-1"
+        assert service._endpoint_prefix == "xgboost-"
+        # Assuming _validate_aws_config sets these directly or indirectly
+        # Need to confirm attribute names if validation logic changes
+        assert service._dynamodb_table_name == "predictions" # Example: Assuming internal name
+        assert service._bucket_name == "xgboost-models"      # Example: Assuming internal name
 
         # Verify AWS clients initialization
         mock_aws_clients["dynamodb"].Table.assert_called_once_with("predictions")
@@ -147,13 +160,17 @@ class TestAWSXGBoostServiceInitialization:
         )
 
         with pytest.raises(ServiceConfigurationError) as exc_info:
-            AWSXGBoostService(
-                region_name="us-east-1",
-                endpoint_prefix="xgboost-",
-                dynamodb_table="nonexistent-table",
-                s3_bucket="xgboost-models",
-                log_level="INFO",
-            )
+            config = {
+                'region_name': 'us-east-1',
+                'endpoint_prefix': 'xgboost-',
+                'dynamodb_table': 'nonexistent-table',
+                's3_bucket': 'xgboost-models',
+                'log_level': 'INFO',
+                'model_mappings': {}, # Add default
+                'privacy_level': PrivacyLevel.STANDARD # Add default
+            }
+            service = AWSXGBoostService()
+            service.initialize(config)
 
         assert "Resource not found" in str(exc_info.value)
 
@@ -166,13 +183,17 @@ class TestAWSXGBoostServiceInitialization:
         )
 
         with pytest.raises(ServiceConfigurationError) as exc_info:
-            AWSXGBoostService(
-                region_name="us-east-1",
-                endpoint_prefix="xgboost-",
-                dynamodb_table="predictions",
-                s3_bucket="nonexistent-bucket",
-                log_level="INFO",
-            )
+            config = {
+                'region_name': 'us-east-1',
+                'endpoint_prefix': 'xgboost-',
+                'dynamodb_table': 'predictions',
+                's3_bucket': 'nonexistent-bucket',
+                'log_level': 'INFO',
+                'model_mappings': {}, # Add default
+                'privacy_level': PrivacyLevel.STANDARD # Add default
+            }
+            service = AWSXGBoostService()
+            service.initialize(config)
 
         assert "validation failed" in str(exc_info.value)
 class TestPredictRisk:

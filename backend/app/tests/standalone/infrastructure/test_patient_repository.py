@@ -16,26 +16,15 @@ from app.domain.entities.patient import Patient
 # Corrected import to use the concrete SQLAlchemy repository
 from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession
-from app.infrastructure.security.encryption.base_encryption_service import BaseEncryptionService
-
-
-@pytest.fixture
 def mock_db_session():
     """Fixture for a mock database session."""
     return AsyncMock()
 
 @pytest.fixture
-def mock_encryption_service():
-    """Fixture for a mock encryption service."""
-    mock_service = MagicMock(spec=BaseEncryptionService)
-    mock_service.encrypt.side_effect = lambda x: f"enc_{x}" if x else None
-    mock_service.decrypt.side_effect = lambda x: x[4:] if x and x.startswith("enc_") else x
-    return mock_service
-
-@pytest.fixture
-def repository(mock_db_session, mock_encryption_service):
-    """Fixture for PatientRepository with mocked dependencies."""
-    return PatientRepository(session=mock_db_session, encryption_service=mock_encryption_service)
+def repository(mock_db_session):
+    """Fixture for PatientRepository with mocked session."""
+    # Remove encryption_service from instantiation
+    return PatientRepository(session=mock_db_session)
 
 @pytest.fixture
 def sample_patient_data():
@@ -53,13 +42,12 @@ class TestPatientRepository:
     """Tests for the PatientRepository."""
 
     @pytest.fixture(autouse=True)
-    async def setup_method(self, mock_db_session, mock_encryption_service):
+    async def setup_method(self, mock_db_session):
         """Setup method for TestPatientRepository class."""
         self.mock_db = mock_db_session
-        self.mock_encryption_service = mock_encryption_service
-        self.repository = PatientRepository(session=self.mock_db, encryption_service=self.mock_encryption_service)
+        # Remove encryption_service from instantiation
+        self.repository = PatientRepository(session=self.mock_db)
         self.mock_db.reset_mock()
-        self.mock_encryption_service.reset_mock()
 
         # Create sample patients for testing
         self.patient_1 = self._create_test_patient(

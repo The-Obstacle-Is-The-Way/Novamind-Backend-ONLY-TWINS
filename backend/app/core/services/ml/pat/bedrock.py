@@ -918,4 +918,157 @@ class BedrockPAT(PATInterface):
         if not assessment:
             logger.error("Assessment not found: %s", assessment_id)
 
-        # ... rest of your code remains the same ...
+            raise ModelNotFoundError(f"Assessment not found: {assessment_id}")
+            
+        # Mock scoring logic
+        scores = {}
+        if assessment.get("template") and assessment["template"].get("scoring"):
+            scoring_config = assessment["template"]["scoring"]
+            if scoring_config.get("method") == "sum":
+                total_score = sum(int(v) for v in assessment.get("responses", {}).values() if isinstance(v, (int, str)) and str(v).isdigit())
+                scores["total_score"] = total_score
+                # Determine severity based on ranges
+                for range_def in scoring_config.get("ranges", []):
+                    if range_def.get("min", -1) <= total_score <= range_def.get("max", float('inf')):
+                        scores["severity"] = range_def.get("severity", "unknown")
+                        break
+            else: # Default mock scoring
+                 scores["mock_score"] = len(assessment.get("responses", {})) * 5 # Example mock score
+        else:
+             scores["mock_score"] = len(assessment.get("responses", {})) * 5 # Example mock score
+
+        assessment["scores"] = scores # Store calculated scores
+        assessment["updated_at"] = datetime.datetime.now(timezone.utc).isoformat()
+
+        logger.info("Calculated score for assessment %s: %s", assessment_id, scores)
+        
+        return {
+            "assessment_id": assessment_id,
+            "scoring_method": scoring_method or "default_mock",
+            "scores": scores
+        }
+
+    # --- Added missing PATInterface abstract method implementations ---
+
+    def analyze_actigraphy(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        start_time: str,
+        end_time: str,
+        sampling_rate_hz: float,
+        device_info: Dict[str, str],
+        analysis_types: List[str],
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for BedrockPAT."""
+        self._ensure_initialized()
+        logger.warning("BedrockPAT.analyze_actigraphy called - using mock implementation.")
+        analysis_id = str(uuid.uuid4())
+        results = {
+            "analysis_id": analysis_id,
+            "patient_id": patient_id,
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
+            "device_info": device_info,
+            "start_time": start_time,
+            "end_time": end_time,
+        }
+        # Add mock results for requested types
+        if "sleep_quality" in analysis_types:
+             results["sleep_quality"] = {"efficiency": 0.8, "duration_hours": 7.0}
+        if "activity_levels" in analysis_types:
+             results["activity_levels"] = {"total_steps": 5000, "active_minutes": 60}
+        # Add other mock analysis types if needed
+        return results
+
+    def get_sleep_metrics(
+        self,
+        patient_id: str,
+        start_date: str,
+        end_date: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for BedrockPAT."""
+        self._ensure_initialized()
+        logger.warning("BedrockPAT.get_sleep_metrics called - using mock implementation.")
+        return {
+            "patient_id": patient_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "metrics": {"average_duration_hours": 7.2, "average_efficiency": 0.82}
+        }
+
+    def get_activity_metrics(
+        self,
+        patient_id: str,
+        start_date: str,
+        end_date: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for BedrockPAT."""
+        self._ensure_initialized()
+        logger.warning("BedrockPAT.get_activity_metrics called - using mock implementation.")
+        return {
+            "patient_id": patient_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "metrics": {"average_steps_per_day": 6000, "average_active_minutes": 75}
+        }
+
+    def detect_anomalies(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        baseline_period: Optional[Dict[str, str]] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for BedrockPAT."""
+        self._ensure_initialized()
+        logger.warning("BedrockPAT.detect_anomalies called - using mock implementation.")
+        return {
+            "patient_id": patient_id,
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
+            "anomalies_detected": [] # Return empty list for mock
+        }
+
+    def predict_mood_state(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        historical_context: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for BedrockPAT."""
+        self._ensure_initialized()
+        logger.warning("BedrockPAT.predict_mood_state called - using mock implementation.")
+        return {
+            "patient_id": patient_id,
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
+            "predicted_mood": "neutral",
+            "confidence": 0.6
+        }
+
+    def integrate_with_digital_twin(
+        self,
+        patient_id: str,
+        profile_id: str,
+        actigraphy_analysis: Dict[str, Any], # Changed from analysis_id to match interface
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for BedrockPAT."""
+        self._ensure_initialized()
+        logger.warning("BedrockPAT.integrate_with_digital_twin called - using mock implementation.")
+        # Simulate integration based on passed analysis data
+        return {
+            "patient_id": patient_id,
+            "profile_id": profile_id,
+            "integration_status": "success_mock",
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
+            "integrated_profile": { # Mock profile structure
+                 "id": profile_id,
+                 "patient_id": patient_id,
+                 "actigraphy_analysis_id": actigraphy_analysis.get("analysis_id", "mock_analysis_id"),
+                 "sleep_summary": actigraphy_analysis.get("sleep_quality", {}),
+                 "activity_summary": actigraphy_analysis.get("activity_levels", {})
+            }
+        }

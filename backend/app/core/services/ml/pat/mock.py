@@ -1021,3 +1021,100 @@ class MockPATService(PATInterface):
             }
         
         return interpretation
+
+    # --- Added missing abstract method implementations ---
+
+    def detect_anomalies(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        baseline_period: Optional[Dict[str, str]] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for detecting anomalies."""
+        self._check_initialized()
+        logger.info(f"Mock detecting anomalies for patient {patient_id}")
+        # Return a simple mock response
+        return {
+            "patient_id": patient_id,
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "anomalies_detected": [
+                {
+                    "type": "sleep_pattern_shift",
+                    "severity": "low",
+                    "timestamp": readings[-1]['timestamp'] if readings else datetime.datetime.now(datetime.UTC).isoformat(),
+                    "details": "Mock anomaly: Slight shift detected."
+                }
+            ] if len(readings) > 50 else [], # Example condition
+            "baseline_period": baseline_period
+        }
+
+    def get_activity_metrics(
+        self,
+        patient_id: str,
+        start_date: str,
+        end_date: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for getting activity metrics."""
+        self._check_initialized()
+        logger.info(f"Mock getting activity metrics for patient {patient_id} from {start_date} to {end_date}")
+        # Return simple mock metrics
+        return {
+            "patient_id": patient_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "metrics": {
+                "total_steps": 15000,
+                "average_steps_per_day": 5000,
+                "active_minutes": 120,
+                "sedentary_minutes": 600,
+                "intensity_distribution": {
+                    "light": 0.6,
+                    "moderate": 0.3,
+                    "vigorous": 0.1
+                }
+            }
+        }
+
+    def get_sleep_metrics(
+        self,
+        patient_id: str,
+        start_date: str,
+        end_date: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for getting sleep metrics."""
+        self._check_initialized()
+        logger.info(f"Mock getting sleep metrics for patient {patient_id} from {start_date} to {end_date}")
+        return {
+            "patient_id": patient_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "metrics": {
+                "average_duration_hours": 7.5,
+                "average_efficiency": 0.85,
+                "average_deep_sleep_percentage": 0.20,
+                "average_rem_sleep_percentage": 0.25,
+                "average_light_sleep_percentage": 0.55,
+                "consistency_score": 0.7
+            }
+        }
+
+    def predict_mood_state(
+        self,
+        patient_id: str,
+        readings: List[Dict[str, Any]],
+        historical_context: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Mock implementation for predicting mood state."""
+        self._check_initialized()
+        logger.info(f"Mock predicting mood state for patient {patient_id}")
+        return {
+            "patient_id": patient_id,
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "predicted_mood": "neutral",
+            "confidence": 0.65,
+            "contributing_factors": ["activity_level", "sleep_regularity"]
+        }
