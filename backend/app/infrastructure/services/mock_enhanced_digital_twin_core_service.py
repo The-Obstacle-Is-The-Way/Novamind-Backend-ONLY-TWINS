@@ -13,17 +13,14 @@ import uuid
 from typing import Dict, List, Optional, Tuple, Union, Set, Callable
 from uuid import UUID, uuid4
 
+# Import domain entities (use dataclass models for insights and state)
 from app.domain.entities.digital_twin_enums import (
     BrainRegion,
-    ClinicalInsight,
-    ClinicalSignificance,
     Neurotransmitter,
-    DigitalTwinState as DigitalTwinStateEnum # Alias if needed
+    ClinicalSignificance,
 )
-from app.domain.entities.digital_twin import (
-    DigitalTwin, # Actual entity
-    DigitalTwinState # Actual state class
-)
+from app.domain.entities.digital_twin_entity import ClinicalInsight
+from app.domain.entities.digital_twin import DigitalTwin, DigitalTwinState
 from app.domain.entities.neurotransmitter_mapping import ReceptorSubtype
 from app.domain.entities.neurotransmitter_mapping import (
     NeurotransmitterMapping,
@@ -32,7 +29,7 @@ from app.domain.entities.neurotransmitter_mapping import (
     create_default_neurotransmitter_mapping
 )
 # Import the original DigitalTwinState and all adapter classes
-from app.domain.entities.digital_twin_enums import DigitalTwinState
+# Removed import of DigitalTwinState enum to avoid shadowing domain models
 
 # Corrected import path assuming model_adapter is directly under entities
 from app.domain.entities.model_adapter import (
@@ -66,14 +63,14 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
     It provides realistic but simulated responses for demonstration and testing.
     """
     
-    def __init__(self):
+    def __init__(self, mental_llama_service: EnhancedMentalLLaMAService, xgboost_service: EnhancedXGBoostService, pat_service: EnhancedPATService):
         """
-        Initialize the mock enhanced digital twin core service.
+        Initialize the mock enhanced digital twin core service with its component services.
         """
-        # AI component placeholders (not used in neurotransmitter mapping)
-        self.mental_llama_service = None
-        self.xgboost_service = None
-        self.pat_service = None
+        # Assign provided AI component services
+        self.mental_llama_service = mental_llama_service
+        self.xgboost_service = xgboost_service
+        self.pat_service = pat_service
         
         # In-memory storage of Digital Twin states, knowledge graphs, and belief networks
         self._digital_twin_states: Dict[UUID, Dict[UUID, Union[DigitalTwinState, DigitalTwinStateAdapter]]] = {}  # patient_id -> state_id -> state
@@ -1378,9 +1375,9 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         # Resolve coroutine patient_id if provided as async fixture
         if asyncio.iscoroutine(patient_id):  # type: ignore
             patient_id = await patient_id
-        # Ensure patient exists
-        if patient_id not in self._digital_twin_states:
-            raise ValueError(f"Patient {patient_id} not found. Initialize digital twin first.")
+        # Ensure patient exists (allow mapping initialization without prior digital twin)
+        # if patient_id not in self._digital_twin_states:
+        #     raise ValueError(f"Patient {patient_id} not found. Initialize digital twin first.")
         
         # Create the mapping object
         if custom_mapping:
