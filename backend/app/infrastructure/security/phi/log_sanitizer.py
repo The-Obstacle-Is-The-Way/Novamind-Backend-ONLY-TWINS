@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional, Union, List, Tuple, Set, Callable
 
 # Import the NEW core PHI service
 # from app.core.security.phi_sanitizer import PHISanitizer # Old import REMOVED
-from .phi_service import PHIService # Import the consolidated service
+from .phi_service import PHIService, PHIType  # Import the consolidated service and PHIType
 
 # Configuration dataclass (Simplified for infrastructure layer)
 from dataclasses import dataclass, field
@@ -33,6 +33,8 @@ class LogSanitizer:
     Infrastructure wrapper for the core PHIService.
     Delegates sanitization tasks to PHIService.
     """
+    # Storage for custom regex patterns for static string sanitization
+    _custom_patterns: Dict[str, Any] = {}
     def __init__(self, config: Optional[LogSanitizerConfig] = None):
         """Initialize the LogSanitizer with config and PHIService instance."""
         self.config = config or LogSanitizerConfig()
@@ -41,17 +43,26 @@ class LogSanitizer:
         self._phi_service = PHIService() 
 
     def sanitize(self, data: Any, sensitivity: Optional[str] = None) -> Any:
-        """Sanitize data using the core PHIService."""
+        """Sanitize data using the core PHIService, with dict key overrides for names."""
         if not self.config.enabled:
             return data
-            
-        # Use configured sensitivity or the service default
+
+        # Determine sensitivity and replacement
         effective_sensitivity = sensitivity or self.config.default_sensitivity
-        # Use configured replacement template or None (service default)
         replacement = self.config.replacement_template
-        
-        # Delegate directly to the core service's main entry point
-        return self._phi_service.sanitize(data, sensitivity=effective_sensitivity, replacement=replacement)
+
+        # Delegate to the core service for base sanitization
+        sanitized = self._phi_service.sanitize(data,
+                                              sensitivity=effective_sensitivity,
+                                              replacement=replacement)
+        # Override top-level name fields without relying on text context
+        if isinstance(data, dict):
+            for key in data:
+                lower_key = key.lower()
+                if lower_key in ("name", "patient_name"):
+                    # Replace entire value with redaction marker for NAME
+                    sanitized[key] = self._phi_service._get_replacement_value(PHIType.NAME, replacement)
+        return sanitized
 
     def sanitize_log_record(self, record: logging.LogRecord) -> logging.LogRecord:
         """
@@ -105,6 +116,25 @@ class LogSanitizer:
         record.args = [] 
 
         return record
+
+    @classmethod
+    def sanitize_string(cls, text: str) -> str:
+        """Sanitize a simple string using custom patterns only."""
+        result = text
+        for name, pattern in cls._custom_patterns.items():
+            # Use uppercase pattern name for redaction marker
+            result = pattern.sub(lambda m, nm=name: f"[{nm.upper()} REDACTED]", result)
+        return result
+
+    @classmethod
+    def update_patterns(cls, patterns: Dict[str, Any]) -> None:
+        """Add or update custom regex patterns for sanitize_string."""
+        cls._custom_patterns.update(patterns)
+
+    @staticmethod
+    def sanitize_log_entry(log_entry: str) -> str:
+        """Sanitize a raw log entry string using default sanitization."""
+        return LogSanitizer().sanitize(log_entry)
 
 
 class PHIFormatter(logging.Formatter):
