@@ -11,11 +11,12 @@ import redis.exceptions
 
 # Updated import path
 from app.infrastructure.security.rate_limiting.rate_limiter_enhanced import (
-    RateLimiter, # Import the base class directly
+    RateLimiter,  # Import the base class directly
     RateLimitConfig,
     InMemoryRateLimiter,
     RedisRateLimiter,
     RateLimiterFactory,
+    RateLimitType,
 )
 # Keep original RateLimitType if used, or check enhanced file
 # Remove unused/incorrect imports
@@ -296,12 +297,9 @@ def mock_redis_client():
     return client
 
 @pytest.fixture
-def redis_rate_limiter(mock_redis_client: AsyncMock):
+def redis_rate_limiter(mock_redis: MagicMock):
     """Fixture for creating a RedisRateLimiter instance with mocked client."""
-    limiter = RedisRateLimiter(redis_client=mock_redis_client)
-    # Optionally configure specific limits if needed for tests below
-    # limiter.configure(RateLimitType.DEFAULT, RateLimitConfig(requests_per_period=10, period_seconds=60, burst_capacity=5))
-    return limiter
+    return RedisRateLimiter(redis_client=mock_redis)
 
 @pytest.fixture
 def distributed_rate_limiter(mock_redis_client: AsyncMock) -> RedisRateLimiter:
@@ -444,8 +442,7 @@ async def test_check_rate_limit_redis_with_user_id(distributed_rate_limiter: Red
     pipeline_mock.zadd.assert_called_with(combined_key, {str(pytest.approx(time.time(), abs=1)): pytest.approx(time.time(), abs=1)})
 
 
-@pytest.mark.asyncio
-async def test_rate_limit_config_override_redis(redis_rate_limiter: RedisRateLimiter, mock_redis: MagicMock):
+def test_rate_limit_config_override_redis(redis_rate_limiter: RedisRateLimiter, mock_redis: MagicMock):
     """Test overriding default config by passing RateLimitConfig directly."""
     identifier = "special_user:192.168.1.7"
     # Define a specific config for this check
@@ -456,7 +453,7 @@ async def test_rate_limit_config_override_redis(redis_rate_limiter: RedisRateLim
     mock_redis.zcard.return_value = 40
 
     # Check limit using the override config passed directly
-    allowed = await redis_rate_limiter.check_rate_limit(
+    allowed = redis_rate_limiter.check_rate_limit(
         identifier, config=override_config
     )
 

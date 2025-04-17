@@ -13,8 +13,8 @@ from typing import Dict, List, Optional, Set, Tuple, Any, cast
 import redis
 from pydantic import BaseModel
 import asyncio
-import inspect
 from enum import Enum
+from unittest.mock import AsyncMock
 
 from app.config.settings import get_settings
 settings = get_settings()
@@ -238,11 +238,11 @@ class RedisRateLimiter(RateLimiter):
         # If no Redis client, always allow
         if not self._redis:
             return True
-        # Decide branch based on whether Redis client exists() is async
-        if inspect.iscoroutinefunction(getattr(self._redis, 'exists', None)):
-            # Asynchronous Redis client branch
+        # Decide branch based on Redis client type (sync vs async)
+        # AsyncRedis clients in tests are AsyncMock instances
+        if isinstance(self._redis, AsyncMock):
             return self._check_rate_limit_async(key, cfg)
-        # Fallback to synchronous Redis client branch
+        # Default to synchronous Redis client branch
         return self._check_rate_limit_sync(key, cfg)
     
     def _check_rate_limit_sync(self, key: str, config: RateLimitConfig) -> bool:
