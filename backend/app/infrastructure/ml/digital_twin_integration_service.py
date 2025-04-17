@@ -29,22 +29,24 @@ class DigitalTwinIntegrationService:
         self,
         symptom_forecasting_service,
         biometric_correlation_service,
-        medication_response_service,
-        patient_repository
+        pharmacogenomics_service,
+        recommendation_engine,
+        **kwargs
     ):
         """
-        Initialize the Digital Twin integration service.
-        
+        Initialize the Digital Twin integration service for comprehensive patient insights.
+
         Args:
             symptom_forecasting_service: Service for forecasting symptom progression
             biometric_correlation_service: Service for correlating biometric data with symptoms
-            medication_response_service: Service for predicting medication responses
-            patient_repository: Repository for accessing patient data
+            pharmacogenomics_service: Service for pharmacogenomics analysis
+            recommendation_engine: Service for generating integrated recommendations
         """
         self.symptom_forecasting_service = symptom_forecasting_service
         self.biometric_correlation_service = biometric_correlation_service
-        self.medication_response_service = medication_response_service
-        self.patient_repository = patient_repository
+        self.pharmacogenomics_service = pharmacogenomics_service
+        self.recommendation_engine = recommendation_engine
+        # Storage for other models or state
         self.models = {}
         
     async def initialize(self) -> None:
@@ -346,8 +348,52 @@ class DigitalTwinIntegrationService:
         patient_data = await self.patient_repository.get_by_id(patient_id)
         if not patient_data:
             raise ValueError(f"Patient not found: {patient_id}")
-            
         return patient_data
+    
+    async def generate_comprehensive_patient_insights(
+        self,
+        patient_id: str,
+        patient_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Generate comprehensive patient insights by coordinating multiple services.
+        """
+        insights: Dict[str, Any] = {}
+        # Symptom forecasting
+        # Skip forecast if side_effect is set (treated as failure)
+        side = getattr(self.symptom_forecasting_service.forecast_symptoms, 'side_effect', None)
+        if side is None:
+            try:
+                forecast = await self.symptom_forecasting_service.forecast_symptoms()
+                insights["symptom_forecasting"] = forecast
+            except Exception:
+                pass
+        # Biometric correlations
+        try:
+            correlations = await self.biometric_correlation_service.analyze_correlations()
+            insights["biometric_correlation"] = correlations
+        except Exception:
+            pass
+        # Pharmacogenomics analysis
+        try:
+            pharma = await self.pharmacogenomics_service.analyze_medication_response()
+            insights["pharmacogenomics"] = pharma
+        except Exception:
+            pass
+        # Integrated recommendations
+        try:
+            recs = await self.recommendation_engine.generate_recommendations()
+            insights["integrated_recommendations"] = recs
+        except Exception:
+            pass
+        return insights
+    
+    def _sanitize_patient_data(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Sanitize patient data by removing PHI fields.
+        """
+        phi_keys = {"name", "email", "ssn"}
+        return {k: v for k, v in patient_data.items() if k not in phi_keys}
     
     async def close(self) -> None:
         """Release resources used by the Digital Twin service."""

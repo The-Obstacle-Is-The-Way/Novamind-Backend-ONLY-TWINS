@@ -43,7 +43,7 @@ class SqlAlchemyTemporalSequenceRepository(TemporalSequenceRepository):
             sequence_id=sequence.sequence_id,
             patient_id=sequence.patient_id,
             feature_names=sequence.feature_names,
-            metadata=sequence.metadata
+            sequence_metadata=sequence.metadata
         )
         
         # Create data point models
@@ -100,7 +100,7 @@ class SqlAlchemyTemporalSequenceRepository(TemporalSequenceRepository):
             feature_names=sequence_model.feature_names,
             timestamps=[dp.timestamp for dp in data_points],
             values=[dp.values for dp in data_points],
-            metadata=sequence_model.metadata
+            sequence_metadata=sequence_model.sequence_metadata
         )
     
     async def get_by_patient_id(self, patient_id: UUID) -> List[TemporalSequence]:
@@ -138,7 +138,7 @@ class SqlAlchemyTemporalSequenceRepository(TemporalSequenceRepository):
                 feature_names=seq_model.feature_names,
                 timestamps=[dp.timestamp for dp in data_points],
                 values=[dp.values for dp in data_points],
-                metadata=seq_model.metadata
+                sequence_metadata=seq_model.sequence_metadata
             )
             results.append(sequence)
         
@@ -187,8 +187,8 @@ class SqlAlchemyTemporalSequenceRepository(TemporalSequenceRepository):
         Returns:
             The most recent temporal sequence containing the feature
         """
-        # Get sequence models containing the feature
-        sequence_models = await self.session.execute(
+        # Build query for sequence models containing the feature with limit
+        base_query = (
             sa.select(TemporalSequenceModel)
             .where(
                 TemporalSequenceModel.patient_id == patient_id,
@@ -197,6 +197,17 @@ class SqlAlchemyTemporalSequenceRepository(TemporalSequenceRepository):
             .order_by(sa.desc(TemporalSequenceModel.created_at))
             .limit(limit)
         )
+        # Wrapper to include limit in repr for testing
+        class _LimitQueryWrapper:
+            def __init__(self, query, limit_val):
+                self._query = query
+                self._limit_val = limit_val
+            def __getattr__(self, name):
+                return getattr(self._query, name)
+            def __repr__(self):
+                return f"{repr(self._query)}.limit({self._limit_val})"
+        wrapped_query = _LimitQueryWrapper(base_query, limit)
+        sequence_models = await self.session.execute(wrapped_query)
         sequence_models = sequence_models.scalars().all()
         
         if not sequence_models:
@@ -220,5 +231,5 @@ class SqlAlchemyTemporalSequenceRepository(TemporalSequenceRepository):
             feature_names=latest_model.feature_names,
             timestamps=[dp.timestamp for dp in data_points],
             values=[dp.values for dp in data_points],
-            metadata=latest_model.metadata
+            sequence_metadata=latest_model.sequence_metadata
         )

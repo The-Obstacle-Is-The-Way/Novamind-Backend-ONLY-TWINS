@@ -44,6 +44,8 @@ class ReceptorSubtype(Enum):
     SEROTONIN_5HT1A = auto()
     SEROTONIN_5HT1B = auto()
     SEROTONIN_5HT2A = auto()
+    # Legacy alias for test compatibility
+    FIVE_HT2A = SEROTONIN_5HT2A
     SEROTONIN_5HT2C = auto()
     SEROTONIN_5HT3 = auto()
     SEROTONIN_5HT4 = auto()

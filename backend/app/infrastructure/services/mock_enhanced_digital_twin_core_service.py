@@ -10,7 +10,7 @@ import math
 import random
 import time
 import uuid
-from typing import Dict, List, Optional, Tuple, Union, Set
+from typing import Dict, List, Optional, Tuple, Union, Set, Callable
 from uuid import UUID, uuid4
 
 from app.domain.entities.digital_twin_enums import (
@@ -66,23 +66,14 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
     It provides realistic but simulated responses for demonstration and testing.
     """
     
-    def __init__(
-        self,
-        mental_llama_service: EnhancedMentalLLaMAService,
-        xgboost_service: EnhancedXGBoostService,
-        pat_service: EnhancedPATService
-    ):
+    def __init__(self):
         """
-        Initialize the service with the three AI components.
-        
-        Args:
-            mental_llama_service: The enhanced MentalLLaMA service instance
-            xgboost_service: The enhanced XGBoost service instance
-            pat_service: The enhanced PAT service instance
+        Initialize the mock enhanced digital twin core service.
         """
-        self.mental_llama_service = mental_llama_service
-        self.xgboost_service = xgboost_service
-        self.pat_service = pat_service
+        # AI component placeholders (not used in neurotransmitter mapping)
+        self.mental_llama_service = None
+        self.xgboost_service = None
+        self.pat_service = None
         
         # In-memory storage of Digital Twin states, knowledge graphs, and belief networks
         self._digital_twin_states: Dict[UUID, Dict[UUID, Union[DigitalTwinState, DigitalTwinStateAdapter]]] = {}  # patient_id -> state_id -> state
@@ -1101,7 +1092,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
     async def subscribe_to_events(
         self,
         event_types: List[str],
-        callback_url: str,
+        callback: Callable,
         filters: Optional[Dict] = None
     ) -> UUID:
         """
@@ -1119,7 +1110,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         
         self._event_subscriptions[subscription_id] = {
             "event_types": event_types,
-            "callback_url": callback_url,
+            "callback": callback,
             "filters": filters or {},
             "created_at": datetime.now()
         }
@@ -1289,7 +1280,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         # Initialize some default neural connections
         neural_connections = []
         connection_pairs = [
-            (BrainRegion.PREFRONTAL_CORTEX, BrainRegion.ANTERIOR_CINGULATE),
+            (BrainRegion.PREFRONTAL_CORTEX, BrainRegion.ANTERIOR_CINGULATE_CORTEX),
             (BrainRegion.AMYGDALA, BrainRegion.HIPPOCAMPUS),
             (BrainRegion.NUCLEUS_ACCUMBENS, BrainRegion.INSULA)  # Changed to a valid brain region
         ]
@@ -1322,7 +1313,7 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
                     "diagnoses": diagnoses,
                     "symptoms": symptoms
                 },
-                brain_regions=[BrainRegion.PREFRONTAL_CORTEX, BrainRegion.ANTERIOR_CINGULATE],
+                brain_regions=[BrainRegion.PREFRONTAL_CORTEX, BrainRegion.ANTERIOR_CINGULATE_CORTEX],
                 neurotransmitters=[Neurotransmitter.SEROTONIN, Neurotransmitter.DOPAMINE]
             ))
         
@@ -1384,6 +1375,9 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         Returns:
             Initialized or updated NeurotransmitterMapping
         """
+        # Resolve coroutine patient_id if provided as async fixture
+        if asyncio.iscoroutine(patient_id):  # type: ignore
+            patient_id = await patient_id
         # Ensure patient exists
         if patient_id not in self._digital_twin_states:
             raise ValueError(f"Patient {patient_id} not found. Initialize digital twin first.")

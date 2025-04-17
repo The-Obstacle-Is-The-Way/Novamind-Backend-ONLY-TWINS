@@ -96,7 +96,7 @@ def create_application(dependency_overrides: Optional[Dict[Callable, Callable]] 
     # Get settings values with fallbacks
     settings = get_settings()
     project_name = settings.PROJECT_NAME
-    app_description = settings.APP_DESCRIPTION
+    app_description = getattr(settings, 'APP_DESCRIPTION', '')
     version = settings.VERSION
     
     app = FastAPI(

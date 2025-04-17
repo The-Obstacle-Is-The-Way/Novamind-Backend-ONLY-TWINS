@@ -47,6 +47,7 @@ class TemporalSequence(Generic[T]):
         patient_id: UUID | None = None,
         clinical_significance: Any | None = None,
         metadata: dict[str, Any] | None = None,
+        sequence_metadata: dict[str, Any] | None = None,
         name: str | None = None,
         brain_region: BrainRegion | None = None,
         neurotransmitter: Neurotransmitter | None = None,
@@ -71,6 +72,9 @@ class TemporalSequence(Generic[T]):
             updated_at: Last update timestamp
             temporal_resolution: Time resolution of the sequence
         """
+        # Handle alias for sequence_metadata
+        if sequence_metadata is not None:
+            metadata = sequence_metadata
         # Map alias 'id' to sequence_id if provided
         if sequence_id is None and id is not None:
             sequence_id = id
@@ -99,6 +103,8 @@ class TemporalSequence(Generic[T]):
         self.patient_id = patient_id
         self.clinical_significance = clinical_significance
         self.metadata = metadata or {}
+        # Alias for repository mapping
+        self.sequence_metadata = self.metadata
         self.name = name or f"Sequence-{str(sequence_id)[:8]}"
         self.brain_region = brain_region
         self.neurotransmitter = neurotransmitter
