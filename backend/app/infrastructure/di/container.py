@@ -411,7 +411,7 @@ def get_container() -> DIContainer:
 
 
 # Convenience function for FastAPI dependency injection
-def get_service(service_type: Union[Type[T], str]) -> Callable[[], T]: # Accept string
+def get_service(service_type: Union[Type[T], str] = XGBoostInterface) -> Callable[[], T]: # Accept string or default to XGBoostInterface
     """Factory function to get a service instance for FastAPI Depends."""
     container = get_container()
 
