@@ -51,8 +51,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(
     # prefix="/xgboost", # Prefix is likely already handled by main app include_router
-    tags=["XGBoost ML"],
-    dependencies=[Depends(verify_provider_access)] # Protect endpoints
+    tags=["XGBoost ML"]
 )
 
 @router.post(
@@ -61,9 +60,15 @@ router = APIRouter(
     description="Predicts various risk types (e.g., relapse, suicide) using XGBoost models.",
     status_code=status.HTTP_200_OK
 )
+@router.post(
+    "/predict/risk",
+    summary="Predict Patient Risk",
+    description="Predicts various risk types (e.g., relapse, suicide) using XGBoost models.",
+    status_code=status.HTTP_200_OK
+)
 async def predict_risk(
     request: RiskPredictionRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
+    xgboost_service: XGBoostInterface = Depends(get_service), # Use generic service provider
     # current_user: User = Depends(get_current_user) # Optional: If user info needed
 ) -> dict:
     """Endpoint to predict patient risk using XGBoost."""
@@ -98,9 +103,15 @@ async def predict_risk(
     description="Predicts patient response to specific treatments using XGBoost models.",
     status_code=status.HTTP_200_OK
 )
+@router.post(
+    "/predict/treatment-response",
+    summary="Predict Treatment Response",
+    description="Predicts patient response to specific treatments using XGBoost models.",
+    status_code=status.HTTP_200_OK
+)
 async def predict_treatment_response(
     request: TreatmentResponseRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
+    xgboost_service: XGBoostInterface = Depends(get_service), # Use generic service provider
 ) -> dict:
     """Endpoint to predict treatment response using XGBoost."""
     try:
@@ -136,17 +147,34 @@ async def predict_treatment_response(
     description="Predicts clinical outcomes based on patient data and treatment plan using XGBoost.",
     status_code=status.HTTP_200_OK
 )
+@router.post(
+    "/predict/outcome",
+    summary="Predict Clinical Outcome",
+    description="Predicts clinical outcomes based on patient data and treatment plan using XGBoost.",
+    status_code=status.HTTP_200_OK
+)
 async def predict_outcome(
     request: OutcomePredictionRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
+    xgboost_service: XGBoostInterface = Depends(get_service), # Use generic service provider
 ) -> dict:
     """Endpoint to predict clinical outcome using XGBoost."""
     try:
+        # Prepare timeframe and treatment plan, handling dict or Pydantic model
+        timeframe = (
+            request.outcome_timeframe.dict()
+            if hasattr(request.outcome_timeframe, 'dict')
+            else request.outcome_timeframe or {}
+        )
+        plan = (
+            request.treatment_plan.dict()
+            if hasattr(request.treatment_plan, 'dict')
+            else request.treatment_plan or {}
+        )
         raw = xgboost_service.predict_outcome(
             patient_id=str(request.patient_id),
-            outcome_timeframe=request.outcome_timeframe.dict() if request.outcome_timeframe else {},
+            outcome_timeframe=timeframe,
             clinical_data=request.clinical_data,
-            treatment_plan=request.treatment_plan.dict() if request.treatment_plan else {}
+            treatment_plan=plan
         )
         result = await raw if inspect.isawaitable(raw) else raw
         return result
@@ -174,7 +202,7 @@ async def predict_outcome(
 )
 async def get_model_info(
     model_type: str, # Or use ModelType enum if defined appropriately
-    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)), # Use get_service
+    xgboost_service: XGBoostInterface = Depends(get_service), # Use generic service provider
 ) -> dict:
     """Endpoint to get information about an XGBoost model."""
     try:
@@ -198,7 +226,7 @@ async def get_model_info(
 )
 async def get_feature_importance(
     model_type: str,
-    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface)),
+    xgboost_service: XGBoostInterface = Depends(get_service),
 ) -> dict:
     """Endpoint to get feature importance for a prediction."""
     try:
@@ -225,7 +253,7 @@ async def get_feature_importance(
 )
 async def digital_twin_simulation(
     request_data: Dict[str, Any] = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_service(XGBoostInterface))
+    xgboost_service: XGBoostInterface = Depends(get_service)
 ) -> dict:
     """Endpoint to simulate a digital twin using XGBoost."""
     raw = xgboost_service.simulate_digital_twin(

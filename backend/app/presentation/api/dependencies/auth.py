@@ -137,7 +137,8 @@ async def verify_provider_access(
         if isinstance(user, dict)
         else getattr(user, "role", "").lower()
     )
-    if role not in ["provider", "admin"]:
+    # Allow providers, administrators, and clinicians access to protected routes
+    if role not in ["provider", "admin", "clinician"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Provider or Admin access required",
