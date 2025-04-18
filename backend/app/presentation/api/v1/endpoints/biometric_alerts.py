@@ -29,7 +29,7 @@ from app.presentation.api.schemas.biometric_alert import (
 )
 from app.presentation.api.schemas.user import UserResponseSchema
 from app.infrastructure.cache.redis_cache import RedisCache # Import directly
-from app.presentation.api.dependencies import get_cache_service, get_alert_repository
+# Removed redundant legacy dependency imports (get_cache_service, get_alert_repository)
 from app.infrastructure.di.container import get_service
 
 

@@ -19,7 +19,7 @@ from app.core.exceptions.ml_exceptions import (
     ModelLoadingError
 )
 from app.infrastructure.ml.mentallama import MentaLLaMAService
-from app.presentation.api.dependencies import get_mentallama_service
+from app.presentation.api.v1.dependencies.ml import get_mentallama_service
 from app.presentation.api.schemas.ml_schemas import (
     AnalysisType,
     ClinicalAnalysisRequest,

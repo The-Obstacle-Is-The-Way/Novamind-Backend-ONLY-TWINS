@@ -19,7 +19,7 @@ from fastapi.responses import JSONResponse
 # Removed import of non-existent get_jwt_service
 from app.presentation.api.dependencies.auth import get_current_user, verify_provider_access, verify_admin_access
 from app.infrastructure.cache.redis_cache import RedisCache # Removed get_cache_service
-from app.presentation.api.dependencies import get_cache_service # Corrected import path
+from app.presentation.api.dependencies.services import get_cache_service
 from app.infrastructure.di.container import get_service # Import the DI helper
 # Ensure AnalyticsService is NOT imported at the top level
 
