@@ -865,11 +865,12 @@ class AWSXGBoostService(XGBoostInterface):
         except botocore.exceptions.ClientError as e:
             error_code = e.response.get("Error", {}).get("Code", "Unknown")
             error_message = e.response.get("Error", {}).get("Message", str(e))
-            
+
             self._logger.error(f"AWS client initialization error: {error_code} - {error_message}")
-            
+
+            # Raise as service connection error with expected message
             raise ServiceConnectionError(
-                f"Failed to initialize AWS clients: {error_message}",
+                f"Failed to connect to AWS services: {error_message}",
                 service="AWS",
                 error_type=error_code,
                 details=str(e)
