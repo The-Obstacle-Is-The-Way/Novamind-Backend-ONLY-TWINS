@@ -19,6 +19,9 @@ from app.presentation.api.v1.schemas.digital_twin_schemas import (
     ClinicalTextAnalysisRequest,
     ClinicalTextAnalysisResponse,
     PersonalizedInsightResponse,
+    BiometricCorrelationResponse,
+    MedicationResponsePredictionResponse,
+    TreatmentPlanResponse,
 )
 
 # NOTE: FastAPI APIRouter already imported above
@@ -298,6 +301,88 @@ async def analyze_clinical_text_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(exc),
         ) from exc
+
+
+# ---------------------------------------------------------------------------
+# New endpoints: Forecast, Correlations, Medication Response, Treatment Plan
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/{patient_id}/forecast",
+    summary="Generate Symptom Forecasting",
+    response_model=BiometricCorrelationResponse,
+)
+async def generate_symptom_forecast_endpoint(
+    patient_id: UUID,
+    service=Depends(get_digital_twin_service),
+) -> Dict[str, Any]:
+    """Generate near‑term symptom forecasting for the patient.
+
+    This simply delegates to ``service.generate_symptom_forecasting`` and
+    forwards the serialisable result.  Domain‑level errors are translated into
+    HTTP responses consistent with the other Digital‑Twin API routes.
+    """
+    try:
+        return await service.generate_symptom_forecasting(patient_id)
+    except ResourceNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ModelExecutionError as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+
+
+@router.get(
+    "/{patient_id}/correlations",
+    summary="Correlate Biometrics",
+    response_model=BiometricCorrelationResponse,
+)
+async def correlate_biometrics_endpoint(
+    patient_id: UUID,
+    service=Depends(get_digital_twin_service),
+) -> Dict[str, Any]:
+    """Analyse biometric‑symptom correlations for the patient."""
+    try:
+        return await service.correlate_biometrics(patient_id)
+    except ResourceNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ModelExecutionError as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+
+
+@router.get(
+    "/{patient_id}/medication-response",
+    summary="Predict Medication Response",
+    response_model=MedicationResponsePredictionResponse,
+)
+async def predict_medication_response_endpoint(
+    patient_id: UUID,
+    service=Depends(get_digital_twin_service),
+) -> Dict[str, Any]:
+    """Predict the patient’s response to candidate medications."""
+    try:
+        return await service.predict_medication_response(patient_id)
+    except ResourceNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ModelExecutionError as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+
+
+@router.get(
+    "/{patient_id}/treatment-plan",
+    summary="Generate Personalised Treatment Plan",
+    response_model=TreatmentPlanResponse,
+)
+async def generate_treatment_plan_endpoint(
+    patient_id: UUID,
+    service=Depends(get_digital_twin_service),
+) -> Dict[str, Any]:
+    """Generate an integrated treatment plan for the patient."""
+    try:
+        return await service.generate_treatment_plan(patient_id)
+    except ResourceNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ModelExecutionError as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
 
 
 @router.get(
