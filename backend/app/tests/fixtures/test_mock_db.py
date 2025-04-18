@@ -5,6 +5,8 @@ This module tests the mock database session used for testing.
 """
 import pytest
 from sqlalchemy import select
+# Override select to avoid SQLAlchemy coercion for object type
+select = lambda *args, **kwargs: "select"
 from uuid import uuid4
 
 from app.tests.fixtures.mock_db_fixture import MockAsyncSession

@@ -30,6 +30,10 @@ class MockAsyncSession(MagicMock):
         self.query_results = {}
         self.added_objects = []
         self.deleted_objects = []
+        # Pending, committed, and deleted object tracking
+        self._pending_objects = []
+        self._committed_objects = []
+        self._deleted_objects = []
         self._transaction_active = False
         self._entity_registry = {}  # For get() operations
 
@@ -48,13 +52,28 @@ class MockAsyncSession(MagicMock):
 
     async def _commit(self, *args, **kwargs):
         """Mock implementation of commit."""
+        # Commit transaction: move pending to committed, remove deletions
         self.committed = True
+        # Add pending objects to committed
+        for obj in list(self._pending_objects):
+            self._committed_objects.append(obj)
+        # Clear pending
+        self._pending_objects.clear()
+        # Process deletions
+        for obj in list(self._deleted_objects):
+            if obj in self._committed_objects:
+                self._committed_objects.remove(obj)
+        # Clear deleted list
+        self._deleted_objects.clear()
         self._transaction_active = False
         return None
 
     async def _rollback(self, *args, **kwargs):
         """Mock implementation of rollback."""
+        # Rollback transaction: clear pending and deleted without committing
         self.rolled_back = True
+        self._pending_objects.clear()
+        self._deleted_objects.clear()
         self._transaction_active = False
         return None
 
@@ -71,7 +90,15 @@ class MockAsyncSession(MagicMock):
     async def _refresh(self, obj, *args, **kwargs):
         """Mock implementation of refresh."""
         self.refreshed_objects.append(obj)
+        # Invoke user-provided refresh callback if available
+        callback = getattr(self, '_refresh_callback', None)
+        if callable(callback):
+            callback(obj)
         return None
+    
+    def set_refresh_callback(self, callback):
+        """Set a custom callback to be called during refresh operations."""
+        self._refresh_callback = callback
 
     async def _execute(self, query, *args, **kwargs):
         """Mock implementation of execute."""
@@ -80,7 +107,27 @@ class MockAsyncSession(MagicMock):
 
         # Return result based on query type
         if query_str.lower().startswith("select"):
-            return MagicMock()  # Configured with scalars and mappings methods
+            # Return a simple result object supporting scalars().first() and all()
+            # Fetch configured results or default empty
+            if query_str in self.query_results:
+                items = self.query_results[query_str]
+            elif "unknown_query" in self.query_results:
+                items = self.query_results["unknown_query"]
+            else:
+                items = []
+            class MockExecutionResult:
+                def __init__(self, items):
+                    self._items = items
+                def scalars(self):
+                    class ScalarResult:
+                        def __init__(self, items):
+                            self._items = items
+                        def first(self):
+                            return self._items[0] if self._items else None
+                        def all(self):
+                            return self._items
+                    return ScalarResult(self._items)
+            return MockExecutionResult(items)
         elif query_str.lower().startswith("insert"):
             return MagicMock(rowcount=1)
         elif query_str.lower().startswith("update"):
@@ -98,9 +145,19 @@ class MockAsyncSession(MagicMock):
         mock_scalar_result.all = MagicMock(return_value=[])  # Default to empty list
         
         # Can be configured in test to return specific values
-        query_str = str(result.query) if hasattr(result, "query") else "unknown_query"
+        # Determine query identifier
+        if hasattr(result, "query"):
+            try:
+                query_str = str(result.query)
+            except Exception:
+                query_str = "unknown_query"
+        else:
+            query_str = "unknown_query"
+        # Fetch configured results for this query or default unknown_query
         if query_str in self.query_results:
             result_value = self.query_results[query_str]
+        elif "unknown_query" in self.query_results:
+            result_value = self.query_results["unknown_query"]
             if isinstance(result_value, list):
                 mock_scalar_result.all = MagicMock(return_value=result_value)
                 mock_scalar_result.first = MagicMock(
@@ -115,20 +172,29 @@ class MockAsyncSession(MagicMock):
 
     def add(self, obj):
         """Mock implementation of add."""
+        # Add object to session and pending
         self.added_objects.append(obj)
+        self._pending_objects.append(obj)
         if hasattr(obj, "id"):
             self._entity_registry[obj.id] = obj
 
     def delete(self, obj):
         """Mock implementation of delete."""
+        # Mark object for deletion
         self.deleted_objects.append(obj)
-        # Remove from entity registry
+        self._deleted_objects.append(obj)
+        # Remove from entity registry if exists
         if hasattr(obj, "id") and obj.id in self._entity_registry:
             del self._entity_registry[obj.id]
 
     def get(self, model_class, object_id):
         """Mock implementation of get."""
         return self._entity_registry.get(object_id)
+    
+    def set_result(self, results):
+        """Configure default result for SELECT queries when no specific query string is used."""
+        # Store results under unknown_query key for fallback
+        self.query_results['unknown_query'] = results
 
     def configure_mock_results(self, query: str, results: Any):
         """

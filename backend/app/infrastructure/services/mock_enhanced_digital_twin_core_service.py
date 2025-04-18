@@ -42,6 +42,7 @@ from app.domain.entities.model_adapter import (
 )
 from app.domain.services.enhanced_digital_twin_core_service import EnhancedDigitalTwinCoreService
 from app.domain.services.enhanced_mentalllama_service import EnhancedMentalLLaMAService
+from unittest.mock import MagicMock
 from app.domain.services.enhanced_xgboost_service import EnhancedXGBoostService
 from app.domain.services.enhanced_pat_service import EnhancedPATService
 from app.domain.entities.knowledge_graph import (
@@ -80,9 +81,10 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         # fixtures when a test only wants to exercise high‑level orchestration
         # logic.
 
-        self.mental_llama_service = mental_llama_service or EnhancedMentalLLaMAService()
-        self.xgboost_service = xgboost_service or EnhancedXGBoostService()
-        self.pat_service = pat_service or EnhancedPATService()
+        # Initialize or stub AI component services
+        self.mental_llama_service = mental_llama_service or MagicMock(spec=EnhancedMentalLLaMAService)
+        self.xgboost_service = xgboost_service or MagicMock(spec=EnhancedXGBoostService)
+        self.pat_service = pat_service or MagicMock(spec=EnhancedPATService)
         
         # In-memory storage of Digital Twin states, knowledge graphs, and belief networks
         self._digital_twin_states: Dict[UUID, Dict[UUID, Union[DigitalTwinState, DigitalTwinStateAdapter]]] = {}  # patient_id -> state_id -> state
