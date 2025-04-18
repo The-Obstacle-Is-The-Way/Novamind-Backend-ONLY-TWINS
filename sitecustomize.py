@@ -31,22 +31,19 @@ from types import FunctionType as _FunctionType
 # modules).
 if not getattr(_dt, "_nova_now_patched", False):  # type: ignore[attr-defined]
 
-    _original_now: _FunctionType = _dt.datetime.now  # type: ignore[assignment]
+    _orig_datetime_cls = _dt.datetime
 
-    def _now_compat(tz=None):  # type: ignore[override]
-        """Replacement for ``datetime.datetime.now`` accepting ``timedelta``."""
+    class _PatchedDateTime(_orig_datetime_cls):  # type: ignore[misc]
+        """`datetime.datetime` subclass whose `now` accepts a `timedelta`."""
 
-        if isinstance(tz, _dt.timedelta):
-            tz = _dt.timezone(tz)
-        return _original_now(tz)
+        @classmethod
+        def now(cls, tz=None):  # type: ignore[override]
+            if isinstance(tz, _dt.timedelta):
+                tz = _dt.timezone(tz)
+            return super().now(tz)
 
-    try:
-        # We can’t simply assign to ``datetime.datetime.now`` because the class
-        # is *immutable* in CPython.  Instead we monkey‑patch via the internal
-        # dictionary of the *type* (works on CPython / PyPy).
-        object.__setattr__(_dt.datetime, "now", staticmethod(_now_compat))
-        _dt._nova_now_patched = True  # type: ignore[attr-defined]
-    except Exception:  # pragma: no cover
-        # If the runtime prevents assignment (some alternative interpreters)
-        # we silently ignore – the offending tests will still fail there.
-        pass
+    # Replace reference in the *module* so `from datetime import datetime`
+    # picks up the patched version **before** any test modules are imported.
+    _dt.datetime = _PatchedDateTime  # type: ignore[assignment]
+
+    _dt._nova_now_patched = True  # type: ignore[attr-defined]
