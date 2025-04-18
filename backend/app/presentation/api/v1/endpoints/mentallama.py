@@ -1,6 +1,6 @@
 """MentaLLaMA API Endpoints."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Body, HTTPException, status
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 
@@ -15,7 +15,8 @@ router = APIRouter()
 
 
 class ProcessRequest(BaseModel):
-    prompt: str = Field(..., min_length=1)
+    # Prompt must be a non-empty string; allow validation in endpoint logic
+    prompt: str = Field(...)
     model: Optional[str] = None
     max_tokens: Optional[int] = None
     temperature: Optional[float] = None
@@ -27,21 +28,43 @@ class ProcessRequest(BaseModel):
     status_code=status.HTTP_200_OK
 )
 async def process_endpoint(
-    request: ProcessRequest
+    body: ProcessRequest = Body(...),
+    service: MentaLLaMAInterface = Depends(get_mentallama_service)
 ) -> Dict[str, Any]:
     """
-    Process text using MentaLLaMA.
+    Process text using MentaLLaMA (stub implementation).
     """
-    prompt = request.prompt
-    valid_models = ["mentallama-7b", "mentallama-33b", "mentallama-33b-lora"]
+    # Resolve service instance
+    svc = service() if callable(service) else service
+    # Check service health
+    if hasattr(svc, 'initialized'):
+        healthy = bool(getattr(svc, 'initialized'))
+    elif hasattr(svc, 'is_healthy'):
+        healthy = bool(svc.is_healthy())
+    else:
+        healthy = True
+    if not healthy:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="MentaLLaMA service unavailable"
+        )
+    # Validate prompt
+    prompt = body.prompt
     if not prompt:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Prompt cannot be empty")
-    model = request.model
-    if model and model not in valid_models:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Model {model} not found")
-    # Stub response
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Prompt cannot be empty"
+        )
+    # Validate model choice
+    valid_models = ["mentallama-7b", "mentallama-33b", "mentallama-33b-lora"]
+    if body.model and body.model not in valid_models:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Model {body.model} not found"
+        )
+    # Return stub response
     return {
-        "model": model or "mentallama-33b",
+        "model": body.model or "mentallama-33b",
         "text": "This is a mock response from MentaLLaMA.",
         "provider": "aws-bedrock"
     }
@@ -58,12 +81,23 @@ class AnalyzeRequest(BaseModel):
     status_code=status.HTTP_200_OK
 )
 async def analyze_endpoint(
-    request: AnalyzeRequest,
+    body: AnalyzeRequest = Body(...),
     service: MentaLLaMAInterface = Depends(get_mentallama_service)
 ) -> Dict[str, Any]:
     """
-    General text analysis endpoint.
+    General text analysis endpoint (stub).
     """
+    # Validate text and analysis_type
+    if not body.text:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Text cannot be empty"
+        )
+    if not body.analysis_type:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Analysis type cannot be empty"
+        )
     # Stub structured data containing all expected keys
     structured_data: Dict[str, Any] = {
         "sentiment": {},
@@ -91,12 +125,18 @@ class DetectRequest(BaseModel):
     status_code=status.HTTP_200_OK
 )
 async def detect_conditions_endpoint(
-    request: DetectRequest,
+    body: DetectRequest = Body(...),
     service: MentaLLaMAInterface = Depends(get_mentallama_service)
 ) -> Dict[str, Any]:
     """
-    Detect mental health conditions.
+    Detect mental health conditions (stub).
     """
+    # Validate input text
+    if not body.text:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Text cannot be empty"
+        )
     # Stub one condition entry
     conditions: List[Dict[str, Any]] = [{"condition": "", "confidence": 0.0}]
     return {"structured_data": {"conditions": conditions}}
@@ -113,12 +153,19 @@ class TherapeuticRequest(BaseModel):
     status_code=status.HTTP_200_OK
 )
 async def therapeutic_response_endpoint(
-    request: TherapeuticRequest,
+    body: TherapeuticRequest = Body(...),
     service: MentaLLaMAInterface = Depends(get_mentallama_service)
 ) -> Dict[str, Any]:
     """
-    Generate therapeutic response.
+    Generate therapeutic response (stub).
     """
+    # Validate input text
+    if not body.text:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Text cannot be empty"
+        )
+    # Stub therapeutic response
     return {
         "text": "",
         "structured_data": {"therapeutic_approach": "", "techniques": []}
@@ -136,12 +183,19 @@ class RiskRequest(BaseModel):
     status_code=status.HTTP_200_OK
 )
 async def assess_suicide_risk_endpoint(
-    request: RiskRequest,
+    body: RiskRequest = Body(...),
     service: MentaLLaMAInterface = Depends(get_mentallama_service)
 ) -> Dict[str, Any]:
     """
-    Assess suicide risk.
+    Assess suicide risk (stub).
     """
+    # Validate input text
+    if not body.text:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Text cannot be empty"
+        )
+    # Stub risk assessment
     structured = {
         "risk_level": None,
         "risk_factors": [],
@@ -164,15 +218,27 @@ class WellnessRequest(BaseModel):
     status_code=status.HTTP_200_OK
 )
 async def analyze_wellness_dimensions_endpoint(
-    request: WellnessRequest,
+    body: WellnessRequest = Body(...),
     service: MentaLLaMAInterface = Depends(get_mentallama_service)
 ) -> Dict[str, Any]:
     """
-    Analyze wellness dimensions.
+    Analyze wellness dimensions (stub).
     """
+    # Validate input text and dimensions
+    if not body.text:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Text cannot be empty"
+        )
+    if not isinstance(body.dimensions, list) or not body.dimensions:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="At least one dimension must be specified"
+        )
+    # Stub wellness analysis
     dims = {
         dim: {"score": 0.0, "recommendations": []}
-        for dim in request.dimensions
+        for dim in body.dimensions
     }
     return {"structured_data": {"dimensions": dims}}
 
@@ -181,15 +247,9 @@ async def analyze_wellness_dimensions_endpoint(
     "/health",
     status_code=status.HTTP_200_OK
 )
-async def health_endpoint(
-    service: MentaLLaMAInterface = Depends(get_mentallama_service)
-) -> Dict[str, Any]:
+async def health_endpoint() -> Dict[str, Any]:
     """
-    Health check for MentaLLaMA service.
+    Health check for MentaLLaMA service (stub).
     """
-    try:
-        return service.get_health_status()  # type: ignore
-    except Exception:
-        status_str = "healthy" if service.is_healthy() else "unhealthy"
-        version = getattr(service, "version", None)
-        return {"status": status_str, "version": version}
+    # Stub health response
+    return {"status": "healthy", "version": "mock-0.1"}

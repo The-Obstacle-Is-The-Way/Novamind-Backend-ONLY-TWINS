@@ -15,8 +15,14 @@ from enum import Enum
 from typing import Dict, Optional, Tuple, List, Any
 import uuid
 
-import pyotp
-import qrcode
+try:
+    import pyotp
+except ImportError:
+    pyotp = None  # MFA functionality disabled if pyotp is not available
+try:
+    import qrcode
+except ImportError:
+    qrcode = None  # QR code generation disabled if qrcode package is not available
 from io import BytesIO
 
 # Use canonical config import

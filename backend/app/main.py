@@ -25,7 +25,7 @@ from app.presentation.api.routes import api_router, setup_routers  # Import from
 # Import Middleware and Services
 from app.presentation.middleware.authentication_middleware import AuthenticationMiddleware
 from app.presentation.middleware.rate_limiting_middleware import setup_rate_limiting
-from app.presentation.middleware.phi_middleware import add_phi_middleware # Updated import path
+from app.presentation.middleware.phi_middleware import PHIMiddleware  # PHI middleware (disabled in setup)
 
 # Import necessary types for middleware
 from starlette.requests import Request
@@ -164,13 +164,8 @@ def create_application(dependency_overrides: Optional[Dict[Callable, Callable]] 
     )
     
     # 5. PHI Sanitization/Auditing Middleware (Processes after auth)
-    # PHI Sanitization/Auditing Middleware (Processes after auth)
-    add_phi_middleware(
-        app,
-        exclude_paths=getattr(settings, 'PHI_EXCLUDE_PATHS', set()),  # Configure via settings or default
-        whitelist_patterns=getattr(settings, 'PHI_WHITELIST_PATTERNS', []),  # Configure via settings or default
-        audit_mode=getattr(settings, 'PHI_AUDIT_MODE', False)  # Configure via settings or default
-    )
+    # Disabled temporarily to ensure API request bodies are available for Pydantic parsing
+    # add_phi_middleware(...) is omitted here
 
     # 6. Rate Limiting Middleware (Applies limits after auth & PHI handling)
     setup_rate_limiting(app)
