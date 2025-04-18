@@ -6,6 +6,7 @@ behaves correctly, handles errors appropriately, and follows the expected patter
 """
 import asyncio
 import pytest
+import pytest_asyncio
 import uuid
 import random
 import math
@@ -48,7 +49,7 @@ def mock_service():
     """Create an instance of the mock service for testing."""
     return MockEnhancedDigitalTwinCoreService()
 
-@pytest.fixture
+@pytest_asyncio.fixture
 @pytest.mark.venv_only()
 async def test_patient_id(mock_service) -> UUID:
     """Create a test patient with an initialized digital twin."""
@@ -197,10 +198,10 @@ async def test_update_receptor_profiles_updates_existing_mapping(
     # Define new profiles
     new_profiles = [
         ReceptorProfile(
-            brain_region=BrainRegion.INSULAR_CORTEX,
+            brain_region=BrainRegion.INSULA,
             neurotransmitter=Neurotransmitter.GLUTAMATE,
             receptor_type=ReceptorType.EXCITATORY,
-            receptor_subtype=ReceptorSubtype.NMDA,
+            receptor_subtype=ReceptorSubtype.GLUTAMATE_NMDA,
             density=0.6,
             sensitivity=0.7,
             clinical_relevance=ClinicalSignificance.MILD,
@@ -227,7 +228,7 @@ async def test_update_receptor_profiles_updates_existing_mapping(
 
     # Check that the new profiles were added
     glutamate_profiles = updated_mapping.get_receptor_profiles(
-        BrainRegion.INSULAR_CORTEX, Neurotransmitter.GLUTAMATE
+        BrainRegion.INSULA, Neurotransmitter.GLUTAMATE
     )
     assert len(glutamate_profiles) > 0
 

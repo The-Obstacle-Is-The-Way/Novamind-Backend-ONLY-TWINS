@@ -1187,6 +1187,10 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
     
     async def simulate_neurotransmitter_cascade(self, *args, **kwargs) -> Dict:
         """Stub for cascading neurotransmitter simulations."""
+        # Ensure mapping exists for patient (args[0] is patient_id)
+        patient_id = kwargs.get('patient_id') if 'patient_id' in kwargs else (args[0] if args else None)
+        if patient_id is not None and patient_id not in self._neurotransmitter_mappings:
+            await self.initialize_neurotransmitter_mapping(patient_id)
         # Provide a simple timeline with time_hours and neurotransmitter levels
         timeline = [{
             "time_hours": 0,
@@ -1540,9 +1544,9 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         # Resolve coroutine patient_id if provided as async fixture
         if asyncio.iscoroutine(patient_id):  # type: ignore
             patient_id = await patient_id
-        # Ensure patient exists (allow mapping initialization without prior digital twin)
-        # if patient_id not in self._digital_twin_states:
-        #     raise ValueError(f"Patient {patient_id} not found. Initialize digital twin first.")
+        # Ensure patient exists (digital twin initialized) before initializing mapping
+        if (patient_id not in self._digital_twin_states) and (patient_id not in self._knowledge_graphs):
+            raise ValueError(f"Patient {patient_id} not found. Initialize digital twin first.")
         
         # Create the mapping object
         if custom_mapping:
@@ -1591,9 +1595,10 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         Returns:
             Updated NeurotransmitterMapping
         """
-        # Ensure patient exists and has a mapping
+        # Ensure patient exists and has a mapping; create an empty mapping if none exists
         if patient_id not in self._neurotransmitter_mappings:
-            await self.initialize_neurotransmitter_mapping(patient_id)
+            # Initialize mapping without defaults to start empty
+            await self.initialize_neurotransmitter_mapping(patient_id, use_default_mapping=False)
         
         mapping = self._neurotransmitter_mappings[patient_id]
         
@@ -1645,10 +1650,14 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
         latest_state_id = max(self._digital_twin_states[patient_id].keys())
         current_state = self._digital_twin_states[patient_id][latest_state_id]
         
-        # Get current neurotransmitter level
+        # Get current neurotransmitter level (unwrap adapter if present)
         nt_level = 0.5  # Default level if not found
         if hasattr(current_state, 'neurotransmitters'):
-            nt_level = current_state.neurotransmitters.get(neurotransmitter, 0.5)
+            nt_state = current_state.neurotransmitters.get(neurotransmitter, 0.5)
+            if isinstance(nt_state, NeurotransmitterStateAdapter):
+                nt_level = nt_state.level
+            else:
+                nt_level = nt_state or 0.5
         
         # Determine which regions to analyze
         regions_to_check = brain_regions or list(BrainRegion)

@@ -9,6 +9,7 @@ import datetime
 import random
 import uuid
 import pytest
+import pytest_asyncio
 import math
 from typing import Dict, List, Tuple, Optional
 from uuid import UUID
@@ -75,7 +76,7 @@ def initial_data() -> Dict:
     }
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def initialized_patient(
     enhanced_services: Tuple[EnhancedDigitalTwinCoreService],
     patient_id: UUID,
@@ -96,6 +97,7 @@ async def initialized_patient(
 @pytest.mark.asyncio
 async def test_neurotransmitter_mapping_initialization(
     enhanced_services: Tuple[EnhancedDigitalTwinCoreService],
+    initialized_patient,  # Ensure digital twin is initialized for patient
     patient_id: UUID
 ):
     """Test initialization of the neurotransmitter mapping."""
@@ -136,6 +138,7 @@ async def test_neurotransmitter_mapping_initialization(
 @pytest.mark.asyncio
 async def test_add_custom_receptor_profile(
     enhanced_services: Tuple[EnhancedDigitalTwinCoreService],
+    initialized_patient,  # Ensure digital twin is initialized for patient
     patient_id: UUID
 ):
     """Test adding a custom receptor profile to the mapping."""

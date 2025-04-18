@@ -66,6 +66,8 @@ class ReceptorSubtype(Enum):
     GLUTAMATE_AMPA = auto()
     GLUTAMATE_KAINATE = auto()
     GLUTAMATE_MGLUR = auto()
+    # Cholinergic receptor subtype for compatibility
+    NICOTINIC = auto()
 
 
 class ReceptorProfile:
