@@ -461,3 +461,83 @@ class TemporalSequence(Generic[T]):
             result["temporal_resolution"] = self.temporal_resolution.value
         
         return result
+    
+# === Dynamic TemporalSequence override supporting both generic and simplified use cases ===
+
+# Capture reference to the original generic TemporalSequence
+_GenericTemporalSequence = TemporalSequence
+
+class TimePoint:
+    """Simple container for a time point in a temporal sequence."""
+    def __init__(self, time_value, data):
+        self.time_value = time_value
+        self.data = data
+
+class TemporalSequence(_GenericTemporalSequence):
+    """TemporalSequence supporting both generic and simplified usages."""
+    def __init__(self, *args, **kwargs):
+        # Simplified scenario: only name, description, time_unit provided
+        if {'name', 'description', 'time_unit'}.issubset(kwargs.keys()) and 'timestamps' not in kwargs:
+            self.name = kwargs.get('name')
+            self.description = kwargs.get('description')
+            self.time_unit = kwargs.get('time_unit')
+            self.time_points: list[TimePoint] = []
+        else:
+            # Generic initialization for repository or service usages
+            _GenericTemporalSequence.__init__(self, *args, **kwargs)
+
+    def add_time_point(self, time_value, data):
+        """Add a time point with associated data."""
+        point = TimePoint(time_value, data)
+        self.time_points.append(point)
+        self.time_points.sort(key=lambda p: p.time_value)
+
+    def get_time_point(self, time_value):
+        """Retrieve a time point exactly matching the given time value."""
+        for p in self.time_points:
+            if p.time_value == time_value:
+                return p
+        return None
+
+    def get_data_series(self, key):
+        """Get a list of data values for the specified key across all time points."""
+        return [p.data.get(key) for p in self.time_points]
+
+    def interpolate_at_time(self, t):
+        """Linearly interpolate data values at a given time."""
+        if not self.time_points:
+            return None
+        # Before first point
+        if t <= self.time_points[0].time_value:
+            return dict(self.time_points[0].data)
+        # After last point
+        if t >= self.time_points[-1].time_value:
+            return dict(self.time_points[-1].data)
+        # Between points
+        for i in range(len(self.time_points) - 1):
+            p1 = self.time_points[i]
+            p2 = self.time_points[i + 1]
+            if p1.time_value <= t <= p2.time_value:
+                span = p2.time_value - p1.time_value
+                if span == 0:
+                    return dict(p1.data)
+                ratio = (t - p1.time_value) / span
+                result = {}
+                keys = set(p1.data.keys()) | set(p2.data.keys())
+                for key in keys:
+                    v1 = p1.data.get(key, 0)
+                    v2 = p2.data.get(key, 0)
+                    result[key] = v1 + (v2 - v1) * ratio
+                return result
+        return dict(self.time_points[-1].data)
+
+    def to_dict(self):
+        """Serialize the sequence to a dictionary."""
+        return {
+            "name": self.name,
+            "description": self.description,
+            "time_unit": self.time_unit,
+            "time_points": [
+                {"time_value": p.time_value, "data": p.data} for p in self.time_points
+            ]
+        }
