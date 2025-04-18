@@ -213,12 +213,12 @@ class AWSXGBoostService(XGBoostInterface):
         Validate parameters for risk prediction.
         Raises ValidationError for invalid inputs.
         """
-        # Check risk type is a valid risk model
-        if not isinstance(risk_type, ModelType) or not risk_type.name.startswith("RISK_"):
-            raise ValidationError(f"Invalid risk type: {risk_type}", field="risk_type", value=risk_type)
         # Patient ID must be provided
         if not patient_id:
             raise ValidationError("Patient ID cannot be empty", field="patient_id", value=patient_id)
+        # Check risk type is a valid risk model
+        if not isinstance(risk_type, ModelType) or not risk_type.name.startswith("RISK_"):
+            raise ValidationError(f"Invalid risk type: {risk_type}", field="risk_type", value=risk_type)
         # Clinical data must be a dict
         if not isinstance(clinical_data, dict):
             raise ValidationError("Clinical data must be provided", field="clinical_data", value=clinical_data)
@@ -227,7 +227,7 @@ class AWSXGBoostService(XGBoostInterface):
         self,
         patient_id: str,
         risk_type: ModelType,
-        features: Dict[str, Any],
+        clinical_data: Dict[str, Any],
         time_frame_days: Optional[int] = None,
         **kwargs
     ) -> Any:
@@ -253,13 +253,13 @@ class AWSXGBoostService(XGBoostInterface):
         self._ensure_initialized()
         
         # Validate parameters
-        self._validate_prediction_params(risk_type, patient_id, features)
+        self._validate_prediction_params(risk_type, patient_id, clinical_data)
         
         # Prepare input data for invocation
         tf_days = time_frame_days if time_frame_days is not None else kwargs.get("time_frame_days", 30)
         input_data = {
             "patient_id": patient_id,
-            "clinical_data": features,
+            "clinical_data": clinical_data,
             "time_frame_days": tf_days
         }
         # Determine endpoint name: prefix + normalized risk type
