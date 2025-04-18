@@ -227,103 +227,94 @@ class AWSXGBoostService(XGBoostInterface):
         self,
         patient_id: str,
         risk_type: str,
-        clinical_data: Dict[str, Any],
+        features: Dict[str, Any],
         time_frame_days: Optional[int] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> Any:
         """
         Predict risk level using a risk model.
-        
-        Args:
-            patient_id: Patient identifier
-            risk_type: Type of risk to predict
-            clinical_data: Clinical data for prediction
-            **kwargs: Additional prediction parameters
-            
-        Returns:
-            Risk prediction result
-            
-        Raises:
-            ValidationError: If parameters are invalid
-            DataPrivacyError: If PHI is detected in data
-            ModelNotFoundError: If the model is not found
-            ServiceConnectionError: If there's an AWS service error
-            PredictionError: If prediction fails
         """
+        from types import SimpleNamespace
+        # Ensure service initialized
         self._ensure_initialized()
-
-        # Validate parameters
-        self._validate_prediction_params(risk_type, patient_id, clinical_data)
-
+        # Validate inputs
+        if not patient_id:
+            raise ValidationError("Patient ID cannot be empty", field="patient_id", value=patient_id)
+        # Features must be a non-empty dict
+        if not isinstance(features, dict) or not features:
+            raise ValidationError("Features must be a non-empty dict", field="features", value=features)
+        # Validate risk type
+        # Accept ModelType enum or string
+        rt_val = risk_type.value if hasattr(risk_type, 'value') else str(risk_type)
+        valid_risks = {m.value for m in ModelType if m.name.startswith('RISK')}
+        if rt_val not in valid_risks:
+            raise ValidationError(f"Invalid risk type: {rt_val}", field="risk_type", value=risk_type)
         # Data privacy check
         if self._privacy_level == PrivacyLevel.STRICT:
-            has_phi, fields = self._check_phi_in_data(clinical_data)
+            has_phi, fields = self._check_phi_in_data(features)
             if has_phi:
                 raise DataPrivacyError("Potential PHI detected in input data")
-
-        # Prepare input data for invocation
+        # Prepare invocation payload
         tf_days = time_frame_days if time_frame_days is not None else kwargs.get("time_frame_days", 30)
-        input_data = {
-            "patient_id": patient_id,
-            "clinical_data": clinical_data,
-            "time_frame_days": tf_days
-        }
-
-        # Determine SageMaker endpoint
-        endpoint_key = f"risk-{risk_type}"
-        endpoint = self._model_mappings.get(endpoint_key)
-        if not endpoint:
-            raise ModelNotFoundError(f"No endpoint mapping found for model type: {endpoint_key}")
-
-        # Check endpoint status
+        payload = {"patient_id": patient_id, "features": features, "time_frame_days": tf_days}
+        # Determine endpoint name
+        endpoint = f"{self._endpoint_prefix}{rt_val}"
+        # Check endpoint existence
         try:
             desc = self._sagemaker.describe_endpoint(EndpointName=endpoint)
         except botocore.exceptions.ClientError:
-            raise ModelNotFoundError(f"No endpoint mapping found for model type: {endpoint_key}")
+            raise ModelNotFoundError(f"No model available for {rt_val}")
         if desc.get("EndpointStatus") != "InService":
             raise ServiceConnectionError(f"Endpoint {endpoint} not in service")
-
-        # Invoke SageMaker runtime
+        # Invoke endpoint
         try:
-            response = self._sagemaker_runtime.invoke_endpoint(
+            resp = self._sagemaker_runtime.invoke_endpoint(
                 EndpointName=endpoint,
                 ContentType="application/json",
-                Body=json.dumps(input_data),
-                Accept="application/json"
+                Body=json.dumps(payload),
             )
-        except botocore.exceptions.ClientError as e:
-            error_code = e.response.get("Error", {}).get("Code", "")
-            error_msg = e.response.get("Error", {}).get("Message", "")
-            if error_code == "ModelError":
-                raise PredictionError(f"Model prediction failed: {error_msg}")
-            elif error_code == "ValidationError":
-                raise ValidationError(error_msg, field="clinical_data", value=clinical_data)
-            elif error_code in ("ServiceUnavailable", "ThrottlingException"):
-                raise ServiceConnectionError(f"AWS service error during prediction: {error_code}")
-            else:
-                raise ServiceConnectionError(f"AWS service error during prediction: {error_code}")
-
-        # Parse response body
-        body = response.get("Body")
-        raw_bytes = body.read()
-        body_json = json.loads(raw_bytes.decode("utf-8"))
-
-        # Build final result
+        except botocore.exceptions.ClientError:
+            raise ServiceConnectionError("Failed to invoke endpoint")
+        # Parse response
+        body = resp.get("Body")
+        raw = body.read()
+        body_json = json.loads(raw.decode('utf-8'))
+        # Extract fields
+        score = body_json.get("risk_score")
+        confidence = body_json.get("confidence")
+        contrib = body_json.get("contributing_factors", [])
+        # Map score to risk level
+        # Simple thresholds: <=0.33 low, <=0.66 moderate, else high
+        if score is None:
+            raise PredictionError("Missing risk score in response")
+        if score <= 0.33:
+            level = RiskLevel.LOW
+        elif score <= 0.66:
+            level = RiskLevel.MODERATE
+        else:
+            level = RiskLevel.HIGH
+        # Assemble result
+        pred_id = body_json.get("prediction_id") or str(uuid.uuid4())
         result = {
-            "prediction": body_json.get("prediction", {}),
-            "prediction_id": body_json.get("prediction_id") or str(uuid.uuid4()),
-            "timestamp": datetime.now().isoformat()
-        }
-
-        # Notify observers
-        self._notify_observers(EventType.PREDICTION, {
-            "prediction_type": "risk",
-            "risk_type": risk_type,
+            "prediction_id": pred_id,
             "patient_id": patient_id,
-            "prediction_id": result["prediction_id"]
-        })
-
-        return result
+            "prediction_type": rt_val,
+            "risk_level": level,
+            "risk_score": score,
+            "confidence": confidence,
+            "time_frame_days": tf_days,
+            "contributing_factors": contrib,
+        }
+        # Store prediction
+        try:
+            self._predictions_table.put_item(Item={**result})
+        except Exception:
+            # Log failure but do not prevent returning result
+            pass
+        # Notify observers
+        self._notify_observers(EventType.PREDICTION, result)
+        # Return as object
+        return SimpleNamespace(**result)
     
     def predict_treatment_response(
         self,
