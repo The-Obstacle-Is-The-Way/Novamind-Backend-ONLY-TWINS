@@ -79,6 +79,10 @@ def _patch_test_module(mod: ModuleType) -> None:  # pragma: no cover – helper
 
         mod.datetime = _DateTimeCompat  # type: ignore[attr-defined]
 
+    # DEBUG: indicate patch executed – to be removed
+    import sys as _sys
+    _sys.stderr.write('[conftest] Patched digital twin test module\n')
+
 
 # ---------------------------------------------------------------------------
 # Meta‑path finder / loader – patches target module *during* import
