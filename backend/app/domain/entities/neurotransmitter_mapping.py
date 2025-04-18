@@ -473,16 +473,51 @@ class NeurotransmitterMapping:
                 )
             else:
                 self.receptor_map[region][neurotransmitter] = effect
+    
+    def calculate_regional_activity(
+        self,
+        brain_region: BrainRegion,
+        neurotransmitter_levels: dict[Neurotransmitter, float]
+    ) -> dict[str, float]:
+        """
+        Calculate regional activity levels based on receptor profiles and given neurotransmitter levels.
+        
+        Args:
+            brain_region: The brain region to calculate activity for.
+            neurotransmitter_levels: Mapping of neurotransmitter to its level (0.0 - 1.0).
+        
+        Returns:
+            Dict with keys 'excitatory', 'inhibitory', and 'net_activity'.
+        """
+        excitatory = 0.0
+        inhibitory = 0.0
+        # Sum effects for each profile in the region
+        for profile in self.receptor_profiles:
+            if profile.brain_region != brain_region:
+                continue
+            # Get level for this neurotransmitter, default to 0.0 if missing
+            level = neurotransmitter_levels.get(profile.neurotransmitter, 0.0)
+            effect = profile.density * profile.sensitivity * level
+            if profile.receptor_type == ReceptorType.EXCITATORY:
+                excitatory += effect
+            elif profile.receptor_type == ReceptorType.INHIBITORY:
+                inhibitory += effect
+        net_activity = excitatory - inhibitory
+        return {
+            "excitatory": excitatory,
+            "inhibitory": inhibitory,
+            "net_activity": net_activity,
+        }
 
 
-def create_default_neurotransmitter_mapping() -> NeurotransmitterMapping:
+def create_default_neurotransmitter_mapping(patient_id: Optional[UUID] = None) -> NeurotransmitterMapping:
     """
     Create a default neurotransmitter mapping with scientific defaults.
     
     Returns:
         A neurotransmitter mapping with default values
     """
-    mapping = NeurotransmitterMapping()
+    mapping = NeurotransmitterMapping(patient_id=patient_id)
     
     # Add default production sites
     mapping.add_production_site(Neurotransmitter.SEROTONIN, BrainRegion.RAPHE_NUCLEI)
