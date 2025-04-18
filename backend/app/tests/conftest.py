@@ -119,6 +119,17 @@ class MockSettings:
         self.RATE_LIMIT_TIMES = 500 # Allow generous limits for testing
         self.RATE_LIMIT_SECONDS = 60
 
+        # ------------------------------------------------------------------
+        # Miscellaneous / Meta
+        # ------------------------------------------------------------------
+        # Several FastAPI application‑creation helpers expose a semantic
+        # version string via `settings.VERSION`.  Production settings load
+        # this from project metadata.  In the test harness we merely need the
+        # attribute to exist so that `create_application()` does not raise an
+        # AttributeError.  The concrete value is irrelevant for test logic,
+        # therefore we provide a static placeholder.
+        self.VERSION = "0.0.0-test"
+
     def is_production(self) -> bool:
         return self.ENVIRONMENT == "production"
 
@@ -456,6 +467,18 @@ async def client(
 
     logger.info("[Fixture client - async] EXITING")
     app.dependency_overrides = {} 
+
+# ---------------------------------------------------------------------------
+# Compatibility alias – some integration tests expect a `test_client` fixture
+# that behaves exactly like the standard `client` fixture defined above.  We
+# simply expose an alias so that both names resolve to the same object.
+# ---------------------------------------------------------------------------
+
+
+@pytest_asyncio.fixture(scope="function")
+async def test_client(client):  # type: ignore[valid-type]
+    """Alias for the *client* fixture required by older tests."""
+    yield client
 
 # --- Database Fixtures (Independent of client) ---
 # If you need direct DB access in tests *not* using the client, define separate fixtures.

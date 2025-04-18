@@ -63,14 +63,26 @@ class MockEnhancedDigitalTwinCoreService(EnhancedDigitalTwinCoreService):
     It provides realistic but simulated responses for demonstration and testing.
     """
     
-    def __init__(self, mental_llama_service: EnhancedMentalLLaMAService, xgboost_service: EnhancedXGBoostService, pat_service: EnhancedPATService):
+    def __init__(
+        self,
+        mental_llama_service: Optional[EnhancedMentalLLaMAService] = None,
+        xgboost_service: Optional[EnhancedXGBoostService] = None,
+        pat_service: Optional[EnhancedPATService] = None,
+    ):
         """
         Initialize the mock enhanced digital twin core service with its component services.
         """
         # Assign provided AI component services
-        self.mental_llama_service = mental_llama_service
-        self.xgboost_service = xgboost_service
-        self.pat_service = pat_service
+        # The real implementation would require these collaborators; for the
+        # purposes of unit‑testing we allow them to be omitted and fall back to
+        # simple *stub* instances that expose the minimal async interface used
+        # inside this mock service.  This prevents a cascading explosion of
+        # fixtures when a test only wants to exercise high‑level orchestration
+        # logic.
+
+        self.mental_llama_service = mental_llama_service or EnhancedMentalLLaMAService()
+        self.xgboost_service = xgboost_service or EnhancedXGBoostService()
+        self.pat_service = pat_service or EnhancedPATService()
         
         # In-memory storage of Digital Twin states, knowledge graphs, and belief networks
         self._digital_twin_states: Dict[UUID, Dict[UUID, Union[DigitalTwinState, DigitalTwinStateAdapter]]] = {}  # patient_id -> state_id -> state
