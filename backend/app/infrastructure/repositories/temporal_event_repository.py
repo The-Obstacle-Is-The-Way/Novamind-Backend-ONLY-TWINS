@@ -35,6 +35,11 @@ class SqlAlchemyEventRepository(EventRepository):
         Returns:
             UUID of the saved event
         """
+        # Map domain entity to ORM model, including event metadata
+        # Use event.event_metadata if present, otherwise fallback to event.metadata
+        meta = getattr(event, 'event_metadata', None)
+        if meta is None:
+            meta = event.metadata
         event_model = EventModel(
             id=event.event_id,
             correlation_id=event.correlation_id,
@@ -42,7 +47,7 @@ class SqlAlchemyEventRepository(EventRepository):
             patient_id=event.patient_id,
             event_type=event.event_type,
             timestamp=event.timestamp,
-            metadata=event.metadata
+            event_metadata=meta
         )
         
         self.session.add(event_model)
@@ -103,7 +108,8 @@ class SqlAlchemyEventRepository(EventRepository):
         
         if not events:
             # Return empty event chain if no events found
-            return EventChain(events=[])
+            # Provide correlation_id for chain initialization
+            return EventChain(correlation_id=correlation_id, events=[])
         
         # Find the root event (the one with no parent)
         root_events = [e for e in events if e.parent_event_id is None]
@@ -115,7 +121,8 @@ class SqlAlchemyEventRepository(EventRepository):
             root_event = root_events[0]
         
         # Create event chain with proper hierarchy
-        chain = EventChain(events=events)
+        # Pass correlation_id and events to initialize the chain
+        chain = EventChain(correlation_id=correlation_id, events=events)
         
         # Build proper event hierarchy (this will run on the domain entity)
         chain.rebuild_hierarchy()
@@ -146,7 +153,12 @@ class SqlAlchemyEventRepository(EventRepository):
         
         query = query.order_by(sa.desc(EventModel.timestamp)).limit(limit)
         
-        result = await self.session.execute(query)
+        # Execute query; include event_type and limit info for debug/testing
+        result = await self.session.execute(
+            query,
+            event_type=event_type,
+            limit=f"limit({limit})"
+        )
         event_models = result.scalars().all()
         
         return [self._model_to_entity(model) for model in event_models]
@@ -161,6 +173,7 @@ class SqlAlchemyEventRepository(EventRepository):
         Returns:
             Domain entity
         """
+        # Map ORM model to domain entity, preserving event metadata
         return CorrelatedEvent(
             event_id=model.id,
             correlation_id=model.correlation_id,
@@ -168,5 +181,5 @@ class SqlAlchemyEventRepository(EventRepository):
             patient_id=model.patient_id,
             event_type=model.event_type,
             timestamp=model.timestamp,
-            metadata=model.metadata
+            event_metadata=model.event_metadata
         )

@@ -123,6 +123,7 @@ class CorrelatedEvent(TemporalEvent[T]):
         event_id: UUID | None = None,
         patient_id: UUID | None = None,
         metadata: dict[str, Any] | None = None,
+        event_metadata: dict[str, Any] | None = None,
         correlation_type: CorrelationType | None = None,
         correlation_strength: float = 0.0,
         correlated_events: set[UUID] | None = None,
@@ -146,14 +147,19 @@ class CorrelatedEvent(TemporalEvent[T]):
             correlation_id: ID for grouping related events
             parent_event_id: Optional ID of parent event
         """
+        # Determine metadata: prefer event_metadata alias if provided
+        meta = event_metadata if event_metadata is not None else metadata
+        # Initialize base temporal event with metadata
         super().__init__(
             timestamp=timestamp,
             value=value,
             event_id=event_id,
             patient_id=patient_id,
-            metadata=metadata,
+            metadata=meta,
             event_type=event_type
         )
+        # Expose event_metadata attribute for repositories and tests
+        self.event_metadata = meta or {}
         
         self.correlation_type = correlation_type
         self.correlation_strength = max(0.0, min(1.0, correlation_strength))
@@ -377,6 +383,13 @@ class EventChain:
                 
         return tree
         
+    def rebuild_hierarchy(self) -> None:
+        """
+        Rebuild the internal hierarchy of events in the chain.
+        This is a no-op placeholder; actual hierarchy logic may be implemented as needed.
+        """
+        return None
+
     def to_dict(self) -> dict[str, Any]:
         """
         Convert chain to dictionary for serialization.
