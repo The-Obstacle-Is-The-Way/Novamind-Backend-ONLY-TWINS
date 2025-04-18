@@ -108,11 +108,11 @@ def app(mock_analytics_service, mock_cache_service):
     # Ensure get_cache_service is imported if not already
     try:
         # Corrected import path for get_cache_service
-        from app.presentation.api.dependencies import get_cache_service
+        from app.presentation.api.dependencies.services import get_cache_service
         app.dependency_overrides[get_cache_service] = lambda: mock_cache_service
-        print("Cache service override applied.") # Debug print
+        print("Cache service override applied.")
     except ImportError:
-        print("Failed to import get_cache_service, override skipped.") # Debug print
+        print("Failed to import get_cache_service, override skipped.")
         pass
 
     # Override AnalyticsService directly to ensure the mock is used by endpoints
