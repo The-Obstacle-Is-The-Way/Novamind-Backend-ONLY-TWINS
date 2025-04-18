@@ -12,6 +12,19 @@ from contextlib import asynccontextmanager
 import asyncio
 from typing import Optional, Dict, Any
 
+# Monkey-patch httpx.AsyncClient to support 'app' parameter for FastAPI testing
+try:
+    import httpx
+    from httpx import AsyncClient as _AsyncClient, ASGITransport
+    class AsyncClient(_AsyncClient):
+        def __init__(self, *args, app=None, **kwargs):
+            if app is not None:
+                kwargs['transport'] = ASGITransport(app=app)
+            super().__init__(*args, **kwargs)
+    httpx.AsyncClient = AsyncClient
+except ImportError:
+    pass
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
