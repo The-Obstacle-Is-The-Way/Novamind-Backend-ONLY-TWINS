@@ -20,7 +20,7 @@ values untouched – caller wins.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Any, Optional
 
 
@@ -42,6 +42,7 @@ class Patient:
     # Dual‑API identification fields
     # ------------------------------------------------------------------
 
+    # Full patient name (optional – may be derived from first_name/last_name)
     name: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
@@ -100,16 +101,24 @@ class Patient:
 
         # 3. Datetime parsing convenience ---------------------------------------------
 
-        def _ensure_datetime(value: datetime | str | None) -> datetime | str | None:
-            if value is None or isinstance(value, datetime):
+        def _ensure_datetime(value: datetime | str | None) -> datetime | date | str | None:
+            # Accept date or datetime as already valid
+            if value is None or isinstance(value, (datetime, date)):
                 return value
-
-            # Try ISO‑8601 first; fall back to simple YYYY‑MM‑DD.
-            try:
-                return datetime.fromisoformat(value.replace("Z", "+00:00"))
-            except ValueError:
+            # Handle simple date strings (YYYY-MM-DD)
+            if isinstance(value, str):
                 try:
-                    return datetime.strptime(value, "%Y-%m-%d")
+                    return date.fromisoformat(value)
+                except ValueError:
+                    pass
+                # Try ISO‑8601 datetime string
+                try:
+                    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+                except ValueError:
+                    pass
+                # Fallback to simple date parsing
+                try:
+                    return datetime.strptime(value, "%Y-%m-%d").date()
                 except ValueError:
                     return value  # leave unchanged – caller can handle
 
@@ -134,3 +143,39 @@ class Patient:
     # Hashing: we consider the *id* to be the immutable primary key.
     def __hash__(self) -> int:  # pragma: no cover – required for set() in tests
         return hash(self.id)
+    
+    # ------------------------------------------------------------------
+    # Helper methods for updating patient data
+    # ------------------------------------------------------------------
+    def update_contact_info(self, email: str | None = None, phone: str | None = None, address: str | None = None) -> None:
+        """Update contact fields and refresh updated_at timestamp."""
+        if email is not None:
+            self.email = email
+        if phone is not None:
+            self.phone = phone
+        if address is not None:
+            self.address = address
+        self.updated_at = datetime.now()
+
+    def add_medical_history_item(self, item: str) -> None:
+        """Add an item to medical_history and refresh updated_at."""
+        self.medical_history.append(item)
+        self.updated_at = datetime.now()
+
+    def add_medication(self, medication: str) -> None:
+        """Add a medication and refresh updated_at."""
+        self.medications.append(medication)
+        self.updated_at = datetime.now()
+
+    def add_allergy(self, allergy: str) -> None:
+        """Add an allergy if not existing and refresh updated_at."""
+        if allergy not in self.allergies:
+            self.allergies.append(allergy)
+            self.updated_at = datetime.now()
+
+    def add_treatment_note(self, note: dict) -> None:
+        """Add a treatment note with timestamp and refresh updated_at."""
+        entry = dict(note)
+        entry["date"] = datetime.now()
+        self.treatment_notes.append(entry)
+        self.updated_at = datetime.now()
