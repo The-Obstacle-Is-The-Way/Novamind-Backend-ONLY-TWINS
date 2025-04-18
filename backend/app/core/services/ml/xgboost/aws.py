@@ -208,7 +208,7 @@ class AWSXGBoostService(XGBoostInterface):
                 del self._observers[event_key]
             self._logger.debug(f"Observer unregistered for event type {event_type}")
     
-    def _validate_prediction_params(self, risk_type: ModelType, patient_id: str, clinical_data: Dict[str, Any]) -> None:
+    def _validate_prediction_params(self, risk_type, patient_id: str, clinical_data: Dict[str, Any]) -> None:
         """
         Validate parameters for risk prediction.
         Raises ValidationError for invalid inputs.
@@ -216,21 +216,21 @@ class AWSXGBoostService(XGBoostInterface):
         # Patient ID must be provided
         if not patient_id:
             raise ValidationError("Patient ID cannot be empty", field="patient_id", value=patient_id)
-        # Check risk type is a valid risk model
-        if not isinstance(risk_type, ModelType) or not risk_type.name.startswith("RISK_"):
-            raise ValidationError(f"Invalid risk type: {risk_type}", field="risk_type", value=risk_type)
-        # Clinical data must be a dict
+        # Clinical data must be provided as a dict
         if not isinstance(clinical_data, dict):
             raise ValidationError("Clinical data must be provided", field="clinical_data", value=clinical_data)
+        # Clinical data cannot be empty
+        if not clinical_data:
+            raise ValidationError("Clinical data cannot be empty", field="clinical_data", value=clinical_data)
 
     def predict_risk(
         self,
         patient_id: str,
-        risk_type: ModelType,
+        risk_type: str,
         clinical_data: Dict[str, Any],
         time_frame_days: Optional[int] = None,
         **kwargs
-    ) -> Any:
+    ) -> Dict[str, Any]:
         """
         Predict risk level using a risk model.
         
@@ -251,10 +251,16 @@ class AWSXGBoostService(XGBoostInterface):
             PredictionError: If prediction fails
         """
         self._ensure_initialized()
-        
+
         # Validate parameters
         self._validate_prediction_params(risk_type, patient_id, clinical_data)
-        
+
+        # Data privacy check
+        if self._privacy_level == PrivacyLevel.STRICT:
+            has_phi, fields = self._check_phi_in_data(clinical_data)
+            if has_phi:
+                raise DataPrivacyError("Potential PHI detected in input data")
+
         # Prepare input data for invocation
         tf_days = time_frame_days if time_frame_days is not None else kwargs.get("time_frame_days", 30)
         input_data = {
@@ -262,72 +268,62 @@ class AWSXGBoostService(XGBoostInterface):
             "clinical_data": clinical_data,
             "time_frame_days": tf_days
         }
-        # Determine endpoint name: prefix + normalized risk type
-        endpoint_name = f"{self._endpoint_prefix}{risk_type.name.lower()}"
-        # Ensure endpoint exists and is in service
+
+        # Determine SageMaker endpoint
+        endpoint_key = f"risk-{risk_type}"
+        endpoint = self._model_mappings.get(endpoint_key)
+        if not endpoint:
+            raise ModelNotFoundError(f"No endpoint mapping found for model type: {endpoint_key}")
+
+        # Check endpoint status
         try:
-            desc = self._sagemaker.describe_endpoint(EndpointName=endpoint_name)
-        except botocore.exceptions.ClientError as e:
-            # No such endpoint
-            raise ModelNotFoundError(f"No model available for {risk_type.name.lower()}") from e
+            desc = self._sagemaker.describe_endpoint(EndpointName=endpoint)
+        except botocore.exceptions.ClientError:
+            raise ModelNotFoundError(f"No endpoint mapping found for model type: {endpoint_key}")
         if desc.get("EndpointStatus") != "InService":
-            raise ServiceConnectionError(f"Endpoint {endpoint_name} not in service")
+            raise ServiceConnectionError(f"Endpoint {endpoint} not in service")
+
         # Invoke SageMaker runtime
         try:
             response = self._sagemaker_runtime.invoke_endpoint(
-                EndpointName=endpoint_name,
+                EndpointName=endpoint,
                 ContentType="application/json",
-                Body=json.dumps(input_data)
+                Body=json.dumps(input_data),
+                Accept="application/json"
             )
         except botocore.exceptions.ClientError as e:
-            # Invocation failed
-            err_msg = e.response.get("Error", {}).get("Message", str(e))
-            raise ServiceConnectionError(f"Failed to invoke endpoint: {err_msg}") from e
-        # Parse result
+            error_code = e.response.get("Error", {}).get("Code", "")
+            error_msg = e.response.get("Error", {}).get("Message", "")
+            if error_code == "ModelError":
+                raise PredictionError(f"Model prediction failed: {error_msg}")
+            elif error_code == "ValidationError":
+                raise ValidationError(error_msg, field="clinical_data", value=clinical_data)
+            elif error_code in ("ServiceUnavailable", "ThrottlingException"):
+                raise ServiceConnectionError(f"AWS service error during prediction: {error_code}")
+            else:
+                raise ServiceConnectionError(f"AWS service error during prediction: {error_code}")
+
+        # Parse response body
         body = response.get("Body")
-        raw = json.loads(body.read().decode("utf-8"))
-        # Build result object
-        score = raw.get("risk_score")
-        confidence = raw.get("confidence")
-        factors = raw.get("contributing_factors", [])
-        # Determine risk level based on score
-        if score is None:
-            raise PredictionError("Missing risk_score in response")
-        if score < 0.2:
-            risk_level = RiskLevel.VERY_LOW
-        elif score < 0.4:
-            risk_level = RiskLevel.LOW
-        elif score < 0.6:
-            risk_level = RiskLevel.MODERATE
-        elif score < 0.8:
-            risk_level = RiskLevel.HIGH
-        else:
-            risk_level = RiskLevel.VERY_HIGH
-        # Generate prediction ID
-        pred_id = str(uuid.uuid4())
-        # Assemble final result
+        raw_bytes = body.read()
+        body_json = json.loads(raw_bytes.decode("utf-8"))
+
+        # Build final result
         result = {
-            "prediction_id": pred_id,
-            "patient_id": patient_id,
-            "prediction_type": risk_type,
-            "risk_level": risk_level,
-            "risk_score": score,
-            "confidence": confidence,
-            "time_frame_days": tf_days,
-            "contributing_factors": factors
+            "prediction": body_json.get("prediction", {}),
+            "prediction_id": body_json.get("prediction_id") or str(uuid.uuid4()),
+            "timestamp": datetime.now().isoformat()
         }
-        # Store prediction record
-        self._predictions_table.put_item(Item=result)
+
         # Notify observers
         self._notify_observers(EventType.PREDICTION, {
             "prediction_type": "risk",
             "risk_type": risk_type,
             "patient_id": patient_id,
-            "prediction_id": pred_id
+            "prediction_id": result["prediction_id"]
         })
-        # Return as object for attribute access
-        from types import SimpleNamespace
-        return SimpleNamespace(**result)
+
+        return result
     
     def predict_treatment_response(
         self,
