@@ -58,7 +58,7 @@ def setup_routers() -> None:
     # Temporal Neurotransmitter router
     api_router.include_router(
         get_router("temporal_neurotransmitter"),
-        prefix="/v1/temporal", # Add v1 prefix
+        prefix="/temporal-neurotransmitter",  # Mount under /api/v1/temporal-neurotransmitter
         tags=["Temporal Neurotransmitter System"]
     )
     

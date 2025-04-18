@@ -8,6 +8,7 @@ coverage across all neurotransmitters and brain regions.
 import asyncio
 import logging
 import pytest
+import pytest_asyncio
 from datetime import datetime, timedelta
 from app.domain.utils.datetime_utils import UTC
 from typing import Dict, List, Any
@@ -101,12 +102,12 @@ def visualization_preprocessor():
     return NeurotransmitterVisualizationPreprocessor()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def temporal_service(sequence_repository: TemporalSequenceRepository,
-                         event_repository: EventRepository,
-                         xgboost_service: EnhancedXGBoostService,
-                         visualization_preprocessor: NeurotransmitterVisualizationPreprocessor,
-                         patient_id: UUID):
+                          event_repository: EventRepository,
+                          xgboost_service: EnhancedXGBoostService,
+                          visualization_preprocessor: NeurotransmitterVisualizationPreprocessor,
+                          patient_id: UUID):
     """Create temporal neurotransmitter service with repositories, XGBoost, visualization, and patient_id."""
     # The service now requires patient_id if nt_mapping is not provided, which is the case here.
     return TemporalNeurotransmitterService(
@@ -121,8 +122,11 @@ async def temporal_service(sequence_repository: TemporalSequenceRepository,
 @pytest.fixture
 def mock_current_user():
     """Mock current user dependency."""
-    with patch("app.presentation.api.dependencies.auth.get_current_user_dict",
-               return_value=AsyncMock(return_value=test_user)) as mock:
+    # Patch the alias DI in our API routes to return the test_user
+    with patch(
+        "app.api.routes.temporal_neurotransmitter.get_current_user",
+        new=AsyncMock(return_value=test_user)
+    ) as mock:
         yield mock
 
 
@@ -312,8 +316,10 @@ async def test_api_integration_with_service(
     This test verifies that the API layer correctly integrates with the service layer.
     """
     # Setup - patch dependencies to use our service instance
-    with mock_current_user, patch("app.presentation.api.dependencies.services.get_temporal_neurotransmitter_service",
-                                 return_value=AsyncMock(return_value=temporal_service)) as mock:
+    with mock_current_user, patch(
+        "app.api.routes.temporal_neurotransmitter.get_temporal_neurotransmitter_service",
+        return_value=AsyncMock(return_value=temporal_service)
+    ) as mock:
         # Test 1: Generate time series
         time_series_response = test_client.post(  # Use test_client fixture
             "/api/v1/temporal-neurotransmitter/time-series",

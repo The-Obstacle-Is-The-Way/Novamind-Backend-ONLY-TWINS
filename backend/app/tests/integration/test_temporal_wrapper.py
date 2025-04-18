@@ -31,7 +31,7 @@ async def test_temporal_endpoints_integration(
     """
     # Setup - patch dependencies to use our service instance
     with mock_current_user, patch(
-        "app.api.dependencies.services.get_temporal_neurotransmitter_service",
+        "app.api.routes.temporal_neurotransmitter.get_temporal_neurotransmitter_service",
         new=AsyncMock(return_value=temporal_service)
     ):
         # Test 1: Generate time series

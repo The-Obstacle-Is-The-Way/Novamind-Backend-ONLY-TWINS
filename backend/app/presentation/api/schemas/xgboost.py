@@ -109,10 +109,10 @@ class RiskPredictionRequest(BaseModel):
     patient_id: str = Field(..., description="Patient identifier")
     # Use str for risk_type to allow model lookup to handle unknown types
     risk_type: str = Field(..., description="Type of risk to predict")
-    # Allow patient_data to be optional; clinical_data will be used if patient_data is not provided
-    patient_data: Optional[Dict[str, Any]] = Field(None, description="Patient data for prediction")
     clinical_data: Dict[str, Any] = Field(..., description="Clinical data for prediction")
-    time_frame_days: Optional[int] = Field(30, ge=1, description="Time frame for prediction in days")
+    demographic_data: Dict[str, Any] = Field(..., description="Demographic data for prediction")
+    temporal_data: Optional[Dict[str, Any]] = Field(None, description="Temporal data for prediction")
+    confidence_threshold: float = Field(..., description="Confidence threshold for prediction")
     
     model_config = ConfigDict(extra="allow")
 
@@ -195,6 +195,8 @@ class TreatmentResponseRequest(BaseModel):
     )
     clinical_data: Dict[str, Any] = Field(..., description="Clinical data for prediction")
     prediction_horizon: Optional[str] = Field("8_weeks", description="Time horizon for prediction")
+    genetic_data: List[Any] = Field(..., description="Genetic data for prediction")
+    treatment_history: List[Dict[str, Any]] = Field(..., description="Treatment history")
 
     @field_validator('treatment_type', mode='before')
     @classmethod
@@ -271,6 +273,8 @@ class OutcomePredictionRequest(BaseModel):
     outcome_timeframe: TimeFrame = Field(..., description="Timeframe for outcome prediction")
     clinical_data: Dict[str, Any] = Field(..., description="Clinical data for prediction")
     treatment_plan: Dict[str, Any] = Field(..., description="Treatment plan details")
+    social_determinants: Dict[str, Any] = Field(..., description="Social determinants data for prediction")
+    comorbidities: List[str] = Field(..., description="Comorbidities list for prediction")
     outcome_type: Optional[OutcomeType] = Field(OutcomeType.SYMPTOM, description="Type of outcome to predict")
     
     model_config = ConfigDict(extra="allow")
