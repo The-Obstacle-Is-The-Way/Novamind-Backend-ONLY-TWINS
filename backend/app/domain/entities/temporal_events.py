@@ -231,8 +231,8 @@ class CorrelatedEvent(TemporalEvent[T]):
         Returns:
             A new child event with correlation to the parent
         """
-        # Store all additional kwargs as metadata
-        metadata = kwargs.copy()
+        # Extract metadata for child event
+        metadata = kwargs.pop('metadata', {}) or {}
         
         # Create the child event
         child_event = cls(
@@ -260,8 +260,9 @@ class EventChain:
     
     def __init__(
         self,
-        correlation_id: UUID,
+        correlation_id: UUID | None = None,
         name: str | None = None,
+        description: str | None = None,
         chain_id: UUID | None = None,
         patient_id: UUID | None = None,
         events: list[CorrelatedEvent] | None = None,
@@ -280,7 +281,12 @@ class EventChain:
             metadata: Additional metadata for the chain
             created_at: Creation timestamp
         """
+        # Assign or generate correlation ID
+        if correlation_id is None:
+            correlation_id = uuid.uuid4()
         self.correlation_id = correlation_id
+        # Optional description for the chain
+        self.description = description
         self.name = name or f"Chain-{str(correlation_id)[:8]}"
         self.chain_id = chain_id or uuid.uuid4()
         self.patient_id = patient_id
@@ -298,12 +304,30 @@ class EventChain:
         Raises:
             ValueError: If the event doesn't match the chain's correlation ID
         """
-        if event.correlation_id != self.correlation_id:
+        # For the first event, adopt its correlation ID
+        if not self.events:
+            self.correlation_id = event.correlation_id
+        # For subsequent events, ensure matching correlation
+        elif event.correlation_id != self.correlation_id:
             raise ValueError(
                 f"Event correlation ID {event.correlation_id} does not match "
                 f"chain correlation ID {self.correlation_id}"
             )
         self.events.append(event)
+    
+    @property
+    def root_event_id(self) -> UUID | None:
+        """Return the ID of the root (first) event in the chain."""
+        if self.events:
+            return self.events[0].event_id
+        return None
+
+    @property
+    def last_event_id(self) -> UUID | None:
+        """Return the ID of the last event in the chain."""
+        if self.events:
+            return self.events[-1].event_id
+        return None
     
     def get_root_event(self) -> CorrelatedEvent | None:
         """
@@ -361,6 +385,28 @@ class EventChain:
             List of events matching the specified type
         """
         return [event for event in self.events if event.event_type == event_type]
+    
+    def find_event_by_type(self, event_type: str) -> CorrelatedEvent | None:
+        """Find the first event of the given type in the chain."""
+        events = self.get_events_by_type(event_type)
+        return events[0] if events else None
+    
+    def get_event_path(self, event_id: UUID) -> list[CorrelatedEvent]:
+        """
+        Get the path of events from the root to the specified event.
+        Returns a list of CorrelatedEvent instances in order.
+        """
+        path: list[CorrelatedEvent] = []
+        # Find the target event
+        event = self.get_event_by_id(event_id)
+        # Traverse up via parent_event_id
+        while event is not None:
+            path.append(event)
+            if not hasattr(event, 'parent_event_id') or event.parent_event_id is None:
+                break
+            event = self.get_event_by_id(event.parent_event_id)
+        # Return from root to target
+        return list(reversed(path))
         
     def build_event_tree(self) -> dict[UUID, list[UUID]]:
         """
@@ -397,7 +443,7 @@ class EventChain:
         Returns:
             Dictionary representation of the chain
         """
-        return {
+        result = {
             "name": self.name,
             "correlation_id": str(self.correlation_id),
             "chain_id": str(self.chain_id),
@@ -407,6 +453,10 @@ class EventChain:
             "patient_id": str(self.patient_id) if self.patient_id else None,
             "events": [event.to_dict() for event in self.events[:100]]  # Limit to first 100 for performance
         }
+        # Include root and last event identifiers
+        result["root_event_id"] = self.root_event_id
+        result["last_event_id"] = self.last_event_id
+        return result
 
 
 class EventGroup:
