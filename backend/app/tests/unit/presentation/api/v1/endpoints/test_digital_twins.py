@@ -35,10 +35,8 @@ from app.domain.entities.digital_twin import DigitalTwin # Corrected path
 # from app.infrastructure.ml.digital_twin_integration_service import DigitalTwinIntegrationService # Use for spec if needed
 
 # Import presentation layer components
-from app.presentation.api.dependencies import (
+from app.presentation.api.dependencies.services import (
     get_digital_twin_service,
-    # get_patient_service, # Removed - Not found in dependencies
-    # get_provider_service, # Removed - Assuming also unused or moved
     get_cache_service,
 )
 from app.presentation.api.v1.endpoints.digital_twins import router as digital_twins_router

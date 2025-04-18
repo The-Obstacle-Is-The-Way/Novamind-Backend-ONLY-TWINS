@@ -33,8 +33,8 @@ from app.presentation.api.v1.endpoints.analytics_endpoints import (
 from app.domain.services.analytics_service import AnalyticsService
 
 # Assuming get_cache_service exists or is defined elsewhere for dependency override
-    try:
-        from app.presentation.api.dependencies.services import get_cache_service
+try:
+    from app.presentation.api.dependencies.services import get_cache_service
 except ImportError:
     # Define a dummy function if the actual dependency isn't available
     async def get_cache_service():
