@@ -900,10 +900,11 @@ def _simulate_treatment_cascade(self, patient_id: UUID, brain_region: BrainRegio
 
 def _analyze_temporal_response(self, patient_id: UUID, brain_region: BrainRegion, neurotransmitter: Neurotransmitter, treatment_effect: float) -> dict[str, Any]:
     """Simple temporal response analysis."""
-    # Build a simple response curve with response levels
-    response_curve = [{'day': i, 'response_level': 0.1 * i} for i in range(1, 6)]
-    peak_day = max(response_curve, key=lambda x: x['response'])['day']
-    stabilization_day = min(response_curve, key=lambda x: abs(x['response'] - response_curve[-1]['response']))['day']
+    # Build a response curve peaking in the middle for shape analysis
+    response_curve = [{'day': i, 'response_level': 0.1 * min(i, 4 - i)} for i in range(5)]
+    peak_day = max(response_curve, key=lambda x: x['response_level'])['day']
+    # Stabilization assumed at peak response day
+    stabilization_day = peak_day
     return {
         'response_curve': response_curve,
         'peak_response_day': peak_day,

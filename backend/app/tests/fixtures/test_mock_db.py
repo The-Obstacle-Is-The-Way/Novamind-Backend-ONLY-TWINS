@@ -22,7 +22,8 @@ class TestMockAsyncSession:
     async def test_mock_session_basic_operations(self, mock_db):
         """Test that basic CRUD operations work with MockAsyncSession."""
         # Setup test entity
-        test_entity = object()  # Use standard object for mock testing
+        # Use a dynamic object for mock testing that supports attribute assignment
+        test_entity = type("Entity", (), {})()
         test_entity.id = uuid4()
 
         # Test add
@@ -38,7 +39,7 @@ class TestMockAsyncSession:
     async def test_mock_session_execute_select(self, mock_db):
         """Test that execute works with SELECT statements."""
         # Setup test entity
-        test_entity = object()
+        test_entity = type("Entity", (), {})()
         test_entity.id = uuid4()
         test_entity.name = "Test Entity"
         
@@ -59,7 +60,7 @@ class TestMockAsyncSession:
     async def test_mock_session_rollback(self, mock_db):
         """Test that rollback works correctly."""
         # Setup test entity
-        test_entity = object()
+        test_entity = type("Entity", (), {})()
         test_entity.id = uuid4()
         
         # Add the entity
@@ -75,7 +76,7 @@ class TestMockAsyncSession:
     async def test_mock_session_delete(self, mock_db):
         """Test that delete works correctly."""
         # Setup test entity
-        test_entity = object()
+        test_entity = type("Entity", (), {})()
         test_entity.id = uuid4()
         
         # Add and commit the entity
@@ -96,7 +97,7 @@ class TestMockAsyncSession:
     async def test_mock_session_refresh(self, mock_db):
         """Test that refresh works correctly."""
         # Setup test entity
-        test_entity = object()
+        test_entity = type("Entity", (), {})()
         test_entity.id = uuid4()
         test_entity.name = "Original Name"
         
