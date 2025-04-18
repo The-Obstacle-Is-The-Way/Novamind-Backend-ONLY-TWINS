@@ -374,6 +374,54 @@ class NeurotransmitterVisualizationPreprocessor:
         }
 
 
+    def process_neurotransmitter_levels(self, levels: Dict[str, float], normalize: bool = False, include_metadata: bool = False) -> Dict[str, Any]:
+        """Process neurotransmitter levels for visualization purposes."""
+        metadata: Dict[str, Any] = {}
+        data = levels.copy()
+        if normalize:
+            max_val = max(data.values()) if data else 0
+            min_val = min(data.values()) if data else 0
+            if max_val != min_val:
+                data = {k: (v - min_val) / (max_val - min_val) for k, v in data.items()}
+            else:
+                data = {k: 1.0 for k in data}
+            metadata["max_original_value"] = max_val
+            metadata["min_original_value"] = min_val
+            metadata["normalization_applied"] = True
+        else:
+            metadata["normalization_applied"] = False
+        neurotransmitters = []
+        for nt, level in data.items():
+            neurotransmitters.append({"neurotransmitter": nt, "level": level})
+        result: Dict[str, Any] = {"neurotransmitters": neurotransmitters}
+        if include_metadata:
+            result["metadata"] = metadata
+        return result
+
+    def generate_comparative_visualization(self, effects: List[NeurotransmitterEffect]) -> Dict[str, Any]:
+        """Generate comparison data for multiple neurotransmitter effects."""
+        processed_effects: List[Dict[str, Any]] = []
+        for e in effects:
+            processed_effects.append({
+                "neurotransmitter": e.neurotransmitter.value,
+                "effect_size": e.effect_size,
+                "confidence_interval": e.confidence_interval,
+                "p_value": e.p_value,
+                "sample_size": e.sample_size,
+                "clinical_significance": e.clinical_significance.value if e.clinical_significance else None,
+                "is_statistically_significant": e.is_statistically_significant
+            })
+        significant_effects = [e for e in effects if e.is_statistically_significant]
+        most_significant = min(significant_effects, key=lambda e: e.p_value) if significant_effects else None
+        largest_effect = max(effects, key=lambda e: abs(e.effect_size)) if effects else None
+        magnitude_ranking = [e.neurotransmitter.value for e in sorted(effects, key=lambda e: abs(e.effect_size), reverse=True)]
+        summary: Dict[str, Any] = {
+            "most_significant": most_significant.neurotransmitter.value if most_significant else None,
+            "largest_effect": largest_effect.neurotransmitter.value if largest_effect else None,
+            "magnitude_ranking": magnitude_ranking
+        }
+        return {"effects": processed_effects, "summary": summary}
+
 class NeurotransmitterEffectVisualizer:
     """
     Visualizes neurotransmitter effects for clinical analysis.

@@ -42,10 +42,15 @@ class MentalLLaMAConnectionError(MentalLLaMABaseException):
         details: dict[str, Any] | None = None
     ):
         self.endpoint = endpoint
-        combined_details = details or {}
-        if endpoint:
-            combined_details["endpoint"] = endpoint
+        # Use provided details only; do not inject endpoint into details
+        combined_details = details if details is not None else {}
         super().__init__(message, combined_details)
+    
+    def __str__(self) -> str:
+        """Human-readable string representation including endpoint."""
+        if self.endpoint:
+            return f"{self.message} (endpoint: {self.endpoint})"
+        return super().__str__()
 
 
 class MentalLLaMAAuthenticationError(MentalLLaMABaseException):
@@ -71,22 +76,22 @@ class MentalLLaMAInferenceError(MentalLLaMABaseException):
     unexpected errors during the inference process.
     """
     def __init__(
-        self, 
+        self,
         message: str,
-        model_name: str | None = None,
-        inference_parameters: dict[str, Any] | None = None,
+        model: str | None = None,
         details: dict[str, Any] | None = None
     ):
-        self.model_name = model_name
-        self.inference_parameters = inference_parameters or {}
-        
-        combined_details = details or {}
-        if model_name:
-            combined_details["model_name"] = model_name
-        if inference_parameters:
-            combined_details["inference_parameters"] = inference_parameters
-            
+        # Store model identifier
+        self.model = model
+        # Use provided details or default to empty
+        combined_details = details if details is not None else {}
         super().__init__(message, combined_details)
+
+    def __str__(self) -> str:
+        """Human-readable string including model information."""
+        if self.model:
+            return f"{self.message} (model: {self.model})"
+        return super().__str__()
 
 
 class MentalLLaMAValidationError(MentalLLaMABaseException):
@@ -104,11 +109,18 @@ class MentalLLaMAValidationError(MentalLLaMABaseException):
     ):
         self.validation_errors = validation_errors or {}
         
-        combined_details = details or {}
-        if validation_errors:
-            combined_details["validation_errors"] = validation_errors
+        # Only use explicit details; do not inject validation_errors into details
+        combined_details = details if details is not None else {}
             
         super().__init__(message, combined_details)
+    
+    def __str__(self) -> str:
+        """Human-readable string including validation errors."""
+        base = super().__str__()
+        if self.validation_errors:
+            errors = ", ".join(f"{field}: {err}" for field, err in self.validation_errors.items())
+            return f"{base} [{errors}]"
+        return base
 
 
 class MentalLLaMAQuotaExceededError(MentalLLaMABaseException):
@@ -125,14 +137,31 @@ class MentalLLaMAQuotaExceededError(MentalLLaMABaseException):
         quota_used: int | None = None,
         details: dict[str, Any] | None = None
     ):
+        # Store quota information
         self.quota_limit = quota_limit
         self.quota_used = quota_used
-        
+        # Compute remaining quota
+        if quota_limit is not None and quota_used is not None:
+            self.quota_remaining = max(0, quota_limit - quota_used)
+        else:
+            self.quota_remaining = None
+        # Merge provided details with quota details
         combined_details = details or {}
         if quota_limit is not None:
             combined_details["quota_limit"] = quota_limit
         if quota_used is not None:
             combined_details["quota_used"] = quota_used
-            combined_details["quota_remaining"] = max(0, quota_limit - quota_used) if quota_limit is not None else 0
-            
+            combined_details["quota_remaining"] = self.quota_remaining
         super().__init__(message, combined_details)
+    
+    def __str__(self) -> str:
+        """Human-readable string including quota information."""
+        base = super().__str__()
+        parts = []
+        if self.quota_limit is not None:
+            parts.append(str(self.quota_limit))
+        if self.quota_used is not None:
+            parts.append(str(self.quota_used))
+        if parts:
+            return f"{base} ({', '.join(parts)})"
+        return base
