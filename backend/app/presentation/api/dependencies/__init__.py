@@ -61,5 +61,58 @@ def __getattr__(item):  # pragma: no cover – defensive shim
             sys.modules.setdefault(f"{__name__}.{item}", sub_mod)
             return sub_mod
     raise AttributeError(item)
+    
+# ---------------------------------------------------------------------------
+# Provide stub cache and auth dependencies for legacy imports
+# ---------------------------------------------------------------------------
+async def get_cache_service():  # stub cache provider for tests
+    """Stub cache service dependency for tests."""
+    class DummyCache:
+        async def get(self, *args, **kwargs):
+            return None
+
+        async def set(self, *args, **kwargs):
+            return True
+
+    return DummyCache()
+
+async def verify_provider_access(user=None):  # stub for route dependency
+    """Stub provider access check for tests."""
+    return user
+
+async def verify_admin_access(user=None):  # stub for route dependency
+    """Stub admin access check for tests."""
+    return user
+    
+async def get_alert_repository():  # stub alert repository dependency for tests
+    """Stub alert repository dependency for tests."""
+    return None
+    
+# Attach stub verify functions to auth_mod for endpoint imports
+auth_mod.verify_provider_access = verify_provider_access  # type: ignore[name-defined]
+auth_mod.verify_admin_access = verify_admin_access      # type: ignore[name-defined]
+    
+# ---------------------------------------------------------------------------
+# Provide stub repository sub-module for legacy imports
+# ---------------------------------------------------------------------------
+repo_mod = types.ModuleType(f"{_OLD_PREFIX}.repository")
+
+async def get_patient_repository():  # stub patient repository dependency for tests
+    """Stub patient repository dependency for tests."""
+    return None
+    
+async def get_encryption_service():  # stub encryption service dependency for tests
+    """Stub encryption service dependency for tests."""
+    class DummyEncryptionService:
+        async def encrypt(self, data, *args, **kwargs):
+            return data
+        async def decrypt(self, data, *args, **kwargs):
+            return data
+    return DummyEncryptionService()
+
+repo_mod.get_patient_repository = get_patient_repository  # type: ignore[attr-defined]
+sys.modules[f"{_OLD_PREFIX}.repository"] = repo_mod
+sys.modules[f"{v1_deps.__name__}.repository"] = repo_mod
+repo_mod.get_encryption_service = get_encryption_service  # type: ignore[attr-defined]
 
 

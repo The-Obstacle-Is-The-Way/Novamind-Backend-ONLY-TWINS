@@ -32,7 +32,6 @@
 - **Secure Messaging**: SMS/email reminders & alerts (Twilio/SES).  
 - **PHI Sanitization & Audit**: Middleware that strips/logs PHI access events.  
 - **Auth & RBAC**: JWT authentication, role‑based access control, rate limiting.  
-- **Prompt Templates**: Canonical LLM prompts in `prompt-templates/`.  
 
 ## Architecture Overview
 

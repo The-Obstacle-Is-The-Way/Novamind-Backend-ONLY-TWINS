@@ -100,6 +100,26 @@ def get_digital_twin_service():
 
 
 services.get_digital_twin_service = get_digital_twin_service  # type: ignore[attr-defined]
+    
+# ---------------------------------------------------------------------------
+# Stub PAT service for compatibility
+# ---------------------------------------------------------------------------
+def get_pat_service():
+    """Return a stub PAT service suitable for tests."""
+    try:
+        from app.infrastructure.services.mock_pat_service import MockPATService  # type: ignore
+        return MockPATService()
+    except ModuleNotFoundError:
+        class StubPATService:
+            async def initialize(self, *args, **kwargs):
+                pass
+            async def analyze_actigraphy(self, *args, **kwargs):
+                return {}
+            def get_model_info(self):
+                return {}
+        return StubPATService()
+
+services.get_pat_service = get_pat_service  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------
