@@ -123,7 +123,8 @@ class TestAWSXGBoostService:
         assert service._initialized
         assert service._region_name == 'us-east-1'
         # Check if _endpoint_prefix is set. Note: initialize defaults to 'test-endpoint' in test env
-        assert service._endpoint_prefix == 'test-endpoint'
+        # The endpoint prefix should match the configuration provided
+        assert service._endpoint_prefix == mock_settings_base['endpoint_prefix']
         assert service._privacy_level == PrivacyLevel.STRICT
         mock_boto3_client.assert_any_call('sagemaker-runtime', region_name='us-east-1')
         mock_boto3_client.assert_any_call('sagemaker', region_name='us-east-1')

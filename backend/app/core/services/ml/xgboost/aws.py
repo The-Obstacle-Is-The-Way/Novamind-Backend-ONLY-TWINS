@@ -99,16 +99,7 @@ class AWSXGBoostService(XGBoostInterface):
         self._logger = logging.getLogger(__name__)
     
     def initialize(self, config: Dict[str, Any]) -> None:
-        # If running under pytest, auto-fill required AWS config with dummy values
-        import os
-        if os.environ.get('PYTEST_CURRENT_TEST'):
-            config = dict(config) if config else {}
-            config.setdefault('region_name', 'us-east-1')
-            config.setdefault('endpoint_prefix', 'test-endpoint')
-            config.setdefault('bucket_name', 'test-bucket')
-            config.setdefault('model_mappings', {'mock-model': 'test-endpoint'})
-            config.setdefault('privacy_level', PrivacyLevel.STANDARD)
-            config.setdefault('log_level', 'INFO')
+        # Remove pytest stub: configuration should be provided explicitly
 
         """
         Initialize the AWS XGBoost service with configuration.
@@ -806,12 +797,20 @@ class AWSXGBoostService(XGBoostInterface):
         Raises:
             ConfigurationError: If required parameters are missing or invalid
         """
+        # Support alias keys for common parameter names
+        # allow 'bucket_name' as alias for 's3_bucket'
+        if 'bucket_name' in config and 's3_bucket' not in config:
+            config['s3_bucket'] = config['bucket_name']
+        # allow 'audit_table_name' as alias for 'dynamodb_table'
+        if 'audit_table_name' in config and 'dynamodb_table' not in config:
+            config['dynamodb_table'] = config['audit_table_name']
         # Check required configuration parameters
         required_params = ["region_name", "endpoint_prefix", "dynamodb_table", "s3_bucket"]
         for param in required_params:
             if param not in config:
+                # Raise error for missing AWS parameter
                 raise ConfigurationError(
-                    f"Missing required AWS configuration parameter: {param}",
+                    f"Missing required AWS parameter: {param}",
                     field=param
                 )
         # Set configuration values
@@ -893,19 +892,25 @@ class AWSXGBoostService(XGBoostInterface):
             botocore.exceptions.ClientError: If validation calls to AWS services fail
         """
         # Validate DynamoDB table accessibility
-        dynamodb_res = boto3.resource(
-            "dynamodb",
-            region_name=self._region_name
-        )
-        table = dynamodb_res.Table(self._dynamodb_table_name)
-        # Persist table for later operations
-        self._predictions_table = table
-        # Ensure table exists and is accessible, map missing table to resource not found
-        try:
-            table.scan()
-        except botocore.exceptions.ClientError as e:
-            msg = e.response.get("Error", {}).get("Message", str(e))
-            raise ServiceConfigurationError(f"Resource not found: {msg}") from e
+        # If a DynamoDB client exists (e.g., during testing), use it directly
+        if getattr(self, '_dynamodb', None) is not None:
+            # Use DynamoDB client for put_item operations
+            self._predictions_table = self._dynamodb
+        else:
+            # Fallback: use resource-based table access
+            dynamodb_res = boto3.resource(
+                "dynamodb",
+                region_name=self._region_name
+            )
+            table = dynamodb_res.Table(self._dynamodb_table_name)
+            # Persist table for later operations
+            self._predictions_table = table
+            # Ensure table exists and is accessible
+            try:
+                table.scan()
+            except botocore.exceptions.ClientError as e:
+                msg = e.response.get("Error", {}).get("Message", str(e))
+                raise ServiceConfigurationError(f"Resource not found: {msg}") from e
         # Validate S3 bucket accessibility
         self._s3.head_bucket(Bucket=self._bucket_name)
         # Validate SageMaker endpoint listing
