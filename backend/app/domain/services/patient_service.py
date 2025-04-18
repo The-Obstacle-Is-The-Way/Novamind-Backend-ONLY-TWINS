@@ -15,6 +15,7 @@ from app.domain.entities.patient import Patient
 from app.domain.exceptions import (
     ValidationError,
 )
+from app.domain.exceptions.patient_exceptions import PatientNotFoundError
 from app.domain.repositories.appointment_repository import IAppointmentRepository
 from app.domain.repositories.clinical_note_repository import ClinicalNoteRepository
 from app.domain.repositories.patient_repository import PatientRepository
@@ -49,6 +50,27 @@ class PatientService:
         self.provider_repository = provider_repository
         self.appointment_repository = appointment_repository
         self._note_repo = clinical_note_repository
+
+    async def get_by_id(self, patient_id: str) -> Patient:
+        """Retrieve a patient by ID, raising if not found."""
+        patient = await self.patient_repository.get_by_id(patient_id)
+        if not patient:
+            raise PatientNotFoundError(patient_id)
+        return patient
+
+    async def create(self, patient_data: dict) -> Patient:
+        """Create a new patient using provided data dict."""
+        return await self.patient_repository.create(patient_data)
+
+    async def update(self, patient_id: str, updated_data: dict) -> Patient:
+        """Update an existing patient by ID with provided fields."""
+        await self.get_by_id(patient_id)
+        return await self.patient_repository.update(updated_data)
+
+    async def delete(self, patient_id: str) -> bool:
+        """Delete a patient by ID, raising if not found."""
+        await self.get_by_id(patient_id)
+        return await self.patient_repository.delete(patient_id)
 
     async def register_patient(
         self,

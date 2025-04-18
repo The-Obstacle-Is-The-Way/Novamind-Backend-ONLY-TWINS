@@ -30,5 +30,11 @@ class CreatePatientUseCase:
         Raises:
             ValueError: If patient data is invalid
         """
-        # Placeholder for implementation
-        pass
+        # Validate and build the Patient entity
+        try:
+            patient = Patient(**patient_data)
+        except TypeError as e:
+            raise ValueError(f"Invalid patient data: {e}") from e
+
+        # Delegate to repository to persist the new patient
+        return await self.patient_repository.create(patient)
