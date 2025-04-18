@@ -558,11 +558,11 @@ async def test_events_are_published(mock_service, test_patient_id):
     await mock_service.update_receptor_profiles(
         patient_id=test_patient_id,
         receptor_profiles=[
-            ReceptorProfile(
-                brain_region=BrainRegion.THALAMUS,
-                neurotransmitter=Neurotransmitter.GLUTAMATE,
-                receptor_type=ReceptorType.EXCITATORY,
-                receptor_subtype=ReceptorSubtype.NMDA,
+                ReceptorProfile(
+                    brain_region=BrainRegion.THALAMUS,
+                    neurotransmitter=Neurotransmitter.GLUTAMATE,
+                    receptor_type=ReceptorType.EXCITATORY,
+                    receptor_subtype=ReceptorSubtype.GLUTAMATE_NMDA,
                 density=0.6,
                 sensitivity=0.7,
                 clinical_relevance=ClinicalSignificance.MILD,

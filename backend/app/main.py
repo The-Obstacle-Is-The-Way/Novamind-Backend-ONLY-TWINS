@@ -164,11 +164,12 @@ def create_application(dependency_overrides: Optional[Dict[Callable, Callable]] 
     )
     
     # 5. PHI Sanitization/Auditing Middleware (Processes after auth)
+    # PHI Sanitization/Auditing Middleware (Processes after auth)
     add_phi_middleware(
         app,
-        exclude_paths=settings.PHI_EXCLUDE_PATHS, # Configure via settings
-        whitelist_patterns=settings.PHI_WHITELIST_PATTERNS, # Configure via settings
-        audit_mode=settings.PHI_AUDIT_MODE # Configure via settings
+        exclude_paths=getattr(settings, 'PHI_EXCLUDE_PATHS', set()),  # Configure via settings or default
+        whitelist_patterns=getattr(settings, 'PHI_WHITELIST_PATTERNS', []),  # Configure via settings or default
+        audit_mode=getattr(settings, 'PHI_AUDIT_MODE', False)  # Configure via settings or default
     )
 
     # 6. Rate Limiting Middleware (Applies limits after auth & PHI handling)
@@ -200,7 +201,7 @@ def create_application(dependency_overrides: Optional[Dict[Callable, Callable]] 
     app.include_router(api_router, prefix=api_prefix)
     
     # --- Static Files (Optional) ---
-    static_dir = settings.STATIC_DIR
+    static_dir = getattr(settings, 'STATIC_DIR', None)
     if static_dir:
         app.mount("/static", StaticFiles(directory=static_dir), name="static")
     

@@ -142,6 +142,15 @@ def setup_routers() -> None:
         )
     except (ModuleNotFoundError, AttributeError):
         print("XGBoost router not found or setup incorrectly, skipping.")
+    # MentaLLaMA router
+    try:
+        api_router.include_router(
+            get_router("mentallama"),
+            prefix="/mentallama",
+            tags=["MentaLLaMA"]
+        )
+    except (ModuleNotFoundError, AttributeError):
+        print("MentaLLaMA router not found or setup incorrectly, skipping.")
 
 # This function should be called by the main application (e.g., main.py)
 # after the FastAPI app instance is created.
