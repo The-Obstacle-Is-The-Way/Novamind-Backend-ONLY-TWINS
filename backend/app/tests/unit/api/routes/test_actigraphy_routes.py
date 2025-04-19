@@ -716,6 +716,22 @@ class TestActigraphyRoutes:
         # Verify service call
         mock_pat_service.integrate_with_digital_twin.assert_called_once()
 
+    def test_get_analysis_types_success(
+        self,
+        client: TestClient,
+        mock_pat_service: MagicMock,
+    ) -> None:
+        """Test retrieving the list of available analysis types."""
+
+        expected = [t.value for t in AnalysisType]
+
+        response = client.get("/api/v1/actigraphy/analysis_types")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == expected
+
+        mock_pat_service.get_analysis_types.assert_called_once()
+
     def test_integrate_with_digital_twin_unauthorized(
         self, client: TestClient, mock_token: str, integration_request: Dict[str, Any]
     ) -> None:

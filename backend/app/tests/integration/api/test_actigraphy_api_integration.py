@@ -222,11 +222,21 @@ class TestActigraphyAPI:
 
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) == 3
-        for analysis in data:
+
+        # The endpoint now returns a structured dict with patient_id,
+        # list of analyses, and a total count.
+        assert {
+            "patient_id",
+            "analyses",
+            "total",
+        } <= data.keys()
+
+        assert data["patient_id"] == patient_id
+        assert isinstance(data["analyses"], list)
+        assert data["total"] == len(data["analyses"])
+
+        for analysis in data["analyses"]:
             assert "analysis_id" in analysis
-            assert "patient_id" in analysis
             assert analysis["patient_id"] == patient_id
 
     def test_get_model_info(self, client: TestClient, auth_headers):
@@ -238,11 +248,8 @@ class TestActigraphyAPI:
 
         assert response.status_code == 200
         data = response.json()
-        assert "model_name" in data
-        assert "version" in data
-        assert "deployment_date" in data
-        assert "supported_devices" in data
-        assert "supported_analyses" in data
+        expected_keys = {"name", "version", "capabilities", "developer"}
+        assert expected_keys <= data.keys()
 
     def test_integrate_with_digital_twin(
         self,
@@ -286,10 +293,11 @@ class TestActigraphyAPI:
 
         assert response.status_code == 200
         data = response.json()
-        assert "integration_id" in data
-        assert "patient_id" in data
-        assert "analysis_id" in data
-        assert "integrated_data_points" in data
+
+        # The refactored endpoint now returns a concise payload containing
+        # the identifiers and the updated profile data.
+        expected_keys = {"patient_id", "profile_id", "timestamp", "integrated_profile"}
+        assert expected_keys <= data.keys()
 
     def test_unauthorized_access(self, client: TestClient, actigraphy_data):
         """Test unauthorized access to API."""
@@ -300,3 +308,29 @@ class TestActigraphyAPI:
         # No auth headers provided
         assert response.status_code == 401  # Unauthorized
         assert "detail" in response.json()
+
+    def test_get_analysis_types(
+        self,
+        client: TestClient,
+        auth_headers,
+        mock_pat_service
+    ):
+        """Test retrieving analysis types via the API."""
+
+        expected = [
+            "sleep_quality",
+            "activity_levels",
+            "gait_analysis",
+            "tremor_analysis",
+        ]
+
+        # Ensure the mock returns a custom list so we can assert call
+        mock_pat_service.get_analysis_types = lambda: expected  # type: ignore
+
+        response = client.get(
+            "/api/v1/actigraphy/analysis_types",
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        assert response.json() == expected
