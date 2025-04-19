@@ -7,7 +7,8 @@ from typing import Any, Dict
 from datetime import datetime
 
 # Database session dependency
-from app.infrastructure.persistence.sqlalchemy.config.database import get_db_session
+# Prefer the original get_db dependency which is overridden in tests.
+from app.infrastructure.database.session import get_db as get_db_session  # type: ignore
 # Repository for patient persistence
 from app.infrastructure.persistence.sqlalchemy.repositories.patient_repository import PatientRepository
 # Domain entity
