@@ -147,7 +147,8 @@ def get_db_instance() -> Database:
         # ALWAYS use get_settings() in test env, assuming it's mocked
         test_settings = get_settings()
         logger.info(
-            f"Test Environment: Creating NEW Database instance using settings from get_settings(). URI: {test_settings.SQLALCHEMY_DATABASE_URI}"
+            # match our Settings field name; avoid AttributeError on MockSettings
+            f"Test Environment: Creating NEW Database instance using settings from get_settings(). URI: {test_settings.DATABASE_URL}"
         )
         # Return a new instance directly, DO NOT assign to _db_instance
         return Database(test_settings)

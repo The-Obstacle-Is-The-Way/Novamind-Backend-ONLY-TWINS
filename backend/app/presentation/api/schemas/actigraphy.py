@@ -248,6 +248,15 @@ class AnalysisResult(BaseModel):
         ...,
         description="Analysis results for each analysis type"
     )
+    # Convenience fields for individual analysis types
+    sleep_metrics: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Sleep quality metrics"
+    )
+    activity_levels: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Activity level metrics"
+    )
 
 
 class AnalysisSummary(BaseModel):

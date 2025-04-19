@@ -94,6 +94,7 @@ async def get_pat_service() -> PATInterface:
 
 @router.post(
     "/analyze",
+    response_model=AnalysisResult,
     status_code=status.HTTP_200_OK,
     summary="Analyze actigraphy data",
     description="Analyze raw actigraphy data to derive physical activity insights."
@@ -103,7 +104,7 @@ async def analyze_actigraphy(
     payload: AnalyzeActigraphyRequest = Depends(validate_analyze_actigraphy_request),
     current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
-    ) -> List[Dict[str, Any]]:
+    ) -> AnalysisResult:
     """Analyze actigraphy data endpoint.
     
     This endpoint processes raw accelerometer data to extract physical activity
@@ -223,6 +224,7 @@ async def analyze_actigraphy(
 
 @router.post(
     "/embeddings",
+    response_model=EmbeddingResult,
     status_code=status.HTTP_200_OK,
     summary="Generate embeddings from actigraphy data",
     description="Generate embeddings from actigraphy data for machine learning models."
@@ -231,7 +233,7 @@ async def get_actigraphy_embeddings(
     payload: GetActigraphyEmbeddingsRequest = Depends(validate_get_actigraphy_embeddings_request),
     current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
-    ) -> List[Dict[str, Any]]:
+    ) -> EmbeddingResult:
     """Generate embeddings from actigraphy data endpoint.
     
     This endpoint processes raw accelerometer data to generate vector embeddings
@@ -447,7 +449,7 @@ async def get_patient_analyses(
     offset: int = Query(0, ge=0),
     current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
-) -> Dict[str, Any]:
+) -> List[Dict[str, Any]]:
     """Get analyses for a patient endpoint.
     
     This endpoint retrieves a paginated list of analyses for a specific patient,
