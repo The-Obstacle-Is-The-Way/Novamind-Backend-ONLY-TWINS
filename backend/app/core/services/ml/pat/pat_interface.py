@@ -157,3 +157,31 @@ class PATInterface(MLService):
             Dict containing integrated digital twin profile
         """
         pass
+
+# ---------------------------------------------------------------------------
+# Optional convenience methods
+# ---------------------------------------------------------------------------
+
+    def get_analysis_types(self) -> List[str]:
+        """Return the list of analysis types supported by the service.
+
+        PAT service implementations may override this method when they
+        support a custom or dynamic set of analyses.  A sane default is
+        provided so that existing subclasses that have not yet been updated
+        remain concrete and instantiable.
+        """
+
+        # Import lazily to prevent import‑cycle issues.
+        try:
+            from app.presentation.api.schemas.actigraphy import AnalysisType  # noqa: WPS433
+
+            return [t.value for t in AnalysisType]
+        except Exception:  # pragma: no cover – fallback safeguard
+            # In the unlikely event that the import fails we still return the
+            # canonical list hard‑coded here so that the API does not break.
+            return [
+                "sleep_quality",
+                "activity_levels",
+                "gait_analysis",
+                "tremor_analysis",
+            ]

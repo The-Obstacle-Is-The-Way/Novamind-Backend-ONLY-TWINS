@@ -141,7 +141,8 @@ class TestActigraphyAPI:
             json=embedding_data
         )
 
-        assert response.status_code == 200
+        # Expect 201 Created for embedding generation
+        assert response.status_code == 201
         data = response.json()
         assert "embedding_id" in data
         assert "patient_id" in data

@@ -50,6 +50,23 @@ logger = logging.getLogger(__name__)
 # Set up router
 router = APIRouter() # Prefix is usually added when including the router
 
+# ---------------------------------------------------------------------------
+# Helper – convert AnalysisType enums or raw strings to plain string values
+# ---------------------------------------------------------------------------
+
+
+def _normalize_analysis_type(value: Any) -> str:  # noqa: ANN401
+    """Return the *string* representation for an ``AnalysisType`` value.
+
+    The PAT service (or tests) might return a mixture of raw strings and
+    ``AnalysisType`` enumeration members.  This helper normalises the output
+    so the API response is always a list of *plain* strings.
+    """
+
+    if hasattr(value, "value"):
+        return str(value.value)
+    return str(value)
+
 # Security might be handled by middleware or dependencies now, review if needed
 # security = HTTPBearer()
 
@@ -559,13 +576,12 @@ async def get_model_info(
         logger.info("Retrieving PAT model information")
         result = pat_service.get_model_info()
         logger.info("Successfully retrieved PAT model information")
-        # Shape response to expected API fields
+        # Shape response to expected API fields for client expectations
         return {
-            "model_name": result.get("name"),
+            "name": result.get("name"),
             "version": result.get("version"),
-            "deployment_date": result.get("created_at"),
-            "supported_devices": result.get("supported_devices"),
-            "supported_analyses": result.get("supported_analysis_types")
+            "capabilities": result.get("capabilities"),
+            "developer": result.get("developer"),
         }
     except Exception as e:
         logger.error(f"Unexpected error in get_model_info: {str(e)}")
@@ -573,6 +589,41 @@ async def get_model_info(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred while retrieving model information"
         )
+
+
+# ---------------------------------------------------------------------------
+# New: GET /analysis_types
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/analysis_types",
+    response_model=List[str],
+    status_code=status.HTTP_200_OK,
+    summary="List available actigraphy analysis types",
+    description="Return the list of analysis types supported by the PAT service."
+)
+async def get_analysis_types(
+    pat_service: PATInterface = Depends(get_pat_service),
+) -> List[str]:
+    """Return the list of supported analysis types.
+
+    The values ultimately originate from the PAT service so that advanced
+    (e.g. model‑specific) capabilities can be surfaced without redeploying
+    the API layer.  A fallback to the canonical list defined in the
+    ``AnalysisType`` enumeration is provided to guarantee availability even
+    when the underlying service does not implement the new method.
+    """
+
+    try:
+        types_raw = pat_service.get_analysis_types()  # type: ignore[attr-defined]
+    except Exception as exc:  # pragma: no cover – defensive
+        logger.warning("PAT service did not expose get_analysis_types: %s", exc)
+        types_raw = [t.value for t in AnalysisType]
+
+    # Normalise to *plain* strings for the public API.
+    normalized = [_normalize_analysis_type(t) for t in types_raw]
+    return normalized
 
 
 @router.post(
@@ -639,16 +690,13 @@ async def integrate_with_digital_twin(
             f"Successfully integrated with Digital Twin: "
             f"integration_id={result.get('integration_id')}"
         )
-        # Shape response payload
-        # Shape response payload with key fields for integration
-        payload: Dict[str, Any] = {
-            "integration_id": result.get("integration_id"),
+        # Shape response to expected API fields for integration
+        return {
             "patient_id": result.get("patient_id"),
-            "analysis_id": result.get("analysis_id"),
-            "integrated_data_points": result.get("metrics_integrated"),
-            # additional fields can be included if desired
+            "profile_id": result.get("profile_id"),
+            "timestamp": result.get("timestamp"),
+            "integrated_profile": result.get("updated_profile"),
         }
-        return payload
     
     except ValidationError as e:
         logger.warning(f"Validation error in integrate_with_digital_twin: {str(e)}")

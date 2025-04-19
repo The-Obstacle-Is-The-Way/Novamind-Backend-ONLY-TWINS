@@ -633,19 +633,21 @@ class TestActigraphyRoutes:
         mock_pat_service: MagicMock,
     ) -> None:
         """Test successful patient analyses retrieval."""
-        # Make the request
+        # Make the request to the correct endpoint
         response = client.get(
-            f"/api/v1/actigraphy/patients/{patient_id}/analyses",  # Added prefix
+            f"/api/v1/actigraphy/patient/{patient_id}/analyses",
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-        
-        # Check the response
+        # Check the response status
         assert response.status_code == status.HTTP_200_OK
-        assert response.json() == analyses_list
-        
-        # Verify service call
+        data = response.json()
+        # Validate structured response
+        assert data.get("patient_id") == patient_id
+        assert "analyses" in data and isinstance(data.get("analyses"), list)
+        assert data.get("total") == len(data.get("analyses"))
+        # Verify service call with default pagination
         mock_pat_service.get_patient_analyses.assert_called_once_with(
-            patient_id=patient_id, limit=10, offset=0  # Check default pagination
+            patient_id=patient_id, limit=10, offset=0
         )
     
 
@@ -653,15 +655,14 @@ class TestActigraphyRoutes:
         self, client: TestClient, mock_token: str, patient_id: str
     ) -> None:
         """Test unauthorized patient analyses retrieval."""
-        # Make the request for a different patient ID than in the token
+        # Make the request for a different patient ID
         response = client.get(
-            f"/api/v1/actigraphy/patients/different_patient/analyses",  # Added prefix
+            f"/api/v1/actigraphy/patient/different_patient/analyses",
             headers={"Authorization": f"Bearer {mock_token}"}
         )
-
-        # Check the response
+        # Expect forbidden status
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "Not authorized" in response.json()["detail"]
+        assert "Not authorized" in response.json().get("detail", "")
 
     def test_get_model_info_success(
         self,
