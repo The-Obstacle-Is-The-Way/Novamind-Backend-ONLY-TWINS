@@ -141,8 +141,10 @@ def patient_id():
 async def test_temporal_service_with_xgboost_integration(
     temporal_service: TemporalNeurotransmitterService,
     xgboost_service: EnhancedXGBoostService,
-    patient_id: UUID
-): 
+    patient_id: UUID,
+    sequence_repository: TemporalSequenceRepository,
+    event_repository: EventRepository
+):
     """
     Test the integration between TemporalNeurotransmitterService and EnhancedXGBoostService.
     
@@ -160,6 +162,10 @@ async def test_temporal_service_with_xgboost_integration(
     
     # Verify baseline sequence was created
     assert baseline_sequence_id is not None
+    # Verify sequence persisted in repository
+    persisted_sequence = await sequence_repository.get_by_id(baseline_sequence_id)
+    assert persisted_sequence is not None
+    assert persisted_sequence.patient_id == patient_id
     
     logger.info(f"Test Function: Generated baseline sequence {baseline_sequence_id}")
 
@@ -181,6 +187,13 @@ async def test_temporal_service_with_xgboost_integration(
     assert treatment_results is not None
     assert Neurotransmitter.SEROTONIN in treatment_results
     assert isinstance(treatment_results[Neurotransmitter.SEROTONIN], UUID)
+    # Verify treatment simulation events were persisted
+    patient_events = await event_repository.get_patient_events(patient_id)
+    assert patient_events is not None
+    assert len(patient_events) > 0
+    # Optional: check event types include simulation events
+    event_types = {e.event_type for e in patient_events}
+    assert any('sequence' in et or 'simulation' in et or 'analysis' in et for et in event_types)
 
     # # Verify XGBoost interaction (if mocked/spied)
     # # assert prediction_calls # Ensure predict was called

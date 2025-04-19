@@ -130,7 +130,7 @@ class TemporalNeurotransmitterService:
                 neurotransmitter=neurotransmitter,
                 sequence_id=sequence_id
             )
-            await self.event_repository.save(event)
+            await self.event_repository.save_event(event)
         
         return sequence_id
     
@@ -196,7 +196,7 @@ class TemporalNeurotransmitterService:
                 neurotransmitter=neurotransmitter,
                 effect=effect
             )
-            await self.event_repository.save(event)
+            await self.event_repository.save_event(event)
         
         return effect
     
@@ -306,7 +306,7 @@ class TemporalNeurotransmitterService:
                     treatment_effect=treatment_effect,
                     adjusted_effect=adjusted_effect
                 )
-                await self.event_repository.save(event)
+                await self.event_repository.save_event(event)
         
         return sequence_ids
     
@@ -658,7 +658,7 @@ class TemporalNeurotransmitterService:
             # In production this should never happen, but unit‑tests may provide None – emulate save and return id.
             return event.event_id
 
-        event_id: UUID = await self.event_repository.save(event)  # type: ignore[arg-type]
+        event_id: UUID = await self.event_repository.save_event(event)  # type: ignore[arg-type]
         return event_id
 
     async def get_concentration_history(
