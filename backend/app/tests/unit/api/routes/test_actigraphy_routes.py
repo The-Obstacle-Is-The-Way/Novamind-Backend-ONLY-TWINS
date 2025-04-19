@@ -179,10 +179,15 @@ def analysis_result(
 
 @pytest.fixture
 def embedding_result(patient_id: str) -> Dict[str, Any]:
-    """Create an embedding result."""
+    """Create an embedding result with legacy alias fields."""
     now_iso = datetime.now(UTC).isoformat() + "Z"
     end_iso = (datetime.now(UTC) + timedelta(hours=1)).isoformat() + "Z"
-    return {
+    embedding = {
+        "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+        "dimension": 5,
+        "model_version": "mock-embedding-v1.0",
+    }
+    result = {
         "embedding_id": "embedding123",
         "patient_id": patient_id,
         "timestamp": now_iso,
@@ -193,12 +198,12 @@ def embedding_result(patient_id: str) -> Dict[str, Any]:
             "readings_count": 10,
             "sampling_rate_hz": 10.0,
         },
-        "embedding": {
-            "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
-            "dimension": 5,
-            "model_version": "mock-embedding-v1.0",
-        }
+        "embedding": embedding,
+        # Legacy aliases
+        "embeddings": embedding["vector"],
+        "embedding_size": embedding["dimension"],
     }
+    return result
 
 
 @pytest.fixture

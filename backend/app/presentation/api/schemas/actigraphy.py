@@ -356,6 +356,13 @@ class EmbeddingResult(BaseModel):
         ...,
         description="Embedding data"
     )
+    # Legacy aliases for embedding vector and size
+    embeddings: List[float] = Field(
+        ..., description="Legacy alias for embedding vector"
+    )
+    embedding_size: int = Field(
+        ..., description="Legacy alias for embedding size"
+    )
 
 
 class Insight(BaseModel):

@@ -301,8 +301,8 @@ class TestActigraphyAPI:
             headers={"Authorization": "Bearer test-token"},
         )
 
-        # Verify response
-        assert response.status_code == status.HTTP_200_OK
+        # Verify response (resource created)
+        assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
         assert "embedding_id" in data
         assert "patient_id" in data

@@ -225,7 +225,7 @@ async def analyze_actigraphy(
 @router.post(
     "/embeddings",
     response_model=EmbeddingResult,
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
     summary="Generate embeddings from actigraphy data",
     description="Generate embeddings from actigraphy data for machine learning models."
 )
@@ -449,7 +449,7 @@ async def get_patient_analyses(
     offset: int = Query(0, ge=0),
     current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     """Get analyses for a patient endpoint.
     
     This endpoint retrieves a paginated list of analyses for a specific patient,
@@ -522,8 +522,12 @@ async def get_patient_analyses(
             elif a.get("results") and AnalysisType.ACTIVITY_LEVELS.value in a["results"]:
                 entry["activity_levels"] = a["results"][AnalysisType.ACTIVITY_LEVELS.value]
             analyses_payload.append(entry)
-        # Return list of analyses for compatibility with client expectations
-        return analyses_payload
+        # Return structured response for patient analyses
+        return {
+            "patient_id": patient_id,
+            "analyses": analyses_payload,
+            "total": len(analyses_payload),
+        }
     
     except HTTPException:
         raise
