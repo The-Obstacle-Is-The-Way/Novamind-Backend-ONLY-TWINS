@@ -17,7 +17,7 @@ from datetime import datetime
  # from app.presentation.api.dependencies.services import get_xgboost_service # Likely removed/refactored
  # TODO: Update dependency injection for XGBoostInterface if needed.
 # Remove container-based DI, use alias module for tests
-from app.api.routes.xgboost import get_xgboost_service, get_current_user, verify_provider_access
+from app.api.routes.xgboost import get_xgboost_service, verify_provider_access
 from app.core.services.ml.xgboost.interface import XGBoostInterface # Import the interface
 
 # Schemas for Request/Response Validation
@@ -76,7 +76,7 @@ router = APIRouter(
 async def predict_risk(
     request: RiskPredictionRequest = Body(...),
     xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    current_user: dict = Depends(get_current_user)
+    user: dict = Depends(verify_provider_access)
 ) -> dict:
     """Endpoint to predict patient risk using XGBoost."""
     try:
@@ -86,9 +86,7 @@ async def predict_risk(
             patient_id=str(request.patient_id),
             risk_type=rt,
             clinical_data=request.clinical_data,
-            demographic_data=request.demographic_data,
-            temporal_data=request.temporal_data,
-            confidence_threshold=request.confidence_threshold
+            time_frame_days=request.time_frame_days
         )
         result = await raw if inspect.isawaitable(raw) else raw
         return result
@@ -127,7 +125,7 @@ async def predict_risk(
 async def predict_treatment_response(
     request: TreatmentResponseRequest = Body(...),
     xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    current_user: dict = Depends(get_current_user)
+    user: dict = Depends(verify_provider_access)
 ) -> dict:
     """Endpoint to predict treatment response using XGBoost."""
     try:
@@ -139,9 +137,7 @@ async def predict_treatment_response(
                 if hasattr(request.treatment_details, "dict")
                 else request.treatment_details
             ),
-            clinical_data=request.clinical_data,
-            genetic_data=request.genetic_data,
-            treatment_history=request.treatment_history
+            clinical_data=request.clinical_data
         )
         result = await raw if inspect.isawaitable(raw) else raw
         return result
@@ -184,7 +180,7 @@ async def predict_treatment_response(
 async def predict_outcome(
     request: OutcomePredictionRequest = Body(...),
     xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    current_user: dict = Depends(get_current_user)
+    user: dict = Depends(verify_provider_access)
 ) -> dict:
     """Endpoint to predict clinical outcome using XGBoost."""
     try:
