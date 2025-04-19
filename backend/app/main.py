@@ -106,7 +106,11 @@ def create_application(dependency_overrides: Optional[Dict[Callable, Callable]] 
     Returns:
         FastAPI: Configured FastAPI application
     """
-    # Get settings values with fallbacks
+    # Clear settings cache (e.g., to pick up TESTING flag) and get settings values
+    try:
+        get_settings.cache_clear()
+    except Exception:
+        pass
     settings = get_settings()
     project_name = settings.PROJECT_NAME
     app_description = getattr(settings, 'APP_DESCRIPTION', '')

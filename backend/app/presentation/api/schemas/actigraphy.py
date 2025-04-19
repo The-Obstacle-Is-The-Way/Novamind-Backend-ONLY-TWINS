@@ -15,9 +15,9 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 class AnalysisType(str, Enum):
     """Types of actigraphy analysis."""
-    
-    ACTIVITY_LEVEL = "activity_level_analysis"
-    SLEEP = "sleep_analysis"
+
+    SLEEP_QUALITY = "sleep_quality"
+    ACTIVITY_LEVELS = "activity_levels"
     GAIT = "gait_analysis"
     TREMOR = "tremor_analysis"
 
@@ -56,8 +56,8 @@ class DeviceInfo(BaseModel):
         description="Model of the device",
         examples=["Apple Watch Series 9", "Fitbit Sense 2"]
     )
-    manufacturer: str = Field(
-        ...,
+    manufacturer: Optional[str] = Field(
+        None,
         description="Manufacturer of the device",
         examples=["Apple", "Fitbit", "Samsung"]
     )
@@ -65,8 +65,8 @@ class DeviceInfo(BaseModel):
         None,
         description="Firmware version of the device"
     )
-    position: str = Field(
-        ...,
+    position: Optional[str] = Field(
+        None,
         description="Position of the device on the body",
         examples=["wrist_left", "wrist_right", "waist", "ankle"]
     )

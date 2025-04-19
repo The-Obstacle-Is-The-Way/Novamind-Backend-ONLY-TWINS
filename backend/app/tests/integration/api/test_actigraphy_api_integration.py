@@ -26,11 +26,11 @@ def mock_pat_service():
     service.initialize({})
     return service
 
-@pytest.fixture
 def auth_headers():
     """Authentication headers for API requests."""
+    # Use the mock token recognized by the mocked JWT service
     return {
-        "Authorization": "Bearer test-token",
+        "Authorization": "Bearer patient_token_string",
         "Content-Type": "application/json"
     }
 
@@ -59,14 +59,37 @@ def actigraphy_data():
         "readings": readings,
         "start_time": start_time,
         "end_time": end_time,
-        "sampling_rate_hz": 1.0,  # 1 sample per second
+        "sampling_rate_hz": 1.0,
+        # DeviceInfo fields must match schema: device_type and model are required; others optional
         "device_info": {
-            "name": "ActiGraph GT9X",
-            "firmware": "1.7.0",
-            "device_id": "AG12345"
+            "device_type": "ActiGraph GT9X",
+            "model": "GT9X",
+            "manufacturer": None,
+            "firmware_version": "1.7.0",
+            "position": None,
+            "metadata": None
         },
-        "analysis_types": ["activity_levels", "sleep_analysis"]
+        # Use correct analysis type values
+        "analysis_types": ["activity_levels", "sleep_quality"]
     }
+
+# Fixtures to create app and client for integration tests
+@pytest.fixture
+def test_app(mock_pat_service, actigraphy_data):
+    from app.main import create_application
+    from app.presentation.api.dependencies.auth import get_current_user
+    from app.presentation.api.v1.endpoints.actigraphy import get_pat_service
+    app_instance = create_application()
+    # Override PAT service and authentication
+    app_instance.dependency_overrides[get_pat_service] = lambda: mock_pat_service
+    # Use patient_id from fixture for current_user
+    app_instance.dependency_overrides[get_current_user] = lambda: {"id": actigraphy_data["patient_id"], "roles": []}
+    return app_instance
+
+@pytest.fixture
+def client(test_app):
+    """Override client to use TestClient for sync calls."""
+    return TestClient(test_app)
 
 
 @pytest.mark.db_required()

@@ -100,6 +100,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = Field(default="development", json_schema_extra={"env": "ENVIRONMENT"})
     APP_DESCRIPTION: str = Field(default="NovaMind Digital Twin API - Powering the future of psychiatric digital twins.", json_schema_extra={"env": "APP_DESCRIPTION"})
     VERSION: str = Field(default="0.1.0", json_schema_extra={"env": "VERSION"}) # Default application version
+    TESTING: bool = Field(default=True, json_schema_extra={"env": "TESTING"}) # Enable test mode to skip authentication in middleware
     
     # Optional Feature Flags
     ENABLE_ANALYTICS: bool = Field(default=False, json_schema_extra={"env": "ENABLE_ANALYTICS"})

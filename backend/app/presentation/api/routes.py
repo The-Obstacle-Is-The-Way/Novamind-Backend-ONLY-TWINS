@@ -65,7 +65,7 @@ def setup_routers() -> None:
     # Actigraphy router
     api_router.include_router(
         get_router("actigraphy"),
-        prefix="/v1/actigraphy", # Add v1 prefix
+        prefix="/actigraphy",  # Mount actigraphy endpoints under /api/v1/actigraphy
         tags=["Actigraphy Analysis"]
     )
 
