@@ -331,6 +331,11 @@ def mock_pat_service(
     mock_service.get_patient_analyses = AsyncMock(return_value=analyses_list)
     mock_service.get_model_info = AsyncMock(return_value=model_info)
     mock_service.integrate_with_digital_twin = AsyncMock(return_value=integration_result)
+
+    # Synchronous call for analysis types – the route does *not* await it.
+    mock_service.get_analysis_types = MagicMock(
+        return_value=[t.value for t in AnalysisType]
+    )
     
     return mock_service
 
