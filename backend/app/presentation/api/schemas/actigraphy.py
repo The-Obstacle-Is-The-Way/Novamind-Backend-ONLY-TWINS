@@ -118,8 +118,11 @@ class AnalyzeActigraphyRequest(BaseModel):
     @model_validator(mode="after")
     def validate_times(self) -> "AnalyzeActigraphyRequest":
         """Validate that end_time is after start_time."""
-        start = datetime.fromisoformat(self.start_time.replace("Z", "+00:00"))
-        end = datetime.fromisoformat(self.end_time.replace("Z", "+00:00"))
+        # Normalize trailing Z only, to avoid doubling offsets
+        start_str = self.start_time[:-1] if self.start_time.endswith("Z") else self.start_time
+        end_str = self.end_time[:-1] if self.end_time.endswith("Z") else self.end_time
+        start = datetime.fromisoformat(start_str)
+        end = datetime.fromisoformat(end_str)
         
         if end <= start:
             raise ValueError("end_time must be after start_time")
@@ -158,8 +161,11 @@ class GetActigraphyEmbeddingsRequest(BaseModel):
     @model_validator(mode="after")
     def validate_times(self) -> "GetActigraphyEmbeddingsRequest":
         """Validate that end_time is after start_time."""
-        start = datetime.fromisoformat(self.start_time.replace("Z", "+00:00"))
-        end = datetime.fromisoformat(self.end_time.replace("Z", "+00:00"))
+        # Normalize trailing Z only
+        start_str = self.start_time[:-1] if self.start_time.endswith("Z") else self.start_time
+        end_str = self.end_time[:-1] if self.end_time.endswith("Z") else self.end_time
+        start = datetime.fromisoformat(start_str)
+        end = datetime.fromisoformat(end_str)
         
         if end <= start:
             raise ValueError("end_time must be after start_time")

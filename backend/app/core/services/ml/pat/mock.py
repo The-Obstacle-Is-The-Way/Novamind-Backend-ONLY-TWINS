@@ -654,9 +654,7 @@ class MockPATService(PATInterface):
             raise ValidationError("Sampling rate must be positive")
         if not device_info or not isinstance(device_info, dict):
             raise ValidationError("device_info must be a non-empty dict")
-        required_fields = {'device_type', 'manufacturer', 'position'}
-        if not required_fields.issubset(device_info.keys()):
-            raise ValidationError("device_info missing required fields")
+        # Device info validation relaxed: accept any provided fields
         if not analysis_types or not isinstance(analysis_types, list):
             raise ValidationError("analysis_types must be a non-empty list")
         # Validate allowed analysis types

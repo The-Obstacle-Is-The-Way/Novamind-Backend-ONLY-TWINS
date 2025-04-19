@@ -24,7 +24,11 @@ from app.presentation.api.schemas.actigraphy import (
     AnalysisType,
 )
 # Assuming standard dependency injection setup within presentation layer
-from app.presentation.api.dependencies.auth import get_current_user # Corrected import
+from app.presentation.api.dependencies.auth import get_current_user  # Corrected import
+from app.presentation.api.v1.dependencies.actigraphy import (
+    validate_analyze_actigraphy_request,
+    validate_get_actigraphy_embeddings_request,
+)
 from typing import Dict, Any # Import Dict and Any for type hinting
 
 # Assuming core/services paths remain stable or adjust if moved
@@ -95,10 +99,11 @@ async def get_pat_service() -> PATInterface:
     description="Analyze raw actigraphy data to derive physical activity insights."
 )
 async def analyze_actigraphy(
-    request: AnalyzeActigraphyRequest,
-    req: Request,
+    request: Request,
+    payload: AnalyzeActigraphyRequest = Depends(validate_analyze_actigraphy_request),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
-) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
     """Analyze actigraphy data endpoint.
     
     This endpoint processes raw accelerometer data to extract physical activity
@@ -116,58 +121,73 @@ async def analyze_actigraphy(
     Raises:
         HTTPException: If analysis fails or validation errors occur
     """
+    # Require Authorization header even if get_current_user is overridden
+    if not request.headers.get("authorization"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
     try:
-        # Simple authentication check: require Authorization header
-        if not req.headers.get("authorization"):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required"
-            )
         # Log analysis request (without PHI)
         logger.info(
-            f"Analyzing actigraphy data: readings_count={len(request.readings)}, "
-            f"analysis_types={[at.value for at in request.analysis_types]}"
+            f"Analyzing actigraphy data: readings_count={len(payload.readings)}, "
+            f"analysis_types={[t.value for t in payload.analysis_types]}"
         )
-        # Prepare readings for the service
-        readings = [reading.model_dump() for reading in request.readings]
-        # Analyze actigraphy data
+        # Prepare inputs for service
+        readings_list = [r.dict() for r in payload.readings]
+        types_list = [t.value for t in payload.analysis_types]
+        # Perform analysis via PAT service
         result = pat_service.analyze_actigraphy(
-            patient_id=request.patient_id,
-            readings=readings,
-            start_time=request.start_time,
-            end_time=request.end_time,
-            sampling_rate_hz=request.sampling_rate_hz,
-            device_info=request.device_info.model_dump(),  # type: ignore
-            analysis_types=[at.value for at in request.analysis_types]
+            patient_id=payload.patient_id,
+            readings=readings_list,
+            start_time=payload.start_time,
+            end_time=payload.end_time,
+            sampling_rate_hz=payload.sampling_rate_hz,
+            device_info=payload.device_info.dict(),
+            analysis_types=types_list
         )
         # Log success (without PHI)
         logger.info(
             f"Successfully analyzed actigraphy data: analysis_id={result['analysis_id']}"
         )
         # Build data summary
-        start_iso = request.start_time
-        end_iso = request.end_time
-        # Parse ISO timestamps, replacing Zulu indicator for compatibility
-        start_dt = datetime.fromisoformat(start_iso.replace("Z", "+00:00"))  # type: ignore
-        end_dt = datetime.fromisoformat(end_iso.replace("Z", "+00:00"))      # type: ignore
+        # Parse ISO timestamps, normalizing Zulu indicator
+        start_str = payload.start_time
+        if start_str.endswith("Z"):
+            start_str = start_str[:-1]
+        start_dt = datetime.fromisoformat(start_str)  # type: ignore
+        end_str = payload.end_time
+        if end_str.endswith("Z"):
+            end_str = end_str[:-1]
+        end_dt = datetime.fromisoformat(end_str)      # type: ignore
         duration_seconds = (end_dt - start_dt).total_seconds()
         data_summary = {
-            "start_time": start_iso,
-            "end_time": end_iso,
+            "start_time": payload.start_time,
+            "end_time": payload.end_time,
             "duration_seconds": duration_seconds,
-            "readings_count": len(request.readings),
-            "sampling_rate_hz": request.sampling_rate_hz
+            "readings_count": len(payload.readings),
+            "sampling_rate_hz": payload.sampling_rate_hz
         }
         # Build and return response payload
-        payload = {
+        payload_dict: Dict[str, Any] = {
             "analysis_id": result.get("analysis_id"),
             "patient_id": result.get("patient_id"),
             "timestamp": result.get("timestamp") or result.get("created_at"),
-            "analysis_types": [at.value for at in request.analysis_types],
-            "device_info": request.device_info.model_dump(),  # type: ignore
+            "analysis_types": types_list,
+            "device_info": payload.device_info.dict(),
             "data_summary": data_summary,
             "results": result.get("results", {})
         }
+        # Include individual metrics at top-level for convenience
+        if "sleep_metrics" in result:
+            payload_dict["sleep_metrics"] = result["sleep_metrics"]
+        elif AnalysisType.SLEEP_QUALITY.value in payload_dict["results"]:
+            payload_dict["sleep_metrics"] = payload_dict["results"][AnalysisType.SLEEP_QUALITY.value]
+        if "activity_levels" in result:
+            payload_dict["activity_levels"] = result["activity_levels"]
+        elif AnalysisType.ACTIVITY_LEVELS.value in payload_dict["results"]:
+            payload_dict["activity_levels"] = payload_dict["results"][AnalysisType.ACTIVITY_LEVELS.value]
+        return payload_dict
         # Include individual metrics at top-level for convenience
         if "sleep_metrics" in result:
             payload["sleep_metrics"] = result["sleep_metrics"]
@@ -208,10 +228,10 @@ async def analyze_actigraphy(
     description="Generate embeddings from actigraphy data for machine learning models."
 )
 async def get_actigraphy_embeddings(
-    request: GetActigraphyEmbeddingsRequest,
-    req: Request,
+    payload: GetActigraphyEmbeddingsRequest = Depends(validate_get_actigraphy_embeddings_request),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
-) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
     """Generate embeddings from actigraphy data endpoint.
     
     This endpoint processes raw accelerometer data to generate vector embeddings
@@ -230,57 +250,62 @@ async def get_actigraphy_embeddings(
         HTTPException: If embedding generation fails or validation errors occur
     """
     try:
-        # Simple authentication check: require Authorization header
-        if not req.headers.get("authorization"):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required"
-            )
         # Log embedding request (without PHI)
         logger.info(
-            f"Generating actigraphy embeddings: "
-            f"readings_count={len(request.readings)}"
+            f"Generating actigraphy embeddings: readings_count={len(payload.readings)}"
         )
-        
-        # Prepare readings for the service
-        readings = [reading.model_dump() for reading in request.readings]
-        
-        # Generate embeddings
+        # Prepare inputs for service
+        readings_list = [r.dict() for r in payload.readings]
+        # Generate embeddings via PAT service
         result = pat_service.get_actigraphy_embeddings(
-            patient_id=request.patient_id,
-            readings=readings,
-            start_time=request.start_time,
-            end_time=request.end_time,
-            sampling_rate_hz=request.sampling_rate_hz
+            patient_id=payload.patient_id,
+            readings=readings_list,
+            start_time=payload.start_time,
+            end_time=payload.end_time,
+            sampling_rate_hz=payload.sampling_rate_hz
         )
-        
         # Log success (without PHI)
         logger.info(
-            f"Successfully generated actigraphy embeddings: "
-            f"embedding_id={result['embedding_id']}"
+            f"Successfully generated actigraphy embeddings: embedding_id={result['embedding_id']}"
         )
-        
         # Build data summary
-        start_iso = request.start_time
-        end_iso = request.end_time
-        # Parse ISO timestamps, replacing Zulu indicator for compatibility
-        start_dt = datetime.fromisoformat(start_iso.replace("Z", "+00:00"))  # type: ignore
-        end_dt = datetime.fromisoformat(end_iso.replace("Z", "+00:00"))      # type: ignore
+        # Parse ISO timestamps, normalizing Zulu indicator
+        start_str = payload.start_time
+        if start_str.endswith("Z"):
+            start_str = start_str[:-1]
+        start_dt = datetime.fromisoformat(start_str)  # type: ignore
+        end_str = payload.end_time
+        if end_str.endswith("Z"):
+            end_str = end_str[:-1]
+        end_dt = datetime.fromisoformat(end_str)      # type: ignore
         duration_seconds = (end_dt - start_dt).total_seconds()
         data_summary = {
-            "start_time": start_iso,
-            "end_time": end_iso,
+            "start_time": payload.start_time,
+            "end_time": payload.end_time,
             "duration_seconds": duration_seconds,
-            "readings_count": len(request.readings),
-            "sampling_rate_hz": request.sampling_rate_hz
+            "readings_count": len(payload.readings),
+            "sampling_rate_hz": payload.sampling_rate_hz
         }
-        # Build embedding dict
-        embedding_data = result.get("embedding", {})
-        embedding_payload = {
-            "vector": embedding_data.get("vector", []),
-            "dimension": embedding_data.get("dimension", 0),
-            "model_version": embedding_data.get("model_version", "")
-        }
+        # Build embedding dict, supporting legacy list or nested dict
+        embedding_data = result.get("embedding")
+        if isinstance(embedding_data, list):
+            # Legacy format: list of vector values
+            vector = embedding_data
+            dimension = result.get("embedding_dim", result.get("dimension", len(vector)))
+            model_version = result.get("model_version", "")
+            embedding_payload = {
+                "vector": vector,
+                "dimension": dimension,
+                "model_version": model_version
+            }
+        else:
+            # Nested dict format
+            ed = embedding_data or {}
+            embedding_payload = {
+                "vector": ed.get("vector", []),
+                "dimension": ed.get("dimension", 0),
+                "model_version": ed.get("model_version", "")
+            }
         # Build and return response payload
         payload = {
             "embedding_id": result.get("embedding_id"),
@@ -495,8 +520,8 @@ async def get_patient_analyses(
             elif a.get("results") and AnalysisType.ACTIVITY_LEVELS.value in a["results"]:
                 entry["activity_levels"] = a["results"][AnalysisType.ACTIVITY_LEVELS.value]
             analyses_payload.append(entry)
-        total_count = result.get("total") or (result.get("pagination") or {}).get("total") or len(analyses_payload)
-        return {"patient_id": patient_id, "analyses": analyses_payload, "total": total_count}
+        # Return list of analyses for compatibility with client expectations
+        return analyses_payload
     
     except HTTPException:
         raise
@@ -516,38 +541,26 @@ async def get_patient_analyses(
     description="Retrieve information about the PAT model being used."
 )
 async def get_model_info(
-    request: Request,
     current_user: Dict[str, Any] = Depends(get_current_user),
     pat_service: PATInterface = Depends(get_pat_service)
 ) -> Dict[str, Any]:
     """Get PAT model information endpoint.
-    
-    This endpoint retrieves information about the PAT model being used,
-    including its capabilities, version, and other metadata.
-    
-    Args:
-        current_user: The authenticated user dictionary/object.
-        pat_service: PAT service
-        
-    Returns:
-        Model information
-        
-    Raises:
-        HTTPException: If an error occurs
+
+    Retrieves information about the PAT model, including capabilities,
+    version, and metadata. Authentication enforced by dependency.
     """
-    # Require Authorization header for access
-    if not request.headers.get("authorization"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Authentication required"
-        )
     try:
         logger.info("Retrieving PAT model information")
-        # Get model info from service
         result = pat_service.get_model_info()
         logger.info("Successfully retrieved PAT model information")
-        return result
-    
+        # Shape response to expected API fields
+        return {
+            "model_name": result.get("name"),
+            "version": result.get("version"),
+            "deployment_date": result.get("created_at"),
+            "supported_devices": result.get("supported_devices"),
+            "supported_analyses": result.get("supported_analysis_types")
+        }
     except Exception as e:
         logger.error(f"Unexpected error in get_model_info: {str(e)}")
         raise HTTPException(
@@ -608,21 +621,26 @@ async def integrate_with_digital_twin(
             f"patient_id={request_data.get('patient_id')}, "
             f"profile_id={request_data.get('profile_id')}"
         )
+        # Call service with analysis_id or full analysis data, pass integration options
         result = pat_service.integrate_with_digital_twin(
             patient_id=request_data.get("patient_id"),
             profile_id=request_data.get("profile_id"),
-            actigraphy_analysis=request_data.get("actigraphy_analysis")
+            analysis_id=request_data.get("analysis_id"),
+            actigraphy_analysis=request_data.get("actigraphy_analysis"),
+            **request_data.get("integration_options", {})
         )
         logger.info(
             f"Successfully integrated with Digital Twin: "
             f"integration_id={result.get('integration_id')}"
         )
         # Shape response payload
+        # Shape response payload with key fields for integration
         payload: Dict[str, Any] = {
+            "integration_id": result.get("integration_id"),
             "patient_id": result.get("patient_id"),
-            "profile_id": result.get("profile_id"),
-            "timestamp": result.get("timestamp") or result.get("created_at"),
-            "integrated_profile": result.get("updated_profile"),
+            "analysis_id": result.get("analysis_id"),
+            "integrated_data_points": result.get("metrics_integrated"),
+            # additional fields can be included if desired
         }
         return payload
     
