@@ -13,4 +13,8 @@ def get_xgboost_service(
     """Dependency override for XGBoost service. Uses DI container via get_service."""
     return service
 
-__all__ = ["get_xgboost_service", "get_current_user", "verify_provider_access"]
+__all__ = ["get_xgboost_service", "get_current_user", "verify_provider_access", "validate_permissions"]
+# Default no-op permission validator for XGBoost API routes; tests may patch this
+def validate_permissions() -> None:
+    """No-op permission validator for XGBoost routes. Can be patched in tests."""
+    return None

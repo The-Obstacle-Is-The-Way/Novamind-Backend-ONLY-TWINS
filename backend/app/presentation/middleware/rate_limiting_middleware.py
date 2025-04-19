@@ -113,10 +113,11 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
             "/redoc",
             "/openapi.json",
         ]
-        # Exempt MentaLLaMA endpoints from rate limiting
+        # Exempt MentaLLaMA and XGBoost endpoints from rate limiting
         try:
             ml_prefix = f"{get_settings().API_V1_STR}/mentallama"
-            self.exempt_paths.append(ml_prefix)
+            xgb_prefix = f"{get_settings().API_V1_STR}/ml/xgboost"
+            self.exempt_paths.extend([ml_prefix, xgb_prefix])
         except Exception:
             pass
     

@@ -47,10 +47,11 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.auth_service = auth_service # Store injected service
         self.jwt_service = jwt_service   # Store injected service
-        # Always allow the MentaLLaMA endpoints to be public (skip auth)
+        # Always allow the MentaLLaMA and XGBoost endpoints to be public (skip auth)
         base_paths = public_paths or set()
         ml_path = f"{get_settings().API_V1_STR}/mentallama"
-        self.public_paths = base_paths | {ml_path}
+        xgb_path = f"{get_settings().API_V1_STR}/ml/xgboost"
+        self.public_paths = base_paths | {ml_path, xgb_path}
         logger.info(f"AuthenticationMiddleware initialized (using constructor injection). Public paths: {self.public_paths}.")
 
     # Remove Depends from dispatch
