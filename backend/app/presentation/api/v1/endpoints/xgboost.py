@@ -356,8 +356,10 @@ async def digital_twin_simulation(
 )
 async def integrate_with_digital_twin(
     request_data: Dict[str, Any] = Body(...),
+) -> dict:
     xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    current_user: dict = Depends(get_current_user)
+    user: dict = Depends(verify_provider_access)
+) -> dict:
 ) -> dict:
     try:
         raw = xgboost_service.integrate_with_digital_twin(
