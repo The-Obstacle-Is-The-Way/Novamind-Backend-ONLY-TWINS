@@ -17,6 +17,38 @@ class Address:
     state: str
     zip_code: str
     country: str | None = "USA"
+
+    def __init__(
+        self,
+        *,
+        street: str | None = None,
+        line1: str | None = None,
+        line2: str | None = None,
+        city: str,
+        state: str,
+        zip_code: str | None = None,
+        postal_code: str | None = None,
+        country: str | None = "USA",
+    ):
+        """
+        Initialize Address, allowing either 'street' or 'line1', and 'zip_code' or 'postal_code'.
+        'line2' is optional and stored on the instance but not included in to_dict.
+        """
+        s = street if street is not None else line1
+        if not s:
+            raise ValueError("Street (street or line1) is required")
+        z = zip_code if zip_code is not None else postal_code
+        if not z:
+            raise ValueError("ZIP code (zip_code or postal_code) is required")
+        # Store street and alias line1 for compatibility
+        object.__setattr__(self, "street", s)
+        object.__setattr__(self, "line1", s)
+        object.__setattr__(self, "city", city)
+        object.__setattr__(self, "state", state)
+        object.__setattr__(self, "zip_code", z)
+        object.__setattr__(self, "country", country)
+        object.__setattr__(self, "line2", line2)
+        self.__post_init__()
     
     def __post_init__(self) -> None:
         """Validate address after initialization."""

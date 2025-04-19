@@ -22,6 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from typing import Any, Optional
+from app.domain.value_objects.emergency_contact import EmergencyContact
 
 
 @dataclass
@@ -36,7 +37,8 @@ class Patient:
 
     id: str
     date_of_birth: datetime | str
-    gender: str
+    # Gender is optional in integration scenarios
+    gender: Optional[str] = None
 
     # ------------------------------------------------------------------
     # Dual‑API identification fields
@@ -57,6 +59,12 @@ class Patient:
     phone: Optional[str] = None
     address: Optional[str] = None
     insurance_number: Optional[str] = None
+    # Additional PHI & administrative fields
+    emergency_contact: Optional[EmergencyContact] = None
+    insurance: Optional[dict[str, Any]] = None
+    insurance_info: Optional[dict[str, Any]] = None
+    active: bool = True
+    created_by: Any = None
 
     # ------------------------------------------------------------------
     # Clinical data
