@@ -658,7 +658,8 @@ class TemporalNeurotransmitterService:
             # In production this should never happen, but unit‑tests may provide None – emulate save and return id.
             return event.event_id
 
-        event_id: UUID = await self.event_repository.save_event(event)  # type: ignore[arg-type]
+        # Use generic 'save' method to align with repository interface in unit tests
+        event_id: UUID = await self.event_repository.save(event)  # type: ignore[arg-type]
         return event_id
 
     async def get_concentration_history(

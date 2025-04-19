@@ -110,9 +110,10 @@ class RiskPredictionRequest(BaseModel):
     # Use str for risk_type to allow model lookup to handle unknown types
     risk_type: str = Field(..., description="Type of risk to predict")
     clinical_data: Dict[str, Any] = Field(..., description="Clinical data for prediction")
-    patient_data: Dict[str, Any] = Field(..., description="Patient demographic data for prediction")
+    patient_data: Dict[str, Any] = Field(default_factory=dict, description="Patient demographic data for prediction")
     temporal_data: Optional[Dict[str, Any]] = Field(None, description="Temporal data for prediction")
     confidence_threshold: float = Field(0.5, description="Confidence threshold for prediction")
+    time_frame_days: Optional[int] = Field(None, description="Time frame in days for prediction")
     
     model_config = ConfigDict(extra="allow")
 

@@ -2,7 +2,7 @@
 from fastapi import HTTPException, status
 import asyncio
 
-async def verify_api_key(*args, **kwargs):
+async def verify_api_key():
     """
     Stub verify_api_key for integration test compatibility.
     Actual authentication is handled by middleware.

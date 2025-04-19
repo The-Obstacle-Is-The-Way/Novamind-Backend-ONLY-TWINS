@@ -15,7 +15,7 @@ from app.config.settings import get_settings
 settings = get_settings()
 from app.infrastructure.security.jwt.jwt_service import JWTService, get_jwt_service
 from app.core.utils.logging import get_logger
-
+from app.infrastructure.security.auth.authentication_service import AuthenticationService
 
 logger = get_logger(__name__)
 security = HTTPBearer(auto_error=False)

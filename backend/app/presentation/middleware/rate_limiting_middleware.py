@@ -11,6 +11,7 @@ import logging
 from typing import Callable, Optional
 
 from fastapi import Request, Response, status
+from app.config.settings import get_settings
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from app.infrastructure.security.rate_limiting.rate_limiter import (
@@ -112,6 +113,12 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
             "/redoc",
             "/openapi.json",
         ]
+        # Exempt MentaLLaMA endpoints from rate limiting
+        try:
+            ml_prefix = f"{get_settings().API_V1_STR}/mentallama"
+            self.exempt_paths.append(ml_prefix)
+        except Exception:
+            pass
     
         # Maintain legacy attribute name expected by existing code/tests
         self.rate_limiter = self._limiter  # type: ignore

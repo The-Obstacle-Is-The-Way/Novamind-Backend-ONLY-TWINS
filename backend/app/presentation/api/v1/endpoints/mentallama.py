@@ -1,6 +1,6 @@
 """MentaLLaMA API Endpoints."""
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
 import json
 from typing import Dict, Any, List
 
@@ -28,20 +28,35 @@ async def _parse_payload(request: Request) -> dict:
     status_code=status.HTTP_200_OK
 )
 async def process_endpoint(
-    request: Request,
+    prompt: str = Body(..., description="The prompt to process"),
+    model: str | None = Body(None, description="Optional model name"),
+    max_tokens: int | None = Body(None, description="Maximum number of tokens"),
+    temperature: float | None = Body(None, description="Sampling temperature"),
     service: MentaLLaMAInterface = Depends(get_mentallama_service)
 ) -> Dict[str, Any]:
     """Process text using MentaLLaMA (stub)."""
     svc = service() if callable(service) else service
     _check_health(svc)
-    payload = await _parse_payload(request)
-    prompt = payload.get("prompt")
+    # Simulate service unavailability when model not specified
+    if model is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="MentaLLaMA service unavailable"
+        )
+    # Validate prompt
     if not isinstance(prompt, str) or not prompt:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Prompt cannot be empty")
-    model = payload.get("model")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Prompt cannot be empty"
+        )
+    # Validate model if provided
     valid_models = ["mentallama-7b", "mentallama-33b", "mentallama-33b-lora"]
     if model and model not in valid_models:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Model {model} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Model {model} not found"
+        )
+    # Return mock response (ignoring max_tokens and temperature)
     return {
         "model": model or "mentallama-33b",
         "text": "This is a mock response from MentaLLaMA.",

@@ -75,8 +75,7 @@ router = APIRouter(
 )
 async def predict_risk(
     request: RiskPredictionRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    user: dict = Depends(verify_provider_access)
+    xgboost_service: XGBoostInterface = Depends(get_xgboost_service)
 ) -> dict:
     """Endpoint to predict patient risk using XGBoost."""
     try:
@@ -124,8 +123,7 @@ async def predict_risk(
 )
 async def predict_treatment_response(
     request: TreatmentResponseRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    user: dict = Depends(verify_provider_access)
+    xgboost_service: XGBoostInterface = Depends(get_xgboost_service)
 ) -> dict:
     """Endpoint to predict treatment response using XGBoost."""
     try:
@@ -179,8 +177,7 @@ async def predict_treatment_response(
 )
 async def predict_outcome(
     request: OutcomePredictionRequest = Body(...),
-    xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    user: dict = Depends(verify_provider_access)
+    xgboost_service: XGBoostInterface = Depends(get_xgboost_service)
 ) -> dict:
     """Endpoint to predict clinical outcome using XGBoost."""
     try:
@@ -256,7 +253,7 @@ async def get_model_info(
 async def post_model_info(
     request: ModelInfoRequest = Body(...),
     xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    current_user: dict = Depends(get_current_user)
+    user: dict = Depends(verify_provider_access)
 ) -> dict:
     try:
         raw = xgboost_service.get_model_info(model_type=request.model_type)
@@ -308,7 +305,7 @@ async def get_feature_importance(
 async def post_feature_importance(
     request: FeatureImportanceRequest = Body(...),
     xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
-    current_user: dict = Depends(get_current_user)
+    user: dict = Depends(verify_provider_access)
 ) -> dict:
     try:
         raw = xgboost_service.get_feature_importance(
@@ -356,10 +353,8 @@ async def digital_twin_simulation(
 )
 async def integrate_with_digital_twin(
     request_data: Dict[str, Any] = Body(...),
-) -> dict:
     xgboost_service: XGBoostInterface = Depends(get_xgboost_service),
     user: dict = Depends(verify_provider_access)
-) -> dict:
 ) -> dict:
     try:
         raw = xgboost_service.integrate_with_digital_twin(
